@@ -93,8 +93,9 @@ class FileDialog(wxFileDialog):
       cls = self.__class__
       if cls.last_directory is None:
          cls.last_directory = config.get("default_dir")
+      self._flags = False
       if multiple:
-         flags |= wxMULTIPLE
+         self._flags |= wxMULTIPLE
          self._multiple = True
       else:
          self._multiple = False

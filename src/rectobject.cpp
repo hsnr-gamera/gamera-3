@@ -652,21 +652,15 @@ static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {
   */
   bool cmp;
   switch (op) {
-  case Py_LT:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
-  case Py_LE:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
   case Py_EQ:
     cmp = ap == bp;
     break;
   case Py_NE:
     cmp = ap != bp;
     break;
+  case Py_LT:
+  case Py_LE:
   case Py_GT:
-    Py_INCREF(Py_NotImplemented);
-    return Py_NotImplemented;
   case Py_GE:
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
@@ -689,6 +683,11 @@ static PyObject* rect_repr(PyObject* self) {
 			     (int)x->nrows(), (int)x->ncols());
 }
 
+static long rect_hash(PyObject* self) {
+  Rect* x = ((RectObject*)self)->m_x;
+  return (((x->ul_x() & 0xff) << 24) & ((x->ul_y() & 0xff) << 16) & ((x->lr_x() & 0xff) << 8) & (x->lr_y() & 0xff));
+}
+
 void init_RectType(PyObject* module_dict) {
   RectType.ob_type = &PyType_Type;
   RectType.tp_name = "gameracore.Rect";
@@ -703,6 +702,7 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_richcompare = rect_richcompare;
   RectType.tp_free = NULL; // _PyObject_Del;
   RectType.tp_repr = rect_repr;
+  RectType.tp_hash = rect_hash;
   RectType.tp_doc = "The ``Rect`` class manages bounding boxes, and has a number of operations on those bounding boxes.\n\nThere are multiple ways to create a Rect:\n\n  - **Rect** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Rect** (Point *upper_left*, Point *lower_right*)\n\n  - **Rect** (Point *upper_left*, Size *size*)\n\n  - **Rect** (Point *upper_left*, Dimensions *dimensions*)\n";
   PyType_Ready(&RectType);
   PyDict_SetItemString(module_dict, "Rect", (PyObject*)&RectType);

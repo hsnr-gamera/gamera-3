@@ -803,6 +803,93 @@ static int cc_set_label(PyObject* self, PyObject* v) {
   return 0;
 }
 
+static PyObject* image_richcompare(PyObject* a, PyObject* b, int op) {
+  if (!is_ImageObject(a) || !is_ImageObject(b)) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+
+  Image& ap = *(Image*)((RectObject*)a)->m_x;
+  Image& bp = *(Image*)((RectObject*)b)->m_x;
+
+  /*
+    Only equality and inequality make sense.
+  */
+  bool cmp;
+  switch (op) {
+  case Py_EQ:
+    cmp = (ap == bp) && (ap.data() == bp.data());
+    break;
+  case Py_NE:
+    cmp = (ap != bp) || (ap.data() != bp.data());
+    break;
+  case Py_LT:
+  case Py_LE:
+  case Py_GT:
+  case Py_GE:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  default:
+    return 0; // cannot happen
+  }
+  if (cmp) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* cc_richcompare(PyObject* a, PyObject* b, int op) {
+  if (!is_ImageObject(a) || !is_ImageObject(b)) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+
+  Image& ap = *(Image*)((RectObject*)a)->m_x;
+  Image& bp = *(Image*)((RectObject*)b)->m_x;
+
+  /*
+    Only equality and inequality make sense.
+  */
+  bool cmp;
+  switch (op) {
+  case Py_EQ:
+    if (!is_CCObject(a) || !is_CCObject(b))
+      cmp = false;
+    else {
+      Cc& ac = *(Cc*)((RectObject*)a)->m_x;
+      Cc& bc = *(Cc*)((RectObject*)b)->m_x;
+      cmp = (ap == bp) && (ap.data() == bp.data()) && ac.label() == bc.label();
+    }
+    break;
+  case Py_NE:
+    if (!is_CCObject(a) || !is_CCObject(b))
+      cmp = true;
+    else {
+      Cc& ac = *(Cc*)((RectObject*)a)->m_x;
+      Cc& bc = *(Cc*)((RectObject*)b)->m_x;
+      cmp = (ap != bp) || (ap.data() != bp.data()) || ac.label() != bc.label();
+    }
+    break;
+  case Py_LT:
+  case Py_LE:
+  case Py_GT:
+  case Py_GE:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  default:
+    return 0; // cannot happen
+  }
+  if (cmp) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
 
 void init_ImageType(PyObject* module_dict) {
   ImageType.ob_type = &PyType_Type;
@@ -818,6 +905,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_getattro = PyObject_GenericGetAttr;
   ImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageType.tp_free = NULL; //_PyObject_Del;
+  ImageType.tp_richcompare = image_richcompare;
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   ImageType.tp_traverse = image_traverse;
   ImageType.tp_clear = image_clear;
@@ -851,6 +939,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_getset = cc_getset;
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = PyType_GenericAlloc;
+  CCType.tp_richcompare = cc_richcompare;
   CCType.tp_free = NULL; //_PyObject_Del;
   CCType.tp_doc = "Creates a connected component representing part of a OneBit image. It is rare to create one of these objects directly: most often you will just use cc_analysis to create connected components.\n\nThere are a number of ways to create a Cc:\n\n  - **Cc** (Image *image*, Int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Point *lower_right*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Size *size*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **Cc** (Image *image*, Int *label*, Rect *rectangle*)\n\n*label*\n  The pixel value used to represent this Cc.";
   PyType_Ready(&CCType);

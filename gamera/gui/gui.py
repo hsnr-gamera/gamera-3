@@ -18,6 +18,7 @@
 #
 
 # Gamera specific
+
 import inspect
 from gamera.core import *
 from gamera.config import config
@@ -45,16 +46,12 @@ import sys, types, traceback, os, string, os.path
 
 # Set default options
 config.add_option(
-   "", "--shell-font-face", default="Arial",
+   "", "--shell-font-face", default=py.editwindow.FACES['mono'],
    help="[shell] Font face used in the shell")
-if wxPlatform == '__WXMSW__':
-   config.add_option(
-      "", "--shell-font-size", default=10, type="int",
-      help="[shell] Font size used in the shell")
-else:
-   config.add_option(
-      "", "--shell-font-size", default=9, type="int",
-      help="[shell] Font size used in the shell")
+config.add_option(
+   "", "--shell-font-size", default=py.editwindow.FACES['size'],
+   type="int",
+   help="[shell] Font size used in the shell")
 main_win = None
 app = None
 
@@ -139,11 +136,16 @@ class PyCrustGameraShell(shell.Shell):
       self.history_win = None
       self.update = None
       shell.Shell.__init__(self, parent, id, introText=message)
-
+      
       self.locals = self.interp.locals
       self.main_win = main_win
       self.SetMarginType(1, 0)
       self.SetMarginWidth(1, 0)
+
+      style = py.editwindow.FACES.copy()
+      style['mono'] = config.get("shell_font_face")
+      style['size'] = config.get("shell_font_size")
+      self.setStyles(style)
 
    def addHistory(self, command):
       if self.history_win:
@@ -197,8 +199,7 @@ class History(wxStyledTextCtrl):
          style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       style = "face:%s,size:%d" % (
          config.get("shell_font_face"), config.get("shell_font_size"))
-      self.StyleSetSpec(wxSTC_STYLE_DEFAULT,
-                        style)
+      self.StyleSetSpec(wxSTC_STYLE_DEFAULT, style)
       self.SetTabWidth(2)
       EVT_KEY_DOWN(self, self.OnKey)
       EVT_LEFT_DCLICK(self, self.OnDoubleClick)

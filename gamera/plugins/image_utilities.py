@@ -113,43 +113,6 @@ class union_images(PluginFunction):
     args = Args([ImageList('list_of_images')])
     return_type = ImageType([ONEBIT])
 
-class projection_rows(PluginFunction):
-    """Compute the horizontal projections of an image.  This computes the
-number of pixels in each row."""
-    category = "Analysis"
-    self_type = ImageType([ONEBIT])
-    return_type = IntVector()
-
-class projection_cols(PluginFunction):
-    """Compute the vertical projections of an image.  This computes the
-number of pixels in each column."""
-    category = "Analysis"
-    self_type = ImageType([ONEBIT])
-    return_type = IntVector()
-
-class projections(PluginFunction):
-    """Computes the projections in both the *row*- and *column*- directions.
-This is returned as a tuple (*rows*, *columns*), where each element is an
-``IntVector`` of projections.
-(Equivalent to ``(image.projections_rows(), image.projections_cols())``).
-
-If the GUI is being used, the result is displayed in a window:
-
-.. image:: images/projections.png
-"""
-    category = "Analysis"
-    self_type = ImageType([ONEBIT])
-    return_type = Class()
-    pure_python = 1
-    def __call__(image):
-        rows = _image_utilities.projection_rows(image)
-        cols = _image_utilities.projection_cols(image)
-        gui = has_gui.gui
-        if gui:
-            gui.ShowProjections(rows, cols, image)
-        return (rows, cols)
-    __call__ = staticmethod(__call__)
-
 class fill_white(PluginFunction):
     """Fills the entire image with white."""
     category = "Draw"
@@ -297,12 +260,12 @@ class shear_column(PluginFunction):
     args = Args([Int('column'), Int('distance')])
 
 class UtilModule(PluginModule):
-    cpp_headers=["image_utilities.hpp", "projections.hpp"]
+    cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, resize, scale,
-                 histogram, union_images, projection_rows, projection_cols,
-                 projections, fill_white, invert, clip_image, mask,
+                 histogram, union_images,
+                 fill_white, invert, clip_image, mask,
                  corelation, nested_list_to_image,
                  to_nested_list, shear_row, shear_column]
     author = "Michael Droettboom and Karl MacMillan"

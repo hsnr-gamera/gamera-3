@@ -257,8 +257,10 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
 
   #import plugin
   plugin_module = __import__(module_name)
+  if not hasattr(plugin_module, 'module'):
+     return None
   if plugin_module.module.pure_python:
-    return None
+     return None
 
   # see if any of the header files have changed since last time
   # we compiled

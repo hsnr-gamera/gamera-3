@@ -21,7 +21,8 @@ plugins.  Toolkits are a whole other discussion, so see the
 .. __: writing_toolkits.html
 
 Before writing any plugin, you should make sure there isn't already a
-plugin included that does what you want.  Look at the `list of plugins included with Gamera`__.
+plugin included that does what you want.  Look at the `list of plugins
+included with Gamera`__.
 
 .. __: plugins.html
 
@@ -112,9 +113,9 @@ create Gamera plugins, so the first thing we do is import it:
 
   from gamera.plugin import *
 
-Next, we import the C++ side of the plugin, (described in the next
-section) which *always* has the same name as the Python metadata
-module, except with a leading underscore:
+Next, we import the C++ (compiled object file) side of the plugin,
+(described in the next section) which *always* has the same name as
+the Python metadata module, except with a leading underscore:
 
 .. code:: Python
 

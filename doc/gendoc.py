@@ -115,11 +115,15 @@ def method_doc(func, level, s):
    if file == 'plugin.py':
        file = 'core.py'
    s.write(":Defined in: %s\n" % os.path.split(inspect.getsourcefile(func))[1])
-   if func.module.author != None:
+   if func.author is None:
+       author = func.module.author
+   else:
+       author = func.author
+   if author != None:
       if func.module.url != None and 0:
-         s.write(":Author: `%s`__\n.. __: %s\n" % (func.module.author, func.module.url))
+         s.write(":Author: `%s`__\n.. __: %s\n" % (author, func.module.url))
       else:
-         s.write(":Author: %s\n" % (func.module.author,))
+         s.write(":Author: %s\n" % (author,))
    if func.image_types_must_match:
       s.write("\n*All images passed in (including self) must have the same pixel type.*\n\n")
    if func.__doc__ == None or func.__doc__ == "":

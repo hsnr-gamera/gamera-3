@@ -115,6 +115,101 @@ namespace Gamera {
 	   height, image.ncols());
     return projection_cols(image, r);
   }
+
+  /*
+    returns y-projections of a rotated image
+  */
+  template<class T>
+  void projection_skewed_cols(const T& image, FloatVector* angles, std::vector<IntVector*>& proj) {
+    int x;
+    size_t i;
+    size_t n = angles->size();
+
+    FloatVector sina(n);
+    FloatVector cosa(n);
+    for (i = 0; i < n; i++) {
+      sina[i] = sin((*angles)[i] * M_PI / 180.0);
+      cosa[i] = cos((*angles)[i] * M_PI / 180.0);
+    }
+
+    for (i = 0; i < n; i++)
+      proj[i] = new IntVector(image.ncols(), 0);
+
+    // compute skewed projections simultanously
+    for (size_t r = 0; r < image.nrows(); ++r) {
+      for (size_t c = 0; c < image.ncols(); ++c) {
+        if (is_black(image.get(r,c))) {
+          for (i = 0; i < n; i++) {
+            x = (int) round(c*cosa[i] - r*sina[i]);
+            if ((x > 0) && (x < (int)image.ncols()))
+              ++(*(proj[i]))[x];
+          }
+        }
+      }
+    }
+  }
+
+  // The Python part
+  template<class T>
+  PyObject* projection_skewed_cols(const T& image, FloatVector* angles) {
+    size_t n = angles->size();
+    std::vector<IntVector*> proj(n);
+    projection_skewed_cols(image, angles, proj);
+
+    PyObject* projlist = PyList_New(n);  
+    // move projections to return list
+    for (size_t i = 0; i < n; i++)
+      PyList_SET_ITEM(projlist, i, IntVector_to_python(proj[i]));
+    return projlist;
+  }
+
+  /*
+    returns x-projections of a rotated image
+  */
+  template<class T>
+  void projection_skewed_rows(const T& image, FloatVector* angles, 
+			      std::vector<IntVector*>& proj) {
+    int y;
+    size_t i;
+    size_t n = angles->size();
+
+    FloatVector sina(n);
+    FloatVector cosa(n);
+    for (i = 0; i < n; i++) {
+      sina[i] = sin((*angles)[i] * M_PI / 180.0);
+      cosa[i] = cos((*angles)[i] * M_PI / 180.0);
+    }
+
+    for (i = 0; i < n; i++)
+      proj[i] = new IntVector(image.nrows(), 0);
+
+    // compute skewed projections simultanously
+    for (size_t r = 0; r < image.nrows(); ++r) {
+      for (size_t c = 0; c < image.ncols(); ++c) {
+        if (is_black(image.get(r,c))) {
+          for (i = 0; i < n; i++) {
+            y = (int) round(c*sina[i] + r*cosa[i]);
+            if ((y > 0) && (y < (int)image.nrows()))
+              ++(*(proj[i]))[y];
+          }
+        }
+      }
+    }
+  }
+
+  // The Python part
+  template<class T>
+  PyObject* projection_skewed_rows(const T& image, FloatVector* angles) {
+    size_t n = angles->size();
+    std::vector<IntVector*> proj(n);
+    projection_skewed_rows(image, angles, proj);
+
+    PyObject* projlist = PyList_New(n);  
+    // move projections to return list
+    for (size_t i = 0; i < n; i++)
+      PyList_SET_ITEM(projlist, i, IntVector_to_python(proj[i]));
+    return projlist;
+  }
 }
 
 #endif

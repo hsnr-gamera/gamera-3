@@ -64,6 +64,6 @@ class DefModule(PluginModule):
     cpp_namespace=["Gamera"]
     category = "Deformations"
     functions = [rotateShear,wave,noise,inkrub]
-    author = "Michael Droettboom and Karl MacMillan"
+    author = "Albert Brzeczko"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()

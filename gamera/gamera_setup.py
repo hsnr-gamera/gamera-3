@@ -56,7 +56,7 @@ else:
 sys.path.append("gamera")
 import generate
 
-extras = {}
+extras = {'extra_compile_args': ['-Wall']}
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
    extras['extra_compile_args'] = ['/GR']#, "/Zi"]
 elif sys.platform == 'darwin':

@@ -392,8 +392,8 @@ namespace Gamera {
   template<class T>
   struct _nested_list_to_image {
     ImageView<ImageData<T> >* operator()(PyObject* obj) {
-      ImageData<T>* data;
-      ImageView<ImageData<T> >* image;
+      ImageData<T>* data = NULL;
+      ImageView<ImageData<T> >* image = NULL;
       
       if (!PyList_Check(obj))
 	throw std::runtime_error("Must be a nested Python list of pixels.");
@@ -402,7 +402,7 @@ namespace Gamera {
 	throw std::runtime_error("Nested list must have at least one row.");
       int ncols = -1;
       
-      for (size_t r = 0; r < nrows; ++r) {
+      for (size_t r = 0; r < (size_t)nrows; ++r) {
 	PyObject* row = PyList_GET_ITEM(obj, r);
 	if (!PyList_Check(row)) {
 	  pixel_from_python<T>::convert(row);
@@ -425,7 +425,7 @@ namespace Gamera {
 	      ("Each row of the nested list must be the same length.");
 	  }
 	}
-	for (size_t c = 0; c < ncols; ++c) {
+	for (size_t c = 0; c < (size_t)ncols; ++c) {
 	  PyObject* item = PyList_GET_ITEM(row, c);
 	  T px = pixel_from_python<T>::convert(item);
 	  image->set(r, c, px);

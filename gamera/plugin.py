@@ -68,6 +68,7 @@ class PluginFunction:
    doc_examples = []
    category = None
    pure_python = False
+   author = None
 
    def register(cls, add_to_image=1):
       if cls.return_type != None:
@@ -98,7 +99,7 @@ class PluginFunction:
          func = cls.__call__
       cls.__call__ = staticmethod(func)
       from gamera import core
-      if add_to_image: # and isinstance(cls.self_type, ImageType):
+      if add_to_image:
          core.ImageBase.add_plugin_method(cls, func, category)
    register = classmethod(register)
 

@@ -12,6 +12,10 @@ By categories
 
   - projection_rows_
 
+  - projection_skewed_cols_
+
+  - projection_skewed_rows_
+
   - projections_
 
 - Classification_
@@ -316,12 +320,6 @@ By categories
 
   - threshold_
 
-- Tracing_
-
-  - reduce_tracing_
-
-  - trace_cc_
-
 - Utility_
 
   - NestedLists_
@@ -406,11 +404,11 @@ or_image_, otsu_find_threshold_, otsu_threshold_, outline_
 
 **P**
 
-permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_
+permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projection_skewed_cols_, projection_skewed_rows_, projections_
 
 **R**
 
-rank_, red_, reduce_tracing_, remove_border_, resize_, rotateShear_
+rank_, red_, remove_border_, resize_, rotateShear_
 
 **S**
 
@@ -418,7 +416,7 @@ saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sh
 
 **T**
 
-text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, trace_cc_
+text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
 
 **U**
 
@@ -448,6 +446,8 @@ zernike_moments_
 .. _histogram: analysis.html#histogram
 .. _projection_cols: analysis.html#projection-cols
 .. _projection_rows: analysis.html#projection-rows
+.. _projection_skewed_cols: analysis.html#projection-skewed-cols
+.. _projection_skewed_rows: analysis.html#projection-skewed-rows
 .. _projections: analysis.html#projections
 .. _Classification: classification.html#classification
 .. _classify_automatic: classification.html#classify-automatic
@@ -600,9 +600,6 @@ zernike_moments_
 .. _otsu_find_threshold: thresholding.html#otsu-find-threshold
 .. _otsu_threshold: thresholding.html#otsu-threshold
 .. _threshold: thresholding.html#threshold
-.. _Tracing: tracing.html#tracing
-.. _reduce_tracing: tracing.html#reduce-tracing
-.. _trace_cc: tracing.html#trace-cc
 .. _Utility: utility.html#utility
 .. _NestedLists: utility.html#nestedlists
 .. _nested_list_to_image: utility.html#nested-list-to-image

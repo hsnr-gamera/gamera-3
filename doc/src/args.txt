@@ -20,7 +20,8 @@ interfaces (a sequence of dialogs) to help the user navigate through
 complex processes.  (See `Writing Wizards`_).
 
 All of the classes necessary to make this happen are in
-``gamera/args.py``, which is included in ``gamera/plugin.py``.
+``gamera/args.py``, which is included in ``gamera/plugin.py``.  You
+can refer to those files for more information if necessary.
 
 This document will first describe the common case of using ``args.py``
 for  `specifying the type metadata of a plugin method`_.  Then

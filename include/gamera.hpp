@@ -140,6 +140,14 @@ namespace Gamera {
     {0xbc, 0x88, 0x2d}, // Orange
     {0x6e, 0x00, 0xc7}  // Purple
   };
+
+  /**
+   * Point Vector
+   *
+   * For managing lists of points
+   */
+  typedef std::vector<Point> PointVector;
+
 }
 
 #endif

@@ -923,6 +923,16 @@ inline PyObject* IntVector_to_python(IntVector* cpp) {
   return py;
 }
 
+inline PyObject* PointVector_to_python(PointVector* cpp) {
+  PyObject* py = PyList_New(cpp->size());
+  for (size_t i = 0; i < cpp->size(); ++i) {
+    PyObject* point = create_PointObject(Point((*cpp)[i]));
+    Py_INCREF(point);
+    PyList_SetItem(py, i, point);
+  }
+  return py;
+}
+
 inline FloatVector* FloatVector_from_python(PyObject* py) {
   int size = PyObject_Size(py);
   if (size < 0) {
@@ -946,6 +956,22 @@ inline IntVector* IntVector_from_python(PyObject* py) {
   IntVector* cpp = new IntVector(size);
   for (int i = 0; i < size; ++i)
     (*cpp)[i] = (int)PyInt_AsLong(PyObject_GetItem(py, PyInt_FromLong(i)));
+  return cpp;
+}
+
+inline PointVector* PointVector_from_python(PyObject* py) {
+  int size = PyObject_Size(py);
+  if (size < 0) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument is not a sequence.\n");
+      return 0;
+  }
+  PointVector* cpp = new PointVector();
+  cpp->reserve(size);
+  for (int i = 0; i < size; ++i) {
+    PointObject* point = (PointObject*)PyList_GET_ITEM(py, i);
+    cpp->push_back(Point(*point->m_x));
+  }
   return cpp;
 }
 

@@ -104,7 +104,7 @@ The two images must be the same size and type.
 class ArithmeticModule(PluginModule):
     cpp_headers=["arithmetic.hpp"]
     cpp_namespace=["Gamera"]
-    category = "Arithmetic"
+    category = "Combine/Arithmetic"
     functions = [add_images, subtract_images, multiply_images, divide_images]
     author = "Michael Droettboom"
     url = "http://gamera.dkc.jhu.edu/"

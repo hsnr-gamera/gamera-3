@@ -166,6 +166,29 @@ namespace Gamera {
   }
 
   template<class T>
+  class Mode {
+  public:
+    inline T operator() (typename vector<T>::iterator begin,
+			 typename vector<T>::iterator end);
+  };
+
+  template<class T>
+  inline T Mode<T>::operator() (typename vector<T>::iterator begin,
+				typename vector<T>::iterator end) {
+    std::map<T, size_t> votes;
+    T max_value;
+    size_t max_count = 0;
+    for (; begin != end; ++begin) {
+      votes[*begin]++;
+      if (votes[*begin] > max_count) {
+	max_count = votes[*begin];
+	max_value = *begin;
+      }
+    }
+    return max_value;
+  }
+
+  template<class T>
   void mean(T &m) {
     if (m.nrows() < 3 || m.ncols() < 3)
       return;

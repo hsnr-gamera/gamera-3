@@ -24,6 +24,14 @@
 #include <stack>
 
 template<class T>
+inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x2) {
+  y1 = std::min(y1, image.nrows());
+  y2 = std::min(y2, image.nrows());
+  x1 = std::min(x1, image.nrows());
+  x2 = std::min(x2, image.nrows());
+}
+
+template<class T>
 void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
 	       typename T::value_type value, double alpha = 1.0) {
   // Breshenham's Algorithm
@@ -40,7 +48,9 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
     int e = y_dist_abs - x_dist_abs;
     size_t y = y1;
     for (size_t x = x1; x <= x2; ++x, e += y_dist_abs) {
-      image.set(y, x, value);
+      // We could be more clever about determining where we're within the image, but...
+      if (y >= 0 && y < image.nrows() && x >= 0 && x < image.ncols())
+	image.set(y, x, value);
       if (e > 0.0) {
 	y += y_sign;
 	e -= x_dist_abs;
@@ -53,7 +63,8 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
     int e = x_dist_abs - y_dist_abs;
     size_t x = x1;
     for (size_t y = y1; y <= y2; ++y, e += x_dist_abs) {
-      image.set(y, x, value);
+      if (y >= 0 && y < image.nrows() && x >= 0 && x < image.ncols())
+	image.set(y, x, value);
       if (e > 0.0) {
 	x += x_sign;
 	e -= y_dist_abs;
@@ -75,6 +86,8 @@ void draw_hollow_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
     y1 = y2_, y2 = y1_;
   else
     y1 = y1_, y2 = y2_;
+
+  _clip_points(image, y1, x1, y2, x2);
 
   for (size_t x = x1; x < x2; ++x) {
     image.set(y1, x, value);
@@ -100,6 +113,8 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
     y1 = y2_, y2 = y1_;
   else
     y1 = y1_, y2 = y2_;
+
+  _clip_points(image, y1, x1, y2, x2);
 
   for (size_t y = y1; y < y2; ++y) 
     for (size_t x = x1; x < x2; ++x)
@@ -180,6 +195,8 @@ struct FloodFill {
 
 template<class T>
 void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
+  if (y >= image.nrows() || x >= image.ncols())
+    throw std::runtime_error("Coordinate out of range.");
   typename T::value_type interior = image.get(y, x);
   if (color == interior)
     return;
@@ -206,21 +223,23 @@ void remove_border(T& image) {
   }
 }
 
-  template<class T, class U>
-  void highlight(T& a, const U& b, const typename T::value_type& color) {
-    size_t ul_y = std::max(a.ul_y(), b.ul_y());
-    size_t ul_x = std::max(a.ul_x(), b.ul_x());
-    size_t lr_y = std::min(a.lr_y(), b.lr_y());
-    size_t lr_x = std::min(a.lr_x(), b.lr_x());
-
-    if (ul_y >= lr_y || ul_x >= lr_x)
-      return;
-    for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
-      for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
-	if (is_black(b.get(yb, xb))) 
-	  a.set(ya, xa, color);
-      }
-  }
+template<class T, class U>
+void highlight(T& a, const U& b, const typename T::value_type& color) {
+  size_t ul_y = std::max(a.ul_y(), b.ul_y());
+  size_t ul_x = std::max(a.ul_x(), b.ul_x());
+  size_t lr_y = std::min(a.lr_y(), b.lr_y());
+  size_t lr_x = std::min(a.lr_x(), b.lr_x());
+  
+  if (ul_y >= lr_y || ul_x >= lr_x)
+    return;
+  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); 
+       y <= lr_y; ++y, ++ya, ++yb)
+    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); 
+	 x <= lr_x; ++x, ++xa, ++xb) {
+      if (is_black(b.get(yb, xb))) 
+	a.set(ya, xa, color);
+    }
+}
 
 
 #endif

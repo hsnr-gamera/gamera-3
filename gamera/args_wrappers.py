@@ -302,7 +302,24 @@ class Pixel(WrapperArg):
          return self._do_call(function, new_output_args)
       else:
          return args[0].call(function, args[1:], new_output_args, limit_choices)
-   
+
+class PointVector(WrapperArg):
+   arg_format = 'O'
+   convert_from_PyObject = True
+   c_type = 'PointVector*'
+   delete_cpp = True
+
+   def from_python(self):
+      return """
+      %(symbol)s = PointVector_from_python(%(pysymbol)s);
+      """ % self
+
+   def to_python(self):
+      return """
+      %(pysymbol)s = PointVector_to_python(%(symbol)s);
+      delete %(symbol)s;
+      """ % self
+
 
 class ImageInfo(WrapperArg):
    arg_format = "O";

@@ -63,6 +63,18 @@ class convolve(PluginFunction):
    - BORDER_TREATMENT_WRAP (4)
 
        wrap image around (periodic boundary conditions)
+
+Example usage:
+
+.. code:: Python
+
+  # Using a custom kernels
+  image.convolve([[0.125, 0.0, -0.125],
+                  [0.25 , 0.0, -0.25 ],
+                  [0.125, 0.0, -0.125]])
+
+  # Using one of the included kernel generators
+  image.convolve(GaussianKernel(3.0))
 """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel'),

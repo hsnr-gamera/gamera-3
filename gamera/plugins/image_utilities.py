@@ -108,7 +108,7 @@ If the GUI is being used, the histogram is displayed.
 
 class union_images(PluginFunction):
     """Returns an image that is the union of the given list of connected components."""
-    category = "Utility/Combine"
+    category = "Combine"
     self_type = None
     args = Args([ImageList('list_of_images')])
     return_type = ImageType([ONEBIT])
@@ -172,8 +172,11 @@ not intersect."""
 
 class mask(PluginFunction):
     """Masks an image using the given ONEBIT image.  Parts of the ONEBIT
-image that are white will be changed to white in the resulting image."""
-    category = "Utility/Combine"
+image that are white will be changed to white in the resulting image.
+
+The images must be the same size.
+"""
+    category = "Combine"
     return_type = ImageType([GREYSCALE, RGB])
     self_type = ImageType([GREYSCALE, RGB])
     args = Args(ImageType([ONEBIT], "mask"))
@@ -205,6 +208,9 @@ Python types:
   - GREY16 -> int
   - RGB -> RGBPixel
   - FLOAT -> float
+
+NOTE: This will not scale very well and should only be used
+for small images, such as convolution kernels.
 """
     category = "Utility/NestedLists"
     self_type = ImageType(ALL)
@@ -231,7 +237,10 @@ class nested_list_to_image(PluginFunction):
 
   To obtain other image types, the type number must be explicitly passed.
 
-TODO: Handle Python arrays.  This is difficult without a proper C API.
+NOTE: This will not scale very well and should only be used
+for small images, such as convolution kernels.
+
+Examples:
 
 .. code:: Python
 
@@ -245,6 +254,7 @@ TODO: Handle Python arrays.  This is difficult without a proper C API.
                                  RGBPixel(0, 255, 0),
                                  RGBPixel(0, 0, 255)])
 
+TODO: Handle Python arrays.  This is difficult without a proper C API.
 """
     category = "Utility/NestedLists"
     self_type = None
@@ -256,6 +266,36 @@ TODO: Handle Python arrays.  This is difficult without a proper C API.
         return _image_utilities.nested_list_to_image(l, t)
     __call__ = staticmethod(__call__)
 
+class shear_row(PluginFunction):
+    """Shears a given row by a given amount.
+
+*row*
+   The row number to shear.
+
+*distance*
+   The number of pixels to move the row.  Positive values
+   move the row to the right.  Negative values move the row
+   to the left.
+   """
+    category = "Shearing"
+    self_type = ImageType(ALL)
+    args = Args([Int('row'), Int('distance')])
+
+class shear_column(PluginFunction):
+    """Shears a given column by a given amount.
+
+*column*
+   The column number to shear.
+
+*distance*
+   The number of pixels to move the column.  Positive values
+   move the column downward.  Negative values move the column
+   upward.
+   """
+    category = "Shearing"
+    self_type = ImageType(ALL)
+    args = Args([Int('column'), Int('distance')])
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
@@ -264,7 +304,7 @@ class UtilModule(PluginModule):
                  histogram, union_images, projection_rows, projection_cols,
                  projections, fill_white, invert, clip_image, mask,
                  corelation, nested_list_to_image,
-                 to_nested_list]
+                 to_nested_list, shear_row, shear_column]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

@@ -533,5 +533,12 @@ class Pixel(_Filename):
       else:
          return eval(text, {'RGBPixel': RGBPixel})
 
+class PointVector:
+   def determine_choices(self, locals):
+      from gamera import core
+      self.klass = core.Point
+      return _guiClass.determine_choices(self, locals)
+
+
 from gamera import args
 args.mixin(locals(), "GUI")

@@ -46,7 +46,7 @@ first, if you do not wish to change the original data.
 
 class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""
-  category = "Utility/Combine"
+  category = "Combine/Logical"
   cpp_headers = ["logical.hpp"]
   cpp_namespaces=["Gamera"]
   functions = [and_image, or_image, xor_image]

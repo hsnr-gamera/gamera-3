@@ -226,6 +226,10 @@ PixelType must always match the type of the "self" image."""
 class Info(Arg):
    pass
 
+class PointVector(Class):
+   def __init__(self, name=None):
+      Class.__init__(self, name, None, True)
+
 class Wizard:
    def show(self, dialog):
       dialog_history = ['start', dialog]
@@ -243,7 +247,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard Pixel'.split()
+__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard Pixel PointVector'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

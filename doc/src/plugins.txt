@@ -14,16 +14,6 @@ By categories
 
   - projections_
 
-- Arithmetic_
-
-  - add_images_
-
-  - divide_images_
-
-  - multiply_images_
-
-  - subtract_images_
-
 - Classification_
 
   - classify_automatic_
@@ -65,6 +55,30 @@ By categories
   - value_
 
   - yellow_
+
+- Combine_
+
+  - Arithmetic_
+
+    - add_images_
+
+    - divide_images_
+
+    - multiply_images_
+
+    - subtract_images_
+
+  - Logical_
+
+    - and_image_
+
+    - or_image_
+
+    - xor_image_
+
+  - mask_
+
+  - union_images_
 
 - Conversion_
 
@@ -280,6 +294,16 @@ By categories
 
   - splity_top_
 
+- Shearing_
+
+  - shear_column_
+
+  - shear_row_
+
+- TextLineFinding_
+
+  - text_line_finding_fuzzy_runlength_
+
 - Thresholding_
 
   - abutaleb_threshold_
@@ -292,19 +316,13 @@ By categories
 
   - threshold_
 
+- Tracing_
+
+  - reduce_tracing_
+
+  - trace_cc_
+
 - Utility_
-
-  - Combine_
-
-    - and_image_
-
-    - mask_
-
-    - or_image_
-
-    - union_images_
-
-    - xor_image_
 
   - NestedLists_
 
@@ -392,15 +410,15 @@ permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, proje
 
 **R**
 
-rank_, red_, remove_border_, resize_, rotateShear_
+rank_, red_, reduce_tracing_, remove_border_, resize_, rotateShear_
 
 **S**
 
-saturation_, save_PNG_, save_tiff_, scale_, simple_sharpen_, SimpleSharpeningKernel_, skeleton_features_, smith_waterman_, sobel_edge_detection_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, subtract_images_, SymmetricGradientKernel_
+saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sharpen_, SimpleSharpeningKernel_, skeleton_features_, smith_waterman_, sobel_edge_detection_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, subtract_images_, SymmetricGradientKernel_
 
 **T**
 
-thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
+text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, trace_cc_
 
 **U**
 
@@ -431,11 +449,6 @@ zernike_moments_
 .. _projection_cols: analysis.html#projection-cols
 .. _projection_rows: analysis.html#projection-rows
 .. _projections: analysis.html#projections
-.. _Arithmetic: arithmetic.html#arithmetic
-.. _add_images: arithmetic.html#add-images
-.. _divide_images: arithmetic.html#divide-images
-.. _multiply_images: arithmetic.html#multiply-images
-.. _subtract_images: arithmetic.html#subtract-images
 .. _Classification: classification.html#classification
 .. _classify_automatic: classification.html#classify-automatic
 .. _classify_heuristic: classification.html#classify-heuristic
@@ -457,6 +470,18 @@ zernike_moments_
 .. _saturation: color.html#saturation
 .. _value: color.html#value
 .. _yellow: color.html#yellow
+.. _Combine: combine.html#combine
+.. _Arithmetic: combine.html#arithmetic
+.. _add_images: combine.html#add-images
+.. _divide_images: combine.html#divide-images
+.. _multiply_images: combine.html#multiply-images
+.. _subtract_images: combine.html#subtract-images
+.. _Logical: combine.html#logical
+.. _and_image: combine.html#and-image
+.. _or_image: combine.html#or-image
+.. _xor_image: combine.html#xor-image
+.. _mask: combine.html#mask
+.. _union_images: combine.html#union-images
 .. _Conversion: conversion.html#conversion
 .. _to_float: conversion.html#to-float
 .. _to_grey16: conversion.html#to-grey16
@@ -564,19 +589,21 @@ zernike_moments_
 .. _splity: segmentation.html#splity
 .. _splity_bottom: segmentation.html#splity-bottom
 .. _splity_top: segmentation.html#splity-top
+.. _Shearing: shearing.html#shearing
+.. _shear_column: shearing.html#shear-column
+.. _shear_row: shearing.html#shear-row
+.. _TextLineFinding: textlinefinding.html#textlinefinding
+.. _text_line_finding_fuzzy_runlength: textlinefinding.html#text-line-finding-fuzzy-runlength
 .. _Thresholding: thresholding.html#thresholding
 .. _abutaleb_threshold: thresholding.html#abutaleb-threshold
 .. _bernsen_threshold: thresholding.html#bernsen-threshold
 .. _otsu_find_threshold: thresholding.html#otsu-find-threshold
 .. _otsu_threshold: thresholding.html#otsu-threshold
 .. _threshold: thresholding.html#threshold
+.. _Tracing: tracing.html#tracing
+.. _reduce_tracing: tracing.html#reduce-tracing
+.. _trace_cc: tracing.html#trace-cc
 .. _Utility: utility.html#utility
-.. _Combine: utility.html#combine
-.. _and_image: utility.html#and-image
-.. _mask: utility.html#mask
-.. _or_image: utility.html#or-image
-.. _union_images: utility.html#union-images
-.. _xor_image: utility.html#xor-image
 .. _NestedLists: utility.html#nestedlists
 .. _nested_list_to_image: utility.html#nested-list-to-image
 .. _to_nested_list: utility.html#to-nested-list

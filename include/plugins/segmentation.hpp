@@ -446,14 +446,28 @@ namespace Gamera {
     typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       image.nrows(), split_point));
-    ccs = cc_analysis(*view);
+    try {
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;
     delete ccs;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
 			       image.nrows(), image.ncols() - split_point));
-    ccs = cc_analysis(*view);
+    try {
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;
@@ -472,14 +486,28 @@ namespace Gamera {
     typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       image.nrows(), split_point));
-    ccs = cc_analysis(*view);
+    try {
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;
     delete ccs;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
 			       image.nrows(), image.ncols() - split_point));
-    ccs = cc_analysis(*view);
+    try { 
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;
@@ -498,14 +526,28 @@ namespace Gamera {
     typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       split_point, image.ncols()));
-    ccs = cc_analysis(*view);
+    try {
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;
     delete ccs;
     view = simple_image_copy(T(image, image.ul_y() + split_point, image.ul_x(),
 			       image.nrows() - split_point, image.ncols()));
-    ccs = cc_analysis(*view);
+    try {
+      ccs = cc_analysis(*view);
+    } catch (std::range_error x) {
+      delete view->data();
+      delete view;
+      delete splits;
+      throw x;
+    }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     delete view;

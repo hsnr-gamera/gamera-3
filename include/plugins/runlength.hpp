@@ -229,7 +229,7 @@ namespace Gamera {
     // Scan through whitespace (literally, non-numeric)
     while (*s < '0' || *s > '9') {
       if (*s == '\0')
-	std::invalid_argument("Image is too large for run-length data");
+	throw std::invalid_argument("Image is too large for run-length data");
       ++s;
     }
 

@@ -262,22 +262,11 @@ namespace Gamera {
   */
   template<class T>
   typename T::value_type find_max(const T& image) {
-    if (image.nrows() == 0 || image.ncols() == 0)
+    if (image.nrows() <= 1 || image.ncols() <= 1)
       throw std::range_error("Image must have nrows and ncols > 0.");
-    typename T::const_row_iterator row = image.row_begin();
-    typename T::const_col_iterator col;
-    typename T::value_type tmp, max;
-    ImageAccessor<typename T::value_type> acc;
-    
-    max = acc.get(row); 
-    for ( ; row != image.row_end(); ++row) {
-      for (col = row.begin(); col != row.end(); ++col) {
-	tmp = acc.get(col);
-	if (tmp > max)
-	  max = tmp;
-      }
-    }
-    return max;
+    typename T::const_vec_iterator max = std::max_element(image.vec_begin(),
+						    image.vec_end());
+    return *(max);
   }
 
   /*
@@ -288,35 +277,12 @@ namespace Gamera {
     std::fill(image.vec_begin(), image.vec_end(), white(image));
   }
 
-  /* Invert an image */
-  template<class Pixel>
-  struct invert_specialized {
-    template<class T>
-    void operator()(T& image) {
-      ImageAccessor<typename T::value_type> acc;
-      typename T::vec_iterator in = image.vec_begin();
-      for (; in != image.vec_end(); ++in)
-	acc.set(invert(acc(in)), in);
-    }
-  };
-
-  template<>
-  struct invert_specialized<FloatPixel> {
-    template<class T>
-    void operator()(T& image) {
-      FloatPixel max = 0;
-      max = find_max(image.parent());
-      ImageAccessor<FloatPixel> acc;
-      typename T::vec_iterator in = image.vec_begin();
-      for (; in != image.vec_end(); ++in)
-	acc.set(max - acc(in), in);
-    }
-  };
-
   template<class T>
   void invert(T& image) {
-    invert_specialized<typename T::value_type> invert_special;
-    invert_special(image);
+    ImageAccessor<typename T::value_type> acc;
+    typename T::vec_iterator in = image.vec_begin();
+    for (; in != image.vec_end(); ++in)
+      acc.set(invert(acc(in)), in);
   }
 
   /*
@@ -394,6 +360,9 @@ namespace Gamera {
 
   template<class T, class U>
   typename ImageFactory<T>::view_type* mask(const T& a, U &b) {
+    if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
+      throw std::runtime_error("The image and the mask image must be the same size.");
+
     typename ImageFactory<T>::data_type* dest_data =
       new typename ImageFactory<T>::data_type(b.size(), b.offset_y(), b.offset_x());
     typename ImageFactory<T>::view_type* dest =

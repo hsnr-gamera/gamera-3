@@ -43,6 +43,30 @@ copied, changes to the new image do not affect the original image.
         return _image_utilities.image_copy(image, storage_format)
     __call__ = staticmethod(__call__)
 
+class image_save(PluginFunction):
+    """Saves an image to file with specified name and format"""
+    pure_python = 1
+    category = "Utility"
+    self_type = ImageType(ALL)
+    args = Args([FileSave("image_file_name", "", "*"),
+                 Choice("File format", ["TIFF", "PNG"])
+                 ])
+    def __call__(image, name, format):
+
+        if format==0:
+            try:
+                from gamera.plugins import tiff_support
+                image.save_tiff(name)
+            except:
+                print "Image could not be saved because TIFF Support is not functioning properly."
+        else:
+            try:
+                from gamera.plugins import png_support
+                image.save_png(name)
+            except:
+                print "Image could not be saved because PNG support is not functioning properly."
+    __call__ = staticmethod(__call__)
+
 class resize(PluginFunction):
     """Returns a resized copy of an image. In addition to size, the type of
 interpolation can be specified, with a tradeoff between speed
@@ -248,7 +272,7 @@ class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
-    functions = [image_copy, resize, scale,
+    functions = [image_save, image_copy, resize, scale,
                  histogram, union_images,
                  fill_white, invert, clip_image, mask,
                  nested_list_to_image,

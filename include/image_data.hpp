@@ -85,9 +85,6 @@ namespace Gamera {
       do_resize((m_size / m_stride) * m_stride);
     }
     virtual void dimensions(size_t rows, size_t cols) = 0;
-
-    // virtual void nrows(size_t nrows) = 0;
-    // virtual void ncols(size_t ncols) = 0;
   protected:
     virtual void do_resize(size_t size) = 0;
     size_t m_size;

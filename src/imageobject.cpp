@@ -117,43 +117,6 @@ static PyMethodDef image_methods[] = {
   { NULL }
 };
 
-static PyObject* init_image_members(ImageObject* o) {
-  /*
-    Create the features array. This will load the array module
-    (if required) and create an array object containing doubles.
-  */
-  static PyObject* array_func = 0;
-  if (array_func == 0) {
-    PyObject* array_module = PyImport_ImportModule("array");
-    if (array_module == 0)
-      return 0;
-    PyObject* array_dict = PyModule_GetDict(array_module);
-    if (array_dict == 0)
-      return 0;
-    array_func = PyDict_GetItemString(array_dict, "array");
-    if (array_func == 0)
-      return 0;
-  }
-  PyObject* arglist = Py_BuildValue("(s)", "d");
-  o->m_features = PyEval_CallObject(array_func, arglist);
-  Py_DECREF(arglist);
-  if (o->m_features == 0)
-    return 0;
-  // id_name
-  o->m_id_name = PyList_New(0);
-  if (o->m_id_name == 0)
-    return 0;
-  // Children Images
-  o->m_children_images = PyList_New(0);
-  if (o->m_children_images == 0)
-    return 0;
-  // Classification state
-  o->m_classification_state = Py_BuildValue("i", Python::UNCLASSIFIED);
-  // Scaling
-  o->m_scaling = Py_BuildValue("i", 1);
-  return (PyObject*)o;
-}
-
 static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds) {
   int nrows, ncols, pixel, format, offset_y, offset_x;

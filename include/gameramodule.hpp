@@ -58,6 +58,22 @@ namespace Gamera {
       RLE
     };
 
+    /*
+      To make the wrapping code a little easier these are all of the
+      combinations of pixel and storage types. The order is so that
+      the non-compressed views correspond to the PixelTypes.
+    */
+    enum ImageCombinations {
+      ONEBITIMAGEVIEW,
+      GREYSCALEIMAGEVIEW,
+      GREY16IMAGEVIEW,
+      RGBIMAGEVIEW,
+      FLOATIMAGEVIEW,
+      ONEBITRLEIMAGEVIEW,
+      CC,
+      RLECC
+    };
+
     enum ClassificationStates {
       UNCLASSIFIED,
       AUTOMATIC,
@@ -204,6 +220,112 @@ inline int get_storage_format(PyObject* image) {
 // get the pixel type - no type checking is performed
 inline int get_pixel_type(PyObject* image) {
   return ((ImageDataObject*)((ImageObject*)image)->m_data)->m_pixel_type;
+}
+
+// get the combination of pixel and image type
+inline int get_image_combination(PyObject* image, PyTypeObject* cc_type) {
+  int storage = get_storage_format(image);
+  if (PyObject_TypeCheck(image, cc_type)) {
+    if (storage == Gamera::Python::RLE)
+      return Gamera::Python::RLECC;
+    else if (storage == Gamera::Python::DENSE)
+      return Gamera::Python::CC;
+    else
+      return -1;
+  } else if (storage == Gamera::Python::RLE) {
+    return Gamera::Python::ONEBITERLEIMAGEVIEW;
+  } else if storage == Gamera::Python::Dense {
+    return get_pixel_type(image);
+  } else {
+    return -1;
+  }
+}
+
+/*
+  This initializes all of the non-image members of an Image class.
+*/
+inline PyObject* init_image_members(ImageObject* o) {
+  /*
+    Create the features array. This will load the array module
+    (if required) and create an array object containing doubles.
+  */
+  static PyObject* array_func = 0;
+  if (array_func == 0) {
+    PyObject* array_module = PyImport_ImportModule("array");
+    if (array_module == 0)
+      return 0;
+    PyObject* array_dict = PyModule_GetDict(array_module);
+    if (array_dict == 0)
+      return 0;
+    array_func = PyDict_GetItemString(array_dict, "array");
+    if (array_func == 0)
+      return 0;
+  }
+  PyObject* arglist = Py_BuildValue("(s)", "d");
+  o->m_features = PyEval_CallObject(array_func, arglist);
+  Py_DECREF(arglist);
+  if (o->m_features == 0)
+    return 0;
+  // id_name
+  o->m_id_name = PyList_New(0);
+  if (o->m_id_name == 0)
+    return 0;
+  // Children Images
+  o->m_children_images = PyList_New(0);
+  if (o->m_children_images == 0)
+    return 0;
+  // Classification state
+  o->m_classification_state = Py_BuildValue("i", Python::UNCLASSIFIED);
+  // Scaling
+  o->m_scaling = Py_BuildValue("i", 1);
+  return (PyObject*)o;
+}
+
+/*
+  Create an ImageObject from a given ImageBase object. This
+  requires using RTTI to determine the type of the object so
+  that the pixel_type and storage format parameters can be filled
+  in the ImageDataObject correctly. Additionally, the only way
+  to determine whether this should be an ImageObject or a
+  SubImage object is to see if the image completely covers the
+  image data. Finally, because we want to create the subclasses in
+  gamera.py of the objects defined here, we have to pass in those
+  types to this function (the types are determined at module loading
+  time).
+*/
+inline PyObject* create_ImageObject(ImageBase* image, PyTypeObject* image_type,
+				    PyTypeObject* subimage_type, PyTypeObject* cc_type) {
+  int pixel_type;
+  int storage_type;
+  if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::GREYSCALE;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<Grey16ImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::GREY16;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<FloatImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::FLOAT;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<RGBImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::RGB;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::OneBit;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
+    pixel_type = Gamera::Python::ONEBIT;
+    storage_type = Gamera::Python::RLE;
+  } else if (dynamic_cast<CC*>(image) != 0) {
+    pixel_type = Gamera::Python::GREY16;
+    storage_type = Gamera::Python::DENSE;
+  } else if (dynamic_cast<RLE*>(image) != 0) {
+    pixel_type = Gamera::Python::GREY16;
+    storage_type = Gamera::Python::DENSE;
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Unknown type returned from plugin.");
+    return 0;
+  }
+  
 }
 
 /*

@@ -118,13 +118,17 @@ class fill_white(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 fill_white = fill_white()
 
+class invert(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
+invert = invert()
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy,
                  histogram, union_images, projections_rows, projections_cols,
-                 projections, fill_white]
+                 projections, fill_white, invert]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

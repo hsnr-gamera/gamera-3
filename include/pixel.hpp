@@ -134,13 +134,13 @@ namespace Gamera {
       return (data_[1] * 0.066 + data_[2] * 1.111) / 256.0;
     }
     GreyScalePixel const cyan() {
-      return 255 - data_[0];
+      return std::numeric_limits<GreyScalePixel>::max() - data_[0];
     }
     GreyScalePixel const magenta() {
-      return 255 - data_[1];
+      return std::numeric_limits<GreyScalePixel>::max() - data_[1];
     }
     GreyScalePixel const yellow() {
-      return 255 - data_[2];
+      return std::numeric_limits<GreyScalePixel>::max() - data_[2];
     }
     operator FloatPixel() {
       return FloatPixel(luminance());
@@ -268,7 +268,7 @@ namespace Gamera {
 
   template<>
   inline bool is_white<FloatPixel>(FloatPixel value) {
-    if (value == 255)
+    if (value == std::numeric_limits<GreyScalePixel>::max())
       return true;
     else
       return false;
@@ -276,7 +276,7 @@ namespace Gamera {
 
   template<>
   inline bool is_white<GreyScalePixel>(GreyScalePixel value) {
-    if (value == 255)
+    if (value == std::numeric_limits<GreyScalePixel>::max())
       return true;
     else
       return false;
@@ -292,9 +292,9 @@ namespace Gamera {
 
   template<>
   inline bool is_white<RGBPixel>(RGBPixel value) {
-    if (value.red() == 255
-        && value.green() == 255
-        && value.blue() == 255)
+    if (value.red() == std::numeric_limits<GreyScalePixel>::max()
+        && value.green() == std::numeric_limits<GreyScalePixel>::max()
+        && value.blue() == std::numeric_limits<GreyScalePixel>::max())
       return true;
     else
       return false;
@@ -325,7 +325,38 @@ namespace Gamera {
   }
   
   RGBPixel pixel_traits<RGBPixel>::white() {
-    return RGBPixel(255, 255, 255);
+    return RGBPixel(std::numeric_limits<GreyScalePixel>::max(),
+		    std::numeric_limits<GreyScalePixel>::max(),
+		    std::numeric_limits<GreyScalePixel>::max());
+  }
+
+  /*
+    Inversion of pixel values
+  */
+
+  inline FloatPixel invert(FloatPixel value) {
+    return 1.0 - value; // No normalization on image is possible
+  }
+
+  inline GreyScalePixel invert(GreyScalePixel value) {
+    return std::numeric_limits<GreyScalePixel>::max() - value;
+  }
+
+  inline Grey16Pixel invert(Grey16Pixel value) {
+    return std::numeric_limits<Grey16Pixel>::max() - value;
+  }
+
+  inline RGBPixel invert(RGBPixel value) {
+    return RGBPixel(std::numeric_limits<Grey16Pixel>::max() - value.red(),
+		    std::numeric_limits<Grey16Pixel>::max() - value.green(),
+		    std::numeric_limits<Grey16Pixel>::max() - value.blue());
+  }
+
+  inline OneBitPixel invert(OneBitPixel value) {
+    if (is_white(value))
+      return pixel_traits<OneBitPixel>::black();
+    else
+      return pixel_traits<OneBitPixel>::white();
   }
 };
 

@@ -60,7 +60,6 @@ namespace Gamera {
     /*
       TO RGB
     */
-
     template<class Pixel>
     struct to_rgb_converter {
       template<class T>

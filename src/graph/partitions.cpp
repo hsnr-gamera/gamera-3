@@ -26,6 +26,7 @@ typedef unsigned __int64 Bitfield;
 #else
 typedef unsigned long long Bitfield;
 #endif
+
 struct Part;
 class Part {
 public:
@@ -91,7 +92,7 @@ inline void graph_optimize_partitions_number_parts(Node* root, NodeVector& subgr
 inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t max_size,
 						     const size_t subgraph_size,
 						     NodeList& node_stack, Bitfield bits,
-						     PyObject* eval_func, Parts& parts) {
+						     const PyObject* eval_func, Parts& parts) {
   size_t node_number = NP_NUMBER(node);
   node_stack.push_back(node);
   bits |= 1 << node_number;
@@ -106,7 +107,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
 
   PyObject* tuple = PyTuple_New(1);
   PyTuple_SET_ITEM(tuple, 0, result);
-  PyObject* evalobject = PyObject_CallObject(eval_func, tuple);
+  PyObject* evalobject = PyObject_CallObject(const_cast<PyObject*>(eval_func), tuple);
   double eval;
   if (evalobject == NULL)
     eval = -1;
@@ -145,13 +146,13 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
   }
 }
 
-inline void graph_optimize_partitions_find_solution(const Parts &parts,
-						    size_t begin, 
-						    size_t end, 
+inline void graph_optimize_partitions_find_solution(Parts &parts,
+						    const size_t begin, 
+						    const size_t end, 
 						    Solution& best_solution, 
 						    double &best_mean,
 						    Solution& partial_solution, 
-						    double partial_mean, Bitfield bits, 
+						    double partial_mean, const Bitfield bits, 
 						    const Bitfield all_bits) {
   if (bits == all_bits) {
     partial_mean /= partial_solution.size();
@@ -174,8 +175,8 @@ inline void graph_optimize_partitions_find_solution(const Parts &parts,
   }
 }
 
-PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
-				    PyObject* eval_func, size_t max_size) {
+PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
+				    const PyObject* eval_func, const size_t max_size) {
 
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
@@ -221,8 +222,8 @@ PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
 
   // Now, we find a solution
   Solution best_solution, partial_solution;
-  best_solution.reserve(size);
-  partial_solution.reserve(size);
+  best_solution.reserve(size); // Maximum size the solution can be
+  partial_solution.reserve(size); // Maximum size the solution can be
   Bitfield all_bits = (1 << size) - 1;
   double best_mean = 0;
   graph_optimize_partitions_find_solution(parts, 0, (*(parts.begin())).begin,

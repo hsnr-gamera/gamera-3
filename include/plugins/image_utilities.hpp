@@ -362,5 +362,36 @@ namespace Gamera {
   void fill_white(T& image) {
     std::fill(image.vec_begin(), image.vec_end(), white(image));
   }
+
+  /* Invert an image */
+  template<class Pixel>
+  struct invert_specialized {
+    template<class T>
+    void operator()(T& image) {
+      ImageAccessor<typename T::value_type> acc;
+      typename T::vec_iterator in = image.vec_begin();
+      for (; in != image.vec_end(); ++in)
+	acc.set(invert(acc(in)), in);
+    }
+  };
+
+  template<>
+  struct invert_specialized<FloatPixel> {
+    template<class T>
+    void operator()(T& image) {
+      FloatPixel max = 0;
+      max = find_max(image.parent());
+      ImageAccessor<FloatPixel> acc;
+      typename T::vec_iterator in = image.vec_begin();
+      for (; in != image.vec_end(); ++in)
+	acc.set(max - acc(in), in);
+    }
+  };
+
+  template<class T>
+  void invert(T& image) {
+    invert_specialized<typename T::value_type> invert_special;
+    invert_special(image);
+  }
 }
 #endif

@@ -25,7 +25,7 @@ class to_rgb(PluginFunction):
 to_rgb = to_rgb()
 
 class to_greyscale(PluginFunction):
-    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
+    self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB])
     return_type = ImageType([GREYSCALE], "greyscale")
 to_greyscale = to_greyscale()
 

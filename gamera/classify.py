@@ -316,7 +316,7 @@ class NonInteractiveClassifier(_Classifier):
       self.classifier.load_settings(filename)
 
 class InteractiveClassifier(_Classifier):
-   _group_regex = re.compile('_group\..*')
+   _group_regex = re.compile('\_group\..*')
    
    def __init__(self, classifier=None, database=[], features='all',
                 perform_splits=1, grouping_classifier=None):
@@ -428,7 +428,7 @@ class InteractiveClassifier(_Classifier):
       return self._do_splits(glyph), removed
 
    def classify_list_manual(self, glyphs, id):
-      if self.grouping_classifier and id.startswith('group'):
+      if self.grouping_classifier and id.startswith('_group'):
          added, removed = self.grouping_classifier.classify_group_manual(glyphs, id[6:])
          return added, removed
 

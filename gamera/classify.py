@@ -91,7 +91,7 @@ class _Classifier:
          else:
             return classification[0][0]
       classification = subgroup[0].id_name[0]
-      if classification[1].startswith('_group'):
+      if classification[1].startswith('_group._part'):
          return 0
       return classification[0]
 

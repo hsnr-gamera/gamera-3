@@ -21,8 +21,8 @@ from __future__ import generators
 
 import string, UserList, sys, re   ## Python standard
 from math import pow
-
 from gamera.enums import *
+from gamera import config
 
 # determine if an object is a sequence
 def is_sequence(obj):
@@ -128,26 +128,24 @@ def group_list(list, group_size):
 def word_wrap(stream, l, indent=0, width=78):
   indent *= 2
   width -= indent
-  if not is_sequence(l):
-    if len(l) + indent < width:
-      stream.write(" " * indent)
-      stream.write(l)
-      stream.write("\n")
-      return
-    l = l.split()
-  position = indent
-  indent_spaces = " " * (indent + 1)
-  stream.write(" " * indent)
-  for item in l:
-    if position + len(item) + 1 > width:
-      stream.write("\n")
-      stream.write(indent_spaces)
-      position = indent
-    stream.write(item)
-    position += len(item)
-    stream.write(' ')
-    position += 1
-  stream.write("\n")
+  indent_spaces = ' ' * (indent)
+  if is_sequence(l):
+    l = ' '.join([str(x) for x in l])
+  i = 0
+  p = 0
+  while i != -1:
+    stream.write(indent_spaces)
+    if len(l) - p < width:
+      stream.write(l[p:].strip())
+      stream.write('\n')
+      break
+    else:
+      i = l.rfind(' ', p, p + width)
+      if i == -1:
+        stream.write(l[p:].strip())
+      stream.write(l[p:i].strip())
+    stream.write('\n')
+    p = i + 1
 
 def encode_binary(s):
   import zlib, binascii
@@ -156,3 +154,40 @@ def encode_binary(s):
 def decode_binary(s):
   import zlib, binascii
   return zlib.decompress(binascii.a2b_base64(s))
+
+class ProgressText:
+  width = 70
+  
+  def __init__(self, message):
+    self._message = message
+    self._starting = 1
+    self._done = 0
+    self._last_amount = 0
+  
+  def update(self, num, den):
+    if self._starting:
+      sys.stdout.write(self._message)
+      sys.stdout.write("\n")
+      self._starting = 0
+    if not self._done:
+      progress = int((float(num) / float(den)) * self.width)
+      if progress != self._last_amount:
+        self._last_amount = progress
+        left = self.width - progress
+        sys.stdout.write("|")
+        sys.stdout.write("#" * progress)
+        sys.stdout.write("=" * left)
+        sys.stdout.write("|\r")
+        sys.stdout.flush()
+      if num >= den:
+        self._done = 1
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+
+def ProgressFactory(message):
+  gui = config.get_option('__gui')
+  if gui:
+    return gui.ProgressBox(message)
+  else:
+    return ProgressText(message)
+  

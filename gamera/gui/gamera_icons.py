@@ -10136,3 +10136,19 @@ def getIconDeleteImage():
     stream = cStringIO.StringIO(getIconDeleteData())
     return wxImageFromStream(stream)
 
+#----------------------------------------------------------------------
+def getToolbarMenuData():
+    return zlib.decompress(
+"x\xda\xeb\x0c\xf0s\xe7\xe5\x92\xe2b``\xe0\xf5\xf4p\t\x02\xd2\x1c \xcc\xc1\
+\x06$\x8f\xf0\xef\xeb\x06R,\xc5N\x9e!\x1c@P\xc3\x91\xd2\x01\xe4\x1by\xba8\
+\x86T\xccI\x16\x11\x10H8\xc0>\xe3\xc3\xa9 WFnff\xe6\xc3\xed\xfc\xf2\xff\x92'\
+\x83\x84S\x9a\x0c7x.\x8ah\\\xc31\xf3\xac\xc7\x89\xd9\x0c\xa9\xed\xac\xa6\x13\
+8tk\x80\xba\x19<]\xfd\\\xd69%4\x01\x00f\xfb\x1f\xcb" )
+
+def getToolbarMenuBitmap():
+    return wxBitmapFromImage(getToolbarMenuImage())
+
+def getToolbarMenuImage():
+    stream = cStringIO.StringIO(getToolbarMenuData())
+    return wxImageFromStream(stream)
+

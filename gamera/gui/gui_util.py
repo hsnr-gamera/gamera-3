@@ -18,6 +18,7 @@
 #
 
 from wxPython.wx import *        # wxPython
+from os import path
 
 colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
           wxColor(0x2d, 0x34, 0xbc), wxColor(0x2d, 0xbc, 0x2d),
@@ -33,3 +34,62 @@ def message(message):
                          wxOK | wxICON_INFORMATION)
    dlg.ShowModal()
    dlg.Destroy()
+
+def are_you_sure_dialog(message):
+   dlg = wxMessageDialog(None, message, "Are you sure?",
+                         wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION)
+   result = dlg.ShowModal()
+   dlg.Destroy()
+   return result == wxID_YES
+
+menu_item_id = 1000
+def build_menu(parent, menu_spec):
+   global menu_item_id
+   menu = wxMenu()
+   for name, func in menu_spec:
+      if name == None:
+         menu.AppendSeparator()
+      else:
+         menu.Append(menu_item_id, name)
+         EVT_MENU(parent, menu_item_id, func)
+      menu_item_id += 1
+   return menu
+
+last_directory = '.'
+def open_file_dialog(extensions):
+   global last_directory
+   dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxOPEN)
+   if dlg.ShowModal() == wxID_OK:
+      filename = dlg.GetPath()
+      dlg.Destroy()
+      last_directory = path.dirname(filename)
+      return filename
+   return None
+
+def save_file_dialog(extensions):
+   global last_directory
+   dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxSAVE)
+   if dlg.ShowModal() == wxID_OK:
+      filename = dlg.GetPath()
+      dlg.Destroy()
+      last_directory = path.dirname(filename)
+      return filename
+   return ''
+
+class ProgressBox:
+   def __init__(self, message):
+      self.progress_box = wxProgressDialog(
+         "Progress", message, 100,
+         style=wxPD_APP_MODAL|wxPD_ELAPSED_TIME|wxPD_REMAINING_TIME|wxPD_AUTO_HIDE)
+      self.done = 0
+
+   def __del__(self):
+      self.done = 1
+      self.progress_box.Destroy()
+
+   def update(self, num, den):
+      if not self.done:
+         self.progress_box.Update((float(num) / float(den)) * 100.0)
+         if num >= den:
+            self.done = 1
+            self.progress_box.Destroy()

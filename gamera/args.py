@@ -138,7 +138,7 @@ if _has_gui == _WX_GUI:
          self.window.SetSize((max(400, size[0]), max(200, size[1])))
          self.window.Centre()
 
-      def show(self, parent, locals, function=None, wizard=0):
+      def show(self, parent, locals={}, function=None, wizard=0):
          self.wizard = wizard
          if function != None:
             self.function = function
@@ -147,10 +147,13 @@ if _has_gui == _WX_GUI:
          self.window.Destroy()
          if result == wxPython.wx.wxID_CANCEL:
             return None
-         elif self.function == None:
-            return function + self.get_args()
+         elif self.function is None:
+            if function is None:
+               return self.get_args()
+            else:
+               return function + self.get_args_string()
          else:
-            return self.function + self.get_args()
+            return self.function + self.get_args_string()
 
       def OnHelp(self, event):
          import core
@@ -181,7 +184,7 @@ class Args(_guiArgs):
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
 
-   def get_args(self):
+   def get_args_string(self):
       results = []
       for control in self.controls:
          res = control.get()
@@ -201,6 +204,9 @@ class Args(_guiArgs):
             else:
                tuple = tuple + ", "
       return tuple
+
+   def get_args(self):
+      return [control.get() for control in self.controls]
 
    def __getitem__(self, i):
       return self.list[i]
@@ -614,9 +620,9 @@ class ImageList(_guiImageList, Arg):
 
 # Info
 if _has_gui == _WX_GUI:
-   class _guiInfo(wxPython.wx.wxStaticText):
+   class _guiInfo:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxStaticText.__init__(self, parent, -1, "")
+         self.control = wxPython.wx.wxStaticText(parent, -1, "")
          return self
 
       def get(self):

@@ -22,7 +22,7 @@ import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name
+     icon_display, classifier_display, var_name, gui_util
 
 # wxPython
 from wxPython.wx import *
@@ -48,16 +48,14 @@ app = None
 
 class GameraGui:
    def GetImageFilename():
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
+      filename = gui_util.open_file_dialog("*.*")
+      if filename:
          return filename
    GetImageFilename = staticmethod(GetImageFilename)
 
    def ShowImage(image, title, view_function=None, owner=None):
       wxBeginBusyCursor()
-      img = gamera_display.ImageFrame(title = title, owner=owner)
+      img = gamera_display.ImageFrame(title=title, owner=owner)
       img.set_image(image, view_function)
       img.Show(1)
       wxEndBusyCursor()
@@ -74,7 +72,6 @@ class GameraGui:
    ShowImages = staticmethod(ShowImages)
 
    def ShowHistogram(hist, mark=None):
-
       f = gamera_display.HistogramDisplay(hist, mark=mark)
       f.Show(1)
    ShowHistogram = staticmethod(ShowHistogram)
@@ -84,7 +81,10 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   def ShowClassifier(classifier, current_database, image, symbol_table):
+   def ShowClassifier(classifier=None, current_database=[], image=None, symbol_table=[]):
+      if classifier is None:
+         from gamera import classify
+         classifier = classify.InteractiveClassifier()
       wxBeginBusyCursor()
       img = classifier_display.ClassifierFrame(classifier, symbol_table)
       img.set_image(current_database, image)
@@ -101,6 +101,10 @@ class GameraGui:
    def TopLevel():
       return main_win
    TopLevel = staticmethod(TopLevel)
+
+   def ProgressBox(message):
+      return gui_util.ProgressBox(message)
+   ProgressBox = staticmethod(ProgressBox)
 
 ######################################################################
 
@@ -208,8 +212,12 @@ class ShellFrame(wxFrame):
       self.menu = self.make_menu()
       self.SetMenuBar(self.menu)
 
-      self.hsplitter = wxSplitterWindow(self, -1)
-      self.splitter = wxSplitterWindow(self.hsplitter, -1)
+      self.hsplitter = wxSplitterWindow(
+         self, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      self.splitter = wxSplitterWindow(
+         self.hsplitter, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
       self.icon_display = icon_display.IconDisplay(self.splitter)
       self.icon_display
       
@@ -261,13 +269,7 @@ class ShellFrame(wxFrame):
       classifyID = wxNewId()
       menu.Append(classifyID, "&Classifier", "Start the classifier")
       EVT_MENU(self, classifyID, self.OnClassifier)
-      classifyID = wxNewId()
-      menu.Append(classifyID, "&Feature Editor", "Start the feature editor")
-      EVT_MENU(self, classifyID, self.OnFeatureEditor)
-      classifyID = wxNewId()
-      menu.Append(classifyID, "&Process Wizard", "Start the process wizard")
-      EVT_MENU(self, classifyID, self.OnProcess)
-      menubar.Append(menu, "&Classifier")
+      menubar.Append(menu, "&Classify")
       self.toolkit_menu = wxMenu()
       toolkits = paths.get_toolkit_names(paths.toolkits)
       self.import_toolkits = {}
@@ -300,27 +302,17 @@ class ShellFrame(wxFrame):
       self.icon_display.add_class(icon_description)
 
    def OnFileOpen(self, event):
-      dlg = wxFileDialog(self, "Choose a file", ".", "", "*.*", wxOPEN)
-      path = None
-      if dlg.ShowModal() == wxID_OK:
-         path = dlg.GetPath()
-      dlg.Destroy()
-      if (path):
+      filename = gui_util.open_file_dialog("*.*")
+      if filename:
          name = var_name.get("image", self.shell.locals)
          if name:
             wxBeginBusyCursor()
             self.shell.run(name + " = load_image(\""
-                                + path + "\")")
+                                + filename + "\")")
             wxEndBusyCursor()
 
    def OnClassifier(self, event):
-      classifier_display.ClassifierWizard(self.shell, self.shell.GetLocals())
-
-   def OnFeatureEditor(self, event):
-      classifier_display.FeatureEditorWizard(self.shell, self.shell.GetLocals())
-   def OnProcess(self, event):
-      import omr, process
-      process.ProcessWizard(self.shell, self.shell.GetLocals(), omr.OMR)
+      GameraGui.ShowClassifier()
 
    def OnImportToolkit(self, event):
       self.shell.run("import %s\n" % self.import_toolkits[event.GetId()])
@@ -334,10 +326,6 @@ class ShellFrame(wxFrame):
 
    def Update(self):
       self.icon_display.update_icons(self.shell.interp.locals)
-
-class GameraSplitter(wxSplitterWindow):
-   def __init__(self, parent=None, id=-1):
-      wxSplitterWindow.__init__(self, parent, id)
 
 class StatusBar(wxStatusBar):
    def __init__(self, parent):

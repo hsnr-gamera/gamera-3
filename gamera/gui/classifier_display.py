@@ -17,13 +17,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import types
 from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
-from gamera.gui import image_menu, var_name, toolbar
-from gamera.gui.gamera_display import *
 from gamera.symbol_table import SymbolTable
 from gamera import gamera_xml, classify
+from gamera.gui import image_menu, var_name, toolbar, gui_util
+from gamera.gui.gamera_display import *
 
 ###############################################################################
 # CLASSIFIER DISPLAY
@@ -70,10 +71,12 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       else:
          row, col = self.GetGridCursorRow(), self.GetGridCursorCol()
          image_no = self.get_image_no(row, col)
+
       # Find the next glyph of the right type
       found = -1
-      for i in range(image_no + 1, len(self.list)):
-         image = self.list[i]
+      list = self.GetAllItems()
+      for i in range(image_no + 1, len(list)):
+         image = list[i]
          if (image != None and
              not hasattr(image, 'dead') and
              image.classification_state in state):
@@ -118,10 +121,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       if matches != []:
          first = 0
          self.updating = 1
+         last_index = matches[-1]
          for index in matches:
             row = index / GRID_NCOLS
             col = index % GRID_NCOLS
-            if index is matches[-1]:
+            if index is last_index:
                self.updating = 0
             self.SelectBlock(row, col, row, col, first)
             if first == 0:
@@ -161,15 +165,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       prev_id = -1
       new_list = []
       for image in list:
-         if image.id_name != prev_id and column != 0:
-            for i in range(GRID_NCOLS - column):
-               new_list.append(None)
+         main_id = image.get_main_id()
+         if main_id != prev_id and column != 0:
+            new_list.extend([None] * (GRID_NCOLS - column))
             column = 0
          new_list.append(image)
          column += 1
-         if column >= GRID_NCOLS:
-            colomn = 0
-         prev_id = image.id_name
+         column %= GRID_NCOLS
+         prev_id = main_id
       for i in range(column, GRID_NCOLS):
          new_list.append(None)
       return new_list
@@ -202,16 +205,12 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    def sort_images(self, function=None, order=0):
       self.last_sort = None
-      if function:
-         # Turn off the row labels
-         self.display_row_labels = 0
-      else:
-         self.display_row_labels = 1
+      self.display_row_labels = not function
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_len = len(self.list)
       # Remove "None"s and dead glyphs from the list
-      new_list = [x for x in self.list if x != None and not hasattr(x, 'dead')]
+      new_list = self.GetAllItems()
       if len(new_list) != len(self.list):
          self.list = new_list
       MultiImageDisplay.sort_images(self, function, order)
@@ -248,6 +247,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       self.EndBatch()
       return max_label
 
+   def delete_selected(self):
+      for item in self.GetSelectedItems():
+         if hasattr(item, 'dead'):
+            del item.__dict__['dead']
+         else:
+            item.dead = 1
+      self.RefreshSelected()
+
    ########################################
    # CALLBACKS
 
@@ -276,13 +283,6 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       if event.KeyCode() == WXK_F12:
          self.toplevel.do_auto_move()
          
-   def delete_selected(self):
-      for item in self.GetSelectedItems():
-         if hasattr(item, 'dead'):
-            del item.__dict__['dead']
-         else:
-            item.dead = 1
-      self.RefreshSelected()
 
 class ClassifierMultiImageWindow(MultiImageWindow):
    def __init__(self, toplevel, parent = None, id = -1, size = wxDefaultSize):
@@ -293,49 +293,46 @@ class ClassifierMultiImageWindow(MultiImageWindow):
       self.toolbar.AddSimpleTool(
          300, gamera_icons.getIconDeleteBitmap(),
          "Delete selected glyphs",
-         self.OnDelete)
+         self._OnDelete)
       self.toolbar.AddSeparator()
       self.auto_move_buttons = []
       self.auto_move_buttons.append(
          self.toolbar.AddSimpleTool(
          200, gamera_icons.getIconNextUnclassBitmap(),
          "Move to next unclassified glyph after each classification.",
-         self.OnAutoMove, 1)
+         self._OnAutoMoveButton, 1)
          )
       self.auto_move_buttons.append(
          self.toolbar.AddSimpleTool(
          201, gamera_icons.getIconNextAutoclassBitmap(),
          "Move to next auto-classified glyph after each classification.",
-         self.OnAutoMove, 1)
+         self._OnAutoMoveButton, 1)
          )
       self.auto_move_buttons.append(
       self.toolbar.AddSimpleTool(
          202, gamera_icons.getIconNextHeurclassBitmap(),
          "Move to next heuristically classified glyph after each classification.",
-         self.OnAutoMove, 1)
+         self._OnAutoMoveButton, 1)
       )
       self.auto_move_buttons.append(
       self.toolbar.AddSimpleTool(
          203, gamera_icons.getIconNextManclassBitmap(),
          "Move to next manually classified glyph after each classification.",
-         self.OnAutoMove, 1)
+         self._OnAutoMoveButton, 1)
       )
       
    def get_display(self):
       return ClassifierMultiImageDisplay(self.toplevel, self)
 
-   def OnAutoMove(self, event):
+   def _OnAutoMoveButton(self, event):
       id = event.GetId() - 200
       if event.GetIsDown():
          self.toplevel.auto_move.append(id)
       else:
          self.toplevel.auto_move.remove(id)
 
-   def OnDelete(self, event):
+   def _OnDelete(self, event):
       self.toplevel.delete_selected()
-
-   def find_glyphs_in_rect(self, x1, y1, x2, y2):
-      self.id.find_glyphs_in_rect(x1, y1, x2, y2)
 
 class ClassifierImageDisplay(ImageDisplay):
    def __init__(self, toplevel, parent):
@@ -358,7 +355,6 @@ class ClassifierImageWindow(ImageWindow):
          "Choose new image", self.OnChooseImage)
 
    def OnChooseImage(self, event):
-      from gamera.args import Args, Class
       dlg = Args([Class("Image for context display", core.ImageBase)])
       function = dlg.show(self, image_menu.shell.locals, "")
       if function != None:
@@ -374,93 +370,162 @@ class ClassifierFrame(ImageFrameBase):
                 parent = None, id = -1, title = "Classifier",
                 owner=None):
       if not isinstance(classifier, classify.InteractiveClassifier):
-         raise ValueError("classifier must be instance of type InteractiveClassifier.")
-      self.classifier = classifier
+         raise ValueError(
+            "classifier must be instance of type InteractiveClassifier.")
+      self._classifier = classifier
+
+      if isinstance(symbol_table, SymbolTable):
+         self._symbol_table = symbol_table
+      elif util.is_sequence(symbol_table):
+         self._symbol_table = SymbolTable()
+         for symbol in symbol_table:
+            if type(symbol) == types.StringType:
+               self._symbol_table.add(symbol)
+            else:
+               raise ValueError(
+                  "symbol_table must be a SymbolTable instance or a list of strings.")
+
+      else:
+         raise ValueError(
+            "symbol_table must be a SymbolTable instance or a list of strings.")
+      # Add 'actions' to symbol table
+      for action in ImageBase.methods_flat_category("Action", ONEBIT):
+         self._symbol_table.add("action." + action[0])
+      # Add classifier database's symbols to the symbol table
+      for glyph in self._classifier.database.iterkeys():
+         for id in glyph.id_name:
+            self._symbol_table.add(id[1])
+
+      self.is_dirty = 0
       self.production_database_filename = None
       self.current_database_filename = None
-      if not isinstance(symbol_table, SymbolTable):
-         self.symbol_table = SymbolTable()
-         for symbol in symbol_table:
-            self.symbol_table.add(symbol)
-      else:
-         self.symbol_table = symbol_table
-      for glyph in classifier.database.iterkeys():
-         for id in glyph.id_name:
-            self.symbol_table.add(id[1])
-      for action in ImageBase.methods_flat_category("Action", ONEBIT):
-         self.symbol_table.add("action." + action[0])
       self.auto_move = []
-      toplevel = self
       self.image = None
       self.menu = None
+      self.default_segmenter = -1
+
       ImageFrameBase.__init__(self, parent, id, title, owner)
-      self._frame.SetSize((800, 600))
-      self.splitterv = wxSplitterWindow(self._frame, -1)
-      self.splitterh = wxSplitterWindow(self.splitterv, -1)
-      self.single_iw = ClassifierImageWindow(self, self.splitterh)
-      self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
-      self.splitterh.SetMinimumPaneSize(5)
-      self.splitterh.SplitHorizontally(self.multi_iw, self.single_iw, 300)
-      self.symbol_editor = SymbolTableEditorPanel(self.symbol_table,
-                                                  self, self.splitterv)
-      self.splitterv.SetMinimumPaneSize(5)
-      self.splitterv.SplitVertically(self.symbol_editor, self.splitterh, 160)
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(3)
+      self._frame.SetSize((800, 600))
+      self.splitterv = wxSplitterWindow(
+         self._frame, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      self.splitterh = wxSplitterWindow(
+         self.splitterv, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      self.single_iw = ClassifierImageWindow(self, self.splitterh)
+      self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
+      self.splitterh.SetMinimumPaneSize(3)
+      self.splitterh.SplitHorizontally(self.multi_iw, self.single_iw, 300)
+      self.symbol_editor = SymbolTableEditorPanel(
+         self._symbol_table, self, self.splitterv)
+      self.splitterv.SetMinimumPaneSize(3)
+      self.splitterv.SplitVertically(self.symbol_editor, self.splitterh, 160)
+      self.create_menus()
+
+   def create_menus(self):
+      image_menu = gui_util.build_menu(
+         self._frame,
+         (("Open and segment image...", self._OnOpenAndSegmentImage),))
+      xml_menu = gui_util.build_menu(
+         self._frame,
+         (("Save by criteria...", self._OnPowerSave),
+          (None, None),
+          ("Open production database...", self._OnOpenProductionDatabase),
+          ("Merge into production database...", self._OnMergeProductionDatabase),
+          ("Save production database", self._OnSaveProductionDatabase),
+          ("Save production database as...", self._OnSaveProductionDatabaseAs),
+          ("Clear production database...", self._OnClearProductionDatabase),
+          (None, None),
+          ("Open current database...", self._OnOpenCurrentDatabase),
+          ("Merge into current database...", self._OnMergeCurrentDatabase),
+          ("Save current database", self._OnSaveCurrentDatabase),
+          ("Save current database as...", self._OnSaveCurrentDatabaseAs),
+          ("Save selected glyphs as...", self._OnSaveSelectedGlyphsAs),
+          (None, None),
+          ("Import symbol names...", self._OnImportSymbolTable),
+          ("Export symbol names...", self._OnExportSymbolTable)))
+      classifier_menu = gui_util.build_menu(
+         self._frame,
+         (("Guess all", self._OnGuessAll),
+          ("Guess selected", self._OnGuessSelected),
+          (None, None),
+          ("Confirm all", self._OnConfirmAll),
+          ("Confirm selected", self._OnConfirmSelected),
+          (None, None),
+          ("Change set of features...", self._OnChangeSetOfFeatures),
+          (None, None),
+          ("Change classifier properties...", self._OnClassifierProperties)))
+         
+      menubar = wxMenuBar()
+      menubar.Append(image_menu, "Image")
+      menubar.Append(xml_menu, "XML")
+      menubar.Append(classifier_menu, "Classifier")
+      self._frame.SetMenuBar(menubar)
 
    def set_image(self, current_database, image=None):
-      self.current_database = {}
-      for glyph in current_database:
-         self.current_database[glyph] = None
-         for id in glyph.id_name:
-            self.symbol_table.add(id[1])
-      self.multi_iw.id.set_image(current_database)
-      if image == None:
-         image = self.image
-      self.image = image
-      if self.image == None:
-         self.splitterh.SetSashPosition(10000)
-         self.image = Image(0, 0, 300, 200, ONEBIT, DENSE)
-      self.single_iw.id.set_image(self.image)
+      self.set_multi_image(current_database)
+      self.set_single_image(image)
 
+   def set_multi_image(self, current_database):
+      for glyph in current_database:
+         for id in glyph.id_name:
+            self._symbol_table.add(id[1])
+      self.multi_iw.id.set_image(current_database)
+      self.is_dirty = 1
+
+   def set_single_image(self, image=None):
+      if image == None:
+         if self.splitterh.IsSplit():
+            self.splitterh.Unsplit()
+            self.single_iw.Hide()
+      else:
+         self.single_iw.id.set_image(image)
+         if not self.splitterh.IsSplit():
+            self.splitterh.SplitHorizontally(
+               self.multi_iw, self.single_iw, self._frame.GetSize()[1] / 2)
+            self.single_iw.Show()
+         
    def append_glyphs(self, list):
       self.multi_iw.id.append_glyphs(list)
+      for glyph in list:
+         for id in glyph.id_name:
+            self._symbol_table.add(id[1])
+      self.is_dirty = 1
 
    def delete_selected(self):
       self.multi_iw.id.delete_selected()
+      self.is_dirty = 1
+
+   def update_symbol_table(self):
+      for glyph in self._classifier.database.iterkeys():
+         for id in glyph.id_name:
+            self._symbol_table.add(id[1])
+      for glyph in self.multi_iw.id.GetAllItems():
+         for id in glyph.id_name:
+            self._symbol_table.add(id[1])
 
    ########################################
    # DISPLAY
 
    def display_cc(self, cc):
-      if self.image != None:
+      if self.splitterh.IsSplit():
          self.single_iw.id.highlight_cc(cc)
          self.single_iw.id.focus(cc)
 
    def find_glyphs_in_rect(self, x1, y1, x2, y2):
-      self.multi_iw.find_glyphs_in_rect(x1, y1, x2, y2)
+      self.multi_iw.id.find_glyphs_in_rect(x1, y1, x2, y2)
 
    ########################################
    # CLASSIFICATION FUNCTIONS
-
-   def guess_all(self):
-      wxBeginBusyCursor()
-      self.classifier.classify_list_automatic(self.current_database.keys())
-      self.multi_iw.id.sort_images(None)
-      wxEndBusyCursor()
-
    def guess_glyph(self, glyph):
-      return self.classifier.guess_glyph(glyph)
+      return self._classifier.guess_glyph(glyph)
 
-   def confirm_all(self):
-      for x in self.classifier.current_database:
-         if x.classification_state == AUTOMATIC:
-            self.classifier.classify_glyph_manual(x, x.get_main_id())
-      self.multi_iw.id.ForceRefresh()
-   
    def classify_manual(self, id):
+      assert type(id) == types.StringType
       wxBeginBusyCursor()
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
@@ -470,31 +535,25 @@ class ClassifierFrame(ImageFrameBase):
          removed_some = 0
          for glyph in selection:
             for child in glyph.children_images:
-               if self.current_database.has_key(child):
-                  child.dead = 1
-                  del self.current_database[child]
-                  removed_some = 1
-         splits = self.classifier.classify_list_manual(selection, id)
+               child.dead = 1
+               removed_some = 1
+         splits = self._classifier.classify_list_manual(selection, id)
          if len(splits):
-            for split in splits:
-               self.current_database[split] = None
             self.append_glyphs(splits)
-##          if removed_some or len(splits):
-##             self.multi_iw.id.Refresh()
+         if removed_some or len(splits):
+            self.multi_iw.id.Refresh()
          if not self.do_auto_move():
             self.set_label_display([(1.0, id)])
          self.multi_iw.id.EndBatch()
          wxEndBusyCursor()
+
 
    ########################################
    # AUTO-MOVE
 
    def do_auto_move(self):
       self.multi_iw.id.do_auto_move(self.auto_move)
-      if self.auto_move != []:
-         return 1
-      else:
-         return 0
+      return self.auto_move != []
 
    def set_label_display(self, ids):
       if ids != []:
@@ -505,169 +564,256 @@ class ClassifierFrame(ImageFrameBase):
    def display_label_at_cell(self, row, col, label):
       self.multi_iw.id.display_label_at_cell(row, col, label)
 
+   def symbol_table_rename_callback(self, old, new):
+      for glyph in self.multi_iw.id.list:
+         new_ids = []
+         if glyph != None:
+            for id in glyph.id_name:
+               if id[1] == old:
+                  new_ids.append((id[0], new))
+               else:
+                  new_ids.append(id)
+            glyph.id_name = new_ids
+      self._classifier.rename_ids(old, new)
+
    ########################################
    # FILE MENU
 
-   def file_menu(self):
-      self.menu = wxMenu()
-      self.menu.Append(10, "Smart saving...")
-      EVT_MENU(self._frame, 10, self.OnSmartSave)
-      self.menu.AppendSeparator()
-      self.menu.Append(11, "Open production database...")
-      EVT_MENU(self._frame, 11, self.OnOpenProductionDatabase)
-      self.menu.Append(12, "Merge into production database...")
-      EVT_MENU(self._frame, 12, self.OnMergeProductionDatabase)
-      self.menu.Append(13, "Save production database")
-      EVT_MENU(self._frame, 13, self.OnSaveProductionDatabase)
-      self.menu.Append(14, "Save production database as...")
-      EVT_MENU(self._frame, 14, self.OnSaveProductionDatabaseAs)
-      self.menu.Append(140, "Clear production database")
-      EVT_MENU(self._frame, 140, self.OnClearProductionDatabase)
-      self.menu.AppendSeparator()
-      self.menu.Append(15, "Open current database...")
-      EVT_MENU(self._frame, 15, self.OnOpenCurrentDatabase)
-      self.menu.Append(16, "Merge into current database...")
-      EVT_MENU(self._frame, 16, self.OnMergeCurrentDatabase)
-      self.menu.Append(17, "Save current database")
-      EVT_MENU(self._frame, 17, self.OnSaveCurrentDatabase)
-      self.menu.Append(18, "Save current database as...")
-      EVT_MENU(self._frame, 18, self.OnSaveCurrentDatabaseAs)
-      self.menu.AppendSeparator()
-      self.menu.Append(19, "Import symbol names...")
-      EVT_MENU(self._frame, 19, self.OnImportSymbolTable)
-      self.menu.Append(20, "Export symbol names...")
-      EVT_MENU(self._frame, 20, self.OnExportSymbolTable)
-      self._frame.PopupMenu(self.menu, wxPoint(5, 22))
+   def _OnOpenAndSegmentImage(self, event):
+      segmenters = [x[0] for x in ImageBase.methods_flat_category("Segmentation", ONEBIT)]
+      if self.default_segmenter == -1:
+         self.default_segmenter = segmenters.index("cc_analysis")
+      dialog = Args(
+         [FileOpen("Image file", "", "*.*"),
+          Choice("Segmentation algorithm", segmenters, self.default_segmenter)])
+      results = dialog.show(self._frame)
+      if results is None:
+         return
+      filename, segmenter = results
+      self.default_segmenter = segmenter
+      if filename == "'None'":
+         gui_util.message("You must provide a filename to load.")
+      wxBeginBusyCursor()
+      image = load_image(filename[1:-1])
+      image_ref = image
+      if image_ref.data.pixel_type == RGB:
+         image_ref = image_ref.to_greyscale()
+      if image_ref.data.pixel_type != ONEBIT:
+         image_ref = image_ref.otsu_threshold()
+      ccs = getattr(image_ref, segmenters[segmenter])()
+      self.set_image(ccs, image)
+      wxEndBusyCursor()
 
-   def file_menu_destroy(self):
-      if self.menu != None:
-         self.menu.Destroy()
-         self.menu = None
+   ########################################
+   # CLASSIFIER MENU
+
+   def _OnGuessAll(self, event):
+      self._OnGuess(self.multi_iw.id.GetAllItems())
+      self.multi_iw.id.sort_images(None)
+
+   def _OnGuessSelected(self, event):
+      self._OnGuess(self.multi_iw.id.GetSelectedItems())
+
+   def _OnGuess(self, list):
+      wxBeginBusyCursor()
+      self._classifier.classify_list_automatic(list)
+      wxEndBusyCursor()
+
+   def _OnConfirmAll(self, event):
+      self._OnConfirm(self.multi_iw.id.GetAllItems())
+
+   def _OnConfirmSelected(self, event):
+      self._OnConfirm(self.multi_iw.id.GetSelectedItems())
+
+   def _OnConfirm(self, list):
+      wxBeginBusyCursor()
+      for x in list:
+         if (x is not None and not hasattr(x, 'dead') and
+             x.classification_state == AUTOMATIC):
+            self._classifier.classify_glyph_manual(x, x.get_main_id())
+      self.multi_iw.id.ForceRefresh()
+      wxEndBusyCursor()
+      
+   def _OnChangeSetOfFeatures(self, event):
+      all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
+      all_features.sort()
+      existing_features = [x[0] for x in self._classifier.feature_functions]
+      feature_controls = []
+      for x in all_features:
+         feature_controls.append(
+            Check('', x, default=(x in existing_features)))
+      dialog = Args(
+         feature_controls,
+         name='Feature selection', 
+         title='Select the features you to use for classification')
+      result = dialog.show(self._frame)
+      if result is None:
+         return
+      selected_features = [name for check, name in zip(result, all_features) if check]
+      self._classifier.change_feature_set(selected_features)
+
+   def _OnClassifierProperties(self, event):
+      gui_util.message("This will open up a classifier-specific dialog box...")
+      
+   ########################################
+   # XML MENU
+
+   def _OnPowerSave(self, event):
+      dialog = Args(
+         [Info('Set of glyphs to save:'),
+          Check('', 'Production database', 1),
+          Check('', 'Current database', 1),
+          Info('Kind of glyphs to save:'),
+          Check('', 'Unclassified', 1),
+          Check('', 'Automatically classified', 1),
+          Check('', 'Heuristically classified', 1),
+          Check('', 'Manually classified', 1),
+          FileSave('Save glyphs to file', '',
+                   extension=gamera_xml.extensions)],
+         name = 'Save by criteria...')
+      results = dialog.show(self._frame)
+      if results is None:
+         return
+      skip, proddb, currdb, skip, un, auto, heur, man, filename = results
+      if ((proddb == 0 and currdb == 0) or
+          (un == 0 and auto == 0 and heur == 0 and man == 0)):
+         gui_util.message("You selected nothing to save!")
+         return
+      if filename == 'None':
+         gui_util.message("You must select a filename to save into.")
+         return
+      # We build a dictionary here, since we don't want to save the
+      # same glyph twice
+      glyphs = {}
+      if proddb:
+         for glyph in self._classifier.database:
+            glyphs[glyph] = None
+      if currdb:
+         for glyph in self.multi_iw.id.GetAllItems():
+            glyphs[glyph] = None
+      # One bigass filtering function
+      glyphs = [x for x in glyphs.iterkeys()
+                if ((x != None and not hasattr(x, 'dead')) and
+                    ((x.classification_state == UNCLASSIFIED and un) or
+                     (x.classification_state == AUTOMATIC and auto) or
+                     (x.classification_state == HEURISTIC and heur) or
+                     (x.classification_state == MANUAL and man)))]
+      gamera_xml.WriteXMLFile(glyphs=glyphs,
+         symbol_table=self._symbol_table).write_filename(
+         filename[1:-1])
+
+   def _OnOpenProductionDatabase(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         self.production_database_filename = filename
+         self._classifier.from_xml_filename(filename)
+         self.update_symbol_table()
+         wxEndBusyCursor()
+
+   def _OnMergeProductionDatabase(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         self._classifier.merge_from_xml_filename(filename)
+         self.update_symbol_table()
+         wxEndBusyCursor()
+
+   def _OnSaveProductionDatabase(self, event):
+      if self.production_database_filename == None:
+         self._OnSaveProductionDatabaseAs(event)
+      else:
+         wxBeginBusyCursor()
+         self._classifier.to_xml_filename(
+            self.production_database_filename)
+         wxEndBusyCursor()
+
+   def _OnSaveProductionDatabaseAs(self, event):
+      filename = save_file_dialog(gamera_xml.extensions)
+      if filename:
+         self.production_database_filename = filename
+         self._OnSaveProductionDatabase(event)
+
+   def _OnClearProductionDatabase(self, event):
+      if self._classifier.is_dirty:
+         if gui_util.are_you_sure_dialog(
+            "Are you sure you want to clear all glyphs in the production database?"):
+            self._classifier.database = []
+      else:
+         self._classifier.database = []
+
+   def _OnOpenCurrentDatabase(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+         self.set_multi_image(glyphs)
+         wxEndBusyCursor()
+
+   def _OnMergeCurrentDatabase(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+         self.append_glyphs(glyphs)
+         wxEndBusyCursor()
+
+   def _OnSaveCurrentDatabase(self, event):
+      if self.current_database_filename == None:
+         self._OnSaveCurrentDatabaseAs(event)
+      else:
+         wxBeginBusyCursor()
+         gamera_xml.WriteXMLFile(
+            glyphs=self.multi_iw.id.GetAllItems(),
+            symbol_table=self._symbol_table).write_filename(
+            self.current_database_filename)
+         wxEndBusyCursor()
+
+   def _OnSaveCurrentDatabaseAs(self, event):
+      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      if filename:
+         self.current_database_filename = filename
+         self._OnSaveCurrentDatabase(event)
+
+   def _OnSaveSelectedGlyphsAs(self, event):
+      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         gamera_xml.WriteXMLFile(
+            glyphs=self.multi_iw.id.GetSelectedItems(),
+            symbol_table=self._symbol_table).write_filename(
+            filename)
+         wxEndBusyCursor()
+         
+   def _OnImportSymbolTable(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         symbol_table = gamera_xml.LoadXMLSymbolTable().parse_filename(filename)
+         for symbol in symbol_table.symbols.keys():
+            self._symbol_table.add(symbol)
+         wxEndBusyCursor()
+
+   def _OnExportSymbolTable(self, event):
+      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      if filename:
+         wxBeginBusyCursor()
+         gamera_xml.WriteXMLFile(symbol_table=self._symbol_table).write_filename(filename)
+         wxEndBusyCursor()
 
    ########################################
    # CALLBACKS
 
    def _OnCloseWindow(self, event):
-      if self.classifier.is_dirty:
-         message = wxMessageDialog(
-            self._frame,
-            "Are you sure you want to quit without saving?",
-            "Classifier",
-            wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION )
-         result = message.ShowModal()
-         if result != wxID_YES:
+      if self._classifier.is_dirty:
+         if not gui_util.are_you_sure_dialog(
+            "Are you sure you want to quit without saving?"):
             return
-      self.single_iw.Destroy()
-      self.multi_iw.Destroy()
+      #self.single_iw.Destroy()
+      #self.multi_iw.Destroy()
       if self.owner:
          self.owner.set_display(None)
       self._frame.Destroy()
-
-   def OnSmartSave(self, event):
-      print "To be implemented."
-
-   def OnOpenProductionDatabase(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         self.production_database_filename = filename
-         self.classifier.from_xml_filename(filename)
-         wxEndBusyCursor()
-
-   def OnMergeProductionDatabase(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         self.classifier.merge_from_xml_filename(filename)
-         wxEndBusyCursor()
-
-   def OnSaveProductionDatabase(self, event):
-      if self.production_database_filename == None:
-         self.OnSaveProductionDatabaseAs(event)
-      else:
-         wxBeginBusyCursor()
-         self.classifier.to_xml_filename(
-            self.production_database_filename)
-         wxEndBusyCursor()
-
-   def OnSaveProductionDatabaseAs(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxSAVE)
-      if dlg.ShowModal() == wxID_OK:
-         self.production_database_filename = dlg.GetPath()
-         dlg.Destroy()
-         self.OnSaveProductionDatabase(event)
-
-   def OnClearProductionDatabase(self, event):
-      # TODO: An are you sure dialog
-      self.classifier.database = []
-
-   def OnOpenCurrentDatabase(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
-         self.set_image(glyphs)
-         wxEndBusyCursor()
-
-   def OnMergeCurrentDatabase(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
-         for glyph in glyphs:
-            self.current_database[glyph] = None
-         self.append_glyphs(glyphs)
-         wxEndBusyCursor()
-
-   def OnSaveCurrentDatabase(self, event):
-      if self.current_database_filename == None:
-         self.OnSaveCurrentDatabaseAs(event)
-      else:
-         wxBeginBusyCursor()
-         self.current_database = {}
-         for i in self.multi_iw.id.list:
-            if not i is None and not hasattr(i, 'dead'):
-               self.current_database[i] = i
-         gamera_xml.WriteXMLFile(
-            glyphs=self.current_database.keys(),
-            symbol_table=self.symbol_table).write_filename(
-            self.current_database_filename)
-         wxEndBusyCursor()
-
-   def OnSaveCurrentDatabaseAs(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxSAVE)
-      if dlg.ShowModal() == wxID_OK:
-         self.current_database_filename = dlg.GetPath()
-         dlg.Destroy()
-         self.OnSaveCurrentDatabase(event)
-
-   def OnImportSymbolTable(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         symbol_table = gamera_xml.LoadXMLSymbolTable().parse_filename(filename)
-         for symbol in symbol_table.symbols.keys():
-            self.symbol_table.add(symbol)
-         wxEndBusyCursor()
-
-   def OnExportSymbolTable(self, event):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxSAVE)
-      if dlg.ShowModal() == wxID_OK:
-         filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         gamera_xml.WriteXMLFile(symbol_table=self.symbol_table).write_filename(filename)
-         wxEndBusyCursor()
 
    def refresh(self):
       self.single_iw.id.refresh(1)
@@ -695,10 +841,10 @@ class SymbolTreeCtrl(wxTreeCtrl):
       EVT_RIGHT_UP(self, self.OnRightUp)
       EVT_LEFT_DCLICK(self, self.OnLeftDoubleClick)
       self.Expand(self.root)
-      self.toplevel.symbol_table.add_listener(self)
+      self.toplevel._symbol_table.add_listener(self)
 
    def __del__(self):
-      self.symbol_table.remove_listener(self)
+      self._symbol_table.remove_listener(self)
 
    ########################################
    # CALLBACKS
@@ -724,7 +870,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
                break
 
    def OnBeginEdit(self, event):
-      if not self.editing:
+      # if not self.editing:
          event.Veto()
 
    def OnEndEdit(self, event):
@@ -741,13 +887,13 @@ class SymbolTreeCtrl(wxTreeCtrl):
       else:
          new = previous_stub + "." + label
       self.SetPyData(event.GetItem(), new)
-      self.toplevel.symbol_table.rename(previous, new)
+      self.toplevel._symbol_table.rename(previous, new)
       self.editing = 0
 
    def OnItemExpanded(self, event):
       parent = event.GetItem()
       parent_path = self.GetPyData(parent)
-      items = self.toplevel.symbol_table.get_category_contents_list(parent_path)
+      items = self.toplevel._symbol_table.get_category_contents_list(parent_path)
       for name, is_parent in items:
          item = self.AppendItem(parent, name)
          new_path = '.'.join((parent_path, name))
@@ -764,7 +910,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
 
    def OnKey(self, evt):
       if evt.KeyCode() == WXK_DELETE:
-         self.toplevel.symbol_table.remove(self.GetPyData(self.GetSelection()))
+         self.toplevel._symbol_table.remove(self.GetPyData(self.GetSelection()))
       else:
          evt.Skip()
 
@@ -784,7 +930,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
       if (flags == 4):
          return
       self.last_value = self.GetItemText(item)
-      print self.last_value
       self.EditLabel(item)
 
    def OnRightUp(self, event):
@@ -801,26 +946,13 @@ class SymbolTreeCtrl(wxTreeCtrl):
          self.toplevel.text.SetInsertionPointEnd()
       event.Skip()
 
-
 class SymbolTableEditorPanel(wxPanel):
    def __init__(self, symbol_table, toplevel, parent = None, id = -1):
       wxPanel.__init__(self, parent, id)
       self.toplevel = toplevel
-      self.symbol_table = symbol_table
+      self._symbol_table = symbol_table
       self.SetAutoLayout(true)
-      self.toolbar = toolbar.ToolBar(self, -1, hideable=0)
-      from gamera.gui import gamera_icons
-      file_menu = self.toolbar.AddSimpleTool(5, gamera_icons.getIconFileBitmap(),
-                                 "File Menu", self.OnFileClick)
-      EVT_LEFT_UP(file_menu, self.OnFileLeftUp)
-      self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(10, gamera_icons.getIconGuessBitmap(),
-                                 "Classify all glyphs", self.OnGuessClick)
-      self.toolbar.AddSimpleTool(11, gamera_icons.getIconConfirmBitmap(),
-                                 "Confirm all guesses", self.OnConfirmClick)
-      self.toolbar.AddSeparator()
       self.box = wxBoxSizer(wxVERTICAL)
-      self.box.Add(self.toolbar, 0, wxEXPAND|wxBOTTOM, 5)
       txID = NewId()
       self.text = wxTextCtrl(self, txID)
       EVT_KEY_DOWN(self.text, self.OnKey)
@@ -837,26 +969,14 @@ class SymbolTableEditorPanel(wxPanel):
    ########################################
    # CALLBACKS
 
-   def OnFileClick(self, event):
-      self.toplevel.file_menu()
-
-   def OnFileLeftUp(self, event):
-      self.toplevel.file_menu_destroy()
-
-   def OnGuessClick(self, event):
-      self.toplevel.guess_all()
-
-   def OnConfirmClick(self, event):
-      self.toplevel.confirm_all()
-
    def OnKey(self, evt):
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
-         find = self.symbol_table.autocomplete(find)
+         find = self._symbol_table.autocomplete(find)
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
-         self.symbol_table.add(find)
+         self._symbol_table.add(find)
          self.toplevel.classify_manual(find)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():
          current = self.text.GetInsertionPoint()
@@ -897,7 +1017,7 @@ class SymbolTableEditorPanel(wxPanel):
          evt.Skip()
 
    def OnText(self, evt):
-      symbol, tokens = self.symbol_table.normalize_symbol(self.text.GetValue())
+      symbol, tokens = self._symbol_table.normalize_symbol(self.text.GetValue())
       parent = item = self.tree.root
       cookie = 0
       self.tree.UnselectAll()
@@ -1084,55 +1204,3 @@ class ClassifierWizard(Wizard):
                         (classifier, self.ccs, self.context_image, symbol_table))
       except Exception, e:
          print e
-
-class FeatureEditorWizard(Wizard):
-   dlg_select_database = Args([
-      FileOpen('Database filename', '', extension="*.*")],
-      name=name,
-      function = 'cb_select_database',
-      title = '1. Select a database to add and remove features.')
-
-   def __init__(self, shell, locals):
-      self.shell = shell
-      self.parent = None
-      self.locals = locals
-      self.database = 'None'
-      self.show(self.dlg_select_database)
-
-   def cb_select_database(self, database):
-      self.database = database
-      self.classifier = Classifier(None, None, database, None, None, [])
-      self.classifier.current_database[0].members_flat_category("Features")
-      ff.sort()
-      existing_features = map(lambda x: x[0], self.classifier.feature_functions)
-      feature_controls = []
-      self.feature_list = []
-      for x in ff:
-         feature_controls.append(Check('', str(x[0]),
-                                       default=(x[0] in existing_features)))
-         self.feature_list.append(x[0])
-      self.dlg_features = Args(
-         feature_controls,
-         name=name, function='cb_features',
-         title='Select the features you would like to use for classification')
-      return self.dlg_features
-
-   def cb_features(self, *args):
-      self.features = []
-      for i in range(len(args)):
-         if args[i]:
-            self.features.append(self.feature_list[i])
-      dlg_save_as = Args([
-         FileSave('Database filename', self.database, extension="*.*")],
-                  name=name,
-                  function = 'cb_save_as',
-      title = '3. Where would you like to save the new database?')
-      return dlg_save_as
-
-   def cb_save_as(self, file):
-      self.save_database = file
-      return None
-
-   def done(self):
-      self.classifier.update_features(self.features)
-      self.classifier.save_current_database(self.save_database)

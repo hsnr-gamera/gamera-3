@@ -313,7 +313,12 @@ class CIImageList(CustomIcon):
     return icon
   
   def check(self, data):
-    return util.is_sequence(data)
+    if util.is_sequence(data):
+      for glyph in data:
+        if not isinstance(glyph, ImageBase):
+          return 0
+      return 1
+    return 0
 
 builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
                       CIFloatImage, CIOneBitImage,

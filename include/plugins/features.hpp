@@ -236,7 +236,7 @@ namespace Gamera {
     if (vol == 0)
       return 32767;
     typename ImageFactory<T>::view_type* ol = outline(image);
-    feature_t return_value = volume(*ol) / vol * image.scaling();
+    feature_t return_value = volume(*ol) / vol;
     delete ol->data();
     delete ol;
     return return_value;

@@ -133,8 +133,9 @@ class ImageBase:
    
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
-                        'ul_x', 'ul_y', 'resolution', 'nrows', 'ncols',
-                        'memory_size', 'label', 'properties')
+                        'ul_x', 'ul_y', 'nrows', 'ncols',
+                        'resolution', 'memory_size', 'label', 
+                        'classification_state', 'properties')
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu if hasattr(self, x)]
@@ -157,7 +158,7 @@ class ImageBase:
          dest[key] = val
    _methods_sub = classmethod(_methods_sub)
 
-   def methods_flat_category(cls, category, pixel_type):
+   def methods_flat_category(cls, category, pixel_type=None):
       methods = {}
       for type in (ALL, pixel_type):
          if cls._methods.has_key(type):

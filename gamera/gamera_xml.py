@@ -18,7 +18,7 @@
 #
 
 import core, util
-from util import word_wrap
+from util import word_wrap, ProgressFactory
 import gzip, os, os.path, cStringIO
 from gamera.symbol_table import SymbolTable
 from xml.parsers import expat
@@ -39,6 +39,8 @@ saveable_types = {
    'int': int,
    'str': str,
    'float': float }
+
+extensions = "XML files (*.xml)|*.xml*"
 
 ################################################################################
 # SAVING
@@ -65,16 +67,19 @@ class WriteXML:
    def write_stream(self, stream=None):
       if stream == None:
          return self.string()
-      self.write_core(stream)
+      progress = util.ProgressFactory("Writing XML...")
+      self._write_core(stream, progress)
 
-   def write_core(self, stream):
-      self.write_symbol_table(stream, self.symbol_table)
+   def _write_core(self, stream, progress, indent=0):
+      self._write_symbol_table(stream, self.symbol_table, indent=indent)
       if isinstance(self.glyphs, core.ImageBase):
-         self.write_glyph(stream, self.glyphs)
+         progress.update(1, 1)
+         self._write_glyph(stream, self.glyphs, indent=indent)
       else:
-         self.write_glyphs(stream, self.glyphs)
+         self._write_glyphs(stream, self.glyphs, progress, indent=indent)
+      progress.update(1, 1)
 
-   def write_symbol_table(self, stream, symbol_table, indent=0):
+   def _write_symbol_table(self, stream, symbol_table, indent=0):
       if (not isinstance(symbol_table, SymbolTable) and
           util.is_sequence(symbol_table)):
          symbols = symbol_table
@@ -89,31 +94,34 @@ class WriteXML:
          indent -= 1
          word_wrap(stream, '</symbols>', indent)
 
-   def write_glyphs(self, stream, glyphs, indent=0):
+   def _write_glyphs(self, stream, glyphs, progress, indent=0):
       if len(glyphs):
          word_wrap(stream, '<glyphs>', indent)
-         for glyph in glyphs:
-            self.write_glyph(stream, glyph, indent + 1)
+         for i, glyph in util.enumerate(glyphs):
+            self._write_glyph(stream, glyph, indent + 1)
+            progress.update(i, len(glyphs))
          word_wrap(stream, '</glyphs>', indent)
 
-   def write_glyph(self, stream,  glyph, indent=0):
+   def _write_glyph(self, stream,  glyph, indent=0):
       if not isinstance(glyph, core.ImageBase):
          raise ValueError("'%s' is not an Image instance." % str(glyph))
-      tag = ('<glyph ul_y="%s" ul_x="%s" nrows="%s" ncols="%s" classification-state="%s"' %
-             (glyph.ul_y, glyph.ul_x, glyph.nrows, glyph.ncols,
-              classification_state_to_name[glyph.classification_state]))
-      if hasattr(glyph, 'source_image_name'):
-         tag = tag + (' source_image_name="%s"' % glyph.source_image_name)
-      tag = tag + ">"
+      tag = ('<glyph uly="%s" ulx="%s" nrows="%s" ncols="%s">' %
+             (glyph.ul_y, glyph.ul_x, glyph.nrows, glyph.ncols))
       word_wrap(stream, tag, indent)
       indent += 1
-      if len(glyph.id_name):
-         for confidence, id in glyph.id_name:
-            word_wrap(stream, '<id name="%s" confidence="%f"/>' %
-                      (id, confidence), indent)
+      word_wrap(
+         stream,
+         '<ids state="%s">' %
+         classification_state_to_name[glyph.classification_state],
+         indent)
+      indent += 1
+      for confidence, id in glyph.id_name:
+         word_wrap(stream, '<id name="%s" confidence="%f"/>' %
+                   (id, confidence), indent)
+      indent -= 1
+      word_wrap(stream, '</ids>', indent)
       word_wrap(stream, '<data>', indent)
-      stream.write(glyph.to_rle())
-      stream.write('\n')
+      word_wrap(stream, glyph.to_rle(), indent+1)
       word_wrap(stream, '</data>', indent)
       if len(glyph.feature_functions):
          word_wrap(stream,
@@ -144,13 +152,15 @@ class WriteXML:
       word_wrap(stream, '</glyph>', indent)
 
 class WriteXMLFile(WriteXML):
-   def write_stream(self, stream=None):
+   def write_stream(self, stream=None, progress=None):
+      if progress is None:
+         progress = util.ProgressFactory("Writing XML...")
       if stream == None:
          return self.string()
       self.stream = stream
       self.stream.write('<?xml version="1.0" ?>\n')
       self.stream.write('<gamera-database>\n')
-      self.write_core(stream)
+      self._write_core(stream, progress, indent=1)
       self.stream.write('</gamera-database>\n')
 
 
@@ -159,15 +169,15 @@ class WriteXMLFile(WriteXML):
 ################################################################################
 
 class LoadXML:
-   def __init__(self, classifier=None):
-      self.classifier = classifier
-      self.parser = expat.ParserCreate()
-      self.parser.StartElementHandler = self.start_element_handler
-      self.parser.EndElementHandler = self.end_element_handler
-      self.start_elements = {}
-      self.end_elements = {}
-      self.start_elements_global = []
-      self.end_elements_global = []
+   def __init__(self):
+      self._parser = expat.ParserCreate()
+      self._parser.StartElementHandler = self._start_element_handler
+      self._parser.EndElementHandler = self._end_element_handler
+      self._start_elements = {}
+      self._end_elements = {}
+      self._start_elements_global = []
+      self._end_elements_global = []
+      self._stream_length = 0
       self.setup_handlers()
       
    def return_parse(self):
@@ -177,59 +187,70 @@ class LoadXML:
       pass
 
    def parse_filename(self, filename):
-      self.path = os.path.dirname(os.path.abspath(filename))
+      self._stream_length = os.stat(filename).st_size
       try:
          fd = gzip.open(filename, 'r')
          return self.parse_stream(fd)
       except IOError:
+         del self._progress
          fd = open(filename, 'r')
          return self.parse_stream(fd)
 
-   def parse_stream(self, stream):
-      self.parser.ParseFile(stream)
-      return self.return_parse()
-
    def parse_string(self, s):
+      self._stream_length = len(s)
       stream = cStringIO.StringIO(s)
       return self.parse_stream(stream)
 
+   def parse_stream(self, stream):
+      self._stream = stream
+      self._progress = util.ProgressFactory("Loading XML...")
+      self._parser.ParseFile(stream)
+      self._progress.update(1, 1)
+      return self.return_parse()
+
    def add_start_element_handler(self, name, func):
-      self.start_elements[name] = func
+      self._start_elements[name] = func
 
    def remove_start_element_handler(self, name):
-      del self.start_elements[name]
+      del self._start_elements[name]
 
    def add_global_start_element_handler(self, func):
-      self.start_elements_global.append(func)
+      self._start_elements_global.append(func)
 
    def remove_global_start_element_handler(self, func):
-      self.start_elements_global.remove(func)
+      self._start_elements_global.remove(func)
       
-   def start_element_handler(self, name, attributes):
-      if self.start_elements_global != []:
-         for x in self.start_elements_global:
-            x(name, attributes)
-      if self.start_elements.has_key(name):
-         self.start_elements[name](attributes)
+   def _start_element_handler(self, name, attributes):
+      if self._stream_length:
+         self._progress.update(self._stream.tell(), self._stream_length)
+      else:
+         self._progress.update(self._stream.tell() % 9, 10)
+      for x in self._start_elements_global:
+         x(name, attributes)
+      if self._start_elements.has_key(name):
+         self._start_elements[name](attributes)
 
    def add_end_element_handler(self, name, func):
-      self.end_elements[name] = func
+      self._end_elements[name] = func
 
    def remove_end_element_handler(self, name):
-      del self.end_elements[name]
+      del self._end_elements[name]
 
    def add_global_end_element_handler(self, func):
-      self.end_elements_global.append(func)
+      self._end_elements_global.append(func)
 
    def remove_global_end_element_handler(self, func):
-      self.end_elements_global.remove(func)
+      self._end_elements_global.remove(func)
 
-   def end_element_handler(self, name):
-      if self.end_elements_global != []:
-         for x in self.end_elements_global:
-            x(name)
-      if self.end_elements.has_key(name):
-         self.end_elements[name]()
+   def _end_element_handler(self, name):
+      if self._stream_length:
+         self._progress.update(self._stream.tell(), self._stream_length)
+      else:
+         self._progress.update(self._stream.tell() % 9, 10)
+      for x in self._end_elements_global:
+         x(name)
+      if self._end_elements.has_key(name):
+         self._end_elements[name]()
 
 class LoadXMLSymbolTable(LoadXML):
    def setup_handlers(self):
@@ -247,6 +268,7 @@ class LoadXMLGlyphs(LoadXML):
       self.add_start_element_handler('glyph', self.ths_glyph)
       self.add_end_element_handler('glyph', self.the_glyph)
       self.add_start_element_handler('features', self.ths_features)
+      self.add_start_element_handler('ids', self.ths_ids)
       self.add_start_element_handler('id', self.ths_id)
       self.add_start_element_handler('data', self.ths_data)
       self.add_end_element_handler('data', self.the_data)
@@ -258,17 +280,13 @@ class LoadXMLGlyphs(LoadXML):
       return self.glyphs
 
    def ths_glyph(self, a):
-      self.ul_y = int(a['ul_y'])
-      self.ul_x = int(a['ul_x'])
+      self.ul_y = int(a['uly'])
+      self.ul_x = int(a['ulx'])
       self.nrows = int(a['nrows'])
       self.ncols = int(a['ncols'])
       self.scaling = 1.0
       self.id_name = []
       self.properties = {}
-      if a.has_key('classification-state'):
-         self.classification_state = classification_state_to_number[a['classification-state']]
-      else:
-         self.classification_state = UNCLASSIFIED
 
    def the_glyph(self):
       glyph = core.Image(self.ul_y, self.ul_x, self.nrows, self.ncols,
@@ -281,8 +299,14 @@ class LoadXMLGlyphs(LoadXML):
       glyph.scaling = self.scaling
       self.glyphs.append(glyph)
 
+   def ths_ids(self, a):
+      if a.has_key('state'):
+         self.classification_state = classification_state_to_number[a['state']]
+      else:
+         self.classification_state = UNCLASSIFIED
+
    def ths_id(self, a):
-      self.id_name.append((a['name'], float(a['confidence'])))
+      self.id_name.append((float(a['confidence']), a['name']))
 
    def ths_features(self, a):
       if a.has_key('scaling'):
@@ -290,10 +314,10 @@ class LoadXMLGlyphs(LoadXML):
 
    def ths_data(self, a):
       self.data = ''
-      self.parser.CharacterDataHandler = self.add_data
+      self._parser.CharacterDataHandler = self.add_data
 
    def the_data(self):
-      self.parser.CharacterDataHandler = None
+      self._parser.CharacterDataHandler = None
 
    def add_data(self, data):
       self.data += data
@@ -302,7 +326,7 @@ class LoadXMLGlyphs(LoadXML):
       self.property_name = a['name']
       self.property_type = a['type']
       self.property_value = ''
-      self.parser.CharacterDataHandler = self.add_property_value
+      self._parser.CharacterDataHandler = self.add_property_value
 
    def the_property(self):
       if saveable_types.has_key(self.property_type):

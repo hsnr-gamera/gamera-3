@@ -72,6 +72,22 @@ class ToolBar(wxPanel):
         self.controls.append(button)
         return button
 
+    def AddMenuTool(self, id, text, help_string, callback=None, toggle=0):
+        if not toggle:
+            button = wxGenBitmapTextButton(self, id, None, text, size=wxSize(48, 28))
+        else:
+            button = wxGenBitmapTextToggleButton(self, id, None, text, size=wxSize(48,28))
+        button.SetBitmapLabel(gamera_icons.getToolbarMenuBitmap())
+        button.SetBezelWidth(1)
+        button.SetUseFocusIndicator(false)
+        button.SetToolTipString(help_string)
+        if callback:
+            EVT_BUTTON(self, id, callback)
+        self.sizer.Add(button, flag=wxALIGN_CENTER)
+        self.sizer.SetSizeHints(self)
+        self.controls.append(button)
+        return button
+
     def AddControl(self, control):
         self.sizer.Add(control, flag=wxALIGN_CENTER)
         self.sizer.SetSizeHints(self)

@@ -30,7 +30,6 @@ else:
    real_white = wxBLACK
    real_black = wxWHITE
 from gamera.core import *             # Gamera specific
-from gamera.gameracore import RGBPixel
 from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
 import gui_support
@@ -52,8 +51,9 @@ config.add_option_default("display_scroll_amount", 32)
 
 class ImageDisplay(wxScrolledWindow):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
-      wxScrolledWindow.__init__(self, parent, id, wxPoint(0, 0), size,
-                                wxSUNKEN_BORDER|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+      wxScrolledWindow.__init__(
+         self, parent, id, wxPoint(0, 0), size,
+         wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE|wxSIMPLE_BORDER)
       self.SetBackgroundColour(wxWHITE)
       self.scaling = 1.0
       self.scaling_quality = 0
@@ -796,8 +796,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          # If there's no image in this cell, draw a hatch pattern
          dc.SetLogicalFunction(wxCOPY)
          dc.SetBackgroundMode(wxSOLID)
-         dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
          dc.SetPen(wxTRANSPARENT_PEN)
+         if image is None:
+            dc.SetBrush(wxWHITE_BRUSH)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+         dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       dc.SetLogicalFunction(wxCOPY)
 
@@ -814,7 +817,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                            image.ncols * self.parent.scaling + GRID_PADDING ),
                        min(GRID_MAX_CELL_HEIGHT,
                            image.nrows * self.parent.scaling + GRID_PADDING))
-      return wxSize(0, 0)
+      return wxSize(50, 50)
 
    def Clone(self):
       return MultiImageGridRenderer()
@@ -859,7 +862,7 @@ class MultiImageDisplay(wxGrid):
       self.list = list
       self.do_updates = 0
       self.sort_images()
-      self.frame.set_choices(self.list[0])
+      self.frame.set_choices()
       if not self.created:
          self.rows = 1
          self.CreateGrid(1, GRID_NCOLS)
@@ -874,10 +877,12 @@ class MultiImageDisplay(wxGrid):
       return (x.x, 600)
 
    def resize_grid(self, do_auto_size=1):
+      if not self.created:
+         return
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_rows = self.rows
-      rows = (len(self.list) - 1) / GRID_NCOLS + 1
+      rows = max((len(self.list) - 1) / GRID_NCOLS + 1, 1)
       cols = GRID_NCOLS
       if self.rows < rows:
          self.AppendRows(rows - self.rows)
@@ -901,7 +906,8 @@ class MultiImageDisplay(wxGrid):
          self.AutoSizeRow(self.rows - 1)
       elif do_auto_size:
          self.AutoSize()
-      self.SetSize(x)
+      # self.SetSize(self.GetSize())
+      # self.ForceRefresh()
       self.EndBatch()
       wxEndBusyCursor()
 
@@ -999,6 +1005,9 @@ class MultiImageDisplay(wxGrid):
       else:
          return no
 
+   def GetAllItems(self):
+      return [x for x in self.list if x != None and not hasattr(x, 'dead')]
+
    def GetSelectedItems(self, row = None, col = None):
       if row != None:
          bitmap_no = self.get_image_no(row, col)
@@ -1012,7 +1021,7 @@ class MultiImageDisplay(wxGrid):
                   index = self.get_image_no(row, col)
                   if index != None:
                      item = self.list[index]
-                     if item != None:
+                     if item != None and not hasattr(item, 'dead'):
                         image.append(item)
       elif row != None:
          image = [self.list[bitmap_no]]
@@ -1215,7 +1224,7 @@ class MultiImageWindow(wxPanel):
    def get_display(self):
       return MultiImageDisplay(self)
 
-   def set_choices(self, prototype):
+   def set_choices(self):
       methods = ImageBase.methods_flat_category("Features", ONEBIT)
 
       self.sort_choices = ["", "ncols", "nrows", "label", "id",

@@ -104,10 +104,6 @@ class GameraGui:
       return main_win
    TopLevel = staticmethod(TopLevel)
 
-   def SetTopLevel(win):
-      app.SetTopLevel(win)
-   SetTopLevel = staticmethod(SetTopLevel)
-
    def ProgressBox(message, length=1):
       return gui_util.ProgressBox(message, length)
    ProgressBox = staticmethod(ProgressBox)
@@ -314,10 +310,6 @@ class ShellFrame(wxFrame):
 
    def add_custom_icon_description(self, icon_description):
       self.icon_display.add_class(icon_description)
-
-   def OnActivate(self, event):
-      gui = config.get_option('__gui')
-      gui.SetTopLevel(self)
 
    def _OnFileOpen(self, event):
       filename = gui_util.open_file_dialog(self, '*.*')

@@ -349,9 +349,11 @@ namespace Gamera {
 	sprintf(error, "%s\tnrows %d\n", error, (int)nrows());
 	sprintf(error, "%s\toffset_y %d\n", error, (int)offset_y());
 	sprintf(error, "%s\tdata nrows %d\n", error, (int)m_image_data->nrows());
+	sprintf(error, "%s\tdata offset_y %d\n", error, (int)m_image_data->page_offset_y());
 	sprintf(error, "%s\tncols %d\n", error, (int)ncols());
 	sprintf(error, "%s\toffset_x %d\n", error, (int)offset_x());
 	sprintf(error, "%s\tdata ncols %d\n", error,(int)m_image_data->ncols());
+	sprintf(error, "%s\tdata offset_x %d\n", error, (int)m_image_data->page_offset_x());
 	throw std::range_error(error);
       }
     }

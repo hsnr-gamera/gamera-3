@@ -164,19 +164,19 @@ namespace Gamera {
     typedef std::list<cc_type*> ccs_type;
     typedef std::list<dense_cc_type*> dense_ccs_type;
     typedef std::list<rle_cc_type*> rle_ccs_type;
-    static view_type* new_view(const T& view) {
+    static view_type* new_view(const RGBImageView& view) {
       view_type* nview = new view_type(*((data_type*)view.data()),
 				      view.offset_y(), view.offset_x(),
 				      view.nrows(), view.ncols());
       return nview;
     }
-    static view_type* new_view(const T& view, size_t ul_y, size_t ul_x,
-			       size_t nrows, size_t ncols) {
+    static view_type* new_view(const RGBImageView& view, size_t ul_y,
+			       size_t ul_x, size_t nrows, size_t ncols) {
       view_type* nview = new view_type(*((data_type*)view.data()),
 				       ul_y, ul_x, nrows, ncols);
       return nview;
     }
-    static view_type* new_image(const T& view) {
+    static view_type* new_image(const RGBImageView& view) {
       data_type* data = new data_type(view.nrows(), view.ncols(),
 				      view.offset_y(), view.offset_x());
       view_type* nview = new view_type(*data,

@@ -56,7 +56,7 @@ namespace Gamera {
     Utility
   */
   typedef std::vector<std::string> StringVector;
-  typedef std::vector<size_t> IntVector;
+  typedef std::vector<int> IntVector;
   typedef std::vector<int> SignedIntVector;
 
   /*

@@ -57,6 +57,7 @@ class bdist_osx(Command):
    def run (self):
       name = self.distribution.metadata.name
       version = self.distribution.metadata.version
+      fullname = "%s-%s" % (name, version)
       description = self.distribution.metadata.description
        
       self.run_command('build')
@@ -72,21 +73,29 @@ class bdist_osx(Command):
       create_tree(bin, self.distribution.scripts)
       for script in self.distribution.scripts:
          copy_file(script, bin)
-      
+
       if not os.path.exists(self.dist_dir):
          os.mkdir(self.dist_dir)
-      pkg = os.path.join(self.dist_dir, name + ".pkg")
-      if os.path.exists(pkg):
-         remove_tree(pkg)
-
       pkg_dir = os.path.join(self.dist_dir, "pkg")
       if not os.path.exists(pkg_dir):
           os.mkdir(pkg_dir)
 
+      pkg = os.path.join(pkg_dir, fullname + ".pkg")
+      if os.path.exists(pkg):
+         remove_tree(pkg)
+
+      readmes = ['README', 'readme.txt', 'LICENSE', 'ACKNOWLEDGEMENTS']
+      for readme in readmes:
+          if os.path.exists(readme):
+              copy_file(readme, pkg_dir)
+
+      copy_file('README', 'gamera/mac/resources/ReadMe.txt')
+      copy_file('LICENSE', 'gamera/mac/resources/License.txt')
+
       import buildpkg
       import __version__
-      log.info("Building %s.pkg..." % name)
-      pm = buildpkg.PackageMaker(name, version, description)
+      log.info("Building %s.pkg..." % fullname)
+      pm = buildpkg.PackageMaker(fullname, version, description)
       pm.build(self.bdist_dir, "gamera/mac/resources",
                DefaultLocation="/",
                Relocatable='NO',
@@ -97,20 +106,16 @@ class bdist_osx(Command):
 
       remove_tree(self.bdist_dir)
 
-      readmes = ['README', 'readme.txt', 'LICENSE', 'ACKNOWLEDGEMENTS']
-      for readme in readmes:
-          if os.path.exists(readme):
-              copy_file(readme, pkg_dir)
 
-      removals = [os.path.join(self.dist_dir, name + ".dmg"),
-                  os.path.join(self.dist_dir, "_%s.dmg" % name)]
+      removals = [os.path.join(self.dist_dir, fullname + ".dmg"),
+                  os.path.join(self.dist_dir, "_%s.dmg" % fullname)]
       for removal in removals:
           if os.path.exists(removal):
               os.remove(removal)
 
       import makedmg
-      log.info("Making %s.dmg..." % name)
-      makedmg.make_dmg(pkg_dir, self.dist_dir, name)
+      log.info("Making %s.dmg..." % fullname)
+      makedmg.make_dmg(pkg_dir, self.dist_dir, fullname)
 
       remove_tree(pkg_dir)
       os.remove(removals[1])

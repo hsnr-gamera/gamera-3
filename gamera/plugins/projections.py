@@ -18,7 +18,7 @@
 #
 
 from gamera.plugin import *
-from gamera import has_gui
+from gamera.gui import has_gui
 import _projections
 
 class projection_rows(PluginFunction):

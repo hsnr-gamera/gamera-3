@@ -54,6 +54,7 @@ bool is_RegionMapType(PyObject* x) {
 PyObject* create_RegionMapObject(const RegionMap& r) {
   RegionMapObject* so = (RegionMapObject*) RegionMapType.tp_alloc(&RegionMapType, 0);
   so->m_x = new RegionMap(r);
+  return (PyObject*)so;
 }
 
 static PyObject* regionmap_new(PyTypeObject* pytype, PyObject* args,
@@ -79,7 +80,8 @@ static PyObject* regionmap_lookup(PyObject* self, PyObject* args) {
     return 0;
   }
   RegionMapObject* r = (RegionMapObject*)self;
-  return create_RegionObject(r->m_x->lookup(*((RectObject*)key)->m_x));
+  Region tmp = r->m_x->lookup(*((RectObject*)key)->m_x);
+  return create_RegionObject(tmp);
 }
 
 static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
@@ -104,7 +106,6 @@ void init_RegionMapType(PyObject* module_dict) {
   RegionMapType.tp_basicsize = sizeof(RegionMapObject);
   RegionMapType.tp_dealloc = regionmap_dealloc;
   RegionMapType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-  //RegionMapType.tp_base = get_RectType();
   RegionMapType.tp_methods = regionmap_methods;
   RegionMapType.tp_new = regionmap_new;
   RegionMapType.tp_getattro = PyObject_GenericGetAttr;

@@ -55,6 +55,7 @@ PyObject* create_RegionObject(const Region& r) {
   RectObject* so;
   so = (RectObject*)RegionType.tp_alloc(&RegionType, 0);
   so->m_x = new Region(r);
+  return (PyObject*)so;
 }
 
 static PyObject* region_new(PyTypeObject* pytype, PyObject* args,

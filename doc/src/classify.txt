@@ -303,11 +303,6 @@ genetic algorithm.
 
 .. docstring:: gamera.knn kNNNonInteractive start_optimizing stop_optimizing add_optimization_callback remove_optimization_callback
 
-Managing kNN's internal feature generation
-''''''''''''''''''''''''''''''''''''''''''
-
-By default, 
-
 References
 ----------
 

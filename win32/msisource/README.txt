@@ -1,7 +1,7 @@
 Introduction
 ------------
     In this folder you will find createmsi, a small application that was written to ease the creation of Gamera MSI
-installation packages.  This application makes use of the following software:
+installation packages featuring multiple compilers.  This application makes use of the following software:
 
 cygwin (optional--needed for the mingw compiler)
     http://www.cygwin.com
@@ -11,10 +11,15 @@ Intel Compiler Library 8.0 (optional--note that support for this is very experim
     http://www.intel.com/software/products/compilers/cwin/
 MakeMSI by Dennis Bareis (required--needed for building the MSI Installer Packages)
     http://www.labyrinth.net.au/~dbareis/makemsi.htm
-
+Microsoft Platform SDK (for low level MSI creation utilities on which MakeMSI depends)
+    http://www.microsoft.com/msdownload/platformsdk/sdkupdate/
 Please note that while each compiler individually is optional, you will need at least one to be able to compile gamera.
 Also, ICL does not have a complete set of include files, so some form of the Microsoft compiler will be needed.
 
+
+If you are looking for a more straightforward approach to making packages with only one version of the C++ extensions
+(suitable for most needs), installing the Platform SDK and MakeMSI and then issuing the bdist_msi command to setup.py is
+recommended.  However, if you wish to include multiple compiled (target optimized) binaries in one installer, read on.
 
 Instructions
 ------------
@@ -51,14 +56,9 @@ icl
 several compilers without having to distribute them in separate files.  Please note that this multiple compiler support
 still very much a work in progress, so your mileage may vary.
     If you are planning on using ICL for your builds, you will find that Python 2.3.x's distutils does not have built-in
-support for it.  There is an included file called iclcompiler.py that you should put in [pythondirectory]\lib\distutils.
-Also, you should make the following modification to ccompiler.py (also in this same folder):
-Look for a list by the name of compiler_class.  Add to this list an ICL member, so that it looks like
-compiler_class = { <existing members>,
-                   'icl':     ('iclcompiler','ICLCompiler',
-                               "Intel Compiler Library for Windows"),
-                 }
-This will allow the distutils system to find the ICLCompiler package that was just added.
+support for it.  Gamera includes a file called iclcompiler.py that automatically registers itself with distutils.  This
+file will facilitate ICL support, but such support for Gamera is currently experimental.  Please report any problems to
+the mailing list and I will attempt to remedy them as soon as possible.
 
 Examples:
 createmsi -c msvc		Rebuilds Gamera with MSOC to build a single-featured MSI
@@ -78,7 +78,7 @@ Known Issues
 3) Error handling is still very rough at this point, so it's best to keep a watchful eye on the build process for intermediate
    failures in the build (at least until you know the process works).  These will currently not be caught automatically (but
    usually will result in a terminal error anyway).
-4) ICL support is sketchy at this point.  We are currently working on the distutils plugin included in this package, but it is
+4) ICL support is sketchy at this point.  We are actively working on the distutils plugin included in this package, but it is
    not known to be entirely stable as of yet.
 
 Planned Enhancements

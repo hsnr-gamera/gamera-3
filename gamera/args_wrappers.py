@@ -123,7 +123,7 @@ class String(WrapperArg):
    def to_python(self):
       return "%(pysymbol)s = PyString_FromStringAndSize(%(symbol)s.data(), %(symbol)s.size());" % self
 
-FileOpen = FileSave = Directory = String
+FileOpen = FileSave = Directory = ChoiceString = String
 
 class ImageType(WrapperArg):
    c_type = 'Image*'

@@ -490,6 +490,32 @@ class Choice:
       else:
          return int(selection)
 
+class ChoiceString:
+   def get_control(self, parent, locals=None):
+      if self.strict:
+         self.control = wxChoice(parent, -1, choices=self.choices)
+         if self.has_default:
+            default_index = self.choices.index(self.default)
+            self.control.SetSelection(default_index)
+      else:
+         if self.has_default:
+            default = self.default
+         else:
+            default = self.choices[0]
+         self.control = wxComboBox( 
+            parent, -1, default, choices=self.choices, style=wxCB_DROPDOWN)
+      return self
+
+   def get_string(self):
+      return repr(self.get())
+
+   def get(self):
+      if self.strict:
+         selection = self.control.GetStringSelection()
+      else:
+         selection = self.control.GetValue()
+      return selection
+
 class _Filename:
    def get_control(self, parent, locals=None, text=None):
       if text is None:

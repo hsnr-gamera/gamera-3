@@ -63,7 +63,7 @@ The same type objects are also used for the ``self_type`` and
 ``return_type`` member variables in the plugin method metadata.
 
 The argument types
-include Int_, Real_, String_, Class_, ImageType_, Choice_, FileOpen_,
+include Int_, Real_, String_, Class_, ImageType_, Choice_, ChoiceString_, FileOpen_,
 FileSave_, Directory_, Check_, Region_, RegionMap_,
 ImageInfo_, FloatVector_, IntVector_, ImageList_, Info_ and Radio_.  Each of
 these is discussed in greater detail below.  
@@ -192,11 +192,30 @@ options.  For example, from the ``resize`` plugin method::
     args = Args([Int("nrows"), Int("ncols"),
                  Choice("interp_type", ["None", "Linear", "Spline"])])
 
+ChoiceString
+------------
+
+**ChoiceString** (string *name*, list *choices* = ``[]``, int
+*default* = None, strict = ``True``)
+
+A set of choices of strings.  Corresponds to the C type ``char *``.
+
+To be used when a string argument can be on of a fixed set of values.
+
+If ``strict`` is ``True`` (the default), the GUI will present a
+drop-down list box of these choices.  When ``strict`` is ``False``, a
+combo box will be presented which will allow the user to enter in a
+value that is not in the list of choices.
+
+Note that outside of the GUI, the plugin system does not verify the
+calue of the string, so the plugin method must be prepared to accept
+any string as input and deal with it accordingly.
+
 FileOpen
 --------
 
 **FileOpen** (string *name*, string *default* = ``""``, *extension* =
-  ``"*.*"``)
+``"*.*"``)
 
 A filename for opening.  Corresponds to the C ``char *`` or C++
 ``std::string`` type.
@@ -219,7 +238,7 @@ FileSave
 --------
 
 **FileSave** (string *name*, string *default* = ``""``, *extension* =
-  ``"*.*"``)
+``"*.*"``)
 
 The counterpart to FileOpen_, except for saving files.
 

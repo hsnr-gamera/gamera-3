@@ -232,7 +232,37 @@ class Choice(Arg):
          raise TypeError("'default' must be an int")
 
    def rest_repr(self, name = False):
-      result = '``Choice`` [%s]' % '|'.join(self.choices)
+      result = '``Choice`` [%s]' % ('|'.join(self.choices))
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % self.choices[self.default]
+      return result
+
+class ChoiceString(Arg):
+   def __init__(self, name=None, choices=[], default=None, strict=True):
+      Arg.__init__(self, name)
+      if not util.is_string_or_unicode_list(choices):
+         raise TypeError("'choices' must be a list of strings.")
+      self.choices = choices
+      if default is None:
+         self.has_default = False
+         self.default = choices[0]
+      else:
+         if type(default) != str:
+            raise TypeError("'default' must be a string")
+         if default not in choices:
+            raise ValueError("Given 'default' must be in available 'choices'")
+         self.has_default = True
+         self.default = default
+      self.strict = strict
+
+   def rest_repr(self, name = False):
+      if self.strict:
+         strict = "(strict)"
+      else:
+         strict = ""
+      result = '``ChoiceString%s`` [%s]' % (strict, '|'.join(self.choices))
       if name:
          result += " *%s*" % self.name
          if self.has_default:
@@ -367,7 +397,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector'.split()
+__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector ChoiceString'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

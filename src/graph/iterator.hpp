@@ -125,6 +125,29 @@ struct NodeEdgeIterator : IteratorObject {
 };
 
 template<class T>
+struct NodeEdgeTupleIterator : IteratorObject {
+  int init(Node* node, typename T::iterator begin, typename T::iterator end) {
+    m_node = node;
+    m_it = begin;
+    m_end = end;
+    return 1;
+  }
+  static PyObject* next(IteratorObject* self) {
+    NodeEdgeTupleIterator<T>* so = (NodeEdgeTupleIterator<T>*)self;
+    if (so->m_it == so->m_end)
+      return 0;
+    Edge* edge = (*((so->m_it)++));
+    Node* node = edge->traverse(so->m_node);
+    EdgeObject* edge_object = edgeobject_new(edge);
+    NodeObject* node_object = nodeobject_new(node);
+    PyObject* tuple = 
+    return nodeobject_new((*((so->m_it)++))->traverse(so->m_node));
+  }
+  typename T::iterator m_it, m_end;
+  Node* m_node;
+};
+
+template<class T>
 struct NodeIterator : IteratorObject {
   int init(typename T::iterator begin, typename T::iterator end) {
     m_it = begin;

@@ -211,12 +211,13 @@ inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
 			    PyObject* label) {
   if (!HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED) && from_node == to_node)
     return false;
-  if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
+  
+  /* if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
     for (EdgeList::iterator i = from_node->m_edges.begin();
 	 i != from_node->m_edges.end(); ++i)
       if ((*i)->traverse(from_node) == to_node)
 	return false;
-  }
+  } */
 
 #ifdef DEBUG_ADT
   for (NodeVector::iterator i = so->m_nodes->begin();

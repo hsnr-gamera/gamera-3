@@ -88,7 +88,7 @@ void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
     }
   }
 
-  size_t count = 0;
+  size_t count = 1;
   NodeStack node_stack;
   node_stack.push(root);
   NP_VISITED(root) = true;

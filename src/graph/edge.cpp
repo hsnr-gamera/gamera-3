@@ -30,6 +30,7 @@ extern "C" {
   static void edgeobject_dealloc(PyObject* self);
   static PyObject* edge___repr__(PyObject* self);
   static PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* edge_traverse(PyObject* self, PyObject* node);
   static PyObject* edge_get_from_node(PyObject* self);
   static PyObject* edge_get_to_node(PyObject* self);
   static PyObject* edge_get_cost(PyObject* self);
@@ -43,6 +44,8 @@ static PyTypeObject EdgeType = {
 };
 
 PyMethodDef edge_methods[] = {
+  { "traverse", edge_traverse, METH_O,
+    "Get the 'other' node in an edge." },
   { NULL }
 };
 
@@ -109,6 +112,16 @@ PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   Py_INCREF(Py_None);
   return Py_None;
 }  
+
+PyObject* edge_traverse(PyObject* self, PyObject* node_object) {
+  Edge* so = ((EdgeObject*)self)->m_x;
+  if (!is_NodeObject(node_object)) {
+    PyErr_SetString(PyExc_TypeError, "edge: expected a node");
+    return 0;
+  }
+  Node* node = ((NodeObject*)node_object)->m_x;
+  return nodeobject_new(so->traverse(node));
+}
 
 PyObject* edge_get_from_node(PyObject* self) {
   Edge* so = ((EdgeObject*)self)->m_x;

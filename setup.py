@@ -12,5 +12,7 @@ setup(name = "gameracore", version="1.1",
                                           "src/imagedataobject.cpp",
                                           "src/imageobject.cpp"
                                           ], include_dirs=["include"],
-                               libraries=["stdc++"])]
+                               libraries=["stdc++"]),
+                     Extension("knn", ["src/knnmodule.cpp"],
+                               include_dirs=["include"], libraries=["stdc++"])]
       )

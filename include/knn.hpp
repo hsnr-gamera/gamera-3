@@ -63,7 +63,7 @@ namespace Gamera {
 				     IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *w * std::sqrt(*known * *known - *unknown * *unknown);
+	distance += *weight * std::sqrt(*known * *known - *unknown * *unknown);
       return distance;
     }
 
@@ -81,7 +81,7 @@ namespace Gamera {
 					  IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *w * (*known * *known - *unknown * *unknown);
+	distance += *weight * (*known * *known - *unknown * *unknown);
       return distance;
     }
 

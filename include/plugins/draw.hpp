@@ -361,7 +361,7 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
   size_t lr_y = std::min(a.lr_y(), b.lr_y());
   size_t lr_x = std::min(a.lr_x(), b.lr_x());
   
-  if (ul_y >= lr_y || ul_x >= lr_x)
+  if (ul_y > lr_y || ul_x > lr_x)
     return;
   for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); 
        y <= lr_y; ++y, ++ya, ++yb)

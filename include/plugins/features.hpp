@@ -182,7 +182,7 @@ namespace Gamera {
 	  hole_count++;
 	}
       }
-      if (!last)
+      if (!last && hole_count)
 	hole_count--;
     }
     return hole_count;

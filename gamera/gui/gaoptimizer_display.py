@@ -27,24 +27,23 @@ from gamera.args import *
 from gamera.core import *
 from gamera.knn import *
 from gamera.classify import *
-import gamera.gamera_xml
+from gamera import gamera_xml
 import time, math
 
 MAX_POPULATION = 10000
 MAX_K = 300
-
+TIMER_INTERVAL = 2500
 
 class OptimizerFrame(wxFrame):
-   def __init__(self, parent, id, title, classifier):
+   def __init__(self, parent, id, title):
       wxFrame.__init__(self, parent, id, title, wxDefaultPosition,
                        (400, 500))
 
       self.setup_menus()
-      self.classifier = classifier
-      self.knn = self.classifier.classifier
+      self.classifier = None
       self.notebook = wxNotebook(self, -1)
       self.notebook.SetAutoLayout(True)
-      self.running = 0
+      self.running = False
       self.elapsed_time = 0
       self.start_time = 0
       self.filename = None
@@ -52,6 +51,7 @@ class OptimizerFrame(wxFrame):
 
       self.status = StatusPanel(self.notebook, self.classifier)
       self.notebook.AddPage(self.status, "Status")
+      self.status.enable_controls(False)
 
       self.weights_panel = WeightsPanel(self.notebook)
       self.notebook.AddPage(self.weights_panel, "Best Weights")
@@ -102,6 +102,7 @@ class OptimizerFrame(wxFrame):
       id = wxNewId()
       menu.Append(id, "&Features", "Set the features for the classifier")
       EVT_MENU(self, id, self.features_cb)
+      menu.Enable(id, False)
 
       # exit
       menu.AppendSeparator()
@@ -114,32 +115,50 @@ class OptimizerFrame(wxFrame):
       self.menu_bar.Append(menu, "&File")
       self.SetMenuBar(self.menu_bar)
 
+   def enable_controls(self, enable=True):
+      id = self.file_menu.FindItem("Start")
+      self.file_menu.Enable(id, enable)
+      id = self.file_menu.FindItem("Features")
+      self.file_menu.Enable(id, enable)
+      id = self.file_menu.FindItem("Open")
+      self.file_menu.Enable(id, enable)
+      self.status.enable_controls(True)
+      self.update_status()
+      
    def set_classifier(self, classifier):
       self.classifier = classifier
       self.weights_panel.new_classifier(self.classifier)
 
    def stop(self):
-      self.timer.Stop()
-      self.classifier.stop_optimizing()
-      id = self.file_menu.FindItem("Start")
-      self.file_menu.Enable(id, True)
-      id = self.file_menu.FindItem("Stop")
-      self.file_menu.Enable(id, False)
-      self.running = 0
-      self.status.state_display.SetValue("not running")
+      if self.classifier is not None and self.running:
+         self.timer.Stop()
+         wxBeginBusyCursor()
+         self.classifier.stop_optimizing()
+         self.running = False
+         self.enable_controls(True)
+         id = self.file_menu.FindItem("Stop")
+         self.file_menu.Enable(id, False)
+         wxEndBusyCursor()
 
    def start(self):
+      if self.running:
+         return
+      if self.classifier is None:
+         gui_util.message("There is no classifier to start.")
+         return
       self.classifier.start_optimizing()
-      id = self.file_menu.FindItem("Start")
-      self.file_menu.Enable(id, False)
+      self.enable_controls(False)
       id = self.file_menu.FindItem("Stop")
       self.file_menu.Enable(id, True)
-      self.timer.Start(1000)
-      self.running = 1
+      self.timer.Start(TIMER_INTERVAL)
+      self.running = True
       self.elapsed_time = 0
       self.start_time = time.time()
 
    def open_cb(self, evt):
+      if self.running:
+         gui_util.message("Please stop the optimizer first.")
+         return
       import sys
       filename = gui_util.open_file_dialog(self, gamera.gamera_xml.extensions)
       if filename:
@@ -148,14 +167,15 @@ class OptimizerFrame(wxFrame):
          self.stop()
          glyphs = None
          try:
-            self.classifier.from_xml_filename(filename)
+            glyphs = gamera_xml.glyphs_from_xml(filename)
          except Exception, e:
             wxEndBusyCursor()
             gui_util.message('Error opening the xml file. The error was:\n\"%s"' %
                              str(e))                
             return
 
-         self.weights_panel.new_classifier(self.knn, self.classifier.get_glyphs())
+         self.set_classifier(kNNNonInteractive(glyphs))
+         self.weights_panel.new_classifier(self.classifier)
          wxEndBusyCursor()
          id = self.file_menu.FindItem("Start")
          self.file_menu.Enable(id, True)
@@ -163,23 +183,30 @@ class OptimizerFrame(wxFrame):
          self.file_menu.Enable(id, True)
          id = self.file_menu.FindItem("Save as")
          self.file_menu.Enable(id, True)
+         id = self.file_menu.FindItem("Features")
+         self.file_menu.Enable(id, True)
+         self.status.enable_controls(True)
          return
-      dlg.Destroy()
-
 
    def save_cb(self, evt):
-      if self.settings_filename != None:
+      if self.classifier == None:
+         gui_util.message("There is no loaded classifier to save.")
+      else:
+         if self.settings_filename != None:
+            wxBeginBusyCursor()
+            self.classifier.save_settings(self.settings_filename)
+            wxEndBusyCursor()
+         else:
+            self.save_as_cb(evt)
+
+   def save_as_cb(self, evt):
+      if self.classifier == None:
+         gui_util.message("There is no loaded classifier to save.")
+      else:
+         self.settings_filename = gui_util.save_file_dialog(self)
          wxBeginBusyCursor()
          self.classifier.save_settings(self.settings_filename)
          wxEndBusyCursor()
-      else:
-         self.save_as_cb(evt)
-
-   def save_as_cb(self, evt):
-      self.settings_filename = gui_util.save_file_dialog(self)
-      wxBeginBusyCursor()
-      self.classifier.save_settings(self.settings_filename)
-      wxEndBusyCursor()
 
    def start_cb(self, evt):
       self.start()
@@ -188,9 +215,11 @@ class OptimizerFrame(wxFrame):
       self.stop()
 
    def features_cb(self, evt):
+      if self.running:
+         gui_util.message("Please stop the optimizer first.")
       all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
-      existing_features = [x[0] for x in self.classifier.get_feature_functions()]
+      existing_features = [x[0] for x in self.classifier.get_feature_functions()[0]]
       feature_controls = []
       for x in all_features:
          feature_controls.append(
@@ -204,7 +233,7 @@ class OptimizerFrame(wxFrame):
          return
       selected_features = [name for check, name in zip(result, all_features) if check]
       self.classifier.change_feature_set(selected_features)
-      self.weights_panel.new_classifier(self.knn, self.classifier.get_glyphs())
+      self.weights_panel.new_classifier(self.classifier)
       
    def close_cb(self, evt):
       if self.IsTopLevel():
@@ -214,25 +243,10 @@ class OptimizerFrame(wxFrame):
          evt.Skip()
 
    def update_status(self):
-      if not self.running:
-         self.status.state_display.SetValue("not running")
-      else:
-         self.status.state_display.SetValue("running")
-         self.status.initial_rate_display.SetValue(
-             str(self.knn.ga_initial * 100.0))
-         self.status.current_rate_display.SetValue(
-             str(self.knn.ga_best * 100.0))
-         self.status.generation_display.SetValue(
-             str(self.knn.ga_generation))
-         self.status.best_rate_display.SetValue(
-             str(self.knn.ga_best * 100.0))
+      if self.running:
          self.elapsed_time = time.time() - self.start_time
-         hours = int(self.elapsed_time / 3600.0)
-         minutes = int((self.elapsed_time - (hours * 3600)) / 60.0)
-         secs = int((self.elapsed_time - (hours * 3600) - (minutes * 60)))
-         self.status.elapsed_display.SetValue(
-             "%d:h %d:m %d:s" % (hours, minutes, secs))
-         self.weights_panel.update_cb()
+      self.status.update_cb(self, self.classifier)
+      self.weights_panel.update_cb()
 
 
 class StatusPanel(wxPanel):
@@ -323,6 +337,12 @@ class StatusPanel(wxPanel):
       self.SetSizer(sizer)
       sizer.Fit(self)
 
+   def enable_controls(self, enable=True):
+      self.population_display.Enable(enable)
+      self.k_display.Enable(enable)
+      self.crossover_display.Enable(enable)
+      self.mutation_display.Enable(enable)
+      
    def population_cb(self, e):
       self.classifier.ga_population = self.population_display.GetValue()
 
@@ -335,13 +355,38 @@ class StatusPanel(wxPanel):
    def mutation_cb(self, e):
       self.classifier.ga_mutation = self.mutation_display.GetValue() / 100.0
 
+   def update_cb(self, optimizer, classifier):
+      if not optimizer.running:
+         self.state_display.SetValue("not running")
+      else:
+         self.state_display.SetValue("running")
+         self.initial_rate_display.SetValue(
+            str(classifier.ga_initial * 100.0))
+         self.current_rate_display.SetValue(
+            str(classifier.ga_best * 100.0))
+         self.generation_display.SetValue(
+            str(classifier.ga_generation))
+         self.best_rate_display.SetValue(
+            str(classifier.ga_best * 100.0))
+
+         # It seems funny to have to do this, but before datetime
+         # was introduced in Python 2.3, there was no way to built-in
+         # module to deal with time lengths, and backporting datetime
+         # seems a little heavyweight for this task - MGD
+         hours = int(optimizer.elapsed_time / 3600.0)
+         minutes = int((optimizer.elapsed_time - (hours * 3600)) / 60.0)
+         secs = int((optimizer.elapsed_time - (hours * 3600) - (minutes * 60)))
+         self.elapsed_display.SetValue(
+            "%d:h %d:m %d:s" % (hours, minutes, secs))
+
 GAUGE_WIDTH = 300
 class WeightsPanel(wxScrolledWindow):
    def __init__(self, parent):
       wxScrolledWindow.__init__(self, parent, -1)
 
-   def new_classifier(self, classifier, glyphs):
-      ff = glyphs[0].feature_functions
+   def new_classifier(self, classifier):
+      glyphs = classifier.get_glyphs()
+      ff = glyphs[0].feature_functions[0]
       feature_functions = []
       for x in ff:
          tmp = x[1].__call__(glyphs[0])
@@ -350,6 +395,7 @@ class WeightsPanel(wxScrolledWindow):
                feature_functions.append(x[0] + " - " + str(i))
          else:
             feature_functions.append(x[0])
+      self.DestroyChildren()
       self.classifier = classifier
       sizer = wxFlexGridSizer(len(feature_functions), 2, 5, 5)
       self.bars = []
@@ -361,14 +407,14 @@ class WeightsPanel(wxScrolledWindow):
          sizer.Add(bar, 1, flag=wxGROW)
          self.bars.append(bar)
       sizer.Layout()
-      self.SetSizer(sizer)
+      self.SetSizer(sizer, True)
       width, height = sizer.GetMinSize()
       self.SetScrollbars(10, 10, width / 10, height / 10)
 
    def update_cb(self):
       weights = self.classifier.get_weights()
       for i in range(len(weights)):
-         self.bars[i].SetValue(weights[i] * 100)
+         self.bars[i].SetValue(int(weights[i] * 100))
 
 class BiollanteApp(wxApp):
    def OnInit(self):

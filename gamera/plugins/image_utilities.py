@@ -331,6 +331,28 @@ class mirror_vertical(PluginFunction):
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
+class diff_images(PluginFunction):
+    """Returns a color image representing the difference of two images
+following the conventions of a number of Unix diff visualization
+tools, such as CVS web.  Pixels in both images are black.  Pixels in
+'self' but not in the given image (\"deleted\" pixels) are red.
+Pixels in the given image but not in self (\"inserted\" pixels) are
+green."""
+    category = "Utility"
+    self_type = ImageType(ONEBIT)
+    args = Args([ImageType(ONEBIT)])
+    return_type = ImageType(RGB)
+    pure_python = True
+    def __call__(self, other):
+        from gamera.core import RGBPixel
+        result = self.to_rgb()
+        diff = self.subtract_images(other)
+        result.highlight(diff, RGBPixel(255, 64, 64))
+        diff = other.subtract_images(self)
+        result.highlight(diff, RGBPixel(64, 255, 64))
+        return result
+    __call__ = staticmethod(__call__)
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
@@ -340,7 +362,8 @@ class UtilModule(PluginModule):
 		 invert, clip_image, mask,
                  nested_list_to_image,
                  to_nested_list, shear_row, shear_column,
-                 mirror_horizontal, mirror_vertical]
+                 mirror_horizontal, mirror_vertical,
+                 diff_images]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

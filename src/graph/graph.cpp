@@ -376,16 +376,25 @@ PyObject* graph_make_undirected(PyObject* self, PyObject* args) {
   graph_make_undirected(so);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
+
 
 PyObject* graph_is_cyclic(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)(bool)HAS_FLAG(so->m_flags, FLAG_CYCLIC));
+  if (HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
+    return PyInt_FromLong(1);
+  } else {
+    return PyInt_FromLong(0);
+  }
 }
 
 PyObject* graph_is_acyclic(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)!(bool)HAS_FLAG(so->m_flags, FLAG_CYCLIC));
+  if (HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
+    return PyInt_FromLong(0);
+  } else {
+    return PyInt_FromLong(1);
+  }
 }
 
 void graph_make_cyclic(GraphObject* so) {
@@ -408,6 +417,7 @@ void graph_make_acyclic(GraphObject* so) {
 	  while (!node_stack.empty()) {
 	    Node* node = node_stack.top();
 	    node_stack.pop();
+
 	    NP_VISITED(node) = true;
 	    for (EdgeList::iterator k, j = node->m_edges.begin();
 		 j != node->m_edges.end();) {
@@ -450,12 +460,20 @@ PyObject* graph_make_acyclic(PyObject* self, PyObject* args) {
 
 PyObject* graph_is_tree(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)!(bool)HAS_FLAG(so->m_flags, FLAG_BLOB));
+  if (HAS_FLAG(so->m_flags, FLAG_BLOB)) {
+    return PyInt_FromLong(0);
+  } else {
+    return PyInt_FromLong(1);
+  }
 }
 
 PyObject* graph_is_blob(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)(bool)HAS_FLAG(so->m_flags, FLAG_BLOB));
+  if (HAS_FLAG(so->m_flags, FLAG_BLOB)) {
+    return PyInt_FromLong(1);
+  } else {
+    return PyInt_FromLong(0);
+  }
 }
 
 void graph_make_tree(GraphObject* so) {
@@ -486,12 +504,20 @@ PyObject* graph_make_blob(PyObject* self, PyObject* args) {
 
 PyObject* graph_is_multi_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)(bool)HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED));
+  if (HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
+    return PyInt_FromLong(1);
+  } else {
+    return PyInt_FromLong(0);
+  }
 }
 
 PyObject* graph_is_singly_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)!(bool)HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED));
+  if (HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
+    return PyInt_FromLong(0);
+  } else {
+    return PyInt_FromLong(1);
+  }
 }
 
 void graph_make_multi_connected(GraphObject* so) {
@@ -565,7 +591,11 @@ PyObject* graph_make_singly_connected(PyObject* self, PyObject* args) {
 
 PyObject* graph_is_self_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  return PyInt_FromLong((long)(bool)HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED));
+  if (HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED)) {
+    return PyInt_FromLong(1);
+  } else {
+    return PyInt_FromLong(0);
+  }
 }
 
 void graph_make_self_connected(GraphObject* so) {

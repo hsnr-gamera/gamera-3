@@ -95,7 +95,7 @@ static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
 
 static PyObject* regionmap___getitem__(PyObject* self, int index) {
   RegionMap* r = ((RegionMapObject*)self)->m_x;
-  if (index < 0 || index >= r->size()) {
+  if (index < 0 || (unsigned int)(index) >= r->size()) {
     PyErr_SetString(PyExc_IndexError, "Index out of range");
     return 0;
   }

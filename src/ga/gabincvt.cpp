@@ -113,7 +113,7 @@ _GAEncodeBase(unsigned int base, unsigned BITBASE val,
   int status = 0;
   if(c < 0) return 1;		// if this happens we should post an error
 				// it means we didn't get a perfect encoding
-  binstr[c] = val % base;
+  binstr[c] = (GABit)val % base;
   unsigned BITBASE quotient = val / base;
   if(quotient) status = _GAEncodeBase(base, quotient, binstr, n, c-1);
   return status;

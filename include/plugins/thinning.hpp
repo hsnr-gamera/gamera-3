@@ -51,17 +51,27 @@ namespace Gamera {
     size_t x_before = (x == 0) ? 1 : x - 1;
     size_t y_after = (y == image.nrows() - 1) ? image.nrows() - 2 : y + 1;
     size_t x_after = (x == image.ncols() - 1) ? image.ncols() - 2 : x + 1;
-    p = (is_black(image.get(y_before, x))) |
-      (is_black(image.get(y_before, x_after)) << 1) |
-      (is_black(image.get(y, x_after)) << 2) |
-      (is_black(image.get(y_after, x_after)) << 3) |
-      (is_black(image.get(y_after, x)) << 4) |
-      (is_black(image.get(y_after, x_before)) << 5) |
-      (is_black(image.get(y, x_before)) << 6) |
-      (is_black(image.get(y_before, x_before)) << 7);
+
+    size_t a, b, c, d, e, f, g, h;
+    a = is_black(image.get(y_before, x)) ? 2 : 0;
+    b = is_black(image.get(y_before, x_after)) ? 4 : 0;
+    c = is_black(image.get(y, x_after)) ? 8 : 0;
+    d = is_black(image.get(y_after, x_after)) ? 16 : 0;
+    e = is_black(image.get(y_after, x)) ? 32 : 0;
+    f = is_black(image.get(y_after, x_before)) ? 64 : 0;
+    g = is_black(image.get(y, x_before)) ? 128 : 0;
+    h = is_black(image.get(y_before, x_before)) ? 256 : 0;
+
+    p = a | b | c | d | e | f | g | h;
+
     N = 0;
     S = 0;
-    bool prev = p & (1 << 7);
+    bool prev;
+    if (p & (1 << 7)) {
+      prev = true;
+    } else {
+      prev = false;
+    }
     for (unsigned char p_copy = p; p_copy; p_copy >>= 1) {
       if (p_copy & 1) {
 	++N;
@@ -325,14 +335,23 @@ static bool thin_lc_look_up[16][16]=
 	  size_t x_before = (x == 0) ? 1 : x - 1;
 	  size_t y_after = (y == nrows - 1) ? nrows - 2 : y + 1;
 	  size_t x_after = (x == ncols - 1) ? ncols - 2 : x + 1;
-	  size_t j = ((is_black(thin_view->get(y_before, x))) |
-		      (is_black(thin_view->get(y_before, x_after)) << 1) |
-		      (is_black(thin_view->get(y, x_after)) << 2) |
-		      (is_black(thin_view->get(y_after, x_after)) << 3));
-	  size_t i = ((is_black(thin_view->get(y_after, x))) |
-		      (is_black(thin_view->get(y_after, x_before)) << 1) |
-		      (is_black(thin_view->get(y, x_before)) << 2) |
-		      (is_black(thin_view->get(y_before, x_before)) << 3));
+
+	  size_t a, b, c, d;
+
+	  a = is_black(thin_view->get(y_before, x)) ? 1 : 0;
+	  b = is_black(thin_view->get(y_before, x_after)) ? 2 : 0;
+	  c = is_black(thin_view->get(y, x_after)) ? 4 : 0;
+	  d = is_black(thin_view->get(y_after, x_after)) ? 8 : 0;
+
+	  size_t j = a | b | c | d;
+
+	  a = is_black(thin_view->get(y_after, x)) ? 1 : 0;
+	  b = is_black(thin_view->get(y_after, x_before)) ? 2 : 0;
+	  c = is_black(thin_view->get(y, x_before)) ? 4 : 0;
+	  d = is_black(thin_view->get(y_before, x_before)) ? 8 : 0;
+
+	  size_t i = a | b | c | d;
+		       
 	  if (thin_lc_look_up[i][j])
 	    *it = white(*thin_view);
 	}

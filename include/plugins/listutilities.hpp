@@ -68,7 +68,7 @@ inline PyObject* all_compositions_(int n, int l, const int orig_l, PyObject* lst
     PyList_Append(main_list, new_list);
   } else {
     std::cerr << "else";
-    for (size_t j = n; j >= n/2 + 1; --j) {
+    for (int j = n; j >= n/2 + 1; --j) {
       PyObject* tmp = PyInt_FromLong(j);
       Py_INCREF(tmp);
       PyList_SET_ITEM(lst, l - 1, tmp);
@@ -76,12 +76,14 @@ inline PyObject* all_compositions_(int n, int l, const int orig_l, PyObject* lst
       all_compositions_(n - j, l - 1, orig_l, lst, main_list);
     }
   }
+  // FIXME Not certail why we have a return at all. KWM
+  return NULL;
 }
 
 PyObject* all_compositions(int n, int l) {
   PyObject* main_list = PyList_New(0);
   PyObject* lst = PyList_New(l);
-  for (size_t i = 0; i < l; ++i) {
+  for (int i = 0; i < l; ++i) {
     PyObject* tmp = PyInt_FromLong(0);
     Py_INCREF(tmp);
     PyList_SET_ITEM(lst, 0, tmp);

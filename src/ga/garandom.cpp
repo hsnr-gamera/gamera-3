@@ -312,7 +312,7 @@ ran2() {
   iy=iv[j]-idum2;
   iv[j] = idum;
   if (iy < 1) iy += IMM1;
-  if ((temp=AM*iy) > RNMX) return RNMX;
+  if ((temp=AM*iy) > RNMX) return (float)RNMX;
   else return temp;
 }
 

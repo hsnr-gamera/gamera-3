@@ -129,6 +129,11 @@ support::
 Microsoft Visual Studio
 ```````````````````````
 
+Compiling Gamera with MS Visual Studio should be considered
+preliminary and non-preferred.  Particularly in light of all of the
+backwardly-incompatible things in Visual Studio .NET, it is a bit of a
+pain.
+
 First and foremost, you will need to ensure that Python was compiled
 with the same version of Visual Studio as you use to compile Gamera.
 At the time of this writing, the "official" distribution of Python was
@@ -223,22 +228,13 @@ Standard Build and Install
 Download and install the unoffical wxPython-Gtk-X11 distribution from
 the Gamera Files section on SourceForge.
 
-Alternatively, you can install fink and then build the package wxPython-Py23, which is
-currently in the unstable branch, (and its dependencies) from
-source.  You will then need to use the fink version of Python (not
-the one that Apple provides) to carry out the instructions below.
+  Alternatively, you can install fink and then build the package
+  wxPython-Py23, which is currently in the unstable branch, (and its
+  dependencies) from source.  You will then need to use the fink
+  version of Python (not the one that Apple provides) to carry out the
+  instructions below.
 
 Gamera is built using the Python-standard Distutils system.  
-
-Make sure you're using the "right" Python.  If you compiled wxPython
-yourself, you will need to use the fink Python.  If you used the
-unofficial wxPython/Gtk/X11 installer, you need to use the Python
-included with OS-X 10.3.  In a terminal, type::
-
-  whereis python
-
-If this is under ``/sw/fink``, your default Python is the fink
-Python.  If not, you're default Python is probably the OS-X default.
 
 To build Gamera, open a X11 terminal and type::
 
@@ -265,5 +261,8 @@ or add symlinks for the scripts from /usr/bin to there.
 Running
 -------
 
-Run the ``gamera_gui`` script located at the root of the source
-tree.
+Run the ``gamera_gui`` script.  Running the script from the root of
+the source tree will not work, since it will not be able to find the
+Gamera compiled shared object files.  Make sure you have installed the
+script somewhere convenient (as above) first.
+

@@ -1,0 +1,35 @@
+=======================
+Writing a Gamera script
+=======================
+
+Overview
+--------
+
+While the GUI is great for experimentation, the ultimate goal of any
+Gamera application is usually scriptability, or the ability to run in
+batch mode.  
+
+Gamera scripts are merely Python scripts that use
+Gamera objects and call Gamera functions.  The standard Python library
+has lots of ways to glue Gamera inside of other applications using
+Unix scripting, web services and other types of remote procedure
+calls.
+
+A script skeleton
+-----------------
+
+To use Gamera in a Python script, you simply need to import the
+``gamera.core`` module and then initialize it:
+
+.. code:: Python
+
+   from gamera.core import *
+   init_gamera()
+
+From there, you can use Gamera's functions and methods:
+
+.. code:: Python
+
+   image = load_image(filename)
+   onebit = image.otsu_threshold()
+

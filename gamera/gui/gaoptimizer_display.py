@@ -18,6 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+# TODO: needs to be rewritten
+
 from wxPython.wx import *
 from wxPython.lib.filebrowsebutton import FileBrowseButton
 from gamera.gui import gui_util
@@ -33,12 +35,12 @@ MAX_K = 300
 
 
 class OptimizerFrame(wxFrame):
-   def __init__(self, parent, id, title):
+   def __init__(self, parent, id, title, classifier):
       wxFrame.__init__(self, parent, id, title, wxDefaultPosition,
                        (400, 500))
 
       self.setup_menus()
-      self.classifier = NonInteractiveClassifier()
+      self.classifier = classifier
       self.knn = self.classifier.classifier
       self.notebook = wxNotebook(self, -1)
       self.notebook.SetAutoLayout(True)

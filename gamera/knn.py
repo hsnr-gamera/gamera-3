@@ -369,7 +369,6 @@ class _kNNBase(gamera.knncore.kNN):
       else:
          gamera.knncore.kNN.serialize(self, filename,self.features)
 
-
    def unserialize(self, filename):
       """Load the k-NN settings and data from an optimized, k-NN specific
       file format"""
@@ -392,6 +391,14 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
    def __init__(self, database=[], features=None, perform_splits=1):
       classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
       _kNNBase.__init__(self, features)
+
+   def change_feature_set(self, f):
+      """Change the set of features used in the classifier.  features is a list of
+      strings, naming the feature functions to be used."""
+      self.features = f
+      self.feature_functions = core.ImageBase.get_feature_functions(self.features)
+      self.num_features = features.get_features_length(self.features)
+      classify.NonInteractiveClassifier.change_feature_set(self, f)
 
 def simple_feature_selector(glyphs):
    """simple_feature_selector does a brute-force search through all

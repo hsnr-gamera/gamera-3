@@ -21,6 +21,7 @@
 #define kwm10092002_logical
 
 #include "gamera.hpp"
+#include "accessor.hpp"
 #include <exception>
 
 namespace Gamera {
@@ -46,12 +47,13 @@ void or_image(T& a, U& b) {
     throw std::range_error("Dimensions must match!");
   typename T::vec_iterator it_a, end;
   typename U::vec_iterator it_b;
-  for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
-       it_a != end; ++it_a, ++it_b) {
-    if (is_black(*it_a) || is_black(*it_b))
-      *it_a = black(a);
-    else
-      *it_a = white(a);
+  for (size_t r = 0; r < a.nrows(); ++r) {
+    for (size_t c = 0; c < a.ncols(); ++c) {
+      if (is_black(a.get(r, c)) || is_black(b.get(r, c)))
+	a.set(r, c, black(a));
+      else
+	a.set(r, c, white(a));
+    }
   }
 }
 

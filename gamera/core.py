@@ -62,6 +62,9 @@ import gameracore
 # from gamera.classify import *
 import paths, util, config    # Gamera-specific
 
+class SegmentationError(Exception):
+   pass
+
 ######################################################################
 
 def load_image(filename, compression = DENSE):
@@ -337,7 +340,7 @@ class ImageBase:
       self.classification_state = HEURISTIC
 
    def get_main_id(self):
-      if self.classification_state == UNCLASSIFIED:
+      if self.classification_state == UNCLASSIFIED or not len(self.id_name):
          return 'UNCLASSIFIED'
       return self.id_name[0][1]
 

@@ -214,7 +214,7 @@ class LoadXML:
             (tagname, key))
       except TypeError:
          raise XMLError(
-            'XML ValueError: <%s %s="%s" ... is not of valid type' %
+            'XML ValueError: <%s %s="%s" ... is not of the correct type' %
             (tagname, key, dictionary[key]))
       
    def parse_filename(self, filename):

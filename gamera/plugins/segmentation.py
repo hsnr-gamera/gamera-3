@@ -44,6 +44,14 @@ class splitx(PluginFunction):
         return _segmentation.splitx(self, center)
 splitx = splitx()
 
+class splitx_max(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    args = Args([Float("center")])
+    return_type = ImageList("splits")
+    def __call__(self, center=0.5):
+        return _segmentation.splitx_max(self, center)
+splitx_max = splitx_max()
+
 class splity(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
@@ -170,7 +178,8 @@ class SegmentationModule(PluginModule):
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
     functions = [cc_analysis, cc_and_cluster, splitx, splity,
-                 splitx_left, splitx_right, splity_top, splity_bottom]
+                 splitx_left, splitx_right, splity_top, splity_bottom,
+                 splitx_max]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

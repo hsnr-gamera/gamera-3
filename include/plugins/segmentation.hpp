@@ -403,7 +403,29 @@ namespace Gamera {
     for (size_t i=start; i != end; ++i) {
       double distance_from_middle = abs(middle - i);
       int value = (*projections)[i];
-      double score = sqrt(value*value*2 + distance_from_middle*distance_from_middle);
+      double score = value*value*2 + distance_from_middle*distance_from_middle;
+      if (score < minimum) {
+	minimum = score;
+	minimum_index = i;
+      }
+    }
+    if (minimum_index == 0)
+      minimum_index = 1;
+    else if (minimum_index == projections->size() - 1)
+      minimum_index = projections->size() - 2; 
+    return minimum_index;
+  }
+
+  size_t find_split_point_max(IntVector *projections, double& center) {
+    double minimum = std::numeric_limits<size_t>::max();
+    double middle = double(projections->size()) * center;
+    size_t minimum_index = 0;
+    size_t start = size_t(middle / 2);
+    size_t end = size_t(((projections->size() - middle) / 2) + middle);
+    for (size_t i=start; i != end; ++i) {
+      double distance_from_middle = abs(middle - i);
+      int value = (*projections)[i];
+      double score = -(value*value*2) + distance_from_middle*distance_from_middle*distance_from_middle;
       if (score < minimum) {
 	minimum = score;
 	minimum_index = i;
@@ -420,6 +442,28 @@ namespace Gamera {
   std::list<Image*>* splitx(T& image, double& center) {
     IntVector *projs = projection_cols(image);
     size_t split_point = find_split_point(projs, center);
+    delete projs;
+    std::list<Image*>* splits = new std::list<Image*>();
+    std::list<Image*>* ccs;
+    std::list<Image*>::iterator ccs_it;
+    typename ImageFactory<T>::view_type* view;
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
+			       image.nrows(), split_point));
+    ccs = cc_analysis(*view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
+			       image.nrows(), image.ncols() - split_point));
+    ccs = cc_analysis(*view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    return splits;
+  }
+
+  template<class T>
+  std::list<Image*>* splitx_max(T& image, double& center) {
+    IntVector *projs = projection_cols(image);
+    size_t split_point = find_split_point_max(projs, center);
     delete projs;
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;

@@ -89,8 +89,8 @@ def constains_instance(gl, klass):
    """Returns true if list *gl* contains an instance of *klass*"""
    for g in gl:
       if isinstance(g, klass):
-         return 1
-   return 0  
+         return True
+   return False  
 
 def combine_unique_elements(list1, list2=[]):
    """Given two lists, returns a list of all unique items in both."""

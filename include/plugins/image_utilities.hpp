@@ -22,6 +22,7 @@
 #define kwm12032001_image_utilities
 
 #include "gamera.hpp"
+#include "gameramodule.hpp"
 #include "gamera_limits.hpp"
 #include "vigra/resizeimage.hxx"
 #include "plugins/logical.hpp"
@@ -168,10 +169,10 @@ namespace Gamera {
       min_x = std::min(min_x, image->ul_x());
       min_y = std::min(min_y, image->ul_y());
       max_x = std::max(max_x, image->lr_x());
-      max_y = std::max(max_y, image->lr_y());
+      max_y = std::max(max_y, image->lr_y()); 
     }
 
-    size_t ncols = max_x - min_x + 1;
+    size_t ncols = max_x - min_x + 1; 
     size_t nrows = max_y - min_y + 1;
     OneBitImageData *dest_data = new OneBitImageData(nrows, ncols, min_y, min_x);
     OneBitImageView *dest = new OneBitImageView(*dest_data, min_y, min_x, nrows, ncols);
@@ -179,11 +180,21 @@ namespace Gamera {
     
     for (std::vector<Image*>::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
-      OneBitImageView* image = (OneBitImageView *)(*i);
       OneBitImageView* tmp = new OneBitImageView(*dest_data,
 						 image->ul_y(), image->ul_x(),
 						 image->nrows(), image->ncols());
-      or_image(*tmp, *image);
+      try {
+	std::cerr << "CC";
+	Cc* cc_image = dynamic_cast<Cc *>(*i);
+	or_image(*tmp, *cc_image);
+      } catch {
+	try {
+	  std::cerr << "CCRle";
+	  CcRle* cc_rle_image = dynamic_cast<CcRle *>(*i);
+	  or_image(*tmp, *cc_rle_image);
+	} catch {
+	  std::cerr << "OneBitImageView";
+	  OneBitImageView
     }
     return dest;
   }

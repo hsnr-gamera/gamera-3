@@ -8,7 +8,7 @@
 # of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# but ITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
@@ -183,9 +183,17 @@ class _Classifier:
          parts = id.split('.')
          if (len(parts) != 2 or not hasattr(glyph, parts[1])):
             raise ClassifierError("'%s' is not a known or valid split function." % parts[1])
-         splits = getattr(glyph, parts[1]).__call__(glyph)
-         glyph.children_images = splits
-         return splits
+         try:
+            splits = getattr(glyph, parts[1]).__call__(glyph)
+         except core.SegmentationError:
+            if len(glyph.id_name) >= 2:
+               glyph.id_name = glyph.id_name[1:]
+            else:
+               glyph.id_name = [(0.0, '_ERROR')]
+            return []
+         else:
+            glyph.children_images = splits
+            return splits
       return []
 
    def _do_splits_null(self, glyph):
@@ -294,7 +302,7 @@ class NonInteractiveClassifier(_Classifier):
    # Features
    def change_feature_set(self, features):
       if len(self._database):
-         self.classifier.instantiate_from_images(self._database)
+         self.instantiate_from_images(self._database)
 
 class InteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all',

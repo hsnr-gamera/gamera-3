@@ -83,7 +83,7 @@ class Process:
       last_step = self.get_step_number(last_step, len(self.steps) - 1)
 
       for step in self.steps[first_step:last_step + 1]:
-         if (step[:6] == "DEBUG" and step != self.steps[last_step]):
+         if (step[:5] == "DEBUG" and step != self.steps[last_step]):
             continue
          self.__do_step(step)
       if save_members == None:
@@ -198,7 +198,7 @@ class ProcessWizard(Wizard):
 
          self.dlg_select_saves = Args(
              args,
-             caption=self.caption,
+#             caption=self.caption,
              title="Select which members to save.",
              function="cb_select_saves")
          return self.dlg_select_saves
@@ -211,7 +211,7 @@ class ProcessWizard(Wizard):
 
    def done(self):
       self.shell.run("%s.%s%s.process(%s, %s, %s)" %
-                     (getmodule(self.process).__name__.split[-1],
+                     (getmodule(self.process).__name__.split('.')[-1],
                       self.process.__name__,
                       self.init_args,
                       repr(self.process.steps[self.start_step]),

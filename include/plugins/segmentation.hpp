@@ -397,16 +397,22 @@ namespace Gamera {
   size_t find_split_point(IntVector *projections, double& center) {
     double minimum = std::numeric_limits<size_t>::max();
     double middle = double(projections->size()) * center;
-    IntVector::iterator proj_it = projections->begin();
     size_t minimum_index = 0;
-    for (size_t i=0; proj_it != projections->end(); ++i, ++proj_it) {
+    size_t start = size_t(middle / 2);
+    size_t end = size_t(((projections->size() - middle) / 2) + middle);
+    for (size_t i=start; i != end; ++i) {
       double distance_from_middle = abs(middle - i);
-      double score = sqrt((*proj_it)*(*proj_it) + distance_from_middle*distance_from_middle);
+      int value = (*projections)[i];
+      double score = sqrt(value*value*2 + distance_from_middle*distance_from_middle);
       if (score < minimum) {
 	minimum = score;
 	minimum_index = i;
       }
     }
+    if (minimum_index == 0)
+      minimum_index = 1;
+    else if (minimum_index == projections->size() - 1)
+      minimum_index = projections->size() - 2; 
     return minimum_index;
   }
 

@@ -124,7 +124,7 @@ namespace Gamera {
     typedef RegionMapTemplate self;
     typedef RegionTemplate<T> region_type;
     typedef Rect rect_t;
-    RegionMapTemplate() : std::list<region_type>(1) { }
+    RegionMapTemplate() : std::list<region_type>(0) { }
     virtual ~RegionMapTemplate() { }
     void add_region(const region_type& x) {
       push_back(x);

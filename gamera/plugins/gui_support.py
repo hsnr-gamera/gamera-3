@@ -38,14 +38,6 @@ class color_ccs(PluginFunction):
     return_type = ImageType([RGB])
 color_ccs = color_ccs()
 
-class clip_image(PluginFunction):
-    """Crops a subimage down so it only includes the intersection of
-    it and another subimage."""
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT]))
-clip_image = clip_image()
-
 # By default, the wxPython-devel RPM puts stuff here, but this
 # should be done better
 wxpython_prefix = "/usr/lib/wxPython/"
@@ -55,7 +47,7 @@ class GuiSupportModule(PluginModule):
     category = None
     cpp_headers = ["gui_support.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [to_string, to_buffer, color_ccs, clip_image]
+    functions = [to_string, to_buffer, color_ccs]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     

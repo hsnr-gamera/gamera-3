@@ -34,6 +34,7 @@ efficiency.
 
   Example expressions:
     (upper.x)|(lower.y)   # match either upper.x or lower.y
+    upper.x|upper.y       # careful! matches upper.x.y or upper.upper.y
     upper.*               # match anything in the 'upper' category
     upper.a|b|c           # matches upper.a, upper.b or upper.c
     upper.capital_?       # ? is a single character wildcard

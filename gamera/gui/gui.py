@@ -98,7 +98,7 @@ class GameraGui:
    def ShowClassifier(classifier=None, current_database=[], image=None, symbol_table=[]):
       if classifier is None:
          from gamera import knn
-         classifier = knn.knnInteractive()
+         classifier = knn.kNNInteractive()
       wxBeginBusyCursor()
       class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
       class_disp.set_image(current_database, image)

@@ -28,10 +28,16 @@ extern "C" {
   static void regionmap_dealloc(PyObject* self);
   static PyObject* regionmap_lookup(PyObject* self, PyObject* args);
   static PyObject* regionmap_add_region(PyObject* self, PyObject* args);
+  static PyObject* regionmap___getitem__(PyObject* self, int index);
+  static int regionmap___len__(PyObject* self);
 }
 
 static PyTypeObject RegionMapType = {
   PyObject_HEAD_INIT(NULL)
+  0,
+};
+
+static PySequenceMethods RegionMapSequenceMethods = {
   0,
 };
 
@@ -87,7 +93,26 @@ static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
+static PyObject* regionmap___getitem__(PyObject* self, int index) {
+  RegionMap* r = ((RegionMapObject*)self)->m_x;
+  if (index < 0 || index >= r->size()) {
+    PyErr_SetString(PyExc_IndexError, "Index out of range");
+    return 0;
+  }
+  RegionMap::iterator it = (*r).begin();
+  for (size_t i = 0; i != index; ++i, ++it)
+    ;
+  return create_RegionObject(*it);
+}
+
+static int regionmap___len__(PyObject* self) {
+  return (((RegionMapObject*)self)->m_x->size());
+}
+
 void init_RegionMapType(PyObject* module_dict) {
+  RegionMapSequenceMethods.sq_item = regionmap___getitem__;
+  RegionMapSequenceMethods.sq_length = regionmap___len__;
+
   RegionMapType.ob_type = &PyType_Type;
   RegionMapType.tp_name = "gameracore.RegionMap";
   RegionMapType.tp_basicsize = sizeof(RegionMapObject);
@@ -98,6 +123,7 @@ void init_RegionMapType(PyObject* module_dict) {
   RegionMapType.tp_getattro = PyObject_GenericGetAttr;
   RegionMapType.tp_alloc = PyType_GenericAlloc;
   RegionMapType.tp_free = _PyObject_Del;
+  RegionMapType.tp_as_sequence = &RegionMapSequenceMethods;
   PyType_Ready(&RegionMapType);
   PyDict_SetItemString(module_dict, "RegionMap", (PyObject*)&RegionMapType);
 }

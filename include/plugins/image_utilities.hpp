@@ -403,5 +403,19 @@ namespace Gamera {
     simple_shear((mat.row_begin() + row).begin(),
 		 (mat.row_begin() + row).end(), distance);
   }
+
+  template<class T>
+  Image *clip_image(T& m, const Rect& rect) {
+    if (m.intersects(rect)) {
+      size_t ul_y = std::max(m.ul_y(), rect.ul_y());
+      size_t ul_x = std::max(m.ul_x(), rect.ul_x());
+      size_t lr_y = std::min(m.lr_y(), rect.lr_y());
+      size_t lr_x = std::min(m.lr_x(), rect.lr_x());
+      return new T(m, ul_y, ul_x, lr_y - ul_y, lr_x - ul_x + 1);
+    } else {
+      return new T(m, m.ul_y(), m.ul_x(), 1, 1);
+    };
+  }
+
 }
 #endif

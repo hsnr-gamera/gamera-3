@@ -21,10 +21,15 @@
 
 #define NP_VISITED2(a) ((a)->m_node_properties[2].Bool)
 
+// This should always be a 64-bit unsigned
+// If compiling on a platform with a larger available native integer length,
+// you might want to use that instead
 #ifdef _MSC_VER
 typedef unsigned __int64 Bitfield;
+#define BITFIELD_SIZE 64
 #else
 typedef unsigned long long Bitfield;
+#define BITFIELD_SIZE 64
 #endif
 
 class Part {
@@ -105,14 +110,19 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
        i != node_stack.end(); ++i, ++j)
     PyList_SET_ITEM(result, j, (*i)->m_data);
 
-  PyObject* tuple = PyTuple_New(1);
-  PyTuple_SET_ITEM(tuple, 0, result);
+  PyObject* tuple = Py_BuildValue("N", result);
   PyObject* evalobject = PyObject_CallObject(const_cast<PyObject*>(eval_func), tuple);
+
   double eval;
   if (evalobject == NULL)
-    eval = -1;
-  else
-    eval = PyFloat_AsDouble(evalobject); // Implicit error checking
+    eval = -1.0;
+  else {
+    if (PyFloat_Check(evalobject))
+      eval = PyFloat_AsDouble(evalobject);
+    else
+      eval = -1.0;
+  }
+
   parts.push_back(Part(bits, eval));
 
   if ((node_stack.size() < max_size) && 
@@ -143,7 +153,7 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
     for (; k < parts.size(); ++k)
       if (!(temp & parts[k].bits))
 	break;
-    parts[i].end = k;
+    root.end = k;
   }
 }
 
@@ -176,10 +186,8 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
 				    const PyObject* eval_func, const size_t max_size) {
 
   for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i) {
-    NP_VISITED(*i) = false;
-    NP_VISITED2(*i) = false;
-  }
+       i != so->m_nodes->end(); ++i)
+    NP_VISITED(*i) = NP_VISITED2(*i) = false;
 
   NodeVector subgraph;
   root = graph_optimize_partitions_find_root(root, subgraph);
@@ -188,7 +196,7 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   // We can't do the grouping if there's more than 64 nodes,
   // so just return them all.  Also, if there's only one node,
   // just trivially return it to save time.
-  if (size > 64 || size == 1) {
+  if (size > BITFIELD_SIZE || size == 1) {
     // Now, build a Python list of the solution
     PyObject* result = PyList_New(subgraph.size());
     for (size_t i = 0; i < subgraph.size(); ++i) {
@@ -217,11 +225,6 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   }
 
   graph_optimize_partitions_find_skips(parts);
-
-  for (NodeVector::iterator i = subgraph.begin();
-       i != subgraph.end(); ++i) {
-    std::cerr << PyString_AsString(PyObject_Repr((*i)->m_data)) << "\n";
-  }
 
   // Now, we find a solution
   Solution best_solution, partial_solution;

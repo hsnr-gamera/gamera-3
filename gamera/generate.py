@@ -298,16 +298,16 @@ template = Template("""
       [[# Extract the other arguments #]]
       [[for x in function.args.list]]
         [[if isinstance(x, RegionMap)]]
-          [[x.pyname = x.name + '_arg']]
-          [[x.name = x.name + '_regionmaparg']]
+          [[exec x.pyname = x.name + '_arg']]
+          [[exec x.name = x.name + '_regionmaparg']]
           if (!is_RegionMapObject([[x.pyname]])) {
             PyErr_SetString(PyExc_TypeError, \"Object is not a RegionMap.\");
             return 0;
           }
           [[x.name]] = (RegionMap*)((RegionMapObect*)[[x.pyname]])->m_x;
         [[elif isinstance(x, Region)]]
-          [[x.pyname = x.name + '_arg']]
-          [[x.name = x.name + '_regionarg']]
+          [[exec x.pyname = x.name + '_arg']]
+          [[exec x.name = x.name + '_regionarg']]
           if (!is_RegionObject([[x.pyname]])) {
             PyErr_SetString(PyExc_TypeError, \"Object is not a Region.\");
             return 0;

@@ -464,11 +464,8 @@ class ClassifierFrame(ImageFrameBase):
       self._frame.SetMenuBar(menubar)
 
    def set_image(self, current_database, image=None, weak=1):
-      print "1"
       self.set_multi_image(current_database)
-      print "2"
       self.set_single_image(image, weak=weak)
-      print "3"
 
    def set_multi_image(self, current_database):
       wxBeginBusyCursor()
@@ -690,7 +687,6 @@ class ClassifierFrame(ImageFrameBase):
          wxEndBusyCursor()
          return
       wxEndBusyCursor()
-      print "Finished callback"
 
    def _OnSelectAndSegmentImage(self, event):
       segmenters = [x[0] for x in
@@ -734,7 +730,6 @@ class ClassifierFrame(ImageFrameBase):
          image_ref = image_ref.otsu_threshold()
       ccs = getattr(image_ref, segmenter)()
       self.set_image(ccs, image, weak=0)
-      print "REALLY DONE!"
 
    def _OnSaveCurrentDatabaseAsImages(self, event):
       self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
@@ -1072,7 +1067,7 @@ class ClassifierFrame(ImageFrameBase):
                parts=['symbol_table']).parse_filename(filename).symbol_table
          except gamera_xml.XMLError, e:
             gui_util.message("Importing symbol table: " + str(e))
-            return 
+            return
          for symbol in symbol_table.symbols.keys():
             self._symbol_table.add(symbol)
       finally:

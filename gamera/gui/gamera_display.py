@@ -33,6 +33,8 @@ from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
 import gamera.plugins.gui_support  # Gamera plugin
 
+XXX = None
+
 ##############################################################################
 
 # we want this done on import
@@ -135,6 +137,10 @@ class ImageDisplay(wxScrolledWindow):
          self.rubber_y2 = highlight.lr_y + i
          self._boxed_highlight_position -= 1
          self.draw_rubber()
+
+   def highlight_rectangle(self, y, x, h, w, color, text):
+      cc = self.image.subimage(y, x, h, w)
+      self.add_highlight_cc(cc, color)
 
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=None):
@@ -663,6 +669,8 @@ class ImageDisplay(wxScrolledWindow):
                                       self.image.ncols - 1), 0))
          self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
                                       self.image.nrows - 1), 0))
+         for callback in self.click_callbacks:
+            callback(self.rubber_y2, self.rubber_x2)
          self.draw_rubber()
          if self.rubber_origin_x > self.rubber_x2:
             self.rubber_origin_x, self.rubber_x2 = \
@@ -1727,6 +1735,13 @@ class ImageFrame(ImageFrameBase):
 
    def __repr__(self):
       return "<ImageFrame Window>"
+
+   def add_highlight_cc(self, cc):
+      self._iw.id.add_highlight_cc(cc)
+   add_highlight_ccs = add_highlight_cc
+
+   def highlight_rectangle(self, y, x, h, w, c, t):
+      self._iw.id.highlight_rectangle(y, x, h, w, c, t)
 
    def highlight_cc(self, cc):
       self._iw.id.highlight_cc(cc)

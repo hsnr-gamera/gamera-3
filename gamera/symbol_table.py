@@ -103,9 +103,7 @@ class SymbolTable:
                   break
             if found_last != -1:
                found_last = targets[found_last]
-               print found, found_last
                for i in range(len(symbol), min(len(found), len(found_last))):
-                  print i,
                   if found[i] != found_last[i]:
                      break
                found = found[:i]

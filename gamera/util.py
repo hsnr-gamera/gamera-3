@@ -242,7 +242,7 @@ def word_wrap(stream, l, indent=0, width=78):
    width -= indent
    indent_spaces = ' ' * (indent)
    if is_sequence(l):
-      l = space.join([str(x) for x in l])
+      l = ' '.join([str(x) for x in l])
    i = 0
    p = 0
    while i != -1:

@@ -148,7 +148,7 @@ if _has_gui == _WX_GUI:
                                       wxPython.wx.wxSWISS,
                                       wxPython.wx.wxNORMAL,
                                       wxPython.wx.wxBOLD,
-                                      wxPython.wx.false,
+                                      False,
                                       "Helvetica")
             static_text.SetFont(font)
             self.box.Add(static_text, 0,
@@ -310,18 +310,18 @@ if _has_gui == _WX_GUI:
          for x in val:
             if x not in string.digits + "-.":
                self.show_error(self.name + " must be numeric.")
-               return wxPython.wx.false
+               return False
          try:
             val = float(val)
          except:
             self.show_error(self.caption + " is invalid.")
-            return wxPython.wx.false
+            return False
          if self.rng:
             if val < self.rng[0] or val > self.rng[1]:
                self.show_error(
                   self.name + " must be in the range " + str(self.rng) + ".")
-               return wxPython.wx.false
-         return wxPython.wx.true
+               return False
+         return True
 
       def OnChar(self, event):
          key = event.KeyCode()
@@ -336,10 +336,10 @@ if _has_gui == _WX_GUI:
             wxPython.wx.wxBell()
 
       def TransferToWindow(self):
-         return wxPython.wx.true
+         return True
 
       def TransferFromWindow(self):
-         return wxPython.wx.true
+         return True
 
    class _guiReal:
       def get_control(self, parent, locals=None):

@@ -388,7 +388,7 @@ class InteractiveClassifier(_Classifier):
                progress.step()
       finally:
          progress.kill()
-      print "generate features time:", time.clock() - t
+      # print "generate features time:", time.clock() - t
 
    ########################################
    # MANUAL CLASSIFICATION

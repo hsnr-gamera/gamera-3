@@ -122,13 +122,21 @@ class invert(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
 invert = invert()
 
+class clip_image(PluginFunction):
+    """Crops a subimage down so it only includes the intersection of
+    it and another subimage."""
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT]))
+clip_image = clip_image()
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy,
                  histogram, union_images, projection_rows, projection_cols,
-                 projections, fill_white, invert]
+                 projections, fill_white, invert, clip_image]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

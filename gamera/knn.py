@@ -220,7 +220,7 @@ class kNN(gamera.knncore.kNN):
                          args.Choice('Distance Function',
                                      ['City Block', 'Euclidean', 'Fast Euclidean'],
                                      default = self.distance_type)
-                         ], title="kNN settings")
+                         ], name="kNN settings")
         results = dlg.show(NULL)
         if results is None:
             return

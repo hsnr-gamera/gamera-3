@@ -379,7 +379,7 @@ class ClassifierImageWindow(ImageWindow):
 
    def _OnChooseImage(self, event):
       dlg = Args([Class("Image for context display", core.ImageBase)])
-      function = dlg.show(self, image_menu.shell.locals, title="Choose image")
+      function = dlg.show(self, image_menu.shell.locals, name="Choose image")
       if function != None:
          function = function[1:-1]
          image = image_menu.shell.locals[function]
@@ -581,7 +581,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def classify_manual(self, id):
       # if type(id) == types.StringType
-      id = id.encode('utf8')
+      # id = id.encode('utf8')
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
          self.multi_iw.id.GetGridCursorCol())
@@ -647,7 +647,7 @@ class ClassifierFrame(ImageFrameBase):
       dialog = Args(
          [FileOpen("Image file", "", "*.*"),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
-         title = "Open and segment image...")
+         name="Open and segment image...")
       filename = "r'None'"
       while filename == "r'None'":
          results = dialog.show(self._frame)
@@ -673,7 +673,7 @@ class ClassifierFrame(ImageFrameBase):
       dialog = Args(
          [Class("Image", core.ImageBase),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
-         title = "Select and segment image...")
+         name="Select and segment image...")
       results = dialog.show(self._frame, image_menu.shell.locals)
       if results is None:
          return

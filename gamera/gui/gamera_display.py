@@ -154,7 +154,7 @@ class ImageDisplay(wxScrolledWindow):
    def highlight_cc(self, ccs, color=-1):
       color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
-      refresh_at_once = len(ccs) > 10
+      refresh_at_once = len(ccs) > 10 or len(highlights) > 10
       use_color = color
       old_highlights = self.highlights[:]
       self.highlights = []
@@ -1239,7 +1239,8 @@ class MultiImageDisplay(wxGrid):
       return label
 
    def set_tooltip(self, label):
-      self.tooltip.SetLabel(label.decode('utf8'))
+      #self.tooltip.SetLabel(label.decode('utf8'))
+      self.tooltip.SetLabel(label)
       dc = wxClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
       self.tooltip.SetDimensions(

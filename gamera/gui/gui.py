@@ -116,10 +116,10 @@ class PyCrustGameraShell(shell.Shell):
       # Win32 change
       # WIN32TODO: This needs to be tested
       # if wxPython was compiled with Unicode
-      if hasattr(wxLocale, 'GetSystemEncoding'): 
-         self.SetCodePage(wxSTC_CP_UTF8)
-      else:
-         self.SetCodePage(1)
+##       if hasattr(wxLocale, 'GetSystemEncoding'): 
+##          self.SetCodePage(wxSTC_CP_UTF8)
+##       else:
+##          self.SetCodePage(1)
       self.history_win = None
       self.update = None
       self.locals = self.interp.locals

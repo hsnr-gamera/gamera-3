@@ -81,8 +81,9 @@ void nodeobject_dealloc(PyObject* self) {
 #ifdef DEBUG_DEALLOC
   std::cerr << "node dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
 #endif
-  Py_DECREF(so->m_graph);
+  PyObject* graph = (PyObject*)so->m_graph;
   self->ob_type->tp_free(self);
+  Py_DECREF(graph);
 }
 
 PyObject* node___repr__(PyObject* self) {

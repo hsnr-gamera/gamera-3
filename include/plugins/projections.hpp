@@ -89,9 +89,6 @@ namespace Gamera {
 				  size_t width) {
     Rect r(image.offset_y(), image.offset_x() + offset_x,
 	   image.nrows(), width);
-    std::cerr << "yproj_vertical_strip\n";
-    std::cerr << r.ul_y() << " " << r.ul_x() << " " << r.nrows() << " " << r.ncols() << "\n";
-    std::cerr << image.ul_y() << " " << image.ul_x() << " " << image.nrows() << " " << image.ncols() << "\n";
     return projection_rows(image, r);
   }
   
@@ -100,9 +97,6 @@ namespace Gamera {
 				    size_t height) {
     Rect r(image.offset_y() + offset_y, image.offset_x(),
 	   height, image.ncols());
-    std::cerr << "yproj_horizontal_strip\n";
-    std::cerr << r.ul_y() << " " << r.ul_x() << " " << r.nrows() << " " << r.ncols() << "\n";
-    std::cerr << image.ul_y() << " " << image.ul_x() << " " << image.nrows() << " " << image.ncols() << "\n";
     return projection_rows(image, r);
   }
 
@@ -111,9 +105,6 @@ namespace Gamera {
 				  size_t width) {
     Rect r(image.offset_y(), image.offset_x() + offset_x,
 	   image.nrows(), width);
-    std::cerr << "xproj_vertical_strip\n";
-    std::cerr << r.ul_y() << " " << r.ul_x() << " " << r.nrows() << " " << r.ncols() << "\n";
-    std::cerr << image.ul_y() << " " << image.ul_x() << " " << image.nrows() << " " << image.ncols() << "\n";
     return projection_cols(image, r);
   }
 
@@ -122,9 +113,6 @@ namespace Gamera {
 				    size_t height) {
     Rect r(image.offset_y() + offset_y, image.offset_x(),
 	   height, image.ncols());
-    std::cerr << "xproj_horizontal_strip\n";
-    std::cerr << r.ul_y() << " " << r.ul_x() << " " << r.nrows() << " " << r.ncols() << "\n";
-    std::cerr << image.ul_y() << " " << image.ul_x() << " " << image.nrows() << " " << image.ncols() << "\n";
     return projection_cols(image, r);
   }
 }

@@ -89,8 +89,9 @@ void edgeobject_dealloc(PyObject* self) {
   std::cerr << "edgeobject dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
 #endif
   EdgeObject* so = (EdgeObject*)self;
-  Py_DECREF(so->m_graph);
+  PyObject* graph = (PyObject*)so->m_graph;
   self->ob_type->tp_free(self);
+  Py_DECREF(graph);
 }
 
 PyObject* edge___repr__(PyObject* self) {

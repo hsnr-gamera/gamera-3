@@ -269,7 +269,7 @@ class _kNNBase(gamera.knncore.kNN):
          indent += 1
          feature_no = 0
          weights = self.get_weights()
-         for name, function in self.feature_functions:
+         for name, function in self.feature_functions[0]:
             word_wrap(file, '<weight name="%s">' % name, indent)
             length = function.return_type.length
             word_wrap(file,

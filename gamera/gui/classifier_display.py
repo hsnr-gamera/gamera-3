@@ -637,16 +637,28 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("You must provide a directory to load.")
          return
       if settings:
-         self._SaveClassifierSettings(
-            os.path.join(directory, "classifier_settings.xml"))
+         try:
+            self._SaveClassifierSettings(
+               os.path.join(directory, "classifier_settings.xml"))
+         except:
+            pass
       if current:
-         self._SaveCurrentDatabase(
-            os.path.join(directory, "current_database.xml"))
+         try:
+            self._SaveCurrentDatabase(
+               os.path.join(directory, "current_database.xml"))
+         except:
+            pass
       if production:
-         self._SaveProductionDatabase(
-            os.path.join(directory, "production_database.xml"))
+         try:
+            self._SaveProductionDatabase(
+               os.path.join(directory, "production_database.xml"))
+         except:
+            pass
       if symbols:
-         self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
+         try:
+            self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
+         except:
+            pass
       if source and self.splitterhr.IsSplit():
          try:
             self.single_iw.id.image.save_image(

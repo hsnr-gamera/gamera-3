@@ -261,5 +261,8 @@ or add symlinks for the scripts from /usr/bin to there.
 Running
 -------
 
-Run the ``gamera_gui`` script located at the root of the source
-tree.
+Run the ``gamera_gui`` script.  Running the script from the root of
+the source tree will not work, since it will not be able to find the
+Gamera compiled shared object files.  Make sure you have installed the
+script somewhere convenient (as above) first.
+

@@ -18,7 +18,7 @@ def magic_import(name, globals_={}, locals_={}, fromlist=[]):
     fromlist = list(fromlist)
     fromlist.remove("core")
 
-  if (name[0] == '_' and name[1] != "_") or name == "core" or name == "gamera.core":
+  if (name[0] == '_' and name[1] != "_" and name != "_winreg") or name == "core" or name == "gamera.core":
     print name
     return None
   else:
@@ -252,5 +252,5 @@ def generate_plugin(plugin_filename):
   for file in plugin_module.module.cpp_sources:
     cpp_files.append(plug_path + file)
   return Extension("gamera.plugins." + module_name, cpp_files,
-                   include_dirs=["include", plug_path],
+                   include_dirs=["include", plug_path, "include/plugins"],
                    libraries=["stdc++"])

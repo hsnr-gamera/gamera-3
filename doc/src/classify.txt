@@ -560,7 +560,7 @@ Stops the background optimzation thread.
 **add_optimization_callback** (*function*)
 
 Adds a function that will be called everytime the optimization process
-improves the performance of the classifier.  This function must take
+improves the performance of the classifier.  This callback function must take
 one argument which is an instance of the kNN classifier.
 
 ``remove_optimization_callback``

@@ -4,7 +4,7 @@ Plugins
 
 **Alphabetical list**
 
-PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, cyan_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
+PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, cyan_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
    
 Analysis
 ========
@@ -177,6 +177,55 @@ to MANUAL.  Use this method when an end user has classified this glyph.
          A value in range (0, 1), where 0 is uncertain and 1 is certain.
        *class_name*
          A ``.``-delimited class name.
+
+
+``match_id_name``
+-----------------
+
+**match_id_name** (``String`` *regex*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Classification
+:Defined in: id_name_matching.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+
+    Returns true if the image's ``id_name`` matches the given regular expression.
+
+*regex*
+    A special-purpose regular expression as defined below.
+
+A special-purpose regular expression language designed for convenience on
+Gamera symbol names is used here.  It has limited flexibility relative to Python regular
+expressions, and is more akin to wildcards in command-line shells.  This
+language is converted to standard Python regular expressions (``re`` module) for
+efficiency.
+
+**Informal syntax definition:**
+
+====================  =============================================
+Regular expression    Description
+====================  =============================================
+``A|B``               matches ``A`` or ``B``
+``A.B|C``             matches ``A.B`` or ``A.C``
+``*``                 multiple-character wildcard
+``?``                 single character wildcard
+``()``                grouping can be performed with parentheses
+``[a-z]``             matches any character a-z
+====================  =============================================
+
+**Example expressions:**
+
+========================  ====================================================  
+``(upper.x)|(lower.y)``   match either ``upper.x`` or ``lower.y``
+``upper.x|upper.y``       careful! matches ``upper.x.y`` or ``upper.upper.y``
+``upper.*``               match anything in the ``upper`` category
+``upper.a|b|c``           matches ``upper.a``, ``upper.b`` or ``upper.c``
+``upper.capital_?``       ``?`` is a single character wildcard
+========================  ====================================================
+
 
 
 ``unclassify``
@@ -1378,7 +1427,7 @@ ImageInfo **PNG_info** (``String`` *image_file_name*)
 :Returns: ``ImageInfo``
 :Category: File
 :Defined in: png_support.py
-:Author: Michael Droettboom and Karl MacMillan
+:Author: Michael Droettboom
 
 
 Returns an ``ImageInfo`` object describing a PNG file.
@@ -1396,7 +1445,7 @@ Image [OneBit|GreyScale|Grey16|RGB|Float] **load_PNG** (``FileOpen`` *image_file
 :Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
 :Category: File
 :Defined in: png_support.py
-:Author: Michael Droettboom and Karl MacMillan
+:Author: Michael Droettboom
 
 
 Loads a PNG format image file.
@@ -1453,7 +1502,7 @@ Loads a TIFF file from disk.
 :Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
 :Category: File
 :Defined in: png_support.py
-:Author: Michael Droettboom and Karl MacMillan
+:Author: Michael Droettboom
 
 
 Saves the image to a PNG format file.

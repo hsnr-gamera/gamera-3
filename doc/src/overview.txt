@@ -1,0 +1,322 @@
+===========================
+A gentle overview of Gamera
+===========================
+
+.. note:: This document was adapted from the following paper:
+          Droettboom, M., MacMillan, K., and Fujinaga, I. 2003. *The Gamera
+          framework for building custom recognition systems*. In proceedings,
+          Symposium on Document Image Understanding Technology.
+
+Introduction
+============
+
+Gamera is a framework for the creation of structured document analysis
+applications by domain experts. Domain experts are individuals who
+have a strong knowledge of the documents in a collection, but may not
+have a formal technical background. The goal is to create a tool that
+leverages their knowledge of the target documents to create custom
+applications rather than attempting to meet diverse requirements with
+a monolithic application.
+
+This paper gives an overview of the architecture and design principles
+of Gamera.
+
+Architecture overview
+=====================
+
+Developing recognition systems for difficult historical documents
+requires experimentation since the solution is often
+non-obvious. Therefore, Gamera's primary goal is to support an
+efficient test-and-refine development cycle. Virtually every
+implementation detail is driven by this goal. For instance, Python
+[Rossum2002]_ was chosen as the core language because of its
+introspection capabilities, dynamic typing and ease of use. It has
+been used as a first programming language with considerable success
+[Berehzny2001]_. C++ is used to write plugins where runtime performance
+is a priority, but even in that case, the `Gamera plugin system`__ is
+designed to make writing extensions as easy as possible. Gamera
+includes a full-fledged graphical user interface that provides a
+number of shortcuts for training, as well as inspection of the results
+of algorithms at every step. By improving the ease of experimentation,
+we hope to put the power to develop recognition systems with those who
+understand the documents best. We expect at least two kinds of
+developers to work with the system: those with a technical background
+adding algorithms to the system, and those working on the higher-level
+aggregation of those pieces. It is important to note this distinction,
+since those groups represent different skill sets and requirements.
+
+.. __: writing_plugins.html
+
+In addition to its support of test-and-refine development, Gamera also
+has several other advantages that are important to large-scale
+digitization projects in general. These are:
+
+   * **Open source code** and **standards-compliance** so that the software
+     can interact well with other parts of a digitization framework
+
+   * **Platform independence**, running on a variety of operating systems
+     including Linux, Microsoft Windows and Mac OS-X 
+
+   * **A workflow system** to combine high-level tasks 
+
+   * **Batch processing**
+
+   * **A unit-testing framework** to ensure correctness and avoid regression
+
+   * **User interface components** for development and classifier training
+
+   * **Recognition confidence output** so that collection managers can
+     easily target documents that need correction or different
+     recognition strategies
+
+Tasks
+-----
+
+Gamera has a modular plugin architecture. These modules typically
+perform one of five document recognition tasks:
+
+       1. Pre-processing
+       2. Document segmentation and analysis
+       3. Symbol segmentation and classification
+       4. Syntactical or structural analysis
+       5. Output
+
+Each of these tasks can be arbitrarily complex, involve multiple
+strategies or modules, or be removed entirely depending on the
+specific recognition problem at hand. The actual steps that make up a
+complete recognition system are completely controlled by the user.
+
+Pre-processing
+``````````````
+
+Pre-processing involves standard image-processing operations such as
+noise removal, blurring, de-skewing, contrast adjustment, sharpening,
+binarization, and morphology. Close attention to and refinement of
+these steps is particularly important when working with degraded
+historical documents.
+
+Document segmentation and analysis
+``````````````````````````````````
+
+Before the symbols of a document can be classified, an analysis of the
+overall structure of the document may be necessary. The purpose of
+this step is to analyze the structure of the document, segment it into
+sections, and perhaps identify and remove elements. For example, in
+the case of music recognition, it is necessary to identify and remove
+the staff lines in order to be able to properly separate the
+individual symbols. Similarly, text documents may require the removal
+of figures.
+
+Symbol segmentation and classification
+``````````````````````````````````````
+
+The segmentation, feature extraction, and classification of symbols is
+the core of the Gamera system. The system allows different segmenters
+and classifiers to be plugged-in.
+
+Classifiers come in two flavors: "interactive" classifiers, where
+examples can be added and the results tested immediately, and
+"non-interactive" classifiers, that are highly optimized but
+static. Gamera has a generic and flexible `XML-based file format`__ to
+store classifier data, but for efficiency, the "non-interactive"
+classifiers can also define their own format containing Pre-parsed or
+pre-optimized data. At present, we have an implementation of the k
+-nearest neighbor (kNN) algorithm [Cover1967]_ whose weights are
+optimized using a genetic algorithm (GA) [Holland1975]_. We have tested
+the extensibility of our classifier framework by porting a simple
+back-propagating neural network library to Gamera
+[Schemenauer2002]_. We also plan to examine what modifications would be
+necessary to support stateful classifiers, such as hidden Markov
+models.  
+
+.. __: xml_format.html
+
+Syntactical and structural analysis
+```````````````````````````````````
+
+This process reconstructs a document into a semantic representation of
+the individual symbols. Examples of this include combining stems,
+flags, and noteheads into musical objects, or grouping words and
+numbers into lines, paragraphs, columns etc. Obviously, this process
+is entirely dependent on the type of document being processed and is a
+likely place for large customizations by knowledgeable users.
+
+Output
+``````
+
+Gamera stores groups of glyphs in an `XML-based file format`__. This
+makes it very easy to save, load, and merge sets of training
+data. Since a run-length encoded copy of the glyph is included, it is
+easy to load the original images and inspect, edit or generate new
+features from them.
+
+.. __: xml_format.html
+
+.. code:: XML
+
+   <?xml version="1.0" encoding="utf-8"?>
+   <gamera-database version="2.0">
+    <glyphs>
+     <glyph uly="798" ulx="784" nrows="15" ncols="12">
+      <ids state="MANUAL">
+       <id name="lower.c" confidence="1.000000"/>
+      </ids>
+      <!-- Run-length encoded binary image (white first) -->
+      <data>
+       5 6 4 9 2 4 2 4 2 4 3 3 1 4 6 5 8 4 9 3 8 4 9 4 8 5 7 5 3 3 3 9 3 9 6
+       4 2 0 
+      </data>
+      <features scaling="1.0">
+       <feature name="area">
+        180.0
+       </feature>
+       <feature name="aspect_ratio">
+        0.8
+       </feature>
+       <feature name="compactness">
+        0.584269662921
+       </feature>
+       <feature name="moments">
+        0.219907407407 0.228888888889 0.0697385116598 0.126611111111
+        0.0505606995885 0.0203254388586 0.0177776861746 0.00727370913662
+        0.0488995911061
+       </feature>
+       ...
+      </features>
+     </glyph>
+     ...
+    </glyphs>
+   </gamera_database> 
+
+Output of data that is specific to a particular type of document,
+i.e. post-structural interpretation, is deliberately left open-ended,
+since different domains will have different requirements.  
+
+Graphical user interface
+========================
+
+Since document recognition is an inherently visual problem, a
+graphical user interface (GUI) is included to allow the application
+developer to experiment with different recognition strategies. At the
+core of the interface is the console window which allows the
+programmer to run code interactively and control the system either by
+typing commands or using menus. All commands are recorded in a
+history, which can later be used for building automatic batch scripts.
+
+    .. image: images/console.png
+
+The interface also includes a simple image viewer, image analysis
+tools, and a training interface for the learning classifiers.
+
+    .. image: images/classifier_window.png
+
+The training interface allows the user to create databases of labeled
+glyphs, including the merging and splitting of connected components.
+
+The interface can easily be extended to include new elements as
+modules are added to Gamera. The entire GUI is written in Python,
+using the wxPython toolkit.
+    
+The Gamera GUI documentation contains more information.
+
+Implementation details
+======================
+
+Image classes
+-------------
+
+The storage and manipulation of images is one of the most important
+aspects of Gamera. Gamera must provide not only general-purpose image
+manipulation functions, but also infrastructure to support the symbol
+segmentation and analysis. The features of the Image classes in Gamera
+include:
+
+**Polymorphic image types.**
+    Gamera images can be in stored using a number of different pixel
+    types, including color (24-bit RGB), greyscale (8- and 16-bit),
+    floating point (32-bit) and bi-level images, though new images
+    types can be added as desired.
+
+**Consistent programming interface.**
+    The interface to all types of images (in both C++ and Python) is
+    the same. While some methods are not available for all image types
+    (e.g. thresholding a bi-level image would not make sense), in many
+    cases image types are interchangeable, meaning types can be
+    changed at different points in the development process.
+
+**Use of existing code libraries.**
+    The image classes have been designed especially to make
+    transferring code from other ccpp image processing libraries as
+    easy as possible. For example, many algorithms in the VIGRA
+    library [Jähne1999]_ can be used in Gamera without
+    modification. Using C libraries, such as XITE [Bøe1998]_, often
+    requires only a few minor modifications of the code. This ability
+    has reduced our development time considerably.
+
+**Portions of images.**
+    The image classes allow for the flexible and efficient
+    representation of portions of images, including non-rectangular
+    regions, without resorting to memory copying. The bi-level images
+    actually store 16-bits-per-pixel, so that labeling information can
+    be stored to define connected components. This uses a considerably
+    smaller memory footprint than using separate data for each
+    connected component.
+
+The `image types documentation`__ contains more information.
+
+.. __: image_types.html
+
+The plugin system
+-----------------
+
+Writing wrapper code to call C/C++ from Python is a time-consuming,
+error-prone and repetitive task. A number of general-purpose tools
+exist to help automate this process, including SWIG_ and `Boost
+Python`__. In fact, an earlier version of Gamera used Boost Python, but
+the additional function-call overhead for our highly polymorphic image
+types lead to poor performance of that system as a whole. We have
+since developed our own wrapper-generating mechanism specific to
+Gamera and its classes. This allowed us to provide optimizations and
+conveniences to the programmer that would not be possible with a more
+general approach.
+
+.. _SWIG: http://www.swig.org/
+.. __: http://www.boost.org/
+
+To add a plugin function to Gamera, a programmer writes metadata about
+the function (in Python) and a single function to perform an
+image-processing task (in C++). Plugin functions are grouped into
+standard Python modules, which are collections of related classes and
+functions.
+
+See `Writing Gamera plugins`__ for more information.
+
+.. __: writing_plugins.html
+
+Bibliography
+============
+
+.. [Rossum2002] Rossum, G. 2002. Python language
+  reference. F. L. Drake, Jr., ed. http://www.python.org
+
+.. [Berehzny2001] Berehzny, L., J. Elkner, and J. Straw. 2001. Using
+  Python in a high school computer science program: Year
+  2. International Python Conference. 217--23.
+
+.. [Cover1967] Cover, T. and P. Hart. 1967. Nearest neighbour pattern
+  classification. IEEE Transactions on Information Theory. 13(1): 21--7.
+
+.. [Holland1975] Holland, J. H. 1975. Adaptation in natural and
+  artificial systems. University of Michigan Press, Ann Arbor.
+
+.. [Schemenauer2002] Schemenauer, N. 2002. A simple neural network
+  library bpnn.py. Computer software. http://arctrix.com/nas/
+
+.. [Jähne1999] Jähne, B., H. Haußecker, and P. Geißler. 1999. Reusable
+  software in Computer Vision. Handbook on Computer Vision and
+  Applications. New York: Academic Press.
+
+.. [Bøe1998] Bøe, S., T. Lønnestad, and O. Milvang. 1998. XITE:
+  X-based image processing tools and environment: User's manual, version
+  3.4. Technical Report 56, Image Processing Laboratory, Department of
+  Informatics, University of Oslo.

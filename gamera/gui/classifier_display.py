@@ -377,10 +377,8 @@ class ClassifierImageWindow(ImageWindow):
 
    def _OnChooseImage(self, event):
       dlg = Args([Class("Image for context display", core.ImageBase)])
-      function = dlg.show(self, image_menu.shell.locals, name="Choose image")
-      if function != None:
-         function = function[1:-1]
-         image = image_menu.shell.locals[function]
+      image = dlg.show(self, image_menu.shell.locals, name="Choose image")
+      if image != None:
          self.id.set_image(image)
 
    def get_display(self):
@@ -660,12 +658,12 @@ class ClassifierFrame(ImageFrameBase):
             return
          filename, segmenter = results
          self.default_segmenter = segmenter
-         if filename == "r'None'":
+         if filename == None:
             gui_util.message("You must provide a filename to load.")
       
       wxBeginBusyCursor()
       try:
-         image = load_image(filename[2:-1])
+         image = load_image(filename)
          self._segment_image(image, segmenters[segmenter])
       finally:
          wxEndBusyCursor()
@@ -682,8 +680,7 @@ class ClassifierFrame(ImageFrameBase):
       results = dialog.show(self._frame, image_menu.shell.locals)
       if results is None:
          return
-      image_name, segmenter = results
-      image = image_menu.shell.locals[image_name]
+      image, segmenter = results
       self._segment_image(image, segmenters[segmenter])
       
    def _segment_image(self, image, segmenter):
@@ -705,7 +702,7 @@ class ClassifierFrame(ImageFrameBase):
       self._OnSaveAsImages(self._classifier.get_glyphs())
 
    def _OnSaveAsImages(self, list):
-      filename = gui_util.directory_dialog()
+      filename = gui_util.directory_dialog(self._frame)
       if filename:
          classifier_stats.GlyphStats(list).write(filename)
 
@@ -813,21 +810,21 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnClassifierSettingsEdit(self, event):
       if self._classifier.supports_settings_dialog():
-         self._classifier.settings_dialog()
+         self._classifier.settings_dialog(self._frame)
       else:
          gui_util.message("This classifier doesn't have a settings dialog.")
 
    def _OnClassifierSettingsOpen(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
-      if not filename is None:
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
+      if filename:
          try:
             self._classifier.load_settings(filename)
          except Exception, e:
             gui_util.message(str(e))
 
    def _OnClassifierSettingsSave(self, event):
-      filename = gui_util.save_file_dialog(gamera_xml.extensions)
-      if not filename is None:
+      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
+      if filename:
          try:
             self._classifier.save_settings(filename)
          except Exception, e:
@@ -868,7 +865,7 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
          self._OnSaveByCriteria(event)
          return
-      if filename == 'None':
+      if filename is None:
          gui_util.message("You must select a filename to save into.")
          self._OnSaveByCriteria(event)
          return
@@ -892,12 +889,12 @@ class ClassifierFrame(ImageFrameBase):
          gamera_xml.WriteXMLFile(
          glyphs=glyphs,
          symbol_table=self._symbol_table).write_filename(
-         filename[2:-1])
+         filename)
       except gamera_xml.XMLError, e:
          gui_util.message(str(e))
          
    def _OnOpenProductionDatabase(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self.production_database_filename = filename
          try:
@@ -908,7 +905,7 @@ class ClassifierFrame(ImageFrameBase):
          self.update_symbol_table()
 
    def _OnMergeProductionDatabase(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          try:
             self._classifier.merge_from_xml_filename(filename)
@@ -927,7 +924,7 @@ class ClassifierFrame(ImageFrameBase):
             gui_util.message(str(e))
 
    def _OnSaveProductionDatabaseAs(self, event):
-      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self.production_database_filename = filename
          self._OnSaveProductionDatabase(event)
@@ -941,7 +938,7 @@ class ClassifierFrame(ImageFrameBase):
          self._classifier.clear_glyphs()
 
    def _OnOpenCurrentDatabase(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          try:
             glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
@@ -951,7 +948,7 @@ class ClassifierFrame(ImageFrameBase):
          self.set_multi_image(glyphs)
 
    def _OnMergeCurrentDatabase(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          try:
             glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
@@ -981,13 +978,13 @@ class ClassifierFrame(ImageFrameBase):
             gui_util.message(str(e))
 
    def _OnSaveCurrentDatabaseAs(self, event):
-      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self.current_database_filename = filename
          self._OnSaveCurrentDatabase(event)
 
    def _OnSaveSelectedGlyphsAs(self, event):
-      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          glyphs = self.multi_iw.id.GetSelectedItems()
          progress = util.ProgressFactory("Generating features...", len(glyphs))
@@ -1006,7 +1003,7 @@ class ClassifierFrame(ImageFrameBase):
             gui_util.message(str(e))
          
    def _OnImportSymbolTable(self, event):
-      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
          try:
@@ -1021,7 +1018,7 @@ class ClassifierFrame(ImageFrameBase):
             wxEndBusyCursor()
 
    def _OnExportSymbolTable(self, event):
-      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
          try:
@@ -1046,7 +1043,7 @@ class ClassifierFrame(ImageFrameBase):
          self.rule_engine_runner.Show()
 
    def _OnOpenRuleModule(self, event):
-      filename = gui_util.open_file_dialog("*.py")
+      filename = gui_util.open_file_dialog(self._frame, "*.py")
       if not filename is None:
          self.rule_engine_runner.open_module(filename)
       if not self.splitterhl.IsSplit():
@@ -1060,6 +1057,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnCloseWindow(self, event):
       if self._classifier.is_dirty:
          if not gui_util.are_you_sure_dialog(
+            self._frame,
             "Are you sure you want to quit without saving?"):
             event.Veto()
             return
@@ -1303,156 +1301,3 @@ class SymbolTableEditorPanel(wxPanel):
       if not evt is None:
          evt.Skip()
 
-# TODO: Add dialog to select kind of classifier
-
-extensions = "XML files (*.xml)|*.xml*"
-name = "Classifier Wizard"
-class ClassifierWizard(Wizard):
-   dlg_select_image = Args([
-      Radio('Use an image that is already loaded', 'From memory'),
-      Class('    Image variable name', Image),
-      Radio('Load an image from disk', 'From disk'),
-      FileOpen('    Image filename', '', extension="*.*")],
-      name=name,
-      function = 'cb_select_image',
-      title = '1. Select an image to use in the classifier.')
-
-   dlg_select_ccs = Args([
-      Radio('Generate connected components from image', 'Generate'),
-      Radio('Use connected components in memory', 'From memory'),
-      Class('    Connected components list', Cc, list_of=1),
-      Radio('Load connected components (current database)', 'From disk'),
-      FileOpen('    Current database', extension=extensions),
-      Check('Apply scaling', '', 0),
-      Int('Scaling factor', (0, 100), 1)],
-      name=name,
-      function='cb_select_ccs',
-      title = '2. How should the individual symbols (connected components) be obtained?')
-
-   dlg_select_production_database = Args([
-      Radio('Start with an empty database', 'Empty database'),
-      Radio('Use an existing database for the classifier', 'Load database'),
-      FileOpen('    Production database', extension=extensions)],
-      name=name,
-      function='cb_select_production_database',
-      title='3. Optionally load the data used to classify symbols.')
-   
-   dlg_select_symbol_table = Args([
-      FileOpen('Symbol table', extension=extensions)],
-      name=name,
-      function='cb_select_symbol_table',
-      title=('You have chosen not to load any existing databases.\n' +
-             'You may optionally load just the symbol names below.'))
-   
-   def __init__(self, shell, locals):
-      self.shell = shell
-      self.parent = None
-      self.locals = locals
-      self.ccs = 'None'
-      self.production_database = 'None'
-      self.current_database = 'None'
-      self.symbol_table = 'None'
-      self.context_image = 'None'
-      self.features = 'None'
-      self.show(self.dlg_select_image)
-
-   def cb_select_image(self, memory, image_var, file, image_filename):
-      if memory:
-         self.context_image = image_var
-      elif file:
-         self.context_image = var_name.get("image", self.shell.locals)
-         if image_filename == 'None':
-            dlg = wxFileDialog(None, "Choose an image", ".", "", "*.*", wxOPEN)
-            if dlg.ShowModal() == wxID_OK:
-               image_filename = dlg.GetPath()
-               dlg.Destroy()
-         self.shell.run(self.context_image + " = load_image('" +
-                             image_filename + "')")
-      if self.context_image == None or self.context_image == 'None':
-         self.dlg_select_image.title = ("That image is not valid." +
-                                        "Please try again.")
-         return self.dlg_select_image
-      if (self.locals[self.context_image].data.pixel_type == GREYSCALE):
-         self.shell.run("%s = %s.otsu_threshold()" %
-                        (self.context_image, self.context_image))
-      return self.dlg_select_ccs
-
-   def cb_select_ccs(self, generate, use, list, file, filename, scaling, factor):
-      if generate:
-         ## Generate some ccs
-         self.ccs = var_name.get("ccs", self.shell.locals)
-         if scaling:
-            self.shell.run(self.ccs + " = " + self.context_image + ".cc_analysis(%d)" % factor)
-         else:
-            self.shell.run(self.ccs + " = " + self.context_image + ".cc_analysis()")
-      elif use:
-         self.ccs = list
-         if scaling:
-            self.shell.run("for x in " + self.ccs + ":")
-            self.shell.run("\tx.scaling = " + str(factor))
-            self.shell.run("")
-      else:
-         if filename == 'None':
-            dlg = wxFileDialog(None, "Choose a Gamera XML file",
-                               ".", "", "*.xml", wxOPEN)
-            if dlg.ShowModal() == wxID_OK:
-               filename = dlg.GetPath()
-               dlg.Destroy()
-         self.ccs = var_name.get("ccs", self.shell.locals)
-         self.shell.run(self.ccs + " = gamera_xml.LoadXMLGlyphs().parse_filename('" + filename + "')")
-      return self.dlg_select_production_database
-
-   def cb_select_production_database(self, empty, load, production_database):
-      self.prod_db = ''
-      if load:
-         if production_database == 'None':
-            dlg = wxFileDialog(None, "Choose a Gamera XML file",
-                               ".", "", "*.xml", wxOPEN)
-            if dlg.ShowModal() == wxID_OK:
-               production_database = dlg.GetPath()
-               dlg.Destroy()
-         self.prod_db = var_name.get("production_db", self.shell.locals)
-         self.shell.run(self.prod_db + " = gamera_xml.LoadXMLGlyphs().parse_filename('" + filename + "')")
-      self.feature_list = core.ImageBase.methods_flat_category("Features", ONEBIT)
-      self.feature_list = [x[0] for x in self.feature_list]
-      self.feature_list.sort()
-      feature_controls = []
-      for key in self.feature_list:
-         feature_controls.append(Check('', key, default=1))
-      self.dlg_features = Args(
-         feature_controls,
-         name=name, function='cb_features',
-         title='Select the features you would like to use for classification')
-      return self.dlg_features
-
-   def cb_features(self, *args):
-      self.features = []
-      for i in range(len(args)):
-         if args[i]:
-            self.features.append(self.feature_list[i])
-      return self.dlg_select_symbol_table
-
-   def cb_select_symbol_table(self, symbol_table):
-      if symbol_table != "None":
-         self.symbol_table = "'" + symbol_table + "'"
-      return None
-
-   def done(self):
-      classifier = var_name.get("classifier", self.shell.locals)
-      try:
-         self.shell.run("from gamera import classify")
-         self.shell.run("from gamera import knn")
-         if self.prod_db != '':
-            prod_db = "database=%s," % self.prod_db
-         else:
-            prod_db = ''
-         self.shell.run("%s = classify.InteractiveClassifier(knn.kNN(), %s features=%s)" %
-                        (classifier, prod_db, self.features))
-         if self.symbol_table != 'None':
-            symbol_table = ", symbol_table=%s" % self.symbol_table
-         else:
-            symbol_table = ''
-         self.shell.run("%s.display(%s, context_image=%s%s)" %
-                        (classifier, self.ccs, self.context_image, symbol_table))
-      except Exception, e:
-         print e

@@ -983,7 +983,8 @@ static PyObject* knn_set_weights(PyObject* self, PyObject* args) {
   for (size_t i = 0; i < o->num_features; ++i) {
     o->weight_vector[i] = weights[i];
   }
-  return 0;
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 /*

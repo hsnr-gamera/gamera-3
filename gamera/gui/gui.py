@@ -48,7 +48,7 @@ app = None
 
 class GameraGui:
    def GetImageFilename():
-      filename = gui_util.open_file_dialog("*.*")
+      filename = gui_util.open_file_dialog(None, "*.*")
       if filename:
          return filename
    GetImageFilename = staticmethod(GetImageFilename)
@@ -312,7 +312,7 @@ class ShellFrame(wxFrame):
       self.icon_display.add_class(icon_description)
 
    def _OnFileOpen(self, event):
-      filename = gui_util.open_file_dialog()
+      filename = gui_util.open_file_dialog(self, '*.*')
       if filename:
          name = var_name.get("image", self.shell.locals)
          if name:
@@ -380,7 +380,7 @@ class GameraSplash(wxSplashScreen):
    def OnClose(self, evt):
       global main_win
       main_win = ShellFrame(NULL, -1, "Gamera")
-      app.SetTopWindow(main_win)
+      # app.SetTopWindow(main_win)
       main_win.Show(true)
       evt.Skip()
 

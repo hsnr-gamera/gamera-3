@@ -252,7 +252,7 @@ class LoadXML:
       self._parser.StartElementHandler = self._start_element_handler
       self._parser.EndElementHandler = self._end_element_handler
       self._stream = stream
-      self._progress = util.ProgressFactory("Loading XML...")
+      self._progress = util.ProgressFactory("Loading XML...", self._stream_length)
       try:
          try:
             self._parser.ParseFile(stream)

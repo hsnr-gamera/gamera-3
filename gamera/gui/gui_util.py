@@ -32,17 +32,19 @@ def get_color(number):
 
 # Displays a message box
 def message(message):
+   print message
    if "\n" in message:
-      dlg = wxScrolledMessageDialog(None, message, "Message")
+      dlg = wxScrolledMessageDialog(None, message, "Message",
+                                    style=wxDIALOG_NO_PARENT)
    else:
       dlg = wxMessageDialog(None, message, "Message",
-                            wxOK | wxICON_INFORMATION)
+                            wxOK|wxICON_INFORMATION|wxDIALOG_NO_PARENT)
    dlg.ShowModal()
    dlg.Destroy()
 
-def are_you_sure_dialog(message):
-   dlg = wxMessageDialog(None, message, "Are you sure?",
-                         wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION)
+def are_you_sure_dialog(parent, message):
+   dlg = wxMessageDialog(parent, message, "Are you sure?",
+                         wxYES_NO|wxNO_DEFAULT|wxICON_QUESTION|wxDIALOG_NO_PARENT)
    result = dlg.ShowModal()
    dlg.Destroy()
    return result == wxID_YES
@@ -64,9 +66,9 @@ def build_menu(parent, menu_spec):
    return menu
 
 last_directory = '.'
-def open_file_dialog(extensions="*.*"):
+def open_file_dialog(parent, extensions="*.*"):
    global last_directory
-   dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxOPEN)
+   dlg = wxFileDialog(parent, "Choose a file", last_directory, "", extensions, wxOPEN)
    if dlg.ShowModal() == wxID_OK:
       filename = dlg.GetPath()
       dlg.Destroy()
@@ -74,13 +76,13 @@ def open_file_dialog(extensions="*.*"):
       return filename
    return None
 
-def directory_dialog(create=1):
+def directory_dialog(parent, create=1):
    global last_directory
    if create:
       style = wxDD_NEW_DIR_BUTTON
    else:
       style = 0
-   dlg = wxDirDialog(None, "Choose a directory", last_directory, style)
+   dlg = wxDirDialog(parent, "Choose a directory", last_directory, style)
    if dlg.ShowModal() == wxID_OK:
       filename = dlg.GetPath()
       dlg.Destroy()
@@ -88,9 +90,9 @@ def directory_dialog(create=1):
       return filename
    return None
 
-def save_file_dialog(extensions="*.*"):
+def save_file_dialog(parent, extensions="*.*"):
    global last_directory
-   dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxSAVE)
+   dlg = wxFileDialog(parent, "Choose a file", last_directory, "", extensions, wxSAVE)
    if dlg.ShowModal() == wxID_OK:
       filename = dlg.GetPath()
       dlg.Destroy()
@@ -102,7 +104,8 @@ class ProgressBox:
    def __init__(self, message, length=1):
       self.progress_box = wxProgressDialog(
          "Progress", message, 100,
-         style=wxPD_APP_MODAL|wxPD_ELAPSED_TIME|wxPD_REMAINING_TIME|wxPD_AUTO_HIDE)
+         style=wxPD_APP_MODAL|wxPD_ELAPSED_TIME|wxPD_REMAINING_TIME|wxPD_AUTO_HIDE|
+         wxDIALOG_NO_PARENT)
       self.done = 0
       self._num = 0
       self._den = length

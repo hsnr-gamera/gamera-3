@@ -317,7 +317,7 @@ class CIImageList(CustomIcon):
 
   def glyphs_to_xml(self, event):
     from gamera import gamera_xml
-    filename = gui_util.save_file_dialog(gamera_xml.extensions)
+    filename = gui_util.save_file_dialog(None, gamera_xml.extensions)
     if filename != None:
       gamera_xml.glyphs_to_xml(filename, self.data)
 

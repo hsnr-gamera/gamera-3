@@ -38,7 +38,6 @@ _distance_type_to_number = {
     "EUCLIDEAN": EUCLIDEAN,
     "FAST-EUCLIDEAN": FAST_EUCLIDEAN }
 
-
 class GaWorker(Thread):
     def __init__(self, knn):
         Thread.__init__(self)
@@ -71,55 +70,45 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
         self.ga_mutation = None
         self.ga_crossover = None
         self.ga_population = None
-        self.add_start_element_handler('num-k', self._ths_num_k)
-        self.add_start_element_handler('distance-type', self._ths_distance_type)
-        self.add_start_element_handler('ga-mutation', self._ths_ga_mutation)
-        self.add_start_element_handler('ga-crossover', self._ths_ga_crossover)
-        self.add_start_element_handler('ga-population', self._ths_ga_population)
-        self.add_start_element_handler('weight', self._ths_weight)
-        self.add_end_element_handler('weight', self._the_weight)
+        self.add_start_element_handler('gamera-knn-settings', self._ths_knn_settings)
+        self.add_start_element_handler('ga', self._ths_ga)
+        self.add_start_element_handler('weights', self._ths_weights)
+        self.add_end_element_handler('weights', self._the_weights)
         
     def _remove_handlers(self):
-        self.remove_start_element_handler('num-k')
-        self.remove_start_element_handler('distance-type')
-        self.remove_start_element_handler('ga-mutation')
-        self.remove_start_element_handler('ga-crossover')
-        self.remove_start_element_handler('ga-population')
+        self.remove_start_element_handler('gamera-knn-settings')
+        self.remove_start_element_handler('ga')
+        self.remove_start_element_handler('weights')
+
+    def _ths_knn_settings(self, a):
+        self.num_k = self.try_type_convert(a, 'num-k', int, 'gamera-knn-settings')
+        self.distance_type = \
+          _distance_type_to_number[self.try_type_convert(a, 'distance-type',
+                                                         str, 'gamera-knn-settings')]
+
+    def _ths_ga(self, a):
+        self.ga_mutation = self.try_type_convert(a, 'mutation', float, 'ga')
+        self.ga_crossover = self.try_type_convert(a, 'crossover', float, 'ga')
+        self.ga_population = self.try_type_convert(a, 'population', int, 'ga')
+
+    def _ths_weights(self, a):
+        self.add_start_element_handler('weight', self._ths_weight)
+        self.add_end_element_handler('weight', self._the_weight)
+
+    def _the_weights(self):
         self.remove_start_element_handler('weight')
         self.remove_end_element_handler('weight')
 
-    def _ths_num_k(self, a):
-        self.num_k = self.try_type_convert(a, 'value', int, 'num-k')
-
-    def _ths_distance_type(self, a):
-        self.distance_type = \
-          _distance_type_to_number[self.try_type_convert(a, 'value',
-                                                         unicode, 'distance-type')]
-
-    def _ths_ga_mutation(self, a):
-        self.ga_mutation = self.try_type_convert(a, 'value', float, 'ga-mutation')
-
-    def _ths_ga_crossover(self, a):
-        self.ga_crossover = self.try_type_convert(a, 'value', float, 'ga-crossover')
-
-    def _ths_ga_population(self, a):
-        self.ga_population = self.try_type_convert(a, 'value', int, 'ga-population')
-
     def _ths_weight(self, a):
         self._data = u''
-        self._weight_name = a["name"]
+        self._weight_name = str(a["name"])
         self._parser.CharacterDataHandler = self._add_weights
 
     def _the_weight(self):
-        import string
         self._parser.CharacterDataHandler = None
         self.weights[self._weight_name] = array.array('d')
-        tmp = array.array('d')
-        nums = string.split(self._data, u' ')
-        for x in nums:
-            if x == u'' or x == u'\n':
-                continue
-            tmp.append(float(x))
+        nums = str(self._data).split()
+        tmp = array.array('d', [float(x) for x in nums])
         self.weights[self._weight_name] = tmp
 
     def _add_weights(self, data):
@@ -130,6 +119,7 @@ class kNN(gamera.knncore.kNN):
     """k-NN classifier that supports optimization using
     a Genetic Algorithm. This classifier supports all of
     the Gamera interactive/non-interactive classifier interface."""
+
     def __init__(self, features='all'):
         gamera.knncore.kNN.__init__(self)
         self.ga_initial = 0.0
@@ -220,15 +210,15 @@ class kNN(gamera.knncore.kNN):
         """Flag to indicate that this classifier has a settings dialog"""
         return 1
     
-    def settings_dialog(self):
+    def settings_dialog(self, parent):
         """Display a settings dialog for k-NN settings"""
         from gamera import args
         dlg = args.Args([args.Int('k', range=(0, 100), default=self.num_k),
                          args.Choice('Distance Function',
-                                     ['City Block', 'Euclidean', 'Fast Euclidean'],
+                                     ['City block', 'Euclidean', 'Fast Euclidean'],
                                      default = self.distance_type)
                          ], name="kNN settings")
-        results = dlg.show(None)
+        results = dlg.show(parent)
         if results is None:
             return
         self.num_k, self.distance_type = results
@@ -242,31 +232,29 @@ class kNN(gamera.knncore.kNN):
         file = open(filename, "w")
         indent = 0
         word_wrap(file, '<?xml version="1.0" encoding="utf-8"?>', indent)
-        word_wrap(file, '<gamera-knn-settings version="1.0">', indent)
+        word_wrap(file, '<gamera-knn-settings version="1.0" num-k="%s" distance-type="%s">'
+                  % (self.num_k, _distance_type_to_name[self.distance_type]), indent)
         indent += 1
-        word_wrap(file, '<num-k value="%s"/>' % self.num_k, indent)
-        word_wrap(file, '<distance-type value="%s"/>' % _distance_type_to_name[self.distance_type],
-                  indent)
-        word_wrap(file, '<ga-mutation value="%s"/>' % self.ga_mutation, indent)
-        word_wrap(file, '<ga-crossover value="%s"/>' % self.ga_crossover, indent)
-        word_wrap(file, '<ga-population value="%s"/>' % self.ga_population, indent)
+        word_wrap(file, '<ga mutation="%s" crossover="%s" population="%s"/>' %
+                  (self.ga_mutation, self.ga_crossover, self.ga_population), indent)
         if self.feature_functions != None:
             word_wrap(file, '<weights>', indent)
             indent += 1
             feature_no = 0
+            weights = self.get_weights()
             for name, function in self.feature_functions:
                 word_wrap(file, '<weight name="%s">' % name, indent)
                 length = function.return_type.length
                 word_wrap(file,
                           [str(x) for x in
-                           self.weights[feature_no:feature_no+length]],
+                           weights[feature_no:feature_no+length]],
                           indent + 1)
                 word_wrap(file, '</weight>', indent)
                 feature_no += length
             indent -= 1
             word_wrap(file, '</weights>', indent)
         indent -= 1
-        word_wrap(file, '</gamera-knn-database>', indent)
+        word_wrap(file, '</gamera-knn-settings>', indent)
         file.close()
 
     def load_settings(self, filename):
@@ -291,22 +279,17 @@ class kNN(gamera.knncore.kNN):
         functions = []
         for key in loader.weights:
             try:
-                func = core.ImageBase.get_feature_functions(str(key))
+                func = core.ImageBase.get_feature_functions(key)
             except Exception, e:
-                raise AttributeError("While loading the weights " +
-                "an unknown feature function was found.  The feature name was: " + key)
+                raise gamera.gamera_xml.XMLError("While loading the weights " +
+                "an unknown feature function '%s' was found." % key)
             functions.append(func[0])
         functions.sort()
         self.change_feature_set(functions)
         # Create the weights array with the weights in the correct order
         weights = array.array('d')
         for x in self.feature_functions:
-            print self.feature_functions
-            print x
-            tmp = loader.weights[str(x[0])]
-            print tmp
-            print self.interactive_weights
-            weights.extend(tmp)
+            weights.extend(loader.weights[x[0]])
         self.set_weights(weights)
             
         

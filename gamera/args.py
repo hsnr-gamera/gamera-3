@@ -91,11 +91,11 @@ if _has_gui == _WX_GUI:
          return buttons
 
       # generates the dialog box
-      def setup(self, parent, locals, wizard=0):
+      def setup(self, parent, locals):
          self.window = wxPython.wx.wxDialog(parent, -1, self.name,
                                             style=wxPython.wx.wxCAPTION)
          self.window.SetAutoLayout(wxPython.wx.true)
-         if wizard:
+         if self.wizard:
             bigbox = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
             from gamera.gui import gamera_icons
             bmp = gamera_icons.getGameraWizardBitmap()
@@ -104,7 +104,7 @@ if _has_gui == _WX_GUI:
          self.box = wxPython.wx.wxBoxSizer(wxPython.wx.wxVERTICAL)
          self.border = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
          self._create_controls(locals)
-         if wizard:
+         if self.wizard:
             buttons = self._create_wizard_buttons()
          else:
             buttons = self._create_buttons()
@@ -125,7 +125,7 @@ if _has_gui == _WX_GUI:
          self.box.Add(buttons, 0, wxPython.wx.wxALIGN_RIGHT)
          self.box.RecalcSizes()
          self.gs.RecalcSizes()
-         if wizard:
+         if self.wizard:
             bigbox.Add(self.box,
                        1,
                        wxPython.wx.wxEXPAND|wxPython.wx.wxALL|wxPython.wx.wxALIGN_TOP,
@@ -143,7 +143,7 @@ if _has_gui == _WX_GUI:
          self.wizard = wizard
          if function != None:
             self.function = function
-         self.setup(parent, locals, wizard=wizard)
+         self.setup(parent, locals)
          result = wxPython.wx.wxDialog.ShowModal(self.window)
          self.window.Destroy()
          if result == wxPython.wx.wxID_CANCEL:
@@ -161,7 +161,7 @@ if _has_gui == _WX_GUI:
          core.help(self.function)
 else:
    class _guiArgs:
-      def setup(self, parent, locals, wizard=0):
+      def setup(self, parent, locals):
          raise Exception("No GUI environment available.  Cannot display dialog.")
 
       def show(self, parent, locals, function=None, wizard=0):
@@ -186,24 +186,8 @@ class Args(_guiArgs):
       return "<" + self.__class__.__name__ + ">"
 
    def get_args_string(self):
-      results = []
-      for control in self.controls:
-         res = control.get()
-         if res == None:
-            return ''
-         results.append(control.get())
-      tuple = '('
-      for i in range(len(results)):
-         if results[i] != None:
-            if (type(results[i]) == StringType and self.wizard and
-                results[i][0] != "'"):
-               tuple = tuple + "'" + str(results[i]) + "'"
-            else:
-               tuple = tuple + str(results[i])
-            if i == len(results) - 1:
-               tuple = tuple + ")"
-            else:
-               tuple = tuple + ", "
+      results = [x.get_string() for x in self.controls]
+      tuple = '(' + ', '.join(results) + ')'
       return tuple
 
    def get_args(self):
@@ -211,7 +195,6 @@ class Args(_guiArgs):
 
    def __getitem__(self, i):
       return self.list[i]
-
    index = __getitem__
 
    def __len__(self, i):
@@ -246,7 +229,10 @@ if _has_gui == _WX_GUI:
          return self
 
       def get(self):
-         return self.control.GetValue()
+         return int(self.control.GetValue())
+
+      def get_string(self):
+         return str(self.control.GetValue())
 else:
    class _guiInt:
       pass
@@ -330,7 +316,10 @@ if _has_gui == _WX_GUI:
          return self
 
       def get(self):
-         return self.control.GetValue()
+         return float(self.control.GetValue())
+
+      def get_string(self):
+         return str(self.control.GetValue())
 else:
    class _guiReal:
       pass
@@ -359,7 +348,10 @@ if _has_gui == _WX_GUI:
          return self
 
       def get(self):
-         return "'" + self.control.GetString() + "'"
+         return self.control.GetString()
+
+      def get_string(self):
+         return "r'" + self.control.GetString() + "'"
 else:
    class _guiString:
       pass
@@ -373,11 +365,11 @@ class String(_guiString, Arg):
 if _has_gui == _WX_GUI:
    class _guiClass:
       def determine_choices(self, locals):
+         self.locals = locals
          if self.klass is None:
             choices = locals.keys()
          else:
             choices = []
-            self.locals = locals
             for i in locals.items():
                if ((self.list_of and isinstance(i[1], ListType) and
                     len(i[1]) and isinstance(i[1][0], self.klass)) or
@@ -394,6 +386,12 @@ if _has_gui == _WX_GUI:
 
       def get(self):
          if self.control.Number() > 0:
+            return self.locals[self.control.GetStringSelection()]
+         else:
+            return None
+
+      def get_string(self):
+         if self.control.Number() > 0:
             return self.control.GetStringSelection()
          else:
             return 'None'
@@ -409,7 +407,7 @@ class Class(_guiClass, Arg):
 
 # Image (a drop-down list of instances of a given class in a given namespace)
 if _has_gui == _WX_GUI:
-   class _guiImage(_guiClass):
+   class _guiImageType(_guiClass):
       def determine_choices(self, locals):
          import core
          choices = []
@@ -424,10 +422,10 @@ if _has_gui == _WX_GUI:
                      choices.append(key)
          return choices
 else:
-   class _guiImage(_guiClass):
+   class _guiImageType(_guiClass):
       pass
 
-class ImageType(_guiImage, Arg):
+class ImageType(_guiImageType, Arg):
    def __init__(self, pixel_types, name="self", list_of = 0):
       import core
       self.name = name
@@ -462,13 +460,21 @@ if _has_gui == _WX_GUI:
             self.control.SetSelection(self.default)
          return self
 
+      def get_string(self):
+         selection = self.control.GetSelection()
+         if (len(self.choices[selection]) == 2 and
+             type(self.choices[selection]) != StringType):
+            return str(self.choices[selection][1])
+         else:
+            return str(selection)
+
       def get(self):
          selection = self.control.GetSelection()
          if (len(self.choices[selection]) == 2 and
              type(self.choices[selection]) != StringType):
             return self.choices[selection][1]
          else:
-            return selection
+            return int(selection)
 else:
    class _guiChoice:
       pass
@@ -495,12 +501,19 @@ if _has_gui == _WX_GUI:
          self.control.Add(browse, 0)
          return self
 
-      def get(self):
+      def get_string(self):
          text = self.text.GetValue()
          if text == "":
             return "None"
          else:
             return "r'" + self.text.GetValue() + "'"
+
+      def get(self):
+         text = self.text.GetValue()
+         if text == "":
+            return None
+         else:
+            return str(text)
 else:
    class _guiFilename:
       pass
@@ -515,7 +528,7 @@ if _has_gui == _WX_GUI:
    class FileOpen(_Filename):
       def OnBrowse(self, event):
          from gui import gui_util
-         filename = gui_util.open_file_dialog(self.extension)
+         filename = gui_util.open_file_dialog(self.text, self.extension)
          if filename:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
@@ -523,7 +536,7 @@ if _has_gui == _WX_GUI:
    class FileSave(_Filename):
       def OnBrowse(self, event):
          from gui import gui_util
-         filename = gui_util.save_file_dialog(self.extension)
+         filename = gui_util.save_file_dialog(self.text, self.extension)
          if filename:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
@@ -549,6 +562,9 @@ if _has_gui == _WX_GUI:
          self.control = wxPython.wx.wxRadioButton(parent, -1, self.radio_button)
          return self
 
+      def get_string(self):
+         return str(self.control.GetValue())
+
       def get(self):
          return self.control.GetValue()
 else:
@@ -567,6 +583,9 @@ if _has_gui == _WX_GUI:
          self.control = wxPython.wx.wxCheckBox(parent, -1, self.check_box)
          self.control.SetValue(self.default)
          return self
+
+      def get_string(self):
+         return str(self.control.GetValue())
 
       def get(self):
          return self.control.GetValue()
@@ -624,8 +643,9 @@ if _has_gui == _WX_GUI:
          self.control = wxPython.wx.wxStaticText(parent, -1, "")
          return self
 
-      def get(self):
+      def get_string(self):
          return None
+      get = get_string
 else:
    class _guiInfo:
       pass
@@ -634,7 +654,7 @@ class Info(_guiInfo, Arg):
    def __init__(self, name):
       self.name = name
 
-class Wizard:
+class Wizard(Args):
    def show(self, dialog):
       dialog_history = ['start']
       next_dialog = dialog
@@ -644,8 +664,7 @@ class Wizard:
          result = next_dialog.show(self.parent, self.locals, wizard=1)
          if result != None:
             dialog_history.append(next_dialog)
-            self.locals['self'] = self
-            next_dialog = eval("self." + result, {}, self.locals)
+            next_dialog = getattr(self, result)
          else:
             next_dialog = dialog_history[-1]
             dialog_history = dialog_history[0:-1]

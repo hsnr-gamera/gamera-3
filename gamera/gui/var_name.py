@@ -38,9 +38,11 @@ def get(default='untitled', dict={}):
             if number > 1000:
                 number = 0
                 break
-        dlg = wxTextEntryDialog(NULL,
-                                'Please enter a variable name for the result',
-                                'Select a variable name', name)
+        dlg = wxTextEntryDialog(
+            NULL,
+            'Please enter a variable name for the result',
+            'Select a variable name', name,
+            style=wxDIALOG_NO_PARENT)
         button = dlg.ShowModal()
         if button == wxID_OK:
             result = dlg.GetValue()

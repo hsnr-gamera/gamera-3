@@ -348,7 +348,9 @@ class ImageBase:
          import plugin
          all_functions = 1
          for feature in features:
-            if not isinstance(feature, plugin.PluginFunction):
+            if not (type(feature) == TupleType and
+                    type(feature[0]) == StringType and
+                    issubclass(feature[1], plugin.PluginFunction)):
                all_functions = 0
                break
          if not all_functions:

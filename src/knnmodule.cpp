@@ -304,13 +304,12 @@ inline int compute_distance(PyObject* known, PyObject* unknown, double* weights,
 }
 
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
-  PyObject* unknown, *known;
-  if (PyArg_ParseTuple(args, "OO", &known, &unknown) <= 0) {
+  PyObject* unknown, *iterator;
+  if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
     return 0;
   }
 
-  PyObject* iterator = PyObject_GetIter(known);
-  if (iterator == NULL) {
+  if (!PyIter_Check(iterator)) {
     PyErr_SetString(PyExc_TypeError, "Known features must be iterable.");
     return 0;
   }

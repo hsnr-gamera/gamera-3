@@ -92,9 +92,9 @@ class Arg:
 class Int(Arg):
    def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
       Arg.__init__(self, name)
-      if not (type(range) == tuple and len(range) == 2 and
-              type(range[0]) == int and type(range[1]) == int):
-         raise TypeError("'range' must be a 2-tuple of ints")
+      if not (util.is_sequence(range) and len(range) == 2 and
+              type(range[0]) in (int, float) and type(range[1]) in (int, float)):
+         raise TypeError("'range' must be a 2-tuple of numbers")
       self.rng = range
       if default is None:
          self.has_default = False
@@ -116,20 +116,22 @@ class Int(Arg):
       return result
 
 class Real(Arg):
-   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
+   def __init__(self, name=None,
+                range=(float(-sys.maxint), float(sys.maxint)),
+                default=None):
       Arg.__init__(self, name)
-      if not (type(range) == tuple and len(range) == 2 and
-              type(range[0]) == float and type(range[1]) == float):
-         raise TypeError("'range' must be a 2-tuple of ints")
+      if not (util.is_sequence(range) and len(range) == 2 and
+              type(range[0]) in (int, float) and type(range[1]) in (int, float)):
+         raise TypeError("'range' must be a 2-tuple of numbers")
       self.rng = range
       if default is None:
          self.has_default = False
-         self.default = 0
+         self.default = 0.0
       else:
          self.has_default = True
          self.default = default
       if type(self.default) != float:
-         raise TypeError("'default' must be an float")
+         raise TypeError("'default' must be a float")
 
    def rest_repr(self, name=False):
       result = "float"
@@ -261,7 +263,7 @@ class Radio(Arg):
 class Check(Arg):
    def __init__(self, name=None, check_box='', default=None, enabled=True):
       Arg.__init__(self, name)
-      if not util.is_string_or_unicode(checkbox):
+      if not util.is_string_or_unicode(check_box):
          raise TypeError("'check_box' must be a string")
       self.check_box = check_box
       if default is None:

@@ -134,22 +134,6 @@ By categories
 
   - sobel_edge_detection_
 
-- Corelation_
-
-  - corelation_sum_
-
-  - corelation_sum_squares_
-
-  - corelation_weighted_
-
-- DTW_
-
-  - dtw_matrix_
-
-  - dtw_matrix_with_function_
-
-  - smith_waterman_
-
 - Deformations_
 
   - ink_diffuse_
@@ -344,10 +328,6 @@ By categories
 
   - shear_row_
 
-- TextLineFinding_
-
-  - text_line_finding_fuzzy_runlength_
-
 - Thresholding_
 
   - abutaleb_threshold_
@@ -404,11 +384,11 @@ bernsen_threshold_, BinomialKernel_, black_area_, black_horizontal_run_histogram
 
 **C**
 
-canny_edge_image_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_sum_, corelation_sum_squares_, corelation_weighted_, cyan_
+canny_edge_image_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, cyan_
 
 **D**
 
-despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_, draw_filled_rect_, draw_hollow_rect_, draw_line_, draw_marker_, dtw_matrix_, dtw_matrix_with_function_
+despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_, draw_filled_rect_, draw_hollow_rect_, draw_line_, draw_marker_
 
 **E**
 
@@ -456,11 +436,11 @@ rank_, red_, remove_border_, resize_, rotate_, rotation_angle_projections_
 
 **S**
 
-saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sharpen_, SimpleSharpeningKernel_, skeleton_features_, smith_waterman_, sobel_edge_detection_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, subtract_images_, SymmetricGradientKernel_
+saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sharpen_, SimpleSharpeningKernel_, skeleton_features_, sobel_edge_detection_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, subtract_images_, SymmetricGradientKernel_
 
 **T**
 
-text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
+thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
 
 **U**
 
@@ -551,14 +531,6 @@ zernike_moments_
 .. _laplacian_of_gaussian: convolution.html#laplacian-of-gaussian
 .. _simple_sharpen: convolution.html#simple-sharpen
 .. _sobel_edge_detection: convolution.html#sobel-edge-detection
-.. _Corelation: corelation.html#corelation
-.. _corelation_sum: corelation.html#corelation-sum
-.. _corelation_sum_squares: corelation.html#corelation-sum-squares
-.. _corelation_weighted: corelation.html#corelation-weighted
-.. _DTW: dtw.html#dtw
-.. _dtw_matrix: dtw.html#dtw-matrix
-.. _dtw_matrix_with_function: dtw.html#dtw-matrix-with-function
-.. _smith_waterman: dtw.html#smith-waterman
 .. _Deformations: deformations.html#deformations
 .. _ink_diffuse: deformations.html#ink-diffuse
 .. _inkrub: deformations.html#inkrub
@@ -656,8 +628,6 @@ zernike_moments_
 .. _Shearing: shearing.html#shearing
 .. _shear_column: shearing.html#shear-column
 .. _shear_row: shearing.html#shear-row
-.. _TextLineFinding: textlinefinding.html#textlinefinding
-.. _text_line_finding_fuzzy_runlength: textlinefinding.html#text-line-finding-fuzzy-runlength
 .. _Thresholding: thresholding.html#thresholding
 .. _abutaleb_threshold: thresholding.html#abutaleb-threshold
 .. _bernsen_threshold: thresholding.html#bernsen-threshold

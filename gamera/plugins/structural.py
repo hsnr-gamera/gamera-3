@@ -23,11 +23,15 @@ between glyphs."""
 from gamera.plugin import * 
 
 class bounding_box_grouping_function(PluginFunction):
+    """Given two rectangles *a*, *b*, and a given *threshold* distance (in pixels),
+returns ``True`` if the two rectangles are closer than *threshold*."""
     self_type = None
     args = Args([Rect("a"), Rect("b"), Int("threshold")])
     return_type = Check("connected")
 
 class shaped_grouping_function(PluginFunction):
+    """Given two connected components *a*, *b*, and a given *threshold* distance (in pixels),
+returns ``True`` if any pixel in *a* are closer than *threshold* to any pixel in *b*."""
     self_type = None
     args = Args([ImageType(ONEBIT, "a"), ImageType(ONEBIT, "b"), Int("threshold")])
     return_type = Check("connected")

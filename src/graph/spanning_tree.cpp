@@ -32,13 +32,13 @@ GraphObject* graph_create_spanning_tree(GraphObject* so, Node* root) {
     NP_VISITED(node) = true;
     Node* new_node1 = graph_add_node(tree, node->m_data);
     for (EdgeList::iterator j = node->m_edges.begin();
-	 j != node->m_edges.end(); ++j) {
+			j != node->m_edges.end(); ++j) {
       Node* inner_node = (*j)->traverse(node);
       if (!NP_VISITED(inner_node)) {
-	Node* new_node2 = graph_add_node(tree, inner_node->m_data);
-	graph_add_edge(tree, new_node1, new_node2, (*j)->m_cost);
-	node_stack.push(inner_node);
-	NP_VISITED(inner_node) = true;
+		  Node* new_node2 = graph_add_node(tree, inner_node->m_data);
+		  graph_add_edge(tree, new_node1, new_node2, (*j)->m_cost);
+		  node_stack.push(inner_node);
+		  NP_VISITED(inner_node) = true;
       }
     }
   }
@@ -54,7 +54,6 @@ PyObject* graph_create_spanning_tree(PyObject* self, PyObject* pyobject) {
   return (PyObject*)graph_create_spanning_tree(so, root);
 }
 
-/*
 
 struct minimum_spanning_queue_comp_func
 {
@@ -62,6 +61,7 @@ struct minimum_spanning_queue_comp_func
     return a->m_cost > b->m_cost;
   }
 };
+
 GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   // Kruskal's algorithm
   typedef std::priority_queue<Edge*, std::vector<Edge*>,
@@ -69,59 +69,79 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   EdgeQueue edge_queue;
 
   for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i)
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j)
-      EP_VISITED(*j) = false;
-  
-  for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i)
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j) {
-      if (!EP_VISITED(*j)) {
-	EP_VISITED(*j) = true;
-	if ((*j)->m_other)
-	  EP_VISITED((*j)->m_other) = true;
-	edge_queue.push(*j);
-      }
-    }
-
-  for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i)
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-			j != (*i)->m_out_edges->end(); ++j) {
-		if (!EP_VISITED(*j)) {
-		  EP_VISITED(*j) = true;
-		  EP_VISITED((*j)->m_other) = true;
-		  edge_queue.push(*j);
-		  // Increase reference count, since we're about to delete all edges
-		  Py_INCREF((PyObject*)(*j));
-		}
-    }
+       i != so->m_nodes->end(); ++i) {
+	 for (EdgeList::iterator j = (*i)->m_edges.begin();
+	      j != (*i)->m_edges.end(); ++j) {
+	   edge_queue.push(*j);
+	 }
+  }
   
   size_t flags = so->m_flags;
   UNSET_FLAG(flags, FLAG_CYCLIC);
   GraphObject* tree = graph_new(flags);
   tree->m_nodes->reserve(so->m_nodes->size());
   for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i)
+       i != so->m_nodes->end(); ++i) {
     graph_add_node(tree, (*i)->m_data);
+  }
   
-  size_t divisor = 1;
-  if (!HAS_FLAG(tree->m_flags, FLAG_DIRECTED))
-    divisor = 2;
-
-  while (!edge_queue.empty() && tree->m_nedges / divisor < tree->m_nodes->size() - 1) {
+  while (!edge_queue.empty() && tree->m_edges->size() < tree->m_nodes->size() - 1) {
     Edge* edge = edge_queue.top();
     edge_queue.pop();
-    graph_add_edge(tree, edge->m_from_node->m_data, edge->m_to_node->m_data, edge->m_cost, edge->m_label);
+    graph_add_edge(tree, edge->m_from_node->m_data, edge->m_to_node->m_data,
+		   edge->m_cost, edge->m_label);
   }
   return tree;
 }
 
-PyObject* graph_create_minimum_spanning_tree(PyObject* self, PyObject* _) {
-  GraphObject* so = ((GraphObject*)self);
-  return (PyObject*)graph_create_minimum_spanning_tree(so);
+PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject* images,
+																		 PyObject* uniq_dists) {
+  if (!PyList_Check(uniq_dists) || !PyList_Check(images)) {
+	 PyErr_SetString(PyExc_TypeError, "uniq_dists and images must be a list.");
+	 return 0;
+  }
+  
+  // get the graph ready
+  graph_remove_all_edges(so);
+  graph_make_acyclic(so);
+  
+  // Add the nodes to the graph and build our map for later
+  int images_len = PyList_Size(images);
+  int i;
+  
+  // create the mst using kruskal
+  i = 0;
+  int uniq_dists_len = PyList_Size(uniq_dists);
+  while (i < uniq_dists_len && (int(so->m_edges->size()) < (images_len - 1))) {
+	 PyObject* cur_tuple = PyList_GET_ITEM(uniq_dists, i);
+	 if (!PyTuple_Check(cur_tuple) || (PyTuple_GET_SIZE(cur_tuple) != 3)) {
+		PyErr_SetString(PyExc_TypeError, "list didn't contain an appropriate tuple.");
+		return 0;
+	 }
+	 PyObject* cur = PyTuple_GET_ITEM(cur_tuple, 0);
+	 if (!PyFloat_Check(cur)) {
+		PyErr_SetString(PyExc_TypeError, "First item in tuple must be a float.");
+		return 0;
+	 }
+	 PyObject* a = PyTuple_GET_ITEM(cur_tuple, 1);
+	 PyObject* b = PyTuple_GET_ITEM(cur_tuple, 2);
+	 assert(a != b);
+	 graph_add_edge(so, a, b, PyFloat_AS_DOUBLE(cur));
+	 ++i;
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
-*/
+PyObject* graph_create_minimum_spanning_tree(PyObject* self, PyObject* args) {
+  PyObject* images = 0;
+  PyObject* uniq_dists = 0;
+  if (PyArg_ParseTuple(args, "|OO", &images, &uniq_dists) <= 0)
+	 return 0;
+  GraphObject* so = ((GraphObject*)self);
+  if (images == 0 || uniq_dists == 0)
+    return (PyObject*)graph_create_minimum_spanning_tree(so);
+  else
+    return graph_minimum_spanning_tree_unique_distances(so, images, uniq_dists);
+}
+

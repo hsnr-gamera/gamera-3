@@ -19,7 +19,8 @@
 #ifndef mgd010103_graphlib_hpp
 #define mgd010103_graphlib_hpp
 
-#define DEBUG_DEALLOC
+//#define DEBUG_DEALLOC
+//#define DEBUG
 
 #include <Python.h>
 #include <iostream>

@@ -1131,7 +1131,8 @@ class ClassifierFrame(ImageFrameBase):
    def _SavePageCollection(self, filename, glyphs=None, with_features=True):
       if glyphs is None:
          glyphs = self.multi_iw.id.GetAllItems()
-      self._classifier.generate_features(glyphs)
+      for glyph in glyphs:
+         self._classifier.generate_features(glyph)
       try:
          gamera_xml.WriteXMLFile(
             glyphs=glyphs,
@@ -1150,7 +1151,8 @@ class ClassifierFrame(ImageFrameBase):
           "Are you sure you want to save?") % len(glyphs)):
          filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
          if filename:
-            self._classifier.generate_features(glyphs)
+            for glyph in glyphs:
+               self._classifier.generate_features(glyph)
             try:
                gamera_xml.WriteXMLFile(
                   glyphs=glyphs,
@@ -1199,7 +1201,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnOpenAndSegmentImage(self, event):
       if self.multi_iw.id.is_dirty:
-         if not gui_util.are_you_sure_dialog("Editing glyphs have not been saved.  Are you sure you wish to proceed?"):
+         if not gui_util.are_you_sure_dialog("Page glyphs have not been saved.  Are you sure you wish to proceed?"):
             return
       segmenters = [x[0] for x in
                     ImageBase.methods_flat_category("Segmentation", ONEBIT)]
@@ -1232,7 +1234,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnSelectAndSegmentImage(self, event):
       if self.multi_iw.id.is_dirty:
-         if not gui_util.are_you_sure_dialog("Editing glyphs have not been saved.  Are you sure you wish to proceed?"):
+         if not gui_util.are_you_sure_dialog("Page glyphs have not been saved.  Are you sure you wish to proceed?"):
             return
       segmenters = [x[0] for x in
                     ImageBase.methods_flat_category("Segmentation", ONEBIT)]

@@ -127,10 +127,14 @@ class OptimizerFrame(wxFrame):
    def enable_controls(self, enable=True):
       id = self.optimizer_menu.FindItem("Start")
       self.optimizer_menu.Enable(id, enable)
-      id = self.optimizer_menu.FindItem("Features")
+      id = self.optimizer_menu.FindItem("Features...")
       self.optimizer_menu.Enable(id, enable)
       id = self.optimizer_menu.FindItem("Open")
       self.optimizer_menu.Enable(id, enable)
+      id = self.file_menu.FindItem("Save settings")
+      self.file_menu.Enable(id, True)
+      id = self.file_menu.FindItem("Save settings as...")
+      self.file_menu.Enable(id, True)
       self.status.enable_controls(enable)
       self.update_status()
       
@@ -148,6 +152,7 @@ class OptimizerFrame(wxFrame):
          self.enable_controls(True)
          id = self.optimizer_menu.FindItem("Stop")
          self.optimizer_menu.Enable(id, False)
+         
          wxEndBusyCursor()
 
    def start(self):
@@ -200,7 +205,7 @@ class OptimizerFrame(wxFrame):
       if self.classifier == None:
          gui_util.message("There is no loaded classifier to save.")
       else:
-         if self.settings_filename != None:
+         if self.settings_filename is not None:
             wxBeginBusyCursor()
             self.classifier.save_settings(self.settings_filename)
             wxEndBusyCursor()
@@ -212,9 +217,10 @@ class OptimizerFrame(wxFrame):
          gui_util.message("There is no loaded classifier to save.")
       else:
          self.settings_filename = gui_util.save_file_dialog(self)
-         wxBeginBusyCursor()
-         self.classifier.save_settings(self.settings_filename)
-         wxEndBusyCursor()
+         if self.settings_filename is not None:
+            wxBeginBusyCursor()
+            self.classifier.save_settings(self.settings_filename)
+            wxEndBusyCursor()
 
    def start_cb(self, evt):
       self.start()

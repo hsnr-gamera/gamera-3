@@ -533,8 +533,6 @@ class Cc(gameracore.Cc, ImageBase):
 # this is a convenience function for using in a console
 _gamera_initialised = False
 def _init_gamera():
-   import traceback
-   traceback.print_stack()
    global _gamera_initialised
    if _gamera_initialised:
       return

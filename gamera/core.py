@@ -243,7 +243,7 @@ class ImageBase:
          self.id_name = [id_name]
       else:
          self.id_name = list(id_name)
-      self.classification_state = CLASS_MANUAL
+      self.classification_state = MANUAL
 
    def set_id_name_automatic(self, id_name):
       if id_name[-1] == ".":
@@ -252,7 +252,7 @@ class ImageBase:
          self.id_name = [id_name]
       else:
          self.id_name = list(id_name)
-      self.classification_state = CLASS_AUTOMATIC
+      self.classification_state = AUTOMATIC
 
    def set_id_name_heuristic(self, id_name):
       if id_name[-1] == ".":
@@ -261,7 +261,7 @@ class ImageBase:
          self.id_name = [id_name]
       else:
          self.id_name = list(id_name)
-      self.classification_state = CLASS_HEURISTIC
+      self.classification_state = HEURISTIC
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""

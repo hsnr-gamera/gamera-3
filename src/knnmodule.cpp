@@ -19,45 +19,100 @@
 
 #include "gameramodule.hpp"
 #include "knn.hpp"
+#include <algorithm>
 #include <string.h>
+#include <Python.h>
 
 using namespace Gamera;
 using namespace Gamera::kNN;
 
 extern "C" {
   void initknn(void);
-  static PyObject* knn_new(PyObject* pytype, PyObject* args, PyObject* kwds);
+  static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
+			   PyObject* kwds);
   static void knn_dealloc(PyObject* self);
-  static PyObject* knn_classify_using_list(PyObject* self, PyObject* args);
+  static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args);
+  static PyObject* knn_classify(PyObject* self, PyObject* args);
+  static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
+  static PyObject* knn_get_interactive(PyObject* self);
 }
 
-struct KnnObject {
-  PyObject_HEAD
-};
-
-static PyTypeObject KnnType {
+static PyTypeObject KnnType = {
   PyObject_HEAD_INIT(NULL)
   0,
 };
 
+enum DistanceType {
+  CITY_BLOCK,
+  EUCLIDEAN,
+  FAST_EUCLIDEAN
+};
+
+struct KnnObject {
+  PyObject_HEAD
+  size_t num_features;
+  size_t num_feature_vectors;
+  double* feature_vectors;
+  char** id_names;
+  size_t num_k;
+  DistanceType distance_type;
+};
+
+
 PyMethodDef knn_methods[] = {
   { "classify_with_images", knn_classify_with_images, METH_VARARGS,
-    "foo" },
+    "classify an unknown image using a list of images." },
+  { "instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
+    "" },
+  { "classify", knn_classify, METH_VARARGS,
+    "" },
+  { NULL }
+};
+
+PyGetSetDef knn_getset[] = {
+  { "interactive", (getter)knn_get_interactive, 0,
+    "bool property indicating whether this object supports interactive classification.", 0 },
   { NULL }
 };
 
 // for type checking images - see initknn.
 static PyTypeObject* imagebase_type;
 
-static PyObject* knn_new(PyObject* pytype, PyObject* args, PyObject* kwds) {
+static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
+			 PyObject* kwds) {
   KnnObject* o;
   o = (KnnObject*)pytype->tp_alloc(pytype, 0);
+  o->num_features = 0;
+  o->num_feature_vectors = 0;
+  o->feature_vectors = 0;
+  o->id_names = 0;
+  o->num_k = 1;
   return (PyObject*)o;
 }
 
+static void knn_delete_data(KnnObject* o) {
+  if (o->feature_vectors != 0)
+    delete o->feature_vectors;
+  if (o->id_names != 0) {
+    for (size_t i = 0; i < o->num_feature_vectors; ++i)
+      delete o->id_names[i];
+    delete o->id_names;
+  }
+  o->num_features = 0;
+  o->num_feature_vectors = 0;
+}
+
 static void knn_dealloc(PyObject* self) {
+  KnnObject* o = (KnnObject*)self;
+  knn_delete_data(o);
   self->ob_type->tp_free(self);
 }
+
+struct ltstr {
+  bool operator()(const char* s1, const char* s2) const {
+    return strcmp(s1, s2) < 0;
+  }
+};
 
 /*
   get the feature vector from an image. image argument _must_ an image - no
@@ -65,12 +120,22 @@ static void knn_dealloc(PyObject* self) {
 */
 inline int image_get_fv(PyObject* image, double** buf, int* len) {
   ImageObject* x = (ImageObject*)image;
+
+  if (PyObject_CheckReadBuffer(x->m_features) < 0) {
+    return -1;
+  }
+
   if (PyObject_AsReadBuffer(x->m_features, (const void**)buf, len) < 0) {
     PyErr_SetString(PyExc_TypeError, "knn: Could not use image as read buffer.");
     return -1;
   }
-  return buf;
+  if (*len == 0) {
+    return -1;
+  }
+  *len = *len / sizeof(double);
+  return 0;
 }
+
 
 /*
   get the id_name from an image. The image argument _must_ be n image -
@@ -94,84 +159,227 @@ inline int image_get_id_name(PyObject* image, char** id_name) {
     PyErr_SetString(PyExc_TypeError, "knn: could not get string from id_name tuple.");
     return -1;
   }
+  return 0;
 }
+
+static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
+  PyObject* images;
+  KnnObject* o = (KnnObject*)self;
+  if (PyArg_ParseTuple(args, "O", &images) <= 0) {
+    return 0;
+  }
+  if (!PyList_Check(images)) {
+    PyErr_SetString(PyExc_TypeError, "knn: images must be a list!");
+    return 0;
+  }
+  int images_size = PyList_Size(images);
+  if (images_size == 0) {
+    PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
+    return 0;
+  }
+  knn_delete_data(o);
+  o->num_feature_vectors = images_size;
+
+  PyObject* first_image = PyList_GET_ITEM(images, 0);
+  if (!PyObject_TypeCheck(first_image, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+    return 0;
+  }
+
+  double* tmp_fv;
+  int tmp_fv_len;
+  if (image_get_fv(first_image, &tmp_fv, &tmp_fv_len) < 0) {
+    PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
+    return 0;
+  }
+  o->num_features = tmp_fv_len;
+  o->feature_vectors = new double[o->num_feature_vectors * o->num_features];
+  o->id_names = new char*[o->num_feature_vectors];
+  for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+    PyObject* cur_image = PyList_GetItem(images, i);
+    if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
+      knn_delete_data(o);
+      PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
+      return 0;
+    }
+    if (size_t(tmp_fv_len) != o->num_features) {
+      knn_delete_data(o);
+      PyErr_SetString(PyExc_TypeError, "knn: feature vector lengths don't match");
+      return 0;      
+    }
+    for (size_t feature = 0; feature < o->num_features; ++feature) {
+      o->feature_vectors[i * o->num_features + feature] = tmp_fv[feature];
+    }
+    char* tmp_id_name;
+    if (image_get_id_name(cur_image, &tmp_id_name) < 0) {
+      knn_delete_data(o);
+      PyErr_SetString(PyExc_TypeError, "knn: could not get id name");
+      return 0;
+    }
+    o->id_names[i] = new char[strlen(tmp_id_name)];
+    strcpy(o->id_names[i], tmp_id_name);
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* knn_classify(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  if (o->feature_vectors == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "knn: classify called before instantiate from images");
+      return 0;          
+  }
+  PyObject* unknown;
+  if (PyArg_ParseTuple(args, "O", &unknown) <= 0) {
+    return 0;
+  }
+
+  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
+    return 0;
+  }
+  double* fv;
+  int fv_len;
+  if (image_get_fv(unknown, &fv, &fv_len) < 0) {
+    PyErr_SetString(PyExc_TypeError, "knn: could not get features");
+    return 0;
+  }
+  if (size_t(fv_len) != o->num_features) {
+    PyErr_SetString(PyExc_TypeError, "knn: features not the correct size");
+    return 0;
+  }
+
+  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  double* current_known = o->feature_vectors;
+  double* weights = new double[o->num_features];
+  std::fill(weights, weights + o->num_features, 1.0);
+  for (size_t i = 0; i < o->num_feature_vectors; ++i, current_known += o->num_features) {
+    double distance = city_block_distance(current_known, current_known + o->num_features,
+					  fv, weights);
+    knn.add(o->id_names[i], distance);
+  }
+  std::pair<char*, double> answer = knn.majority();
+  PyObject* ans = PyTuple_New(2);
+  PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
+  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first));
+  PyObject* ans_list = PyList_New(1);
+  PyList_SET_ITEM(ans_list, 0, ans);
+  return ans_list;
+}
+
 
 /*
   Compute the distance between a known and an unknown feature
   vector with weights.
 */
-inline int compute_distance(PyObject* known, PyObject* unknown, double* distance) {
-  double* buf;
-  int known_len, len;
-  if (PyObject_AsReadBuffer(known, &buf, &known_len) < 0)
+inline int compute_distance(PyObject* known, PyObject* unknown, double* weights,
+			    double* distance) {
+  double* known_buf, *unknown_buf;
+  int known_len, unknown_len;
+
+  if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0)
     return -1;
 
-  double* k = (double*)buf;
-  int size = known_len / sizeof(double);
-
-  if (PyObject_AsReadBuffer(unknown, &buf, &len) < 0)
+  if (image_get_fv(known, &known_buf, &known_len) < 0)
     return -1;
-  if (len != known_len) {
+
+  if (unknown_len != known_len) {
     PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
     return -1;
   }
 
-  double* u = (double*)buf;
-
-  if (PyObject_AsReadBuffer(weights, &buf, &len) < 0)
-    return -1;
-  if (len != known_len) {
-    PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
-    return -1;
-  }
-
-  double* w = (double*)buf;
-
-  *distance = city_block_distance(k, k + size, u, w);
+  *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
+				  weights);
   return 0;
 }
 
-struct ltstr {
-  bool operator()(const char* s1, const char* s2) const {
-    return strcmp(s1, s2) < 0;
-  }
-};
-
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
-  PyObject* unknown, *known, *weights;
-  if (PyArg_ParseTuple(args, "OOO", &known, &unknown, &weights) <= 0) {
+  PyObject* unknown, *known;
+  if (PyArg_ParseTuple(args, "OO", &known, &unknown) <= 0) {
     return 0;
   }
+
   if (!PyList_Check(known)) {
     PyErr_SetString(PyExc_TypeError, "Known features must be a list!");
     return 0;
   }
+
   int known_size = PyList_Size(known);
   if (known_size == 0) {
     PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
     return 0;
   }
 
-  kNearestNeighbors<PyObject*> knn(1);
+  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
+    return 0;
+  }
+    
+
+  /*
+    create an empty weight vector.
+  */
+  double* weights;
+  int len;
+  if (image_get_fv(unknown, &weights, &len) < 0)
+    return 0;
+  weights = new double[len];
+  std::fill(weights, weights + len, 1.0);
+
+  kNearestNeighbors<char*, ltstr> knn(1);
   for (int i = 0; i < known_size; ++i) {
     PyObject* cur = PyList_GET_ITEM(known, i);
     
+    if (!PyObject_TypeCheck(cur, imagebase_type)) {
+      PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
+    }
     double distance;
-    if (compute_distance(cur, unknown, weights,
-			 &distance) < 0)
+    if (compute_distance(cur, unknown, weights, &distance) < 0)
       return 0;
-    knn.add(PyTuple_GET_ITEM(cur, 0), distance);
+    char* id_name;
+    if (image_get_id_name(cur, &id_name) < 0)
+      return 0;
+    knn.add(id_name, distance);
   }
-  std::pair<PyObject*, double> answer = knn.majority();
+  delete weights;
+
+  std::pair<char*, double> answer = knn.majority();
   PyObject* ans = PyTuple_New(2);
-  Py_INCREF(answer.first);
-  PyTuple_SET_ITEM(ans, 0, answer.first);
-  PyTuple_SET_ITEM(ans, 1, PyFloat_FromDouble(answer.second));
-  return ans;
+  PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
+  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first));
+  PyObject* ans_list = PyList_New(1);
+  PyList_SET_ITEM(ans_list, 0, ans);
+  return ans_list;
 }
 
+static PyObject* knn_get_interactive(PyObject* self) {
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
+
+PyMethodDef knn_module_methods[] = {
+  { NULL }
+};
+
 DL_EXPORT(void) initknn(void) {
-  Py_InitModule("knn", knn_methods);
+  PyObject* m = Py_InitModule("gamera.knn", knn_module_methods);
+  PyObject* d = PyModule_GetDict(m);
+
+  KnnType.ob_type = &PyType_Type;
+  KnnType.tp_name = "gamera.knn.kNN";
+  KnnType.tp_basicsize = sizeof(KnnObject);
+  KnnType.tp_dealloc = knn_dealloc;
+  KnnType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  KnnType.tp_new = knn_new;
+  KnnType.tp_getattro = PyObject_GenericGetAttr;
+  KnnType.tp_alloc = PyType_GenericAlloc;
+  KnnType.tp_free = _PyObject_Del;
+  KnnType.tp_methods = knn_methods;
+  KnnType.tp_getset = knn_getset;
+  PyDict_SetItemString(d, "kNN", (PyObject*)&KnnType);
+
   PyObject* mod = PyImport_ImportModule("gamera.gameracore");
   if (mod == 0) {
     PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");

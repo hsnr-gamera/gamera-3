@@ -1134,7 +1134,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
       wxTreeCtrl.__init__(self, parent, id, pos, size,
                           style=style|wxNO_FULL_REPAINT_ON_RESIZE)
       self.root = self.AddRoot("Symbols")
-      self.SetItemHasChildren(self.root, TRUE)
+      self.SetItemHasChildren(self.root, True)
       self.SetPyData(self.root, "")
       EVT_KEY_DOWN(self, self._OnKey)
       EVT_LEFT_DOWN(self, self._OnLeftDown)

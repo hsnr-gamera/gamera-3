@@ -33,7 +33,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       id = wxNewId()
       wxTreeCtrl.__init__(self, parent, id)
       self.root = self.AddRoot("RuleSets")
-      self.SetItemHasChildren(self.root, TRUE)
+      self.SetItemHasChildren(self.root, True)
       self.SetPyData(self.root, "")
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.Expand(self.root)

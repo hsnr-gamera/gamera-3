@@ -30,7 +30,7 @@ class ThresholdModule(PluginModule):
     category = "Filter"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold]
-    author = "Karl MacMillan"
+    author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
 module = ThresholdModule()

@@ -1,14 +1,21 @@
 from distutils.core import setup, Extension
 import sys, os, time, locale
 import glob
-from gamera import generate
+
+# If gamera.generate is imported gamer.__init__.py will
+# also be imported, which won't work until the build is
+# finished. To get around this, the gamera directory is
+# added to the path and generate is imported directly
+sys.path.append("gamera")
+import generate
+generate.magic_import_setup()
 
 ##########################################
 # generate the plugins
 plugins = glob.glob("gamera/plugins/*.py")
 plugins.remove("gamera/plugins/__init__.py")
 
-plugins = ["gamera/plugins/threshold.py"]
+plugins = ["gamera/plugins/logical.py"]
 
 plugin_extensions = []
 for x in plugins:

@@ -63,7 +63,7 @@ namespace Gamera {
       // assignment only happens if the label matches
       void operator=(T value) {
 	if (m_accessor(m_iter) == m_label)
-	  m_accessor.set(m_iter, value);
+	  m_accessor.set(value, m_iter);
       }
     private:
       I m_iter;

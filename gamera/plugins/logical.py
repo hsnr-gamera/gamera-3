@@ -41,5 +41,7 @@ class LogicalModule(PluginModule):
   category = "Logical"
   cpp_headers = ["logical.hpp"]
   functions = [and_image, or_image, xor_image]
+  author = "Michael Droettboom and Karl MacMillan"
+  url = "http://gamera.dkc.jhu.edu/"
 
 module = LogicalModule()

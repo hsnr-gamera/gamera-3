@@ -13,7 +13,13 @@ from gamera import paths
 # when those C++ modules don't yet exist (which is the case
 # when we are generating and compiling the plugins!).
 def magic_import(name, globals_={}, locals_={}, fromlist=[]):
-  if (name[0] == '_' and name != "__future__") or name == "gamera":
+
+  if fromlist != None and "core" in fromlist:
+    fromlist = list(fromlist)
+    fromlist.remove("core")
+
+  if (name[0] == '_' and name[1] != "_") or name == "core" or name == "gamera.core":
+    print name
     return None
   else:
     return std_import(name, globals_, locals_, fromlist)
@@ -111,6 +117,7 @@ def generate_plugin(plugin_filename):
         return 0;
       }
       [[exec tmp = [] ]]
+      [[ exec orig_self_types = function.self_type.pixel_types[:] ]]
       [[for type in function.self_type.pixel_types]]
         [[if type == 'OneBit']]
           [[exec tmp.append('OneBitRleImageView')]]
@@ -122,6 +129,7 @@ def generate_plugin(plugin_filename):
       [[exec function.self_type.pixel_types = tmp]]
       [[exec function.self_type.name = 'real_self']]
       [[exec images = [function.self_type] ]]
+      [[exec orig_image_types = [] ]]
       [[for x in function.args.list]]
         [[if isinstance(x, ImageType)]]
           [[exec tmp = [] ]]
@@ -133,6 +141,7 @@ def generate_plugin(plugin_filename):
             [[end]]
             [[exec tmp.append(type + 'ImageView')]]
           [[end]]
+          [[exec orig_image_types.append(x.pixel_types[:])]]
           [[exec x.pixel_types = tmp]]
           [[exec images.append(x)]]
           if (!PyObject_TypeCheck([[x.name + '_arg']], image_type)) {
@@ -158,7 +167,7 @@ def generate_plugin(plugin_filename):
                 [[exec current_image = 1]]
                 [[for i in range(len(function.args.list))]]
                   [[if isinstance(function.args.list[i], ImageType)]]
-                    [[exec arg_string += tmp_args[current_image]]]
+                    [[exec arg_string += tmp_args[current_image] ]]
                     [[exec current_image += 1]]
                   [[else]]
                     [[exec arg_string += function.args.list[i].name + '_arg']]
@@ -186,6 +195,13 @@ def generate_plugin(plugin_filename):
       return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type);
     [[else]]
       return return_value;
+    [[end]]
+
+    [[ exec function.self_type.pixel_types = orig_self_types]]
+    [[for i in range(len(function.args.list))]]
+      [[if isinstance(function.args.list[i], ImageType)]]
+        [[exec function.args.list[i].pixel_types = orig_image_types[i] ]]
+      [[end]]
     [[end]]
     }
   [[end]]
@@ -216,20 +232,20 @@ def generate_plugin(plugin_filename):
   
   """)
   
-  import plugin
-  magic_import_setup()
+  #magic_import_setup()
 
+  import plugin
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
+  sys.path.append(plug_path)
   plugin_module = __import__(module_name)
   module_name = "_" + module_name
   cpp_filename = path.join(plug_path, module_name + ".cpp")
   output_file = open(cpp_filename, "w")
-  sys.path.append(plug_path)
-  #plugin_module.__dict__.update(locals())
+
   template.execute(output_file, plugin_module.__dict__)
-  #os.system("indent -sob -kr " + cpp_filename)
-  restore_import()
+
+  #restore_import()
 
   # make the a distutils extension class for this plugin
   cpp_files = [cpp_filename]

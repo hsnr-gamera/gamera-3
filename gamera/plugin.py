@@ -18,7 +18,8 @@
 #
 
 from gamera.args import *
-from gamera import paths, core
+from gamera import paths
+import gamera.core
 import unittest, new, os, os.path, imp
 
 class PluginModule:
@@ -67,7 +68,7 @@ class PluginFunction:
                                 cls.__name__)
         cls.__call__ = staticmethod(func)
         if isinstance(cls.self_type, ImageType):
-            core.Image.add_plugin_method(cls, func, category)
+            gamera.core.Image.add_plugin_method(cls, func, category)
     register = classmethod(register)
 
     def test(cls):
@@ -125,11 +126,11 @@ class PluginFunction:
 def get_test_image(filename):
     # TODO: should search test image paths
     filename = os.path.join(paths.test, filename)
-    return core.load_image(filename)
+    return gamera.core.load_image(filename)
 
 def get_result_image(filename):
     filename = os.path.join(paths.test_results, filename)
-    return core.load_image(filename)
+    return gamera.core.load_image(filename)
 
 def save_test_image(image, name, no):
     filename = "%s.plugin.%04d.results.tiff" % (name, no)
@@ -150,7 +151,7 @@ class PluginTest(unittest.TestCase):
         fd = file(self._results_filename(), "w")
         image_file_no = 0
         for result in results:
-            if isinstance(result, core.Image):
+            if isinstance(result, gamera.core.Image):
                 image_file_name = save_test_image(result,
                                                   self.plugin_class.__name__,
                                                   image_file_no)
@@ -175,7 +176,7 @@ class PluginTest(unittest.TestCase):
         for result, compare in zip(results, compares):
             print result, compare
             if (compare.startswith("Image File: ") and
-                isinstance(result, core.Image)):
+                isinstance(result, gamera.core.Image)):
                 image = get_result_image(compare[12:])
                 image.display()
                 result.display()

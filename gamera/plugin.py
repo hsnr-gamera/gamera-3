@@ -32,11 +32,17 @@ class PluginModule:
     extra_libraries = []
     library_dirs = []
     functions = []
+    pure_python = 0
     version = "1.0"
     author = ""
     url = ""
 
     def __init__(self):
+        # FIXME - skip this if we can't get gamera.core (i.e.
+        # during the build process).
+        core = __import__("gamera.core")
+        if core is None:
+            return
         for function in self.functions:
             function.register(self.category)
 
@@ -44,6 +50,7 @@ class PluginFunction:
     return_type = None
     self_type = ImageType((ONEBIT, GREYSCALE, GREY16, RGB, FLOAT))
     args = Args([])
+    pure_python = 0
     image_types_must_match = 0
 
     def register(cls, category=None, add_to_image=1):

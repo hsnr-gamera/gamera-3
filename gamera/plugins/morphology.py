@@ -18,27 +18,36 @@
 #
 
 from gamera.plugin import *
-import _erode_dilate
+import _morphology
 
-class _Morphology(PluginFunction):
-  cpp_source = "morphology.hpp"
-  category = "Morphology"
-  self_type = ImageType(["OneBit"])
-
-class erode(_Morphology):
+class erode(PluginFunction):
+  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  pure_python = 1
   def __call__(image):
     _erode_dilate.erode_dilate(image.m, 1, 1, 0)
+  __call__ = staticmethod(__call__)
 erode = erode()
 
-class dilate(_Morphology):
+class dilate(PluginFunction):
+  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  pure_python = 1
   def __call__(image):
     _erode_dilate.erode_dilate(image.m, 1, 0, 0)
+  __call__ = staticmethod(__call__)
 dilate = dilate()
 
-class erode_dilate(_Morphology):
+class erode_dilate(PluginFunction):
+  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('number of times', range=(0, 10), default=1), \
                Choice('direction', ['dilate', 'erode']), \
                Choice('window shape', ['rectangular', 'octagonal'])])
 erode_dilate = erode_dilate()
 
-plugins = [erode, dilate, erode_dilate]
+class MorphologyModule(PluginModule):
+  cpp_headers = ["morphology.hpp"]
+  category = "Morphology"
+  functions = [erode_dilate, erode, dilate]
+  author = "Michael Droettboom and Karl MacMillan"
+  url = "http://gamera.dkc.jhu.edu/"
+
+module = MorphologyModule()

@@ -19,14 +19,18 @@ try:
 except:
     pass
 
-plugins = ["gamera/plugins/tiff_support.py",
+plugins = ["gamera/plugins/morphology.py",
+           "gamera/plugins/tiff_support.py",
            "gamera/plugins/threshold.py",
            "gamera/plugins/gui_support.py",
            "gamera/plugins/logical.py"]
 
 plugin_extensions = []
 for x in plugins:
-    plugin_extensions.append(generate.generate_plugin(x))
+    print x
+    extension = generate.generate_plugin(x)
+    if not extension is None:
+        plugin_extensions.append(extension)
 
 ########################################
 # Check that this is at least Python 2.2

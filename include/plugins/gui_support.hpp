@@ -39,13 +39,9 @@ namespace {
 	tmp = *vi;
 	if (tmp > 255)
 	  tmp = 255;
-	if (tmp > 0) {
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	} else {
-	  i += 3;
-	}
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
       }
     }
   };
@@ -73,13 +69,9 @@ namespace {
 	tmp = *vi * max;
 	if (tmp > 255)
 	  tmp = 255;
-	if (tmp > 0) {
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	} else {
-	  i += 3;
-	}
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
       }
     }
   };
@@ -97,13 +89,9 @@ namespace {
 	  the rgb color space. KWM
 	*/
 	tmp = *vi / 257;
-	if (tmp > 0) {
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	} else {
-	  i += 3;
-	}
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
       }
     }
   };
@@ -135,13 +123,9 @@ namespace {
 	  tmp = 255;
 	else if (is_black(tmp))
 	  tmp = 0;
-	if (tmp > 0) {
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	} else {
-	  i += 3;
-	}
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
+	*i = (char)tmp; i++;
       }
     }
   };

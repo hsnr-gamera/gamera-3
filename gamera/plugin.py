@@ -23,13 +23,13 @@ import gamera.core
 import unittest, new, os, os.path, imp
 from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 
-def get_pixel_type_name(type):
+def get_pixel_type_name(type_):
     _pixel_type_names = {ONEBIT:     "OneBit",
                          GREYSCALE:  "GreyScale",
                          GREY16:     "Grey16",
                          RGB:        "RGB",
                          FLOAT:      "Float"}
-    return _pixel_type_names[type]
+    return _pixel_type_names[type_]
 
 class PluginModule:
     category = "Miscellaneous"

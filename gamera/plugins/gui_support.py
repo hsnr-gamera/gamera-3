@@ -20,7 +20,7 @@
 from gamera.plugin import *
 
 class to_string(PluginFunction):
-    self_type = ImageType(["OneBit", "GreyScale", "Grey16", "Float", "RGB"])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
 
 to_string = to_string()
 

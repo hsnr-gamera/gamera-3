@@ -20,9 +20,9 @@
 from gamera.plugin import *
 
 class threshold(PluginFunction):
-    self_type = ImageType(["OneBit", "GreyScale", "Grey16", "Float"])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
     args = Args([Int("threshold")])
-    return_type = ImageType(["OneBit"], "output")
+    return_type = ImageType([ONEBIT], "output")
     
 threshold = threshold()
 

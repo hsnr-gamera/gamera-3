@@ -23,7 +23,7 @@ from math import ceil, log       # Python standard library
 from sys import maxint
 import string
 from gamera.core import *             # Gamera specific
-from gamera import find_members, paths, util
+from gamera import paths, util
 from gamera.gui import image_menu, var_name
 
 ##############################################################################
@@ -515,7 +515,7 @@ class ImageWindow(wxPanel):
                                  "Refresh")
       EVT_TOOL(self, 10, self.OnRefreshClick)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomBitmap(),
+      self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
                                  "Zoom in")
       EVT_TOOL(self, 20, self.OnZoomInClick)
       self.toolbar.AddSimpleTool(30, gamera_icons.getIconZoomOutBitmap(),
@@ -1097,8 +1097,8 @@ class ImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.iw = ImageWindow(self)
-      from gamer.gui import gamera_icons
-      icon = wxIconFromBitmap(gamera_icon.getIconImageBitmap())
+      from gamera.gui import gamera_icons
+      icon = wxIconFromBitmap(gamera_icons.getIconImageBitmap())
       self.SetIcon(icon)
 
    def __repr__(self):

@@ -18,7 +18,6 @@
 #
 
 from gamera.plugin import *
-from gamera.core import ONEBIT
   
 class _LogicalBase(PluginFunction):
   self_type = ImageType([ONEBIT])

@@ -1,7 +1,4 @@
 recursive-include misc *
-recursive-include mac *.py
-recursive-include mac/gamera.pkg *.*
-recursive-include mac/wxPython.pkg *.*
 recursive-include doc gendoc.py
 recursive-include doc/src *.txt *.png
 recursive-include doc/html *.css
@@ -10,6 +7,12 @@ recursive-include gamera/test *.tiff
 recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO
 recursive-include examples *.py README *.tiff *.xml
 recursive-include include *.hpp *.hxx
+recursive-include include/zlib-1.2.1 *.h
+recursive-include src/zlib-1.2.1 *.c
+recursive-include win32 *.py 
+recursive-include win32/msisource *.mmh *.txt *.jpg *.c *.template *.bmp
+recursive-include gamera/mac/ *.py *.html DMG_DS_STORE
+recursive-include gamera/mac/resources *.jpg
 include INSTALL LICENSE ACKNOWLEDGEMENTS MANIFEST.in setup.cfg gamera_post_install.py version
 
 

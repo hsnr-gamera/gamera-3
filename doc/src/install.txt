@@ -32,14 +32,13 @@ Gamera requires that you install the following software FIRST:
 	little hidden on the wxPython website.  It can be downloaded
 	here__.
 
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
-
 	wxPython tends to change dramatically with even minor version
 	increments (argh!).  I'm currently using 2.4.2.4, but I don't
 	have the resources to support all different minor versions, so
 	if you're having GUI-related problems, I would recommend
 	downloading that **exact** version before submitting a bug report.
 
+.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
 Microsoft Windows
 =================
@@ -130,12 +129,12 @@ If you just want to install Gamera without the ability to uninstall::
 If you'd like a real Windows installer, including uninstallation
 support, you have two options:
 
-1) Use the Python Distutils Installer Maker::
+Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
-2) Use the (currently experimental) MSI creation support provided in 
+Or, use the (currently experimental) MSI creation support provided in 
 the Gamera source tree (see MSI section).
 
 Microsoft Visual Studio
@@ -170,12 +169,12 @@ If you just want to install Gamera without the ability to uninstall::
 If you'd like a real Windows installer, including uninstallation
 support, you have two options:
 
-1) Use the Python Distutils Installer Maker::
+Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
-2) Use the (currently experimental) MSI creation support provided in 
+Or, use the (currently experimental) MSI creation support provided in 
 the Gamera source tree (see MSI section).
 
 MSI (Windows Installer Package)

@@ -28,6 +28,7 @@ extern "C" {
   static int edge_set_cost(PyObject* self, PyObject* obj);
   static PyObject* edge_get_label(PyObject* self);
   static int edge_set_label(PyObject* self, PyObject* obj);
+  static PyObject* edge_get_other(PyObject* self);
 }
 inline bool edge_check_alive(EdgeObject* edge);
 static PyTypeObject EdgeType = {
@@ -48,6 +49,8 @@ PyGetSetDef edge_getset[] = {
     "Cost of traversing this node (get/set)", 0 },
   { "label", (getter)edge_get_label, (setter)edge_set_label,
     "An arbitrary label attached to the edge (get/set)", 0 },
+  { "other", (getter)edge_get_other, 0,
+    "For an undirected graph return the edge pointing in the oppisite direction." },
   { NULL }
 };
 
@@ -164,6 +167,14 @@ int edge_set_label(PyObject* self, PyObject* data) {
   so->m_label = data;
   Py_INCREF(so->m_label);
   return 0;
+}
+
+static PyObject* edge_get_other(PyObject* self) {
+  EdgeObject* so = (EdgeObject*)self;
+  if (!edge_check_alive(so))
+    return 0;
+  Py_INCREF(so->m_other);
+  return (PyObject*)so->m_other;  
 }
 
 void init_EdgeType() {

@@ -534,7 +534,8 @@ def generate_plugin(plugin_filename):
   
   extra_libraries = plugin_module.module.extra_libraries
   if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
-     extra_libraries.append("stdc++")
+     if "stdc++" not in extra_libraries:
+        extra_libraries.append("stdc++")
   compile_args = []
   if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
      compile_args = ["/GR", "/Zi", "/Yd"]

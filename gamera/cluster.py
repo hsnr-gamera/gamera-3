@@ -171,22 +171,22 @@ def make_subtrees_stddev(graph, ratio):
    i = 0
    edges = graph.edges.keys()
    edges.sort()
-   edges.reverse()
    for edge in edges:
       lengths = { }
-      get_lengths(edge.node1, 4, lengths, 0, { edge: None })
-      get_lengths(edge.node2, 4, lengths, 0, { edge: None })
+      get_lengths(edge.node1, 2, lengths, 0, { edge: None })
+      get_lengths(edge.node2, 2, lengths, 0, { edge: None })
       l = lengths.values()
       if not (len(l) > 1):
          continue
-      #stdev = stats.samplestdev(l)
+      stdev = stats.samplestdev(l)
       mean = stats.mean(l)
-      #stdev2 = stats.samplestdev([stats.mean(l), edge.cost])
-      print edge.cost / mean, ratio * mean
-      if (edge.cost) / mean > (ratio * mean):
+      stdev2 = stats.samplestdev([mean, edge.cost])
+      #print edge.cost / mean, ratio * mean
+      print stdev2, mean * ratio
+      if stdev2 > (mean * ratio):
          graph.remove_edge(edge.node1, edge.node2)
-         #remove.append(edge)
-
+         remove.append(edge)
+   print remove
    #for edge in remove:
    #   graph.remove_edge(edge.node1, edge.node2)
 
@@ -194,6 +194,7 @@ def make_subtrees_stddev(graph, ratio):
       node.cluster_label = 0
    for node in graph:
       if node.cluster_label == 0:
+         print "hi"
          label(node, cur_label)
          cur_label += 1
    for node in graph:
@@ -256,7 +257,7 @@ def create_graph(glyphs, ratio):
                break
          progress.step()
       #print detect_cycle(g, g.keys()[0])
-      #check_connected(g)
+      check_connected(g)
       total_cost = 0.0
       counted_edges = { }
    finally:

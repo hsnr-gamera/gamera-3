@@ -67,15 +67,21 @@ void graph_minimum_spanning_tree(GraphObject* so) {
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j) {
+			j != (*i)->m_out_edges->end(); ++j) {
       EP_VISITED(*j) = false;
-      if ((*j)->m_other) {
-	EP_VISITED((*j)->m_other) = false;
-	Py_INCREF((PyObject*)(*j)->m_other);
-      }
-      edge_queue.push(*j);
-      // Increase reference count, since we're about to delete all edges
-      Py_INCREF((PyObject*)(*j));
+	 }
+
+  for (NodeVector::iterator i = so->m_nodes->begin();
+       i != so->m_nodes->end(); ++i)
+    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
+			j != (*i)->m_out_edges->end(); ++j) {
+		if (!EP_VISITED(*j)) {
+		  EP_VISITED(*j) = true;
+		  EP_VISITED((*j)->m_other) = true;
+		  edge_queue.push(*j);
+		  // Increase reference count, since we're about to delete all edges
+		  Py_INCREF((PyObject*)(*j));
+		}
     }
   
   graph_remove_all_edges(so);
@@ -85,18 +91,11 @@ void graph_minimum_spanning_tree(GraphObject* so) {
   if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED))
     divisor = 2;
 
-  while (!edge_queue.empty() && so->m_nedges / divisor < so->m_nodes->size() - 1) {
+  while (!edge_queue.empty() && (so->m_nedges / divisor) < so->m_nodes->size() - 1) {
     EdgeObject* edge = edge_queue.top();
     edge_queue.pop();
-    if (!EP_VISITED(edge)) {
-      EP_VISITED(edge) = true;
-      if (edge->m_other) {
-	EP_VISITED(edge->m_other) = true;
-	Py_DECREF((PyObject*)edge->m_other);
-      }
-      graph_add_edge(so, edge->m_from_node, edge->m_to_node, edge->m_cost, edge->m_label);
-      Py_DECREF((PyObject*)edge);
-    }
+	 graph_add_edge(so, edge->m_from_node, edge->m_to_node, edge->m_cost, edge->m_label);
+	 Py_DECREF((PyObject*)edge);
  }
 }
 

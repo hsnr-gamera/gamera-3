@@ -196,8 +196,11 @@ class kNN(gamera.knncore.kNN):
       features are normalized before performing the distance calculations."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
-      return self._unique_distances(images)
-      
+		l = len(images)
+		progress = util.ProgressFactory("Generating unique distances . . .", l)
+      dists = self._unique_distances(images, progress)
+		progress.kill()
+		return dists
 
    def evaluate(self):
       """Evaluate the performance of the kNN classifier using
@@ -365,11 +368,15 @@ def simple_feature_selector(glyphs):
    a long time to complete."""
 
    import classify
-   if len(glyphs <= 1):
+   if len(glyphs) <= 1:
       raise RuntimeError("Lenght of list must be greater than 1")
    
    c = classify.NonInteractiveClassifier()
 
+	# For efficiency we calculate all of the features and pass in the
+	# indexes of the features vector that we want to use for the distance
+	# calculation. This is more efficient than using the features weights
+	# or recalculating the features.
    all_features = []
    feature_indexes = {}
    offset = 0
@@ -378,16 +385,15 @@ def simple_feature_selector(glyphs):
       feature_indexes[x[0]] = range(offset, offset + x[1].return_type.length)
       offset += x[1].return_type.length
    # First do the easy ones = single features and all features
-   for x in feature_indexes.values():
-      print x
    answers = []
-
    c.change_feature_set(all_features)
    c.set_glyphs(glyphs)
    answers.append((c.evaluate(), all_features))
    for x in all_features:
       print x
       answers.append((c.classifier.leave_one_out(feature_indexes[x]), x))
+	# Now do the remaining combinations using the CombGen object for each
+	# size subset of all of the features.
    for i in range(2, len(all_features) - 1):
       for x in CombGen(all_features, i):
          print x

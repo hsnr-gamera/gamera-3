@@ -450,7 +450,8 @@ namespace Gamera {
     bool found_something = true;
     size_t cc_no = 2;
     while (found_something) {
-      size_t start_y, start_x;
+      size_t start_y = 0;
+      size_t start_x = 0;
       found_something = false;
       for (start_x = image.ncols() - 1; start_x > 0; --start_x) { // Right-to-left IMPORTANT!!!
 	for (start_y = 0; start_y < image.nrows(); ++start_y)

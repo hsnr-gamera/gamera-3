@@ -218,28 +218,28 @@ inline EdgeObject* graph_add_edge0(GraphObject* so, NodeObject* from_node,
       size_t to_set_id = graph_disj_set_find_and_compress(so, to_node->m_set_id);
       size_t from_set_id = graph_disj_set_find_and_compress(so, from_node->m_set_id);
       if (from_set_id != to_set_id) {
-	possible_cycle = false;
-	graph_disj_set_union_by_height(so, to_set_id, from_set_id);
+		  possible_cycle = false;
+		  graph_disj_set_union_by_height(so, to_set_id, from_set_id);
       }
     }
 
     if (possible_cycle) {
       if (!HAS_FLAG(so->m_flags, FLAG_BLOB))
-	return NULL;
+		  return NULL;
       else {
-	if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) || 
-	    (HAS_FLAG(so->m_flags, FLAG_DIRECTED) && to_node->m_is_subgraph_root)) {
-	  DFSIterator* iterator = iterator_new_simple<DFSIterator>();
-	  iterator->init(so, to_node);
-	  NodeObject* node = (NodeObject*)DFSIterator::next(iterator);
-	  while ((node = (NodeObject*)DFSIterator::next(iterator)))
-	    if (node == from_node) {
-	      found_cycle = true;
-	      break;
-	    }
-	}
-	if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) && found_cycle)
-	  return NULL;
+		  if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) || 
+				(HAS_FLAG(so->m_flags, FLAG_DIRECTED) && to_node->m_is_subgraph_root)) {
+			 DFSIterator* iterator = iterator_new_simple<DFSIterator>();
+			 iterator->init(so, to_node);
+			 NodeObject* node = (NodeObject*)DFSIterator::next(iterator);
+			 while ((node = (NodeObject*)DFSIterator::next(iterator)))
+				if (node == from_node) {
+				  found_cycle = true;
+				  break;
+				}
+		  }
+		  if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) && found_cycle)
+			 return NULL;
       }
     }
   }

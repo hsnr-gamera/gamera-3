@@ -669,7 +669,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
     return 0;
   double* weights = o->weight_vector;
-  if (len_a != o->num_features) {
+  if (len_a != (int)o->num_features) {
     PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
     return 0;
   }
@@ -686,7 +686,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     }
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       return 0;
-    if (len_a != o->num_features) {
+    if (len_a != (int)o->num_features) {
       PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
       return 0;
     }
@@ -737,7 +737,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
 PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
-  if (PyArg_ParseTuple(args, "O", &images) <= 0)
+  PyObject* progress;
+  if (PyArg_ParseTuple(args, "OO", &images, &progress) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   if (!PyList_Check(images)) {
@@ -765,7 +766,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
     return 0;
   double* weights = o->weight_vector;
-  if (len_a != o->num_features) {
+  if (len_a != (int)o->num_features) {
     PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
     return 0;
   }
@@ -798,13 +799,13 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PyList_GetItem(images, j);
       if (cur_b == NULL)
-	goto uniq_error;
+		  goto uniq_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
-	goto uniq_error;
-
+		  goto uniq_error;
+		
       if (len_a != len_b) {
-	PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
-	goto uniq_error;
+		  PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
+		  goto uniq_error;
       }
       norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
@@ -812,9 +813,11 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
       PyList_SET_ITEM(list, index, Py_BuildValue("(dOO)", distance, cur_a, cur_b));
       index++;
     }
+	 // call the progress object
+	 PyObject_CallObject(progress, NULL);
   }
 
-  delete[] weights; delete[] tmp_a; delete[] tmp_b;
+  delete[] tmp_a; delete[] tmp_b;
   
   if (PyList_Sort(list) < 0)
     return 0;

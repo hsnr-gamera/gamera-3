@@ -23,8 +23,8 @@
 #   We always assume libpng was installed in a default place (/usr or /usr/local)
 #
 # Mac OS-X:
-#   We look for png.h in Fink (/sw/include/png.h).  If it's not there, we
-#   use the local copy of libpng
+#   We look for png.h in Fink (/sw/include/png.h) and then
+#   /usr/include.  If it's not there, we use the local copy of libpng
 #
 # MS-Windows:
 #   We always use the local copy of libpng
@@ -102,13 +102,11 @@ class PngSupportModule(PluginModule):
                         'pngtrans.c', 'pngwutil.c', 'pngread.c', 'pngrio.c',
                         'pngwio.c', 'pngwrite.c', 'pngrtran.c', 'pngwtran.c',
                         'pngmem.c', 'pngerror.c', 'pngpread.c',]]
-        for filename in [os.path.join(internal_zlib_dir, x) for x in
-                         ['adler32.c','compress.c','crc32.c','deflate.c','gzio.c',
-                          'infback.c','inffast.c','inflate.c','inftrees.c','trees.c',
-                          'uncompr.c','zutil.c']]:
-            cpp_sources.append(filename)
+        cpp_sources.extend([os.path.join(internal_zlib_dir, x) for x in
+                            ['adler32.c','compress.c','crc32.c','deflate.c','gzio.c',
+                             'infback.c','inffast.c','inflate.c','inftrees.c','trees.c',
+                             'uncompr.c','zutil.c']])
         cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.1"]
-        # zlib, which apparently is included in OS-X 10.3 by default
 #        extra_libraries = ["z"]
     functions = [save_PNG, PNG_info, load_PNG]
     author = "Michael Droettboom and Albert Bzreckzo"

@@ -286,7 +286,10 @@ class ProgressText:
       self._done = 0
       self._last_amount = 0
       self._num = 0
-      self._den = length
+      if length == 0:
+         self._den = 1
+      else:
+         self._den = length
 
    def add_length(self, l):
       self._den += l

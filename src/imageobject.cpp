@@ -35,6 +35,8 @@ extern "C" {
   static PyObject* image_set(PyObject* self, PyObject* args);
   static PyObject* image_getitem(PyObject* self, PyObject* args);
   static PyObject* image_setitem(PyObject* self, PyObject* args);
+  static PyObject* image_len(PyObject* self, PyObject* args);
+  static PyObject* image_sort(PyObject* self, PyObject* args);
   // Get/set
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
@@ -132,6 +134,8 @@ static PyMethodDef image_methods[] = {
   { "set", image_set, METH_VARARGS },
   { "__getitem__", image_getitem, METH_VARARGS },
   { "__setitem__", image_setitem, METH_VARARGS },  
+  { "__len__", image_len, METH_NOARGS },  
+  { "sort", image_sort, METH_NOARGS },  
   { NULL }
 };
 
@@ -483,6 +487,40 @@ static PyObject* image_setitem(PyObject* self, PyObject* args) {
     return 0;
   }
   return image_set(self, row, col, value);
+}
+
+static PyObject* image_len(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  return Py_BuildValue("i", (long)(image->nrows() * image->ncols()));
+}
+
+static PyObject* image_sort(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
+  if (is_CCObject(self)) {
+    Cc* im = (Cc*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+  } else if (od->m_pixel_type == Gamera::FLOAT) {
+    FloatImageView* im = (FloatImageView*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+  } else if (od->m_storage_format == RLE) {
+    OneBitRleImageView* im = (OneBitRleImageView*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+    //  } else if (od->m_pixel_type == RGB) {
+    //    RGBImageView* im = (RGBImageView*)image;
+    ///    std::sort(im->vec_begin(), im->vec_end());
+  } else if (od->m_pixel_type == GREYSCALE) {
+    GreyScaleImageView* im = (GreyScaleImageView*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+  } else if (od->m_pixel_type == GREY16) {
+    Grey16ImageView* im = (Grey16ImageView*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+  } else { // ONEBIT
+    OneBitImageView* im = (OneBitImageView*)image;
+    std::sort(im->vec_begin(), im->vec_end());
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 #define CREATE_GET_FUNC(name) static PyObject* image_get_##name(PyObject* self) {\

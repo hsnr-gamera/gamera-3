@@ -95,8 +95,8 @@ namespace Gamera {
       return data_[2];
     }
     FloatPixel const hue() {
-      FloatPixel maxc = (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
-      FloatPixel minc = (FloatPixel)std::min<T>(data_[0], std::min<T>(data_[1], data_[2]));
+      FloatPixel maxc = (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
+      FloatPixel minc = (FloatPixel)std::min(data_[0], std::min(data_[1], data_[2]));
       if (minc == maxc)
 	return 0;
       FloatPixel den = (maxc - minc);
@@ -115,14 +115,14 @@ namespace Gamera {
       return h;
     }
     FloatPixel const saturation() {
-      FloatPixel maxc = (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
-      FloatPixel minc = (FloatPixel)std::min<T>(data_[0], std::min<T>(data_[1], data_[2]));
+      FloatPixel maxc = (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
+      FloatPixel minc = (FloatPixel)std::min(data_[0], std::min(data_[1], data_[2]));
       if (minc == maxc)
 	return 0;
       return (maxc - minc) / maxc;
     }
     FloatPixel const value() {
-      return (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
+      return (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
     }
     FloatPixel const CIE_X() {
       return (data_[0] * 0.607 + data_[1] * 0.174 + data_[2] * 0.200) / 256.0;
@@ -134,13 +134,13 @@ namespace Gamera {
       return (data_[1] * 0.066 + data_[2] * 1.111) / 256.0;
     }
     GreyScalePixel const cyan() {
-      return std::numeric_limits<GreyScalePixel>::max() - data_[0];
+      return std::numeric_limits<T>::max() - data_[0];
     }
     GreyScalePixel const magenta() {
-      return std::numeric_limits<GreyScalePixel>::max() - data_[1];
+      return std::numeric_limits<T>::max() - data_[1];
     }
     GreyScalePixel const yellow() {
-      return std::numeric_limits<GreyScalePixel>::max() - data_[2];
+      return std::numeric_limits<T>::max() - data_[2];
     }
     operator FloatPixel() {
       return FloatPixel(luminance());

@@ -217,7 +217,11 @@ namespace Gamera {
   };
 
   template<class Image, class Row, class Col, class Iterator>
-  class VecIteratorBase {
+  class VecIteratorBase
+    : public std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			   typename Image::difference_type, typename Image::pointer,
+			   typename Image::reference>
+  {
   public:
     // Standard typedefs
     typedef typename Image::value_type value_type;

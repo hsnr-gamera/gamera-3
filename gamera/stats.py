@@ -214,6 +214,7 @@ SUPPORT FUNCTIONS:  writecc
 import pstat               # required 3rd party module
 import math, string, copy  # required python modules
 from types import *
+import gamera.core
 
 __version__ = 0.5
 
@@ -1835,63 +1836,63 @@ Usage:   lfindwithin(data)     data in |Stat format
 #########################################################
 
 ## CENTRAL TENDENCY:
-geometricmean = Dispatch ( (lgeometricmean, (ListType, TupleType)), )
-harmonicmean = Dispatch ( (lharmonicmean, (ListType, TupleType)), )
-mean = Dispatch ( (lmean, (ListType, TupleType)), )
-median = Dispatch ( (lmedian, (ListType, TupleType)), )
-medianscore = Dispatch ( (lmedianscore, (ListType, TupleType)), )
-mode = Dispatch ( (lmode, (ListType, TupleType)), )
+geometricmean = Dispatch ( (lgeometricmean, (ListType, TupleType, gamera.core.Image)), )
+harmonicmean = Dispatch ( (lharmonicmean, (ListType, TupleType, gamera.core.Image)), )
+mean = Dispatch ( (lmean, (ListType, TupleType, gamera.core.Image)), )
+median = Dispatch ( (lmedian, (ListType, TupleType, gamera.core.Image)), )
+medianscore = Dispatch ( (lmedianscore, (ListType, TupleType, gamera.core.Image)), )
+mode = Dispatch ( (lmode, (ListType, TupleType, gamera.core.Image)), )
 
 ## MOMENTS:
-moment = Dispatch ( (lmoment, (ListType, TupleType)), )
-variation = Dispatch ( (lvariation, (ListType, TupleType)), )
-skew = Dispatch ( (lskew, (ListType, TupleType)), )
-kurtosis = Dispatch ( (lkurtosis, (ListType, TupleType)), )
-describe = Dispatch ( (ldescribe, (ListType, TupleType)), )
+moment = Dispatch ( (lmoment, (ListType, TupleType, gamera.core.Image)), )
+variation = Dispatch ( (lvariation, (ListType, TupleType, gamera.core.Image)), )
+skew = Dispatch ( (lskew, (ListType, TupleType, gamera.core.Image)), )
+kurtosis = Dispatch ( (lkurtosis, (ListType, TupleType, gamera.core.Image)), )
+describe = Dispatch ( (ldescribe, (ListType, TupleType, gamera.core.Image)), )
 
 ## FREQUENCY STATISTICS:
-itemfreq = Dispatch ( (litemfreq, (ListType, TupleType)), )
-scoreatpercentile = Dispatch ( (lscoreatpercentile, (ListType, TupleType)), )
-percentileofscore = Dispatch ( (lpercentileofscore, (ListType, TupleType)), )
-histogram = Dispatch ( (lhistogram, (ListType, TupleType)), )
-cumfreq = Dispatch ( (lcumfreq, (ListType, TupleType)), )
-relfreq = Dispatch ( (lrelfreq, (ListType, TupleType)), )
+itemfreq = Dispatch ( (litemfreq, (ListType, TupleType, gamera.core.Image)), )
+scoreatpercentile = Dispatch ( (lscoreatpercentile, (ListType, TupleType, gamera.core.Image)), )
+percentileofscore = Dispatch ( (lpercentileofscore, (ListType, TupleType, gamera.core.Image)), )
+histogram = Dispatch ( (lhistogram, (ListType, TupleType, gamera.core.Image)), )
+cumfreq = Dispatch ( (lcumfreq, (ListType, TupleType, gamera.core.Image)), )
+relfreq = Dispatch ( (lrelfreq, (ListType, TupleType, gamera.core.Image)), )
 
 ## VARIABILITY:
-obrientransform = Dispatch ( (lobrientransform, (ListType, TupleType)), )
-samplevar = Dispatch ( (lsamplevar, (ListType, TupleType)), )
-samplestdev = Dispatch ( (lsamplestdev, (ListType, TupleType)), )
-var = Dispatch ( (lvar, (ListType, TupleType)), )
-stdev = Dispatch ( (lstdev, (ListType, TupleType)), )
-sterr = Dispatch ( (lsterr, (ListType, TupleType)), )
-sem = Dispatch ( (lsem, (ListType, TupleType)), )
-z = Dispatch ( (lz, (ListType, TupleType)), )
-zs = Dispatch ( (lzs, (ListType, TupleType)), )
+obrientransform = Dispatch ( (lobrientransform, (ListType, TupleType, gamera.core.Image)), )
+samplevar = Dispatch ( (lsamplevar, (ListType, TupleType, gamera.core.Image)), )
+samplestdev = Dispatch ( (lsamplestdev, (ListType, TupleType, gamera.core.Image)), )
+var = Dispatch ( (lvar, (ListType, TupleType, gamera.core.Image)), )
+stdev = Dispatch ( (lstdev, (ListType, TupleType, gamera.core.Image)), )
+sterr = Dispatch ( (lsterr, (ListType, TupleType, gamera.core.Image)), )
+sem = Dispatch ( (lsem, (ListType, TupleType, gamera.core.Image)), )
+z = Dispatch ( (lz, (ListType, TupleType, gamera.core.Image)), )
+zs = Dispatch ( (lzs, (ListType, TupleType, gamera.core.Image)), )
 
 ## TRIMMING FCNS:
-trimboth = Dispatch ( (ltrimboth, (ListType, TupleType)), )
-trim1 = Dispatch ( (ltrim1, (ListType, TupleType)), )
+trimboth = Dispatch ( (ltrimboth, (ListType, TupleType, gamera.core.Image)), )
+trim1 = Dispatch ( (ltrim1, (ListType, TupleType, gamera.core.Image)), )
 
 ## CORRELATION FCNS:
-paired = Dispatch ( (lpaired, (ListType, TupleType)), )
-pearsonr = Dispatch ( (lpearsonr, (ListType, TupleType)), )
-spearmanr = Dispatch ( (lspearmanr, (ListType, TupleType)), )
-pointbiserialr = Dispatch ( (lpointbiserialr, (ListType, TupleType)), )
-kendalltau = Dispatch ( (lkendalltau, (ListType, TupleType)), )
-linregress = Dispatch ( (llinregress, (ListType, TupleType)), )
+paired = Dispatch ( (lpaired, (ListType, TupleType, gamera.core.Image)), )
+pearsonr = Dispatch ( (lpearsonr, (ListType, TupleType, gamera.core.Image)), )
+spearmanr = Dispatch ( (lspearmanr, (ListType, TupleType, gamera.core.Image)), )
+pointbiserialr = Dispatch ( (lpointbiserialr, (ListType, TupleType, gamera.core.Image)), )
+kendalltau = Dispatch ( (lkendalltau, (ListType, TupleType, gamera.core.Image)), )
+linregress = Dispatch ( (llinregress, (ListType, TupleType, gamera.core.Image)), )
 
 ## INFERENTIAL STATS:
-ttest_1samp = Dispatch ( (lttest_1samp, (ListType, TupleType)), )
-ttest_ind = Dispatch ( (lttest_ind, (ListType, TupleType)), )
-ttest_rel = Dispatch ( (lttest_rel, (ListType, TupleType)), )
-chisquare = Dispatch ( (lchisquare, (ListType, TupleType)), )
-ks_2samp = Dispatch ( (lks_2samp, (ListType, TupleType)), )
-mannwhitneyu = Dispatch ( (lmannwhitneyu, (ListType, TupleType)), )
-ranksums = Dispatch ( (lranksums, (ListType, TupleType)), )
-tiecorrect = Dispatch ( (ltiecorrect, (ListType, TupleType)), )
-wilcoxont = Dispatch ( (lwilcoxont, (ListType, TupleType)), )
-kruskalwallish = Dispatch ( (lkruskalwallish, (ListType, TupleType)), )
-friedmanchisquare = Dispatch ( (lfriedmanchisquare, (ListType, TupleType)), )
+ttest_1samp = Dispatch ( (lttest_1samp, (ListType, TupleType, gamera.core.Image)), )
+ttest_ind = Dispatch ( (lttest_ind, (ListType, TupleType, gamera.core.Image)), )
+ttest_rel = Dispatch ( (lttest_rel, (ListType, TupleType, gamera.core.Image)), )
+chisquare = Dispatch ( (lchisquare, (ListType, TupleType, gamera.core.Image)), )
+ks_2samp = Dispatch ( (lks_2samp, (ListType, TupleType, gamera.core.Image)), )
+mannwhitneyu = Dispatch ( (lmannwhitneyu, (ListType, TupleType, gamera.core.Image)), )
+ranksums = Dispatch ( (lranksums, (ListType, TupleType, gamera.core.Image)), )
+tiecorrect = Dispatch ( (ltiecorrect, (ListType, TupleType, gamera.core.Image)), )
+wilcoxont = Dispatch ( (lwilcoxont, (ListType, TupleType, gamera.core.Image)), )
+kruskalwallish = Dispatch ( (lkruskalwallish, (ListType, TupleType, gamera.core.Image)), )
+friedmanchisquare = Dispatch ( (lfriedmanchisquare, (ListType, TupleType, gamera.core.Image)), )
 
 ## PROBABILITY CALCS:
 chisqprob = Dispatch ( (lchisqprob, (IntType, FloatType)), )
@@ -1904,20 +1905,20 @@ erfcc = Dispatch ( (lerfcc, (IntType, FloatType)), )
 gammln = Dispatch ( (lgammln, (IntType, FloatType)), )
 
 ## ANOVA FUNCTIONS:
-F_oneway = Dispatch ( (lF_oneway, (ListType, TupleType)), )
-F_value = Dispatch ( (lF_value, (ListType, TupleType)), )
+F_oneway = Dispatch ( (lF_oneway, (ListType, TupleType, gamera.core.Image)), )
+F_value = Dispatch ( (lF_value, (ListType, TupleType, gamera.core.Image)), )
 
 ## SUPPORT FUNCTIONS:
-incr = Dispatch ( (lincr, (ListType, TupleType)), )
-sum = Dispatch ( (lsum, (ListType, TupleType)), )
-cumsum = Dispatch ( (lcumsum, (ListType, TupleType)), )
-ss = Dispatch ( (lss, (ListType, TupleType)), )
-summult = Dispatch ( (lsummult, (ListType, TupleType)), )
-square_of_sums = Dispatch ( (lsquare_of_sums, (ListType, TupleType)), )
-sumdiffsquared = Dispatch ( (lsumdiffsquared, (ListType, TupleType)), )
-shellsort = Dispatch ( (lshellsort, (ListType, TupleType)), )
-rankdata = Dispatch ( (lrankdata, (ListType, TupleType)), )
-findwithin = Dispatch ( (lfindwithin, (ListType, TupleType)), )
+incr = Dispatch ( (lincr, (ListType, TupleType, gamera.core.Image)), )
+sum = Dispatch ( (lsum, (ListType, TupleType, gamera.core.Image)), )
+cumsum = Dispatch ( (lcumsum, (ListType, TupleType, gamera.core.Image)), )
+ss = Dispatch ( (lss, (ListType, TupleType, gamera.core.Image)), )
+summult = Dispatch ( (lsummult, (ListType, TupleType, gamera.core.Image)), )
+square_of_sums = Dispatch ( (lsquare_of_sums, (ListType, TupleType, gamera.core.Image)), )
+sumdiffsquared = Dispatch ( (lsumdiffsquared, (ListType, TupleType, gamera.core.Image)), )
+shellsort = Dispatch ( (lshellsort, (ListType, TupleType, gamera.core.Image)), )
+rankdata = Dispatch ( (lrankdata, (ListType, TupleType, gamera.core.Image)), )
+findwithin = Dispatch ( (lfindwithin, (ListType, TupleType, gamera.core.Image)), )
 
 
 #=============  THE ARRAY-VERSION OF THE STATS FUNCTIONS  ===============
@@ -4168,17 +4169,17 @@ Usage:   afindwithin(data)     data in |Stat format
  #########################################################
 
 ## CENTRAL TENDENCY:
- geometricmean = Dispatch ( (lgeometricmean, (ListType, TupleType)),
+ geometricmean = Dispatch ( (lgeometricmean, (ListType, TupleType, gamera.core.Image)),
                             (ageometricmean, (N.ArrayType,)) )
- harmonicmean = Dispatch ( (lharmonicmean, (ListType, TupleType)),
+ harmonicmean = Dispatch ( (lharmonicmean, (ListType, TupleType, gamera.core.Image)),
                            (aharmonicmean, (N.ArrayType,)) )
- mean = Dispatch ( (lmean, (ListType, TupleType)),
+ mean = Dispatch ( (lmean, (ListType, TupleType, gamera.core.Image)),
                    (amean, (N.ArrayType,)) )
- median = Dispatch ( (lmedian, (ListType, TupleType)),
+ median = Dispatch ( (lmedian, (ListType, TupleType, gamera.core.Image)),
                      (amedian, (N.ArrayType,)) )
- medianscore = Dispatch ( (lmedianscore, (ListType, TupleType)),
+ medianscore = Dispatch ( (lmedianscore, (ListType, TupleType, gamera.core.Image)),
                           (amedianscore, (N.ArrayType,)) )
- mode = Dispatch ( (lmode, (ListType, TupleType)),
+ mode = Dispatch ( (lmode, (ListType, TupleType, gamera.core.Image)),
                    (amode, (N.ArrayType,)) )
  tmean = Dispatch ( (atmean, (N.ArrayType,)) )
  tvar = Dispatch ( (atvar, (N.ArrayType,)) )
@@ -4186,104 +4187,104 @@ Usage:   afindwithin(data)     data in |Stat format
  tsem = Dispatch ( (atsem, (N.ArrayType,)) )
 
 ## VARIATION:
- moment = Dispatch ( (lmoment, (ListType, TupleType)),
+ moment = Dispatch ( (lmoment, (ListType, TupleType, gamera.core.Image)),
                      (amoment, (N.ArrayType,)) )
- variation = Dispatch ( (lvariation, (ListType, TupleType)),
+ variation = Dispatch ( (lvariation, (ListType, TupleType, gamera.core.Image)),
                         (avariation, (N.ArrayType,)) )
- skew = Dispatch ( (lskew, (ListType, TupleType)),
+ skew = Dispatch ( (lskew, (ListType, TupleType, gamera.core.Image)),
                    (askew, (N.ArrayType,)) )
- kurtosis = Dispatch ( (lkurtosis, (ListType, TupleType)),
+ kurtosis = Dispatch ( (lkurtosis, (ListType, TupleType, gamera.core.Image)),
                        (akurtosis, (N.ArrayType,)) )
- describe = Dispatch ( (ldescribe, (ListType, TupleType)),
+ describe = Dispatch ( (ldescribe, (ListType, TupleType, gamera.core.Image)),
                        (adescribe, (N.ArrayType,)) )
 
 ## DISTRIBUTION TESTS
 
- skewtest = Dispatch ( (askewtest, (ListType, TupleType)),
+ skewtest = Dispatch ( (askewtest, (ListType, TupleType, gamera.core.Image)),
                        (askewtest, (N.ArrayType,)) )
- kurtosistest = Dispatch ( (akurtosistest, (ListType, TupleType)),
+ kurtosistest = Dispatch ( (akurtosistest, (ListType, TupleType, gamera.core.Image)),
                            (akurtosistest, (N.ArrayType,)) )
- normaltest = Dispatch ( (anormaltest, (ListType, TupleType)),
+ normaltest = Dispatch ( (anormaltest, (ListType, TupleType, gamera.core.Image)),
                          (anormaltest, (N.ArrayType,)) )
 
 ## FREQUENCY STATS:
- itemfreq = Dispatch ( (litemfreq, (ListType, TupleType)),
+ itemfreq = Dispatch ( (litemfreq, (ListType, TupleType, gamera.core.Image)),
                        (aitemfreq, (N.ArrayType,)) )
- scoreatpercentile = Dispatch ( (lscoreatpercentile, (ListType, TupleType)),
+ scoreatpercentile = Dispatch ( (lscoreatpercentile, (ListType, TupleType, gamera.core.Image)),
                                 (ascoreatpercentile, (N.ArrayType,)) )
- percentileofscore = Dispatch ( (lpercentileofscore, (ListType, TupleType)),
+ percentileofscore = Dispatch ( (lpercentileofscore, (ListType, TupleType, gamera.core.Image)),
                                  (apercentileofscore, (N.ArrayType,)) )
- histogram = Dispatch ( (lhistogram, (ListType, TupleType)),
+ histogram = Dispatch ( (lhistogram, (ListType, TupleType, gamera.core.Image)),
                         (ahistogram, (N.ArrayType,)) )
- cumfreq = Dispatch ( (lcumfreq, (ListType, TupleType)),
+ cumfreq = Dispatch ( (lcumfreq, (ListType, TupleType, gamera.core.Image)),
                       (acumfreq, (N.ArrayType,)) )
- relfreq = Dispatch ( (lrelfreq, (ListType, TupleType)),
+ relfreq = Dispatch ( (lrelfreq, (ListType, TupleType, gamera.core.Image)),
                       (arelfreq, (N.ArrayType,)) )
  
 ## VARIABILITY:
- obrientransform = Dispatch ( (lobrientransform, (ListType, TupleType)),
+ obrientransform = Dispatch ( (lobrientransform, (ListType, TupleType, gamera.core.Image)),
                               (aobrientransform, (N.ArrayType,)) )
- samplevar = Dispatch ( (lsamplevar, (ListType, TupleType)),
+ samplevar = Dispatch ( (lsamplevar, (ListType, TupleType, gamera.core.Image)),
                         (asamplevar, (N.ArrayType,)) )
- samplestdev = Dispatch ( (lsamplestdev, (ListType, TupleType)),
+ samplestdev = Dispatch ( (lsamplestdev, (ListType, TupleType, gamera.core.Image)),
                           (asamplestdev, (N.ArrayType,)) )
  signaltonoise = Dispatch( (asignaltonoise, (N.ArrayType,)),)
- var = Dispatch ( (lvar, (ListType, TupleType)),
+ var = Dispatch ( (lvar, (ListType, TupleType, gamera.core.Image)),
                   (avar, (N.ArrayType,)) )
- stdev = Dispatch ( (lstdev, (ListType, TupleType)),
+ stdev = Dispatch ( (lstdev, (ListType, TupleType, gamera.core.Image)),
                     (astdev, (N.ArrayType,)) )
- sterr = Dispatch ( (lsterr, (ListType, TupleType)),
+ sterr = Dispatch ( (lsterr, (ListType, TupleType, gamera.core.Image)),
                     (asterr, (N.ArrayType,)) )
- sem = Dispatch ( (lsem, (ListType, TupleType)),
+ sem = Dispatch ( (lsem, (ListType, TupleType, gamera.core.Image)),
                   (asem, (N.ArrayType,)) )
- z = Dispatch ( (lz, (ListType, TupleType)),
+ z = Dispatch ( (lz, (ListType, TupleType, gamera.core.Image)),
                 (az, (N.ArrayType,)) )
- zs = Dispatch ( (lzs, (ListType, TupleType)),
+ zs = Dispatch ( (lzs, (ListType, TupleType, gamera.core.Image)),
                  (azs, (N.ArrayType,)) )
  
 ## TRIMMING FCNS:
  threshold = Dispatch( (athreshold, (N.ArrayType,)),)
- trimboth = Dispatch ( (ltrimboth, (ListType, TupleType)),
+ trimboth = Dispatch ( (ltrimboth, (ListType, TupleType, gamera.core.Image)),
                        (atrimboth, (N.ArrayType,)) )
- trim1 = Dispatch ( (ltrim1, (ListType, TupleType)),
+ trim1 = Dispatch ( (ltrim1, (ListType, TupleType, gamera.core.Image)),
                     (atrim1, (N.ArrayType,)) )
  
 ## CORRELATION FCNS:
- paired = Dispatch ( (lpaired, (ListType, TupleType)),
+ paired = Dispatch ( (lpaired, (ListType, TupleType, gamera.core.Image)),
                      (apaired, (N.ArrayType,)) )
- pearsonr = Dispatch ( (lpearsonr, (ListType, TupleType)),
+ pearsonr = Dispatch ( (lpearsonr, (ListType, TupleType, gamera.core.Image)),
                        (apearsonr, (N.ArrayType,)) )
- spearmanr = Dispatch ( (lspearmanr, (ListType, TupleType)),
+ spearmanr = Dispatch ( (lspearmanr, (ListType, TupleType, gamera.core.Image)),
                         (aspearmanr, (N.ArrayType,)) )
- pointbiserialr = Dispatch ( (lpointbiserialr, (ListType, TupleType)),
+ pointbiserialr = Dispatch ( (lpointbiserialr, (ListType, TupleType, gamera.core.Image)),
                              (apointbiserialr, (N.ArrayType,)) )
- kendalltau = Dispatch ( (lkendalltau, (ListType, TupleType)),
+ kendalltau = Dispatch ( (lkendalltau, (ListType, TupleType, gamera.core.Image)),
                          (akendalltau, (N.ArrayType,)) )
- linregress = Dispatch ( (llinregress, (ListType, TupleType)),
+ linregress = Dispatch ( (llinregress, (ListType, TupleType, gamera.core.Image)),
                          (alinregress, (N.ArrayType,)) )
  
 ## INFERENTIAL STATS:
- ttest_1samp = Dispatch ( (lttest_1samp, (ListType, TupleType)),
+ ttest_1samp = Dispatch ( (lttest_1samp, (ListType, TupleType, gamera.core.Image)),
                           (attest_1samp, (N.ArrayType,)) )
- ttest_ind = Dispatch ( (lttest_ind, (ListType, TupleType)),
+ ttest_ind = Dispatch ( (lttest_ind, (ListType, TupleType, gamera.core.Image)),
                         (attest_ind, (N.ArrayType,)) )
- ttest_rel = Dispatch ( (lttest_rel, (ListType, TupleType)),
+ ttest_rel = Dispatch ( (lttest_rel, (ListType, TupleType, gamera.core.Image)),
                         (attest_rel, (N.ArrayType,)) )
- chisquare = Dispatch ( (lchisquare, (ListType, TupleType)),
+ chisquare = Dispatch ( (lchisquare, (ListType, TupleType, gamera.core.Image)),
                         (achisquare, (N.ArrayType,)) )
- ks_2samp = Dispatch ( (lks_2samp, (ListType, TupleType)),
+ ks_2samp = Dispatch ( (lks_2samp, (ListType, TupleType, gamera.core.Image)),
                        (aks_2samp, (N.ArrayType,)) )
- mannwhitneyu = Dispatch ( (lmannwhitneyu, (ListType, TupleType)),
+ mannwhitneyu = Dispatch ( (lmannwhitneyu, (ListType, TupleType, gamera.core.Image)),
                            (amannwhitneyu, (N.ArrayType,)) )
- tiecorrect = Dispatch ( (ltiecorrect, (ListType, TupleType)),
+ tiecorrect = Dispatch ( (ltiecorrect, (ListType, TupleType, gamera.core.Image)),
                          (atiecorrect, (N.ArrayType,)) )
- ranksums = Dispatch ( (lranksums, (ListType, TupleType)),
+ ranksums = Dispatch ( (lranksums, (ListType, TupleType, gamera.core.Image)),
                        (aranksums, (N.ArrayType,)) )
- wilcoxont = Dispatch ( (lwilcoxont, (ListType, TupleType)),
+ wilcoxont = Dispatch ( (lwilcoxont, (ListType, TupleType, gamera.core.Image)),
                         (awilcoxont, (N.ArrayType,)) )
- kruskalwallish = Dispatch ( (lkruskalwallish, (ListType, TupleType)),
+ kruskalwallish = Dispatch ( (lkruskalwallish, (ListType, TupleType, gamera.core.Image)),
                              (akruskalwallish, (N.ArrayType,)) )
- friedmanchisquare = Dispatch ( (lfriedmanchisquare, (ListType, TupleType)),
+ friedmanchisquare = Dispatch ( (lfriedmanchisquare, (ListType, TupleType, gamera.core.Image)),
                                 (afriedmanchisquare, (N.ArrayType,)) )
  
 ## PROBABILITY CALCS:
@@ -4305,30 +4306,30 @@ Usage:   afindwithin(data)     data in |Stat format
                      (agammln, (N.ArrayType,)) )
  
 ## ANOVA FUNCTIONS:
- F_oneway = Dispatch ( (lF_oneway, (ListType, TupleType)),
+ F_oneway = Dispatch ( (lF_oneway, (ListType, TupleType, gamera.core.Image)),
                        (aF_oneway, (N.ArrayType,)) )
- F_value = Dispatch ( (lF_value, (ListType, TupleType)),
+ F_value = Dispatch ( (lF_value, (ListType, TupleType, gamera.core.Image)),
                       (aF_value, (N.ArrayType,)) )
 
 ## SUPPORT FUNCTIONS:
  incr = Dispatch ( (lincr, (ListType, TupleType, N.ArrayType)), )
- sum = Dispatch ( (lsum, (ListType, TupleType)),
+ sum = Dispatch ( (lsum, (ListType, TupleType, gamera.core.Image)),
                   (asum, (N.ArrayType,)) )
- cumsum = Dispatch ( (lcumsum, (ListType, TupleType)),
+ cumsum = Dispatch ( (lcumsum, (ListType, TupleType, gamera.core.Image)),
                      (acumsum, (N.ArrayType,)) )
- ss = Dispatch ( (lss, (ListType, TupleType)),
+ ss = Dispatch ( (lss, (ListType, TupleType, gamera.core.Image)),
                  (ass, (N.ArrayType,)) )
- summult = Dispatch ( (lsummult, (ListType, TupleType)),
+ summult = Dispatch ( (lsummult, (ListType, TupleType, gamera.core.Image)),
                       (asummult, (N.ArrayType,)) )
- square_of_sums = Dispatch ( (lsquare_of_sums, (ListType, TupleType)),
+ square_of_sums = Dispatch ( (lsquare_of_sums, (ListType, TupleType, gamera.core.Image)),
                              (asquare_of_sums, (N.ArrayType,)) )
- sumdiffsquared = Dispatch ( (lsumdiffsquared, (ListType, TupleType)),
+ sumdiffsquared = Dispatch ( (lsumdiffsquared, (ListType, TupleType, gamera.core.Image)),
                              (asumdiffsquared, (N.ArrayType,)) )
- shellsort = Dispatch ( (lshellsort, (ListType, TupleType)),
+ shellsort = Dispatch ( (lshellsort, (ListType, TupleType, gamera.core.Image)),
                         (ashellsort, (N.ArrayType,)) )
- rankdata = Dispatch ( (lrankdata, (ListType, TupleType)),
+ rankdata = Dispatch ( (lrankdata, (ListType, TupleType, gamera.core.Image)),
                        (arankdata, (N.ArrayType,)) )
- findwithin = Dispatch ( (lfindwithin, (ListType, TupleType)),
+ findwithin = Dispatch ( (lfindwithin, (ListType, TupleType, gamera.core.Image)),
                          (afindwithin, (N.ArrayType,)) )
 
 ######################  END OF NUMERIC FUNCTION BLOCK  #####################

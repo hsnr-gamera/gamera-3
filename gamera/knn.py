@@ -179,30 +179,31 @@ class kNN(gamera.knncore.kNN):
       imageb.generate_features(self.feature_functions)
       return self._distance_between_images(imagea, imageb)
 
-   def distance_matrix(self, images):
+   def distance_matrix(self, images, normalize=1):
       """Create a symmetric float matrix (image) containing all of the
       distances between the images in the list passed in. This is useful
       because it allows you to find the distance between any two pairs
       of images regardless of the order of the pairs. NOTE: the features
-      are normalized before performing the distance calculations."""
+      are normalized before performing the distance calculations by default."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances . . .", l)
-      m = self._distance_matrix(images, progress.step)
+      m = self._distance_matrix(images, progress.step, normalize)
       progress.kill()
       return m
 
-   def unique_distances(self, images):
+   def unique_distances(self, images, normalize=1):
       """Return a list of the unique pairs of images in the passed in list
       and the distances between them. The return list is a list of tuples
       of (distance, imagea, imageb) so that it easy to sort. NOTE: the
-      features are normalized before performing the distance calculations."""
+      features are normalized before performing the distance calculations
+      by default."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances . . .", l)
-      dists = self._unique_distances(images, progress.step)
+      dists = self._unique_distances(images, progress.step, normalize)
       progress.kill()
       return dists
 
@@ -394,8 +395,11 @@ def simple_feature_selector(glyphs):
    c.change_feature_set(all_features)
    c.set_glyphs(glyphs)
    ans = c.classifier.leave_one_out()
+   # Because we are only interested in top score, we can stop the evaluation
+   # after we have missed too many answers to possibly beat the top score.
+   # Therefore, we store the number missed for the top score here and pass
+   # it into leave_one_out.
    stop_threshold = ans[1] - ans[0]
-   print stop_threshold
    answer = (float(ans[0]) / float(ans[1]), all_features)
    for x in all_features:
       print x
@@ -405,8 +409,8 @@ def simple_feature_selector(glyphs):
       if num_wrong < stop_threshold:
          stop_threshold = num_wrong
          answer = (float(ans[0]) / float(ans[1]), x)
-	# Now do the remaining combinations using the CombGen object for each
-	# size subset of all of the features.
+   # Now do the remaining combinations using the CombGen object for each
+   # size subset of all of the features.
    for i in range(2, len(all_features) - 1):
       for x in CombGen(all_features, i):
          print x
@@ -455,3 +459,51 @@ class CombGen:
       for i in indices:
          result.append(seq[i])
       return result
+
+def _get_id_stats(glyphs, k=None):
+   import stats
+   if len(glyphs) < 3:
+      return (len(glyphs),1.0, 1.0, 1.0)
+   if k is None:
+      k = kNN()
+   distances = k.unique_distances(glyphs)
+   return (len(glyphs),stats.lmean(distances), stats.lstdev(distances), stats.lmedian(distances))
+
+def get_glyphs_stats(glyphs):
+   k = kNN()
+   klasses = {}
+   for x in glyphs:
+      id = x.get_main_id()
+      if not klasses.has_key(id):
+         klasses[id] = []
+      klasses[id].append(x)
+   stats = {}
+   for x in klasses.iteritems():
+      stats[x[0]] = _get_id_stats(x[1], k)
+   return stats
+
+def comma_delim_stats(glyphs, filename):
+   file = open(filename, "w")
+   stats = get_glyphs_stats(glyphs)
+   for x in stats.iteritems():
+      file.write(x[0])
+      file.write(',')
+      file.write(str(x[1][0]))
+      file.write(',')
+      file.write(str(x[1][1]))
+      file.write(',')
+      file.write(str(x[1][2]))
+      file.write(',')
+      file.write(str(x[1][3]))
+      file.write('\n')
+   file.close()
+
+
+def glyphs_by_category(glyphs):
+   klasses = {}
+   for x in glyphs:
+      id = x.get_main_id()
+      if not klasses.has_key(id):
+         klasses[id] = []
+      klasses[id].append(x)
+   

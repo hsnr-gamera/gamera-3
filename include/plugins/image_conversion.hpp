@@ -392,28 +392,114 @@ namespace Gamera {
     return conv(image);
   }
 
-#define CONVERSION_FUNCTION(name, output) \
-  template<class T> \
-  output* to_##name(const T& image) { \
-    output* view = _image_conversion::creator<typename output::value_type>::image(image); \
-    typename T::const_vec_iterator in = image.vec_begin(); \
-    typename output::vec_iterator out = view->vec_begin(); \
-    ImageAccessor<typename T::value_type> in_acc; \
-    ImageAccessor<typename output::value_type> out_acc; \
-    for (; in != image.vec_end(); ++in, ++out) \
-      out_acc.set(typename output::value_type(in_acc.get(in).name()), out); \
-    return view; \
+  template<class T>
+  FloatImageView* to_hue(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).hue(),
+		  out);
+    return view;
   }
 
-CONVERSION_FUNCTION(hue, FloatImageView)
-CONVERSION_FUNCTION(saturation, FloatImageView)
-CONVERSION_FUNCTION(value, FloatImageView)
-CONVERSION_FUNCTION(CIE_X, FloatImageView)
-CONVERSION_FUNCTION(CIE_Y, FloatImageView)
-CONVERSION_FUNCTION(CIE_Z, FloatImageView)
-CONVERSION_FUNCTION(cyan, GreyScaleImageView)
-CONVERSION_FUNCTION(magenta, GreyScaleImageView)
-CONVERSION_FUNCTION(yellow, GreyScaleImageView)
+  template<class T>
+  FloatImageView* to_saturation(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).saturation(), out);
+    return view;
+  }
+
+  template<class T>
+  FloatImageView* to_value(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).value(), out);
+    return view;
+  }
+
+  template<class T>
+  FloatImageView* to_CIE_X(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).CIE_X(), out);
+    return view;
+  }
+
+  template<class T>
+  FloatImageView* to_CIE_Y(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).CIE_Y(), out);
+    return view;
+  }
+
+  template<class T>
+  FloatImageView* to_CIE_Z(const T& image) {
+    FloatImageView* view = _image_conversion::creator<FloatPixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename FloatImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename FloatImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename FloatImageView::value_type)in_acc.get(in).CIE_Z(), out);
+    return view;
+  }
+
+  template<class T>
+  GreyScaleImageView* to_cyan(const T& image) {
+    GreyScaleImageView* view = _image_conversion::creator<GreyScalePixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename GreyScaleImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename GreyScaleImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename GreyScaleImageView::value_type)in_acc.get(in).cyan(), out);
+    return view;
+  }
+
+  template<class T>
+  GreyScaleImageView* to_magenta(const T& image) {
+    GreyScaleImageView* view = _image_conversion::creator<GreyScalePixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename GreyScaleImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename GreyScaleImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename GreyScaleImageView::value_type)in_acc.get(in).magenta(), out);
+    return view;
+  }
+
+  template<class T>
+  GreyScaleImageView* to_yellow(const T& image) {
+    GreyScaleImageView* view = _image_conversion::creator<GreyScalePixel>::image(image);
+    typename T::const_vec_iterator in = image.vec_begin();
+    typename GreyScaleImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<typename T::value_type> in_acc;
+    ImageAccessor<typename GreyScaleImageView::value_type> out_acc;
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set((typename GreyScaleImageView::value_type)in_acc.get(in).yellow(), out);
+    return view;
+  }
 
   RGBImageView* to_false_color(const FloatImageView& image) {
     RGBImageView* view = _image_conversion::creator<RGBPixel>::image(image);

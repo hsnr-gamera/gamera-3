@@ -27,7 +27,6 @@ typedef unsigned __int64 Bitfield;
 typedef unsigned long long Bitfield;
 #endif
 
-struct Part;
 class Part {
 public:
   inline Part(Bitfield _bits, double _score) :
@@ -36,6 +35,7 @@ public:
   double score;
   size_t begin, end;
 };
+typedef std::vector<Part> Parts;
 typedef std::vector<Bitfield> Solution;
 typedef std::vector<Part> Parts;
 

@@ -658,7 +658,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
   PyObject* progress;
-  if (PyArg_ParseTuple(args, "OO", &images, &progress) <= 0)
+  long normalize = 1;
+  if (PyArg_ParseTuple(args, "OO|i", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   if (!PyList_Check(images)) {
@@ -704,9 +705,11 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
       return 0;
     }
-    norm.add(buf_a, buf_a + len_a);
+    if (normalize)
+      norm.add(buf_a, buf_a + len_a);
   }
-  norm.compute_normalization();
+  if (normalize)
+    norm.compute_normalization();
 
   double* tmp_a = new double[len_a];
   double* tmp_b = new double[len_a];
@@ -720,16 +723,21 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
       goto mat_error;
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       goto mat_error;
-    norm.apply(buf_a, buf_a + len_a, tmp_a);
+    if (normalize)
+      norm.apply(buf_a, buf_a + len_a, tmp_a);
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PyList_GetItem(images, j);
       if (cur_b == NULL)
 	goto mat_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
 	goto mat_error;
-      norm.apply(buf_b, buf_b + len_b, tmp_b);
+      if (normalize)
+	norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
-      compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+      if (normalize)
+	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+      else
+	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
       mat->set(i, j, (float)distance);
       mat->set(j, i, (float)distance);
     }
@@ -753,7 +761,8 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
   PyObject* progress;
-  if (PyArg_ParseTuple(args, "OO", &images, &progress) <= 0)
+  long normalize = 1;
+  if (PyArg_ParseTuple(args, "OO|i", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   if (!PyList_Check(images)) {
@@ -767,8 +776,9 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   }
   // create the 'vector' for the output
   int list_len = ((images_len * images_len) - images_len) / 2;
-  PyObject* list = PyList_New(list_len);
-  size_t index = 0;
+  FloatImageData* data = new FloatImageData(1, list_len);
+  FloatImageView* list = new FloatImageView(*data, 0, 0, 1, list_len);
+
   // create a default set of weights for the distance calculation.
   double* buf_a, *buf_b;
   int len_a, len_b;
@@ -798,19 +808,23 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
       return 0;
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       return 0;
-    norm.add(buf_a, buf_a + len_a);
+    if (normalize)
+      norm.add(buf_a, buf_a + len_a);
   }
-  norm.compute_normalization();
+  if (normalize)
+    norm.compute_normalization();
   double* tmp_a = new double[len_a];
   double* tmp_b = new double[len_a];
   // do the distance calculations
+  size_t index = 0;
   for (int i = 0; i < images_len; ++i) { 
     cur_a = PyList_GetItem(images, i);
     if (cur_a == NULL)
       goto uniq_error;
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       goto uniq_error;
-    norm.apply(buf_a, buf_a + len_a, tmp_a);
+    if (normalize)
+      norm.apply(buf_a, buf_a + len_a, tmp_a);
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PyList_GetItem(images, j);
       if (cur_b == NULL)
@@ -822,10 +836,14 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 	PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
 	goto uniq_error;
       }
-      norm.apply(buf_b, buf_b + len_b, tmp_b);
+      if (normalize)
+	norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
-      compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
-      PyList_SET_ITEM(list, index, Py_BuildValue("(dii)", distance, i, j));
+      if (normalize)
+	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+      else
+	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
+      list->set(0, index, (float)distance);
       index++;
     }
     // call the progress object
@@ -833,13 +851,13 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   }
 
   delete[] tmp_a; delete[] tmp_b;
-  
-  if (PyList_Sort(list) < 0)
-    return 0;
-  return list;
+  return create_ImageObject(list, image_type, subimage_type, cc_type,
+			    data_type, pybase_init);
   // in case of error
  uniq_error:
   delete[] tmp_a; delete[] tmp_b;
+  delete list;
+  delete data;
   return 0;
 }
 
@@ -883,6 +901,9 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
   int total_queries = 0;
   if (indexes == 0) {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+      // We don't want to do the calculation if there is no
+      // hope that kNN will return the correct answer (because
+      // there aren't enough examples in the database).
       if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2))
 	continue;
       double* current_known = o->feature_vectors;

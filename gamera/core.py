@@ -395,25 +395,6 @@ class ImageBase:
    def get_property(self, name):
       return self.property[name]
 
-   def __len__(self):
-      return self.nrows * self.ncols
-
-   def __getitem__(self, idx):
-      print idx
-      print dir(idx)
-      if idx > (self.nrows * self.ncols) - 1:
-         raise IndexError
-      row = int(idx / self.ncols)
-      col = idx - (row * self.ncols)
-      return self.get(row, col)
-
-   def __setitem__(self, idx, value):
-      if idx > (self.nrows * self.ncols) - 1:
-         raise IndexError
-      row = int(idx / self.ncols)
-      col = idx - (row * self.ncols)
-      self.set(row, col, value)
-   
 ######################################################################
       
 class Image(gameracore.Image, ImageBase):

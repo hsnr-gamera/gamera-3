@@ -23,7 +23,6 @@
 
 #include <png.h>
 #include <stdio.h>
-#include "gamera.hpp"
 #include "image_utilities.hpp"
 
 // TODO: Get/Save resolution information

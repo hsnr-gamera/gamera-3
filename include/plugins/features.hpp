@@ -39,19 +39,31 @@ namespace Gamera {
 
   template<class T>
   void black_area(const T& mat, feature_t* buf) {
+    *buf = 0;
+    for (typename T::const_vec_iterator i = mat.vec_begin();
+	 i != mat.vec_end(); ++i) {
+      if (is_black(*i))
+	(*buf)++;
+    }
+  }
+
+  // Old-style version, since it is called from C++ elsewhere
+
+  template<class T>
+  feature_t black_area(const T& mat) {
     int black_pixels = 0;
     for (typename T::const_vec_iterator i = mat.vec_begin();
 	 i != mat.vec_end(); ++i) {
       if (is_black(*i))
 	black_pixels++;
     }
-    *buf = (feature_t)black_pixels;
+    return (feature_t)black_pixels;
   }
 
   // Ratio of black to white pixels
 
   template<class T>
-  feature_t volume0(const T &m) {
+  feature_t volume(const T &m) {
     unsigned int count = 0;
     typename T::const_vec_iterator i = m.vec_begin();
     for (; i != m.vec_end(); i++)
@@ -62,7 +74,7 @@ namespace Gamera {
   
   template<class T>
   void volume(const T &m, feature_t* buf) {
-    *buf = volume0(m);
+    *buf = volume(m);
   }
   
 
@@ -237,7 +249,7 @@ namespace Gamera {
     // prevents the unnecessary xor_image pixel-by-pixel operation from
     // happening.  We still need to create a copy to dilate, however,
     // since we don't want to change the original.
-    feature_t vol = volume0(image);
+    feature_t vol = volume(image);
     feature_t result;
     if (vol == 0)
       result = std::numeric_limits<feature_t>::max();
@@ -245,7 +257,7 @@ namespace Gamera {
       typedef typename ImageFactory<T>::view_type* view_type;
       view_type copy = simple_image_copy(image);
       dilate(*copy);
-      result = (volume0(*copy) - vol) / vol;
+      result = (volume(*copy) - vol) / vol;
       delete copy->data();
       delete copy;
     }
@@ -270,7 +282,7 @@ namespace Gamera {
       for (size_t j = 0; j < 4; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	*(buf++) = volume0(tmp);
+	*(buf++) = volume(tmp);
 	start_row += rows;
       }
       start_col += cols;
@@ -295,7 +307,7 @@ namespace Gamera {
       for (size_t j = 0; j < 8; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	*(buf++) = volume0(tmp);
+	*(buf++) = volume(tmp);
 	start_row += rows;
       }
       start_col += cols;

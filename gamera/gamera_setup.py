@@ -34,6 +34,7 @@ sys.path.append("gamera")
 import generate
 
 required_versions = {'posix': 222,
+                     'linux2': 222,
                      'win32': 231,
                      'darwin': 231}
 def check_python_version():

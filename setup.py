@@ -2,8 +2,8 @@
 
 # vi:set tabsize=3:
 #
-# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2004 Ichiro Fujinaga, Michael Droettboom,
+#                         and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -81,7 +81,7 @@ except:
    print
    print "Press <ENTER> to exit."
    x = raw_input()
-   sys.exit(1)"""), )
+   """), )
    
 if sys.platform == 'win32':
    command_line_filename_at = 1
@@ -149,14 +149,18 @@ description = ("This is the Gamera installer. " +
                "(or later) are installed before proceeding.")
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
-
+include_path = "include/gamera/"
+includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", os.path.join(a, b)))) for a, b in
+            ("", "*.hpp"),
+            ("plugins", "*.hpp"),
+            ("vigra", "*.hxx")]
+            
 setup(name = "gamera", version=open("version", 'r').readlines()[0].strip(),
-      url = "http://dkc.jhu.edu/gamera/",
+      url = "http://gamera.sourceforge.net/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "gamera-users@lists.sourceforge.net",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
       scripts = scripts,
-      data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))]
-      )
+      data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)

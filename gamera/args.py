@@ -28,10 +28,10 @@ import util, paths            # Gamera specific
 # This is a "self-generating" dialog box
 
 class NoGUIArgs:
-   def setup(self, parent, locals):
+   def setup(self, *args, **kwargs):
       raise Exception("No GUI environment available.  Cannot display dialog.")
    
-   def show(self, parent, locals, function=None, wizard=0):
+   def show(self, *args, **kwargs):
       raise Exception("No GUI environment available.  Cannot display dialog.")
 
 class Args(NoGUIArgs):
@@ -230,16 +230,16 @@ class Wizard:
 
 __all__ = 'Args Int Real Float String Class ImageType Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard'.split()
 
-mixin_modules = []
-if has_gui.has_gui:
-   from gamera.gui import args_gui
-   mixin_modules.append(args_gui)
-from gamera import args_wrappers
-mixin_modules.append(args_wrappers)
-
-for module in mixin_modules:
+___mixin_locals = locals()
+def mixin(module, name):
+   sys.stdout.write("Mixing in args for %s:\n" % name)
+   first = True
    for cls_name in __all__:
-      if hasattr(module, cls_name):
-         cls = locals()[cls_name]
-         cls.__bases__ = tuple([getattr(module, cls_name)] + list(cls.__bases__))
-         
+      cls = ___mixin_locals[cls_name]
+      if module.has_key(cls_name):
+         if not first:
+            sys.stdout.write(", ")
+         first = False
+         sys.stdout.write(cls_name)
+         cls.__bases__ = tuple([module[cls_name]] + list(cls.__bases__))
+   sys.stdout.write("\n")

@@ -26,7 +26,7 @@ import re
 from distutils.core import Extension
 from distutils.dep_util import newer
 from distutils import sysconfig
-from gamera import paths
+from gamera import paths, args_wrappers
 
 global std_import
 global plugins_to_ignore
@@ -219,7 +219,8 @@ template = Template("""
 
   """)
   
-def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_args=[], extra_link_args=[], libraries=[]):
+def generate_plugin(plugin_filename, location, compiling_gamera,
+                    extra_compile_args=[], extra_link_args=[], libraries=[]):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")

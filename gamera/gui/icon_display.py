@@ -22,7 +22,7 @@ import os.path
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify, gamera_xml
-from gamera.gui import image_menu, var_name, gamera_icons, gui_util
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui
 import inspect
 
 ######################################################################
@@ -185,16 +185,23 @@ class CustomIcon:
       self.index = index_
 
    def register(cls):
-      icon_display = main_win = config.options.__.gui.TopLevel().icon_display
-      icon_display.add_class(cls)
+      if has_gui.has_gui:
+         icon_display = main_win = config.options.__.gui.TopLevel().icon_display
+         icon_display.add_class(cls)
    register = classmethod(register)
 
    def to_icon(bitmap):
-      return wxIconFromBitmap(bitmap)
+      if has_gui.has_gui:
+         return wxIconFromBitmap(bitmap)
+      else:
+         return None
    to_icon = staticmethod(to_icon)
 
    def get_icon():
-      return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+      if has_gui.has_gui:
+         return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+      else:
+         return None
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -205,6 +212,8 @@ class CustomIcon:
       return "%s.display()" % self.label
 
    def right_click(self, parent, event, shell):
+      if not has_gui.has_gui:
+         return
       x,y = event.GetPoint()
       self._shell = shell
       image_menu.ImageMenu(

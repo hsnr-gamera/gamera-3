@@ -18,9 +18,6 @@
 #
 
 # Gamera specific
-from gamera.gui import has_gui
-has_gui.has_gui = has_gui.WX_GUI
-
 import inspect
 from gamera.core import *
 from gamera import paths, config, util
@@ -404,16 +401,12 @@ class ShellFrame(wxFrame):
    def Update(self):
       self.icon_display.update_icons(self.shell.interp.locals)
 
-class StatusBar(wxStatusBar):
-   def __init__(self, parent):
-      wxStatusBar.__init__(self, parent, -1)
-      self.SetFieldsCount(3)
-      self.SetStatusText("Gamera", 0)
-
 class CustomMenu:
    is_custom_menu = 1
-   items = []
+   _items = []
    def __init__(self):
+      if not has_gui.has_gui:
+         return
       main_win = config.options.__.gui.TopLevel()
       name = self.__class__.__module__.split('.')[-1]
       if not main_win.custom_menus.has_key(name):
@@ -433,7 +426,12 @@ class CustomMenu:
                   menu.Append(menuID, item)
                   EVT_MENU(main_win, menuID,
                            getattr(self, "_On" + util.string2identifier(item)))
-CustomIcon = icon_display.CustomIcon
+
+class StatusBar(wxStatusBar):
+   def __init__(self, parent):
+      wxStatusBar.__init__(self, parent, -1)
+      self.SetFieldsCount(3)
+      self.SetStatusText("Gamera", 0)
 
 class GameraSplash(wxSplashScreen):
    def __init__(self):
@@ -455,6 +453,8 @@ class GameraSplash(wxSplashScreen):
 app = None
 def run():
    global app
+   has_gui.has_gui = has_gui.WX_GUI
+   from gamera.gui import args_gui
    init_gamera()
    # wxInitAllImageHandlers()
 

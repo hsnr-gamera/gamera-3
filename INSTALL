@@ -42,12 +42,8 @@ Microsoft Windows
 Installing using the Windows installer
 --------------------------------------
 
-If you got the Windows installer, simply run it to
-install Gamera.  Unfortunately, we're having trouble getting the
-startup script (``gamera_gui.py``) to be installed by the installer, so 
-you'll have to install that yourself.  Do a ``Search...``
-for it after installing Gamera.  You can place it anywhere,
-(such as the Desktop) and simply double-click it to start Gamera.
+If you downloaded the Windows installer, simply run it to
+install Gamera.
 
 .. note:: Windows is not our primary development environment, and the
    Windows installer tends to lag a version or two behind and may not
@@ -64,10 +60,10 @@ Cygwin/Mingw32
 ``````````````
 
 Use the installer from http://www.cygwin.com/ to install Cygwin,
-including a g++ and the MingW32 libraries.  Compiling Gamera against
-the Cygwin DLL is theoretically possible, but not supported.  However,
-you can compile Gamera using Mingw32, which means there will be no
-non-standard Windows runtime dependancies.
+including the ``g++`` compiler and the ``MingW32`` libraries.
+Compiling Gamera against the Cygwin DLL is theoretically possible, but
+not supported.  However, you can compile Gamera using ``MingW32``, which
+means there will be no non-standard Windows runtime dependancies.
 
 Python
 ``````

@@ -366,9 +366,7 @@ namespace Gamera {
     void filter_black_area_large(T& ccs, int max_area) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	FloatVector* ba = black_area(**i);
-	int bai = (int)(*ba)[0];
-	delete ba;
+	int bai = (int)black_area(**i);
 	if (bai > max_area) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
@@ -382,9 +380,7 @@ namespace Gamera {
     void filter_black_area_small(T& ccs, int min_area) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	FloatVector* ba = black_area(**i);
-	int bai = (int)(*ba)[0];
-	delete ba;
+	int bai = (int)black_area(**i);
 	if (bai < min_area) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);

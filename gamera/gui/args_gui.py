@@ -510,3 +510,7 @@ class Info:
    def get_string(self):
       return None
    get = get_string
+
+from gamera import args
+print locals()["Args"]
+args.mixin(locals(), "GUI")

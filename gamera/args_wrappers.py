@@ -154,7 +154,7 @@ class Region(WrapperArg):
 
    def to_python(self):
       return """
-      result_pyarg = create_RegionObject(*%(symbol)s);
+      return_pyarg = create_RegionObject(*%(symbol)s);
       delete %(symbol)s;""" % self
 
 class RegionMap(WrapperArg):
@@ -171,7 +171,7 @@ class RegionMap(WrapperArg):
 
    def to_python(self):
       return """
-      result_pyarg = create_RegionMapObject(*%(symbol)s);
+      return_pyarg = create_RegionMapObject(*%(symbol)s);
       delete %(symbol)s;""" % self
 
 class ImageList(WrapperArg):
@@ -263,3 +263,5 @@ class ImageInfo(WrapperArg):
    def to_python(self):
       return "%(pysymbol)s = create_ImageInfoObject(%(symbol)s);""" % self
 
+from gamera import args
+args.mixin(locals(), "C++ Wrappers")

@@ -189,7 +189,7 @@ class InteractiveClassifier(_Classifier):
             self.is_dirty = 1
             self.database.append(glyph)
 
-   def display(self, current_database, image=None, symbol_table=[]):
+   def display(self, current_database, context_image=None, symbol_table=[]):
       gui = config.get_option("__gui")
-      display = gui.ShowClassifier(self, current_database, image, symbol_table)
+      display = gui.ShowClassifier(self, current_database, context_image, symbol_table)
       

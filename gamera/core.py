@@ -32,6 +32,7 @@ from gameracore import ImageData, Size, Dimensions, Point, \
      Rect, Region, RegionMap, ImageInfo
 # import gamera.gameracore for subclassing
 import gameracore
+import gamera_xml
 
 from gamera.classify import *
 import paths, util, config  # Gamera-specific

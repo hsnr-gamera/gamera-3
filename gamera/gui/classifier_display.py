@@ -931,6 +931,8 @@ class SymbolTableEditorPanel(wxPanel):
          self.tree.ScrollTo(item)
          self.tree.Refresh()
 
+# TODO: Add dialog to select kind of classifier
+
 extensions = "XML files (*.xml)|*.xml*"
 name = "Classifier Wizard"
 class ClassifierWizard(Wizard):
@@ -999,7 +1001,8 @@ class ClassifierWizard(Wizard):
                                         "Please try again.")
          return self.dlg_select_image
       if (self.locals[self.context_image].data.pixel_type == GREYSCALE):
-         self.shell.run(self.context_image + ".otsu_threshold()")
+         self.shell.run("%s = %s.otsu_threshold()" %
+                        (self.context_image, self.context_image))
       return self.dlg_select_ccs
 
    def cb_select_ccs(self, generate, use, list, file, filename, scaling, factor):
@@ -1023,10 +1026,12 @@ class ClassifierWizard(Wizard):
             if dlg.ShowModal() == wxID_OK:
                filename = dlg.GetPath()
                dlg.Destroy()
-         self.current_database = "'" + filename + "'"
+         self.ccs = var_name.get("ccs", self.shell.locals)
+         self.shell.run(self.ccs + " = gamera_xml.LoadXMLGlyphs().parse_filename('" + filename + "')")
       return self.dlg_select_production_database
 
    def cb_select_production_database(self, empty, load, production_database):
+      self.prod_db = ''
       if load:
          if production_database == 'None':
             dlg = wxFileDialog(None, "Choose a Gamera XML file",
@@ -1034,30 +1039,26 @@ class ClassifierWizard(Wizard):
             if dlg.ShowModal() == wxID_OK:
                production_database = dlg.GetPath()
                dlg.Destroy()
-         self.production_database = "'" + production_database + "'"
-      if self.production_database == 'None' and self.ccs != 'None':
-         self.ff = self.locals[self.ccs][0].methods_flat_category("Features")
-         self.ff.sort()
-         feature_controls = []
-         self.feature_list = []
-         for key, val in self.ff:
-            feature_controls.append(Check('', key, default=1))
-            self.feature_list.append(key)
-         self.dlg_features = Args(
-            feature_controls,
-            name=name, function='cb_features',
-            title='Select the features you would like to use for classification')
-         return self.dlg_features
-      return None
+         self.prod_db = var_name.get("production_db", self.shell.locals)
+         self.shell.run(self.prod_db + " = gamera_xml.LoadXMLGlyphs().parse_filename('" + filename + "')")
+      self.feature_list = core.ImageBase.methods_flat_category("Features", ONEBIT)
+      self.feature_list = [x[0] for x in self.feature_list]
+      self.feature_list.sort()
+      feature_controls = []
+      for key in self.feature_list:
+         feature_controls.append(Check('', key, default=1))
+      self.dlg_features = Args(
+         feature_controls,
+         name=name, function='cb_features',
+         title='Select the features you would like to use for classification')
+      return self.dlg_features
 
    def cb_features(self, *args):
       self.features = []
       for i in range(len(args)):
          if args[i]:
             self.features.append(self.feature_list[i])
-      if self.current_database == 'None':
-         return self.dlg_select_symbol_table
-      return None
+      return self.dlg_select_symbol_table
 
    def cb_select_symbol_table(self, symbol_table):
       if symbol_table != "None":
@@ -1067,15 +1068,22 @@ class ClassifierWizard(Wizard):
    def done(self):
       classifier = var_name.get("classifier", self.shell.locals)
       try:
-         self.shell.run("%s = Classifier(%s, %s, %s, %s, %s, %s)" %
-                        (classifier, self.ccs, self.production_database,
-                         self.current_database,
-                         self.symbol_table, self.context_image,
-                         self.features))
-         
-         self.shell.run("%s.display(%s)" % (classifier, self.context_image))
-      except e:
-         pass
+         self.shell.run("from gamera import classify")
+         self.shell.run("from gamera import knn")
+         if self.prod_db != '':
+            prod_db = "database=%s," % self.prod_db
+         else:
+            prod_db = ''
+         self.shell.run("%s = classify.InteractiveClassifier(knn.kNN(), %s features=%s)" %
+                        (classifier, prod_db, self.features))
+         if self.symbol_table != 'None':
+            symbol_table = ", symbol_table=%s" % self.symbol_table
+         else:
+            symbol_table = ''
+         self.shell.run("%s.display(%s, context_image=%s%s)" %
+                        (classifier, self.ccs, self.context_image, symbol_table))
+      except Exception, e:
+         print e
 
 class FeatureEditorWizard(Wizard):
    dlg_select_database = Args([

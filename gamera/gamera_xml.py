@@ -19,10 +19,9 @@
 
 import core, util
 from util import word_wrap
-import gzip, os, os.path, string, cStringIO
+import gzip, os, os.path, cStringIO
 from gamera.symbol_table import SymbolTable
 from xml.parsers import expat
-import knn
 
 classification_state_to_name = {
    core.UNCLASSIFIED: "UNCLASSIFIED",

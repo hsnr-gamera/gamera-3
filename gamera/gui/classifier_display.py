@@ -255,12 +255,17 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       return min(max_label, GRID_MAX_LABEL_LENGTH)
 
    def delete_selected(self):
-      for item in self.GetSelectedItems():
-         if hasattr(item, 'dead'):
-            del item.__dict__['dead']
-         else:
-            item.dead = 1
+      self._delete_selected(self.GetSelectedItems(), 0)
       self.RefreshSelected()
+
+   def _delete_selected(self, glyphs, setting):
+      for glyph in glyphs:
+         if (setting == 0 and hasattr(item, 'dead')) or setting == -1:
+            del item.__dict__['dead']
+            self._delete_selected(glyph.children_images, -1)
+         elif (setting == 0 and not hasattr(item, 'dead')) or setting == 1:
+            item.dead = 1
+            self._delete_selected(glyph.children_images, -1)
 
    ########################################
    # CALLBACKS
@@ -654,11 +659,22 @@ class ClassifierFrame(ImageFrameBase):
    def _OnGuess(self, list):
       wxBeginBusyCursor()
       try:
-         added = self._classifier.classify_list_automatic(list)
+         added, removed = self._classifier.classify_list_automatic(list)
       except classify.ClassifierError, e:
          gui_util.message(str(e))
-      self.multi_iw.id.append_glyphs(added)
+      wxBeginBusyCursor()
+      self.multi_iw.id.BeginBatch()
+      if len(added) or len(removed):
+         if len(added):
+            self.append_glyphs(added)
+         for glyph in removed:
+            glyph.dead = 1
+         self.multi_iw.id.Refresh()
+         wxEndBusyCursor()
+      else:
+         self.multi_iw.id.RefreshSelected()
       self.multi_iw.id.sort_images()
+      self.multi_iw.id.EndBatch()
       wxEndBusyCursor()
 
    def _OnConfirmAll(self, event):

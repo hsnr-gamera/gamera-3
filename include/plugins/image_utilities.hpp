@@ -24,6 +24,7 @@
 #include "gamera.hpp"
 #include "gamera_limits.hpp"
 #include "vigra/resizeimage.hxx"
+#include "plugins/logical.hpp"
 #include <exception>
 #include <math.h>
 #include <algorithm>
@@ -118,6 +119,8 @@ namespace Gamera {
     return dest;
   }
 
+  
+
   /*
     image_copy
 
@@ -143,6 +146,47 @@ namespace Gamera {
       image_copy_fill(a, *view);
       return view;
     }
+  }
+
+  /*
+    union_images
+
+    This function creates a new image that is the summation of all of the images
+    in the passed-in list.
+  */
+  Image *union_images(std::vector<Image*> list_of_images) {
+    // TODO: get a proper maxint
+    size_t min_x = 0xffff;
+    size_t min_y = 0xffff;
+    size_t max_x = 0;
+    size_t max_y = 0;
+
+    // Determine bounding box
+    for (std::vector<Image*>::iterator i = list_of_images.begin();
+	 i != list_of_images.end(); ++i) {
+      Image* image = (*i);
+      min_x = MIN(min_x, image->ul_x());
+      min_y = MIN(min_y, image->ul_y());
+      max_x = MAX(max_x, image->lr_x());
+      max_y = MAX(max_y, image->lr_y());
+    }
+
+    size_t ncols = max_x - min_x + 1;
+    size_t nrows = max_y - min_y + 1;
+    
+    OneBitImageData *dest_data = new OneBitImageData(nrows, ncols, min_y, min_x);
+    OneBitImageView *dest = new OneBitImageView(*dest_data, min_y, min_x, nrows, ncols);
+    std::fill(dest->vec_begin(), dest->vec_end(), white(*dest));
+    
+    for (std::vector<Image*>::iterator i = list_of_images.begin();
+	 i != list_of_images.end(); ++i) {
+      OneBitImageView* image = (OneBitImageView *)(*i);
+      OneBitImageView* tmp = new OneBitImageView(*dest_data,
+						 image->ul_y(), image->ul_x(),
+						 image->nrows(), image->ncols());
+      or_image(*tmp, *image);
+    }
+    return dest;
   }
 
   template<class T>

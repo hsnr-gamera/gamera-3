@@ -274,8 +274,10 @@ class LoadXML:
    def _start_element_handler(self, name, attributes):
       for x in self._start_elements_global:
          x(name, attributes)
-      if self._start_elements.has_key(name):
+      try:
          self._start_elements[name](attributes)
+      except KeyError:
+         pass
 
    def add_end_element_handler(self, name, func):
       self._end_elements[name] = func
@@ -292,12 +294,14 @@ class LoadXML:
    def _end_element_handler(self, name):
       for x in self._end_elements_global:
          x(name)
-      if self._end_elements.has_key(name):
-         if self._stream_length:
-            self._progress.update(self._stream.tell(), self._stream_length)
-         else:
-            self._progress.update(self._stream.tell() % 9, 10)
+      try:
          self._end_elements[name]()
+      except KeyError:
+         pass
+      if self._stream_length:
+         self._progress.update(self._stream.tell(), self._stream_length)
+      else:
+         self._progress.update(self._stream.tell() % 49, 50)
 
    def _append_glyph_to_glyphs(self, glyph):
       self.glyphs.append(glyph)

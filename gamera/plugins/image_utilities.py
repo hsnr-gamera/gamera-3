@@ -11,7 +11,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#  
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -20,9 +20,9 @@
 """The image utilities module contains plugins for copy, rotating, resizing,
 and computing histograms."""
 
-from gamera.plugin import *
+from gamera.plugin import * 
 import gamera.config
-import _image_utilities
+import _image_utilities 
 
 class image_copy(PluginFunction):
     """Copies an image, with all of its underlying data."""
@@ -80,11 +80,17 @@ class histogram(PluginFunction):
     __call__ = staticmethod(__call__)
 histogram = histogram()
 
+class union_images(PluginFunction):
+    self_type = None
+    args = Args([ImageList('list_of_images')])
+    return_type = ImageType([ONEBIT])
+union_images = union_images() 
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
-    functions = [image_copy, rotate_copy, resize_copy, scale_copy, histogram]
+    functions = [image_copy, rotate_copy, resize_copy, scale_copy, histogram, union_images]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

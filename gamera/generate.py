@@ -155,6 +155,10 @@ template = Template("""
         [[elif isinstance(x, ImageType) or isinstance(x, Class)]]
           PyObject* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'O']]
+        [[elif isinstance(x, ImageList)]]
+          PyObject* [[x.name + '_arg']];
+          [[exec pyarg_format = pyarg_format + 'O']]
+          std::vector<Image*> [[x.name + '_list_arg']];
         [[else]]
           Something funny happened - [[x.__class__.__name__]]
           [[isinstance(x, ImageType)]]
@@ -206,6 +210,25 @@ template = Template("""
           return 0;
         }
       [[end]]
+
+      [[for arg in function.args.list]]
+        [[if isinstance(arg, ImageList)]]
+          if (!PyList_Check([[arg.name + '_arg']])) {
+            PyErr_SetString(PyExc_TypeError, \"Expected a list of images.\");
+            return 0;
+          }
+          [[arg.name + '_list_arg']].resize(PyList_GET_SIZE([[arg.name + '_arg']]));
+          for (int i=0; i < PyList_GET_SIZE([[arg.name + '_arg']]); ++i) {
+            PyObject *element = PyList_GET_ITEM([[arg.name + '_arg']], i);
+            if (!PyObject_TypeCheck(element, imagebase_type)) {
+              PyErr_SetString(PyExc_TypeError, \"Expected a list of images.\");
+              return 0;
+            }
+            [[arg.name + '_list_arg']][i] = ((Image*)((RectObject*)element)->m_x);
+          }
+          [[exec arg.name += '_list']]  
+        [[end]]
+      [[end]]  
 
       [[# This code goes through each of the image arguments and builds up a list of #]]
       [[# possible image type names. What is passed in is an abstract notion of #]]

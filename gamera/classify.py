@@ -35,37 +35,40 @@ class _Classifier:
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
          splits = self._do_splits(glyph)
-         return splits
-      return []
+         return splits, []
+      return [], []
 
    def classify_list_automatic(self, glyphs, recursion_level=0, progress=None,
                                progress_i=0, progress_len=0):
+      for glyph in glyphs:
+         glyph.generate_features(self.feature_functions)
+      added = []
       if (len(self.database) == 0 or recursion_level > 10):
          return []
-      splits = []
       if recursion_level == 0:
+         # TODO: should we group before or after splitting?
          progress = util.ProgressFactory("Classifying glyphs...")
+      groups, removed = self.grouping_classifier.search(glyphs)
       #try: # Big try block so the progress display goes away if there is an error
       if 1:
          progress_len += len(glyphs)
          for glyph in glyphs:
-            if not glyph.classification_state == core.MANUAL:
-               glyph.generate_features(self.feature_functions)
+            if not glyph.classification_state in (core.MANUAL, core.HEURISTIC):
                id = self._classify_automatic_impl(glyph)
                glyph.classify_automatic(id)
-               splits.extend(self._do_splits(glyph))
-               progress.update(progress_i, progress_len + len(splits))
+               added.extend(self._do_splits(glyph))
+               progress.update(progress_i, progress_len + len(added))
                progress_i += 1
-         if len(splits):
-            splits.extend(self.classify_list_automatic(
-               splits, recursion_level+1, progress, progress_i, progress_len))
+         if len(added):
+            for glyph in added:
+               glyph.generate_features(self.feature_functions)
+            added_recurse, removed_recurse = self.classify_list_automatic(
+               added, recursion_level+1, progress, progress_i, progress_len)
+            added.extend(added_recurse)
+            removed.extend(removed_recurse)
          if recursion_level == 0:
             progress.update(1, 1)
-            # TODO: should we group before or after splitting?
-            if self.grouping_classifier:
-               groups = self.grouping_classifier.search(glyphs + splits)
-            return splits + groups
-         return splits
+         return added + groups, removed
 ##       except Exception, e:
 ##          progress.update(1, 1)
 ##          raise e
@@ -163,7 +166,7 @@ class NonInteractiveClassifier(_Classifier):
          self._do_splits = self._do_splits_null
       if grouping_classifier is None:
          from gamera import structure
-         grouping_classifier = structure.GroupingClassifier()
+         grouping_classifier = structure.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
       for i, glyph in enumerate(database):
          glyph.generate_features(self.feature_functions)
@@ -204,7 +207,7 @@ class InteractiveClassifier(_Classifier):
          self._do_splits = self._do_splits_null
       if grouping_classifier is None:
          from gamera import structure_by_knn
-         grouping_classifier = structure_by_knn.GroupingClassifier()
+         grouping_classifier = structure_by_knn.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
       self._display = None
 
@@ -241,6 +244,9 @@ class InteractiveClassifier(_Classifier):
          progress.update(1, 1)
 
    def _classify_automatic_impl(self, glyph):
+      for child in glyph.children_images:
+         if self.database.has_key(child):
+            del self.database[child]
       return self.classifier.classify_with_images(self.database.iterkeys(), glyph)
                          
    def guess_glyph(self, glyph):
@@ -253,8 +259,9 @@ class InteractiveClassifier(_Classifier):
 
    def classify_glyph_manual(self, glyph, id):
       self.is_dirty = 1
-      if id.startswith('group'):
-         raise ClassifierError('You can not train a single glyph as a group.')
+      if id.startswith('group') and self.grouping_classifier:
+         added, removed = self.grouping_classifier.classify_group_manual([glyph], id)
+         return added, removed
       if self.database.has_key(glyph):
          del self.database[glyph]
       glyph.generate_features(self.feature_functions)
@@ -269,10 +276,8 @@ class InteractiveClassifier(_Classifier):
 
    def classify_list_manual(self, glyphs, id):
       if id.startswith('group') and self.grouping_classifier:
-         if len(glyphs) <= 1:
-            raise ClassifierError('You can not train a single glyph as a group.')
-         groups = self.grouping_classifier.classify_group_manual(glyphs, id)
-         return groups, []
+         added, removed = self.grouping_classifier.classify_group_manual(glyphs, id)
+         return added, removed
       splits = []
       removed = {}
       for glyph in glyphs:

@@ -266,17 +266,32 @@ class ImageBase:
       self.classification_state = UNCLASSIFIED
 
    def classify_manual(self, id_name):
-      id_name.sort()
+      if type(id_name) == StringType:
+         id_name = [(0.0, id_name)]
+      elif type(id_name) == ListType:
+         id_name.sort()
+      else:
+         raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = MANUAL
 
    def classify_automatic(self, id_name):
-      id_name.sort()
+      if type(id_name) == StringType:
+         id_name = [(0.0, id_name)]
+      elif type(id_name) == ListType:
+         id_name.sort()
+      else:
+         raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = AUTOMATIC
 
    def classify_heuristic(self, id_name):
-      id_name.sort()
+      if type(id_name) == StringType:
+         id_name = [(0.0, id_name)]
+      elif type(id_name) == ListType:
+         id_name.sort()
+      else:
+         raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = HEURISTIC
 
@@ -286,16 +301,8 @@ class ImageBase:
       return self.id_name[0][1]
 
    def has_id_name(self, name):
-      return name in [x[1] for x in self.id_name]
-
-   def match_id_name(self, regex):
-      """Returns true if any of the class names of the glyph match
-      the given regular expression."""
-      if type(regex) == StringType:
-         import re
-         regex = re.compile(regex)
-      for confidence, name in self.id_name:
-         if regex.match(name):
+      for confidence, id_name in self.id_name:
+         if name == id_name:
             return 1
       return 0
 
@@ -310,43 +317,42 @@ class ImageBase:
       global all_features
       if all_features is None:
          all_features = cls.methods_flat_category('Features', ONEBIT)
-      if features == 'all':
+      if features == 'all' or features is None:
          functions = all_features
+         return functions
+      features = util.make_sequence(features)
+      all_strings = 1
+      for feature in features:
+         if not type(feature) == StringType:
+            all_strings = 0
+            break
+      if not all_strings:
+         import plugin
+         all_functions = 1
+         for feature in features:
+            if not isinstance(feature, plugin.PluginFunction):
+               all_functions = 0
+               break
+         if not all_functions:
+            raise ValueError("'%s' is not a valid way to specify a list of features."
+                             % features)
+         else:
+            return features
       else:
-         if not util.is_sequence(features):
-            features = [features]
          functions = []
          for feature in features:
-            if type(feature) == StringType:
-               found = 0
-               for i in all_features:
-                  if feature == i[0]:
-                     functions.append(i)
-                     found = 1
-                     break
-               if not found:
-                  raise ValueError("'%s' is not a known feature function.")
-            else:
-               raise ValueError("'%s' is not a valid way to specify a feature."
-                                % feature)
-      functions.sort()
-      return functions
+            found = 0
+            for i in all_features:
+               if feature == i[0]:
+                  functions.append(i)
+                  found = 1
+                  break
+            if not found:
+               raise ValueError("'%s' is not a known feature function.")
+         functions.sort()
+         return functions
    get_feature_functions = classmethod(get_feature_functions)
 
-   def generate_features(self, features=None):
-      if features is None:
-         features = self.get_feature_functions()
-      if self.feature_functions == features:
-         return
-      self.feature_functions = features
-      self.features = array('d')
-      for i in range(len(features)):
-         result = apply(features[i][1].__call__, (self,))
-         if type(result) in (IntType, FloatType):
-            self.features.append(result)
-         else:
-            self.features.extend(result)
-         
    def to_xml(self, stream=None):
       import gamera_xml
       return gamera_xml.WriteXML(glyphs=self).write_stream(stream)
@@ -413,13 +419,13 @@ _gamera_initialised = 0
 def init_gamera():
    global _gamera_initialised
    if not _gamera_initialised:
-      import plugin
+      import plugin, gamera_xml
       # Create the default functions for the menu
       for method in (
          plugin.PluginFactory("load_image", None, "File",
                               plugin.ImageType([], "image"),
                               plugin.ImageType([ALL]),
-                              (plugin.FileOpen("filename"))),
+                              (plugin.FileOpen("filename"),)),
          plugin.PluginFactory("display", None, "Display",
                               None,
                               plugin.ImageType([ALL]),
@@ -443,7 +449,7 @@ def init_gamera():
          plugin.PluginFactory("to_xml_filename", None, "XML",
                               None,
                               plugin.ImageType([ONEBIT]),
-                              None)
+                              (plugin.FileSave("filename", extension=gamera_xml.extensions),))
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)

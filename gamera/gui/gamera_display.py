@@ -244,7 +244,6 @@ class ImageDisplay(wxScrolledWindow):
          return
       elif scale < scaling:
          self.Clear()
-      wxBeginBusyCursor()
       if scale == None or scale <= 0:
          scale = scaling
       scale = pow(2.0, floor(log(scale) / log(2.0)))
@@ -260,17 +259,20 @@ class ImageDisplay(wxScrolledWindow):
                   h - size.y) - 2, 0)
       self.scaling = scale
 
-      if self.highlights == []:
-         self.SetScrollbars(scroll_amount, scroll_amount,
-                            floor(w / scroll_amount),
-                            floor(h / scroll_amount),
-                            floor((x / scroll_amount) + 0.5),
-                            floor((y / scroll_amount) + 0.5))
-      else:
-         self.focus([x[0] for x in self.highlights])
-      self.RefreshAll()
-      wxEndBusyCursor()
-
+      wxBeginBusyCursor()
+      try:
+         if self.highlights == []:
+            self.SetScrollbars(scroll_amount, scroll_amount,
+                               floor(w / scroll_amount),
+                               floor(h / scroll_amount),
+                               floor((x / scroll_amount) + 0.5),
+                               floor((y / scroll_amount) + 0.5))
+         else:
+            self.focus([x[0] for x in self.highlights])
+      finally:
+         self.RefreshAll()
+         wxEndBusyCursor()
+         
    def ZoomOut(self, *args):
       if self.scaling > pow(2, -8):
          self.scale(self.scaling * 0.5)
@@ -896,22 +898,23 @@ class MultiImageDisplay(wxGrid):
    def set_image(self, list, view_function=None):
       wxBeginBusyCursor()
       self.BeginBatch()
-      self.list = list
-      self.do_updates = 0
-      self.sort_images()
-      self.frame.set_choices()
-      if not self.created:
-         self.rows = 1
-         self.CreateGrid(1, GRID_NCOLS)
-         self.created = 1
-      self.EnableEditing(0)
-      self.resize_grid()
-      # self.Refresh()
-      self.ClearSelection()
-      x = self.GetSize()
-      self.do_updates = 1
-      self.EndBatch()
-      wxEndBusyCursor()
+      try:
+         self.list = list
+         self.do_updates = 0
+         self.sort_images()
+         self.frame.set_choices()
+         if not self.created:
+            self.rows = 1
+            self.CreateGrid(1, GRID_NCOLS)
+            self.created = 1
+         self.EnableEditing(0)
+         self.resize_grid()
+         self.ClearSelection()
+         x = self.GetSize()
+         self.do_updates = 1
+      finally:
+         self.EndBatch()
+         wxEndBusyCursor()
       return (x.x, 600)
 
    def AutoSize(self):
@@ -921,69 +924,76 @@ class MultiImageDisplay(wxGrid):
       # bug is fixed in wxPython
       wxBeginBusyCursor()
       self.BeginBatch()
-      col_max = [25] * self.cols
-      height = 0
-      image_no = self.rows * self.cols - 1
-      for row in xrange(self.rows - 1, -1, -1):
-         row_max = 25
-         for col in xrange(self.cols - 1, -1, -1):
-            if image_no < len(self.list):
-               image = self.list[image_no]
-               if not image is None:
-                  row_max = max(row_max,
-                                min(GRID_MAX_CELL_WIDTH,
-                                    image.nrows * self.scaling + GRID_PADDING))
-                  col_max[col] = max(col_max[col],
-                                     min(GRID_MAX_CELL_HEIGHT,
-                                         image.ncols * self.scaling + GRID_PADDING))
-            image_no -= 1
-         self.SetRowSize(row, row_max)
-         height += row_max
-      width = 0
-      for col in range(self.cols - 1, -1, -1):
-         self.SetColSize(col, col_max[col])
-         width += col_max[col]
-      self.SetSize(wxSize(-1, height))
-      self.GetGridWindow().GetParent().Layout()
-      self.EndBatch()
-      wxEndBusyCursor()
+      try:
+         col_max = [25] * self.cols
+         height = 0
+         image_no = self.rows * self.cols - 1
+         for row in xrange(self.rows - 1, -1, -1):
+            row_max = 25
+            for col in xrange(self.cols - 1, -1, -1):
+               if image_no < len(self.list):
+                  image = self.list[image_no]
+                  if not image is None:
+                     row_max = max(row_max,
+                                   min(GRID_MAX_CELL_WIDTH,
+                                       image.nrows * self.scaling + GRID_PADDING))
+                     col_max[col] = max(col_max[col],
+                                        min(GRID_MAX_CELL_HEIGHT,
+                                            image.ncols * self.scaling + GRID_PADDING))
+               image_no -= 1
+            self.SetRowSize(row, row_max)
+            height += row_max
+         width = 0
+         for col in range(self.cols - 1, -1, -1):
+            self.SetColSize(col, col_max[col])
+            width += col_max[col]
+         self.SetSize(wxSize(-1, height))
+      finally:
+         self.EndBatch()
+         self.GetGridWindow().GetParent().Layout()
+         wxEndBusyCursor()
 
    def resize_grid(self, do_auto_size=1):
       if not self.created:
          return
       wxBeginBusyCursor()
       self.BeginBatch()
-      orig_rows = self.rows
-      rows = int(max(ceil(float(len(self.list) - 1) / float(GRID_NCOLS)), 1))
-      cols = GRID_NCOLS
-      self.DeleteRows(0, self.rows)
-      self.AppendRows(rows)
-      self.rows = rows
-      self.cols = cols
-      row_size = 1
-      for row in range(rows - 1, -1, -1):
-         for col in range(cols):
-            self.SetCellRenderer(row, col, self.GetDefaultRenderer())
-            self.SetReadOnly(row, col, TRUE)
-      width = self.set_labels()
-      self.SetRowLabelSize(width + 20)
-      self.SetColLabelSize(20)
-      self.AutoSize()
-      self.EndBatch()
-      wxEndBusyCursor()
+      try:
+         orig_rows = self.rows
+         rows = int(max(ceil(float(len(self.list) - 1) / float(GRID_NCOLS)), 1))
+         cols = GRID_NCOLS
+         self.DeleteRows(0, self.rows)
+         self.AppendRows(rows)
+         self.rows = rows
+         self.cols = cols
+         row_size = 1
+         for row in range(rows - 1, -1, -1):
+            for col in range(cols):
+               self.SetCellRenderer(row, col, self.GetDefaultRenderer())
+               self.SetReadOnly(row, col, TRUE)
+         width = self.set_labels()
+         self.SetRowLabelSize(width + 20)
+         self.SetColLabelSize(20)
+         self.AutoSize()
+      finally:
+         self.EndBatch()
+         self.GetGridWindow().GetParent().Layout()
+         wxEndBusyCursor()
 
    def append_glyphs(self, list):
       wxBeginBusyCursor()
       self.BeginBatch()
-      # Remove trailing 'None's
-      for i in range(len(self.list) - 1, -1, -1):
-         if not self.list[i] is None:
-            break
-      self.list = self.list[:i+1]
-      self.list.extend(list)
-      self.resize_grid(do_auto_size=0)
-      self.EndBatch()
-      wxEndBusyCursor()
+      try:
+         # Remove trailing 'None's
+         for i in range(len(self.list) - 1, -1, -1):
+            if not self.list[i] is None:
+               break
+         self.list = self.list[:i+1]
+         self.list.extend(list)
+         self.resize_grid(do_auto_size=0)
+      finally:
+         self.EndBatch()
+         wxEndBusyCursor()
 
    def scale(self, scaling):
       if self.scaling != scaling:
@@ -1015,28 +1025,30 @@ class MultiImageDisplay(wxGrid):
    def sort_images(self, function=None, order=0):
       wxBeginBusyCursor()
       self.BeginBatch()
-      orig_len = len(self.list)
-      if function != None:
-         self.sort_function = function
-      if self.sort_function == "":
-         self.list = self.default_sort(self.list)
-      else:
-         self.list.sort(self.sort_function)
-         for item in self.list:
-            del item.sort_cache
-      if order:
-         self.list.reverse()
-      if self.do_updates:
-         if orig_len != len(self.list):
-            self.resize_grid()
+      try:
+         orig_len = len(self.list)
+         if function != None:
+            self.sort_function = function
+         if self.sort_function == "":
+            self.list = self.default_sort(self.list)
          else:
-            width = self.set_labels()
-            self.SetRowLabelSize(width + 20)
-            self.AutoSize()
-         self.ClearSelection()
-         self.MakeCellVisible(0, 0)
-      self.EndBatch()
-      wxEndBusyCursor()
+            self.list.sort(self.sort_function)
+            for item in self.list:
+               del item.sort_cache
+         if order:
+            self.list.reverse()
+         if self.do_updates:
+            if orig_len != len(self.list):
+               self.resize_grid()
+            else:
+               width = self.set_labels()
+               self.SetRowLabelSize(width + 20)
+               self.AutoSize()
+            self.ClearSelection()
+            self.MakeCellVisible(0, 0)
+      finally:
+         self.EndBatch()
+         wxEndBusyCursor()
 
    def set_labels(self):
       for i in range(self.cols):
@@ -1049,22 +1061,28 @@ class MultiImageDisplay(wxGrid):
    # SELECTING
 
    def select_images(self, function):
-      self.updating = 1
-      self.ClearSelection()
-      for i in range(len(self.list)):
-         x = self.list[i]
-         if x != None:
-          try:
-             result = function(x)
-          except Exception, err:
-             gui_util.message(str(err))
-             return
-          if result:
-             self.SelectBlock(
-                i / GRID_NCOLS, i % GRID_NCOLS,
-                i / GRID_NCOLS, i % GRID_NCOLS, true)
-      self.updating = 0
-      self.OnSelectImpl()
+      wxBeginBusyCursor()
+      self.BeginBatch()
+      try:
+         self.updating = 1
+         self.ClearSelection()
+         for i in range(len(self.list)):
+            x = self.list[i]
+            if x != None:
+             try:
+                result = function(x)
+             except Exception, err:
+                gui_util.message(str(err))
+                return
+             if result:
+                self.SelectBlock(
+                   i / GRID_NCOLS, i % GRID_NCOLS,
+                   i / GRID_NCOLS, i % GRID_NCOLS, true)
+         self.updating = 0
+         self.OnSelectImpl()
+      except:
+         self.EndBatch()
+         wxEndBusyCursor()
 
    ########################################
    # UTILITY FUNCTIONS
@@ -1368,9 +1386,7 @@ class MultiImageWindow(wxPanel):
       if sort_string not in self.sort_choices:
          self.sort_choices.append(sort_string)
          self.sort_combo.Append(sort_string)
-      wxBeginBusyCursor()
       self.id.sort_images(sort_func, order)
-      wxEndBusyCursor()
 
    def OnSortDescending(self, event):
       self.OnSortAscending(event, 1)
@@ -1388,14 +1404,14 @@ class MultiImageWindow(wxPanel):
       if select_string not in self.select_choices:
          self.select_choices.append(select_string)
          self.select_combo.Append(select_string)
-      wxBeginBusyCursor()
       self.id.select_images(select_func)
-      wxEndBusyCursor()
 
    def OnSelectAll(self, event):
       wxBeginBusyCursor()
-      self.id.SelectAll()
-      wxEndBusyCursor()
+      try:
+         self.id.SelectAll()
+      finally:
+         wxEndBusyCursor()
 
    def OnSelectInvert(self, event):
       self.id.SelectInvert()

@@ -55,10 +55,12 @@ class GameraGui:
 
    def ShowImage(image, title, view_function=None, owner=None):
       wxBeginBusyCursor()
-      img = gamera_display.ImageFrame(title=title, owner=owner)
-      img.set_image(image, view_function)
-      img.Show(1)
-      wxEndBusyCursor()
+      try:
+         img = gamera_display.ImageFrame(title=title, owner=owner)
+         img.set_image(image, view_function)
+         img.Show(1)
+      finally:
+         wxEndBusyCursor()
       return img
    ShowImage = staticmethod(ShowImage)
 
@@ -102,8 +104,8 @@ class GameraGui:
       return main_win
    TopLevel = staticmethod(TopLevel)
 
-   def ProgressBox(message):
-      return gui_util.ProgressBox(message)
+   def ProgressBox(message, length=1):
+      return gui_util.ProgressBox(message, length)
    ProgressBox = staticmethod(ProgressBox)
 
 ######################################################################
@@ -299,13 +301,12 @@ class ShellFrame(wxFrame):
       self.icon_display.add_class(icon_description)
 
    def OnFileOpen(self, event):
-      filename = gui_util.open_file_dialog("*.*")
+      filename = gui_util.open_file_dialog()
       if filename:
          name = var_name.get("image", self.shell.locals)
          if name:
             wxBeginBusyCursor()
-            self.shell.run(name + " = load_image(\""
-                                + filename + "\")")
+            self.shell.run('%s = load_image(r"%s")' % (name, filename))
             wxEndBusyCursor()
 
    def OnClassifier(self, event):

@@ -23,15 +23,14 @@ import gamera.util
 
 def generate_features_list(list, feature_functions = None):
     import gamera.core
-    ff = None
-    if (feature_functions == None):
-        ff = gamera.core.Image.get_feature_functions()
-    else:
-        ff = feature_functions
-    progress = gamera.util.ProgressFactory("Generating features...")
-    for i in range(len(list)):
-        list[i].generate_features(ff)
-        progress.update(i, len(list))
+    ff = gamera.core.Image.get_feature_functions(feature_functions)
+    progress = gamera.util.ProgressFactory("Generating features...", len(list))
+    try:
+        for glyph in list:
+            glyph.generate_features(ff)
+            progress.step()
+    finally:
+        progress.kill()
 
 class black_area(PluginFunction):
     self_type = ImageType([ONEBIT])
@@ -88,15 +87,15 @@ class generate_features(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = None
-    def __call__(self, features = None):
+    def __call__(self, features=None):
       if features is None:
          features = self.get_feature_functions()
       if self.feature_functions == features:
          return
       self.feature_functions = features
       self.features = array.array('d')
-      for i in range(len(features)):
-         result = apply(features[i][1].__call__, (self,))
+      for feature in features:
+         result = apply(feature[1].__call__, (self,))
          if type(result) in (IntType, FloatType):
             self.features.append(result)
          else:

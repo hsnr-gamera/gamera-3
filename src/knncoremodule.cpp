@@ -47,6 +47,7 @@ extern "C" {
   static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args);
   static PyObject* knn_classify(PyObject* self, PyObject* args);
   static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
+  static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
   static PyObject* knn_get_num_k(PyObject* self);
   static int knn_set_num_k(PyObject* self, PyObject* v);
   static PyObject* knn_get_distance_type(PyObject* self);
@@ -149,6 +150,7 @@ PyMethodDef knn_methods[] = {
     "classify an unknown image using a list of images." },
   { "instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
+  { "distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { "classify", knn_classify, METH_VARARGS,
     "" },
   { "leave_one_out", knn_leave_one_out, METH_VARARGS, "" },
@@ -483,7 +485,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
 */
 static PyObject* knn_classify(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
-  if (o->ga_running = true) {
+  if (o->ga_running == true) {
     PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
     return 0;
   }
@@ -579,7 +581,7 @@ inline int compute_distance(KnnObject* o, PyObject* known, PyObject* unknown,
 
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
-  if (o->ga_running = true) {
+  if (o->ga_running == true) {
     PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
     return 0;
   }
@@ -603,10 +605,14 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   while ((cur = PyIter_Next(iterator))) {
     if (!PyObject_TypeCheck(cur, imagebase_type)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
+      return 0;
     }
     double distance;
-    if (compute_distance(o, cur, unknown, &distance) < 0)
+    if (compute_distance(o, cur, unknown, &distance) < 0) {
+      PyErr_SetString(PyExc_ValueError, 
+		      "knn: error in distance calculation (This is most likely because features have not been generated.)");
       return 0;
+    }
     
     char* id_name;
     int len;
@@ -624,6 +630,51 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   PyObject* ans_list = PyList_New(1);
   PyList_SET_ITEM(ans_list, 0, ans);
   return ans_list;
+}
+
+static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  PyObject* unknown, *iterator;
+  double maximum_distance;
+  if (PyArg_ParseTuple(args, "OOd", &iterator, &unknown, &maximum_distance) <= 0) {
+    maximum_distance = std::numeric_limits<double>::max();
+    if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
+      return 0;
+    }
+  }
+
+  if (!PyIter_Check(iterator)) {
+    PyErr_SetString(PyExc_TypeError, "Known features must be iterable.");
+    return 0;
+  }
+
+  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
+    return 0;
+  }
+  
+  PyObject* cur;
+  PyObject* distance_list = PyList_New(0);
+  PyObject* tmp_val;
+  while ((cur = PyIter_Next(iterator))) {
+    if (!PyObject_TypeCheck(cur, imagebase_type)) {
+      PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
+      return 0;
+    }
+    double distance;
+    if (compute_distance(o, cur, unknown, &distance) < 0) {
+      PyErr_SetString(PyExc_ValueError, "knn: error in distance calculation (This is most likely because features have not been generated.)");
+      return 0;
+    }
+    tmp_val = Py_BuildValue("(fO)", distance, cur);
+    if (distance < maximum_distance)
+      if (PyList_Append(distance_list, tmp_val) < 0)
+	return 0;
+    Py_DECREF(tmp_val);
+    Py_DECREF(cur);
+  }
+  //Py_DECREF(distance_list);
+  return distance_list;
 }
 
 static PyObject* knn_get_num_k(PyObject* self) {

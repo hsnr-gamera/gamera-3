@@ -217,11 +217,23 @@ class ProgressText:
   """A console-based progress bar."""
   width = 70
   
-  def __init__(self, message):
+  def __init__(self, message, length=0):
     self._message = message
     self._starting = 1
     self._done = 0
     self._last_amount = 0
+    self._num = 0
+    self._den = length
+
+  def add_length(self, l):
+    self._den += l
+
+  def step(self):
+    self._num += 1
+    self.update(self._num, self._den)
+
+  def kill(self):
+    self.update(1, 1)
   
   def update(self, num, den):
     if self._starting:
@@ -243,12 +255,11 @@ class ProgressText:
         sys.stdout.write("\n")
         sys.stdout.flush()
 
-def ProgressFactory(message):
+def ProgressFactory(message, length=1):
   gui = config.get_option('__gui')
   if gui:
-    return gui.ProgressBox(message)
+    return gui.ProgressBox(message, length)
   else:
-    return ProgressText(message)
+    return ProgressText(message, length)
   
-def build_id_regex(s):
-  parts = s.split('.')
+

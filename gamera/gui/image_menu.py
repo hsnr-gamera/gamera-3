@@ -42,7 +42,7 @@ class ImageMenu:
   _base_method_id = 10003
 
   def __init__(self, parent, x, y, images_, name_=None, shell_=None,
-               mode=EXECUTE_MODE):
+               mode=EXECUTE_MODE, extra_methods={}):
     self.shell = shell_
     self.locals = locals
     self.mode = mode
@@ -55,15 +55,17 @@ class ImageMenu:
       gui_util.message("All selected images are not of the same type.")
     self.image_name = name_
 
+    self._method_id = 10000
     members = self.images[0].members_for_menu()
     methods = self.images[0].methods_for_menu()
     menu = self.create_menu(
       members, methods,
       self.images[0].data.pixel_type,
-      self.images[0].pixel_type_name)
+      self.images[0].pixel_type_name,
+      extra_methods)
     self.did_something = 0
     self.parent.PopupMenu(menu, wxPoint(x, y))
-    for i in range(10000, self._base_method_id + len(self.functions)):
+    for i in range(10000, self._method_id):
       self.parent.Disconnect(i)
     menu.Destroy()
 
@@ -71,29 +73,40 @@ class ImageMenu:
     print 'ImageMenu deleted'
 
   # Given a list of variables and methods, put it all together
-  def create_menu(self, members, methods, type, type_name):
+  def create_menu(self, members, methods, type, type_name, extra_methods):
     menu = wxMenu()
     # Top line
     if self.mode == HELP_MODE:
       menu.Append(0, "Help")
-    menu.Append(0, type_name + " Image")
+    menu.Append(self._method_id, type_name + " Image")
+    self._method_id += 1
     menu.AppendSeparator()
-    menu.Append(10000, "new reference")
-    EVT_MENU(self.parent, 10000, self.OnCreateReference)
-    menu.Append(10001, "new copy")
-    EVT_MENU(self.parent, 10001, self.OnCreateCopy)
+    menu.Append(self._method_id, "new reference")
+    EVT_MENU(self.parent, self._method_id, self.OnCreateReference)
+    self._method_id += 1
+    menu.Append(self._method_id, "new copy")
+    EVT_MENU(self.parent, self._method_id, self.OnCreateCopy)
+    self._method_id += 1
     menu.AppendSeparator()
 
     info_menu = wxMenu()
-    menu.AppendMenu(0, "Info", info_menu)
+    menu.AppendMenu(self._method_id, "Info", info_menu)
+    self._method_id += 1
     # Variables
     for member in members:
-      info_menu.Append(0, member)
+      info_menu.Append(self._method_id, member)
+      self._method_id += 1
 
-    menu.AppendSeparator()
     # Methods
+    menu.AppendSeparator()
     self.functions = [None]
     menu = self.create_methods(methods, menu)
+
+    # Extra methods
+    if len(extra_methods):
+      menu.AppendSeparator()
+      menu = self.create_extra_methods(extra_methods, menu)
+
     return menu
 
   def create_methods(self, methods, menu):
@@ -102,12 +115,27 @@ class ImageMenu:
     for key, val in items:
       if type(val) == types.DictType:
         item = self.create_methods(val, wxMenu())
-        menu.AppendMenu(0, key, item)
+        menu.AppendMenu(self._method_id, key, item)
+        self._method_id += 1
       else:
-        menu.Append(len(self.functions) + self._base_method_id, key)
-        EVT_MENU(self.parent, len(self.functions) + self._base_method_id,
-                 self.OnPopupFunction)
+        menu.Append(self._method_id, key)
+        EVT_MENU(self.parent, self._method_id, self.OnPopupFunction)
+        self._method_id += 1
         self.functions.append(val)
+    return menu
+
+  def create_extra_methods(self, methods, menu):
+    items = methods.items()
+    items.sort()
+    for key, val in items:
+      if type(val) == types.DictType:
+        item = self.create_extra_methods(val, wxMenu())
+        menu.AppendMenu(self._method_id, key, item)
+        self._method_id += 1
+      else:
+        menu.Append(self._method_id, key)
+        EVT_MENU(self.parent, self._method_id, val)
+        self._method_id += 1
     return menu
 
   def get_shell(self):
@@ -148,9 +176,7 @@ class ImageMenu:
       # if not, we can just use empty parentheses
       return function.__name__ + "()"
     # else, display the argument gui and use what it returns
-    return function.args.show(self.parent,
-                              sh.GetLocals(),
-                              function.__name__)
+    return function.args.show(self.parent, sh.GetLocals(), function.__name__)
 
   def get_result_name(self, function, dict):
     if function.return_type not in ('', None):
@@ -191,14 +217,16 @@ class ImageMenu:
       namespace = {'images': self.images}
       if result_name != '':
         sh.locals[result_name] = []
-      progress = util.ProgressFactory('Processing images...')
-      for i in range(len(self.images)):
-        source = "images[%d].%s" % (i, func_call)
-        result = eval(source, namespace)
-        if result_name != '':
-          sh.locals[result_name].append(result)
-        progress.update(i, len(self.images))
-      progress.update(1, 1)
+      progress = util.ProgressFactory('Processing images...', len(self.images))
+      try:
+        for i in range(len(self.images)):
+          source = "images[%d].%s" % (i, func_call)
+          result = eval(source, namespace)
+          if result_name != '':
+            sh.locals[result_name].append(result)
+          progress.step()
+      finally:
+        progress.kill()
     if result_name != '':
       sh.run(result_name)
 

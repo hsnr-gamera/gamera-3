@@ -56,7 +56,7 @@ def build_menu(parent, menu_spec):
    return menu
 
 last_directory = '.'
-def open_file_dialog(extensions):
+def open_file_dialog(extensions="*.*"):
    global last_directory
    dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxOPEN)
    if dlg.ShowModal() == wxID_OK:
@@ -80,7 +80,7 @@ def directory_dialog(create=1):
       return filename
    return None
 
-def save_file_dialog(extensions):
+def save_file_dialog(extensions="*.*"):
    global last_directory
    dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxSAVE)
    if dlg.ShowModal() == wxID_OK:
@@ -91,16 +91,27 @@ def save_file_dialog(extensions):
    return ''
 
 class ProgressBox:
-   def __init__(self, message):
+   def __init__(self, message, length=1):
       self.progress_box = wxProgressDialog(
          "Progress", message, 100,
          style=wxPD_APP_MODAL|wxPD_ELAPSED_TIME|wxPD_REMAINING_TIME|wxPD_AUTO_HIDE)
       self.done = 0
+      self._num = 0
+      self._den = length
+      wxBeginBusyCursor()
 
    def __del__(self):
       if not self.done:
          self.done = 1
          self.progress_box.Destroy()
+      wxEndBusyCursor()
+
+   def add_length(self, l):
+      self._den += l
+
+   def step(self):
+      self._num += 1
+      self.update(self._num, self._den)
 
    def update(self, num, den):
       if not self.done:
@@ -108,3 +119,6 @@ class ProgressBox:
          if num >= den:
             self.done = 1
             self.progress_box.Destroy()
+
+   def kill(self):
+      self.update(1,1)

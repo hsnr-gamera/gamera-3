@@ -21,8 +21,8 @@
 import os.path
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                    # Gamera specific
-from gamera import paths, util, classify
-from gamera.gui import image_menu, var_name, gamera_icons
+from gamera import paths, util, classify, gamera_xml
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util
 
 ######################################################################
 
@@ -39,10 +39,10 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
       if filename.endswith('.xml') or filename.endswith('.xml.gz'):
         name = var_name.get("glyphs", self.display.shell.locals)
         self.display.shell.run("from gamera import gamera_xml")
-        self.display.shell.run(name + " = gamera_xml.glyphs_from_xml('" + filename + "')")
+        self.display.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' % (name, filename))
       else:
         name = var_name.get("image", self.display.shell.locals)
-        self.display.shell.run(name + " = load_image('" + filename + "')")
+        self.display.shell.run('%s = load_image(r"%s")' % (name, filename))
 
 
 ######################################################################
@@ -298,6 +298,19 @@ class CIImageList(CustomIcon):
   def check(data):
     return util.is_homogeneous_image_list(data)
   check = staticmethod(check)
+
+  def right_click(self, parent, event, shell):
+    x,y = event.GetPoint()
+    image_menu.ImageMenu(
+      parent, x, y,
+      self.data, self.label,
+      shell, extra_methods = {'XML': {'glyphs_to_xml': self.glyphs_to_xml}})
+
+  def glyphs_to_xml(self, event):
+    filename = gui_util.save_file_dialog(gamera_xml.extensions)
+    if filename != None:
+      shell.run('from gamera import gamera_xml')
+      shell.run('gamera_xml.glyphs_to_xml(r"%s", %s)' % (filename, self.label))
 
   def double_click(self):
     return 'display_multi(%s)' % self.label

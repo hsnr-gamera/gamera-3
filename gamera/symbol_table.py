@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import types
+import types, string
 
 class SymbolTable:
    def __init__(self):
@@ -55,14 +55,13 @@ class SymbolTable:
       # assert type(symbol) == types.StringType
       if symbol == '':
          return '', []
-      for i in '!@#$%^&*()-=+':
+      for i in '!@#$%^&*()-=+~`|\{}[];:"\',<>?/ ':
          symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
+      if symbol[0] in string.digits:
+         symbol = '_' + symbol
       # Split by '.' delimiters
       tokens = symbol.strip().split('.')
-      # Remove internal whitespace
-      tokens = map(lambda x: '_'.join(x.split()), tokens)
-      symbol = '.'.join(tokens)
       if symbol[-1] == ".":
          symbol = symbol[:-1]
       return symbol, tokens
@@ -72,6 +71,7 @@ class SymbolTable:
       if self.symbols.has_key(symbol):
          return
       self.add_to_tree(symbol, tokens, id)
+      return symbol
 
    # When we add to the tree, the alert listeners need to be
    # informed of the stem of the symbol up to where we start adding

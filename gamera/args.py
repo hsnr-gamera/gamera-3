@@ -432,7 +432,7 @@ class ImageType(_guiImage, Arg):
       import core
       self.name = name
       if not core is None:
-         self.klass = core.Image
+         self.klass = core.ImageBase
       if not util.is_sequence(pixel_types):
          pixel_types = (pixel_types,)
       self.pixel_types = pixel_types

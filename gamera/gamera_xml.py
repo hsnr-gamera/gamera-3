@@ -50,6 +50,9 @@ _saveable_types = {
 
 extensions = "XML files (*.xml)|*.xml*"
 
+class XMLError(Exception):
+   pass
+
 ################################################################################
 # SAVING
 ################################################################################
@@ -69,7 +72,7 @@ class WriteXML:
 
    def write_filename(self, filename):
       if not os.path.exists(os.path.split(os.path.abspath(filename))[0]):
-         raise ValueError(
+         raise XMLError(
             "Cannot create a file at '%s'." %
             os.path.split(os.path.abspath(filename))[0])
       if filename.endswith('gz'):
@@ -89,12 +92,19 @@ class WriteXML:
       self._write_core(stream)
 
    def _write_core(self, stream, indent=0):
-      self._write_symbol_table(stream, self.symbol_table, indent=indent)
-      if isinstance(self.glyphs, core.ImageBase):
-         self._write_glyph(stream, self.glyphs, indent=indent)
-      else:
-         self._write_glyphs(stream, self.glyphs, indent=indent)
-      self._write_groups(stream, self.groups, indent=indent)
+      progress = util.ProgressFactory("Saving XML...", len(self.groups))
+      try:
+         self._write_symbol_table(stream, self.symbol_table, indent=indent)
+         if isinstance(self.glyphs, core.ImageBase):
+            progress.add_length(1)
+            self._write_glyph(stream, self.glyphs, indent=indent)
+            progress.step()
+         else:
+            progress.add_length(len(self.glyphs))
+            self._write_glyphs(stream, self.glyphs, progress, indent=indent)
+         self._write_groups(stream, self.groups, progress, indent=indent)
+      finally:
+         progress.kill()
 
    def _write_symbol_table(self, stream, symbol_table, indent=0):
       encoding = config.get_option('encoding')
@@ -112,41 +122,30 @@ class WriteXML:
          indent -= 1
          word_wrap(stream, '</symbols>', indent)
 
-   def _write_glyphs(self, stream, glyphs, indent=0):
+   def _write_glyphs(self, stream, glyphs, progress, indent=0):
       if len(glyphs):
-         progress = ProgressFactory("Writing glyphs to XML...")
-         try:
-            word_wrap(stream, '<glyphs>', indent)
-            indent += 1
-            for i, glyph in util.enumerate(glyphs):
-               self._write_glyph(stream, glyph, indent)
-               progress.update(i, len(glyphs))
-            indent -= 1
-            word_wrap(stream, '</glyphs>', indent)
-            progress.update(1, 1)
-         except Exception, e:
-            progress.update(1, 1)
-            raise e
+         word_wrap(stream, '<glyphs>', indent)
+         indent += 1
+         for i, glyph in util.enumerate(glyphs):
+            self._write_glyph(stream, glyph, indent)
+            progress.step()
+         indent -= 1
+         word_wrap(stream, '</glyphs>', indent)
 
-   def _write_groups(self, stream, groups, indent=0):
+   def _write_groups(self, stream, groups, progress, indent=0):
       if len(groups):
-         progress = ProgressFactory("Writing groups to XML...")
-         try:
-            word_wrap(stream, '<groups>', indent)
+         word_wrap(stream, '<groups>', indent)
+         indent += 1
+         for i, group in enumerate(groups):
+            word_wrap(stream, '<group id="%s">' % group.id, indent)
             indent += 1
-            for i, group in enumerate(groups):
-               word_wrap(stream, '<group id="%s">' % group.id, indent)
-               indent += 1
-               for glyph in group.group:
-                  self._write_glyph(stream, glyph, indent)
-               indent -= 1
-               word_wrap(stream, '</group>', indent)
-               progress.update(i, len(groups))
+            for glyph in group.glyphs:
+               self._write_glyph(stream, glyph, indent)
             indent -= 1
-            word_wrap(stream, '</groups>', indent)
-         except Exception, e:
-            progress.update(1, 1)
-            raise e
+            word_wrap(stream, '</group>', indent)
+            progress.step()
+         indent -= 1
+         word_wrap(stream, '</groups>', indent)
 
    def _write_glyph(self, stream,  glyph, indent=0):
       tag = ('<glyph uly="%s" ulx="%s" nrows="%s" ncols="%s">' %
@@ -230,11 +229,11 @@ class LoadXML:
       try:
          return typename(dictionary[key])
       except KeyError:
-         raise ValueError(
+         raise XMLError(
             "XML ValueError: <%s> tag does not have a required element '%s'." %
             (tagname, key))
-      except ValueError:
-         raise ValueError(
+      except TypeError:
+         raise XMLError(
             'XML ValueError: <%s %s="%s" ... is not of valid type' %
             (tagname, key, dictionary[key]))
       
@@ -244,7 +243,6 @@ class LoadXML:
          fd = gzip.open(filename, 'r')
          return self.parse_stream(fd)
       except IOError:
-         del self._progress
          fd = open(filename, 'r')
          return self.parse_stream(fd)
 
@@ -256,8 +254,10 @@ class LoadXML:
    def parse_stream(self, stream):
       self._stream = stream
       self._progress = util.ProgressFactory("Loading XML...")
-      self._parser.ParseFile(stream)
-      self._progress.update(1, 1)
+      try:
+         self._parser.ParseFile(stream)
+      finally:
+         self._progress.kill()
       return self
    
    def add_start_element_handler(self, name, func):
@@ -398,6 +398,7 @@ class LoadXML:
 
    def _the_data(self):
       self._parser.CharacterDataHandler = None
+      print "<" + self._data + ">"
 
    def add_data(self, data):
       self._data += data

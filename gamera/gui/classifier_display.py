@@ -451,7 +451,7 @@ class ClassifierFrame(ImageFrameBase):
           ("Save production database as separate images...", self._OnSaveProductionDatabaseAsImages)))
       xml_menu = gui_util.build_menu(
          self._frame,
-         (("Save by criteria...", self._OnPowerSave),
+         (("Save by criteria...", self._OnSaveByCriteria),
           (None, None),
           ("Open production database...", self._OnOpenProductionDatabase),
           ("Merge into production database...", self._OnMergeProductionDatabase),
@@ -471,6 +471,12 @@ class ClassifierFrame(ImageFrameBase):
          self._frame,
          (("Guess all", self._OnGuessAll),
           ("Guess selected", self._OnGuessSelected),
+          (None, None),
+          ("Group all", self._OnGroupAll),
+          ("Group selected", self._OnGroupSelected),
+          (None, None),
+          ("Group and guess all", self._OnGroupAndGuessAll),
+          ("Group and guess selected", self._OnGroupAndGuessSelected),
           (None, None),
           ("Confirm all", self._OnConfirmAll),
           ("Confirm selected", self._OnConfirmSelected),
@@ -492,11 +498,15 @@ class ClassifierFrame(ImageFrameBase):
       self.set_single_image(image, weak=weak)
 
    def set_multi_image(self, current_database):
-      for glyph in current_database:
-         for id in glyph.id_name:
-            self._symbol_table.add(id[1])
-      self.multi_iw.id.set_image(current_database)
-      self.is_dirty = 1
+      wxBeginBusyCursor()
+      try:
+         for glyph in current_database:
+            for id in glyph.id_name:
+               self._symbol_table.add(id[1])
+         self.multi_iw.id.set_image(current_database)
+      finally:
+         wxEndBusyCursor()
+         self.is_dirty = 1
 
    def set_single_image(self, image=None, weak=1):
       if image == None:
@@ -566,13 +576,15 @@ class ClassifierFrame(ImageFrameBase):
          if len(added) or len(removed):
             wxBeginBusyCursor()
             self.multi_iw.id.BeginBatch()
-            if len(added):
-               self.append_glyphs(added)
-            for glyph in removed:
-               glyph.dead = 1
-            self.multi_iw.id.Refresh()
-            self.multi_iw.id.EndBatch()
-            wxEndBusyCursor()
+            try:
+               if len(added):
+                  self.append_glyphs(added)
+               for glyph in removed:
+                  glyph.dead = 1
+            finally:
+               self.multi_iw.id.ForceRefresh()
+               self.multi_iw.id.EndBatch()
+               wxEndBusyCursor()
          else:
             self.multi_iw.id.RefreshSelected()
          if not self.do_auto_move():
@@ -616,23 +628,28 @@ class ClassifierFrame(ImageFrameBase):
       dialog = Args(
          [FileOpen("Image file", "", "*.*"),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)])
-      results = dialog.show(self._frame)
-      if results is None:
-         return
-      filename, segmenter = results
-      self.default_segmenter = segmenter
-      if filename == "'None'":
-         gui_util.message("You must provide a filename to load.")
+      filename = "'None'"
+      while filename == "'None'":
+         results = dialog.show(self._frame)
+         if results is None:
+            return
+         filename, segmenter = results
+         self.default_segmenter = segmenter
+         if filename == "'None'":
+            gui_util.message("You must provide a filename to load.")
+      
       wxBeginBusyCursor()
-      image = load_image(filename[1:-1])
-      image_ref = image
-      if image_ref.data.pixel_type == RGB:
-         image_ref = image_ref.to_greyscale()
-      if image_ref.data.pixel_type != ONEBIT:
-         image_ref = image_ref.otsu_threshold()
-      ccs = getattr(image_ref, segmenters[segmenter])()
-      self.set_image(ccs, image, weak=0)
-      wxEndBusyCursor()
+      try:
+         image = load_image(filename[1:-1])
+         image_ref = image
+         if image_ref.data.pixel_type == RGB:
+            image_ref = image_ref.to_greyscale()
+         if image_ref.data.pixel_type != ONEBIT:
+            image_ref = image_ref.otsu_threshold()
+         ccs = getattr(image_ref, segmenters[segmenter])()
+         self.set_image(ccs, image, weak=0)
+      finally:
+         wxEndBusyCursor()
 
    def _OnSaveCurrentDatabaseAsImages(self, event):
       self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
@@ -658,24 +675,62 @@ class ClassifierFrame(ImageFrameBase):
       self._OnGuess(self.multi_iw.id.GetSelectedItems())
 
    def _OnGuess(self, list):
-      wxBeginBusyCursor()
       try:
          added, removed = self._classifier.classify_list_automatic(list)
       except classify.ClassifierError, e:
-         wxEndBusyCursor()
          gui_util.message(str(e))
+      self._AdjustAfterGuess(added, removed)
+
+   def _OnGroupAll(self, event):
+      self._OnGroup(self.multi_iw.id.GetAllItems())
+
+   def _OnGroupSelected(self, event):
+      self._OnGroup(self.multi_iw.id.GetSelectedItems())
+
+   def _OnGroup(self, list):
+      try:
+         added, removed = self._classifier.group_list_automatic(list)
+      except classify.ClassifierError, e:
+         gui_util.message(str(e))
+      self._AdjustAfterGuess(added, removed)
+
+   def _OnGroupAndGuessAll(self, event):
+      self._OnGroupAndGuess(self.multi_iw.id.GetAllItems())
+
+   def _OnGroupAndGuessSelected(self, event):
+      self._OnGroupAndGuess(self.multi_iw.id.GetSelectedItems())
+
+   def _OnGroupAndGuess(self, list):
+      try:
+         added1, removed1 = self._classifier.group_list_automatic(list)
+         added2, removed2 = self._classifier.classify_list_automatic(list + added1)
+      except classify.ClassifierError, e:
+         gui_util.message(str(e))
+      added = {}
+      for glyph in added1 + added2:
+         added[glyph] = None
+      removed = {}
+      for glyph in removed1 + removed2:
+         removed[glyph] = None
+      self._AdjustAfterGuess(added.keys(), removed.keys())
+
+   def _AdjustAfterGuess(self, added, removed):
+      wxBeginBusyCursor()
       self.multi_iw.id.BeginBatch()
-      if len(added) or len(removed):
-         if len(added):
-            self.append_glyphs(added)
-         for glyph in removed:
-            glyph.dead = 1
-         self.multi_iw.id.Refresh()
-      else:
-         self.multi_iw.id.RefreshSelected()
-      self.multi_iw.id.sort_images()
-      self.multi_iw.id.EndBatch()
-      wxEndBusyCursor()
+      try:
+         if len(added) or len(removed):
+            if len(added):
+               self.append_glyphs(added)
+            for glyph in removed:
+               glyph.dead = 1
+            self.multi_iw.id.ForceRefresh()
+         else:
+            self.multi_iw.id.RefreshSelected()
+         self.multi_iw.id.sort_images()
+      finally:
+         self.multi_iw.id.ForceRefresh()
+         self.multi_iw.id.EndBatch()
+         wxEndBusyCursor()
 
    def _OnConfirmAll(self, event):
       self._OnConfirm(self.multi_iw.id.GetAllItems())
@@ -685,18 +740,18 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnConfirm(self, list):
       wxBeginBusyCursor()
-      for x in list:
-         if (x is not None and not hasattr(x, 'dead') and
-             x.classification_state == AUTOMATIC):
-            try:
-               self._classifier.classify_glyph_manual(x, x.get_main_id())
-            except classify.ClassifierError, e:
-               gui_util.message(str(e))
-               self.multi_iw.id.ForceRefresh()
-               wxEndBusyCursor()
-               return
-      self.multi_iw.id.ForceRefresh()
-      wxEndBusyCursor()
+      try:
+         for x in list:
+            if (x is not None and not hasattr(x, 'dead') and
+                x.classification_state == AUTOMATIC):
+               try:
+                  self._classifier.classify_glyph_manual(x, x.get_main_id())
+               except classify.ClassifierError, e:
+                  gui_util.message(str(e))
+                  return
+      finally:
+         self.multi_iw.id.ForceRefresh()
+         wxEndBusyCursor()
       
    def _OnChangeSetOfFeatures(self, event):
       all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
@@ -727,7 +782,7 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # XML MENU
 
-   def _OnPowerSave(self, event):
+   def _OnSaveByCriteria(self, event):
       dialog = Args(
          [Info('Set of glyphs to save:'),
           Check('', 'Production database', 1),
@@ -767,35 +822,43 @@ class ClassifierFrame(ImageFrameBase):
                      (x.classification_state == AUTOMATIC and auto) or
                      (x.classification_state == HEURISTIC and heur) or
                      (x.classification_state == MANUAL and man)))]
-      gamera_xml.WriteXMLFile(glyphs=glyphs,
+      try:
+         gamera_xml.WriteXMLFile(
+         glyphs=glyphs,
          symbol_table=self._symbol_table).write_filename(
          filename[1:-1])
-
+      except gamera_xml.XMLError, e:
+         gui_util.message(str(e))
+         
    def _OnOpenProductionDatabase(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
          self.production_database_filename = filename
-         self._classifier.from_xml_filename(filename)
+         try:
+            self._classifier.from_xml_filename(filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
+            return
          self.update_symbol_table()
-         wxEndBusyCursor()
 
    def _OnMergeProductionDatabase(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
-         self._classifier.merge_from_xml_filename(filename)
+         try:
+            self._classifier.merge_from_xml_filename(filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
+            return
          self.update_symbol_table()
-         wxEndBusyCursor()
 
    def _OnSaveProductionDatabase(self, event):
       if self.production_database_filename == None:
          self._OnSaveProductionDatabaseAs(event)
       else:
-         wxBeginBusyCursor()
-         self._classifier.to_xml_filename(
-            self.production_database_filename)
-         wxEndBusyCursor()
+         try:
+            self._classifier.to_xml_filename(self.production_database_filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
 
    def _OnSaveProductionDatabaseAs(self, event):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
@@ -814,35 +877,42 @@ class ClassifierFrame(ImageFrameBase):
    def _OnOpenCurrentDatabase(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+         try:
+            glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
+            return
          self.set_multi_image(glyphs)
-         wxEndBusyCursor()
 
    def _OnMergeCurrentDatabase(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+         try:
+            glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
+            return
          self.append_glyphs(glyphs)
-         wxEndBusyCursor()
 
    def _OnSaveCurrentDatabase(self, event):
       if self.current_database_filename == None:
          self._OnSaveCurrentDatabaseAs(event)
       else:
-         wxBeginBusyCursor()
          glyphs = self.multi_iw.id.GetAllItems()
-         progress = util.ProgressFactory("Generating features...")
-         for i, glyph in util.enumerate(glyphs):
-            glyph.generate_features(self._classifier.feature_functions)
-            progress.update(i, len(glyphs))
-         progress.update(1,1)
-         gamera_xml.WriteXMLFile(
-            glyphs=glyphs,
-            symbol_table=self._symbol_table).write_filename(
-            self.current_database_filename)
-         wxEndBusyCursor()
+         progress = util.ProgressFactory("Generating features...", len(glyphs))
+         try:
+            for glyph in glyphs:
+               glyph.generate_features(self._classifier.feature_functions)
+               progress.step()
+         finally:
+            progress.kill()
+         try:
+            gamera_xml.WriteXMLFile(
+               glyphs=glyphs,
+               symbol_table=self._symbol_table).write_filename(
+               self.current_database_filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
 
    def _OnSaveCurrentDatabaseAs(self, event):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
@@ -853,36 +923,49 @@ class ClassifierFrame(ImageFrameBase):
    def _OnSaveSelectedGlyphsAs(self, event):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
          glyphs = self.multi_iw.id.GetSelectedItems()
-         progress = util.ProgressFactory("Generating features...")
-         for i, glyph in util.enumerate(glyphs):
-            glyph.generate_features(self._classifier.feature_functions)
-            progress.update(i, len(glyphs))
-         progress.update(1,1)
-         gamera_xml.WriteXMLFile(
-            glyphs=glyphs,
-            symbol_table=self._symbol_table).write_filename(
-            filename)
-         wxEndBusyCursor()
+         progress = util.ProgressFactory("Generating features...", len(glyphs))
+         try:
+            for glyph in glyphs:
+               glyph.generate_features(self._classifier.feature_functions)
+               progress.step()
+         finally:
+            progress.kill()
+         try:
+            gamera_xml.WriteXMLFile(
+               glyphs=glyphs,
+               symbol_table=self._symbol_table).write_filename(
+               filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message(str(e))
          
    def _OnImportSymbolTable(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         symbol_table = gamera_xml.LoadXML(
-            parts=['symbol_table']).parse_filename(filename).symbol_table
-         for symbol in symbol_table.symbols.keys():
-            self._symbol_table.add(symbol)
-         wxEndBusyCursor()
+         try:
+            try:
+               symbol_table = gamera_xml.LoadXML(
+                  parts=['symbol_table']).parse_filename(filename).symbol_table
+            except gamera_xml.XMLError, e:
+               gui_util.message(str(e))
+            for symbol in symbol_table.symbols.keys():
+               self._symbol_table.add(symbol)
+         finally:
+            wxEndBusyCursor()
 
    def _OnExportSymbolTable(self, event):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         gamera_xml.WriteXMLFile(
-            symbol_table=self._symbol_table).write_filename(filename)
-         wxEndBusyCursor()
+         try:
+            try:
+               gamera_xml.WriteXMLFile(
+                  symbol_table=self._symbol_table).write_filename(filename)
+            except gamera_xml.XMLError, e:
+               gui_util.message(str(e))
+         finally:
+            wxEndBusyCursor()
 
    ########################################
    # CALLBACKS
@@ -892,8 +975,6 @@ class ClassifierFrame(ImageFrameBase):
          if not gui_util.are_you_sure_dialog(
             "Are you sure you want to quit without saving?"):
             return
-      #self.single_iw.Destroy()
-      #self.multi_iw.Destroy()
       self._classifier.set_display(None)
       self._frame.Destroy()
 
@@ -1029,8 +1110,8 @@ class SymbolTableEditorPanel(wxPanel):
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
-         self._symbol_table.add(find)
-         self.toplevel.classify_manual(find)
+         normalized_symbol = self._symbol_table.add(find)
+         self.toplevel.classify_manual(normalized_symbol)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():
          current = self.text.GetInsertionPoint()
          new = max(self.text.GetValue().rfind(".", 0, current), 0)

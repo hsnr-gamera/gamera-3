@@ -55,4 +55,46 @@ int permute_list(PyObject* list) {
   return 1;
 }
 
+PyObject* all_subsets(PyObject* a, int k) {
+  if (!PyList_Check(a)) {
+    PyErr_Format(PyExc_TypeError, "Must pass a Python list to permute list.");
+    return 0;
+  }
+
+  int n = PyList_Size(a);
+  if (k < 0 || k > n)
+    throw std::runtime_error("k must be between 0 and len(a)");
+
+  PyObject* result = PyList_New(0);
+  std::vector<int> indices(k);
+  bool start = true;
+  int m, m2;
+  do {
+    if (start) {
+      m2 = 0;
+      m = k;
+      start = false;
+    } else {
+      if (m2 < n - m)
+	m = 0;
+      m++;
+      m2 = indices[k - m];
+    }
+
+    for (int j = 1; j <= m; ++j) 
+      indices[k + j - m - 1] = m2 + j;
+
+    PyObject* subset = PyList_New(k);
+    for (int j = 0; j < k; ++j) {
+      PyObject* item = PyList_GetItem(a, indices[j] - 1);
+      Py_INCREF(item);
+      PyList_SetItem(subset, j, item);
+    }
+    PyList_Append(result, subset);
+    Py_DECREF(subset);
+  } while (indices[0] != n - k + 1);
+
+  return result;
+}
+
 #endif

@@ -41,13 +41,18 @@ Example usage::
    args = Args([Class("list")])
    return_type = Int("continuaton")
 
+class all_subsets(PluginFunction):
+   self_type = None
+   args = Args([Class("list"), Int("size")])
+   return_type = Class("subsets")
+
 class ListUtilitiesModule(PluginModule):
     category = "List"
     cpp_headers=["listutilities.hpp"]
-    functions = [permute_list]
+    functions = [permute_list, all_subsets]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = ListUtilitiesModule()
 
 permute_list = permute_list()
-
+all_subsets = all_subsets()

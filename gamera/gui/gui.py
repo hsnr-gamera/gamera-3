@@ -21,16 +21,17 @@
 import inspect
 from gamera.core import *
 from gamera import paths, config
-from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
+from gamera.gui import gamera_display, image_menu, \
+     icon_display, classifier_display, var_name
 
 # wxPython
 from wxPython.wx import *
 # Handle multiple versions of wxPython
 from wxPython.__version__ import ver
-# We use PyCrust on everything but 2.3.1 (2.3.1 is our minimum requirement
 from wxPython.lib.PyCrust import shell
 from wxPython.stc import *
 from wxPython.lib.splashscreen import SplashScreen
+from wxPython.html import *
 
 # Python standard library
 # import interactive
@@ -44,14 +45,6 @@ config.add_option_default("shell_y", "5")
 
 main_win = None
 app = None
-
-######################################################################
-
-def message(message):
-   dlg = wxMessageDialog(main_win, message, "Message",
-                         wxOK | wxICON_INFORMATION)
-   dlg.ShowModal()
-   dlg.Destroy()
 
 ######################################################################
 
@@ -93,12 +86,9 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   def DisplayHTML(cls, file):
-      if cls.browser == None:
-         cls.browser = webbrowser.get()
-      print "Showing HTML: ", file
-      cls.browser.open("file:" + file)
-   DisplayHTML = classmethod(DisplayHTML)
+   def help(object):
+      HelpWindow(main_win, pydoc.HTMLDoc().document(object))
+   help = staticmethod(help)
 
    def ShowClassifier(classifier, image, function):
       wxBeginBusyCursor()
@@ -240,10 +230,12 @@ class ShellFrame(wxFrame):
       self.shell.push("init_gamera()")
 
       # TODO: hard coding:::
-      self.shell.push("greyscale = Image(5,5,50,50,GREYSCALE,DENSE)")
-      self.shell.push("rgb = Image(5,5,50,50,RGB,DENSE)")
-      self.shell.push("onebit = Image(5,5,50,50,ONEBIT,DENSE)")
-      self.shell.push("grey16 = Image(5,5,50,50,GREY16,DENSE)")
+      self.shell.push("greyscale = Image(0,0,50,50,GREYSCALE,DENSE)")
+      self.shell.push("rgb = Image(0,0,50,50,RGB,DENSE)")
+      self.shell.push("onebit = Image(0,0,50,50,ONEBIT,DENSE)")
+      self.shell.push("grey16 = Image(0,0,50,50,GREY16,DENSE)")
+
+      self.Update()
 
       self.shell.update = self.Update
       self.icon_display.shell = self.shell
@@ -335,7 +327,6 @@ class ShellFrame(wxFrame):
 
    def OnFeatureEditor(self, event):
       classifier_display.FeatureEditorWizard(self.shell, self.shell.GetLocals())
-
    def OnProcess(self, event):
       import omr, process
       process.ProcessWizard(self.shell, self.shell.GetLocals(), omr.OMR)
@@ -397,6 +388,18 @@ class GameraSplash(wxSplashScreen):
       main_win = ShellFrame(NULL, -1, "Gamera")
       main_win.Show(true)
       evt.Skip()
+
+class HelpWindow:
+   frame = None
+   def __init__(cls, parent, content):
+      if cls.frame is None:
+         cls.frame = wxFrame(parent, 0, "Gamera Help", size=wxSize(300, 400))
+         cls.html = wxHtmlWindow(cls.frame, -1)
+      cls.frame.Show(1)
+      cls.html.Show(1)
+      cls.html.SetPage(content)
+
+   __init__ = classmethod(__init__)
 
 def run():
    global app

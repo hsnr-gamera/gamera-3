@@ -21,3 +21,4 @@ GREYSCALE = 1
 GREY16 = 2
 RGB = 3
 FLOAT = 4
+ALL = 0xffff

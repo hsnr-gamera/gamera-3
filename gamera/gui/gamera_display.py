@@ -24,31 +24,14 @@ from sys import maxint
 import string
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
-from gamera.gui import image_menu, var_name
+from gamera.gui import image_menu, var_name, gui_util
 
 ##############################################################################
 
 # we want this done on import
 wxInitAllImageHandlers()
 
-colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
-          wxColor(0x2d, 0x34, 0xbc), wxColor(0x2d, 0xbc, 0x2d),
-          wxColor(0x2d, 0xbc, 0xbc), wxColor(0xbc, 0xb7, 0x2d),
-          wxColor(0xbc, 0x88, 0x2d))
-
-def get_color(number):
-   return colors[number % 7]
-
-
 #############################################################################
-
-
-# Displays a message box
-def message(message):
-   dlg = wxMessageDialog(None, message, "Message",
-                         wxOK | wxICON_INFORMATION)
-   dlg.ShowModal()
-   dlg.Destroy()
 
 ##############################################################################
 # SINGLE IMAGE DISPLAY
@@ -100,10 +83,10 @@ class ImageDisplay(wxScrolledWindow):
 
    # Refreshes the image by recalling the to_string function
    def reload_image(self):
-      self.width = self.image.width()
-      self.height = self.image.height()
+      self.width = self.image.width
+      self.height = self.image.height
       self.scale()
-      return (self.image.width(), self.image.height())
+      return (self.image.width, self.image.height)
 
    def add_click_callback(self, cb):
       self.click_callbacks.append(cb)
@@ -121,7 +104,7 @@ class ImageDisplay(wxScrolledWindow):
          color = self.color
          self.color = self.color + 1
       rect = (x, y, w + 1, h + 1)
-      self.highlighted.append((rect, None, get_color(color)))
+      self.highlighted.append((rect, None, gui_util.get_color(color)))
       if self.scaling <= 1:
          self.PaintArea(*rect)
 
@@ -135,12 +118,12 @@ class ImageDisplay(wxScrolledWindow):
          if color == -1:
             color = self.color
             self.color = self.color + 1
-         image = wxEmptyImage(cc.ncols(), cc.nrows())
+         image = wxEmptyImage(cc.ncols, cc.nrows)
          image.SetData(apply(function, (cc,)))
          bmp = wxBitmapFromImage(image, 1)
          rect = (cc.page_offset_x(), cc.page_offset_y(),
-                 cc.ncols(), cc.nrows())
-         self.highlighted.append((rect, bmp, get_color(color)))
+                 cc.ncols, cc.nrows)
+         self.highlighted.append((rect, bmp, gui_util.get_color(color)))
          self.PaintArea(*rect)
 
    # Clears a CC in the display.  Multiple CCs
@@ -155,8 +138,8 @@ class ImageDisplay(wxScrolledWindow):
                del self.highlighted[i]
                self.PaintArea(cc.page_offset_x(),
                               cc.page_offset_y(),
-                              cc.ncols(),
-                              cc.nrows())
+                              cc.ncols,
+                              cc.nrows)
                break
       
    # Clears all of the highlighted CCs in the display   
@@ -179,16 +162,16 @@ class ImageDisplay(wxScrolledWindow):
       for image in subimages:
          x1 = min(image.page_offset_x(), x1)
          y1 = min(image.page_offset_y(), y1)
-         x2 = max(image.page_offset_x() + image.ncols(), x2)
-         y2 = max(image.page_offset_y() + image.nrows(), y2)
+         x2 = max(image.page_offset_x() + image.ncols, x2)
+         y2 = max(image.page_offset_y() + image.nrows, y2)
       # Adjust for the scaling factor
       x1 = x1 * self.scaling
       y1 = y1 * self.scaling
       x2 = x2 * self.scaling
       y2 = y2 * self.scaling
       origin = self.GetViewStart()
-      maxwidth = self.image.width() * self.scaling
-      maxheight = self.image.height() * self.scaling
+      maxwidth = self.image.width * self.scaling
+      maxheight = self.image.height * self.scaling
       need_to_scroll = 0
       if (x1 < origin[0] or
           x2 > origin[0] + self.GetSize().x / self.scaling):
@@ -283,12 +266,12 @@ class ImageDisplay(wxScrolledWindow):
              (w == 0 or h == 0)):
             return
       self.tmpDC.SetUserScale(self.scaling, self.scaling)
-      if (y + h > self.image.nrows()):
-         h = self.image.nrows() - y
-      if (x + w > self.image.ncols()):
-         w = self.image.ncols() - x
+      if (y + h > self.image.nrows):
+         h = self.image.nrows - y
+      if (x + w > self.image.ncols):
+         w = self.image.ncols - x
       subimage = SubImage(self.image, y, x, h, w)
-      image = apply(wxEmptyImage, [w, h])
+      image = apply(wxEmptyImage, (w, h))
       image.SetData(apply(self.to_string_function, (subimage, )))
       bmp = image.ConvertToBitmap()
       self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
@@ -350,9 +333,9 @@ class ImageDisplay(wxScrolledWindow):
       self.draw_rubber()
       origin = self.GetViewStart()
       x = min((event.GetX() + origin[0]) / self.scaling,
-              self.image.ncols() - 1)
+              self.image.ncols - 1)
       y = min((event.GetY() + origin[1]) / self.scaling,
-              self.image.nrows() - 1)
+              self.image.nrows - 1)
       if (x > self.rubber_origin_x and
           x < self.rubber_origin_x + self.block_w):
          self.rubber_origin_x, self.rubber_x2 = \
@@ -386,9 +369,9 @@ class ImageDisplay(wxScrolledWindow):
          self.draw_rubber()
          origin = self.GetViewStart()
          self.rubber_x2 = min((event.GetX() + origin[0]) / self.scaling,
-                              self.image.ncols() - 1)
+                              self.image.ncols - 1)
          self.rubber_y2 = min((event.GetY() + origin[1]) / self.scaling,
-                              self.image.nrows() - 1)
+                              self.image.nrows - 1)
          self.draw_rubber()
          try:
             for i in self.click_callbacks:
@@ -442,9 +425,9 @@ class ImageDisplay(wxScrolledWindow):
          self.draw_rubber()
          origin = self.GetViewStart()
          self.rubber_x2 = min((event.GetX() + origin[0]) / self.scaling,
-                              self.image.ncols() - 1)
+                              self.image.ncols - 1)
          self.rubber_y2 = min((event.GetY() + origin[1]) / self.scaling,
-                              self.image.nrows() - 1)
+                              self.image.nrows - 1)
          self.draw_rubber()
       if self.dragging:
          self.Scroll(self.dragging_origin_x - (event.GetX() - self.dragging_x),
@@ -473,7 +456,7 @@ class ImageDisplay(wxScrolledWindow):
              self.rubber_x2 == self.rubber_origin_x):
             image_menu.shell.run(
                "%s = SubImage(__image__, 0, 0, %d, %d)" %
-               (name, self.image.nrows(), self.image.ncols()))
+               (name, self.image.nrows, self.image.ncols))
          else:
             image_menu.shell.run(
                "%s = SubImage(__image__, %d, %d, %d, %d)" %
@@ -606,8 +589,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       self.parent = parent
 
    def get_color(self, image):
-      if hasattr(image, 'color'):
-         color = image.color()
+      if hasattr(image, 'classification_color'):
+         color = image.classification_color()
       if color == None:
          color = (255,255,255)
       color = wxColor(red = color[0], green = color[1],
@@ -636,10 +619,10 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          # If the image is bigger than the cell, crop it. This used to be done
          # in wxPython, but it is more efficient to do it with Gamera SubImages
          image = None
-         if (image.ncols() >= rect.GetWidth() or
-             image.nrows() >= rect.GetHeight()):
-            height = min(rect.GetHeight() + 1, image.nrows())
-            width = min(rect.GetWidth() + 1, image.ncols())
+         if (image.ncols >= rect.GetWidth() or
+             image.nrows >= rect.GetHeight()):
+            height = min(rect.GetHeight() + 1, image.nrows)
+            width = min(rect.GetWidth() + 1, image.ncols)
             # If we are dealing with a CC, we have to make a smaller CC withthe
             # same label. This is unfortunately a two step process.
             if isinstance(image, CC):
@@ -652,7 +635,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             s = sub_image.to_string()
             image.SetData(s)
          else:
-            image = wxEmptyImage(image.ncols(), image.nrows())
+            image = wxEmptyImage(image.ncols, image.nrows)
             s = image.to_string()
             image.SetData(s)
          bmp = image.ConvertToBitmap()
@@ -691,9 +674,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          image = None
       if image != None:
          return wxSize(min(GRID_MAX_CELL_WIDTH,
-                           image.ncols() + GRID_PADDING),
+                           image.ncols + GRID_PADDING),
                        min(GRID_MAX_CELL_HEIGHT,
-                           image.nrows() + GRID_PADDING))
+                           image.nrows + GRID_PADDING))
       return wxSize(0, 0)
 
    def Clone(self):
@@ -781,14 +764,14 @@ class MultiImageDisplay(wxGrid):
    # To minimize the size of the grid, we sort the images
    # first by height, and then within each row by width
    def default_sort(self, list):
-      list.sort(lambda x, y: cmp(x.nrows(), y.nrows()))
+      list.sort(lambda x, y: cmp(x.nrows, y.nrows))
       outlist = []
       while len(list):
          if len(list) < GRID_NCOLS:
             sublist = list; list = []
          else:
             sublist = list[:GRID_NCOLS]; list = list[GRID_NCOLS:]
-         sublist.sort(lambda x, y: cmp(x.ncols(), y.ncols()))
+         sublist.sort(lambda x, y: cmp(x.ncols, y.ncols))
          outlist.extend(sublist)
       return outlist
 
@@ -839,7 +822,7 @@ class MultiImageDisplay(wxGrid):
           try:
              result = function(x)
           except Exception, err:
-             message(str(err))
+             gui_util.message(str(err))
              return
           if result:
              self.SelectBlock(i / GRID_NCOLS, i % GRID_NCOLS,
@@ -975,7 +958,7 @@ class MultiImageWindow(wxPanel):
    def set_choices(self, prototype):
       members = find_members.find_members(prototype)
       methods = find_members.find_methods_flat_category(prototype, "Features")
-      self.sort_choices = ["", "ncols()", "nrows()", "label()", "id",
+      self.sort_choices = ["", "ncols", "nrows", "label()", "id",
                            "classification_state", "page_offset_x()",
                            "page_offset_y()"]
       for method in methods:
@@ -986,7 +969,7 @@ class MultiImageWindow(wxPanel):
       self.select_choices = ["", "x.unclassified()",
                              "x.automatically_classified()",
                              "x.manually_classified()",
-                             "x.nrows() < 2 or x.ncols() < 2"]
+                             "x.nrows < 2 or x.ncols < 2"]
       self.select_combo.Clear()
       for choice in self.select_choices:
          self.select_combo.Append(choice)
@@ -1013,7 +996,7 @@ class MultiImageWindow(wxPanel):
          if len(split) >= 1:
             final = string.join(split[1:])
          else:
-            message("The given sorting expressing contains a syntax error.")
+            gui_util.message("The given sorting expressing contains a syntax error.")
             return
       else:
          final = ("lambda x, y: util.fast_cmp(x, (x." +
@@ -1022,7 +1005,7 @@ class MultiImageWindow(wxPanel):
       try:
          sort_func = eval(final, globals(), image_menu.shell.locals)
       except SyntaxError:
-         message("The given sorting expression contains a syntax error.")
+         gui_util.message("The given sorting expression contains a syntax error.")
          return
       if sort_string not in self.sort_choices:
          self.sort_choices.append(sort_string)
@@ -1042,7 +1025,7 @@ class MultiImageWindow(wxPanel):
          select_func = eval("lambda x: (" + select_string + ")", globals(),
                             image_menu.shell.locals)
       except SyntaxError:
-         message("The given selection expression contains a syntax error.")
+         gui_util.message("The given selection expression contains a syntax error.")
          return
       if select_string not in self.select_choices:
          self.select_choices.append(select_string)
@@ -1241,8 +1224,8 @@ class ProjectionsDisplay(wxFrame):
    def __init__(self, x_data=None, y_data=None, image=None, parent=None, title="Projections"):
       wxFrame.__init__(self, parent, -1, title,
                        style=wxCAPTION,
-                       size=((image.ncols() * 2) + (HISTOGRAM_PAD * 3),
-                             (image.nrows() * 2) + (HISTOGRAM_PAD * 3)))
+                       size=((image.ncols * 2) + (HISTOGRAM_PAD * 3),
+                             (image.nrows * 2) + (HISTOGRAM_PAD * 3)))
       self.x_data = x_data
       self.y_data = y_data
       self.image = image
@@ -1253,9 +1236,9 @@ class ProjectionsDisplay(wxFrame):
       clear_dc(dc)
       dc_width = dc.GetSize().x
       dc_height = dc.GetSize().y
-      mat_width = self.image.ncols()
-      mat_height = self.image.nrows()
-      image = wxEmptyImage(self.image.ncols(), self.image.nrows())
+      mat_width = self.image.ncols
+      mat_height = self.image.nrows
+      image = wxEmptyImage(self.image.ncols, self.image.nrows)
       image.SetData(self.image.to_string())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell

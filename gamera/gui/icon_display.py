@@ -62,7 +62,8 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
 
 class IconDisplay(wxListCtrl):
   def __init__(self, parent):
-    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), wxLC_LIST|wxLC_SINGLE_SEL)
+    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1),
+                        wxLC_LIST|wxLC_SINGLE_SEL|wxLC_ALIGN_TOP)
     self.data = {}
     self.locals = {}
     self.currentIcon = None
@@ -173,6 +174,9 @@ class IconDisplay(wxListCtrl):
   def OnRightClick(self, event):
     index = self.HitTest(
       wxPoint(event.GetX(), event.GetY()))[0]
+    if index < 0 or index >= self.GetItemCount():
+      event.Skip()
+      return
     for i in range(self.GetItemCount()):
       self.SetItemState(i, 0, wxLIST_STATE_SELECTED)
     self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)

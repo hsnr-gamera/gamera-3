@@ -21,7 +21,7 @@ from gamera.plugin import *
   
 class _LogicalBase(PluginFunction):
   self_type = ImageType([ONEBIT])
-  args = Args([ImageType([ONEBIT])])
+  args = Args([ImageType([ONEBIT], "mask")])
 
 class and_image(_LogicalBase):
   pass

@@ -39,11 +39,6 @@ images_name = None
 ######################################################################
 # These are redefined here from gamera_shell, since importing
 # gamera_shell here causes cyclic references
-def verify_variable_name(name):
-  if keyword.iskeyword(name):
-    return 0
-  return 1
-
 def set_shell(sh):
   global shell
   shell = sh
@@ -97,7 +92,6 @@ class ImageMenu:
     # Variables
     for i in range(len(variables)):
       info_menu.Append(0, variables[i])
-    EVT_MENU(self.parent, 0, self.OnPopupVariable)
 
     menu.AppendSeparator()
     # Methods
@@ -162,11 +156,6 @@ class ImageMenu:
         for i in range(len(images)):
           sh.locals[name].append(images[i].image_copy())
       sh.Update()
-
-  # TODO: not implemented
-  def OnPopupVariable(self, event):
-    print ("Here we will set the value of ",
-           self.variables[event.GetId() - 1])
 
   def get_function_call(self, sh, function):
     # determine if the function requires an argument gui
@@ -237,6 +226,3 @@ class ImageMenu:
                 sh.locals[result_name] = eval(source)
             else:
               eval(source, globals(), sh.locals)
-
-
-

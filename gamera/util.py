@@ -20,6 +20,7 @@
 from __future__ import generators
 
 import string, UserList, sys, re   ## Python standard
+from math import pow
 
 # determine if an object is a sequence
 def is_sequence(obj):
@@ -68,7 +69,7 @@ def string2identifier(str):
   """Defines how illegal variable names are converted to legal ones."""
   if len(str):
     name = re.sub('\-|/|\.|\ ', '_', str, 0)
-    if name[0] in "0123456789":
+    if name[0] in string.digits:
       name = "_" + name
     return name
   else:
@@ -92,15 +93,16 @@ class Set(UserList.UserList):
       for item in other:
         self.append(item)
 
-_byte_steps = (('Gb', 1024 * 1024 * 1024, 1024 * 1024 * 1024 * 1.1),
-               ('Mb', 1024 * 1024, 1024 * 1024 * 1.1),
-               ('kb', 1024, 1024 * 1.1),
+_byte_steps = (('Gb', 1 << 30, (1 << 30) * 1.1),
+               ('Mb', 1 << 20, (1 << 20) * 1.1),
+               ('kb', 1 << 10, (1 << 10) * 1.1),
                ('b', 0, 1))
 def pretty_print_bytes(bytes):
   for step in _byte_steps:
     if bytes > step[2]:
       return "%.2f %s" % (bytes / step[1], step[0])
-        
+  return 'error (negative!)'
+
 # This is a back port of Python 2.3's enumerate function.
 # This will make our loops look a lot cleaner
 if float(sys.version[0:3]) < 2.3:
@@ -110,5 +112,8 @@ if float(sys.version[0:3]) < 2.3:
     while 1:
       yield(i, it.next())
       i += 1
+  __builtins__['enumerate'] = enumerate
+  __builtins__['True'] = 1
+  __builtins__['False'] = 0
 else:
-  enumerate = __builtin__.enumerate
+  enumerate = __builtins__.enumerate

@@ -31,12 +31,12 @@ from gamera import paths
 # when those C++ modules don't yet exist (which is the case
 # when we are generating and compiling the plugins!).
 def magic_import(name, globals_={}, locals_={}, fromlist=[]):
-
   if fromlist != None and "core" in fromlist:
     fromlist = list(fromlist)
     fromlist.remove("core")
 
-  if (name[0] == '_' and name[1] != "_" and name != "_winreg") or name == "core" or name == "gamera.core":
+  if ((name[0] == '_' and name[1] != "_" and name != "_winreg") or
+      name == "core" or name == "gamera.core"):
     return None
   else:
     return std_import(name, globals_, locals_, fromlist)
@@ -54,7 +54,6 @@ def restore_import():
 
 
 def generate_plugin(plugin_filename):
-  
   template = Template("""
   [[exec import string]]
   [[exec from os import path]]

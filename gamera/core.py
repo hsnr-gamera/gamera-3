@@ -17,13 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import sys, os, types, os.path, inspect     # Python standard library
+import sys, os, types, os.path, inspect, pydoc     # Python standard library
 
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
 from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
-ALL = 255
+from enums import ALL
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
@@ -40,6 +40,15 @@ import paths, util, config  # Gamera-specific
 # Reference to the currently active gui
 config.add_option_default("__gui", None)
 
+def help(object):
+   gui = config.get_option("__gui")
+   if gui is None:
+      pydoc.help(object)
+   else:
+      gui.help(object)
+
+######################################################################
+
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
@@ -54,11 +63,11 @@ class ImageBase:
       if self._display:
          self._display.close()
 
-   def add_plugin_method(cls, plug, func, category="Miscellaneous"):
+   def add_plugin_method(cls, plug, func, category=None):
       methods = cls._methods
-      if func != None:
+      if not func is None:
          setattr(cls, plug.__name__, func)
-      if category != None:
+      if not category is None:
          for type in plug.self_type.pixel_types:
             if not methods.has_key(type):
                methods[type] = {}
@@ -145,8 +154,8 @@ class ImageBase:
    def set_resolution(self, v):
       self.m.resolution(v)
 
-   # Displays the image in its own window
    def display(self):
+      "Displays the image in its own window."
       gui = config.get_option("__gui")
       if gui:
          if self._display:
@@ -161,6 +170,8 @@ class ImageBase:
    # Displays the image in its own window, coloring the connected-
    # component labels
    def display_ccs(self):
+      """Displays the image in its own window, coloring the connected
+      components."""
       gui = config.get_option("__gui")
       if gui:
          if self._display:
@@ -174,6 +185,9 @@ class ImageBase:
    # Displays the image in its own window, highlighting the given
    # subimage (or subimages)
    def display_cc(self, cc):
+      """display_cc(self, cc)
+      Displays the image in its own window, highlighting the given
+      subimage (or list of subimages)."""
       gui = config.get_option("__gui")
       # If the last thing displayed was something other than a cc
       # do a normal display to clear and refresh the window
@@ -235,9 +249,11 @@ class ImageBase:
       else:
          self.id_name = list(id_name)
       self.classification_state = CLASS_HEURISTIC
+
+   def subimage(self, offset_y, offset_x, nrows, ncols):
+      return SubImage(self, offset_y, offset_x, nrows, ncols)
       
 class Image(ImageBase, gameracore.Image):
-
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
                 pixel_format, storage_type):
       ImageBase.__init__(self)

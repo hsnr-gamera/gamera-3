@@ -51,7 +51,7 @@ def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
    # TODO: Take out this hard coding
-   modules = ["logical"]
+   modules = ["logical", "gui_support", "threshold"]
    if debug:
       sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0

@@ -61,7 +61,9 @@ if _has_gui == _WX_GUI:
          ok = wxPython.wx.wxButton(self, wxPython.wx.wxID_OK, "OK")
          ok.SetDefault()
          buttons.Add(ok, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 5)
-         buttons.Add(wxPython.wx.wxButton(self, wxPython.wx.wxID_CANCEL, "Cancel"),
+         buttons.Add(wxPython.wx.wxButton(self,
+                                          wxPython.wx.wxID_CANCEL,
+                                          "Cancel"),
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
                      5)
@@ -76,11 +78,15 @@ if _has_gui == _WX_GUI:
       def _create_wizard_buttons(self):
          # Buttons
          buttons = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
-         buttons.Add(wxPython.wx.wxButton(self, wxPython.wx.wxID_CANCEL, "< Back"),
+         buttons.Add(wxPython.wx.wxButton(self,
+                                          wxPython.wx.wxID_CANCEL,
+                                          "< Back"),
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
                      5)
-         ok = wxPython.wx.wxButton(self, wxPython.wx.wxID_OK, "Next >")
+         ok = wxPython.wx.wxButton(self,
+                                   wxPython.wx.wxID_OK,
+                                   "Next >")
          ok.SetDefault()
          buttons.Add(ok,
                      1,
@@ -134,8 +140,8 @@ if _has_gui == _WX_GUI:
          self.border.Fit(self)
          self.SetSizer(self.border)
          size = self.GetSize()
-         self.SetSize((max(600, size[0]), max(350, size[1])))
-         # self.Centre()  # Doesn't work well on dual-headed displays
+         self.SetSize((max(400, size[0]), max(200, size[1])))
+         self.Centre()
 
       def show(self, parent, locals, function=None, wizard=0):
          self.wizard = wizard
@@ -179,7 +185,6 @@ class Args(_guiArgs):
 
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
-   
 
    def get_args(self):
       results = []
@@ -209,7 +214,6 @@ class Args(_guiArgs):
 
    def __len__(self, i):
       return len(self.list)
-
    
 
 ######################################################################
@@ -226,7 +230,8 @@ class Arg:
 if _has_gui == _WX_GUI:
    class _guiInt(wxPython.wx.wxSpinCtrl):
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxSpinCtrl.__init__(self, parent, -1, value=str(self.default),
+         wxPython.wx.wxSpinCtrl.__init__(self, parent, -1,
+                                         value=str(self.default),
                              min=self.rng[0], max=self.rng[1],
                              initial=self.default)
          return self
@@ -256,8 +261,10 @@ if _has_gui == _WX_GUI:
          return _RealValidator(self.name, self.rng)
 
       def show_error(self, s):
-         dlg = wxPython.wx.wxMessageDialog(self.GetWindow(), s,
-                               "Dialog Error", wxPython.wx.wxOK | wxPython.wx.wxICON_ERROR)
+         dlg = wxPython.wx.wxMessageDialog(
+            self.GetWindow(), s,
+            "Dialog Error",
+            wxPython.wx.wxOK | wxPython.wx.wxICON_ERROR)
          dlg.ShowModal()
          dlg.Destroy()
 
@@ -275,13 +282,15 @@ if _has_gui == _WX_GUI:
             return wxPython.wx.false
          if self.rng:
             if val < self.rng[0] or val > self.rng[1]:
-               self.show_error(self.name + " must be in the range " + str(self.rng) + ".")
+               self.show_error(
+                  self.name + " must be in the range " + str(self.rng) + ".")
                return wxPython.wx.false
          return wxPython.wx.true
 
       def OnChar(self, event):
          key = event.KeyCode()
-         if key < WXPYTHON.WX.WXK_SPACE or key == WXPYTHON.WX.WXK_DELETE or key > 255:
+         if (key < WXPYTHON.WX.WXK_SPACE or
+             key == WXPYTHON.WX.WXK_DELETE or key > 255):
             event.Skip()
             return
          if chr(key) in string.digits + "-.":
@@ -298,8 +307,9 @@ if _has_gui == _WX_GUI:
 
    class _guiReal(wxPython.wx.wxTextCtrl):
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxTextCtrl.__init__(self, parent, -1, str(self.default),
-                             validator=_RealValidator(name=self.name, range=self.rng))
+         wxPython.wx.wxTextCtrl.__init__(
+            self, parent, -1, str(self.default),
+            validator=_RealValidator(name=self.name, range=self.rng))
          return self
 
       def get(self):
@@ -338,9 +348,11 @@ class String(_guiString, Arg):
 if _has_gui == _WX_GUI:
    class _guiClass(wxPython.wx.wxChoice):
       def determine_choices(self, locals):
-         choices = []
-         self.locals = locals
-         if locals:
+         if self.klass is None:
+            choices = locals.keys()
+         else:
+            choices = []
+            self.locals = locals
             for i in locals.items():
                if ((self.list_of and isinstance(i[1], type([])) and
                     len(i[1]) and isinstance(i[1][0], self.klass)) or
@@ -351,7 +363,8 @@ if _has_gui == _WX_GUI:
       def get_control(self, parent, locals=None):
          if type(self.klass) == type(''):
             self.klass = eval(self.klass)
-         wxPython.wx.wxChoice.__init__(self, parent, -1, choices = self.determine_choices(locals))
+         wxPython.wx.wxChoice.__init__(
+            self, parent, -1, choices = self.determine_choices(locals))
          return self
 
       def get(self):
@@ -364,7 +377,7 @@ else:
       pass
 
 class Class(_guiClass, Arg):
-   def __init__(self, name, klass, list_of = 0):
+   def __init__(self, name, klass=None, list_of=0):
       self.name = name
       self.klass = klass
       self.list_of = list_of
@@ -377,13 +390,13 @@ if _has_gui == _WX_GUI:
          choices = []
          self.locals = locals
          if locals:
-            for i in locals.items():
-               if ((self.list_of and isinstance(i[1], type([])) and
-                    len(i[1]) and isinstance(i[1][0], self.klass)) or
-                   (not self.list_of and isinstance(i[1], self.klass))):
+            for key, val in locals.items():
+               if ((self.list_of and isinstance(val, type([])) and
+                    len(val) and isinstance(val[0], self.klass)) or
+                   (not self.list_of and isinstance(val, self.klass))):
                   if (core.ALL in self.pixel_types or
-                      i.data.pixel_types in self.pixel_types):
-                     choices.append(i[0])
+                      val.data.pixel_type in self.pixel_types):
+                     choices.append(key)
          return choices
 else:
    class _guiImage(_guiClass):
@@ -589,4 +602,3 @@ class ProgressDialog:
    def Destroy(self):
       self.dialog.Destroy()
       self.dialog = None
-         

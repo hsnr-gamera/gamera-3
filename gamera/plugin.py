@@ -32,7 +32,7 @@ def get_pixel_type_name(type_):
     return _pixel_type_names[type_]
 
 class PluginModule:
-    category = "Miscellaneous"
+    category = None
     cpp_sources = []
     cpp_headers = []
     cpp_defines = []
@@ -56,7 +56,7 @@ class PluginFunction:
     args = Args([])
     image_types_must_match = 0
 
-    def register(cls, category='Miscellaneous'):
+    def register(cls, category=None):
         if hasattr(cls, 'category'):
             category = cls.category
         if not hasattr(cls, "__call__"):

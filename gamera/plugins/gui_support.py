@@ -21,11 +21,12 @@ from gamera.plugin import *
 
 class to_string(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    return_type = String("image_as_string")
 
 to_string = to_string()
 
 class GuiSupportModule(PluginModule):
-    category = "Gui"
+    category = None
     cpp_headers = ["gui_support.hpp"]
     functions = [to_string]
     author = "Michael Droettboom and Karl MacMillan"

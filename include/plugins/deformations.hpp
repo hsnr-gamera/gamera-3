@@ -109,7 +109,20 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
     }
   }
 
-  return rot45(*new_view, angle, bgcolor); // Even if the angle is 0.0 degrees send to rot45
+  // MGD: Changed to fix memory leak.  If rot45 will do nothing,
+  // we can just return new_view, otherwise, we have to delete new_view/new_data
+  // before returning.
+
+  double epsilon = 1e-5;
+
+  if (abs(angle-0.0) <= epsilon * abs(angle)) {
+    return new_view;
+  } else {
+    view_type* result = rot45(*new_view, angle, bgcolor);
+    delete new_view;
+    delete new_data;
+    return result;
+  }
 }
 
 /*
@@ -121,14 +134,6 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
 template<class T>
 typename ImageFactory<T>::view_type* rot45(T &src, float angle, typename T::value_type bgcolor)
 {
-  // If the angle approaches 0, do not rotate.
-
-  double epsilon = 1e-5;
-  
-  if (abs(angle-0.0) <= epsilon * abs(angle)) {
-    return &src;
-  }
-
   //------------------------------------------------------------------------------------
   // Declarations/Initialization
   //------------------------------------------------------------------------------------

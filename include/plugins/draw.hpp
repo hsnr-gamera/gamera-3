@@ -22,7 +22,6 @@
 #define mgd12032001_draw_hpp
 
 #include <stack>
-#include <stdio.h>
 
 template<class T>
 inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x2) {

@@ -435,5 +435,6 @@ def gendoc():
    except Exception, e:
       print "Documentation generation failed with the following exception:"
       print e
-   docgen.generate()
+   else:
+      docgen.generate()
       

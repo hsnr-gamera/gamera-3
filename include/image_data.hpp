@@ -184,7 +184,7 @@ namespace Gamera {
     void create_data() {
       if (m_size > 0)
 	m_data = new T[m_size];
-      std::fill(m_data, m_data + m_size, pixel_traits<T>::white());
+      std::fill(m_data, m_data + m_size, pixel_traits<T>::default_value());
     }
 
     T* m_data;

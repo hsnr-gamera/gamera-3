@@ -292,19 +292,19 @@ class _kNNBase(gamera.knncore.kNN):
       # classification methods to know whether the weights should
       # be used or not (according to whether the features on the
       # image passed in match the features we currently know about).
-      functions = []
-      for key in loader.weights:
-         try:
-            func = core.ImageBase.get_feature_functions(key)
-         except Exception, e:
-            raise gamera.gamera_xml.XMLError("While loading the weights " +
-            "an unknown feature function '%s' was found." % key)
-         functions.append(func[0][0])
+##       for key in loader.weights:
+##          try:
+##             func = core.ImageBase.get_feature_functions(key)
+##          except Exception, e:
+##             raise gamera.gamera_xml.XMLError("While loading the weights " +
+##             "an unknown feature function '%s' was found." % key)
+##          functions.append(func[0][0])
+      functions = loader.weights.keys()
       functions.sort()
       self.change_feature_set(functions)
       # Create the weights array with the weights in the correct order
       weights = array.array('d')
-      for x in self.feature_functions:
+      for x in self.feature_functions[0]:
          weights.extend(loader.weights[x[0]])
       self.set_weights(weights)
 

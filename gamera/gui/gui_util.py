@@ -125,7 +125,7 @@ def save_file_dialog(parent, extensions="*.*"):
    return SaveFileDialog(parent, extensions).show()
 
 def directory_dialog(parent, create=1):
-   last_directory = config.get("default-dir")
+   last_directory = config.get("default_dir")
    if create:
       style = wxDD_NEW_DIR_BUTTON
    else:

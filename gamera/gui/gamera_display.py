@@ -34,7 +34,6 @@ from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui
 import gamera.plugins.gui_support  # Gamera plugin
 
-
 ##############################################################################
 
 # we want this done on import
@@ -94,7 +93,7 @@ class ImageDisplay(wxScrolledWindow):
 
    # Sets the image being displayed
    # Returns the size of the image
-   def set_image(self, image, view_function=None, weak=1):
+   def set_image(self, image, view_function=None, weak=True):
       if weak:
          self.original_image = weakref.proxy(image)
          self.image = weakref.proxy(image)
@@ -625,8 +624,8 @@ class ImageDisplay(wxScrolledWindow):
                   if float(h) * scaling <= 1 or float(w) * scaling <= 1:
                      continue
                   scaled_highlight = subhighlight.resize(
-                     ceil(subhighlight.nrows * scaling),
-                     ceil(subhighlight.ncols * scaling),
+                     int(ceil(subhighlight.nrows * scaling)),
+                     int(ceil(subhighlight.ncols * scaling)),
                      self.scaling_quality)
                else:
                   # Sometimes we get an image with 0 rows or cols - I'm
@@ -985,9 +984,10 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    # The images should be a little padded within the cells
    # Also, there is a max size for every cell
    def GetBestSize(self, grid, attr, dc, row, col):
+      glyphs = self.parent.sorted_glyphs
       bitmap_no = row * grid.cols + col
-      if bitmap_no < len(self.parent.sorted_glyphs):
-         image = self.parent.sorted_glyphs[bitmap_no]
+      if bitmap_no < len(glyphs):
+         image = glyphs[bitmap_no]
       else:
          image = None
       if not image is None:
@@ -997,10 +997,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             min(grid.max_cell_height,
                 int(image.nrows * grid.scaling + grid.cell_padding)))
       else:
-         return wxSize(25, 25)
+         return wxSize(grid.cell_padding * 2, grid.cell_padding * 2)
 
    def Clone(self):
-      print "Clone"
       return MultiImageGridRenderer(self.parent)
 
 # Grid constants
@@ -1014,7 +1013,7 @@ config.add_option(
    '', '--grid-max_label_length', default=200, type="int",
    help='[grid] Maximum length (in pixels) of the row labels in the grid')
 config.add_option(
-   '', '--grid-cell-padding', default=20, type="int",
+   '', '--grid-cell-padding', default=8, type="int",
    help='[grid] Amount of padding around the glyphs in the grid')
 config.add_option(
    '', '--grid-ncols', default=8, type="int",
@@ -1026,7 +1025,7 @@ class MultiImageDisplay(wxGrid):
                       style=wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.GetGridWindow().SetWindowStyle(
          wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
-      self.glyphs = util.CallbackList()
+      self.glyphs = util.CallbackSet()
       self.sorted_glyphs = []
       self.rows = 1
       self.cols = config.get("grid_ncols")
@@ -1039,10 +1038,10 @@ class MultiImageDisplay(wxGrid):
       self.sort_function = ""
       self.sort_order = 0
       self.display_attribute = ""
-      self.display_names = 0
-      self.created = 0
-      self.do_updates = 0
-      self.last_image_no = None
+      self.display_names = False
+      self.created = False
+      self.do_updates = False
+      self.last_tooltip = ""
       self.scaling = 1.0
       if wxPlatform == '__WXMAC__':
         size = wxSize(300, 24)
@@ -1074,19 +1073,22 @@ class MultiImageDisplay(wxGrid):
       self.BeginBatch()
       try:
          self.glyphs.clear()
-         self.glyphs.extend(list)
-         self.do_updates = 0
+         self.glyphs.update(list)
+         self.do_updates = False
          self.sort_images()
          self.frame.set_choices()
          if not self.created:
             self.rows = 1
             self.CreateGrid(1, self.cols)
-            self.created = 1
+            for col in range(self.cols):
+               self.SetCellRenderer(0, col, self.GetDefaultRenderer())
+               self.SetReadOnly(0, col, True)
+            self.created = True
          self.EnableEditing(0)
          self.resize_grid()
          self.ClearSelection()
          x = self.GetSize()
-         self.do_updates = 1
+         self.do_updates = True
       finally:
          self.EndBatch()
          wxEndBusyCursor()
@@ -1098,7 +1100,7 @@ class MultiImageDisplay(wxGrid):
       self.GetGridWindow().Layout()
       self.GetGridWindow().GetParent().Layout()
 
-   def resize_grid(self, do_auto_size=1):
+   def resize_grid(self, do_auto_size=True):
       if not self.created:
          return
       wxBeginBusyCursor()
@@ -1113,50 +1115,62 @@ class MultiImageDisplay(wxGrid):
             self.DeleteRows(0, orig_rows - rows)
          elif rows > orig_rows:
             self.AppendRows(rows - orig_rows)
+            for row in range(rows - 1, orig_rows - 1, -1):
+               for col in range(cols):
+                  self.SetCellRenderer(row, col, self.GetDefaultRenderer())
+                  self.SetReadOnly(row, col, True)
          self.rows = rows
          self.cols = cols
          row_size = 1
-         for row in range(rows - 1, -1, -1):
-            for col in range(cols):
-               self.SetCellRenderer(row, col, self.GetDefaultRenderer())
-               self.SetReadOnly(row, col, True)
+         
          width = self.set_labels()
          self.SetRowLabelSize(width + 20)
          self.SetColLabelSize(20)
-         self.AutoSize()
+         if do_auto_size:
+            self.AutoSize()
          if start_row < self.GetNumberRows() and start_col < self.GetNumberCols():
-            self.SetGridCursor(start_row, start_col)
+            # self.SetGridCursor(start_row, start_col)
             self.MakeCellVisible(start_row, start_col)
       finally:
          self.EndBatch()
          wxEndBusyCursor()
 
-   def append_glyphs(self, list):
+   def append_glyphs(self, glyphs, resize=True):
       wxBeginBusyCursor()
       self.BeginBatch()
       try:
-         self.glyphs.extend(list)
-         # Remove trailing 'None's
+         i = None
          for i in range(len(self.sorted_glyphs) - 1, -1, -1):
             if not self.sorted_glyphs[i] is None:
                break
-         del self.sorted_glyphs[i+1:]
-         self.sorted_glyphs.extend(list)
-         self.resize_grid(do_auto_size=1)
+         if not i is None:
+            del self.sorted_glyphs[i+1:]
+         added = False
+         for g in glyphs:
+            if not g in self.glyphs:
+               self.glyphs.add(g)
+               self.sorted_glyphs.append(g)
+               added = True
+         if added and resize:
+            self.resize_grid(False)
       finally:
          self.EndBatch()
          wxEndBusyCursor()
 
-   def remove_glyphs(self, list):
+   def remove_glyphs(self, list, resize=True):
       for glyph in list:
-         glyph.dead = 1
-         self.glyphs.remove(glyph)
+         if glyph in self.glyphs:
+            glyph.dead = True
+            self.glyphs.remove(glyph)
+      if resize:
+         self.resize_grid(False)
 
    def append_and_remove_glyphs(self, add, remove):
       if len(add):
-         self.append_glyphs(add)
+         self.append_glyphs(add, False)
       if len(remove):
-         self.remove_glyphs(remove)
+         self.remove_glyphs(remove, False)
+      self.resize_grid(False)
       #self.ForceRefresh()
       
    def scale(self, scaling):
@@ -1165,6 +1179,9 @@ class MultiImageDisplay(wxGrid):
          self.AutoSize()
          self.MakeCellVisible(
             self.GetGridCursorRow(), self.GetGridCursorCol())
+
+   def get_glyphs(self):
+      return list(self.glyphs)
 
    ########################################
    # SORTING
@@ -1255,7 +1272,7 @@ class MultiImageDisplay(wxGrid):
             self.sort_order = order
 
          if self.sort_function == '':
-            self.sorted_glyphs = self.default_sort(self.glyphs)
+            self.sorted_glyphs = self.default_sort(list(self.glyphs))
          else:
             sort_string = self.sort_function
             error_messages = {}
@@ -1272,11 +1289,12 @@ class MultiImageDisplay(wxGrid):
                for item in self.glyphs:
                   del item.sort_cache
                return
-            self.list.sort(util.fast_cmp)
+            self.sorted_glyphs = list(self.glyphs)
+            self.sorted_glyphs.sort(util.fast_cmp)
             for item in self.glyphs:
                del item.sort_cache
          if self.sort_order:
-            self.list.reverse()
+            self.sorted_glyphs.reverse()
          self.resize_grid()
          self.ClearSelection()
          self.MakeCellVisible(0, 0)
@@ -1350,7 +1368,6 @@ class MultiImageDisplay(wxGrid):
 
    def GetAllItems(self):
       return self.glyphs
-      return [x for x in self.list if not x is None and not hasattr(x, 'dead')]
 
    def GetSelectedCoords(self, row=None, col=None):
       if self.IsSelection():
@@ -1440,10 +1457,10 @@ class MultiImageDisplay(wxGrid):
       pass
 
    def _OnSelect(self, event):
-      image_no = self.get_image_no(event.GetRow(), event.GetCol())
-      if image_no != None:
-         event.Skip()
-         self._OnSelectImpl()
+##       image_no = self.get_image_no(event.GetRow(), event.GetCol())
+##       if image_no != None:
+      event.Skip()
+      self._OnSelectImpl()
 
    def _OnRightClick(self, event):
       row = event.GetRow()
@@ -1507,13 +1524,15 @@ class MultiImageDisplay(wxGrid):
          image = self.sorted_glyphs[image_no]
 
       if image == None:
-         self.tooltip.Show(False)
-         last_image_no = None
+         if self.last_tooltip != "":
+            self.tooltip.Show(False)
+            self.last_tooltip = ""
       else:
-         self.tooltip.Show(1)
-         if self.last_image_no != image_no:
-            self.set_tooltip(self.get_label(image))
-            self.last_image_no = image_no
+         message = self.get_label(image)
+         if message != self.last_tooltip:
+            self.tooltip.Show(True)
+            self.set_tooltip(message)
+            self.last_tooltip = message
          self.tooltip.Move(wxPoint(event.GetX() + 16, event.GetY() + 16))
       event.Skip()
 

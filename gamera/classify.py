@@ -54,7 +54,7 @@ class _Classifier:
    ########################################
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
-                            evaluate_function=None, max_parts_per_group=5):
+                            evaluate_function=None, max_parts_per_group=4):
       glyphs = [x for x in glyphs if x.classification_state != 3]
       if len(glyphs) == 0:
          return [], []
@@ -70,7 +70,7 @@ class _Classifier:
       return found_unions + splits, removed
 
    def _default_grouping_function(a, b):
-      return Fudge(a, 8).intersects(b)
+      return Fudge(a, 4).intersects(b)
    _default_grouping_function = staticmethod(_default_grouping_function)
 
    def _pregroup(self, glyphs, function):
@@ -128,7 +128,7 @@ class _Classifier:
             progress.step()
       finally:
          progress.kill()
-      print "Number of groups created: %d" % len(found_unions)
+      # print "Number of groups created: %d" % len(found_unions)
       return found_unions
 
    ########################################
@@ -492,25 +492,29 @@ of strings, naming the feature functions to be used."""
          for child in glyph.children_images:
             removed.add(child)
 
+      new_glyphs = []
       feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          # Don't re-insert removed children glyphs
          if not glyph in removed:
             if not glyph in self.database:
                glyph.generate_features(feature_functions)
-               self.database.append(glyph)
+               new_glyphs.append(glyph)
             glyph.classify_manual([(1.0, id)])
             added.extend(self._do_splits(self, glyph))
+      self.database.extend(new_glyphs)
       return added, list(removed)
 
    def add_to_database(self, glyphs):
       glyphs = util.make_sequence(glyphs)
+      new_glyphs = []
       feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          if (glyph.classification_state == core.MANUAL and
              not glyph in self.database):
             glyph.generate_features(feature_functions)
-            self.database.add(glyph)
+            new_glyphs.append(glyph)
+      self.database.extend(new_glyphs)
 
    def remove_from_database(self, glyphs):
       glyphs = util.make_sequence(glyphs)

@@ -131,8 +131,8 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
 
   PyObject* tuple = Py_BuildValue("(O)", result);
   PyObject* evalobject = PyObject_CallObject(const_cast<PyObject*>(eval_func), tuple);
-  Py_DECREF(result);
   Py_DECREF(tuple);
+  Py_DECREF(result);
 
   double eval;
   if (evalobject == NULL)
@@ -226,7 +226,6 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     NP_VISITED(*i) = NP_VISITED2(*i) = false;
-
   size_t size;
   {
     NodeVector subgraph;
@@ -248,7 +247,6 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       return result;
     }
   }
-
   { 
     Solution best_solution;
     NodeVector subgraph;

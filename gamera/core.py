@@ -586,15 +586,17 @@ if sys.platform == 'win32':
    def init_gamera():
       try:
          _init_gamera()
-      except:
-         import traceback
-         print "Gamera made a fatal error:"
-         print
-         traceback.print_exc()
-         print
-         print "Press <ENTER> to exit."
-         x = raw_input()
-         sys.exit(1)
+      except Exception, e:
+         print type(e)
+         if not isinstance(e, SystemExit):
+            import traceback
+            print "Gamera made a fatal error:"
+            print
+            traceback.print_exc()
+            print
+            print "Press <ENTER> to exit."
+            x = raw_input()
+            sys.exit(1)
 else:
    init_gamera = _init_gamera
 

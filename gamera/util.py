@@ -100,15 +100,6 @@ def constains_instance(gl, klass):
          return True
    return False  
 
-def combine_unique_elements(list1, list2=[]):
-   """Given two lists, returns a list of all unique items in both."""
-   result = {}
-   for item in list1:
-      result[item] = None
-   for item in list2:
-      result[item] = None
-   return result.keys()
-
 def sublists(list):
    l = len(list) - 1
    m = int(pow(2, l - 1))

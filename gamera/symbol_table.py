@@ -56,7 +56,7 @@ class SymbolTable:
       if symbol == '':
          return '', []
       for i in '!@#$%^&*()-=+':
-         symbol.replace(i, '_')
+         symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
       # Split by '.' delimiters
       tokens = symbol.strip().split('.')

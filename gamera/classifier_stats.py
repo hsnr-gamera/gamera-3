@@ -52,7 +52,7 @@ class GlyphStats:
         progress = util.ProgressFactory("Saving images...")
         for i, glyph in util.enumerate(self._glyphs):
             name = glyph.get_main_id()
-            if names.has_key(name):
+            if sorted_glyphs.has_key(name):
                 sorted_glyphs[name].append(glyph)
             else:
                 sorted_glyphs[name] = [glyph]
@@ -65,8 +65,12 @@ class GlyphStats:
         keys.sort()
         for name in keys:
             fd.write("<h3>%s</h3>" % name)
-            for glyph in sorted_glyphs[name]:
-                doc
-
-        progress.update(1, 1)
+            size = 0
+            for i, glyph in util.enumerate(sorted_glyphs[name]):
+                if size + glyph.ncols > 500:
+                    fd.write("<br/>")
+                    size = 0
+                fd.write('<img src="%s-%08d.tiff" width="%d" height="%d"/>' %
+                         (name, i, glyph.ncols, glyph.nrows))
         self._end_html(fd)
+        progress.update(1, 1)

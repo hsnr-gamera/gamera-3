@@ -155,8 +155,7 @@ class IconDisplay(wxListCtrl):
     return None
 
   def OnItemSelected(self, event):
-    self.currentIcon = self.find_icon(event.m_itemIndex)
-    self.currentIconName = self.currentIcon.label
+    self.currentIconName = self.find_icon(event.m_itemIndex).label
 
   def OnRightDown(self, event):
     self.x = event.GetX()
@@ -172,23 +171,24 @@ class IconDisplay(wxListCtrl):
     for i in range(self.GetItemCount()):
       self.SetItemState(i, 0, wxLIST_STATE_SELECTED)
     self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
-    self.currentIcon = self.find_icon(index)
-    if self.currentIcon:
-      if isinstance(self.currentIcon.data, ImageBase):
+    currentIcon = self.find_icon(index)
+    if currentIcon:
+      if isinstance(currentIcon.data, ImageBase):
         if event.ShiftDown():
           mode = image_menu.HELP_MODE
         else:
           mode = image_menu.EXECUTE_MODE
           menu = image_menu.ImageMenu(self, self.x, self.y,
-                                      self.currentIcon.data,
-                                      self.currentIcon.label,
+                                      currentIcon.data,
+                                      currentIcon.label,
                                       self.shell, mode)
           menu.PopupMenu()
     event.Skip()
 
   def OnDoubleClick(self, event):
-    if self.currentIcon:
-      if isinstance(self.currentIcon.data, ImageBase):
+    if self.currentIconName:
+      currentIcon = self.shell.locals[self.currentIconName]
+      if isinstance(currentIcon, ImageBase):
         source = (self.currentIconName + ".display()")
       else:
         source = "display_multi(" + self.currentIconName + ")"

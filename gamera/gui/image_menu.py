@@ -68,8 +68,11 @@ class ImageMenu:
     else:
       self.images = images_
       self.images_name = name_
-    self.variables = images[0].members_for_menu()
-    self.methods = images[0].methods_for_menu()
+    self.variables = self.images[0].members_for_menu()
+    self.methods = self.images[0].methods_for_menu()
+
+  def __del__(self):
+    print "del!"
 
   # Given a list of variables and methods, put it all together
   def create_menu(self, variables, methods, type, type_name):
@@ -115,12 +118,12 @@ class ImageMenu:
     return menu
 
   def PopupMenu(self):
-    menu = self.create_menu(self.variables,
+    self.menu = self.create_menu(self.variables,
                             self.methods,
                             self.images[0].data.pixel_type,
                             self.images[0].pixel_type_name)
-    self.parent.PopupMenu(menu, wxPoint(self.x, self.y))
-    menu.Destroy()
+    self.parent.PopupMenu(self.menu, wxPoint(self.x, self.y))
+    self.menu.Destroy()
 
   def GetMenu(self):
     return self.create_menu(self.variables,

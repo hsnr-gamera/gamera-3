@@ -18,7 +18,7 @@
 #
 
 from gamera import core, config
-from gamera.gui import gamera_display, gui_util
+from gamera.gui import gamera_display, gui_util, gamera_icons
 from wxPython.wx import *
 from wxPython.lib.mixins.listctrl import wxListCtrlAutoWidthMixin
 import glob, string, os.path
@@ -47,16 +47,18 @@ class FileList(wxGenericDirCtrl):
             return
       finally:
          wxEndBusyCursor()
-      self.image_display.id.set_image(image, weak=0)
       width, height = self.image_display.id.GetSize()
       scale = max(float(width) / float(image.width),
                   (float(height) / float(image.height)))
+      self.image_display.id.set_image(image, weak=0)
       self.image_display.id.scale(scale)
 
 class ImageBrowserFrame(wxFrame):
    def __init__(self):
       wxFrame.__init__(self, NULL, -1, "Image File Browser",
                        wxDefaultPosition,(400, 500))
+      icon = wxIconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
+      self.SetIcon(icon)
       self.splitter = wxSplitterWindow(self, -1)
       self.image = gamera_display.ImageWindow(self.splitter, -1)
       self.file = FileList(self.splitter, -1, self.image)

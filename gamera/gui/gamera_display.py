@@ -285,6 +285,7 @@ class ImageDisplay(wxScrolledWindow):
       old_scale = self.scaling
       if new_scale < old_scale:
          self.Clear()
+         self.RefreshAll()
       if new_scale == None or new_scale <= 0:
          new_scale = old_scale
          
@@ -389,8 +390,8 @@ class ImageDisplay(wxScrolledWindow):
       brush = wxBLUE_BRUSH
       brush.SetColour(wxColor(167, 105, 39))
       dc.SetBrush(brush)
-      self.block_w = block_w = min(w / 2, 8)
-      self.block_h = block_h = min(h / 2, 8)
+      self.block_w = block_w = max(min(w / 2 - 1, 8), 0)
+      self.block_h = block_h = max(min(h / 2 - 1, 8), 0)
       dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
       dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
       dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)

@@ -20,6 +20,7 @@
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 import re
+from fudge import Fudge
 
 """This file defines the Python part of classifiers.  These wrapper classes
 contain a reference to a core classifier class (unusally written in C++).
@@ -39,22 +40,27 @@ class _Classifier:
 
    ########################################
    # GROUPING
-   def group_list_automatic(self, glyphs):
-      import time
+   def group_list_automatic(self, glyphs, grouping_function=None,
+                            evaluate_function=None):
       if len(glyphs) == 0:
          return
-      t = time.clock()
       glyphs = [x for x in glyphs if x.classification_state != 3]
       splits, removed = self.classify_list_automatic(glyphs)
       glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]
-      G = self.pregroup(glyphs)
-      found_unions = self.find_group_unions(G)
-      print "Time: %s" % (str(time.clock() - t))
+      if grouping_function is None:
+         grouping_function = _Classifier._default_grouping_function
+      G = self._pregroup(glyphs, grouping_function)
+      if evaluate_function is None:
+         evaluate_function = _Classifier._evaluate_subgroup
+      found_unions = self._find_group_unions(G, evaluate_function)
       return found_unions + splits, removed
 
-   def pregroup(self, glyphs):
+   def _default_grouping_function(a, b):
+      return Fudge(a, 8).intersects(b)
+   _default_grouping_function = staticmethod(_default_grouping_function)
+
+   def _pregroup(self, glyphs, function):
       from gamera import graph
-      from fudge import Fudge
       G = graph.Undirected()
       G.add_nodes(glyphs)
       progress = util.ProgressFactory("Pre-grouping glyphs...", len(glyphs))
@@ -63,17 +69,16 @@ class _Classifier:
          group_no = 0
          for i in range(len(glyphs)):
             gi = glyphs[i]
-            fudge_gi = Fudge(gi, 8)
             for j in range(i + 1, len(glyphs)):
                gj = glyphs[j]
-               if fudge_gi.intersects(gj):
+               if function(gi, gj):
                   G.add_edge(gi, gj)
             progress.step()
       finally:
          progress.kill()
       return G
 
-   def evaluate_subgroup(self, subgroup):
+   def _evaluate_subgroup(subgroup):
       import image_utilities
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
@@ -84,28 +89,29 @@ class _Classifier:
          else:
             return classification[0][0]
       return subgroup[0].id_name[0][0]
+   _evaulate_subgroup = staticmethod(_evaluate_subgroup)
 
-   def find_group_unions(self, G):
+   def _find_group_unions(self, G, evaluate_function):
       import image_utilities
       progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
             best_grouping = G.optimize_partitions(
-               root, self.evaluate_subgroup, 3)
+               root, evaluate_function, 3)
             for subgroup in best_grouping:
                if len(subgroup) > 1:
                   union = image_utilities.union_images(subgroup)
                   found_unions.append(union)
                   classification = self.guess_glyph_automatic(union)
                   union.classify_heuristic(classification)
-                  part_name = "_group._part.%s" % classification[0][1]
+                  part_name = "_group._part." + classification[0][1]
                   for glyph in subgroup:
                      glyph.classify_heuristic(part_name)
             progress.step()
       finally:
          progress.kill()
-      print "Number of groups created: %s" % str(len(found_unions))
+      print "Number of groups created: %d" % len(found_unions)
       return found_unions
 
    ########################################

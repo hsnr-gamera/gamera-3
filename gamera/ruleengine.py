@@ -223,7 +223,8 @@ class RuleEngine:
                      seed = [list(grid_index.get_glyphs_around_glyph_by_key(glyph, x))
                              for x in glyph_specs[1:]]
                      for combination in util.combinations(seed):
-                        stop = self._deal_with_result(rule, [glyph] + combination, added, removed)
+                        stop = self._deal_with_result(rule, [glyph] + combination,
+                                                      added, removed)
                         if not self._reapply and stop:
                            break
                   progress.step()

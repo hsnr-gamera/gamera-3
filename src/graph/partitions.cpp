@@ -115,7 +115,8 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
     eval = PyFloat_AsDouble(evalobject); // Implicit error checking
   parts.push_back(Part(bits, eval));
 
-  if ((node_stack.size() < max_size) && (NP_NUMBER(node) != subgraph_size - 1)) {
+  if ((node_stack.size() < max_size) && 
+      (NP_NUMBER(node) != subgraph_size - 1)) {
     for (EdgeList::iterator i = node->m_edges.begin();
 	 i != node->m_edges.end(); ++i) {
       Node* to_node = (*i)->traverse(node);
@@ -146,14 +147,10 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
   }
 }
 
-inline void graph_optimize_partitions_find_solution(Parts &parts,
-						    const size_t begin, 
-						    const size_t end, 
-						    Solution& best_solution, 
-						    double &best_mean,
-						    Solution& partial_solution, 
-						    double partial_mean, const Bitfield bits, 
-						    const Bitfield all_bits) {
+inline void graph_optimize_partitions_find_solution(
+  Parts &parts, const size_t begin, const size_t end, 
+  Solution& best_solution, double &best_mean, Solution& partial_solution, 
+  double partial_mean, const Bitfield bits, const Bitfield all_bits) {
   if (bits == all_bits) {
     partial_mean /= partial_solution.size();
     if (partial_mean > best_mean) {
@@ -224,19 +221,6 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   for (NodeVector::iterator i = subgraph.begin();
        i != subgraph.end(); ++i) {
     std::cerr << PyString_AsString(PyObject_Repr((*i)->m_data)) << "\n";
-  }
-
-  size_t j = 0;
-  for (Parts::iterator i = parts.begin();
-       i != parts.end(); ++i, ++j) {
-    std::cerr << j << " & ";
-    for (size_t k = 0; k < size; ++k) {
-      if ((*i).bits & 1 << k)
-	std::cerr << "$\\bullet$ & ";
-      else
-	std::cerr << "$\\circ$ & ";
-    }
-    std::cerr << (*i).begin << " & " << (*i).end << " & " << (*i).score << "\\\\ \n";
   }
 
   // Now, we find a solution

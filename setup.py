@@ -72,7 +72,7 @@ graph_files = glob.glob("src/graph/*.cpp")
 
 libs = []
 if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
-   libs = ["stdc++"]
+   libs = ["stdc++"] # Not for intel compiler
 
 extra_args = []
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:

@@ -181,7 +181,7 @@ if float(sys.version[0:3]) < 2.3:
    __builtins__['True'] = 1
    __builtins__['False'] = 0
 else:
-   enumerate = enumerate(__builtins__)
+   enumerate = __builtins__.enumerate
 
 _pixel_type_names = {ONEBIT:     "OneBit",
                      GREYSCALE:  "GreyScale",
@@ -241,7 +241,6 @@ def word_wrap(stream, l, indent=0, width=78):
    indent *= 2
    width -= indent
    indent_spaces = ' ' * (indent)
-   space = ' '
    if is_sequence(l):
       l = space.join([str(x) for x in l])
    i = 0
@@ -253,7 +252,7 @@ def word_wrap(stream, l, indent=0, width=78):
          stream.write('\n')
          break
       else:
-         i = l.rfind(space, p, p + width)
+         i = l.rfind(' ', p, p + width)
          if i == -1:
             stream.write(l[p:])
          stream.write(l[p:i])

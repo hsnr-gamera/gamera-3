@@ -87,16 +87,22 @@ def build_menu(parent, menu_spec):
 
 NUM_RECENT_FILES = 9
 class FileDialog(wxFileDialog):
-   def __init__(self, parent, extensions="*.*"):
+   def __init__(self, parent, extensions="*.*", multiple=0):
       self.recent_files_spec = 'recent_files(%s)' % extensions
       config.define_option(
          "file", self.recent_files_spec, [],
          "Recently opened files",
          system=1)
       last_directory = config.options.file.default_directory
+      flags = self._flags
+      if multiple:
+         flags |= wxMULTIPLE
+         self._multiple = 1
+      else:
+         self._multiple = 0
       wxFileDialog.__init__(
          self, parent, "Choose a file",
-         last_directory, "", extensions, self._flags)
+         last_directory, "", extensions, flags)
       self.extensions = extensions
       if not sys.platform == 'win32':
          self.button = wxButton(
@@ -110,10 +116,17 @@ class FileDialog(wxFileDialog):
       self.Destroy()
       if result == wxID_CANCEL:
          return None
-      filename = self.GetPath()
-      config.options.file.default_directory = path.dirname(filename)
-      config.options.file[self.recent_files_spec].set(filename)
-      return filename
+      if self._multiple:
+         filenames = self.GetPaths()
+         for filename in filenames:
+            config.options.file[self.recent_files_spec].set(filename)
+         config.options.file.default_directory = path.dirname(filenames[0])
+         return filenames
+      else:
+         filename = self.GetPath()
+         config.options.file[self.recent_files_spec].set(filename)
+         config.options.file.default_directory = path.dirname(filename)
+         return filename
       
    def _OnRecentMenu(self, event):
       menu = wxMenu()
@@ -133,8 +146,8 @@ class OpenFileDialog(FileDialog):
 class SaveFileDialog(FileDialog):
    _flags = wxSAVE|wxOVERWRITE_PROMPT
 
-def open_file_dialog(parent, extensions="*.*"):
-   return OpenFileDialog(parent, extensions).show()
+def open_file_dialog(parent, extensions="*.*", multiple=0):
+   return OpenFileDialog(parent, extensions, multiple).show()
 
 def save_file_dialog(parent, extensions="*.*"):
    return SaveFileDialog(parent, extensions).show()

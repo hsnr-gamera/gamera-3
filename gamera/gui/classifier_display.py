@@ -872,7 +872,7 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Automatically classified', self._save_by_criteria_dialog[5]),
           Check('', 'Heuristically classified', self._save_by_criteria_dialog[6]),
           Check('', 'Manually classified', self._save_by_criteria_dialog[6]),
-          FileSave('Save glyphs to file', '',
+          FileSave('Save glyphs to file:', '',
                    extension=gamera_xml.extensions)],
          name = 'Save by criteria...')
       verified = 0
@@ -883,7 +883,9 @@ class ClassifierFrame(ImageFrameBase):
          skip, proddb, currdb, skip, un, auto, heur, man, filename = results
          if ((proddb == 0 and currdb == 0) or
              (un == 0 and auto == 0 and heur == 0 and man == 0)):
-            gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
+            gui_util.message(
+               "You didn't select anything to save!" +
+               "\n(You must check at least one box per category.)")
             continue
          if filename is None:
             gui_util.message("You must select a filename to save into.")
@@ -913,24 +915,33 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("Saving by criteria: " + str(e))
          
    def _OnOpenProductionDatabase(self, event):
-      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
-         self.production_database_filename = filename
-         self._OpenProductionDatabase(filename)
+      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
+                                           multiple=1)
+      if not filenames is None:
+         if len(filenames) == 1:
+            self.production_database_filename = filenames[0]
+         else:
+            self.production_database_filename = None
+         self._OpenProductionDatabase(filenames)
 
-   def _OpenProductionDatabase(self, filename):
+   def _OpenProductionDatabase(self, filenames):
       try:
-         self._classifier.from_xml_filename(filename)
+         self._classifier.from_xml_filename(filenames[0])
+         if len(filenames) > 1:
+            for f in filenames[1:]:
+               self._classifier.merge_from_xml_filename(f)
       except gamera_xml.XMLError, e:
          gui_util.message("Opening production database: " + str(e))
          return
       self.update_symbol_table()
 
    def _OnMergeProductionDatabase(self, event):
-      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
+      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
+                                            multiple=1)
+      if not filenames is None:
          try:
-            self._classifier.merge_from_xml_filename(filename)
+            for f in filenames:
+               self._classifier.merge_from_xml_filename(f)
          except gamera_xml.XMLError, e:
             gui_util.message("Merging production database: " + str(e))
             return
@@ -963,24 +974,34 @@ class ClassifierFrame(ImageFrameBase):
          self._classifier.clear_glyphs()
 
    def _OnOpenCurrentDatabase(self, event):
-      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
-         self.current_database_filename = filename
-         self._OpenCurrentDatabase(filename)
+      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
+                                            multiple=1)
+      if not filenames is None:
+         if len(filenames) == 1:
+            self.current_database_filename = filenames[0]
+         else:
+            self.current_database_filename = None
+         self._OpenCurrentDatabase(filenames)
 
-   def _OpenCurrentDatabase(self, filename):
+   def _OpenCurrentDatabase(self, filenames):
       try:
-         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+         glyphs = gamera_xml.LoadXML().parse_filename(filenames[0]).glyphs
+         if len(filenames) > 1:
+            for f in filenames[1:]:
+               glyphs.extend(gamera_xml.LoadXML().parse_filename(f).glyphs)
       except gamera_xml.XMLError, e:
          gui_util.message("Opening current database: " + str(e))
          return
       self.set_multi_image(glyphs)
 
    def _OnMergeCurrentDatabase(self, event):
-      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
+      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
+                                            multiple=1)
+      if not filenames is None:
+         glyphs = []
          try:
-            glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+            for f in filenames:
+               glyphs.extend(gamera_xml.LoadXML().parse_filename(f).glyphs)
          except gamera_xml.XMLError, e:
             gui_util.message("Merging current database" + str(e))
             return

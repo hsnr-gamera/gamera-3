@@ -20,22 +20,10 @@
 
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                         # Gamera specific
-from gamera import paths, util
+from gamera import paths, util, classify
 from gamera.gui import image_menu, var_name, gamera_icons
 
 ######################################################################
-
-class Icon:
-  data = None
-  index = None
-  label = None
-  type = None
-
-  def __init__(self, label_, data_, index_, type_):
-    self.label = label_
-    self.data = data_
-    self.index = index_
-    self.type = type_
 
 ######################################################################
 
@@ -102,16 +90,15 @@ class IconDisplay(wxListCtrl):
     self.data[label] = data
     self.InsertImageStringItem(index, label, icon)
     
-  def refresh_icon(self, key, data, icon):
-    if data.__class__ != self.data[key].__class__:
+  def refresh_icon(self, key, klass, data, icon):
+    if klass != self.data[key].__class__:
       index = self.data[key].index
-      data.index = index
-      self.data[key] = data
+      obj = klass(name, data, index)
+      self.data[key] = obj
       self.SetStringItem(index, 0, key, icon)
 
   def remove_icon(self, key):
-    if isinstance(self.data[key].data, Image):
-      # removed custom callback from Image in gamera.py
+    if self.data.has_key(key):
       del self.data[key].data
     index = self.data[key].index
     self.DeleteItem(index)
@@ -134,10 +121,10 @@ class IconDisplay(wxListCtrl):
         except:
           pass
       if t != None:
-        obj = t(i[0], i[1], 0)
         if self.data.has_key(i[0]):
-          self.refresh_icon(i[0], obj, icon)
+          self.refresh_icon(i[0], t, i[1], icon)
         else:
+          obj = t(i[0], i[1], 0)
           self.add_icon(i[0], obj, icon)
         okay.append(i[0])
       elif self.data.has_key(i[0]):
@@ -184,7 +171,8 @@ class IconDisplay(wxListCtrl):
   def OnDoubleClick(self, event):
     if self.currentIcon:
       source = self.currentIcon.double_click()
-      self.shell.run(source)
+      if not source is None:
+        self.shell.run(source)
 
 # Standard icons for core Gamera
  
@@ -319,11 +307,33 @@ class CIImageList(CustomIcon):
     return 0
   check = staticmethod(check)
 
-  def double_click(self, name):
-    return 'display_multi(%s)' % name
+  def double_click(self):
+    return 'display_multi(%s)' % label
+
+class CIInteractiveClassifier(CustomIcon):
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
+  get_icon = staticmethod(get_icon)
+
+  def check(data):
+    return isinstance(data, classify.InteractiveClassifier)
+  check = staticmethod(check)
+
+class CINonInteractiveClassifier(CustomIcon):
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconNoninterClassifyBitmap())
+  get_icon = staticmethod(get_icon)
+
+  def check(data):
+    return isinstance(data, classify.NonInteractiveClassifier)
+  check = staticmethod(check)
+
+  def double_click(self):
+    pass
 
 builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
                       CIFloatImage, CIOneBitImage,
                       CIRGBSubImage, CIGreyScaleSubImage, CIGrey16SubImage,
                       CIFloatSubImage, CIOneBitSubImage,
-                      CIImageList)
+                      CIImageList, CIInteractiveClassifier,
+                      CINonInteractiveClassifier)

@@ -60,16 +60,17 @@ class _Classifier:
          glyph.generate_features(self.feature_functions)
 
 class NonInteractiveClassifier(_Classifier):
-   def __init__(self, classifier, database=[], features='all', perform_actions=1):
+   def __init__(self, classifier=None, database=[], features='all', perform_actions=1):
+      if classifier is None:
+         from gamera import knn
+         classifier = knn.kNN()
       self.classifier = classifier
       self.features = features
-      self.feature_functions = None
       if database == []:
          raise ValueError("You must initialize a NonInteractiveClassifier with a non-zero length database.")
       self.database = database
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.perform_actions = perform_actions
-      self.determine_feature_functions()
       for i, glyph in enumerate(database):
          glyph.generate_features(self.feature_functions)
       self.classifier.instantiate_from_images(database)
@@ -219,6 +220,12 @@ class InteractiveClassifier(_Classifier):
                new_ids.append(id)
          glyph.id_name = new_ids
 
-   def display(self, current_database, context_image=None, symbol_table=[]):
+   def noninteractive_copy(self):
+      if len(self.database):
+         return NonInteractiveClassifier(
+            self.classifier, self.database.keys(), self.features, self.perform_actions)
+      return None
+
+   def display(self, current_database=[], context_image=None, symbol_table=[]):
       gui = config.get_option("__gui")
       display = gui.ShowClassifier(self, current_database, context_image, symbol_table)

@@ -33,6 +33,7 @@ from gameracore import ImageData, Size, Dimensions, Point, \
 # import gamera.gameracore for subclassing
 import gameracore
 import gamera_xml
+from classify import InteractiveClassifier, NonInteractiveClassifier
 
 from gamera.classify import *
 import paths, util, config  # Gamera-specific

@@ -267,7 +267,7 @@ class ShellFrame(wxFrame):
       menubar.Append(menu, "&File")
       menu = wxMenu()
       classifyID = wxNewId()
-      menu.Append(classifyID, "&Classifier", "Start the classifier")
+      menu.Append(classifyID, "&Interactive Classifier", "Start the classifier")
       EVT_MENU(self, classifyID, self.OnClassifier)
       menubar.Append(menu, "&Classify")
       self.toolkit_menu = wxMenu()
@@ -312,7 +312,10 @@ class ShellFrame(wxFrame):
             wxEndBusyCursor()
 
    def OnClassifier(self, event):
-      GameraGui.ShowClassifier()
+      name = var_name.get("classifier", self.shell.locals)
+      gui_util.message("Eventually, you will be able to select a different kind of classifier here.")
+      self.shell.run("%s = InteractiveClassifier()" % name)
+      self.shell.run("%s.display()" % name)
 
    def OnImportToolkit(self, event):
       self.shell.run("import %s\n" % self.import_toolkits[event.GetId()])

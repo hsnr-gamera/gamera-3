@@ -460,7 +460,9 @@ class ClassifierFrame(ImageFrameBase):
           (None, None),
           ("Change set of features...", self._OnChangeSetOfFeatures),
           (None, None),
-          ("Change classifier properties...", self._OnClassifierProperties)))
+          ("Change classifier properties...", self._OnClassifierProperties),
+          (None, None),
+          ("Create noninteractive copy...", self._OnCreateNoninteractiveCopy)))
          
       menubar = wxMenuBar()
       menubar.Append(image_menu, "Image")
@@ -613,7 +615,7 @@ class ClassifierFrame(ImageFrameBase):
       self._OnSaveAsImages(self.multi_iw.id.GetSelectedItems())
 
    def _OnSaveProductionDatabaseAsImages(self, event):
-      self._OnSaveAsImages(self._classifier.database.iterkeys())
+      self._OnSaveAsImages(self._classifier.database.keys())
 
    def _OnSaveAsImages(self, list):
       filename = gui_util.directory_dialog()
@@ -670,6 +672,11 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnClassifierProperties(self, event):
       gui_util.message("This will open up a classifier-specific dialog box...")
+
+   def _OnCreateNoninteractiveCopy(self, event):
+      name = var_name.get("classifier", image_menu.shell.locals)
+      image_menu.shell.locals[name] = self._classifier.noninteractive_copy()
+      image_menu.shell.update()
       
    ########################################
    # XML MENU
@@ -779,8 +786,14 @@ class ClassifierFrame(ImageFrameBase):
          self._OnSaveCurrentDatabaseAs(event)
       else:
          wxBeginBusyCursor()
+         glyphs = self.multi_iw.id.GetAllItems()
+         progress = util.ProgressFactory("Generating features...")
+         for i, glyph in util.enumerate(glyphs):
+            glyph.generate_features(self._classifier.features)
+            progress.update(i, len(glyphs))
+         progress.update(1,1)
          gamera_xml.WriteXMLFile(
-            glyphs=self.multi_iw.id.GetAllItems(),
+            glyphs=glyphs,
             symbol_table=self._symbol_table).write_filename(
             self.current_database_filename)
          wxEndBusyCursor()
@@ -795,8 +808,14 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
+         glyphs = self.multi_iw.id.GetSelectedItems()
+         progress = util.ProgressFactory("Generating features...")
+         for i, glyph in util.enumerate(glyphs):
+            glyph.generate_features(self._classifier.features)
+            progress.update(i, len(glyphs))
+         progress.update(1,1)
          gamera_xml.WriteXMLFile(
-            glyphs=self.multi_iw.id.GetSelectedItems(),
+            glyphs=glyphs,
             symbol_table=self._symbol_table).write_filename(
             filename)
          wxEndBusyCursor()

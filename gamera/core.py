@@ -32,7 +32,7 @@ from gameracore import ImageData, Size, Dimensions, Point, \
 # import gamera.gameracore for subclassing
 import gameracore
 
-#import classify
+from gamera.classify import *
 import paths, util, config  # Gamera-specific
 
 ######################################################################

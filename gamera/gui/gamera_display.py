@@ -981,8 +981,8 @@ class MultiImageWindow(wxPanel):
       methods = prototype.methods_flat_category("Features")
 
       self.sort_choices = ["", "ncols", "nrows", "label", "id",
-                           "classification_state", "page_offset_x()",
-                           "page_offset_y()"]
+                           "classification_state", "offset_x()",
+                           "offset_y()"]
       for method in methods:
          self.sort_choices.append(method[0] + "()")
       self.sort_combo.Clear()

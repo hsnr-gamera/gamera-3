@@ -49,8 +49,7 @@ class otsu_threshold(PluginFunction):
     return_type = ImageType([ONEBIT], "output")
     testable = 1
     def __call__(image, storage_format = 0):
-        return _threshold.threshold(
-            image, image.otsu_find_threshold(), storage_format)
+        return _threshold.otsu_threshold(image, storage_format)
     __call__ = staticmethod(__call__)
     
 otsu_threshold = otsu_threshold()

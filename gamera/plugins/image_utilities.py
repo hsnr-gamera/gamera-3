@@ -74,7 +74,8 @@ class histogram(PluginFunction):
     def __call__(image):
         hist = _image_utilities.histogram(image)
         gui = gamera.config.get_option("__gui")
-        gui.ShowHistogram(hist)
+        if gui:
+            gui.ShowHistogram(hist)
         return hist
     __call__ = staticmethod(__call__)
 histogram = histogram()

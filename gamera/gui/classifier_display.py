@@ -1081,7 +1081,7 @@ class ClassifierWizard(Wizard):
          self.dlg_select_image.title = ("That image is not valid." +
                                         "Please try again.")
          return self.dlg_select_image
-      if (self.locals[self.context_image].get_type() == "GreyScale"):
+      if (self.locals[self.context_image].data.pixel_type == GREYSCALE):
          self.shell.run(self.context_image + ".threshold()")
       return self.dlg_select_ccs
 
@@ -1119,13 +1119,13 @@ class ClassifierWizard(Wizard):
                dlg.Destroy()
          self.production_database = "'" + production_database + "'"
       if self.production_database == 'None' and self.ccs != 'None':
-         self.locals[self.ccs][0].methods_flat_category("Features")
-         ff.sort()
+         self.ff = self.locals[self.ccs][0].methods_flat_category("Features")
+         self.ff.sort()
          feature_controls = []
          self.feature_list = []
-         for x in ff:
-            feature_controls.append(Check('', str(x.__name__), default=1))
-            self.feature_list.append(x.__name__)
+         for key, val in self.ff:
+            feature_controls.append(Check('', key, default=1))
+            self.feature_list.append(key)
          self.dlg_features = Args(
             feature_controls,
             name=name, function='cb_features',

@@ -108,6 +108,16 @@ namespace Gamera {
   }
 
   template<class T>
+  void erode(T& image) {
+    erode_dilate(image, 1, 1, 0);
+  }
+
+  template<class T>
+  void dilate(T& image) {
+    erode_dilate(image, 1, 0, 0);
+  }
+
+  template<class T>
   class Rank {
     unsigned int rank;
   public:

@@ -51,8 +51,23 @@ area = area()
 
 class aspect_ratio(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Float("aspect_ration")
+    return_type = Float("aspect_ratio")
 aspect_ratio = aspect_ratio()
+
+class compactness(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = Float("compactness")
+compactness = compactness()
+
+class volume16regions(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = FloatVector("volumes")
+volume16regions = volume16regions()
+
+class volume64regions(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = FloatVector("volumes")
+volume64regions = volume64regions()
 
 class FeaturesModule(PluginModule):
     category = "Features"
@@ -60,7 +75,8 @@ class FeaturesModule(PluginModule):
     cpp_namespaces = ["Gamera"]
     functions = [black_area, moments, nholes,
                  nholes_extended, volume, area,
-                 aspect_ratio]
+                 aspect_ratio, compactness,
+                 volume16regions, volume64regions]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()

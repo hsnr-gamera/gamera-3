@@ -175,34 +175,34 @@ namespace Gamera {
     ImageView(const self& other, size_t offset_y,
 	       size_t offset_x, size_t nrows, size_t ncols)
       : base_type(offset_y, offset_x, nrows, ncols) {
-      m_image_data = other.data();
+      m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }
     ImageView(const self& other, const Rect& rect)
       : base_type(rect) {
-      m_image_data = other.data();
+      m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }
     ImageView(const self& other, const Point& upper_left,
 	       const Point& lower_right)
       : base_type(upper_left, lower_right) {
-      m_image_data = other.data();
+      m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }
     ImageView(const self& other, const Point& upper_left,
 	       const Size& size)
       : base_type(upper_left, size) {
-      m_image_data = other.data();
+      m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }
     ImageView(const self& other, const Point& upper_left,
 	       const Dimensions& dim)
       : base_type(upper_left, dim) {
-      m_image_data = other.data();
+      m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }

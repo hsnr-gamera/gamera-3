@@ -25,6 +25,8 @@
 #include <map>
 #include <cmath>
 #include <algorithm>
+#include <exception>
+#include <stdexcept>
 
 namespace Gamera {
   namespace kNN {
@@ -45,7 +47,7 @@ namespace Gamera {
 				      IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * std::abs(*known - *unknown);
+	distance += *weight * std::abs(*unknown - *known);
       return distance;
     }
 
@@ -63,7 +65,7 @@ namespace Gamera {
 				     IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * std::sqrt(*known * *known - *unknown * *unknown);
+	distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
       return distance;
     }
 
@@ -81,7 +83,7 @@ namespace Gamera {
 					  IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * std::abs(*known * *known - *unknown * *unknown);
+	distance += *weight * ((*unknown - *known) * (*unknown - *known));
       return distance;
     }
 
@@ -95,7 +97,7 @@ namespace Gamera {
       search needs to be performed call reset (at which point add for each
       element will need to be called again).
     */
-    template<class IdType>
+    template<class IdType, class Comp>
     class kNearestNeighbors {
     public:
       /*
@@ -184,16 +186,19 @@ namespace Gamera {
 	*/
 	if (m_additions < m_nn.size())
 	  m_nn.resize(m_additions);
+	if (m_nn.size() == 0)
+	  throw std::range_error("majority called without enough valid neighbors.");
 	// short circuit for k == 1
-	if (m_nn.size() == 1)
+	if (m_nn.size() == 1) {
 	  return std::make_pair(m_nn[0].id, m_nn[0].distance);
+	}
 	/*
 	  Create a histogram of the ids in the nearest neighbors. A map
 	  is used because the id_type could be anything. Additionally, even
 	  if id_type was an integer there is no garuntee that they are small,
 	  ordered numbers (making a vector impractical).
 	*/
-	typedef std::map<id_type, IdStat> map_type;
+	typedef std::map<id_type, IdStat, Comp> map_type;
 	map_type id_map;
 	typename map_type::iterator current;
 	for (typename vec_type::iterator i = m_nn.begin();
@@ -213,10 +218,10 @@ namespace Gamera {
 	  Now that we have the histogram we can take the majority if there
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
-	if (id_map.size() == 1)
+	if (id_map.size() == 1) {
 	  return std::make_pair(id_map.begin()->first,
 				id_map.begin()->second.min_distance);
-	else {
+	} else {
 	  /*
 	    Find the id(s) with the maximum
 	  */

@@ -37,6 +37,8 @@ namespace Gamera {
       // Convenience typedefs
       typedef RowIterator self;
       typedef RowIteratorBase<Image, self, T> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
 
       // Constructor
       RowIterator(Image* image, const T iterator) : base(image, iterator) { }
@@ -50,6 +52,14 @@ namespace Gamera {
 	return &*m_iterator;
       }
 
+      value_type get() const {
+	return m_accessor(m_iterator);
+      }
+
+      void set(const value_type& v) {
+	m_accessor.set(v, m_iterator);
+      }
+
       iterator begin() const {
 	return iterator(m_image, m_iterator);
       }
@@ -57,6 +67,8 @@ namespace Gamera {
       iterator end() const {
 	return iterator(m_image, m_iterator + m_image->ncols());
       }
+    private:
+      accessor m_accessor;
     };
 
     template<class Image, class T>
@@ -68,6 +80,8 @@ namespace Gamera {
       // Convenience typedefs
       typedef ColIterator self;
       typedef ColIteratorBase<Image, self, T> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
 
       // Constructor
       ColIterator(Image* image, const T iterator) : base(image, iterator) { }
@@ -81,12 +95,23 @@ namespace Gamera {
       }
 
       // Image specific
+      value_type get() const {
+	return m_accessor(m_iterator);
+      }
+
+      void set(const value_type& v) {
+	m_accessor.set(v, m_iterator);
+      }
+
       iterator begin() const {
 	return iterator(m_image, m_iterator);
       }
+
       iterator end() const {
 	return iterator(m_image, m_iterator) + m_image->nrows();
       }
+    private:
+      accessor m_accessor;
     };
 
     template<class Image, class T> class ConstColIterator;
@@ -100,6 +125,8 @@ namespace Gamera {
       // Convenience typedefs
       typedef ConstRowIterator self;
       typedef RowIteratorBase<Image, self, T> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
 
       // Constructor
       ConstRowIterator(Image* image, const T iterator) : base(image, iterator) { }
@@ -113,6 +140,10 @@ namespace Gamera {
 	return &*m_iterator;
       }
 
+      value_type get() const {
+	return m_accessor(m_iterator);
+      }
+
       iterator begin() const {
 	return iterator(m_image, m_iterator);
       }
@@ -120,6 +151,8 @@ namespace Gamera {
       iterator end() const {
 	return iterator(m_image, m_iterator + m_image->ncols());
       }
+    private:
+      accessor m_accessor;
     };
 
     template<class Image, class T>
@@ -131,6 +164,8 @@ namespace Gamera {
       // Convenience typedefs
       typedef ConstColIterator self;
       typedef ColIteratorBase<Image, self, T> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
 
       // Constructor
       ConstColIterator(Image* image, const T iterator) : base(image, iterator) { }
@@ -144,12 +179,20 @@ namespace Gamera {
       }
 
       // Image specific
+ 
+      value_type get() const {
+	return m_accessor(m_iterator);
+      }
+
       iterator begin() const {
 	return iterator(m_image, m_iterator);
       }
+
       iterator end() const {
 	return iterator(m_image, m_iterator) + m_image->nrows();
       }
+    private:
+      accessor m_accessor;
     };
 
 
@@ -159,6 +202,8 @@ namespace Gamera {
     public:
       typedef VecIterator self;
       typedef VecIteratorBase<Image, Row, Col, self> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
       // Constructor
       VecIterator(const Row iterator) : base(iterator) { }
       VecIterator() { }
@@ -166,6 +211,14 @@ namespace Gamera {
       // Operators
       typename base::reference operator*() const { return *m_coliterator; }
       typename base::pointer operator->() const { return &*m_coliterator; }
+      value_type get() const {
+	return m_accessor(m_coliterator);
+      }
+      void set(const value_type& v) {
+	m_accessor.set(v, m_coliterator);
+      }
+    private:
+      accessor m_accessor;
     };
 
     template<class Image, class Row, class Col>
@@ -174,6 +227,9 @@ namespace Gamera {
     public:
       typedef ConstVecIterator self;
       typedef VecIteratorBase<Image, Row, Col, self> base;
+      typedef typename base::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
       // Constructor
       ConstVecIterator(const Row iterator) : base(iterator) { }
       ConstVecIterator() { }
@@ -181,6 +237,11 @@ namespace Gamera {
       // Operators
       typename Image::value_type operator*() const { return *m_coliterator; }
       typename base::pointer operator->() const { return &*m_coliterator; }
+      value_type get() const {
+	return m_accessor(m_coliterator);
+      }
+    private:
+      accessor m_accessor;
     };
 
   } // namespace

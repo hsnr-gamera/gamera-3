@@ -19,22 +19,89 @@
 
 #include "gameramodule.hpp"
 #include "knn.hpp"
+#include <string.h>
 
 using namespace Gamera;
 using namespace Gamera::kNN;
 
 extern "C" {
   void initknn(void);
+  static PyObject* knn_new(PyObject* pytype, PyObject* args, PyObject* kwds);
+  static void knn_dealloc(PyObject* self);
   static PyObject* knn_classify_using_list(PyObject* self, PyObject* args);
+}
+
+struct KnnObject {
+  PyObject_HEAD
+};
+
+static PyTypeObject KnnType {
+  PyObject_HEAD_INIT(NULL)
+  0,
+};
+
+PyMethodDef knn_methods[] = {
+  { "classify_with_images", knn_classify_with_images, METH_VARARGS,
+    "foo" },
+  { NULL }
+};
+
+// for type checking images - see initknn.
+static PyTypeObject* imagebase_type;
+
+static PyObject* knn_new(PyObject* pytype, PyObject* args, PyObject* kwds) {
+  KnnObject* o;
+  o = (KnnObject*)pytype->tp_alloc(pytype, 0);
+  return (PyObject*)o;
+}
+
+static void knn_dealloc(PyObject* self) {
+  self->ob_type->tp_free(self);
+}
+
+/*
+  get the feature vector from an image. image argument _must_ an image - no
+  type checking is performed.
+*/
+inline int image_get_fv(PyObject* image, double** buf, int* len) {
+  ImageObject* x = (ImageObject*)image;
+  if (PyObject_AsReadBuffer(x->m_features, (const void**)buf, len) < 0) {
+    PyErr_SetString(PyExc_TypeError, "knn: Could not use image as read buffer.");
+    return -1;
+  }
+  return buf;
+}
+
+/*
+  get the id_name from an image. The image argument _must_ be n image -
+  no type checking is performed.
+*/
+inline int image_get_id_name(PyObject* image, char** id_name) {
+  ImageObject* x = (ImageObject*)image;
+  // PyList_Size shoule type check the argument
+  if (PyList_Size(x->m_id_name) < 1) {
+    PyErr_SetString(PyExc_TypeError, "knn: id_name not a list or list is empty.");
+    return -1;
+  }
+  PyObject* id_tuple = PyList_GET_ITEM(x->m_id_name, 0);
+  if (PyTuple_Size(id_tuple) != 2) {
+    PyErr_SetString(PyExc_TypeError, "knn: id_name is not a tuple or is the wrong size.");
+    return -1;
+  }
+  PyObject* id = PyTuple_GET_ITEM(id_tuple, 1);
+  *id_name = PyString_AsString(id);
+  if (*id_name == 0) {
+    PyErr_SetString(PyExc_TypeError, "knn: could not get string from id_name tuple.");
+    return -1;
+  }
 }
 
 /*
   Compute the distance between a known and an unknown feature
   vector with weights.
 */
-inline int compute_distance(PyObject* known, PyObject* unknown,
-			    PyObject* weights, double* distance) {
-  const void* buf;
+inline int compute_distance(PyObject* known, PyObject* unknown, double* distance) {
+  double* buf;
   int known_len, len;
   if (PyObject_AsReadBuffer(known, &buf, &known_len) < 0)
     return -1;
@@ -64,20 +131,13 @@ inline int compute_distance(PyObject* known, PyObject* unknown,
   return 0;
 }
 
-
-#define CHECK_ITEM(tuple) \
-  if (!PyTuple_Check(tuple)) { \
-    PyErr_SetString(PyExc_TypeError, "Known items must be a tuple!"); \
-    return 0; \
-  } else if (PyTuple_GET_SIZE(tuple) != 2) { \
-    PyErr_SetString(PyExc_IndexError, "Tuple must be 2 elements!"); \
-    return 0; \
+struct ltstr {
+  bool operator()(const char* s1, const char* s2) const {
+    return strcmp(s1, s2) < 0;
   }
+};
 
-static char knn_classify_using_list_doc[] = "classify_list(unknown, known)
-Classify an unknown object represented by an array using a list of known
-objects.";
-static PyObject* knn_classify_using_list(PyObject* self, PyObject* args) {
+static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   PyObject* unknown, *known, *weights;
   if (PyArg_ParseTuple(args, "OOO", &known, &unknown, &weights) <= 0) {
     return 0;
@@ -87,7 +147,7 @@ static PyObject* knn_classify_using_list(PyObject* self, PyObject* args) {
     return 0;
   }
   int known_size = PyList_Size(known);
-  if (known_size <= 0) {
+  if (known_size == 0) {
     PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
     return 0;
   }
@@ -95,9 +155,9 @@ static PyObject* knn_classify_using_list(PyObject* self, PyObject* args) {
   kNearestNeighbors<PyObject*> knn(1);
   for (int i = 0; i < known_size; ++i) {
     PyObject* cur = PyList_GET_ITEM(known, i);
-    CHECK_ITEM(cur);
+    
     double distance;
-    if (compute_distance(PyTuple_GET_ITEM(cur, 1), unknown, weights,
+    if (compute_distance(cur, unknown, weights,
 			 &distance) < 0)
       return 0;
     knn.add(PyTuple_GET_ITEM(cur, 0), distance);
@@ -110,15 +170,17 @@ static PyObject* knn_classify_using_list(PyObject* self, PyObject* args) {
   return ans;
 }
 
-
-PyMethodDef knn_methods[] = {
-  { "classify_using_list", knn_classify_using_list, METH_VARARGS,
-    knn_classify_using_list_doc },
-  { NULL, NULL },
-};
-
-
 DL_EXPORT(void) initknn(void) {
   Py_InitModule("knn", knn_methods);
-  
+  PyObject* mod = PyImport_ImportModule("gamera.gameracore");
+  if (mod == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
+    return;
+  }
+  PyObject* dict = PyModule_GetDict(mod);
+  if (dict == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+    return;
+  }
+  imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
 }

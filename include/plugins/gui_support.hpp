@@ -130,10 +130,11 @@ namespace {
       char* i = data;
       typename Mat::const_row_iterator row = mat.row_begin();
       typename Mat::const_col_iterator col;
+      ImageAccessor<OneBitPixel> acc;
       OneBitPixel tmp;
       for (; row != mat.row_end(); ++row) {
 	for (col = row.begin(); col != row.end(); ++col) {
-	  tmp = *col;
+	  tmp = acc(col);
 	  if (is_white(tmp))
 	    tmp = 255;
 	  else if (is_black(tmp))

@@ -79,7 +79,7 @@ if _has_gui == _WX_GUI:
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
                      5)
-         ok = wxPython.wx.wxButton(self,
+         ok = wxPython.wx.wxButton(self.window,
                                    wxPython.wx.wxID_OK,
                                    "Next >")
          ok.SetDefault()
@@ -558,11 +558,11 @@ if _has_gui == _WX_GUI:
    class _guiCheck:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxCheckBox(parent, -1, self.check_box)
-         self.SetValue(self.default)
+         self.control.SetValue(self.default)
          return self
 
       def get(self):
-         return self.controlGetValue()
+         return self.control.GetValue()
 else:
    class _guiCheck:
       pass

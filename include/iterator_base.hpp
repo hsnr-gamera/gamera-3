@@ -53,7 +53,6 @@ namespace Gamera {
 
     // Convenience typedefs
     typedef Iterator self;
-    typedef ImageAccessor<value_type> accessor;
     
     // Constructor
     RowIteratorBase(Image* image, const T iterator)
@@ -124,16 +123,9 @@ namespace Gamera {
     size_t col() const {
       return col_number(m_image, m_iterator);
     }
-    value_type get() const {
-      return m_accessor(m_iterator);
-    }
-    void set(const value_type& v) {
-      m_accessor.set(v, m_iterator);
-    }
   public:
     Image* m_image;
     T m_iterator;
-    accessor m_accessor;
   };
 
   template<class Image, class Iterator, class T>
@@ -145,9 +137,6 @@ namespace Gamera {
     typedef typename Image::pointer pointer;
     typedef typename Image::difference_type difference_type;
     typedef std::random_access_iterator_tag iterator_category;
-
-    // Typedefs for Cols
-    typedef ImageAccessor<value_type> accessor;
 
     // Convenience typedefs
     typedef Iterator self;
@@ -222,16 +211,9 @@ namespace Gamera {
     size_t col() const {
       return col_number(m_image, m_iterator);
     }
-    value_type get() const {
-      return m_accessor(m_iterator);
-    }
-    void set(const value_type& v) {
-      m_accessor.set(v, m_iterator);
-    }
   public:
     T m_iterator;
     Image* m_image;
-    accessor m_accessor;
   };
 
   template<class Image, class Row, class Col, class Iterator>
@@ -246,7 +228,6 @@ namespace Gamera {
     
     // Convenience typedefs
     typedef Iterator self;
-    typedef ImageAccessor<value_type> accessor;
 			
     // Constructor
     VecIteratorBase(const Row iterator)
@@ -368,16 +349,9 @@ namespace Gamera {
 	return ((nrows - 1) * col_length) + other_col_distance + col_distance;
       }
     }
-    value_type get() const {
-      return m_accessor(m_iterator);
-    }
-    void set(const value_type& v) {
-      m_accessor.set(v, m_iterator);
-    }
   public:
     Row m_rowiterator;
     Col m_coliterator;
-    accessor m_accessor;
   };
 }
 

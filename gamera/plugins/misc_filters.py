@@ -20,20 +20,15 @@
 from gamera.plugin import *
 
 class outline(PluginFunction):
-    pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
-    def __call__(image):
-        new_image = image.image_copy()
-        new_image.dilate()
-        new_image.xor_image(image)
-        return new_image
-    __call__ = staticmethod(__call__)
+outline = outline()
 
 class MiscFiltersModule(PluginModule):
-    pure_python = 1
     category = "Filter"
     functions = [outline]
+    cpp_headers = ["misc_filters.hpp"]
+    cpp_namespaces = ["Gamera"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = MiscFiltersModule()

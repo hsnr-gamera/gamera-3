@@ -20,7 +20,9 @@
 import core # grab all of the standard gamera modules
 import string, sys, random, os, os.path
 import util, paths, database
+import array
 import knn
+from gamera import config
 
 class SymbolTable:
    def __init__(self):
@@ -211,7 +213,7 @@ class Classifier:
                 current_database=None, symbol_table=None, parent_image=None,
                 features=None, gui=0):
       self._display = None
-      self.gui = gamera.gui
+      self.gui = config.get_option("__gui")
       self.parent_image = None
       self.is_dirty = 0
       self.production_database_filename = production_database
@@ -237,91 +239,84 @@ class Classifier:
       else:
          self.progress = self.dev_null
 
-      try:
-         if (symbol_table):
-            self.load_symbol_table(symbol_table)
-         self.progress(10)
+      if (symbol_table):
+         self.load_symbol_table(symbol_table)
+      self.progress(10)
 
-         #######################################################################
-         # For now, the current_database is just a filename for saving. The real
-         # current database is the glyphs that were passed in
-         if (current_database):
-            self.load_current_database(self.current_database_filename)
+      #######################################################################
+      # For now, the current_database is just a filename for saving. The real
+      # current database is the glyphs that were passed in
+      if (current_database):
+         self.load_current_database(self.current_database_filename)
+      else:
+         self.current_database = glyphs
+      self.progress(30)
+
+      ###################################################################
+      # Load the databases - both the production database and the current
+      # database are just a list of CC
+      self.knn_database = None
+      if (production_database):
+         self.load_production_database(self.production_database_filename)
+      else:
+         self.production_database = []
+         # because we didn't have a production database file we need to set
+         # up some additional things
+
+      # Find feature functions, if we haven't already loaded them from
+      # a file
+      if self.feature_functions == []:
+         self.num_features = 0
+         if features == None:
+            self.current_database[0].find_methods_flat_category("Features")
+            assert(ff != [])
+            for x in ff:
+               self.feature_functions.append([x[0], 0])
          else:
-            self.current_database = glyphs
-         self.progress(30)
+            for f in features:
+               self.feature_functions.append([f, 0])
+      self.progress(50)
 
-         ###################################################################
-         # Load the databases - both the production database and the current
-         # database are just a list of CC
-         self.knn_database = None
-         if (production_database):
-            self.load_production_database(self.production_database_filename)
-         else:
-            self.production_database = []
-            # because we didn't have a production database file we need to set
-            # up some additional things
+      if self.num_features == 0:
+         self.find_number_of_features_in_each_function()
+         self.num_features = len(self.features_list)
 
-         # Find feature functions, if we haven't already loaded them from
-         # a file
-         if self.feature_functions == []:
-            self.num_features = 0
-            if features == None:
-               self.current_database[0].find_methods_flat_category("Features")
-               assert(ff != [])
-               for x in ff:
-                  self.feature_functions.append([x[0], 0])
-            else:
-               for f in features:
-                  self.feature_functions.append([f, 0])
-         self.progress(50)
-
-         if self.num_features == 0:
-            self.find_number_of_features_in_each_function()
-            self.num_features = len(self.features_list)
-
-         if self.current_database != []:
-            prog = 30.0 / len(self.current_database)
-            if not current_database:
-               for i in range(len(self.current_database)):
-                  current = self.current_database[i]
-                  self.set_features(current)
-                  self.progress(int(50 + i * prog))
-         self.progress(80)
-
-         # get the number of features
-         if self.knn_database == None:
-            self.knn_database = knn.FloatDatabase(self.num_k,
-                                                  self.num_features)
-
-         if self.current_database != []:
-            prog = 20.0 / len(self.current_database)
+      if self.current_database != []:
+         prog = 30.0 / len(self.current_database)
+         if not current_database:
             for i in range(len(self.current_database)):
-               g = self.current_database[i]
-               if not g.unclassified():
-                  try:
-                     self.symbol_table.get_id_by_name(g.id_name[0])
-                  except:
-                     g.id_name = []
-                     g.classification_state = 0
-                     continue
-                  if g.manually_classified():
-                     self.add_glyph_to_database(x)
-               self.progress(int(80 + i * prog))
+               current = self.current_database[i]
+               self.set_features(current)
+               self.progress(int(50 + i * prog))
+      self.progress(80)
 
-         self.progress(99)
-         self.current_database[0].methods_flat_category("Action")
-         for f in sf:
-            self.symbol_table.add_if_not_exists("action." + f[0])
+      # get the number of features
+      if self.knn_database == None:
+         self.knn_database = knn.FloatDatabase(self.num_k,
+                                               self.num_features)
 
-         self.progress(100)
-         self.symbol_table.add_rename_listener(self)
-      except Exception, e:
-         if self.gui != None:
-            self.progress_dialog.Destroy()
-            self.progress = None
-            self.progress_dialog = None
-         raise e
+      if self.current_database != []:
+         prog = 20.0 / len(self.current_database)
+         for i in range(len(self.current_database)):
+            g = self.current_database[i]
+            if not g.unclassified():
+               try:
+                  self.symbol_table.get_id_by_name(g.id_name[0])
+               except:
+                  g.id_name = []
+                  g.classification_state = 0
+                  continue
+               if g.manually_classified():
+                  self.add_glyph_to_database(x)
+            self.progress(int(80 + i * prog))
+
+      self.progress(99)
+      self.current_database[0].methods_flat_category("Action")
+      for f in sf:
+         self.symbol_table.add_if_not_exists("action." + f[0])
+
+      self.progress(100)
+      self.symbol_table.add_rename_listener(self)
 
 
    def __del__(self):
@@ -352,7 +347,7 @@ class Classifier:
       self._regenerate_features()
 
    def find_number_of_features_in_each_function(self):
-      tmp_glyph = core.Image(10, 10, "OneBit")
+      tmp_glyph = core.Image(0, 0, 10, 10, core.ONEBIT, core.DENSE)
       for f in self.feature_functions:
          features = getattr(tmp_glyph, f[0])()
          try:
@@ -415,9 +410,8 @@ class Classifier:
             self._display = self.gui.ShowClassifier(self, None, None)
 
    def set_features(self, glyph):
-      assert isinstance(glyph, core.Image)
       glyph.feature_names = self.features_list
-      glyph.features = knn.FeatureVector(self.num_features)
+      glyph.features = array.array('d', [0.0] * self.num_features)
       i = 0
       for f in self.feature_functions:
          features = getattr(glyph, f[0])()

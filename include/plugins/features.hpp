@@ -22,6 +22,7 @@
 #define kwm10242002_features
 
 #include "gamera.hpp"
+#include "misc_filters.hpp"
 #include <cmath>
 #include <vector>
 
@@ -185,6 +186,13 @@ namespace Gamera {
     return output;
   }
 
+  /*
+    nholes_extended
+
+    This divides the image into quarters (both horizontally
+    and vertically) and computes the number of holes on
+    each of the sections.
+  */
   template<class T>
   FloatVector* nholes_extended(const T& m) {
     FloatVector* output = new FloatVector(8);
@@ -215,5 +223,78 @@ namespace Gamera {
   feature_t aspect_ratio(const T& image) {
     return feature_t(image.ncols()) / feature_t(image.nrows());
   }
+
+  /*
+    compactness
+    
+    compactness is ratio of the volume of the outline of an image to
+    the volume of the image.
+  */
+  template<class T>
+  feature_t compactness(const T& image) {
+    feature_t vol = volume(image);
+    if (vol == 0)
+      vol = .0001;
+    typename ImageFactory<T>::view_type* ol = outline(image);
+    feature_t return_value = volume(*ol) / vol * image.scaling();
+    delete ol->data();
+    delete ol;
+    return return_value;
+  }
+
+  /*
+    volume16regions
+
+    This function divides the image into 16 regions and takes the volume of
+    each of those regions.
+  */
+  template<class T>
+  FloatVector* volume16regions(const T& image) {
+    float quarter_rows = image.height() / 4.0;
+    float quarter_cols = image.width() / 4.0;
+    size_t start_row = image.offset_y();
+    size_t start_col = image.offset_x();
+    FloatVector* volumes = new FloatVector(16);
+    for (size_t i = 0; i < 4; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+	T tmp(image, start_row, start_col,
+	      size_t(quarter_rows + 1),
+	      size_t(quarter_cols + 1));
+	(*volumes)[i * 4 + j] = volume(tmp);
+	start_row += size_t(quarter_rows);
+      }
+      start_col += size_t(quarter_cols);
+      start_row = image.offset_y();
+    }
+    return volumes;
+  }
+
+  /*
+    volume64regions
+
+    This function divides the image into 64 regions and takes the volume of
+    each of those regions.
+  */
+  template<class T>
+  FloatVector* volume64regions(const T& image) {
+    float quarter_rows = image.height() / 8.0;
+    float quarter_cols = image.width() / 8.0;
+    size_t start_row = image.offset_y();
+    size_t start_col = image.offset_x();
+    FloatVector* volumes = new FloatVector(64);
+    for (size_t i = 0; i < 8; ++i) {
+      for (size_t j = 0; j < 8; ++j) {
+	T tmp(image, start_row, start_col,
+	      size_t(quarter_rows + 1),
+	      size_t(quarter_cols + 1));
+	(*volumes)[i * 8 + j] = volume(tmp);
+	start_row += size_t(quarter_rows);
+      }
+      start_col += size_t(quarter_cols);
+      start_row = image.offset_y();
+    }
+    return volumes;
+  }
+
 }
 #endif

@@ -22,18 +22,10 @@ import _morphology
 
 class erode(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  pure_python = 1
-  def __call__(image):
-    _morphology.erode_dilate(image, 1, 1, 0)
-  __call__ = staticmethod(__call__)
 erode = erode()
 
 class dilate(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  pure_python = 1
-  def __call__(image):
-    _morphology.erode_dilate(image, 1, 0, 0)
-  __call__ = staticmethod(__call__)
 dilate = dilate()
 
 class erode_dilate(PluginFunction):

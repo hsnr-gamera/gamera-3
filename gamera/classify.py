@@ -271,21 +271,35 @@ existing training data."""
    # Features
    def get_feature_functions(self):
       return self.feature_functions
+
+   def generate_features(self, glyphs):
+      """Generates features for all the given glyphs."""
+      import time
+      progress = util.ProgressFactory("Generating features...",
+                                      len(glyphs) / 16)
+      feature_functions = self.get_feature_functions()
+      try:
+         for i, glyph in enumerate(glyphs):
+            glyph.generate_features(feature_functions)
+            if i & 0xf == 0:
+               progress.step()
+      finally:
+         progress.kill()
    
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all', perform_splits=True):
       """
-      database: a list of database to initialize the classifier with.
-      features: a list of strings naming the features that will be used in the
-                classifier.
-      perform_splits: (boolean) true if glyphs classified as split.* should be
-                split."""
+database: a list of database to initialize the classifier with.
+features: a list of strings naming the features that will be used in the
+          classifier.
+perform_splits: (boolean) true if glyphs classified as split.* should be
+          split."""
       self.is_dirty = False
       self._database = database
       self.features = features
-      if type(database) == type([]):
+      if type(database) == list:
          self.change_feature_set(features)
-         self.instantiate_from_images(database)
+         self.set_glyphs(database)
       else:
          self.unserialize(database)
 
@@ -339,9 +353,9 @@ class NonInteractiveClassifier(_Classifier):
    #########################################
    # Features
    def change_feature_set(self, features):
-      if type(self._database) == type([]) and len(self._database):
+      if type(self._database) == list and len(self._database):
          self.feature_functions = self._database[0].get_feature_functions(features)
-         self.instantiate_from_images(self._database)
+         self.set_glyphs(self._database)
 
 class InteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all',
@@ -418,25 +432,12 @@ class InteractiveClassifier(_Classifier):
 
    def change_feature_set(self, features):
       """Change the set of features used in the classifier.  features is a list
-      of strings, naming the feature functions to be used."""
+of strings, naming the feature functions to be used."""
       self.is_dirty = True
       if len(self._database):
          self.feature_functions = self._database.keys()[0].get_feature_functions(features)
          self.generate_features(self._database)
    
-   def generate_features(self, glyphs):
-      """Generates features for all the given glyphs."""
-      import time
-      progress = util.ProgressFactory("Generating features...",
-                                      len(glyphs) / 16)
-      feature_functions = self.get_feature_functions()
-      try:
-         for i, glyph in enumerate(glyphs):
-            glyph.generate_features(feature_functions)
-            if i & 0xf == 0:
-               progress.step()
-      finally:
-         progress.kill()
 
    ########################################
    # MANUAL CLASSIFICATION

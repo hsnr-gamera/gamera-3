@@ -148,6 +148,11 @@ namespace Gamera {
    */
   typedef std::vector<Point> PointVector;
 
+  template<class T>
+  static inline T sign(const T& x) {
+    return ((x) > 0 ? 1 : (x) < 0 ? -1 : 0);
+  }
+  
 }
 
 #endif

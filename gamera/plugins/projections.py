@@ -87,7 +87,7 @@ this method to small angles.
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
-    args = Args(FloatVector("Rotation angles"))
+    args = Args([FloatVector("Rotation angles")])
     return_type = Class("nested_list")
     author = "Christoph Dalitz"
 
@@ -110,7 +110,7 @@ this method to small angles.
 .. _rotateShear: deformations.html#rotateshear
 """
     self_type = ImageType([ONEBIT])
-    args = Args(FloatVector("Rotation angles"))
+    args = Args([FloatVector("Rotation angles")])
     return_type = Class("nested_list")
     author = "Christoph Dalitz"
 

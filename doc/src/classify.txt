@@ -33,11 +33,13 @@ Interactive classifier
   interactively. 
 
 Noninteractive classifier
-  Noninteractive classifiers generally take a complete database of
-  training data and then create a highly optimised data structure for
+  Noninteractive classifiers take a complete database of
+  training data and then create an optimised data structure for
   classification.  Because building that data structure can take a
   considerable amount of time, new training examples cannot be added
-  on the fly.
+  on the fly.  In addition, noninteractive classifiers are
+  serializable to binary classifier-specific file formats, which save
+  and load much faster than the Gamera XML format.
 
 Types of classifiers
 ''''''''''''''''''''
@@ -52,7 +54,7 @@ are:
 
  - kNNNonInteractive_
      Noninteractive *k* nearest neighbor classifier.  The weights of
-     the dimensions are optimised using a genetic algorithm.
+     the dimensions can be optimised using a genetic algorithm.
 
 
 Classifying images without a classifier
@@ -109,7 +111,7 @@ Methods
 Images have a number of methods for managing their classification
 state.  Use of these methods is highly recommended over changing the
 ``id_name`` variable directly.  These methods are documented is the
-`classification section of the plugin documenation`__.
+`classification section of the plugin documentation`__.
 
 .. __: plugins.html#classification
 
@@ -147,6 +149,9 @@ Creates a new classifier instance.
 	classification_state == MANUAL) will be used as training data
         for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
         classified images will be ignored.
+
+	When initializing a noninteractive classifier, the database
+	*must* be non-empty.
 
 *features*
 	A list of feature function names to use for classification.
@@ -258,7 +263,13 @@ those cases.  It attempts to group connected components with others
 nearby in order to create groupings that are more like glyphs in the
 database.  Needless to say, this approach is much slower than the
 "one-connected-component-at-a-time" approach, but can produce
-considerably better results on certain images.  
+considerably better results on certain images.
+
+To train for grouping, images corresponding to the entire character
+must exist in the database.  For instance, in the Gamera GUI, one
+would select both the dot and stem of a lower-case *i* and train it as
+``_group.lower.i``.  This will join the two connected components into
+a single image and then add it to the database.
 
 The algorithm is described in more detail in our paper on `correcting
 broken characters`__ (PDF).
@@ -276,11 +287,16 @@ together if doing so results in a higher global confidence.  Each part
 of a joined glyph is classified as HEURISTIC with the prefix
 ``_group``.
 
+Returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of
+glyphs that were created by classifying any glyphs as a split (See
+Initialization_) or grouping.  *remove* is a list of glyphs that are
+no longer valid due to reclassifying glyphs from a split to something else.  
+
 *glyphs*
   The list of glyphs to group and classify.
 
 *grouping_function*
-  A function (reference) that determines how glyphs are initially
+  A function that determines how glyphs are initially
   combined.  This function must take exactly two arguments, which the
   grouping algorithm will pass an arbitrary pair of glyphs from
   *glyphs*.  If the two glyphs should be considered for grouping, the
@@ -381,7 +397,12 @@ type.
 **serialize** (FileSave *filename*)
 
 Saves the classifier-specific settings *and* data in an optimized and
-classifer-specific format.
+classifer-specific format.  
+
+.. note:: 
+   It is good practice to retain the XML
+   file, since it is portable across platforms and to future versions of
+   Gamera.  The binary format is not guaranteed to be portable.
 
 ``unserialize``
 ...............
@@ -511,6 +532,26 @@ training usually takes place.
 The *k* Nearest Neighbor classifier is a concrete example of the
 classifier API.  It adds some methods of its own.
 
+``kNNNonInteractive`` has a number of advantages over
+``kNNInteractive``:
+
+- Each feature is normalized independently in the range (0, 1).  This
+  reduces the bias toward features that generate large values, such as
+  ``area``.  This normalization may change the classifications that
+  the classifier makes, however.
+
+- The weights of the features can be optimized using a genetic
+  algorithm.  (See start_optimizing_).
+
+- The training data can be serialized to a classifier-specific binary file
+  format.  This format saves and loads much faster than the Gamera XML
+  file format.
+
+.. note:: 
+   It is good practice to retain the XML
+   file, since it is portable across platforms and to future versions of
+   Gamera.  The binary format is not guaranteed to be portable.
+
 All ``kNN`` classes
 '''''''''''''''''''
 
@@ -545,8 +586,13 @@ Creates a non-interactive copy of the interactive classifier.
 Starts the genetic algorithm optimization of the weights of the
 features.  The optimization is run in a background thread.
 
-By adjusting the weights (relative importance) of the
-individual features, the performance of the classifier is improved.
+For information about genetic algorithms, see [Holland1975]_.
+
+In the genetic algorithm, the population consists of vectors of
+feature weights.  The vectors are evaluated using the
+leave_one_out_ algorithm.  The vectors that perform well are
+allowed to reproduce to producing offspring using combination at a
+randomly chosen split point.
 
 ``stop_optimizing``
 ```````````````````
@@ -572,3 +618,21 @@ one argument which is an instance of the kNN classifier.
 Removes an optimization callback function added using
 add_optimization_callback_.
 
+``leave_one_out``
+`````````````````
+
+float **leave_one_out** ()
+
+Evaluates the database using the leave one out algorithm.
+
+The leave one out algorithm works by successively choosing each
+element in the database to be the element that is "left out".  That
+element is classified using the remaining elements in the database.
+The result of ``leave_one_out`` is the number of correctly classified
+glyphs divided by the total number of glyphs.
+
+References
+----------
+
+.. [Holland1975] Holland, J. H. 1975. *Adaptation in natural and
+   artifical systems.*  University of Michigan Press, Ann Arbor.

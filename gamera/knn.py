@@ -125,7 +125,7 @@ class _kNNBase(gamera.knncore.kNN):
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
 
-   def __init__(self, features=None, num_k=1):
+   def __init__(self, features='all', num_k=1):
       """Constructor for knn object. Features is a list
       of feature names to use for classification. If features
       is none then the default settings will be loaded from a
@@ -326,7 +326,7 @@ class _kNNBase(gamera.knncore.kNN):
          self.change_feature_set(features)
 
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
-   def __init__(self, database=[], features=None, perform_splits=1, num_k=1):
+   def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
       _kNNBase.__init__(self, features, num_k=num_k)
       classify.InteractiveClassifier.__init__(self, database, features, perform_splits)
 
@@ -343,7 +343,7 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
       return False
 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
-   def __init__(self, database=[], features=None, perform_splits=1, num_k=1):
+   def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
       _kNNBase.__init__(self, features, num_k=num_k)
       classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
 

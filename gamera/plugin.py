@@ -42,6 +42,7 @@ class PluginModule:
    version = "1.0"
    author = None
    url = None
+   stable = True
 
    def __init__(self):
       for function in self.functions:

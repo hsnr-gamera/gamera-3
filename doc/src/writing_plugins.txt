@@ -230,7 +230,7 @@ Lastly, we create an instance of this class so the module loader can do its work
   module = ExampleModule()
 
 C++ code
-----------
+--------
 
 Since the ``volume`` method needs to look at individual pixels, it
 is likely going to be much faster written in C++ than in Python.  Below is
@@ -418,11 +418,12 @@ And the corresponding C++ declaration:
   template<class T>
   Image* resize_copy(T& image, int nrows, int ncols, int resize_quality);
 
-The ``args`` member variable specifies a list of the arguments that are
-passable to the method (excluding the first ``self`` argument).  This
-specification is used to generate wrapper code, and also to generate
-dialog boxes in the GUI.  The format of these argument lists are
-documented in `Specifying arguments`__.
+The ``args`` member variable specifies a list of the arguments that
+are passable to the method.  Note that this does not include the first
+"argument" to the C++ function, which always corresponds to
+``self_type``.  This specification is used to generate wrapper code,
+and also to generate dialog boxes in the GUI.  The format of these
+argument lists are documented in `Specifying arguments`__.
 
 .. __: args.html
 
@@ -433,9 +434,8 @@ It doesn't always make sense to have everything be a method of
 images.  For example, you may want to create a function that requires
 a list of images as input.  Fortunately, you can still use the plugin
 system to automate the wrapping/building process, while foregoing the
-automatic inclusion in the Image class (and the right-click context
-menu). It's as simple as setting ``self_type``
-to ``None`` in the metadata object:
+automatic inclusion of the method in the Image class and on the right-click context
+menu. It's as simple as setting ``self_type`` to ``None`` in the metadata object:
 
 .. code:: CPP
 
@@ -480,6 +480,26 @@ functions as well:
   # Python free function
   def filter_small_images(l):
       return [x for x in l if x.ncols > 2 and x.nrows > 2]
+
+Raising exceptions
+------------------
+
+The convention in Gamera is to use exceptions for error conditions
+rather than by using error codes.
+
+C++ exceptions are automatically propagated to Python.  (All C++
+exception types will be converted to Python ``RuntimeError``.)
+
+.. code:: C++
+
+   throw std::runtime_error("Input is out of range");
+
+From pure Python functions, the standard Python exception mechanism
+can be used:
+
+.. code:: Python
+
+   raise RuntimeError("Input is out of range")
 
 Feature generators: A special kind of plugin
 ============================================

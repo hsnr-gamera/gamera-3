@@ -145,6 +145,14 @@ class ImageBase:
          self.to_string())
       return dict
 
+   def __getattr__(self, attr):
+      # This is a hack to help people who may have forgetten to init_gamera
+      init_gamera()
+      if hasattr(self, attr):
+         return getattr(self, attr)
+      else:
+         raise AttributeError("'Image' object has no attribute '%s'." % attr)
+
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
       plug -- subclass of PluginFunction describing the function.

@@ -304,10 +304,6 @@ By categories
 
   - shear_row_
 
-- TextLineFinding_
-
-  - text_line_finding_fuzzy_runlength_
-
 - Thresholding_
 
   - abutaleb_threshold_
@@ -416,7 +412,7 @@ saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sh
 
 **T**
 
-text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
+thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
 
 **U**
 
@@ -592,8 +588,6 @@ zernike_moments_
 .. _Shearing: shearing.html#shearing
 .. _shear_column: shearing.html#shear-column
 .. _shear_row: shearing.html#shear-row
-.. _TextLineFinding: textlinefinding.html#textlinefinding
-.. _text_line_finding_fuzzy_runlength: textlinefinding.html#text-line-finding-fuzzy-runlength
 .. _Thresholding: thresholding.html#thresholding
 .. _abutaleb_threshold: thresholding.html#abutaleb-threshold
 .. _bernsen_threshold: thresholding.html#bernsen-threshold

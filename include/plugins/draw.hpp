@@ -42,14 +42,17 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
   int y_dist_abs = abs(y_dist);
 
   if (x_dist_abs > y_dist_abs) { // x is controlling axis
-    int y_sign = 1 | (y_dist >> (sizeof(int) * 8 - 1));
-    if (x1 > x2) 
+    if (x1 > x2) {
       std::swap(x1, x2);
+      std::swap(y1, y2);
+    }
+    int y_sign = sign((int)y2 - (int)y1);
     int e = y_dist_abs - x_dist_abs;
-    size_t y = y1;
-    for (size_t x = x1; x <= x2; ++x, e += y_dist_abs) {
-      // We could be more clever about determining where we're within the image, but...
-      if (y >= 0 && y < image.nrows() && x >= 0 && x < image.ncols())
+    int y = y1;
+    for (int x = x1; x <= (int)x2; ++x, e += y_dist_abs) {
+      // We could be more clever about determining where the line exits/enters
+      // the image, but...
+      if (y >= 0 && y < (int)image.nrows() && x >= 0 && x < (int)image.ncols())
 	image.set(y, x, value);
       if (e > 0.0) {
 	y += y_sign;
@@ -57,13 +60,17 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
       }
     }
   } else {
-    int x_sign = 1 | (x_dist >> (sizeof(int) * 8 - 1));
-    if (y1 > y2) 
+    if (y1 > y2) {
+      std::swap(x1, x2);
       std::swap(y1, y2);
+    }
+    int x_sign = sign(int(x2) - int(x1));
     int e = x_dist_abs - y_dist_abs;
-    size_t x = x1;
-    for (size_t y = y1; y <= y2; ++y, e += x_dist_abs) {
-      if (y >= 0 && y < image.nrows() && x >= 0 && x < image.ncols())
+    int x = x1;
+    for (int y = y1; y <= (int)y2; ++y, e += x_dist_abs) {
+      // We could be more clever about determining where the line exits/enters
+      // the image, but...
+      if (y >= 0 && y < (int)image.nrows() && x >= 0 && x < (int)image.ncols())
 	image.set(y, x, value);
       if (e > 0.0) {
 	x += x_sign;

@@ -47,7 +47,7 @@ a one-bit (binary) image, and then saves the result to "output.png".
 
    import sys
 
-   # Import the Gamera core and initialise it
+   # Import the Gamera core and initialize it
    from gamera.core import *
    init_gamera()
 
@@ -84,7 +84,7 @@ two reasons:
    must run inside the GUI thread.  The simplest way to do this is to
    do all work inside of a function, and then pass this function
    as an argument to ``gui.run()``.  This will have the GUI start the
-   application once it has been initialised.
+   application once it has been initialized.
 
 2. One must be careful about the lifetime of image objects.  Since Python
    uses reference counting for memory management, whenever there are
@@ -113,7 +113,7 @@ saving the result to disk, it is displayed in a Gamera display window.
       # Display the image in a window
       image.display()	       
 
-   # Import the Gamera core and initialise it
+   # Import the Gamera core and initialize it
    from gamera.core import *
    init_gamera()
 
@@ -159,12 +159,12 @@ example to work correctly.
       # Display the ccs to show their classification
       display_multi(ccs)
 
-   # Import the Gamera core and initialise it
+   # Import the Gamera core and initialize it
    from gamera.core import *
    init_gamera()
 
    # Import the classifier module
-   import knn
+   from gamera import knn
    # Create a new classifier
    classifier = knn.kNNInteractive()
    # Load some training data
@@ -174,11 +174,98 @@ example to work correctly.
    from gamera.gui import gui
    gui.run(my_application)
 
+Advanced use of the classifier
+------------------------------
+
+There are a couple of downsides to using the classifier as described
+in the previous section:
+
+- The classifier may not be as accurate as possible
+
+- Loading the XML file everytime the script starts up can be time
+  consuming.
+
+If one is willing to give up the ability to add more elements to the
+training set at runtime, both of these problems can be ameliorated.
+
+The following example loads a training set from an XML file, and then
+optimizes it until the user presses Ctrl+C.  At the end, the
+classifier is saved into a fast binary file format using
+``serialize``.
+
+.. note:: 
+   It is good practice to retain the XML
+   file, since it is portable across platforms and to future versions of
+   Gamera.  The binary format is not guaranteed to be portable.
+
+.. code:: Python
+
+   # Import the Gamera core and initialise it
+   from gamera.core import *
+   init_gamera()
+
+   # Import the classifier module and the XML module
+   from gamera import knn, gamera_xml
+
+   # Since noninteractive classifiers can not be added to after
+   # they are created, we need a set of glyphs to initialize the
+   # classifier with.
+   glyphs = gamera_xml.glyphs_from_xml("training.xml")
+   classifier = knn.kNNNonInteractive(glyphs)
+
+   # OPTION:
+   # You can also create a noninteractive classifier from an
+   # interactive one:
+   #
+   # classifier = knn.kNNInteractive()
+   # classifier.from_xml("training.xml")
+   # classifier = classifier.noninteractive_copy()
+
+   # Set up a function that displays the results of the
+   # genetic algorithm as it progresses
+   def optimizer_callback(classifier):
+      print "Leave one out performance: %f%%\r" % classifier.ga_best
+   classifier.add_optimization_callback(optimizer_callback)
+
+   print "Starting optimization (press Ctrl+C to stop)..."
+
+   # Optimize until the user presses "Ctrl+C"
+   classifier.start_optimizing()
+   try:
+      while 1:
+         # We have to do something do get around a bug
+         # in the Python optimizer
+         x = 0
+   except KeyboardInterrupt:
+      print "Ctrl+C pressed"
+   except:
+      pass
+
+   # When the user presses Ctrl+C *or* any other sort of
+   # error happens, stop optimizing and then save to disk.
+   print "Stopping optimization (please wait...)"
+   classifier.stop_optimizing()
+   print "Saving to disk"
+   classifier.serialize("training.knn")
+
+Once you have the serialized version of the classifier, it can be
+loaded easily from your production script:
+
+.. code:: Python
+
+   from gamera.core import *
+   init_gamera()
+   
+   from gamera import knn
+
+   classifier = knn.kNNNonInteractive("training.knn")
+
+
 Where to go from here
 ---------------------
 
 Obviously, there's a lot more to Gamera that isn't covered in this
-document.  Where you go from here is largely dependant on the
+chapter.  Where you go from here is largely dependant on the
 particular document domain.  Most of the work in many Gamera
 applications involves analysing the positional information, symbolic
 classification and features of the connected components to recognize
@@ -187,5 +274,4 @@ structure and semantics of the image.
 A good example of how to put these things together is in
 ``roman_text.py``, which puts simple left-to-right, top-to-bottom
 printed text into its reading order.
-
 

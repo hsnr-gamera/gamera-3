@@ -98,7 +98,11 @@ Int
 A signed integers argument.  Corresponds to the C ``int`` type.
 
 Optionally, a *range* can be given as the
-tuple (*lower_bound*, *upper_bound*), and a *default* value.
+tuple (*lower_bound*, *upper_bound*) and a *default* value.
+
+.. note:: 
+   Ranges and defaults are used for the benefit of the GUI only.
+   There is no range-checking performed for you.
 
 In the GUI, this is presented as a spin button.
 
@@ -111,6 +115,10 @@ A real (floating-point) argument.   Corresponds to the C ``double`` type.
 
 Optionally, a *range* can be given as the
 tuple (*lower_bound*, *upper_bound*), and a *default* value.
+
+.. note:: 
+   Ranges and defaults are used for the benefit of the GUI only.
+   There is no range-checking performed for you.
 
 String
 ------
@@ -309,7 +317,7 @@ does not affect in any way the passing of arguments to a plugin.
 Radio
 -----
 
-**Radio** (string *name*, string *default* = ``""``, *extension* = ``"*.*"``)
+**Radio** (string *name*)
 
 
 Advanced usage
@@ -341,7 +349,7 @@ When the user clicks **Ok**, the results are returned in a list::
 
    [6]
 
-If the user had clicked **Cancel**, ``None`` is returned::
+If the user clicks **Cancel**, ``None`` is returned::
 
    None
 
@@ -357,7 +365,7 @@ TODO: But that's for another day... ;)
 Under the hood...
 =================
 
-For a detailed view of how this works, I suggest looking at the source code... ;)
+For a detailed view of how this works, I suggest looking at the source code... [wink]
 
 But seriously, to help with that it should be noted that there are
 three different source files at work here:

@@ -98,11 +98,10 @@ class IconDisplay(wxListCtrl):
       self.InsertImageStringItem(index, label, icon)
 
    def refresh_icon(self, key, klass, data, icon):
-      if self.data[key].data != data:
-         index = self.data[key].index
-         obj = klass(key, data, index)
-         self.data[key] = obj
-         self.SetStringItem(index, 0, key, icon)
+      index = self.data[key].index
+      obj = klass(key, data, index)
+      self.data[key] = obj
+      self.SetStringItem(index, 0, key, icon)
 
    def remove_icon(self, key):
       if self.data.has_key(key):
@@ -434,5 +433,5 @@ builtin_icon_types = (
   CICC, CIRGBImage, CIComplexImage, CIGreyScaleImage, CIGrey16Image,
   CIFloatImage, CIOneBitImage, CIRGBSubImage,
   CIGreyScaleSubImage, CIGrey16SubImage, CIFloatSubImage,
-  CIOneBitSubImage, CIImageList, CIInteractiveClassifier,
+  CIOneBitSubImage, CIComplexSubImage, CIImageList, CIInteractiveClassifier,
   CINonInteractiveClassifier)

@@ -150,7 +150,7 @@ namespace Gamera {
     *(buf++) = (m30 - (3 * x * m20) + (x2 * m10)) / div;                // u30
     *(buf++) = (m12 - (2 * y * m11) - (x * m02) + (y2 * m10)) / div;    // u12
     *(buf++) = (m21 - (2 * x * m11) - (y * m20) + (x2 * m01)) / div;    // u21
-    *buf = (m03 - (3 * x * m02) + (y2 + m01)) / div;                // u03
+    *buf = (m03 - (3 * y * m02) + (y2 + m01)) / div;                // u03
   }
  
   // Number of holes in x and y direction

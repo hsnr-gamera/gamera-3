@@ -441,6 +441,10 @@ major order instead, you could write:
 Of course, that really should be templatized on the iterator type.
 For an example of this, see ``include/plugins/projections.hpp``.
 
+Row and column iterators also have methods that return the current row
+and column (relative to the underlying data).  ``i.row()`` returns the
+current row and ``i.col()`` returns the current column.
+
 Two-dimensional iterators
 '''''''''''''''''''''''''
 
@@ -558,8 +562,7 @@ The performance of the 1-dimensional
 iterator is perhaps surprising, since it appears to be the simplest
 code.  In fact, however, ``vec_iterators`` are implemented under the
 hood as two-dimensional iterators, to be compatible with VIGRA_
-algorithms and make ``row_number()`` and ``col_number()`` work.  This
-introduces some overhead.
+algorithms and to support the view model.  This introduces some overhead.
 
 .. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
 

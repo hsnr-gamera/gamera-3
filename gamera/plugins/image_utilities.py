@@ -151,6 +151,14 @@ class fill(PluginFunction):
     self_type = ImageType(ALL)
     args = Args([Pixel("value")])
 
+class pad_image_default(PluginFunction):
+    # This is only for plugin generation, it will not be added to the image type
+    # (since self_type == None)
+    category = "Utility"
+    self_type = None
+    args = Args([ImageType(ALL), Int("top"), Int("right"), Int("bottom"), Int("left")])
+    return_type = ImageType(ALL)
+
 class pad_image(PluginFunction):
     """Pads an image with any value.
 
@@ -170,24 +178,17 @@ class pad_image(PluginFunction):
    A pixel value.  This value may be any value the pixel type can support.
 
 """
-    category = "Draw"
+    category = "Utility"
     self_type = ImageType(ALL)
     args = Args([Int("top"), Int("right"), Int("bottom"), Int("left"), Pixel("value")])
     return_type = ImageType(ALL)
+    _pad_image_default = pad_image_default()
     def __call__(self, top, right, bottom, left, value=None):
         if value is None:
-            return _image_utilities.pad_image_default(self, top, right, bottom, left)
+            return pad_image._pad_image_default(self, top, right, bottom, left)
     	return _image_utilities.pad_image(self, top, right, bottom, left, value)
     __call__ = staticmethod(__call__)
-    doc_examples = [(RGB, 5, 5, 5, 5)]
-
-class pad_image_default(PluginFunction):
-    # This is only for plugin generation, it will not be added to the image type
-    add_to_image = False
-    category = "Draw"
-    self_type = ImageType(ALL)
-    args = Args([Int("top"), Int("right"), Int("bottom"), Int("left")])
-    return_type = ImageType(ALL)
+    doc_examples = [(RGB, 5, 10, 15, 20)]
 
 class invert(PluginFunction):
     """Inverts the image."""
@@ -345,3 +346,5 @@ module = UtilModule()
 
 union_images = union_images()
 nested_list_to_image = nested_list_to_image()
+
+del pad_image_default

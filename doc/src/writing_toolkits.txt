@@ -123,6 +123,9 @@ If you want to add a drop-down menu to the Gamera GUI shell, you can
 edit this file.  It is self-documenting.  You will probably want to
 remove the example menu items that are included in the skeleton.
 
+This file should also import any plugins that you want to have added
+to the GUI's context menu (right-click menu).
+
 Plugins
 '''''''
 

@@ -151,7 +151,7 @@ class ImageType(WrapperArg):
 
    def _get_choices(self):
       result = []
-      pixel_types = self.pixel_types[:]
+      pixel_types = list(self.pixel_types[:])
       pixel_types.sort()
       for type in pixel_types:
          result.extend(self._get_choices_for_pixel_type(type))

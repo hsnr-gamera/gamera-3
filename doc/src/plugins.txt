@@ -4,6 +4,7 @@ Plugins
 
 By categories
 -------------
+
 - Analysis_
 
   - histogram_
@@ -183,8 +184,6 @@ By categories
   - highlight_
 
   - invert_
-
-  - pad_image_
 
   - remove_border_
 
@@ -372,6 +371,10 @@ By categories
 
   - mirror_vertical_
 
+  - pad_image_
+
+  - pad_image_default_
+
   - resize_
 
   - scale_
@@ -440,7 +443,7 @@ or_image_, otsu_find_threshold_, otsu_threshold_, outline_
 
 **P**
 
-pad_image_, permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projection_skewed_cols_, projection_skewed_rows_, projections_
+pad_image_, pad_image_default_, permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projection_skewed_cols_, projection_skewed_rows_, projections_
 
 **R**
 
@@ -568,7 +571,6 @@ zernike_moments_
 .. _flood_fill: draw.html#flood-fill
 .. _highlight: draw.html#highlight
 .. _invert: draw.html#invert
-.. _pad_image: draw.html#pad-image
 .. _remove_border: draw.html#remove-border
 .. _Edge: edge.html#edge
 .. _canny_edge_image: edge.html#canny-edge-image
@@ -662,6 +664,8 @@ zernike_moments_
 .. _image_save: utility.html#image-save
 .. _mirror_horizontal: utility.html#mirror-horizontal
 .. _mirror_vertical: utility.html#mirror-vertical
+.. _pad_image: utility.html#pad-image
+.. _pad_image_default: utility.html#pad-image-default
 .. _resize: utility.html#resize
 .. _scale: utility.html#scale
 .. _XML: xml.html#xml

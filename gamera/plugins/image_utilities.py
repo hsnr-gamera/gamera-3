@@ -177,7 +177,7 @@ class pad_image(PluginFunction):
     def __call__(self, top, right, bottom, left, value):
     	return _image_utilities.pad_image(self, top, right, bottom, left, value)
     __call__ = staticmethod(__call__)
-    doc_examples = [(RGB)]
+    doc_examples = [(RGB,)]
 
 class pad_image_default(PluginFunction):
     """Pads an image with the default value.

@@ -20,7 +20,7 @@
 
 from gamera.args import *
 from gamera import paths
-import new, os, os.path, imp, inspect, sys
+import new, os, os.path, imp, inspect, sys, copy
 from types import *
 from enums import *
 
@@ -74,6 +74,7 @@ class PluginFunction:
    def register(cls, add_to_image=1):
       if cls.return_type != None:
          if cls.return_type.name == None:
+            cls.return_type = copy.copy(cls.return_type)
             cls.return_type.name = cls.__name__
       if cls.category == None:
          category = cls.module.category

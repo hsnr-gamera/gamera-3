@@ -49,11 +49,13 @@ class wave(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("Amplitude"),\
-                 Float("Period"),\
+                 Int("Period"),\
                  Choice('Direction',['Horizontal','Vertical']),\
                  Choice('Waveform type',['Sinusoid','Square','Sawtooth','Triangle','Sinc']),\
                  Int('Waveform Offset')\
                 ])
+    args.list[0].rng = (0,sys.maxint)
+    args.list[1].rng = (0,sys.maxint)
     def __call__(self, amplitude, period, direction, waveform_type=0, offset=0):
         return _deformation.wave(self, amplitude, period, direction, waveform_type, offset)
     __call__ = staticmethod(__call__)
@@ -91,7 +93,7 @@ class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
     category = "Deformations"
     functions = [rotate,noise,inkrub,wave,ink_diffuse]
-    author = "Albert Bzreckzo"
+    author = "Albert Brzeczko"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()
 

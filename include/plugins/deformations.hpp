@@ -37,10 +37,12 @@
 
 using namespace vigra;
 //using namespace std;
+bool randset=0;
 namespace Gamera
 {
 	template<class T, class U>
-	Image* rotate(T &m, float hypot, U bgcolor) {
+	Image* rotate(T &m, float hypot, U bgcolor)
+	{
 		typedef ImageFactory<T> fact;
 		typename fact::data_type* out_data;
 		typename fact::view_type* out;
@@ -219,8 +221,7 @@ namespace Gamera
 		
 		for(; i<shiftAmount; i++)
 			if(i < width1) newbmp->set(row,i,bgcolor);  //leading background
-		
-		//do first pixel a little differently according to the background color
+
 		borderfunc(p0,p1,oldPixel,orig->get(row,i-shiftAmount+sourceshift),weight,bgcolor);
 		
 		newbmp->set(row,i, //bgcolor!=pixelFormat(0.0) ? orig->get(row,i-shiftAmount+sourceshift) :
@@ -233,13 +234,12 @@ namespace Gamera
 			if(i>=0 && i<width1) newbmp->set(row,i,p0);
 		}
 		weight=1.0-weight;
-		if(i<width1) newbmp->set(row,i++,//bgcolor==pixelFormat(0.0) ? oldPixel : 
-											norm_weight_avg(bgcolor,p0,weight,1.0-weight));
+		if(i<width1) newbmp->set(row,i++, norm_weight_avg(bgcolor,p0,weight,1.0-weight));
 		for(; i<width1; i++) newbmp->set(row,i,bgcolor); //trailing background
 	}
 	
 	template<class T, class U>
-	void vertShift(T* orig, T* newbmp, size_t &col, size_t amount, U bgcolor, double weight, size_t diff)
+	void vertShift(T* orig, T* newbmp, size_t &col, size_t amount, U bgcolor, double weight, size_t diff=0)
 	{
 		typedef typename ImageFactory<T>::view_type::value_type pixelFormat;
 		size_t i, sourceshift=0;
@@ -258,24 +258,23 @@ namespace Gamera
 		U p0, p1, oldPixel;
 		oldPixel = p0 = p1 = bgcolor;
 		
-		
-		//do first pixel differently in order to initialize filtering
 		borderfunc(p0,p1,oldPixel,orig->get(i-amount+sourceshift,col),weight,bgcolor);
 		newbmp->set(i,col,p0);
-		
+		i++;
 		
 		for(; i<amount + orig->nrows() - sourceshift; i++)
 		{
-			if(i-amount+sourceshift > 0) filterfunc(p0,p1,oldPixel,orig->get(i - amount + sourceshift,col),weight);
+			if(i-amount+sourceshift >= 0) filterfunc(p0,p1,oldPixel,orig->get(i - amount + sourceshift,col),weight);
+			else cout << "Failed read from (" << i-amount+sourceshift << "," << col << ")"<<endl;
 			if(i>=0 && i<height1) newbmp->set(i,col,p0);
+			else cout << "Failed write to (" << i << "," << col << ")"<<endl;
 		}
-		if(i<height1) newbmp->set(i++,col,bgcolor==pixelFormat(0.0) ? oldPixel : 
-											norm_weight_avg(p0,bgcolor,weight,1.0-weight));
+		if(i<height1) newbmp->set(i++,col,norm_weight_avg(p0,bgcolor,weight,1.0-weight));
 		
 		for(; i<height1; i++) newbmp->set(i,col,bgcolor); //trailing background
 	}
 	
-    inline void filterfunc(RGBPixel &p0, RGBPixel &p1, RGBPixel &oldPixel, RGBPixel origPixel, double &weight)
+	inline void filterfunc(RGBPixel &p0, RGBPixel &p1, RGBPixel &oldPixel, RGBPixel origPixel, double &weight)
 	{
 		p0 = origPixel;
 		p1 = RGBPixel(  GreyScalePixel(p0.red() * weight),
@@ -296,45 +295,27 @@ namespace Gamera
 		oldPixel = p1;
 	}
 	
-	#include <fstream>
-
 	template<class T>
 	inline void borderfunc(T& p0, T& p1, T& oldPixel, T origPixel, double& weight, T bgcolor)
 	{
 			filterfunc(p0,p1,oldPixel,origPixel,weight);
-			p0 = norm_weight_avg(bgcolor,origPixel,weight,1.0-weight);		
+			p0 = norm_weight_avg(bgcolor,origPixel,weight,1.0-weight);
 	}
 	
 	template<class T>
-	Image* wave(T &m, int amplitude, float freq, int direction, int funcType, int offset) {
-		
-		if(amplitude < 0)
-		{
-			//cerr<<"Could not make a wave with negative amplitude."<<endl<<
-			//"Try to rotate by 180 and then apply the desired wave deformation with positive amplitude."<<endl;
-			return NULL;
-		}
+	Image* wave(T &m, int amplitude, float freq, int direction, int funcType, int offset)
+	{
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
-		pixelFormat background = (pixelFormat)1.0;
-		typename fact::data_type* out_data;
-		typename fact::view_type* out;
-		size_t (*vertExpand)(size_t), (*horizExpand)(size_t),
-			   (*vertShift)(size_t, double), (*horizShift)(size_t, double);
-		//Note that these do not correspond to the horizShift and vertShift functions defined above!
+		pixelFormat background = pixelFormat(0.0);
+		
+		typename fact::data_type* in_data, *out_data;
+		typename fact::view_type* in, *out;
+		size_t (*vertExpand)(size_t), (*horizExpand)(size_t);
 
 		double (*waveType)(float, int);
-		if(direction)
-		{
-			vertExpand = &noExpDim; horizExpand = &expDim;
-			vertShift = &noShift; horizShift = &doShift;
-		}
-		else
-		{
-			vertExpand = &expDim; horizExpand = &noExpDim;
-			vertShift = &doShift; horizShift = &noShift;
-		}
-		
+		if(direction) {vertExpand = &noExpDim; horizExpand = &expDim;}
+		else vertExpand = &expDim; horizExpand = &noExpDim;
 
 		switch(funcType)
 		{
@@ -356,26 +337,41 @@ namespace Gamera
 			default:
 				waveType = &sin2;
 		}
-
+		
+		//Take the easy way out and just copy the source image in order to make image types nonambiguous
+		in_data = new typename fact::data_type(m.nrows(), m.ncols());
+		in = new typename fact::view_type(*in_data, 0, 0, m.nrows(), m.ncols());
+		//TODO: Remove this inefficiency by fixing the type ambiguity
+		
 		out_data = new typename fact::data_type(m.nrows()+vertExpand(amplitude), m.ncols()+horizExpand(amplitude));
 		out = new typename fact::view_type(*out_data, 0, 0, m.nrows()+vertExpand(amplitude), m.ncols()+horizExpand(amplitude));
 		size_t i, j;
 		
-		for(i = 0; i<out->nrows(); i++) for(j=0; j<out->ncols(); j++) out->set(i,j, background);
-
-		for(i = 0; i<m.nrows(); i++)
-			for(j = 0; j<m.ncols();j++)
+		for(i = 0; i<m.nrows(); i++) for(j=0; j<m.ncols(); j++) in->set(i,j, m.get(i,j));
+		
+		if(direction)
+		{
+			for(i=0;i<out->nrows();i++)
 			{
-				out->set(i+vertShift(amplitude,waveType(freq,(int)j-offset)),
-						j+horizShift(amplitude,waveType(freq,(int)i-offset)),
-						(typename fact::view_type::value_type)m.get(i, j)
-						);
+				double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset));
+				horizShift(in, out, i, floor(shift),background, shift-(size_t)shift);
 			}
-//		out = removeExcessBorder(out_data,out,background);
+		}
+		else
+		{
+			for(i=0;i<out->ncols();i++)
+			{
+				double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset));
+				vertShift(in, out, i, floor(shift),background, shift - (size_t)shift);
+			}
+		}
+		
 		image_copy_attributes(m, *out);
 		
+		delete in_data, in;
 		return out;
 	}
+	
 	inline double sin2(float per, int n)
 	{
 		if(per==0) return 1;
@@ -394,7 +390,7 @@ namespace Gamera
 	{
 		return 1.0 - 2*(double)abs((n%(size_t)per)-per)/per;
 	}
-
+	
 	inline double triangle(float per, int n)
 	{
 		size_t n1 = n%(size_t)per;
@@ -447,7 +443,7 @@ namespace Gamera
 		typename fact::data_type* out_data;
 		typename fact::view_type* out;
 		pixelFormat background = m.get(0,0);
-		srand(time(0));
+		if(!randset){srand(time(0)); randset=1;}
 		size_t (*vertExpand)(size_t), (*horizExpand)(size_t),
 			   (*vertShift)(size_t, double), (*horizShift)(size_t, double);
 		if(direction)
@@ -475,7 +471,7 @@ namespace Gamera
 			}
 		return out;
 	}
-	bool randset=0;
+	
 	template<class T>
 	Image* inkrub(T &m, int a)
         {
@@ -495,11 +491,7 @@ namespace Gamera
 				 (typename fact::view_type::value_type)m.get(i, j));
 		}
 
-		if(!randset)
-		{
-			srand(time(0));
-			randset = 1;
-		}
+		if(!randset){srand(time(0));randset = 1;}
 		for(i = 0; i<out->nrows(); i++) for(j = 0; j<out->ncols(); j++)
 		{
 			pixelFormat px1 = m.get(i,out->ncols() - j - 1),
@@ -525,7 +517,7 @@ namespace Gamera
 		size_t i, j;
 		double val, expSum;
 		pixelFormat aggColor, currColor;
-		srand(time(NULL));
+		if(!randset){srand(time(NULL)); randset=1;}
 		
 		if(type == 0)
 		{
@@ -553,7 +545,7 @@ namespace Gamera
 				expSum = 0;
 				for(j=0; j<m.nrows(); j++)
 				{
-					val = 1.0/exp((double)j/70.0);
+					val = 1.0/exp((double)j/dropoff);
 					expSum += val;
 					currColor = m.get(j,i);
 					double weight = val / (val + expSum);
@@ -573,7 +565,7 @@ namespace Gamera
 			while(iD>0 && iD < m.ncols() && jD>0 && jD<m.nrows() )
 			{
 				expSum = 0;
-				val = 1.0/exp(dist((double)starti, (double)startj, iD, jD)/70.0);
+				val = 1.0/exp(dist((double)starti, (double)startj, iD, jD)/dropoff);
 				expSum += val;
 				currColor = out->get(jD,iD);
 				double weight = val / (val + expSum);
@@ -588,13 +580,12 @@ namespace Gamera
 		return out;
 	}
 	
-
 	inline double dist(double i0, double j0, double i1, double j1)
 	{
 		double quadI = pow(i1-i0,2.0), quadJ = pow(j1-j0,2.0);
 		return sqrt(quadI + quadJ);
 	}	
-
+	
 	inline RGBPixel norm_weight_avg(RGBPixel& pix1, RGBPixel& pix2, double w1=1.0, double w2=1.0)
 	{
 		if(w1 == -w2) w1 = w2 = 1.0;
@@ -602,12 +593,14 @@ namespace Gamera
 					GreyScalePixel(((pix1.green() * w1) + (pix2.green() * w2))/(w1 + w2)),
 					GreyScalePixel(((pix1.blue() * w1) + (pix2.blue() * w2))/(w1 + w2)));
 	}
+	
         inline OneBitPixel norm_weight_avg(OneBitPixel& pix1, OneBitPixel& pix2, double w1=1.0, double w2=1.0)
 	{
 		if(w1 == -w2) w1 = w2 = 1.0;
                 if(((pix1 * w1) + (pix2 * w2))/(w1 + w2) < 0.5) return OneBitPixel(0);
 		return OneBitPixel(1);
 	}
+	
 	template <class T>
 	inline T norm_weight_avg(T& pix1, T& pix2, double w1=1.0, double w2=1.0)
 	{

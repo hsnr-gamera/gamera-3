@@ -6,6 +6,7 @@ setup(name = "gameracore", version="1.1",
                                           "src/pointobject.cpp",
                                           "src/dimensionsobject.cpp",
                                           "src/rectobject.cpp",
+                                          "src/rgbpixelobject.cpp",
                                           "src/imagedataobject.cpp",
                                           "src/imageobject.cpp"
                                           ], include_dirs=["include"],

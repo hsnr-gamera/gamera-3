@@ -323,7 +323,7 @@ namespace Gamera {
 	}
 	return (self&)*this;
       }
-      self operator+(size_t n) {
+      self operator+(size_t n) const {
 	self tmp;
 	tmp.m_vec = m_vec;
 	tmp.m_pos = m_pos;
@@ -340,7 +340,7 @@ namespace Gamera {
 	}
 	return (self&)*this;
       }
-      self operator-(size_t n) {
+      self operator-(size_t n) const {
 	self tmp;
 	tmp.m_vec = m_vec;
 	tmp.m_pos = m_pos;

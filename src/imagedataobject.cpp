@@ -78,6 +78,10 @@ static PyMethodDef imagedata_methods[] = {
   { NULL }
 };
 
+PyTypeObject* get_ImageDataType() {
+  return &ImageDataType;
+}
+
 bool is_ImageDataObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &ImageDataType))
     return true;

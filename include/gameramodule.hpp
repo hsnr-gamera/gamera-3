@@ -32,6 +32,9 @@
   is available via the object->tp_type field in the instance struct.
 */
 
+/*
+  SIZE OBJECT
+*/
 struct SizeObject {
   PyObject_HEAD
   Size* m_x;
@@ -41,6 +44,9 @@ extern PyTypeObject* get_SizeType();
 extern bool is_SizeObject(PyObject* x);
 extern PyObject* create_SizeObject(const Size& d);
 
+/*
+  DIMENSIONS OBJECT
+*/
 struct DimensionsObject {
   PyObject_HEAD
   Dimensions* m_x;
@@ -50,6 +56,9 @@ extern PyTypeObject* get_DimensionsType();
 extern bool is_DimensionsObject(PyObject* x);
 extern PyObject* create_DimensionsObject(const Dimensions& d);
 
+/*
+  POINT OBJECT
+*/
 struct PointObject {
   PyObject_HEAD
   Point* m_x;
@@ -59,6 +68,9 @@ extern PyTypeObject* get_PointType();
 extern bool is_PointObject(PyObject* x);
 extern PyObject* create_PointObject(const Point& p);
 
+/*
+  RECT OBJECT
+*/
 struct RectObject {
   PyObject_HEAD
   Rect* m_x;
@@ -66,7 +78,24 @@ struct RectObject {
 
 extern PyTypeObject* get_RectType();
 bool is_RectObject(PyObject* x);
+extern PyObject* create_RectObject(const Rect& r);
 
+/*
+  RGB Pixel OBJECT
+*/
+
+struct RGBPixelObject {
+  PyObject_HEAD
+  RGBPixel* m_x;
+};
+
+extern PyTypeObject* get_RGBPixelType();
+bool is_RGBPixelObject(PyObject* x);
+extern PyObject* create_RGBPixelObject(const RGBPixel& p);
+
+/*
+  IMAGE DATA OBJECT
+*/
 struct ImageDataObject {
   PyObject_HEAD
   ImageDataBase* m_x;
@@ -74,11 +103,15 @@ struct ImageDataObject {
   int m_storage_format;
 };
 
+extern PyTypeObject* get_ImageDataType();
 bool is_ImageDataObject(PyObject* x);
 extern PyObject* create_ImageDataObject(int nrows, int ncols,
 					int page_offset_y, int page_offset_x,
 					int pixel_type, int storage_format);
 
+/*
+  IMAGE OBJECT
+*/
 struct ImageObject {
   RectObject m_parent; // we inherit from Rect
   PyObject* m_data; // an ImageDataObject for ref counting
@@ -95,7 +128,12 @@ struct ImageObject {
   PyObject* m_action_depth; // for limiting recursions for "actions"
 };
 
+extern PyTypeObject* get_ImageType();
+bool is_ImageObject(PyObject* x);
+
 /*
+  SUB IMAGE OBJECT
+
   The SubImage object is here simply to allow type checking and to provide
   a natural form of constructor overloading - otherwise it is identical
   to the ImageObject.
@@ -104,14 +142,22 @@ struct SubImageObject {
   ImageObject m_parent;
 };
 
+extern PyTypeObject* get_SubImageType();
+bool is_SubImageObject(PyObject* x);
+
 /*
+  CC TYPE
+
   ConnectedComponents are a special case of image - a separate class is
   used for clarity and type checking. Like the SubImageObject it is almost
   identical to an ImageObject.
 */
-struct CC {
+struct CCObject {
   ImageObject m_parent;
 };
+
+extern PyTypeObject* get_CCType();
+bool is_CCObject(PyObject* x);
   
 namespace Gamera {
   namespace Python {

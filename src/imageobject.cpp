@@ -27,8 +27,14 @@ extern "C" {
 			     PyObject* kwds);
   static PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
+  static PyObject* cc_new(PyTypeObject* pytype, PyObject* args,
+				 PyObject* kwds);
   static void image_dealloc(PyObject* self);
   static void subimage_dealloc(PyObject* self);
+  static void cc_dealloc(PyObject* self);
+  // methods
+  static PyObject* image_get(PyObject* self, PyObject* args);
+  static PyObject* image_set(PyObject* self, PyObject* args);
   // Get/set
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
@@ -45,10 +51,10 @@ static PyTypeObject ImageType = {
   0,
 };
 
-static PyTypeObject SubImageType = {
-  PyObject_HEAD_INIT(NULL)
-  0,
-};
+
+PyTypeObject* get_ImageType() {
+  return &ImageType;
+}
 
 bool is_ImageObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &ImageType))
@@ -57,8 +63,33 @@ bool is_ImageObject(PyObject* x) {
     return false;
 }
 
+static PyTypeObject SubImageType = {
+  PyObject_HEAD_INIT(NULL)
+  0,
+};
+
+PyTypeObject* get_SubImageType() {
+  return &SubImageType;
+}
+
 bool is_SubImageObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &SubImageType))
+    return true;
+  else
+    return false;
+}
+
+static PyTypeObject CCType = {
+  PyObject_HEAD_INIT(NULL)
+  0,
+};
+
+PyTypeObject* get_CCType() {
+  return &CCType;
+}
+
+bool is_CCObject(PyObject* x) {
+  if (PyObject_TypeCheck(x, &CCType))
     return true;
   else
     return false;
@@ -78,6 +109,12 @@ static PyGetSetDef image_getset[] = {
     "How (or whether) an image is classified", 0 },
   { "scaling", (getter)image_get_scaling, (setter)image_set_scaling,
     "The scaling applied to the features", 0 },
+  { NULL }
+};
+
+static PyMethodDef image_methods[] = {
+  { "get", image_get, METH_VARARGS },
+  { "set", image_set, METH_VARARGS },
   { NULL }
 };
 
@@ -261,6 +298,51 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   return init_image_members(o);
 }
 
+PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  PyObject* image;
+  int nrows, ncols, off_x, off_y;
+  int label;
+  if (PyArg_ParseTuple(args, "Oiiiii", &image, &label, &off_y, &off_x, &nrows,
+		       &ncols) <= 0)
+    return 0;
+  if (!is_ImageObject(image)) {
+    PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
+    return 0;
+  }
+
+  ImageObject* o;
+  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  o->m_data = ((ImageObject*)image)->m_data;
+  Py_INCREF(o->m_data);
+  int pixel, format;
+  pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
+  format = ((ImageDataObject*)o->m_data)->m_storage_format;
+
+  if (pixel != Python::ONEBIT) {
+    PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
+    return 0;
+  }
+
+  if (format == Python::DENSE) {
+    ImageData<OneBitPixel>* data =
+      ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+    ((RectObject*)o)->m_x =
+      new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, off_y,
+						      off_x, nrows, ncols);
+  } else if (format == Python::RLE) {
+    RleImageData<OneBitPixel>* data =
+      ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+    ((RectObject*)o)->m_x =
+      new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label,
+							 off_y, off_x, nrows,
+							 ncols);
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+    return 0;
+  }
+  return init_image_members(o);
+}
+
 static void image_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
   printf("hi %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
@@ -276,6 +358,78 @@ static void subimage_dealloc(PyObject* self) {
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
 }
+
+static void cc_dealloc(PyObject* self) {
+  ImageObject* o = (ImageObject*)self;
+  printf("hi2 %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
+  Py_DECREF(o->m_data);
+  delete ((RectObject*)self)->m_x;
+  self->ob_type->tp_free(self);
+}
+
+static PyObject* image_get(PyObject* self, PyObject* args) {
+  RectObject* o = (RectObject*)self;
+  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
+  int row, col;
+  PyArg_ParseTuple(args, "ii", &row, &col);
+  if (is_CCObject(self)) {
+    return Py_BuildValue("i", ((CC*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_pixel_type == Python::FLOAT) {
+    return Py_BuildValue("d", ((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_storage_format == Python::RLE) {
+    return Py_BuildValue("i", ((OneBitRleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_pixel_type == Python::RGB) {
+    return create_RGBPixelObject(((RGBImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_pixel_type == Python::GREYSCALE) {
+    return Py_BuildValue("i", ((GreyScaleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_pixel_type == Python::GREY16) {
+    return Py_BuildValue("i", ((Grey16ImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else if (od->m_pixel_type == Python::ONEBIT) {
+    return Py_BuildValue("i", ((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  }
+}
+
+static PyObject* image_set(PyObject* self, PyObject* args) {
+  RectObject* o = (RectObject*)self;
+  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
+  int row, col;
+  if (is_CCObject(self)) {
+    int value;
+    PyArg_ParseTuple(args, "iii", &row, &col, &value);
+    ((CC*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+  } else if (od->m_pixel_type == Python::FLOAT) {
+    double value;
+    PyArg_ParseTuple(args, "iid", &row, &col, &value);
+    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, (float)value);
+  } else if (od->m_storage_format == Python::RLE) {
+    int value;
+    PyArg_ParseTuple(args, "iii", &row, &col, &value);
+    ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+  } else if (od->m_pixel_type == Python::RGB) {
+    RGBPixelObject* value;
+    PyArg_ParseTuple(args, "iio", &row, &col, &value);
+    if (!is_RGBPixelObject((PyObject*)value)) {
+      PyErr_SetString(PyExc_TypeError, "Value is not an RGBPixel!");
+      return 0;
+    }
+    //((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *value->m_x);
+  } else if (od->m_pixel_type == Python::GREYSCALE) {
+    int value;
+    PyArg_ParseTuple(args, "iii", &row, &col, &value);
+    ((GreyScaleImageView*)o->m_x)->set((size_t)row, (size_t)col, (GreyScalePixel)value);
+  } else if (od->m_pixel_type == Python::GREY16) {
+    int value;
+    PyArg_ParseTuple(args, "iii", &row, &col, &value);
+    ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col, (Grey16Pixel)value);
+  } else if (od->m_pixel_type == Python::ONEBIT) {
+    int value;
+    PyArg_ParseTuple(args, "iii", &row, &col, &value);
+    ((OneBitImageView*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+  }
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 
 #define CREATE_GET_FUNC(name) static PyObject* image_get_##name(PyObject* self) {\
   ImageObject* o = (ImageObject*)self; \
@@ -309,7 +463,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   ImageType.tp_base = get_RectType();
   ImageType.tp_getset = image_getset;
-  //ImageType.tp_methods = imagedata_methods;
+  ImageType.tp_methods = image_methods;
   ImageType.tp_new = image_new;
   ImageType.tp_getattro = PyObject_GenericGetAttr;
   ImageType.tp_alloc = PyType_GenericAlloc;
@@ -330,10 +484,27 @@ void init_ImageType(PyObject* module_dict) {
   PyType_Ready(&SubImageType);
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
 
+  CCType.ob_type = &PyType_Type;
+  CCType.tp_name = "gameracore.CC";
+  CCType.tp_basicsize = sizeof(CCObject);
+  CCType.tp_dealloc = cc_dealloc;
+  CCType.tp_flags = Py_TPFLAGS_DEFAULT;
+  CCType.tp_base = &ImageType;
+  CCType.tp_new = cc_new;
+  CCType.tp_getattro = PyObject_GenericGetAttr;
+  CCType.tp_alloc = PyType_GenericAlloc;
+  CCType.tp_free = _PyObject_Del;
+  PyType_Ready(&CCType);
+  PyDict_SetItemString(module_dict, "CC", (PyObject*)&CCType);
+
   // some constants
-  PyDict_SetItemString(module_dict, "UNCLASSIFIED", Py_BuildValue("i", Python::UNCLASSIFIED));
-  PyDict_SetItemString(module_dict, "AUTOMATIC", Py_BuildValue("i", Python::AUTOMATIC));
-  PyDict_SetItemString(module_dict, "HEURISTIC", Py_BuildValue("i", Python::HEURISTIC));
-  PyDict_SetItemString(module_dict, "MANUAL", Py_BuildValue("i", Python::MANUAL));
+  PyDict_SetItemString(module_dict, "UNCLASSIFIED",
+		       Py_BuildValue("i", Python::UNCLASSIFIED));
+  PyDict_SetItemString(module_dict, "AUTOMATIC",
+		       Py_BuildValue("i", Python::AUTOMATIC));
+  PyDict_SetItemString(module_dict, "HEURISTIC",
+		       Py_BuildValue("i", Python::HEURISTIC));
+  PyDict_SetItemString(module_dict, "MANUAL",
+		       Py_BuildValue("i", Python::MANUAL));
 }
 

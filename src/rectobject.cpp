@@ -129,6 +129,13 @@ bool is_RectObject(PyObject* x) {
     return false;
 }
 
+PyObject* create_RectObject(const Rect& r) {
+  RectObject* ro;
+  ro = (RectObject*)RectType.tp_alloc(&RectType, 0);
+  ro->m_x = new Rect(r);
+  return (PyObject*)ro;
+}
+
 static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
 			  PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);

@@ -204,8 +204,8 @@ Mac OS-X
 
 OS-X support can be considered working but preliminary at this point.
 Gamera will only run on Panther (10.3).  We do not plan to support
-earlier versions.  You will need to install the GNU development tools, X11,
-and Python 2.3.
+earlier versions.  You will need to install the GNU development tools
+(gcc, g++, ld etc.), X11, and Python 2.3.
 
 Prerequisites
 -------------
@@ -213,21 +213,20 @@ Prerequisites
 wxPython comes in two flavors for OS-X: a native Carbon-based one that
 follows the look-and-feel of OS-X, and a version built on top of
 Gtk+/X11.  The native Carbon version is currently too incomplete to be
-usable for Gamera.  Unfortunately, there are no installer packages
-available for the Gtk+/X11 version on the wxPython website.  You have
-two options:
-
-1. Install fink and then build the package wxPython-Py23, which is
-   currently in the unstable branch, (and its dependencies) from
-   source.  You will then need to use the fink version of Python (not
-   the one that Apple provides) to carry out the instructions below.
-
-2. Use the unofficial wxPython/Gtk/X11 installer on the Gamera website (coming
-   soon).  It is not clear whether this installer will work for all
-   Panther installations.
+usable for Gamera.  Since there is no official build of the
+Gtk+/X11 version, I have made one available in the Gamera
+SourceForge Files section.
 
 Standard Build and Install
---------------------------
+----------------------------
+
+Download and install the unoffical wxPython-Gtk-X11 distribution from
+the Gamera Files section on SourceForge.
+
+Alternatively, you can install fink and then build the package wxPython-Py23, which is
+currently in the unstable branch, (and its dependencies) from
+source.  You will then need to use the fink version of Python (not
+the one that Apple provides) to carry out the instructions below.
 
 Gamera is built using the Python-standard Distutils system.  
 
@@ -249,9 +248,22 @@ and then to install (you'll need to have admin priviledges)::
  
   sudo python setup.py install
 
+The scripts can be installed by::
+
+  sudo python setup.py install_scripts
+
+This will install the scripts in
+'/System/Library/Frameworks/Python.framework/Versions/2.3/bin'.  Why
+they are installed there, is unclear to me, since that is not by
+default on the path.  To make these scripts available, you can either
+add that directory to the path::
+
+  export PATH=$PATH:/System/Library/Frameworks/Python.framework/Versions/2.3/bin
+
+or add symlinks for the scripts from /usr/bin to there.
+
 Running
 -------
 
-Run the ``gamera_gui.py`` script located at the root of the source
-tree.  This file can be copied anywhere (such as the Desktop)
-and double-clicked to run Gamera.
+Run the ``gamera_gui`` script located at the root of the source
+tree.

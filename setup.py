@@ -20,6 +20,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+# We do this first, so that when gamera.__init__ loads gamera.__version__,
+# it is in fact the new and updated version
+
+gamera_version = open("version", 'r').readlines()[0].strip()
+open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
+
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
@@ -122,9 +128,6 @@ includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", o
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
-
-gamera_version = open("version", 'r').readlines()[0].strip()
-open("gamera/__version__.py", "w").write("ver = `%s`\n\n" % gamera_version)
             
 setup(name = "gamera",
       version=gamera_version,

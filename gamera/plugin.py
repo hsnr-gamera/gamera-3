@@ -70,11 +70,19 @@ class PluginFunction:
       if hasattr(cls, 'category'):
          category = cls.category
       if not hasattr(cls, "__call__"):
+         # This loads the actual C++ function if it is not directly
+         # linked in the Python PluginFunction class
          parts = cls.__module__.split('.')
-         cpp_module_name = '.'.join(parts[:-1] + ['_' + parts[-1]])
-         module = __import__(cpp_module_name,
-                             locals(),
-                             globals())
+         cpp_module_name = '.'.join(parts[:-1])
+         if not cpp_module.startswith('gamera'):
+             module = __import__('_' + parts[-1],
+                                 locals(),
+                                 globals())
+         else:
+             module = __import__(cpp_module_name,
+                                 locals(),
+                                 globals(),
+                                 '_' + parts[-1])
          if module == None:
             return
          func = getattr(module, cls.__name__)

@@ -24,9 +24,20 @@ class outline(PluginFunction):
     return_type = ImageType([ONEBIT])
 outline = outline()
 
+class thin_zs(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT])
+thin_zs = thin_zs()
+
+class expand_edges(PluginFunction):
+    self_type = ImageType([ONEBIT, FLOAT, GREYSCALE, GREY16, RGB])
+    args = Args([Int("size", default=1), Int("zeros"), Int("even")])
+    return_type = ImageType([ONEBIT, FLOAT, GREYSCALE, GREY16, RGB])
+expand_edges = expand_edges()
+
 class MiscFiltersModule(PluginModule):
     category = "Filter"
-    functions = [outline]
+    functions = [outline, expand_edges]
     cpp_headers = ["misc_filters.hpp"]
     cpp_namespaces = ["Gamera"]
     author = "Michael Droettboom and Karl MacMillan"

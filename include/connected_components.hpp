@@ -74,6 +74,13 @@ namespace Gamera {
       range_check();
       calculate_iterators();
     }
+    ConnectedComponent(T& image_data)
+      : base_type(image_data.page_offset_y(), image_data.page_offset_x(),
+		  image_data.nrows(), image_data.ncols()) {
+      m_image_data = &image_data;
+      range_check();
+      calculate_iterators();
+    }
     ConnectedComponent(T& image_data, value_type label,
 		       const Rect& rect)
       : base_type(rect), m_label(label) {

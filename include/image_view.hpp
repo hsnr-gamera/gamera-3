@@ -133,6 +133,13 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
+    ImageView(T& image_data) 
+      : base_type(image_data.page_offset_y(), image_data.page_offset_x(),
+		  image_data.nrows(), image_data.ncols()) {
+      m_image_data = &image_data;
+      range_check();
+      calculate_iterators();
+    }
     ImageView(T& image_data, const Rect& rect,
 	       bool do_range_check = true)
       : base_type(rect) {

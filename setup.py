@@ -41,7 +41,6 @@ if not '--help' in sys.argv and not '--help-commands' in sys.argv:
    generate.magic_import_setup(ignore)
 
    plugin_extensions = gamera_setup.generate_plugins(plugins)
-   print plugin_extensions
 
    generate.restore_import()
 

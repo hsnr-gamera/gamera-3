@@ -67,11 +67,8 @@ inline PyObject* get_module_dict(char* module_name) {
 */
 inline PyObject* get_gameracore_dict() {
   static PyObject* dict = 0;
-  if (dict == 0) {
+  if (dict == 0)
     dict = get_module_dict("gamera.gameracore");
-    if (dict == 0)
-      return 0;
-  }
   return dict;
 }
 

@@ -38,21 +38,72 @@ Freely useable in non-commercial applications as long as credits to Po-Han Lin a
 */
 
 template<class T>
-void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
-	       typename T::value_type value, double alpha = 1.0) {
-  size_t ul_y = std::min(y1, image.nrows());
-  size_t lr_y = std::min(y2, image.nrows());
-  size_t ul_x = std::min(x1, image.nrows());
-  size_t lr_x = std::min(x2, image.nrows());
+void draw_line(T& image, double y1, double x1, double y2, double x2,
+	       typename T::value_type value) {
+  y1 -= (double)image.ul_y();
+  y2 -= (double)image.ul_y();
+  x1 -= (double)image.ul_x();
+  x2 -= (double)image.ul_x();
+
+  double ul_y = std::max(std::min(y1, double(image.nrows())), 0.0);
+  double lr_y = std::max(std::min(y2, double(image.nrows())), 0.0);
+  double ul_x = std::max(std::min(x1, double(image.nrows())), 0.0);
+  double lr_x = std::max(std::min(x2, double(image.nrows())), 0.0);
   
   // The line doesn't pass through the image, so just skip
-  if (lr_y - ul_y == 0 && lr_x - ul_x == 0)
+  if (lr_y - ul_y == 0.0 && lr_x - ul_x == 0.0)
     return;
 
   bool y_longer = false;
-  long increment_val, end_val;
-  long short_len = long(y2) - long(y1);
-  long long_len = long(x2) - long(x1);
+  double increment_val, end_val;
+  double y_len = y2 - y1;
+  double x_len = x2 - x1;
+
+  std::cerr << y1 << " " << x1 << " " << y2 << " " << x2 << "\n";
+  
+  if (y_len > 0) {
+    if (y1 < 0) {
+      x1 += (-y1 * x_len) / y_len;
+      y1 = 0;
+    }
+    if (y2 > image.nrows()) {
+      x2 += ((y2 - image.nrows()) * x_len) / y_len;
+      y2 = image.nrows() - 1;
+    }
+  } else {
+    if (y2 < 0) {
+      x2 += (-y2 * x_len) / y_len;
+      y2 = 0;
+    }
+    if (y1 > image.nrows()) {
+      x1 += ((y1 - image.nrows()) * x_len) / y_len;
+      y1 = image.nrows() - 1;
+    }
+  }
+  if (x_len > 0) {
+    if (x1 < 0) {
+      y1 += (-x1 * y_len) / x_len;
+      x1 = 0;
+    }
+    if (x2 > image.ncols()) {
+      y2 += ((x2 - image.ncols()) * y_len) / x_len;
+      x2 = image.ncols() - 1;
+    }
+  } else {
+    if (x2 < 0) {
+      y2 += (-x2 * y_len) / x_len;
+      x2 = 0;
+    }
+    if (x1 > image.ncols()) {
+      y1 += ((x1 - image.ncols()) * y_len) / x_len;
+      x1 = image.ncols() - 1;
+    }
+  }
+
+  std::cerr << y1 << " " << x1 << " " << y2 << " " << x2 << "\n";
+  
+  double short_len = y2 - y1;
+  double long_len = x2 - x1;
   if (abs(short_len) > abs(long_len)) {
     std::swap(short_len, long_len);
     y_longer = true;
@@ -62,24 +113,28 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
   if (long_len < 0) {
     increment_val = -1;
     long_len = -long_len;
-  } else
+  } else 
     increment_val = 1;
 
-  long dec_inc;
+  double dec_inc;
   if (long_len == 0)
-    dec_inc = 0;
+    dec_inc = short_len;
   else
-    dec_inc = (short_len << 16) / long_len;
+    dec_inc = short_len / long_len;
 
-  long j = 0;
+  double j = 0;
   if (y_longer) {
-    for (long i = 0; i != end_val; i += increment_val) {
-      image.set(size_t(y1 + i), size_t(x1 + (j >> 16)), value);
+    for (double i = 0; i < end_val; i += increment_val) {
+      size_t y = size_t(y1 + i);
+      size_t x = size_t(x1 + j);
+      image.set(y, x, value);
       j += dec_inc;
     }
   } else {
-    for (long i = 0; i != end_val; i += increment_val) {
-      image.set(size_t(y1 + (j >> 16)), size_t(x1 + i), value);
+    for (double i = 0; i < end_val; i += increment_val) {
+      size_t y = size_t(y1 + j);
+      size_t x = size_t(x1 + i);
+      image.set(y, x, value);
       j += dec_inc;
     }
   }
@@ -141,25 +196,25 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
 }
 
 template<class T>
-void draw_bezier_curve(T& image, size_t ya, size_t xa, 
-		       size_t yb, size_t xb, 
-		       size_t yc, size_t xc,
-		       typename T::value_type value) {
-  long x_dist = abs(long(xb) - long(xa));
-  long y_dist = abs(long(yb) - long(ya));
-  long max = std::max(x_dist, y_dist);
+void draw_bezier(T& image, double ya, double xa, 
+		 double yb, double xb, 
+		 double yc, double xc,
+		 typename T::value_type value) {
+  double x_dist = abs(xb - xa);
+  double y_dist = abs(yb - ya);
+  double max = std::max(x_dist, y_dist);
   double step = 1.0 / ((double)max * 2.0);
 
-  size_t y = ya;
-  size_t x = xa;
+  double y = ya;
+  double x = xa;
   for (double t = 0.0; t <= 1.0; t += step) {
-    size_t new_x = (size_t)(pow((1 - t), 2) * xa + 
-			    2 * t * (1 - t) * xc + 
-			    pow(t, 2) * xb);
-    size_t new_y = (size_t)(pow((1 - t), 2) * ya + 
-			    2 * t * (1 - t) * yc + 
-			    pow(t, 2) * yb);
-    draw_line(image, y, x, new_y, new_x, value);
+    double new_x = (pow((1 - t), 2) * xa + 
+		    2 * t * (1 - t) * xc + 
+		    pow(t, 2) * xb);
+    double new_y = (pow((1 - t), 2) * ya + 
+		    2 * t * (1 - t) * yc + 
+		    pow(t, 2) * yb);
+    draw_line(image, (size_t)y, (size_t)x, (size_t)new_y, (size_t)new_x, value);
     y = new_y; x = new_x;
   }
 }
@@ -283,6 +338,5 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
 	a.set(ya, xa, color);
     }
 }
-
 
 #endif

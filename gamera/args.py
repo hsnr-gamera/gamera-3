@@ -72,9 +72,7 @@ class Arg:
    default = 0
    length = 1
 
-   def __init__(self, name=None):
-##       if name is None:
-##          name = "_" + str(hash(self))
+   def __init__(self, name):
       self.name = name
       self.has_default = False
 

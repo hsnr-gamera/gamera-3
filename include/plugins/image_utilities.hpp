@@ -156,6 +156,24 @@ namespace Gamera {
     This function creates a new image that is the summation of all of the images
     in the passed-in list.
   */
+  template<class T, class U>
+  void _union_image(T& a, const U& b) {
+    size_t ul_y = std::max(a.ul_y(), b.ul_y());
+    size_t ul_x = std::max(a.ul_x(), b.ul_x());
+    size_t lr_y = std::min(a.lr_y(), b.lr_y());
+    size_t lr_x = std::min(a.lr_x(), b.lr_x());
+    
+    if (ul_y >= lr_y || ul_x >= lr_x)
+      return;
+    for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
+      for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
+	if (is_black(a.get(ya, xa)) || is_black(b.get(yb, xb))) {
+	  a.set(ya, xa, black(a));
+	} else
+	  a.set(ya, xa, white(a));
+      }
+  }
+
   Image *union_images(std::vector<Image*> &list_of_images) {
     // TODO: get a proper maxint
     size_t min_x, min_y, max_x, max_y;
@@ -182,7 +200,7 @@ namespace Gamera {
 	 i != list_of_images.end(); ++i) {
       Image* image = *i;
       OneBitImageView* one_bit_image = static_cast<OneBitImageView*>(image);
-      or_image(*dest, *one_bit_image);
+      _union_image(*dest, *one_bit_image);
     }
 
     return dest;

@@ -33,6 +33,9 @@ class WrapperArg:
 
    def __getitem__(self, attr):
       return getattr(self, attr)
+
+   def __iter__(self):
+      raise RuntimeError()
    
    def _get_symbol(self):
       return re.sub(r"\s", "_", self.name) + '_arg'

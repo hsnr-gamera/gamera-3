@@ -712,7 +712,10 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
                                       self.image.ncols - 1), 0))
          self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
                                       self.image.nrows - 1), 0))
-         self.trigger_callback("click", self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
+         self.trigger_callback("click",
+                               self.rubber_y2 + self.original_image.ul_y,
+                               self.rubber_x2 + self.original_image.ul_x,
+                               event.ShiftDown(), event.ControlDown())
          self.draw_rubber()
          if self.rubber_origin_x > self.rubber_x2:
             self.rubber_origin_x, self.rubber_x2 = \
@@ -721,7 +724,12 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
          self.rubber_on = 0
-         self.trigger_callback("rubber", self.rubber_origin_y, self.rubber_origin_x, self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
+         self.trigger_callback("rubber",
+                               self.rubber_origin_y + self.original_image.ul_y,
+                               self.rubber_origin_x + self.original_image.ul_x,
+                               self.rubber_y2 + self.original_image.ul_y,
+                               self.rubber_x2 + self.original_image.ul_x,
+                               event.ShiftDown(), event.ControlDown())
 
    def _OnMiddleDown(self, event):
       if not self.image:
@@ -766,7 +774,7 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
             self.scroll_amount,
             (self.dragging_origin_y - (event.GetY() - self.dragging_y)) /
             self.scroll_amount)
-      self.trigger_callback("move", y2, x2)
+      self.trigger_callback("move", y2 + self.original_image.ul_y, x2 + self.original_image.ul_x)
 
    def _OnLeave(self, event):
       if not self.HasCapture() and self.rubber_on:
@@ -1868,18 +1876,17 @@ class ImageFrame(ImageFrameBase):
    def _OnMove(self, y, x):
       image = self._iw.id.original_image
       self._status_bar.SetStatusText(
-         "(%d, %d): %s" % (x + image.ul_x, y + image.ul_y,
-                           self._iw.id.original_image.get(y, x)), 0)
+         "(%d, %d): %s" % (x, y, image.get(y - image.ul_y, x - image.ul_x)), 0)
 
    def _OnRubber(self, y1, x1, y2, x2, shift, ctrl):
       image = self._iw.id.original_image
       if y1 == y2 and x1 == x2:
          self._status_bar.SetStatusText(
-            "(%d, %d): %s" % (x1 + image.ul_x, y1 + image.ul_y, self._iw.id.original_image.get(y2, x2)), 1)
+            "(%d, %d): %s" % (x1, y1, image.get(y2 - image.ul_y, x2 - image.ul_x)), 1)
       else:
          self._status_bar.SetStatusText(
             "(%d, %d) to (%d, %d) / (%d w, %d h) %s" %
-            (x1 + image.ul_x, y1 + image.ul_y, x2 + image.ul_x, y2 + image.ul_y, abs(x1-x2), abs(y1-y2), self._iw.id.original_image.get(y2, x2)), 1)
+            (x1, y1, x2, y2, abs(x1-x2), abs(y1-y2), image.get(y2 - image.ul_y, x2 - image.ul_x)), 1)
 
 class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):

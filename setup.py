@@ -8,7 +8,6 @@ import glob
 # added to the path and generate is imported directly
 sys.path.append("gamera")
 import generate
-generate.magic_import_setup()
 
 ##########################################
 # generate the plugins

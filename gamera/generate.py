@@ -1,3 +1,21 @@
+#
+# Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
 from pyplate import *
 from os import path
 import os
@@ -41,19 +59,28 @@ def generate_plugin(plugin_filename):
   template = Template("""
   [[exec import string]]
   [[exec from os import path]]
+  [[exec from enums import *]]
+  [[exec from plugin import *]]
+  
+  [[# Standard headers used in the plugins #]]
   #include \"gameramodule.hpp\"
   #include \"Python.h\"
+
+  [[# include the headers that the module needs #]]
   [[for header in module.cpp_headers]]
     #include \"[[header]]\"
   [[end]]
+  
   using namespace Gamera;
   using namespace Gamera::Python;
   
-  [[# The module name is prepended with an underscore #]]
-  [[# exec module_name = "_" + __file__.split(".")[0] #]]
+  [[# Generate the plugin path and module name from the filename. #]]
+  [[# The module name for our purposes will be prefixed with an underscore #]]
   [[exec plug_path, filename = path.split(__file__)]]
   [[exec module_name = '_' + filename.split('.')[0] ]]
 
+  [[# Declare all of the functions - because this is a C++ file we have to #]]
+  [[# declare the functions as C functions so that Python can access them #]]
   extern \"C\" {
     void init[[module_name]](void);
     [[for function in module.functions]]
@@ -61,6 +88,10 @@ def generate_plugin(plugin_filename):
     [[end]]
   }
 
+  [[# Create the list of methods for the module - the name of the function #]]
+  [[# is derived from the name of the class implementing the function - #]]
+  [[# also, the function name is prepended with call_ so that there are no clashes #]]
+  [[# with the real plugin functions #]]
   static PyMethodDef [[module_name]]_methods[] = {
     [[for function in module.functions]]
       { \"[[function.__class__.__name__]]\",
@@ -69,15 +100,26 @@ def generate_plugin(plugin_filename):
     { NULL }
   };
 
+  [[# These hold the types for the various image types defined in gameracore - this #]]
+  [[# is for type checking the arguments and creating the return types. See the init #]]
+  [[# function for more details. #]]
   static PyTypeObject* image_type;
   static PyTypeObject* subimage_type;
   static PyTypeObject* cc_type;
   static PyTypeObject* data_type;
 
+  [[# Each module can declare several functions so we loop through and generate wrapping #]]
+  [[# code for each function #]]
   [[for function in module.functions]]
+    [[# We assume that there is at least 1 argument - the image 'self' #]]
     [[exec pyarg_format = 'O']]
     static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args) {
+      [[# this holds the self argument - note that the self passed into the function will #]]
+      [[# be Null because this functions is not actually bound to an object #]]
       PyObject* real_self;
+      
+      [[# for each argument insert the appropriate conversion code into the string that will #]]
+      [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
       [[for x in function.args.list]]
         [[if isinstance(x, Int)]]
           int [[x.name + '_arg']];
@@ -94,6 +136,8 @@ def generate_plugin(plugin_filename):
         [[end]]
       [[end]]
 
+      [[# Create a variable to hold the return value of the plugin function - see #]]
+      [[# below for how the Image* is converted to a PyImageObject. #]]
       [[if isinstance(function.return_type, Int)]]
         int return_value;
       [[elif isinstance(function.return_type, Float)]]
@@ -104,6 +148,9 @@ def generate_plugin(plugin_filename):
         Image* return_value;
       [[end]]
 
+      [[# Now that we have all of the arguments and variables for them we can parse #]]
+      [[# the argument tuple. Again, there is an assumption that there is at least one #]]
+      [[# argument #]]
       if (PyArg_ParseTuple(args, \"[[pyarg_format]]\", &real_self
       [[for i in range(len(function.args.list))]]
         ,
@@ -112,19 +159,28 @@ def generate_plugin(plugin_filename):
       ) <= 0)
         return 0;
 
+      [[# Type check the self argument #]]
       if (!PyObject_TypeCheck(real_self, image_type)) {
         PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
         return 0;
       }
+
+      [[# This code goes through each of the image arguments and builds up a list of #]]
+      [[# possible image type names. What is passed in is an abstract notion of #]]
+      [[# pixel type (which is saved and restored at the end of this process). That #]]
+      [[# is converted into strings used for the the enums (in the switch statemnt) #]]
+      [[# and for the casting of the pointers to the C++ objects held in the PyObjects. #]]
+      [[# Finally, type-checking code is inserted as well #]]
+      
       [[exec tmp = [] ]]
-      [[ exec orig_self_types = function.self_type.pixel_types[:] ]]
+      [[exec orig_self_types = function.self_type.pixel_types[:] ]]
       [[for type in function.self_type.pixel_types]]
-        [[if type == 'OneBit']]
+        [[if type == ONEBIT]]
           [[exec tmp.append('OneBitRleImageView')]]
           [[exec tmp.append('RleCc')]]
           [[exec tmp.append('Cc')]]
         [[end]]
-        [[exec tmp.append(type + 'ImageView')]]
+        [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
       [[end]]
       [[exec function.self_type.pixel_types = tmp]]
       [[exec function.self_type.name = 'real_self']]
@@ -134,12 +190,12 @@ def generate_plugin(plugin_filename):
         [[if isinstance(x, ImageType)]]
           [[exec tmp = [] ]]
           [[for type in x.pixel_types]]
-            [[if type == 'OneBit']]
+            [[if type == ONEBIT]]
               [[exec tmp.append('OneBitRleImageView')]]
               [[exec tmp.append('RleCc')]]
               [[exec tmp.append('Cc')]]
             [[end]]
-            [[exec tmp.append(type + 'ImageView')]]
+            [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
           [[end]]
           [[exec orig_image_types.append(x.pixel_types[:])]]
           [[exec x.pixel_types = tmp]]
@@ -233,7 +289,7 @@ def generate_plugin(plugin_filename):
   
   """)
   
-  #magic_import_setup()
+  magic_import_setup()
 
   import plugin
   plug_path, filename = path.split(plugin_filename)
@@ -246,7 +302,7 @@ def generate_plugin(plugin_filename):
 
   template.execute(output_file, plugin_module.__dict__)
 
-  #restore_import()
+  restore_import()
 
   # make the a distutils extension class for this plugin
   cpp_files = [cpp_filename]

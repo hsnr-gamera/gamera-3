@@ -21,6 +21,15 @@ from gamera.args import *
 from gamera import paths
 import gamera.core
 import unittest, new, os, os.path, imp
+from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+
+def get_pixel_type_name(type):
+    _pixel_type_names = {ONEBIT:     "OneBit",
+                         GREYSCALE:  "GreyScale",
+                         GREY16:     "Grey16",
+                         RGB:        "RGB",
+                         FLOAT:      "Float"}
+    return _pixel_type_names[type]
 
 class PluginModule:
     category = "Miscellaneous"
@@ -43,7 +52,7 @@ class PluginModule:
 
 class PluginFunction:
     return_type = None
-    self_type = ImageType(("RGB", "GreyScale", "Grey16", "Float", "OneBit"))
+    self_type = ImageType((ONEBIT, GREYSCALE, GREY16, RGB, FLOAT))
     args = Args([])
     image_types_must_match = 0
 
@@ -189,10 +198,10 @@ class PluginTest(unittest.TestCase):
 
 def PluginFactory(name, func, category=None,
                   return_type=None,
-                  self_type=ImageType((gamera.core.RGB,
-                                       gamera.core.GREYSCALE,
-                                       gamera.core.GREY16,
-                                       gamera.core.ONEBIT)),
+                  self_type=ImageType((RGB,
+                                       GREYSCALE,
+                                       GREY16,
+                                       ONEBIT)),
                   args=None):
     cls = new.classobj(name, (PluginFunction,), {})
     if not category is None:

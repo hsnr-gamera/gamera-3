@@ -1066,6 +1066,8 @@ class MultiImageDisplay(wxGrid):
       wxBeginBusyCursor()
       self.BeginBatch()
       try:
+         start_row = self.GetGridCursorRow()
+         start_col = self.GetGridCursorCol()
          orig_rows = self.rows
          rows = int(max(ceil(float(len(self.list)) / float(self.cols)), 1))
          cols = self.cols
@@ -1084,6 +1086,9 @@ class MultiImageDisplay(wxGrid):
          self.SetRowLabelSize(width + 20)
          self.SetColLabelSize(20)
          self.AutoSize()
+         if start_row < self.GetNumberRows() and start_col < self.GetNumberCols():
+            self.SetGridCursor(start_row, start_col)
+            self.MakeCellVisible(start_row, start_col)
       finally:
          self.EndBatch()
          wxEndBusyCursor()

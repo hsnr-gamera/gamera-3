@@ -87,8 +87,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             found = i
             break
       if found != -1:
-         row = found / GRID_NCOLS
-         col = found % GRID_NCOLS
+         row = found / self.cols
+         col = found % self.cols
          self.SetGridCursor(row, col)
          self.SelectBlock(row, col, row, col, 0)
          self.MakeCellVisible(min(row + 1, self.rows), col)
@@ -102,10 +102,10 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    def move_back(self):
       row = self.GetGridCursorRow()
       col = self.GetGridCursorCol()
-      image_no = row * GRID_NCOLS + col
+      image_no = row * self.cols + col
       image_no = max(0, image_no - 1)
-      row = image_no / GRID_NCOLS
-      col = image_no % GRID_NCOLS
+      row = image_no / self.cols
+      col = image_no % self.cols
       self.SetGridCursor(row, col)
       self.SelectBlock(row, col, row, col, 0)
       self.MakeCellVisible(min(row + 1, self.rows), col)
@@ -131,7 +131,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             for row in range(self.rows):
                for col in range(self.cols):
                   if self.IsInSelection(row, col):
-                     selected.append(row * GRID_NCOLS + col)
+                     selected.append(row * self.cols + col)
       matches = []
       if x1 == x2 or y1 == y2:
          point = Point(x1, y1)
@@ -161,8 +161,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          self.updating = 1
          last_index = matches[-1]
          for index in matches:
-            row = index / GRID_NCOLS
-            col = index % GRID_NCOLS
+            row = index / self.cols
+            col = index % self.cols
             if index is last_index:
                self.updating = 0
             self.SelectBlock(row, col, row, col, first)
@@ -201,8 +201,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    # Display selected items in the context display
    def _OnSelectImpl(self):
+      images = self.GetSelectedItems()
       if not self.updating:
-         images = self.GetSelectedItems()
          if images != self._last_selection:
             self._last_selection = images
          else:
@@ -219,6 +219,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             else:
                self.toplevel.set_label_display([])
             self.toplevel.display_cc(images)
+      self.toplevel._frame.GetStatusBar().SetStatusText("%s selected glyphs" % len(images), 0)
 
    def _OnSelect(self, event):
       event.Skip()
@@ -956,7 +957,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnClearProductionDatabase(self, event):
       if self._classifier.is_dirty:
-         if gui_util.are_you_sure_dialog(
+         if gui_util.are_you_sure_dialog(self._frame,
             "Are you sure you want to clear all glyphs in the production database?"):
             self._classifier.clear_glyphs()
       else:

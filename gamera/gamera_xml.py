@@ -439,9 +439,9 @@ class LoadXML:
       self._parser.CharacterDataHandler = self.add_property_value
 
    def _tag_end_property(self):
-      if saveable_types.has_key(self._property_type):
+      if _saveable_types.has_key(self._property_type):
          self._properties[self._property_name] = \
-            saveable_types[self._property_type](self._property_value)
+            _saveable_types[self._property_type](self._property_value)
       else:
          self._properties[self._property_name] = self._data.encode()
       self._parser.CharacterDataHandler = None

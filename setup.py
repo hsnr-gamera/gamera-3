@@ -83,6 +83,8 @@ if 'build' in sys.argv:
 ga_files = glob.glob("src/ga/*.cpp")
 ga_files.append("src/knncoremodule.cpp")
 
+graph_files = glob.glob("src/graph/*.cpp")
+
 libs = []
 if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
    libs = ["stdc++"]
@@ -108,11 +110,11 @@ extensions = [Extension("gamera.gameracore",
                         # FIXME
                         libraries=libs, extra_compile_args=extra_args
                         ),
-               Extension("gamera.knncore", ga_files,
-                         include_dirs=["include", "src/ga", "src"],
-                         libraries=libs, extra_compile_args=extra_args),
-              Extension("gamera.graph", ["src/graphmodule.cpp"],
-                        include_dirs=["include", "src"],
+              Extension("gamera.knncore", ga_files,
+                        include_dirs=["include", "src/ga", "src"],
+                        libraries=libs, extra_compile_args=extra_args),
+              Extension("gamera.graph", graph_files,
+                        include_dirs=["include", "src", "src/graph"],
                         libraries=libs, extra_compile_args=extra_args)]
 extensions.extend(plugin_extensions)
 

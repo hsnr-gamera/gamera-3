@@ -240,7 +240,6 @@ class LoadXML:
       return self.parse_stream(stream)
 
    def parse_stream(self, stream):
-      t = time.clock()
       self._setup_handlers()
       self._parser = expat.ParserCreate()
       self._parser.StartElementHandler = self._start_element_handler
@@ -258,7 +257,6 @@ class LoadXML:
          self._parser.StartElementHandler = None
          self._parser.EndElementHandler = None
          del self._parser
-      print "Time:", time.clock() - t
       return self
    
    def add_start_element_handler(self, name, func):

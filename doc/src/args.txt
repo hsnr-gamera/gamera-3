@@ -341,3 +341,24 @@ Radio
 **Radio** (string *name*, string *default* = ``""``, *extension* =
   ``"*.*"``)
 
+Under the hood...
+=================
+
+For a detailed view of how this works, I suggest looking at the source code... ;)
+
+But seriously, to help with that it should be noted that there are
+three different source files at work here:
+
+``gamera/args.py``
+	The main file that defines a class for each of the argument
+	types.  Only very basic functionality, such as storing the
+	range of ``Int``, are implemented here.
+
+``gamera/args_wrappers.py``
+	Defines how the types are converted between C++ and Python.
+
+``gamera/gui/args_gui.py``
+	Defines how the arguments are mapped to widgets in the GUI.
+
+The ``args.py`` file loads the other two (if necessary) and "mixes-in"
+the methods in the extension classes to the core classes.

@@ -14,10 +14,10 @@ to start the Gamera GUI.
 .. note:: It is possible to run Gamera image processing without the
    GUI, saving the memory and runtime overhead.
 
-The console
------------
+Console window
+--------------
 
-.. image:: images/console.png
+  .. image:: images/console.png
 
 The main Gamera console window is divided into three parts: the Python
 console, the icon display and the history.
@@ -36,7 +36,7 @@ image and store it in the variable name ``image``.  Type ``image.`` in
 the console, and a window will appear showing all of the (many)
 members and methods of the image.
 
-.. image:: images/autocompletion.png
+  .. image:: images/autocompletion.png
 
 Icon display
 ````````````
@@ -104,7 +104,7 @@ Context menu
 Right-clicking on any of these icons brings up a context menu to
 perform operations on an image.
 
-.. image:: images/right_click_menu.png
+  .. image:: images/right_click_menu.png
 
 At the top of the menu, the pixel type is displayeimage_api.htmld.
 
@@ -118,7 +118,7 @@ plugin methods are documented here__.
 Many of the plugin methods require arguments.  In that case, a dialog
 will be displayed.  For example the dialog for ``erode_dilate`` is:
 
-.. image:: images/erode_dilate_dialog.png
+  .. image:: images/erode_dilate_dialog.png
 
 After entering the arguments for a plugin function, code is generated
 to perform the operation and automatically run in the console:
@@ -136,10 +136,40 @@ At the bottom of the console window is a history which displays all of
 the code that has been entered in the Python console.  Code can be
 copied and pasted from here to build Gamera scripts.
 
-The image display
------------------
+Console menu
+````````````
 
-Double-clicking on the image icon will display the image in its own window.
+File menu
+'''''''''
+
+**Open...**
+  Open an image.
+
+**Exit**
+  Exit Gamera.
+
+Classify menu
+'''''''''''''
+
+**Interactive Classifier**
+  Create a new `Interactive Classifier window`_.
+
+Toolkits
+''''''''
+
+See `Writing toolkits`__ for more information.
+
+.. __: writing_toolkits.html
+
+Image display
+-------------
+
+Double-clicking on the image icon will display the image in its own
+window.  Alternatively, you can use the ``display`` method:
+
+.. code:: Python
+
+   >>>image.display()
 
 .. image:: images/display.png
 
@@ -186,12 +216,377 @@ The image display toolbar has the following buttons:
 .. |NewReference| image:: images/icon_make_view.png
 .. |NewCopy| image:: images/icon_image_copy.png
 
-The multiple image display
---------------------------
+Multiple image display
+----------------------
 
-.. image:: images/multi_display.png
+Double-clicking on a list of images in the icon display brings up the
+**multi-image display** window.  Alternatively, you can use the
+``display_multi`` function:
 
-The classification environment
-------------------------------
+.. code:: Python
 
-.. image:: images/classifier_window.png
+  >>>display_multi(list_of_images)
+
+Images are displayed in a grid.  By default, the images are sorted so
+the grid takes up a minimum amount of total space.
+
+  .. image:: images/multi_display.png
+
+Images can be selected by clicking on a cell in the grid.  Individual cells
+can be added to the selection by **Ctrl** clicking.  Ranges of cells
+can be selected by **Shift** clicking.
+
+The `context menu`_ can be used to perform operations on multiple
+images.  Right-clicking on a selected image brings up the context menu.
+
+The multi-display toolbar has the following items:
+
+  +-----------------+--------------------------------------------------------------+
+  | |Refresh|       | Force a refresh of the display, in case any change has       |
+  |                 | occurred to the image.                                       |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomIn|        | Zoom in.                                                     |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomNorm|      | Actual size.                                                 |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomIn|        | Zoom out.                                                    |
+  +-----------------+--------------------------------------------------------------+
+  | |Label|         | Displays a value within each cell. The value is determined by|
+  |                 | the expression in the drop-down text box to the left of      |
+  |                 | the label button.                                            |
+  |                 | Within the context of the expression, `x` represents the     |
+  |                 | image within each cell, and the expression is evaluated to   |
+  |                 | determine the result to display.                             |
+  +-----------------+--------------------------------------------------------------+
+  | |SortA| |SortD| | Sorts the images in the grid based on a given property.  The |
+  |                 | property is determined by the expression in the drop-down    |
+  |                 | text box to the left of the sort buttons.                    |
+  +-----------------+--------------------------------------------------------------+
+  | |Select|        | Selects the image in the grid based on a given criteria.     |
+  |                 | The criteria is determined by the expression in the drop-down|
+  |                 | text box to the left of the select button.                   |  
+  |                 | Within the context of the expression, `x` represents the     |
+  |                 | image within each cell.  When the expression evaluates to    |
+  |                 | ``True``, the image will be selected.                        |
+  +-----------------+--------------------------------------------------------------+
+  | |SelectAll|     | Selects all images.                                          |
+  +-----------------+--------------------------------------------------------------+
+
+.. |Label| image:: images/icon_show_name.png
+.. |SortA| image:: images/icon_sort_asc.png
+.. |SortD| image:: images/icon_sort_dec.png
+.. |Select| image:: images/icon_select.png
+.. |SelectAll| image:: images/icon_select_all.png
+
+Interactive classifier window
+-----------------------------
+
+The interactive classifier window is the most involved part of the
+Gamera GUI.  It is where you can train the Gamera classifier to
+recognize different symbol types.
+
+  .. image:: images/classifier_window.png
+
+Concepts
+````````
+
+Before the parts of the classifier window are discussed, some general
+concepts should be understood.
+
+Databases
+'''''''''
+
+In the classifier window, there are two sets of connected components
+(glyphs) involved: the current database and the production database:
+
+Current database
+  The set of glyphs on the currently displayed image.
+
+Production database
+  Works "behind-the-scenes" by the classifier to classify future
+  connected components.  The production database can contain glyphs
+  from a number of images, or it may be a pre-pruned set of training
+  data.
+
+When glyphs in the current database are classified by the user, they
+are copied into the production database
+
+Coloring
+''''''''
+
+When connected components are displayed in the classifier, they are
+colored according to how they were classified:
+
+  +----------+--------------+-----------------------------------------------------+
+  | Color    | Constant     | Description                                         |
+  +==========+==============+=====================================================+
+  | |UColor| | UNCLASSIFIED | The connected component is completely unclassified. |
+  | (white)  |              |                                                     |
+  +----------+--------------+-----------------------------------------------------+
+  | |AColor| | AUTOMATIC    | The connected component was classified by the       | 
+  | (red)    |              | automatic classifier using training data.           |
+  +----------+--------------+-----------------------------------------------------+
+  | |HColor| | HEURISTIC    | The connected component was classified by some      |
+  | (yellow) |              | heuristic (non-exemplar-based) process.             |
+  +----------+--------------+-----------------------------------------------------+
+  | |MColor| | MANUAL       | The connected component was classified by a human.  |
+  | (green)  |              |                                                     |
+  +----------+--------------+-----------------------------------------------------+
+
+.. |UColor| image:: images/unclassified_color.png
+.. |AColor| image:: images/autoclassified_color.png
+.. |HColor| image:: images/heuristicclassified_color.png
+.. |MColor| image:: images/manualclassified_color.png
+
+Class names
+'''''''''''
+
+"Class names" name a particular class of symbol.  Class names are made
+up of period-delimited parts so that they can be grouped into
+categories.  Names can be invented on the fly.
+
+For instance, if you were training for a subset of the characters in the
+English language, you might have the following class names::
+
+  lower.a
+  lower.b
+  lower.c
+
+  upper.a
+  upper.b
+  upper.c
+
+  punctuation.comma
+
+These period-delimited parts are used to create a tree-like structure
+in the classifier window that might look something like:
+
+  .. image:: images/symbol_table_example.png
+
+Special class names
+...................
+
+Special class names begin with an underscore (``_``).
+
+``_group``
+  Symbols trained with names beginning with ``_group.`` are first
+  grouped together and then trained as a single unit.  For instance,
+  you may wish to train lowercase i's (which are made up of two
+  connected components) as a single logical unit.  Select both parts
+  (by dragging a bounding box around them in the original image
+  display) and then train as ``_group.lower.i``.
+
+``_split``
+  Symbols trained with names beginning with ``_split.`` are run
+  through a given splitting algorithm.  For instance, symbols that
+  need to be broken into upper and lower halves for further
+  classification of those parts would be trained as
+  ``_split.splity``.  When the automatic classifier encounters glyphs
+  that most closely match those trained as ``_split``, it will perform
+  the splitting algorithm and then continue to recursively classify its parts.
+
+  The splitting algorithms are documented `here`__.
+
+.. __: plugins.html#segmentation
+
+  New splitting algorithms can be created by `writing plugin`__ methods
+  in the category ``Segmentation``.  
+
+.. __: writing_plugins.html
+
+The window
+``````````
+
+The interactive classifier window is divided into three parts: The
+symbol table, the connected component display, and the original image
+display.
+
+Symbol table
+''''''''''''
+
+The symbol table is a heirarchical tree of symbol names that are
+currently in use.  It is preloaded with `special class names`_.
+
+Symbols can be trained by typing the class name in the text box at
+the top or double-clicking on a class name in the tree.  The text box
+features auto-completion (similar to the Unix shell), so you can type
+a partial name and then press the <Tab> key to attempt to complete it.
+
+Connected component display
+'''''''''''''''''''''''''''
+
+The connected component display behaves identically to the `multiple
+image display`_.
+
+When connected components are selected, they are highlighted in the
+original image display below.
+
+Connected components are colored based on their classification state.
+(See `coloring`_).
+
+There are some additional toolbar buttons:
+
+  +-----------------+--------------------------------------------------------------+
+  | |Delete|        | Deletes the selected connected components.  They will be     |
+  |                 | displayed with a red-hatching pattern to indicate they are   |
+  |                 | deleted.  Re-sorting the connected component display will    |
+  |                 | remove them completely.  Deleted glyphs are never saved to   |
+  |                 | disk.                                                        |
+  +-----------------+--------------------------------------------------------------+
+  | |NextU| |NextA| | Auto-move toggles.					   |
+  |                 | Whenever a glyph is classified, the 'cursor' will            |
+  | |NextH| |NextM| | automatically move to the next glyph that matches any of the |
+  |                 | selected types: UNCLASSIFIED, AUTOMATIC, HEURISTIC or MANUAL.|
+  +-----------------+--------------------------------------------------------------+
+
+.. |Delete| image:: images/icon_delete.png
+.. |NextU| image:: images/icon_next_unclass.png
+.. |NextA| image:: images/icon_next_autoclass.png
+.. |NextH| image:: images/icon_next_heurclass.png
+.. |NextM| image:: images/icon_next_manclass.png
+
+
+Original image display
+''''''''''''''''''''''
+
+The original image display, for the most part, behaves identically to
+the standard `image display`_.
+
+Clicking on a connected component will select it in the connected
+component display.  Dragging a bounding box around a
+collection of connected components will select multiple connected
+components.  Additional connected components can be added to the
+selection by Shift-clicking.
+
+There are some additional toolbar buttons:
+
+  +-----------------+--------------------------------------------------------------+
+  | |Mark|          | (Toggle) Display an animated rectangle around the            |
+  |                 | currently selected connected component.                      |
+  +-----------------+--------------------------------------------------------------+
+
+.. |Mark| image:: images/icon_mark_highlights.png
+
+Menu
+````
+
+File menu
+'''''''''
+
+**Open all...**
+  Opens a special directory of files containing an original image, and
+  the production and current databases.  This directory should be one
+  created by **Save all...**
+
+**Save all...**
+  Saves all of the data necessary to restore the classifier's state
+  into a special directory.  This includes the original image and the
+  production and current databases.  This special directory can be
+  reloaded using **Open all...**.
+
+Image menu
+''''''''''
+
+**Open and segment image...**
+  Loads an image from disk and then performs a given segmentation
+  algorithm on it to create connected components.  The segmentation
+  algorithm can be selected from the drop-down list.  (If you're not
+  sure which one to use, try ``cc_analysis``.)  The connected
+  components are loaded into the connected component display and the
+  original image is loaded into the original image display.
+
+**Select and segment image...**
+  Select an already-loaded image from the console, and perform a given
+  segmentation algorithm on it to create connected components.  The
+  segmentation algorithm can be selected from the drop-down list.  (If
+  you're not sure which one to use, try ``cc_analysis``.)  The
+  connected components are loaded into the connected component display
+  and the original image is loaded into the original image display.
+
+**Select image...**
+  Select an already-loaded image from the console and use it as the
+  original image.  This image does not have to correspond to the
+  current database.
+
+**Save glyphs separately...**
+  Saves each of the connected components into a separate image file in
+  a given directory using one of the following sets of connected
+  components:
+
+    - Production database
+    - Current database
+    - Selected glyphs
+
+XML menu
+''''''''
+
+The XML menu is used to save and load connected components in the
+`Gamera XML format`__.
+
+.. __: xml_format.html
+
+**Save by criteria...**
+  For *expert* users.  Provides a complex dialog box to save different
+  sets of glyphs to a single XML file.
+
+  .. image:: images/save_by_criteria.png
+
+**Production database**
+  The production database is the set of glyphs that affect the
+  currently active classifier.  This menu allows one to Open, Merge,
+  Save, Save As or Clear the production database.
+
+**Current database**
+  The current database is the set of glyphs visible in the connected
+  components display.  This menu allows one to Open, Merge, Save, Save
+  As the current database.  The selected
+  connected components only can also be saved.
+
+**Symbol names**
+  Import or export a set of symbol names.  Symbol names can be
+  imported from a full Gamera XML file containing images, or a symbol
+  name-only Gamera XML file.
+
+Classifier menu
+'''''''''''''''
+
+**Guess all** / **Guess selected**
+  Classifies the glyphs using the automatic classifier.  Glyphs that
+  were classified manually are not reclassified (they must be
+  unclassified first).
+
+  
+**Group and guess all** / **Group and guess selected**
+  Classifies the glyphs using the automatic classifier, while
+  attempting to group nearby connected components to form glyphs that
+  are more similar to glyphs in the production database.  This process
+  can take considerably longer than one-by-one classification.
+
+**Confirm all** / **Confirm selected**
+  Treats all automatically classified glyphs as if they were manually
+  classified and adds them to the production database.  Use this
+  function when you are sure all glyphs are correctly classified.
+
+**Change set of features**
+  Change which features of the connected components are used for
+  classification.  The features themselves are documented here__.
+
+.. __: plugins.html#features
+
+  .. image:: images/feature_selection.png
+
+**Classifier settings**
+  Allows the settings specific to a particular classifier type to be
+  changed, saved or loaded.
+
+**Create noninteractive copy**
+  When training is completed (or partially completed) this function
+  will create a noninteractive copy, which is likely more optimized
+  than the interactive version (depending on the classifier type).
+
+Rules menu
+''''''''''
+
+Unstable.
+
+TODO: Write me.

@@ -46,10 +46,13 @@ otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
 see the Thresholding_ category.
 """
     pure_python = True
-    self_type = ImageType([FLOAT, GREY16, RGB])
+    self_type = ImageType([FLOAT, GREYSCALE, GREY16, RGB])
     return_type = ImageType([ONEBIT], "onebit")
     def __call__(self, storage_format=DENSE):
-        image = self.to_greyscale()
+        try:
+            image = self.to_greyscale()
+        except TypeError:
+            image = self
         return image.otsu_threshold(storage_format)
     __call__ = staticmethod(__call__)
     doc_examples = [(RGB,)]

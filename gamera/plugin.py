@@ -21,6 +21,7 @@
 from gamera.args import *
 from gamera import paths
 import new, os, os.path, imp, inspect, sys
+from types import *
 from enums import *
 
 class PluginModule:
@@ -37,19 +38,21 @@ class PluginModule:
    extra_link_args = []
    extra_objects = []
    functions = []
-   pure_python = 0
+   pure_python = False
    version = "1.0"
    author = None
    url = None
 
    def __init__(self):
-      # FIXME - skip this if we can't get gamera.core (i.e.
-      # during the build process).
+      for function in self.functions:
+         function.module = self.__class__
       core = __import__("gamera.core")
       if core is None:
          return
       for function in self.functions:
-         function.register(self, self.category)
+         if not isinstance(function, ClassType):
+            function = function.__class__
+         function.register(self)
 
 class Builtin(PluginModule):
    author = "Michael Droettboom and Karl MacMillan"
@@ -59,16 +62,17 @@ class PluginFunction:
    return_type = None
    self_type = ImageType(ALL)
    args = Args([])
-   pure_python = 0
    image_types_must_match = 0
    testable = 0
    feature_function = False
-   category = None
    doc_examples = []
+   category = None
+   pure_python = False
 
-   def register(cls, module=Builtin, category=None, add_to_image=1):
-      cls.module = module
-      if cls.category != None:
+   def register(cls, add_to_image=1):
+      if cls.category == None:
+         category = cls.module.category
+      else:
          category = cls.category
       if not hasattr(cls, "__call__"):
          # This loads the actual C++ function if it is not directly

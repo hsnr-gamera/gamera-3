@@ -106,8 +106,9 @@ class Template:
       self.line = self.line[chars:]
 
    def parser_exception(self, s, e=None):
+      import traceback
       if e != None:
-         print e.__class__.__name__ + ": " + str(e)
+         traceback.print_exc()
       raise ParserException(self.lineno, s)
 
    def execute_file(self, filename, data={}):

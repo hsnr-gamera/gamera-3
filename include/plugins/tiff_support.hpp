@@ -94,9 +94,9 @@ namespace {
 	  bit_index++;
 	}
 	if (bits[k])
-	  tmp = 1;
+	  tmp = pixel_traits<OneBitPixel>::black();
 	else
-	  tmp = 0;
+	  tmp = pixel_traits<OneBitPixel>::white(); 
 	matrix.set(i, j, tmp);
 	if (k == 0)
 	  k = 8;

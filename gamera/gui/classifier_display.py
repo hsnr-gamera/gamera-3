@@ -809,7 +809,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnChangeSetOfFeatures(self, event):
       all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
-      existing_features = [x[0] for x in self._classifier.get_feature_functions()]
+      existing_features = [x[0] for x in self._classifier.get_feature_functions()[0]]
       feature_controls = []
       for x in all_features:
          feature_controls.append(
@@ -817,7 +817,7 @@ class ClassifierFrame(ImageFrameBase):
       dialog = Args(
          feature_controls,
          name='Feature selection', 
-         title='Select the features you to use for classification')
+         title='Select the features you want to use for classification')
       result = dialog.show(self._frame)
       if result is None:
          return

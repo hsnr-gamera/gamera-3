@@ -120,115 +120,50 @@ template = Template("""
   [[# code for each function #]]
   [[for function in module.functions]]
     [[if not function.pure_python]]
-      [[if not function.self_type is None]]
-        [[exec pyarg_format = 'O']]
-      [[else]]
-        [[exec pyarg_format = '']]
-      [[end]]
       static PyObject* call_[[function.__name__]](PyObject* self, PyObject* args) {
       [[# this holds the self argument - note that the self passed into the function will #]]
       [[# be Null because this functions is not actually bound to an object #]]
-      [[if not function.self_type is None]]
-        PyObject* real_self;
-        Image* real_self_image;
+
+      [[if function.self_type == None]]
+        [[exec args = function.args.list]]
+      [[else]]
+        [[exec args = [function.self_type] + function.args.list]]
+        [[exec function.self_type.name = 'self']]
+      [[end]]  
+      [[# for each argument insert the appropriate conversion code into the string that will #]]
+      [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
+      [[if function.return_type != None]]
+        [[exec function.return_type.name = 'return']]
+        [[exec function.return_type.convert_from_PyObject = True]]
+        [[function.return_type.declare()]]
+      [[end]]
+      [[exec pyarg_format = '']]
+      [[for arg in args]]
+        [[exec pyarg_format += arg.arg_format]]
+        [[arg.declare()]]
       [[end]]
 
-         [[# for each argument insert the appropriate conversion code into the string that will #]]
-         [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
+      [[# Now that we have all of the arguments and variables for them we can parse #]]
+      [[# the argument tuple. #]]
+      [[if pyarg_format != '']]
+        if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
+        [[for arg in args]]
+          ,
+          &[[arg.pysymbol]]
+        [[end]]
+        ) <= 0)
+        return 0;\
+      [[end]]
       [[if function.feature_function]]
          int offset = -1;
-         [[exec pyarg_format = 'O|i']]
-         if (PyArg_ParseTuple(args, \"[[pyarg_format]]\",&real_self, &offset) <= 0)
+         if (PyArg_ParseTuple(args, \"O|i\",&[[function.self_type.pysymbol]], &offset) <= 0)
            return 0;
-      [[else]]
-         [[for x in function.args.list]]
-           [[exec x.name = re.sub(\"\s\", \"_\", x.name)]]
-           [[if isinstance(x, Int) or isinstance(x, Choice) or isinstance(x, Check)]]
-             int [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 'i']]
-           [[elif isinstance(x, Float)]]
-             double [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 'd']]
-           [[elif isinstance(x, String) or isinstance(x, FileSave) or isinstance(x, FileOpen)]]
-             char* [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 's']]
-           [[elif isinstance(x, Region)]]
-             PyObject* [[x.name + '_arg']];
-             Region* [[x.name + '_regionarg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
-           [[elif isinstance(x, RegionMap)]]
-             PyObject* [[x.name + '_arg']];
-             RegionMap* [[x.name + '_regionmaparg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
-           [[elif isinstance(x, ImageType)]]
-             PyObject* [[x.name + '_arg']];
-             Image* [[x.name + '_imagearg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
-           [[elif isinstance(x, ImageList)]]
-             PyObject* [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
-             std::vector<Image*> [[x.name + '_list_arg']];
-           [[elif isinstance(x, Class)]]
-             PyObject* [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
-           [[else]]
-             Something funny happened - [[x.__name__]]
-             [[isinstance(x, ImageType)]]
-           [[end]]
-         [[end]]
-         
-         [[# Create a variable to hold the return value of the plugin function - see #]]
-         [[# below for how the Image* is converted to a PyImageObject. #]]
-         [[if isinstance(function.return_type, Int)]]
-           int return_value = 0;
-         [[elif isinstance(function.return_type, Float)]]
-           double return_value = 0.0;
-         [[elif isinstance(function.return_type, String)]]
-           [[# changed from char * to std::string  MGD #]]
-           std::string return_value; // Let C++ implicitly initialize this.
-         [[elif isinstance(function.return_type, ImageType)]]
-           Image* return_value = 0;
-         [[elif isinstance(function.return_type, Region)]]
-           Region* return_value = 0;
-         [[elif isinstance(function.return_type, RegionMap)]]
-           RegionMap* return_value = 0;
-         [[elif isinstance(function.return_type, ImageInfo)]]
-           ImageInfo* return_value = 0;
-         [[elif isinstance(function.return_type, FloatVector)]]
-           FloatVector* return_value = 0;
-         [[elif isinstance(function.return_type, IntVector)]]
-           IntVector* return_value = 0;
-         [[elif isinstance(function.return_type, ImageList)]]
-           std::list<Image*>* return_value = 0;
-         [[elif isinstance(function.return_type, Class)]]
-           PyObject* return_value = 0;
-         [[end]]
-
-         [[# Now that we have all of the arguments and variables for them we can parse #]]
-         [[# the argument tuple. #]]
-         [[if pyarg_format != '']]
-           if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
-             [[if not function.self_type is None]]
-               ,&real_self
-             [[end]]
-           [[for i in range(len(function.args.list))]]
-             ,
-             &[[function.args.list[i].name + '_arg']]
-           [[end]]
-           ) <= 0)
-           return 0;\
-         [[end]]
       [[end]]
 
-      [[# Type check the self argument #]]
-      [[if not function.self_type is None]]
-        if (!is_ImageObject(real_self)) {
-          PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
-          return 0;
-        }
-        real_self_image = ((Image*)((RectObject*)real_self)->m_x);
-        image_get_fv(real_self, &real_self_image->features, &real_self_image->features_len);
+      [[for arg in args]]
+        [[arg.from_python()]]
       [[end]]
+      
       [[if function.feature_function]]
          feature_t* feature_buffer = 0;
          PyObject* str = 0;
@@ -236,175 +171,22 @@ template = Template("""
            str = PyString_FromStringAndSize(NULL, [[function.return_type.length]] * sizeof(feature_t));
            feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
-           if (PyObject_Size(((ImageObject*)real_self)->m_features) < offset + [[function.return_type.length]]) {
+           if (self_arg->features_len < offset + [[function.return_type.length]]) {
              PyErr_SetString(PyExc_ValueError, \"Offset as given will cause data to be written outside of array.  Perhaps you neglected to create a feature array?\");
              return 0;
            }
-           feature_buffer = real_self_image->features + offset;
+           feature_buffer = self_arg->features + offset;
          }
-      [[end]]
-
-      [[for arg in function.args.list]]
-        [[if isinstance(arg, ImageList)]]
-          if (!PyList_Check([[arg.name + '_arg']])) {
-            PyErr_SetString(PyExc_TypeError, \"Expected a list of images.\");
-            return 0;
-          }
-          [[arg.name + '_list_arg']].resize(PyList_GET_SIZE([[arg.name + '_arg']]));
-          for (int i=0; i < PyList_GET_SIZE([[arg.name + '_arg']]); ++i) {
-            PyObject *element = PyList_GET_ITEM([[arg.name + '_arg']], i);
-            if (!is_ImageObject(element)) {
-              PyErr_SetString(PyExc_TypeError, \"Expected a list of images.\");
-              return 0;
-            }
-            [[arg.name + '_list_arg']][i] = ((Image*)((RectObject*)element)->m_x);
-            image_get_fv(element, &[[arg.name + '_list_arg']][i]->features,
-                         &[[arg.name + '_list_arg']][i]->features_len);
-          }
-          [[exec arg.name += '_list']]  
-        [[end]]
-      [[end]]  
-
-      [[# This code goes through each of the image arguments and builds up a list of #]]
-      [[# possible image type names. What is passed in is an abstract notion of #]]
-      [[# pixel type (which is saved and restored at the end of this process). That #]]
-      [[# is converted into strings used for the the enums (in the switch statemnt) #]]
-      [[# and for the casting of the pointers to the C++ objects held in the PyObjects. #]]
-      [[# Finally, type-checking code is inserted as well #]]      
-      [[if not function.self_type is None]]
-        [[exec tmp = [] ]]
-        [[exec orig_self_types = function.self_type.pixel_types[:] ]]
-        [[for type in function.self_type.pixel_types]]
-          [[if type == ONEBIT]]
-            [[exec tmp.append('OneBitRleImageView')]]
-            [[exec tmp.append('RleCc')]]
-            [[exec tmp.append('Cc')]]
-          [[end]]
-          [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
-        [[end]]
-        [[exec function.self_type.pixel_types = tmp]]
-        [[exec function.self_type.name = 'real_self_image']]
-        [[exec function.self_type.pyname = 'real_self']]
-        [[exec images = [function.self_type] ]]
+         [[args[0].call(function, args[1:], [])]]
       [[else]]
-        [[exec images = [] ]]
-      [[end]]      
-      [[exec orig_image_types = [] ]]
-      [[for x in function.args.list]]
-        [[if isinstance(x, ImageType)]]
-          [[exec tmp = [] ]]
-          [[for type in x.pixel_types]]
-            [[if type == ONEBIT]]
-              [[exec tmp.append('OneBitRleImageView')]]
-              [[exec tmp.append('RleCc')]]
-              [[exec tmp.append('Cc')]]
-            [[end]]
-            [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
-          [[end]]
-          [[exec orig_image_types.append(x.pixel_types[:])]]
-          [[exec x.pyname = x.name + '_arg']]
-          [[exec x.name = x.name + '_imagearg']]
-          [[exec x.pixel_types = tmp]]
-          [[exec images.append(x)]]
-          if (!is_ImageObject([[x.pyname]])) {
-            PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
-            return 0;
-          }
-          [[x.name]] = ((Image*)((RectObject*)[[x.pyname]])->m_x);
-          image_get_fv([[x.pyname]], &[[x.name]]->features,
-                       &[[x.name]]->features_len);
-        [[end]]
-      [[end]]
-
-      [[# Extract the other arguments #]]
-      [[for x in function.args.list]]
-        [[if isinstance(x, RegionMap)]]
-          [[exec x.pyname = x.name + '_arg']]
-          [[exec x.name = x.name + '_regionmaparg']]
-          if (!is_RegionMapObject([[x.pyname]])) {
-            PyErr_SetString(PyExc_TypeError, \"Object is not a RegionMap.\");
-            return 0;
-          }
-          [[x.name]] = (RegionMap*)((RegionMapObect*)[[x.pyname]])->m_x;
-        [[elif isinstance(x, Region)]]
-          [[exec x.pyname = x.name + '_arg']]
-          [[exec x.name = x.name + '_regionarg']]
-          if (!is_RegionObject([[x.pyname]])) {
-            PyErr_SetString(PyExc_TypeError, \"Object is not a Region.\");
-            return 0;
-          }
-          [[x.name]] = (Region*)((RectObect*)[[x.pyname]])->m_x;
-        [[end]]
-      [[end]]
-
-      [[def switch(layer, args)]]
-        switch(get_image_combination([[images[layer].pyname]])) {
-          [[for type in images[layer].pixel_types]]
-            [[exec current = '*((' + type + '*)' + images[layer].name + ')']]
-            case [[type.upper()]]:
-              [[if layer == len(images) - 1]]
-                [[if function.feature_function]]
-                   [[function.__name__]]([[current]], feature_buffer);
-                [[else]]
-                   [[if not function.return_type is None]]
-                     return_value =
-                   [[end]]
-                   [[function.__name__]]
-                   (
-                   [[exec tmp_args = args + [current] ]]
-                   [[exec arg_string = tmp_args[0] ]]
-                   [[exec if len(function.args.list) > 0: arg_string += ', ']]
-                   [[exec current_image = 1]]
-                   [[for i in range(len(function.args.list))]]
-                     [[if isinstance(function.args.list[i], ImageType)]]
-                       [[exec arg_string += tmp_args[current_image] ]]
-                       [[exec current_image += 1]]
-                     [[else]]
-
-                       [[exec arg_string += function.args.list[i].name + '_arg']]
-                     [[end]]
-                     [[if i < len(function.args.list) - 1]]
-                       [[exec arg_string += ', ']]
-                     [[end]]
-                   [[end]]
-                   [[arg_string]]
-
-                   );
-                [[end]]   
-              [[else]]
-                [[call switch(layer + 1, args + [current])]]
-              [[end]]
-            break;
-          [[end]]
-          default:
-            PyErr_SetString(PyExc_TypeError, \"Image types do not match function signature.\");
-            return 0;
+        try {
+          [[args[0].call(function, args[1:], [])]]
+        } catch (std::exception& e) {
+          PyErr_SetString(PyExc_RuntimeError, e.what());
+          return 0;
         }
       [[end]]
-      try {
-      [[if images != [] ]]
-        [[call switch(0, [])]]
-      [[else]]
-           [[if function.return_type != None]]
-             return_value =
-           [[end]]
-           [[function.__name__]]
-           (
-           [[exec arg_string = '']]
-           [[for i in range(len(function.args.list))]]
-             [[exec arg_string += function.args.list[i].name + '_arg']]
-             [[if i < len(function.args.list) - 1]]
-               [[exec arg_string += ', ']]
-             [[end]]
-           [[end]]
-           [[arg_string]]
-           );
-      [[end]]
-      } catch (std::exception& e) {
-        PyErr_SetString(PyExc_RuntimeError, e.what());
-        return 0;
 
-      }
       [[if function.feature_function]]
          if (str != 0) {
             [[# This is pretty expensive, but simple#]]
@@ -422,70 +204,13 @@ template = Template("""
       [[elif function.return_type == None]]
         Py_INCREF(Py_None);
         return Py_None;
-      [[elif isinstance(function.return_type, ImageType)]]
-        return create_ImageObject(return_value);
-      [[elif isinstance(function.return_type, String)]]
-        return PyString_FromStringAndSize(return_value.data(), return_value.size() [[# + 1 doesn't seem to be needed MGD #]]);
-      [[elif isinstance(function.return_type, ImageInfo)]]
-        return create_ImageInfoObject(return_value);
-      [[elif isinstance(function.return_type, Int)]]
-        return Py_BuildValue(\"i\", return_value);
-      [[elif isinstance(function.return_type, Float)]]
-        return Py_BuildValue(\"f\", return_value);
-      [[elif isinstance(function.return_type, Region)]]
-        PyObject* result = create_RegionObject(*return_value);
-        delete return_value;
-        return result;
-      [[elif isinstance(function.return_type, RegionMap)]]
-        PyObject* result = create_RegionMapObject(*return_value);
-        delete return_value;
-        return result;
-      [[elif isinstance(function.return_type, FloatVector) or isinstance(function.return_type, IntVector)]]
-         [[# This is pretty expensive, but simple#]]
-         PyObject* array_init = get_ArrayInit();
-         if (array_init == 0)
-           return 0;
-         [[if isinstance(function.return_type, FloatVector)]]
-           PyObject* str = PyString_FromStringAndSize(
-               (char*)(&((*return_value)[0])),
-               return_value->size() * sizeof(double));
-           PyObject* array = PyObject_CallFunction(
-               array_init, \"sO\", \"d\", str);
-         [[else]]
-           PyObject* str = PyString_FromStringAndSize(
-               (char*)(&((*return_value)[0])),
-               return_value->size() * sizeof(int));
-           PyObject* array = PyObject_CallFunction(
-               array_init, \"sO\", \"i\", str);
-         [[end]]
-         Py_DECREF(str);
-         delete return_value;
-         return array;
-      [[elif isinstance(function.return_type, ImageList)]]
-        PyObject* list = PyList_New(return_value->size());
-        std::list<Image*>::iterator it = return_value->begin();
-        for (size_t i = 0; i < return_value->size(); ++i, ++it) {
-          PyObject *item = create_ImageObject(*it);
-          PyList_SetItem(list, i, item);
-        }
-        delete return_value;
-        return list;
       [[else]]
-        return return_value;
-      [[end]]
-
-      [[if not function.self_type is None]]
-        [[exec function.self_type.pixel_types = orig_self_types]]
-      [[end]]
-      [[for i in range(len(function.args.list))]]
-        [[if isinstance(function.args.list[i], ImageType)]]
-          [[exec function.args.list[i].pixel_types = orig_image_types[i] ]]
-        [[end]]
+        [[function.return_type.to_python()]]
+        return return_pyarg;
       [[end]]
       }
     [[end]]
   [[end]]
-
 
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
@@ -498,9 +223,9 @@ def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_a
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")
 
-  regenerate = 0
+  regenerate = False
   if newer(plugin_filename, cpp_filename) or '-f' in sys.argv:
-    regenerate = 1
+    regenerate = True
 
   sys.path.append(plug_path)
 
@@ -524,7 +249,7 @@ def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_a
         if path.exists(header_filename):
           found_header = 1
           if newer(header_filename, cpp_filename):
-            regenerate = 1
+            regenerate = True
             break
           break
       if regenerate:

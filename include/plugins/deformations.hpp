@@ -30,9 +30,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
+#include <time.h>
 #include <algorithm>
 #include <iostream>
-#include <fstream>
+
 using namespace vigra;
 using namespace std;
 namespace Gamera
@@ -92,7 +93,7 @@ namespace Gamera
 		delete out_data;
 		return out;
 	}
-
+	
 	template<class T, class U, class V, class W>
 	U* rot45(V v, T* m, U* img, float angle, W bgcolor)
 	{
@@ -128,7 +129,7 @@ namespace Gamera
 		
 		T out_data1(height1,width1);
 		U* out1 = new U(out_data1, 0, 0, height1, width1);
-		cout << "first allocation done"<<endl;
+		
 		double d;
 		if(dTan >= 0.0) //Positive Angle
 			d = dTan * (height1 + 0.5);
@@ -142,14 +143,13 @@ namespace Gamera
 			horizShift(img,out1,i,in,background,weight);
 			d -= dTan;
 		}
-
-		cout << "First shear done" << endl;
+		
 		//------------------------------------------------------------------------------------
 		// Second shear--vertical
 		//------------------------------------------------------------------------------------
 		size_t width2 = width1;
 		size_t height2 = size_t( double(img->ncols()) * fabs(dSinE) + (dCosE*img->nrows())) + 1;
-
+		
 		// Allocate image for 2nd shear
 		size_t diff = size_t( fabs(dSinE * dTan * img->nrows()) );
 		T out_data2(height2,width2);
@@ -160,7 +160,6 @@ namespace Gamera
 		else //Negative angle
 			d = -dSinE * (width2);
 
-		cout << "starting second shear" << endl;
 		for (i = 0; i < width2; i++)
 		{
 			size_t in = size_t(floor(d));
@@ -168,12 +167,12 @@ namespace Gamera
 			if(in < out2->nrows()) vertShift(out1, out2, i, in, background, weight,diff);
 			d += dSinE;
 		}
-		cout << "second shear done" << endl;
-		
+
 		//------------------------------------------------------------------------------------
 		// Third shear--horizontal
 		//------------------------------------------------------------------------------------
 		double abstan = fabs(dTan);
+		
 		diff = size_t(abstan * (height2 - img->nrows() + diff));
 		size_t width3 = //size_t(width2 + height2*fabs(dTan) - diff + 1);
 				size_t( img->ncols()*fabs(dCosE) + img->nrows()*fabs(dSinE) ) + 1;
@@ -195,7 +194,6 @@ namespace Gamera
 			d -= dTan;
 		}
 		
-		cout << "third shear done" << endl;
 		delete out1;
 		delete out2;
 		return out3;
@@ -233,13 +231,16 @@ namespace Gamera
 			filterfunc(p0, p1, oldPixel, orig->get(row,i-shiftAmount+sourceshift), weight);
 			if(i>=0 && i<width1) newbmp->set(row,i,p0);
 		}
-		if(i<width1 && bgcolor==pixelFormat(0.0)) newbmp->set(row,i++,oldPixel);
+		weight=1.0-weight;
+		if(i<width1) newbmp->set(row,i++,//bgcolor==pixelFormat(0.0) ? oldPixel : 
+											norm_weight_avg(bgcolor,p0,weight,1.0-weight));
 		for(; i<width1; i++) newbmp->set(row,i,bgcolor); //trailing background
 	}
 	
 	template<class T, class U>
 	void vertShift(T* orig, T* newbmp, size_t &col, size_t amount, U bgcolor, double weight, size_t diff)
 	{
+		typedef typename ImageFactory<T>::view_type::value_type pixelFormat;
 		size_t i, sourceshift=0;
 		
 		if(amount >= diff)
@@ -260,19 +261,20 @@ namespace Gamera
 		//do first pixel differently in order to initialize filtering
 		borderfunc(p0,p1,oldPixel,orig->get(i-amount+sourceshift,col),weight,bgcolor);
 		newbmp->set(i,col,p0);
-		i++;
+		
 		
 		for(; i<amount + orig->nrows() - sourceshift; i++)
 		{
 			if(i-amount+sourceshift > 0) filterfunc(p0,p1,oldPixel,orig->get(i - amount + sourceshift,col),weight);
 			if(i>=0 && i<height1) newbmp->set(i,col,p0);
 		}
-		if(i<height1) newbmp->set(i++,col,oldPixel);
+		if(i<height1) newbmp->set(i++,col,bgcolor==pixelFormat(0.0) ? oldPixel : 
+											norm_weight_avg(p0,bgcolor,weight,1.0-weight));
 		
 		for(; i<height1; i++) newbmp->set(i,col,bgcolor); //trailing background
 	}
 	
-        inline void filterfunc(RGBPixel &p0, RGBPixel &p1, RGBPixel &oldPixel, RGBPixel origPixel, double &weight)
+    inline void filterfunc(RGBPixel &p0, RGBPixel &p1, RGBPixel &oldPixel, RGBPixel origPixel, double &weight)
 	{
 		p0 = origPixel;
 		p1 = RGBPixel(  GreyScalePixel(p0.red() * weight),
@@ -293,11 +295,13 @@ namespace Gamera
 		oldPixel = p1;
 	}
 	
+	#include <fstream>
+
 	template<class T>
 	inline void borderfunc(T& p0, T& p1, T& oldPixel, T origPixel, double& weight, T bgcolor)
 	{
-		filterfunc(p0,p1,oldPixel,origPixel,weight);
-		if(bgcolor!=T(0.0)) p0 = origPixel;
+			filterfunc(p0,p1,oldPixel,origPixel,weight);
+			p0 = norm_weight_avg(bgcolor,origPixel,weight,1.0-weight);		
 	}
 	
 	template<class T>
@@ -498,10 +502,7 @@ namespace Gamera
 			srand(time(0));
 			randset = 1;
 		}
-/*
-		size_t hoffset = size_t(0.5*(double)m.ncols()*((double)rand()/(double)RAND_MAX)),
-			   voffset = size_t(0.5*(double)m.nrows()*((double)rand()/(double)RAND_MAX));
-*/
+		
 		size_t hoffset = 0, voffset = 0;
 		for(i = voffset; i<out->nrows(); i++) for(j = hoffset; j<out->ncols(); j++)
 		{
@@ -512,6 +513,86 @@ namespace Gamera
 		image_copy_attributes(m, *out);
 
 		return out;
+	}
+
+	template<class T>
+	Image* ink_diffuse(T &m)
+	{
+		using namespace std;
+		typedef ImageFactory<T> fact;
+		typedef typename fact::view_type::value_type pixelFormat;
+		pixelFormat background = (pixelFormat)m.get(0,0);
+		typename fact::data_type* out_data;
+		typename fact::view_type* out;
+		out_data = new typename fact::data_type(m.nrows(), m.ncols());
+		out = new typename fact::view_type(*out_data, 0, 0, m.nrows(), m.ncols());
+		size_t i, j;
+		double val, expSum;
+		pixelFormat aggColor, currColor;
+		srand(time(NULL));
+		size_t type = 2;
+		if(type == 1)
+		for(i=0; i<m.ncols(); i++)
+		{
+			aggColor = m.get(0,i);
+			expSum = 0;
+			for(j=0; j<m.nrows(); j++)
+			{
+				val = 1.0/exp((double)j/70.0);
+				expSum += val;
+				currColor = m.get(j,i);
+				double weight = val / (val + expSum);
+				aggColor = norm_weight_avg(aggColor, currColor, 1-weight, weight);
+				out->set(j,i,norm_weight_avg(aggColor,currColor,val, 1.0-val));
+			}
+			expSum += val;
+		}
+
+		else if(type == 2)//try monte carlo simulation
+		{
+			for(i = 0; i<m.ncols(); i++) for(j=0; j<m.nrows(); j++) out->set(j,i,m.get(j,i));
+			size_t starti, startj;
+			double iD, jD;
+			starti = iD = (double)m.ncols() * (double)rand() / (double)RAND_MAX;
+			startj = jD = (double)m.nrows() * (double)rand() / (double)RAND_MAX;
+			size_t index = 0;
+			while(iD>0 && iD < m.ncols() && jD>0 && jD<m.nrows() )
+			{
+				expSum = 0;
+				val = 1.0/exp(dist((double)starti, (double)startj, iD, jD)/70.0);
+				expSum += val;
+				currColor = out->get(jD,iD);
+				double weight = val / (val + expSum);
+				aggColor = norm_weight_avg(aggColor, currColor, 1-weight, weight);
+				out->set((size_t)jD,(size_t)iD,norm_weight_avg(aggColor,currColor,1.0-val, val));
+				iD += sin(2.0*PI*rand()/(double)RAND_MAX);
+				jD += cos(2.0*PI*rand()/(double)RAND_MAX);
+
+			}
+		}
+		image_copy_attributes(m, *out);
+		return out;
+	}
+	
+
+	inline double dist(double i0, double j0, double i1, double j1)
+	{
+		double quadI = pow(i1-i0,2.0), quadJ = pow(j1-j0,2.0);
+		return sqrt(quadI + quadJ);
+	}	
+
+	inline RGBPixel norm_weight_avg(RGBPixel& pix1, RGBPixel& pix2, double w1=1.0, double w2=1.0)
+	{
+		if(w1 == -w2) w1 = w2 = 1.0;
+		return RGBPixel( GreyScalePixel(((pix1.red() * w1) + (pix2.red() * w2))/(w1 + w2)),
+					GreyScalePixel(((pix1.green() * w1) + (pix2.green() * w2))/(w1 + w2)),
+					GreyScalePixel(((pix1.blue() * w1) + (pix2.blue() * w2))/(w1 + w2)));
+	}
+
+	template <class T>
+	inline T norm_weight_avg(T& pix1, T& pix2, double w1=1.0, double w2=1.0)
+	{
+		 return ((pix1 * w1) + (pix2 * w2))/(w1 + w2);
 	}
 }
 

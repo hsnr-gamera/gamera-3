@@ -22,6 +22,8 @@ from wxPython.wx import *         # wxPython
 from wxPython.grid import *
 from wxPython.lib.stattext import wxGenStaticText as wxStaticText
 from wxPython.wx import __version__ as __wx_version__
+if __wx_version__[-1] == 'u':
+   __wx_version__ = __wx_version__[0:-1]
 __wx_version__ = int(''.join(__wx_version__.split('.')))
 from math import sin, sqrt, ceil, log, floor, pi # Python standard library
 from sys import maxint

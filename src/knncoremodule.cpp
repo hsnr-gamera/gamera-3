@@ -987,11 +987,14 @@ void Initializer(GAGenome& genome) {
 static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   o->ga_running = true;
+  std::cerr << "hello" << std::endl;
   Py_BEGIN_ALLOW_THREADS
+#if 0
   if (o->ga != 0)
     delete o->ga;
   if (o->genome != 0)
     delete o->genome;
+#endif
   o->genome = new GA1DArrayGenome<double>(o->num_features, Fitness);
   o->genome->userData(o);
   o->genome->initializer(Initializer);
@@ -1008,11 +1011,16 @@ static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
 }
 
 static PyObject* knn_ga_destroy(PyObject* self, PyObject* args) {
+  std::cerr << "this is a test!!!!!" << std::endl;
   KnnObject* o = (KnnObject*)self;
-  if (o->ga != 0)
+  if (o->ga != 0) {
     delete o->ga;
-  if (o->genome != 0)
+    o->ga = 0;
+  }
+  if (o->genome != 0) {
     delete o->genome;
+    o->genome = 0;
+  }
   o->ga_running = false;
   Py_INCREF(Py_None);
   return Py_None;

@@ -33,7 +33,7 @@ def is_sequence(obj):
 def make_sequence(obj):
    "Make an object into a sequence if it isn't one."
    if not type(obj) in (ListType, TupleType):
-      return (obj,)
+      return [obj,]
    return obj
 
 def is_image_list(l):

@@ -117,8 +117,8 @@ def get_remove(graph, node, max_cost, path, remove):
          if edge.cost > max_cost:
             remove.append(edge)
          get_remove(graph, edge.get_node(node), max_cost, path, remove)
-
-def label(node, l, path):
+         
+def label(node, l, path={}):
    node.cluster_label = l
    for edge in node.edges:
       if not path.has_key(edge):
@@ -148,6 +148,60 @@ def make_subtrees(graph, max_cost):
            if x != []]
    return subs
 
+def get_lengths(node, depth, lengths, cur_depth=0, path = {}):
+   for edge in node.edges:
+      if path.has_key(edge):
+         continue
+      path[edge] = None
+      lengths[edge] = edge.cost
+      if depth > cur_depth:
+         get_lengths(edge.get_node(node), depth, lengths, cur_depth + 1, path)
+      
+def set_label(node, l, path = { }):
+   node.classify_automatic(l)
+   for edge in node.edges:
+      if not path.has_key(edge):
+         path[edge] = None
+         label(edge.get_node(node), l, path)
+
+def make_subtrees_stddev(graph, ratio):
+   import stats
+   cur_label = 0
+   remove = []
+   i = 0
+   edges = graph.edges.keys()
+   edges.sort()
+   edges.reverse()
+   for edge in edges:
+      lengths = { }
+      get_lengths(edge.node1, 4, lengths, 0, { edge: None })
+      get_lengths(edge.node2, 4, lengths, 0, { edge: None })
+      l = lengths.values()
+      if not (len(l) > 1):
+         continue
+      #stdev = stats.samplestdev(l)
+      mean = stats.mean(l)
+      #stdev2 = stats.samplestdev([stats.mean(l), edge.cost])
+      print edge.cost / mean, ratio * mean
+      if (edge.cost) / mean > (ratio * mean):
+         graph.remove_edge(edge.node1, edge.node2)
+         #remove.append(edge)
+
+   #for edge in remove:
+   #   graph.remove_edge(edge.node1, edge.node2)
+
+   for node in graph:
+      node.cluster_label = 0
+   for node in graph:
+      if node.cluster_label == 0:
+         label(node, cur_label)
+         cur_label += 1
+   for node in graph:
+      node.classify_automatic(str(node.cluster_label))
+
+   return graph.keys()
+         
+
 def do_visit_connected(node, path):
    node.visited = 1
    for edge in node.edges:
@@ -162,9 +216,9 @@ def check_connected(graph):
    for x in graph:
       if x.visited != 1:
          print "error: not connected!"
-         #print graph.disj_set
-         #for x in graph:
-            #print x.cluster_name, x.edges
+         print graph.disj_set
+         for x in graph:
+            print x.cluster_name, x.edges
          return
 
 def create_forest(glyphs):
@@ -178,7 +232,9 @@ def create_forest(glyphs):
    forest.sort()
    return forest
 
-def cluster(forest, glyphs):
+def create_graph(glyphs, ratio):
+   #forest = distance.unique_distances(glyphs)
+   forest = create_forest(glyphs)
    num_nodes = len(glyphs)
    next = 1
    g = Graph()
@@ -187,10 +243,9 @@ def cluster(forest, glyphs):
       g.add_node(glyphs[i])
       glyphs[i].cluster_name = str(i)
    g.add_edge(forest[0][1], forest[0][2], forest[0][0])
-   #print forest[0][1].cluster_name, forest[0][2].cluster_name 
    progress = util.ProgressFactory("Creating graph . . . ", num_nodes - 1)
    try:
-      for i in range(num_nodes - 2):
+      for i in range(num_nodes - 1):
          while(1):
             if g.add_edge(forest[next][1], forest[next][2], forest[next][0]):
                next += 1
@@ -204,19 +259,18 @@ def cluster(forest, glyphs):
       counted_edges = { }
    finally:
       progress.kill()
-   progress = util.ProgressFactory("Getting avg dist . . . ", len(g))
-   try:
-      for node in g:
-         for edge in node.edges:
-            if not counted_edges.has_key(edge):
-               counted_edges[edge] = None
-               total_cost += edge.cost
-         progress.step()
-   finally:
-      progress.kill()
+   print g.edges
+   c = make_subtrees_stddev(g, ratio)
+   return c
 
-   avg_cost = total_cost / len(counted_edges)
-   print avg_cost
-   s = make_subtrees(g, avg_cost * 2)
-   return g, s
+def cluster_avg_dist(graph):
+   s = make_subtrees(graph)
+   final_list = []
+   i = 0
+   for x in s:
+      for g in x:
+         g.classify_automatic(str(i))
+      i += 1
+      final_list.extend(x)
+   return final_list
 

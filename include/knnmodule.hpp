@@ -119,4 +119,19 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, double*
   return 0;
 }
 
+inline void compute_distance(DistanceType distance_type, const double* known_buf, int known_len,
+			     const double* unknown_buf, double* distance, const double* weights) {
+
+  if (distance_type == CITY_BLOCK) {
+    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
+				    weights);
+  } else if (distance_type == FAST_EUCLIDEAN) {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  } else {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  }
+}
+
 #endif

@@ -22,6 +22,7 @@ from wxPython.lib.dialogs import wxScrolledMessageDialog
 from os import path
 from types import *
 from gamera import util, config
+import sys
 
 config.define_option(
    "file", "default_directory", ".",
@@ -97,11 +98,12 @@ class FileDialog(wxFileDialog):
          self, parent, "Choose a file",
          last_directory, "", extensions, self._flags)
       self.extensions = extensions
-      self.button = wxButton(
-         self, 10000, "Recent files...", wxPoint(95, 10))
-      EVT_BUTTON(self, 10000, self._OnRecentMenu)
-      if not len(config.options.file[self.recent_files_spec].get()):
-         self.button.Enable(0)
+      if not sys.platform == 'win32':
+         self.button = wxButton(
+            self, 10000, "Recent files...", wxPoint(95, 10))
+         EVT_BUTTON(self, 10000, self._OnRecentMenu)
+         if not len(config.options.file[self.recent_files_spec].get()):
+            self.button.Enable(0)
 
    def show(self):
       result = self.ShowModal()

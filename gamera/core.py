@@ -18,6 +18,29 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+
+""" This module contains the core parts of Gamera including all of the image
+representation types, the dimension types, abstract mappings of values
+to regions on an image (ImageMap), image loading, and feature generation.
+ 
+Everything in this module can be used without the Gui to facilitate
+batch processing. It contains the following classes:
+
+ImageBase - common functionality for all of the image types.
+Image - images.
+SubImage - a view on part of an image.
+Cc - a non-rectangular view of part of an image (the view area
+     is marked with labels in the image).
+
+Additionally this module contains the following functions:
+
+load_image - load an image from a file.
+image_info - get information about an image file.
+display_multi - display a list of images in a grid-like window.
+generate_features_list - generate features on a list of images.
+init_gamera - parse the gamera options and load all of the plugins.
+"""
+
 # Python standard library
 from new import instancemethod
 from array import array
@@ -43,17 +66,22 @@ import paths, util, config    # Gamera-specific
 ######################################################################
 
 def load_image(filename, compression = DENSE):
+   """Load an image from a file optionally using the given type of
+   compression for the image object."""
    import tiff_support
    image = tiff_support.load_tiff(filename, compression)
    image.name = filename
    return image
 
 def image_info(filename):
+   """Retrieve an ImageInfo about about a given filename. The ImageInfo
+   object gives information such as the type (color, b&w, onebit),
+   the bit-depth, resolution, size, etc."""
    import tiff_support
    return tiff_support.tiff_info(filename)
 
-# displays a list of images in a grid-like window
 def display_multi(list):
+   """Display a list of images in a grid-like window."""
    gui = config.options.__.gui
    if gui:
       # If it's not a list, we'll get errors, so make it one
@@ -63,18 +91,23 @@ def display_multi(list):
 
 # Used to cache the list of all features
 all_features = None
-# Utility to generate features on a list of glyphs
-def generate_features_list(list, feature_functions=None):
-    ff = Image.get_feature_functions(feature_functions)
-    progress = util.ProgressFactory("Generating features...", len(list))
-    try:
-        for glyph in list:
-            glyph.generate_features(ff)
-            progress.step()
-    finally:
-        progress.kill()
+
+def generate_features_list(list, feature_functions='all'):
+   """Generate features on a list of images using either the feature
+   functions passed in or the default features."""
+   ff = Image.get_feature_functions(feature_functions)
+   progress = util.ProgressFactory("Generating features...", len(list))
+   try:
+      for glyph in list:
+         glyph.generate_features(ff)
+         progress.step()
+   finally:
+      progress.kill()
 
 class ImageBase:
+   """Base class for all of the image objects. This class contains
+   common functionality for all of the image types including
+   the necessary infrastructure to support dynamically added plugins."""
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
    _methods = {}
@@ -135,12 +168,20 @@ class ImageBase:
    add_plugin_method = classmethod(add_plugin_method)
 
    def pixel_type_name(self):
+      """Returns a string representing the pixle type of the image. Can be
+      used for display purposes. Pixel types determine the type of data
+      stored in an image - i.e. RGB, GreyScale, Onebit."""
       return util.get_pixel_type_name(self.data.pixel_type)
    pixel_type_name = property(pixel_type_name)
 
    _storage_format_names = {DENSE:  "Dense",
                             RLE:    "RLE"}
+   
    def storage_format_name(self):
+      """Returns a string representing the storage type of the image. Can
+      be used for display purposes. Storage formats determing the way
+      image data is stored in an image - i.e. Dense (uncompressed) or
+      RLE (runlength-encoded)."""
       return self._storage_format_names[self.data.storage_format]
    storage_format_name = property(storage_format_name)
    

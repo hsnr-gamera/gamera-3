@@ -148,7 +148,8 @@ class _Classifier:
       self._from_xml(gamera_xml.LoadXML().parse_stream(stream))
 
    def from_xml_filename(self, filename):
-      self._from_xml(gamera_xml.LoadXML().parse_filename(filename))
+      stream = gamera_xml.LoadXML().parse_filename(filename)
+      self._from_xml(stream)
 
    def _from_xml(self, xml):
       database = [x for x in xml.glyphs
@@ -232,15 +233,12 @@ class NonInteractiveClassifier(_Classifier):
          from gamera import group
          grouping_classifier = group.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
-##       if not util.is_sequence(database) or database == []:
-##          raise ValueError(
-##             "You can not initialize a NonInteractiveClassifier an empty database.")
       if database != []:
          self._database = database
          self.change_feature_set(features)
          self.classifier.instantiate_from_images(database)
       else:
-         self._database = [0]
+         self._database = []
 
       if perform_splits:
          self._do_splits = self._do_splits_impl
@@ -285,6 +283,26 @@ class NonInteractiveClassifier(_Classifier):
 
    def _classify_automatic_impl(self, glyph):
       return self.classifier.classify(glyph)
+
+   #########################################
+   # Optimization
+   # (most of this is just a proxy to the underlying classifier)
+   def supports_optimization(self):
+      return self.classifier.supports_classification()
+   
+   def start_optimizing(self):
+      self.classifier.start_optimizing()
+
+   def stop_optimizing(self):
+      self.classifier.stop_optimizing()
+
+   #########################################
+   # Settings
+   def save_settings(self, filename):
+      self.classifier.save_settings(filename)
+
+   def load_settings(self, filename):
+      self.classifier.load_settings(filename)
 
 class InteractiveClassifier(_Classifier):
    _group_regex = re.compile('group\..*')

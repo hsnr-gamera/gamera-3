@@ -17,9 +17,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from args import *
-import paths, gamera
-import unittest, new, os, os.path
+from gamera.args import *
+from gamera import paths, core
+import unittest, new, os, os.path, imp
 
 class PluginModule:
     category = "Miscellaneous"
@@ -31,10 +31,13 @@ class PluginModule:
     author = ""
     url = ""
 
+    def __init__(self):
+        for function in self.functions:
+            function.register(self.category)
+
     def generate(cls):
         for x in cls.functions:
             print x.__class__.__name__, x.self_type.pixel_types
-
     generate = classmethod(generate)
 
 class PluginFunction:
@@ -43,13 +46,20 @@ class PluginFunction:
     args = []
     image_types_must_match = 0
 
-    def register(cls):
+    def register(cls, category='Miscellaneous'):
+        if hasattr(cls, 'category'):
+            category = cls.category
         if not hasattr(cls, "__call__"):
-            func = getattr(__import__("_" + cls.__name__,
-                                      locals(),
-                                      globals()),
+            parts = cls.__module__.split('.')
+            cpp_module_name = '.'.join(parts[:-1] + ['_' + parts[-1]])
+            module = __import__(cpp_module_name,
+                                locals(),
+                                globals())
+            if module == None:
+                return
+            func = getattr(module,
                            cls.__name__)
-        elif cls.__call__ == None:
+        elif cls.__call__ is None:
             func = None
         else:
             func = new.function(cls.__call__.func_code,
@@ -57,7 +67,7 @@ class PluginFunction:
                                 cls.__name__)
         cls.__call__ = staticmethod(func)
         if isinstance(cls.self_type, ImageType):
-            gamera.Image.add_plugin_method(cls, func)
+            core.Image.add_plugin_method(cls, func, category)
     register = classmethod(register)
 
     def test(cls):
@@ -115,11 +125,11 @@ class PluginFunction:
 def get_test_image(filename):
     # TODO: should search test image paths
     filename = os.path.join(paths.test, filename)
-    return gamera.load_image(filename)
+    return core.load_image(filename)
 
 def get_result_image(filename):
     filename = os.path.join(paths.test_results, filename)
-    return gamera.load_image(filename)
+    return core.load_image(filename)
 
 def save_test_image(image, name, no):
     filename = "%s.plugin.%04d.results.tiff" % (name, no)
@@ -140,7 +150,7 @@ class PluginTest(unittest.TestCase):
         fd = file(self._results_filename(), "w")
         image_file_no = 0
         for result in results:
-            if isinstance(result, gamera.Image):
+            if isinstance(result, core.Image):
                 image_file_name = save_test_image(result,
                                                   self.plugin_class.__name__,
                                                   image_file_no)
@@ -165,7 +175,7 @@ class PluginTest(unittest.TestCase):
         for result, compare in zip(results, compares):
             print result, compare
             if (compare.startswith("Image File: ") and
-                isinstance(result, gamera.Image)):
+                isinstance(result, core.Image)):
                 image = get_result_image(compare[12:])
                 image.display()
                 result.display()
@@ -176,12 +186,13 @@ class PluginTest(unittest.TestCase):
     def shortDescription(self):
         return "Automatically generated test of the %s plugin." % self.plugin_class.__name__
 
-def PluginFactory(name, func, category="Miscellaneous",
+def PluginFactory(name, func, category=None,
                   return_type=None,
                   self_type=ImageType(("RGB", "GreyScale", "Grey16", "OneBit")),
                   args=None):
     cls = new.classobj(name, (PluginFunction,), {})
-    cls.category = category
+    if not category is None:
+        cls.category = category
     cls.return_type = return_type
     cls.self_type = self_type
     cls.args = args

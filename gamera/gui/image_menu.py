@@ -18,7 +18,7 @@
 
 from wxPython.wx import *   # wxPython
 import keyword              # Python standard library
-from gamera.gamera import *        # Gamera-specific
+from gamera.core import *        # Gamera-specific
 from gamera import util
 from gamera.gui import var_name
 from gamera.args import *
@@ -91,10 +91,14 @@ class ImageMenu:
     EVT_MENU(self.parent, 10001, self.OnCreateCopy)
     menu.AppendSeparator()
 
+    info_menu = wxMenu()
+    menu.AppendMenu(0, "Info", info_menu)
+    
     # Variables
     for i in range(len(variables)):
-      menu.Append(0, variables[i])
+      info_menu.Append(0, variables[i])
     EVT_MENU(self.parent, 0, self.OnPopupVariable)
+
     menu.AppendSeparator()
     # Methods
     functions = [None]
@@ -118,14 +122,14 @@ class ImageMenu:
   def PopupMenu(self):
     menu = self.create_menu(self.variables,
                             self.methods,
-                            images[0].get_type())
+                            images[0].pixel_type_name)
     self.parent.PopupMenu(menu, wxPoint(self.x, self.y))
     menu.Destroy()
 
   def GetMenu(self):
     return self.create_main_menu(self.variables,
                                  self.methods,
-                                 images[0].get_type())
+                                 images[0].pixel_type_name)
 
   def get_shell(self):
     if self.shell:

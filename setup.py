@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 import sys, os, time, locale
 import glob
-import gamera.generate
+from gamera import generate
 
 ##########################################
 # generate the plugins
@@ -12,7 +12,7 @@ plugins = ["gamera/plugins/threshold.py"]
 
 plugin_extensions = []
 for x in plugins:
-    plugin_extensions.append(gamera.generate.generate_plugin(x))
+    plugin_extensions.append(generate.generate_plugin(x))
 
 ########################################
 # Check that this is at least Python 2.2

@@ -24,7 +24,7 @@ try:
 except:
    _has_gui = _NO_GUI
 import sys, types, string   # Python standard library
-import util, paths, gamera  # Gamera specific
+import util, paths, core  # Gamera specific
 
 
 ######################################################################

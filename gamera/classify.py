@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import gamera # grab all of the standard gamera modules
+import core # grab all of the standard gamera modules
 import string, sys, random, os, os.path
 import util, paths, database
 import knn
@@ -267,9 +267,7 @@ class Classifier:
          if self.feature_functions == []:
             self.num_features = 0
             if features == None:
-               import find_members # this is to find all of the feature functions
-               ff = find_members.find_methods_flat_category(
-                  self.current_database[0], "Features")
+               self.current_database[0].find_methods_flat_category("Features")
                assert(ff != [])
                for x in ff:
                   self.feature_functions.append([x[0], 0])
@@ -312,9 +310,7 @@ class Classifier:
                self.progress(int(80 + i * prog))
 
          self.progress(99)
-         import find_members
-         sf = find_members.find_methods_flat_category(self.current_database[0],
-                                                      "Action")
+         self.current_database[0].methods_flat_category("Action")
          for f in sf:
             self.symbol_table.add_if_not_exists("action." + f[0])
 

@@ -1,6 +1,6 @@
 from wxPython.wx import *
 from wxPython.lib.filebrowsebutton import FileBrowseButton
-from gamera.gamera import *
+from gamera.core import *
 from gamera import gaoptimizer
 
 import time

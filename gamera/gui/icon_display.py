@@ -18,7 +18,7 @@
 #
 
 from wxPython.wx import *                    # wxPython
-from gamera.gamera import *                         # Gamera specific
+from gamera.core import *                         # Gamera specific
 from gamera import paths, util
 from gamera.gui import image_menu, var_name
 

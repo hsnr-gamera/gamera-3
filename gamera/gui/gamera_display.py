@@ -22,7 +22,7 @@ from wxPython.grid import *
 from math import ceil, log       # Python standard library
 from sys import maxint
 import string
-from gamera.gamera import *             # Gamera specific
+from gamera.core import *             # Gamera specific
 from gamera import find_members, paths, util
 from gamera.gui import image_menu, var_name
 

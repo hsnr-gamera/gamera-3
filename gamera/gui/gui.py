@@ -19,7 +19,7 @@
 
 # Gamera specific
 import inspect
-from gamera.gamera import *
+from gamera.core import *
 from gamera import paths, config, magic_import
 from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
 
@@ -237,7 +237,7 @@ class ShellFrame(wxFrame):
       image_menu.set_shell(self.shell)
       image_menu.set_shell_frame(self)
       self.shell.push("from gamera.gui import gui")
-      self.shell.push("from gamera.gamera import *")
+      self.shell.push("from gamera.core import *")
       self.shell.push("config.add_option('__gui', gui.GameraGui)")
       self.shell.push("init_gamera()")
       self.shell.update = self.Update

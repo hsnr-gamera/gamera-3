@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from plugin import *
+from gamera.plugin import *
 
 class threshold(PluginFunction):
     self_type = ImageType(["OneBit", "GreyScale", "Grey16", "Float"])

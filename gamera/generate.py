@@ -192,7 +192,7 @@ def generate_plugin(plugin_filename):
 
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
-    PyObject* mod = PyImport_ImportModule(\"gamera.gamera\");
+    PyObject* mod = PyImport_ImportModule(\"gamera.core\");
     if (mod == 0) {
       printf(\"Could not load gamera.py - falling back to gameracore\n\");
       mod = PyImport_ImportModule(\"gamera.gameracore\");
@@ -215,8 +215,8 @@ def generate_plugin(plugin_filename):
   
   """)
   
-  magic_import_setup()
   import plugin
+  magic_import_setup()
 
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]

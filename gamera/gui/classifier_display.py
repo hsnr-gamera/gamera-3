@@ -18,7 +18,7 @@
 #
 
 from wxPython.wx import *
-from gamera.gamera import *
+from gamera.core import *
 from gamera.args import *
 from gamera.gui import gaoptimizer_display, image_menu, var_name
 from gamera.gui.gamera_display import *

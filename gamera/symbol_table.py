@@ -33,37 +33,18 @@ class SymbolTable:
       self.listeners.append(listener)
       # Get the listener up-to-date
       for symbol in self.symbols.keys():
-         self.alert_listeners(self.normalize_symbol(symbol)[1])
+         self.alert_add(self.normalize_symbol(symbol)[1])
 
    def remove_listener(self, listener):
       self.listeners.remove(listener)
 
-   def alert_listeners(self, symbol):
+   def alert_add(self, symbol):
       for l in self.listeners:
          if hasattr(l, 'symbol_table_callback'):
             l.symbol_table_callback(symbol)
 
-   def add_rename_listener(self, listener):
-      assert hasattr(listener, 'symbol_table_rename_callback')
-      self.rename_listeners.append(listener)
-
-   def remove_rename_listener(self, listener):
-      self.rename_listeners.remove(listener)
-
-   def alert_rename_listeners(self, a, b):
-      for l in self.rename_listeners:
-         if hasattr(l, 'symbol_table_rename_callback'):
-            l.symbol_table_rename_callback(a, b)
-
-   def add_remove_listener(self, listener):
-      assert hasattr(listener, 'symbol_table_remove_callback')
-      self.remove_listeners.append(listener)
-
-   def remove_remove_listener(self, listener):
-      self.remove_listeners.remove(listener)
-
-   def alert_remove_listeners(self, a):
-      for l in self.remove_listeners:
+   def alert_remove(self, a):
+      for l in self.listeners:
          if hasattr(l, 'symbol_table_remove_callback'):
             l.symbol_table_remove_callback(a)
 
@@ -92,25 +73,16 @@ class SymbolTable:
       if self.symbols.has_key(symbol):
          return symbol
       self.symbols[symbol] = None
-      self.alert_listeners(tokens)
+      self.alert_add(tokens)
       return symbol
 
    def remove(self, symbol):
       symbol, tokens = self.normalize_symbol(symbol)
       if self.symbols.has_key(symbol):
          del self.symbols[symbol]
-         self.alert_remove_listeners(tokens)
+         self.alert_remove(tokens)
          return 1
       return 0
-
-   def rename(self, a, b):
-      a, x = self.normalize_symbol(a)
-      b, x = self.normalize_symbol(b)
-      for key in self.symbols.keys():
-         if key.startswith(a):
-            del self.symbols[key]
-            self.symbols[b + key[len(a):]] = None
-      self.alert_rename_listeners(a, b)
 
    def autocomplete(self, symbol):
       targets = self.symbols.keys()
@@ -125,12 +97,12 @@ class SymbolTable:
          if found_i < len(targets) - 1:
             found_next = targets[found_i + 1]
             print found, found_next
-            if found_next.startswith(symbol):
-               if not found_next.startswith(found):
-                  for i in range(len(symbol), len(found)):
-                     if found[i] != found_next[i]:
-                        break
-                  found = found[:i]
+            if (found_next.startswith(symbol) and 
+                not found_next.startswith(found)):
+               for i in range(len(symbol), len(found)):
+                  if found[i] != found_next[i]:
+                     break
+               found = found[:i]
          return found
       return symbol
 

@@ -1132,13 +1132,11 @@ class SymbolTreeCtrl(wxTreeCtrl):
       EVT_LEFT_DOWN(self, self._OnLeftDown)
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.toplevel._symbol_table.add_listener(self)
-      self.toplevel._symbol_table.add_remove_listener(self)
       self.Expand(self.root)
       self.SelectItem(self.root)
 
    def __del__(self):
       self._symbol_table.remove_listener(self)
-      self._symbol_table.remove_remove_listener(self)
 
    ########################################
    # CALLBACKS
@@ -1166,10 +1164,11 @@ class SymbolTreeCtrl(wxTreeCtrl):
          item, cookie = self.GetFirstChild(root, cookie)
          while item.IsOk():
             text = self.GetItemText(item)
+            print text, token
             if text == token:
                found = 1
                break
-            item, cookie = self.GetNextChild(item, cookie)
+            item, cookie = self.GetNextChild(root, cookie)
          if not found:
             item = self.AppendItem(root, token)
             self.SetPyData(item, '.'.join(tokens[0:i+1]))
@@ -1201,7 +1200,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
             elif text > token:
                found = 0
                break
-            item, cookie = self.GetNextChild(item, cookie)
+            item, cookie = self.GetNextChild(root, cookie)
          if not found:
             break
          root = item
@@ -1210,7 +1209,8 @@ class SymbolTreeCtrl(wxTreeCtrl):
 
    def _OnKey(self, evt):
       if evt.KeyCode() == WXK_DELETE:
-         self.toplevel._symbol_table.remove(self.GetPyData(self.GetSelection()))
+         self.toplevel._symbol_table.remove(
+            self.GetPyData(self.GetSelection()))
       else:
          evt.Skip()
 
@@ -1273,39 +1273,6 @@ class SymbolTableEditorPanel(wxPanel):
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
          self._OnEnter(evt)
-      elif evt.KeyCode() == WXK_LEFT and evt.AltDown():
-         current = self.text.GetInsertionPoint()
-         new = max(self.text.GetValue().rfind(".", 0, current), 0)
-         if evt.ShiftDown():
-            self.text.SetSelection(new, current)
-         self.text.SetInsertionPoint(new)
-         return
-      elif evt.KeyCode() == WXK_BACK and evt.AltDown():
-         current = self.text.GetInsertionPoint()
-         value = self.text.GetValue()
-         if value == '':
-            return
-         if value[-1] == '.':
-            value = value[:-1]
-         new = value.rfind(".", 0, current)
-         if new == -1:
-            self.text.SetValue("")
-         else:
-            self.text.SetValue(self.text.GetValue()[0:new+1])
-         self.text.SetInsertionPointEnd()
-         return
-      elif evt.KeyCode() == WXK_RIGHT and evt.AltDown():
-         current = self.text.GetInsertionPoint()
-         new = self.text.GetValue().find(".", current)
-         if new == -1:
-            if evt.ShiftDown():
-               self.text.SetSelection(current, len(self.text.GetValue()))
-            self.text.SetInsertionPointEnd()
-         else:
-            if evt.ShiftDown():
-               self.text.SetSelection(current, new + 2)
-            self.text.SetInsertionPoint(new + 1)
-         return
       elif evt.KeyCode() == WXK_F12:
          self.toplevel.do_auto_move()
       elif evt.KeyCode() == WXK_F11:
@@ -1318,28 +1285,27 @@ class SymbolTableEditorPanel(wxPanel):
          self.text.GetValue())
       root = self.tree.root
       expand_list = []
-      found = 0
-      cookie = 0
+      found = None
       for i in range(len(tokens)):
          token = tokens[i]
+         cookie = 0
          item, cookie = self.tree.GetFirstChild(root, cookie)
          while item.IsOk():
             text = self.tree.GetItemText(item)
             if text == token:
-               found = 1
+               found = item
                break
             elif text > token:
-               found = 0
                break
-            item, cookie = self.tree.GetNextChild(item, cookie)
+            item, cookie = self.tree.GetNextChild(root, cookie)
          if not found:
             break
          elif token != tokens[-1] and not self.tree.IsExpanded(item):
             self.tree.Expand(item)
          root = item
-      if found:
-         self.tree.SelectItem(item)
-         self.tree.ScrollTo(item)
+      if not found is None:
+         self.tree.SelectItem(found)
+         self.tree.ScrollTo(found)
       else:
          self.tree.UnselectAll()
          

@@ -21,8 +21,7 @@
 import inspect
 from gamera.gamera import *
 from gamera import paths, config, magic_import
-from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name
+from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
 
 # wxPython
 from wxPython.wx import *

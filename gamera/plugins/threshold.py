@@ -24,7 +24,6 @@ class threshold(PluginFunction):
     args = Args([Int("threshold")])
     return_type = ImageType(["OneBit"], "output")
     
-    
 threshold = threshold()
 
 class ThresholdModule(PluginModule):

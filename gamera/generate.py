@@ -45,7 +45,7 @@ def generate_plugin(plugin_filename):
   [[# The module name is prepended with an underscore #]]
   [[# exec module_name = "_" + __file__.split(".")[0] #]]
   [[exec plug_path, filename = path.split(__file__)]]
-  [[exec module_name = '_' + filename.split('.')[0]]]
+  [[exec module_name = '_' + filename.split('.')[0] ]]
 
   extern \"C\" {
     void init[[module_name]](void);
@@ -99,9 +99,7 @@ def generate_plugin(plugin_filename):
 
       if (PyArg_ParseTuple(args, \"[[pyarg_format]]\", &real_self,
       [[for i in range(len(function.args.list))]]
-        [[if i != 0]]
-          ,
-        [[end]]
+        [[if i != 0]],[[end]]
         &[[function.args.list[i].name + '_arg']]
       [[end]]
       ) <= 0)
@@ -154,7 +152,7 @@ def generate_plugin(plugin_filename):
                 [[end]]
                 [[function.__class__.__name__]]
                 (
-                [[exec tmp_args = args + [current]]]
+                [[exec tmp_args = args + [current] ]]
                 [[exec arg_string = tmp_args[0] + ', ']]
                 [[exec current_image = 1]]
                 [[for i in range(len(function.args.list))]]
@@ -193,8 +191,7 @@ def generate_plugin(plugin_filename):
 
 
   DL_EXPORT(void) init[[module_name]](void) {
-    Py_InitModule(\"[[module_name]]\",
-      [[module_name]]_methods);
+    Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
     PyObject* mod = PyImport_ImportModule(\"gamera.gamera\");
     if (mod == 0) {
       printf(\"Could not load gamera.py - falling back to gameracore\n\");

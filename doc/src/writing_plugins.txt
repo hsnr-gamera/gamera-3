@@ -28,21 +28,18 @@ plugin included that does what you want.  Look here__.
 The files involved
 ------------------
 
-In the gamera source tree, the ``./gamera`` subdirectory contains all of the
-files that are needed at runtime, so this is where all of the Python
-source code, Python byte-code and compiled Python extensions live.
-C++ source code lives in ``./src`` and header files live in
-``./include``.  (For more information, see the `Directory heirarchy`__
-documentation).
+You first need to decide whether your plugin will reside in the Gamera
+core or in an external toolkit.  See `Writing toolkits`__ for more
+information about creating a Gamera toolkit.
 
-.. __: directory_heirarchy.html
+.. __: writing_toolkits.html
 
 Each plugin is made up of two files: 
 
 1. A Python file that describes each method in the plugin and the
    plugin itself.  If any methods are "pure Python", they can also be
    defined here, or they can just delegate to functions in other
-   Python modules.  These files live in ``./gamera/plugins``.
+   Python modules.
 
 2. Optionally, a C++ header file containing implementations of any C++
    methods of the plugin.  This is a header file (``.hpp``) and not an
@@ -51,13 +48,27 @@ Each plugin is made up of two files:
    C++ will be generated automatically at compile time by the Gamera
    build system.  (What templates are is beyond the scope of this
    document, but it's covered very well in [Stroustrup1997]_.)
-   These C++ files live in ``./include/plugins``.
 
+Plugins in the Gamera source tree
+`````````````````````````````````
+The Python metadata files are stored in ``./gamera/plugins/`` and the
+C++ source files are stored in ``./include/plugins``.
 
 If you keep these files in the proper directories, they will be
 automatically picked up by the build system and compiled.  When Gamera
 is started up, it will search the ``./gamera/plugins`` directory and load
 all plugins.
+
+Plugins in a toolkit
+````````````````````
+
+In a toolkit, the Python metadata files are stored in
+``./gamera/toolkits/my_toolkit/plugins/`` and the C++ source files are
+stored in ``./include/plugins``, both rooted at the top of your
+toolkit directory.
+
+Plugin modules included in toolkits will have to be explicitly
+imported before they are available.
 
 A simple example
 ================
@@ -133,7 +144,7 @@ On a related note, you can also have the documentation system
 ``doc_examples`` member is a list of tuples, each of which is a set of
 arguments to pass to the plugin method.  If the first argument in the
 tuple is a pixel type constant (e.g. ``ONEBIT``), a generic image will
-be loaded from disk and used as self to generate the example.  If the
+be loaded from disk and used as ``self`` to generate the example.  If the
 result of the method is an image, the image will be included in the
 HTML documentation.  If the result is not an image, a text
 representation of the result (obtained using the standard Python
@@ -292,7 +303,7 @@ about the intricacies of the `Python/C API`__.
 
 .. __: http://www.python.org/doc/current/api/api.html
 
-But, for the sake of some sadistic curiosity, the 
+But, for the sake of some sick curiosity, the 
 generated code looks something like:
 
 .. code:: CPP
@@ -460,7 +471,7 @@ Free pure Python functions
 --------------------------
 
 Since the plugin modules are also just regular Python modules under
-the hood, it's of course possible to just add ordinary Python
+the hood, it is of course possible to just add ordinary Python
 functions as well:
 
 .. code:: Python

@@ -4,7 +4,7 @@ Plugins
 
 **Alphabetical list**
 
-PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, corelation_, cyan_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, highlight_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, smith_waterman_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
+PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, corelation_, cyan_, despeckle_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, highlight_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
    
 Analysis
 ========
@@ -740,88 +740,6 @@ Converts the given image to an RGB image.
 
 
 
-DTW
-===
-
-``dtw_matrix``
---------------
-
-Image [Float] **dtw_matrix** (``FloatVector`` *x*, ``FloatVector`` *y*)
-
-
-:Returns: ``Image [Float]``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a floating-point matrix of the distances between two vectors.
-Each pixel in the image is equal to the absolute difference between the
-corresponding elements in the given vectors.
-
-*x*
-   The *x*-axis vector
-*y*
-   The *y*-axis vector
-
-----------
-
-**Example 1:** dtw_matrix((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0))
-
-.. image:: images/dtw_matrix_plugin_00.png
-
-
-
-``dtw_matrix_with_function``
-----------------------------
-
-Image [Float] **dtw_matrix_with_function** (``Class`` *x*, ``Class`` *y*, ``Class`` *func*)
-
-
-:Returns: ``Image [Float]``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a floating-point matrix of the distances between two vectors.
-Each pixel in the image is calculated using the given function, which
-receives a single pair of elements from each vector, and returns a distance
-result.
-
-*x*
-   The *x*-axis vector
-*y*
-   The *y*-axis vector
-*func*
-   A Python function to calculate the distances
-   
-
-----------
-
-**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x8a17c84>)
-
-.. image:: images/dtw_matrix_with_function_plugin_00.png
-
-
-
-``smith_waterman``
-------------------
-
-FloatVector **smith_waterman** (``double`` *gapopen*, ``double`` *gapextend*)
-
-
-:Operates on: ``Image [Float]``
-:Returns: ``FloatVector``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-.. warning:: No documentation written.
-
-
-
-
 Deformations
 ============
 
@@ -1282,7 +1200,7 @@ These features are scale invariant.
 
 .. image:: images/OneBit_generic.png
 
-*result* = array('d', [0.10721836734693878, 0.11714714285714285, 0.038409057233236149, 0.09039186294752187, 0.039458327664723035, 0.016029672484755123, 0.019246628947512095, 0.010444870016473779, 0.064997712724557205])
+*result* = array('d', [0.10721836734693876, 0.11714714285714285, 0.038409057233236149, 0.09039186294752187, 0.039458327664723028, 0.016029672484755123, 0.019246628947512095, 0.010444870016473777, 0.064997712724557191])
 
 
 
@@ -1519,7 +1437,7 @@ A. Khotanzad and Y. Hong. Invariant image recognition by Zernike moments.
 
 .. image:: images/OneBit_generic.png
 
-*result* = array('d', [-37.223158090332504, -115.27274218259787, -27.38888482889574, -238.55414747433861, 99.091297417022759, 68.584177440635628, 329.80317022580272, 50.381730229673231, 8.6592661085182421, 58.04265047527376, 315.72095729103381, 301.84194567130726, -69.978045223611701, -62.235854155025173, 60.605978333980012, 15.471584853132827, 76.095993290903195, 22.29836927622107, 370.0254790802569, 228.42192663806134, -36.488449055134488, 78.96739358965047, 278.86617421574044, 978.55979874564093, -0.16938552125805673, -1.3852848954126054])
+*result* = array('d', [-37.223158090332504, -115.27274218259787, -27.388884828895755, -238.55414747433855, 99.091297417022773, 68.584177440635656, 329.80317022580266, 50.381730229673302, 8.6592661085182474, 58.042650475273781, 315.72095729103376, 301.84194567130766, -69.978045223611687, -62.235854155025258, 60.605978333980183, 15.471584853132368, 76.095993290903237, 22.29836927622118, 370.02547908025616, 228.42192663806546, -36.48844905513387, 78.967393589650072, 278.86617421573987, 978.55979874562593, -0.16938552125820011, -1.3852848954132868])
 
 
 
@@ -1873,6 +1791,50 @@ Example usage::
 
 Morphology
 ==========
+
+``despeckle``
+-------------
+
+**despeckle** (``int(1, 100)`` *cc_size*)
+
+
+:Operates on: ``Image [OneBit]``
+:Category: Morphology
+:Defined in: morphology.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+Removes connected components that are smaller than the given size.
+
+*size*
+  The maximum number of pixels in each connected component that
+  will be removed.
+
+This approach to finding connected components uses a pseudo-recursive
+descent, which gets around the hard limit of ~64k connected components
+per page in ``cc_analysis``.  Unfortunately, this approach is much
+slower as the connected components get large, so *size* should be
+kept relatively small.
+
+*size* == 1 is a special case and runs much faster, since it does not
+require recursion.
+  
+
+----------
+
+**Example 1:** despeckle(5,)
+
+.. image:: images/OneBit_generic.png
+
+.. image:: images/despeckle_plugin_00.png
+
+**Example 2:** despeckle(15,)
+
+.. image:: images/OneBit_generic.png
+
+.. image:: images/despeckle_plugin_01.png
+
+
 
 ``dilate``
 ----------

@@ -45,6 +45,11 @@ How-To
 
 .. __: image_api.html
 
+- `Writing Gamera toolkits`__: How to package your code in a
+  redistributable package that is easier to build. 
+
+.. __: writing_toolkits.html
+
 - `The Gamera GUI`__: How to use the integrated GUI.  Additionally,
   this describes how to train images.
 

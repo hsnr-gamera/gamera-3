@@ -20,12 +20,9 @@ The Gamera source tree looks something like this:
 |          |               | format used by docutils_.                      |
 |          +---------------+------------------------------------------------+
 |          | html/         | The generated HTML documentation.              |
-|          +---------------+------------------------------------------------+
-|          | latex/        | The generated LaTeX (and through that PDF)     |
-|          |               | documentation.                                 |
 +----------+---------------+------------------------------------------------+
 | gamera/  | All the files needed by Gamera at runtime.                     |
-|          | Since Python is interpreted, these means                       |
+|          | Since Python is interpreted, this means                        |
 |          | Python source files.                                           |
 |          +---------------+------------------------------------------------+
 |          | gui/          | Python source related to the GUI.  These are   |

@@ -135,7 +135,10 @@ class ExtendedMultiImageWindow(MultiImageWindow):
       self.titlebar.SetForegroundColour(wxColor(255,255,255))
       font = self.titlebar.GetFont()
       font.SetWeight(wxBOLD)
-      font.SetPointSize(14)
+      if wxPlatform == '__WXMSW__':
+         font.SetPointSize(10)
+      else:
+         font.SetPointSize(14)
       self.titlebar.SetFont(font)
       self.titlebar_button = wxButton(self, -1, "+", size=(16, 16))
       EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
@@ -1449,134 +1452,6 @@ class ClassifierFrame(ImageFrameBase):
          wxEndBusyCursor()
          gui_util.message(e)
       else:
-         wxEndBusyCursor()
-         
-   def _SaveClassifierCollection(self, filename):
-         try:
-            self._classifier.to_xml_filename(filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message("Saving classifier glyphs: " + str(e))
-
-   def _OnClearClassifierCollection(self, event):
-      if self._classifier.is_dirty:
-         if gui_util.are_you_sure_dialog(self._frame,
-            "Are you sure you want to clear all glyphs in the classifier?"):
-            self._classifier.clear_glyphs()
-      else:
-         self._classifier.clear_glyphs()
-      self._classifier.is_dirty = False
-
-   def _OnOpenEditorCollection(self, event):
-      if self.multi_iw.id.is_dirty:
-         if not gui_util.are_you_sure_dialog("Editor glyphs have not been saved and will be replaced.\nAre you sure you want to load glyphs into the classifier?"):
-            return
-      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
-                                            multiple=1)
-      if not filenames is None:
-         if len(filenames) == 1:
-            self.editor_collection_filename = filenames[0]
-         else:
-            self.editor_collection_filename = None
-         self._OpenEditorCollection(filenames)
-
-   def _OpenEditorCollection(self, filenames):
-      try:
-         glyphs = gamera_xml.LoadXML().parse_filename(filenames[0]).glyphs
-         if len(filenames) > 1:
-            for f in filenames[1:]:
-               glyphs.extend(gamera_xml.LoadXML().parse_filename(f).glyphs)
-      except gamera_xml.XMLError, e:
-         gui_util.message("Opening editor glyphs: " + str(e))
-         return
-      self.set_multi_image(glyphs)
-      self.multi_iw.id.is_dirty = False
-
-   def _OnMergeEditorCollection(self, event):
-      filenames = gui_util.open_file_dialog(self._frame, gamera_xml.extensions,
-                                            multiple=1)
-      if not filenames is None:
-         glyphs = []
-         try:
-            for f in filenames:
-               glyphs.extend(gamera_xml.LoadXML().parse_filename(f).glyphs)
-         except gamera_xml.XMLError, e:
-            gui_util.message("Merging editor glyphs: " + str(e))
-            return
-         self.multi_iw.id.append_glyphs(glyphs)
-
-   def _OnSaveEditorCollection(self, event):
-      if self.editor_collection_filename == None:
-         self._OnSaveEditorCollectionAs(event)
-      else:
-         glyphs = self.multi_iw.id.GetAllItems()
-         if gui_util.are_you_sure_dialog("There are %d glyphs in the editor.\nAre you sure you want to save?" % len(glyphs)):
-            self._SaveEditorCollection(self.editor_collection_filename)
-
-   def _OnSaveEditorCollectionAs(self, event):
-      glyphs = self.multi_iw.id.GetAllItems()
-      if gui_util.are_you_sure_dialog("There are %d glyphs in the editor.\nAre you sure you want to save?" % len(glyphs)):
-         filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
-         if filename:
-            self.editor_collection_filename = filename
-            self._SaveEditorCollection(self.editor_collection_filename)
-
-   def _SaveEditorCollection(self, filename, force=False):
-      glyphs = self.multi_iw.id.GetAllItems()
-      self._classifier.generate_features(glyphs)
-      try:
-         gamera_xml.WriteXMLFile(
-            glyphs=glyphs,
-            symbol_table=self._symbol_table).write_filename(
-            filename)
-      except gamera_xml.XMLError, e:
-         gui_util.message("Saving editor glyphs: " + str(e))
-
-   def _OnSaveSelectedGlyphsAs(self, event):
-      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
-         glyphs = self.multi_iw.id.GetSelectedItems()
-         self._classifier.generate_features(glyphs)
-         try:
-            gamera_xml.WriteXMLFile(
-               glyphs=glyphs,
-               symbol_table=self._symbol_table).write_filename(
-               filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message("Saving selected glyphs: " + str(e))
-         
-   def _OnImportSymbolTable(self, event):
-      filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
-         self._ImportSymbolTable(filename)
-
-   def _ImportSymbolTable(self, filename):
-      wxBeginBusyCursor()
-      try:
-         try:
-            symbol_table = gamera_xml.LoadXML(
-               parts=['symbol_table']).parse_filename(filename).symbol_table
-         except gamera_xml.XMLError, e:
-            gui_util.message("Importing symbol table: " + str(e))
-            return
-         for symbol in symbol_table.symbols.keys():
-            self._symbol_table.add(symbol)
-      finally:
-         wxEndBusyCursor()
-
-   def _OnExportSymbolTable(self, event):
-      filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
-      if filename:
-         self._ExportSymbolTable(filename)
-
-   def _ExportSymbolTable(self, filename):
-      wxBeginBusyCursor()
-      try:
-         try:
-            gamera_xml.WriteXMLFile(
-               symbol_table=self._symbol_table).write_filename(filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message("Exporting symbol table: " + str(e))
-      finally:
          wxEndBusyCursor()
 
    ########################################

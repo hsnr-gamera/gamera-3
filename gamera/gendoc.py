@@ -121,11 +121,11 @@ class DocumentationGenerator:
 
    def generate(self):
       self.copy_css(self.src_path, self.output_path)
+      self.generate_generic_pngs()
       PluginDocumentationGenerator(self, self.plugins)
       ClassDocumentationGenerator(self, self.classes)
       self.copy_images([self.src_images_path, self.icons_path],
                        self.output_images_path)
-      self.generate_generic_pngs()
       if not self.test_mode:
          self.convert_to_html()
       print
@@ -373,33 +373,27 @@ class PluginDocumentationGenerator:
                       (i + 1, func.__name__,
                        ", ".join([str(x) for x in doc_example])))
           if not pixel_type is None:
-             s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
+             self.write_image(s, "%s_generic" % pixel_type_name)
           result_filename = "%s_plugin_%02d" % (func.__name__, i)
           if isinstance(result, core.ImageBase):
-             self.save_image(
-                result, 
-                os.path.join(self.docgen.output_images_path, result_filename + ".png"))
-             s.write(".. image:: images/%s.png\n\n" % (result_filename))
+             self.save_image(result, result_filename)
+             self.write_image(s, result_filename)
           elif (result is None and
                 isinstance(func.self_type, args.ImageType) and
                 src_image is not None):
-             self.save_image(
-                src_image,
-                os.path.join(self.docgen.output_images_path, result_filename + ".png"))
-             s.write(".. image:: images/%s.png\n\n" % (result_filename))
+             self.save_image(src_image, result_filename)
+             self.write_image(s, result_filename)
           elif util.is_image_list(result):
-             subst = "\n\n"
+             result_filenames = []
              for j, part in enumerate(result):
                 result_filename = ("%s_plugin_%02d_%02d" %
                                    (func.__name__, i, j))
-                self.save_image(
-                   part,
-                   os.path.join(self.docgen.output_images_path, result_filename + ".png"))
+                self.save_image(part, result_filename)
                 s.write("|%s| " % result_filename)
-                subst += (".. |%s| image:: images/%s.png\n" %
-                          (result_filename, result_filename))
-             s.write(subst)
-             s.write("\n")
+                result_filenames.append(result_filename)
+             s.write("\n\n")
+             for result_filename in result_filenames:
+                self.write_image(s, result_filename, "|%s|" % result_filename)
           else:
               s.write("*result* = " + repr(result) + "\n\n")
       s.write("\n\n")
@@ -407,7 +401,16 @@ class PluginDocumentationGenerator:
    def save_image(self, image, filename):
       if image.data.pixel_type in (COMPLEX, FLOAT):
          image = _image_conversion.to_greyscale(image)
-      _png_support.save_PNG(image, filename)
+      _png_support.save_PNG(
+         image,
+         os.path.join(
+         self.docgen.output_images_path, filename + ".png"))
+
+   def write_image(self, s, filename, tag=""):
+      image = _png_support.load_PNG(os.path.join(self.docgen.output_images_path, filename + ".png"), 0)
+      s.write(".. %s image:: images/%s.png\n   :height: %d\n   :width: %d\n\n" %
+              (tag, filename, image.height, image.width))
+
 
 class ClassDocumentationGenerator:
    def __init__(self, docgen, classes):

@@ -54,10 +54,7 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node);
 inline bool graph_remove_node(GraphObject* so, Node* node);
 inline size_t graph_disj_set_find_and_compress(GraphObject* so, size_t x);
 inline void graph_disj_set_union_by_height(GraphObject* so, size_t a, size_t b);
-inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
-				   Node* to_node, CostType cost = 1.0,
-				   PyObject* label = NULL, bool check = true);
-inline bool graph_add_edge(GraphObject* so, Node* from_node,
+inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
 			   Node* to_node, CostType cost = 1.0, 
 			   PyObject* label = NULL);
 inline bool graph_add_edge(GraphObject* so, PyObject* from_object,
@@ -209,10 +206,19 @@ inline void graph_disj_set_union_by_height(GraphObject* so, size_t a, size_t b) 
 }
 
 // WARNING: Internal function: DO NOT CALL DIRECTLY
-inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
-			     Node* to_node, CostType cost, PyObject* label,
-			     bool check) {
-#ifdef DEBUG
+inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
+			    Node* to_node, CostType cost,
+			    PyObject* label) {
+  if (!HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED) && from_node == to_node)
+    return false;
+  if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
+    for (EdgeList::iterator i = from_node->m_edges.begin();
+	 i != from_node->m_edges.end(); ++i)
+      if ((*i)->traverse(from_node) == to_node)
+	return false;
+  }
+
+#ifdef DEBUG_ADT
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     std::cerr << (*i)->m_disj_set << " ";
@@ -220,39 +226,38 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
 #endif  
 
   bool found_cycle = false;
-  if (check) {
-    bool possible_cycle = true;
-    if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) ||
-	!HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
-      size_t to_set_id = graph_disj_set_find_and_compress
-	(so, to_node->m_set_id);
-      size_t from_set_id = graph_disj_set_find_and_compress
-	(so, from_node->m_set_id);
-      if (from_set_id != to_set_id) {
-	possible_cycle = false;
-	graph_disj_set_union_by_height(so, to_set_id, from_set_id);
-      }
+  bool possible_cycle = true;
+  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) ||
+      !HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
+    size_t to_set_id = graph_disj_set_find_and_compress
+      (so, to_node->m_set_id);
+    size_t from_set_id = graph_disj_set_find_and_compress
+      (so, from_node->m_set_id);
+    if (from_set_id != to_set_id) {
+      possible_cycle = false;
+      graph_disj_set_union_by_height(so, to_set_id, from_set_id);
     }
+  }
 
-    if (possible_cycle) {
-      if (!HAS_FLAG(so->m_flags, FLAG_BLOB))
-		  return NULL;
-      else {
-	if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) || 
-	    (HAS_FLAG(so->m_flags, FLAG_DIRECTED) && 
-	     to_node->m_is_subgraph_root)) {
-	  DFSIterator* iterator = iterator_new<DFSIterator>();
-	  iterator->init(so, to_node);
-	  Node* node = (Node*)DFSIterator::next_node(iterator);
-	  while ((node = (Node*)DFSIterator::next_node(iterator)))
-	    if (node == from_node) {
-	      found_cycle = true;
-	      break;
-	    }
-	}
-	if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) && found_cycle)
-	  return NULL;
+  if (possible_cycle) {
+    if (!HAS_FLAG(so->m_flags, FLAG_BLOB))
+      return NULL;
+    else {
+      if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) || 
+	  (HAS_FLAG(so->m_flags, FLAG_DIRECTED) && 
+	   to_node->m_is_subgraph_root)) {
+	DFSIterator* iterator = iterator_new<DFSIterator>();
+	iterator->init(so, to_node);
+	// Skip the first node, since we know what it is
+	Node* node = (Node*)DFSIterator::next_node(iterator);
+	while ((node = (Node*)DFSIterator::next_node(iterator)))
+	  if (node == from_node) {
+	    found_cycle = true;
+	    break;
+	  }
       }
+      if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) && found_cycle)
+	return NULL;
     }
   }
 
@@ -261,11 +266,10 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
   from_node->m_edges.push_back(edge);
   if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED))
     to_node->m_edges.push_back(edge);
-  // to_node->m_in_edges->push_back(edge);
-  if (check && !found_cycle)
+  if (!found_cycle)
     to_node->m_is_subgraph_root = false;
 
-#ifdef DEBUG
+#ifdef DEBUG_ADT
   std::cerr << "After";
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
@@ -274,22 +278,6 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
 #endif
 
   return edge;
-}
-
-inline bool graph_add_edge(GraphObject* so, Node* from_node,
-			   Node* to_node, CostType cost, PyObject* label) {
-
-  if (!HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED) && from_node == to_node)
-    return false;
-  if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
-    for (EdgeList::iterator i = from_node->m_edges.begin();
-	 i != from_node->m_edges.end(); ++i)
-      if ((*i)->m_to_node == to_node)
-	return false;
-  }
-
-  Edge* result = graph_add_edge0(so, from_node, to_node, cost, label);
-  return result != NULL;
 }
 
 inline bool graph_add_edge(GraphObject* so, PyObject* from_pyobject,
@@ -343,7 +331,6 @@ inline bool graph_remove_edge(GraphObject* so, Edge* edge) {
     Node* node = (Node*)DFSIterator::next_node(iterator);
     while ((node = (Node*)DFSIterator::next_node(iterator))) {
       if (node == from_node) {
-	// so->m_subgraph_roots->erase(from_node);
 	to_node->m_is_subgraph_root = true;
 	from_node->m_is_subgraph_root = false;
 	break;

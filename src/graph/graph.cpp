@@ -193,9 +193,10 @@ PyObject* graph_add_edge(PyObject* self, PyObject* args) {
   PyObject* from_pyobject, *to_pyobject;
   CostType cost = 1.0;
   PyObject* label = NULL;
-  if (PyArg_ParseTuple(args, "OO|dO", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
+  if (PyArg_ParseTuple
+      (args, "OO|dO", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
     return 0;
-  return PyInt_FromLong((long)graph_add_edge(so, from_pyobject, to_pyobject, cost, label));
+  return PyInt_FromLong((long)graph_add_edge(so, from_pyobject, to_pyobject, cost, label) != 0);
 }
 
 PyObject* graph_add_edges(PyObject* self, PyObject* args) {
@@ -294,11 +295,38 @@ void graph_make_directed(GraphObject* so) {
     SET_FLAG(so->m_flags, FLAG_DIRECTED);
     for (NodeVector::iterator i = so->m_nodes->begin();
 	 i != so->m_nodes->end(); ++i) {
+      NP_VISITED(*i) = false;
+      (*i)->m_is_subgraph_root = false;
       for (EdgeList::iterator j, k = (*i)->m_edges.begin();
 	   k != (*i)->m_edges.end();) {
 	j = k++;
 	if ((*j)->m_from_node != *i)
 	  (*i)->m_edges.remove(*j);
+      }
+    }
+
+    // This is to take care of the subgraph roots
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i) {
+      if (!NP_VISITED(*i)) {
+	(*i)->m_is_subgraph_root = true;
+	NodeStack node_stack;
+	node_stack.push(*i);
+	NP_VISITED(*i) = true;
+	while (!node_stack.empty()) {
+	  Node* node = node_stack.top();
+	  node_stack.pop();
+	  for (EdgeList::iterator j = node->m_edges.begin();
+	       j != node->m_edges.end(); ++j) {
+	    // Traverse not needed, since we know this is directed
+	    // at this point
+	    Node* inner_node = (*j)->m_to_node;
+	    if (!NP_VISITED(inner_node)) {
+	      node_stack.push(inner_node);
+	      NP_VISITED(inner_node) = true;
+	    }
+	  }
+	}
       }
     }
   }
@@ -610,8 +638,8 @@ PyObject* graph_get_nnodes(PyObject* self) {
 
 PyObject* graph_get_edges(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  AllEdgeIterator* iterator = iterator_new<AllEdgeIterator>();
-  iterator->init(so->m_nodes->begin(), so->m_nodes->end());
+  EdgeIterator<EdgeVector>* iterator = iterator_new<EdgeIterator<EdgeVector> >();
+  iterator->init(so->m_edges->begin(), so->m_edges->end());
   return (PyObject*)iterator;
 }
 
@@ -693,7 +721,7 @@ struct SubTreeRootIterator : IteratorObject {
 PyObject* graph_get_subgraph_roots(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   
-  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED) || HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
+  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
     SubGraphRootIterator* iterator = iterator_new<SubGraphRootIterator>();
     iterator->init(so->m_nodes->begin(), so->m_nodes->end());
     return (PyObject*)iterator;
@@ -774,7 +802,7 @@ PyMethodDef graph_methods[] = {
     "Is the graph defined as being undirected?" },
   { "make_directed", graph_make_directed, METH_VARARGS,
     "Make the graph a directed one" },
-  { "make_undirected", graph_make_directed, METH_NOARGS,
+  { "make_undirected", graph_make_undirected, METH_NOARGS,
     "Make the graph an undirected one" },
   { "is_cyclic", graph_is_cyclic, METH_NOARGS,
     "Is the graph defined as being cyclic?" },

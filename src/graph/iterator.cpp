@@ -1,5 +1,4 @@
 /*
- *
  * Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
  *
  * This program is free software; you can redistribute it and/or
@@ -76,10 +75,10 @@ void init_IteratorType() {
 // struct BFSIterator : IteratorObject {
 int BFSIterator::init(GraphObject* graph, Node* root) {
   m_node_queue = new NodeQueue();
-  m_node_queue->push(root);
   NodeVector::iterator i = graph->m_nodes->begin();
   for (; i != graph->m_nodes->end(); ++i)
     NP_VISITED(*i) = false;
+  m_node_queue->push(root);
   NP_VISITED(root) = true;
   return 1;
 }
@@ -111,10 +110,10 @@ PyObject* BFSIterator::next(IteratorObject* self) {
 // struct DFSIterator : IteratorObject {
 int DFSIterator::init(GraphObject* graph, Node* root) {
   m_node_stack = new NodeStack();
-  m_node_stack->push(root);
   NodeVector::iterator i = graph->m_nodes->begin();
   for (; i != graph->m_nodes->end(); ++i)
     NP_VISITED(*i) = false;
+  m_node_stack->push(root);
   NP_VISITED(root) = true;
   return 1;
 }
@@ -140,25 +139,4 @@ PyObject* DFSIterator::next(IteratorObject* self) {
   if (node)
     return nodeobject_new(node);
   return 0;
-}
-
-// struct EdgeIterator : IteratorObject {
-int AllEdgeIterator::init(NodeVector::iterator begin, NodeVector::iterator end) {
-  m_it = begin;
-  m_end = end;
-  m_edge_it = (*begin)->m_edges.begin();
-  m_edge_end = (*begin)->m_edges.end();
-  return 1;
-}
-PyObject* AllEdgeIterator::next(IteratorObject* self) {
-  AllEdgeIterator* so = (AllEdgeIterator*)self;
-  while (so->m_edge_it == so->m_edge_end) {
-    so->m_it++;
-    if (so->m_it == so->m_end) {
-      return 0;
-    }
-    so->m_edge_it = (*(so->m_it))->m_edges.begin();
-    so->m_edge_end = (*(so->m_it))->m_edges.end();
-  }
-  return edgeobject_new(*((so->m_edge_it)++));
 }

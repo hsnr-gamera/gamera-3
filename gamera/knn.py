@@ -190,17 +190,17 @@ class kNN(gamera.knncore.kNN):
       return self._distance_matrix(images)
 
    def unique_distances(self, images):
-		"""Return a list of the unique pairs of images in the passed in list
-		and the distances between them. The return list is a list of tuples
-		of (distance, imagea, imageb) so that it easy to sort. NOTE: the
-		features are normalized before performing the distance calculations."""
-		from gamera.plugins import features
-		features.generate_features_list(images, self.feature_functions)
-		l = len(images)
-		progress = util.ProgressFactory("Generating unique distances . . .", l)
-		dists = self._unique_distances(images, progress.step)
-		progress.kill()
-		return dists
+      """Return a list of the unique pairs of images in the passed in list
+      and the distances between them. The return list is a list of tuples
+      of (distance, imagea, imageb) so that it easy to sort. NOTE: the
+      features are normalized before performing the distance calculations."""
+      from gamera.plugins import features
+      features.generate_features_list(images, self.feature_functions)
+      l = len(images)
+      progress = util.ProgressFactory("Generating unique distances . . .", l)
+      dists = self._unique_distances(images, progress)
+      progress.kill()
+      return dists
 
    def evaluate(self):
       """Evaluate the performance of the kNN classifier using
@@ -373,10 +373,10 @@ def simple_feature_selector(glyphs):
    
    c = classify.NonInteractiveClassifier()
 
-	# For efficiency we calculate all of the features and pass in the
-	# indexes of the features vector that we want to use for the distance
-	# calculation. This is more efficient than using the features weights
-	# or recalculating the features.
+   # For efficiency we calculate all of the features and pass in the
+   # indexes of the features vector that we want to use for the distance
+   # calculation. This is more efficient than using the features weights
+   # or recalculating the features.
    all_features = []
    feature_indexes = {}
    offset = 0

@@ -36,7 +36,7 @@ private:
 public:
   static PyObject* next(IteratorObject* self);
 private:
-  inline static PyObject* next_no_edges(PartitionIterator* so);
+  static PyObject* next_no_edges(PartitionIterator* so);
   size_t m_npartitions;
   size_t m_i;
   size_t m_ones;
@@ -186,7 +186,6 @@ void PartitionIterator::unmark(Node* u) {
 PyObject* PartitionIterator::next(IteratorObject* self) {
   PartitionIterator* so = (PartitionIterator*)self;
 
-  // Short-circuit case here for no edges
   if (so->m_no_edges)
     return next_no_edges(so);
 

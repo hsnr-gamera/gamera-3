@@ -187,12 +187,4 @@ struct DFSIterator : IteratorObject {
   NodeStack* m_node_stack;
 };
 
-struct AllEdgeIterator : IteratorObject {
-  int init(NodeVector::iterator begin, NodeVector::iterator end);
-  static PyObject* next(IteratorObject* self);
-  NodeVector::iterator m_it, m_end;
-  EdgeList::iterator m_edge_it, m_edge_end;
-};
-
-
 #endif

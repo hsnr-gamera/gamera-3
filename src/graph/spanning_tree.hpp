@@ -34,6 +34,6 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so);
   { "create_spanning_tree", graph_create_spanning_tree, METH_O, \
     "Returns a new graph with a spanning tree of all nodes reachable from the given node" }, \
   { "create_minimum_spanning_tree", graph_create_minimum_spanning_tree, METH_VARARGS, \
-    "Creates a minimum spanning tree (in place)" },
+    "Creates a minimum spanning tree (in place)" }, \
 
 #endif

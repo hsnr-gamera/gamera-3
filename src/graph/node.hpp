@@ -36,11 +36,9 @@ struct Node {
   inline ~Node() {
     Py_DECREF((PyObject*)m_data);
   }
-
   GraphObject* m_graph;
   PyObject* m_data;
   EdgeList m_edges;
-  // EdgeList* m_in_edges;
   bool m_is_subgraph_root;
   size_t m_set_id;
   long m_disj_set;

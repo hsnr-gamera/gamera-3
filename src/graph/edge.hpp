@@ -39,9 +39,8 @@ struct Edge {
       Py_DECREF(m_label);
   }
   inline Node* traverse(Node* from_node) {
-    if (HAS_FLAG(m_graph->m_flags, FLAG_DIRECTED)) {
-      return m_to_node;
-    }
+    //if (HAS_FLAG(m_graph->m_flags, FLAG_DIRECTED))
+    //  return m_to_node;
     return (from_node == m_from_node) ? m_to_node : m_from_node;
   }
 

@@ -94,6 +94,7 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   return tree;
 }
 
+
 PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject* images,
 																		 PyObject* uniq_dists) {
   if (!PyList_Check(uniq_dists) || !PyList_Check(images)) {

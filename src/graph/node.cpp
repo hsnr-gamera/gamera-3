@@ -30,6 +30,7 @@ extern "C" {
   static int node_set_data(PyObject* self, PyObject* data);
   static PyObject* node_get_out_edges(PyObject* self);
   static PyObject* node_get_nodes(PyObject* self);
+  static PyObject* node_get_nedges(PyObject* self);
 }
 
 static PyTypeObject NodeType = {
@@ -45,9 +46,11 @@ PyGetSetDef node_getset[] = {
   { "data", (getter)node_get_data, (setter)node_set_data,
     "Data stored in the node (get/set)", 0 },
   { "edges", (getter)node_get_out_edges, 0,
-    "Edges pointing out from node (get) (alias for out_edges)", 0 },
+    "Edges pointing out from node (get)", 0 },
   { "nodes", (getter)node_get_nodes, 0,
-    "Nodes that can be reached directly from this nodes", 0 },
+    "Nodes that can be reached directly from this nodes (get)", 0 },
+  { "nedges", (getter)node_get_nedges, 0,
+    "The number of edges going out of this node (get)", 0 },
   { NULL }
 };
 
@@ -127,6 +130,11 @@ PyObject* node_get_nodes(PyObject* self) {
   NodeEdgeListIterator* iterator = iterator_new<NodeEdgeListIterator>();
   iterator->init(so, so->m_edges.begin(), so->m_edges.end());
   return (PyObject*)iterator;
+}
+
+PyObject* node_get_nedges(PyObject* self) {
+  Node* so = ((NodeObject*)self)->m_x;
+  return PyInt_FromLong((long)so->m_edges.size());
 }
 
 void init_NodeType() {

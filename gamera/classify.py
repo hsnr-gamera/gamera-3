@@ -22,7 +22,7 @@ import util, gamera_xml, config
 import re
 
 """This file defines the Python part of classifiers.  These wrapper classes
-contain a reference to a core classifier class (unusally written in C++), and an
+contain a reference to a core classifier class (unusally written in C++), and a
 optional GroupingClassifier.  They add functionality for XML loading/saving,
 splitting/grouping, and keeping track of a database of glyphs (in the
 Interactive case.)"""

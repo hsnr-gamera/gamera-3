@@ -89,6 +89,6 @@ class EdgeDetect(PluginModule):
       functions = [difference_of_exponential_edge_image,
                    difference_of_exponential_crack_edge_image,
                    canny_edge_image]
-      author = "L. C. Ninja"
+      author = "Ullrich Koethe (wrapped by Robert Ferguson)"
       url = "http://gamera.dkc.jhu.edu"
 module = EdgeDetect()

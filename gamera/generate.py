@@ -363,7 +363,7 @@ template = Template("""
 def generate_plugin(plugin_filename):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
-  cpp_filename = path.join(plug_path, module_name + ".cpp")
+  cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")
 
   regenerate = 0
   if newer(plugin_filename, cpp_filename):
@@ -375,6 +375,7 @@ def generate_plugin(plugin_filename):
 
   #import plugin
   plugin_module = __import__(module_name)
+  print plugin_module.module
   if plugin_module.module.pure_python:
     return None
 

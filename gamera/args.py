@@ -454,15 +454,12 @@ if _has_gui == _WX_GUI:
          return self
 
       def get(self):
-         if self.Number() > 0:
-            selection = self.control.GetSelection()
-            if (len(self.choices[selection]) == 2 and
-                type(self.choices[selection]) != type('')):
-               return self.choices[selection][1]
-            else:
-               return selection
+         selection = self.control.GetSelection()
+         if (len(self.choices[selection]) == 2 and
+             type(self.choices[selection]) != type('')):
+            return self.choices[selection][1]
          else:
-            return 'None'
+            return selection
 else:
    class _guiChoice:
       pass

@@ -18,15 +18,23 @@
 #
 
 from gamera.plugin import *
-import _compare
+import _image_utilities
 
-class _Utility(PluginFunction):
-    cpp_source = "utility.hpp"
-    category = None
-    
-class compare(_Utility):
-    def __call__(image, image2):
-        return _compare.compare(image.m, image2.m)
-compare = compare()
+class image_copy(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args = Args([Choice("storage format", ["DENSE", "RLE"])])
+    def __call__(image, storage_format = 0):
+        return _image_utilities.image_copy(image, storage_format)
+    __call__ = staticmethod(__call__)
 
-plugins = [compare]
+image_copy = image_copy()
+
+class UtilModule(PluginModule):
+    cpp_headers=["image_utilities.hpp"]
+    category = "Utility"
+    functions = [image_copy]
+    author = "Michael Droettboom and Karl MacMillan"
+    url = "http://gamera.dkc.jhu.edu/"
+
+module = UtilModule()

@@ -116,9 +116,22 @@ namespace Gamera {
     // view types
     typedef ImageView<data_type> view_type;
     typedef ImageView<dense_data_type> dense_view_type;
-    dense_view_type* create_dense_view_and_data(T& other) {
-      
-    }
+    typedef ImageView<rle_data_type> rle_view_type;
+    // cc types
+    typedef ConnectedComponent<data_type> cc_type;
+    typedef ConnectedComponent<dense_data_type> dense_cc_type;
+    typedef ConnectedComponent<rle_data_type> rle_cc_type;
+  };
+
+  template<>
+  struct ImageFactory<RGBImageView> {
+    // data types
+    typedef RGBImageView::data_type data_type;
+    typedef ImageData<RGBImageView::value_type> dense_data_type;
+    typedef ImageData<RGBImageView::value_type> rle_data_type;
+    // view types
+    typedef ImageView<data_type> view_type;
+    typedef ImageView<dense_data_type> dense_view_type;
     typedef ImageView<rle_data_type> rle_view_type;
     // cc types
     typedef ConnectedComponent<data_type> cc_type;

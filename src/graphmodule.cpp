@@ -32,7 +32,7 @@ typedef std::set<NodeObject*> NodeSet;
 typedef std::set<EdgeObject*> EdgeSet;
 
 extern "C" {
-  void initgraph(void);
+  DL_EXPORT(void) initgraph(void);
 
   static PyObject* iterator_get_iter(PyObject* self);
   static PyObject* iterator_next(PyObject* self);

@@ -531,12 +531,19 @@ def generate_plugin(plugin_filename):
   cpp_files = [cpp_filename]
   for file in plugin_module.module.cpp_sources:
     cpp_files.append(file)
-  extra_libraries = ["stdc++"] + plugin_module.module.extra_libraries
+  
+  extra_libraries = plugin_module.module.extra_libraries
+  if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
+     extra_libraries.append("stdc++")
+  compile_args = []
+  if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
+     compile_args = ["/GR", "/Zi"]
+     #compile_args = ["/GR"]
   return Extension("gamera.plugins._" + module_name, cpp_files,
                    include_dirs=include_dirs,
                    library_dirs=plugin_module.module.library_dirs,
                    libraries=extra_libraries,
-                   extra_compile_args=plugin_module.module.extra_compile_args,
+                   extra_compile_args=plugin_module.module.extra_compile_args + compile_args,
                    extra_link_args=plugin_module.module.extra_link_args,
                    define_macros=plugin_module.module.define_macros,
                    extra_objects=plugin_module.module.extra_objects)

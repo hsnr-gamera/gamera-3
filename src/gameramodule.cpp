@@ -39,7 +39,7 @@ void init_ImageInfoType(PyObject* module_dict);
 
 
 extern "C" {
-  void initgameracore(void);
+  DL_EXPORT(void) initgameracore(void);
 }
 
 PyMethodDef gamera_module_methods[] = {

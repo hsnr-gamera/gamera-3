@@ -26,6 +26,9 @@
 
 #ifndef _TIFFDIR_
 #define	_TIFFDIR_
+#if !defined(__GNUC__)
+#include "tiffcomp.h"
+#endif
 /*
  * ``Library-private'' Directory-related Definitions.
  */

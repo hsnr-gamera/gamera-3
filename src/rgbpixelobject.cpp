@@ -63,6 +63,7 @@ static PyGetSetDef rgbpixel_getset[] = {
     "the current green value", 0 },
   { "blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
     "the current blue value", 0 },
+  { NULL }
 };
 
 static PyObject* rgbpixel_new(PyTypeObject* pytype, PyObject* args,

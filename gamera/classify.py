@@ -296,6 +296,16 @@ class NonInteractiveClassifier(_Classifier):
    def stop_optimizing(self):
       self.classifier.stop_optimizing()
 
+   def evaluate(self):
+      return self.classifier.evaluate()
+
+   #########################################
+   # Features
+   def change_feature_set(self, features):
+      _Classifier.change_feature_set(self, features)
+      if len(self._database):
+         self.classifier.instantiate_from_images(self._database)
+
    #########################################
    # Settings
    def save_settings(self, filename):
@@ -495,3 +505,58 @@ class InteractiveClassifier(_Classifier):
 
    def set_display(self, display):
       self._display = display
+
+def simple_feature_selector(glyphs, classifier = None):
+   assert(len(glyphs) > 1)
+   c = classifier
+   if c is None:
+      c = NonInteractiveClassifier()
+
+   all_features = []
+   for x in glyphs[0].get_feature_functions():
+      all_features.append(x[0])
+   # First do the easy ones = single features and all features
+   answers = []
+   c.change_feature_set(all_features)
+   c.set_glyphs(glyphs)
+   answers.append((c.evaluate(), all_features))
+   for x in all_features:
+      print x
+      c.change_feature_set(x)
+      answers.append((c.evaluate(), x))
+   return answers
+   
+
+class CombGen:
+   """Generate the k-combinations of a sequence. This is a iterator
+   that generates the combinations of the fly. This code was adapted
+   from a posting by Tim Peters"""
+   def __init__(self, seq, k):
+      n = self.n = len(seq)
+      if not 1 <= k <= n:
+         raise ValueError("k must be in 1.." + `n` + ": " + `k`)
+      self.k = k
+      self.seq = seq
+      self.indices = range(k)
+      # Trickery to make the first .next() call work.
+      self.indices[-1] = self.indices[-1] - 1
+
+   def __iter__(self):
+      return self
+
+   def next(self):
+      n, k, indices = self.n, self.k, self.indices
+      lasti, limit = k-1, n-1
+      while lasti >= 0 and indices[lasti] == limit:
+         lasti = lasti - 1
+         limit = limit - 1
+      if lasti < 0:
+         raise StopIteration
+      newroot = indices[lasti] + 1
+      indices[lasti:] = range(newroot, newroot + k - lasti)
+      # Build the result.
+      result = []
+      seq = self.seq
+      for i in indices:
+         result.append(seq[i])
+      return result

@@ -119,7 +119,7 @@
  * then define BSDTYPES in your Makefile.
  */
 //#undef BSDTYPES
-#if defined(BSDTYPES)
+#if 1//defined(BSDTYPES)
 typedef	unsigned char u_char;
 typedef	unsigned short u_short;
 typedef	unsigned int u_int;

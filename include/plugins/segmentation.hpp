@@ -500,7 +500,7 @@ namespace Gamera {
 	      }
 	    }
 	  }
-	  if (!finished_look or steps > 500) {
+	  if ((!finished_look) | (steps > 500)) {
 	    std::cerr << "ERROR!";
 	    break;
 	  }

@@ -96,11 +96,12 @@ def generate_features_list(list, feature_functions='all'):
    """Generate features on a list of images using either the feature
    functions passed in or the default features."""
    ff = Image.get_feature_functions(feature_functions)
-   progress = util.ProgressFactory("Generating features...", len(list))
+   progress = util.ProgressFactory("Generating features...", len(list) / 10)
    try:
-      for glyph in list:
+      for i, glyph in enumerate(list):
          glyph.generate_features(ff)
-         progress.step()
+         if i % 10 == 0:
+            progress.step()
    finally:
       progress.kill()
 

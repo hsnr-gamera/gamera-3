@@ -167,9 +167,8 @@ void to_buffer(T& m, PyObject *py_buffer) {
 template<class T>
 Image *color_ccs(T& m) {
   typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
-  RGBViewFactory fact;
   RGBViewFactory::image_type* image =
-    fact.create(0, 0, m.nrows(), m.ncols());
+    RGBViewFactory::create(0, 0, m.nrows(), m.ncols());
 
   typename T::vec_iterator src = m.vec_begin();
   typename RGBImageView::vec_iterator dst = image->vec_begin();

@@ -87,7 +87,7 @@ namespace Gamera {
    */
   template<class T, class U>
   void image_copy_fill(const T& src, U& dest) {
-    if (src.nrows() != dest.nrows() | src.ncols() != dest.ncols())
+    if ((src.nrows() != dest.nrows()) | (src.ncols() != dest.ncols()))
       throw std::range_error("image_copy_fill: src and dest image dimensions must match!");
     typename T::const_row_iterator src_row = src.row_begin();
     typename T::const_col_iterator src_col;
@@ -98,7 +98,7 @@ namespace Gamera {
     for (; src_row != src.row_end(); ++src_row, ++dest_row)
       for (src_col = src_row.begin(), dest_col = dest_row.begin(); src_col != src_row.end();
 	   ++src_col, ++dest_col)
-	dest_acc.set(typename U::value_type(src_acc.get(src_col)), dest_col);
+	dest_acc.set((typename U::value_type)src_acc.get(src_col), dest_col);
     image_copy_attributes(src, dest);
   }
 
@@ -221,7 +221,8 @@ namespace Gamera {
 	double new_col = ((double(col - half_col) * cos_angle) - 
 			  (double(row - half_row) * sin_angle) +
 			  double(half_out_col));
-	out->set(int(new_row + 0.5), int(new_col + 0.5), typename fact::view_type::value_type(m.get(row, col)));
+	out->set((int)(new_row + 0.5), (int)(new_col + 0.5),
+		 (typename fact::view_type::value_type)m.get(row, col));
       }
     }
     image_copy_attributes(m, *out);

@@ -118,8 +118,7 @@
  * If your system doesn't have them in <sys/types.h>,
  * then define BSDTYPES in your Makefile.
  */
-#undef BSDTYPES
-#if defined(BSDTYPES)
+#if !defined(__GNUC__)
 typedef	unsigned char u_char;
 typedef	unsigned short u_short;
 typedef	unsigned int u_int;

@@ -392,13 +392,18 @@ namespace Gamera {
 
   template<class T>
   FloatVector* skeleton_features(const T& image) {
+    if (image.nrows() == 1 && image.ncols() == 1) {
+      FloatVector* features = new FloatVector(6, 0.0);
+      std::fill(features->begin() + 3, features->end(), 1.0);
+      return features;
+    }
     typedef typename ImageFactory<T>::view_type* view_type;
     view_type skel = thin_lc(image);
     bool p[8];
     size_t T_joints = 0, X_joints = 0, bend_points = 0;
     size_t end_points = 0, total_pixels = 0;
     size_t center_x = 0, center_y = 0;
-    for (size_t y = 0; y < skel->nrows(); ++y)
+    for (size_t y = 0; y < skel->nrows(); ++y) {
       for (size_t x = 0; x < skel->ncols(); ++x) {
 	if (is_black(skel->get(y, x))) {
 	  ++total_pixels;
@@ -406,7 +411,7 @@ namespace Gamera {
 	  center_y += y;
 	  size_t N, S;
 	  thin_zs_get(y, x, *skel, p, N, S);
-	  if (N == 4) // T-joint
+		  if (N == 4) // T-joint
 	    ++X_joints;
 	  else if (N == 3) // X-joint
 	    ++T_joints;
@@ -420,6 +425,11 @@ namespace Gamera {
 	    ++end_points;
 	}
       }
+    }
+    if (total_pixels == 0) {
+      FloatVector* features = new FloatVector(6, 0.0);
+      return features;
+    }
     center_x /= total_pixels;
     size_t x_axis_crossings = 0;
     bool last_pixel = false;

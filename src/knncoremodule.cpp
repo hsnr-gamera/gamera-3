@@ -41,7 +41,7 @@ using namespace Gamera;
 using namespace Gamera::kNN;
 
 extern "C" {
-  void initknncore(void);
+  DL_EXPORT(void) initknncore(void);
   static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds);
   static void knn_dealloc(PyObject* self);
@@ -865,7 +865,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
       return 0;
     }
-    char tmp_string[string_size];
+    char tmp_string[1024];
     if (fread((void*)&tmp_string, sizeof(char), string_size, file) != string_size) {
       PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
       return 0;

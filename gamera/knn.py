@@ -19,7 +19,7 @@
 #
 
 from threading import *
-
+import sys
 from gamera import core, util
 import gamera.knncore
 import gamera.gamera_xml
@@ -322,8 +322,6 @@ class kNN(gamera.knncore.kNN):
          self.change_feature_set('all')
       else:
          self.change_feature_set(features)
-
-
 
 
 

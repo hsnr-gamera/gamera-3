@@ -62,8 +62,11 @@ class Option:
       self._defined = 1
 
    def get(self):
-      if self._value == [] and self._defined:
-         return self._default
+      if self._value == []:
+         if self._defined:
+            return self._default
+         else:
+            return None
       if self._type == list:
          return self._value
       else:

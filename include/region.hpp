@@ -104,7 +104,7 @@ namespace Gamera {
       if (b.lr_y() >= a.ul_y())
 	return b.lr_y() - a.ul_y();
       else
-	return -(a.ul_y() - b.lr_y());
+	return -int(a.ul_y() - b.lr_y());
     }
 
     // distance from the bottom of a to the top of b
@@ -114,7 +114,7 @@ namespace Gamera {
       if (b.ul_y() <= a.lr_y())
 	return a.lr_y() - b.ul_y();
       else
-	return -(b.ul_y() - a.lr_y());
+	return -(int)(b.ul_y() - a.lr_y());
     }
   }
 

@@ -475,13 +475,13 @@ namespace vigra {
 			 NumericTraits<RGBPixel::value_type>::fromRealPromote(v.blue()));
     }
   };
-  
+#if 0  
   template <class T2>
   struct PromoteTraits<RGBPixel, RGBValue<T2> >
   {
     typedef RGBValue<typename PromoteTraits<typename RGBPixel::value_type, T2>::Promote> Promote;
   };
-  
+#endif
   struct PromoteTraits<RGBPixel, double>
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;

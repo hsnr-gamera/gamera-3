@@ -81,9 +81,17 @@ if not '--help' in sys.argv and not '--help-commands' in sys.argv:
 ########################################
 # Distutils setup
 
-ga_files = glob.glob("src/ga/*.C")
+ga_files = glob.glob("src/ga/*.cpp")
 ga_files.append("src/knncoremodule.cpp")
 
+libs = []
+if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
+   libs = ["stdc++"]
+
+extra_args = []
+if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
+   extra_args = ["/GR", "/Zi"]
+   
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
                          "src/sizeobject.cpp",
@@ -99,13 +107,14 @@ extensions = [Extension("gamera.gameracore",
                          ],
                         include_dirs=["include"],
                         # FIXME
-                        libraries=["stdc++"]),
+                        libraries=libs, extra_compile_args=extra_args
+                        ),
               Extension("gamera.knncore", ga_files,
                         include_dirs=["include", "src/ga", "src"],
-                        libraries=["stdc++"]),
+                        libraries=libs, extra_compile_args=extra_args),
               Extension("gamera.graph", ["src/graphmodule.cpp"],
                         include_dirs=["include", "src"],
-                        libraries=["stdc++"])]
+                        libraries=libs, extra_compile_args=extra_args)]
 extensions.extend(plugin_extensions)
 
 setup(name = "gamera", version="1.1",

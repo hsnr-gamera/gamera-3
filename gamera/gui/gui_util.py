@@ -160,7 +160,10 @@ class ProgressBox:
          style=wxPD_APP_MODAL|wxPD_ELAPSED_TIME|wxPD_REMAINING_TIME|wxPD_AUTO_HIDE)
       self.done = 0
       self._num = 0
-      self._den = length
+      if length == 0:
+         self._den = 1
+      else:
+         self._den = length
       wxBeginBusyCursor()
 
    def __del__(self):

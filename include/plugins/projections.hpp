@@ -69,10 +69,21 @@ namespace Gamera {
 
   /*
     Projection along the x axis (rows) of an image.
+    
+    MGD: Should be faster now because it accesses the image data in
+    row-major order.
   */
   template<class T>
   IntVector* projection_cols(const T& image) {
-    return projection(image.col_begin(), image.col_end());
+    IntVector* proj = new IntVector(image.ncols(), 0);
+    for (size_t r = 0; r != image.nrows(); ++r) {
+      for (size_t c = 0; c != image.ncols(); ++c) {
+	if (is_black(image.get(r, c))) {
+	  (*proj)[c] += 1;
+	}
+      }
+    }
+    return proj;
   }
 
   /*

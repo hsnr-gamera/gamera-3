@@ -28,7 +28,7 @@ from os.path import join
 import os
 import glob
 import commands
-
+import datetime
 def _run_command(exc, line):
     print line
     try:
@@ -59,14 +59,16 @@ class bdist_osx(Command):
                     "platform name to embed in generated filenames "
                     "(default: %s)" % get_platform()),
                    ('dist-dir=', 'd',
-                    "directory to put final built distributions in")
+                    "directory to put final built distributions in"),
+		   ('nightly','n',"Name output file according to nightly build format")
                    ]
-   
+   boolean_options = ['nightly']
    def initialize_options (self):
       self.bdist_dir = None
       self.plat_name = None
       self.keep_temp = 0
       self.dist_dir = None
+      self.nightly = 0
       
    def finalize_options (self):
       if self.bdist_dir is None:
@@ -143,8 +145,18 @@ class bdist_osx(Command):
       copy_tree('gamera/mac/dmg_images', join(dmg_dir, '.images'))
       # wxPython link
       copy_file('gamera/mac/wxPython.html', join(dmg_dir, 'wxPython Build on Sourceforge.html'))
-
-      log.info("Making %s.dmg..." % fullname)
+      imagename = "%s.osx.dmg" % fullname
+      if self.nightly:
+         d = datetime.date.today()
+         monthstring = str(d.month)
+         daystring = str(d.day)
+         if d.month < 10:
+            monthstring = '0' + monthstring
+         if d.day < 10:
+            daystring = '0' + daystring
+         imagename = "gamera-2-nightly-%s%s%s.osx.dmg" % (d.year,monthstring,daystring)
+      
+      log.info("Making %s..." % imagename)
       # Make a read/write DMG
       output = run_command_at(self.dist_dir, "hdiutil", "create", "-format", "UDRW", "-fs", "HFS+", "-volname", "Gamera", "-srcfolder", "pkg", "temp.dmg")
       # Mount it
@@ -154,9 +166,10 @@ class bdist_osx(Command):
       # Unmount it
       output = run_command("hdiutil unmount /Volumes/Gamera")
       # Make it read only
-      output = run_command_at(self.dist_dir, "hdiutil", "convert", "-format", "UDRO", "-o", fullname+".osx.dmg", "temp.dmg")
+      
+      output = run_command_at(self.dist_dir, "hdiutil", "convert", "-format", "UDRO", "-o", imagename, "temp.dmg")
       # Internet Enable it (why I can do this read only, but I can't do the background, I dunno)
-      output = run_command_at(self.dist_dir, "hdiutil internet-enable -no", fullname+".osx.dmg")
+      output = run_command_at(self.dist_dir, "hdiutil internet-enable -no", imagename)
       # Delete the temporary image
       os.remove(join(self.dist_dir, "temp.dmg"))
       remove_tree(pkg_dir)

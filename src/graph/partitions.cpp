@@ -19,319 +19,263 @@
 
 #include "partitions.hpp"
 
-#define NP_NUMBER(a) ((a)->m_node_properties[1].SizeT)
-#define NP_AVAIL(a) ((a)->m_node_properties[2].Bool)
-#define NP_B(a) ((a)->m_node_properties[3].NodeSet_)
-#define EP_PARTITION_COUNTER(a) ((a)->m_edge_properties[1].Bool)
-#define EP_IN_CYCLE(a) ((a)->m_edge_properties[2].SizeT)
+#define NP_VISITED2(a) ((a)->m_node_properties[2].Bool)
 
-typedef std::vector<size_t> Cycles;
-
-struct PartitionIterator : IteratorObject {
-  int init(GraphObject* graph, Node* root, bool ids, double m, double b);
-private:
-  inline void find_subgraph(GraphObject* graph, Node* root);
-  inline void find_cycles(Node* root);
-  bool cycle(Node* s, Node* v, EdgeList& path);
-  inline void unmark(Node* u);
-public:
-  static PyObject* next(IteratorObject* self);
-private:
-  static PyObject* next_no_edges(PartitionIterator* so);
-  size_t m_npartitions;
-  size_t m_i;
-  size_t m_ones;
-  size_t m_allowable_ones;
-  bool m_no_edges;
-  bool m_ids;
-  Node* m_root;
-  NodeList* m_subgraph;
-  EdgeList* m_edges;
-  Cycles* m_cycles;
-  Cycles* m_cycle_sizes;
-};  
-
-int PartitionIterator::init(GraphObject* graph, Node* root, bool ids,
-			    double m, double b) {
-  m_ids = ids;
-  m_subgraph = new NodeList();
-  m_edges = new EdgeList();
-  m_root = root;
-
-  find_subgraph(graph, root);
-  
-  // Special case: if we haven't found any edges, we don't
-  // need to do cycle detection, so we skip it
-  if (m_edges->empty()) {
-    m_no_edges = true;
-    m_i = m_npartitions = 0;
-    return 1;
+void print_bits(size_t bits) {
+  for (int i = 31; i >= 0; --i) {
+    if (1 << i & bits)
+      std::cerr << "1";
+    else
+      std::cerr << "-";
   }
-
-  m_cycles = new Cycles();
-  m_cycle_sizes = new Cycles();
-  m_cycles->reserve(m_subgraph->size());
-  m_cycle_sizes->reserve(m_subgraph->size());
-  find_cycles(root);
-
-  size_t nedges = m_edges->size();
-  m_npartitions = (size_t)pow(2, nedges);
-  m_i = 0;
-  m_ones = 0;
-  m_allowable_ones = size_t(double(nedges) * m + b);
-  std::cerr << nedges << " " << m_allowable_ones << " " << m_cycles->size() << "\n";
-  return 1; 
 }
 
-void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
-  for (NodeVector::iterator i = graph->m_nodes->begin();
-       i != graph->m_nodes->end(); ++i) {
-    NP_VISITED(*i) = false;
-    for (EdgeList::iterator j = (*i)->m_edges.begin();
-	 j != (*i)->m_edges.end(); ++j) {
-      EP_VISITED(*j) = false;
-    }
-  }
+#ifdef _MSC_VER
+typedef unsigned __int64 Bitfield;
+#else
+typedef unsigned long long Bitfield;
+#endif
+struct Part;
+typedef std::list<Part> Parts;
+class Part {
+public:
+  inline Part(Bitfield _bits, double _score) :
+    bits(_bits), score(_score), begin(NULL), end(NULL) {};
+  Bitfield bits;
+  double score;
+  Parts::iterator begin;
+  Parts::iterator end;
+};
+typedef std::vector<Bitfield> Solution;
 
-  size_t count = 1;
-  NodeStack node_stack;
-  node_stack.push(root);
+inline Node* graph_optimize_partitions_find_root(Node* root, NodeVector& subgraph) {
+  // Find the node with the minimum edges
+  NodeQueue node_queue;
+  node_queue.push(root);
+  size_t min_edges = std::numeric_limits<size_t>::max();
   NP_VISITED(root) = true;
-  while (!node_stack.empty()) {
+  while (!node_queue.empty()) {
     Node* node;
-    node = node_stack.top();
-    node_stack.pop();
-    m_subgraph->push_back(node);
-    NP_NUMBER(node) = count++;
+    node = node_queue.front();
+    node_queue.pop();
+    subgraph.push_back(node);
+    if (node->m_edges.size() < min_edges) {
+      min_edges = node->m_edges.size();
+      root = node;
+    }
     for (EdgeList::iterator j = node->m_edges.begin();
 	 j != node->m_edges.end(); ++j) {
       Node* to_node = (*j)->traverse(node);
-      if (!EP_VISITED(*j)) {
-	EP_VISITED(*j) = true;
-	EP_PARTITION_COUNTER(*j) = false;
-	EP_IN_CYCLE(*j) = 0;
-	m_edges->push_back(*j);
-      }
       if (!NP_VISITED(to_node)) {
-	node_stack.push(to_node);
+	node_queue.push(to_node);
 	NP_VISITED(to_node) = true;
       }
     }
   }
+  return root;
 }
 
-void PartitionIterator::find_cycles(Node* root) {
-  for (NodeList::iterator j = m_subgraph->begin();
-       j != m_subgraph->end(); ++j) {
-    NP_B(*j) = new NodeSet();
-    NP_VISITED(*j) = false;
-  }
-
-  EdgeList path;
-  for (NodeList::iterator i = m_subgraph->begin();
-       i != m_subgraph->end(); ++i) {
-    for (NodeList::iterator j = m_subgraph->begin();
-	 j != m_subgraph->end(); ++j) {
-      NP_AVAIL(*j) = true;
-      NP_B(*j)->clear();
+inline void graph_optimize_partitions_number_parts(Node* root, NodeVector& subgraph) {
+  // Now visit the graph in the correct order
+  NodeQueue node_queue;
+  node_queue.push(root);
+  NP_VISITED2(root) = true;
+  size_t count = 0;
+  while (!node_queue.empty()) {
+    Node* node;
+    node = node_queue.front();
+    node_queue.pop();
+    subgraph.push_back(node);
+    NP_NUMBER(node) = count++;
+    for (EdgeList::iterator j = node->m_edges.begin();
+	 j != node->m_edges.end(); ++j) {
+      Node* to_node = (*j)->traverse(node);
+      if (!NP_VISITED2(to_node)) {
+	node_queue.push(to_node);
+	NP_VISITED2(to_node) = true;
+      }
     }
-    for (EdgeList::iterator j = m_edges->begin();
-	 j != m_edges->end(); ++j) {
-      EP_VISITED(*j) = false;
-    }
-    Node* s = *i;
-    cycle(s, s, path);
-    NP_VISITED(s) = true;
   }
-
-  for (NodeList::iterator j = m_subgraph->begin();
-       j != m_subgraph->end(); ++j)
-    delete NP_B(*j);
 }
 
-bool PartitionIterator::cycle(Node* s, Node* v,
-			      EdgeList& path) {
-  bool flag = false;
-  NP_AVAIL(v) = false;
-  for (EdgeList::iterator i = v->m_edges.begin();
-       i != v->m_edges.end(); ++i) {
-    Node* w = (*i)->traverse(v);
-    if (!NP_VISITED(w) && !EP_VISITED(*i)) {
-      path.push_back(*i);
-      EP_VISITED(*i) = true;
-      if (w == s) {
-	if (path.size() > 2) {
-	  size_t marker = 1 << m_cycles->size();
-	  for (EdgeList::iterator j = path.begin();
-	       j != path.end(); ++j)
-	    EP_IN_CYCLE(*j) |= marker;
-	  m_cycles->push_back(0);
-	  m_cycle_sizes->push_back(path.size() - 1);
-	}
-	flag = true;
-      } else if NP_AVAIL(w)
-	flag |= cycle(s, w, path);
-      path.pop_back();
+inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t max_size,
+						     const size_t subgraph_size,
+						     NodeList& node_stack, Bitfield bits,
+						     PyObject* eval_func, Parts& parts) {
+  size_t node_number = NP_NUMBER(node);
+  node_stack.push_back(node);
+  bits |= 1 << node_number;
+
+  // Get the score for this part by building a Python list and
+  // passing it to Python
+  PyObject* result = PyList_New(node_stack.size());
+  size_t j = 0;
+  for (NodeList::iterator i = node_stack.begin();
+       i != node_stack.end(); ++i, ++j)
+    PyList_SET_ITEM(result, j, (*i)->m_data);
+
+  PyObject* tuple = PyTuple_New(1);
+  PyTuple_SET_ITEM(tuple, 0, result);
+  PyObject* evalobject = PyObject_CallObject(eval_func, tuple);
+  double eval;
+  if (evalobject == NULL)
+    eval = -1;
+  else
+    eval = PyFloat_AsDouble(evalobject); // Implicit error checking
+  parts.push_back(Part(bits, eval));
+
+  if ((node_stack.size() < max_size) && (NP_NUMBER(node) != subgraph_size - 1)) {
+    for (EdgeList::iterator i = node->m_edges.begin();
+	 i != node->m_edges.end(); ++i) {
+      Node* to_node = (*i)->traverse(node);
+      if (NP_NUMBER(to_node) > node_number)
+	graph_optimize_partitions_evaluate_parts
+	  (to_node, max_size, subgraph_size, node_stack, bits, eval_func, parts);
     }
   }
-  if (flag)
-    unmark(v);
-  else 
-    for (EdgeList::iterator i = v->m_edges.begin();
-	 i != v->m_edges.end(); ++i) {
-      Node* w = (*i)->traverse(v);
-      if (!NP_VISITED(w))
-	NP_B(w)->insert(v);
+
+  node_stack.pop_back();
+  return;
+}
+
+inline void graph_optimize_partitions_find_skips(const Parts::iterator begin,
+						 const Parts::iterator end) {
+  for (Parts::iterator i = begin; i != end; ++i) {
+    Parts::iterator j = i;
+    for (; j != end; ++j)
+      if (!((*i).bits & (*j).bits))
+	break;
+    (*i).begin = j;
+    Bitfield temp = (*i).bits << 1;
+    Parts::iterator k = j;
+    for (; k != end; ++k)
+      if (!(temp & (*k).bits))
+	break;
+    (*i).end = k;
+  }
+}
+
+inline void graph_optimize_partitions_find_solution(Parts::iterator begin, 
+						    Parts::iterator end, 
+						    Solution& best_solution, 
+						    double &best_mean,
+						    Solution& partial_solution, 
+						    double partial_mean, Bitfield bits, 
+						    const Bitfield all_bits) {
+  if (bits == all_bits) {
+    partial_mean /= partial_solution.size();
+    if (partial_mean > best_mean) {
+      best_mean = partial_mean;
+      best_solution = partial_solution; // Copy
     }
-  return flag;
+  }
+
+  for (Parts::iterator i = begin; i != end; ++i) {
+    if (!((*i).bits & bits)) { // If this part "fits into" the current part(s)
+      partial_solution.push_back((*i).bits);
+      graph_optimize_partitions_find_solution
+	((*i).begin, (*i).end, best_solution, best_mean,
+	 partial_solution, partial_mean + (*i).score,
+	 bits | (*i).bits, all_bits);
+      partial_solution.pop_back();
+    }
+  }
 }
 
-void PartitionIterator::unmark(Node* u) {
-  NP_AVAIL(u) = true;
-  for (NodeSet::iterator i = NP_B(u)->begin();
-       i != NP_B(u)->end(); ++i) {
-    if (!NP_AVAIL(*i))
-      unmark(*i);
-  }
-  NP_B(u)->clear();
-}
+PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
+				    PyObject* eval_func, size_t max_size) {
 
-PyObject* PartitionIterator::next(IteratorObject* self) {
-  PartitionIterator* so = (PartitionIterator*)self;
-
-  if (so->m_no_edges)
-    return next_no_edges(so);
-
-  if (so->m_i >= so->m_npartitions) {
-    // Cleanup
-    delete so->m_edges;
-    delete so->m_subgraph;
-    delete so->m_cycles;
-    delete so->m_cycle_sizes;
-    return 0;
-  }
-    
-  for (NodeList::iterator i = so->m_subgraph->begin();
-       i != so->m_subgraph->end(); ++i)
+  for (NodeVector::iterator i = so->m_nodes->begin();
+       i != so->m_nodes->end(); ++i) {
     NP_VISITED(*i) = false;
-
-  PyObject* result = PyList_New(0);
-  for (NodeList::iterator i = so->m_subgraph->begin();
-       i != so->m_subgraph->end(); ++i) {
-    size_t id = 0;
-    if (!NP_VISITED(*i)) {
-      PyObject* subresult = PyList_New(0);
-      NodeStack node_stack;
-      node_stack.push(*i);
-      while (!node_stack.empty()) {
-	Node* root = node_stack.top();
-	node_stack.pop();
-	NP_VISITED(root) = true;
-	for (EdgeList::iterator j = root->m_edges.begin();
-	     j != root->m_edges.end(); ++j) {
-	  Node* inner_node = (*j)->traverse(root);
-	  if (!NP_VISITED(inner_node)) {
-	    if (EP_PARTITION_COUNTER(*j)) {
-	      NP_VISITED(inner_node) = true;
-	      node_stack.push(inner_node);
-	    }
-	  }
-	}
-	if (so->m_ids)
-	  id |= 1 << NP_NUMBER(root);
-	PyList_Append(subresult, root->m_data);
-      }
-      if (so->m_ids) {
-	PyObject* tuple = PyTuple_New(2);
-	PyTuple_SetItem(tuple, 0, PyInt_FromLong((long)id));
-	PyTuple_SetItem(tuple, 1, subresult);
-	PyList_Append(result, tuple);
-	Py_DECREF(tuple);
-      } else {
-	PyList_Append(result, subresult);
-	Py_DECREF(subresult);
-      }
-    }
+    NP_VISITED2(*i) = false;
   }
-    
-  // Do the addition
-  while (so->m_i < so->m_npartitions) {
-    for (EdgeList::iterator i = so->m_edges->begin();
-	 i != so->m_edges->end(); ++i) {
-      if (EP_PARTITION_COUNTER(*i)) {
-	EP_PARTITION_COUNTER(*i) = false;
-	so->m_ones--;
-	if (EP_IN_CYCLE(*i)) {
-	  size_t bit = 1;
-	  for (size_t j = 0; j < so->m_cycles->size(); ++j) {
-	    (*(so->m_cycles))[j] -= (EP_IN_CYCLE(*i) & bit);
-	    bit <<= 1;
-	  }
-	}
-      } else {
-	EP_PARTITION_COUNTER(*i) = true;
-	so->m_ones++;
-	if (EP_IN_CYCLE(*i)) {
-	  size_t bit = 1;
-	  for (size_t j = 0; j < so->m_cycles->size(); ++j) {
-	    (*(so->m_cycles))[j] += (EP_IN_CYCLE(*i) & bit);
-	    bit <<= 1;
-	  }
-	}
-	break;
-      }
-    }
-    so->m_i++;
 
-    // Constrain the maximum number of ones
-    if (so->m_ones <= so->m_allowable_ones) {
-      // Constrain the cycles -- not entirely sure this actually speeds
-      // things up
-      bool good_set = true;
-      Cycles::iterator i = so->m_cycles->begin();
-      Cycles::iterator j = so->m_cycle_sizes->begin();
-      for (; i != so->m_cycles->end(); ++i, ++j)
-	if (*i == *j) {
-	  good_set = false;
-	  break;
-	}
-      if (good_set)
-	break;
+  NodeVector subgraph;
+  root = graph_optimize_partitions_find_root(root, subgraph);
+  size_t size = subgraph.size();
+  // We can't do the grouping if there's more than 64 nodes,
+  // so just return them all.  Also, if there's only one node,
+  // just trivially return it to save time.
+  if (size > 64 || size == 1) {
+    // Now, build a Python list of the solution
+    PyObject* result = PyList_New(subgraph.size());
+    for (size_t i = 0; i < subgraph.size(); ++i) {
+      PyObject* subresult = PyList_New(1);
+      Py_INCREF(subgraph[i]->m_data);
+      PyList_SET_ITEM(subresult, 0, subgraph[i]->m_data);
+      PyList_SET_ITEM(result, i, subresult);
     }
+    return result;
+  }
+
+  subgraph.clear();
+  subgraph.reserve(size);
+  graph_optimize_partitions_number_parts(root, subgraph);
+
+  // That gives us an idea of the number of nodes in the graph,
+  // now go through and find the parts
+  Parts parts;
+  for (NodeVector::iterator i = subgraph.begin();
+       i != subgraph.end(); ++i) {
+    NodeList node_stack;
+    Bitfield bits = 0;
+    graph_optimize_partitions_evaluate_parts(*i, max_size, size,
+					     node_stack, bits, eval_func, parts);
+  }
+
+  graph_optimize_partitions_find_skips(parts.begin(), parts.end());
+
+  /* for (Parts::iterator i = parts.begin(); i != parts.end(); ++i) {
+    print_bits((*i).bits);
+    std::cerr << " " << (*i).score << "\n";
+    } */
+
+  // Now, we find a solution
+  Solution best_solution, partial_solution;
+  best_solution.reserve(size);
+  partial_solution.reserve(size);
+  Bitfield all_bits = (1 << size) - 1;
+  double best_mean = 0;
+  graph_optimize_partitions_find_solution(parts.begin(), (*(parts.begin())).begin,
+					  best_solution, best_mean,
+					  partial_solution, 0.0,
+					  0, all_bits);
+
+  // Now, build a Python list of the solution
+  PyObject* result = PyList_New(best_solution.size());
+  for (size_t i = 0; i < best_solution.size(); ++i) {
+    // Count the set bits (Kernighan's method) so that we can allocate the
+    // correct sized list from the get-go
+    Bitfield solution_part = best_solution[i];
+    size_t c = 0;
+    for (; solution_part; c++)
+      solution_part &= solution_part - 1;
+    PyObject* subresult = PyList_New(c);
+    Bitfield k = 1;
+    solution_part = best_solution[i];
+    for (size_t j = 0, l = 0; k < solution_part; ++j, k <<= 1)
+      if (solution_part & k) {
+	PyObject* data = subgraph[j]->m_data;
+	Py_INCREF(data);
+	PyList_SET_ITEM(subresult, l++, data);
+      }
+    PyList_SET_ITEM(result, i, subresult);
   }
 
   return result;
 }
 
-PyObject* PartitionIterator::next_no_edges(PartitionIterator* so) {
-  PyObject* result = PyList_New(0);
-  PyObject* subresult = PyList_New(0);
-  PyList_Append(subresult, so->m_root->m_data);
-  if (so->m_ids) {
-    PyObject* tuple = PyTuple_New(2);
-    PyTuple_SetItem(tuple, 0, PyInt_FromLong(1));
-    PyTuple_SetItem(tuple, 1, subresult);
-    PyList_Append(result, tuple);
-    Py_DECREF(tuple);
-  } else {
-    PyList_Append(result, subresult);
-    Py_DECREF(subresult);
-  }
-  so->m_no_edges = false;
-  return result;
-}
-
-PyObject* graph_partitions(PyObject* self, PyObject* args) {
+PyObject* graph_optimize_partitions(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  Node* root;
-  int ids = 0;
-  double m = 1, b = 0;
-  if (PyArg_ParseTuple(args, "O|idd", &root, &ids, &m, &b) <= 0)
+  PyObject* a, *eval_func;
+  int max_size = 32;
+  if (PyArg_ParseTuple(args, "OO|i", &a, &eval_func, &max_size) <= 0)
     return 0;
-  root = graph_find_node(so, (PyObject*)root);
+  Node* root = graph_find_node(so, (PyObject*)a);
   if (root == NULL)
     return 0;
-  PartitionIterator* iterator = iterator_new<PartitionIterator>();
-  iterator->init(so, root, ids != 0, m, b);
-  return (PyObject*)iterator;
+  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_size);
+  return result;
 }
+

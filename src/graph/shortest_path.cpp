@@ -176,10 +176,8 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
     }
   }
 
-  // Create a vector of set_id -> Node*
-  for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i) {
-    distances[(*i)->m_set_id * size + (*i)->m_set_id] = 0;
+  for (size_t i = 0; i < size; ++i) {
+    distances[i * size + i] = 0;
   }
 
   // The main loop
@@ -199,6 +197,7 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
     }
   }
 
+
   PyObject* result = PyDict_New();
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
@@ -212,10 +211,21 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
 	PyObject* tuple = PyTuple_New(2);
 	PyTuple_SetItem(tuple, 0, PyFloat_FromDouble(distance));
 	PyObject* path = PyList_New(0);
-	while (paths[i_id * size + j_id] != 0) {
-	  PyList_Insert(path, 0, (*(so->m_nodes))[j_id - 1]->m_data);
-	  j_id = paths[i_id * size + j_id];
-	}
+	PyList_Insert(path, 0, (*(so->m_nodes))[i_id - 1]->m_data);
+	if (i_id > j_id) {
+	  size_t i_id_temp = i_id;
+	  while (paths[i_id_temp * size + j_id] != i_id_temp) {
+	    i_id_temp = paths[i_id_temp * size + j_id];
+	    if (i_id_temp > 0)
+	      PyList_Insert(path, 0, (*(so->m_nodes))[i_id_temp - 1]->m_data);
+	  };
+	} else {
+	  size_t j_id_temp = j_id;
+	  while (paths[i_id * size + j_id_temp] != 0) {
+	    PyList_Insert(path, 0, (*(so->m_nodes))[j_id_temp - 1]->m_data);
+	    j_id_temp = paths[i_id * size + j_id_temp];
+	  };
+	}	  
 	PyTuple_SetItem(tuple, 1, path);
 	PyDict_SetItem(subresult, (*j)->m_data, tuple);
 	Py_DECREF(tuple);

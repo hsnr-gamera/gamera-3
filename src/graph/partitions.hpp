@@ -24,11 +24,11 @@
 #include "graph.hpp"
 
 extern "C" {
-  PyObject* graph_partitions(PyObject* self, PyObject* args);
+  PyObject* graph_optimize_partitions(PyObject* self, PyObject* args);
 }
 
 #define PARTITIONS_METHODS \
-  { "partitions", graph_partitions, METH_VARARGS, \
-    "An iterator over all the partitions of the subgraph at the given root" }, \
+  { "optimize_partitions", graph_optimize_partitions, METH_VARARGS, \
+    "Find an optimal way to break up the subgraph" }, \
 
 #endif

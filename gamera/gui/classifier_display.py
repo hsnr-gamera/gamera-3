@@ -23,7 +23,7 @@ from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, classifier_stats, util
+from gamera import gamera_xml, util
 from gamera.classify import InteractiveClassifier, ClassifierError
 from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner
 from gamera.gui.gamera_display import *
@@ -559,12 +559,16 @@ class ClassifierFrame(ImageFrameBase):
             ("Merge glyphs into classifier...", self._OnMergeClassifierCollection),
             ("Save glyphs in classifier", self._OnSaveClassifierCollection),
             ("Save glyphs in classifier as...", self._OnSaveClassifierCollectionAs),
+            ("Save glyphs in classifier with features as...", self._OnSaveClassifierCollectionWithFeaturesAs),
             ("Clear glyphs in classifier", self._OnClearClassifierCollection))),
           ("&Page glyphs",
            (("Open glyphs into page editor...", self._OnOpenPageCollection),
             ("Merge glyphs into page editor...", self._OnMergePageCollection),
-            ("Save glyphs in page editor", self._OnSavePageCollection),
-            ("Save glyphs in page editor as...", self._OnSavePageCollectionAs))),
+            ("Save glyphs in page", self._OnSavePageCollection),
+            ("Save glyphs in page as...", self._OnSavePageCollectionAs),
+            ("Save glyphs in page with features as...", self._OnSavePageCollectionWithFeaturesAs),
+            ),
+           ),
           ("Save selected glyphs &as...", self._OnSaveSelectedGlyphs),
           (None, None),
           ("&Symbol names",
@@ -609,6 +613,9 @@ class ClassifierFrame(ImageFrameBase):
          classifier_menu_spec.extend([
             (None, None),
             ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)])
+      classifier_menu_spec.extend([
+         (None, None),
+         ("Generate classifier stats...", self._OnGenerateClassifierStats)])
       classifier_menu = gui_util.build_menu(
          self._frame,
          classifier_menu_spec)
@@ -812,7 +819,7 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Classifier glyphs', self._save_state_dialog[2]),
           Check('', 'Symbol table', self._save_state_dialog[3]),
           Check('', 'Source image', self._save_state_dialog[4]),
-          Directory('Save directory')], name="Open classifier window")
+          Directory('Open directory')], name="Open classifier window")
       results = dialog.show(self._frame)
       if results == None:
          return
@@ -856,12 +863,13 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Symbol table', self._save_state_dialog[3]),
           Check('', 'Source image', self._save_state_dialog[4],
                 enabled=self.splitterhr0.IsSplit()),
+          Check('', 'With features', self._save_state_dialog[5]),
           Directory('Save directory')], name="Save classifier window")
       results = dialog.show(self._frame)
       if results == None:
          return
       self._save_state_dialog = results
-      settings, page, classifier, symbols, source, directory = results
+      settings, page, classifier, symbols, source, with_features, directory = results
       if directory == None:
          gui_util.message("You must provide a directory to load.")
          return
@@ -875,14 +883,14 @@ class ClassifierFrame(ImageFrameBase):
       if page:
          try:
             self._SavePageCollection(
-               os.path.join(directory, "page_glyphs.xml"))
+               os.path.join(directory, "page_glyphs.xml"), with_features=with_features)
          except:
             error_messages.add(str(e))
          self.multi_iw.id.is_dirty = False
       if classifier:
          try:
             self._SaveClassifierCollection(
-               os.path.join(directory, "classifier_glyphs.xml"))
+               os.path.join(directory, "classifier_glyphs.xml"), with_features=with_features)
          except:
             error_messages.add(str(e))
          self._classifier.is_dirty = False
@@ -910,7 +918,9 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Unclassified', self._save_by_criteria_dialog[4]),
           Check('', 'Automatically classified', self._save_by_criteria_dialog[5]),
           Check('', 'Heuristically classified', self._save_by_criteria_dialog[6]),
-          Check('', 'Manually classified', self._save_by_criteria_dialog[6]),
+          Check('', 'Manually classified', self._save_by_criteria_dialog[7]),
+          Info('Options'),
+          Check('', 'Save with features', self._save_by_criteria_dialog[9]),
           FileSave('Save glyphs to file:', '',
                    extension=gamera_xml.extensions)],
          name = 'Save by criteria...')
@@ -919,7 +929,7 @@ class ClassifierFrame(ImageFrameBase):
          results = dialog.show(self._frame)
          if results is None:
             return
-         skip, classifier, page, skip, un, auto, heur, man, filename = results
+         skip, classifier, page, skip, un, auto, heur, man, skip2, with_features, filename = results
          if ((classifier == 0 and page == 0) or
              (un == 0 and auto == 0 and heur == 0 and man == 0)):
             gui_util.message(
@@ -952,8 +962,8 @@ class ClassifierFrame(ImageFrameBase):
          try:
             gamera_xml.WriteXMLFile(
                glyphs=glyphs,
-               symbol_table=self._symbol_table).write_filename(
-                  filename)
+               symbol_table=self._symbol_table,
+               with_features=with_features).write_filename(filename)
          except gamera_xml.XMLError, e:
             gui_util.message("Saving by criteria: " + str(e))
          
@@ -1005,22 +1015,29 @@ class ClassifierFrame(ImageFrameBase):
          if gui_util.are_you_sure_dialog(
             ("There are %d glyphs in the classifier.\n" +
              "Are you sure you want to save?") % len(self._classifier.database)):
-            self._SaveClassifierCollection(self.classifier_collection_filename)
+            self._SaveClassifierCollection(
+               self.classifier_collection_filename, with_features=False)
 
    def _OnSaveClassifierCollectionAs(self, event):
+      self._SaveClassifierCollectionAs(event, False)
+
+   def _OnSaveClassifierCollectionWithFeaturesAs(self, event):
+      self._SaveClassifierCollectionAs(event, True)
+
+   def _SaveClassifierCollectionAs(self, event, with_features=False):
       if gui_util.are_you_sure_dialog(
          ("There are %d glyphs in the classifier.\n" +
           "Are you sure you want to save?") % len(self._classifier.database)):
          filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
          if filename:
             self.classifier_collection_filename = filename
-            self._SaveClassifierCollection(filename)
+            self._SaveClassifierCollection(filename, with_features=with_features)
          
-   def _SaveClassifierCollection(self, filename):
-         try:
-            self._classifier.to_xml_filename(filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message("Saving classifier glyphs: " + str(e))
+   def _SaveClassifierCollection(self, filename, with_features=True):
+      try:
+         self._classifier.to_xml_filename(filename, with_features=with_features)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Saving classifier glyphs: " + str(e))
 
    def _OnClearClassifierCollection(self, event):
       if self._classifier.is_dirty:
@@ -1079,9 +1096,16 @@ class ClassifierFrame(ImageFrameBase):
          if gui_util.are_you_sure_dialog(
             ("There are %d glyphs in the page glyphs pane.\n" +
              "Are you sure you want to save?") % len(glyphs)):
-            self._SavePageCollection(self.page_collection_filename, glyphs)
+            self._SavePageCollection(
+               self.page_collection_filename, glyphs, with_features=False)
 
    def _OnSavePageCollectionAs(self, event):
+      self._SavePageCollectionAs(event, with_features=False)
+
+   def _OnSavePageCollectionWithFeaturesAs(self, event):
+      self._SavePageCollectionAs(event, with_features=True)
+
+   def _SavePageCollectionAs(self, event, with_features=False):
       glyphs = self.multi_iw.id.GetAllItems()
       if gui_util.are_you_sure_dialog(
          ("There are %d glyphs in the page glyphs pane.\n" +
@@ -1089,17 +1113,17 @@ class ClassifierFrame(ImageFrameBase):
          filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
          if filename:
             self.page_collection_filename = filename
-            self._SavePageCollection(filename, glyphs)
+            self._SavePageCollection(filename, glyphs, with_features=with_features)
 
-   def _SavePageCollection(self, filename, glyphs=None):
+   def _SavePageCollection(self, filename, glyphs=None, with_features=True):
       if glyphs is None:
          glyphs = self.multi_iw.id.GetAllItems()
       self._classifier.generate_features(glyphs)
       try:
          gamera_xml.WriteXMLFile(
             glyphs=glyphs,
-            symbol_table=self._symbol_table).write_filename(
-            filename)
+            symbol_table=self._symbol_table,
+            with_features=with_features).write_filename(filename)
       except gamera_xml.XMLError, e:
          gui_util.message("Saving page glyphs: " + str(e))
 
@@ -1400,6 +1424,32 @@ class ClassifierFrame(ImageFrameBase):
          self.unsplit_editors(self.class_iw)
       else:
          self.split_editors()
+
+   def _OnGenerateClassifierStats(self, event):
+      from gamera import classifier_stats
+      all_stats = [(x.title, x) for x in classifier_stats.all_stat_pages]
+      all_stats.sort()
+      stats_controls = [Check('', x[0], default=True) for x in all_stats]
+      stats_controls.append(Directory('Stats directory'))
+      dialog = Args(
+         stats_controls,
+         name='Select statistics', 
+         title='Select the statistics to generate and the directory to save them to.\n(Experimental feature).')
+      result = dialog.show(self._frame)
+      if result is None or result[-1] is None:
+         return
+      pages = []
+      for on, (name, page) in zip(result, all_stats):
+         if on:
+            pages.append(page)
+      wxBeginBusyCursor()
+      try:
+         classifier_stats.make_stat_pages(self._classifier, result[-1], pages)
+      except Exception, e:
+         wxEndBusyCursor()
+         gui_util.message(e)
+      else:
+         wxEndBusyCursor()
          
    def _SaveClassifierCollection(self, filename):
          try:

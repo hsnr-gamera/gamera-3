@@ -64,13 +64,14 @@ class XMLError(Exception):
 ################################################################################
 
 class WriteXML:
-   def __init__(self, glyphs=[], symbol_table=[]):
+   def __init__(self, glyphs=[], symbol_table=[], with_features=True):
       self.glyphs = glyphs
-      if (not isinstance(symbol_table, SymbolTable) and
-          not util.is_string_or_unicode_list(symbol_table)):
+      if (not (isinstance(symbol_table, SymbolTable) or
+               util.is_string_or_unicode_list(symbol_table))):
          raise XMLError(
             "symbol_table argument to WriteXML must be of type SymbolTable or a list of strings.")
       self.symbol_table = symbol_table
+      self.with_features = with_features
 
    def write_filename(self, filename):
       if not os.path.exists(os.path.split(os.path.abspath(filename))[0]):
@@ -153,7 +154,7 @@ class WriteXML:
       word_wrap(stream, glyph.to_rle(), indent+1)
       word_wrap(stream, '</data>', indent)
       feature_functions = glyph.feature_functions[0]
-      if len(feature_functions):
+      if self.with_features and len(feature_functions):
          word_wrap(stream,
                    '<features scaling="%s">' % str(glyph.scaling),
                    indent)
@@ -436,6 +437,105 @@ def glyphs_with_features_from_xml(filename, feature_functions = None):
    features.generate_features_list(glyphs, feature_functions)
    return glyphs
 
-def glyphs_to_xml(filename, glyphs):
+def glyphs_to_xml(filename, glyphs, with_features=True):
    """Save a list of glyphs to an xml file"""
-   WriteXMLFile(glyphs).write_filename(filename)
+   WriteXMLFile(glyphs, with_features=with_features).write_filename(filename)
+
+class StripTag:
+   # This is a ridiculous implementation that probably deserves some
+   # explanation.  I want to use a full-fledged XML parser, (even though this
+   # could probably be done with Regex's or something), for robustness.
+   # However, when parsing a file with Expat, there's no way of getting the
+   # original XML back, and .GetInputContext() seems to be broken in Py2.3.3
+   # AFAICT.  Therefore, what this does is two passes:
+   #   1) go through storing the indices of start and end tags
+   #   2) use that information to generate an excerpted file
+   def __init__(self, input_filename, output_filename, tag_name):
+      if input_filename == output_filename:
+         raise ValueError("Input and output filenames must be different.")
+      self._input_filename = input_filename
+      self._output_filename = output_filename
+      self._tag_name = tag_name
+      self.parse()
+      self.excerpt()
+
+   def open_input_file(self):
+      try:
+         if self._input_filename.endswith('gz'):
+            self._input = gzip.open(self._input_filename, 'r')
+         else:
+            self._input = open(self._input_filename, 'r')
+      except Exception, e:
+         raise XMLError("Couldn't open input file '%s': %s" %
+                        (self._input_filename, str(e)))
+
+   def open_output_file(self):
+      try:
+         if self._output_filename.endswith('gz'):
+            self._output = gzip.open(self._output_filename, 'w')
+         else:
+            self._output = open(self._output_filename, 'w')
+      except Exception, e:
+         raise XMLError("Couldn't open output file '%s': %s" %
+                        (self._output_filename, str(e)))
+
+   def parse(self):
+      self.open_input_file()
+      self._parser = expat.ParserCreate()
+      self._parser.StartElementHandler = self.start_element_handler
+      self._parser.EndElementHandler = self.end_element_handler
+      self._parser.DefaultHandler = self.default_handler
+      self._last_was_end = False
+      self._indices = []
+      try:
+         try:
+            self._parser.ParseFile(self._input)
+         except expat.ExpatError, e:
+            raise
+      finally:
+         self._parser.StartElementHandler = None
+         self._parser.EndElementHandler = None
+         del self._parser
+      self._input.close()
+
+   def start_element_handler(self, name, attributes):
+      if self._last_was_end:
+         self._indices.append(self._parser.ErrorByteIndex)
+      self._last_was_end = False
+      if name == self._tag_name:
+         self._indices.append(self._parser.ErrorByteIndex)
+
+   def end_element_handler(self, name):
+      if self._last_was_end:
+         self._indices.append(self._parser.ErrorByteIndex)
+      if name == self._tag_name:
+         self._last_was_end = True
+      else:
+         self._last_was_end = False
+
+   def default_handler(self, data):
+      if self._last_was_end:
+         self._indices.append(self._parser.ErrorByteIndex)
+      self._last_was_end = False
+
+   def excerpt(self):
+      self.open_input_file()
+      self.open_output_file()
+      pos = 0
+      for i in range(0, len(self._indices), 2):
+         start, end = self._indices[i], self._indices[i+1]
+         self._output.write(self._input.read(start - pos))
+         pos = end
+         self._input.seek(pos)
+      self._output.write(self._input.read())
+      self._input.close()
+      self._output.close()
+
+def strip_features(input_filename, output_filename):
+   """Strips the features from a Gamera XML file.
+
+*input_filename*: The input Gamera XML filename
+*output_filename*: The output Gamera XML filename"""
+   StripTag(input_filename, output_filename, 'features')
+   
+   

@@ -18,107 +18,152 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from os import path
-import os
+import os, os.path
 from gamera import util
+from gamera.core import *
 
-# To add a your custom stats pages --
-#    Create a new class that inherits from GlyphStats
-#    Override _write_core to call of the the page generating functions required
-#       (Do not forget to chain to the base class first.)
-#    In each page generating function, call _html_start with a new filename and
-#       title to get a file pointer in which you can write your stats.
-#    Close the file handle by calling _html_end.
-#    A front page will be automatically generated that links to each of your
-#       created stats pages.
+class ClassifierStat:
+   def __init__(self, classifier, path, max_size=64):
+      self.classifier = classifier
+      self.path = path
+      if not os.path.exists(path):
+         os.makedirs(path)
+      self.image_path = os.path.join(path, "images")
+      if not os.path.exists(self.image_path):
+         os.makedirs(self.image_path)
+      self.max_size = max_size
 
-class GlyphStats:
-   def __init__(self, glyphs):
-      from gamera import pyplate, generate_help
-      self.header = pyplate.Template(
-          generate_help.header +
-          '[[exec toplevel_path=""]][[call header(title, 1)]]<h1>[[title]]</h1>')
-      self.footer = pyplate.Template(
-          generate_help.footer +
-          '[[exec toplevel_path=""]][[call footer(0)]]')
-      self._glyphs = glyphs
+   def make_example_glyphs(self):
+      self.example_glyphs = {}
+      for glyph in self.classifier.get_glyphs():
+         for conf, id in glyph.id_name:
+            if not self.example_glyphs.has_key(id):
+               self.example_glyphs[id] = glyph
 
-   def write(self, directory):
-      self._pages = []
-      if not path.exists(directory):
-         os.mkdir(directory)
-      self._write_core(directory)
-      self._write_index(directory)
+   def make_grid(self, rows, cols):
+      grid = []
+      for i in range(rows):
+         row = [None] * cols
+         grid.append(row)
+      return grid
 
-   def _html_start(self, directory, file, title):
-      fd = open(path.join(directory, file + ".html"), 'w')
-      self.header.execute(fd, {'title': title})
-      self._pages.append((file, title))
-      return fd
+   def make_pages(self):
+      grids = self.make_result()
+      for name, grid in grids:
+         filename = os.path.join(self.path, name.lower().replace(" ", "_"))
+         self.make_html(filename + ".html", name, grid)
+         self.make_csv(filename + ".csv", name, grid)
 
-   def _html_end(self, stream):
-      self.footer.execute(stream)
-      stream.close()
+   def make_html(self, filename, name, grid):
+      fd = open(filename, "w")
+      fd.write("<html><head><title>%s</title></head><body><h1>%s</h1>" %
+               (name, name))
+      fd.write("<table>")
+      for row in grid:
+         fd.write("<tr>")
+         for col in row:
+            fd.write("<td>")
+            if isinstance(col, ImageBase):
+               id = col.get_main_id()
+               image_filename = "images/%s.png" % id
+               col.save_PNG(os.path.join(self.path, image_filename))
+               fd.write('<img src="%s" width="%d" height="%d"/><br/>%s' %
+                        (image_filename, min(col.width, self.max_size),
+                         min(col.height, self.max_size), id))
+            elif col is None:
+               fd.write("&nbsp;")
+            else:
+               fd.write(str(col))
+            fd.write("</td>")
+         fd.write("</tr>")
+      fd.write("</table>")
+      fd.write("</body></html>")
+      fd.close()
 
-   def _html_bargraph(self, stream, data):
-      maximum = max([x[1] for x in data])
-      stream.write('<table width="100%">')
-      for name, value in data:
-         bar_width = int((float(value) / float(maximum)) * 100)
-         stream.write(
-             '<tr><td width="%s">%s</td><td width="%s"><table width="%s"><tr><td width="%s" bgcolor="#afcac5">%d</td><td width="%s">&nbsp;</td></tr></table></td></tr>' %
-             ("25%", name, "75%", "100%",
-              str(bar_width) + "%", value, str(100 - bar_width) + "%"))
-      stream.write('</table>')
-
-   def _write_index(self, directory):
-      fd = self._html_start(directory, 'index', 'Statistics Index')
-      fd.write('<ul>')
-      for file, title in self._pages:
-         fd.write('<li><a href="%s.html">%s</a></li>' % (file, title))
-      fd.write('</ul>')
-      self._html_end(fd)
-
-   def _write_core(self, directory):
-      sorted_glyphs = self._save_images(directory)
-      self._table_page(directory, sorted_glyphs)
-      self._histogram_page(directory, sorted_glyphs)
-
-   def _save_images(self, directory):
-      sorted_glyphs = {}
-      progress = util.ProgressFactory("Saving images...")
-      for i, glyph in util.enumerate(self._glyphs):
-         name = glyph.get_main_id()
-         if sorted_glyphs.has_key(name):
-            sorted_glyphs[name].append(glyph)
+   def make_csv(self, filename, name, grid):
+      def convert(x):
+         if isinstance(x, ImageBase):
+            return x.get_main_id()
+         elif x == None:
+            return ""
          else:
-            sorted_glyphs[name] = [glyph]
-         number = len(sorted_glyphs[name])
-         filename = "%s-%08d.tiff" % (name, number)
-         glyph.save_tiff(path.join(directory, filename))
-         progress.update(i, len(self._glyphs))
-      progress.update(1, 1)
-      return sorted_glyphs
+            return str(x)
+      fd = open(filename, "w")
+      for row in grid:
+         formatted_row = ", ".join([convert(x) for x in row])
+         fd.write(formatted_row)
+         fd.write("\n")
+      fd.close()
+            
+class ConfusionMatrix(ClassifierStat):
+   title = "Confusion Matrix"
+   
+   def make_result(self):
+      self.make_example_glyphs()
+      result = {}
+      for id0 in self.example_glyphs.keys():
+         leaf = {}
+         for id1 in self.example_glyphs.keys():
+            leaf[id1] = 0
+         result[id0] = leaf
+         
+      classifier = self.classifier
+      glyphs = classifier.get_glyphs()
+      progress = util.ProgressFactory("Generating confusion matrix...", len(glyphs) / 50)
+      try:
+         for i, glyph in enumerate(glyphs):
+            guess = classifier.classify_with_images(glyphs, glyph, True)
+            result[glyph.get_main_id()][guess[0][1]] += 1
+            if i % 50 == 0:
+               progress.step()
+      finally:
+         progress.kill()
 
-   def _table_page(self, directory, sorted_glyphs):
-      fd = self._html_start(directory, 'table', 'Table of glyphs')
-      keys = sorted_glyphs.keys()
-      keys.sort()
-      for name in keys:
-         fd.write("<h2>%s</h2>" % name)
-         size = 0
-         for i, glyph in util.enumerate(sorted_glyphs[name]):
-            if size + glyph.ncols > 500:
-               fd.write("<br/>")
-               size = 0
-            fd.write('<img src="%s-%08d.tiff" width="%d" height="%d"/>' %
-                     (name, i, glyph.ncols, glyph.nrows))
-      self._html_end(fd)
+      ids = result.keys()
+      ids.sort()
+      grid = self.make_grid(len(ids) + 1, len(ids) + 1)
+      for i, id in enumerate(ids):
+         grid[0][i+1] = self.example_glyphs[id]
+         grid[i+1][0] = self.example_glyphs[id]
+      for i, id0 in enumerate(ids):
+         res = result[id0]
+         sum = 0
+         for val in res.values():
+            sum += val
+         for j, id0 in enumerate(ids):
+            grid[i+1][j+1] = str(int((float(res[id0]) / sum) * 100.0)) + "%"
+      return [("Confusion Matrix", grid)]
 
-   def _histogram_page(self, directory, sorted_glyphs):
-      fd = self._html_start(directory, 'histogram', 'Histogram of classes')
-      items = sorted_glyphs.items()
-      items.sort(lambda x, y: cmp(len(x[1]), len(y[1])))
-      items.reverse()
-      self._html_bargraph(fd, [(key, len(val)) for key, val in items])
-      self._html_end(fd)
+class ClassNameHistogram(ClassifierStat):
+   title = "Class Name Histogram"
+
+   def make_result(self):
+      self.make_example_glyphs()
+      result = {}
+      for id0 in self.example_glyphs.keys():
+         result[id0] = 0
+
+      for glyph in self.classifier.get_glyphs():
+         id = glyph.get_main_id()
+         result[id] += 1
+
+      result = [(val, key) for key, val in result.items()]
+      result.sort()
+      result.reverse()
+
+      grid = self.make_grid(len(self.classifier.get_glyphs()), 2)
+      for i, (val, key) in enumerate(result):
+         grid[i][0] = self.example_glyphs[key]
+         grid[i][1] = val
+      return [("Class Name Histogram", grid)]
+
+all_stat_pages = [ConfusionMatrix, ClassNameHistogram]
+def make_stat_pages(classifier, path, pages=None, max_size=64):
+   if pages is None:
+      pages = all_stat_pages
+   for page in pages:
+      name = page.__name__.lower()
+      page_path = os.path.join(path, name)
+      p = page(classifier, page_path, max_size)
+      p.make_pages()
+

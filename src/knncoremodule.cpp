@@ -565,13 +565,13 @@ inline int compute_distance(KnnObject* o, PyObject* known, double* unknown_buf,
 
   if (o->distance_type == CITY_BLOCK) {
     *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
-				    o->weight_vector);
+				    weights);
   } else if (o->distance_type == FAST_EUCLIDEAN) {
     *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   o->weight_vector);
+				   weights);
   } else {
     *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   o->weight_vector);
+				   weights);
   }
   return 0;
 }

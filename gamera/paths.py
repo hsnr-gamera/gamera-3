@@ -52,7 +52,7 @@ def get_toolkit_names(dir):
 
 def get_directory_of_modules(dir, base=''):
    modules = glob.glob(os.path.join(dir, "*.py"))
-   names = map(lambda x: os.path.basename(x).split('.')[0], modules)
+   names = [os.path.basename(x).split('.')[0] for x in modules]
    mods = []
    suffixes = imp.get_suffixes()
    for i in suffixes:
@@ -69,7 +69,7 @@ def get_directory_of_modules(dir, base=''):
 
 def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
-   modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
+   modules = [os.path.basename(x).split('.')[0] for x in modules]
    if debug:
       sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0

@@ -27,6 +27,13 @@ class to_string(PluginFunction):
     return_type = Class("image_as_string")
 to_string = to_string()
 
+class scaled_to_string(PluginFunction):
+    """Encodes the image at the given scaling into a 'string'
+    required by wxImage. (i.e. 8-bit RGB triplets)."""
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    args = Args([Float("scaling"),Class("wxImage")])
+scaled_to_string = scaled_to_string()
+
 class to_buffer(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
 (i.e. 8-bit RGB triplets)."""
@@ -39,7 +46,7 @@ class GuiSupportModule(PluginModule):
     infrastructure."""
     category = None
     cpp_headers = ["gui_support.hpp"]
-    functions = [to_string, to_buffer]
+    functions = [to_string, scaled_to_string, to_buffer]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     

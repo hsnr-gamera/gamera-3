@@ -22,6 +22,7 @@
 #define kwm01102002_to_string
 
 #include "gamera.hpp"
+#include "vigra/resizeimage.hxx"
 #include "Python.h"
 
 using namespace Gamera;
@@ -144,6 +145,25 @@ PyObject* to_string(T& m) {
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
   return str;
+}
+
+template<class T>
+void scaled_to_string(T& m, float scale, PyObject* py_buffer) {
+  typedef ImageData<typename T::value_type> data_type;
+  typedef ImageView<data_type> view_type;
+
+  char *buffer;
+  int buffer_len;
+  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+
+  size_t nrows = size_t(m.nrows() * scale);
+  size_t ncols = size_t(m.ncols() * scale);
+  data_type data(nrows, ncols);
+  view_type view(data, 0, 0, nrows, ncols);
+  resizeImageNoInterpolation(src_image_range(m), dest_image_range(view));
+
+  to_string_impl<typename T::value_type> func;
+  func(view, buffer);
 }
 
 template<class T>

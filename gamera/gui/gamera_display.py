@@ -77,7 +77,7 @@ class ImageDisplay(wxScrolledWindow):
       self.click_callbacks = []
       self.current_color = 0
       self.dragging = 0
-      self.scroll_amount = config.options.display.scroll_amount
+      self.scroll_amount = int(config.options.display.scroll_amount)
       self.block_w = 8
       self.block_h = 8
 
@@ -176,7 +176,7 @@ class ImageDisplay(wxScrolledWindow):
          self.draw_rubber()
 
    def highlight_rectangle(self, y, x, h, w, color, text):
-      cc = self.image.subimage(y, x, h, w)
+      cc = self.image.subimage(int(y), int(x), int(h), int(w))
       self.add_highlight_cc(cc, color)
 
    # Highlights only a particular list of ccs in the display
@@ -303,10 +303,10 @@ class ImageDisplay(wxScrolledWindow):
             set_y = origin_y
       if need_to_scroll:
          self.SetScrollbars(scroll_amount, scroll_amount,
-                            floor(maxwidth / scroll_amount),
-                            floor(maxheight / scroll_amount),
-                            set_x / scroll_amount,
-                            set_y / scroll_amount)
+                            int(maxwidth / scroll_amount),
+                            int(maxheight / scroll_amount),
+                            int(set_x / scroll_amount),
+                            int(set_y / scroll_amount))
          self.RefreshAll()
 
    def _OnBoxHighlightsToggle(self, event):
@@ -357,10 +357,10 @@ class ImageDisplay(wxScrolledWindow):
       try:
          if self.highlights == []:
             self.SetScrollbars(scroll_amount, scroll_amount,
-                               floor(w / scroll_amount),
-                               floor(h / scroll_amount),
-                               floor((x / scroll_amount) + 0.5),
-                               floor((y / scroll_amount) + 0.5))
+                               int(w / scroll_amount),
+                               int(h / scroll_amount),
+                               int((x / scroll_amount) + 0.5),
+                               int((y / scroll_amount) + 0.5))
          else:
             self.focus_glyphs([x[0] for x in self.highlights])
       finally:
@@ -458,10 +458,10 @@ class ImageDisplay(wxScrolledWindow):
                self.original_image.nrows, self.original_image.ncols)
          else:
             subimage = self.original_image.subimage(
-               self.rubber_origin_y + self.original_image.ul_y,
-               self.rubber_origin_x + self.original_image.ul_x,
-               self.rubber_y2 - self.rubber_origin_y + 1,
-               self.rubber_x2 - self.rubber_origin_x + 1)
+               int(self.rubber_origin_y + self.original_image.ul_y),
+               int(self.rubber_origin_x + self.original_image.ul_x),
+               int(self.rubber_y2 - self.rubber_origin_y + 1),
+               int(self.rubber_x2 - self.rubber_origin_x + 1))
          image_menu.shell.locals[name] = subimage
          image_menu.shell.update()
 
@@ -473,10 +473,10 @@ class ImageDisplay(wxScrolledWindow):
             copy = self.original_image.image_copy()
          else:
             copy = self.original_image.subimage(
-               self.rubber_origin_y + self.original_image.ul_y,
-               self.rubber_origin_x + self.original_image.ul_x,
-               self.rubber_y2 - self.rubber_origin_y + 1,
-               self.rubber_x2 - self.rubber_origin_x + 1).image_copy()
+               int(self.rubber_origin_y + self.original_image.ul_y),
+               int(self.rubber_origin_x + self.original_image.ul_x),
+               int(self.rubber_y2 - self.rubber_origin_y + 1),
+               int(self.rubber_x2 - self.rubber_origin_x + 1)).image_copy()
          image_menu.shell.locals[name] = copy
          image_menu.shell_frame.icon_display.update_icons()
 
@@ -608,8 +608,8 @@ class ImageDisplay(wxScrolledWindow):
       image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
       scaled_image.to_buffer(image.GetDataBuffer())
       bmp = wxBitmapFromImage(image)
-      x = (x - self.image.ul_x) * scaling - origin[0]
-      y = (y - self.image.ul_y) * scaling - origin[1]
+      x = int((x - self.image.ul_x) * scaling - origin[0])
+      y = int((y - self.image.ul_y) * scaling - origin[1])
 
       tmpdc.SelectObject(bmp)
       dc.Blit(x, y, scaled_image.ncols, scaled_image.nrows,
@@ -643,8 +643,8 @@ class ImageDisplay(wxScrolledWindow):
                bmp = wxBitmapFromImage(image)
                tmpdc = wxMemoryDC()
                tmpdc.SelectObject(bmp)
-               x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
-               y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
+               x_cc = int(x + (subhighlight.ul_x - subimage.ul_x) * scaling)
+               y_cc = int(y + (subhighlight.ul_y - subimage.ul_y) * scaling)
                dc.Blit(x_cc, y_cc,
                        scaled_highlight.ncols, scaled_highlight.nrows,
                        tmpdc, 0, 0, wxAND, True)
@@ -897,8 +897,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                # appropriate size, but that could be very expensive. Instead we
                # figure out how big of a cropped image to create so that after
                # scaling it is the appropriate size.
-               sub_height = min((rect.GetHeight() + 1) / scaling, image.nrows)
-               sub_width = min((rect.GetWidth() + 1) / scaling, image.ncols)
+               sub_height = min(int((rect.GetHeight() + 1) / scaling), image.nrows)
+               sub_width = min(int((rect.GetWidth() + 1) / scaling), image.ncols)
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
                scaled_image = sub_image.resize(
@@ -923,8 +923,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          scaled_image.to_buffer(wx_image.GetDataBuffer())
          bmp = wx_image.ConvertToBitmap()
          # Display centered within the cell
-         x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
-         y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
+         x = int(rect.x + (rect.width / 2) - (bmp.GetWidth() / 2))
+         y = int(rect.y + (rect.height / 2) - (bmp.GetHeight() / 2))
 
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function
@@ -981,9 +981,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       if image != None:
          return wxSize(
             min(grid.max_cell_width,
-                image.ncols * grid.scaling + grid.cell_padding),
+                int(image.ncols * grid.scaling + grid.cell_padding)),
             min(grid.max_cell_height,
-                image.nrows * grid.scaling + grid.cell_padding))
+                int(image.nrows * grid.scaling + grid.cell_padding)))
       return wxSize(25, 25)
 
    def Clone(self):

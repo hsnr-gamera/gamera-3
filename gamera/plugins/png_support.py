@@ -54,6 +54,9 @@ if sys.platform != 'win32':
         category = "File"
         cpp_headers = ["png_support.hpp"]
         extra_libraries = ["png"]
+        if sys.platform == 'darwin':
+            cpp_include_dirs = ["/sw/include/"]
+            library_dirs = ["/sw/lib/"]
         functions = [save_PNG, PNG_info_class, load_PNG_class]
         author = "Michael Droettboom"
         url = "http://gamera.dkc.jhu.edu/"

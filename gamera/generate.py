@@ -241,7 +241,8 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
   include_dirs = (["include", plug_path, "include/plugins"] +
                   plugin_module.module.cpp_include_dirs)
   if not compiling_gamera:
-     include_dirs.append(sysconfig.get_python_inc() + "\gamera")
+     include_dirs.append(os.path.join(sysconfig.get_python_inc(), "gamera"))
+     include_dirs.append(os.path.join(sysconfig.get_python_inc(), "../gamera"))
      include_dirs.append("/usr/include/gamera")
   if not regenerate:
     for header in plugin_module.module.cpp_headers:

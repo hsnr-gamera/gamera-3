@@ -17,6 +17,7 @@
 #
 
 from gamera.plugin import *
+from gamera import util
 import _segmentation
 
 
@@ -64,32 +65,56 @@ class splitx(Segmenter):
     """Splits an image vertically.
 
 The split point is determined automatically
-by finding a valley in the projections near the center of the image."""
-    args = Args([Float("center")])
+by finding a valley in the projections near *center*.
+
+This function is overloaded to work both with a single value
+and a list of splitting point canidates as input.
+"""
+    args = Args([FloatVector("center", default=[0.5])])
     doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
-        return _segmentation.splitx(self, center)
+       if not util.is_sequence(center):
+          return _segmentation.splitx(self, [center])
+       else:
+          return _segmentation.splitx(self, center)
     __call__ = staticmethod(__call__)
+    author = "Michael Droettboom, Karl MacMillan and Christoph Dalitz"
 
 class splitx_max(Segmenter):
     """Splits an image vertically.
 
 The split point is determined automatically
-by finding a peak in the projections near the center of the image."""
-    args = Args([Float("center")])
+by finding a peak in the projections near *center*.
+
+This function is overloaded to work both with a single value
+and a list of splitting point canidates as input.
+"""
+    args = Args([FloatVector("center", default=[0.5])])
     def __call__(self, center=0.5):
-        return _segmentation.splitx_max(self, center)
+       if not util.is_sequence(center):
+          return _segmentation.splitx_max(self, [center])
+       else:
+          return _segmentation.splitx_max(self, center)
     __call__ = staticmethod(__call__)
+    author = "Michael Droettboom, Karl MacMillan and Christoph Dalitz"
 
 class splity(Segmenter):
     """Splits an image horizontally.
 
 The split point is determined automatically
-by finding a valley in the projections near the center of the image."""
-    args = Args([Float("center")])
-    def __call__(self, center=0.5):
-        return _segmentation.splity(self, center)
+by finding a valley in the projections near *center*.
+
+This function is overloaded to work both with a single value
+and a list of splitting point canidates as input.
+"""
+    args = Args([FloatVector("center", default=[0.5])])
+    def __call__(self, center=[0.5]):
+       if not util.is_sequence(center):
+          return _segmentation.splity(self, [center])
+       else:
+          return _segmentation.splity(self, center)
     __call__ = staticmethod(__call__)
+    author = "Michael Droettboom, Karl MacMillan and Christoph Dalitz"
 
 class splitx_base(Segmenter):
     pure_python = True

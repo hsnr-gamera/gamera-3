@@ -185,6 +185,7 @@ namespace Gamera {
     std::sort(eq.begin(), eq.end());
 	
     // resolve the equivalences
+
     for (size_t i = 1; i < eq.size(); i++) {
       size_t x = eq[i].label;
       size_t y = eq[i].equiv;
@@ -436,42 +437,68 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splitx(T& image, double& center) {
-    std::list<Image*>* splits = new std::list<Image*>();
+  void split_error_cleanup(T* view,
+			   std::list<Image*>* splits,
+			   IntVector *projs,
+			   std::list<Image*>* ccs) {
+    typedef std::list<Image*> ImageList;
+    delete view->data();
+    delete view;
+    for (ImageList::iterator i = splits->begin(); i != splits->end(); ++i) 
+      delete (*i);
+    delete splits;
+    if (projs != NULL)
+      delete projs;
+    if (ccs != NULL) {
+      for (ImageList::iterator i = ccs->begin(); i != ccs->end(); ++i) 
+	delete (*i);
+      delete ccs;
+    }
+  }
+
+  template<class T>
+  std::list<Image*>* splitx(T& image, FloatVector* center) {
+    typedef std::list<Image*> ImageList;
+    ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
+    ImageList* ccs = NULL;
+    ImageList::iterator ccs_it;
+    size_t last_split, new_split;
+
     if (image.ncols() <= 1) {
       view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 				 image.nrows(), image.ncols()));
       splits->push_back(view);
       return splits;
     }
+    sort(center->begin(), center->end());
     IntVector *projs = projection_cols(image);
-    size_t split_point = find_split_point(projs, center);
-    delete projs;
-    std::list<Image*>* ccs;
-    std::list<Image*>::iterator ccs_it;
-    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
-			       image.nrows(), split_point));
-    try {
-      ccs = cc_analysis(*view);
-    } catch (std::range_error x) {
-      delete view->data();
+    last_split = 0;
+    for (size_t i = 0; i<center->size(); i++) {
+      new_split = find_split_point(projs, (*center)[i]);
+      if (new_split <= last_split)
+        continue;
+      view = simple_image_copy(T(image, image.ul_y(), image.ul_x()+last_split,
+                                 image.nrows(), new_split - last_split));
+      last_split = new_split;
+      try {
+        ccs = cc_analysis(*view);
+      } catch (std::range_error x) {
+	split_error_cleanup(view, splits, projs, ccs);
+        throw x;
+      }
+      for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+        splits->push_back(*ccs_it);
       delete view;
-      delete splits;
-      throw x;
+      delete ccs;
     }
-    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
-      splits->push_back(*ccs_it);
-    delete view;
-    delete ccs;
-    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
-			       image.nrows(), image.ncols() - split_point));
+    delete projs;
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + last_split,
+                               image.nrows(), image.ncols() - last_split));
     try {
       ccs = cc_analysis(*view);
     } catch (std::range_error x) {
-      delete view->data();
-      delete view;
-      delete splits;
+      split_error_cleanup(view, splits, NULL, ccs);
       throw x;
     }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
@@ -482,42 +509,48 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splitx_max(T& image, double& center) {
-    std::list<Image*>* splits = new std::list<Image*>();
+  std::list<Image*>* splitx_max(T& image, FloatVector* center) {
+    typedef std::list<Image*> ImageList;
+    ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
+    ImageList* ccs = NULL;
+    ImageList::iterator ccs_it;
+    size_t last_split, new_split;
+
     if (image.ncols() <= 1) {
       view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 				 image.nrows(), image.ncols()));
       splits->push_back(view);
       return splits;
     }
+    sort(center->begin(), center->end());
     IntVector *projs = projection_cols(image);
-    size_t split_point = find_split_point_max(projs, center);
-    delete projs;
-    std::list<Image*>* ccs;
-    std::list<Image*>::iterator ccs_it;
-    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
-			       image.nrows(), split_point));
-    try {
-      ccs = cc_analysis(*view);
-    } catch (std::range_error x) {
-      delete view->data();
+    last_split = 0;
+    for (size_t i = 0; i<center->size(); i++) {
+      new_split = find_split_point_max(projs, (*center)[i]);
+      if (new_split <= last_split)
+        continue;
+      view = simple_image_copy(T(image, image.ul_y(), image.ul_x()+last_split,
+                                 image.nrows(), new_split - last_split));
+      last_split = new_split;
+      try {
+        ccs = cc_analysis(*view);
+      } catch (std::range_error x) {
+	split_error_cleanup(view, splits, projs, ccs);
+        throw x;
+      }
+      for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+        splits->push_back(*ccs_it);
       delete view;
-      delete splits;
-      throw x;
+      delete ccs;
     }
-    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
-      splits->push_back(*ccs_it);
-    delete view;
-    delete ccs;
-    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
-			       image.nrows(), image.ncols() - split_point));
+    delete projs;
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + last_split,
+			       image.nrows(), image.ncols() - last_split));
     try { 
       ccs = cc_analysis(*view);
     } catch (std::range_error x) {
-      delete view->data();
-      delete view;
-      delete splits;
+      split_error_cleanup(view, splits, NULL, ccs);
       throw x;
     }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
@@ -528,42 +561,48 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splity(T& image, double& center) {
-    std::list<Image*>* splits = new std::list<Image*>();
+  std::list<Image*>* splity(T& image, FloatVector* center) {
+    typedef std::list<Image*> ImageList;
+    ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
+    ImageList* ccs = NULL;
+    ImageList::iterator ccs_it;
+    size_t last_split, new_split;
+
     if (image.nrows() <= 1) {
       view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 				 image.nrows(), image.ncols()));
       splits->push_back(view);
       return splits;
     }
+    sort(center->begin(), center->end());
     IntVector *projs = projection_rows(image);
-    size_t split_point = find_split_point(projs, center);
-    delete projs;
-    std::list<Image*>* ccs;
-    std::list<Image*>::iterator ccs_it;
-    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
-			       split_point, image.ncols()));
-    try {
-      ccs = cc_analysis(*view);
-    } catch (std::range_error x) {
-      delete view->data();
+    last_split = 0;
+    for (size_t i = 0; i<center->size(); i++) {
+      new_split = find_split_point(projs, (*center)[i]);
+      if (new_split <= last_split)
+        continue;
+      view = simple_image_copy(T(image, image.ul_y()+last_split, image.ul_x(),
+                                 new_split - last_split, image.ncols()));
+      last_split = new_split;
+      try {
+        ccs = cc_analysis(*view);
+      } catch (std::range_error x) {
+	split_error_cleanup(view, splits, projs, ccs);
+        throw x;
+      }
+      for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+        splits->push_back(*ccs_it);
       delete view;
-      delete splits;
-      throw x;
+      delete ccs;
     }
-    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
-      splits->push_back(*ccs_it);
-    delete view;
-    delete ccs;
-    view = simple_image_copy(T(image, image.ul_y() + split_point, image.ul_x(),
-			       image.nrows() - split_point, image.ncols()));
+    delete projs;
+    view = simple_image_copy(T(image, image.ul_y() + last_split, image.ul_x(),
+                               image.nrows() - last_split, image.ncols()));
     try {
       ccs = cc_analysis(*view);
     } catch (std::range_error x) {
-      delete view->data();
-      delete view;
-      delete splits;
+      split_error_cleanup(view, splits, NULL, ccs);
       throw x;
     }
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)

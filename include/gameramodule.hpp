@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef KWM06292002_imagemodule
-#define KWM06292002_imagemodule
+#ifndef KWM06292002_gameramodule
+#define KWM06292002_gameramodule
 
 #include "gamera.hpp"
 #include <Python.h>

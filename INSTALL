@@ -1,0 +1,52 @@
+BUILDING GAMERA
+========================================
+2002 Michael Droettboom
+
+The following information is based on the generic information for
+building Python extensions written by Greg Ward
+
+
+========================================
+
+Standard Build and Install
+
+As described in section , building and installing a module
+distribution using the Distutils is usually one simple command:
+
+python setup.py install
+
+On Unix, you'd run this command from a shell prompt; on Windows, you
+have to open a command prompt window (``DOS box'') and do it there; on
+MacOS, things are a tad more complicated (see below).
+
+========================================
+
+Platform variations
+
+UNIX
+
+You should always run the setup command from the distribution root
+directory, i.e. the top-level subdirectory that the module source
+distribution unpacks into. For example, if you've just downloaded a
+module source distribution gamera-2.0.tar.gz onto a Unix system, the
+normal thing to do is:
+
+tar zvxf gamera-2.0.tar.gz
+cd gamera-2.0
+python setup.py install
+
+WINDOWS
+
+On Windows, you'd probably download gamera-2.0.zip. If you downloaded the
+archive file to C:\Temp, then it would unpack into C:\Temp\gamera-2.0;
+you can use either a GUI archive manipulator (such as WinZip) or a
+command-line tool (such as unzip or pkunzip) to unpack the
+archive. Then, open a command prompt window (``DOS box''), and run:
+
+cd c:\Temp\gamera-2.0 python setup.py install
+
+
+
+More detailed information can be found at:
+http://www.python.org/sigs/distutils-sig/doc/inst/inst.html
+

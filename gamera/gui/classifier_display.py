@@ -1405,7 +1405,7 @@ class ClassifierFrame(ImageFrameBase):
                       ImageBase.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
       existing_features = [x[0] for x in
-                           self._classifier.get_feature_functions()[0]]
+                           ImageBase.get_feature_functions()[0]]
       feature_controls = []
       for x in all_features:
          feature_controls.append(

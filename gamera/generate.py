@@ -1,13 +1,41 @@
 from pyplate import *
-import plugin, magic_import
+from os import path
+import os
+import sys
+from distutils.core import Extension
 
-magic_import.magic_import_setup()
+# magic_import and magic_import_setup
+#
+# This allows us to silently ignore importing modules prefixed
+# with and underscore. This allows us to import plugins that
+# depend on C++ moduels that are prefixed with underscores
+# when those C++ modules don't yet exist (which is the case
+# when we are generating and compiling the plugins!).
+def magic_import(name, globals_={}, locals_={}, fromlist=[]):
+  if (name[0] == '_' and name != "__future__") or name == "gamera":
+    return None
+  else:
+    return std_import(name, globals_, locals_, fromlist)
+  
+def magic_import_setup():
+  global std_import
+  # Save the standard __import__ function so we can chain to it
+  std_import = __builtins__['__import__']
+  # Override the __import__ function with our new one
+  __builtins__['__import__'] = magic_import
+
+def restore_import():
+  global std_import
+  __builtins__['__import__'] = std_import
+
 
 def generate_plugin(plugin_filename):
   
   template = Template("""
   [[exec import string]]
+  [[exec from os import path]]
   #include \"gameramodule.hpp\"
+  #include \"Python.h\"
   [[for header in module.cpp_headers]]
     #include \"[[header]]\"
   [[end]]
@@ -15,18 +43,21 @@ def generate_plugin(plugin_filename):
   using namespace Gamera::Python;
   
   [[# The module name is prepended with an underscore #]]
-  [[exec module_name = "_" + __file__.split(".")[0]]]
+  [[# exec module_name = "_" + __file__.split(".")[0] #]]
+  [[exec plug_path, filename = path.split(__file__)]]
+  [[exec module_name = '_' + filename.split('.')[0]]]
+
   extern \"C\" {
     void init[[module_name]](void);
     [[for function in module.functions]]
-      static PyObject* [[function.__class__.__name__]](PyObject* self, PyObject* args);
+      static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args);
     [[end]]
   }
 
   static PyMethodDef [[module_name]]_methods[] = {
     [[for function in module.functions]]
       { \"[[function.__class__.__name__]]\",
-        [[function.__class__.__name__]], METH_VARARGS },
+        call_[[function.__class__.__name__]], METH_VARARGS },
     [[end]]
     { NULL }
   };
@@ -38,7 +69,7 @@ def generate_plugin(plugin_filename):
 
   [[for function in module.functions]]
     [[exec pyarg_format = 'O']]
-    static PyObject* [[function.__class__.__name__]](PyObject* self, PyObject* args) {
+    static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args) {
       PyObject* real_self;
       [[for x in function.args.list]]
         [[if isinstance(x, Int)]]
@@ -164,10 +195,10 @@ def generate_plugin(plugin_filename):
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\",
       [[module_name]]_methods);
-    PyObject* mod = PyImport_ImportModule(\"gamera\");
+    PyObject* mod = PyImport_ImportModule(\"gamera.gamera\");
     if (mod == 0) {
       printf(\"Could not load gamera.py - falling back to gameracore\n\");
-      mod = PyImport_ImportModule(\"gameracore\");
+      mod = PyImport_ImportModule(\"gamera.gameracore\");
       if (mod == 0) {
         PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\");
         return;
@@ -186,10 +217,26 @@ def generate_plugin(plugin_filename):
   }
   
   """)
+  
+  magic_import_setup()
+  import plugin
 
-  module_name = plugin_filename.split('.')[0]
-  cpp_filename = "_" + module_name + ".cpp"
+  plug_path, filename = path.split(plugin_filename)
+  module_name = filename.split('.')[0]
+  plugin_module = __import__(module_name)
+  module_name = "_" + module_name
+  cpp_filename = path.join(plug_path, module_name + ".cpp")
   output_file = open(cpp_filename, "w")
-  module = __import__(module_name)
-  template.execute(output_file, module.__dict__)
+  sys.path.append(plug_path)
+  #plugin_module.__dict__.update(locals())
+  template.execute(output_file, plugin_module.__dict__)
+  #os.system("indent -sob -kr " + cpp_filename)
+  restore_import()
 
+  # make the a distutils extension class for this plugin
+  cpp_files = [cpp_filename]
+  for file in plugin_module.module.cpp_sources:
+    cpp_files.append(plug_path + file)
+  return Extension("gamera.plugins." + module_name, cpp_files,
+                   include_dirs=["include", plug_path],
+                   libraries=["stdc++"])

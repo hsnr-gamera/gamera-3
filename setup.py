@@ -1,5 +1,16 @@
 from distutils.core import setup, Extension
 import sys, os, time, locale
+import glob
+import gamera.generate
+
+##########################################
+# generate the plugins
+plugins = glob.glob("gamera/plugins/*.py")
+plugins.remove("gamera/plugins/__init__.py")
+
+plugin_extensions = []
+for x in plugins:
+    plugin_extensions.append(gamera.generate.generate_plugin(x))
 
 ########################################
 # Check that this is at least Python 2.2
@@ -39,25 +50,29 @@ if os.name == 'posix':
 
 ########################################
 # Distutils setup
+
+extensions = [Extension("gamera.gameracore",
+                        ["src/gameramodule.cpp",
+                         "src/sizeobject.cpp",
+                         "src/pointobject.cpp",
+                         "src/dimensionsobject.cpp",
+                         "src/rectobject.cpp",
+                         "src/regionobject.cpp",
+                         "src/regionmapobject.cpp",
+                         "src/rgbpixelobject.cpp",
+                         "src/imagedataobject.cpp",
+                         "src/imageobject.cpp",
+                         "src/imageinfoobject.cpp"
+                         ],
+                        include_dirs=["include"],
+                        # FIXME
+                        libraries=["stdc++"]),
+              Extension("gamera.knn", ["src/knnmodule.cpp"],
+                        include_dirs=["include"], libraries=["stdc++"])]
+extensions.extend(plugin_extensions)
+
 setup(name = "gameracore", version="1.1",
-      ext_modules = [Extension("gamera.gameracore",
-                               ["src/gameramodule.cpp",
-                                "src/sizeobject.cpp",
-                                "src/pointobject.cpp",
-                                "src/dimensionsobject.cpp",
-                                "src/rectobject.cpp",
-                                "src/regionobject.cpp",
-                                "src/regionmapobject.cpp",
-                                "src/rgbpixelobject.cpp",
-                                "src/imagedataobject.cpp",
-                                "src/imageobject.cpp",
-                                "src/imageinfoobject.cpp"
-                                ],
-                               include_dirs=["include"],
-                               # FIXME
-                               libraries=["stdc++"]),
-                     Extension("gamera.knn", ["src/knnmodule.cpp"],
-                               include_dirs=["include"], libraries=["stdc++"])],
+      ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
                   'gamera.toolkits.omr']
       )

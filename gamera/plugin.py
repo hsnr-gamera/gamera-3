@@ -23,9 +23,9 @@ import unittest, new, os, os.path
 
 class PluginModule:
     category = "Miscellaneous"
-    cpp_sources = None
-    cpp_headers = None
-    cpp_defines = None
+    cpp_sources = []
+    cpp_headers = []
+    cpp_defines = []
     functions = []
     version = "1.0"
     author = ""

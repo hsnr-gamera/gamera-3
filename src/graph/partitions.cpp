@@ -103,6 +103,7 @@ void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
       Node* to_node = (*j)->traverse(node);
       if (!EP_VISITED(*j)) {
 	EP_VISITED(*j) = true;
+	EP_PARTITION_COUNTER(*j) = false;
 	m_edges->push_back(*j);
       }
       if (!NP_VISITED(to_node)) {

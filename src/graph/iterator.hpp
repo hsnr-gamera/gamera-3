@@ -140,8 +140,10 @@ struct NodeEdgeTupleIterator : IteratorObject {
     Node* node = edge->traverse(so->m_node);
     EdgeObject* edge_object = edgeobject_new(edge);
     NodeObject* node_object = nodeobject_new(node);
-    PyObject* tuple = 
-    return nodeobject_new((*((so->m_it)++))->traverse(so->m_node));
+    PyObject* tuple = PyTuple_New(2);
+    PyTuple_SET_ITEM(tuple, 0, edge_object);
+    PyTuple_SET_ITEM(tuple, 1, node_object);
+    return tuple;
   }
   typename T::iterator m_it, m_end;
   Node* m_node;

@@ -875,11 +875,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(image_list):
          image = image_list[bitmap_no]
-         classification_state = image.classification_state
       else:
          image = None
 
       if not image is None:
+         classification_state = image.classification_state
          # Fill the background
          color = self._colors[classification_state]
          dc.SetPen(wxTRANSPARENT_PEN)

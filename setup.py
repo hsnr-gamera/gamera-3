@@ -23,7 +23,7 @@ gamera_setup.check_python_version()
 plugin_extensions = []
 
 # we grab all of the plugins except __init__.py - of course
-# to exclude this we have to go throug all sorts of crap . . .
+# to exclude this we have to go throug all sorts of crap...
 if not '--help' in sys.argv and not '--help-commands' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 
@@ -102,7 +102,8 @@ extensions = [Extension("gamera.gameracore",
                         # FIXME
                         libraries=["stdc++"]),
               Extension("gamera.knncore", ga_files,
-                        include_dirs=["include", "src/ga", "src"], libraries=["stdc++"])]
+                        include_dirs=["include", "src/ga", "src"],
+                        libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
 setup(name = "gamera", version="1.1",

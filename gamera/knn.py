@@ -29,6 +29,8 @@ from gamera.knncore import CITY_BLOCK
 from gamera.knncore import EUCLIDEAN
 from gamera.knncore import FAST_EUCLIDEAN
 
+KNN_XML_FORMAT_VERSION = 1.0
+
 _distance_type_to_name = {
     CITY_BLOCK: "CITY-BLOCK",
     EUCLIDEAN: "EUCLIDEAN",
@@ -71,41 +73,45 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
       self.ga_mutation = None
       self.ga_crossover = None
       self.ga_population = None
-      self.add_start_element_handler('gamera-knn-settings', self._ths_knn_settings)
-      self.add_start_element_handler('ga', self._ths_ga)
-      self.add_start_element_handler('weights', self._ths_weights)
-      self.add_end_element_handler('weights', self._the_weights)
+      self.add_start_element_handler('gamera-knn-settings', self._tag_start_knn_settings)
+      self.add_start_element_handler('ga', self._tag_start_ga)
+      self.add_start_element_handler('weights', self._tag_start_weights)
+      self.add_end_element_handler('weights', self._tag_end_weights)
 
    def _remove_handlers(self):
       self.remove_start_element_handler('gamera-knn-settings')
       self.remove_start_element_handler('ga')
       self.remove_start_element_handler('weights')
 
-   def _ths_knn_settings(self, a):
+   def _tag_start_knn_settings(self, a):
+      version = self.try_type_convert(a, 'version', float, 'gamera-knn-settings')
+      if version < KNN_XML_FORMAT_VERSION:
+         raise gamera_xml.XMLError(
+            "knn-settings XML file is an older version that can not be read by this version of Gamera.")
       self.num_k = self.try_type_convert(a, 'num-k', int, 'gamera-knn-settings')
       self.distance_type = \
         _distance_type_to_number[self.try_type_convert(a, 'distance-type',
                                                        str, 'gamera-knn-settings')]
 
-   def _ths_ga(self, a):
+   def _tag_start_ga(self, a):
       self.ga_mutation = self.try_type_convert(a, 'mutation', float, 'ga')
       self.ga_crossover = self.try_type_convert(a, 'crossover', float, 'ga')
       self.ga_population = self.try_type_convert(a, 'population', int, 'ga')
 
-   def _ths_weights(self, a):
-      self.add_start_element_handler('weight', self._ths_weight)
-      self.add_end_element_handler('weight', self._the_weight)
+   def _tag_start_weights(self, a):
+      self.add_start_element_handler('weight', self._tag_start_weight)
+      self.add_end_element_handler('weight', self._tag_end_weight)
 
-   def _the_weights(self):
+   def _tag_end_weights(self):
       self.remove_start_element_handler('weight')
       self.remove_end_element_handler('weight')
 
-   def _ths_weight(self, a):
+   def _tag_start_weight(self, a):
       self._data = u''
       self._weight_name = str(a["name"])
       self._parser.CharacterDataHandler = self._add_weights
 
-   def _the_weight(self):
+   def _tag_end_weight(self):
       self._parser.CharacterDataHandler = None
       self.weights[self._weight_name] = array.array('d')
       nums = str(self._data).split()
@@ -236,8 +242,11 @@ class kNN(gamera.knncore.kNN):
       file = open(filename, "w")
       indent = 0
       word_wrap(file, '<?xml version="1.0" encoding="utf-8"?>', indent)
-      word_wrap(file, '<gamera-knn-settings version="1.0" num-k="%s" distance-type="%s">'
-                % (self.num_k, _distance_type_to_name[self.distance_type]), indent)
+      word_wrap(file,
+                '<gamera-knn-settings version="%s" num-k="%s" distance-type="%s">'
+                % (KNN_XML_FORMAT_VERSION,
+                   self.num_k,
+                   _distance_type_to_name[self.distance_type]), indent)
       indent += 1
       word_wrap(file, '<ga mutation="%s" crossover="%s" population="%s"/>' %
                 (self.ga_mutation, self.ga_crossover, self.ga_population), indent)
@@ -250,7 +259,7 @@ class kNN(gamera.knncore.kNN):
             word_wrap(file, '<weight name="%s">' % name, indent)
             length = function.return_type.length
             word_wrap(file,
-                      [str(x) for x in
+                      [x for x in
                        weights[feature_no:feature_no+length]],
                       indent + 1)
             word_wrap(file, '</weight>', indent)

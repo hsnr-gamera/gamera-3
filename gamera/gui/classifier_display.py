@@ -26,8 +26,7 @@ from gamera.args import *
 from gamera.symbol_table import SymbolTable
 from gamera import gamera_xml, classifier_stats, util
 from gamera.classify import InteractiveClassifier, ClassifierError
-from gamera.gui import image_menu, var_name, toolbar, gui_util, \
-     rule_engine_runner
+from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner
 from gamera.gui.gamera_display import *
 
 ###############################################################################
@@ -921,6 +920,7 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("Saving classifier settings: " + str(e))
 
    def _OnCreateNoninteractiveCopy(self, event):
+      from gamera.gui import var_name
       name = var_name.get("classifier", image_menu.shell.locals)
       if name is None: return
       try:
@@ -1291,7 +1291,7 @@ class SymbolTableEditorPanel(wxPanel):
       self.SetAutoLayout(true)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = NewId()
-      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER | wxTE_PROCESS_TAB)
+      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB)
       EVT_KEY_DOWN(self.text, self._OnKey)
       EVT_TEXT(self, txID, self._OnText)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER

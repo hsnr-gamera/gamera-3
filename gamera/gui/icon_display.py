@@ -44,8 +44,7 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
             name = var_name.get('image', self.display.shell.locals)
             if name:
                self.display.shell.run(
-                 '%s = load_image(r"' % name + filename + '")')
-
+                 '%s = load_image(r"%s")' % (name, filename))
 
 ######################################################################
 
@@ -299,7 +298,8 @@ class CIImageList(CustomIcon):
    def __init__(self, *args):
       CustomIcon.__init__(self, *args)
       self._extra_methods =  _extra_methods = {
-        'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml}}}
+        'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml},
+                'Features': {'generate_features_list' : self.generate_features}}}
 
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
@@ -308,15 +308,6 @@ class CIImageList(CustomIcon):
    def check(data):
       return util.is_homogeneous_image_list(data)
    check = staticmethod(check)
-
-   def right_click(self, parent, event, shell):
-      x,y = event.GetPoint()
-      image_menu.ImageMenu(
-        parent, x, y,
-        self.data, self.label,
-        shell, extra_methods = {'Glyphs': {
-        'glyphs_to_xml': self.glyphs_to_xml,
-        'generate_features_list' : self.generate_features}})
 
    def glyphs_to_xml(self, event):
       from gamera import gamera_xml

@@ -29,6 +29,8 @@ from gamera.group import Group
 
 config.add_option_default('encoding', 'utf-8')
 
+GAMERA_XML_FORMAT_VERSION = 2.0
+
 _classification_state_to_name = {
    core.UNCLASSIFIED: "UNCLASSIFIED",
    core.MANUAL:       "MANUAL",
@@ -61,13 +63,10 @@ class XMLError(Exception):
 
 class WriteXML:
    def __init__(self, glyphs=[], symbol_table=[], groups=[]):
-      if not is_image_list(glyphs):
-         raise TypeError(
-            "glyphs argument to WriteXML must be a list of images.")
       self.glyphs = glyphs
       if (not isinstance(symbol_table, SymbolTable) and
           not util.is_string_or_unicode_list(symbol_table)):
-         raise TypeError(
+         raise XMLError(
             "symbol_table argument to WriteXML must be of type SymbolTable or a list of strings.")
       self.symbol_table = symbol_table
       self.groups = groups
@@ -180,7 +179,7 @@ class WriteXML:
                       indent)
             length = function.return_type.length
             word_wrap(stream,
-                      [str(x) for x in
+                      [x for x in
                        glyph.features[feature_no:feature_no+length]],
                       indent + 1)
             feature_no += length
@@ -205,7 +204,7 @@ class WriteXMLFile(WriteXML):
       self.stream = stream
       encoding = config.get_option('encoding')
       self.stream.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
-      self.stream.write('<gamera-database version="2.0">\n')
+      self.stream.write('<gamera-database version="%s">\n' % str(GAMERA_XML_FORMAT_VERSION))
       self._write_core(stream, indent=1)
       self.stream.write('</gamera-database>\n')
 
@@ -313,17 +312,34 @@ class LoadXML:
       self.symbol_table = SymbolTable()
       self.glyphs = []
       self.groups = []
-      if 'symbol_table' in self._parts:
-         self.add_start_element_handler('symbols', self._ths_symbols)
-         self.add_end_element_handler('symbols', self._the_symbols)
-      if 'glyphs' in self._parts:
-         self.add_start_element_handler('glyphs', self._ths_glyphs)
-         self.add_end_element_handler('glyphs', self._the_glyphs)
-      if 'groups' in self._parts:
-         self.add_start_element_handler('groups', self._ths_groups)
-         self.add_end_element_handler('groups', self._the_groups)
+      self._glyph_no = 0
+      self.add_start_element_handler('gamera-database', self._tag_start_gamera_database)
+      self.add_end_element_handler('gamera-database', self._tag_end_gamera_database)
 
    def _remove_handlers(self):
+      self.remove_start_element_handler('gamera-database')
+      self.remove_end_element_handler('gamera-database')
+
+   def _tag_start_gamera_database(self, a):
+      try:
+         version = self.try_type_convert(a, 'version', float, 'gamera-database')
+      except:
+         version = 1.0
+      if version < GAMERA_XML_FORMAT_VERSION:
+         raise XMLError(
+            "The XML file is an old version, which can not be read " +
+            "by this version of Gamera.")
+      if 'symbol_table' in self._parts:
+         self.add_start_element_handler('symbols', self._tag_start_symbols)
+         self.add_end_element_handler('symbols', self._tag_end_symbols)
+      if 'glyphs' in self._parts:
+         self.add_start_element_handler('glyphs', self._tag_start_glyphs)
+         self.add_end_element_handler('glyphs', self._tag_end_glyphs)
+      if 'groups' in self._parts:
+         self.add_start_element_handler('groups', self._tag_start_groups)
+         self.add_end_element_handler('groups', self._tag_end_groups)
+
+   def _tag_end_gamera_database(self):
       if 'symbol_table' in self._parts:
          self.remove_start_element_handler('symbols')
          self.remove_end_element_handler('symbols')
@@ -334,36 +350,36 @@ class LoadXML:
          self.remove_start_element_handler('groups')
          self.remove_end_element_handler('groups')
 
-   def _ths_symbols(self, a):
-      self.add_start_element_handler('symbol', self._ths_symbol)
+   def _tag_start_symbols(self, a):
+      self.add_start_element_handler('symbol', self._tag_start_symbol)
 
-   def _the_symbols(self):
+   def _tag_end_symbols(self):
       self.remove_start_element_handler('symbol')
    
-   def _ths_symbol(self, a):
+   def _tag_start_symbol(self, a):
       self.symbol_table.add(str(a['name']))
       self._update_progress()
 
-   def _ths_glyphs(self, a):
+   def _tag_start_glyphs(self, a):
       self._append_glyph = self._append_glyph_to_glyphs
-      self.add_start_element_handler('glyph', self._ths_glyph)
-      self.add_end_element_handler('glyph', self._the_glyph)
-      self.add_start_element_handler('features', self._ths_features)
-      self.add_start_element_handler('ids', self._ths_ids)
-      self.add_start_element_handler('id', self._ths_id)
-      self.add_start_element_handler('data', self._ths_data)
-      self.add_end_element_handler('data', self._the_data)
-      self.add_start_element_handler('property', self._ths_property)
-      self.add_end_element_handler('property', self._the_property)
+      self.add_start_element_handler('glyph', self._tag_start_glyph)
+      self.add_end_element_handler('glyph', self._tag_end_glyph)
+      self.add_start_element_handler('features', self._tag_start_features)
+      self.add_start_element_handler('ids', self._tag_start_ids)
+      self.add_start_element_handler('id', self._tag_start_id)
+      self.add_start_element_handler('data', self._tag_start_data)
+      self.add_end_element_handler('data', self._tag_end_data)
+      self.add_start_element_handler('property', self._tag_start_property)
+      self.add_end_element_handler('property', self._tag_end_property)
 
-   def _the_glyphs(self):
+   def _tag_end_glyphs(self):
       self._append_glyph = None
       for element in 'glyph features ids id data property'.split():
          self.remove_start_element_handler(element)
       for element in 'glyph data property'.split():
          self.remove_end_element_handler(element)
 
-   def _ths_glyph(self, a):
+   def _tag_start_glyph(self, a):
       self._ul_y = self.try_type_convert(a, 'uly', int, 'glyph')
       self._ul_x = self.try_type_convert(a, 'ulx', int, 'glyph')
       self._nrows = self.try_type_convert(a, 'nrows', int, 'glyph')
@@ -372,7 +388,7 @@ class LoadXML:
       self._id_name = []
       self._properties = {}
 
-   def _the_glyph(self):
+   def _tag_end_glyph(self):
       glyph = core.Image(self._ul_y, self._ul_x, self._nrows, self._ncols,
                          core.ONEBIT, core.DENSE)
       glyph.from_rle(str(self._data.strip()))
@@ -383,34 +399,36 @@ class LoadXML:
          glyph.properties[key] = val
       glyph.scaling = self._scaling
       self._append_glyph(glyph)
-      self._update_progress()
+      if not self._glyph_no % 10:
+         self._update_progress()
+      self._glyph_no += 1
 
-   def _ths_ids(self, a):
+   def _tag_start_ids(self, a):
       self._classification_state = self.try_type_convert(
          a, 'state', classification_state_to_number, 'ids')
 
-   def _ths_id(self, a):
+   def _tag_start_id(self, a):
       confidence = self.try_type_convert(
          a, 'confidence', float, 'id')
       name = self.try_type_convert(
          a, 'name', unicode, 'id')
       self._id_name.append((confidence, name.encode()))
 
-   def _ths_features(self, a):
+   def _tag_start_features(self, a):
       self._scaling = self.try_type_convert(
          a, 'scaling', float, 'features')
 
-   def _ths_data(self, a):
+   def _tag_start_data(self, a):
       self._data = u''
       self._parser.CharacterDataHandler = self.add_data
 
-   def _the_data(self):
+   def _tag_end_data(self):
       self._parser.CharacterDataHandler = None
 
    def add_data(self, data):
       self._data += data
 
-   def _ths_property(self, a):
+   def _tag_start_property(self, a):
       self._property_name = self.try_type_convert(
          a, 'name', str, 'property')
       self._property_type = self.try_type_convert(
@@ -418,7 +436,7 @@ class LoadXML:
       self._property_value = ''
       self._parser.CharacterDataHandler = self.add_property_value
 
-   def _the_property(self):
+   def _tag_end_property(self):
       if saveable_types.has_key(self._property_type):
          self._properties[self._property_name] = \
             saveable_types[self._property_type](self._property_value)
@@ -429,32 +447,32 @@ class LoadXML:
    def add_property_value(self, data):
       self._property_value += data
 
-   def _ths_groups(self, a):
+   def _tag_start_groups(self, a):
       self._append_glyph = self._append_glyph_to_group
-      self.add_start_element_handler('group', self._ths_group)
-      self.add_end_element_handler('group', self._the_group)
-      self.add_start_element_handler('glyph', self._ths_glyph)
-      self.add_end_element_handler('glyph', self._the_glyph)
-      self.add_start_element_handler('features', self._ths_features)
-      self.add_start_element_handler('ids', self._ths_ids)
-      self.add_start_element_handler('id', self._ths_id)
-      self.add_start_element_handler('data', self._ths_data)
-      self.add_end_element_handler('data', self._the_data)
-      self.add_start_element_handler('property', self._ths_property)
-      self.add_end_element_handler('property', self._the_property)
+      self.add_start_element_handler('group', self._tag_start_group)
+      self.add_end_element_handler('group', self._tag_end_group)
+      self.add_start_element_handler('glyph', self._tag_start_glyph)
+      self.add_end_element_handler('glyph', self._tag_end_glyph)
+      self.add_start_element_handler('features', self._tag_start_features)
+      self.add_start_element_handler('ids', self._tag_start_ids)
+      self.add_start_element_handler('id', self._tag_start_id)
+      self.add_start_element_handler('data', self._tag_start_data)
+      self.add_end_element_handler('data', self._tag_end_data)
+      self.add_start_element_handler('property', self._tag_start_property)
+      self.add_end_element_handler('property', self._tag_end_property)
 
-   def _the_groups(self):
+   def _tag_end_groups(self):
       self._append_glyph = None
       for element in 'group glyph feautures ids id data property'.split():
          self.remove_start_element_handler(element)
       for element in 'group glyph data property'.split():
          self.remove_end_element_handler(element)
 
-   def _ths_group(self, a):
+   def _tag_start_group(self, a):
       self._group = []
       self.group_id = self.try_type_convert(a, 'id', str, 'group')
 
-   def _the_group(self):
+   def _tag_end_group(self):
       self.groups.append(Group(self.group_id, self._group))
 
 def glyphs_from_xml(filename):

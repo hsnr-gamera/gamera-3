@@ -37,12 +37,12 @@ def make_sequence(obj):
    return obj
 
 def is_image_list(l):
-   # TODO: This doesn't seem to work correctly
-   ##   if not is_sequence(l):
-   ##     return 0
-   ##   for image in l:
-   ##     if not isinstance(l, image_type):
-   ##       return 0
+   from gamera.core import ImageBase
+   if not is_sequence(l) or not isinstance(l[0], ImageBase):
+      return 0
+   for image in l[1:]:
+      if not isinstance(l, ImageBase):
+         return 0
    return 1
 
 def is_string_or_unicode_list(l):
@@ -105,21 +105,27 @@ def string2identifier(str):
 
 def sign(i):
    "Returns the sign of a number"
-   if i < 0:
-      return -1
-   return 1
+   return cmp(i, 0)
 
 class Set(list):
    "A list-like container that contains only unique elements."
+   def __init__(self, list=[]):
+      list.__init__(self)
+      self._dict = {}
+      self.extend(list)
    def append(self, item):
-      if item not in self:
+      if not self._dict.has_key(item):
          list.append(self, item)
+         self._dict[item] = None
    def insert(self, i, item):
-      if item not in self:
+      if not self._dict.has_key(item):
          list.insert(self, i, item)
+         self._dict[item] = None
    def extend(self, other):
       for item in other:
-         self.append(item)
+         if not self._dict.has_key(item):
+            list.append(self, item)
+            self._dict[item] = None
 
 class SetDictionary(dict):
    def __getitem__(self, key):
@@ -208,8 +214,9 @@ def word_wrap(stream, l, indent=0, width=78):
    indent *= 2
    width -= indent
    indent_spaces = ' ' * (indent)
+   space = ' '
    if is_sequence(l):
-      l = ' '.join([str(x) for x in l])
+      l = space.join([str(x) for x in l])
    i = 0
    p = 0
    while i != -1:
@@ -219,7 +226,7 @@ def word_wrap(stream, l, indent=0, width=78):
          stream.write('\n')
          break
       else:
-         i = l.rfind(' ', p, p + width)
+         i = l.rfind(space, p, p + width)
          if i == -1:
             stream.write(l[p:])
          stream.write(l[p:i])

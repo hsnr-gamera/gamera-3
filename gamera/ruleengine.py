@@ -131,12 +131,6 @@ performing sets of rules in sequence or parallel or whatever...  """
 class RuleEngineError(Exception):
    pass
 
-def example_rule(a="dot", b="letter*"):
-   if (Fudge(a.lr_y) == b.lr_y and
-       a.ul_x > b.lr_x and a.ul_x - b.lr_x < 20):
-      a.classify_heuristic('punctuation.period')
-   return [], []
-
 class RuleEngine:
    _class_rules = []
 
@@ -176,9 +170,11 @@ class RuleEngine:
       except Exception, e:
          lines = traceback.format_exception(*exc_info())
          del lines[1]
-         self._exceptions[''.join(lines)] = None 
+         exception = ''.join(lines)
+         # We build a dictionary of exceptions in order to remove duplicates
+         self._exceptions.append(exception)
          return 0
-      if result is None or result == ([],[]):
+      if result is None or result == ([], []):
          return 0
       for a in result[0]:
          added[a] = None
@@ -188,7 +184,7 @@ class RuleEngine:
 
    def perform_rules(self, glyphs, grid_size=100, recurse=0,
                      progress=None, _recursion_level=0):
-      self._exceptions = {}
+      self._exceptions = util.Set()
       if _recursion_level > 10:
          return [], []
       elif _recursion_level == 0:
@@ -234,7 +230,6 @@ class RuleEngine:
       finally:
          if _recursion_level == 0:
             progress.kill()
-      print
       if recurse and len(added):
          self._deal_with_result(
            self.perform_rules(added.keys(), 1, progress, _recursion_level + 1))
@@ -242,7 +237,7 @@ class RuleEngine:
       if len(self._exceptions):
          s = ("One or more of the rule functions caused an exception.\n" +
               "(Each exception listed only once):\n\n" +
-              "\n".join(self._exceptions.keys()))
+              "\n".join(self._exceptions))
          raise RuleEngineError(s)
 
       return added.keys(), removed.keys()

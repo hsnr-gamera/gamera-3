@@ -27,7 +27,7 @@ import sys, string, time, weakref
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
-import gui_support
+import gui_support  # Gamera plugin
 
 ##############################################################################
 
@@ -61,8 +61,6 @@ class ImageDisplay(wxScrolledWindow):
       self._boxed_highlight_position = 0
       self._boxed_highlight_timer = wxTimer(self, 100)
       EVT_TIMER(self, 100, self._OnBoxHighlight)
-
-      self.color = 0
       self.rubber_on = 0
       self.rubber_origin_x = 0
       self.rubber_origin_y = 0
@@ -99,6 +97,7 @@ class ImageDisplay(wxScrolledWindow):
          self.image = image
       self.clear_all_highlights()
       self.view_function = view_function
+      self.Raise()
       return self.reload_image()
 
    # Refreshes the image by recalling the to_string function
@@ -117,18 +116,6 @@ class ImageDisplay(wxScrolledWindow):
    ########################################
    # HIGHLIGHTED CCs
 
-   def _get_highlight_color(self, color):
-      if util.is_sequence(color):
-         if len(color) == 3:
-            return wxColor(*color)
-         else:
-            return -1
-      elif isinstance(color, wxColor):
-         return color
-      elif type(color) == type(0) and color >= 0:
-         return gui_util.get_color(color)
-      return -1
-
    def _OnBoxHighlight(self, event):
       if len(self.highlights) == 1 and not self.rubber_on:
          self._boxed_highlight_position &= 0x7  # mod 8
@@ -144,45 +131,39 @@ class ImageDisplay(wxScrolledWindow):
 
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=-1):
-      color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
+      # For efficiency, if we're updating fewer than 10 glyphs, we only
+      # update that part of the display, otherwise, we update the entire
+      # display
       refresh_at_once = len(ccs) > 10 or len(self.highlights) > 10
       use_color = color
       old_highlights = self.highlights[:]
       self.highlights = []
       for cc in ccs:
-         found_it = 0
          if color == -1:
-            for old_cc, use_color in old_highlights:
+            for old_cc, color in old_highlights:
                if old_cc == cc:
-                  found_it = 1
+                  use_color = color
                   break
-            if not found_it:
-               use_color = gui_util.get_color(self.color)
-               self.color += 1
-         self.highlights.append((cc, use_color))
-         if not found_it and not refresh_at_once:
+         self.highlights.append((cc, gui_util.get_color(use_color)))
+         if not refresh_at_once:
             self.PaintAreaRect(cc)
       if not refresh_at_once:
          for cc in old_highlights:
             if cc not in self.highlights:
                self.PaintAreaRect(cc[0])
-      if refresh_at_once:
+      else:
          self.RefreshAll()
    highlight_ccs = highlight_cc
 
    # Adds a list of ccs to be highlighted in the display
    def add_highlight_cc(self, ccs, color=-1):
-      color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
       refresh_at_once = len(ccs) > 10
       use_color = color
       for cc in ccs:
          if cc not in self.highlights:
-            if color == -1:
-               use_color = gui_util.get_color(self.color)
-               self.color += 1
-            self.highlights.append((cc, use_color))
+            self.highlights.append((cc, gui_util.get_color(use_color)))
             if not refresh_at_once:
                self.PaintAreaRect(cc)
       if refresh_at_once:
@@ -204,7 +185,6 @@ class ImageDisplay(wxScrolledWindow):
                break
       if refresh_at_once:
          self.RefreshAll()
-
    unhighlight_ccs = unhighlight_cc
       
    # Clears all of the highlighted CCs in the display   
@@ -281,9 +261,17 @@ class ImageDisplay(wxScrolledWindow):
          self.Clear()
       if new_scale == None or new_scale <= 0:
          new_scale = old_scale
-      # Quantize scaling to powers of 2, since other scalings son't get sized
-      # accurately by the Vigra scaling functions
-      new_scale = pow(2.0, floor(log(new_scale) / log(2.0)))
+         
+      # Clamp scaling to a reasonable range
+      # Going outside of this range has been known to cause segfaults
+      new_scale = min(max(new_scale, 0.1), 16)
+
+      # Quantize scaling to integers, (or 1.0 / integer)
+      # This makes scrolling look nice
+      if new_scale >= 1.0:
+         new_scale = floor(new_scale)
+      else:
+         new_scale = 1.0 / ceil(1.0 / new_scale)
       scroll_amount = self.scroll_amount
       w = self.image.width * new_scale
       h = self.image.height * new_scale
@@ -310,14 +298,14 @@ class ImageDisplay(wxScrolledWindow):
          wxEndBusyCursor()
          
    def ZoomOut(self, *args):
-      if self.scaling > pow(2, -4):
+      if self.scaling > 0.125:
          self.scale(self.scaling * 0.5)
 
    def ZoomNorm(self, *args):
       self.scale(1.0)
 
    def ZoomIn(self, *args):
-      if self.scaling < pow(2, 4):
+      if self.scaling < 8:
          self.scale(self.scaling * 2.0)
 
    def ZoomView(self, *args):
@@ -335,9 +323,7 @@ class ImageDisplay(wxScrolledWindow):
          rubber_h = self.image.nrows
          x = y = x2 = y2 = 0
       scaling = min(float(size.x) / float(rubber_w),
-                    float(size.y) / float(rubber_h)) * 0.9
-      scaling = max(scaling, pow(2, -4))
-      scaling = min(scaling, pow(2, 4))
+                    float(size.y) / float(rubber_h)) * 0.95
       self.scale(scaling)
       self.focus_rect(x, y, x2, y2)
 
@@ -488,7 +474,7 @@ class ImageDisplay(wxScrolledWindow):
       size_scaled = [a / scaling for a in self.GetSizeTuple()]
 
       # Quantize for scaling
-      if scaling > 1:
+      if scaling > 1.0:
          x = int(int(x / scaling) * scaling)
          y = int(int(y / scaling) * scaling)
          w = int(int(w / scaling) * scaling)
@@ -561,8 +547,6 @@ class ImageDisplay(wxScrolledWindow):
                image = wxEmptyImage(
                   scaled_highlight.ncols, scaled_highlight.nrows)
                scaled_highlight.to_buffer(image.GetDataBuffer())
-               # GTK change
-               # bmp = wxBitmapFromImage(image, 1)
                bmp = wxBitmapFromImage(image)
                tmpdc.SelectObject(bmp)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
@@ -644,6 +628,7 @@ class ImageDisplay(wxScrolledWindow):
          self.OnRubber(event.ShiftDown() or event.ControlDown())
 
    def _OnMiddleDown(self, event):
+      wxSetCursor(wxStockCursor(wxCURSOR_BULLSEYE))
       self.dragging = 1
       self.dragging_x = event.GetX()
       self.dragging_y = event.GetY()
@@ -651,6 +636,7 @@ class ImageDisplay(wxScrolledWindow):
          [x * self.scroll_amount for x in self.GetViewStart()]
 
    def _OnMiddleUp(self, event):
+      wxSetCursor(wxSTANDARD_CURSOR)
       self.dragging = 0
 
    def _OnRightDown(self, event):
@@ -1185,11 +1171,10 @@ class MultiImageDisplay(wxGrid):
 
    def SelectGlyphs(self, glyphs):
       matches = []
-      for glyph in glyphs:
-         try:
-            matches.append(self.list.index(glyph))
-         except:
-            pass
+      for g in glyphs:
+         for i, g2 in enumerate(self.list):
+            if g is g2:
+               matches.append(i)
       if len(matches):
          self.BeginBatch()
          first = 0
@@ -1395,6 +1380,7 @@ class MultiImageWindow(wxPanel):
    def set_choices(self):
       methods = [x[0] + "()" for x in
                  ImageBase.methods_flat_category("Features", ONEBIT)]
+      methods.sort()
 
       self.display_choices = [
          "x.get_main_id()",

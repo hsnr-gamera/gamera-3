@@ -201,12 +201,13 @@ class _Classifier:
    
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
-      progress = util.ProgressFactory("Generating features...", len(glyphs))
+      progress = util.ProgressFactory("Generating features...", len(glyphs) / 10)
       feature_functions = self.get_feature_functions()
       try:
-         for glyph in glyphs:
+         for i, glyph in enumerate(glyphs):
             glyph.generate_features(feature_functions)
-            progress.step()
+            if i % 10 == 0:
+               progress.step()
       finally:
          progress.kill()   
 

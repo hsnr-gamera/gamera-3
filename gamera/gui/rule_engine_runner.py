@@ -21,7 +21,6 @@
 from inspect import isfunction, ismodule
 from os import path
 from wxPython.wx import *
-from gamera import ruleengine
 from gamera.gui import toolbar, gui_util
 
 class RuleEngineRunnerTree(wxTreeCtrl):
@@ -43,6 +42,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       pass
 
    def _OnActivated(self, event):
+      from gamera import ruleengine
       item = event.GetItem()
       data = self.GetPyData(item)
       multi_display = self.toplevel.multi_iw.id
@@ -67,7 +67,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       multi_display.ClearSelection()
       multi_display.append_and_remove_glyphs(added, removed)
       single_display.highlight_cc(added, 0)
-      single_display.add_highlight_cc(removed, 1)
+      # single_display.add_highlight_cc(removed, 1)
       self.undo_history.append((added, removed))
       self.added, self.removed = added, removed
 
@@ -101,6 +101,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       self.toplevel.multi_iw.id.SelectGlyphs(self.removed)
 
    def add_module(self, module):
+      from gamera import ruleengine
       self.modules.append(module)
       module_node = self.AppendItem(self.root, path.split(module.__file__)[1])
       self.SetPyData(module_node, module)
@@ -108,6 +109,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
          self.SetItemHasChildren(module_node, TRUE)
          if isinstance(val, ruleengine.RuleEngine):
             rule_engine_node = self.AppendItem(module_node, key)
+            self.Expand(module_node)
             self.SetPyData(rule_engine_node, val)
             for rule in val.get_rules():
                self.SetItemHasChildren(rule_engine_node, TRUE)

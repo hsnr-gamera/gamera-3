@@ -27,7 +27,19 @@ colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
           wxColor(0x2d, 0xbc, 0xbc), wxColor(0xbc, 0xb7, 0x2d),
           wxColor(0xbc, 0x88, 0x2d), wxColor(0x6e, 0x00, 0xc7))
 
+color_number = 0
 def get_color(number):
+   global color_number
+   if isinstance(number, wxColor):
+      return number
+   if util.is_sequence(number):
+      if len(number) == 3:
+         return wxColor(*tuple(number))
+      else:
+         number = -1
+   if number < 0:
+      number = color_number
+      color_number += 1
    return colors[number & 0x7] # mod 8
 
 # Displays a message box

@@ -459,86 +459,85 @@ namespace Gamera {
     }
   }
 
+  struct make_vertical_run {
+    Rect operator() (const int start, const int end, const int column) {
+      return Rect(Point(column, start), Point(column, end - 1));
+    }
+  };
+
+  struct make_horizontal_run {
+    Rect operator() (const int start, const int end, const int row) {
+      return Rect(Point(start, row), Point(end - 1, row));
+    }
+  };
+
   template<class Image, class RunIterator>
   struct RowIterator : IteratorObject {
+    typedef RowIterator<Image, RunIterator> SelfType;
     int init(Image& image) {
+      m_offset_x = image.ul_x();
+      m_offset_y = image.ul_y();
       m_it = m_begin = image.row_begin();
       m_end = image.row_end();
       return 1;
     }
     static PyObject* next(IteratorObject* self) {
-      RowIterator<Image, RunIterator>* so = (RowIterator<Image, RunIterator>*)self;
+      SelfType* so = (SelfType*)self;
       if (so->m_it == so->m_end)
 	return NULL;
       RunIterator* iterator = iterator_new<RunIterator>();
-      iterator->init(so->m_it.begin(), so->m_it.end(), "row", so->m_it - so->m_begin);
+      iterator->init(so->m_it.begin(), so->m_it.end(), (so->m_it - so->m_begin) + so->m_offset_y, so->m_offset_x);
       so->m_it++;
       return (PyObject*)iterator;
     }
     typename Image::row_iterator m_it, m_end, m_begin;
+    size_t m_offset_x, m_offset_y;
   };
 
-  template<class Image, class RunIterator>
+  template<class Image, typename RunIterator>
   struct ColIterator : IteratorObject {
+    typedef ColIterator<Image, RunIterator> SelfType;
     int init(Image& image) {
+      m_offset_x = image.ul_x();
+      m_offset_y = image.ul_y();
       m_it = m_begin = image.col_begin();
       m_end = image.col_end();
       return 1;
     }
     static PyObject* next(IteratorObject* self) {
-      ColIterator<Image, RunIterator>* so = (ColIterator<Image, RunIterator>*)self;
+      SelfType* so = (SelfType*)self;
       if (so->m_it == so->m_end)
 	return NULL;
       RunIterator* iterator = iterator_new<RunIterator>();
-      iterator->init(so->m_it.begin(), so->m_it.end(), "column", so->m_it - so->m_begin);
+      iterator->init(so->m_it.begin(), so->m_it.end(), (so->m_it - so->m_begin) + so->m_offset_x, so->m_offset_y);
       so->m_it++;
       return (PyObject*)iterator;
     }
     typename Image::col_iterator m_it, m_end, m_begin;
+    size_t m_offset_x, m_offset_y;
   };
 
-  PyObject* make_run_object(const int start, const int end, const char* sequence_name, 
-			    const int sequence) {
-    PyObject* dict = PyDict_New();
-
-    PyObject* start_obj = PyInt_FromLong(start);
-    PyDict_SetItemString(dict, "start", start_obj);
-    Py_DECREF(start_obj);
-
-    PyObject* end_obj = PyInt_FromLong(end);
-    PyDict_SetItemString(dict, "end", end_obj);
-    Py_DECREF(end_obj);
-
-    PyObject* length_obj = PyInt_FromLong(end - start);
-    PyDict_SetItemString(dict, "length", length_obj);
-    Py_DECREF(length_obj);
-
-    PyObject* sequence_obj = PyInt_FromLong(sequence);
-    PyDict_SetItemString(dict, sequence_name, sequence_obj);
-    Py_DECREF(sequence_obj);
-
-    return dict;
-  }
-
-  template<class Iterator>
+  template<class Iterator, class RunMaker>
   struct BlackRunIterator : IteratorObject {
-    int init(Iterator begin, Iterator end, const char* sequence_name, int sequence) {
+    typedef BlackRunIterator<Iterator, RunMaker> SelfType;
+    int init(Iterator begin, Iterator end, int sequence, size_t offset) {
       m_begin = m_it = begin;
       m_end = end;
-      m_sequence_name = sequence_name;
       m_sequence = sequence;
+      m_offset = offset;
       return 1;
     }
     static PyObject* next(IteratorObject* self) {
-      BlackRunIterator<Iterator>* so = (BlackRunIterator<Iterator>*)self;
+      SelfType* so = (SelfType*)self;
       PyObject* result = 0;
       while (so->m_it != so->m_end) {
 	white_run_end(so->m_it, so->m_end);
 	Iterator start = so->m_it;
 	black_run_end(so->m_it, so->m_end);
 	if (so->m_it - start > 0) {
-	  result = make_run_object(start - so->m_begin, so->m_it - so->m_begin,
-				   so->m_sequence_name, so->m_sequence);
+	  result = create_RectObject
+	    (RunMaker()
+	     ((start - so->m_begin) + so->m_offset, (so->m_it - so->m_begin) + so->m_offset, so->m_sequence));
 	  break;
 	}
       }
@@ -546,29 +545,31 @@ namespace Gamera {
     }
     
     Iterator m_begin, m_it, m_end;
-    const char* m_sequence_name;
     int m_sequence;
+    size_t m_offset;
   };
 
-  template<class Iterator>
+  template<class Iterator, class RunMaker>
   struct WhiteRunIterator : IteratorObject {
-    int init(Iterator begin, Iterator end, const char* sequence_name, int sequence) {
+    typedef WhiteRunIterator<Iterator, RunMaker> SelfType;
+    int init(Iterator begin, Iterator end, int sequence, size_t offset) {
       m_begin = m_it = begin;
       m_end = end;
-      m_sequence_name = sequence_name;
       m_sequence = sequence;
+      m_offset = offset;
       return 1;
     }
     static PyObject* next(IteratorObject* self) {
-      WhiteRunIterator<Iterator>* so = (WhiteRunIterator<Iterator>*)self;
+      SelfType* so = (SelfType*)self;
       PyObject* result = 0;
       while (so->m_it != so->m_end) {
 	black_run_end(so->m_it, so->m_end);
 	Iterator start = so->m_it;
 	white_run_end(so->m_it, so->m_end);
 	if (so->m_it - start > 0) {
-	  result = make_run_object(start - so->m_begin, so->m_it - so->m_begin,
-				   so->m_sequence_name, so->m_sequence);
+	  result = create_RectObject
+	    (RunMaker()
+	     ((start - so->m_begin) + so->m_offset, (so->m_it - so->m_begin) + so->m_offset, so->m_sequence));
 	  break;
 	}
       }
@@ -576,13 +577,13 @@ namespace Gamera {
     }
     
     Iterator m_begin, m_it, m_end;
-    const char* m_sequence_name;
     int m_sequence;
+    size_t m_offset;
   };
 
   template<class T>
   PyObject* iterate_black_horizontal_runs(T& image) {
-    typedef RowIterator<T, BlackRunIterator<typename T::col_iterator> > Iterator;
+    typedef RowIterator<T, BlackRunIterator<typename T::col_iterator, make_horizontal_run> > Iterator;
     Iterator* iterator = iterator_new<Iterator>();
     iterator->init(image);
     return (PyObject*)iterator;
@@ -590,7 +591,7 @@ namespace Gamera {
 
   template<class T>
   PyObject* iterate_black_vertical_runs(T& image) {
-    typedef ColIterator<T, BlackRunIterator<typename T::row_iterator> > Iterator;
+    typedef ColIterator<T, BlackRunIterator<typename T::row_iterator, make_vertical_run> > Iterator;
     Iterator* iterator = iterator_new<Iterator>();
     iterator->init(image);
     return (PyObject*)iterator;
@@ -598,7 +599,7 @@ namespace Gamera {
 
   template<class T>
   PyObject* iterate_white_horizontal_runs(T& image) {
-    typedef RowIterator<T, WhiteRunIterator<typename T::col_iterator> > Iterator;
+    typedef RowIterator<T, WhiteRunIterator<typename T::col_iterator, make_horizontal_run> > Iterator;
     Iterator* iterator = iterator_new<Iterator>();
     iterator->init(image);
     return (PyObject*)iterator;
@@ -606,7 +607,7 @@ namespace Gamera {
 
   template<class T>
   PyObject* iterate_white_vertical_runs(T& image) {
-    typedef ColIterator<T, WhiteRunIterator<typename T::row_iterator> > Iterator;
+    typedef ColIterator<T, WhiteRunIterator<typename T::row_iterator, make_vertical_run> > Iterator;
     Iterator* iterator = iterator_new<Iterator>();
     iterator->init(image);
     return (PyObject*)iterator;

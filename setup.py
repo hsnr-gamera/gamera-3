@@ -133,9 +133,12 @@ if sys.platform == 'win32' and '--compiler=mingw32' in sys.argv:
 
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']
+
 if sys.platform == 'darwin':
    packages.append("gamera.mac")
-            
+elif sys.platform == 'win32':
+   packages.append("win32")
+
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",
       version=gamera_version,

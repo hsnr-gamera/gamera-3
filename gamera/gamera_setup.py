@@ -46,6 +46,9 @@ setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', rpm_run)
 if sys.platform == "darwin":
    from gamera.mac import gamera_mac_setup
    cmdclass = {'bdist_osx': gamera_mac_setup.bdist_osx}
+elif sys.platform == "win32":
+    from win32 import bdist_msi
+    cmdclass = {'bdist_msi': bdist_msi.bdist_msi}
 else:
    cmdclass = {}
 

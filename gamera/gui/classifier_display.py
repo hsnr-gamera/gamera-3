@@ -870,12 +870,8 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.SetPyData(self.root, "")
       EVT_TREE_ITEM_EXPANDED(self, id, self.OnItemExpanded)
       EVT_TREE_ITEM_COLLAPSED(self, id, self.OnItemCollapsed)
-      EVT_TREE_BEGIN_LABEL_EDIT(self, id, self.OnBeginEdit)
-      EVT_TREE_END_LABEL_EDIT(self, id, self.OnEndEdit)
       EVT_KEY_DOWN(self, self.OnKey)
       EVT_LEFT_DOWN(self, self.OnLeftDown)
-      EVT_RIGHT_DOWN(self, self.OnRightDown)
-      EVT_RIGHT_UP(self, self.OnRightUp)
       EVT_LEFT_DCLICK(self, self.OnLeftDoubleClick)
       self.Expand(self.root)
       self.toplevel._symbol_table.add_listener(self)
@@ -900,32 +896,11 @@ class SymbolTreeCtrl(wxTreeCtrl):
       item = self.GetFirstVisibleItem()
       while item.IsOk():
          item = self.GetNextVisible(item)
-         if self.GetPyData(item) == symbol:
+         if item.IsOk() and self.GetPyData(item) == symbol:
             if self.IsExpanded(item):
                self.CollapseAndReset(item)
                self.Expand(item)
                break
-
-   def OnBeginEdit(self, event):
-      # if not self.editing:
-         event.Veto()
-
-   def OnEndEdit(self, event):
-      previous = self.GetPyData(event.GetItem())
-      previous_stub = '.'.join(previous.split('.')[:-1])
-      if event.GetLabel() == '':
-         self.SetItemText(event.GetItem(), self.last_value)
-         self.editing = 0
-         return
-      else:
-         label = event.GetLabel()
-      if previous_stub == "":
-         new = label
-      else:
-         new = previous_stub + "." + label
-      self.SetPyData(event.GetItem(), new)
-      self.toplevel._symbol_table.rename(previous, new)
-      self.editing = 0
 
    def OnItemExpanded(self, event):
       parent = event.GetItem()
@@ -960,18 +935,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
       if id != None:
          self.toplevel.toplevel.classify_manual(id)
 
-   def OnRightDown(self, event):
-      self.editing = 1
-      pt = event.GetPosition()
-      item, flags = self.HitTest(pt)
-      if (flags == 4):
-         return
-      self.last_value = self.GetItemText(item)
-      self.EditLabel(item)
-
-   def OnRightUp(self, event):
-      self.editing = 0
-
    def OnLeftDown(self, event):
       pt = event.GetPosition()
       item, flags = self.HitTest(pt)
@@ -998,7 +961,7 @@ class SymbolTableEditorPanel(wxPanel):
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
                                  wxDefaultSize,
-                                 wxTR_HAS_BUTTONS | wxTR_EDIT_LABELS)
+                                 wxTR_HAS_BUTTONS)
       self.box.Add(self.tree, 1, wxEXPAND|wxALL)
       self.box.RecalcSizes()
       self.SetSizer(self.box)

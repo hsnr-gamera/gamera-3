@@ -865,7 +865,7 @@ class MultiImageDisplay(wxGrid):
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_rows = self.rows
-      rows = max(ceil((len(self.list) - 2) / GRID_NCOLS), 1)
+      rows = max(ceil((len(self.list) - 1) / GRID_NCOLS) + 1, 1)
       cols = GRID_NCOLS
       if self.rows < rows:
          self.AppendRows(rows - self.rows)

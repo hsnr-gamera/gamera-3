@@ -48,21 +48,25 @@ class _Classifier:
 
    def from_xml(self, stream):
       database = gamera_xml.LoadXMLGlyphs().parse_stream(stream)
+      database = [x for x in database if x.classification_state != core.UNCLASSIFIED]
       self.generate_features(database)
       self.set_glyphs(database)
 
    def from_xml_filename(self, filename):
       database = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+      database = [x for x in database if x.classification_state != core.UNCLASSIFIED]
       self.generate_features(database)
       self.set_glyphs(database)
 
    def merge_from_xml(self, stream):
       database = gamera_xml.LoadXMLGlyphs().parse_stream(stream)
+      database = [x for x in database if x.classification_state != core.UNCLASSIFIED]
       self.generate_features(database)
       self.merge_glyphs(database)
 
    def merge_from_xml_filename(self, filename):
       database = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+      database = [x for x in database if x.classification_state != core.UNCLASSIFIED]
       self.generate_features(database)
       self.merge_glyphs(database)
 

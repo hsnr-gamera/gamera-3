@@ -242,4 +242,3 @@ def generate_features_list(list, features='all'):
 generate_features = generate_features()
 
 del Feature
-del array

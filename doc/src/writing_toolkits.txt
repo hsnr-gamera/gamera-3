@@ -53,6 +53,19 @@ heirarchy.  Here we assume the toolkit is called ``my_toolkit``.
 |          +---------------+------------------------------------------------+
 |          | plugins/      | Source code for the C++-based plugins.         |
 +----------+---------------+------------------------------------------------+
+| scripts/ | Command line scripts                                           |
++----------+---------------+------------------------------------------------+
+| doc/     | Documentation                                                  |
+|          +---------------+------------------------------------------------+
+|          | gendoc.py     | A script to generate the documentation using   |
+|          |               | the Gamera documentation system.               |
+|          +---------------+------------------------------------------------+
+|          | src/          | The source files for the narrative             |
+|          |               | documentation.                                 |
+|          +---------------+------------------------------------------------+
+|          | html/         | The HTML output from the Gamera documentation  |
+|          |               | system.                                        |
++----------+---------------+------------------------------------------------+
 
 Some toolkits may go beyond this, of course, by including ``.cpp``
 files in a ``src/`` directory or documentation in a ``doc/``
@@ -119,11 +132,18 @@ the C++ source code goes in ``include/plugins/``.
 
 .. __: writing_plugins.html
 
+
 Python modules
 ''''''''''''''
 
 The Python modules in your toolkit should go in
 ``gamera/my_toolkit/skeleton``.
+
+Documentation
+'''''''''''''
+
+Optionally, the toolkit may use the Gamera documentation system.  See
+`Documenting toolkits`_ for more information.
 
 Building and installing a toolkit
 ---------------------------------
@@ -137,3 +157,115 @@ attempting to build and install a Gamera toolkit.**
 The complete instructions for building Gamera toolkits is included in
 the skeleton example in the INSTALL file.  You should redistribute
 this file with your toolkit.
+
+Documenting toolkits
+--------------------
+
+Optionally, toolkit writers can use the Gamera documentation system.
+Toolkits are also free to use another documentation
+workflow if desired, of course.
+
+To document a toolkit using the Gamera documentation system, the
+author should perform three steps: 1) write narrative documentation,
+2) write plugin method documentation, and 3) create a documentation
+generation script.
+
+Writing narrative documentation
+```````````````````````````````
+
+The narrative documentation is intended for longer "how-to" like documents.
+
+Put narrative or high-level documentation in ``doc/src/``, in ``.txt``
+files in reStructuredText_ format.  Each ``.txt`` file will be
+converted into a corresponding ``.html`` when the documentation is
+generated.
+
+.. _reStructuredText: http://docutils.sf.net/
+
+Optionally, any inline images to be included can be placed in
+``doc/src/images/``.
+
+Plugin documentation
+````````````````````
+
+Document each plugin method in its Python docstring.  This docstring
+should occur on the line following the ``class`` statement where each
+``PluginFunction`` is defined.
+
+Optionally, write a documentation example.  This is a snippet of code
+that will be run to generate an image that demonstrates the
+capabilities of the plugin function.  
+
+These steps are described in greater detail in the `writing plugins`__
+chapter.
+
+.. __: writing_plugins.html#documenting-plugin-functions
+
+Documentation generation script
+```````````````````````````````
+
+A small script is required that loads the toolkits' plugins and then
+calls out to the Gamera documentation system.  The example
+documentation generation script included in the skeleton toolkit
+example is as follows:
+
+.. code:: Python
+
+   #!/usr/bin/env python
+
+   from gamera import gendoc
+
+   if __name__ == '__main__':
+      # Step 1:
+      # Import all of the plugins to document.
+      # Be careful not to load the core plugins, or they
+      # will be documented here, too.
+      # If the plugins are not already installed, we'll just ignore
+      # them and generate the narrative documentation.
+      try:
+         from gamera.toolkits.skeleton.plugins import clear
+      except ImportError:
+         print "WARNING:"
+         print "This `skeleton` toolkit must be installed before generating"
+         print "the documentation.  For now, the system will skip generating"
+         print "documentation for the plugins."
+         print
+
+      # Step 2:	 
+      # Generate documentation for this toolkit
+      # This will handle any commandline arguments if necessary
+      gendoc.gendoc()
+
+Building the documentation
+``````````````````````````
+
+Once these three elements are in place, the documentation can be
+generated and converted to HTML.
+
+Prerequisites
+'''''''''''''
+
+Generating documentation requires two third-party Python
+libraries:
+
+  - docutils_ (version 0.3 or later) for handling reStructuredText documents.
+
+  - SilverCity_ (version 0.9 or later) for colorizing source code.
+
+.. _docutils: http://docutils.sourceforge.net/
+.. _SilverCity: http://silvercity.sourceforge.net/
+
+Generating
+''''''''''
+
+To generate the documentation, go to the ``doc`` directory and run the
+``gendoc.py`` script.
+
+Alternatively, you can call the ``gendoc.py`` script with the
+documentation directory as a commandline argument::
+
+   gendoc.py -d /path/to/doc
+
+The output will be placed in the ``doc/html/`` directory.  The contents of
+this directory can be placed on a webserver for convenient viewing.
+

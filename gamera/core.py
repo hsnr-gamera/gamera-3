@@ -72,12 +72,12 @@ class SegmentationError(Exception):
 def load_image(filename, compression = DENSE):
    """Load an image from a file optionally using the given type of
    compression for the image object."""
-   from gamera.plugins import tiff_support, png_support
+   from gamera.plugins import _tiff_support, _png_support
    try:
-      image = tiff_support.load_tiff(filename, compression)
+      image = _tiff_support.load_tiff(filename, compression)
    except RuntimeError:
       try:
-         image = png_support.load_PNG(filename, compression)
+         image = _png_support.load_PNG(filename, compression)
       except RuntimeError, AttributeError:
          raise RuntimeError("%s in not a TIFF or PNG file." % filename)
    image.name = filename

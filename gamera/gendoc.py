@@ -70,6 +70,7 @@ docutils.parsers.rst.directives.register_directive( 'code', code_block )
 
 try:
    from gamera import core, args, paths, util
+   from gamera.plugins import _png_support
    from gamera.enums import *
 except ImportError, e:
    print "Cannot load gameracore."
@@ -157,16 +158,16 @@ def method_example(path_obj, func, level, images, s):
            s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
        result_filename = "%s_plugin_%02d" % (func.__name__, i)
        if isinstance(result, core.ImageBase):
-           result.save_PNG(path_obj.doc_images_path + result_filename + ".png")
+           _png_support.save_PNG(result, path_obj.doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
        elif result is None and isinstance(func.self_type, args.ImageType) and src_image is not None:
-           src_image.save_PNG(path_obj.doc_images_path + result_filename + ".png")
+           _png_support.save_PNG(src_image, path_obj.doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
        elif util.is_image_list(result):
            subst = "\n\n"
            for j, part in enumerate(result):
                result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
-               part.save_PNG(path_obj.doc_images_path + result_filename + ".png")
+               _png_support.save_PNG(part, path_obj.doc_images_path + result_filename + ".png")
                s.write("|%s| " % result_filename)
                subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
            s.write(subst)
@@ -263,8 +264,12 @@ def generate_plugin_docs(path_obj):
    flat_methods = {}
    flat_list = {}
    for pixel_type in ALL + [NONIMAGE]:
-      methods_flatten(flat_methods, methods[pixel_type], flat_list)
-
+      if methods.has_key(pixel_type): 
+          methods_flatten(flat_methods, methods[pixel_type], flat_list)
+   
+   if len(flat_list) == 0:
+       return
+          
    flat_list = flat_list.keys()
    flat_list.sort(lambda x,y: cmp(x.lower(), y.lower()))
 
@@ -278,7 +283,7 @@ def generate_generic_pngs(path_obj):
          pixel_type_name = util.get_pixel_type_name(pixel_type)
          image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
          print image.pixel_type_name
-         image.save_PNG(os.path.join(path_obj.output_images_path, "%s_generic.png" % (pixel_type_name)))
+         _png_support.save_PNG(image, os.path.join(path_obj.output_images_path, "%s_generic.png" % (pixel_type_name)))
 
 def copy_images(path_obj):
    if not os.path.exists(path_obj.output_images_path):
@@ -286,10 +291,14 @@ def copy_images(path_obj):
    for path in (path_obj.doc_images_path,
                 path_obj.doc_src_images_path,
                 path_obj.icons_path):
-      for file in glob.glob(path + "*.png"):
+      for file in glob.glob(path + "*.*"):
          path, filename = os.path.split(file)
          open(os.path.join(path_obj.output_images_path, filename), "wb").write(
              open(file, "rb").read())
+
+def copy_css(path_obj):
+    open(os.path.join(path_obj.output_path, "default.css"), "w").write(
+        open(os.path.join(path_obj.doc_src_path, "default.css"), "r").read())
 
 class Paths:
     def __init__(self, root="."):
@@ -301,14 +310,23 @@ class Paths:
         self.icons_path = join(root, "../gamera/pixmaps/")
         self.output_path = join(self.doc_path, "html/")
         self.output_images_path = join(self.output_path, "images/")
+
+def print_usage():
+    print "Gamera documentation generator."
+    print "Usage: gendoc.py [-d doc_directory]"
+    print "  (if doc_directory is omitted, the current directory"
+    print "   will be used.)"
+    print 
    
 def gendoc():
+   print_usage()
    opts, args = getopt.getopt(sys.argv[1:], "d:")
    root = '.'
    for flag, value in opts:
        if flag == "-d":
            root = value
    path_obj = Paths(root)
+   copy_css(path_obj)
    generate_plugin_docs(path_obj)
    ui("Generating and copying images\n")
    copy_images(path_obj)

@@ -340,6 +340,38 @@ namespace Gamera {
       ul_x(std::min(ul_x(), other.ul_x()));
       lr_x(std::max(lr_x(), other.lr_x()));
     }
+
+    // distance
+    double distance_euclid(const self& other) {
+      return euclid(center_x(), center_y(), other.center_x(), other.center_y());
+    }
+    coord_t distance_cx(const self& other) {
+      coord_t cx = center_x();
+      coord_t other_cx = other.center_x();
+      if (cx > other_cx)
+	return cx - other_cx;
+      else
+	return other_cx - cx;
+    }
+    coord_t distance_cy(const self& other) {
+      coord_t cy = center_y();
+      coord_t other_cy = other.center_y();
+      if (cy > other_cy)
+	return cy - other_cy;
+      else
+	return other_cy - cy;
+    }
+  private:
+    double euclid(coord_t x1, coord_t y1, coord_t x2, coord_t y2) {
+      double dx1 = (double)x1;
+      double dy1 = (double)y1;
+      double dx2 = (double)x2;
+      double dy2 = (double)y2;
+      double a = std::pow(std::abs(dx1 - dx2), 2);
+      double b = std::pow(std::abs(dy1 - dy2), 2);
+      return std::sqrt(a + b);
+    }
+
   protected:
     virtual void dimensions_change() { }
   private:

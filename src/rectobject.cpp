@@ -84,6 +84,9 @@ extern "C" {
   static PyObject* rect_intersects(PyObject* self, PyObject* args);
   static PyObject* rect_union_rects(PyObject* _, PyObject* rects);
   static PyObject* rect_union(PyObject* self, PyObject* args);
+  static PyObject* rect_distance_euclid(PyObject* self, PyObject* args);
+  static PyObject* rect_distance_cx(PyObject* self, PyObject* args);
+  static PyObject* rect_distance_cy(PyObject* self, PyObject* args);
   static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op);
   static PyObject* rect_repr(PyObject* self);
 }
@@ -136,6 +139,9 @@ static PyMethodDef rect_methods[] = {
   // (i.e. rect_instance.union vs Rect.union)
   {"union_rects", rect_union, METH_O},
   {"union", rect_union, METH_VARARGS},
+  {"distance_euclid", rect_distance_euclid, METH_VARARGS},
+  {"distance_cx", rect_distance_cx, METH_VARARGS},
+  {"distance_cy", rect_distance_cy, METH_VARARGS},
   {NULL, NULL}
 };
 
@@ -508,6 +514,42 @@ static PyObject* rect_union(PyObject* self, PyObject* args) {
   x->union_rect(*((RectObject*)rect)->m_x);
   Py_INCREF(Py_None);
   return Py_None;
+}
+
+static PyObject* rect_distance_euclid(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  return PyFloat_FromDouble(x->distance_euclid(*((RectObject*)rect)->m_x));
+}
+
+static PyObject* rect_distance_cx(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  return PyInt_FromLong((long)x->distance_cx(*((RectObject*)rect)->m_x));
+}
+
+static PyObject* rect_distance_cy(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  return PyInt_FromLong((long)x->distance_cy(*((RectObject*)rect)->m_x));
 }
 
 static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {

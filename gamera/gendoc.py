@@ -539,6 +539,7 @@ def gendoc(classes=[]):
    print_usage()
    opts, args = getopt.getopt(sys.argv[1:], "d:t")
    root = '.'
+   test_mode = False
    for flag, value in opts:
       if flag == "-d":
          root = value

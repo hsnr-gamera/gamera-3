@@ -1122,12 +1122,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
-##       if platform == 'win32':
-##          EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
-##          EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
-##       else:
-##          EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
-##          EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
       EVT_KEY_DOWN(self, self._OnKey)
       EVT_LEFT_DOWN(self, self._OnLeftDown)
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
@@ -1164,9 +1158,11 @@ class SymbolTreeCtrl(wxTreeCtrl):
          item, cookie = self.GetFirstChild(root, cookie)
          while item.IsOk():
             text = self.GetItemText(item)
-            print text, token
             if text == token:
                found = 1
+               break
+            elif text > token:
+               found = 0
                break
             item, cookie = self.GetNextChild(root, cookie)
          if not found:
@@ -1277,6 +1273,33 @@ class SymbolTableEditorPanel(wxPanel):
          self.toplevel.do_auto_move()
       elif evt.KeyCode() == WXK_F11:
          self.toplevel.move_back()
+      # This behavior works automatically in GTK+
+      elif platform == 'win32' and evt.ControlDown():
+         if evt.KeyCode() == WXK_LEFT:
+            current = self.text.GetInsertionPoint()
+            if current != 0:
+               new = self.text.GetValue().rfind(".", 0, current - 1)
+               self.text.SetInsertionPoint(new + 1)
+            return
+         elif evt.KeyCode() == WXK_BACK:
+            current = self.text.GetInsertionPoint()
+            value = self.text.GetValue()
+            if current != 0:
+               new = value.rfind(".", 0, current - 1)
+               if new == -1:
+                  self.text.SetValue("")
+               else:
+                  self.text.SetValue(self.text.GetValue()[0:new + 1])
+               self.text.SetInsertionPointEnd()
+            return
+         elif evt.KeyCode() == WXK_RIGHT:
+            current = self.text.GetInsertionPoint()
+            new = self.text.GetValue().find(".", current)
+            if new == -1:
+               self.text.SetInsertionPointEnd()
+            else:
+               self.text.SetInsertionPoint(new + 1)
+            return
       else:
          evt.Skip()
 

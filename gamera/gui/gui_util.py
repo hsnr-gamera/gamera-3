@@ -162,7 +162,7 @@ def directory_dialog(parent, create=1):
    if dlg.ShowModal() == wxID_OK:
       filename = dlg.GetPath()
       dlg.Destroy()
-      config.options.file.default_directory.set(filename)
+      config.options.file.default_directory = filename
       return filename
    return None
 

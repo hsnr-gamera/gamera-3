@@ -168,10 +168,9 @@ Running
 If you chose to build the installer, double-click on the Gamera icon
 on your desktop to run Gamera.
 
-Otherwise, run the ``gamera_gui.py`` script located at the root of the source
-tree::
-
-  python gamera_gui.py
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the Gamera compiled shared
+  object files.
 
 This file can be copied anywhere (such as the Desktop or the
 Start Menu) and double-clicked to run Gamera.
@@ -199,10 +198,13 @@ terminal and type::
 Running
 -------
 
-Run the ``gamera_gui.py`` script located at the root of the source
-tree.  This file can be copied anywhere (such as the Desktop)
-and double-clicked to run Gamera.
+Run the ``gamera_gui.py`` script, which should have installed to
+``/usr/local/bin``.  
+This file can also be copied anywhere (such as the Desktop) and double-clicked to run Gamera.
 
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the Gamera compiled shared
+  object files.
 
 Mac OS-X
 ========
@@ -246,23 +248,18 @@ and then to install (you'll need to have admin priviledges)::
 
 The scripts can be installed by::
 
-  sudo python setup.py install_scripts
+  sudo python setup.py install_scripts -d /usr/bin
 
-This will install the scripts in
-'/System/Library/Frameworks/Python.framework/Versions/2.3/bin'.  Why
-they are installed there, is unclear to me, since that is not by
-default on the path.  To make these scripts available, you can either
-add that directory to the path::
-
-  export PATH=$PATH:/System/Library/Frameworks/Python.framework/Versions/2.3/bin
-
-or add symlinks for the scripts from /usr/bin to there.
+.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
+  place on the PATH.  If you do not specify it, the scripts are by
+  default installed to ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
 
 Running
 -------
 
-Run the ``gamera_gui`` script.  Running the script from the root of
-the source tree will not work, since it will not be able to find the
-Gamera compiled shared object files.  Make sure you have installed the
-script somewhere convenient (as above) first.
+Start an X11 terminal and run the ``gamera_gui`` script.  
+
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the Gamera compiled shared
+  object files.
 

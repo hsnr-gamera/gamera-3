@@ -275,10 +275,10 @@ class String:
       return self
 
    def get(self):
-      return self.control.GetString()
+      return self.control.GetValue()
 
    def get_string(self):
-      return "r'" + self.control.GetString() + "'"
+      return "r'" + self.control.GetValue() + "'"
 
 class Class:
    def determine_choices(self, locals):

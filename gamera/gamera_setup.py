@@ -46,7 +46,8 @@ setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', rpm_run)
 if sys.platform == "darwin":
    from gamera.mac import gamera_mac_setup
    cmdclass = {'bdist_osx': gamera_mac_setup.bdist_osx}
-
+else:
+   cmdclass = {}
 
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is

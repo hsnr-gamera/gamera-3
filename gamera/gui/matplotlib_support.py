@@ -242,7 +242,7 @@ else:
       figure = Figure()
       axis = figure.add_subplot(111)
       axis.plot(*args)
-      show_plot(figure)
+      show_figure(figure)
       return figure
 
    def show_figure(figure):

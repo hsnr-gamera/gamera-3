@@ -346,6 +346,15 @@ class ImageDisplay(wxScrolledWindow):
       subimage = SubImage(self.image, y, x, h, w)
       image = None
       if scaling != 1.0:
+         # For the high quality scalings a greyscale (or rgb) is required
+         # to really realize the increased quality. There is some smoothing
+         # that happens for zooming in, but for zooming out grey pixels are
+         # required for the smoothing. This simply does a conversion on the
+         # fly, which can be very slow, but limits the total memory usage.
+         # The other option is to cache a greyscale copy of the image, but
+         # that could use too much memory.
+         if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
+            subimage = subimage.to_greyscale()
          scaled_image = subimage.scale_copy(
             scaling,
             self.scaling_quality)

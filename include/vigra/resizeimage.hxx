@@ -812,7 +812,7 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     --iend, --idend;
     ad.set(as(iend), idend);
     
-    double dx = (double)(wold - 1) / (wnew - 1);
+    double dx = (double)(wold) / (wnew);
     double x = dx;
     
     for(; id != idend; ++id, x += dx)

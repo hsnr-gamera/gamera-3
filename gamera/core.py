@@ -162,11 +162,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, ImageBase.to_string)
+            self._display.set_image(self, ImageBase.to_buffer)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             ImageBase.to_string, owner=self))
+                             ImageBase.to_buffer, owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -206,7 +206,7 @@ class ImageBase:
       self.cc = []
       for c in cc:
          if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c, Image.to_string)
+            self._display.highlight_cc(c, Image.to_buffer)
             self.cc.append(c)
       # This will adjust the scroll bars so the cc will be visible
       self._display.focus(self.cc)
@@ -294,15 +294,15 @@ class Cc(gameracore.Cc, ImageBase):
       if self._display:
 
          self._display.set_image(image,
-                                  Image.to_string)
+                                  Image.to_buffer)
       else:
          self.set_display(
             gui.ShowImage(image,
                           "Connected Component",
-                          Image.to_string,
+                          Image.to_buffer,
                           owner=self))
       self._display.highlight_cc(self,
-                                 Image.to_string)
+                                 Image.to_buffer)
       self._display.focus(self)
       self.last_display = "context"
 

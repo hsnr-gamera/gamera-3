@@ -146,4 +146,13 @@ PyObject* to_string(T& m) {
   return str;
 }
 
+template<class T>
+void to_buffer(T& m, PyObject *py_buffer) {
+  char *buffer;
+  int buffer_len;
+  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+  to_string_impl<typename T::value_type> func;
+  func(m, buffer);
+}
+
 #endif

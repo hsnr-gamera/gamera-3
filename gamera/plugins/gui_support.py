@@ -18,6 +18,7 @@
 #
 
 from gamera.plugin import *
+import popen2
 
 class to_string(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
@@ -26,12 +27,19 @@ class to_string(PluginFunction):
     return_type = Class("image_as_string")
 to_string = to_string()
 
+class to_buffer(PluginFunction):
+    """Encodes the image into a 'string' required by wxImage.
+(i.e. 8-bit RGB triplets)."""
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    args = Args(Class("wxImage"))
+to_buffer = to_buffer()
+
 class GuiSupportModule(PluginModule):
     """This module provides various functions that support the GUI
     infrastructure."""
     category = None
     cpp_headers = ["gui_support.hpp"]
-    functions = [to_string]
+    functions = [to_string, to_buffer]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     

@@ -17,9 +17,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from wxPython.wx import *        # wxPython
+from wxPython.wx import *         # wxPython
 from wxPython.grid import * 
-from math import ceil, log       # Python standard library
+from math import ceil, log, floor # Python standard library
 from sys import maxint
 import sys
 import string
@@ -31,6 +31,7 @@ from gamera.gui import image_menu, var_name, gui_util
 
 # we want this done on import
 wxInitAllImageHandlers()
+config.add_option_default("display_scroll_amount", 32)
 
 #############################################################################
 
@@ -63,6 +64,8 @@ class ImageDisplay(wxScrolledWindow):
       self.current_color = 0
       self.dragging = 0
       self.scroll_rate = 10
+      self.scroll_amount = config.get_option("display_scroll_amount")
+      self.wx_image = wxEmptyImage(2048, 2048)
       EVT_PAINT(self, self.OnPaint)
       EVT_SIZE(self, self.OnResize)
       EVT_LEFT_DOWN(self, self.OnLeftDown)
@@ -155,6 +158,7 @@ class ImageDisplay(wxScrolledWindow):
 
    # Adjust the scrollbars so a group of highlighted subimages are visible
    def focus(self, subimages):
+      scroll_amount = self.scroll_amount
       if not util.is_sequence(subimages):
          subimages = (subimages,)
       x1 = y1 = maxint
@@ -190,13 +194,17 @@ class ImageDisplay(wxScrolledWindow):
       else:
          set_y = origin[1]
       if need_to_scroll or self.scaling > 1:
-         self.SetScrollbars(1,1,maxwidth,maxheight,set_x,set_y)
+         self.SetScrollbars(scroll_amount, scroll_amount,
+                            floor(maxwidth / scroll_amount),
+                            floor(maxheight / scroll_amount),
+                            set_x, set_y)
          self.Refresh(0, rect=wxRect(0,0,self.GetSize().x,self.GetSize().y))
 
    ########################################
    # SCALING
    #
    def scale(self, scale=None):
+      scroll_amount = self.scroll_amount
       if scale == None:
          scale = self.scaling
       w = self.width * scale - 1
@@ -206,8 +214,11 @@ class ImageDisplay(wxScrolledWindow):
       y = max(min(self.GetViewStart()[1] * scale / self.scaling + 1,
                   h - self.GetSize().y) - 2, 0)
       self.scaling = scale
-      self.SetScrollbars(1,1,w,h,x,y)
-      self.Refresh(0, rect=wxRect(0,0,self.GetSize().x,self.GetSize().y))
+      self.SetScrollbars(scroll_amount, scroll_amount,
+                         floor(w / scroll_amount),
+                         floor(h / scroll_amount),
+                         x, y)
+      self.Refresh(0, rect=wxRect(0, 0, self.GetSize().x, self.GetSize().y))
 
    ########################################
    # CALLBACKS
@@ -228,12 +239,13 @@ class ImageDisplay(wxScrolledWindow):
       event.Skip()
       self.scale()
 
-   # Painting images is slightly buggy in GTK, so we need to
+  # Painting images is slightly buggy in GTK, so we need to
    # have two versions of this function.
    if hasattr(sys, 'winver'):
       def OnPaint(self, event):
-         origin = self.GetViewStart()
+         origin = [x * self.scroll_amount for x in self.GetViewStart()]
          if self.image:
+            self.BeginDrawing()
             update_regions = self.GetUpdateRegion()
             rects = wxRegionIterator(update_regions)
             # Paint only where wxWindows tells us to, this is faster
@@ -252,55 +264,57 @@ class ImageDisplay(wxScrolledWindow):
                   self.PaintArea(x, y, w, h, check=0)
                rects.Next()
             self.draw_rubber()
+            self.EndDrawing()
    else:
       def OnPaint(self, event):
-         origin = self.GetViewStart()
-         if self.image:
-            update_regions = self.GetUpdateRegion()
-            rects = wxRegionIterator(update_regions)
-            # Paint only where wxWindows tells us to, this is faster
-            while rects.HaveRects():
-               ox = rects.GetX() / self.scaling
-               oy = rects.GetY() / self.scaling
-               x = (rects.GetX() + origin[0]) / self.scaling
-               y = (rects.GetY() + origin[1]) / self.scaling
-               if x > self.width or y > self.height:
-                  pass
-               else:
-                  # For some reason, the rectangles wxWindows gives are
-                  # a bit too small, so we need to fudge their size
-                  fudge = self.scaling / 2.0
-                  w = (max(min(int((rects.GetW() / self.scaling) + fudge),
-                               self.width - ox), 0))
-                  h = (max(min(int((rects.GetH() / self.scaling) + fudge),
-                               self.height - oy), 0))
-                  self.PaintArea(x, y, w, h, check=0)
-               rects.Next()
-            self.draw_rubber()
+         if not self.image:
+            return
+         origin = [x * self.scroll_amount for x in self.GetViewStart()]
+         origin_scaled = [x / self.scaling for x in origin]
+         update_regions = self.GetUpdateRegion()
+         rects = wxRegionIterator(update_regions)
+         # Paint only where wxWindows tells us to, this is faster
+         while rects.HaveRects():
+            ox = rects.GetX() / self.scaling
+            oy = rects.GetY() / self.scaling
+            x = ox + origin_scaled[0]
+            y = oy + origin_scaled[1]
+            if x > self.width or y > self.height:
+               pass
+            else:
+               # For some reason, the rectangles wxWindows gives are
+               # a bit too small, so we need to fudge their size
+               fudge = int(self.scaling / 2.0)
+               w = (max(min(int((rects.GetW() / self.scaling) + fudge),
+                            self.width - ox), 0))
+               h = (max(min(int((rects.GetH() / self.scaling) + fudge),
+                            self.height - oy), 0))
+               self.PaintArea(x, y, w, h, check=0)
+            rects.Next()
+         self.draw_rubber()
 
    def PaintArea(self, x, y, w, h, check=1):
       dc = wxPaintDC(self)
       dc.SetLogicalFunction(wxCOPY)
-      origin = self.GetViewStart()
-      size = self.GetSizeTuple()
-      ox = x - (origin[0] / self.scaling)
-      oy = y - (origin[1] / self.scaling)
+      origin = [a * self.scroll_amount for a in self.GetViewStart()]
+      origin_scaled = [a / self.scaling for a in origin]
+      size_scaled = [a / self.scaling for a in self.GetSizeTuple()]
       if check:
-         if ((x + w < (origin[0] / self.scaling) and
-              y + h < (origin[1] / self.scaling)) or
-             (x > (origin[0] + size[0]) / self.scaling and
-              y > (origin[1] + size[1]) / self.scaling) or
+         if ((x + w < origin_scaled[0]) and
+             (y + h < origin_scaled[1]) or
+             (x > origin_scaled[0] + size_scaled[0] and
+              y > origin_scaled[1] + size_scaled[1]) or
              (w == 0 or h == 0)):
             return
       self.tmpDC.SetUserScale(self.scaling, self.scaling)
       if (y + h > self.image.nrows):
-         h = self.image.nrows - y
+         h = self.image.nrows - y - 2
       if (x + w > self.image.ncols):
-         w = self.image.ncols - x
+         w = self.image.ncols - x - 2
       subimage = SubImage(self.image, y, x, h + 1, w + 1)
-      image = apply(wxEmptyImage, (w + 1, h + 1))
-      image.SetData(apply(self.to_string_function, (subimage, )))
-      bmp = image.ConvertToBitmap()
+      image = wxEmptyImage(w + 1, h + 1)
+      apply(self.to_string_function, (subimage, image.GetDataBuffer()))
+      bmp = wxBitmapFromImage(image)
       self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
 
       if len(self.highlighted):
@@ -349,9 +363,11 @@ class ImageDisplay(wxScrolledWindow):
          self.tmpDC.SetLogicalFunction(wxCOPY)
 
       self.tmpDC.SetUserScale(1, 1)
-      dc.Blit(ox * self.scaling, oy * self.scaling,
+      dc.Blit(x * self.scaling - origin[0],
+              y * self.scaling - origin[1],
               w * self.scaling, h * self.scaling,
               self.tmpDC, 0, 0)
+
 
    ############################################################
    # RUBBER BAND
@@ -442,7 +458,8 @@ class ImageDisplay(wxScrolledWindow):
       self.dragging = 1
       self.dragging_x = event.GetX()
       self.dragging_y = event.GetY()
-      self.dragging_origin_x, self.dragging_origin_y = self.GetViewStart()
+      self.dragging_origin_x, self.dragging_origin_y = \
+         [x * self.scroll_amount for x in self.GetViewStart()]
 
    def OnMiddleUp(self, event):
       self.dragging = 0
@@ -457,8 +474,9 @@ class ImageDisplay(wxScrolledWindow):
                               self.image.nrows - 1)
          self.draw_rubber()
       if self.dragging:
-         self.Scroll(self.dragging_origin_x - (event.GetX() - self.dragging_x),
-                     self.dragging_origin_y - (event.GetY() - self.dragging_y))
+         self.Scroll(
+            (self.dragging_origin_x - (event.GetX() - self.dragging_x)) / self.scroll_amount,
+            (self.dragging_origin_y - (event.GetY() - self.dragging_y)) / self.scroll_amount)
 
    def OnLeave(self, event):
       if self.rubber_on:
@@ -663,8 +681,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             image.SetData(s)
          else:
             image = wxEmptyImage(image.ncols, image.nrows)
-            s = image.to_string()
-            image.SetData(s)
+            s = image.to_string(image.GetDataBuffer())
          bmp = image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
@@ -1266,7 +1283,7 @@ class ProjectionsDisplay(wxFrame):
       mat_width = self.image.ncols
       mat_height = self.image.nrows
       image = wxEmptyImage(self.image.ncols, self.image.nrows)
-      image.SetData(self.image.to_string())
+      self.image.to_string(image.GetDataBuffer())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell
       x = (dc_width / 2) + (HISTOGRAM_PAD / 2)

@@ -52,10 +52,10 @@ def get_toolkit_names(dir):
 def get_directory_of_modules(dir):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
-   # TODO: Take out this hard coding
-   modules = ["logical", "gui_support", "threshold", "tiff_support"]
    mods = []
    for m in modules:
+     if m == '__init__':
+       continue
      try:
        module = __import__(m, {}, {}, [])
        mods.append(module)
@@ -66,26 +66,25 @@ def get_directory_of_modules(dir):
 def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
-   # TODO: Take out this hard coding
-   modules = ["logical", "gui_support", "threshold", "tiff_support"]
    if debug:
       sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0
    first = 1
    for m in modules:
+     if m == '__init__':
+       continue
      try:
        module = __import__(m, gl, lo, [])
        failed = 0
      except Exception, e:
-       raise e
-       failed = 1
+       failed = e
      if not first:
        display = ", "
      else:
        display = ""
        first = 0
      if failed:
-       display += '[' + m + ']'
+       display += '[%s %s]' % (m, str(failed))
      else:
        display += m
      column += len(display)

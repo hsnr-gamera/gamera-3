@@ -31,6 +31,10 @@ class PluginModule:
     cpp_include_dirs = []
     extra_libraries = []
     library_dirs = []
+    define_macros = []
+    extra_compile_args = []
+    extra_link_args = []
+    extra_objects = []
     functions = []
     pure_python = 0
     version = "1.0"

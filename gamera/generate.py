@@ -375,7 +375,6 @@ def generate_plugin(plugin_filename):
 
   #import plugin
   plugin_module = __import__(module_name)
-  print plugin_module.module
   if plugin_module.module.pure_python:
     return None
 
@@ -413,4 +412,8 @@ def generate_plugin(plugin_filename):
   return Extension("gamera.plugins._" + module_name, cpp_files,
                    include_dirs=include_dirs,
                    library_dirs=plugin_module.module.library_dirs,
-                   libraries=extra_libraries)
+                   libraries=extra_libraries,
+                   extra_compile_args=plugin_module.module.extra_compile_args,
+                   extra_link_args=plugin_module.module.extra_link_args,
+                   define_macros=plugin_module.module.define_macros,
+                   extra_objects=plugin_module.module.extra_objects)

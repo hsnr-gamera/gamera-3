@@ -70,6 +70,8 @@ ImageInfo* tiff_info(const char* filename) {
   info->y_resolution(res);
   TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &tmp);
   info->ncolors((size_t)tmp);
+  TIFFGetFieldDefaulted(tif, TIFFTAG_PHOTOMETRIC, &tmp);
+  info->inverted(tmp == PHOTOMETRIC_MINISWHITE);
 
   TIFFClose(tif);
   return info;
@@ -116,12 +118,23 @@ namespace {
     typename T::row_iterator mi = matrix.row_begin();
     typename T::col_iterator mj;
     unsigned char* data;
-    for (size_t i = 0; i < info.nrows(); i++, mi++) {
-      mj = mi.begin();
-      TIFFReadScanline(tif, buf, i);
-      data = (unsigned char *)buf;
-      for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	*mj = data[j];
+    if (info.inverted()) {
+      for (size_t i = 0; i < info.nrows(); i++, mi++) {
+	mj = mi.begin();
+	TIFFReadScanline(tif, buf, i);
+	data = (unsigned char *)buf;
+	for (size_t j = 0; j < info.ncols(); j++, mj++) {
+	  *mj = 255 - data[j];
+	}
+      }
+    } else {
+      for (size_t i = 0; i < info.nrows(); i++, mi++) {
+	mj = mi.begin();
+	TIFFReadScanline(tif, buf, i);
+	data = (unsigned char *)buf;
+	for (size_t j = 0; j < info.ncols(); j++, mj++) {
+	  *mj = data[j];
+	}
       }
     }
     

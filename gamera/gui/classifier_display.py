@@ -1092,15 +1092,17 @@ class ClassifierFrame(ImageFrameBase):
       if self.editor_collection_filename == None:
          self._OnSaveEditorCollectionAs(event)
       else:
+         glyphs = self.multi_iw.id.GetAllItems()
          if gui_util.are_you_sure_dialog("There are %d glyphs in the editor.\nAre you sure you want to save?" % len(glyphs)):
             self._SaveEditorCollection(self.editor_collection_filename)
 
    def _OnSaveEditorCollectionAs(self, event):
+      glyphs = self.multi_iw.id.GetAllItems()
       if gui_util.are_you_sure_dialog("There are %d glyphs in the editor.\nAre you sure you want to save?" % len(glyphs)):
          filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
          if filename:
             self.editor_collection_filename = filename
-            self._SaveEditorCollection(event)
+            self._SaveEditorCollection(self.editor_collection_filename)
 
    def _SaveEditorCollection(self, filename, force=False):
       glyphs = self.multi_iw.id.GetAllItems()

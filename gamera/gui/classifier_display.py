@@ -1195,14 +1195,13 @@ class SymbolTableEditorPanel(wxPanel):
       self.SetAutoLayout(true)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = NewId()
-      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER)
+      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER | wxTE_PROCESS_TAB)
       EVT_KEY_DOWN(self.text, self._OnKey)
       EVT_TEXT(self, txID, self._OnText)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
       if platform == 'win32':
          EVT_TEXT_ENTER(self, txID, self._OnEnter)
-         EVT_TEXT_TAB(self, txID, self._OnTab)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
@@ -1222,15 +1221,12 @@ class SymbolTableEditorPanel(wxPanel):
       if normalized_symbol != '':
          self.toplevel.classify_manual(normalized_symbol)
 
-   def _OnTab(self, evt):
-         find = self._symbol_table.autocomplete(find)
-         self.text.SetValue(find)
-         self.text.SetInsertionPointEnd()
-      
    def _OnKey(self, evt):
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
-         self._OnTab(evt)
+         find = self._symbol_table.autocomplete(find)
+         self.text.SetValue(find)
+         self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
          self._OnEnter(evt)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():

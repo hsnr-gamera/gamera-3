@@ -283,6 +283,8 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
+  // set the resolution
+  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
   return init_image_members(o);
 }
 
@@ -332,7 +334,8 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
-
+  // set the resolution
+  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
   return init_image_members(o);
 }
 

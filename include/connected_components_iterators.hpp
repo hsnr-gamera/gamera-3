@@ -204,7 +204,7 @@ namespace Gamera {
     class ConstColIterator : public ColIteratorBase<Image, ConstColIterator<Image, T>, T> {
     public:
       // Typedefs for Cols
-      typedef RowIterator<Image, T> iterator;
+      typedef ConstRowIterator<Image, T> iterator;
 
       // Convenience typedefs
       typedef ConstColIterator self;

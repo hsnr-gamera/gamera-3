@@ -93,8 +93,9 @@ def underline(level, s, extra=0):
    return _underline_levels[level] * (len(s) + extra)
 
 class DocumentationGenerator:
-   def __init__(self, root_path=".", classes=[]):
+   def __init__(self, root_path=".", test_mode=False, classes=[]):
       self.set_paths(root_path)
+      self.test_mode = test_mode
       self.classes = classes
 
    def set_paths(self, root):
@@ -124,7 +125,8 @@ class DocumentationGenerator:
       self.copy_images([self.src_images_path, self.icons_path],
                        self.output_images_path)
       self.generate_generic_pngs()
-      self.convert_to_html()
+      if not self.test_mode:
+         self.convert_to_html()
       print
 
    def generate_generic_pngs(self):
@@ -535,13 +537,15 @@ def print_usage():
    
 def gendoc(classes=[]):
    print_usage()
-   opts, args = getopt.getopt(sys.argv[1:], "d:")
+   opts, args = getopt.getopt(sys.argv[1:], "d:t")
    root = '.'
    for flag, value in opts:
-       if flag == "-d":
-           root = value
+      if flag == "-d":
+         root = value
+      elif flag == "-t":
+         test_mode = True
    try:
-      docgen = DocumentationGenerator(root, classes=classes)
+      docgen = DocumentationGenerator(root, test_mode, classes=classes)
    except Exception, e:
       print "Documentation generation failed with the following exception:"
       print e

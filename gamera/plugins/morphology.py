@@ -23,14 +23,34 @@ import _morphology
 #TODO: Change these to out-of-place
 
 class erode(PluginFunction):
-  """Erodes the image by the image morphology method."""
+  """Erodes the image by the image morphology method.
+
+*in_place*:
+  When ``True`` (default) the operation is performed in place,
+  otherwise a new object is returned.
+"""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  pure_python = True
+  def __call__(image):
+    return _morphology.erode_dilate(image, 1, 1, 0)
+  __call__ = staticmethod(__call__)
 
 class dilate(PluginFunction):
-  """Dilates the image by the image morphology method."""
+  """Dilates the image by the image morphology method.
+
+*in_place*:
+  When ``True`` (default) the operation is performed in place,
+  otherwise a new object is returned.
+"""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  pure_python = True
+  def __call__(image):
+    return _morphology.erode_dilate(image, 1, 0, 0)
+  __call__ = staticmethod(__call__)
 
 class erode_dilate(PluginFunction):
   """Erodes or dilates the image by the image morphology method.
@@ -47,11 +67,15 @@ class erode_dilate(PluginFunction):
     use a 3x3 rectangular morphology operator
   octagonal (1)
     use a 3x3 octagonal morphology operator
+*in_place*:
+  When ``True`` (default) the operation is performed in place,
+  otherwise a new object is returned.
 """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('ntimes', range=(0, 10), default=1), \
                Choice('direction', ['dilate', 'erode']), \
                Choice('shape', ['rectangular', 'octagonal'])])
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE, 10, 0, 1)]
 
 class rank(PluginFunction):
@@ -63,6 +87,7 @@ value.
   the median."""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('rank', range=(1, 9))])
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
 
 class mean(PluginFunction):
@@ -70,6 +95,7 @@ class mean(PluginFunction):
 all 9 pixels."""
   self_type = ImageType([GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,)]
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
 
 class despeckle(PluginFunction):
   """Removes connected components that are smaller than the given size.

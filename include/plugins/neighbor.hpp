@@ -47,7 +47,7 @@ namespace Gamera {
       ####
 */
 template<class T, class F, class M>
-void neighbor16(T& m, F& func, M& tmp, 
+void neighbor16(const T& m, F& func, M& tmp, 
 		size_t center_row = 1, size_t center_col = 1) {
   if (m.nrows() < 4 || m.ncols() < 4)
     return;
@@ -78,24 +78,6 @@ void neighbor16(T& m, F& func, M& tmp,
 	      func(window.begin(), window.end()));
     }
   }
-  // TODO: We need in place and out of place
-  typename T::vec_iterator g = m.vec_begin();
-  typename M::vec_iterator h = tmp.vec_begin();
-  
-    for (; g != m.vec_end(); g++, h++)
-      *g = *h;
-}
-
-template<class T, class F>
-void neighbor16(T& m, F& func) {
-  if (m.nrows() < 4 || m.ncols() < 4)
-    return;
-  typedef typename T::value_type value_type;
-  ImageData<value_type> mat_data(m.nrows(), m.ncols());
-  ImageView<ImageData<value_type> > *tmp;
-  tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor16(m, func, *tmp);
-  delete tmp;
 }
 
 /* Steps through the image using a 3x3 window, replacing the center pixel
@@ -108,7 +90,7 @@ void neighbor16(T& m, F& func) {
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor9(T& m, F& func, M& tmp) {
+void neighbor9(const T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(9);
@@ -219,22 +201,6 @@ void neighbor9(T& m, F& func, M& tmp) {
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
-  typename T::vec_iterator g = m.vec_begin();
-  typename M::vec_iterator h = tmp.vec_begin();
-    for (; g != m.vec_end(); g++, h++)
-      *g = *h;
-}
-
-template<class T, class F>
-void neighbor9(T& m, F& func) {
-  if (m.nrows() < 3 || m.ncols() < 3)
-    return;
-  typedef typename T::value_type value_type;
-  ImageData<value_type> mat_data(m.nrows(), m.ncols());
-  ImageView<ImageData<value_type> > *tmp;
-  tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor9(m, func, *tmp);
-  delete tmp;
 }
 
 /* Steps through the image using a 3x3 window, replacing the center pixel
@@ -247,7 +213,7 @@ void neighbor9(T& m, F& func) {
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor8o(T& m, F& func, M& tmp) {
+void neighbor8o(const T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(8);
@@ -342,22 +308,6 @@ void neighbor8o(T& m, F& func, M& tmp) {
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
-  typename T::vec_iterator g = m.vec_begin();
-  typename M::vec_iterator h = tmp.vec_begin();
-  for (; g != m.vec_end(); g++, h++)
-    *g = *h;
-}
-
-template<class T, class F>
-void neighbor8o(T& m, F& func) {
-  if (m.nrows() < 3 || m.ncols() < 3)
-    return;
-  typedef typename T::value_type value_type;
-  ImageData<value_type> mat_data(m.nrows(), m.ncols());
-  ImageView<ImageData<value_type> > *tmp;
-  tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor8o(m, func, *tmp);
-  delete tmp;
 }
 
 /* Steps through the image using a 3x3 window, replacing the center pixel
@@ -370,7 +320,7 @@ void neighbor8o(T& m, F& func) {
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor4x(T& m, F& func, M& tmp) {
+void neighbor4x(const T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(5);
@@ -449,23 +399,6 @@ void neighbor4x(T& m, F& func, M& tmp) {
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
-
-  typename T::vec_iterator g = m.vec_begin();
-  typename M::vec_iterator h = tmp.vec_begin();
-  for (; g != m.vec_end(); g++, h++)
-    *g = *h;
-}
-
-template<class T, class F>
-void neighbor4x(T& m, F& func) {
-  if (m.nrows() < 3 || m.ncols() < 3)
-    return;
-  typedef typename T::value_type value_type;
-  ImageData<value_type> mat_data(m.nrows(), m.ncols());
-  ImageView<ImageData<value_type> > *tmp;
-  tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor4x(m, func, tmp);
-  delete tmp;
 }
 
 /* Steps through the image using a 3x3 window, replacing the center pixel
@@ -478,7 +411,7 @@ void neighbor4x(T& m, F& func) {
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor4o(T& m, F& func, M& tmp) {
+void neighbor4o(const T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(5);
@@ -566,22 +499,6 @@ void neighbor4o(T& m, F& func, M& tmp) {
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
-  typename T::vec_iterator g = m.vec_begin();
-  typename M::vec_iterator h = tmp.vec_begin();
-  for (; g != m.vec_end(); g++, h++)
-    *g = *h;
-}
-
-template<class T, class F>
-void neighbor4o(T& m, F& func) {
-  if (m.nrows() < 3 || m.ncols() < 3)
-    return;
-  typedef typename T::value_type value_type;
-  ImageData<value_type> mat_data(m.nrows(), m.ncols());
-  ImageView<ImageData<value_type> > *tmp;
-  tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor4o(m, func, *tmp);
-  delete tmp;
 }
 }
 

@@ -116,3 +116,30 @@ class FeaturesModule(PluginModule):
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()
+
+
+def get_features_length(features):
+    """Given a list of feature functions return the number
+    of features that will be generated. This function is
+    necessary because each features 'function' can return
+    multiple individual float values."""
+    from gamera import core
+    ff = core.ImageBase.get_feature_functions(features)
+    features = 0
+    for x in ff:
+        features += x[1].return_type.length
+    return features
+
+def generate_features_list(list, feature_functions='all'):
+   """Generate features on a list of images using either the feature
+   functions passed in or the default features."""
+   from gamera import core
+   ff = core.Image.get_feature_functions(feature_functions)
+   progress = util.ProgressFactory("Generating features...", len(list) / 10)
+   try:
+      for i, glyph in enumerate(list):
+         glyph.generate_features(ff)
+         if i % 10 == 0:
+            progress.step()
+   finally:
+      progress.kill()

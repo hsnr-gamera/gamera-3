@@ -37,7 +37,6 @@ Additionally this module contains the following functions:
 load_image - load an image from a file.
 image_info - get information about an image file.
 display_multi - display a list of images in a grid-like window.
-generate_features_list - generate features on a list of images.
 init_gamera - parse the gamera options and load all of the plugins.
 """
 
@@ -91,19 +90,6 @@ def display_multi(list):
 
 # Used to cache the list of all features
 all_features = None
-
-def generate_features_list(list, feature_functions='all'):
-   """Generate features on a list of images using either the feature
-   functions passed in or the default features."""
-   ff = Image.get_feature_functions(feature_functions)
-   progress = util.ProgressFactory("Generating features...", len(list) / 10)
-   try:
-      for i, glyph in enumerate(list):
-         glyph.generate_features(ff)
-         if i % 10 == 0:
-            progress.step()
-   finally:
-      progress.kill()
 
 class ImageBase:
    """Base class for all of the image objects. This class contains

@@ -40,3 +40,11 @@ class DistanceModule(PluginModule):
     url = "http://gamera.dkc.jhu.edu/"
 
 module = DistanceModule()
+
+class Distance:
+    def __init__(self, features=None, weights=None):
+        self.features = features
+        if self.features == None:
+            self.features = 'all'
+        self.weights = weights
+        

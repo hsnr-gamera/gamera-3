@@ -1,4 +1,3 @@
-# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -20,9 +19,9 @@
 
 from threading import *
 import sys
-from gamera import core, util
-import gamera.knncore
-import gamera.gamera_xml
+from gamera import core, util, config
+from gamera.plugins import features
+import gamera.knncore, gamera.gamera_xml
 import array
 
 from gamera.knncore import CITY_BLOCK
@@ -30,6 +29,10 @@ from gamera.knncore import EUCLIDEAN
 from gamera.knncore import FAST_EUCLIDEAN
 
 KNN_XML_FORMAT_VERSION = 1.0
+
+config.define_option(
+   "knn", "default_settings", "",
+   "File name for the default kNN settings")
 
 _distance_type_to_name = {
     CITY_BLOCK: "CITY-BLOCK",
@@ -121,21 +124,13 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
    def _add_weights(self, data):
       self._data += data
 
-def _get_num_features(features):
-   ff = core.ImageBase.get_feature_functions(features)
-   features = 0
-   for x in ff:
-      features += x[1].return_type.length
-   return features
-
 class kNN(gamera.knncore.kNN):
    """k-NN classifier that supports optimization using
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
 
-   def __init__(self, features='all'):
+   def __init__(self, features=None):
       gamera.knncore.kNN.__init__(self)
-      self.change_feature_set(features)
       self.ga_initial = 0.0
       self.ga_best = 0.0
       self.ga_worker_thread = None
@@ -143,13 +138,21 @@ class kNN(gamera.knncore.kNN):
       self.ga_generation = 0
       self.ga_callbacks = []
       self.features = features
+      if self.features is None:
+         settings = config.options.knn.default_settings
+         try:
+            print settings
+            self.load_settings(settings)
+         except:
+            self.features = 'all'
+            self.change_feature_set(self.features)
 
-   def change_feature_set(self, features):
+   def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
-      self.features = features
+      self.features = f
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
-      self.num_features = _get_num_features(self.features)
+      self.num_features = features.get_features_length(self.features)
 
    def distance_from_images(self, images, glyph, max):
       glyph.generate_features(self.feature_functions)

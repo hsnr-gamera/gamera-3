@@ -62,7 +62,7 @@ class image_save(PluginFunction):
         else:
             try:
                 from gamera.plugins import png_support
-                image.save_png(name)
+                image.save_PNG(name)
             except:
                 print "Image could not be saved because PNG support is not functioning properly."
     __call__ = staticmethod(__call__)

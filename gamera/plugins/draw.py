@@ -19,6 +19,11 @@
 
 from gamera.plugin import *
 import _draw
+try:
+  from gamera.core import RGBPixel
+except:
+  def RGBPixel(*args):
+    pass
 
 class draw_line(PluginFunction):
   """Draws a straight line between two points.
@@ -33,11 +38,10 @@ class draw_line(PluginFunction):
   Ending *x* coordinate.
 *value*:
   The pixel value to set for the line.
-
-.. note:: This needs to be extended to support more pixel types."""
-  self_type = ImageType([ONEBIT])
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
-  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
+"""
+  self_type = ImageType(ALL)
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
 
 class draw_hollow_rect(PluginFunction):
   """Draws a hollow rectangle.
@@ -52,11 +56,10 @@ class draw_hollow_rect(PluginFunction):
   Ending *x* coordinate.
 *value*:
   The pixel value to set for the lines.
-
-.. note:: This needs to be extended to support more pixel types."""
-  self_type = ImageType([ONEBIT])
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
-  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
+"""
+  self_type = ImageType(ALL)
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
 
 class draw_filled_rect(PluginFunction):
   """Draws a filled rectangle.
@@ -71,11 +74,10 @@ class draw_filled_rect(PluginFunction):
   Ending *x* coordinate.
 *value*:
   The pixel value to set for the rectangle.
-
-.. note:: This needs to be extended to support more pixel types."""
-  self_type = ImageType([ONEBIT])
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
-  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
+"""
+  self_type = ImageType(ALL)
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
 
 class flood_fill(PluginFunction):
   """Flood fills from the given point using the given color.  This is similar
@@ -87,26 +89,35 @@ to the "bucket" tool found in many paint programs.
   Starting *x* coordinate.
 *color*:
   The pixel value to set for the rectangle.
-
-.. note:: This needs to be extended to support more pixel types."""
-  self_type = ImageType([ONEBIT])
-  args = Args([Int("y"), Int("x"), Float("color")])
-  doc_examples = [(ONEBIT, 5, 5, 0)]
+"""
+  self_type = ImageType([GREYSCALE, FLOAT, ONEBIT, RGB])
+  args = Args([Int("y"), Int("x"), Pixel("color")])
+  doc_examples = [(ONEBIT, 58, 10, 0)]
 
 class remove_border(PluginFunction):
   """This is a special case of the flood_fill algorithm that is designed to
 remove dark borders produced by photocopiers or flatbed scanners around the
-border of the image.
-
-.. note:: This needs to be extended to support more pixel types."""
+border of the image."""
   self_type = ImageType([ONEBIT])
+
+class highlight(PluginFunction):
+  """Highlights a connected component on a given image using the given color.
+Self must be an RGB image (usually the original image.)
+
+*cc*
+   A one-bit connected component from the image
+
+*color*
+   An RGBPixel color value used to color the *cc*."""
+  self_type = ImageType([RGB])
+  args = Args([ImageType([ONEBIT], "cc"), Pixel("color")])
 
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Draw"
   functions = [draw_line, draw_hollow_rect, draw_filled_rect, flood_fill,
-               remove_border]
+               remove_border, highlight]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

@@ -22,7 +22,10 @@ and computing histograms."""
 
 from gamera.plugin import *
 from gamera.plugins import image_utilities
+import _arithmetic
 import _convolution
+
+CONVOLUTION_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
 
 # Note: The convolution exposed here does not allow for the case where the
 # logical center of the kernel is different from the physical center.
@@ -33,8 +36,6 @@ import _convolution
 
 class convolve(PluginFunction):
     """Convolves an image with a given kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 
 *kernel*
    A kernel for the convolution.  The kernel may either be a FloatImage
@@ -63,12 +64,12 @@ Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 
        wrap image around (periodic boundary conditions)
 """
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel'),
                  Choice('border_treatment',
                         ['avoid', 'clip', 'repeat', 'reflect', 'wrap'],
                         default=1)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
 
     def __call__(self, kernel, border_treatment=1):
         from gamera.gameracore import FLOAT
@@ -80,9 +81,6 @@ Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 class convolve_xy(PluginFunction):
     """Convolves an image in both X and Y directions with 1D kernels.
 This is equivalent to what the Vigra library calls "Separable Convolution".
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
 
 *kernel_y*
    A kernel for the convolution in the *y* direction.  The
@@ -99,13 +97,13 @@ Koethe).
    Specifies how to treat the borders of the image.
    See ``convolve`` for information about *border_treatment*
    values."""
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_y'),
                  ImageType([FLOAT], 'kernel_x'),
                  Choice('border_treatment',
                         ['avoid', 'clip', 'repeat', 'reflect', 'wrap'],
                         default=1)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
 
     def __call__(self, kernel_y, kernel_x=None, border_treatment=1):
@@ -137,12 +135,12 @@ Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 *border_treatment*
    Specifies how to treat the borders of the image.  See ``convolve`` for information
    about *border_treatment* values."""
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_x'),
                  Choice('border_treatment',
                         ['avoid', 'clip', 'repeat', 'reflect', 'wrap'],
                         default=1)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
 
     def __call__(self, kernel, border_treatment=1):
         from gamera.gameracore import FLOAT
@@ -155,9 +153,6 @@ class convolve_y(PluginFunction):
     """Convolves an image in the X directions with a 1D kernel.  This
 is equivalent to what the Vigra library calls "Separable Convolution".
 
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
-
 *kernel_y*
    A kernel for the convolution in the *x* direction.  The
    kernel may either be a FloatImage or a nested Python list of
@@ -167,12 +162,12 @@ Koethe).
    Specifies how to treat the borders of the image.
    See ``convolve`` for information about *border_treatment*
    values."""
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_y'),
                  Choice('border_treatment',
                         ['avoid', 'clip', 'repeat', 'reflect', 'wrap'],
                         default=1)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
 
     def __call__(self, kernel, border_treatment=1):
         from gamera.gameracore import FLOAT
@@ -191,14 +186,12 @@ always 3*standard_deviation.
 
 *standard_deviation*
    The standard deviation of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 """
     self_type = None
     args = Args([Float("standard_deviation", default=1.0)])
     return_type = ImageType([FLOAT])
     category = "Convolution/Kernels"
-
+    
 class GaussianDerivativeKernel(PluginFunction):
     """Init as a Gaussian derivative of order 'order'.  The radius of
 the kernel is always 3*std_dev.
@@ -208,9 +201,7 @@ the kernel is always 3*std_dev.
 
 *order*
    The order of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).  """
+"""
     self_type = None
     args = Args([Float("standard_deviation", default=1.0), Int("order", default=1)])
     return_type = ImageType([FLOAT])
@@ -222,9 +213,6 @@ class BinomialKernel(PluginFunction):
 
 *radius*
    The radius of the kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
 """
     self_type = None
     args = Args([Int("radius", default=3)])
@@ -237,9 +225,6 @@ convolution.  The window size is (2*radius+1) * (2*radius+1).
 
 *radius*
    The radius of the kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
 """
     self_type = None
     args = Args([Int("radius", default=3)])
@@ -249,8 +234,6 @@ Koethe).
 class SymmetricGradientKernel(PluginFunction):
     """Init as a symmetric gradient filter of the form
        [ 0.5, 0.0, -0.5]
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 """
     self_type = None
     return_type = ImageType([FLOAT])
@@ -280,12 +263,10 @@ class gaussian_smoothing(PluginFunction):
 
 *standard_deviation*
    The standard deviation of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 """
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("standard_deviation", default=1.0)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
     doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0)]
     def __call__(self, std_dev=1.0):
@@ -299,12 +280,10 @@ class simple_sharpen(PluginFunction):
 
 *sharpening_factor*
    The amount of sharpening to perform.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 """
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("sharpening_factor", default=0.5)])
-    return_type = ImageType(ALL)
+    return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
     doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0)]
     def __call__(self, sharpening_factor=0.5):
@@ -315,24 +294,93 @@ Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
 
 class gaussian_gradient(PluginFunction):
     """Calculate the gradient vector by means of a 1st derivatives of
-Gaussian filter.
+    Gaussian filter.
 
 *scale*
 
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+Returns a tuple of (*x_gradient*, *y_gradient*).
 """
-    self_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("scale", default=0.5)])
-    return_type = ImageType(ALL)
+    return_type = ImageList("gradients")
     pure_python = True
     doc_examples = [(GREYSCALE, 1.0), (RGB, 1.0)]
     def __call__(self, scale=1.0):
         smooth = _convolution.GaussianKernel(scale)
         grad = _convolution.GaussianDerivativeKernel(scale, 1)
-        tmp_a = self.convolve_x(grad)
-        tmp_b = tmp_a.convolve_y(smooth)
-        tmp_a = self.convolve_x(smooth)
-        return tmp_a.convolve_y(grad)
+        tmp = self.convolve_x(grad)
+        result_x = tmp.convolve_y(smooth)
+        tmp = self.convolve_x(smooth)
+        result_y = tmp.convolve_y(grad)
+        return result_x, result_y
+    __call__ = staticmethod(__call__)
+
+class laplacian_of_gaussian(PluginFunction):
+    """Filter image with the Laplacian of Gaussian operator
+at the given scale.
+
+*scale*
+"""
+    self_type = ImageType([GREYSCALE, GREY16, FLOAT])
+    args = Args([Float("scale", default=0.5)])
+    return_type = ImageType([GREYSCALE, GREY16, FLOAT])
+    pure_python = True
+    doc_examples = [(GREYSCALE, 1.0)]
+    def __call__(self, scale=1.0):
+        smooth = _convolution.GaussianKernel(scale)
+        deriv = _convolution.GaussianDerivativeKernel(scale, 2)
+        fp = self.to_float()
+        tmp = fp.convolve_x(deriv)
+        tmp_x = tmp.convolve_y(smooth)
+        tmp = fp.convolve_x(smooth)
+        tmp_y = tmp.convolve_y(deriv)
+        result = _arithmetic.add_images(tmp_x, tmp_y, False)
+        if self.data.pixel_type == GREYSCALE:
+            return result.to_greyscale()
+        if self.data.pixel_type == GREY16:
+            return result.to_grey16()
+        return result
+    __call__ = staticmethod(__call__)
+
+class hessian_matrix_of_gaussian(PluginFunction):
+    """ Filter image with the 2nd derivatives of the Gaussian
+    at the given scale to get the Hessian matrix.
+
+*scale*
+"""
+    self_type = ImageType([GREYSCALE, GREY16, FLOAT])
+    args = Args([Float("scale", default=0.5)])
+    return_type = ImageList("hessian_matrix")
+    pure_python = True
+    doc_examples = [(GREYSCALE, 1.0)]
+    def __call__(self, scale=1.0):
+        smooth = _convolution.GaussianKernel(scale)
+        deriv1 = _convolution.GaussianDerivativeKernel(scale, 1)
+        deriv2 = _convolution.GaussianDerivativeKernel(scale, 2)
+        fp = self.to_float()
+        tmp = fp.convolve_x(deriv2)
+        tmp_x = tmp.convolve_y(smooth)
+        tmp = fp.convolve_x(smooth)
+        tmp_y = tmp.convolve_y(deriv2)
+        tmp = fp.convolve_x(deriv1)
+        tmp_xy = fp.convolve_y(deriv1)
+        if self.data.pixel_type == GREYSCALE:
+            return tmp_x.to_greyscale(), tmp_y.to_greyscale(), tmp_xy.to_greyscale()
+        if self.data.pixel_type == GREY16:
+            return tmp_x.to_grey16(), tmp_y.to_grey16(), tmp_xy.to_grey16()
+        return result
+    __call__ = staticmethod(__call__)
+
+class sobel_edge_detection(PluginFunction):
+    """Performs simple Sobel edge detection on the image."""
+    self_type = ImageType(ALL)
+    return_type = ImageType(ALL)
+    pure_python = True
+    doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0)]
+    def __call__(self, scale=1.0):
+        return self.convolve([[.125, 0.0, -.125],
+                              [.25, 0.0, -.25],
+                              [.125, 0.0, -.125]])
     __call__ = staticmethod(__call__)
 
 class ConvolutionModule(PluginModule):
@@ -344,8 +392,9 @@ class ConvolutionModule(PluginModule):
                  BinomialKernel, AveragingKernel,
                  SymmetricGradientKernel, SimpleSharpeningKernel,
                  gaussian_smoothing, simple_sharpen,
-                 gaussian_gradient]
-    author = "Michael Droettboom"
+                 gaussian_gradient, laplacian_of_gaussian,
+                 hessian_matrix_of_gaussian, sobel_edge_detection]
+    author = "Michael Droettboom (With code from VIGRA by Ulrich Koethe)"
     url = "http://gamera.dkc.jhu.edu/"
 module = ConvolutionModule()
 

@@ -92,12 +92,13 @@ def get_rest_docs():
       root, ext = os.path.splitext(filename)
       yield root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
 
-def method_doc(s, func, level):
+def method_doc(func, level, s):
    s.write("``%s``\n" % func.__name__)
    s.write(levels[level] * (len(func.__name__) + 4) + "\n\n")
    if func.return_type != None:
       s.write(func.return_type.rest_repr() + " ")
-   header = "**%s** (%s)\n" % (func.__name__, ', '.join(['``%s`` *%s*' % (x.rest_repr(), x.name) for x in func.args.list]))
+   header = "**%s** (%s)\n" % (func.__name__, ', '.join(
+       ['``%s`` *%s*' % (x.rest_repr(), x.name) for x in func.args.list]))
    s.write(header)
    s.write("\n\n")
    if func.self_type != None:
@@ -110,6 +111,9 @@ def method_doc(s, func, level):
       category = func.category
    if category != None:
       s.write(":Category: %s\n" % category)
+   file = os.path.split(inspect.getsourcefile(func))[1]
+   if file == 'plugin.py':
+       file = 'core.py'
    s.write(":Defined in: %s\n" % os.path.split(inspect.getsourcefile(func))[1])
    if func.module.author != None:
       if func.module.url != None and 0:
@@ -122,9 +126,9 @@ def method_doc(s, func, level):
       s.write("\n.. warning:: No documentation written.\n\n")
    else:
       s.write("\n\n%s\n" % func.__doc__)
-   method_example(s, func, level)
+   method_example(func, level, s)
 
-def method_example(s, func, level):
+def method_example(func, level, s):
    if len(func.doc_examples):
       s.write("\n----------\n\n")
    for i, doc_example in enumerate(func.doc_examples):
@@ -154,23 +158,77 @@ def method_example(s, func, level):
             s.write("|%s| " % result_filename)
             subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
          s.write(subst)
+         s.write("\n")
       else:
          s.write("*result* = " + repr(result) + "\n\n")
    s.write("\n\n")
            
 levels = "=-`:'"
 def generate_plugin_docs():
-   def recurse(s, methods, level):
+   def recurse(methods, level, s=None):
       methods_list = methods.items()
       methods_list.sort()
       for key, val in methods_list:
          if type(val) == DictType:
+            if level == 0:
+                filename = key.lower()
+                s = open(os.path.join(doc_src_path, filename + ".txt"), "w")
             s.write("\n%s\n%s\n\n" % (key, levels[level] * len(key)))
             ui("  " * (level + 1) + key + "\n")
-            recurse(s, val, level + 1)
+            recurse(val, level + 1, s)
          else:
-            method_doc(s, val, level)
+            method_doc(val, level, s)
 
+   def table_of_contents(methods):
+      def toc_recurse(s, methods, level, links, index, filename=None):
+          methods_list = methods.items()
+          methods_list.sort()
+          for key, val in methods_list:
+             if type(val) == DictType and level == 0:
+                 filename = key.lower()
+             s.write("  " * level)
+             s.write("- ")
+             s.write(key)
+             s.write("_")
+             s.write("\n\n")
+             href = "%s.html#%s" % (filename, key.lower().replace("_", "-"))
+             links.append(".. _%s: %s" % (key, href))
+             if type(val) == DictType:
+                 toc_recurse(s, val, level + 1, links, index, filename)
+             else:
+                 index.append(key)
+
+      s = open(os.path.join(doc_src_path, "plugins.txt"), "w")
+      s.write("=======\n")
+      s.write("Plugins\n")
+      s.write("=======\n")
+      s.write("\n")
+      s.write("By categories\n")
+      s.write("-------------\n")
+      links = []
+      index = []
+      toc_recurse(s, methods, 0, links, index)
+      s.write("Alphabetical\n")
+      s.write("-------------\n")
+      index.sort(lambda x, y: cmp(x.lower(), y.lower()))
+      letter = ord('A') - 1
+      first = True
+      for name in index:
+          if ord(name[0].upper()) > letter:
+              letter = ord(name[0].upper())
+              s.write("\n\n**")
+              s.write(chr(letter))
+              s.write("**\n\n")
+              first = True
+          if not first:
+              s.write(", ")
+          s.write(name)
+          s.write("_")
+          first = False
+      s.write("\n\n")
+          
+      s.write("\n".join(links))
+      
    def methods_flatten(dest, source, flat):
       for key, val in source.items():
        if type(val) == DictType:
@@ -190,19 +248,11 @@ def generate_plugin_docs():
       methods_flatten(flat_methods, methods[pixel_type], flat_list)
 
    flat_list = flat_list.keys()
-   flat_list.sort()
+   flat_list.sort(lambda x,y: cmp(x.lower(), y.lower()))
 
-   s = open(doc_src_path + "plugins.txt", "w")
-   s.write("""=======
-Plugins
-=======
-
-**Alphabetical list**
-
-%s
-   """ % (', '.join(['%s_' % x for x in flat_list])))
-   recurse(s, flat_methods, 0)
-   s.close()
+   by_category = []
+   recurse(flat_methods, 0)
+   table_of_contents(flat_methods)
 
 def generate_generic_pngs():
    for pixel_type in ALL:

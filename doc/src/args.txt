@@ -288,6 +288,28 @@ A vector of integer values.  On the Python side this is an
 The optional *length* argument should be given when the length of the
 argument is fixed.
 
+Pixel
+-----
+
+**Pixel** (string *name*)
+
+A pixel value corresponding to the type of the "self" image.  For instance,
+if the method is operating on a FLOAT image, this argument will take
+a FLOAT value.
+
+Info
+----
+
+**Info** (string *name*)
+
+This class is just for displaying information in a dialog box.  It
+does not affect in any way the passing of arguments to a plugin.
+
+Radio
+-----
+
+**Radio** (string *name*, string *default* = ``""``, *extension* = ``"*.*"``)
+
 
 Advanced usage
 ==============
@@ -330,19 +352,6 @@ boxes together into a wizard.
 
 TODO: But that's for another day... ;)
 
-Info
-----
-
-**Info** (string *name*)
-
-This class is just for displaying information in a dialog box.  It
-does not affect in any way the passing of arguments to a plugin.
-
-Radio
------
-
-**Radio** (string *name*, string *default* = ``""``, *extension* =
-  ``"*.*"``)
 
 Under the hood...
 =================

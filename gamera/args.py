@@ -201,14 +201,12 @@ class ImageInfo(Class):
    def __init__(self, name=None):
       Class.__init__(self, name, None)
 
-# These can only be used as return values
 class FloatVector(Class):
    def __init__(self, name=None, length=-1):
       import array
       Class.__init__(self, name, type(array.array('d')))
       self.length = length
 
-# These can only be used as return values
 class IntVector(Class):
    def __init__(self, name=None, length=-1):
       import array
@@ -218,6 +216,12 @@ class IntVector(Class):
 class ImageList(Class):
    def __init__(self, name=None):
       Class.__init__(self, name, None, True)
+
+class Pixel(Class):
+   """Uses these to pass pixel values into a plugin.  The
+PixelType must always match the type of the "self" image."""
+   def __init__(self, name=None):
+      Class.__init__(self, name)
 
 class Info(Arg):
    pass
@@ -239,7 +243,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard'.split()
+__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard Pixel'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

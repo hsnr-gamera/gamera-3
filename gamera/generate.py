@@ -219,8 +219,18 @@ template = Template("""
           Py_INCREF(Py_None);
           return Py_None;
         [[else]]
-          [[function.return_type.to_python()]]
-          return return_pyarg;
+          [[if isinstance(function.return_type, (ImageType, Class))]]
+            if ([[function.return_type.symbol]] == NULL) {
+              Py_INCREF(Py_None);
+              return Py_None;
+            } else {  
+              [[function.return_type.to_python()]]
+              return return_pyarg;
+            }
+          [[else]]
+            [[function.return_type.to_python()]]
+            return return_pyarg;
+          [[end]]  
         [[end]]  
       [[end]]
       }

@@ -25,10 +25,9 @@
 
 template<class T>
 void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
-	       double pixel, double alpha = 1.0) {
+	       typename T::value_type value, double alpha = 1.0) {
   // Breshenham's Algorithm
-  
-  typename T::value_type value = (typename T::value_type)pixel;
+
   int x_dist = int(x2) - int(x1);
   int y_dist = int(y2) - int(y1);
   int x_dist_abs = abs(x_dist);
@@ -65,9 +64,7 @@ void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
 
 template<class T>
 void draw_hollow_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
-		      double pixel) {
-  typename T::value_type value = (typename T::value_type)pixel;
-
+		      typename T::value_type value) {
   size_t x1, x2, y1, y2;
   if (x1_ > x2_)
     x1 = x2_, x2 = x1_;
@@ -92,9 +89,7 @@ void draw_hollow_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
 
 template<class T>
 void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
-		      double pixel) {
-  typename T::value_type value = (typename T::value_type)pixel;
-
+		      typename T::value_type value) {
   size_t x1, x2, y1, y2;
   if (x1_ > x2_)
     x1 = x2_, x2 = x1_;
@@ -114,16 +109,16 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
 /* From John R. Shaw's QuickFill code which is based on
    "An Efficient Flood Visit Algorithm" by Anton Treuenfels,
    C/C++ Users Journal Vol 12, No. 8, Aug 1994 */
- 
+
 template<class T>
 struct FloodFill {
   typedef std::stack<Point> Stack;
 
   inline static void travel(T& image, Stack& s,
-		     typename T::value_type& interior, 
-		     typename T::value_type& color,
-		     size_t left, size_t right,
-		     size_t y) {
+			    const typename T::value_type& interior, 
+			    const typename T::value_type& color,
+			    const size_t left, const size_t right,
+			    const size_t y) {
     if (left + 1 <= right) {
       typename T::value_type col1, col2;
       for (size_t x = left + 1; x <= right; ++x) {
@@ -140,8 +135,8 @@ struct FloodFill {
   }
 
   static void fill_seeds(T& image, Stack& s, 
-			 typename T::value_type& interior, 
-			 typename T::value_type& color) {
+			 const typename T::value_type& interior, 
+			 const typename T::value_type& color) {
     typedef typename T::value_type pixel_t;
     size_t left, right;
     while (!s.empty()) {
@@ -184,14 +179,13 @@ struct FloodFill {
 };
 
 template<class T>
-void flood_fill(T& image, size_t y, size_t x, double color) {
-  typename FloodFill<T>::Stack s;
-  s.push(Point(0, 0));
+void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
   typename T::value_type interior = image.get(y, x);
-  typename T::value_type col = (typename T::value_type)color;
-  if (col == interior)
+  if (color == interior)
     return;
-  FloodFill<T>::fill_seeds(image, s, interior, col);
+  typename FloodFill<T>::Stack s;
+  s.push(Point(x, y));
+  FloodFill<T>::fill_seeds(image, s, interior, color);
 }
 
 template<class T>
@@ -200,16 +194,33 @@ void remove_border(T& image) {
   size_t right = image.ncols() - 1;
   for (size_t x = 0; x < image.ncols(); ++x) {
     if (image.get(0, x) != 0)
-      flood_fill(image, 0, x, 0);
+      flood_fill(image, 0, x, white(image));
     if (image.get(bottom, x) != 0)
-      flood_fill(image, bottom, x, 0);
+      flood_fill(image, bottom, x, white(image));
   }
   for (size_t y = 0; y < image.nrows(); ++y) {
     if (image.get(y, 0) != 0)
-      flood_fill(image, y, 0, 0);
+      flood_fill(image, y, 0, white(image));
     if (image.get(y, right) != 0)
-      flood_fill(image, y, right, 0);
+      flood_fill(image, y, right, white(image));
   }
 }
+
+  template<class T, class U>
+  void highlight(T& a, const U& b, const typename T::value_type& color) {
+    size_t ul_y = std::max(a.ul_y(), b.ul_y());
+    size_t ul_x = std::max(a.ul_x(), b.ul_x());
+    size_t lr_y = std::min(a.lr_y(), b.lr_y());
+    size_t lr_x = std::min(a.lr_x(), b.lr_x());
+
+    if (ul_y >= lr_y || ul_x >= lr_x)
+      return;
+    for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
+      for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
+	if (is_black(b.get(yb, xb))) 
+	  a.set(ya, xa, color);
+      }
+  }
+
 
 #endif

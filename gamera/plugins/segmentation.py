@@ -36,6 +36,8 @@ you do not want this behavior, use the image_copy_ function on each of the CCs::
 
    ccs = [x.image_copy() for x in ccs]
 
+.. _image_copy: utility.html#image-copy
+
 """
     self_type = ImageType([ONEBIT])
     return_type = ImageList("ccs")

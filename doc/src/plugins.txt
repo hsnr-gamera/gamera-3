@@ -2,3692 +2,590 @@
 Plugins
 =======
 
-**Alphabetical list**
+By categories
+-------------
+- Analysis_
 
-AveragingKernel_, BinomialKernel_, GaussianDerivativeKernel_, GaussianKernel_, PNG_info_, SimpleSharpeningKernel_, SymmetricGradientKernel_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_, cyan_, despeckle_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, flood_fill_, from_rle_, gaussian_gradient_, gaussian_smoothing_, generate_features_, green_, highlight_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nested_list_to_image_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, remove_border_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, simple_sharpen_, skeleton_features_, smith_waterman_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
-   
-Analysis
-========
+  - histogram_
 
-``histogram``
+  - projection_cols_
+
+  - projection_rows_
+
+  - projections_
+
+- Arithmetic_
+
+  - add_images_
+
+  - divide_images_
+
+  - multiply_images_
+
+  - subtract_images_
+
+- Classification_
+
+  - classify_automatic_
+
+  - classify_heuristic_
+
+  - classify_manual_
+
+  - match_id_name_
+
+  - unclassify_
+
+- Color_
+
+  - blue_
+
+  - cie_x_
+
+  - cie_y_
+
+  - cie_z_
+
+  - color_ccs_
+
+  - cyan_
+
+  - false_color_
+
+  - green_
+
+  - hue_
+
+  - magenta_
+
+  - red_
+
+  - saturation_
+
+  - value_
+
+  - yellow_
+
+- Conversion_
+
+  - to_float_
+
+  - to_grey16_
+
+  - to_greyscale_
+
+  - to_onebit_
+
+  - to_rgb_
+
+- Convolution_
+
+  - Kernels_
+
+    - AveragingKernel_
+
+    - BinomialKernel_
+
+    - GaussianDerivativeKernel_
+
+    - GaussianKernel_
+
+    - SimpleSharpeningKernel_
+
+    - SymmetricGradientKernel_
+
+  - convolve_
+
+  - convolve_x_
+
+  - convolve_xy_
+
+  - convolve_y_
+
+  - gaussian_gradient_
+
+  - gaussian_smoothing_
+
+  - hessian_matrix_of_gaussian_
+
+  - laplacian_of_gaussian_
+
+  - simple_sharpen_
+
+  - sobel_edge_detection_
+
+- DTW_
+
+  - dtw_matrix_
+
+  - dtw_matrix_with_function_
+
+  - smith_waterman_
+
+- Deformations_
+
+  - inkrub_
+
+  - noise_
+
+  - rotateShear_
+
+  - wave_
+
+- Displaying_
+
+  - display_
+
+  - display_ccs_
+
+  - display_false_color_
+
+- Draw_
+
+  - draw_filled_rect_
+
+  - draw_hollow_rect_
+
+  - draw_line_
+
+  - fill_white_
+
+  - flood_fill_
+
+  - highlight_
+
+  - invert_
+
+  - remove_border_
+
+- Features_
+
+  - area_
+
+  - aspect_ratio_
+
+  - black_area_
+
+  - compactness_
+
+  - moments_
+
+  - nholes_
+
+  - nholes_extended_
+
+  - skeleton_features_
+
+  - top_bottom_
+
+  - volume_
+
+  - volume16regions_
+
+  - volume64regions_
+
+  - zernike_moments_
+
+- File_
+
+  - PNG_info_
+
+  - load_PNG_
+
+  - load_image_
+
+  - load_tiff_
+
+  - save_PNG_
+
+  - save_tiff_
+
+  - tiff_info_
+
+- Filter_
+
+  - Thinning_
+
+    - thin_hs_
+
+    - thin_lc_
+
+    - thin_zs_
+
+  - outline_
+
+- List_
+
+  - permute_list_
+
+- Morphology_
+
+  - despeckle_
+
+  - dilate_
+
+  - erode_
+
+  - erode_dilate_
+
+  - mean_
+
+  - rank_
+
+- Relational_
+
+  - polar_distance_
+
+  - polar_match_
+
+- Runlength_
+
+  - filter_narrow_runs_
+
+  - filter_short_runs_
+
+  - filter_tall_runs_
+
+  - filter_wide_runs_
+
+  - from_rle_
+
+  - most_frequent_black_horizontal_run_
+
+  - most_frequent_black_vertical_run_
+
+  - most_frequent_white_horizontal_run_
+
+  - most_frequent_white_vertical_run_
+
+  - to_rle_
+
+- Segmentation_
+
+  - cc_analysis_
+
+  - cc_and_cluster_
+
+  - splitx_
+
+  - splitx_left_
+
+  - splitx_max_
+
+  - splitx_right_
+
+  - splity_
+
+  - splity_bottom_
+
+  - splity_top_
+
+- Thresholding_
+
+  - abutaleb_threshold_
+
+  - bernsen_threshold_
+
+  - otsu_find_threshold_
+
+  - otsu_threshold_
+
+  - threshold_
+
+- Utility_
+
+  - Combine_
+
+    - and_image_
+
+    - mask_
+
+    - or_image_
+
+    - union_images_
+
+    - xor_image_
+
+  - NestedLists_
+
+    - nested_list_to_image_
+
+    - to_nested_list_
+
+  - clip_image_
+
+  - corelation_
+
+  - generate_features_
+
+  - image_copy_
+
+  - resize_
+
+  - scale_
+
+- XML_
+
+  - to_xml_
+
+  - to_xml_filename_
+
+Alphabetical
 -------------
 
-FloatVector **histogram** ()
 
+**A**
 
-:Operates on: ``Image [GreyScale|Grey16]``
-:Returns: ``FloatVector``
-:Category: Analysis
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
+abutaleb_threshold_, add_images_, and_image_, area_, aspect_ratio_, AveragingKernel_
 
+**B**
 
-Compute the histogram of the pixel values in the given image.
-Returns a Python array of doubles, with each value being a percentage.
+bernsen_threshold_, BinomialKernel_, black_area_, blue_
 
-If the GUI is being used, the histogram is displayed.
+**C**
 
-.. image:: images/histogram.png
+cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_, cyan_
 
+**D**
 
-``projection_cols``
--------------------
+despeckle_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
 
-IntVector **projection_cols** ()
+**E**
 
+erode_, erode_dilate_
 
-:Operates on: ``Image [OneBit]``
-:Returns: ``IntVector``
-:Category: Analysis
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
+**F**
 
+false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, flood_fill_, from_rle_
 
-Compute the vertical projections of an image.  This computes the
-number of pixels in each column.
+**G**
 
+gaussian_gradient_, gaussian_smoothing_, GaussianDerivativeKernel_, GaussianKernel_, generate_features_, green_
 
-``projection_rows``
--------------------
+**H**
 
-IntVector **projection_rows** ()
+hessian_matrix_of_gaussian_, highlight_, histogram_, hue_
 
+**I**
 
-:Operates on: ``Image [OneBit]``
-:Returns: ``IntVector``
-:Category: Analysis
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
+image_copy_, inkrub_, invert_
 
+**L**
 
-Compute the horizontal projections of an image.  This computes the
-number of pixels in each row.
+laplacian_of_gaussian_, load_image_, load_PNG_, load_tiff_
 
+**M**
 
-``projections``
----------------
+magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, multiply_images_
 
-Class **projections** ()
+**N**
 
+nested_list_to_image_, nholes_, nholes_extended_, noise_
 
-:Operates on: ``Image [OneBit]``
-:Returns: ``Class``
-:Category: Analysis
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
+**O**
 
+or_image_, otsu_find_threshold_, otsu_threshold_, outline_
 
-Computes the projections in both the *row*- and *column*- directions.
-This is returned as a tuple (*rows*, *columns*), where each element is an
-``IntVector`` of projections.
-(Equivalent to ``(image.projections_rows(), image.projections_cols())``).
+**P**
 
-If the GUI is being used, the result is displayed in a window:
+permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_
 
-.. image:: images/projections.png
+**R**
 
+rank_, red_, remove_border_, resize_, rotateShear_
 
+**S**
 
+saturation_, save_PNG_, save_tiff_, scale_, simple_sharpen_, SimpleSharpeningKernel_, skeleton_features_, smith_waterman_, sobel_edge_detection_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, subtract_images_, SymmetricGradientKernel_
 
-Classification
-==============
+**T**
 
-``classify_automatic``
-----------------------
+thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
 
-**classify_automatic** (``String`` *id*)
+**U**
 
+unclassify_, union_images_
 
-:Operates on: ``Image [OneBit]``
-:Category: Classification
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
+**V**
 
+value_, volume_, volume16regions_, volume64regions_
 
-Classifies the image as the value *id_name* and sets the state
-to AUTOMATIC.  Use this method when an automatic classifier has classified this glyph.
+**W**
 
-*id_name*
-  Can come in one of two forms:
+wave_
 
-    **string**
-       image is classified using the given ``.``-delimited class name.
-    **list of tuples**
-       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
+**X**
 
-       *confidence*
-         A value in range (0, 1), where 0 is uncertain and 1 is certain.
-       *class_name*
-         A ``.``-delimited class name.
+xor_image_
 
+**Y**
 
-``classify_heuristic``
-----------------------
+yellow_
 
-**classify_heuristic** (``String`` *id*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Classification
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Classifies the image as the value *id_name* and sets the state
-to AUTOMATIC.  Use this method when a heuristic process has classified this glyph.
-
-*id_name*
-  Can come in one of two forms:
-
-    **string**
-       image is classified using the given ``.``-delimited class name.
-    **list of tuples**
-       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
-
-       *confidence*
-         A value in range (0, 1), where 0 is uncertain and 1 is certain.
-       *class_name*
-         A ``.``-delimited class name.
-
-
-``classify_manual``
--------------------
-
-**classify_manual** (``String`` *id*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Classification
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Classifies the image as the value *id_name* and sets the state
-to MANUAL.  Use this method when an end user has classified this glyph.
-
-*id_name*
-  Can come in one of two forms:
-
-    **string**
-       image is classified using the given ``.``-delimited class name.
-    **list of tuples**
-       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
-
-       *confidence*
-         A value in range (0, 1), where 0 is uncertain and 1 is certain.
-       *class_name*
-         A ``.``-delimited class name.
-
-
-``match_id_name``
------------------
-
-**match_id_name** (``String`` *regex*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Classification
-:Defined in: id_name_matching.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-
-    Returns true if the image's ``id_name`` matches the given regular expression.
-
-*regex*
-    A special-purpose regular expression as defined below.
-
-A special-purpose regular expression language designed for convenience on
-Gamera symbol names is used here.  It has limited flexibility relative to Python regular
-expressions, and is more akin to wildcards in command-line shells.  This
-language is converted to standard Python regular expressions (``re`` module) for
-efficiency.
-
-**Informal syntax definition:**
-
-====================  =============================================
-Regular expression    Description
-====================  =============================================
-``A|B``               matches ``A`` or ``B``
-``A.B|C``             matches ``A.B`` or ``A.C``
-``*``                 multiple-character wildcard
-``?``                 single character wildcard
-``()``                grouping can be performed with parentheses
-``[a-z]``             matches any character a-z
-====================  =============================================
-
-**Example expressions:**
-
-========================  ====================================================  
-``(upper.x)|(lower.y)``   match either ``upper.x`` or ``lower.y``
-``upper.x|upper.y``       careful! matches ``upper.x.y`` or ``upper.upper.y``
-``upper.*``               match anything in the ``upper`` category
-``upper.a|b|c``           matches ``upper.a``, ``upper.b`` or ``upper.c``
-``upper.capital_?``       ``?`` is a single character wildcard
-========================  ====================================================
-
-
-
-``unclassify``
---------------
-
-**unclassify** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Classification
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Sets the image back to an UNCLASSIFIED state.  Use this
-when you are not longer sure of the identity of the image and you
-want an automatic classifier to reclassify.
-
-
-
-Color
-=====
-
-``blue``
---------
-
-Image [GreyScale] **blue** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the blue component of the
-original.
-
-
-----------
-
-**Example 1:** blue()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/blue_plugin_00.png
-
-
-
-``cie_x``
----------
-
-Image [Float] **cie_x** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a *x* value in the `CIE 1964 Colorimetric`__ system 
-in range [0, 1).
-
-.. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
-
-
-----------
-
-**Example 1:** cie_x()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/cie_x_plugin_00.png
-
-
-
-``cie_y``
----------
-
-Image [Float] **cie_y** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a *y* value in the `CIE 1964
-Colorimetric`__ system 
-in range [0, 1).
-
-.. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
-
-
-----------
-
-**Example 1:** cie_y()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/cie_y_plugin_00.png
-
-
-
-``cie_z``
----------
-
-Image [Float] **cie_z** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a *z* value in the `CIE 1964
-Colorimetric`__ system 
-in range [0, 1).
-
-.. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
-
-
-----------
-
-**Example 1:** cie_z()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/cie_z_plugin_00.png
-
-
-
-``color_ccs``
--------------
-
-Image [RGB] **color_ccs** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``Image [RGB]``
-:Category: Color
-:Defined in: gui_support.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns an RGB image where each connected component of the
-image is colored one of eight different colors.  This function can
-be used to verify that ``cc_analysis`` is working correctly for your
-image.
-
-.. note: Connected component analysis must already be performed on the image
-   (using cc_analysis_, for example) in order for this to work.
-
-**Example 1:**
-
-.. image:: images/color_ccs.png
-
-
-``cyan``
---------
-
-Image [GreyScale] **cyan** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the cyan component of the
-original.
-
-
-----------
-
-**Example 1:** cyan()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/cyan_plugin_00.png
-
-
-
-``false_color``
----------------
-
-Image [RGB] **false_color** ()
-
-
-:Operates on: ``Image [Float|GreyScale]``
-:Returns: ``Image [RGB]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a false color representation of the given image.  Low values
-are red, mid values are green and high values are blue.  This can help visualize
-greyscale images that are not *real* images but are representations of other
-kinds of data.
-
-
-----------
-
-**Example 1:** false_color()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/false_color_plugin_00.png
-
-
-
-``green``
----------
-
-Image [GreyScale] **green** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the green component of the
-original.
-
-
-----------
-
-**Example 1:** green()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/green_plugin_00.png
-
-
-
-``hue``
--------
-
-Image [Float] **hue** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a hue value in range [0, 1).
-Since the hue space is continuous, the shortest *distance* between 1 and 0 is
-0.  For more information, Google HSV color space.
-
-----------
-
-**Example 1:** hue()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/hue_plugin_00.png
-
-
-
-``magenta``
------------
-
-Image [GreyScale] **magenta** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the magenta component of the
-original.
-
-
-----------
-
-**Example 1:** magenta()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/magenta_plugin_00.png
-
-
-
-``red``
--------
-
-Image [GreyScale] **red** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the red component of the
-original.
-
-
-----------
-
-**Example 1:** red()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/red_plugin_00.png
-
-
-
-``saturation``
---------------
-
-Image [Float] **saturation** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a saturation value
-in range [0, 1).  For more information, Google for HSV color space.
-
-----------
-
-**Example 1:** saturation()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/saturation_plugin_00.png
-
-
-
-``value``
----------
-
-Image [Float] **value** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [Float]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a FLOAT image where each pixel is a saturation value
-in range [0, 1).  For more information, Google for HSV color space.
-
-----------
-
-**Example 1:** value()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/value_plugin_00.png
-
-
-
-``yellow``
-----------
-
-Image [GreyScale] **yellow** ()
-
-
-:Operates on: ``Image [RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Color
-:Defined in: color.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a GREYSCALE image where each pixel is the yellow component of the
-original.
-
-
-----------
-
-**Example 1:** yellow()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/yellow_plugin_00.png
-
-
-
-
-Conversion
-==========
-
-``to_float``
-------------
-
-Image [Float] **to_float** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB]``
-:Returns: ``Image [Float]``
-:Category: Conversion
-:Defined in: image_conversion.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts the given image to a FLOAT image.
-
-
-``to_grey16``
--------------
-
-Image [Grey16] **to_grey16** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float|RGB]``
-:Returns: ``Image [Grey16]``
-:Category: Conversion
-:Defined in: image_conversion.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts the given image to a GREY16 image.
-
-
-``to_greyscale``
-----------------
-
-Image [GreyScale] **to_greyscale** ()
-
-
-:Operates on: ``Image [OneBit|Float|Grey16|RGB]``
-:Returns: ``Image [GreyScale]``
-:Category: Conversion
-:Defined in: image_conversion.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts the given image to a GREYSCALE image.
-
-----------
-
-**Example 1:** to_greyscale()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/to_greyscale_plugin_00.png
-
-
-
-``to_onebit``
--------------
-
-Image [OneBit] **to_onebit** ()
-
-
-:Operates on: ``Image [Float|GreyScale|Grey16|RGB]``
-:Returns: ``Image [OneBit]``
-:Category: Conversion
-:Defined in: image_conversion.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts the given image to a ONEBIT image.  Uses the
-otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
-see the Thresholding_ category.
-
-
-----------
-
-**Example 1:** to_onebit()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/to_onebit_plugin_00.png
-
-
-
-``to_rgb``
-----------
-
-Image [RGB] **to_rgb** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float|Grey16]``
-:Returns: ``Image [RGB]``
-:Category: Conversion
-:Defined in: image_conversion.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts the given image to an RGB image.
-
-
-
-Convolution
-===========
-
-
-Kernels
--------
-
-``AveragingKernel``
-```````````````````
-
-Image [Float] **AveragingKernel** (``int`` *radius*)
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Creates an Averaging filter kernel for use with separable
-convolution.  The window size is (2*radius+1) * (2*radius+1).
-
-*radius*
-   The radius of the kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
-
-
-
-``BinomialKernel``
-``````````````````
-
-Image [Float] **BinomialKernel** (``int`` *radius*)
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Creates a binomial filter kernel for use with separable
-    convolution of a given radius.
-
-*radius*
-   The radius of the kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
-
-
-
-``GaussianDerivativeKernel``
-````````````````````````````
-
-Image [Float] **GaussianDerivativeKernel** (``double`` *standard_deviation*, ``int`` *order*)
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Init as a Gaussian derivative of order 'order'.  The radius of
-the kernel is always 3*std_dev.
-
-*standard_deviation* The standard deviation of the Gaussian kernel.
-
-*order* The order of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).  
-
-
-``GaussianKernel``
-``````````````````
-
-Image [Float] **GaussianKernel** (``double`` *standard_deviation*)
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Init as a Gaussian function. The radius of the kernel is 
-always 3*standard_deviation.
-
-*standard_deviation*
-   The standard deviation of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-
-
-``SimpleSharpeningKernel``
-``````````````````````````
-
-Image [Float] **SimpleSharpeningKernel** (``double`` *sharpening_factor*)
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Creates a kernel for simple sharpening.
-
-
-
-
-``SymmetricGradientKernel``
-```````````````````````````
-
-Image [Float] **SymmetricGradientKernel** ()
-
-
-:Returns: ``Image [Float]``
-:Category: Convolution/Kernels
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Init as a symmetric gradient filter of the form
-       [ 0.5, 0.0, -0.5]
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-
-
-``convolve``
-------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve** (``Image [Float]`` *kernel*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Convolves an image with a given kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-*kernel*
-   A kernel for the convolution.  The kernel may either be a FloatImage
-   or a nested Python list of floats.
-
-*border_treatment*
-   Specifies how to treat the borders of the image.  Must be one of the following:
-
-   - BORDER_TREATMENT_AVOID (0)
-
-       do not operate on a pixel where the kernel does not fit in the image
-
-   - BORDER_TREATMENT_CLIP (1)
-
-       clip kernel at image border (this is only useful if the kernel is >= 0 everywhere)
-
-   - BORDER_TREATMENT_REPEAT (2)
-
-       repeat the nearest valid pixel
-
-   - BORDER_TREATMENT_REFLECT (3)
-
-       reflect image at last row/column
-
-   - BORDER_TREATMENT_WRAP (4)
-
-       wrap image around (periodic boundary conditions)
-
-
-
-``convolve_x``
---------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_x** (``Image [Float]`` *kernel_x*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Convolves an image in the X directions with a 1D kernel.
-This is equivalent to what the Vigra library calls "Separable Convolution".
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-*kernel_x*
-   A kernel for the convolution in the *x* direction.  The kernel may either be a FloatImage
-   or a nested Python list of floats.  It must consist of only a single row.
-
-*border_treatment*
-   Specifies how to treat the borders of the image.  See ``convolve`` for information
-   about *border_treatment* values.
-
-
-``convolve_xy``
----------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_xy** (``Image [Float]`` *kernel_y*, ``Image [Float]`` *kernel_x*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Convolves an image in both X and Y directions with 1D kernels.
-This is equivalent to what the Vigra library calls "Separable Convolution".
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
-
-*kernel_y*
-   A kernel for the convolution in the *y* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.
-
-*kernel_x*
-   A kernel for the convolution in the *x* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.  If *kernel_x* is omitted, *kernel_y* will be used in the
-   *x* direction.
-
-*border_treatment*
-   Specifies how to treat the borders of the image.
-   See ``convolve`` for information about *border_treatment*
-   values.
-
-
-``convolve_y``
---------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_y** (``Image [Float]`` *kernel_y*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Convolves an image in the X directions with a 1D kernel.  This
-is equivalent to what the Vigra library calls "Separable Convolution".
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
-Koethe).
-
-*kernel_y*
-   A kernel for the convolution in the *x* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.  It must consist of only a single row.
-
-*border_treatment*
-   Specifies how to treat the borders of the image.
-   See ``convolve`` for information about *border_treatment*
-   values.
-
-
-``gaussian_gradient``
----------------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **gaussian_gradient** (``double`` *scale*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Calculate the gradient vector by means of a 1st derivatives of
-Gaussian filter.
-
-*scale*
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-
-----------
-
-**Example 1:** gaussian_gradient(1.0,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/gaussian_gradient_plugin_00.png
-
-**Example 2:** gaussian_gradient(1.0,)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/gaussian_gradient_plugin_01.png
-
-
-
-``gaussian_smoothing``
-----------------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **gaussian_smoothing** (``double`` *standard_deviation*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Performs gaussian smoothing on an image.
-
-*standard_deviation*
-   The standard deviation of the Gaussian kernel.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-
-----------
-
-**Example 1:** gaussian_smoothing(1.0,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/gaussian_smoothing_plugin_00.png
-
-**Example 2:** gaussian_smoothing(3.0,)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/gaussian_smoothing_plugin_01.png
-
-
-
-``simple_sharpen``
-------------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **simple_sharpen** (``double`` *sharpening_factor*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Convolution
-:Defined in: convolution.py
-:Author: Michael Droettboom
-
-
-Perform simple sharpening.
-
-*sharpening_factor*
-   The amount of sharpening to perform.
-
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
-
-
-----------
-
-**Example 1:** simple_sharpen(1.0,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/simple_sharpen_plugin_00.png
-
-**Example 2:** simple_sharpen(3.0,)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/simple_sharpen_plugin_01.png
-
-
-
-
-DTW
-===
-
-``dtw_matrix``
---------------
-
-Image [Float] **dtw_matrix** (``FloatVector`` *x*, ``FloatVector`` *y*)
-
-
-:Returns: ``Image [Float]``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a floating-point matrix of the distances between two vectors.
-Each pixel in the image is equal to the absolute difference between the
-corresponding elements in the given vectors.
-
-*x*
-   The *x*-axis vector
-*y*
-   The *y*-axis vector
-
-----------
-
-**Example 1:** dtw_matrix((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0))
-
-.. image:: images/dtw_matrix_plugin_00.png
-
-
-
-``dtw_matrix_with_function``
-----------------------------
-
-Image [Float] **dtw_matrix_with_function** (``Class`` *x*, ``Class`` *y*, ``Class`` *func*)
-
-
-:Returns: ``Image [Float]``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a floating-point matrix of the distances between two vectors.
-Each pixel in the image is calculated using the given function, which
-receives a single pair of elements from each vector, and returns a distance
-result.
-
-*x*
-   The *x*-axis vector
-*y*
-   The *y*-axis vector
-*func*
-   A Python function to calculate the distances
-   
-
-----------
-
-**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x9dcf554>)
-
-.. image:: images/dtw_matrix_with_function_plugin_00.png
-
-
-
-``smith_waterman``
-------------------
-
-FloatVector **smith_waterman** (``double`` *gapopen*, ``double`` *gapextend*)
-
-
-:Operates on: ``Image [Float]``
-:Returns: ``FloatVector``
-:Category: DTW
-:Defined in: dtw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-.. warning:: No documentation written.
-
-
-
-
-Deformations
-============
-
-``inkrub``
-----------
-
-Image [OneBit|GreyScale|Grey16|Float|RGB] **inkrub** (``int`` *Transcription Probability 1 in*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Deformations
-:Defined in: deformation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Simulates rubbing off of ink from another page
-
-
-``noise``
----------
-
-Image [OneBit|GreyScale|Grey16|Float|RGB] **noise** (``int`` *Amplitude*, ``Choice[Horizontal|Vertical]`` *Direction*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Deformations
-:Defined in: deformation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Causes random shifting of pixels within a user specified range, in a user-specified direction
-
-
-``rotateShear``
----------------
-
-Image [OneBit|GreyScale|Grey16|Float|RGB] **rotateShear** (``double`` *Rotation angle*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Deformations
-:Defined in: deformation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Rotates an image by skew method
-
-
-``wave``
---------
-
-Image [OneBit|GreyScale|Grey16|Float|RGB] **wave** (``int`` *Amplitude*, ``double`` *Period*, ``Choice[Horizontal|Vertical]`` *Direction*, ``Choice[Sinusoid|Square|Sawtooth|Triangle|Sinc]`` *Waveform type*, ``int`` *Waveform Offset*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Deformations
-:Defined in: deformation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Causes periodic disturbance of user-defined frequency, amplitude, and direction
-
-
-
-Displaying
-==========
-
-``display``
------------
-
-**display** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Displaying
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Displays the image in its own window.  (See `Using the Gamera GUI`__).
-
-.. __: gui.html
-
-.. image:: images/display.png
-
-
-``display_ccs``
----------------
-
-**display_ccs** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Displaying
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Displays the image in its own window.  (See `Using the Gamera GUI`__).
-Each connected component
-is assigned to one of eight colors.  This display can be used to see how
-connected component analysis performs on a given image.  Uses color_ccs_ under
-the hood.
-
-.. note: Connected component analysis must already be performed on the image
-   (using cc_analysis_, for example) in order for this to work.
-
-.. __: gui.html
-
-.. image:: images/display_ccs.png
-
-
-``display_false_color``
------------------------
-
-**display_false_color** ()
-
-
-:Operates on: ``Image [GreyScale|Float]``
-:Category: Displaying
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Displays the image using false coloring.  (See false_color_).
-
-.. image:: images/display_false_color.png
-
-
-
-Draw
-====
-
-``draw_filled_rect``
---------------------
-
-**draw_filled_rect** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Draw
-:Defined in: draw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Draws a filled rectangle.
-
-*y1*:
-  Starting *y* coordinate.
-*x1*:
-  Starting *x* coordinate.
-*y2*:
-  Ending *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
-*value*:
-  The pixel value to set for the rectangle.
-
-.. note:: This needs to be extended to support more pixel types.
-
-----------
-
-**Example 1:** draw_filled_rect(5, 5, 20, 25, 1)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/draw_filled_rect_plugin_00.png
-
-
-
-``draw_hollow_rect``
---------------------
-
-**draw_hollow_rect** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Draw
-:Defined in: draw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Draws a hollow rectangle.
-
-*y1*:
-  Starting *y* coordinate.
-*x1*:
-  Starting *x* coordinate.
-*y2*:
-  Ending *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
-*value*:
-  The pixel value to set for the lines.
-
-.. note:: This needs to be extended to support more pixel types.
-
-----------
-
-**Example 1:** draw_hollow_rect(5, 5, 20, 25, 1)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/draw_hollow_rect_plugin_00.png
-
-
-
-``draw_line``
--------------
-
-**draw_line** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Draw
-:Defined in: draw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Draws a straight line between two points.
-
-*y1*:
-  Starting *y* coordinate.
-*x1*:
-  Starting *x* coordinate.
-*y2*:
-  Ending *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
-*value*:
-  The pixel value to set for the line.
-
-.. note:: This needs to be extended to support more pixel types.
-
-----------
-
-**Example 1:** draw_line(5, 5, 20, 25, 1)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/draw_line_plugin_00.png
-
-
-
-``fill_white``
---------------
-
-**fill_white** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Draw
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Fills the entire image with white.
-
-
-``flood_fill``
---------------
-
-**flood_fill** (``int`` *y*, ``int`` *x*, ``double`` *color*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Draw
-:Defined in: draw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Flood fills from the given point using the given color.  This is similar
-to the "bucket" tool found in many paint programs.
-
-*y*:
-  Starting *y* coordinate.
-*x*:
-  Starting *x* coordinate.
-*color*:
-  The pixel value to set for the rectangle.
-
-.. note:: This needs to be extended to support more pixel types.
-
-----------
-
-**Example 1:** flood_fill(5, 5, 0)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/flood_fill_plugin_00.png
-
-
-
-``invert``
-----------
-
-**invert** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB]``
-:Category: Draw
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Inverts the image.
-
-----------
-
-**Example 1:** invert()
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/invert_plugin_00.png
-
-**Example 2:** invert()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/invert_plugin_01.png
-
-**Example 3:** invert()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/invert_plugin_02.png
-
-
-
-``remove_border``
------------------
-
-**remove_border** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Draw
-:Defined in: draw.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-This is a special case of the flood_fill algorithm that is designed to
-remove dark borders produced by photocopiers or flatbed scanners around the
-border of the image.
-
-.. note:: This needs to be extended to support more pixel types.
-
-
-
-Features
-========
-
-``area``
---------
-
-FloatVector **area** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-The area of the bounding box (i.e. *nrows* * *ncols*).
-
-.. warning: this feature is not scale invariant.
-    
-
-----------
-
-**Example 1:** area()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [7000.0])
-
-
-
-``aspect_ratio``
-----------------
-
-FloatVector **aspect_ratio** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-The aspect ratio of the bounding box (i.e. *ncols* / *nrows*).
-
-This feature is scale invariant.
-    
-
-----------
-
-**Example 1:** aspect_ratio()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.69999999999999996])
-
-
-
-``black_area``
---------------
-
-FloatVector **black_area** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-The simplest of all feature-generating functions, ``black_area`` simply
-returns the number of black pixels.
-
-.. warning: This feature is not scale invariant.
-
-----------
-
-**Example 1:** black_area()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [1518.0])
-
-
-
-``compactness``
----------------
-
-FloatVector **compactness** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Loosely speaking, compactness is a volume to surface area ratio
-of the connected components.  Highly ornate connected components have
-a low compactness, whereas a perfect circle has very high compactness.
-
-The result is derived by calling outline_ on the image and then
-comparing the number of pixels in the outline to the original.
-
-Since this function requires allocation and deallocation of memory, it
-is relatively slow.  However, it has proven to be a very useful feature
-in many cases.
-
-This feature is relatively scale and rotation invariant, though as the
-image scales, the pixel size relative to the image size diminishes.  This
-is currently not corrected for.
-
-
-----------
-
-**Example 1:** compactness()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.50592885375494068])
-
-
-
-``moments``
------------
-
-FloatVector **moments** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns *moments* of the image.
-
-The elements of the returned ``FloatVector`` are:
-
-0. center of gravity on *x* axis
-1. center of gravity on *y* axis
-2. second order moment on *x* axis
-3. second order moment on *y* axis
-4. first order moment on both axes
-
-The rest of these I'm not so sure about anymore.
-
-These features are scale invariant.
-
-
-----------
-
-**Example 1:** moments()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.10721836734693878, 0.11714714285714285, 0.038409057233236149, 0.09039186294752187, 0.039458327664723035, 0.016029672484755123, 0.019246628947512095, 0.010444870016473779, 0.064997712724557205])
-
-
-
-``nholes``
-----------
-
-FloatVector **nholes** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the average number of transitions from white to black in each
-row or column.
-
-The elements of the returned ``FloatVector`` are:
-
-0. vertical
-1. horizontal
-
-These features are scale invariant.
-
-
-----------
-
-**Example 1:** nholes()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [1.8857142857142857, 0.92000000000000004])
-
-
-
-``nholes_extended``
--------------------
-
-FloatVector **nholes_extended** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Divides the image into four quadrants and then does a
-nholes_ analysis on each of those quadrants.
-
-The elements of the returned ``FloatVector`` are:
-
-0 - 3
-  vertical ``nholes`` for each of the quadrants in order NW, NE, SW, SE.
-4 - 7
-  horizonal ``nholes`` for each of the quadrants in order NW, NE, SW, SE.
-
-These features are scale invariant.
-
-
-----------
-
-**Example 1:** nholes_extended()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [3.0, 44.0, 48.0, 33.0, 0.0, 40.0, 38.0, 14.0])
-
-
-
-``skeleton_features``
----------------------
-
-FloatVector **skeleton_features** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Generates a number of features based on the skeleton of an image.
-First, the image in skeletonized using the Lee and Chen algorithm, which
-guarantees that the pixels of the resulting skeleton are never more than
-4-connected.  Then, this skeleton is analysed for a number of properties:
-
-0. Number of X joints (4-connected pixels)
-1. Number of T joints (3-connected pixels)
-2. Average bumber of bend points (pixels which do not form a horizontal or
-   vertical line with its neighbors)
-3. Number of end points (1-connected pixels)
-4. Number of *x*-axis crossings
-5. Number of *y*-axis crossings
-
-
-
-``top_bottom``
---------------
-
-FloatVector **top_bottom** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Features useful only for segmentation-free analysis.  Currently, the
-first feature is the first row containing a black pixel, and the second feature
-is the last row containing a black pixel.
-
-----------
-
-**Example 1:** top_bottom()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.0, 0.98999999999999999])
-
-
-
-``volume``
-----------
-
-FloatVector **volume** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-The percentage of black pixels within the rectangular bounding
-box of the image.  Result in range (0, 1].
-
-This feature is scale and rotation invariant.
-
-
-----------
-
-**Example 1:** volume()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.21685714285714286])
-
-
-
-``volume16regions``
--------------------
-
-FloatVector **volume16regions** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Divides the image into a 4 x 4 grid of 16 regions and calculates
-the volume within each.
-
-----------
-
-**Example 1:** volume16regions()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.0, 0.17555555555555555, 0.53111111111111109, 0.10666666666666667, 0.0, 0.21777777777777776, 0.037777777777777778, 0.44888888888888889, 0.080000000000000002, 0.42444444444444446, 0.46000000000000002, 0.34000000000000002, 0.33555555555555555, 0.21777777777777776, 0.035555555555555556, 0.093333333333333338])
-
-
-
-``volume64regions``
--------------------
-
-FloatVector **volume64regions** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Divides the image into a 8 x 8 grid of 64 regions and calculates
-the volume within each.
-
-----------
-
-**Example 1:** volume64regions()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [0.0, 0.0, 0.0, 0.034188034188034191, 0.3247863247863248, 0.18803418803418803, 0.076923076923076927, 0.0, 0.0, 0.0, 0.0085470085470085479, 0.65811965811965811, 0.80341880341880345, 0.94871794871794868, 0.25641025641025639, 0.0, 0.0, 0.0, 0.29059829059829062, 0.19658119658119658, 0.0, 0.14529914529914531, 0.69230769230769229, 0.15384615384615385, 0.0, 0.0, 0.14529914529914531, 0.22222222222222221, 0.0, 0.0, 0.68376068376068377, 0.23931623931623933, 0.059829059829059832, 0.0, 0.15384615384615385, 0.89743589743589747, 0.88034188034188032, 0.81196581196581197, 0.51282051282051277, 0.28205128205128205, 0.24786324786324787, 0.0, 0.5213675213675214, 0.13675213675213677, 0.1111111111111111, 0.042735042735042736, 0.39316239316239315, 0.18803418803418803, 0.37606837606837606, 0.0, 0.41025641025641024, 0.076923076923076927, 0.1111111111111111, 0.034188034188034191, 0.19658119658119658, 0.1623931623931624, 0.40170940170940173, 0.5641025641025641, 0.3504273504273504, 0.0, 0.0, 0.0, 0.0, 0.0])
-
-
-
-``zernike_moments``
--------------------
-
-FloatVector **zernike_moments** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``FloatVector``
-:Category: Features
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-I can't say I understand much about Zernike moments, except that
-they are well known for all kinds of invariance, and are often detailed
-enough to reconstruct many shapes in a reasonable way.
-
-A. Khotanzad and Y. Hong. Invariant image recognition by Zernike moments.
-*IEEE Transactions on Pattern Analysis and Machine Intelligence*, 12(5), 1990.
-
-
-----------
-
-**Example 1:** zernike_moments()
-
-.. image:: images/OneBit_generic.png
-
-*result* = array('d', [-37.223158090332504, -115.27274218259787, -27.38888482889574, -238.55414747433861, 99.091297417022759, 68.584177440635628, 329.80317022580272, 50.381730229673231, 8.6592661085182421, 58.04265047527376, 315.72095729103381, 301.84194567130726, -69.978045223611701, -62.235854155025173, 60.605978333980012, 15.471584853132827, 76.095993290903195, 22.29836927622107, 370.0254790802569, 228.42192663806134, -36.488449055134488, 78.96739358965047, 278.86617421574044, 978.55979874564093, -0.16938552125805673, -1.3852848954126054])
-
-
-
-
-File
-====
-
-``PNG_info``
-------------
-
-ImageInfo **PNG_info** (``String`` *image_file_name*)
-
-
-:Returns: ``ImageInfo``
-:Category: File
-:Defined in: png_support.py
-:Author: Michael Droettboom
-
-
-Returns an ``ImageInfo`` object describing a PNG file.
-
-*image_file_name*
-  A PNG image filename
-
-
-``load_PNG``
-------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **load_PNG** (``FileOpen`` *image_file_name*, ``Choice[DENSE|RLE]`` *storage format*)
-
-
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: File
-:Defined in: png_support.py
-:Author: Michael Droettboom
-
-
-Loads a PNG format image file.
-
-*image_file_name*
-  A PNG image filename
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-
-``load_image``
---------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **load_image** (``FileOpen`` *filename*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: File
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Loads an image from disk.  Currently only TIFF and PNG images are supported.
-
-
-``load_tiff``
--------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **load_tiff** (``FileOpen`` *image_file_name*, ``Choice[DENSE|RLE]`` *storage format*)
-
-
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: File
-:Defined in: tiff_support.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Loads a TIFF file from disk.
-
-*image_file_name*
-  A TIFF image filename
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-
-``save_PNG``
-------------
-
-**save_PNG** (``FileSave`` *image_file_name*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: File
-:Defined in: png_support.py
-:Author: Michael Droettboom
-
-
-Saves the image to a PNG format file.
-
-
-``save_tiff``
--------------
-
-**save_tiff** (``FileSave`` *image_file_name*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB]``
-:Category: File
-:Defined in: tiff_support.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Saves an image to disk in TIFF format.
-
-*image_file_name*
-  A TIFF image filename
-    
-
-
-``tiff_info``
--------------
-
-ImageInfo **tiff_info** (``String`` *image_file_name*)
-
-
-:Returns: ``ImageInfo``
-:Category: File
-:Defined in: tiff_support.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns an ``ImageInfo`` object describing a TIFF file.
-
-*image_file_name*
-  A TIFF image filename
-
-
-
-Filter
-======
-
-
-Thinning
---------
-
-``thin_hs``
-```````````
-
-Image [OneBit] **thin_hs** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``Image [OneBit]``
-:Category: Filter/Thinning
-:Defined in: thinning.py
-:Author: Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)
-
-
-Thins (skeletonizes) a ONEBIT image using the Haralick and Shapiro algorithm
-
-This algorithm has the interesting property that all pixels are never more than
-4-connected.
-
-R. M. Haralick and L. G. Shapiro. 1992.
-*Computer and Robot Vision*,
-Vol. 1, Chapter 5 (especially 5.10.1).
-Reading, MA: Addison-Wesley.
-
-
-----------
-
-**Example 1:** thin_hs()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/thin_hs_plugin_00.png
-
-
-
-``thin_lc``
-```````````
-
-Image [OneBit] **thin_lc** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``Image [OneBit]``
-:Category: Filter/Thinning
-:Defined in: thinning.py
-:Author: Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)
-
-
-Thins (skeletonizes) a ONEBIT image using the Lee and Chen algorithm.
-
-H.-J. Lee and B. Chen. 1992.
-Recognition of handwritten chinese characters via short
-line segments. *Pattern Recognition*. 25(5) 543-552.
-
-
-----------
-
-**Example 1:** thin_lc()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/thin_lc_plugin_00.png
-
-
-
-``thin_zs``
-```````````
-
-Image [OneBit] **thin_zs** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``Image [OneBit]``
-:Category: Filter/Thinning
-:Defined in: thinning.py
-:Author: Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)
-
-
-Thins (skeletonizes) a ONEBIT image using the Zhang and Suen algorithm
-
-T. Y. Zhang and C. Y. Suen. 1984.
-A Fast Parallel Algorithm for Thinning Digital Patterns.,
-*Communications of ACM*, 2(3).
-  
-R. C. Gonzalez and P. Wintz. 1987
-*Digital Image Processing.*,
-2. edition. 398-402. 
-
-
-----------
-
-**Example 1:** thin_zs()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/thin_zs_plugin_00.png
-
-
-
-``outline``
------------
-
-Image [OneBit] **outline** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``Image [OneBit]``
-:Category: Filter
-:Defined in: misc_filters.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Traces the outline of the image.  This result is obtained by
-dilating the image and then XOR'ing the result with the original.
-
-----------
-
-**Example 1:** outline()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/outline_plugin_00.png
-
-
-
-
-List
-====
-
-``permute_list``
-----------------
-
-int **permute_list** (``Class`` *list*)
-
-
-:Returns: ``int``
-:Category: List
-:Defined in: listutilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Permutes the given list (in place) one step.
-
-Returns ``True`` if there are more permutations to go.  Returns ``False`` if
-permutations are done.
-
-Example usage::
-
-   >>>from gamera.plugins import listutilities
-   >>>a = [1,2,3]
-   >>>while listutilities.permute_list(a):
-   ...    print a
-   ...
-   [2, 1, 3]
-   [1, 3, 2]
-   [3, 1, 2]
-   [2, 3, 1]
-   [3, 2, 1]
-
-
-
-
-Morphology
-==========
-
-``despeckle``
--------------
-
-**despeckle** (``int(1, 100)`` *cc_size*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Removes connected components that are smaller than the given size.
-
-*size*
-  The maximum number of pixels in each connected component that
-  will be removed.
-
-This approach to finding connected components uses a pseudo-recursive
-descent, which gets around the hard limit of ~64k connected components
-per page in ``cc_analysis``.  Unfortunately, this approach is much
-slower as the connected components get large, so *size* should be
-kept relatively small.
-
-*size* == 1 is a special case and runs much faster, since it does not
-require recursion.
-  
-
-----------
-
-**Example 1:** despeckle(5,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/despeckle_plugin_00.png
-
-**Example 2:** despeckle(15,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/despeckle_plugin_01.png
-
-
-
-``dilate``
-----------
-
-**dilate** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Dilates the image by the image morphology method.
-
-----------
-
-**Example 1:** dilate()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/dilate_plugin_00.png
-
-**Example 2:** dilate()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/dilate_plugin_01.png
-
-
-
-``erode``
----------
-
-**erode** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Erodes the image by the image morphology method.
-
-----------
-
-**Example 1:** erode()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/erode_plugin_00.png
-
-**Example 2:** erode()
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/erode_plugin_01.png
-
-
-
-``erode_dilate``
-----------------
-
-**erode_dilate** (``int(0, 10)`` *ntimes*, ``Choice[dilate|erode]`` *direction*, ``Choice[rectangular|octagonal]`` *shape*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Erodes or dilates the image by the image morphology method.
-
-*ntimes*
-  The number of times to perform the operation.
-*direction*
-  dilate (0)
-    increase the presence of black
-  erode (1)
-    decrease the presence of black
-*shape*
-  rectangular (0)
-    use a 3x3 rectangular morphology operator
-  octagonal (1)
-    use a 3x3 octagonal morphology operator
-
-
-----------
-
-**Example 1:** erode_dilate(10, 0, 1)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/erode_dilate_plugin_00.png
-
-
-
-``mean``
---------
-
-**mean** ()
-
-
-:Operates on: ``Image [GreyScale|Float]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Within each 3x3 window, set the center pixel to the mean value of
-all 9 pixels.
-
-----------
-
-**Example 1:** mean()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/mean_plugin_00.png
-
-
-
-``rank``
---------
-
-**rank** (``int(1, 9)`` *rank*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Float]``
-:Category: Morphology
-:Defined in: morphology.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Within each 3x3 window, set the center pixel to the *n*-th ranked
-value.
-
-*rank* (1 - 9)
-  The rank of the 9 pixels to select for the center.  5 is equivalent to
-  the median.
-
-----------
-
-**Example 1:** rank(2,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/rank_plugin_00.png
-
-**Example 2:** rank(5,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/rank_plugin_01.png
-
-**Example 3:** rank(8,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/rank_plugin_02.png
-
-
-
-
-Relational
-==========
-
-``polar_distance``
-------------------
-
-FloatVector **polar_distance** (``Image [OneBit|GreyScale|Grey16|RGB|Float]`` *other*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``FloatVector``
-:Category: Relational
-:Defined in: structural.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a tuple containing the normalized distance, polar direction,
-    and non-normalized polar distance to another glyph (based on center of bounding boxes).
-
-
-``polar_match``
----------------
-
-int **polar_match** (``double`` *r1*, ``double`` *q1*, ``double`` *r2*, ``double`` *q2*)
-
-
-:Returns: ``int``
-:Category: Relational
-:Defined in: structural.py
-:Author: Michael Droettboom and Karl MacMillan
-
-.. warning:: No documentation written.
-
-
-
-
-Runlength
-=========
-
-``filter_narrow_runs``
-----------------------
-
-**filter_narrow_runs** (``int`` *size*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Removes black horizontal runs narrower than a given length.
-
-----------
-
-**Example 1:** filter_narrow_runs(5,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/filter_narrow_runs_plugin_00.png
-
-
-
-``filter_short_runs``
----------------------
-
-**filter_short_runs** (``int`` *size*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Removes black vertical runs shorter than a given length.
-
-----------
-
-**Example 1:** filter_short_runs(5,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/filter_short_runs_plugin_00.png
-
-
-
-``filter_tall_runs``
---------------------
-
-**filter_tall_runs** (``int`` *size*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Removes black vertical runs taller than a given length.
-
-----------
-
-**Example 1:** filter_tall_runs(10,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/filter_tall_runs_plugin_00.png
-
-
-
-``filter_wide_runs``
---------------------
-
-**filter_wide_runs** (``int`` *size*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Removes black horizontal runs wider than a given length.
-
-----------
-
-**Example 1:** filter_wide_runs(10,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/filter_wide_runs_plugin_00.png
-
-
-
-``from_rle``
-------------
-
-**from_rle** (``String`` *runs*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Decodes a string-based run-length encoded version of the image.
-
-The numbers alternate between "length of black run" and "length of white run".
-Runs go left-to-right, top-to-bottom.
-Runs rollover the right hand edge and continue on the left edge of the next run.
-
-To encode an RLE string, use to_rle_.
-
-
-``most_frequent_black_horizontal_run``
---------------------------------------
-
-int **most_frequent_black_horizontal_run** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``int``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the length of the most frequently occurring horizontal run of
-black pixels.
-
-----------
-
-**Example 1:** most_frequent_black_horizontal_run()
-
-.. image:: images/OneBit_generic.png
-
-*result* = 9
-
-
-
-``most_frequent_black_vertical_run``
-------------------------------------
-
-int **most_frequent_black_vertical_run** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``int``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the length of the most frequently occurring vertical run of
-black pixels.
-
-----------
-
-**Example 1:** most_frequent_black_vertical_run()
-
-.. image:: images/OneBit_generic.png
-
-*result* = 3
-
-
-
-``most_frequent_white_horizontal_run``
---------------------------------------
-
-int **most_frequent_white_horizontal_run** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``int``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the length of the most frequently occurring horizontal run of
-white pixels.
-
-----------
-
-**Example 1:** most_frequent_white_horizontal_run()
-
-.. image:: images/OneBit_generic.png
-
-*result* = 9
-
-
-
-``most_frequent_white_vertical_run``
-------------------------------------
-
-int **most_frequent_white_vertical_run** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``int``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the length of the most frequently occurring vertical run of
-white pixels.
-
-----------
-
-**Example 1:** most_frequent_white_vertical_run()
-
-.. image:: images/OneBit_generic.png
-
-*result* = 1
-
-
-
-``to_rle``
-----------
-
-String **to_rle** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``String``
-:Category: Runlength
-:Defined in: runlength.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Encodes a string-based run-length encoded version of the image.
-
-The numbers alternate between "length of black run" and "length of white run".
-Runs go left-to-right, top-to-bottom.
-Runs rollover the right hand edge and continue on the left edge of the next run.
-
-To decode an RLE string, use from_rle_.
-
-----------
-
-**Example 1:** to_rle()
-
-.. image:: images/OneBit_generic.png
-
-*result* = '42 12 56 17 53 19 61 10 63 9 63 8 64 7 64 7 64 7 64 7 64 7 63 7 64 6 64 7 64 6 65 6 64 6 63 7 63 7 65 5 65 4 66 5 65 5 65 5 64 5 65 5 53 2 10 4 52 4 9 4 52 4 9 5 51 4 9 5 30 5 15 7 7 5 28 8 14 9 5 6 27 7 14 12 2 6 26 8 14 19 28 7 14 5 2 13 28 7 14 6 2 11 29 7 13 8 2 9 30 7 13 9 5 4 31 8 12 10 39 8 11 12 39 7 11 13 38 7 10 5 1 9 10 1 26 7 10 4 3 9 10 2 24 8 8 5 4 9 9 3 24 7 8 4 6 9 10 1 24 8 8 3 7 9 35 7 20 8 34 8 20 8 34 8 19 9 33 9 19 9 33 8 20 9 33 8 20 9 33 8 21 8 32 9 20 9 32 9 20 9 10 1 19 11 20 9 9 2 20 10 20 9 9 2 21 9 20 9 9 2 21 9 20 9 9 2 21 9 20 9 9 2 21 10 19 9 9 1 22 10 19 9 9 1 22 10 19 9 9 1 22 11 18 9 9 1 23 10 18 9 9 1 23 10 18 9 33 10 18 8 34 11 17 8 35 11 16 8 35 11 16 8 35 11 16 8 36 11 15 7 37 11 15 5 33 2 5 11 14 3 33 3 6 12 12 3 33 3 8 11 10 4 17 1 16 2 10 12 6 5 17 5 13 1 11 13 4 4 18 5 27 14 1 4 18 6 29 15 17 8 31 16 10 11 34 35 36 33 39 29 43 25 47 21 52 15 62 4 329 4 36 2 30 4 31 5 32 6 25 5 35 6 21 7 39 11 6 11 46 21 52 14 66 1 27 0 '
-
-
-
-
-Segmentation
-============
-
-``cc_analysis``
----------------
-
-ImageList **cc_analysis** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Performs connected component analysis on the image.
-
-This algorithm assumes 8-connected components, meaning any two pixels are
-considered "connected" if they are adjacent in any direction, including
-diagonally.
-
-The original image will have all of its pixels "labeled" with a number
-representing each connected component.  This is so the connected components
-can share data with their source image and makes things much more efficient.
-
-Returns a list of ccs found in the image.  Since all the CC's share the same
-data with the original image, changing the CC's will affect the original.  If
-you do not want this behavior, use the image_copy_ function on each of the CCs::
-
-   ccs = [x.image_copy() for x in ccs]
-
-
-
-----------
-
-**Example 1:** cc_analysis()
-
-.. image:: images/OneBit_generic.png
-
-|cc_analysis_plugin_00_00| |cc_analysis_plugin_00_01| |cc_analysis_plugin_00_02| |cc_analysis_plugin_00_03| |cc_analysis_plugin_00_04| 
-
-.. |cc_analysis_plugin_00_00| image:: images/cc_analysis_plugin_00_00.png
-.. |cc_analysis_plugin_00_01| image:: images/cc_analysis_plugin_00_01.png
-.. |cc_analysis_plugin_00_02| image:: images/cc_analysis_plugin_00_02.png
-.. |cc_analysis_plugin_00_03| image:: images/cc_analysis_plugin_00_03.png
-.. |cc_analysis_plugin_00_04| image:: images/cc_analysis_plugin_00_04.png
-
-
-``cc_and_cluster``
-------------------
-
-ImageList **cc_and_cluster** (``double`` *ratio*, ``int`` *distance*)
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Performs connected component analysis using cc_analysis_ and then
-clusters the CC's according to their similarity.
-
-TODO: We need some more detailed documentation here.
-
-----------
-
-**Example 1:** cc_and_cluster()
-
-.. image:: images/OneBit_generic.png
-
-|cc_and_cluster_plugin_00_00| |cc_and_cluster_plugin_00_01| |cc_and_cluster_plugin_00_02| |cc_and_cluster_plugin_00_03| |cc_and_cluster_plugin_00_04| 
-
-.. |cc_and_cluster_plugin_00_00| image:: images/cc_and_cluster_plugin_00_00.png
-.. |cc_and_cluster_plugin_00_01| image:: images/cc_and_cluster_plugin_00_01.png
-.. |cc_and_cluster_plugin_00_02| image:: images/cc_and_cluster_plugin_00_02.png
-.. |cc_and_cluster_plugin_00_03| image:: images/cc_and_cluster_plugin_00_03.png
-.. |cc_and_cluster_plugin_00_04| image:: images/cc_and_cluster_plugin_00_04.png
-
-
-``splitx``
-----------
-
-ImageList **splitx** (``double`` *center*)
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image vertically.
-
-The split point is determined automatically
-by finding a valley in the projections near the center of the image.
-
-----------
-
-**Example 1:** splitx()
-
-.. image:: images/OneBit_generic.png
-
-|splitx_plugin_00_00| |splitx_plugin_00_01| |splitx_plugin_00_02| |splitx_plugin_00_03| |splitx_plugin_00_04| |splitx_plugin_00_05| |splitx_plugin_00_06| |splitx_plugin_00_07| |splitx_plugin_00_08| 
-
-.. |splitx_plugin_00_00| image:: images/splitx_plugin_00_00.png
-.. |splitx_plugin_00_01| image:: images/splitx_plugin_00_01.png
-.. |splitx_plugin_00_02| image:: images/splitx_plugin_00_02.png
-.. |splitx_plugin_00_03| image:: images/splitx_plugin_00_03.png
-.. |splitx_plugin_00_04| image:: images/splitx_plugin_00_04.png
-.. |splitx_plugin_00_05| image:: images/splitx_plugin_00_05.png
-.. |splitx_plugin_00_06| image:: images/splitx_plugin_00_06.png
-.. |splitx_plugin_00_07| image:: images/splitx_plugin_00_07.png
-.. |splitx_plugin_00_08| image:: images/splitx_plugin_00_08.png
-
-
-``splitx_left``
----------------
-
-ImageList **splitx_left** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image vertically.
-
-The split point is determined automatically
-by finding a valley in the projections near the left of the image.
-
-----------
-
-**Example 1:** splitx_left()
-
-.. image:: images/OneBit_generic.png
-
-|splitx_left_plugin_00_00| |splitx_left_plugin_00_01| |splitx_left_plugin_00_02| |splitx_left_plugin_00_03| |splitx_left_plugin_00_04| |splitx_left_plugin_00_05| |splitx_left_plugin_00_06| |splitx_left_plugin_00_07| 
-
-.. |splitx_left_plugin_00_00| image:: images/splitx_left_plugin_00_00.png
-.. |splitx_left_plugin_00_01| image:: images/splitx_left_plugin_00_01.png
-.. |splitx_left_plugin_00_02| image:: images/splitx_left_plugin_00_02.png
-.. |splitx_left_plugin_00_03| image:: images/splitx_left_plugin_00_03.png
-.. |splitx_left_plugin_00_04| image:: images/splitx_left_plugin_00_04.png
-.. |splitx_left_plugin_00_05| image:: images/splitx_left_plugin_00_05.png
-.. |splitx_left_plugin_00_06| image:: images/splitx_left_plugin_00_06.png
-.. |splitx_left_plugin_00_07| image:: images/splitx_left_plugin_00_07.png
-
-
-``splitx_max``
---------------
-
-ImageList **splitx_max** (``double`` *center*)
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image vertically.
-
-The split point is determined automatically
-by finding a peak in the projections near the center of the image.
-
-----------
-
-**Example 1:** splitx_max()
-
-.. image:: images/OneBit_generic.png
-
-|splitx_max_plugin_00_00| |splitx_max_plugin_00_01| |splitx_max_plugin_00_02| |splitx_max_plugin_00_03| |splitx_max_plugin_00_04| |splitx_max_plugin_00_05| |splitx_max_plugin_00_06| |splitx_max_plugin_00_07| |splitx_max_plugin_00_08| 
-
-.. |splitx_max_plugin_00_00| image:: images/splitx_max_plugin_00_00.png
-.. |splitx_max_plugin_00_01| image:: images/splitx_max_plugin_00_01.png
-.. |splitx_max_plugin_00_02| image:: images/splitx_max_plugin_00_02.png
-.. |splitx_max_plugin_00_03| image:: images/splitx_max_plugin_00_03.png
-.. |splitx_max_plugin_00_04| image:: images/splitx_max_plugin_00_04.png
-.. |splitx_max_plugin_00_05| image:: images/splitx_max_plugin_00_05.png
-.. |splitx_max_plugin_00_06| image:: images/splitx_max_plugin_00_06.png
-.. |splitx_max_plugin_00_07| image:: images/splitx_max_plugin_00_07.png
-.. |splitx_max_plugin_00_08| image:: images/splitx_max_plugin_00_08.png
-
-
-``splitx_right``
-----------------
-
-ImageList **splitx_right** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image vertically.
-
-The split point is determined automatically
-by finding a valley in the projections near the right of the image.
-
-----------
-
-**Example 1:** splitx_right()
-
-.. image:: images/OneBit_generic.png
-
-|splitx_right_plugin_00_00| |splitx_right_plugin_00_01| |splitx_right_plugin_00_02| |splitx_right_plugin_00_03| |splitx_right_plugin_00_04| |splitx_right_plugin_00_05| |splitx_right_plugin_00_06| 
-
-.. |splitx_right_plugin_00_00| image:: images/splitx_right_plugin_00_00.png
-.. |splitx_right_plugin_00_01| image:: images/splitx_right_plugin_00_01.png
-.. |splitx_right_plugin_00_02| image:: images/splitx_right_plugin_00_02.png
-.. |splitx_right_plugin_00_03| image:: images/splitx_right_plugin_00_03.png
-.. |splitx_right_plugin_00_04| image:: images/splitx_right_plugin_00_04.png
-.. |splitx_right_plugin_00_05| image:: images/splitx_right_plugin_00_05.png
-.. |splitx_right_plugin_00_06| image:: images/splitx_right_plugin_00_06.png
-
-
-``splity``
-----------
-
-ImageList **splity** (``double`` *center*)
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image horizontally.
-
-The split point is determined automatically
-by finding a valley in the projections near the center of the image.
-
-----------
-
-**Example 1:** splity()
-
-.. image:: images/OneBit_generic.png
-
-|splity_plugin_00_00| |splity_plugin_00_01| |splity_plugin_00_02| |splity_plugin_00_03| |splity_plugin_00_04| |splity_plugin_00_05| |splity_plugin_00_06| 
-
-.. |splity_plugin_00_00| image:: images/splity_plugin_00_00.png
-.. |splity_plugin_00_01| image:: images/splity_plugin_00_01.png
-.. |splity_plugin_00_02| image:: images/splity_plugin_00_02.png
-.. |splity_plugin_00_03| image:: images/splity_plugin_00_03.png
-.. |splity_plugin_00_04| image:: images/splity_plugin_00_04.png
-.. |splity_plugin_00_05| image:: images/splity_plugin_00_05.png
-.. |splity_plugin_00_06| image:: images/splity_plugin_00_06.png
-
-
-``splity_bottom``
------------------
-
-ImageList **splity_bottom** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image horizontally.
-
-The split point is determined automatically
-by finding a valley in the projections near the bottom of the image.
-
-----------
-
-**Example 1:** splity_bottom()
-
-.. image:: images/OneBit_generic.png
-
-|splity_bottom_plugin_00_00| |splity_bottom_plugin_00_01| |splity_bottom_plugin_00_02| |splity_bottom_plugin_00_03| |splity_bottom_plugin_00_04| |splity_bottom_plugin_00_05| |splity_bottom_plugin_00_06| 
-
-.. |splity_bottom_plugin_00_00| image:: images/splity_bottom_plugin_00_00.png
-.. |splity_bottom_plugin_00_01| image:: images/splity_bottom_plugin_00_01.png
-.. |splity_bottom_plugin_00_02| image:: images/splity_bottom_plugin_00_02.png
-.. |splity_bottom_plugin_00_03| image:: images/splity_bottom_plugin_00_03.png
-.. |splity_bottom_plugin_00_04| image:: images/splity_bottom_plugin_00_04.png
-.. |splity_bottom_plugin_00_05| image:: images/splity_bottom_plugin_00_05.png
-.. |splity_bottom_plugin_00_06| image:: images/splity_bottom_plugin_00_06.png
-
-
-``splity_top``
---------------
-
-ImageList **splity_top** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``ImageList``
-:Category: Segmentation
-:Defined in: segmentation.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Splits an image horizontally.
-
-The split point is determined automatically
-by finding a valley in the projections near the top of the image.
-
-----------
-
-**Example 1:** splity_top()
-
-.. image:: images/OneBit_generic.png
-
-|splity_top_plugin_00_00| |splity_top_plugin_00_01| |splity_top_plugin_00_02| |splity_top_plugin_00_03| |splity_top_plugin_00_04| |splity_top_plugin_00_05| 
-
-.. |splity_top_plugin_00_00| image:: images/splity_top_plugin_00_00.png
-.. |splity_top_plugin_00_01| image:: images/splity_top_plugin_00_01.png
-.. |splity_top_plugin_00_02| image:: images/splity_top_plugin_00_02.png
-.. |splity_top_plugin_00_03| image:: images/splity_top_plugin_00_03.png
-.. |splity_top_plugin_00_04| image:: images/splity_top_plugin_00_04.png
-.. |splity_top_plugin_00_05| image:: images/splity_top_plugin_00_05.png
-
-
-
-Thresholding
-============
-
-``abutaleb_threshold``
-----------------------
-
-Image [OneBit] **abutaleb_threshold** (``Choice[dense|rle]`` *storage format*)
-
-
-:Operates on: ``Image [GreyScale]``
-:Returns: ``Image [OneBit]``
-:Category: Thresholding
-:Defined in: threshold.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a binary image by using the Abutaleb locally-adaptive thresholding
-algorithm.
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-----------
-
-**Example 1:** abutaleb_threshold()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/abutaleb_threshold_plugin_00.png
-
-
-
-``bernsen_threshold``
----------------------
-
-Image [OneBit] **bernsen_threshold** (``Choice[dense|rle]`` *storage format*, ``int(1, 50)`` *region size*, ``int(0, 255)`` *contrast limit*, ``bool`` *doubt*)
-
-
-:Operates on: ``Image [GreyScale]``
-:Returns: ``Image [OneBit]``
-:Category: Thresholding
-:Defined in: threshold.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a binary image by using the Bernsen algorithm.
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-----------
-
-**Example 1:** bernsen_threshold()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/bernsen_threshold_plugin_00.png
-
-
-
-``otsu_find_threshold``
------------------------
-
-int **otsu_find_threshold** ()
-
-
-:Operates on: ``Image [GreyScale]``
-:Returns: ``int``
-:Category: Thresholding
-:Defined in: threshold.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Finds a threshold point using the Otsu algorithm
-
-----------
-
-**Example 1:** otsu_find_threshold()
-
-.. image:: images/GreyScale_generic.png
-
-*result* = 143
-
-
-
-``otsu_threshold``
-------------------
-
-Image [OneBit] **otsu_threshold** (``Choice[dense|rle]`` *storage format*)
-
-
-:Operates on: ``Image [GreyScale]``
-:Returns: ``Image [OneBit]``
-:Category: Thresholding
-:Defined in: threshold.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a binary image by splitting along a threshold value determined
-using the Otsu algorithm.
-
-Equivalent to ``image.threshold(image.otsu_find_threshold())``.
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-----------
-
-**Example 1:** otsu_threshold()
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/otsu_threshold_plugin_00.png
-
-
-
-``threshold``
--------------
-
-Image [OneBit] **threshold** (``int`` *threshold*, ``Choice[dense|rle]`` *storage format*)
-
-
-:Operates on: ``Image [GreyScale|Grey16|Float]``
-:Returns: ``Image [OneBit]``
-:Category: Thresholding
-:Defined in: threshold.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Creates a binary image by splitting along a given threshold value.
-
-Pixels that are greater than the given value become white.
-Pixels less than the given value become black.
-
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-----------
-
-**Example 1:** threshold(128,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/threshold_plugin_00.png
-
-
-
-
-Utility
-=======
-
-
-Combine
--------
-
-``and_image``
-`````````````
-
-**and_image** (``Image [OneBit]`` *mask*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Utility/Combine
-:Defined in: logical.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Perform the AND operation on two images.
-
-The result is written directly to the self image.  Create a new copy (using ``image_copy``)
-first, if you do not wish to change the original data.
-
-
-
-``mask``
-````````
-
-Image [GreyScale|RGB] **mask** (``Image [OneBit]`` *mask*)
-
-
-:Operates on: ``Image [GreyScale|RGB]``
-:Returns: ``Image [GreyScale|RGB]``
-:Category: Utility/Combine
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Masks an image using the given ONEBIT image.  Parts of the ONEBIT
-image that are white will be changed to white in the resulting image.
-
-
-``or_image``
-````````````
-
-**or_image** (``Image [OneBit]`` *mask*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Utility/Combine
-:Defined in: logical.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Perform the OR operation on two images.
-
-The result is written directly to the self image.  Create a new copy (using ``image_copy``)
-first, if you do not wish to change the original data.
-
-
-
-``union_images``
-````````````````
-
-Image [OneBit] **union_images** (``ImageList`` *list_of_images*)
-
-
-:Returns: ``Image [OneBit]``
-:Category: Utility/Combine
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns an image that is the union of the given list of connected components.
-
-
-``xor_image``
-`````````````
-
-**xor_image** (``Image [OneBit]`` *mask*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Utility/Combine
-:Defined in: logical.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Perform the XOR operation on two images.
-
-The result is written directly to the self image.  Create a new copy (using ``image_copy``)
-first, if you do not wish to change the original data.
-
-
-
-
-NestedLists
------------
-
-``nested_list_to_image``
-````````````````````````
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **nested_list_to_image** (``Class`` *nested_list*, ``Choice[ONEBIT|GREYSCALE|GREY16|RGB|FLOAT]`` *image_type*)
-
-
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Utility/NestedLists
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts a nested Python list to an Image.  Is the inverse of ``to_nested_list``.
-
-*nested_list*
-  A nested Python list in row-major order.  If the list is a flat list,
-  an image with a single row will be created.
-  
-*image_type*
-  The resulting image type.  Should be one of the integer Image type
-  constants (ONEBIT, GREYSCALE, GREY16, RGB, FLOAT).  If image_type
-  is not provided or less than 0, the image type will be determined
-  by auto-detection from the list.  The following list shows the mapping
-  from Python type to image type:
-
-    - int -> GREYSCALE
-    - float -> FLOAT
-    - RGBPixel -> RGB
-
-  To obtain other image types, the type number must be explicitly passed.
-
-TODO: Handle Python arrays.  This is difficult without a proper C API.
-
-.. code:: Python
-
-   # Sobel kernel (implicitly will be a FLOAT image)
-   kernel = nested_list_to_image([[0.125, 0.0, -0.125],
-                                  [0.25 , 0.0, -0.25 ],
-                                  [0.125, 0.0, -0.125]])
-
-   # Single row image (note that nesting is optional)
-   image = nested_list_to_image([RGBPixel(255, 0, 0),
-                                 RGBPixel(0, 255, 0),
-                                 RGBPixel(0, 0, 255)])
-
-
-
-
-``to_nested_list``
-``````````````````
-
-Class **to_nested_list** ()
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Class``
-:Category: Utility/NestedLists
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Converts an image to a nested Python list.
-This method is the inverse of ``nested_list_to_image``.
-
-The following table describes how each image type is converted to
-Python types:
-
-  - ONEBIT -> int
-  - GREYSCALE -> int
-  - GREY16 -> int
-  - RGB -> RGBPixel
-  - FLOAT -> float
-
-
-----------
-
-**Example 1:** to_nested_list()
-
-.. image:: images/OneBit_generic.png
-
-*result* = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-
-
-``clip_image``
---------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **clip_image** (``Rect`` *other*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Crops an image so that the bounding box includes only the intersection of
-it and another image.  Returns a zero-sized image if the two images do
-not intersect.
-
-
-``corelation``
---------------
-
-double **corelation** (``Image [OneBit]`` *template*, ``int`` *y_offset*, ``int`` *x_offset*)
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``double``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a floating-point value for how well an image is corelated
-to another image placed at a given (*x*, *y*).  Uses the sum of squares
-method.  A greater result implies more corelation.
-
-*template*
-   The template image.
-*y*, *x*
-   The displacement of the template on the image.
-
-
-
-``generate_features``
----------------------
-
-**generate_features** (``Class`` *features*, ``bool`` *force*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: Utility
-:Defined in: features.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Generates features for the image by calling a number of feature functions
-and storing the results in the image's ``features`` member variable (a Python ``array``).
-
-*features*
-  Optional.  A list of feature function names.  If not given, the previously
-  set feature functions will be used.  If none were previously given,
-  all available feature functions will be used.  Using all feature functions
-  can also be forced by passing ``'all'``.
-
-.. warning: For efficiency, if the given feature functions
-  match those that have been already generated for the image, the
-  features are *not* recalculated.  If you want to force recalculation,
-  pass the optional argument ``force=True``.
-
-
-``highlight``
--------------
-
-**highlight** (``Image [OneBit]`` *cc*)
-
-
-:Operates on: ``Image [RGB]``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-.. warning:: No documentation written.
-
-
-
-``image_copy``
---------------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **image_copy** (``Choice[DENSE|RLE]`` *storage_format*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Copies an image along with all of its underlying data.  Since the data is
-copied, changes to the new image do not affect the original image.
-
-*storage_format*
-  specifies the compression type for the returned copy:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-
-
-``resize``
-----------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **resize** (``int`` *nrows*, ``int`` *ncols*, ``Choice[None|Linear|Spline]`` *interp_type*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a resized copy of an image. In addition to size, the type of
-interpolation can be specified, with a tradeoff between speed
-and quality.
-
-If you need to maintain the aspect ratio of the original image,
-consider using scale_ instead.
-
-*nrows*
-   The height of the resulting image.
-*ncols*
-   The width of the resulting image.
-*interp_type* [None|Linear|Spline]
-   The type of interpolation used to resize the image.  Each option is
-   progressively higher quality, yet slower.
-
-
-----------
-
-**Example 1:** resize(96, 32, 3)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/resize_plugin_00.png
-
-
-
-``scale``
----------
-
-Image [OneBit|GreyScale|Grey16|RGB|Float] **scale** (``double`` *scaling*, ``Choice[None|Linear|Spline]`` *interp_type*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
-:Category: Utility
-:Defined in: image_utilities.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a scaled copy of the image. In addition to scale, the type of
-interpolation can be specified, with a tradeoff between speed
-and quality.
-
-If you need to change the aspect ratio of the original image,
-consider using resize_ instead.
-
-*scale*
-   A scaling factor.  Values greater than 1 will result in a larger image.
-   Values less than 1 will result in a smaller image.
-*interp_type* [None|Linear|Spline]
-   The type of interpolation used to resize the image.  Each option is
-   progressively higher quality, yet slower.
-
-
-----------
-
-**Example 1:** scale(0.5, 3)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/scale_plugin_00.png
-
-**Example 2:** scale(2.0, 3)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/scale_plugin_01.png
-
-
-
-
-XML
-===
-
-``to_xml``
-----------
-
-String **to_xml** ()
-
-
-:Operates on: ``Image [OneBit]``
-:Returns: ``String``
-:Category: XML
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns a string containing the Gamera XML representation of the image.
-(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
-
-
-
-``to_xml_filename``
--------------------
-
-**to_xml_filename** (``FileSave`` *filename*)
-
-
-:Operates on: ``Image [OneBit]``
-:Category: XML
-:Defined in: plugin.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Saves the Gamera XML representation of the image to the given *filename*.
-(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
-
-
-
+**Z**
+
+zernike_moments_
+
+.. _Analysis: analysis.html#analysis
+.. _histogram: analysis.html#histogram
+.. _projection_cols: analysis.html#projection-cols
+.. _projection_rows: analysis.html#projection-rows
+.. _projections: analysis.html#projections
+.. _Arithmetic: arithmetic.html#arithmetic
+.. _add_images: arithmetic.html#add-images
+.. _divide_images: arithmetic.html#divide-images
+.. _multiply_images: arithmetic.html#multiply-images
+.. _subtract_images: arithmetic.html#subtract-images
+.. _Classification: classification.html#classification
+.. _classify_automatic: classification.html#classify-automatic
+.. _classify_heuristic: classification.html#classify-heuristic
+.. _classify_manual: classification.html#classify-manual
+.. _match_id_name: classification.html#match-id-name
+.. _unclassify: classification.html#unclassify
+.. _Color: color.html#color
+.. _blue: color.html#blue
+.. _cie_x: color.html#cie-x
+.. _cie_y: color.html#cie-y
+.. _cie_z: color.html#cie-z
+.. _color_ccs: color.html#color-ccs
+.. _cyan: color.html#cyan
+.. _false_color: color.html#false-color
+.. _green: color.html#green
+.. _hue: color.html#hue
+.. _magenta: color.html#magenta
+.. _red: color.html#red
+.. _saturation: color.html#saturation
+.. _value: color.html#value
+.. _yellow: color.html#yellow
+.. _Conversion: conversion.html#conversion
+.. _to_float: conversion.html#to-float
+.. _to_grey16: conversion.html#to-grey16
+.. _to_greyscale: conversion.html#to-greyscale
+.. _to_onebit: conversion.html#to-onebit
+.. _to_rgb: conversion.html#to-rgb
+.. _Convolution: convolution.html#convolution
+.. _Kernels: convolution.html#kernels
+.. _AveragingKernel: convolution.html#averagingkernel
+.. _BinomialKernel: convolution.html#binomialkernel
+.. _GaussianDerivativeKernel: convolution.html#gaussianderivativekernel
+.. _GaussianKernel: convolution.html#gaussiankernel
+.. _SimpleSharpeningKernel: convolution.html#simplesharpeningkernel
+.. _SymmetricGradientKernel: convolution.html#symmetricgradientkernel
+.. _convolve: convolution.html#convolve
+.. _convolve_x: convolution.html#convolve-x
+.. _convolve_xy: convolution.html#convolve-xy
+.. _convolve_y: convolution.html#convolve-y
+.. _gaussian_gradient: convolution.html#gaussian-gradient
+.. _gaussian_smoothing: convolution.html#gaussian-smoothing
+.. _hessian_matrix_of_gaussian: convolution.html#hessian-matrix-of-gaussian
+.. _laplacian_of_gaussian: convolution.html#laplacian-of-gaussian
+.. _simple_sharpen: convolution.html#simple-sharpen
+.. _sobel_edge_detection: convolution.html#sobel-edge-detection
+.. _DTW: dtw.html#dtw
+.. _dtw_matrix: dtw.html#dtw-matrix
+.. _dtw_matrix_with_function: dtw.html#dtw-matrix-with-function
+.. _smith_waterman: dtw.html#smith-waterman
+.. _Deformations: deformations.html#deformations
+.. _inkrub: deformations.html#inkrub
+.. _noise: deformations.html#noise
+.. _rotateShear: deformations.html#rotateshear
+.. _wave: deformations.html#wave
+.. _Displaying: displaying.html#displaying
+.. _display: displaying.html#display
+.. _display_ccs: displaying.html#display-ccs
+.. _display_false_color: displaying.html#display-false-color
+.. _Draw: draw.html#draw
+.. _draw_filled_rect: draw.html#draw-filled-rect
+.. _draw_hollow_rect: draw.html#draw-hollow-rect
+.. _draw_line: draw.html#draw-line
+.. _fill_white: draw.html#fill-white
+.. _flood_fill: draw.html#flood-fill
+.. _highlight: draw.html#highlight
+.. _invert: draw.html#invert
+.. _remove_border: draw.html#remove-border
+.. _Features: features.html#features
+.. _area: features.html#area
+.. _aspect_ratio: features.html#aspect-ratio
+.. _black_area: features.html#black-area
+.. _compactness: features.html#compactness
+.. _moments: features.html#moments
+.. _nholes: features.html#nholes
+.. _nholes_extended: features.html#nholes-extended
+.. _skeleton_features: features.html#skeleton-features
+.. _top_bottom: features.html#top-bottom
+.. _volume: features.html#volume
+.. _volume16regions: features.html#volume16regions
+.. _volume64regions: features.html#volume64regions
+.. _zernike_moments: features.html#zernike-moments
+.. _File: file.html#file
+.. _PNG_info: file.html#png-info
+.. _load_PNG: file.html#load-png
+.. _load_image: file.html#load-image
+.. _load_tiff: file.html#load-tiff
+.. _save_PNG: file.html#save-png
+.. _save_tiff: file.html#save-tiff
+.. _tiff_info: file.html#tiff-info
+.. _Filter: filter.html#filter
+.. _Thinning: filter.html#thinning
+.. _thin_hs: filter.html#thin-hs
+.. _thin_lc: filter.html#thin-lc
+.. _thin_zs: filter.html#thin-zs
+.. _outline: filter.html#outline
+.. _List: list.html#list
+.. _permute_list: list.html#permute-list
+.. _Morphology: morphology.html#morphology
+.. _despeckle: morphology.html#despeckle
+.. _dilate: morphology.html#dilate
+.. _erode: morphology.html#erode
+.. _erode_dilate: morphology.html#erode-dilate
+.. _mean: morphology.html#mean
+.. _rank: morphology.html#rank
+.. _Relational: relational.html#relational
+.. _polar_distance: relational.html#polar-distance
+.. _polar_match: relational.html#polar-match
+.. _Runlength: runlength.html#runlength
+.. _filter_narrow_runs: runlength.html#filter-narrow-runs
+.. _filter_short_runs: runlength.html#filter-short-runs
+.. _filter_tall_runs: runlength.html#filter-tall-runs
+.. _filter_wide_runs: runlength.html#filter-wide-runs
+.. _from_rle: runlength.html#from-rle
+.. _most_frequent_black_horizontal_run: runlength.html#most-frequent-black-horizontal-run
+.. _most_frequent_black_vertical_run: runlength.html#most-frequent-black-vertical-run
+.. _most_frequent_white_horizontal_run: runlength.html#most-frequent-white-horizontal-run
+.. _most_frequent_white_vertical_run: runlength.html#most-frequent-white-vertical-run
+.. _to_rle: runlength.html#to-rle
+.. _Segmentation: segmentation.html#segmentation
+.. _cc_analysis: segmentation.html#cc-analysis
+.. _cc_and_cluster: segmentation.html#cc-and-cluster
+.. _splitx: segmentation.html#splitx
+.. _splitx_left: segmentation.html#splitx-left
+.. _splitx_max: segmentation.html#splitx-max
+.. _splitx_right: segmentation.html#splitx-right
+.. _splity: segmentation.html#splity
+.. _splity_bottom: segmentation.html#splity-bottom
+.. _splity_top: segmentation.html#splity-top
+.. _Thresholding: thresholding.html#thresholding
+.. _abutaleb_threshold: thresholding.html#abutaleb-threshold
+.. _bernsen_threshold: thresholding.html#bernsen-threshold
+.. _otsu_find_threshold: thresholding.html#otsu-find-threshold
+.. _otsu_threshold: thresholding.html#otsu-threshold
+.. _threshold: thresholding.html#threshold
+.. _Utility: utility.html#utility
+.. _Combine: utility.html#combine
+.. _and_image: utility.html#and-image
+.. _mask: utility.html#mask
+.. _or_image: utility.html#or-image
+.. _union_images: utility.html#union-images
+.. _xor_image: utility.html#xor-image
+.. _NestedLists: utility.html#nestedlists
+.. _nested_list_to_image: utility.html#nested-list-to-image
+.. _to_nested_list: utility.html#to-nested-list
+.. _clip_image: utility.html#clip-image
+.. _corelation: utility.html#corelation
+.. _generate_features: utility.html#generate-features
+.. _image_copy: utility.html#image-copy
+.. _resize: utility.html#resize
+.. _scale: utility.html#scale
+.. _XML: xml.html#xml
+.. _to_xml: xml.html#to-xml
+.. _to_xml_filename: xml.html#to-xml-filename

@@ -393,56 +393,6 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  void highlight(T& a, const U& b) {
-    size_t ul_y = std::max(a.ul_y(), b.ul_y());
-    size_t ul_x = std::max(a.ul_x(), b.ul_x());
-    size_t lr_y = std::min(a.lr_y(), b.lr_y());
-    size_t lr_x = std::min(a.lr_x(), b.lr_x());
-
-    if (ul_y >= lr_y || ul_x >= lr_x)
-      return;
-    for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
-      for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
-	if (is_black(b.get(yb, xb))) 
-	  a.set(ya, xa, RGBPixel(255, 0, 0));
-      }
-  }
-
-  template<class T>
-  void remove_borders(T& m) {
-    typedef typename T::value_type value_type;
-    ImageData<value_type> mat_data(m.nrows(), m.ncols());
-    ImageView<ImageData<value_type> > tmp(mat_data, 0, 0, m.nrows(), m.ncols());
-    if (is_black(m.get(0, 0)))
-      tmp.set(0, 0, black(tmp));
-    if (is_black(m.get(0, m.nrows() - 1)))
-      tmp.set(0, m.nrows() - 1, black(tmp));
-    if (is_black(m.get(m.ncols() - 1, 0)))
-      tmp.set(m.ncols() - 1, 0, black(tmp));
-    if (is_black(m.get(m.ncols() - 1, m.nrows() - 1)))
-      tmp.set(m.ncols() - 1, m.nrows() - 1, black(tmp));
-
-    for (size_t r = 0; r < m.nrows(); ++r) {
-      for (size_t c = 0; c < m.ncols(); ++c) {
-	if (is_black(tmp.get(r, c))) {
-	  m.set(r, c, white(m));
-	  for (size_t r2 = (r>0) ? r - 1 : 0; 
-	       r2 < std::min(r + 2, m.nrows()); ++r2) {
-	    for (size_t c2 = (c>0) ? c - 1 : 0; 
-		 c2 < std::min(c + 2, m.ncols()); ++c2) {
-	      if (r != r2 && c != c2) {
-		if (is_black(m.get(r2, c2))) {
-		  tmp.set(r2, c2, black(tmp));
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
-
-  template<class T, class U>
   typename ImageFactory<T>::view_type* mask(const T& a, U &b) {
     typename ImageFactory<T>::data_type* dest_data =
       new typename ImageFactory<T>::data_type(b.size(), b.offset_y(), b.offset_x());
@@ -475,7 +425,6 @@ namespace Gamera {
     ImageView<ImageData<T> >* operator()(PyObject* obj) {
       ImageData<T>* data;
       ImageView<ImageData<T> >* image;
-      pixel_from_python<T> from_python;
       
       if (!PyList_Check(obj))
 	throw std::runtime_error("Must be a nested Python list of pixels.");
@@ -487,7 +436,7 @@ namespace Gamera {
       for (size_t r = 0; r < nrows; ++r) {
 	PyObject* row = PyList_GET_ITEM(obj, r);
 	if (!PyList_Check(row)) {
-	  from_python(row);
+	  pixel_from_python<T>::convert(row);
 	  row = obj;
 	  nrows = 1;
 	}
@@ -509,7 +458,7 @@ namespace Gamera {
 	}
 	for (size_t c = 0; c < ncols; ++c) {
 	  PyObject* item = PyList_GET_ITEM(row, c);
-	  T px = (T)from_python(item);
+	  T px = pixel_from_python<T>::convert(item);
 	  image->set(r, c, px);
 	}
       }
@@ -567,12 +516,11 @@ namespace Gamera {
  
   template<class T>
   PyObject* to_nested_list(T& m) {
-    pixel_to_python<typename T::value_type> convertor;
     PyObject* rows = PyList_New(m.nrows());
     for (size_t r = 0; r < m.nrows(); ++r) {
       PyObject* row = PyList_New(m.ncols());
       for (size_t c = 0; c < m.ncols(); ++c) {
-	PyObject* px = convertor(m.get(r, c));
+	PyObject* px = pixel_to_python<typename T::value_type>::convert(m.get(r, c));
 	PyList_SET_ITEM(row, c, px);
       }
       PyList_SET_ITEM(rows, r, row);

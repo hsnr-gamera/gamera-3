@@ -193,10 +193,6 @@ method.  A greater result implies more corelation.
     self_type = ImageType([ONEBIT])
     args = Args([ImageType([ONEBIT], "template"), Int("y_offset"), Int("x_offset")])
 
-class highlight(PluginFunction):
-    self_type = ImageType([RGB])
-    args = Args([ImageType([ONEBIT], "cc")])
-
 class to_nested_list(PluginFunction):
     """Converts an image to a nested Python list.
 This method is the inverse of ``nested_list_to_image``.
@@ -267,7 +263,7 @@ class UtilModule(PluginModule):
     functions = [image_copy, resize, scale,
                  histogram, union_images, projection_rows, projection_cols,
                  projections, fill_white, invert, clip_image, mask,
-                 corelation, highlight, nested_list_to_image,
+                 corelation, nested_list_to_image,
                  to_nested_list]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

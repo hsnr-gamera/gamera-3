@@ -226,6 +226,14 @@ namespace Gamera {
     void setBlue(V value, RGBIterator & rgb, DIFFERENCE d) const {
       rgb[d].setBlue(value);
     }
+
+//     template <class V1, class RGBIterator>
+//     void set(RGBValue<V1> value, RGBIterator& rgb) const {
+//       typedef typename RGBVALUE::value_type V;
+//       (*rgb).setRGB(NumericTraits<V>::fromPromote(value.red()), 
+// 		    NumericTraits<V>::fromPromote(value.green()), 
+// 		    NumericTraits<V>::fromPromote(value.blue()));
+//     }
   };
   /*
     The CCAccessor provides filtering of pixels based on an image label. This serves the
@@ -407,6 +415,15 @@ namespace Gamera {
   src_image_range(const Mat& img) {
     return triple<typename Mat::ConstIterator, typename Mat::ConstIterator,
       typename choose_accessor<Mat>::accessor> (img.upperLeft(), img.lowerRight(),
+						choose_accessor<Mat>::make_accessor(img));
+  }
+
+  template<class Mat>
+  inline std::pair<typename Mat::ConstIterator,
+	      typename choose_accessor<Mat>::accessor>
+  src_image(const Mat& img) {
+    return std::pair<typename Mat::ConstIterator,
+      typename choose_accessor<Mat>::accessor> (img.upperLeft(),
 						choose_accessor<Mat>::make_accessor(img));
   }
 

@@ -44,6 +44,9 @@ class to_onebit(PluginFunction):
     """Converts the given image to a ONEBIT image.  Uses the
 otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
 see the Thresholding_ category.
+
+.. _otsu_threshold: thresholding.html#otsu-threshold
+.. _Thresholding: thresholding.html
 """
     pure_python = True
     self_type = ImageType([FLOAT, GREYSCALE, GREY16, RGB])

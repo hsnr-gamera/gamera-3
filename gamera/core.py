@@ -260,10 +260,13 @@ is assigned to one of eight colors.  This display can be used to see how
 connected component analysis performs on a given image.  Uses color_ccs_ under
 the hood.
 
+.. __: gui.html
+.. _color_ccs: gui_support.html#color-ccs
+
 .. note: Connected component analysis must already be performed on the image
    (using cc_analysis_, for example) in order for this to work.
 
-.. __: gui.html
+.. _cc_analysis: segmentation.html#cc-analysis
 
 .. image:: images/display_ccs.png"""
       if self._display:
@@ -277,6 +280,8 @@ the hood.
 
    def display_false_color(self):
       """Displays the image using false coloring.  (See false_color_).
+
+.. _false_color: color.html#false-color
 
 .. image:: images/display_false_color.png"""
       if self._display:

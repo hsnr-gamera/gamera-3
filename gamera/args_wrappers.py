@@ -29,6 +29,7 @@ class WrapperArg:
    convert_from_PyObject = False
    multiple = False
    delete_cpp = False
+   uid = 0
 
    def __getitem__(self, attr):
       return getattr(self, attr)
@@ -45,6 +46,9 @@ class WrapperArg:
    pysymbol = property(_get_pysymbol)
 
    def declare(self):
+      if self.name == None:
+         self.name = "_%08d" % WrapperArg.uid
+         WrapperArg.uid += 1
       if self.name == 'return' and hasattr(self, 'return_type'):
          result = "%s %s;\n" % (self.return_type, self.symbol)
       else:
@@ -67,9 +71,9 @@ class WrapperArg:
          result += "%s(%s);\n" % (function.__name__, ", ".join(output_args))
          return result
 
-   def call(self, function, args, output_args):
+   def call(self, function, args, output_args, limit_choices=None):
       if len(args):
-         return args[0].call(function, args[1:], output_args + [self.symbol])
+         return args[0].call(function, args[1:], output_args + [self.symbol], limit_choices)
       else:
          return self._do_call(function, output_args + [self.symbol])
 
@@ -122,16 +126,23 @@ class ImageType(WrapperArg):
    def to_python(self):
       return "%(pysymbol)s = create_ImageObject(%(symbol)s);" % self
 
-   def call(self, function, args, output_args):
-      choices = self._get_choices()
+   def call(self, function, args, output_args, limit_choices=None):
+      if function.image_types_must_match and limit_choices is not None:
+         choices = limit_choices
+      else:
+         choices = self._get_choices()
       result = "switch(get_image_combination(%(pysymbol)s)) {\n" % self
       for choice in choices:
          result += "case %s:\n" % choice.upper()
-         new_output_args = output_args[:] + ["*((%s*)%s)" % (choice, self.symbol)]
+         new_output_args = output_args + ["*((%s*)%s)" % (choice, self.symbol)]
          if len(args) == 0:
             result += self._do_call(function, new_output_args)
          else:
-            result += args[0].call(function, args[1:], new_output_args)
+            if limit_choices is None:
+               result += args[0].call(function, args[1:], new_output_args, [choice])
+            else:
+               result += args[0].call(function, args[1:], new_output_args, limit_choices)
+
          result += "break;\n"
       result += "default:\n"
       result += 'PyErr_SetString(PyExc_TypeError, "Image types do not match function signature.");\nreturn 0;\n'
@@ -141,11 +152,14 @@ class ImageType(WrapperArg):
    def _get_choices(self):
       result = []
       for type in self.pixel_types:
-         if type == ONEBIT:
-            result.extend(["OneBitImageView", "OneBitRleImageView", "RleCc", "Cc"])
-         else:
-            result.append(util.get_pixel_type_name(type) + "ImageView")
+         result.extend(self._get_choices_for_pixel_type(type))
       return result
+
+   def _get_choices_for_pixel_type(self, pixel_type):
+      if pixel_type == ONEBIT:
+         return ["OneBitImageView", "OneBitRleImageView", "RleCc", "Cc"]
+      else:
+         return [util.get_pixel_type_name(pixel_type) + "ImageView"]
 
 class Rect(WrapperArg):
    c_type = 'Rect*'
@@ -274,6 +288,21 @@ class FloatVector(WrapperArg):
       %(pysymbol)s = FloatVector_to_python(%(symbol)s);
       delete %(symbol)s;
       """ % self
+
+class Pixel(WrapperArg):
+   def from_python(self):
+      return ''
+
+   def call(self, function, args, output_args, limit_choices=None):
+      if limit_choices is None:
+         raise RuntimeError("You can not create a plugin that takes a Pixel argument that does not have a self type")
+      pixel_type = limit_choices[0]
+      new_output_args = output_args + ["pixel_from_python<%s::value_type>::convert(%s)" % (pixel_type, self.pysymbol)]
+      if len(args) == 0:
+         return self._do_call(function, new_output_args)
+      else:
+         return args[0].call(function, args[1:], new_output_args, limit_choices)
+   
 
 class ImageInfo(WrapperArg):
    arg_format = "O";

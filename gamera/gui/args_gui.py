@@ -24,6 +24,7 @@ import string
 from types import *
 from gamera import util, enums
 from gamera.gui import gui_util
+from gamera.core import RGBPixel
 
 class Args:
    def _create_controls(self, locals, parent):
@@ -127,7 +128,6 @@ class Args:
       self.border = wxBoxSizer(wxHORIZONTAL)
       self.window.SetSizer(self.border)
       self.gs = self._create_controls(locals, self.window)
-      ## self.gs.RecalcSizes()
       if self.wizard:
          buttons = self._create_wizard_buttons()
       else:
@@ -364,10 +364,7 @@ class Choice:
 class _Filename:
    def get_control(self, parent, locals=None):
       self.control = wxBoxSizer(wxHORIZONTAL)
-      self.text = wxTextCtrl(parent,
-                                         -1,
-                                         str(self.default),
-                                         size=wxSize(200, 24))
+      self.text = wxTextCtrl(parent, -1, str(self.default), size=wxSize(200, 24))
       browseID = wxNewId()
       browse = wxButton(
          parent, browseID, "...", size=wxSize(24, 24))
@@ -381,7 +378,7 @@ class _Filename:
       if text == "":
          return "None"
       else:
-         return "r'" + self.text.GetValue() + "'"
+         return "r'" + text + "'"
 
    def get(self):
       text = self.text.GetValue()
@@ -422,7 +419,6 @@ class FileOpen(_Filename):
 
 class FileSave(_Filename):
    def OnBrowse(self, event):
-      
       filename = gui_util.save_file_dialog(self.text, self.extension)
       if filename:
          self.text.SetValue(filename)
@@ -514,6 +510,28 @@ class Info:
    def get_string(self):
       return None
    get = get_string
+
+class Pixel(_Filename):
+   def OnBrowse(self, event):
+      dialog = wxColourDialog(None)
+      if dialog.ShowModal() == wxID_OK:
+         color = dialog.GetColourData().GetColour()
+         self.text.SetValue("RGBPixel(%d, %d, %d)" % (color.Red(), color.Green(), color.Blue()))
+      self.text.GetParent().Raise()
+
+   def get_string(self):
+      text = self.text.GetValue()
+      if text == "":
+         return "None"
+      else:
+         return text
+
+   def get(self):
+      text = self.text.GetValue()
+      if text == "":
+         return None
+      else:
+         return eval(text, {'RGBPixel': RGBPixel})
 
 from gamera import args
 args.mixin(locals(), "GUI")

@@ -124,6 +124,8 @@ a low compactness, whereas a perfect circle has very high compactness.
 The result is derived by calling outline_ on the image and then
 comparing the number of pixels in the outline to the original.
 
+.. _outline: filter.html#outline
+
 Since this function requires allocation and deallocation of memory, it
 is relatively slow.  However, it has proven to be a very useful feature
 in many cases.

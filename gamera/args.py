@@ -491,9 +491,9 @@ if _has_gui == _WX_GUI:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
 else:
-   class FileOpen(Filename):
+   class FileOpen(_Filename):
       pass
-   class FileSave(Filename):
+   class FileSave(_Filename):
       pass
 
 # Radio Buttons

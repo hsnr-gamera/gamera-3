@@ -45,7 +45,7 @@ from wxPython.lib.splashscreen import SplashScreen
 import sys, types, traceback, os, string, webbrowser, resource
 
 # Set default options
-config.add_option_default("shell_font", "face:Helvetica,size:12")
+config.add_option_default("shell_font", "face:Courier,size:12")
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
 
@@ -162,6 +162,7 @@ if USE_PYCRUST:
    class PyCrustGameraShell(shell.Shell):
       def __init__(self, main_win, parent, id, message):
          shell.Shell.__init__(self, parent, id, introText=message)
+         self.SetCodePage(1)
          self.history_win = None
          self.update = None
          self.locals = self.interp.locals
@@ -390,7 +391,7 @@ class ShellFrame(wxFrame):
       #self.shell.run("")
       self.shell.runsource("from gamera.gui import gui")
       self.shell.runsource("from gamera.gamera import *")
-      self.shell.runsource("set_interactive(gui.GameraGui())")
+      #self.shell.runsource("set_interactive(gui.GameraGui())")
       self.shell.runsource("init_gamera()")
       self.shell.update = self.Update
       self.icon_display.shell = self.shell

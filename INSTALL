@@ -6,6 +6,12 @@ The following information is based on the generic information for
 building Python extensions written by Greg Ward
 
 
+Gamera requires that you install the following software:
+
+- Python 2.2.1 (or greater) (www.python.org)
+- wxPython 2.3.3.1 (or greater) (www.wxpython.org)
+
+
 ========================================
 
 Standard Build and Install

@@ -67,14 +67,11 @@ class PluginFunction:
                                 globals())
             if module == None:
                 return
-            func = getattr(module,
-                           cls.__name__)
+            func = getattr(module, cls.__name__)
         elif cls.__call__ is None:
             func = None
         else:
-            func = new.function(cls.__call__.func_code,
-                                cls.__call__.func_globals,
-                                cls.__name__)
+            func = cls.__call__
         cls.__call__ = staticmethod(func)
         if isinstance(cls.self_type, ImageType):
             gamera.core.ImageBase.add_plugin_method(cls, func, category)

@@ -263,7 +263,7 @@ class Image(ImageBase, gameracore.Image):
 
 ######################################################################
 
-class SubImage(Image, gameracore.SubImage):
+class SubImage(gameracore.SubImage, Image):
    def __init__(self, image, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.SubImage.__init__(self, image, offset_y, offset_x,
@@ -271,7 +271,7 @@ class SubImage(Image, gameracore.SubImage):
 
 ######################################################################
 
-class Cc(Image, gameracore.Cc):
+class Cc(gameracore.Cc, Image):
    def __init__(self, image, label, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, image, label, offset_y, offset_x,

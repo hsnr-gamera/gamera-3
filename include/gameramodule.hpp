@@ -288,11 +288,13 @@ inline PyObject* init_image_members(ImageObject* o) {
   time).
 */
 
-inline PyObject* create_ImageObject(Rect* image, PyTypeObject* image_type,
+inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
 				    PyTypeObject* subimage_type,
-				    PyTypeObject* cc_type) {
+				    PyTypeObject* cc_type,
+				    PyTypeObject* image_data) {
   int pixel_type;
   int storage_type;
+  bool cc = false;
   if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
     pixel_type = Gamera::Python::GREYSCALE;
     storage_type = Gamera::Python::DENSE;
@@ -312,16 +314,32 @@ inline PyObject* create_ImageObject(Rect* image, PyTypeObject* image_type,
     pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::RLE;
   } else if (dynamic_cast<CC*>(image) != 0) {
-    pixel_type = Gamera::Python::GREY16;
+    pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::DENSE;
+    cc = true;
   } else if (dynamic_cast<RleCC*>(image) != 0) {
-    pixel_type = Gamera::Python::GREY16;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::Python::ONEBIT;
+    storage_type = Gamera::Python::RLE;
+    cc = true;
   } else {
     PyErr_SetString(PyExc_TypeError, "Unknown type returned from plugin.");
     return 0;
   }
-  
+  ImageDataObject* d = (ImageDataObject*)image_data->tp_alloc(image_data, 0);
+  d->m_pixel_type = pixel_type;
+  d->m_storage_format = storage_type;
+  d->m_x = image->data();
+  ImageObject* i;
+  if (cc)
+    i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);
+  else if (image->nrows() < image->data()->nrows()
+	   || image->ncols() < image->data()->ncols())
+    i = (ImageObject*)subimage_type->tp_alloc(subimage_type, 0);
+  else
+    i = (ImageObjecT*)image_type->tp_alloc(image_type, 0);
+  i->m_data = d;
+  ((RectObject*)i)->m_x = image;
+  return init_image_members(i);
 }
 
 /*

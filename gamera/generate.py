@@ -85,6 +85,8 @@ if __name__ == '__main__':
       [[for type in function.self_type.pixel_types]]
         [[if type == 'OneBit']]
           [[exec tmp.append('OneBitRleImageView')]]
+          [[exec tmp.append('RleCC')]]
+          [[exec tmp.append('CC')]]
         [[end]]
         [[exec tmp.append(type + 'ImageView')]]
       [[end]]
@@ -96,8 +98,8 @@ if __name__ == '__main__':
           [[for type in x.pixel_types]]
             [[if type == 'OneBit']]
               [[exec tmp.append('OneBitRleImageView')]]
-              [[exec tmp.append('CC')]]
               [[exec tmp.append('RleCC')]]
+              [[exec tmp.append('CC')]]
             [[end]]
             [[exec tmp.append(type + 'ImageView')]]
           [[end]]
@@ -151,7 +153,7 @@ if __name__ == '__main__':
       Py_INCREF(Py_None);
       return Py_None;
     [[elif isinstance(function.return_type, ImageType)]]
-      return create_ImageObject(return_value);
+      return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type);
     [[else]]
       return return_value;
     [[end]]

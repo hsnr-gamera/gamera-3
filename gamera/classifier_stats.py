@@ -19,13 +19,13 @@
 
 from os import path
 import os
-from gamera import util, generate_help, pyplate
-
-header = pyplate.Template(generate_help.header + "[[call header(title, 0)]]")
-footer = pyplate.Template(generate_help.footer + "[[call footer(0)]]")
+from gamera import util
 
 class GlyphStats:
     def __init__(self, glyphs):
+        from gamera import pyplate, generate_help
+        self.header = pyplate.Template(generate_help.header + "[[call header(title, 0)]]")
+        self.footer = pyplate.Template(generate_help.footer + "[[exec toplevel_path='']][[call footer(0)]]")
         self._glyphs = glyphs
         
     def write(self, directory):
@@ -34,14 +34,14 @@ class GlyphStats:
             os.mkdir(directory)
         self._write_core(directory)
 
-    def _html_header(self, directory, file, title):
+    def _html_start(self, directory, file, title):
         fd = open(path.join(directory, file + ".html"), 'w')
-        header.execute(fd, {'title': title})
+        self.header.execute(fd, {'title': title})
         self._pages.append(file)
         return fd
 
-    def _html_footer(self, stream):
-        footer.execute(fd)
+    def _html_end(self, stream):
+        self.footer.execute(stream)
         stream.close()
 
     def _write_core(self, directory):
@@ -60,7 +60,7 @@ class GlyphStats:
             filename = "%s-%08d.tiff" % (name, number)
             glyph.save_tiff(path.join(directory, filename))
             progress.update(i, len(self._glyphs))
-        fd = self._start_html(directory, 'table', 'Table of glyphs')
+        fd = self._html_start(directory, 'table', 'Table of glyphs')
         keys = sorted_glyphs.keys()
         keys.sort()
         for name in keys:
@@ -72,5 +72,5 @@ class GlyphStats:
                     size = 0
                 fd.write('<img src="%s-%08d.tiff" width="%d" height="%d"/>' %
                          (name, i, glyph.ncols, glyph.nrows))
-        self._end_html(fd)
+        self._html_end(fd)
         progress.update(1, 1)

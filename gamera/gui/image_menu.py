@@ -27,15 +27,6 @@ from gamera.args import *
 EXECUTE_MODE = 0
 HELP_MODE = 1
 
-# These variables need to be globals and not member variables to avoid
-# stickiness problem (they, for some reason, don't get changed when a
-# new menu is created)
-functions = []
-shell = None
-shell_frame = None
-images = None
-images_name = None
-
 
 ######################################################################
 # These are redefined here from gamera_shell, since importing
@@ -55,7 +46,6 @@ def set_shell_frame(sf):
 class ImageMenu:
   def __init__(self, parent, x, y, images_, name_, shell_=None,
                mode=EXECUTE_MODE):
-    # global images, images_name
     self.shell = shell_
     self.x = x
     self.y = y
@@ -99,12 +89,12 @@ class ImageMenu:
 
     menu.AppendSeparator()
     # Methods
-    functions = [None]
+    self.functions = [None]
     menu = self.create_methods(methods, menu)
     return menu
 
   def create_methods(self, methods, menu):
-    global functions
+    global self.functions
     items = methods.items()
     items.sort()
     for key, val in items:
@@ -112,9 +102,10 @@ class ImageMenu:
         item = self.create_methods(val, wxMenu())
         menu.AppendMenu(0, key, item)
       else:
-        menu.Append(len(functions), key)
-        EVT_MENU(self.parent, len(functions), self.OnPopupFunction)
-        functions.append(val)
+        menu.Append(len(self.functions), key)
+        self.parent.Disconnect(len(self.functions))
+        EVT_MENU(self.parent, len(self.functions), self.OnPopupFunction)
+        self.functions.append(val)
     return menu
 
   def PopupMenu(self):
@@ -193,7 +184,7 @@ class ImageMenu:
 
   def OnPopupFunction(self, event):
     sh = self.get_shell()
-    function = functions[event.GetId()]
+    function = self.functions[event.GetId()]
     if self.images:
       if self.mode == HELP_MODE:
         sh.run("help('" + function.__name__ + "')")
@@ -207,8 +198,8 @@ class ImageMenu:
         if len(self.images) > 1 and result_name != '':
           sh.locals[result_name] = []
         # Now let's run some code and get results
-        for i in range(len(images)):
-          image = images[i]
+        for i in range(len(self.images)):
+          image = self.images[i]
           image_name = self.get_image_name(self.images_name, i)
           # If the image name is a string, we can call the function
           # directly in the shell

@@ -35,6 +35,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       self.toplevel = toplevel
       MultiImageDisplay.__init__(self, parent)
       self.last_image_no = None
+      self._last_selection = []
       EVT_GRID_RANGE_SELECT(self, self.OnSelect)
       self.last_sort = None
       # This is to turn off the display of row labels if a)
@@ -276,6 +277,10 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    def OnSelectImpl(self):
       if not self.updating:
          images = self.GetSelectedItems()
+         if images != self._last_selection:
+            self._last_selection = images
+         else:
+            return
          if images != []:
             id = images[0].id_name
             all_same = 1
@@ -428,12 +433,20 @@ class ClassifierFrame(ImageFrameBase):
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(3)
       self._frame.SetSize((800, 600))
-      self.splitterv = wxSplitterWindow(
-         self._frame, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
-      self.splitterh = wxSplitterWindow(
-         self.splitterv, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      if sys.platform == 'win32':
+         self.splitterv = wxSplitterWindow(
+            self._frame, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+         self.splitterh = wxSplitterWindow(
+            self.splitterv, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+      else:
+         self.splitterv = wxSplitterWindow(
+            self._frame, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+         self.splitterh = wxSplitterWindow(
+            self.splitterv, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
       self.single_iw = ClassifierImageWindow(self, self.splitterh)
       self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
       self.splitterh.SetMinimumPaneSize(3)
@@ -566,7 +579,12 @@ class ClassifierFrame(ImageFrameBase):
          return [(0.0, 'unknown')]
 
    def classify_manual(self, id):
-      assert type(id) == types.StringType
+      # if type(id) == types.StringType
+      # Win32 change
+      for i in id:
+         print ord(i)
+      id = id.encode('utf8')
+      print id
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
          self.multi_iw.id.GetGridCursorCol())
@@ -993,12 +1011,17 @@ class SymbolTreeCtrl(wxTreeCtrl):
    def __init__(self, toplevel, parent, id, pos, size, style):
       self.toplevel = toplevel
       self.editing = 0
-      wxTreeCtrl.__init__(self, parent, id, pos, size, style)
+      wxTreeCtrl.__init__(self, parent, id, pos, size,
+                          # Win32 change
+                          style|wxNO_FULL_REPAINT_ON_RESIZE)
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
-      EVT_TREE_ITEM_EXPANDED(self, id, self.OnItemExpanded)
-      EVT_TREE_ITEM_COLLAPSED(self, id, self.OnItemCollapsed)
+      # WIN32 change
+      EVT_TREE_ITEM_EXPANDING(self, id, self.OnItemExpanded)
+      EVT_TREE_ITEM_COLLAPSING(self, id, self.OnItemCollapsed)
+##       EVT_TREE_ITEM_EXPANDING(self, id, self.OnItemExpanded)
+##       EVT_TREE_ITEM_COLLAPSING(self, id, self.OnItemCollapsed)
       EVT_KEY_DOWN(self, self.OnKey)
       EVT_LEFT_DOWN(self, self.OnLeftDown)
       EVT_LEFT_DCLICK(self, self.OnLeftDoubleClick)
@@ -1069,7 +1092,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
       if flags == 4:
          return
       id = self.GetPyData(item)
-      if id != None:
+      if id != None and type(id) == types.IntType:
          self.toplevel.toplevel.classify_manual(id)
 
    def OnLeftDown(self, event):
@@ -1078,22 +1101,27 @@ class SymbolTreeCtrl(wxTreeCtrl):
       if flags == 4:
          return
       data = self.GetPyData(item)
-      if data != None:
+      if data != None and type(id) == types.IntType:
          self.toplevel.text.SetValue(data)
          self.toplevel.text.SetInsertionPointEnd()
       event.Skip()
 
 class SymbolTableEditorPanel(wxPanel):
    def __init__(self, symbol_table, toplevel, parent = None, id = -1):
-      wxPanel.__init__(self, parent, id, style=wxWANTS_CHARS)
+      wxPanel.__init__(self, parent, id,
+                       # Win32 change
+                       style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.toplevel = toplevel
       self._symbol_table = symbol_table
       self.SetAutoLayout(true)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = NewId()
-      self.text = wxTextCtrl(self, txID)
+      # Win32 change
+      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER)
       EVT_KEY_DOWN(self.text, self.OnKey)
       EVT_TEXT(self, txID, self.OnText)
+      # Win32 change
+      EVT_TEXT_ENTER(self, txID, self.OnEnter)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
@@ -1106,7 +1134,12 @@ class SymbolTableEditorPanel(wxPanel):
    ########################################
    # CALLBACKS
 
+   def OnEnter(self, evt):
+      normalized_symbol = self._symbol_table.add(find)
+      self.toplevel.classify_manual(normalized_symbol)
+
    def OnKey(self, evt):
+      print "OnKey", evt.KeyCode()
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
          find = self._symbol_table.autocomplete(find)

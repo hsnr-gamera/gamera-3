@@ -18,7 +18,7 @@
 #
 
 from wxPython.wx import *   # wxPython
-import keyword              # Python standard library
+import weakref              # Python standard library
 from types import *
 from gamera.core import *   # Gamera-specific
 from gamera import util
@@ -149,11 +149,17 @@ class ImageMenu:
     name = var_name.get("ref", sh.locals)
     if name:
       if len(self.images) == 1:
-        sh.locals[name] = self.images[0]
+        if isinstance(self.images[0], weakref.ProxyTypes):
+          sh.locals[name] = self.images[0].image_copy()
+        else:
+          sh.locals[name] = self.images[0]
       else:
         sh.locals[name] = []
-        for i in range(len(self.images)):
-          sh.locals[name].append(self.images[i])
+        for image in self.images:
+          if isinstance(image, weakref.ProxyTypes):
+            sh.locals[name] = image.image_copy()
+          else:
+            sh.locals[name] = image
       sh.Update()
     sh.update()
 
@@ -197,11 +203,13 @@ class ImageMenu:
         # If there is no image name, we have to run the code locally (i.e.
         # not in the shell)
         wxBeginBusyCursor()
-        if self.image_name is None:
-          self._run_locally(sh, result_name, func_call)
-        else:
-          self._run_in_shell(sh, result_name, func_call)
-        wxEndBusyCursor()
+        try:
+          if self.image_name is None:
+            self._run_locally(sh, result_name, func_call)
+          else:
+            self._run_in_shell(sh, result_name, func_call)
+        finally:
+          wxEndBusyCursor()
     self.did_something = 1
     sh.update()
 
@@ -246,6 +254,4 @@ class ImageMenu:
       if result_name != '':
         source = '%s.append(%s)' % (result_name, source)
       sh.run('\t' + source)
-      wxBeginBusyCursor()
       sh.run('\n')
-      wxEndBusyCursor()

@@ -106,7 +106,9 @@ PyObject* create_ImageDataObject(int nrows, int ncols,
     else if (pixel_type == GREY16)
       o->m_x = new ImageData<Grey16Pixel>(nrows, ncols, page_offset_y,
 					  page_offset_x);      
-    else if (pixel_type == FLOAT)
+    // We have to explicity declare which FLOAT we want here, since there
+    // is a name clash on Mingw32 with a typedef in windef.h
+    else if (pixel_type == Gamera::FLOAT)
       o->m_x = new ImageData<FloatPixel>(nrows, ncols, page_offset_y,
 					 page_offset_x);      
     else if (pixel_type == RGB)
@@ -214,7 +216,7 @@ void init_ImageDataType(PyObject* module_dict) {
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",
-		       Py_BuildValue("i", FLOAT));
+		       Py_BuildValue("i", Gamera::FLOAT));
   PyDict_SetItemString(module_dict, "ONEBIT",
 		       Py_BuildValue("i", ONEBIT));
   PyDict_SetItemString(module_dict, "GREYSCALE",

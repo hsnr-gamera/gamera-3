@@ -173,7 +173,7 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
-      } else if (pixel == FLOAT) {
+      } else if (pixel == Gamera::FLOAT) {
 	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
 	ImageData<FloatPixel>* data =
 	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
@@ -249,7 +249,7 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<Grey16Pixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == FLOAT) {
+      } else if (pixel == Gamera::FLOAT) {
 	ImageData<FloatPixel>* data =
 	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
@@ -355,7 +355,7 @@ static PyObject* image_get(PyObject* self, PyObject* args) {
   PyArg_ParseTuple(args, "ii", &row, &col);
   if (is_CCObject(self)) {
     return Py_BuildValue("i", ((Cc*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == FLOAT) {
+  } else if (od->m_pixel_type == Gamera::FLOAT) {
     return Py_BuildValue("d", ((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_storage_format == RLE) {
     return Py_BuildValue("i", ((OneBitRleImageView*)o->m_x)->get((size_t)row, (size_t)col));
@@ -378,7 +378,7 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
     int value;
     PyArg_ParseTuple(args, "iii", &row, &col, &value);
     ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
-  } else if (od->m_pixel_type == FLOAT) {
+  } else if (od->m_pixel_type == Gamera::FLOAT) {
     double value;
     PyArg_ParseTuple(args, "iid", &row, &col, &value);
     ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, (float)value);

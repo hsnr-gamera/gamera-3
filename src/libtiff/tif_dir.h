@@ -33,6 +33,7 @@
 /*
  * Internal format of a TIFF directory entry.
  */
+
 typedef	struct {
 #define	FIELD_SETLONGS	3
 	/* bit vector of fields that are set */

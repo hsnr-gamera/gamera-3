@@ -113,7 +113,7 @@ class GameraGui:
 class PyCrustGameraShell(shell.Shell):
    def __init__(self, main_win, parent, id, message):
       shell.Shell.__init__(self, parent, id, introText=message)
-      self.SetCodePage(1)
+      self.SetCodePage(wxSTC_CP_UTF8)
       self.history_win = None
       self.update = None
       self.locals = self.interp.locals
@@ -139,11 +139,9 @@ class PyCrustGameraShell(shell.Shell):
       return self.interp.locals
 
    def run(self, source):
-      source = string.replace(source, '\\', '\\\\')
       shell.Shell.run(self, source)
       
    def push(self, source):
-      source = string.replace(source, '\\', '\\\\')
       shell.Shell.push(self, source)
       if source.strip().startswith("import "):
          new_modules = [x.strip() for x in source.strip()[7:].split(",")]
@@ -172,8 +170,10 @@ class PyCrustGameraShell(shell.Shell):
 
 class History(wxStyledTextCtrl):
    def __init__(self, parent):
-      wxStyledTextCtrl.__init__(self, parent, -1,
-                                wxDefaultPosition, wxDefaultSize)
+      wxStyledTextCtrl.__init__(
+         self, parent, -1,
+         wxDefaultPosition, wxDefaultSize,
+         style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       style = "face:%(face)s,size:%(size)d" % config.get_options_by_prefix("shell_style_")
       self.StyleSetSpec(wxSTC_STYLE_DEFAULT,
                         style)
@@ -203,20 +203,32 @@ class History(wxStyledTextCtrl):
 class ShellFrame(wxFrame):
    def __init__(self, parent, id, title):
       global shell
-      wxFrame.__init__(self, parent, id, title, wxDefaultPosition,
-                       [600, 550])
+      wxFrame.__init__(
+         self, parent, id, title, wxDefaultPosition,
+         # Win32 change
+         [600, 550],
+         style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       EVT_CLOSE(self, self.OnCloseWindow)
 
       self.known_modules = {}
       self.menu = self.make_menu()
       self.SetMenuBar(self.menu)
 
-      self.hsplitter = wxSplitterWindow(
-         self, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
-      self.splitter = wxSplitterWindow(
-         self.hsplitter, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      if sys.platform == 'win32':
+         self.hsplitter = wxSplitterWindow(
+            self, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+         self.splitter = wxSplitterWindow(
+            self.hsplitter, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+      else:
+         self.hsplitter = wxSplitterWindow(
+            self, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+         self.splitter = wxSplitterWindow(
+            self.hsplitter, -1,
+            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+
       self.icon_display = icon_display.IconDisplay(self.splitter)
       self.icon_display
       

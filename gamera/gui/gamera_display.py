@@ -366,7 +366,7 @@ class ImageDisplay(wxScrolledWindow):
       h = y2 - y
       dc.SetLogicalFunction(wxXOR)
       pen = wxGREY_PEN
-      pen.SetStyle(wxSHORT_DASH)
+      pen.SetStyle(wxDOT)
       dc.SetPen(pen)
       dc.SetBrush(wxTRANSPARENT_BRUSH)
       dc.DrawRectangle(x, y, w, h)
@@ -446,6 +446,8 @@ class ImageDisplay(wxScrolledWindow):
       rects = wxRegionIterator(update_regions)
       # Paint only where wxWindows tells us to, this is faster
       dc = wxPaintDC(self)
+      # Win32 change
+      dc.BeginDrawing()
       while rects.HaveRects():
          ox = rects.GetX() / scaling
          oy = rects.GetY() / scaling
@@ -465,9 +467,13 @@ class ImageDisplay(wxScrolledWindow):
                            w, h, check=0, dc=dc)
          rects.Next()
       self.draw_rubber(dc)
+      # Win32 change
+      dc.EndDrawing()
 
    def PaintAreaRect(self, rect):
-      self.PaintArea(rect.ul_x, rect.ul_y, rect.ncols + self.scaling, rect.nrows + self.scaling, 1)
+      self.PaintArea(rect.ul_x, rect.ul_y,
+                     rect.ncols + self.scaling,
+                     rect.nrows + self.scaling, 1)
 
    def PaintArea(self, x, y, w, h, check=1, dc=None):
       redraw_rubber = 0
@@ -550,14 +556,21 @@ class ImageDisplay(wxScrolledWindow):
                image = wxEmptyImage(scaled_highlight.ncols, scaled_highlight.nrows)
                scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
+               # Win32 change
+               tmpdc = wxMemoryDC()
+               tmpdc.SelectObject(bmp)
+               
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
                dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)
                dc.DrawBitmap(bmp, x_cc, y_cc)
                dc.SetTextForeground(color)
+               # Win32 change
                dc.SetLogicalFunction(wxOR)
-               dc.DrawBitmap(bmp, x_cc, y_cc)
+               dc.Blit(x_cc, y_cc, bmp.GetWidth(), bmp.GetHeight(),
+                       tmpdc, 0, 0, wxOR)
+               # dc.DrawBitmap(bmp, x_cc, y_cc)
          dc.SetBackgroundMode(wxSOLID)
          dc.SetLogicalFunction(wxCOPY)
       if redraw_rubber:
@@ -671,7 +684,8 @@ class ImageDisplay(wxScrolledWindow):
          
 class ImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1):
-      wxPanel.__init__(self, parent, id)
+      wxPanel.__init__(self, parent, id, style=
+                       wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.id = self.get_display()
       self.SetAutoLayout(true)
       self.toolbar = toolbar.ToolBar(self, -1)
@@ -886,7 +900,12 @@ GRID_PADDING_2 = 16
 GRID_NCOLS = 8
 class MultiImageDisplay(wxGrid):
    def __init__(self, parent = None, id = -1, size = wxDefaultSize):
-      wxGrid.__init__(self, parent, id)
+      wxGrid.__init__(self, parent, id,
+                      # Win32 change
+                      style=wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
+      # Win32 change
+      self.GetGridWindow().SetWindowStyle(
+         wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.list = []
       self.rows = 1
       self.cols = GRID_NCOLS
@@ -1096,7 +1115,7 @@ class MultiImageDisplay(wxGrid):
                    i / GRID_NCOLS, i % GRID_NCOLS,
                    i / GRID_NCOLS, i % GRID_NCOLS, true)
          self.updating = 0
-         self.OnSelectImpl()
+         # self.OnSelectImpl()
       finally:
          self.EndBatch()
          wxEndBusyCursor()
@@ -1208,7 +1227,7 @@ class MultiImageDisplay(wxGrid):
       return label
 
    def set_tooltip(self, label):
-      self.tooltip.SetLabel(label)
+      self.tooltip.SetLabel(label.decode('utf8'))
       dc = wxClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
       self.tooltip.SetDimensions(
@@ -1255,7 +1274,8 @@ class MultiImageDisplay(wxGrid):
 class MultiImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       from gamera.gui import gamera_icons
-      wxPanel.__init__(self, parent, id)
+      wxPanel.__init__(self, parent, id,
+                       style=wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.SetAutoLayout(true)
       self.toolbar = toolbar.ToolBar(self, -1)
 
@@ -1467,7 +1487,10 @@ class MultiImageWindow(wxPanel):
 class ImageFrameBase:
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       self._frame = wxFrame(parent, id, title,
-                           wxDefaultPosition, (600, 400))
+                            wxDefaultPosition, (600, 400),
+                            # Win32 change
+                            style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|
+                            wxNO_FULL_REPAINT_ON_RESIZE)
       if (owner != None):
          self.owner = weakref.proxy(owner)
       else:

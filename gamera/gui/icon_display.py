@@ -42,7 +42,8 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
         self.display.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' % (name, filename))
       else:
         name = var_name.get("image", self.display.shell.locals)
-        self.display.shell.run('%s = load_image(r"%s")' % (name, filename))
+        print len(filename)
+        self.display.shell.run('%s = load_image(r"' % name + filename + '")')
 
 
 ######################################################################
@@ -63,7 +64,8 @@ class IconDisplay(wxListCtrl):
     self.dt = IconDisplayDropTarget(self)
     self.dt.display = self
     self.SetDropTarget(self.dt)
-    self.il = wxImageList(32, 32)
+    # Win32 change
+    self.il = wxImageList(34, 34)
     self.classes = []
     for klass in builtin_icon_types:
       self.add_class(klass)

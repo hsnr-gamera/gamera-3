@@ -50,6 +50,7 @@ class TiffSupportModule(PluginModule):
     cpp_headers = ["tiff_support.hpp"]
     if sys.platform == 'win32':
         cpp_sources = glob.glob("src/libtiff/*.c")
+        extra_compile_args = ['-Dunix']
     else:
         extra_libraries = ["tiff"]
     cpp_namespaces = ["Gamera"]

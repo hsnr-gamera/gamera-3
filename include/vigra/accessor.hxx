@@ -26,6 +26,10 @@
 #include "vigra/utilities.hxx"
 #include "vigra/numerictraits.hxx"
 
+// Under mingw32, DIFFERENCE is defined in winuser.h
+// We don't use this anywhere, so let's just undefine it. MGD
+#undef DIFFERENCE
+
 namespace vigra {
 
 namespace detail {
@@ -222,7 +226,7 @@ class StandardAccessor
     { 
         return i[diff]; 
     }
-    
+     
         /** Write the current data item. The type <TT>V</TT> of the passed
             in <TT>value</TT> is automatically converted to <TT>VALUETYPE</TT>.
             In case of a conversion floating point -> intergral this includes rounding and clipping.

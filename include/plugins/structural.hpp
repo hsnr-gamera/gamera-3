@@ -22,9 +22,12 @@
 #define mgd11272002_relational
 
 #include "gamera.hpp"
-#include <math.h>
+#include "math.h"
 
-#define TWO_PI M_PI * 2
+// These constants don't seem to be defined correctly under MINGW32
+#define M_PI		3.14159265358979323846
+#define M_TWOPI         (M_PI * 2.0)
+#define M_PI_2		1.57079632679489661923
 
 template<class T, class U>
 FloatVector *polar_distance(T &a, U &b) {

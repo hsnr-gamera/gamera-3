@@ -145,7 +145,7 @@ PyMethodDef knn_methods[] = {
     "classify an unknown image using a list of images." },
   { "_instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
-  { "distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
+  { "_distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { "set_weights", knn_set_weights, METH_VARARGS,
     "Set the weights used for classification." },
   { "get_weights", knn_get_weights, METH_VARARGS,

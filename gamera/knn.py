@@ -152,6 +152,21 @@ class kNN(gamera.knncore.kNN):
             features += x[1].return_type.length
         self.num_features = features
 
+    def distance_from_images(self, images, glyph, max):
+        from gamera import util
+        glyph.generate_features(self.feature_functions)
+        progress = None
+        for x in images:
+            if progress == None and \
+               x.feature_functions != self.feature_functions:
+                progress = util.ProgressFactory("Generating Features . . .", len(images))
+            x.generate_features(self.feature_functions)
+            if progress:
+                progress.step()
+        if progress:
+            progress.kill()
+        return self._distance_from_images(iter(images), glyph, max)
+
     def generate_features(self, images):
         progress = None
         for x in images:
@@ -178,7 +193,7 @@ class kNN(gamera.knncore.kNN):
         if progress:
             progress.kill()
         return self._classify_with_images(iter(images), glyph)
-      
+
     def instantiate_from_images(self, images):
         """Create a k-NN database from a list of images"""
         assert(len(images) > 0)

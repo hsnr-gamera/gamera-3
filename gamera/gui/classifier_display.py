@@ -614,7 +614,7 @@ class ClassifierFrame(ImageFrameBase):
             self.multi_iw.id.BeginBatch()
             try:
                if len(added):
-                  self.append_and_remove_glyphs(added, removed)
+                  self.multi_iw.id.append_and_remove_glyphs(added, removed)
             finally:
                self.multi_iw.id.EndBatch()
                wxEndBusyCursor()
@@ -773,7 +773,7 @@ class ClassifierFrame(ImageFrameBase):
       self.multi_iw.id.BeginBatch()
       try:
          if len(added) or len(removed):
-            self.append_and_remove_glyphs(added, removed)
+            self.multi_iw.id.append_and_remove_glyphs(added, removed)
          else:
             self.multi_iw.id.RefreshSelected()
          self.multi_iw.id.sort_images()
@@ -952,7 +952,7 @@ class ClassifierFrame(ImageFrameBase):
          except gamera_xml.XMLError, e:
             gui_util.message(str(e))
             return
-         self.append_glyphs(glyphs)
+         self.multi_iw.id.append_glyphs(glyphs)
 
    def _OnSaveCurrentDatabase(self, event):
       if self.current_database_filename == None:

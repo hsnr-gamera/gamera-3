@@ -1464,7 +1464,7 @@ class MultiImageWindow(wxPanel):
             return
       else:
          try:
-            for image in self.GetAllItems():
+            for image in self.id.GetAllItems():
                image.sort_cache = eval("x." + sort_string, {'x': image})
          except Exception, e:
             gui_util.message(str(e))

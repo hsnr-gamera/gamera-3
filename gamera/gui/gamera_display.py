@@ -575,7 +575,7 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
             self.draw_rubber(dc)
          return
 
-      subimage = self.image.subimage(y, x, h, w)
+      subimage = self.image.subimage(int(y), int(x), int(h), int(w))
       image = None
       if scaling != 1.0:
          # For the high quality scalings a greyscale (or rgb) is required

@@ -152,6 +152,8 @@ By categories
 
 - Deformations_
 
+  - ink_diffuse_
+
   - inkrub_
 
   - noise_
@@ -342,6 +344,10 @@ By categories
 
   - shear_row_
 
+- TextLineFinding_
+
+  - text_line_finding_fuzzy_runlength_
+
 - Thresholding_
 
   - abutaleb_threshold_
@@ -369,6 +375,10 @@ By categories
   - image_copy_
 
   - image_save_
+
+  - mirror_horizontal_
+
+  - mirror_vertical_
 
   - resize_
 
@@ -418,7 +428,7 @@ hessian_matrix_of_gaussian_, highlight_, histogram_, hue_
 
 **I**
 
-image_copy_, image_save_, inkrub_, invert_
+image_copy_, image_save_, ink_diffuse_, inkrub_, invert_
 
 **L**
 
@@ -426,7 +436,7 @@ laplacian_of_gaussian_, load_image_, load_PNG_, load_tiff_
 
 **M**
 
-magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_horizontal_runs_, most_frequent_black_vertical_run_, most_frequent_black_vertical_runs_, most_frequent_white_horizontal_run_, most_frequent_white_horizontal_runs_, most_frequent_white_vertical_run_, most_frequent_white_vertical_runs_, multiply_images_
+magenta_, mask_, match_id_name_, mean_, mirror_horizontal_, mirror_vertical_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_horizontal_runs_, most_frequent_black_vertical_run_, most_frequent_black_vertical_runs_, most_frequent_white_horizontal_run_, most_frequent_white_horizontal_runs_, most_frequent_white_vertical_run_, most_frequent_white_vertical_runs_, multiply_images_
 
 **N**
 
@@ -450,7 +460,7 @@ saturation_, save_PNG_, save_tiff_, scale_, shear_column_, shear_row_, simple_sh
 
 **T**
 
-thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
+text_line_finding_fuzzy_runlength_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_
 
 **U**
 
@@ -550,6 +560,7 @@ zernike_moments_
 .. _dtw_matrix_with_function: dtw.html#dtw-matrix-with-function
 .. _smith_waterman: dtw.html#smith-waterman
 .. _Deformations: deformations.html#deformations
+.. _ink_diffuse: deformations.html#ink-diffuse
 .. _inkrub: deformations.html#inkrub
 .. _noise: deformations.html#noise
 .. _rotate: deformations.html#rotate
@@ -645,6 +656,8 @@ zernike_moments_
 .. _Shearing: shearing.html#shearing
 .. _shear_column: shearing.html#shear-column
 .. _shear_row: shearing.html#shear-row
+.. _TextLineFinding: textlinefinding.html#textlinefinding
+.. _text_line_finding_fuzzy_runlength: textlinefinding.html#text-line-finding-fuzzy-runlength
 .. _Thresholding: thresholding.html#thresholding
 .. _abutaleb_threshold: thresholding.html#abutaleb-threshold
 .. _bernsen_threshold: thresholding.html#bernsen-threshold
@@ -659,6 +672,8 @@ zernike_moments_
 .. _generate_features: utility.html#generate-features
 .. _image_copy: utility.html#image-copy
 .. _image_save: utility.html#image-save
+.. _mirror_horizontal: utility.html#mirror-horizontal
+.. _mirror_vertical: utility.html#mirror-vertical
 .. _resize: utility.html#resize
 .. _scale: utility.html#scale
 .. _XML: xml.html#xml

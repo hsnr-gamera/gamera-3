@@ -486,7 +486,8 @@ class Image(gameracore.Image, ImageBase):
                                 nrows, ncols, pixel_format, storage_type)
 
    def __del__(self):
-      ImageBase.__del__(self)
+      if self._display:
+         self._display.close()
 
    __getstate__ = ImageBase.__getstate__
 
@@ -499,7 +500,8 @@ class SubImage(gameracore.SubImage, ImageBase):
                                    int(nrows), int(ncols))
 
    def __del__(self):
-      ImageBase.__del__(self)
+      if self._display:
+         self._display.close()
 
    __getstate__ = ImageBase.__getstate__
 
@@ -514,7 +516,8 @@ class Cc(gameracore.Cc, ImageBase):
    __getstate__ = ImageBase.__getstate__
 
    def __del__(self):
-      ImageBase.__del__(self)
+      if self._display:
+         self._display.close()
    
    # Displays this cc in context
    def display_context(self):

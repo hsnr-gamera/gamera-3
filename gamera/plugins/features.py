@@ -30,6 +30,15 @@ class black_area(Feature):
     """The simplest of all feature-generating functions, ``black_area`` simply
 returns the number of black pixels.
 
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |     X    |   X    |
+  +-------+----------+--------+
+  
 .. warning: This feature is not scale invariant."""
     pass
 
@@ -46,7 +55,13 @@ The elements of the returned ``FloatVector`` are:
 
 The rest of these I'm not so sure about anymore.
 
-These features are scale invariant.
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |        |
+  +-------+----------+--------+
 """
     return_type = FloatVector(length=9)
 
@@ -59,7 +74,13 @@ The elements of the returned ``FloatVector`` are:
 0. vertical
 1. horizontal
 
-These features are scale invariant.
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |   X    |
+  +-------+----------+--------+
 """
     return_type = FloatVector(length=2)
 
@@ -74,7 +95,13 @@ The elements of the returned ``FloatVector`` are:
 4 - 7
   horizonal ``nholes`` for each of the quadrants in order NW, NE, SW, SE.
 
-These features are scale invariant.
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |        |
+  +-------+----------+--------+
 """
     return_type = FloatVector(length=8)
 
@@ -82,14 +109,26 @@ class volume(Feature):
     """The percentage of black pixels within the rectangular bounding
 box of the image.  Result in range (0, 1].
 
-This feature is scale and rotation invariant.
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |   X    |
+  +-------+----------+--------+
 """
     pass
 
 class area(Feature):
     """The area of the bounding box (i.e. *nrows* * *ncols*).
 
-.. warning: this feature is not scale invariant.
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |          |   X    |
+  +-------+----------+--------+
     """
     pass
 
@@ -97,6 +136,14 @@ class aspect_ratio(Feature):
     """The aspect ratio of the bounding box (i.e. *ncols* / *nrows*).
 
 This feature is scale invariant.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |   X    |
+  +-------+----------+--------+
     """
     pass
     
@@ -105,11 +152,6 @@ class compactness(Feature):
 of the connected components.  Highly ornate connected components have
 a low compactness, whereas a perfect circle has very high compactness.
 
-The result is derived by calling outline_ on the image and then
-comparing the number of pixels in the outline to the original.
-
-.. _outline: filter.html#outline
-
 Since this function requires allocation and deallocation of memory, it
 is relatively slow.  However, it has proven to be a very useful feature
 in many cases.
@@ -117,17 +159,43 @@ in many cases.
 This feature is relatively scale and rotation invariant, though as the
 image scales, the pixel size relative to the image size diminishes.  This
 is currently not corrected for.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |    X     |   X    |
+  +-------+----------+--------+
 """
     pass
     
 class volume16regions(Feature):
     """Divides the image into a 4 x 4 grid of 16 regions and calculates
-the volume within each."""
+the volume within each.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |        |
+  +-------+----------+--------+
+"""
     return_type = FloatVector(length=16)
 
 class volume64regions(Feature):
     """Divides the image into a 8 x 8 grid of 64 regions and calculates
-the volume within each."""
+the volume within each.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |        |
+  +-------+----------+--------+
+"""
     return_type = FloatVector(length=64)
 
 class zernike_moments(Feature):
@@ -137,6 +205,14 @@ enough to reconstruct many shapes in a reasonable way.
 
 A. Khotanzad and Y. Hong. Invariant image recognition by Zernike moments.
 *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 12(5), 1990.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |          |        |
+  +-------+----------+--------+
 """
     return_type = FloatVector(length=26)
 
@@ -153,13 +229,30 @@ guarantees that the pixels of the resulting skeleton are never more than
 3. Number of end points (1-connected pixels)
 4. Number of *x*-axis crossings
 5. Number of *y*-axis crossings
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |          |        |
+  +-------+----------+--------+
 """
     return_type = FloatVector(length=6)
 
 class top_bottom(Feature):
     """Features useful only for segmentation-free analysis.  Currently, the
 first feature is the first row containing a black pixel, and the second feature
-is the last row containing a black pixel."""
+is the last row containing a black pixel.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |   X   |          |   X    |
+  +-------+----------+--------+
+"""
     return_type = FloatVector(length=2)
 
 class generate_features(PluginFunction):

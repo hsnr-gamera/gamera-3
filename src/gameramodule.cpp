@@ -47,8 +47,6 @@ PyMethodDef gamera_module_methods[] = {
   {NULL, NULL },
 };
 
-
-
 DL_EXPORT(void)
 initgameracore(void) {
   PyObject* m = Py_InitModule("gameracore", gamera_module_methods);

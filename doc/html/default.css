@@ -27,7 +27,8 @@ div.attention, div.caution, div.danger, div.error, div.hint,
 div.important, div.note, div.tip, div.warning, div.admonition {
   margin-left: 2em;
   margin-right: 2em;
-  border: thin solid ;
+  border-width: 1px;
+  border-style: solid ;
   border-color: #ddddcc;
   background-color: #FFFFDD;
   padding: 1em 
@@ -92,11 +93,11 @@ div.topic {
   margin: 2em }
 
 h1 {
-  background-color: #98ceca;
-  padding: 3px;
-  border-color: #72ada8;
-  border-style: solid;
-  border-width: 1px
+  background-color: #e1f0ee;
+  color: #29493c;
+  border-top-color: #72ada8;
+  border-top-style: solid;
+  border-top-width: 4px
 }
 
 h1.title {
@@ -104,11 +105,11 @@ h1.title {
 }
 
 h2 {
-  background-color: #abd8d4;
-  padding: 3px;
-  border-color: #72ada8;
-  border-style: solid;
-  border-width: 1px
+  background-color: #e1f0ee;
+  color: #29493c;
+  border-top-color: #72ada8;
+  border-top-style: solid;
+  border-top-width: 2px
 }
 
 h2.subtitle {
@@ -116,27 +117,27 @@ h2.subtitle {
 }
 
 h3 {
-  background-color: #c0e5e2;
-  padding: 3px;
-  border-color: #72ada8;
-  border-style: solid;
-  border-width: 1px
+  background-color: #e1f0ee;
+  color: #29493c;
+  border-top-color: #72ada8;
+  border-top-style: solid;
+  border-top-width: 1px
 }
 
 h4 {
-  background-color: #d7f2f0;
-  padding: 3px;
-  border-color: #72ada8;
-  border-style: solid;
-  border-width: 1px
+  background-color: #e1f0ee;
+  color: #29493c;
+  border-top-color: #72ada8;
+  border-top-style: dotted;
+  border-top-width: 1px
 }
 
 h5 {
-  background-color: #d7f2f0;
-  padding: 3px;
-  border-color: #72ada8;
-  border-style: solid;
-  border-width: 1px
+  background-color: #e1f0ee;
+  color: #29493c;
+  border-top-color: #72ada8;
+  border-top-style: dotted;
+  border-top-width: 0.5px
 }
 
 hr {
@@ -367,7 +368,7 @@ padding: 1em;
 .c_preprocessor
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .c_regex
@@ -398,13 +399,13 @@ padding: 1em;
 .c_word
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .c_word2
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .h_asp
@@ -586,7 +587,7 @@ padding: 1em;
 .pl_preprocessor
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .pl_punctuation
@@ -647,7 +648,7 @@ padding: 1em;
 .pl_word
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .p_character
@@ -658,7 +659,7 @@ padding: 1em;
 .p_classname
 {
 	color: blue;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .p_commentblock
@@ -680,7 +681,7 @@ padding: 1em;
 .p_defname
 {
     color: #009999;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .p_identifier
@@ -721,7 +722,7 @@ padding: 1em;
 .p_word
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .yaml_comment
@@ -743,7 +744,7 @@ padding: 1em;
 .yaml_identifier
 {
 	color: navy;
-	background-color: #d8d8c9;
+	font-weight: bold;
 }
 
 .yaml_keyword

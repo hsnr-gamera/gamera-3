@@ -269,6 +269,18 @@ class shear_column(PluginFunction):
     args = Args([Int('column'), Int('distance')])
     doc_examples = [(ONEBIT, 50, 10)]
 
+class mirror_horizontal(PluginFunction):
+    """Flips the image across the horizontal (*x*) axis."""
+    category = "Utility"
+    self_type = ImageType(ALL)
+    doc_examples = [(RGB,)]
+
+class mirror_vertical(PluginFunction):
+    """Flips the image across the horizontal (*x*) axis."""
+    category = "Utility"
+    self_type = ImageType(ALL)
+    doc_examples = [(RGB,)]
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
@@ -276,7 +288,8 @@ class UtilModule(PluginModule):
                  histogram, union_images,
                  fill_white, invert, clip_image, mask,
                  nested_list_to_image,
-                 to_nested_list, shear_row, shear_column]
+                 to_nested_list, shear_row, shear_column,
+                 mirror_horizontal, mirror_vertical]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

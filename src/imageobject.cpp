@@ -330,17 +330,12 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 }
 
 static void image_dealloc(PyObject* self) {
-  //std::cerr << "id";
   ImageObject* o = (ImageObject*)self;
 
   if (o->m_weakreflist != NULL) {
-    //printf("dealing with weak refs\n");
     PyObject_ClearWeakRefs(self);
   }
 
-  // Added in an attempt to fix a leak.
-  //std::cerr << o->m_data->ob_refcnt << " " << o->m_features->ob_refcnt << " " << o->m_id_name->ob_refcnt << " " <<
-  //  o->m_children_images->ob_refcnt << " " << o->m_classification_state->ob_refcnt << "\n";
   image_clear(self);
   
   Py_DECREF(o->m_data);
@@ -349,7 +344,6 @@ static void image_dealloc(PyObject* self) {
 
   delete ((RectObject*)self)->m_x;
 
-  // PyObject_Del(self);
   self->ob_type->tp_free(self);
   //free(self);
 }
@@ -379,19 +373,29 @@ static PyObject* image_get(PyObject* self, int row, int col) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
   if (is_CCObject(self)) {
-    return Py_BuildValue("i", ((Cc*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == Gamera::FLOAT) {
-    return Py_BuildValue("d", ((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
+    return PyInt_FromLong(((Cc*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_storage_format == RLE) {
-    return Py_BuildValue("i", ((OneBitRleImageView*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == RGB) {
-    return create_RGBPixelObject(((RGBImageView*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == GREYSCALE) {
-    return Py_BuildValue("i", ((GreyScaleImageView*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == GREY16) {
-    return Py_BuildValue("i", ((Grey16ImageView*)o->m_x)->get((size_t)row, (size_t)col));
-  } else { // ONEBIT
-    return Py_BuildValue("i", ((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
+    return PyInt_FromLong(((OneBitRleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+  } else {
+    switch (od->m_pixel_type) {
+    case Gamera::FLOAT:
+      return PyFloat_FromDouble(((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      break;
+    case Gamera::RGB:
+      return create_RGBPixelObject(((RGBImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      break;
+    case Gamera::GREYSCALE:
+      return PyInt_FromLong(((GreyScaleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      break;
+    case Gamera::GREY16:
+      return PyInt_FromLong(((Grey16ImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      break;
+    case Gamera::ONEBIT:
+      return PyInt_FromLong(((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      break;
+    default:
+      return 0;
+    }
   }
 }
 
@@ -475,6 +479,8 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
 }
 
 // convert Python indexing into row/col format for images
+// Removed, since getitem/setitem now take a tuple of coordinates
+/*
 static inline int get_rowcol(Image* image, long index, size_t* row, size_t* col) {
   if (index < 0) {
     size_t len = image->ncols() * image->nrows();
@@ -490,27 +496,19 @@ static inline int get_rowcol(Image* image, long index, size_t* row, size_t* col)
     return -1;
   }
   return 0;
-}
+  } */
 
 static PyObject* image_getitem(PyObject* self, PyObject* args) {
-  Image* image = (Image*)((RectObject*)self)->m_x;
-  int index;
-  if (PyArg_ParseTuple(args, "i", &index) <= 0)
-    return 0;
   size_t row, col;
-  if (get_rowcol(image, index, &row, &col) < 0)
+  if (PyArg_ParseTuple(args, "(ii)", &row, &col) <= 0)
     return 0;
   return image_get(self, row, col);
 }
 
 static PyObject* image_setitem(PyObject* self, PyObject* args) {
-  Image* image = (Image*)((RectObject*)self)->m_x;
-  int index;
-  PyObject* value;
-  if (PyArg_ParseTuple(args, "iO", &index, &value) <= 0)
-    return 0;
   size_t row, col;
-  if (get_rowcol(image, index, &row, &col) < 0)
+  PyObject* value;
+  if (PyArg_ParseTuple(args, "(ii)O", &row, &col, &value) <= 0)
     return 0;
   return image_set(self, row, col, value);
 }
@@ -630,7 +628,8 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_name = "gameracore.Image";
   ImageType.tp_basicsize = sizeof(ImageObject);
   ImageType.tp_dealloc = image_dealloc;
-  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
+  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
+    Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   ImageType.tp_base = get_RectType();
   ImageType.tp_getset = image_getset;
   ImageType.tp_methods = image_methods;
@@ -648,7 +647,8 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_name = "gameracore.SubImage";
   SubImageType.tp_basicsize = sizeof(SubImageObject);
   SubImageType.tp_dealloc = image_dealloc;
-  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
+  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
+    Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
@@ -661,7 +661,8 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_name = "gameracore.Cc";
   CCType.tp_basicsize = sizeof(CCObject);
   CCType.tp_dealloc = image_dealloc;
-  CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
+  CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
+    Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   CCType.tp_base = &ImageType;
   CCType.tp_new = cc_new;
   CCType.tp_getset = cc_getset;

@@ -514,6 +514,28 @@ namespace Gamera {
     }
     return rows;
   }
+
+  template<class T>
+  void mirror_horizontal(T& m) {
+    for (size_t r = 0; r < size_t(m.nrows()) / 2; ++r) {
+      for (size_t c = 0; c < m.ncols(); ++c) {
+	typename T::value_type tmp = m.get(r, c);
+	m.set(r, c, m.get(m.nrows() - r - 1, c));
+	m.set(m.nrows() - r - 1, c, tmp);
+      }
+    }
+  }
+
+  template<class T>
+  void mirror_vertical(T& m) {
+    for (size_t r = 0; r < m.nrows(); ++r) {
+      for (size_t c = 0; c < size_t(m.ncols() / 2); ++c) {
+	typename T::value_type tmp = m.get(r, c);
+	m.set(r, c, m.get(r, m.ncols() - c - 1));
+	m.set(r, m.ncols() - c - 1, tmp);
+      }
+    }
+  }
  
 }
 #endif

@@ -90,7 +90,7 @@ def get_rest_docs():
    for file in glob.glob(doc_src_path + "*.txt"):
       path, filename = os.path.split(file)
       root, ext = os.path.splitext(filename)
-      yield root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
+      yield file, root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
 
 def method_doc(func, level, images, s):
    s.write("``%s``\n" % func.__name__)
@@ -301,13 +301,14 @@ def gendoc():
    copy_images("html/images/")
    ui("Generating HTML\n")
    output_path = doc_path + "html/"
-   for name, fd, mtime in get_rest_docs():
-      ui("  Generating " + name + "\n")
-      lines = fd.readlines()
-      lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
-      fd = cStringIO.StringIO(''.join(lines))
-      publish_file(source=fd, destination_path=os.path.join(output_path, name + ".html"),
-                   writer_name="html")
+   for filename, rootname, fd, mtime in get_rest_docs():
+      output_file = os.path.join(output_path, rootname + ".html")
+      if os.stat(filename)[ST_MTIME] > os.stat(output_file)[ST_MTIME]:
+          ui("  Generating " + rootname + "\n")
+          lines = fd.readlines()
+          lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
+          fd = cStringIO.StringIO(''.join(lines))
+          publish_file(source=fd, destination_path=output_file, writer_name="html")
    ui("\n")
       
 if __name__ == "__main__":

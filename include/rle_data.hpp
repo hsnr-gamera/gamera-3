@@ -358,7 +358,13 @@ namespace Gamera {
       bool operator<(const self& other) const {
 	return m_pos < other.m_pos;
       }
+      bool operator<=(const self& other) const {
+	return m_pos <= other.m_pos;
+      }
       bool operator>(const self& other) const {
+	return m_pos > other.m_pos;
+      }
+      bool operator>=(const self& other) const {
 	return m_pos > other.m_pos;
       }
       difference_type operator-(const self& other) const {

@@ -56,6 +56,12 @@ namespace Gamera {
 	return current_ != rhs.current_; }
       bool operator<(MoveX const & rhs) const {
 	return current_ < rhs.current_; }
+      bool operator<=(MoveX const & rhs) const {
+	return current_ <= rhs.current_; }
+      bool operator>(MoveX const & rhs) const {
+	return current_ > rhs.current_; }
+      bool operator>=(MoveX const & rhs) const {
+	return current_ >= rhs.current_; }
       int operator-(MoveX const & rhs) const {
 	return current_ - rhs.current_; }
       MoveX(Iterator base)
@@ -84,6 +90,12 @@ namespace Gamera {
 	return (offset_ != rhs.offset_); }
       bool operator<(MoveY const & rhs) const {
 	return (offset_ < rhs.offset_); }
+      bool operator<=(MoveY const & rhs) const {
+	return (offset_ <= rhs.offset_); }
+      bool operator>(MoveY const & rhs) const {
+	return (offset_ > rhs.offset_); }
+      bool operator>=(MoveY const & rhs) const {
+	return (offset_ >= rhs.offset_); }
       int operator-(MoveY const & rhs) const {
 	return ((offset_ - rhs.offset_) / width_);
       }

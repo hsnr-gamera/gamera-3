@@ -320,6 +320,8 @@ namespace Gamera {
     
     image_copy_fill(src, *dest_srcpart);
 
+    delete dest_srcpart;
+
     return(dest);
   }
 
@@ -346,6 +348,12 @@ namespace Gamera {
     fill(*bottom_pad, value);
     fill(*left_pad, value);
     image_copy_fill(src, *dest_srcpart);
+
+    delete top_pad;
+    delete right_pad;
+    delete bottom_pad;
+    delete left_pad;
+    delete dest_srcpart;
 
     return(dest);
   }

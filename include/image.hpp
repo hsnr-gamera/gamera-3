@@ -30,21 +30,20 @@ namespace Gamera {
 
     This is the base class for all matrices.
   */
-  template<class T> class ImageBase : public Rect<size_t> {
+  template<class T> class ImageBase : public Rect {
   public:
-    typedef Point<size_t> point_type;
-    typedef Dimensions<size_t> dimensions_type;
 
-    ImageBase(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1, size_t ncols = 1)
-      : Rect<size_t>(origin_y, origin_x, nrows, ncols) { }
-    ImageBase(const point_type& upper_left, const point_type& lower_right)
-      : Rect<size_t>(upper_left, lower_right) { }
-    ImageBase(const point_type& upper_left, const size_type& size)
-      : Rect<size_t>(upper_left, size) { }
-    ImageBase(const point_type& upper_left, const dimensions_type& dim)
-      : Rect<size_t>(upper_left, dim) { }
+    ImageBase(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1,
+	      size_t ncols = 1)
+      : Rect(origin_y, origin_x, nrows, ncols) { }
+    ImageBase(const Point& upper_left, const Point& lower_right)
+      : Rect(upper_left, lower_right) { }
+    ImageBase(const Point& upper_left, const Size& size)
+      : Rect(upper_left, size) { }
+    ImageBase(const Point& upper_left, const Dimensions& dim)
+      : Rect(upper_left, dim) { }
 
-    ImageBase(const Rect<size_t>& rect) : Rect<size_t>(rect) { }
+    ImageBase(const Rect& rect) : Rect(rect) { }
     size_t depth() const { return sizeof(T) * 8; }
     size_t ncolors() const { return 1; }
     float resolution() const { return m_resolution; }

@@ -37,15 +37,26 @@ namespace Gamera {
     value_type operator()(const value_type* i) const {
       return *i;
     }
+
     template<class Iterator>
-    void set(Iterator i, const value_type& v) const {
+    value_type get(const Iterator& i) const {
+      return i.get();
+    }
+    value_type get(value_type* i) const {
+      return *i;
+    }
+    value_type get(const value_type* i) const {
+      return *i;
+    }
+
+    template<class Iterator>
+    void set(const value_type& v, Iterator I) const {
       i.set(v);
     }
-    void set(value_type* i, const value_type& v) const {
+    void set(const value_type& v, value_type* i) const {
       *i = v;
     }
   };
-
 
 }
 

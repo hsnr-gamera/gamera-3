@@ -33,10 +33,10 @@ namespace Gamera {
   template<class T>
   class StaticImage : public ImageView<ImageData<T> > {
   public:
-    typedef Rect<size_t> rect_type;
-    typedef Size<size_t> size_type;
-    typedef Point<size_t> point_type;
-    typedef Dimensions<size_t> dimensions_type;
+    typedef Rect rect_type;
+    typedef Size size_type;
+    typedef Point point_type;
+    typedef Dimensions dimensions_type;
     typedef StaticImage self;
     typedef ImageView<ImageData<T> > view_type;
     /*

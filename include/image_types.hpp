@@ -59,8 +59,8 @@ namespace Gamera {
    */
   typedef ConnectedComponent<OneBitImageData> CC;
   typedef ConnectedComponent<OneBitRleImageData> RleCC;
-  typedef std::list<CC> ConnectedComponents;
-  typedef std::list<RleCC> RleConnectedComponents;
+  typedef std::list<CC*> ConnectedComponents;
+  typedef std::list<RleCC*> RleConnectedComponents;
 
   /*
     Factory for types.
@@ -71,6 +71,7 @@ namespace Gamera {
     typedef ConnectedComponent<typename T::data_type> cc_type;
     typedef std::list<cc_type> ccs_type;
   };
+
 }
 
 

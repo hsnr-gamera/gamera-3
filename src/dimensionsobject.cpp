@@ -19,6 +19,8 @@
 
 #include "gameramodule.hpp"
 
+using namespace Gamera;
+
 extern "C" {
   static PyObject* dimensions_new(PyTypeObject* pytype, PyObject* args,
 			    PyObject* kwds);
@@ -51,10 +53,10 @@ bool is_DimensionsObject(PyObject* x) {
     return false;
 }
 
-PyObject* create_DimensionsObject(const IntDimensions& p) {
+PyObject* create_DimensionsObject(const Dimensions& p) {
   DimensionsObject* so;
   so = (DimensionsObject*)DimensionsType.tp_alloc(&DimensionsType, 0);
-  so->m_x = new IntDimensions(p);
+  so->m_x = new Dimensions(p);
   return (PyObject*)so;
 }
 
@@ -65,7 +67,7 @@ static PyObject* dimensions_new(PyTypeObject* pytype, PyObject* args,
     return 0;
   DimensionsObject* so;
   so = (DimensionsObject*)pytype->tp_alloc(pytype, 0);
-  so->m_x = new IntDimensions((size_t)x, (size_t)y);
+  so->m_x = new Dimensions((size_t)x, (size_t)y);
   return (PyObject*)so;
 }
 
@@ -83,7 +85,7 @@ static void dimensions_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Object is not a Dimensions object!"); \
     return 0; \
   } \
-  IntDimensions* x = ((DimensionsObject*)self)->m_x; \
+  Dimensions* x = ((DimensionsObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
@@ -92,7 +94,7 @@ static void dimensions_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Type Error!"); \
     return -1; \
   } \
-  IntDimensions* x = ((DimensionsObject*)self)->m_x; \
+  Dimensions* x = ((DimensionsObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
   return 0; \
 }
@@ -108,8 +110,8 @@ static PyObject* dimensions_richcompare(PyObject* a, PyObject* b, int op) {
     return Py_NotImplemented;
   }
 
-  IntDimensions& ap = *((DimensionsObject*)a)->m_x;
-  IntDimensions& bp = *((DimensionsObject*)b)->m_x;
+  Dimensions& ap = *((DimensionsObject*)a)->m_x;
+  Dimensions& bp = *((DimensionsObject*)b)->m_x;
 
   /*
     Only equality and inequality make sense.
@@ -151,7 +153,7 @@ static PyObject* dimensions_repr(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Self if not a Dimensions object!");
     return 0;
   }
-  IntDimensions* x = ((DimensionsObject*)self)->m_x;
+  Dimensions* x = ((DimensionsObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Dimensions nrows: %i ncols: %i>",
 			     x->nrows(), x->ncols());
 }

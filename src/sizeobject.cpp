@@ -19,6 +19,8 @@
 
 #include "gameramodule.hpp"
 
+using namespace Gamera;
+
 extern "C" {
   static PyObject* size_new(PyTypeObject* pytype, PyObject* args,
 			    PyObject* kwds);
@@ -51,10 +53,10 @@ bool is_SizeObject(PyObject* x) {
     return false;
 }
 
-PyObject* create_SizeObject(const IntSize& p) {
+PyObject* create_SizeObject(const Size& p) {
   SizeObject* so;
   so = (SizeObject*)SizeType.tp_alloc(&SizeType, 0);
-  so->m_x = new IntSize(p);
+  so->m_x = new Size(p);
   return (PyObject*)so;
 }
 
@@ -65,7 +67,7 @@ static PyObject* size_new(PyTypeObject* pytype, PyObject* args,
     return 0;
   SizeObject* so;
   so = (SizeObject*)pytype->tp_alloc(pytype, 0);
-  so->m_x = new IntSize((size_t)width, (size_t)height);
+  so->m_x = new Size((size_t)width, (size_t)height);
   return (PyObject*)so;
 }
 
@@ -83,7 +85,7 @@ static void size_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Object is not a Size object!"); \
     return 0; \
   } \
-  IntSize* x = ((SizeObject*)self)->m_x; \
+  Size* x = ((SizeObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
@@ -92,7 +94,7 @@ static void size_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Type Error!"); \
     return -1; \
   } \
-  IntSize* x = ((SizeObject*)self)->m_x; \
+  Size* x = ((SizeObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
   return 0; \
 }
@@ -108,8 +110,8 @@ static PyObject* size_richcompare(PyObject* a, PyObject* b, int op) {
     return Py_NotImplemented;
   }
 
-  IntSize& as = *((SizeObject*)a)->m_x;
-  IntSize& bs = *((SizeObject*)b)->m_x;
+  Size& as = *((SizeObject*)a)->m_x;
+  Size& bs = *((SizeObject*)b)->m_x;
 
   /*
     Only equality and inequality make sense.
@@ -151,7 +153,7 @@ static PyObject* size_repr(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Self if not a Size object!");
     return 0;
   }
-  IntSize* x = ((SizeObject*)self)->m_x;
+  Size* x = ((SizeObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Size width: %i height: %i>",
 			     x->width(), x->height());
 }

@@ -48,19 +48,19 @@
 namespace Gamera {
 
   template<class V, class T = size_t>
-  class Region : public Rect<T> {
+  class Region : public Rect {
   public:
     typedef std::map<std::string, V> map_type;
     Region(T origin_y = 0, T origin_x = 0, T nrows = 1, T ncols = 1) :
-      Rect<T>(origin_y, origin_x, nrows, ncols) { }
-    Region(const Point<T>& ul, const Point<T>& lr) :
-      Rect<T>(ul, lr) { }
-    Region(const Rect<T>& r) :
-      Rect<T>(r) { }
-    Region(const Point<T>& ul, const Size<T>& size)
-      : Rect<T>(ul, size) {}
-    Region(const Point<T>& ul, const Dimensions<T>& dim)
-      : Rect<T>(ul, dim) {}
+      Rect(origin_y, origin_x, nrows, ncols) { }
+    Region(const Point& ul, const Point& lr) :
+      Rect(ul, lr) { }
+    Region(const Rect& r) :
+      Rect(r) { }
+    Region(const Point& ul, const Size& size)
+      : Rect(ul, size) {}
+    Region(const Point& ul, const Dimensions& dim)
+      : Rect(ul, dim) {}
     V value(const std::string& key) {
       typename map_type::iterator i = m_value_map.find(key);
       if (i != m_value_map.end())
@@ -125,7 +125,7 @@ namespace Gamera {
   public:
     typedef RegionMap self;
     typedef Region<T, Coord> region_type;
-    typedef Rect<Coord> rect_t;
+    typedef Rect rect_t;
     RegionMap() : std::list<Region<T, Coord> >() { }
     RegionMap(size_t n) : std::list<Region<T, Coord> >(n) { }
     virtual ~RegionMap() { }

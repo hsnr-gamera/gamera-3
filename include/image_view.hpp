@@ -29,7 +29,6 @@
 
 #include <exception>
 #include <stdexcept>
-#include <string>
 #include <cstring>
 #include <cstdio>
 #include <utility>
@@ -134,7 +133,7 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
-    ImageView(T& image_data, const Rect<size_t>& rect,
+    ImageView(T& image_data, const Rect& rect,
 	       bool do_range_check = true)
       : base_type(rect) {
       m_image_data = &image_data;
@@ -143,8 +142,8 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
-    ImageView(T& image_data, const Point<size_t>& upper_left,
-	       const Point<size_t>& lower_right, bool do_range_check = true)
+    ImageView(T& image_data, const Point& upper_left,
+	       const Point& lower_right, bool do_range_check = true)
       : base_type(upper_left, lower_right) {
       m_image_data = &image_data;
       if (do_range_check) {
@@ -152,8 +151,8 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
-    ImageView(T& image_data, const Point<size_t>& upper_left,
-	       const Size<size_t>& size, bool do_range_check = true)
+    ImageView(T& image_data, const Point& upper_left,
+	       const Size& size, bool do_range_check = true)
       : base_type(upper_left, size) {
       m_image_data = &image_data;
       if (do_range_check) {
@@ -161,8 +160,8 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
-    ImageView(T& image_data, const Point<size_t>& upper_left,
-	       const Dimensions<size_t>& dim, bool do_range_check = true)
+    ImageView(T& image_data, const Point& upper_left,
+	       const Dimensions& dim, bool do_range_check = true)
       : base_type(upper_left, dim) {
       m_image_data = &image_data;
       if (do_range_check) {
@@ -180,28 +179,28 @@ namespace Gamera {
       range_check();
       calculate_iterators();
     }
-    ImageView(const self& other, const Rect<size_t>& rect)
+    ImageView(const self& other, const Rect& rect)
       : base_type(rect) {
       m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    ImageView(const self& other, const Point<size_t>& upper_left,
-	       const Point<size_t>& lower_right)
+    ImageView(const self& other, const Point& upper_left,
+	       const Point& lower_right)
       : base_type(upper_left, lower_right) {
       m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    ImageView(const self& other, const Point<size_t>& upper_left,
-	       const Size<size_t>& size)
+    ImageView(const self& other, const Point& upper_left,
+	       const Size& size)
       : base_type(upper_left, size) {
       m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    ImageView(const self& other, const Point<size_t>& upper_left,
-	       const Dimensions<size_t>& dim)
+    ImageView(const self& other, const Point& upper_left,
+	       const Dimensions& dim)
       : base_type(upper_left, dim) {
       m_image_data = other.data();
       range_check();
@@ -334,7 +333,6 @@ namespace Gamera {
 	sprintf(error, "%s\tncols %d\n", error, (int)ncols());
 	sprintf(error, "%s\toffset_x %d\n", error, (int)offset_x());
 	sprintf(error, "%s\tdata ncols %d\n", error,(int)m_image_data->ncols());
-	std::cerr << error << std::endl;
 	throw std::range_error(error);
       }
     }

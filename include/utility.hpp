@@ -20,10 +20,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/types.h>
-// This causes problems with python includes - FIXME KWM 5/25/01
-//#include <unistd.h>
-
-#include <iostream>
 
 #include "gamera.hpp"
 

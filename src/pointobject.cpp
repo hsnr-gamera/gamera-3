@@ -19,6 +19,8 @@
 
 #include "gameramodule.hpp"
 
+using namespace Gamera;
+
 extern "C" {
   static PyObject* point_new(PyTypeObject* pytype, PyObject* args,
 			    PyObject* kwds);
@@ -58,10 +60,10 @@ bool is_PointObject(PyObject* x) {
     return false;
 }
 
-PyObject* create_PointObject(const IntPoint& p) {
+PyObject* create_PointObject(const Point& p) {
   PointObject* so;
   so = (PointObject*)PointType.tp_alloc(&PointType, 0);
-  so->m_x = new IntPoint(p);
+  so->m_x = new Point(p);
   return (PyObject*)so;
 }
 
@@ -72,7 +74,7 @@ static PyObject* point_new(PyTypeObject* pytype, PyObject* args,
     return 0;
   PointObject* so;
   so = (PointObject*)pytype->tp_alloc(pytype, 0);
-  so->m_x = new IntPoint((size_t)x, (size_t)y);
+  so->m_x = new Point((size_t)x, (size_t)y);
   return (PyObject*)so;
 }
 
@@ -90,7 +92,7 @@ static void point_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Object is not a Point object!"); \
     return 0; \
   } \
-  IntPoint* x = ((PointObject*)self)->m_x; \
+  Point* x = ((PointObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
@@ -99,7 +101,7 @@ static void point_dealloc(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Type Error!"); \
     return -1; \
   } \
-  IntPoint* x = ((PointObject*)self)->m_x; \
+  Point* x = ((PointObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
   return 0; \
 }
@@ -114,7 +116,7 @@ static PyObject* point_move(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "Self is not a Point!");
     return 0;
   }
-  IntPoint* x = ((PointObject*)self)->m_x;
+  Point* x = ((PointObject*)self)->m_x;
   int xv, y;
   if (PyArg_ParseTuple(args, "ii", &xv, &y) <= 0)
     return 0;
@@ -129,8 +131,8 @@ static PyObject* point_richcompare(PyObject* a, PyObject* b, int op) {
     return Py_NotImplemented;
   }
 
-  IntPoint& ap = *((PointObject*)a)->m_x;
-  IntPoint& bp = *((PointObject*)b)->m_x;
+  Point& ap = *((PointObject*)a)->m_x;
+  Point& bp = *((PointObject*)b)->m_x;
 
   /*
     Only equality and inequality make sense.
@@ -172,7 +174,7 @@ static PyObject* point_repr(PyObject* self) {
     PyErr_SetString(PyExc_TypeError, "Self if not a Point object!");
     return 0;
   }
-  IntPoint* x = ((PointObject*)self)->m_x;
+  Point* x = ((PointObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Point x: %i y: %i>",
 			     x->x(), x->y());
 }

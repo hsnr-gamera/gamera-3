@@ -5,6 +5,8 @@ setup(name = "gameracore", version="1.1",
                                           "src/sizeobject.cpp",
                                           "src/pointobject.cpp",
                                           "src/dimensionsobject.cpp",
-                                          "src/rectobject.cpp"
-                                          ], include_dirs=["include"])]
+                                          "src/rectobject.cpp",
+                                          "src/imagedataobject.cpp"
+                                          ], include_dirs=["include"],
+                               libraries=["stdc++"])]
       )

@@ -27,12 +27,26 @@
 #ifndef kwm11162001_image_data_hpp
 #define kwm11162001_image_data_hpp
 
+#include "dimensions.hpp"
+
 #include <cstddef>
 #include <cmath>
 
 namespace Gamera {
 
-  template<class T> class ImageData {
+  /*
+    A base class for ImageData objects - this
+    is only used for RTTI. There is not an abstract base class
+    using virtual functions for performance reasons (virtual
+    functions often are not properly inlined).
+  */
+  class ImageDataBase {
+  public:
+    virtual ~ImageDataBase() { }
+  };
+
+  template<class T>
+  class ImageData : public ImageDataBase {
   public:
     /*
       Standard typedefs
@@ -56,7 +70,7 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    ImageData(const Size<size_t>& size, size_t page_offset_y = 0,
+    ImageData(const Size& size, size_t page_offset_y = 0,
 	       size_t page_offset_x = 0) {
       m_size = (size.height() + 1) * (size.width() + 1);
       m_stride = size.width() + 1;
@@ -65,7 +79,7 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    ImageData(const Dimensions<size_t>& dim, size_t page_offset_y = 0,
+    ImageData(const Dimensions& dim, size_t page_offset_y = 0,
 	       size_t page_offset_x = 0) {
       m_size = dim.nrows() * dim.ncols();
       m_stride = dim.ncols();
@@ -74,7 +88,10 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    ~ImageData() {
+    /*
+      Destructor
+    */
+    virtual ~ImageData() {
       if (m_data != 0) {
 	delete[] m_data;
       }
@@ -99,7 +116,8 @@ namespace Gamera {
     void page_offset_y(size_t y) { m_page_offset_y = y; }
     void nrows(size_t nrows) { resize(nrows * ncols()); }
     void ncols(size_t ncols) { m_stride = ncols; resize(nrows() * m_stride); }
-    void dimensions(size_t rows, size_t cols) { m_stride = cols; resize(rows * cols); }
+    void dimensions(size_t rows, size_t cols) {
+      m_stride = cols; resize(rows * cols); }
     void resize(size_t size) {
       if (size > 0) {
 	size_t smallest = std::min(m_size, size);

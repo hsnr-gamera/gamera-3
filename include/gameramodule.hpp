@@ -23,35 +23,76 @@
 #include "gamera.hpp"
 #include <Python.h>
 
+/*
+  This file holds the C++ interface for the Python objects that wrap
+  the core Gamera C++ objects. Each object has the struct for the Python
+  object, a type-checking function, and a factory to create an instance
+  of the Python type from the corresponding C++ type. Only the Python
+  instance struct is exported here - the type struct is not exported, but
+  is available via the object->tp_type field in the instance struct.
+*/
+
 struct SizeObject {
   PyObject_HEAD
-  IntSize* m_x;
+  Size* m_x;
 };
 
 extern bool is_SizeObject(PyObject* x);
-extern PyObject* create_SizeObject(const IntSize& d);
+extern PyObject* create_SizeObject(const Size& d);
 
 struct DimensionsObject {
   PyObject_HEAD
-  IntDimensions* m_x;
+  Dimensions* m_x;
 };
 
 extern bool is_DimensionsObject(PyObject* x);
-extern PyObject* create_DimensionsObject(const IntDimensions& d);
+extern PyObject* create_DimensionsObject(const Dimensions& d);
 
 struct PointObject {
   PyObject_HEAD
-  IntPoint* m_x;
+  Point* m_x;
 };
 
 extern bool is_PointObject(PyObject* x);
-extern PyObject* create_PointObject(const IntPoint& p);
+extern PyObject* create_PointObject(const Point& p);
 
 struct RectObject {
   PyObject_HEAD
-  IntRect* m_x;
+  Rect* m_x;
 };
 
 bool is_RectObject(PyObject* x);
+
+struct ImageDataObject {
+  PyObject_HEAD
+  ImageDataBase* m_x;
+};
+  
+namespace Gamera {
+  namespace Python {
+    /*
+      Enumeration for all of the image types, pixel types, and storage
+      types.
+    */
+    enum PixelTypes {
+      ONEBIT,
+      GREYSCALE,
+      GREY16,
+      RGB,
+      FLOAT
+    };
+    
+    enum ImageTypes {
+      VIEW,
+      STATIC,
+      CC
+    };
+    
+    enum StorageTypes {
+      DENSE,
+      RLE
+    };
+  }
+}
 
 #endif

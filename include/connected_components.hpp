@@ -28,7 +28,6 @@
 
 #include <stdexcept>
 #include <exception>
-#include <string>
 
 /*
   ConnectedComponent
@@ -75,28 +74,32 @@ namespace Gamera {
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(T& image_data, value_type label, const Rect<size_t>& rect)
+    ConnectedComponent(T& image_data, value_type label,
+		       const Rect& rect)
       : base_type(rect), m_label(label) {
       m_image_data = &image_data;
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(T& image_data, value_type label, const Point<size_t>& upper_left,
-		       const Point<size_t>& lower_right)
+    ConnectedComponent(T& image_data, value_type label,
+		       const Point& upper_left,
+		       const Point& lower_right)
       : base_type(upper_left, lower_right), m_label(label) {
       m_image_data = &image_data;
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(T& image_data, value_type label, const Point<size_t>& upper_left,
-		       const Size<size_t>& size)
+    ConnectedComponent(T& image_data, value_type label,
+		       const Point& upper_left,
+		       const Size& size)
       : base_type(upper_left, size), m_label(label) {
       m_image_data = &image_data;
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(T& image_data, value_type label, const Point<size_t>& upper_left,
-		       const Dimensions<size_t>& dim)
+    ConnectedComponent(T& image_data, value_type label,
+		       const Point& upper_left,
+		       const Dimensions& dim)
       : base_type(upper_left, dim), m_label(label) {
       m_image_data = &image_data;
       range_check();
@@ -113,31 +116,31 @@ namespace Gamera {
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(const self& other, const Rect<size_t>& rect)
+    ConnectedComponent(const self& other, const Rect& rect)
       : base_type(rect) {
       m_image_data = other.data();
       m_label = other.label();
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(const self& other, const Point<size_t>& upper_left,
-		       const Point<size_t>& lower_right)
+    ConnectedComponent(const self& other, const Point& upper_left,
+		       const Point& lower_right)
       : base_type(upper_left, lower_right) {
       m_image_data = other.data();
       m_label = other.label();
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(const self& other, const Point<size_t>& upper_left,
-		       const Size<size_t>& size)
+    ConnectedComponent(const self& other, const Point& upper_left,
+		       const Size& size)
       : base_type(upper_left, size) {
       m_image_data = other.data();
       m_label = other.label();
       range_check();
       calculate_iterators();
     }
-    ConnectedComponent(const self& other, const Point<size_t>& upper_left,
-		       const Dimensions<size_t>& dim)
+    ConnectedComponent(const self& other, const Point& upper_left,
+		       const Dimensions& dim)
       : base_type(upper_left, dim) {
       m_image_data = other.data();
       m_label = other.label();
@@ -178,7 +181,8 @@ namespace Gamera {
 			   m_image_data->ncols());
     }
     ImageView<T> image() {
-      return ImageView<T>(*m_image_data, offset_y(), offset_x(), nrows(), ncols());
+      return ImageView<T>(*m_image_data, offset_y(), offset_x(), nrows(),
+			  ncols());
     }
     value_type label() const {
       return m_label;
@@ -312,7 +316,6 @@ namespace Gamera {
 	sprintf(error, "%s\tncols %d\n", error, (int)ncols());
 	sprintf(error, "%s\toffset_x %d\n", error, (int)offset_x());
 	sprintf(error, "%s\tdata ncols %d\n", error, (int)m_image_data->ncols());
-	std::cerr << error << std::endl;
 	
 	throw std::range_error(error);
       }

@@ -53,6 +53,8 @@ class SymbolTable:
 
    def normalize_symbol(self, symbol):
       # assert type(symbol) == types.StringType
+      while len(symbol) and symbol[0] == '.':
+         symbol = symbol[1:]
       if symbol == '':
          return '', []
       for i in ' !@#$%^&*()-=+~`|\{}[];:"\',<>?/':
@@ -61,9 +63,12 @@ class SymbolTable:
       if symbol[0] in string.digits or keyword.iskeyword(symbol):
          symbol = '_' + symbol
       # Split by '.' delimiters
-      tokens = symbol.strip().split('.')
-      if symbol[-1] == ".":
-         symbol = symbol[:-1]
+      orig_tokens = symbol.strip().split('.')
+      tokens = []
+      for token in orig_tokens:
+         if token.strip() != '':
+            tokens.append(token.strip())
+      symbol = '.'.join(tokens)
       return symbol, tokens
 
    def add(self, symbol, id = -1):

@@ -1205,8 +1205,11 @@ class SymbolTableEditorPanel(wxPanel):
    # CALLBACKS
 
    def _OnEnter(self, evt):
+      find = self.text.GetValue()
       normalized_symbol = self._symbol_table.add(find)
-      self.toplevel.classify_manual(normalized_symbol)
+      print str(normalized_symbol)
+      if normalized_symbol != '':
+         self.toplevel.classify_manual(normalized_symbol)
 
    def _OnKey(self, evt):
       find = self.text.GetValue()
@@ -1215,8 +1218,7 @@ class SymbolTableEditorPanel(wxPanel):
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
-         normalized_symbol = self._symbol_table.add(find)
-         self.toplevel.classify_manual(normalized_symbol)
+         self._OnEnter(evt)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():
          current = self.text.GetInsertionPoint()
          new = max(self.text.GetValue().rfind(".", 0, current), 0)

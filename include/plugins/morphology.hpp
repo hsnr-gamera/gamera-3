@@ -94,13 +94,13 @@ namespace Gamera {
 	if (n8)
 	  neighbor4x(m, max, *result);
 	else
-	  neighbor8(m, max, *result);
+	  neighbor9(m, max, *result);
       }
       else {
 	if (n8)
 	  neighbor4x(m, min, *result);
 	else
-	  neighbor8(m, min, *result);
+	  neighbor9(m, min, *result);
       }
       ngeo++;
     }
@@ -144,7 +144,7 @@ namespace Gamera {
     if (m.nrows() < 3 || m.ncols() < 3)
       return;
     Rank<typename T::value_type> rank(r);
-    neighbor8<T, Rank<typename T::value_type> >(m, rank);
+    neighbor9<T, Rank<typename T::value_type> >(m, rank);
   }
 
   

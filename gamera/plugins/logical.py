@@ -111,7 +111,7 @@ are a different size, the two images must be the same size.
 See or_image_ for some usage examples.
 """
   def __call__(self, other, in_place=False):
-    return _logical.xor_images(self, other, in_place)
+    return _logical.xor_image(self, other, in_place)
   __call__ = staticmethod(__call__)
 
 class LogicalModule(PluginModule):

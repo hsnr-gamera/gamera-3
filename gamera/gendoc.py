@@ -424,8 +424,8 @@ class ClassDocumentationGenerator:
       if type(members) in (str, unicode):
          members = members.split()
       s = open(os.path.join(self.docgen.src_path, combined_name + ".txt"), "w")
-      s.write("class ``%s``\n%s\n\n" % (combined_name, underline(0, combined_name, 10)))
-      s.write("``%s``\n%s\n\n" % (cls_name, underline(1, combined_name, 4)))
+      s.write("class ``%s``\n%s\n\n" % (cls_name, underline(0, cls_name, 10)))
+      s.write("``%s``\n%s\n\nIn module ``%s``\n\n" % (cls_name, underline(1, cls_name, 4), module_name))
       s.write(".. docstring:: %s %s\n   :no_title:\n\n" % (module_name, cls_name))
       s.write(".. docstring:: %s %s %s\n\n" % (module_name, cls_name, " ".join(members)))
 

@@ -4,20 +4,16 @@ from distutils.sysconfig import get_python_lib
 import sys, os, time, locale, string
 import glob
 
-########################################
-# Check that this is at least Python 2.2
-if float(string.join([str(x) for x in sys.version_info[0:3]], '')) < 221:
-    print "Gamera requires Python version 2.2.1 or later."
-    print "You are running the following Python version:"
-    print sys.version
-    sys.exit(1)
-
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is
 # finished. To get around this, the gamera directory is
 # added to the path and generate is imported directly
 sys.path.append("gamera")
-import generate
+import generate, gamera_setup
+
+########################################
+# Check that this is at least Python 2.2
+gamera_setup.check_python_version()
 
 ##########################################
 # generate the plugins
@@ -27,16 +23,7 @@ plugin_extensions = []
 # we grab all of the plugins except __init__.py - of course
 # to exclude this we have to go throug all sorts of crap . . .
 if not '--help' in sys.argv and not '--help-commands' in sys.argv:
-    plugins = glob.glob("gamera/plugins/*.py")
-    norm_plugins = []
-    for x in plugins:
-        norm_plugins.append(os.path.normpath(os.path.abspath(x)))
-    plugins = norm_plugins
-    try:
-        path = os.path.normpath(os.path.abspath("gamera/plugins/__init__.py"))
-        plugins.remove(path)
-    except:
-        pass
+    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/*.py')
 
     # Create the list of modules to ignore at import - because
     # we are in the middle of the build process a lot of C++
@@ -51,11 +38,7 @@ if not '--help' in sys.argv and not '--help-commands' in sys.argv:
         ignore.append(module_name)
     generate.magic_import_setup(ignore)
 
-    for x in plugins:
-        print x
-        extension = generate.generate_plugin(x)
-        if not extension is None:
-            plugin_extensions.append(extension)
+    plugin_extensions = gamera_setup.generate_plugins(plugins)
 
     generate.restore_import()
 

@@ -257,7 +257,10 @@ namespace Gamera {
     for (size_t i = 0; i < rects.size(); ++i) {
       if (rects[i] != 0) {
 	ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
-								   OneBitPixel(i), *rects[i]));
+								     OneBitPixel(i),
+								     rects[i]->offset_y() + image.offset_y(),
+								     rects[i]->offset_x() + image.offset_x(),
+								     rects[i]->nrows(), rects[i]->ncols()));
 	delete rects[i];
       }
     }

@@ -169,7 +169,7 @@ class ProgressBox:
 
    def update(self, num, den):
       if not self.done:
-         self.progress_box.Update(min(100, (float(num) / float(den)) * 100.0))
+         self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
          if num >= den:
             self.done = 1
             wxEndBusyCursor()

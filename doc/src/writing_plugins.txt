@@ -480,6 +480,91 @@ functions as well:
   def filter_small_images(l):
       return [x for x in l if x.ncols > 2 and x.nrows > 2]
 
+Feature generators: A special kind of plugin
+============================================
+
+Plugin methods that take an image as input and generate some floating
+point features from it are called "feature generators".  The resulting
+floating point features are used by the classifier to classify images.
+
+For efficiency reasons, feature generator functions are implemented
+slightly differently from a regular ``PluginFunction``.  Rather than
+returning the features as a return value, which would require a memory
+copy into the image's feature vector, feature
+generators write directly to a buffer that is passed in as an
+argument.
+
+As an example, let's look at the ``nholes`` feature generator.  The
+Python metadata is the same as you would expect, except the member
+``feature_function`` is set to ``True``.  This will tell the build
+system to treat this plugin method as a feature generator with the
+different return value behavior.  The
+``return_type`` must be a ``FloatVector``, where ``length`` indicates
+the number of feature values that are generated.
+
+.. code:: Python
+
+   class nholes(PluginFunction):
+       """Returns the average number of transitions from white to black in each
+   row or column.
+   
+   The elements of the returned ``FloatVector`` are:
+
+   0. vertical
+   1. horizontal
+
+   These features are scale invariant.
+   """
+       self_type = ImageType([ONEBIT])
+       return_type = FloatVector(length=2)
+       feature_function = True
+       doc_examples = [(ONEBIT,)]
+
+On the C++ side, the function takes two arguments: the image, and a
+pointer to a floating point buffer.  Note that the return type is ``void``.
+
+.. code:: CPP
+
+  template<class T>
+  void nholes(T &m, feature_t* buf) {
+    int vert, horiz;
+    
+    vert = nholes_1d(m.col_begin(), m.col_end());
+    horiz = nholes_1d(m.row_begin(), m.row_end());
+    
+    *(buf++) = (feature_t)vert / m.ncols();
+    *buf = (feature_t)horiz / m.nrows();
+  }
+
+(The C++ function ``nholes_1d`` is where all the real work gets done,
+and is not important for this illustration.)  Note how the result of the
+function is copied directly into the buffer.  
+
+.. note:: It is extrememly important not to write more values to the
+  buffer than is
+  defined in the metadata ``return_value``.  Doing so could cause
+  Python/Gamera to behave erratically or segfault.
+
+It is also possible to write a feature generator in pure Python.
+
+.. code:: Python
+
+   class nholes(PluginFunction):
+       self_type = ImageType([ONEBIT])
+       return_type = FloatVector(length=2)
+       feature_function = True
+       doc_examples = [(ONEBIT,)]
+
+   def __call__(self, index):
+       buffer = self.features
+       
+       # Do some processing to get values...
+              
+       buffer[index] = result1
+       buffer[index + 1] = result2  
+   __call__ = staticmethod(__call__)
+
+
 Further reading
 ===============
 

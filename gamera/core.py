@@ -405,7 +405,6 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
          functions = all_features
          return functions, cls._get_feature_vector_size(functions)
       features = util.make_sequence(features)
-      features.sort()
       all_strings = True
       for feature in features:
          if not util.is_string_or_unicode(feature):
@@ -414,24 +413,25 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
       if not all_strings:
          import plugin
          all_functions = False
-         if (type(features) == TupleType and
+         if (type(features) == tuple and
              len(features) == 2 and
-             type(features[0]) == ListType and
-             type(features[1]) == IntegerType):
+             type(features[0]) == list and
+             type(features[1]) == int):
             all_functions = True
-            for feature in features:
-               if not (type(feature) == TupleType and
+            for feature in features[0]:
+               if not (type(feature) == tuple and
                        util.is_string_or_unicode(feature[0]) and
                        issubclass(feature[1], plugin.PluginFunction)):
-                  all_functions = 0
+                  all_functions = False
                   break
          if not all_functions:
             raise ValueError(
                "'%s' is not a valid way to specify a list of features."
-               % features)
+               % str(features))
          else:
             return features
       else:
+         features.sort()
          functions = []
          for feature in features:
             found = 0

@@ -259,7 +259,7 @@ def generate_features_list(list, features='all'):
 *features*
    Follows the same rules as for generate_features_.
    """
-   from gamera import core
+   from gamera import core, util
    ff = core.Image.get_feature_functions(features)
    progress = util.ProgressFactory("Generating features...", len(list) / 10)
    try:

@@ -15,7 +15,7 @@ import generate
 # generate the plugins
 plugins = glob.glob("gamera/plugins/*.py")
 try:
-    plugins.remove("gamera/plugins\__init__.py")
+    plugins.remove("gamera/plugins/__init__.py")
 except:
     pass
 
@@ -27,6 +27,7 @@ except:
 # them.
 ignore = ["core", "gamera.core", "gameracore"]
 for x in plugins:
+    print x
     plug_path, filename = os.path.split(x)
     module_name = "_" + filename.split('.')[0]
     ignore.append(module_name)

@@ -262,15 +262,17 @@ namespace Gamera {
       m_origin.move(x, y);
       m_lr.move(x, y);
     }
-    // intersection
+    // containment
     bool contains_x(coord_t v) const {
-      if (v >= m_origin.x() && v <= lr_x())
+      // if (v >= m_origin.x() && v <= lr_x())
+      if (v >= ul_x() && v <= lr_x())
 	return true;
       else
 	return false;
     }
     bool contains_y(coord_t v) const {
-      if (v >= m_origin.y() && v <= lr_y())
+      // if (v >= m_origin.y() && v <= lr_y())
+      if (v >= ul_y() && v <= lr_y())
 	return true;
       else
 	return false;
@@ -286,6 +288,16 @@ namespace Gamera {
 	return true;
       else
 	return false;
+    }
+    // intersection
+    bool intersects_x(const self& v) const {
+      return (v.ul_x() <= lr_x() && v.lr_x() >= ul_x());
+    }
+    bool intersects_y(const self& v) const {
+      return (v.ul_y() <= lr_y() && v.lr_y() >= ul_y());
+    }
+    bool intersects(const self& v) const {
+      return (intersects_x(v) && intersects_y(v));
     }
     bool operator==(const Rect& other) const {
       if (m_origin == other.m_origin && m_lr == other.m_lr)

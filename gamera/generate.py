@@ -482,7 +482,6 @@ def generate_plugin(plugin_filename):
     template.execute_file(cpp_filename, plugin_module.__dict__)
   else:
     print "skipping wrapper generation for", module_name, "plugin (output up-to-date)"
-  # add newline to make gcc shut-up about no newline at end of file!
 
   # make the a distutils extension class for this plugin
   cpp_files = [cpp_filename]

@@ -144,7 +144,8 @@ class ImageMenu:
         sh.locals[name] = []
         for i in range(len(images)):
           sh.locals[name].append(images[i])
-      sh.Update()    
+      sh.Update()
+    sh.update()
 
   def OnCreateCopy(self, event):
     sh = self.get_shell()
@@ -157,6 +158,7 @@ class ImageMenu:
         for i in range(len(images)):
           sh.locals[name].append(images[i].image_copy())
       sh.Update()
+    sh.update()
 
   def get_function_call(self, sh, function):
     # determine if the function requires an argument gui
@@ -226,3 +228,4 @@ class ImageMenu:
                 sh.locals[result_name] = eval(source)
             else:
               eval(source, globals(), sh.locals)
+    sh.update()

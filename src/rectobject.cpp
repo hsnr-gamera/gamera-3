@@ -75,6 +75,9 @@ extern "C" {
   static PyObject* rect_contains_y(PyObject* self, PyObject* args);
   static PyObject* rect_contains_point(PyObject* self, PyObject* args);
   static PyObject* rect_contains_rect(PyObject* self, PyObject* args);
+  static PyObject* rect_intersects_x(PyObject* self, PyObject* args);
+  static PyObject* rect_intersects_y(PyObject* self, PyObject* args);
+  static PyObject* rect_intersects(PyObject* self, PyObject* args);
 
   static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op);
   static PyObject* rect_repr(PyObject* self);
@@ -115,6 +118,9 @@ static PyMethodDef rect_methods[] = {
   {"contains_y", rect_contains_y, METH_VARARGS},
   {"contains_point", rect_contains_point, METH_VARARGS},
   {"contains_rect", rect_contains_rect, METH_VARARGS},
+  {"intersects_x", rect_intersects_x, METH_VARARGS},
+  {"intersects_y", rect_intersects_y, METH_VARARGS},
+  {"intersects", rect_intersects, METH_VARARGS},
   {"move", rect_move, METH_VARARGS},
   {NULL, NULL}
 };
@@ -386,6 +392,60 @@ static PyObject* rect_contains_rect(PyObject* self, PyObject* args) {
     return 0;
   }
   if (x->contains_rect(*((RectObject*)rect)->m_x)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* rect_intersects_x(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  if (x->intersects_x(*((RectObject*)rect)->m_x)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* rect_intersects_y(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  if (x->intersects_y(*((RectObject*)rect)->m_x)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* rect_intersects(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  if (x->intersects(*((RectObject*)rect)->m_x)) {
     Py_INCREF(Py_True);
     return Py_True;
   } else {

@@ -160,30 +160,71 @@ PyObject* to_string(T& m) {
 }
 
 template<class T>
-void scaled_to_string(T& m, int nrows, int ncols, PyObject* py_buffer) {
-  typedef ImageData<typename T::value_type> data_type;
-  typedef ImageView<data_type> view_type;
-
-  char *buffer;
-  int buffer_len;
-  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-
-  data_type data(nrows, ncols);
-  view_type view(data, 0, 0, nrows, ncols);
-
-  resizeImageNoInterpolation(src_image_range(m), dest_image_range(view));
-
-  to_string_impl<typename T::value_type> func;
-  func(view, buffer);
-}
-
-template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;
   int buffer_len;
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
+}
+
+template<class T>
+void highlight(T &m, PyObject *highlights) {
+  typename T::vec_iterator dst = m.vec_begin();
+
+  size_t list_size = PyList_GET_SIZE(highlights);
+  for (size_t i=0; i < list_size; ++i) {
+    std::cerr << "highlight\n";
+    PyObject *list_item = PyList_GET_ITEM(highlights, i);
+    Cc *cc = (Cc *)((RectObject*)PyTuple_GET_ITEM(list_item, 0))->m_x;
+    RGBPixel *color = ((RGBPixelObject*)PyTuple_GET_ITEM(list_item, 1))->m_x;
+    if (m.intersects(*cc)) {
+      std::cerr << "intersects\n";
+      std::cerr << m.ul_x() << " " << m.ul_y() << " " << m.lr_x() << " " << m.lr_y() << " " << cc->ul_x() << " " << cc->ul_y() << " " << cc->lr_x() << " " << cc->lr_y() << "\n";
+      for (size_t r = m.ul_y(); r <= m.lr_y(); r++) {
+	for (size_t c = m.ul_x(); c <= m.lr_x(); c++, dst++) {
+	  // Why is point reversed?
+	  if (cc->contains_point(Point(c, r))) {
+	    std::cerr << ",";
+	    // Why is get not page relative?
+	    if (is_black(cc->get(r - cc->ul_y(), c - cc->ul_x()))) {
+	      std::cerr << "." << int(color->red()) << " " << int(color->green()) << " " << int(color->blue());
+	      *dst = *color;
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+
+template<class T>
+Image *color_ccs(T& m) {
+  typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
+  RGBViewFactory fact;
+  RGBViewFactory::image_type* image =
+    fact.create(0, 0, m.nrows(), m.ncols());
+
+  typename T::vec_iterator src = m.vec_begin();
+  typename RGBViewFactory::image_type::vec_iterator dst = image->vec_begin();
+
+  for (; src != m.vec_end(); ++src, ++dst) {
+    size_t color;
+    if (is_white(*src)) {
+      dst->red(255);
+      dst->green(255);
+      dst->blue(255);
+    } else {
+      color = *src & 0x7;
+      dst->red(color_set[color][0]);
+      dst->green(color_set[color][1]);
+      dst->blue(color_set[color][2]);
+    }
+  }
+  
+  return image;
 }
 
 }

@@ -56,7 +56,7 @@ def display_multi(list):
       # If it's not a list, we'll get errors, so make it one
       if not util.is_sequence(list):
          list = [list]
-      gui.ShowImages(list, ImageBase.to_buffer, ImageBase.scaled_to_string)
+      gui.ShowImages(list)
    
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
@@ -144,7 +144,10 @@ class ImageBase:
 
    def methods_flat_category(self, category):
       start = self.methods_for_menu()
-      return self._methods_flatten(start[category])
+      if start.has_key(category):
+         return self._methods_flatten(start[category])
+      else:
+         return []
 
    def _methods_flatten(self, mat):
      list = []
@@ -171,11 +174,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, ImageBase.to_buffer, ImageBase.scaled_to_string)
+            self._display.set_image(self)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             ImageBase.to_buffer, ImageBase.scaled_to_string, owner=self))
+                             owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -187,11 +190,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, Image.cc_mat_to_string)
+            self._display.set_image(self, ImageBase.color_ccs)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             Image.cc_mat_to_string, owner=self))
+                             ImageBase.color_ccs, owner=self))
       self.last_display = "ccs"
 
    # Displays the image in its own window, highlighting the given
@@ -215,7 +218,7 @@ class ImageBase:
       self.cc = []
       for c in cc:
          if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c, Image.to_buffer)
+            self._display.highlight_cc(c, ImageBase.to_buffer)
             self.cc.append(c)
       # This will adjust the scroll bars so the cc will be visible
       self._display.focus(self.cc)
@@ -236,7 +239,7 @@ class ImageBase:
       elif self.classification_state == MANUAL:
          return (180,238,180)
 
-   def set_id_name_manual(self, id_name):
+   def classify_manual(self, id_name):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
@@ -245,7 +248,7 @@ class ImageBase:
          self.id_name = list(id_name)
       self.classification_state = MANUAL
 
-   def set_id_name_automatic(self, id_name):
+   def classify_automatic(self, id_name):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
@@ -254,7 +257,7 @@ class ImageBase:
          self.id_name = list(id_name)
       self.classification_state = AUTOMATIC
 
-   def set_id_name_heuristic(self, id_name):
+   def classify_heuristic(self, id_name):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
@@ -305,13 +308,11 @@ class Cc(gameracore.Cc, ImageBase):
       image = self.parent()
       if self._display:
 
-         self._display.set_image(image,
-                                  Image.to_buffer)
+         self._display.set_image(image)
       else:
          self.set_display(
             gui.ShowImage(image,
                           "Connected Component",
-                          Image.to_buffer,
                           owner=self))
       self._display.highlight_cc(self,
                                  Image.to_buffer)

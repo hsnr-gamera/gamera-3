@@ -68,7 +68,7 @@ namespace Gamera {
   /*
     Colors
   */
-  static const int COLOR_SET_SIZE = 7;
+  static const int COLOR_SET_SIZE = 8;
   const unsigned char color_set[COLOR_SET_SIZE][3] = {
     {0xbc, 0x2d, 0x2d}, // Red
     {0xb4, 0x2d, 0xbc}, // Magenta
@@ -76,7 +76,8 @@ namespace Gamera {
     {0x2d, 0xbc, 0xb7}, // Cyan
     {0x3a, 0xbc, 0x2d}, // Green
     {0xbc, 0xb7, 0x2d}, // Yellow
-    {0xbc, 0x88, 0x2d}  // Orange
+    {0xbc, 0x88, 0x2d}, // Orange
+    {0xaa, 0xaa, 0xaa}  // Grey
   };
 }
 

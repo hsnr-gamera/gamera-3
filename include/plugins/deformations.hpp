@@ -264,9 +264,7 @@ namespace Gamera
 		for(; i<amount + orig->nrows() - sourceshift; i++)
 		{
 			if(i-amount+sourceshift >= 0) filterfunc(p0,p1,oldPixel,orig->get(i - amount + sourceshift,col),weight);
-			else cout << "Failed read from (" << i-amount+sourceshift << "," << col << ")"<<endl;
 			if(i>=0 && i<height1) newbmp->set(i,col,p0);
-			else cout << "Failed write to (" << i << "," << col << ")"<<endl;
 		}
 		if(i<height1) newbmp->set(i++,col,norm_weight_avg(p0,bgcolor,weight,1.0-weight));
 		

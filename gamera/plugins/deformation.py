@@ -62,7 +62,7 @@ class wave(PluginFunction):
     doc_examples = [(RGB, 5, 10, 0, 0, 0), (RGB, 10, 5, 1, 2, 0)]
 
 class noise(PluginFunction):
-    """Causes random shifting of pixels within a user specified range, in a user-specified direction"""
+    """Causes random shifting of pixels within a user-specified range, in a user-specified direction"""
     category = "Deformations"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
@@ -88,6 +88,12 @@ class ink_diffuse(PluginFunction):
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Choice('Diffusion Type',["Linear Horizontal","Linear Vertical","Brownian"]),\
                 Float("Exponential decay constant 1 over")])
+
+class batch_deform(PluginFunction):
+    """Performs all possible deformations over given range of arguments"""
+    pure_python = 1
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]

@@ -98,6 +98,7 @@ extern PyObject* create_RGBPixelObject(const RGBPixel& p);
 */
 
 struct RegionObject {
+  PyObject_HEAD
   RectObject m_parent; // we inheric from Rect
 };
 
@@ -110,6 +111,7 @@ extern PyObject* create_RegionObject(const Region& r);
 */
 
 struct RegionMapObject {
+  PyObject_HEAD
   RegionMap* m_x;
 };
 

@@ -83,6 +83,7 @@ static PyObject* regionmap_lookup(PyObject* self, PyObject* args) {
 }
 
 static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
+  RegionMapObject* foo = (RegionMapObject*)self;
   PyObject* key;
   if (PyArg_ParseTuple(args, "O", &key) <= 0)
     return 0;
@@ -92,8 +93,7 @@ static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
   }
   RegionMapObject* r = (RegionMapObject*)self;
   Region* region = (Region*)((RectObject*)key)->m_x;
-  printf("%d\n", r->m_x->size());
-  //r->m_x->add_region(Region(0, 0, 100, 100));
+  r->m_x->add_region(*region);
   Py_INCREF(Py_None);
   return Py_None;
 }

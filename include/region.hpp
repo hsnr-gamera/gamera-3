@@ -74,7 +74,7 @@ namespace Gamera {
     void add(const std::string& key, V x) {
       m_value_map[key] = x;
     }
-    //private:
+  private:
     map_type m_value_map;
   };
   
@@ -127,8 +127,7 @@ namespace Gamera {
     RegionMapTemplate() : std::list<region_type>(1) { }
     virtual ~RegionMapTemplate() { }
     void add_region(const region_type& x) {
-      region_type tmp;
-      push_back(tmp);
+      push_back(x);
     }
     virtual region_type lookup(const rect_t& r) {
       typename self::iterator answer =

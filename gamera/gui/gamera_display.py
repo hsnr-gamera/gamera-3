@@ -531,7 +531,10 @@ class ImageDisplay(wxScrolledWindow):
                   dc.SetBrush(wxTRANSPARENT_BRUSH)
                   box_cols = highlight.ncols * scaling
                   box_rows = highlight.nrows * scaling
-                  dc.DrawRectangle(x_rect, y_rect, box_cols, box_rows)
+                  for i in range(3):
+                     dc.DrawRectangle(
+                        x_rect + i, y_rect + i,
+                        box_cols - i * 2, box_rows - i * 2)
                   dc.DestroyClippingRegion()
                dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)

@@ -47,6 +47,9 @@ extern "C" {
   static PyObject* rect_get_height(PyObject* self);
   static PyObject* rect_get_offset_x(PyObject* self);
   static PyObject* rect_get_offset_y(PyObject* self);
+  static PyObject* rect_get_center(PyObject* self);
+  static PyObject* rect_get_center_x(PyObject* self);
+  static PyObject* rect_get_center_y(PyObject* self);
   // set
   static int rect_set_ul(PyObject* self, PyObject* value);
   static int rect_set_ul_x(PyObject* self, PyObject* value);
@@ -109,6 +112,9 @@ static PyGetSetDef rect_getset[] = {
   {"height", (getter)rect_get_height, (setter)rect_set_height},
   {"offset_x", (getter)rect_get_offset_x, (setter)rect_set_offset_x},
   {"offset_y", (getter)rect_get_offset_y, (setter)rect_set_offset_y},
+  {"center", (getter)rect_get_center, NULL},
+  {"center_x", (getter)rect_get_center_x, NULL},
+  {"center_y", (getter)rect_get_center_y, NULL},
   { NULL }
 };
 
@@ -244,6 +250,7 @@ CREATE_GET_POINT_FUNC(ul)
 CREATE_GET_POINT_FUNC(ur)
 CREATE_GET_POINT_FUNC(lr)
 CREATE_GET_POINT_FUNC(ll)
+CREATE_GET_POINT_FUNC(center)
 
 CREATE_GET_FUNC(ul_x)
 CREATE_GET_FUNC(ul_y)
@@ -259,6 +266,8 @@ CREATE_GET_FUNC(width)
 CREATE_GET_FUNC(height)
 CREATE_GET_FUNC(offset_x)
 CREATE_GET_FUNC(offset_y)
+  CREATE_GET_FUNC(center_x)
+  CREATE_GET_FUNC(center_y)
 
 CREATE_SET_POINT_FUNC(ul)
 CREATE_SET_POINT_FUNC(ur)

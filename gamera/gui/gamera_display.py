@@ -1018,8 +1018,9 @@ class MultiImageDisplay(wxGrid):
              gui_util.message(str(err))
              return
           if result:
-             self.SelectBlock(i / GRID_NCOLS, i % GRID_NCOLS,
-                              i / GRID_NCOLS, i % GRID_NCOLS, true)
+             self.SelectBlock(
+                i / GRID_NCOLS, i % GRID_NCOLS,
+                i / GRID_NCOLS, i % GRID_NCOLS, true)
       self.updating = 0
       self.OnSelectImpl()
 

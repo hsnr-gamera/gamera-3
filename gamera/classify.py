@@ -252,3 +252,6 @@ class InteractiveClassifier(_Classifier):
       else:
          self._display.Show(1)
          self._display.SetFocus()
+
+   def set_display(self, display):
+      self._display = display

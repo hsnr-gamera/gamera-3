@@ -93,7 +93,7 @@ class IconDisplay(wxListCtrl):
   def refresh_icon(self, key, klass, data, icon):
     if klass != self.data[key].__class__:
       index = self.data[key].index
-      obj = klass(name, data, index)
+      obj = klass(key, data, index)
       self.data[key] = obj
       self.SetStringItem(index, 0, key, icon)
 

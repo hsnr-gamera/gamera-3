@@ -60,7 +60,7 @@ class WriteXML:
             "glyphs argument to WriteXML must be a list of images.")
       self.glyphs = glyphs
       if (not isinstance(symbol_table, SymbolTable) and
-          not is_string_or_unicode_sequence(symbol_table)):
+          not util.is_string_or_unicode_list(symbol_table)):
          raise TypeError(
             "symbol_table argument to WriteXML must be of type SymbolTable or a list of strings.")
       self.symbol_table = symbol_table
@@ -99,7 +99,7 @@ class WriteXML:
    def _write_symbol_table(self, stream, symbol_table, indent=0):
       encoding = config.get_option('encoding')
       if (not isinstance(symbol_table, SymbolTable) and
-          util.is_string_or_unicode_sequence(symbol_table)):
+          util.is_string_or_unicode_list(symbol_table)):
          symbols = symbol_table
       else:
          symbols = symbol_table.symbols.keys()

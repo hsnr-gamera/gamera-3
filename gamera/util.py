@@ -36,12 +36,12 @@ def make_sequence(obj):
   return obj
 
 def is_image_list(l):
-  from gamera.core import ImageBase
-  if not is_sequence(l):
-    return 0
-  for image in l:
-    if not isinstance(l, ImageBase):
-      return 0
+  # TODO: This doesn't seem to work correctly
+  ##   if not is_sequence(l):
+  ##     return 0
+  ##   for image in l:
+  ##     if not isinstance(l, image_type):
+  ##       return 0
   return 1
 
 def is_string_or_unicode_list(l):

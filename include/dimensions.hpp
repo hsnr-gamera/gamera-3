@@ -179,6 +179,9 @@ namespace Gamera {
     coord_t height() const { return m_lr.y() - m_origin.y(); }
     coord_t offset_x() const { return m_origin.x(); }
     coord_t offset_y() const { return m_origin.y(); }
+    Point center() const { return Point(center_x(), center_y()); }
+    coord_t center_x() const { return m_origin.x() + width() / 2; }
+    coord_t center_y() const { return m_origin.y() + height() / 2; }
     // Set
     void ul(const Point& ul) { m_origin = ul; dimensions_change(); }
     void ul_x(coord_t v) { m_origin.x(v); dimensions_change(); }

@@ -529,7 +529,16 @@ if _has_gui == _WX_GUI:
          self.text.GetParent().Raise()
 else:
    class FileOpen(_Filename):
-      pass
+      def get(self):
+         while 1:
+            text = self.text.GetValue()
+            if not os.path.exists(os.path.abspath(text)):
+               gui_util.message("File 'text' does not exist.")
+               self.OnBrowse(None)
+            else:
+               break
+         return _Filename.get(self)
+   
    class FileSave(_Filename):
       pass
 

@@ -100,15 +100,23 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
       self.BeginBatch()
+      if shift:
+         selected = []
+         if self.IsSelection():
+            for row in range(self.rows):
+               for col in range(self.cols):
+                  if self.IsInSelection(row, col):
+                     selected.append(row * GRID_NCOLS + col)
       matches = []
       if x1 == x2 or y1 == y2:
          point = Point(x1, y1)
          for i in range(len(self.list)):
             g = self.list[i]
-            if g != None and g.contains_point(point):
-               if (g.get(y1 - g.ul_y, x1 - g.ul_x) != 0):
-                  matches.append(i)
-                  break
+            if g != None:
+               if g.contains_point(point):
+                  if (g.get(y1 - g.ul_y, x1 - g.ul_x) != 0):
+                     matches.append(i)
+                     break
       else:
          matches = []
          r = Rect(y1, x1, y2 - y1 + 1, x2 - x1 + 1)
@@ -118,6 +126,10 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                if r.contains_rect(g):
                   matches.append(i)
       if matches != []:
+         if shift:
+            new_matches = ([x for x in matches if x not in selected] +
+                           [x for x in selected if x not in matches])
+            matches = new_matches
          first = 0
          self.updating = 1
          last_index = matches[-1]
@@ -849,8 +861,7 @@ class ClassifierFrame(ImageFrameBase):
             return
       #self.single_iw.Destroy()
       #self.multi_iw.Destroy()
-      if self.owner:
-         self.owner.set_display(None)
+      self._classifier.set_display(None)
       self._frame.Destroy()
 
    def refresh(self):

@@ -165,11 +165,13 @@ class _Classifier:
       self._merge_xml(gamera_xml.LoadXML().parse_filename(filename))
 
    def _merge_xml(self, xml):
-      
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
       self.generate_features(database)
       self.merge_glyphs(database)
       self.merge_groups(xml.groups)
+
+   def get_feature_functions(self):
+      return self.classifier.feature_functions
 
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, classifier=None, database=[], features='all',

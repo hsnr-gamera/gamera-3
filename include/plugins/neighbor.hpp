@@ -108,13 +108,91 @@ void neighbor16(T& m, F& func) {
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor8(T& m, F& func, M& tmp) {
+void neighbor9(T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(9);
-  // Row loop
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+
+  unsigned int nrows_m1 = m.nrows() - 1;
+  unsigned int ncols_m1 = m.ncols() - 1;
+  unsigned int nrows_m2 = m.nrows() - 2;
+  unsigned int ncols_m2 = m.ncols() - 2;
+
+  // Upper-left
+  window[0] = m.get(1, 1);
+  window[1] = m.get(1, 0);
+  window[2] = m.get(0, 1);
+  window[3] = m.get(0, 0);
+  window[4] = window[5] = window[6] = window[7] = white(m);
+  tmp.set(0, 0, func(window.begin(), window.end()));
+  
+  // Upper-right
+  window[0] = m.get(1, ncols_m2);
+  window[1] = m.get(1, ncols_m1);
+  window[2] = m.get(0, ncols_m2);
+  window[3] = m.get(0, ncols_m1);
+  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  
+  // Lower-left
+  window[0] = m.get(nrows_m2, 1);
+  window[1] = m.get(nrows_m1, 1);
+  window[2] = m.get(nrows_m2, 0);
+  window[3] = m.get(nrows_m1, 0);
+  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+
+  // Lower-right
+  window[0] = m.get(nrows_m2, ncols_m2);
+  window[1] = m.get(nrows_m1, ncols_m2);
+  window[2] = m.get(nrows_m2, ncols_m1);
+  window[3] = m.get(nrows_m1, ncols_m1);
+  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+
+  // Top edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(0, col - 1);
+    window[1] = m.get(0, col + 1);
+    window[2] = m.get(1, col - 1);
+    window[3] = m.get(1, col);
+    window[4] = m.get(1, col + 1);
+    window[5] = m.get(0, col);
+    tmp.set(0, col, func(window.begin(), window.end()));
+  }
+
+  // Bottom edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(nrows_m1, col - 1);
+    window[1] = m.get(nrows_m1, col + 1);
+    window[2] = m.get(nrows_m2, col - 1);
+    window[3] = m.get(nrows_m2, col);
+    window[4] = m.get(nrows_m2, col + 1);
+    window[5] = m.get(nrows_m1, col);
+    tmp.set(0, col, func(window.begin(), window.end()));
+  }
+
+  // Left edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row - 1, 0);
+    window[1] = m.get(row + 1, 0);
+    window[2] = m.get(row - 1, 1);
+    window[3] = m.get(row, 1);
+    window[4] = m.get(row + 1, 1);
+    window[5] = m.get(row, 0);
+    tmp.set(row, 0, func(window.begin(), window.end()));
+  }
+
+  // Right edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row - 1, ncols_m1);
+    window[1] = m.get(row + 1, ncols_m1);
+    window[2] = m.get(row - 1, ncols_m2);
+    window[3] = m.get(row, ncols_m2);
+    window[4] = m.get(row + 1, ncols_m2);
+    window[5] = m.get(row, ncols_m1);
+    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+  }
+
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
       window[0] = m.get(row, col);
@@ -136,14 +214,14 @@ void neighbor8(T& m, F& func, M& tmp) {
 }
 
 template<class T, class F>
-void neighbor8(T& m, F& func) {
+void neighbor9(T& m, F& func) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   typedef typename T::value_type value_type;
   ImageData<value_type> mat_data(m.nrows(), m.ncols());
   ImageView<ImageData<value_type> > *tmp;
   tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
-  neighbor8(m, func, *tmp);
+  neighbor9(m, func, *tmp);
   delete tmp;
 }
 
@@ -160,10 +238,83 @@ template<class T, class F, class M>
 void neighbor8o(T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
-  std::vector<typename T::value_type> window(9);
-  // Row loop
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+  std::vector<typename T::value_type> window(8);
+
+  unsigned int nrows_m1 = m.nrows() - 1;
+  unsigned int ncols_m1 = m.ncols() - 1;
+  unsigned int nrows_m2 = m.nrows() - 2;
+  unsigned int ncols_m2 = m.ncols() - 2;
+
+  // It's kind of silly to special case corners and edges, but it's more 
+  // efficient than all of the if's one would have to do in the inner loop
+  
+  // Upper-left
+  window[0] = m.get(1, 1);
+  window[1] = m.get(1, 0);
+  window[2] = m.get(0, 1);
+  window[3] = window[4] = window[5] = window[6] = window[7] = white(m);
+  tmp.set(0, 0, func(window.begin(), window.end()));
+  
+  // Upper-right
+  window[0] = m.get(1, ncols_m2);
+  window[1] = m.get(1, ncols_m1);
+  window[2] = m.get(0, ncols_m2);
+  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  
+  // Lower-left
+  window[0] = m.get(nrows_m2, 1);
+  window[1] = m.get(nrows_m1, 1);
+  window[2] = m.get(nrows_m2, 0);
+  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+
+  // Lower-right
+  window[0] = m.get(nrows_m2, ncols_m2);
+  window[1] = m.get(nrows_m1, ncols_m2);
+  window[2] = m.get(nrows_m2, ncols_m1);
+  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+
+  // Top edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(0, col - 1);
+    window[1] = m.get(0, col + 1);
+    window[2] = m.get(1, col - 1);
+    window[3] = m.get(1, col);
+    window[4] = m.get(1, col + 1);
+    tmp.set(0, col, func(window.begin(), window.end()));
+  }
+
+  // Bottom edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(nrows_m1, col - 1);
+    window[1] = m.get(nrows_m1, col + 1);
+    window[2] = m.get(nrows_m2, col - 1);
+    window[3] = m.get(nrows_m2, col);
+    window[4] = m.get(nrows_m2, col + 1);
+    tmp.set(0, col, func(window.begin(), window.end()));
+  }
+
+  // Left edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row - 1, 0);
+    window[1] = m.get(row + 1, 0);
+    window[2] = m.get(row - 1, 1);
+    window[3] = m.get(row, 1);
+    window[4] = m.get(row + 1, 1);
+    tmp.set(row, 0, func(window.begin(), window.end()));
+  }
+
+  // Right edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row - 1, ncols_m1);
+    window[1] = m.get(row + 1, ncols_m1);
+    window[2] = m.get(row - 1, ncols_m2);
+    window[3] = m.get(row, ncols_m2);
+    window[4] = m.get(row + 1, ncols_m2);
+    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+  }
+
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // eight iterators
       window[0] = m.get(row - 1, col);
@@ -179,7 +330,6 @@ void neighbor8o(T& m, F& func, M& tmp) {
   }
   typename T::vec_iterator g = m.vec_begin();
   typename M::vec_iterator h = tmp.vec_begin();
-  
   for (; g != m.vec_end(); g++, h++)
     *g = *h;
 }
@@ -211,6 +361,11 @@ void neighbor4x(T& m, F& func, M& tmp) {
     return;
   std::vector<typename T::value_type> window(5);
 
+  unsigned int nrows_m1 = m.nrows() - 1;
+  unsigned int ncols_m1 = m.ncols() - 1;
+  unsigned int nrows_m2 = m.nrows() - 2;
+  unsigned int ncols_m2 = m.ncols() - 2;
+
   // It's kind of silly to special case corners and edges, but it's more 
   // efficient than all of the if's one would have to do in the inner loop
 
@@ -221,22 +376,22 @@ void neighbor4x(T& m, F& func, M& tmp) {
   tmp.set(0, 0, func(window.begin(), window.end()));
 
   // Upper right
-  window[0] = m.get(0, m.ncols() - 1);
-  window[1] = m.get(1, m.ncols() - 2);
-  tmp.set(0, m.ncols() - 1, func(window.begin(), window.end()));
+  window[0] = m.get(0, ncols_m1);
+  window[1] = m.get(1, ncols_m2);
+  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
 
   // Lower left
-  window[0] = m.get(m.nrows() - 1, 0);
-  window[1] = m.get(m.nrows() - 2, 1);
-  tmp.set(m.nrows() - 1, 0, func(window.begin(), window.end()));
+  window[0] = m.get(nrows_m1, 0);
+  window[1] = m.get(nrows_m2, 1);
+  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower right
-  window[0] = m.get(m.nrows() - 1, m.ncols() - 1);
-  window[1] = m.get(m.nrows() - 2, m.ncols() - 2);
-  tmp.set(m.nrows() - 1, 0, func(window.begin(), window.end()));
+  window[0] = m.get(nrows_m1, ncols_m1);
+  window[1] = m.get(nrows_m2, ncols_m2);
+  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Top edge
-  for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+  for (unsigned int col = 1; col < ncols_m1; col++) {
     window[0] = m.get(0, col);
     window[1] = m.get(1, col - 1);
     window[2] = m.get(1, col + 1);
@@ -244,15 +399,15 @@ void neighbor4x(T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  for (unsigned int col = 1; col < m.ncols() - 1; col++) {
-    window[0] = m.get(m.nrows() - 1, col);
-    window[1] = m.get(m.nrows() - 2, col - 1);
-    window[2] = m.get(m.nrows() - 2, col + 1);
-    tmp.set(m.nrows() - 1, col, func(window.begin(), window.end()));
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(nrows_m1, col);
+    window[1] = m.get(nrows_m2, col - 1);
+    window[2] = m.get(nrows_m2, col + 1);
+    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
+  for (unsigned int row = 1; row < nrows_m1; row++) {
     window[0] = m.get(row, 0);
     window[1] = m.get(row - 1, 1);
     window[2] = m.get(row + 1, 1);
@@ -260,15 +415,15 @@ void neighbor4x(T& m, F& func, M& tmp) {
   }
 
   // Right edge
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    window[0] = m.get(row, m.ncols() - 1);
-    window[1] = m.get(row - 1, m.ncols() - 2);
-    window[2] = m.get(row + 1, m.ncols() - 2);
-    tmp.set(row, m.ncols() - 1, func(window.begin(), window.end()));
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row, ncols_m1);
+    window[1] = m.get(row - 1, ncols_m2);
+    window[2] = m.get(row + 1, ncols_m2);
+    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
       window[0] = m.get(row, col);
@@ -312,6 +467,11 @@ void neighbor4o(T& m, F& func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(5);
+
+  unsigned int nrows_m1 = m.nrows() - 1;
+  unsigned int ncols_m1 = m.ncols() - 1;
+  unsigned int nrows_m2 = m.nrows() - 2;
+  unsigned int ncols_m2 = m.ncols() - 2;
   
   // It's kind of silly to special case corners and edges, but it's more 
   // efficient than all of the if's one would have to do in the inner loop
@@ -325,25 +485,25 @@ void neighbor4o(T& m, F& func, M& tmp) {
   tmp.set(0, 0, func(window.begin(), window.end()));
 
   // Upper-right
-  window[0] = m.get(0, m.ncols() - 1);
-  window[1] = m.get(0, m.ncols() - 2);
-  window[2] = m.get(1, m.ncols() - 1);
-  tmp.set(0, m.ncols() - 1, func(window.begin(), window.end()));
+  window[0] = m.get(0, ncols_m1);
+  window[1] = m.get(0, ncols_m2);
+  window[2] = m.get(1, ncols_m1);
+  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
 
   // Lower-left
-  window[0] = m.get(m.nrows() - 1, 0);
-  window[1] = m.get(m.nrows() - 1, 1);
-  window[2] = m.get(m.nrows() - 2, 0);
-  tmp.set(m.nrows() - 1, 0, func(window.begin(), window.end()));
+  window[0] = m.get(nrows_m1, 0);
+  window[1] = m.get(nrows_m1, 1);
+  window[2] = m.get(nrows_m2, 0);
+  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower-right
-  window[0] = m.get(m.nrows() - 1, m.ncols() - 1);
-  window[1] = m.get(m.nrows() - 2, m.ncols() - 1);
-  window[2] = m.get(m.nrows() - 1, m.ncols() - 2);
-  tmp.set(m.nrows() - 1, m.ncols() - 1, func(window.begin(), window.end()));
+  window[0] = m.get(nrows_m1, ncols_m1);
+  window[1] = m.get(nrows_m2, ncols_m1);
+  window[2] = m.get(nrows_m1, ncols_m2);
+  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
-  for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+  for (unsigned int col = 1; col < ncols_m1; col++) {
     window[0] = m.get(0, col);
     window[1] = m.get(0, col - 1);
     window[2] = m.get(0, col + 1);
@@ -352,16 +512,16 @@ void neighbor4o(T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  for (unsigned int col = 1; col < m.ncols() - 1; col++) {
-    window[0] = m.get(m.nrows() - 1, col);
-    window[1] = m.get(m.nrows() - 1, col - 1);
-    window[2] = m.get(m.nrows() - 1, col + 1);
-    window[3] = m.get(m.nrows() - 2, col);
-    tmp.set(m.nrows() - 1, col, func(window.begin(), window.end()));
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(nrows_m1, col);
+    window[1] = m.get(nrows_m1, col - 1);
+    window[2] = m.get(nrows_m1, col + 1);
+    window[3] = m.get(nrows_m2, col);
+    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
+  for (unsigned int row = 1; row < nrows_m1; row++) {
     window[0] = m.get(row, 0);
     window[1] = m.get(row - 1, 0);
     window[2] = m.get(row + 1, 0);
@@ -370,16 +530,16 @@ void neighbor4o(T& m, F& func, M& tmp) {
   }
 
   // Right edge
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    window[0] = m.get(row, m.ncols() - 1);
-    window[1] = m.get(row - 1, m.ncols() - 1);
-    window[2] = m.get(row + 1, m.ncols() - 1);
-    window[3] = m.get(row, m.ncols() - 2);
-    tmp.set(row, m.ncols() - 1, func(window.begin(), window.end()));
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(row, ncols_m1);
+    window[1] = m.get(row - 1, ncols_m1);
+    window[2] = m.get(row + 1, ncols_m1);
+    window[3] = m.get(row, ncols_m2);
+    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
-  for (unsigned int row = 1; row < m.nrows() - 1; row++) {
-    for (unsigned int col = 1; col < m.ncols() - 1; col++) {
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
       window[0] = m.get(row, col);

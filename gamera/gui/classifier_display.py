@@ -805,7 +805,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnChangeSetOfFeatures(self, event):
       all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
-      existing_features = [x[0] for x in self._classifier.feature_functions]
+      existing_features = [x[0] for x in self._classifier.get_feature_functions()]
       feature_controls = []
       for x in all_features:
          feature_controls.append(
@@ -958,7 +958,7 @@ class ClassifierFrame(ImageFrameBase):
          progress = util.ProgressFactory("Generating features...", len(glyphs))
          try:
             for glyph in glyphs:
-               glyph.generate_features(self._classifier.feature_functions)
+               glyph.generate_features(self._classifier.get_feature_functions())
                progress.step()
          finally:
             progress.kill()
@@ -983,7 +983,7 @@ class ClassifierFrame(ImageFrameBase):
          progress = util.ProgressFactory("Generating features...", len(glyphs))
          try:
             for glyph in glyphs:
-               glyph.generate_features(self._classifier.feature_functions)
+               glyph.generate_features(self._classifier.get_feature_functions())
                progress.step()
          finally:
             progress.kill()

@@ -814,7 +814,7 @@ class ClassifierFrame(ImageFrameBase):
          glyphs = self.multi_iw.id.GetSelectedItems()
          progress = util.ProgressFactory("Generating features...")
          for i, glyph in util.enumerate(glyphs):
-            glyph.generate_features(self._classifier.features)
+            glyph.generate_features(self._classifier.feature_functions)
             progress.update(i, len(glyphs))
          progress.update(1,1)
          gamera_xml.WriteXMLFile(

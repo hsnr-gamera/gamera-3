@@ -537,7 +537,7 @@ def generate_plugin(plugin_filename):
      extra_libraries.append("stdc++")
   compile_args = []
   if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-     compile_args = ["/GR", "/Zi"]
+     compile_args = ["/GR", "/Zi", "/Yd"]
      #compile_args = ["/GR"]
   return Extension("gamera.plugins._" + module_name, cpp_files,
                    include_dirs=include_dirs,

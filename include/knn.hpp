@@ -89,6 +89,73 @@ namespace Gamera {
     }
 
     /*
+      DISTANCE FUNCTIONS with skip.
+      
+      These distance functions allow you to skip certain features in the
+      feature vector. This allows you to evaluate a subset of feature
+      vectors with leave-one-out, for example. This is done by passing
+      in a list of indexes to be used for the distance calculation. For
+      example, if you have a feature vector of length 4 and you want to
+      skip the second feature, you would pass in an iterator pair for a
+      container of [0, 2, 3].
+    */
+
+    /*
+      Compute the weighted distance between a known feature
+      and an unknown feature using the city block method.
+
+      IterA: iterator type for the known feature vector
+      IterB: iterator type for the unknown feature vector
+      IterC: iterator type for the weighting vector
+    */
+    template<class IterA, class IterB, class IterC, class IterD>
+    inline double city_block_distance_skip(IterA known, IterB unknown, IterC weight,
+					   IterD indexes, const IterD end) {
+      double distance = 0;
+      for (; indexes != end; ++indexes)
+	distance += weight[*indexes] * std::abs(unknown[*indexes] - known[*indexes]);
+      return distance;
+    }
+
+
+    /*
+      Compute the weighted distance between a known feature
+      and an unknown feature using the euclidean method.
+
+      IterA: iterator type for the known feature vector
+      IterB: iterator type for the unknown feature vector
+      IterC: iterator type for the weighting vector
+    */
+    template<class IterA, class IterB, class IterC, class IterD>
+    inline double euclidean_distance_skip(IterA known, IterB unknown, IterC weight,
+					  IterD indexes, const IterD end) {
+      double distance = 0;
+      for (; indexes != end; ++indexes)
+	distance += weight[*indexes] * std::sqrt((unknown[*indexes] - known[*indexes])
+						 * (unknown[*indexes] - known[*indexes]));
+      return distance;
+    }
+
+
+    /*
+      Compute the weighted distance between a known feature
+      and an unknown feature using the fast euclidean method.
+
+      IterA: iterator type for the known feature vector
+      IterB: iterator type for the unknown feature vector
+      IterC: iterator type for the weighting vector
+    */
+    template<class IterA, class IterB, class IterC, class IterD>
+    inline double fast_euclidean_distance_skip(IterA known, IterB unknown, IterC weight,
+					       IterD indexes, const IterD end) {
+      double distance = 0;
+      for (; indexes != end; ++indexes)
+	distance += weight[*indexes] * ((unknown[*indexes] - known[*indexes]) 
+					* (unknown[*indexes] - known[*indexes]));
+      return distance;
+    }
+
+    /*
       NORMALIZE
       
       Normalize is used to compute normalization of the feature vectors in a database

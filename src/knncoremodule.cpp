@@ -25,6 +25,7 @@
 #include "knn.hpp"
 #include "knnmodule.hpp"
 #include <algorithm>
+#include <vector>
 #include <string.h>
 #include <Python.h>
 #include <assert.h>
@@ -345,7 +346,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   /*
     Copy the id_names and the features to the internal data structures.
   */
-  double* tmp_fv = new double[o->num_features];
+  double* tmp_fv;
   int tmp_fv_len;
 
   double* current_features = o->feature_vectors;
@@ -373,7 +374,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
   }
-  delete[] tmp_fv;
+
   /*
     Apply the normalization
   */
@@ -620,7 +621,8 @@ static int knn_set_distance_type(PyObject* self, PyObject* v) {
   return 0;
 }
 
-static double leave_one_out(KnnObject* o, double* weight_vector = 0) {
+static double leave_one_out(KnnObject* o, double* weight_vector = 0,
+			    std::vector<long>* indexes = 0) {
   double* weights = weight_vector;
   if (weights == 0)
     weights = o->weight_vector;
@@ -629,30 +631,59 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0) {
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
 
   size_t total_correct = 0;
-  for (size_t i = 0; i < o->num_feature_vectors; ++i) {
-    double* current_known = o->feature_vectors;
-    double* unknown = &o->feature_vectors[i * o->num_features];
-    for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
-      if (i == j)
-	continue;
-      double distance;
-      if (o->distance_type == CITY_BLOCK) {
-	distance = city_block_distance(current_known, current_known + o->num_features,
-				       unknown, weights);
-      } else if (o->distance_type == FAST_EUCLIDEAN) {
-	distance = fast_euclidean_distance(current_known, current_known + o->num_features,
-					   unknown, weights);
-      } else {
-	distance = euclidean_distance(current_known, current_known + o->num_features,
-				      unknown, weights);
+  if (indexes == 0) {
+    for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+      double* current_known = o->feature_vectors;
+      double* unknown = &o->feature_vectors[i * o->num_features];
+      for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
+	if (i == j)
+	  continue;
+	double distance;
+	if (o->distance_type == CITY_BLOCK) {
+	  distance = city_block_distance(current_known, current_known + o->num_features,
+					 unknown, weights);
+	} else if (o->distance_type == FAST_EUCLIDEAN) {
+	  distance = fast_euclidean_distance(current_known, current_known + o->num_features,
+					     unknown, weights);
+	} else {
+	  distance = euclidean_distance(current_known, current_known + o->num_features,
+					unknown, weights);
+	}
+	
+	knn.add(o->id_names[j], distance);
       }
-      
-      knn.add(o->id_names[j], distance);
+      std::vector<std::pair<char*, double> >& answer = knn.majority();
+      knn.reset();
+      if (strcmp(answer[0].first, o->id_names[i]) == 0) {
+	total_correct++;
+      }
     }
-    std::vector<std::pair<char*, double> >& answer = knn.majority();
-    knn.reset();
-    if (strcmp(answer[0].first, o->id_names[i]) == 0) {
-      total_correct++;
+  } else {
+    for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+      double* current_known = o->feature_vectors;
+      double* unknown = &o->feature_vectors[i * o->num_features];
+      for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
+	if (i == j)
+	  continue;
+	double distance;
+	if (o->distance_type == CITY_BLOCK) {
+	  distance = city_block_distance_skip(current_known, unknown, weights,
+					      indexes->begin(), indexes->end());
+	} else if (o->distance_type == FAST_EUCLIDEAN) {
+	  distance = fast_euclidean_distance_skip(current_known, unknown, weights,
+						  indexes->begin(), indexes->end());
+	} else {
+	  distance = euclidean_distance_skip(current_known, unknown, weights,
+					     indexes->begin(), indexes->end());
+	}
+	
+	knn.add(o->id_names[j], distance);
+      }
+      std::vector<std::pair<char*, double> >& answer = knn.majority();
+      knn.reset();
+      if (strcmp(answer[0].first, o->id_names[i]) == 0) {
+	total_correct++;
+      }
     }
   }
   return double(total_correct) / o->num_feature_vectors;
@@ -663,12 +694,49 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0) {
 */
 static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
+  PyObject* indexes = 0;
+  if (PyArg_ParseTuple(args, "|O", &indexes) <= 0)
+    return 0;
   if (o->feature_vectors == 0) {
     PyErr_SetString(PyExc_RuntimeError,
 		    "knn: leave_one_out called before instantiate from images.");
     return 0;
   }
-  return Py_BuildValue("f", leave_one_out(o));
+  if (indexes == 0) {
+    // If we don't have a list of indexes, just do the leave_one_out
+    return Py_BuildValue("f", leave_one_out(o));
+  } else {
+    // Get the list of indexes
+    if (!PyList_Check(indexes)) {
+      PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be a list");
+      return 0;
+    }
+    int indexes_size = PyList_Size(indexes);
+    // Make certain that there aren't too many indexes
+    if (indexes_size > (int)o->num_features) {
+      PyErr_SetString(PyExc_RuntimeError, "knn: index list too large for data");
+      return 0;
+    }
+    // copy the indexes into a vector
+    std::vector<long> idx(indexes_size);
+    for (int i = 0; i < indexes_size; ++i) {
+      PyObject* tmp = PyList_GET_ITEM(indexes, i);
+      if (!PyInt_Check(tmp)) {
+	PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be ints");
+	return 0;
+      }
+      idx[i] = PyInt_AS_LONG(tmp);
+    }
+    // make certain that none of the indexes are out of range
+    for (size_t i = 0; i < idx.size(); ++i) {
+      if (idx[i] > (long)(o->num_features - 1)) {
+	PyErr_SetString(PyExc_RuntimeError, "knn: index out of range in index list");
+	return 0;
+      }
+    }
+    // do the leave-one-out
+    return Py_BuildValue("f", leave_one_out(o, 0, &idx));    
+  }
 }
 
 /*
@@ -988,14 +1056,12 @@ void Initializer(GAGenome& genome) {
 static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   o->ga_running = true;
-  std::cerr << "hello" << std::endl;
+
   Py_BEGIN_ALLOW_THREADS
-#if 0
   if (o->ga != 0)
     delete o->ga;
   if (o->genome != 0)
     delete o->genome;
-#endif
   o->genome = new GA1DArrayGenome<double>(o->num_features, Fitness);
   o->genome->userData(o);
   o->genome->initializer(Initializer);
@@ -1012,7 +1078,6 @@ static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
 }
 
 static PyObject* knn_ga_destroy(PyObject* self, PyObject* args) {
-  std::cerr << "this is a test!!!!!" << std::endl;
   KnnObject* o = (KnnObject*)self;
   if (o->ga != 0) {
     delete o->ga;

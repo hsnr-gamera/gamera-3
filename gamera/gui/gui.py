@@ -289,6 +289,7 @@ class ShellFrame(wxFrame):
          self,
          (("&Open...", self._OnFileOpen),
           ("&Image browser...", self._OnImageBrowser),
+          ("&Biollante...", self._OnBiollante),
           (None, None),
           ("E&xit...", self._OnCloseWindow)))
       classify_menu = gui_util.build_menu(
@@ -339,6 +340,12 @@ class ShellFrame(wxFrame):
    def _OnImageBrowser(self, event):
       browser = image_browser.ImageBrowserFrame()
       browser.Show(1)
+
+   def _OnBiollante(self, event):
+      from gamera.gui import gaoptimizer_display
+      frame = gaoptimizer_display.OptimizerFrame(NULL, -1,
+                                                 "GA Optimization for k-NN")
+      frame.Show(true)
 
    def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)

@@ -187,7 +187,7 @@ incorporate it into the code base.
 // since 2.8 will do rtti without requiring the -frtti flag.
 #elif defined(__GNUG__)
 //#define USE_PID
-#define USE_BORLAND_INST
+//#define USE_BORLAND_INST
 #define USE_AUTO_INST
 //#define USE_CPP_CASTS
 
@@ -216,7 +216,7 @@ incorporate it into the code base.
 #error   Unknown/untested compiler/operating system!  Check these settings!
 
 #define USE_CPP_CASTS
-#define USE_BORLAND_INST
+//#define USE_BORLAND_INST
 #define USE_AUTO_INST
 #define USE_PID
 #endif

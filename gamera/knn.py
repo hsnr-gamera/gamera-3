@@ -324,5 +324,77 @@ class kNN(gamera.knncore.kNN):
          self.change_feature_set(features)
 
 
+def simple_feature_selector(glyphs):
+   """simple_feature_selector does a brute-force search through all
+   possible combinations of features and returns a sorted list of
+   tuples (accuracy, features). WARNING: this function should take
+   a long time to complete."""
 
+   import classify
+   if len(glyphs <= 1):
+      raise RuntimeError("Lenght of list must be greater than 1")
+   
+   c = classify.NonInteractiveClassifier()
 
+   all_features = []
+   feature_indexes = {}
+   offset = 0
+   for x in glyphs[0].get_feature_functions():
+      all_features.append(x[0])
+      feature_indexes[x[0]] = range(offset, offset + x[1].return_type.length)
+      offset += x[1].return_type.length
+   # First do the easy ones = single features and all features
+   for x in feature_indexes.values():
+      print x
+   answers = []
+
+   c.change_feature_set(all_features)
+   c.set_glyphs(glyphs)
+   answers.append((c.evaluate(), all_features))
+   for x in all_features:
+      print x
+      answers.append((c.classifier.leave_one_out(feature_indexes[x]), x))
+   for i in range(2, len(all_features) - 1):
+      for x in CombGen(all_features, i):
+         print x
+         indexes = []
+         for y in x:
+            indexes.extend(feature_indexes[y])
+         answers.append((c.classifier.leave_one_out(indexes), x))
+   answers.sort().reverse()
+   return answers
+   
+
+class CombGen:
+   """Generate the k-combinations of a sequence. This is a iterator
+   that generates the combinations on the fly. This code was adapted
+   from a posting by Tim Peters"""
+   def __init__(self, seq, k):
+      n = self.n = len(seq)
+      if not 1 <= k <= n:
+         raise ValueError("k must be in 1.." + `n` + ": " + `k`)
+      self.k = k
+      self.seq = seq
+      self.indices = range(k)
+      # Trickery to make the first .next() call work.
+      self.indices[-1] = self.indices[-1] - 1
+
+   def __iter__(self):
+      return self
+
+   def next(self):
+      n, k, indices = self.n, self.k, self.indices
+      lasti, limit = k-1, n-1
+      while lasti >= 0 and indices[lasti] == limit:
+         lasti = lasti - 1
+         limit = limit - 1
+      if lasti < 0:
+         raise StopIteration
+      newroot = indices[lasti] + 1
+      indices[lasti:] = range(newroot, newroot + k - lasti)
+      # Build the result.
+      result = []
+      seq = self.seq
+      for i in indices:
+         result.append(seq[i])
+      return result

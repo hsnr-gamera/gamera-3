@@ -172,24 +172,34 @@ Toolkits are also free to use another documentation
 workflow if desired, of course.
 
 To document a toolkit using the Gamera documentation system, the
-author should perform three steps: 1) write narrative documentation,
-2) write plugin method documentation, and 3) create a documentation
-generation script.
+author should perform four steps: 
+
+  1) write narrative documentation,
+
+  2) write plugin method documentation, 
+
+  3) optionally write class and method documentation and 
+
+  4) create a documentation generation script.
 
 Writing narrative documentation
 ```````````````````````````````
 
-The narrative documentation is intended for longer "how-to" like documents.
+The narrative (handwritten) documentation is intended for "how-to"
+like documents or anything that is not simply documenting methods
+one-by-one.
 
-Put narrative or high-level documentation in ``doc/src/``, in ``.txt``
-files in reStructuredText_ format.  Each ``.txt`` file will be
-converted into a corresponding ``.html`` when the documentation is
-generated.
+Put narrative documentation in ``doc/src/``, in ``.txt`` files in
+reStructuredText_ format.  Each ``.txt`` file will be converted into a
+corresponding ``.html`` when the documentation is generated.
 
 .. _reStructuredText: http://docutils.sf.net/
 
 Optionally, any inline images to be included can be placed in
 ``doc/src/images/``.
+
+It is good practice to create an ``index.txt`` here which will act as
+an entry-point to the documentation.
 
 Plugin documentation
 ````````````````````
@@ -206,6 +216,70 @@ These steps are described in greater detail in the `writing plugins`__
 chapter.
 
 .. __: writing_plugins.html#documenting-plugin-functions
+
+Class documentation
+```````````````````
+
+Individual classes and their methods can be documented as well.  There
+are two ways to do this: 1) inline with the narrative documentation,
+or 2) one-class-per-file documentation.
+
+Inline class documentation
+''''''''''''''''''''''''''
+
+The Gamera documentation system adds a new directive, ``docstring``, to
+reStructuredText.  The directive looks up the docstring of a class,
+function or method and inserts it inline into the document.  It takes
+at least two arguments:
+
+   *module*
+     The module that the object is in.  This may be a
+     dot-delimited package path, such as ``gamera.toolkits.skeleton``.
+     
+   *object*
+      The Python object to document.
+
+Additionally, any number of names may be added to the arugment list
+which will be looked up in *object* and documented.
+
+For example, to document the ``__init__`` and ``display`` methods on
+the ``Image`` class in ``gamera.core``::
+
+  .. docstring:: gamera.core Image
+  .. docstring:: gamera.core Image __init__ display
+
+This produces the following:
+
+.. admonition:: Image
+
+  .. docstring:: gamera.core Image
+  .. docstring:: gamera.core Image __init__ display
+
+One-class-per-file documentation
+''''''''''''''''''''''''''''''''
+
+To generate one-class-per-file documentation, use the
+``classes`` keywoard argument when calling ``gendoc()`` (See below_).
+This argument takes a list of tuples, (*class*,
+*methods*).  The first element is the class to document, and the
+second element is a list of method names in the class, in the order to
+write them in the documentation.
+
+.. _below: #documentation-generation-script
+
+For example, to document the ``__init__`` and ``display`` methods on
+the ``Image`` class in ``gamera.core``.
+
+.. code:: Python
+
+   from gamera import core
+
+   gendoc.gendoc(classes=[
+                 (core.Image, ['__init__', 'display'])
+	 	 ])
+
+This will have the same effect as the example above, except it will
+put the class documentation in its own file.
 
 Documentation generation script
 ```````````````````````````````
@@ -240,6 +314,9 @@ example is as follows:
       # Step 2:	 
       # Generate documentation for this toolkit
       # This will handle any commandline arguments if necessary
+
+      # The optional classes argument can be used to document classes
+      # See "Class documentation" in the "Writing toolkits" chapter.
       gendoc.gendoc()
 
 Building the documentation
@@ -264,8 +341,8 @@ libraries:
 Generating
 ''''''''''
 
-To generate the documentation, go to the ``doc`` directory and run the
-``gendoc.py`` script.
+To generate the documentation, go to the ``doc`` directory in the
+skeleton and run the ``gendoc.py`` script.
 
 Alternatively, you can call the ``gendoc.py`` script with the
 documentation directory as a commandline argument::

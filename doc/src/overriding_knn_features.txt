@@ -1,0 +1,132 @@
+===================================
+Overriding kNN's feature generation
+===================================
+
+Introduction
+------------
+
+The classifier automatically manages the generation of feature vectors
+from glyphs.  When a feature vector is needed because it is being
+classified or added to the training set, it is automatically generated
+on-the-fly.
+
+By default, the feature generation method in kNN is quite simple.  The
+user of the classifier provides a list of feature function names
+(either in the constructor or through the ``change_feature_set``
+method), and for each glyph, the results of each feature function in
+the set are appended together to produce a feature vector.
+
+This simple feature generation method can be overridden and replaced
+with something more appropriate to specific problem domains.  The only
+restriction (which is an inherent limitation of the *k*-nearest
+neighbor algorithm) is that the length of the feature vectors must be
+the same for all glyphs within a single classifier.  If your problem
+requires variable-length feature vectors, you will need to use another
+kind of classifier or use multiple kNN classifiers.
+
+Creating a subclass of ``kNN``
+------------------------------
+
+Changing how feature generation works is as simple as creating a new
+class that inherits from either ``kNNInteractive`` or
+``kNNNonInteractive`` and overriding the ``generate_features`` method.
+``__init__`` may also be overridden in order to accept parameters
+specific to the class.
+
+.. code:: Python
+
+   from gamera import knn, classify
+   import array
+
+   class MykNN(knn.kNNInteractive):
+      def __init__(self, database, num_features, perform_splits=True):
+         ... described below ...
+
+      def generate_features(self, glyph):
+         ... described below ...	 
+    
+
+``__init__``
+''''''''''''
+
+The __init__ function must do two things:
+
+    - initialize the low-level kNN classifier and set the length of the
+      feature vectors.
+
+    - initialize the high-level classifier interface with the initial
+      database of glyphs (or filename).
+
+In the example below, the length of the feature vector is set using an
+argument to the constructor.  Note that this is in contrast to the
+default behavior, where a list of feature functions is passed in and
+the length of the feature vectors is calculated from that.
+
+.. code:: Python
+
+  def __init__(self, database, num_features, perform_splits=True):
+     knn._kNNBase.__init__(self, num_features)
+     classify.InteractiveClassifier.__init__(self, database, perform_splits=perform_splits)     
+
+``generate_features``
+'''''''''''''''''''''
+
+The ``generate_features`` function is where the feature generation
+actually happens and is called everytime the classifier needs a
+feature vector for a particular glyph.
+
+The feature vector itself must be stored in the member ``features`` of
+the glyph itself.  This *must* be a Python ``array`` of ``double``,
+and its length must be equal to the feature vector length for the
+whole classifier.  For efficiency reasons, the type-checking within
+kNN is very weak, so this point is very important.
+
+Of course, the actual content of the feature vector will be computed
+through some process (which is the whole point of this document).
+
+As a trivial example, the following simply generates a feature vector
+full of zeros:
+
+.. code:: Python
+
+  def generate_features(self, glyph):
+    glyph.features = array.array('d', [0] * self.num_features)
+
+Pitfalls and performance issues
+'''''''''''''''''''''''''''''''
+
+When you start to put this into a real system, things get more
+complex. ``generate_features`` may be called multiple times on the
+same glyph.  For instance, this can happen when the same glyph is
+classified more than once.  More dangerously, it can happen when
+glyphs are moved around between different classifiers.  If those
+classifiers have different length feature vectors (or even different
+sets and ordering of features) things won't work as expected, because
+the classifiers will be sharing incompatible feature vectors.  It is
+therefore a good idea to always either keep the sets of glyphs
+orthogonal between all active classifiers, or copy the glyph instances
+when moving from one classifier to another.
+
+Calling ``generate_features`` multiple times on the same glyph may
+also have performance implications.  In the default implementation,
+when a feature vector is generated, the feature functions that were
+used to generate it are also stored in a member of the glyph.  The
+next time ``generate_features`` is called for the glyph, the feature
+vector is re-generated *only* if the set of feature functions being
+used is different from the last time they were generated.  This saves
+a redundant time-consuming feature generation operation.
+
+It is impossible for the classifier system to know what external
+forces will require feature regeneration, so it is the resposibility
+of the custom ``generate_features`` method to determine the need to
+regenerate.
+
+In the following example, the feature vector is regenerated if the
+feature vector length has changed since the last time it was generated.
+
+.. code:: Python
+
+  def generate_features(self, glyph):
+    if len(glyph.features) != self.num_features:
+        glyph.features = array.array('d', [0] * self.num_features)
+

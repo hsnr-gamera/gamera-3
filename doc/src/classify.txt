@@ -11,12 +11,12 @@ programming API that is used by scripts that make use of a classifier.
 
 .. __: gui.html#interactive-classifier-window
 
-Gamera supports segmentation-based image classification.  This means
-that the page image is first segmented into individual connected
-components (or glyphs).  Each of these glyphs has a number of features
-generated from it.  These features (collectively called a "feature
-vector") are then sent to a classifier which, using a database of
-training data, identifies the glyph.
+At present, Gamera supports segmentation-based image classification.
+This means that the page image is first segmented into individual
+connected components (or glyphs).  Each of these glyphs has a number
+of features generated from it.  These features (collectively called a
+"feature vector") are then used inside a classifier which, using a
+database of training data, identifies the glyph.
 
 Interactive vs. Noniteractive classifiers
 '''''''''''''''''''''''''''''''''''''''''
@@ -47,7 +47,8 @@ Types of classifiers
 Within each of these families, different classifiers are available.
 These "concrete" classifiers have additional methods specific to the
 particular classifier type.  The currently implemented classifiers
-are:
+are all *k* - nearest-neighbor, but we plan to add other classifiers
+as needed.
 
  - kNNInteractive_
      Interactive *k* nearest neighbor classifier.
@@ -60,7 +61,6 @@ are:
      tool in the Gamera GUI.
 
 .. _Biollante: gui.html#classifier-optimization-biollante
-
 
 Classifying images without a classifier
 ---------------------------------------
@@ -140,7 +140,7 @@ The following methods are available to all classifiers.
 Initialization
 ``````````````
 
-This is initialization
+This describes constructing a classifier.
 
 .. docstring:: gamera.classify NonInteractiveClassifier __init__ 
 
@@ -204,6 +204,11 @@ Classification
 
 .. docstring:: gamera.classify InteractiveClassifier classify_glyph_manual classify_list_manual classify_and_update_list_manual add_to_database remove_from_database
 
+Display
+```````
+
+.. docstring:: gamera.classify InteractiveClassifier display
+
 *k* Nearest Neighbor classifier
 -------------------------------
 
@@ -235,14 +240,41 @@ classifier API.  It adds some methods of its own.
    file, since it is portable across platforms and to future versions of
    Gamera.  The binary format is not guaranteed to be portable.
 
-All ``kNN`` classes
-'''''''''''''''''''
+Feature management
+''''''''''''''''''
+
+The classifier automatically manages the generation of feature vectors
+from glyphs.  When a feature vector is needed because it is being
+automatically classified or added to the training set, it is
+automatically generated on-the-fly.
+
+By default, the feature generation method in kNN is quite simple.  The
+user of the classifier provides a list of feature function names
+(either in the constructor or through the ``change_feature_set``
+method), and for each glyph, the results of each feature function in
+the set are appended together to produce a feature vector.
+
+This basic feature generation method can be overridden and replaced
+with something more appropriate to other problem domains.  See the
+`overriding kNN's feature generation`__ appendix for more information.
+
+.. __: overriding_knn_features.html
+
+Methods on all ``kNN`` classes
+''''''''''''''''''''''''''''''
+
+kNN Initialization
+``````````````````
+
+.. docstring:: gamera.knn kNNNonInteractive __init__
 
 Settings
 ````````
 
 Settings are various parameters that control the behavior of the
 classifier.
+
+.. docstring:: gamera.knn kNNInteractive change_feature_set
 
 .. docstring:: gamera.knn _kNNBase save_settings load_settings
 
@@ -270,6 +302,11 @@ These methods pertain to optimizing the feature weights of the classifier using 
 genetic algorithm.
 
 .. docstring:: gamera.knn kNNNonInteractive start_optimizing stop_optimizing add_optimization_callback remove_optimization_callback
+
+Managing kNN's internal feature generation
+''''''''''''''''''''''''''''''''''''''''''
+
+By default, 
 
 References
 ----------

@@ -20,7 +20,7 @@
 from threading import *
 import sys, os
 from gamera import core, util, config, classify
-from gamera.plugins import features
+from gamera.plugins import features as features_module
 import gamera.knncore, gamera.gamera_xml
 import array
 
@@ -125,7 +125,7 @@ class _kNNBase(gamera.knncore.kNN):
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
 
-   def __init__(self, features='all', num_k=1):
+   def __init__(self, num_features=1, num_k=1):
       """Constructor for knn object. Features is a list
       of feature names to use for classification. If features
       is none then the default settings will be loaded from a
@@ -133,6 +133,7 @@ class _kNNBase(gamera.knncore.kNN):
       settings file specified then all of the features will be
       used."""
       gamera.knncore.kNN.__init__(self)
+      self.num_features = num_features
       self.num_k = num_k
       self.ga_initial = 0.0
       self.ga_best = 0.0
@@ -144,14 +145,6 @@ class _kNNBase(gamera.knncore.kNN):
    def __del__(self):
       pass
 
-   def change_feature_set(self, f):
-      """Change the set of features used in the classifier.  features is a list of
-      strings, naming the feature functions to be used."""
-      self.features = f
-      self.feature_functions = core.ImageBase.get_feature_functions(self.features)
-      self.num_features = features.get_features_length(self.features)
-      classify.InteractiveClassifier.change_feature_set(self, f)
-
    def distance_from_images(self, images, glyph, max=None):
       """**distance_from_images** (ImageList *glyphs*, Image *glyph*, Float *max* = ``None``)
 
@@ -159,9 +152,8 @@ Compute a list of distances between a list of glyphs and a single glyph. Distanc
 greater than *max* are not included in the output.  The return value is a list of
 floating-point distances.
 """
-      from gamera.plugins import features
-      glyph.generate_features(self.feature_functions)
-      features.generate_features_list(images, self.feature_functions)
+      self.generate_features(glyph)
+      self.generate_features_on_glyphs(images)
       if max is None:
          return self._distance_from_images(iter(images), glyph)
       else:
@@ -175,8 +167,8 @@ for the kNN object (distance_type, features, weights, etc). This
 can be used when more control over the distance computations are
 needed than with any of the other methods that work on multiple
 images at once."""
-      imagea.generate_features(self.feature_functions)
-      imageb.generate_features(self.feature_functions)
+      self.generate_features(imagea)
+      self.generate_features(imageb)
       return self._distance_between_images(imagea, imageb)
 
    def distance_matrix(self, images, normalize=True):
@@ -190,8 +182,7 @@ of images regardless of the order of the pairs.
 *normalize*
   When true, the features are normalized before performing the distance
   calculations."""
-      from gamera.plugins import features
-      features.generate_features_list(images, self.feature_functions)
+      self.generate_features_on_glyphs(images)
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances...", l)
       m = self._distance_matrix(images, progress.step, normalize)
@@ -209,8 +200,7 @@ of (distance, imagea, imageb) so that it easy to sort.
 *normalize*
   When true, the features are normalized before performing the distance
   calculations."""
-      from gamera.plugins import features
-      features.generate_features_list(images, self.feature_functions)
+      self.generate_features_on_glyphs(images)
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances...", l)
       dists = self._unique_distances(images, progress.step, normalize)
@@ -294,19 +284,6 @@ Load the kNN settings from an XML file.  See save_settings_."""
       self.ga_mutation = loader.ga_mutation
       self.ga_crossover = loader.ga_crossover
       self.ga_population = loader.ga_population
-      # In order to correctly set the weights we need to look
-      # up all of the feature functions for the individual weights
-      # so that we can set self.feature_functions. This allows the
-      # classification methods to know whether the weights should
-      # be used or not (according to whether the features on the
-      # image passed in match the features we currently know about).
-##       for key in loader.weights:
-##          try:
-##             func = core.ImageBase.get_feature_functions(key)
-##          except Exception, e:
-##             raise gamera.gamera_xml.XMLError("While loading the weights " +
-##             "an unknown feature function '%s' was found." % key)
-##          functions.append(func[0][0])
       functions = loader.weights.keys()
       functions.sort()
       self.change_feature_set(functions)
@@ -342,10 +319,65 @@ classifer-specific format."""
       else:
          self.change_feature_set(features)
 
+   def generate_features(self, glyph):
+      """**generate_features** (Image *glyph*)
+
+Generates features for the given glyph.
+"""
+      glyph.generate_features(self.feature_functions)
+
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
    def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
-      _kNNBase.__init__(self, features, num_k=num_k)
-      classify.InteractiveClassifier.__init__(self, database, features, perform_splits)
+      """**kNNInteractive** (ImageList *database* = ``[]``, *features* = 'all', bool *perform_splits* = ``True``)
+
+Creates a new kNN interactive classifier instance.
+
+*database*
+        Must be a list (or Python interable) containing glyphs to use
+        as training data for the classifier.
+
+        Any images in the list that were manually classified (have
+	classification_state == MANUAL) will be used as training data
+	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
+	classified images will be ignored.
+
+	When initializing a noninteractive classifier, the database
+	*must* be non-empty.
+
+*features*
+	A list of feature function names to use for classification.
+	These feature names
+	correspond to the `feature plugin methods`__.  To use all
+	available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features
+
+*perform_splits*
+	  If ``perform_splits`` is ``True``, glyphs trained with names
+	  beginning with ``_split.`` are run through a given splitting
+	  algorithm.  For instance, glyphs that need to be broken into
+	  upper and lower halves for further classification of those
+	  parts would be trained as ``_split.splity``.  When the
+	  automatic classifier encounters glyphs that most closely
+	  match those trained as ``_split``, it will perform the
+	  splitting algorithm and then continue to recursively
+	  classify its parts.
+
+	  The `splitting algorithms`__ are documented in the plugin documentation.
+
+.. __: plugins.html#segmentation
+
+          New splitting algorithms can be created by `writing plugin`__ methods
+          in the category ``Segmentation``.  
+
+.. __: writing_plugins.html
+
+      """
+      self.features = features
+      self.feature_functions = core.ImageBase.get_feature_functions(features)
+      num_features = features_module.get_features_length(features)
+      _kNNBase.__init__(self, num_features)
+      classify.InteractiveClassifier.__init__(self, database, perform_splits)
 
    def __del__(self):
       _kNNBase.__del__(self)
@@ -356,28 +388,112 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
 
 Creates a non-interactive copy of the interactive classifier."""
       return kNNNonInteractive(
-         self.get_glyphs(), self.features, self._perform_splits, num_k=self.num_k)
+         list(self.get_glyphs()), self.features, self._perform_splits, num_k=self.num_k)
 
    def supports_optimization(self):
       """Flag indicating that this classifier supports optimization."""
       return False
 
+   def change_feature_set(self, f):
+      """**change_feature_set** (*features*)
+
+Changes the set of features used in the classifier to the given list of feature names.
+
+*features*
+  These feature names correspond to the `feature plugin methods`__.
+  To use all available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features"""
+      self.features = f
+      self.feature_functions = core.ImageBase.get_feature_functions(f)
+      self.num_features = features_module.get_features_length(f)
+      if len(self.database):
+         self.is_dirty = True
+         self.generate_features_on_glyphs(self.database)
+
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
-   def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
-      _kNNBase.__init__(self, features, num_k=num_k)
-      classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
+   def __init__(self, database=[], features='all', perform_splits=True, num_k=1):
+      """**kNNNonInteractive** (ImageList *database* = ``[]``, *features* = ``'all'``,
+bool *perform_splits* = ``True``)
+
+Creates a new kNN classifier instance.
+
+*database*
+        Can be in one of two forms:
+
+           - When a list (or Python iterable) each element is a glyph
+             to use as training data for the classifier.  (For
+             non-interactive classifiers, this list must be
+             non-empty).
+
+           - For non-interactive classifiers, *database* may be a
+             filename, in which case the classifier will be
+             "unserialized" from the given file.
+
+        Any images in the list that were manually classified (have
+	classification_state == MANUAL) will be used as training data
+	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
+	classified images will be ignored.
+
+	When initializing a noninteractive classifier, the database
+	*must* be non-empty.
+
+*features*
+	A list of feature function names to use for classification.
+	These feature names
+	correspond to the `feature plugin methods`__.  To use all
+	available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features
+
+*perform_splits*
+	  If ``perform_splits`` is ``True``, glyphs trained with names
+	  beginning with ``_split.`` are run through a given splitting
+	  algorithm.  For instance, glyphs that need to be broken into
+	  upper and lower halves for further classification of those
+	  parts would be trained as ``_split.splity``.  When the
+	  automatic classifier encounters glyphs that most closely
+	  match those trained as ``_split``, it will perform the
+	  splitting algorithm and then continue to recursively
+	  classify its parts.
+
+	  The `splitting algorithms`__ are documented in the plugin documentation.
+
+.. __: plugins.html#segmentation
+
+          New splitting algorithms can be created by `writing plugin`__ methods
+          in the category ``Segmentation``.  
+
+.. __: writing_plugins.html
+
+      """
+      self.features = features
+      self.feature_functions = core.ImageBase.get_feature_functions(features)
+      num_features = features_module.get_features_length(features)
+      _kNNBase.__init__(self, num_features)
+      classify.NonInteractiveClassifier.__init__(self, database, perform_splits)
 
    def __del__(self):
       _kNNBase.__del__(self)
       classify.NonInteractiveClassifier.__del__(self)
 
    def change_feature_set(self, f):
-      """Change the set of features used in the classifier.  features is a list of
-      strings, naming the feature functions to be used."""
+      """**change_feature_set** (*features*)
+
+Changes the set of features used in the classifier to the given list of feature names.
+
+*features*
+  These feature names correspond to the `feature plugin methods`__.
+  To use all available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features"""
       self.features = f
-      self.feature_functions = core.ImageBase.get_feature_functions(self.features)
-      self.num_features = features.get_features_length(self.features)
-      classify.NonInteractiveClassifier.change_feature_set(self, f)
+      self.feature_functions = core.ImageBase.get_feature_functions(f)
+      self.num_features = features_module.get_features_length(f)
+      if len(self.database):
+         self.is_dirty = True
+         self.generate_features_on_glyphs(self.database)
+         self.instantiate_from_images(self.database)
 
    def supports_optimization(self):
       """Flag indicating that this classifier supports optimization."""

@@ -353,7 +353,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
 
   int images_size = PyList_Size(images);
   if (images_size == 0) {
-    PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
+    PyErr_SetString(PyExc_TypeError, "Initial database of a non-interactive kNN classifier must have at least one element.");
     return 0;
   }
 

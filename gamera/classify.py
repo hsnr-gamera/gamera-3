@@ -8,7 +8,7 @@
 # of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
-# but ITHOUT ANY WARRANTY; without even the implied warranty of
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
@@ -50,6 +50,9 @@ class _Classifier:
    def set_database(self, other):
       raise RuntimeError("You can't change the database.  This exception should never be raised.  Please report it to the authors.")
    database = property(get_database, set_database)
+
+   def __len__(self):
+      return len(self._database)
 
    ########################################
    # GROUPING
@@ -170,8 +173,8 @@ a list of glyphs that is already updated for splitting and grouping."""
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
-##             if G.size_of_subgraph(root) > max_graph_size:
-##                continue
+            if G.size_of_subgraph(root) > max_graph_size:
+               continue
             best_grouping = G.optimize_partitions(
                root, evaluate_function, max_parts_per_group, max_graph_size)
             if not best_grouping is None:
@@ -187,7 +190,6 @@ a list of glyphs that is already updated for splitting and grouping."""
             progress.step()
       finally:
          progress.kill()
-      # print "Number of groups created: %d" % len(found_unions)
       return found_unions
 
    ########################################
@@ -217,8 +219,7 @@ page."""
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self.database) and
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
-         feature_functions = self.get_feature_functions()
-         glyph.generate_features(feature_functions)
+         self.generate_features(glyph)
          removed = glyph.children_images
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
@@ -243,14 +244,13 @@ page."""
             return [], []
          added = []
          removed = {}
-         feature_functions = self.get_feature_functions()
          for glyph in glyphs:
             if glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC):
                for child in glyph.children_images:
                   removed[child] = None
          for glyph in glyphs:
             if not removed.has_key(glyph):
-               glyph.generate_features(feature_functions)
+               self.generate_features(glyph)
                if (glyph.classification_state in
                    (core.UNCLASSIFIED, core.AUTOMATIC)):
                   id = self._classify_automatic_impl(glyph)
@@ -286,15 +286,17 @@ id_name of each glyph.  (If you don't want it set, use guess_glyph_automatic_.)
   recursion.  This number can normally be set quite low, depending on
   the application.
 
-The list *glyphs* is never modified by the function.  Instead, it
-returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list
-of glyphs that were created by classifying any glyphs as a split (See
-Initialization_).  *remove* is a list of glyphs that are no longer
-valid due to reclassifying glyphs from a split to something else.
-Most often, both of these lists will be empty.  You will normally want
-to use these lists to update the collection of glyphs on the current
-page.  If you just want a new list returned with these updates already
-made, use classify_and_update_list_automatic_.
+Return type: (*add*, *remove*)
+
+  The list *glyphs* is never modified by the function.  Instead, it
+  returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a
+  list of glyphs that were created by classifying glyphs as a
+  split (See Initialization_).  *remove* is a list of glyphs that are
+  no longer valid due to reclassifying glyphs from a split to
+  something else.  Most often, both of these lists will be empty.  You
+  will normally want to use these lists to update the collection of
+  glyphs on the current page.  If you just want a new list returned
+  with these updates already made, use classify_and_update_list_automatic_.
 """
       return self._classify_list_automatic(glyphs, max_recursion, 0, progress)
 
@@ -400,31 +402,33 @@ existing training data."""
 
    ##############################################
    # Features
-   def get_feature_functions(self):
-      return self.feature_functions
-
-   def generate_features(self, glyphs):
+   def generate_features_on_glyphs(self, glyphs):
       """Generates features for all the given glyphs."""
-      import time
       progress = util.ProgressFactory("Generating features...",
                                       len(glyphs) / 16)
-      feature_functions = self.get_feature_functions()
       try:
          for i, glyph in enumerate(glyphs):
-            glyph.generate_features(feature_functions)
+            self.generate_features(glyph)
             if i & 0xf == 0:
                progress.step()
       finally:
          progress.kill()
    
 class NonInteractiveClassifier(_Classifier):
-   def __init__(self, database=[], features='all', perform_splits=True):
-      """**Classifier** (ImageList *database* = ``[]``, *features* = ``'all'``,
-bool *perform_splits* = ``True``)
+   def __init__(self, database=[], perform_splits=True):
+      """**NonInteractiveClassifier** (ImageList *database* = ``[]``, bool *perform_splits* = ``True``)
 
 Creates a new classifier instance.
 
 *database*
+        Can come in two forms:
+
+           - When a list (or Python iterable) each element is a glyph to
+             use as training data for the classifier
+
+           - *For non-interactive classifiers only*, when *database* is a filename,
+             the classifier will be "unserialized" from the given file.
+
         Any images in the list that were manually classified (have
 	classification_state == MANUAL) will be used as training data
 	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
@@ -433,16 +437,8 @@ Creates a new classifier instance.
 	When initializing a noninteractive classifier, the database
 	*must* be non-empty.
 
-*features*
-	A list of feature function names to use for classification.
-	These feature names
-	correspond to the `feature plugin methods`__.  To use all
-	available feature functions, pass in ``'all'``.
-
-.. __: plugins.html#features
-
 *perform_splits*
-	  If ``perform_splits`` is ``True``, glyphs trained with names
+          If ``perform_splits`` is ``True``, glyphs trained with names
 	  beginning with ``_split.`` are run through a given splitting
 	  algorithm.  For instance, glyphs that need to be broken into
 	  upper and lower halves for further classification of those
@@ -462,10 +458,8 @@ Creates a new classifier instance.
 .. __: writing_plugins.html
 
       """
-      self.features = features
       if type(database) == list:
          self._database = util.CallbackList(database)
-         self.change_feature_set(features)
          self.set_glyphs(database)
       else:
          self._database = util.CallbackList([])
@@ -478,6 +472,7 @@ Creates a new classifier instance.
       self._perform_splits = perform_splits
 
    def __del__(self):
+      # Seems redundant, but this triggers a callback to the GUI, if running.
       del self._database
 
    def is_interactive():
@@ -503,7 +498,7 @@ Sets the training data for the classifier to the given list of glyphs.
 On some non-interactive classifiers, this operation can be quite
 expensive.
 """
-      self.generate_features(glyphs)
+      self.generate_features_on_glyphs(glyphs)
       self.database.clear()
       self.database.extend(glyphs)
       self.instantiate_from_images(self.database)
@@ -515,7 +510,7 @@ Adds the given glyphs to the current set of training data.
 
 On some non-interactive classifiers, this operation can be quite
 expensive."""
-      self.generate_features(glyphs)
+      self.generate_features_on_glyphs(glyphs)
       self.database.extend(glyphs)
       self.instantiate_from_images(self.database)
 
@@ -546,30 +541,22 @@ return value is of the form of `id_name`__.
 
 .. __: #id-name
 """
-      glyph.generate_features(self.get_feature_functions())
+      self.generate_features(glyph)
       return self.classify(glyph)
 
    def _classify_automatic_impl(self, glyph):
       return self.classify(glyph)
 
-   #########################################
-   # Features
-   def change_feature_set(self, features):
-      self.is_dirty = True
-      if len(self.database):
-         self.feature_functions = iter(self.database).next().get_feature_functions(features)
-         self.generate_features(self.database)
-         self.instantiate_from_images(self.database)
-
 class InteractiveClassifier(_Classifier):
-   def __init__(self, database=[], features='all',
-                perform_splits=1):
-      """**Classifier** (ImageList *database* = ``[]``, *features* = ``'all'``,
-bool *perform_splits* = ``True``)
+   def __init__(self, database=[], perform_splits=True):
+      """**InteractiveClassifier** (ImageList *database* = ``[]``, bool *perform_splits* = ``True``)
 
 Creates a new classifier instance.
 
 *database*
+        Must be a list (or Python interable) containing glyphs to use
+        as training data for the classifier.
+
         Any images in the list that were manually classified (have
 	classification_state == MANUAL) will be used as training data
 	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
@@ -577,14 +564,6 @@ Creates a new classifier instance.
 
 	When initializing a noninteractive classifier, the database
 	*must* be non-empty.
-
-*features*
-	A list of feature function names to use for classification.
-	These feature names
-	correspond to the `feature plugin methods`__.  To use all
-	available feature functions, pass in ``'all'``.
-
-.. __: plugins.html#features
 
 *perform_splits*
 	  If ``perform_splits`` is ``True``, glyphs trained with names
@@ -607,9 +586,8 @@ Creates a new classifier instance.
 .. __: writing_plugins.html
 
       """
-      self._database = util.CallbackSet(database)
-      self.features = features
-      self.change_feature_set(features)
+      self._database = util.CallbackSet()
+      self.set_glyphs(database)
       if perform_splits:
          self._do_splits = self.__class__._do_splits_impl
       else:
@@ -618,6 +596,7 @@ Creates a new classifier instance.
       self._display = None
 
    def __del__(self):
+      # Seems redundant, but this triggers a callback to the GUI, if running.
       del self._database
 
    def is_interactive():
@@ -632,12 +611,12 @@ Creates a new classifier instance.
    def set_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
       self.clear_glyphs()
-      self.generate_features(glyphs)
+      self.generate_features_on_glyphs(glyphs)
       self.database.extend(glyphs)
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
-      self.generate_features(glyphs)
+      self.generate_features_on_glyphs(glyphs)
       self.database.extend(glyphs)
 
    def clear_glyphs(self):
@@ -656,20 +635,10 @@ Creates a new classifier instance.
 
    def guess_glyph_automatic(self, glyph):
       if len(self.database):
-         glyph.generate_features(self.get_feature_functions())
-         return self.classify_with_images(
-            self.database, glyph)
+         self.generate_features(glyph)
+         return self.classify_with_images(self.database, glyph)
       else:
          return [(0.0, 'unknown')]
-
-   def change_feature_set(self, features):
-      """Change the set of features used in the classifier.  features is a list
-of strings, naming the feature functions to be used."""
-      self.is_dirty = True
-      if len(self.database):
-         self.feature_functions = iter(self.database).next().get_feature_functions(features)
-         self.generate_features(self.database)
-   
 
    ########################################
    # MANUAL CLASSIFICATION
@@ -701,7 +670,7 @@ end user definitively knows the identity of the glyph.
          if child in self.database:
             self.database.remove(child)
       glyph.classify_manual([(1.0, id)])
-      glyph.generate_features(self.get_feature_functions())
+      self.generate_features(glyph)
       self.database.append(glyph)
       return self._do_splits(self, glyph), removed.keys()
 
@@ -731,12 +700,10 @@ connnected components, such as the lower-case *i*.
          parts = id.split('.')
          sub = '.'.join(parts[1:])
          union = image_utilities.union_images(glyphs)
-         feature_functions = self.get_feature_functions()
          for glyph in glyphs:
             if glyph.nrows > 2 and glyph.ncols > 2:
                glyph.classify_heuristic('_group._part.' + sub)
-               glyph.generate_features(feature_functions)
-               ### self.database[glyph] = None ### !!! Shouldn't be here.
+               self.generate_features(glyph)
          added, removed = self.classify_glyph_manual(union, sub)
          added.append(union)
          return added, removed
@@ -748,12 +715,11 @@ connnected components, such as the lower-case *i*.
             removed.add(child)
 
       new_glyphs = []
-      feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          # Don't re-insert removed children glyphs
          if not glyph in removed:
             if not glyph in self.database:
-               glyph.generate_features(feature_functions)
+               self.generate_features(glyph)
                new_glyphs.append(glyph)
             glyph.classify_manual([(1.0, id)])
             added.extend(self._do_splits(self, glyph))
@@ -773,16 +739,15 @@ a list of glyphs that is already updated for splitting and grouping."""
    def add_to_database(self, glyphs):
       """**add_to_database** (ImageList *glyphs*)
 
-Adds the given glyphs to the classifier training data.  Will not add duplicates
-to the training data.
+Adds the given glyph (or list of glyphs) to the classifier training data.  Will not add duplicates
+to the training data.  Unlike classify_glyph_manual_, no grouping support is performed.
 """
       glyphs = util.make_sequence(glyphs)
       new_glyphs = []
-      feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          if (glyph.classification_state == core.MANUAL and
              not glyph in self.database):
-            glyph.generate_features(feature_functions)
+            self.generate_features(glyph)
             new_glyphs.append(glyph)
       self.database.extend(new_glyphs)
 

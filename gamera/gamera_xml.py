@@ -27,7 +27,9 @@ from util import word_wrap, ProgressFactory, is_image_list
 from gamera.symbol_table import SymbolTable
 from gamera.group import Group
 
-config.add_option_default('encoding', 'utf-8')
+config.define_option(
+   'xml', 'encoding', 'utf-8',
+   help='Character encoding to use when saving XML files')
 
 GAMERA_XML_FORMAT_VERSION = 2.0
 
@@ -108,7 +110,7 @@ class WriteXML:
          progress.kill()
 
    def _write_symbol_table(self, stream, symbol_table, indent=0):
-      encoding = config.get_option('encoding')
+      encoding = config.options.xml.encoding
       if (not isinstance(symbol_table, SymbolTable) and
           util.is_string_or_unicode_list(symbol_table)):
          symbols = symbol_table
@@ -202,7 +204,7 @@ class WriteXMLFile(WriteXML):
       if stream == None:
          return self.string()
       self.stream = stream
-      encoding = config.get_option('encoding')
+      encoding = config.options.xml.encoding
       self.stream.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
       self.stream.write('<gamera-database version="%s">\n' % str(GAMERA_XML_FORMAT_VERSION))
       self._write_core(stream, indent=1)

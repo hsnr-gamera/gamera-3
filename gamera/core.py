@@ -38,13 +38,7 @@ import gameracore
 from classify import InteractiveClassifier, NonInteractiveClassifier
 
 from gamera.classify import *
-import paths, util, config  # Gamera-specific
-
-######################################################################
-
-# Reference to the currently active gui
-config.add_option_default("__gui", None)
-config.add_option_default("__shell", None)
+import paths, util, config    # Gamera-specific
 
 ######################################################################
 
@@ -60,7 +54,7 @@ def image_info(filename):
 
 # displays a list of images in a grid-like window
 def display_multi(list):
-   gui = config.get_option("__gui")
+   gui = config.options.__.gui
    if gui:
       # If it's not a list, we'll get errors, so make it one
       if not util.is_sequence(list):
@@ -215,7 +209,7 @@ class ImageBase:
 
    def display(self):
       "Displays the image in its own window."
-      gui = config.get_option("__gui")
+      gui = config.options.__.gui
       if gui:
          if self._display:
             self._display.set_image(self)
@@ -231,22 +225,7 @@ class ImageBase:
    def display_ccs(self):
       """Displays the image in its own window, coloring the connected
       components."""
-      gui = config.get_option("__gui")
-      if gui:
-         if self._display:
-            self._display.set_image(self, ImageBase.color_ccs)
-         else:
-            self.set_display(
-               gui.ShowImage(self, self.name,
-                             ImageBase.color_ccs, owner=self))
-      self.last_display = "ccs"
-
-   # Displays the image in its own window, highlighting the given
-   # subimage (or subimages)
-   def display_cc(self, cc):
-      """Displays the image in its own window, highlighting the given
-      subimage (or list of subimages)."""
-      gui = config.get_option("__gui")
+      gui = config.options.__.gui
       # If the last thing displayed was something other than a cc
       # do a normal display to clear and refresh the window
       if self.last_display != "cc" or not gui or not self._display:
@@ -420,7 +399,7 @@ class Cc(gameracore.Cc, ImageBase):
    
    # Displays this cc in context
    def display_context(self):
-      gui = config.get_option("__gui")
+      gui = config.options.__.gui
       if not gui:
          return
       image = self.parent()
@@ -441,6 +420,7 @@ def init_gamera():
    global _gamera_initialised
    if not _gamera_initialised:
       import plugin, gamera_xml
+      config.parse_options()
       # Create the default functions for the menu
       for method in (
          plugin.PluginFactory(
@@ -480,3 +460,5 @@ def init_gamera():
       paths.import_directory(paths.plugins, globals(), locals(), 1)
       _gamera_initialised = 1
 
+if __name__ == "__main__":
+   init_gamera()

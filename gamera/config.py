@@ -16,68 +16,214 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import string, sys, os, urllib, imp
+import sys, os, atexit
+import util
 
-options = {}
+system_file = os.path.expanduser("~/.gamera_system")
+user_file = os.path.expanduser("~/.gamera_user")
 
-def get_options_by_prefix(option=''):
-   result = {}
-   for key, val in options.iteritems():
-      if key.startswith(option):
-         result[key[len(option):]] = val
-   return result
+class Options(dict):
+   def __getitem__(self, key):
+      return self.setdefault(key, Namespace(key))
+   __getattr__ = __getitem__
 
-def get_option(option):
-   if options.has_key(option):
-      return options[option]
+class Namespace(dict):
+   def __init__(self, name):
+      dict.__init__(self)
+      self._name = name
+   def __getitem__(self, key):
+      return self.setdefault(key, Option(key))
+   def __getattr__(self, key):
+      return self.setdefault(key, Option(key)).get()
+   def __setattr__(self, key, val):
+      if key == '_name':
+         object.__setattr__(self, key, val)
+      else:
+         self.setdefault(key, Option(key)).set(val)
+
+class Option:
+   def __init__(self, name):
+      self._name = name
+      self._defined = 0
+      self._value = []
+      self._default = ''
+      self._type = str
+      self._help = 'Undefined option'
+      self.system = 0
+
+   def __repr__(self):
+      return str(self.get())
+   
+   def define(self, default='', help='', system=0):
+      self._default = default
+      self._type = type(default)
+      self._help = help
+      self.system = system
+      self._defined = 1
+
+   def get(self):
+      if self._value == [] and self._defined:
+         return self._default
+      if self._type == list:
+         return self._value
+      else:
+         return self._value[0]
+
+   def set(self, val):
+      if self._defined and self._type != list:
+         try:
+            val = self._type(val)
+         except Exception, e:
+            print "Error setting option %s to %s\n%s" % (self._name, str(val), str(e))
+      if val not in self._value:
+         self._value.insert(0, val)
+
+   def set_all(self, val):
+      if not self._defined or self._type == list:
+         self._value = val
+      else:
+         try:
+            self._value = [self._type[v] for v in val]
+         except Exception, e:
+            print "Error setting option %s to %s\n%s" % (self._name, str(val), str(e))
+
+   def get_help(self):
+      return self._help
+
+   def get_type(self):
+      return self._type
+
+   def get_name(self):
+      return self._name
+
+   def get_default(self):
+      return self._default
+
+   def is_defined(self):
+      return self._defined
+
+options = Options()
+
+def define_option(namespace, name, default='', help='', system=0):
+   options[namespace][name].define(default, help, system)
+
+def get_pair(line):
+   line = line.strip()
+   if '=' in line:
+      parts = [x.strip() for x in line.split('=')]
+      if len(parts) > 2:
+         parts = [parts[0], '='.join(parts[1:])]
+      return tuple(parts)
    else:
-      return None
+      return (line, 1)
 
-def add_option(option, value=''):
-   global options
-   if value == '':
-      value = 1
-   options[option] = value
+last_category = 'DEFAULT'
+def get_triple(line):
+   global last_category
+   if '.' in line:
+      parts = [x.strip() for x in line.split('.')]
+      if len(parts) > 2:
+         parts = [parts[0], '.'.join(parts[1:])]
+      last_category = parts[0]
+      line = parts[1]
+   return tuple([last_category] + list(get_pair(line)))
 
-def add_option_default(option, value):
-   global options
-   if not options.has_key(option):
-      options[option] = value
-
-def parse_file(file):
-   if string.find(file, ":") == -1:
-      file = "file:" + file
+def parse_file(filename):
+   if not os.path.exists(filename):
+      return
    try:
-      filename, header = urllib.urlretrieve(file)
-   except:
-      print "Could not load config file:", file
-      return
-   fd = open(filename, 'r')
-   try:
-      opt = imp.load_source("opt", file, fd)
-   except SyntaxError:
-      print "Syntax error in config file: ", file
-      return
-   except ImportError:
-      print "Error importing file: ", file
-      return
-   for x in dir(opt):
-      if not x.startswith("__"):
-         add_option(x, opt.__dict__[x])
-   fd.close()
-   del opt
+      fd = open(filename, 'r')
+      try:
+         current_section = "DEFAULT"
+         for line in fd.xreadlines():
+            line = line.strip()
+            if len(line) == 0:
+               continue
+            if len(line) >= 2 and line[0] == '[' and line[-1] == ']':
+               current_section = line[1:-1].strip()
+               if current_section == '':
+                  current_section = "DEFAULT"
+            elif len(line) >= 1 and line[0] == '#' or line[0] == ';':
+               pass
+            elif '=' in line:
+               key, val = get_pair(line)
+               if current_section.startswith('__') or key.startswith('__'):
+                  continue
+               options[current_section][key].set(val)
+      finally:
+         fd.close()
+   except Exception, e:
+      print "WARNING: Error loading configuration file %s\n%s" % (filename, str(e))
 
-def parse():
-   user_local = os.path.expanduser("~/.gamera")
-   parse_file(user_local)
+def parse_all_files():
+   parse_file(system_file)
+   parse_file(user_file)
 
+def parse_command_line():
    for arg in sys.argv:
       if arg.startswith('--'):
-         option, value = map(string.strip, string.split(arg[2:], "="))
-         add_option(option, value)
-      elif arg.startswith('-'):
-         option, value = map(string.strip, string.split(arg[1:], "="))
-         add_option(option, value)
+         category, key, val = get_triple(arg[2:])
+         options[category][key].set(val)
+   help = ('--help', '-h', '?')
+   for h in help:
+      if h in sys.argv:
+         display_help()
+         sys.exit(1)
 
-   if get_option("configfile") != None:
-      parse_file(get_option("configfile"))
+def parse_options():
+   parse_all_files()
+   parse_command_line()
+   atexit.register(save_files)
+
+def write_out(fd, callback, system=1):
+   sections = options.items()
+   sections.sort()
+   start = ''
+   for section_name, section in sections:
+      if section_name.startswith('__'):
+         continue
+      section = section.items()
+      section.sort()
+      opts = []
+      for option_name, option in section:
+         if (option.system == system and
+             not option_name.startswith('__') and
+             (system or option.is_defined())):
+            opts.append(option)
+      if len(opts):
+         fd.write(start)
+         fd.write("[%s]\n" % section_name)
+         start = '\n'
+         for option in opts:
+            callback(fd, option)
+
+def ini_file_callback(fd, option):
+   util.word_wrap(fd, "# %s" % option.get_help())
+   if option.get_type() == list:
+      vals = option.get()
+      vals.reverse()
+      for val in vals:
+         fd.write("%s = %s\n" % (option.get_name(), str(val)))
+   else:
+      fd.write("%s = %s\n" % (option.get_name(), str(option.get())))
+
+def help_callback(fd, option):
+   if option.get_type() != list:
+      util.word_wrap(fd, '--%s=%s (%s)' %
+                     (option.get_name(), str(option.get()), str(option.get_default()))
+                     , 1)
+      util.word_wrap(fd, option.get_help(), 3)
+
+def display_help():
+   print "\nCommandline help:\n"
+   write_out(sys.stdout, help_callback, 0)
+   print
+
+def save_file(filename, system=1):
+   write_out(open(filename, 'w'), ini_file_callback, system)
+
+def save_files():
+   if not os.path.exists(user_file):
+      save_file(user_file, 0)
+   save_file(system_file, 1)
+

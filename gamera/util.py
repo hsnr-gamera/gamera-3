@@ -319,7 +319,7 @@ class ProgressText:
             sys.stdout.flush()
 
 def ProgressFactory(message, length=1):
-   gui = config.get_option('__gui')
+   gui = config.options.__.gui
    if gui:
       return gui.ProgressBox(message, length)
    else:

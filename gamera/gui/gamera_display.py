@@ -21,6 +21,8 @@
 from wxPython.wx import *         # wxPython
 from wxPython.grid import *
 from wxPython.lib.stattext import wxGenStaticText as wxStaticText
+from wxPython.wx import __version__ as __wx_version__
+__wx_version__ = int(''.join(__wx_version__.split('.')))
 from math import sin, sqrt, ceil, log, floor, pi # Python standard library
 from sys import maxint
 import sys, string, time, weakref
@@ -33,7 +35,9 @@ import gui_support  # Gamera plugin
 
 # we want this done on import
 wxInitAllImageHandlers()
-config.add_option_default("display_scroll_amount", 32)
+config.define_option(
+   "display", "scroll_amount", 32,
+   help="The size of each scroll step in the image viewer.")
 
 #############################################################################
 
@@ -69,7 +73,7 @@ class ImageDisplay(wxScrolledWindow):
       self.click_callbacks = []
       self.current_color = 0
       self.dragging = 0
-      self.scroll_amount = config.get_option("display_scroll_amount")
+      self.scroll_amount = config.options.display.scroll_amount
       self.block_w = 8
       self.block_h = 8
 
@@ -277,9 +281,7 @@ class ImageDisplay(wxScrolledWindow):
       if self.image is None:
          return
       old_scale = self.scaling
-      if new_scale == old_scale:
-         return
-      elif new_scale < old_scale:
+      if new_scale < old_scale:
          self.Clear()
       if new_scale == None or new_scale <= 0:
          new_scale = old_scale
@@ -811,7 +813,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       scaling = self.parent.scaling
       tmp_dc = wxMemoryDC()
       
-      bitmap_no = row * GRID_NCOLS + col
+      bitmap_no = row * grid.cols + col
       if bitmap_no < len(self.parent.list):
          image = self.parent.list[bitmap_no]
       else:
@@ -918,29 +920,38 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    # The images should be a little padded within the cells
    # Also, there is a max size for every cell
    def GetBestSize(self, grid, attr, dc, row, col):
-      bitmap_no = row * GRID_NCOLS + col
+      bitmap_no = row * grid.cols + col
       if bitmap_no < len(self.parent.list):
          image = self.parent.list[bitmap_no]
       else:
          image = None
       if image != None:
          return wxSize(
-            min(GRID_MAX_CELL_WIDTH,
-                image.ncols * self.parent.scaling + GRID_PADDING),
-            min(GRID_MAX_CELL_HEIGHT,
-                image.nrows * self.parent.scaling + GRID_PADDING))
-      return wxSize(50, 50)
+            min(grid.max_cell_width,
+                image.nrows * grid.scaling + grid.cell_padding),
+            min(grid.max_cell_height,
+                image.ncols * grid.scaling + grid.cell_padding))
+      return wxSize(25, 25)
 
    def Clone(self):
       return MultiImageGridRenderer(self.parent)
 
 # Grid constants
-GRID_MAX_CELL_WIDTH = 200
-GRID_MAX_CELL_HEIGHT = 200
-GRID_MAX_LABEL_LENGTH = 200
-GRID_PADDING = 20
-GRID_PADDING_2 = 16
-GRID_NCOLS = 8
+config.define_option(
+   'grid', 'max_cell_width', 200,
+   'Maximum width of a grid cell')
+config.define_option(
+   'grid', 'max_cell_height', 200,
+   'Maximum height of a grid cell')
+config.define_option(
+   'grid', 'max_label_length', 200,
+   'Maximum length (in pixels) of the row labels in the grid')
+config.define_option(
+   'grid', 'cell_padding', 20,
+   'Amount of padding around the glyphs in the grid')
+config.define_option(
+   'grid', 'ncols', 8,
+   'Number of columns in the grid')
 class MultiImageDisplay(wxGrid):
    def __init__(self, parent = None, id = -1, size = wxDefaultSize):
       wxGrid.__init__(self, parent, id,
@@ -949,7 +960,11 @@ class MultiImageDisplay(wxGrid):
          wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.list = []
       self.rows = 1
-      self.cols = GRID_NCOLS
+      self.cols = config.options.grid.ncols
+      self.max_cell_width = config.options.grid.max_cell_width
+      self.max_cell_height = config.options.grid.max_cell_height
+      self.max_label_length = config.options.grid.max_label_length
+      self.cell_padding = config.options.grid.cell_padding
       self.frame = parent
       self.updating = 0
       self.sort_function = ""
@@ -984,7 +999,7 @@ class MultiImageDisplay(wxGrid):
          self.frame.set_choices()
          if not self.created:
             self.rows = 1
-            self.CreateGrid(1, GRID_NCOLS)
+            self.CreateGrid(1, self.cols)
             self.created = 1
          self.EnableEditing(0)
          self.resize_grid()
@@ -996,44 +1011,52 @@ class MultiImageDisplay(wxGrid):
          wxEndBusyCursor()
       return (x.x, 600)
 
-   def AutoSize(self):
-      # This should work correctly in wxPython itself, but it doesn't
-      # (It causes random seqfaulting when it writes over the cache)
-      # This function should work, but should be removed whenever the
-      # bug is fixed in wxPython
-      wxBeginBusyCursor()
-      self.BeginBatch()
-      try:
-         col_max = [25] * self.cols
-         height = 0
-         image_no = self.rows * self.cols - 1
-         for row in xrange(self.rows - 1, -1, -1):
-            row_max = 25
-            for col in xrange(self.cols - 1, -1, -1):
-               if image_no < len(self.list):
-                  image = self.list[image_no]
-                  if not image is None:
-                     row_max = max(
-                        row_max,
-                        min(GRID_MAX_CELL_WIDTH,
-                            image.nrows * self.scaling + GRID_PADDING))
-                     col_max[col] = max(
-                        col_max[col],
-                        min(GRID_MAX_CELL_HEIGHT,
-                            image.ncols * self.scaling + GRID_PADDING))
-               image_no -= 1
-            self.SetRowSize(row, row_max)
-            height += row_max
-         width = 0
-         for col in range(self.cols - 1, -1, -1):
-            self.SetColSize(col, col_max[col])
-            width += col_max[col]
-      finally:
-         self.EndBatch()
+   if float(__wx_version__) < 2342:
+      def AutoSize(self):
+         # This should work correctly in wxPython itself, but it doesn't
+         # (It causes random seqfaulting when it writes over the cache)
+         # This function should works for versions where this is broken.
+         wxBeginBusyCursor()
+         self.BeginBatch()
+         try:
+            col_max = [25] * self.cols
+            height = 0
+            image_no = self.rows * self.cols - 1
+            for row in xrange(self.rows - 1, -1, -1):
+               row_max = 25
+               for col in xrange(self.cols - 1, -1, -1):
+                  if image_no < len(self.list):
+                     image = self.list[image_no]
+                     if not image is None:
+                        row_max = max(
+                           row_max,
+                           min(self.max_cell_width,
+                               image.nrows * self.scaling +
+                               self.cell_padding))
+                        col_max[col] = max(
+                           col_max[col],
+                           min(self.max_cell_height,
+                               image.ncols * self.scaling +
+                               self.cell_padding))
+                  image_no -= 1
+               self.SetRowSize(row, row_max)
+               height += row_max
+            width = 0
+            for col in range(self.cols - 1, -1, -1):
+               self.SetColSize(col, col_max[col])
+               width += col_max[col]
+         finally:
+            self.EndBatch()
+            self.GetGridWindow().SetVirtualSize(self.GetSize())
+            self.GetGridWindow().Layout()
+            self.GetGridWindow().GetParent().Layout()
+            wxEndBusyCursor()
+   else:
+      def AutoSize(self):
+         wxGrid.AutoSize(self)
          self.GetGridWindow().SetVirtualSize(self.GetSize())
          self.GetGridWindow().Layout()
          self.GetGridWindow().GetParent().Layout()
-         wxEndBusyCursor()
 
    def resize_grid(self, do_auto_size=1):
       if not self.created:
@@ -1042,8 +1065,8 @@ class MultiImageDisplay(wxGrid):
       self.BeginBatch()
       try:
          orig_rows = self.rows
-         rows = int(max(ceil(float(len(self.list)) / float(GRID_NCOLS)), 1))
-         cols = GRID_NCOLS
+         rows = int(max(ceil(float(len(self.list)) / float(self.cols)), 1))
+         cols = self.cols
          if rows < orig_rows:
             self.DeleteRows(0, orig_rows - rows)
          elif rows > orig_rows:
@@ -1131,11 +1154,11 @@ class MultiImageDisplay(wxGrid):
       for image in list:
          main_id = image.get_main_id()
          if main_id != prev_id and column != 0:
-            new_list.extend([None] * (GRID_NCOLS - column))
+            new_list.extend([None] * (self.cols - column))
             column = 0
          new_list.append(image)
          column += 1
-         column %= GRID_NCOLS
+         column %= self.cols
          prev_id = main_id
       return new_list
 
@@ -1145,10 +1168,10 @@ class MultiImageDisplay(wxGrid):
       list.sort(lambda x, y: cmp(x.nrows, y.nrows))
       outlist = []
       while len(list):
-         if len(list) < GRID_NCOLS:
+         if len(list) < self.cols:
             sublist = list; list = []
          else:
-            sublist = list[:GRID_NCOLS]; list = list[GRID_NCOLS:]
+            sublist = list[:self.cols]; list = list[self.cols:]
          sublist.sort(lambda x, y: cmp(x.ncols, y.ncols))
          outlist.extend(sublist)
       return outlist
@@ -1210,7 +1233,7 @@ class MultiImageDisplay(wxGrid):
       dc = wxClientDC(self)
       for i in range(self.rows):
          try:
-            image = self.list[i * GRID_NCOLS]
+            image = self.list[i * self.cols]
          except IndexError:
             self.SetRowLabelValue(i, "")
          else:
@@ -1219,14 +1242,14 @@ class MultiImageDisplay(wxGrid):
             elif self.display_row_labels:
                label = self.get_label(image)
                label = self.reduce_label_length(
-                  dc, GRID_MAX_LABEL_LENGTH * 0.6, label)
+                  dc, self.max_label_length * 0.6, label)
                max_label = max(dc.GetTextExtent(label)[0], max_label)
                self.SetRowLabelValue(i, label)
             else:
                max_label = max(dc.GetTextExtent("")[0], max_label)
                self.SetRowLabelValue(i, "")
       self.EndBatch()
-      return min(max_label, GRID_MAX_LABEL_LENGTH)
+      return min(max_label, self.max_label_length)
 
    ########################################
    # SELECTING
@@ -1246,9 +1269,10 @@ class MultiImageDisplay(wxGrid):
                 gui_util.message(str(err))
                 return
              if result:
+                row = i / self.cols
+                col = i % self.cols
                 self.SelectBlock(
-                   i / GRID_NCOLS, i % GRID_NCOLS,
-                   i / GRID_NCOLS, i % GRID_NCOLS, true)
+                   row, col, row, col, true)
          self.updating = 0
          # self.OnSelectImpl()
       finally:
@@ -1259,7 +1283,7 @@ class MultiImageDisplay(wxGrid):
    # UTILITY FUNCTIONS
 
    def get_image_no(self, row, col):
-      no =  row * GRID_NCOLS + col
+      no =  row * self.cols + col
       if no >= len(self.list):
          return None
       else:
@@ -1312,8 +1336,8 @@ class MultiImageDisplay(wxGrid):
          self.updating = 1
          last_index = matches[-1]
          for index in matches:
-            row = index / GRID_NCOLS
-            col = index % GRID_NCOLS
+            row = index / self.cols
+            col = index % self.cols
             if index is last_index:
                self.updating = 0
             self.SelectBlock(row, col, row, col, first)
@@ -1647,7 +1671,7 @@ class MultiImageWindow(wxPanel):
 
 class ImageFrameBase:
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
-      self._frame = wxFrame(config.get_option('__gui').TopLevel(), id, title,
+      self._frame = wxFrame(config.options.__.gui.TopLevel(), id, title,
                             wxDefaultPosition, (600, 400),
                             style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|
                             wxNO_FULL_REPAINT_ON_RESIZE)

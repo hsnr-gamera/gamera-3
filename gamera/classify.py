@@ -468,7 +468,7 @@ class InteractiveClassifier(_Classifier):
 
    def display(self, current_database=[],
                context_image=None, symbol_table=[]):
-      gui = config.get_option("__gui")
+      gui = config.options.__.gui
       if gui and self._display is None:
          self._display = gui.ShowClassifier(
             self, current_database, context_image, symbol_table)

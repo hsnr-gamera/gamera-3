@@ -21,7 +21,12 @@ from wxPython.wx import *        # wxPython
 from wxPython.lib.dialogs import wxScrolledMessageDialog
 from os import path
 from types import *
-from gamera import util
+from gamera import util, config
+
+config.define_option(
+   "file", "default_directory", ".",
+   help="The default directory when opening files",
+   system=1)
 
 colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
           wxColor(0x2d, 0x34, 0xbc), wxColor(0x2d, 0xbc, 0x2d),
@@ -79,19 +84,61 @@ def build_menu(parent, menu_spec):
          EVT_MENU(parent, menu_item_id, func)
    return menu
 
-last_directory = '.'
-def open_file_dialog(parent, extensions="*.*"):
-   global last_directory
-   dlg = wxFileDialog(parent, "Choose a file", last_directory, "", extensions, wxOPEN)
-   if dlg.ShowModal() == wxID_OK:
-      filename = dlg.GetPath()
-      dlg.Destroy()
-      last_directory = path.dirname(filename)
+NUM_RECENT_FILES = 9
+class FileDialog(wxFileDialog):
+   def __init__(self, parent, extensions="*.*"):
+      self.recent_files_spec = 'recent_files(%s)' % extensions
+      config.define_option(
+         "file", self.recent_files_spec, [],
+         "Recently opened files",
+         system=1)
+      last_directory = config.options.file.default_directory
+      wxFileDialog.__init__(
+         self, parent, "Choose a file",
+         last_directory, "", extensions, self._flags)
+      self.extensions = extensions
+      self.button = wxButton(
+         self, 10000, "Recent files...", wxPoint(95, 10))
+      EVT_BUTTON(self, 10000, self._OnRecentMenu)
+      if not len(config.options.file[self.recent_files_spec].get()):
+         self.button.Enable(0)
+
+   def show(self):
+      result = self.ShowModal()
+      self.Destroy()
+      if result == wxID_CANCEL:
+         return None
+      filename = self.GetPath()
+      config.options.file.default_directory = path.dirname(filename)
+      config.options.file[self.recent_files_spec].set(filename)
       return filename
-   return None
+      
+   def _OnRecentMenu(self, event):
+      menu = wxMenu()
+      for id, file in util.enumerate(config.options.file[self.recent_files_spec].get()):
+         menu.Append(id, "&%d %s" % (id + 1, file))
+         EVT_MENU(self, id, self._OnRecentMenuItem)
+      self.PopupMenu(menu, wxPoint(95, 32))
+
+   def _OnRecentMenuItem(self, event):
+      filename = config.options.file[self.recent_files_spec].get()[event.GetId()]
+      self.SetPath(filename)
+      self.EndModal(wxID_OK)
+
+class OpenFileDialog(FileDialog):
+   _flags = wxOPEN
+
+class SaveFileDialog(FileDialog):
+   _flags = wxSAVE|wxOVERWRITE_PROMPT
+
+def open_file_dialog(parent, extensions="*.*"):
+   return OpenFileDialog(parent, extensions).show()
+
+def save_file_dialog(parent, extensions="*.*"):
+   return SaveFileDialog(parent, extensions).show()
 
 def directory_dialog(parent, create=1):
-   global last_directory
+   last_directory = config.options.file.default_directory
    if create:
       style = wxDD_NEW_DIR_BUTTON
    else:
@@ -100,19 +147,9 @@ def directory_dialog(parent, create=1):
    if dlg.ShowModal() == wxID_OK:
       filename = dlg.GetPath()
       dlg.Destroy()
-      last_directory = filename
+      config.options.file.default_directory.set(filename)
       return filename
    return None
-
-def save_file_dialog(parent, extensions="*.*"):
-   global last_directory
-   dlg = wxFileDialog(parent, "Choose a file", last_directory, "", extensions, wxSAVE)
-   if dlg.ShowModal() == wxID_OK:
-      filename = dlg.GetPath()
-      dlg.Destroy()
-      last_directory = path.dirname(filename)
-      return filename
-   return ''
 
 class ProgressBox:
    def __init__(self, message, length=1):

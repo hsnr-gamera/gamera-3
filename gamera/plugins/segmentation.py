@@ -33,11 +33,15 @@ class splity(PluginFunction):
     return_type = ImageList("splits")
 splity = splity()
 
+class tracing_segmentation(PluginFunction):
+    self_type = ImageType([ONEBIT])
+tracing_segmentation = tracing_segmentation()
+
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis, splitx, splity]
+    functions = [cc_analysis, splitx, splity, tracing_segmentation]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

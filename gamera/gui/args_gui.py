@@ -551,7 +551,7 @@ class FileOpen(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      if wxIsBusy():
+      while wxIsBusy():
          wxEndBusyCursor()
 
    def get(self):
@@ -581,7 +581,7 @@ class FileSave(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      if wxIsBusy():
+      while wxIsBusy():
          wxEndBusyCursor()
 
 class Directory(_Filename):
@@ -591,7 +591,7 @@ class Directory(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      if wxIsBusy():
+      while wxIsBusy():
          wxEndBusyCursor()
 
    def get(self):

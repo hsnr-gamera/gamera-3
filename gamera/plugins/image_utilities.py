@@ -237,7 +237,7 @@ class nested_list_to_image(PluginFunction):
 
 TODO: Handle Python arrays.  This is difficult without a proper C API.
 
-.. code::
+.. code:: Python
 
    # Sobel kernel (implicitly will be a FLOAT image)
    kernel = nested_list_to_image([[0.125, 0.0, -0.125],

@@ -183,7 +183,14 @@ template = Template("""
          [[args[0].call(function, args[1:], [])]]
       [[else]]
         try {
-          [[args[0].call(function, args[1:], [])]]
+          [[if len(args)]]
+            [[args[0].call(function, args[1:], [])]]
+          [[else]]
+            [[if function.return_type != None]]
+              [[function.return_type.symbol]] =
+            [[end]]  
+            [[function.__name__]]();
+          [[end]]
         } catch (std::exception& e) {
           PyErr_SetString(PyExc_RuntimeError, e.what());
           return 0;

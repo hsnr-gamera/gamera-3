@@ -154,11 +154,12 @@ class ImageBase:
       """
       from gamera import args
       methods = cls.methods
-      if not func is None:
+      image_type =  isinstance(plug.self_type, args.ImageType)
+      if not func is None and image_type:
          func = instancemethod(func, None, gameracore.Image)
          setattr(cls, plug.__name__, func)
       if not category is None:
-        if isinstance(plug.self_type, args.ImageType):
+        if image_type:
            pixel_types = plug.self_type.pixel_types
         else:
            pixel_types = [NONIMAGE]

@@ -4,7 +4,7 @@ Plugins
 
 **Alphabetical list**
 
-PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, corelation_, cyan_, despeckle_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, highlight_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, smith_waterman_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
+AveragingKernel_, BinomialKernel_, GaussianDerivativeKernel_, GaussianKernel_, PNG_info_, SimpleSharpeningKernel_, SymmetricGradientKernel_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_, cyan_, despeckle_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, flood_fill_, from_rle_, gaussian_gradient_, gaussian_smoothing_, generate_features_, green_, highlight_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nested_list_to_image_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, remove_border_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, simple_sharpen_, skeleton_features_, smith_waterman_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_nested_list_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
    
 Analysis
 ========
@@ -740,6 +740,391 @@ Converts the given image to an RGB image.
 
 
 
+Convolution
+===========
+
+
+Kernels
+-------
+
+``AveragingKernel``
+```````````````````
+
+Image [Float] **AveragingKernel** (``int`` *radius*)
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Creates an Averaging filter kernel for use with separable
+convolution.  The window size is (2*radius+1) * (2*radius+1).
+
+*radius*
+   The radius of the kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
+Koethe).
+
+
+
+``BinomialKernel``
+``````````````````
+
+Image [Float] **BinomialKernel** (``int`` *radius*)
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Creates a binomial filter kernel for use with separable
+    convolution of a given radius.
+
+*radius*
+   The radius of the kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
+Koethe).
+
+
+
+``GaussianDerivativeKernel``
+````````````````````````````
+
+Image [Float] **GaussianDerivativeKernel** (``double`` *standard_deviation*, ``int`` *order*)
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Init as a Gaussian derivative of order 'order'.  The radius of
+the kernel is always 3*std_dev.
+
+*standard_deviation* The standard deviation of the Gaussian kernel.
+
+*order* The order of the Gaussian kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
+Koethe).  
+
+
+``GaussianKernel``
+``````````````````
+
+Image [Float] **GaussianKernel** (``double`` *standard_deviation*)
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Init as a Gaussian function. The radius of the kernel is 
+always 3*standard_deviation.
+
+*standard_deviation*
+   The standard deviation of the Gaussian kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+
+
+``SimpleSharpeningKernel``
+``````````````````````````
+
+Image [Float] **SimpleSharpeningKernel** (``double`` *sharpening_factor*)
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Creates a kernel for simple sharpening.
+
+
+
+
+``SymmetricGradientKernel``
+```````````````````````````
+
+Image [Float] **SymmetricGradientKernel** ()
+
+
+:Returns: ``Image [Float]``
+:Category: Convolution/Kernels
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Init as a symmetric gradient filter of the form
+       [ 0.5, 0.0, -0.5]
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+
+
+``convolve``
+------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve** (``Image [Float]`` *kernel*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Convolves an image with a given kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+*kernel*
+   A kernel for the convolution.  The kernel may either be a FloatImage
+   or a nested Python list of floats.
+
+*border_treatment*
+   Specifies how to treat the borders of the image.  Must be one of the following:
+
+   - BORDER_TREATMENT_AVOID (0)
+
+       do not operate on a pixel where the kernel does not fit in the image
+
+   - BORDER_TREATMENT_CLIP (1)
+
+       clip kernel at image border (this is only useful if the kernel is >= 0 everywhere)
+
+   - BORDER_TREATMENT_REPEAT (2)
+
+       repeat the nearest valid pixel
+
+   - BORDER_TREATMENT_REFLECT (3)
+
+       reflect image at last row/column
+
+   - BORDER_TREATMENT_WRAP (4)
+
+       wrap image around (periodic boundary conditions)
+
+
+
+``convolve_x``
+--------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_x** (``Image [Float]`` *kernel_x*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Convolves an image in the X directions with a 1D kernel.
+This is equivalent to what the Vigra library calls "Separable Convolution".
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+*kernel_x*
+   A kernel for the convolution in the *x* direction.  The kernel may either be a FloatImage
+   or a nested Python list of floats.  It must consist of only a single row.
+
+*border_treatment*
+   Specifies how to treat the borders of the image.  See ``convolve`` for information
+   about *border_treatment* values.
+
+
+``convolve_xy``
+---------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_xy** (``Image [Float]`` *kernel_y*, ``Image [Float]`` *kernel_x*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Convolves an image in both X and Y directions with 1D kernels.
+This is equivalent to what the Vigra library calls "Separable Convolution".
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
+Koethe).
+
+*kernel_y*
+   A kernel for the convolution in the *y* direction.  The
+   kernel may either be a FloatImage or a nested Python list of
+   floats.
+
+*kernel_x*
+   A kernel for the convolution in the *x* direction.  The
+   kernel may either be a FloatImage or a nested Python list of
+   floats.  If *kernel_x* is omitted, *kernel_y* will be used in the
+   *x* direction.
+
+*border_treatment*
+   Specifies how to treat the borders of the image.
+   See ``convolve`` for information about *border_treatment*
+   values.
+
+
+``convolve_y``
+--------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **convolve_y** (``Image [Float]`` *kernel_y*, ``Choice[avoid|clip|repeat|reflect|wrap]`` *border_treatment*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Convolves an image in the X directions with a 1D kernel.  This
+is equivalent to what the Vigra library calls "Separable Convolution".
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich
+Koethe).
+
+*kernel_y*
+   A kernel for the convolution in the *x* direction.  The
+   kernel may either be a FloatImage or a nested Python list of
+   floats.  It must consist of only a single row.
+
+*border_treatment*
+   Specifies how to treat the borders of the image.
+   See ``convolve`` for information about *border_treatment*
+   values.
+
+
+``gaussian_gradient``
+---------------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **gaussian_gradient** (``double`` *scale*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Calculate the gradient vector by means of a 1st derivatives of
+Gaussian filter.
+
+*scale*
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+
+----------
+
+**Example 1:** gaussian_gradient(1.0,)
+
+.. image:: images/GreyScale_generic.png
+
+.. image:: images/gaussian_gradient_plugin_00.png
+
+**Example 2:** gaussian_gradient(1.0,)
+
+.. image:: images/RGB_generic.png
+
+.. image:: images/gaussian_gradient_plugin_01.png
+
+
+
+``gaussian_smoothing``
+----------------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **gaussian_smoothing** (``double`` *standard_deviation*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Performs gaussian smoothing on an image.
+
+*standard_deviation*
+   The standard deviation of the Gaussian kernel.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+
+----------
+
+**Example 1:** gaussian_smoothing(1.0,)
+
+.. image:: images/GreyScale_generic.png
+
+.. image:: images/gaussian_smoothing_plugin_00.png
+
+**Example 2:** gaussian_smoothing(3.0,)
+
+.. image:: images/RGB_generic.png
+
+.. image:: images/gaussian_smoothing_plugin_01.png
+
+
+
+``simple_sharpen``
+------------------
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **simple_sharpen** (``double`` *sharpening_factor*)
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Convolution
+:Defined in: convolution.py
+:Author: Michael Droettboom
+
+
+Perform simple sharpening.
+
+*sharpening_factor*
+   The amount of sharpening to perform.
+
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+
+
+----------
+
+**Example 1:** simple_sharpen(1.0,)
+
+.. image:: images/GreyScale_generic.png
+
+.. image:: images/simple_sharpen_plugin_00.png
+
+**Example 2:** simple_sharpen(3.0,)
+
+.. image:: images/RGB_generic.png
+
+.. image:: images/simple_sharpen_plugin_01.png
+
+
+
+
 DTW
 ===
 
@@ -799,7 +1184,7 @@ result.
 
 ----------
 
-**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x9a2738c>)
+**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x9dcf554>)
 
 .. image:: images/dtw_matrix_with_function_plugin_00.png
 
@@ -962,7 +1347,7 @@ Draw
 ``draw_filled_rect``
 --------------------
 
-**draw_filled_rect** (``int`` *x1*, ``int`` *y1*, ``int`` *x2*, ``int`` *y2*, ``double`` *value*)
+**draw_filled_rect** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
 
 
 :Operates on: ``Image [OneBit]``
@@ -973,14 +1358,14 @@ Draw
 
 Draws a filled rectangle.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the rectangle.
 
@@ -999,7 +1384,7 @@ Draws a filled rectangle.
 ``draw_hollow_rect``
 --------------------
 
-**draw_hollow_rect** (``int`` *x1*, ``int`` *y1*, ``int`` *x2*, ``int`` *y2*, ``double`` *value*)
+**draw_hollow_rect** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
 
 
 :Operates on: ``Image [OneBit]``
@@ -1010,14 +1395,14 @@ Draws a filled rectangle.
 
 Draws a hollow rectangle.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the lines.
 
@@ -1036,7 +1421,7 @@ Draws a hollow rectangle.
 ``draw_line``
 -------------
 
-**draw_line** (``int`` *x1*, ``int`` *y1*, ``int`` *x2*, ``int`` *y2*, ``double`` *value*)
+**draw_line** (``int`` *y1*, ``int`` *x1*, ``int`` *y2*, ``int`` *x2*, ``double`` *value*)
 
 
 :Operates on: ``Image [OneBit]``
@@ -1047,14 +1432,14 @@ Draws a hollow rectangle.
 
 Draws a straight line between two points.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the line.
 
@@ -1083,6 +1468,40 @@ Draws a straight line between two points.
 
 
 Fills the entire image with white.
+
+
+``flood_fill``
+--------------
+
+**flood_fill** (``int`` *y*, ``int`` *x*, ``double`` *color*)
+
+
+:Operates on: ``Image [OneBit]``
+:Category: Draw
+:Defined in: draw.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+Flood fills from the given point using the given color.  This is similar
+to the "bucket" tool found in many paint programs.
+
+*y*:
+  Starting *y* coordinate.
+*x*:
+  Starting *x* coordinate.
+*color*:
+  The pixel value to set for the rectangle.
+
+.. note:: This needs to be extended to support more pixel types.
+
+----------
+
+**Example 1:** flood_fill(5, 5, 0)
+
+.. image:: images/OneBit_generic.png
+
+.. image:: images/flood_fill_plugin_00.png
+
 
 
 ``invert``
@@ -1119,6 +1538,25 @@ Inverts the image.
 
 .. image:: images/invert_plugin_02.png
 
+
+
+``remove_border``
+-----------------
+
+**remove_border** ()
+
+
+:Operates on: ``Image [OneBit]``
+:Category: Draw
+:Defined in: draw.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+This is a special case of the flood_fill algorithm that is designed to
+remove dark borders produced by photocopiers or flatbed scanners around the
+border of the image.
+
+.. note:: This needs to be extended to support more pixel types.
 
 
 
@@ -1668,54 +2106,6 @@ Returns an ``ImageInfo`` object describing a TIFF file.
 
 Filter
 ======
-
-
-Smoothing
----------
-
-``gaussian_smoothing``
-``````````````````````
-
-Image [OneBit|GreyScale|Grey16|Float|RGB] **gaussian_smoothing** (``int`` *scale*)
-
-
-:Operates on: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Returns: ``Image [OneBit|GreyScale|Grey16|Float|RGB]``
-:Category: Filter/Smoothing
-:Defined in: guassian_smoothing.py
-:Author: Michael Droettboom and Karl MacMillan
-
-
-Returns the Gaussian smoothing operation on the image.
-
-*scale*
-  The size of the Gaussian smoothing operator in pixels.
-
-This function was imported from VIGRA_.
-
-.. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
-
-----------
-
-**Example 1:** gaussian_smoothing(5,)
-
-.. image:: images/RGB_generic.png
-
-.. image:: images/gaussian_smoothing_plugin_00.png
-
-**Example 2:** gaussian_smoothing(5,)
-
-.. image:: images/GreyScale_generic.png
-
-.. image:: images/gaussian_smoothing_plugin_01.png
-
-**Example 3:** gaussian_smoothing(5,)
-
-.. image:: images/OneBit_generic.png
-
-.. image:: images/gaussian_smoothing_plugin_02.png
-
-
 
 
 Thinning
@@ -2982,6 +3372,94 @@ first, if you do not wish to change the original data.
 
 
 
+
+NestedLists
+-----------
+
+``nested_list_to_image``
+````````````````````````
+
+Image [OneBit|GreyScale|Grey16|RGB|Float] **nested_list_to_image** (``Class`` *nested_list*, ``Choice[ONEBIT|GREYSCALE|GREY16|RGB|FLOAT]`` *image_type*)
+
+
+:Returns: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Category: Utility/NestedLists
+:Defined in: image_utilities.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+Converts a nested Python list to an Image.  Is the inverse of ``to_nested_list``.
+
+*nested_list*
+  A nested Python list in row-major order.  If the list is a flat list,
+  an image with a single row will be created.
+  
+*image_type*
+  The resulting image type.  Should be one of the integer Image type
+  constants (ONEBIT, GREYSCALE, GREY16, RGB, FLOAT).  If image_type
+  is not provided or less than 0, the image type will be determined
+  by auto-detection from the list.  The following list shows the mapping
+  from Python type to image type:
+
+    - int -> GREYSCALE
+    - float -> FLOAT
+    - RGBPixel -> RGB
+
+  To obtain other image types, the type number must be explicitly passed.
+
+TODO: Handle Python arrays.  This is difficult without a proper C API.
+
+.. code:: Python
+
+   # Sobel kernel (implicitly will be a FLOAT image)
+   kernel = nested_list_to_image([[0.125, 0.0, -0.125],
+                                  [0.25 , 0.0, -0.25 ],
+                                  [0.125, 0.0, -0.125]])
+
+   # Single row image (note that nesting is optional)
+   image = nested_list_to_image([RGBPixel(255, 0, 0),
+                                 RGBPixel(0, 255, 0),
+                                 RGBPixel(0, 0, 255)])
+
+
+
+
+``to_nested_list``
+``````````````````
+
+Class **to_nested_list** ()
+
+
+:Operates on: ``Image [OneBit|GreyScale|Grey16|RGB|Float]``
+:Returns: ``Class``
+:Category: Utility/NestedLists
+:Defined in: image_utilities.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+Converts an image to a nested Python list.
+This method is the inverse of ``nested_list_to_image``.
+
+The following table describes how each image type is converted to
+Python types:
+
+  - ONEBIT -> int
+  - GREYSCALE -> int
+  - GREY16 -> int
+  - RGB -> RGBPixel
+  - FLOAT -> float
+
+
+----------
+
+**Example 1:** to_nested_list()
+
+.. image:: images/OneBit_generic.png
+
+*result* = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+
+
 ``clip_image``
 --------------
 
@@ -3003,7 +3481,7 @@ not intersect.
 ``corelation``
 --------------
 
-double **corelation** (``Image [OneBit]`` *template*, ``int`` *x_offset*, ``int`` *y_offset*)
+double **corelation** (``Image [OneBit]`` *template*, ``int`` *y_offset*, ``int`` *x_offset*)
 
 
 :Operates on: ``Image [OneBit]``
@@ -3012,7 +3490,15 @@ double **corelation** (``Image [OneBit]`` *template*, ``int`` *x_offset*, ``int`
 :Defined in: image_utilities.py
 :Author: Michael Droettboom and Karl MacMillan
 
-.. warning:: No documentation written.
+
+Returns a floating-point value for how well an image is corelated
+to another image placed at a given (*x*, *y*).  Uses the sum of squares
+method.  A greater result implies more corelation.
+
+*template*
+   The template image.
+*y*, *x*
+   The displacement of the template on the image.
 
 
 

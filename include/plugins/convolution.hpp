@@ -27,7 +27,7 @@
 using namespace Gamera;
 
 template<class T, class U>
-typename ImageFactory<T>::view_type* convolve(T& src, const U& k, int border_mode) {
+typename ImageFactory<T>::view_type* convolve(const T& src, const U& k, int border_mode) {
   if (k.nrows() > src.nrows() || k.ncols() > src.ncols())
     throw std::runtime_error("The image must be bigger than the kernel.");
 
@@ -54,7 +54,7 @@ typename ImageFactory<T>::view_type* convolve(T& src, const U& k, int border_mod
 }
 
 template<class T, class U>
-typename ImageFactory<T>::view_type* convolve_x(T& src, const U& k, int border_mode) {
+typename ImageFactory<T>::view_type* convolve_x(const T& src, const U& k, int border_mode) {
   if (k.nrows() > src.nrows() || k.ncols() > src.ncols())
     throw std::runtime_error("The image must be bigger than the kernel.");
   if (k.nrows() != 1)
@@ -74,7 +74,7 @@ typename ImageFactory<T>::view_type* convolve_x(T& src, const U& k, int border_m
     typename choose_accessor<U>::accessor,
     int, int, BorderTreatmentMode> kernel
     (center, choose_accessor<U>::make_accessor(k), 
-     -int(k.center_x()), int(k.width()) - int(k.center_x()),
+     -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
      (BorderTreatmentMode)border_mode);
 
   vigra::separableConvolveX(src_image_range(src), dest_image(*dest), kernel); 
@@ -82,7 +82,7 @@ typename ImageFactory<T>::view_type* convolve_x(T& src, const U& k, int border_m
 }
 
 template<class T, class U>
-typename ImageFactory<T>::view_type* convolve_y(T& src, const U& k, int border_mode) {
+typename ImageFactory<T>::view_type* convolve_y(const T& src, const U& k, int border_mode) {
   if (k.nrows() > src.ncols() || k.ncols() > src.nrows())
     throw std::runtime_error("The image must be bigger than the kernel.");
   if (k.nrows() != 1)
@@ -102,10 +102,71 @@ typename ImageFactory<T>::view_type* convolve_y(T& src, const U& k, int border_m
     typename choose_accessor<U>::accessor,
     int, int, BorderTreatmentMode> kernel
     (center, choose_accessor<U>::make_accessor(k), 
-     -int(k.center_x()), int(k.width()) - int(k.center_x()),
+     -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
      (BorderTreatmentMode)border_mode);
-
+  
   vigra::separableConvolveY(src_image_range(src), dest_image(*dest), kernel); 
+  return dest;
+}
+
+FloatImageView* _copy_kernel(const Kernel1D<FloatPixel>& kernel) {
+  FloatImageData* dest_data = new FloatImageData(1, kernel.size(), 0, 0);
+  FloatImageView* dest = new FloatImageView(*dest_data);
+  FloatImageView::vec_iterator iout = dest->vec_begin();
+  for (int iin = kernel.left(); iin != kernel.right(); ++iout, ++iin)
+    *iout = kernel[iin];
+  return dest;
+}
+
+// The following functions generate various kernels useful for
+// separable convolution.  It might be possible to avoid the copy
+// by creating a new version of ImageData with push_back, or some
+// way to set the ImageData m_data member, but in the absense of
+// any such hack, this will do for now.  The kernels all tend to be
+// quite small, so the copy shouldn't be too bad.
+
+FloatImageView* GaussianKernel(double std_dev) {
+  Kernel1D<FloatPixel> kernel;
+  kernel.initGaussian(std_dev);
+  return _copy_kernel(kernel);
+}
+
+FloatImageView* GaussianDerivativeKernel(double std_dev, int order) {
+  Kernel1D<FloatPixel> kernel;
+  kernel.initGaussianDerivative(std_dev, order);
+  return _copy_kernel(kernel);
+}
+
+FloatImageView* BinomialKernel(int radius) {
+  Kernel1D<FloatPixel> kernel;
+  kernel.initBinomial(radius);
+  return _copy_kernel(kernel);
+}
+
+FloatImageView* AveragingKernel(int radius) {
+  Kernel1D<FloatPixel> kernel;
+  kernel.initAveraging(radius);
+  return _copy_kernel(kernel);
+}
+
+FloatImageView* SymmetricGradientKernel() {
+  Kernel1D<FloatPixel> kernel;
+  kernel.initSymmetricGradient();
+  return _copy_kernel(kernel);
+}
+
+FloatImageView* SimpleSharpeningKernel(double sf) {
+  FloatImageData* dest_data = new FloatImageData(3, 3, 0, 0);
+  FloatImageView* dest = new FloatImageView(*dest_data);
+  dest->set(0, 0, -sf/16.0);
+  dest->set(0, 1, -sf/8.0);
+  dest->set(0, 2, -sf/16.0);
+  dest->set(1, 0, -sf/8.0);
+  dest->set(1, 1, 1.0+sf*0.75);
+  dest->set(1, 2, -sf/8.0);
+  dest->set(2, 0, -sf/16.0);
+  dest->set(2, 1, -sf/8.0);
+  dest->set(2, 2, -sf/16.0);
   return dest;
 }
 

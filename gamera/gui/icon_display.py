@@ -98,7 +98,7 @@ class IconDisplay(wxListCtrl):
       self.InsertImageStringItem(index, label, icon)
 
    def refresh_icon(self, key, klass, data, icon):
-      if klass != self.data[key].__class__:
+      if self.data[key].data != data:
          index = self.data[key].index
          obj = klass(key, data, index)
          self.data[key] = obj

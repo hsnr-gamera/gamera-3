@@ -24,7 +24,7 @@ from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
 from gamera import gamera_xml, util
-from gamera.classify import InteractiveClassifier, ClassifierError
+from gamera.classify import InteractiveClassifier, ClassifierError, BoundingBoxGroupingFunction, ShapedGroupingFunction
 from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner
 from gamera.gui.gamera_display import *
 
@@ -492,6 +492,7 @@ class ClassifierFrame(ImageFrameBase):
       self.menu = None
       self.default_segmenter = -1
       self._save_by_criteria_dialog = [1] * 10
+      self._group_and_guess_dialog = [0, 4, 4, 16]
 
       ImageFrameBase.__init__(
          self, parent, id,
@@ -1316,10 +1317,31 @@ class ClassifierFrame(ImageFrameBase):
       self._OnGroupAndGuess(selected)
 
    def _OnGroupAndGuess(self, list):
+      dialog = Args(
+         [Choice('Grouping function', ['Bounding Box', 'Shaped'], self._group_and_guess_dialog[0]),
+          Int('Distance threshold', range=(0, 100), default=self._group_and_guess_dialog[1]),
+          Int('Maximum number of parts per group', default=self._group_and_guess_dialog[2]),
+          Int('Maximum solveable subgraph size', default=self._group_and_guess_dialog[3])],
+         name = 'Save by criteria...')
+      results = dialog.show(self._frame)
+      if results is None:
+         return
+      function, threshold, max_parts_per_group, max_graph_size = results
+      self._group_and_guess_dialog = results
+
+      if function == 0:
+         func = BoundingBoxGroupingFunction(threshold)
+      elif function == 1:
+         func = ShapedGroupingFunction(threshold)
+
       try:
          try:
             wxBeginBusyCursor()
-            added, removed = self._classifier.group_list_automatic(list)
+            added, removed = self._classifier.group_list_automatic(
+               list,
+               grouping_function=func,
+               max_parts_per_group=max_parts_per_group,
+               max_graph_size=max_graph_size)
          finally:
             wxEndBusyCursor()
       except ClassifierError, e:
@@ -1328,17 +1350,19 @@ class ClassifierFrame(ImageFrameBase):
          self._AdjustAfterGuess(added, removed)
 
    def _AdjustAfterGuess(self, added, removed):
-      wxBeginBusyCursor()
-      self.multi_iw.id.BeginBatch()
       try:
-         if len(added) or len(removed):
-            self.multi_iw.id.append_and_remove_glyphs(added, removed)
-         else:
-            self.multi_iw.id.RefreshSelected()
-         self.multi_iw.id.sort_images()
+         wxBeginBusyCursor()
+         try:
+            self.multi_iw.id.BeginBatch()
+            if len(added) or len(removed):
+               self.multi_iw.id.append_and_remove_glyphs(added, removed)
+            else:
+               self.multi_iw.id.RefreshSelected()
+            self.multi_iw.id.sort_images()
+         finally:
+            self.multi_iw.id.ForceRefresh()
+            self.multi_iw.id.EndBatch()
       finally:
-         self.multi_iw.id.ForceRefresh()
-         self.multi_iw.id.EndBatch()
          wxEndBusyCursor()
 
    def _OnConfirmAll(self, event):

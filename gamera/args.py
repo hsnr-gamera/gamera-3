@@ -180,7 +180,7 @@ class Class(Arg):
 
    def rest_repr(self, name=False):
       if self.klass is None:
-         result = "``object``"
+         result = "object"
       else:
          result = "``%s``" % self.klass.__name__
       if name:
@@ -372,6 +372,12 @@ class Pixel(Class):
 PixelType must always match the type of the "self" image."""
    def __init__(self, name=None):
       Class.__init__(self, name)
+
+   def rest_repr(self, name=False):
+      result = "Pixel"
+      if name:
+         result += " *%s*" % self.name
+      return result
 
 class Info(Arg):
    pass

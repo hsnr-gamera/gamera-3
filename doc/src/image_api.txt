@@ -40,35 +40,72 @@ different overloaded version of the view constructor:
 
    OneBitImageView subimage_view(image_data, 25, 25, 10, 10);
 
-Memory allocation pitfalls
---------------------------
+Memory management issues
+------------------------
 
-Since multiple "views" can use the same "data," one must be very
-careful when deallocating data objects, or there may be views left
-around that "point" to deallocated data.  When using Gamera images in
-Python, the number of views that point to a data object are reference
-counted, so the data object is never deallocated prematurely. However,
-this is not the case in the C++ API, and the programmer must be very
-careful to prevent memory leaks.  The rule of thumb to follow is that the function or object
-that *creates* the data object is *always* responsible for destroying
-it.
+Since multiple "views" can use the same "data," one must be careful
+about prematurely deallocating data objects, or there may be views left
+around that "point" to deallocated data.  Accessing the data through
+the view is unchecked and could result in a segmentation fault.
 
-Another common mistake is to deallocate all views on some data,
-forgetting to deallocate the data itself.  Since there is no reference
-counting, deallocation of all views does not automatically trigger
-deallocation of the underlying data.  For example:
+Another common mistake is to deallocate all views on a given data
+object, forgetting to deallocate the data itself, resulting in a
+memory leak.  Since there is no reference counting on the C++ side,
+deallocation of all views does not automatically trigger deallocation
+of the underlying data.  For example:
 
 .. code:: CPP
 
    OneBitImageData image_data = new OneBitImageData(50, 50, 0, 0);
    OneBitImageView image_view = new OneBitImageView(*image_data);
    
-...
-
-.. code:: CPP
+   ...
 
    delete image_view->data(); // Don't forget to delete the data
    delete image_view;
+
+Of course, if the new image data is the result of a plugin function,
+it will be returned to the caller.  When a pointer to an image
+view (``ImageView*`` or one of its subclasses) is returned to Python, it will
+participate in Python memory management, and both the view and data
+will eventually be deallocated automatically.  When an ``ImageView*``
+is returned to another C++ function, that function is
+responsible for deallocating the view and data, unless it in turn is passing
+it back to Python.
+
+Fortunately, things are much easier on the Python side, since the
+number of views that point to a data object are reference counted, so
+the data object is kept around only as long as there is at least one
+view looking at it.
+
+Take for example the following interactive Python session:
+
+.. code:: Python
+
+  Python 2.3.4 (#1, Oct 26 2004, 16:42:40)
+  [GCC 3.4.2 20041017 (Red Hat 3.4.2-6.fc3)] on linux2
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> from gamera.core import *
+  >>> init_gamera()
+  Loading plugins: ----------------------------------------
+  arithmetic, color, convolution, corelation, deformation, draw,
+  edgedetect, features, gui_support, id_name_matching,
+  image_conversion, image_utilities, listutilities, logical,
+  misc_filters, morphology, png_support, projections, runlength,
+  segmentation, structural, thinning, threshold, tiff_support, contour
+  >>> orig = load_image("test.tiff")
+  >>> del orig
+  # ImageData dealloc, because the only view pointing to it (orig) has been deleted.
+  >>> orig = load_image("test.tiff")
+  >>> orig = orig.otsu_threshold()
+  # ImageData dealloc, because the pointer stored in orig has been replaced
+  # with a new onebit image.  This effect is fairly subtle.
+  >>> ccs = orig.cc_analysis()
+  >>> del orig
+  # No ImageData dealloc, since the ccs list contains views on the data.
+  >>> del ccs
+  # ImageData dealloc, because the remaining views on the data have been destroyed.
+  >>>
 
 Image types
 -----------

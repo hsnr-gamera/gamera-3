@@ -90,6 +90,7 @@ namespace Gamera {
    * The Gamera::ImageVectors is a std::vector of pairs of Image* and image type codes.
    */
   typedef std::vector<std::pair<Image*, int> > ImageVector;
+  typedef std::list<Image*> ImageList;
 
   /**
    * Int Vector.

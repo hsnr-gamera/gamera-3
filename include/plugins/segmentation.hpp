@@ -94,7 +94,7 @@ namespace {
 namespace Gamera {
 
   template<class T>
-  std::list<Image*>* cc_analysis(T& image) {
+  ImageList* cc_analysis(T& image) {
     equiv_table eq;
     // get the max value that can be held in the matrix
     typename T::value_type max_value = 
@@ -257,7 +257,7 @@ namespace Gamera {
     }
 	
     // create ConnectedComponents
-    std::list<Image*>* ccs = new std::list<Image*>;
+    ImageList* ccs = new ImageList;
     for (size_t i = 0; i < rects.size(); ++i) {
       if (rects[i] != 0) {
  	ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
@@ -446,10 +446,9 @@ namespace Gamera {
 
   template<class T>
   void split_error_cleanup(T* view,
-			   std::list<Image*>* splits,
+			   ImageList* splits,
 			   IntVector *projs,
-			   std::list<Image*>* ccs) {
-    typedef std::list<Image*> ImageList;
+			   ImageList* ccs) {
     delete view->data();
     delete view;
     for (ImageList::iterator i = splits->begin(); i != splits->end(); ++i) 
@@ -465,8 +464,7 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splitx(T& image, FloatVector* center) {
-    typedef std::list<Image*> ImageList;
+  ImageList* splitx(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
     ImageList* ccs = NULL;
@@ -517,8 +515,7 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splitx_max(T& image, FloatVector* center) {
-    typedef std::list<Image*> ImageList;
+  ImageList* splitx_max(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
     ImageList* ccs = NULL;
@@ -569,8 +566,7 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splity(T& image, FloatVector* center) {
-    typedef std::list<Image*> ImageList;
+  ImageList* splity(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
     typename ImageFactory<T>::view_type* view;
     ImageList* ccs = NULL;

@@ -124,6 +124,21 @@ namespace Gamera {
     typedef std::list<cc_type*> ccs_type;
     typedef std::list<dense_cc_type*> dense_ccs_type;
     typedef std::list<rle_cc_type*> rle_ccs_type;
+    // methods for creating new images and views
+    static view_type* new_view(const T& view) {
+      view_type* view = new view_type(*((data_type*)view.data()),
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return view;
+    }
+    static view_type* new_image(const T& view) {
+      data_type* data = new data_type(view.nrows(), view.ncols(),
+				      view.offset_y(), view.offset_x());
+      view_type* view = new view_type(*data,
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return view;
+    }
   };
 
   template<>
@@ -143,6 +158,20 @@ namespace Gamera {
     typedef std::list<cc_type*> ccs_type;
     typedef std::list<dense_cc_type*> dense_ccs_type;
     typedef std::list<rle_cc_type*> rle_ccs_type;
+    static view_type* new_view(const T& view) {
+      view_type* view = new view_type(*((data_type*)view.data()),
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return view;
+    }
+    static view_type* new_image(const T& view) {
+      data_type* data = new data_type(view.nrows(), view.ncols(),
+				      view.offset_y(), view.offset_x());
+      view_type* view = new view_type(*data,
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return view;
+    }
   };
 
 

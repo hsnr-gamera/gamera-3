@@ -132,7 +132,7 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
   }
   // get the matrix
   if (!PyObject_TypeCheck(uniq_dists, imagebase)
-      || get_pixel_type(uniq_dists) != FLOAT) {
+      || get_pixel_type(uniq_dists) != Gamera::FLOAT) {
     PyErr_SetString(PyExc_TypeError, "uniq_dists must be a float image.");
     return 0;
   }

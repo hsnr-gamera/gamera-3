@@ -17,13 +17,14 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import array
 from gamera.plugin import *
 import gamera.util
 
 def generate_features_list(list, feature_functions = None):
+    import gamera.core
     ff = None
     if (feature_functions == None):
-        import gamera.core
         ff = gamera.core.Image.get_feature_functions()
     else:
         ff = feature_functions
@@ -82,6 +83,28 @@ class volume64regions(PluginFunction):
     return_type = FloatVector("volumes", 64)
 volume64regions = volume64regions()
 
+class generate_features(PluginFunction):
+    category = "Utility"
+    pure_python = 1
+    self_type = ImageType([ONEBIT])
+    return_type = None
+    def __call__(self, features = None):
+      if features is None:
+         features = self.get_feature_functions()
+      if self.feature_functions == features:
+         return
+      self.feature_functions = features
+      self.features = array.array('d')
+      for i in range(len(features)):
+         result = apply(features[i][1].__call__, (self,))
+         if type(result) in (IntType, FloatType):
+            self.features.append(result)
+         else:
+            self.features.extend(result)
+    __call__ = staticmethod(__call__)
+generate_features = generate_features()
+
+
 class FeaturesModule(PluginModule):
     category = "Features"
     cpp_headers=["features.hpp"]
@@ -89,7 +112,8 @@ class FeaturesModule(PluginModule):
     functions = [black_area, moments, nholes,
                  nholes_extended, volume, area,
                  aspect_ratio, compactness,
-                 volume16regions, volume64regions]
+                 volume16regions, volume64regions,
+                 generate_features]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()

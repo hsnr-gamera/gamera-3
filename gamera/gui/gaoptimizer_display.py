@@ -19,8 +19,11 @@
 
 from wxPython.wx import *
 from wxPython.lib.filebrowsebutton import FileBrowseButton
+from gamera.gui import gui_util
 from gamera.core import *
-from gamera import gaoptimizer
+from gamera.knn import *
+import gamera.gamera_xml
+
 
 import time
 import math
@@ -35,8 +38,7 @@ class OptimizerFrame(wxFrame):
                          (400, 500))
 
         self.setup_menus()
-        self.ga = gaoptimizer.GaKnnOptimizer()
-        self.classifier = None
+        self.classifier = kNN()
         self.notebook = wxNotebook(self, -1)
         self.notebook.SetAutoLayout(true)
         self.running = 0
@@ -44,7 +46,7 @@ class OptimizerFrame(wxFrame):
         self.start_time = 0
         self.filename = None
 
-        self.status = StatusPanel(self.notebook, self.ga)
+        self.status = StatusPanel(self.notebook, self.classifier)
         self.notebook.AddPage(self.status, "Status")
 
         self.weights_panel = WeightsPanel(self.notebook)
@@ -108,7 +110,7 @@ class OptimizerFrame(wxFrame):
 
     def stop(self):
         self.timer.Stop()
-        self.ga.stop_worker()
+        self.classifier.stop_optimizing()
         id = self.file_menu.FindItem("Start")
         self.file_menu.Enable(id, true)
         id = self.file_menu.FindItem("Stop")
@@ -117,9 +119,7 @@ class OptimizerFrame(wxFrame):
         self.status.state_display.SetValue("not running")
 
     def start(self):
-        self.ga.lock.acquire()
-        self.ga.optimize(self.classifier.knn_database)
-        self.ga.lock.release()
+        self.classifier.start_optimizing()
         id = self.file_menu.FindItem("Start")
         self.file_menu.Enable(id, false)
         id = self.file_menu.FindItem("Stop")
@@ -130,14 +130,34 @@ class OptimizerFrame(wxFrame):
         self.start_time = time.time()
 
     def open_cb(self, evt):
+        import sys
         dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
         if dlg.ShowModal() == wxID_OK:
             self.filename = dlg.GetPath()
+            dlg.Destroy()
             wxBeginBusyCursor()
             self.stop()
-            self.classifier = Classifier(production_database=self.filename,
-                                         gui=1)
-            self.weights_panel.new_classifier(self.classifier)
+            glyphs = None
+            try:
+                glyphs = gamera.gamera_xml.glyphs_with_features_from_xml(self.filename)
+            except:
+                wxEndBusyCursor()
+                gui_util.message("Error opening the xml file. The error was:\n\" "
+                                 + str(sys.exc_info()[0]) + "\"")                
+                return
+            if not len(glyphs) > 1:
+                wxEndBusyCursor()
+                gui_util.message("Too few glyphs were loaded from the xml file.")
+                return
+            try:
+                self.classifier.instantiate_from_images(glyphs)
+            except:
+                wxEndBusyCursor()
+                gui_util.message("Error creating classifier. The error was:\n\" "
+                                 + str(sys.exc_info()[0]) + "\"")
+                return
+                
+            self.weights_panel.new_classifier(self.classifier, glyphs)
             wxEndBusyCursor()
             id = self.file_menu.FindItem("Start")
             self.file_menu.Enable(id, true)
@@ -145,7 +165,7 @@ class OptimizerFrame(wxFrame):
             self.file_menu.Enable(id, true)
             id = self.file_menu.FindItem("Save as")
             self.file_menu.Enable(id, true)
-            self.ga.best_score = 0
+            return
         dlg.Destroy()
 
 
@@ -184,27 +204,23 @@ class OptimizerFrame(wxFrame):
             self.status.state_display.SetValue("not running")
         else:
             self.status.state_display.SetValue("running")
-            self.ga.lock.acquire()
-            self.status.initial_rate_display.SetValue(str(self.ga.initial_score))
-            self.status.current_rate_display.SetValue(str(self.ga.current_score))
-            self.status.generation_display.SetValue(str(self.ga.generation))
-            self.status.best_rate_display.SetValue(str(self.ga.best_score))
+            self.status.initial_rate_display.SetValue(str(self.classifier.ga_initial))
+            self.status.current_rate_display.SetValue(str(self.classifier.ga_best))
+            self.status.generation_display.SetValue(str(self.classifier.ga_generation))
+            self.status.best_rate_display.SetValue(str(self.classifier.ga_best))
             self.elapsed_time = time.time() - self.start_time
             hours = int(self.elapsed_time / 3600.0)
             minutes = int((self.elapsed_time - (hours * 3600)) / 60.0)
             secs = int((self.elapsed_time - (hours * 3600) - (minutes * 60)))
             self.status.elapsed_display.SetValue(str(hours) + ":h " + str(minutes) + ":m " + str(secs) + ":s")
-
-            self.classifier.knn_database.set_weights(self.ga.get_weights())
-            self.ga.lock.release()
             self.weights_panel.update_cb()
             
 
 class StatusPanel(wxPanel):
-    def __init__(self, parent, ga):
+    def __init__(self, parent, classifier):
         wxPanel.__init__(self, parent, -1)
 
-        self.ga = ga
+        self.classifier = classifier
 
         sizer = wxFlexGridSizer(10, 2, 10, 10)
         sizer.AddGrowableCol(1)
@@ -279,36 +295,39 @@ class StatusPanel(wxPanel):
         sizer.Fit(self)
 
     def population_cb(self, e):
-        self.ga.lock.acquire()
-        self.ga.population = self.population_display.GetValue()
-        self.ga.lock.release()
+        self.classifier.ga_population = self.population_display.GetValue()
 
     def k_cb(self, e):
-        self.ga.lock.acquire()
-        self.ga.k = self.k_display.GetValue()
-        self.ga.lock.release()
+        self.classifier.num_k = self.k_display.GetValue()
 
     def crossover_cb(self, e):
-        self.ga.lock.acquire()
-        self.ga.crossover = self.crossover_display.GetValue() / 100.0
-        self.ga.lock.release()
+        self.classifier.ga_crossover = self.crossover_display.GetValue() / 100.0
 
     def mutation_cb(self, e):
-        self.ga.lock.acquire()
-        self.ga.mutation = self.mutation_display.GetValue() / 100.0
-        self.ga.lock.release()
+        self.classifier.ga_mutation = self.mutation_display.GetValue() / 100.0
 
 GAUGE_WIDTH = 300
 class WeightsPanel(wxPanel):
     def __init__(self, parent):
         wxPanel.__init__(self, parent, -1)
+        self.panel = wxPanel(self, -1)
+        self.sw = wxScrolledWindow(self.panel)
         
-    def new_classifier(self, classifier):
+    def new_classifier(self, classifier, glyphs):
+        ff = glyphs[0].feature_functions
+        feature_functions = []
+        for x in ff:
+            tmp = x[1].__call__(glyphs[0])
+            if isinstance(tmp, type(glyphs[0].features)):
+                for i in range(len(tmp)):
+                    feature_functions.append(x[0] + str(i))
+            else:
+                feature_functions.append(x[0])
         self.classifier = classifier
-        sizer = wxFlexGridSizer(len(self.classifier.features_list), 2, 5, 5)
+        sizer = wxFlexGridSizer(len(feature_functions), 2, 5, 5)
         sizer.AddGrowableCol(1)
         self.bars = []
-        for x in self.classifier.features_list:
+        for x in feature_functions:
             text = wxStaticText(self, -1, x)
             sizer.Add(text, 1)
             bar = wxGauge(self, -1, 100)
@@ -316,11 +335,12 @@ class WeightsPanel(wxPanel):
             sizer.Add(bar, option=1, flag=wxEXPAND | wxADJUST_MINSIZE)
             self.bars.append(bar)
         self.SetAutoLayout(true)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
+        self.panel.SetAutoLayout(true)
+        self.panel.SetSizer(sizer)
+        sizer.Fit(self.panel)
 
     def update_cb(self):
-        weights = self.classifier.knn_database.get_weights()
+        weights = self.classifier.weights
         for i in range(len(weights)):
             self.bars[i].SetValue(weights[i] * 100)
 
@@ -336,9 +356,4 @@ def run_ga_app():
     app = BiollanteApp(0)
     app.MainLoop()
 
-if __name__ == "__main__":
-    # This is needed to load all of the gamera plugins
-    init_gamera()
-
-    run_ga_app()
     

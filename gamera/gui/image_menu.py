@@ -213,12 +213,11 @@ class ImageMenu:
     else:
       if result_name != '':
         sh.run('%s = []' % result_name)
-      wxBeginBusyCursor()
-      sh.run('for _ in %s:' % self.image_name)
-      source = '_.%s' % (func_call)
+      sh.run('for i in range(len(%s)):' % self.image_name)
+      source = '%s[i].%s' % (self.image_name, func_call)
       if result_name != '':
         source = '%s.append(%s)' % (result_name, source)
       sh.run('\t' + source)
+      wxBeginBusyCursor()
       sh.run('\n')
-      del sh.locals['_'] 
       wxEndBusyCursor()

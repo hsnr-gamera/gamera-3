@@ -1243,7 +1243,7 @@ class SymbolTableEditorPanel(wxPanel):
          style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.toplevel = toplevel
       self._symbol_table = symbol_table
-      self.SetAutoLayout(true)
+      self.SetAutoLayout(True)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = NewId()
       self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB)

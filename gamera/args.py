@@ -208,6 +208,8 @@ class ImageType(Arg):
          raise TypeError("'pixel_types' must be a list of integers.")
       if not core is None:
          self.klass = core.ImageBase
+      else:
+         self.klass = None
       self.pixel_types = pixel_types
       self.list_of = bool(list_of)
 
@@ -309,25 +311,27 @@ class ImageInfo(Class):
    def __init__(self, name=None):
       Class.__init__(self, name, None)
 
-class FloatVector(Class):
-   def __init__(self, name=None, length=-1):
-      import array
-      Class.__init__(self, name, type(array.array('d')))
+class _Vector(Class):
+   def __init__(self, name=None, klass=None, typecode=None, length=-1):
+      Class.__init__(self, name, klass)
+      self.typecode = typecode
       if type(length) != int:
          raise TypeError("'length' must be an int")
       self.length = length
 
-class IntVector(Class):
+class FloatVector(_Vector):
    def __init__(self, name=None, length=-1):
-      import array
-      Class.__init__(self, name, type(array.array('i')))
-      if type(length) != int:
-         raise TypeError("'length' must be an int")
-      self.length = length
+      _Vector.__init__(self, name, float, 'd', length)
+
+class IntVector(_Vector):
+   def __init__(self, name=None, length=-1):
+      _Vector.__init__(self, name, int, 'i', length)
 
 class ComplexVector(Class):
    def __init__(self, name=None, length=-1):
-      Class.__init__(self, name, None, True)
+      Class.__init__(self, name, complex, True)
+      if type(length) != int:
+         raise TypeError("'length' must be an int")
       self.length = length
 
 class ImageList(Class):
@@ -364,7 +368,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector'.split()
+__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

@@ -19,9 +19,9 @@
 #
 
 from wxPython.wx import *
+import array
 import os.path
 import string
-from types import *
 from gamera import util, enums
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
@@ -296,11 +296,28 @@ class Class:
          choices = locals.keys()
       else:
          choices = []
-         for i in locals.items():
-            if ((self.list_of and isinstance(i[1], ListType) and
-                 len(i[1]) and isinstance(i[1][0], self.klass)) or
-                (not self.list_of and isinstance(i[1], self.klass))):
-               choices.append(i[0])
+         if self.list_of:
+            for key, val in locals.items():
+               try:
+                  it = iter(val)
+               except:
+                  pass
+               else:
+                  good = True
+                  try:
+                     for x in val:
+                        if not isinstance(x, self.klass):
+                           good = False
+                           break
+                  except:
+                     pass
+                  else:
+                     if good:
+                        choices.append(key)
+         else:
+            for key, val in locals.items():
+               if isinstance(val, self.klass):
+                  choices.append(key)
       return choices
 
    def get_control(self, parent, locals=None):
@@ -322,17 +339,65 @@ class Class:
       else:
          return 'None'
 
+class _Vector(Class):
+   def determine_choices(self, locals):
+      self.locals = locals
+      if self.klass is None:
+         choices = locals.keys()
+      else:
+         choices = []
+         for key, val in locals.items():
+            if isinstance(val, array.array) and val.typecode == self.typecode:
+               choices.append(key)
+            else:
+               try:
+                  it = iter(val)
+               except:
+                  pass
+               else:
+                  good = True
+                  try:
+                     for x in val:
+                        if not isinstance(x, self.klass):
+                           good = False
+                           break
+                     if good:
+                        choices.append(key)
+                  except:
+                     pass
+                  else:
+                     if good:
+                        choices.append(key)
+      return choices
+
 class ImageType(Class):
    def determine_choices(self, locals):
+      from gamera import core
       choices = []
       self.locals = locals
       if locals:
-         for key, val in locals.items():
-            if ((self.list_of and isinstance(val, ListType) and
-                 len(val) and isinstance(val[0], self.klass)) or
-                (not self.list_of and isinstance(val, self.klass))):
-               if (self.pixel_types in enums.ALL or
-                   val.data.pixel_type in self.pixel_types):
+         if self.list_of:
+            for key, val in locals.items():
+               try:
+                  it = iter(val)
+               except:
+                  pass
+               else:
+                  good = True
+                  try:
+                     for x in val:
+                        if (not isinstance(x, core.ImageBase) or
+                            not val.data.pixel_type in self.pixel_types):
+                           good = False
+                           break
+                  except:
+                     pass
+                  else:
+                     if good:
+                        choices.append(key)
+         else:
+            for key, val in locals.items():
+               if isinstance(val, core.ImageBase) and val.data.pixel_type in self.pixel_types:
                   choices.append(key)
       return choices
 

@@ -938,8 +938,15 @@ inline FloatVector* FloatVector_from_python(PyObject* py) {
       return 0;
   }
   FloatVector* cpp = new FloatVector(size);
-  for (int i = 0; i < size; ++i)
-    (*cpp)[i] = (double)PyFloat_AsDouble(PyObject_GetItem(py, PyInt_FromLong(i)));
+  for (int i = 0; i < size; ++i) {
+    PyObject* number = PyObject_GetItem(py, PyInt_FromLong(i));
+    if (!PyFloat_Check(number)) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument must be a sequence of floats.\n");
+      return 0;
+    }      
+    (*cpp)[i] = (double)PyFloat_AsDouble(number);
+  }
   return cpp;
 }
 
@@ -971,8 +978,15 @@ inline IntVector* IntVector_from_python(PyObject* py) {
       return 0;
   }
   IntVector* cpp = new IntVector(size);
-  for (int i = 0; i < size; ++i)
-    (*cpp)[i] = (int)PyInt_AsLong(PyObject_GetItem(py, PyInt_FromLong(i)));
+  for (int i = 0; i < size; ++i) {
+    PyObject* number = PyObject_GetItem(py, PyInt_FromLong(i));
+    if (!PyInt_Check(number)) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument must be a sequence of integers.\n");
+      return 0;
+    }      
+    (*cpp)[i] = (int)PyInt_AsLong(number);
+  }
   return cpp;
 }
 
@@ -986,7 +1000,12 @@ inline PointVector* PointVector_from_python(PyObject* py) {
   PointVector* cpp = new PointVector();
   cpp->reserve(size);
   for (int i = 0; i < size; ++i) {
-    PointObject* point = (PointObject*)PyList_GET_ITEM(py, i);
+    PointObject* point = (PointObject*)PyObject_GetItem(py, PyInt_FromLong(i));
+    if (!is_PointObject((PyObject*)point)) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument must be a sequence of Points.\n");
+      return 0;
+    }
     cpp->push_back(Point(*point->m_x));
   }
   return cpp;

@@ -285,6 +285,7 @@ class IntVector(WrapperArg):
    def from_python(self):
       return """
       %(symbol)s = IntVector_from_python(%(pysymbol)s);
+      if (%(symbol)s == NULL) return 0;
       """ % self
 
    def to_python(self):
@@ -302,6 +303,7 @@ class FloatVector(WrapperArg):
    def from_python(self):
       return """
       %(symbol)s = FloatVector_from_python(%(pysymbol)s);
+      if (%(symbol)s == NULL) return 0;
       """ % self
 
    def to_python(self):
@@ -319,6 +321,7 @@ class ComplexVector(WrapperArg):
    def from_python(self):
       return """
       %(symbol)s = ComplexVector_from_python(%(pysymbol)s);
+      if (%(symbol)s == NULL) return 0;
       """ % self
 
    def to_python(self):

@@ -87,9 +87,9 @@ namespace Gamera
 		//rotate by remaining arbitrary angle
 
 		out = rot45(m, out_data, out, hypot, bgcolor);
-
+		
 		image_copy_attributes(m, *out);
-
+		delete out_data;
 		return out;
 	}
 
@@ -126,8 +126,8 @@ namespace Gamera
 		size_t width1 = img->ncols() + size_t(double(img->nrows()) * fabs(dTan));
 		size_t height1 = img->nrows();
 		
-		T* out_data1 = new T(height1,width1);
-		U* out1 = new U(*out_data1, 0, 0, height1, width1);
+		T out_data1(height1,width1);
+		U* out1 = new U(out_data1, 0, 0, height1, width1);
 		cout << "first allocation done"<<endl;
 		double d;
 		if(dTan >= 0.0) //Positive Angle
@@ -152,8 +152,8 @@ namespace Gamera
 
 		// Allocate image for 2nd shear
 		size_t diff = size_t( fabs(dSinE * dTan * img->nrows()) );
-		T* out_data2 = new T(height2,width2);
-		U* out2 = new U(*out_data2, 0, 0, height2, width2);
+		T out_data2(height2,width2);
+		U* out2 = new U(out_data2, 0, 0, height2, width2);
 		
 		if (dSinE >= 0.0) //Positive angle
 			d = 0;//dSinE * (img->ncols() - 1.0);
@@ -196,9 +196,8 @@ namespace Gamera
 		}
 		
 		cout << "third shear done" << endl;
-	//	delete img;
-	//	delete out1;
-	//	delete out2;
+		delete out1;
+		delete out2;
 		return out3;
 	}
 	

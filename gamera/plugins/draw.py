@@ -23,74 +23,74 @@ import _draw
 class draw_line(PluginFunction):
   """Draws a straight line between two points.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the line.
 
 .. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
-  args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class draw_hollow_rect(PluginFunction):
   """Draws a hollow rectangle.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the lines.
 
 .. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
-  args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class draw_filled_rect(PluginFunction):
   """Draws a filled rectangle.
 
-*x1*:
-  Starting *x* coordinate.
 *y1*:
   Starting *y* coordinate.
-*x2*:
-  Ending *x* coordinate.
+*x1*:
+  Starting *x* coordinate.
 *y2*:
   Ending *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
 *value*:
   The pixel value to set for the rectangle.
 
 .. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
-  args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Float("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class flood_fill(PluginFunction):
   """Flood fills from the given point using the given color.  This is similar
 to the "bucket" tool found in many paint programs.
 
-*x*:
-  Starting *x* coordinate.
 *y*:
   Starting *y* coordinate.
+*x*:
+  Starting *x* coordinate.
 *color*:
   The pixel value to set for the rectangle.
 
 .. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
-  args = Args([Int("x"), Int("y"), Float("color")])
+  args = Args([Int("y"), Int("x"), Float("color")])
   doc_examples = [(ONEBIT, 5, 5, 0)]
 
 class remove_border(PluginFunction):

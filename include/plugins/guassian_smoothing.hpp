@@ -25,10 +25,13 @@
 #include "image_utilities.hpp"
 
 template<class T>
-typename ImageFactory<T>::view_type* gaussian_smoothing(const T& m, double scale) {
-  typename ImageFactory<T>::view_type* output = simple_image_copy(m);
-  gaussianSmoothing(src_image_range(*output), dest_image(*output), scale);
-  return output; 
+typename ImageFactory<T>::view_type* gaussian_smoothing(const T& src, double scale) {
+  typename ImageFactory<T>::data_type* dest_data =
+    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
+  typename ImageFactory<T>::view_type* dest =
+    new typename ImageFactory<T>::view_type(*dest_data, src);
+  gaussianSmoothing(src_image_range(src), dest_image(*dest), scale);
+  return dest; 
 }
 
 #endif

@@ -124,16 +124,18 @@ struct FloodFill {
 		     typename T::value_type& color,
 		     size_t left, size_t right,
 		     size_t y) {
-    typename T::value_type col1, col2;
-    for (size_t x = left + 1; x <= right; ++x) {
-      col1 = image.get(y, x-1);
-      col2 = image.get(y, x);
-      if (col1 == interior && col2 != interior) {
-	s.push(Point(x-1, y));
+    if (left + 1 <= right) {
+      typename T::value_type col1, col2;
+      for (size_t x = left + 1; x <= right; ++x) {
+	col1 = image.get(y, x-1);
+	col2 = image.get(y, x);
+	if (col1 == interior && col2 != interior) {
+	  s.push(Point(x-1, y));
+	}
       }
-    }
-    if (col2 == interior) {
-      s.push(Point(right, y));
+      if (col2 == interior) {
+	s.push(Point(right, y));
+      }
     }
   }
 
@@ -182,7 +184,7 @@ struct FloodFill {
 };
 
 template<class T>
-void flood_fill(T& image, size_t x, size_t y, double color) {
+void flood_fill(T& image, size_t y, size_t x, double color) {
   typename FloodFill<T>::Stack s;
   s.push(Point(0, 0));
   typename T::value_type interior = image.get(y, x);
@@ -198,15 +200,15 @@ void remove_border(T& image) {
   size_t right = image.ncols() - 1;
   for (size_t x = 0; x < image.ncols(); ++x) {
     if (image.get(0, x) != 0)
-      flood_fill(image, x, 0, 0);
+      flood_fill(image, 0, x, 0);
     if (image.get(bottom, x) != 0)
-      flood_fill(image, x, bottom, 0);
+      flood_fill(image, bottom, x, 0);
   }
   for (size_t y = 0; y < image.nrows(); ++y) {
     if (image.get(y, 0) != 0)
-      flood_fill(image, 0, y, 0);
+      flood_fill(image, y, 0, 0);
     if (image.get(y, right) != 0)
-      flood_fill(image, right, y, 0);
+      flood_fill(image, y, right, 0);
   }
 }
 

@@ -244,6 +244,15 @@ class CustomIcon:
       
       return self.label + ".image_save(r\'" + call[0] + "\'," + str(call[1]) + ")"
 
+class CIComplexImage(CustomIcon):
+   def get_icon():
+      return wxIconFromBitmap(gamera_icons.getIconImageComplexBitmap())
+   get_icon = staticmethod(get_icon)
+
+   def check(data):
+      return isinstance(data,Image) and data.data.pixel_type == COMPLEX
+   check = staticmethod(check)
+
 class CIRGBImage(CustomIcon):
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconImageRgbBitmap())

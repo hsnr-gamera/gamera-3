@@ -129,6 +129,11 @@ support::
 Microsoft Visual Studio
 ```````````````````````
 
+Compiling Gamera with MS Visual Studio should be considered
+preliminary and non-preferred.  Particularly in light of all of the
+backwardly-incompatible things in Visual Studio .NET, it is a bit of a
+pain.
+
 First and foremost, you will need to ensure that Python was compiled
 with the same version of Visual Studio as you use to compile Gamera.
 At the time of this writing, the "official" distribution of Python was

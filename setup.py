@@ -22,14 +22,13 @@
 
 # We do this first, so that when gamera.__init__ loads gamera.__version__,
 # it is in fact the new and updated version
-
 gamera_version = open("version", 'r').readlines()[0].strip()
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
 
+import sys, os, glob
 from distutils.core import setup, Extension
 from distutils.util import get_platform
-from distutils.sysconfig import get_python_lib
-import sys, os, glob
+from distutils.sysconfig import get_python_lib, get_python_inc, PREFIX
 from gamera import gamera_setup
 
 ##########################################
@@ -120,14 +119,23 @@ description = ("This is the Gamera installer. " +
                "Please ensure that Python and wxPython 2.4.0 " +
                "(or later) are installed before proceeding.")
 
-lib_path = os.path.join(get_python_lib(), 'gamera')
-
+lib_path = os.path.join(get_python_lib()[len(PREFIX)+1:], "gamera")
+print "lib_path:", lib_path
+   
 include_path = "include/gamera"
 
-includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", os.path.join(a, b)))) for a, b in
+includes = [(os.path.join(include_path, a),
+             glob.glob(os.path.join("include",
+                                    os.path.join(a, b)))) for a, b in
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
+
+if sys.platform == 'win32':
+   # Use os.system to get Cygwin path
+   os.system("cp /usr/bin/mgwz.dll .")
+   includes.append((os.path.join(lib_path, r'plugins'),
+                    ["mgwz.dll"]))
             
 setup(name = "gamera",
       version=gamera_version,

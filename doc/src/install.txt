@@ -7,11 +7,13 @@ Gamera requires that you install the following software FIRST:
 **Python**
 	Gamera is known to run on Python 2.2 and 2.3, though 2.3 is
 	not as thouroughly tested.  Make sure you have the latest
-	service release of either of these versions.
+	service release of either of these versions, since those
+	contain important bug and security fixes.
 
 	You will need to have the headers (but not the complete
-	source) to build Gamera from source code.  All standard Python
-	installations include these.
+	source) to build Gamera from source code.  Some Linux
+	distributions, such as SuSE and RedHat, include these as a
+	separate package (eg. ``python-dev``).
 
 **wxPython**
 	You must use version 2.4.x or greater.  2.3.x is no longer
@@ -84,16 +86,12 @@ In addition, your Linux installation should also have:
 
 - libtiff 3.5.x
 - libpng 2.2.x
-- On some distributions, including SuSE, the files necessary to build
-  Python extensions are included in a separate development package.
-  Make sure you have the Python development package installed before
-  attempted to build Gamera.
 
 Standard Build and Install
 --------------------------
 
 Gamera is built using the Python-standard Distutils system.  Open a
-Cygwin command prompt and type::
+terminal and type::
 
   python setup.py build
   sudo python setup.py install

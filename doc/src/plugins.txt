@@ -4,7 +4,7 @@ Plugins
 
 **Alphabetical list**
 
-PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, cyan_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
+PNG_info_, abutaleb_threshold_, and_image_, area_, aspect_ratio_, bernsen_threshold_, black_area_, blue_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, cyan_, dilate_, display_, display_ccs_, display_false_color_, draw_filled_rect_, draw_hollow_rect_, draw_line_, erode_, erode_dilate_, false_color_, fill_white_, filter_narrow_runs_, filter_short_runs_, filter_tall_runs_, filter_wide_runs_, from_rle_, gaussian_smoothing_, generate_features_, green_, histogram_, hue_, image_copy_, inkrub_, invert_, load_PNG_, load_image_, load_tiff_, magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, nholes_, nholes_extended_, noise_, or_image_, otsu_find_threshold_, otsu_threshold_, outline_, permute_list_, polar_distance_, polar_match_, projection_cols_, projection_rows_, projections_, rank_, red_, resize_, rotateShear_, saturation_, save_PNG_, save_tiff_, scale_, skeleton_features_, splitx_, splitx_left_, splitx_max_, splitx_right_, splity_, splity_bottom_, splity_top_, thin_hs_, thin_lc_, thin_zs_, threshold_, tiff_info_, to_float_, to_grey16_, to_greyscale_, to_onebit_, to_rgb_, to_rle_, to_xml_, to_xml_filename_, top_bottom_, unclassify_, union_images_, value_, volume_, volume16regions_, volume64regions_, wave_, xor_image_, yellow_, zernike_moments_
    
 Analysis
 ========
@@ -1302,6 +1302,33 @@ guarantees that the pixels of the resulting skeleton are never more than
 
 
 
+``top_bottom``
+--------------
+
+FloatVector **top_bottom** ()
+
+
+:Operates on: ``Image [OneBit]``
+:Returns: ``FloatVector``
+:Category: Features
+:Defined in: features.py
+:Author: Michael Droettboom and Karl MacMillan
+
+
+Features useful only for segmentation-free analysis.  Currently, the
+first feature is the first row containing a black pixel, and the second feature
+is the last row containing a black pixel.
+
+----------
+
+**Example 1:** top_bottom()
+
+.. image:: images/OneBit_generic.png
+
+*result* = array('d', [0.0, 0.98999999999999999])
+
+
+
 ``volume``
 ----------
 
@@ -1464,7 +1491,7 @@ Image [OneBit|GreyScale|Grey16|RGB|Float] **load_image** (``FileOpen`` *filename
 :Author: Michael Droettboom and Karl MacMillan
 
 
-Loads an image from disk.  Currently only TIFF images are supported.
+Loads an image from disk.  Currently only TIFF and PNG images are supported.
 
 
 ``load_tiff``

@@ -1,7 +1,0 @@
-- Finish wrapping the needed objects:
-  * FloatRegionMap
-- Make the region object support the full mapping protocol
-- Make the regionmap object support the full mapping protocol
-- Make the regionmap object support the full sequence protocol
-
-- Look at Unicode [DONE]

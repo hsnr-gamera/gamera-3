@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

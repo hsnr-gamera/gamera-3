@@ -2,7 +2,7 @@
 Provides an extended option parser that loads options from a file and then
 overrides them with options on the command line
 
-Copyright (C) 2004 Michael Droettboom
+Copyright (C) 2001-2005 Michael Droettboom
 """
 ## This program is free software; you can redistribute it and/or
 ## modify it under the terms of the GNU General Public License

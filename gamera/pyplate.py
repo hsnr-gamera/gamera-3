@@ -34,7 +34,7 @@ PyPlate defines the following directives:
 
 # vi:set tabsize=3:
 #
-# Copyright (C) 2002 Michael Droettboom
+# Copyright (C) 2001-2005 Michael Droettboom
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

@@ -2,7 +2,7 @@
 
 # vi:set tabsize=3:
 #
-# Copyright (C) 2001-2004 Ichiro Fujinaga, Michael Droettboom,
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or

@@ -506,9 +506,9 @@ static PyObject* image_sort(PyObject* self, PyObject* args) {
   } else if (od->m_storage_format == RLE) {
     OneBitRleImageView* im = (OneBitRleImageView*)image;
     std::sort(im->vec_begin(), im->vec_end());
-    //  } else if (od->m_pixel_type == RGB) {
-    //    RGBImageView* im = (RGBImageView*)image;
-    ///    std::sort(im->vec_begin(), im->vec_end());
+  } else if (od->m_pixel_type == RGB) {
+    PyErr_SetString(PyExc_TypeError, "RGB pixels cannot be sorted");
+    return 0;
   } else if (od->m_pixel_type == GREYSCALE) {
     GreyScaleImageView* im = (GreyScaleImageView*)image;
     std::sort(im->vec_begin(), im->vec_end());

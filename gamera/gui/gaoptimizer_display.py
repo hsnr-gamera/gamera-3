@@ -122,12 +122,13 @@ class OptimizerFrame(wxFrame):
       self.file_menu.Enable(id, enable)
       id = self.file_menu.FindItem("Open")
       self.file_menu.Enable(id, enable)
-      self.status.enable_controls(True)
+      self.status.enable_controls(enable)
       self.update_status()
       
    def set_classifier(self, classifier):
       self.classifier = classifier
       self.weights_panel.new_classifier(self.classifier)
+      self.status.classifier = classifier
 
    def stop(self):
       if self.classifier is not None and self.running:

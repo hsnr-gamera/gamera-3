@@ -205,8 +205,8 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
   RGBPixelType.tp_doc = "Represents a 24-bit RGBPixel value. " 
-    "The constructor can take either three integers, (*red*, *green*, *blue*), or a single value for all three colors, usually specified as a hex literal. "
-    "Example: RGBPixel(255, 0, 0) or RGBPixel(0xff0000)."
+    "The constructor takes three integers, (*red*, *green*, *blue*) "
+    "Example: RGBPixel(255, 0, 0)."
     "Each color value is in the range 0-255 (8 bits).";
   PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);

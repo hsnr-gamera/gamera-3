@@ -477,9 +477,8 @@ namespace Gamera
 	}
 	bool randset=0;
 	template<class T>
-	Image* inkrub(T &m, int a) {
-		
-		
+	Image* inkrub(T &m, int a)
+        {
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
 		pixelFormat background = (pixelFormat)m.get(0,0);
@@ -492,10 +491,8 @@ namespace Gamera
 
 		for(i = 0; i<m.nrows(); i++) for(j = 0; j<m.ncols();j++)
 		{
-			out->set(i,
-				 j,
-				 (typename fact::view_type::value_type)m.get(i, j)
-				 );
+			out->set(i,j,
+				 (typename fact::view_type::value_type)m.get(i, j));
 		}
 
 		if(!randset)
@@ -505,13 +502,12 @@ namespace Gamera
 		}
 		
 		size_t hoffset = 0, voffset = 0;
-		for(i = voffset; i<out->nrows(); i++) 
-		  for(j = hoffset; j<out->ncols(); j++)
-		    {
-		      pixelFormat px = m.get(i-voffset, m.ncols() - (j-hoffset));
-		      if ((a*rand()/RAND_MAX == 0)) 
-			out->set(i,j,px);
-		    }
+		for(i = voffset; i<out->nrows(); i++) for(j = hoffset; j<out->ncols(); j++)
+		{
+			pixelFormat px1 = m.get(i-voffset, m.ncols() - (j-hoffset)),
+				    px2 = out->get(i,j);
+			if (a*rand()/RAND_MAX == 0) out->set(i,j,norm_weight_avg(px1,px2,0.5,0.5));
+		}
 
 		image_copy_attributes(m, *out);
 
@@ -521,7 +517,6 @@ namespace Gamera
 	template<class T>
 	Image* ink_diffuse(T &m, int type, double dropoff)
 	{
-		
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
 		pixelFormat background = (pixelFormat)m.get(0,0);

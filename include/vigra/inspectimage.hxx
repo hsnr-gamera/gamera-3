@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -184,6 +184,31 @@ inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
          Functor & f)
 {
     inspectImage(img.first, img.second, img.third, f);
+}
+
+namespace functor
+{
+    template <class T> class UnaryAnalyser;
+}
+
+template <class ImageIterator, class Accessor, class Functor>
+inline 
+void
+inspectImage(ImageIterator upperleft, ImageIterator lowerright,
+         Accessor a, functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectImage(upperleft, lowerright, a, 
+                 const_cast<functor::UnaryAnalyser<Functor> &>(f));
+}
+
+template <class ImageIterator, class Accessor, class Functor>
+inline
+void
+inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
+         functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectImage(img.first, img.second, img.third, 
+                 const_cast<functor::UnaryAnalyser<Functor> &>(f));
 }
 
 /********************************************************/
@@ -883,6 +908,10 @@ class FindBoundingRectangle
         */
     typedef Diff2D argument_type;
     
+        /** the functors result type
+        */
+    typedef pair<Diff2D, Diff2D> result_type;
+    
         /** \deprecated use argument_type
         */
     typedef Diff2D value_type;
@@ -941,6 +970,16 @@ class FindBoundingRectangle
             lowerRight.x = std::max(lowerRight.x, otherRegion.lowerRight.x);
             lowerRight.y = std::max(lowerRight.y, otherRegion.lowerRight.y);
         }
+    }
+    
+        /** Get current rectangle. <TT>result_type::first</TT> is the upper
+            left corner of the rectangle, <TT>result_type::second</TT>
+            the lower right.
+            
+        */
+    result_type operator()() const
+    {
+        return std::make_pair(upperLeft, lowerRight);
     }
 };
 

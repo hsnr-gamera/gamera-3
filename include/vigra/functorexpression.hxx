@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -304,11 +304,11 @@
     
     int count = -1;
     
-    initImage(destImageRange(img),
-              (
-                  Var(count) += 1,  
-                  Var(count)     // this is the result of the comma expression
-              ));
+    initImageWithFunctor(destImageRange(img),
+                         (
+                              Var(count) += Param(1),  
+                              Var(count)     // this is the result of the comma expression
+                         ));
     \endcode
     
     Further information about how this mechanism works can be found in
@@ -317,10 +317,10 @@
 
 #ifndef DOXYGEN
 
+#if !defined(NO_PARTIAL_TEMPLATE_SPECIALIZATION)
+
 #include <cmath>
 #include <vigra/numerictraits.hxx>
-
-#if !defined(NO_PARTIAL_TEMPLATE_SPECIALIZATION)
 
 
 namespace vigra {
@@ -332,6 +332,12 @@ namespace functor {
 /*                 unary functor base template              */
 /*                                                          */
 /************************************************************/
+
+
+struct ErrorType;
+
+template <class Operation>
+struct ResultTraits0;
 
 template <class Operation, class T1>
 struct ResultTraits1
@@ -359,6 +365,13 @@ struct UnaryFunctor
     : expr_(e)
     {}
     
+//    typename ResultTraits0<EXPR>::Res 
+    typename ResultTraits0<EXPR>::Res 
+    operator()() const
+    {
+        return expr_();
+    }
+    
     template <class T1>
     typename ResultTraits1<EXPR, T1>::Res 
     operator()(T1 const & v) const
@@ -382,6 +395,12 @@ struct UnaryFunctor
   
   protected:  
     EXPR expr_;
+};
+
+template <class Expr>
+struct ResultTraits0<UnaryFunctor<Expr> >
+{
+    typedef typename ResultTraits0<Expr>::Res Res;
 };
 
 template <class Expr, class T1>
@@ -437,6 +456,12 @@ struct UnaryFunctor<ArgumentFunctor1>
     }
 };
 
+template <>
+struct ResultTraits0<UnaryFunctor<ArgumentFunctor1> >
+{
+    typedef ErrorType Res;
+};
+
 template <class T1>
 struct ResultTraits1<UnaryFunctor<ArgumentFunctor1>, T1>
 {
@@ -485,6 +510,18 @@ struct UnaryFunctor<ArgumentFunctor2>
     }
 };
 
+template <>
+struct ResultTraits0<UnaryFunctor<ArgumentFunctor2> >
+{
+    typedef ErrorType Res;
+};
+
+template <class T1>
+struct ResultTraits1<UnaryFunctor<ArgumentFunctor2>, T1>
+{
+    typedef ErrorType Res;
+};
+
 template <class T1, class T2>
 struct ResultTraits2<UnaryFunctor<ArgumentFunctor2>, T1, T2>
 {
@@ -521,6 +558,24 @@ struct UnaryFunctor<ArgumentFunctor3>
     }
 };
 
+template <>
+struct ResultTraits0<UnaryFunctor<ArgumentFunctor3> >
+{
+    typedef ErrorType Res;
+};
+
+template <class T1>
+struct ResultTraits1<UnaryFunctor<ArgumentFunctor3>, T1>
+{
+    typedef ErrorType Res;
+};
+
+template <class T1, class T2>
+struct ResultTraits2<UnaryFunctor<ArgumentFunctor3>, T1, T2>
+{
+    typedef ErrorType Res;
+};
+
 template <class T1, class T2, class T3>
 struct ResultTraits3<UnaryFunctor<ArgumentFunctor3>, T1, T2, T3>
 {
@@ -549,6 +604,11 @@ struct ParameterFunctor
     : value_(v)
     {}
     
+    T const & operator()() const
+    {
+        return value_;
+    }
+    
     template <class U1>
     T const & operator()(U1 const &) const
     {
@@ -569,6 +629,12 @@ struct ParameterFunctor
     
   protected:
     T value_;
+};
+
+template <class T>
+struct ResultTraits0<ParameterFunctor<T> >
+{
+    typedef T Res;
 };
 
 template <class T, class T1>
@@ -611,6 +677,11 @@ struct UnaryAnalyser
     : expr_(e)
     {}
     
+    void operator()() const
+    {
+        expr_();
+    }
+    
     template <class T1>
     void operator()(T1 const & v) const
     {
@@ -647,7 +718,7 @@ struct UnaryFunctor<VarFunctor<T> >;
 
 /************************************************************/
 
-#define makeAssignmentFunctor(name, op) \
+#define MAKE_ASSIGNMENT_FUNCTOR(name, op) \
     template <class V, class EXPR> \
     struct AssignmentFunctor_##name \
     { \
@@ -655,6 +726,11 @@ struct UnaryFunctor<VarFunctor<T> >;
                                  UnaryFunctor<EXPR> const & e) \
         : value_(v.value_), expr_(e) \
         {} \
+         \
+        V & operator()() const \
+        { \
+            return const_cast<V &>(value_) op expr_(); \
+        } \
          \
         template <class T1>  \
         V & operator()(T1 const & v1) const \
@@ -681,13 +757,13 @@ struct UnaryFunctor<VarFunctor<T> >;
 
 /************************************************************/
 
-makeAssignmentFunctor(assign, =);
-makeAssignmentFunctor(add, +=);
-makeAssignmentFunctor(subtract, -=);
-makeAssignmentFunctor(multiply, *=);
-makeAssignmentFunctor(divide, /=);
+MAKE_ASSIGNMENT_FUNCTOR(assign, =)
+MAKE_ASSIGNMENT_FUNCTOR(add, +=)
+MAKE_ASSIGNMENT_FUNCTOR(subtract, -=)
+MAKE_ASSIGNMENT_FUNCTOR(multiply, *=)
+MAKE_ASSIGNMENT_FUNCTOR(divide, /=)
 
-#undef makeAssignmentFunctor
+#undef MAKE_ASSIGNMENT_FUNCTOR
 
 /************************************************************/
 /*                                                          */
@@ -698,6 +774,8 @@ makeAssignmentFunctor(divide, /=);
 template <class T>
 struct UnaryFunctor<VarFunctor<T> >
 {
+    typedef T Res;
+    
     UnaryFunctor(T & v)
     : value_(v)
     {}
@@ -742,6 +820,11 @@ struct UnaryFunctor<VarFunctor<T> >
         return UnaryAnalyser< AssignmentFunctor_divide<T, UnaryFunctor<EXPR> > >(va);
     }
     
+    T const & operator()() const
+    {
+        return value_;
+    }
+    
     template <class U1>
     T const & operator()(U1 const &) const
     {
@@ -761,6 +844,12 @@ struct UnaryFunctor<VarFunctor<T> >
     }
     
     T & value_;
+};
+
+template <class T>
+struct ResultTraits0<UnaryFunctor<VarFunctor<T> > >
+{
+    typedef T Res;
 };
 
 template <class T, class T1>
@@ -797,10 +886,17 @@ Var(T & v)
 template <class EXPR1, class EXPR2>
 struct IfThenFunctor
 {
+    typedef void Res;
+    
     IfThenFunctor(EXPR1 const & e1, EXPR2 const & e2)
     : expr1_(e1), expr2_(e2)
     {}
     
+    void operator()() const 
+    {
+        if( expr1_() ) expr2_();
+    }
+
     template <class T> 
     void operator()(T const & v1) const 
     {
@@ -846,6 +942,14 @@ ifThen(UnaryFunctor<EXPR1> const & e1,
 template <class EXPR1, class EXPR2, class EXPR3>
 struct IfThenElseFunctor;
 
+template <class EXPR1, class EXPR2, class EXPR3>
+struct ResultTraits0<IfThenElseFunctor<EXPR1, EXPR2, EXPR3> >
+{
+    typedef typename ResultTraits0<EXPR2>::Res R2;
+    typedef typename ResultTraits0<EXPR3>::Res R3;
+    typedef typename PromoteTraits<R2, R3>::Promote Res;
+};
+
 template <class EXPR1, class EXPR2, class EXPR3, class T1>
 struct ResultTraits1<IfThenElseFunctor<EXPR1, EXPR2, EXPR3>, T1>
 {
@@ -877,6 +981,18 @@ struct IfThenElseFunctor
     : expr1_(e1), expr2_(e2), expr3_(e3)
     {}
     
+    typename ResultTraits0<IfThenElseFunctor>::Res 
+    operator()() const 
+    {
+        typename 
+            ResultTraits0<IfThenElseFunctor>::Res 
+            r2(expr2_(v1));
+        typename 
+            ResultTraits0<IfThenElseFunctor>::Res 
+            r3(expr3_(v1));
+        return expr1_(v1) ? r2 : r3;
+    }
+
     template <class T> 
     typename ResultTraits1<IfThenElseFunctor, T>::Res 
     operator()(T const & v1) const 
@@ -945,10 +1061,17 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
 /*                                                          */
 /************************************************************/
 
-#define makeFunctorUnaryFunction(function) \
+#define MAKE_FUNCTOR_UNARY_FUNCTION(function) \
     using std::function; \
     template <class EXPR> \
     struct Functor_##function; \
+    \
+    template <class EXPR> \
+    struct ResultTraits0<Functor_##function<EXPR> > \
+    { \
+        typedef typename ResultTraits0<EXPR>::Res R1; \
+        typedef typename NumericTraits<R1>::RealPromote Res; \
+    }; \
     \
     template <class EXPR, class T1> \
     struct ResultTraits1<Functor_##function<EXPR>, T1> \
@@ -977,6 +1100,12 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
         Functor_##function(EXPR const & e) \
         : expr_(e) \
         {} \
+         \
+        typename ResultTraits0<Functor_##function>::Res \
+        operator()() const \
+        { \
+            return function(expr_()); \
+        } \
          \
         template <class T> \
         typename ResultTraits1<Functor_##function, T>::Res \
@@ -1014,21 +1143,21 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
 
 /************************************************************/
 
-makeFunctorUnaryFunction(sqrt);
-makeFunctorUnaryFunction(exp);
-makeFunctorUnaryFunction(log);
-makeFunctorUnaryFunction(log10);
-makeFunctorUnaryFunction(sin);
-makeFunctorUnaryFunction(asin);
-makeFunctorUnaryFunction(cos);
-makeFunctorUnaryFunction(acos);
-makeFunctorUnaryFunction(tan);
-makeFunctorUnaryFunction(atan);
-makeFunctorUnaryFunction(abs);
-makeFunctorUnaryFunction(floor);
-makeFunctorUnaryFunction(ceil);
+MAKE_FUNCTOR_UNARY_FUNCTION(sqrt)
+MAKE_FUNCTOR_UNARY_FUNCTION(exp)
+MAKE_FUNCTOR_UNARY_FUNCTION(log)
+MAKE_FUNCTOR_UNARY_FUNCTION(log10)
+MAKE_FUNCTOR_UNARY_FUNCTION(sin)
+MAKE_FUNCTOR_UNARY_FUNCTION(asin)
+MAKE_FUNCTOR_UNARY_FUNCTION(cos)
+MAKE_FUNCTOR_UNARY_FUNCTION(acos)
+MAKE_FUNCTOR_UNARY_FUNCTION(tan)
+MAKE_FUNCTOR_UNARY_FUNCTION(atan)
+MAKE_FUNCTOR_UNARY_FUNCTION(abs)
+MAKE_FUNCTOR_UNARY_FUNCTION(floor)
+MAKE_FUNCTOR_UNARY_FUNCTION(ceil)
 
-#undef makeFunctorUnaryFunction
+#undef MAKE_FUNCTOR_UNARY_FUNCTION
 
 /************************************************************/
 /*                                                          */
@@ -1036,9 +1165,15 @@ makeFunctorUnaryFunction(ceil);
 /*                                                          */
 /************************************************************/
 
-#define makeFunctorUnaryOperator(name, op) \
+#define MAKE_FUNCTOR_UNARY_OPERATOR(name, op) \
     template <class EXPR> \
     struct Functor_##name; \
+    \
+    template <class EXPR> \
+    struct ResultTraits0<Functor_##name<EXPR> > \
+    { \
+        typedef typename ResultTraits0<EXPR>::Res Res; \
+    }; \
     \
     template <class EXPR, class T1> \
     struct ResultTraits1<Functor_##name<EXPR>, T1> \
@@ -1064,6 +1199,12 @@ makeFunctorUnaryFunction(ceil);
         Functor_##name(EXPR const & e) \
         : expr_(e) \
         {} \
+         \
+        typename ResultTraits0<Functor_##name>::Res \
+        operator()() const \
+        { \
+            return op expr_(); \
+        } \
          \
         template <class T> \
         typename ResultTraits1<Functor_##name, T>::Res \
@@ -1101,11 +1242,11 @@ makeFunctorUnaryFunction(ceil);
 
 /************************************************************/
 
-makeFunctorUnaryOperator(minus, -);
-makeFunctorUnaryOperator(negate, !);
-makeFunctorUnaryOperator(bitNegate, ~);
+MAKE_FUNCTOR_UNARY_OPERATOR(minus, -)
+MAKE_FUNCTOR_UNARY_OPERATOR(negate, !)
+MAKE_FUNCTOR_UNARY_OPERATOR(bitNegate, ~)
 
-#undef makeFunctorUnaryOperator
+#undef MAKE_FUNCTOR_UNARY_OPERATOR
 
 /************************************************************/
 /*                                                          */
@@ -1113,10 +1254,19 @@ makeFunctorUnaryOperator(bitNegate, ~);
 /*                                                          */
 /************************************************************/
 
-#define makeFunctorBinaryFunction(function) \
+#define MAKE_FUNCTOR_BINARY_FUNCTION(function) \
     using std::function; \
     template <class EXPR1, class EXPR2> \
     struct Functor_##function; \
+    \
+    template <class EXPR1, class EXPR2> \
+    struct ResultTraits0<Functor_##function<EXPR1, EXPR2> > \
+    { \
+        typedef typename ResultTraits0<EXPR1>::Res R1; \
+        typedef typename ResultTraits0<EXPR2>::Res R2; \
+        typedef typename PromoteTraits<R1, R2>::Promote R3; \
+        typedef typename NumericTraits<R3>::RealPromote Res; \
+    }; \
     \
     template <class EXPR1, class EXPR2, class T1> \
     struct ResultTraits1<Functor_##function<EXPR1, EXPR2>, T1> \
@@ -1151,6 +1301,12 @@ makeFunctorUnaryOperator(bitNegate, ~);
         Functor_##function(EXPR1 const & e1, EXPR2 const & e2) \
         : expr1_(e1), expr2_(e2) \
         {} \
+         \
+        typename ResultTraits0<Functor_##function>::Res \
+        operator()() const \
+        { \
+            return function(expr1_(), expr2_()); \
+        } \
          \
         template <class T> \
         typename ResultTraits1<Functor_##function, T>::Res \
@@ -1190,17 +1346,25 @@ makeFunctorUnaryOperator(bitNegate, ~);
 
 /************************************************************/
 
-makeFunctorBinaryFunction(pow);
-makeFunctorBinaryFunction(atan2);
-makeFunctorBinaryFunction(fmod);
+MAKE_FUNCTOR_BINARY_FUNCTION(pow)
+MAKE_FUNCTOR_BINARY_FUNCTION(atan2)
+MAKE_FUNCTOR_BINARY_FUNCTION(fmod)
 
-#undef makeFunctorBinaryFunction
+#undef MAKE_FUNCTOR_BINARY_FUNCTION
 
 /************************************************************/
 
-#define makeFunctorMinMax(name, op) \
+#define MAKE_FUNCTOR_MINMAX(name, op) \
     template <class EXPR1, class EXPR2> \
     struct Functor_##name; \
+    \
+    template <class EXPR1, class EXPR2> \
+    struct ResultTraits0<Functor_##name<EXPR1, EXPR2> > \
+    { \
+        typedef typename ResultTraits0<EXPR1>::Res R1; \
+        typedef typename ResultTraits0<EXPR2>::Res R2; \
+        typedef typename PromoteTraits<R1, R2>::Promote Res; \
+    }; \
     \
     template <class EXPR1, class EXPR2, class T1> \
     struct ResultTraits1<Functor_##name<EXPR1, EXPR2>, T1> \
@@ -1232,6 +1396,16 @@ makeFunctorBinaryFunction(fmod);
         Functor_##name(EXPR1 const & e1, EXPR2 const & e2) \
         : expr1_(e1), expr2_(e2) \
         {} \
+         \
+        typename ResultTraits0<Functor_##name>::Res \
+        operator()() const \
+        { \
+            typename \
+            ResultTraits0<Functor_##name<EXPR1, EXPR2> >::R1 r1(expr1_()); \
+            typename \
+            ResultTraits0<Functor_##name<EXPR1, EXPR2> >::R2 r2(expr2_()); \
+            return (r1 op r2) ? r1 : r2; \
+        } \
          \
         template <class T> \
         typename ResultTraits1<Functor_##name, T>::Res \
@@ -1281,10 +1455,10 @@ makeFunctorBinaryFunction(fmod);
                                         UnaryFunctor<EXPR2> > >(p); \
     }
 
-makeFunctorMinMax(min, <);
-makeFunctorMinMax(max, >);
+MAKE_FUNCTOR_MINMAX(min, <)
+MAKE_FUNCTOR_MINMAX(max, >)
 
-#undef makeFunctorMinMax
+#undef MAKE_FUNCTOR_MINMAX
 
 /************************************************************/
 /*                                                          */
@@ -1292,9 +1466,17 @@ makeFunctorMinMax(max, >);
 /*                                                          */
 /************************************************************/
 
-#define makeFunctorBinaryOperator(name, op) \
+#define MAKE_FUNCTOR_BINARY_OPERATOR(name, op) \
     template <class EXPR1, class EXPR2> \
     struct Functor_##name; \
+    \
+    template <class EXPR1, class EXPR2> \
+    struct ResultTraits0<Functor_##name<EXPR1, EXPR2> > \
+    { \
+        typedef typename ResultTraits0<EXPR1>::Res R1; \
+        typedef typename ResultTraits0<EXPR2>::Res R2; \
+        typedef typename PromoteTraits<R1, R2>::Promote Res; \
+    }; \
     \
     template <class EXPR1, class EXPR2, class T1> \
     struct ResultTraits1<Functor_##name<EXPR1, EXPR2>, T1> \
@@ -1326,6 +1508,12 @@ makeFunctorMinMax(max, >);
         Functor_##name(EXPR1 const & e1, EXPR2 const & e2) \
         : expr1_(e1), expr2_(e2) \
         {} \
+         \
+        typename ResultTraits0<Functor_##name>::Res \
+        operator()() const \
+        { \
+            return expr1_() op expr2_(); \
+        } \
          \
         template <class T> \
         typename ResultTraits1<Functor_##name, T>::Res \
@@ -1365,22 +1553,28 @@ makeFunctorMinMax(max, >);
 
 /************************************************************/
 
-makeFunctorBinaryOperator(add, +);
-makeFunctorBinaryOperator(subtract, -);
-makeFunctorBinaryOperator(multiply, *);
-makeFunctorBinaryOperator(divide, /);
-makeFunctorBinaryOperator(modulo, %);
-makeFunctorBinaryOperator(bitAnd, &);
-makeFunctorBinaryOperator(bitOr, |);
-makeFunctorBinaryOperator(bitXor, ^);
+MAKE_FUNCTOR_BINARY_OPERATOR(add, +)
+MAKE_FUNCTOR_BINARY_OPERATOR(subtract, -)
+MAKE_FUNCTOR_BINARY_OPERATOR(multiply, *)
+MAKE_FUNCTOR_BINARY_OPERATOR(divide, /)
+MAKE_FUNCTOR_BINARY_OPERATOR(modulo, %)
+MAKE_FUNCTOR_BINARY_OPERATOR(bitAnd, &)
+MAKE_FUNCTOR_BINARY_OPERATOR(bitOr, |)
+MAKE_FUNCTOR_BINARY_OPERATOR(bitXor, ^)
 
-#undef makeFunctorBinaryOperator
+#undef MAKE_FUNCTOR_BINARY_OPERATOR
 
 /************************************************************/
 
-#define makeFunctorBinaryOperatorBool(name, op) \
+#define MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(name, op) \
     template <class EXPR1, class EXPR2> \
     struct Functor_##name; \
+    \
+    template <class EXPR1, class EXPR2> \
+    struct ResultTraits0<Functor_##name<EXPR1, EXPR2> > \
+    { \
+        typedef bool Res; \
+    }; \
     \
     template <class EXPR1, class EXPR2, class T1> \
     struct ResultTraits1<Functor_##name<EXPR1, EXPR2>, T1> \
@@ -1406,6 +1600,11 @@ makeFunctorBinaryOperator(bitXor, ^);
         Functor_##name(EXPR1 const & e1, EXPR2 const & e2) \
         : expr1_(e1), expr2_(e2) \
         {} \
+         \
+        bool operator()() const \
+        { \
+            return expr1_() op expr2_(); \
+        } \
          \
         template <class T> \
         bool operator()(T const & v1) const \
@@ -1442,16 +1641,16 @@ makeFunctorBinaryOperator(bitXor, ^);
 
 /************************************************************/
 
-makeFunctorBinaryOperatorBool(equals, ==);
-makeFunctorBinaryOperatorBool(differs, !=);
-makeFunctorBinaryOperatorBool(less, <);
-makeFunctorBinaryOperatorBool(lessEqual, <=);
-makeFunctorBinaryOperatorBool(greater, >);
-makeFunctorBinaryOperatorBool(greaterEqual, >=);
-makeFunctorBinaryOperatorBool(and, &&);
-makeFunctorBinaryOperatorBool(or, ||);
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(equals, ==)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(differs, !=)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(less, <)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(lessEqual, <=)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(greater, >)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(greaterEqual, >=)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(and, &&)
+MAKE_FUNCTOR_BINARY_OPERATOR_BOOL(or, ||)
 
-#undef makeFunctorBinaryOperatorBool
+#undef MAKE_FUNCTOR_BINARY_OPERATOR_BOOL
 
 /************************************************************/
 /*                                                          */
@@ -1465,6 +1664,11 @@ struct UnaryFctPtrFunctor
     UnaryFctPtrFunctor(EXPR const & e, RES (*fct)(ARG))
     : expr_(e), f_(fct)
     {}
+    
+    RES operator()() const 
+    {
+        return f_(expr_());
+    }
     
     template <class T> 
     RES operator()(T const & v1) const 
@@ -1487,6 +1691,12 @@ struct UnaryFctPtrFunctor
   
     EXPR expr_;
     RES (*f_)(ARG);
+};
+
+template <class EXPR, class RES, class ARG>
+struct ResultTraits0<UnaryFctPtrFunctor<EXPR, RES, ARG> >
+{
+    typedef RES Res;
 };
 
 template <class EXPR, class RES, class ARG, class T1>
@@ -1529,6 +1739,11 @@ struct BinaryFctPtrFunctor
     : expr1_(e1), expr2_(e2), f_(f)
     {}
     
+    RES operator()() const 
+    {
+        return f_(expr1_(), expr2_());
+    }
+    
     template <class T> 
     RES operator()(T const & v1) const 
     {
@@ -1551,6 +1766,12 @@ struct BinaryFctPtrFunctor
     EXPR1 expr1_;
     EXPR2 expr2_;
     RES (*f_)(ARG1, ARG2);
+};
+
+template <class EXPR1, class EXPR2, class RES, class ARG1, class ARG2>
+struct ResultTraits0<BinaryFctPtrFunctor<EXPR1, EXPR2, RES, ARG1, ARG2> >
+{
+    typedef RES Res;
 };
 
 template <class EXPR1, class EXPR2, class RES, class ARG1, class ARG2, 
@@ -1602,6 +1823,13 @@ struct CommaFunctor
     : expr1_(e1), expr2_(e2)
     {}
     
+    typename ResultTraits0<EXPR2>::Res 
+    operator()() const 
+    {
+        expr1_();
+        return expr2_();
+    }
+    
     template <class T> 
     typename ResultTraits1<EXPR2, T>::Res 
     operator()(T const & v1) const 
@@ -1630,6 +1858,12 @@ struct CommaFunctor
   
     EXPR1 expr1_;
     EXPR2 expr2_;
+};
+
+template <class Expr1, class Expr2>
+struct ResultTraits0<CommaFunctor<Expr1, Expr2> >
+{
+    typedef typename ResultTraits0<Expr2>::Res Res;
 };
 
 template <class Expr1, class Expr2, class T1>
@@ -1671,6 +1905,12 @@ struct CommaAnalyser
     : expr1_(e1), expr2_(e2)
     {}
     
+    void operator()() const 
+    {
+        expr1_();
+        expr2_();
+    }
+    
     template <class T> 
     void operator()(T const & v1) const 
     {
@@ -1710,13 +1950,14 @@ operator,(UnaryAnalyser<EXPR1> const & e1,
                             UnaryAnalyser<EXPR2> > >(p);
 }
 
-#endif /* NO_PARTIAL_TEMPLATE_SPECIALIZATION */
-
 } // namespace functor
 
 } // namespace vigra
 
+#endif /* NO_PARTIAL_TEMPLATE_SPECIALIZATION */
+
 #endif // DOXYGEN
 
 #endif /* VIGRA_FUNCTOREXPRESSION_HXX  */
+
 

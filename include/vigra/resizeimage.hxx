@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -918,7 +918,7 @@ resizeImageNoInterpolation(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     
     int wnew = idend.x - id.x;
     int hnew = idend.y - id.y;
-
+    
     vigra_precondition((w > 1) && (h > 1),
                  "resizeImageNoInterpolation(): "
          "Source image to small.\n");
@@ -946,13 +946,11 @@ resizeImageNoInterpolation(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     }
     
     yt = tmp.upperLeft();
-
     
     for(y=0; y < hnew; ++y, ++yt.y, ++id.y)
     {
         typename DestIterator::row_iterator rd = id.rowIterator();
         typename TmpImageIterator::row_iterator rt = yt.rowIterator();
-
     
     resizeLineNoInterpolation(rt, rt + w, tmp.accessor(),  
                   rd, rd + wnew, da);

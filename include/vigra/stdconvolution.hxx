@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -921,11 +921,7 @@ class Kernel2D
 	for(i=0; i<= radius; ++i)
 	{
 	    double r = (double) i - 0.5;
-#ifndef CMATH_NOT_IN_STD
-	    int w = (int)(std::sqrt(r2 - r*r) + 0.5);
-#else
-	    int w = (int)(sqrt(r2 - r*r) + 0.5);
-#endif
+	    int w = (int)(VIGRA_CSTD::sqrt(r2 - r*r) + 0.5);
 	    for(int j=-w; j<=w; ++j)
 	    {
 	        k(j, i) = NumericTraits<value_type>::one();
@@ -1019,6 +1015,16 @@ class Kernel2D
         /** ImageIterator that points to the center of the kernel (coordinate (0,0)).
 	*/
     Iterator center() { return kernel_.upperLeft() - left_; }
+    
+        /** Access kernel entry at given position.
+	*/
+    value_type & operator()(int x, int y) 
+        { return kernel_[Diff2D(x,y) - left_]; }
+    
+        /** Read kernel entry at given position.
+	*/
+    value_type operator()(int x, int y) const
+        { return kernel_[Diff2D(x,y) - left_]; }
     
         /** Norm of the kernel (i.e. sum of its elements).
 	*/

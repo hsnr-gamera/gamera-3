@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -54,7 +54,7 @@ namespace vigra {
     operations. Addition, subtraction, and multiplication of two RGBValues 
     (+=, -=, *=, +, -, *, unary -), multiplication and division of an
     RGBValue with a double, and NumericTraits/PromoteTraits are defined, 
-    so that RGBValue fulfills the requirements of a Linear Algebra. 
+    so that RGBValue fulfills the requirements of a \ref LinearAlgebra. 
     
     A number of \ref RGBValueAccessors "accessors" are provided
     that support access to RGBValues as a whole, to a selected
@@ -189,11 +189,7 @@ class RGBValue
         */
     typename NumericTraits<VALUETYPE>::RealPromote
     magnitude() const { 
-#ifndef CMATH_NOT_IN_STD
-         return std::sqrt(squaredMagnitude());
-#else
-         return sqrt(squaredMagnitude());
-#endif
+         return VIGRA_CSTD::sqrt(squaredMagnitude());
     }
     
         /** Calculate squared magnitude.
@@ -526,11 +522,7 @@ operator/=(RGBValue<V> & l, double r)
     return l;
 }
 
-#ifndef CMATH_NOT_IN_STD
-using std::abs;
-#else
-using ::abs;
-#endif
+using VIGRA_CSTD::abs;
 
     /// component-wise absolute value
 template <class T>
@@ -641,11 +633,7 @@ dot(RGBValue<V1> const & r1, RGBValue<V2> const & r2)
     return r1.red()*r2.red() + r1.green()*r2.green() + r1.blue()*r2.blue();
 }
 
-#ifdef CMATH_NOT_IN_STD
-    using ::ceil;
-#else
-    using std::ceil;
-#endif
+using VIGRA_CSTD::ceil;
 
     /** Apply ceil() function to each RGB component.
     */
@@ -657,13 +645,9 @@ ceil(RGBValue<V> const & r)
     return RGBValue<V>(ceil(r.red()), 
                        ceil(r.green()),
                        ceil(r.blue()));
-};
+}
 
-#ifdef CMATH_NOT_IN_STD
-    using ::floor;
-#else
-    using std::floor;
-#endif
+using VIGRA_CSTD::floor;
 
     /** Apply floor() function to each RGB component.
     */
@@ -675,7 +659,7 @@ floor(RGBValue<V> const & r)
     return RGBValue<V>(floor(r.red()), 
                        floor(r.green()),
                        floor(r.blue()));
-};
+}
 
 //@}
 
@@ -685,6 +669,9 @@ floor(RGBValue<V> const & r)
 /*                                                      */
 /********************************************************/
 
+/** \addtogroup DataAccessors
+*/
+//@{
 /** \defgroup RGBValueAccessors Accessors for RGBValue */
 //@{
     /** Encapsulate access to rgb values.
@@ -991,6 +978,7 @@ class RGBToGrayAccessor
 };
 
 
+//@}
 //@}
 
 

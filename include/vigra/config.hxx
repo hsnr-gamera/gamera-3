@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -36,33 +36,49 @@
     #if(_MSC_VER < 1100)    // before VisualC++ 5.0
         #error "Need VisualC++ 5.0, Service Pack 2, or later"
     #endif // _MSC_VER < 1100
-    
-    #pragma warning( disable : 4786 4250 4244 4305)
-    #define NO_TYPENAME         // no 'typename' keyword
-    #define TEMPLATE_COPY_CONSTRUCTOR_BUG
-    #define NO_PARTIAL_TEMPLATE_SPECIALIZATION
-    #define NO_STL_MEMBER_TEMPLATES
-    #define NO_INLINE_STATIC_CONST_DEFINITION
-    #define CMATH_NOT_IN_STD
-    
-    namespace std {
-    
-	template<class T>
-	const T& min(const T& x, const T& y)
-	{
-		return (y < x) 
-			? y
-			: x;
-	}
 
-	template<class T>
-	const T& max(const T& x, const T& y)
-	{
-		return (x < y) 
-			? y
-			: x;
-	}
-    }
+	#pragma warning( disable : 4786 4250 4244 4305)
+
+	#if (_MSC_VER < 1300)
+		#define NO_TYPENAME         // no 'typename' keyword
+		#define TEMPLATE_COPY_CONSTRUCTOR_BUG
+		#define NO_STL_MEMBER_TEMPLATES
+		#define NO_INLINE_STATIC_CONST_DEFINITION
+		#define CMATH_NOT_IN_STD
+		#define NO_COVARIANT_RETURN_TYPES
+	    
+		#ifdef VIGRA_NO_STD_MINMAX  // activate if necessary
+		namespace std {
+	    
+		template<class T>
+		const T& min(const T& x, const T& y)
+		{
+			return (y < x) 
+				? y
+				: x;
+		}
+
+		template<class T>
+		const T& max(const T& x, const T& y)
+		{
+			return (x < y) 
+				? y
+				: x;
+		}
+		}
+		#endif // VIGRA_NO_STD_MINMAX
+	#endif // (_MSC_VER < 1300)
+
+    #define NO_PARTIAL_TEMPLATE_SPECIALIZATION
+    #include <cmath>
+
+    #ifdef _MSC_EXTENSIONS
+        namespace std {
+            inline double abs(double v) { return fabs(v); }
+        }
+    #endif
+
+
 #endif // _MSC_VER
 
 ///////////////////////////////////////////////////////////
@@ -105,6 +121,12 @@
 //                        general                        //
 //                                                       //
 ///////////////////////////////////////////////////////////
+
+#ifdef CMATH_NOT_IN_STD
+    #define VIGRA_CSTD
+#else
+    #define VIGRA_CSTD std
+#endif
 
 #ifdef NO_TYPENAME
     #define typename

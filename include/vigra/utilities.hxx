@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -584,11 +584,7 @@ class Diff2D
         */
     double magnitude() const
     {
-#ifndef CMATH_NOT_IN_STD
-        return std::sqrt((double)(x*x + y*y));
-#else
-        return sqrt((double)(x*x + y*y));
-#endif
+        return VIGRA_CSTD::sqrt((double)(x*x + y*y));
     }
     
         /** Equality.

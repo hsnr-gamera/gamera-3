@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -33,6 +33,7 @@
 #include "vigra/recursiveconvolution.hxx"
 #include "vigra/separableconvolution.hxx"
 #include "vigra/labelimage.hxx"
+
 
 namespace vigra {
 
@@ -343,7 +344,7 @@ sign of difference image     insert zero- and one-cells     resulting edge point
     Thus the edge points are marked where they actually are - in between the pixels. 
     An important property of the resulting edge image is that it conforms to the notion 
     of well-composedness as defined by Latecki et al., i.e. connected regions and edges 
-    obtained by a subsequent \ref Connected Components Labeling do not depend on 
+    obtained by a subsequent \ref Labeling do not depend on 
     whether 4- or 8-connectivity is used.
     The non-edge pixels (<TT>.</TT>) in the destination image remain unchanged. 
     The result conformes to the requirements of a \ref CrackEdgeImage. It can be further
@@ -1164,12 +1165,14 @@ class Edgel
     float orientation;
 };
 
-template <class PixelType>
-void internalCannyFindEdgels(BasicImage<PixelType> const & dx,
-                             BasicImage<PixelType> const & dy,
-                             BasicImage<PixelType> const & magnitude,
+template <class Image>
+void internalCannyFindEdgels(Image const & dx,
+                             Image const & dy,
+                             Image const & magnitude,
                              std::vector<Edgel> & edgels)
 {
+    typedef typename Image::PixelType PixelType;
+    
     PixelType zero = NumericTraits<PixelType>::zero();
     double tan22_5 = M_SQRT2 - 1.0;
     
@@ -1265,7 +1268,7 @@ void internalCannyFindEdgels(BasicImage<PixelType> const & dx,
             
             if(maximum_found)
             {
-                double orientation = atan2(-grady, gradx) - M_PI / 2.0;
+                double orientation = atan2(-grady, gradx) - M_PI * 1.5;
                 if(orientation < 0.0)
                     orientation += 2.0*M_PI;
                 edgel.orientation = orientation;
@@ -1376,6 +1379,7 @@ void cannyEdgelList(SrcIterator ul, SrcIterator lr, SrcAccessor src,
     
     combineTwoImages(srcImageRange(dx), srcImage(dy), destImage(tmp),
                      MagnitudeFunctor<TmpType>());
+    
     
     // find edgels
     internalCannyFindEdgels(dx, dy, tmp, edgels);
@@ -1503,8 +1507,52 @@ inline void cannyEdgeImage(
                    scale, gradient_threshold, edge_marker);
 }
 
-
 //@}
+
+/** \page CrackEdgeImage Crack Edge Image
+
+Crack edges are marked <i>between</i> the pixels of an image. 
+A Crack Edge Image is an image that represents these edges. In order
+to accomodate the cracks, the Crack Edge Image must be twice as large
+as the original image (precisely (2*w - 1) by (2*h - 1)). A Crack Edge Image
+can easily be derived from a binary image or from the signs of the 
+response of a Laplacean filter. Consider the following sketch, where
+<TT>+</TT> encodes the foreground, <TT>-</TT> the background, and
+<TT>*</TT> the resulting crack edges.
+
+    \code
+sign of difference image         insert cracks         resulting CrackEdgeImage
+
+                                   + . - . -              . * . . .
+      + - -                        . . . . .              . * * * .
+      + + -               =>       + . + . -      =>      . . . * .
+      + + +                        . . . . .              . . . * *
+                                   + . + . +              . . . . .
+    \endcode
+
+Starting from the original binary image (left), we insert crack pixels
+to get to the double-sized image (center). Finally, we mark all 
+crack pixels whose non-crack neighbors have different signs as 
+crack edge points, while all other pixels (crack and non-crack) become 
+region pixels.
+
+<b>Requirements on a Crack Edge Image:</b>
+
+<ul>
+    <li>Crack Edge Images have odd width and height.
+    <li>Crack pixels have at least one odd coordinate.
+    <li>Only crack pixels may be marked as edge points.
+    <li>Crack pixels with two odd coordinates must be marked as edge points
+        whenever any of their neighboring crack pixels was marked.  
+</ul>
+
+The last two requirements ensure that both edges and regions are 4-connected. 
+Thus, 4-connectivity and 8-connectivity yield identical connected 
+components in a Crack Edge Image (so called <i>well-composedness</i>).
+This ensures that Crack Edge Images have nice topological properties
+(cf. L. J. Latecki: "Well-Composed Sets", Academic Press, 2000). 
+*/
+
 
 } // namespace vigra
 

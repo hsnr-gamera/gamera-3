@@ -1,10 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -558,11 +558,7 @@ class MagnitudeFunctor
         */
     result_type operator()(first_argument_type const & v1, second_argument_type const & v2) const
     {
-#ifndef CMATH_NOT_IN_STD
-        return std::sqrt(v1*v1 + v2*v2);
-#else
-        return sqrt(v1*v1 + v2*v2);
-#endif
+        return VIGRA_CSTD::sqrt(v1*v1 + v2*v2);
     }
 };
 
@@ -610,15 +606,9 @@ class RGBGradientMagnitudeFunctor
     result_type 
     operator()(first_argument_type const & gx, second_argument_type const & gy) const
     {
-#ifndef CMATH_NOT_IN_STD
-        return std::sqrt(gx.red()*gx.red() + gx.green()*gx.green() +
+        return VIGRA_CSTD::sqrt(gx.red()*gx.red() + gx.green()*gx.green() +
                     gx.blue()*gx.blue() + gy.red()*gy.red() + 
                     gy.green()*gy.green() + gy.blue()*gy.blue());
-#else
-        return sqrt(gx.red()*gx.red() + gx.green()*gx.green() +
-                    gx.blue()*gx.blue() + gy.red()*gy.red() + 
-                    gy.green()*gy.green() + gy.blue()*gy.blue());
-#endif
     }
 };
 

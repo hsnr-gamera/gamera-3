@@ -1,11 +1,10 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2001 by Ullrich Koethe                  */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
-/*    ( Version 1.1.4, Nov 23 2001 )                                    */
+/*    ( Version 1.1.6, Oct 10 2002 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -38,18 +37,45 @@ struct RequiresExplicitCast {
         { return v; }
 };
 
-#define VIGRA_SPECIALIZED_CAST(type) \
+#if !defined(_MSC_VER) || _MSC_VER >= 1300
+#  define VIGRA_SPECIALIZED_CAST(type) \
     template <> \
     struct RequiresExplicitCast<type> { \
-        static type cast(float const & v) \
+        static type cast(float v) \
             { return NumericTraits<type>::fromRealPromote(v); } \
-        static type cast(double const & v) \
+        static type cast(double v) \
             { return NumericTraits<type>::fromRealPromote(v); } \
         template <class U> \
-        static U cast(U v) \
+        static type cast(U v) \
             { return v; } \
  \
     };
+#else
+#  define VIGRA_SPECIALIZED_CAST(type) \
+    template <> \
+    struct RequiresExplicitCast<type> { \
+        static type cast(float v) \
+            { return NumericTraits<type>::fromRealPromote(v); } \
+        static type cast(double v) \
+            { return NumericTraits<type>::fromRealPromote(v); } \
+        static type cast(signed char v) \
+            { return v; } \
+        static type cast(unsigned char v) \
+            { return v; } \
+        static type cast(short v) \
+            { return v; } \
+        static type cast(unsigned short v) \
+            { return v; } \
+        static type cast(int v) \
+            { return v; } \
+        static type cast(unsigned int v) \
+            { return v; } \
+        static type cast(long v) \
+            { return v; } \
+        static type cast(unsigned long v) \
+            { return v; } \
+    };
+#endif
 
 
 VIGRA_SPECIALIZED_CAST(signed char)
@@ -89,7 +115,65 @@ struct RequiresExplicitCast<double> {
     all. Encapsulating access in an accessor enables a better
     decoupling of data structures and algorithms. 
     <a href="documents/DataAccessors.ps">This paper</a> contains
-    a detailed description of the concept.
+    a detailed description of the concept. Here is a brief list of the basic
+    accessor requirements:
+<p>
+<table border=2 cellspacing=0 cellpadding=2 width="100%">
+<tr><td>
+    \htmlonly
+    <th>
+    \endhtmlonly
+    Operation
+    \htmlonly
+    </th><th>
+    \endhtmlonly
+    Result
+    \htmlonly
+    </th><th>
+    \endhtmlonly
+    Semantics
+    \htmlonly
+    </th>
+    \endhtmlonly
+</td></tr>
+<tr>
+    <td><tt>accessor(iter)</tt></td><td>convertible to <br><tt>Iterator::value_type const &</tt></td>
+    <td>read data at the current position of the iterator</td>
+</tr>
+<tr>
+    <td><tt>accessor(iter, index)</tt></td><td>convertible to <br><tt>Accessor::value_type const &</tt></td>
+    <td>read data at offset <tt>index</tt> relative to iterator's current position 
+    (random-access iterator only)</td>
+</tr>
+<tr>
+    <td><tt>accessor.set(value, iter)</tt></td><td><tt>void</tt></td>
+    <td>write data <tt>value</tt> at the current position of the iterator (mutable iterator only)</td>
+</tr>
+<tr>
+    <td><tt>accessor.set(value, iter, index)</tt></td><td><tt>void</tt></td>
+    <td>write data <tt>value</tt> at offset <tt>index</tt> relative to iterator's current position 
+    (mutable random-access iterator only)</td>
+</tr>
+<tr>
+    <td>
+    \htmlonly
+    <td colspan=2>
+    \endhtmlonly
+    <tt>Accessor::value_type</tt></td>
+    <td>type of the data field the accessor refers to</td>
+</tr>
+<tr>
+    <td>
+    \htmlonly
+    <td colspan=3>
+    \endhtmlonly
+        <tt>iter</tt> is an iterator<br>
+        <tt>index</tt> has the iterator's index type (<tt>Iterator::difference_type</tt>)<br>
+        <tt>value</tt> is convertible to <tt>Accessor::value_type const &</tt>
+    </td>
+</tr>
+</table>
+</p>
 */
 //@{
 

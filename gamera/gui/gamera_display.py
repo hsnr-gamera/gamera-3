@@ -297,8 +297,8 @@ class ImageDisplay(wxScrolledWindow):
          h = self.image.nrows - y
       if (x + w > self.image.ncols):
          w = self.image.ncols - x
-      subimage = SubImage(self.image, y, x, h, w)
-      image = apply(wxEmptyImage, (w, h))
+      subimage = SubImage(self.image, y, x, h + 1, w + 1)
+      image = apply(wxEmptyImage, (w + 1, h + 1))
       image.SetData(apply(self.to_string_function, (subimage, )))
       bmp = image.ConvertToBitmap()
       self.tmpDC.DrawBitmap(bmp, 0, 0, 0)

@@ -141,9 +141,9 @@ struct KnnObject {
 
 
 PyMethodDef knn_methods[] = {
-  { "_classify_with_images", knn_classify_with_images, METH_VARARGS,
+  { "classify_with_images", knn_classify_with_images, METH_VARARGS,
     "classify an unknown image using a list of images." },
-  { "_instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
+  { "instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
   { "_distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { "set_weights", knn_set_weights, METH_VARARGS,
@@ -481,12 +481,16 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
 
     knn.add(o->id_names[i], distance);
   }
-  std::pair<char*, double> answer = knn.majority();
-  PyObject* ans = PyTuple_New(2);
-  PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
-  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first));
-  PyObject* ans_list = PyList_New(1);
-  PyList_SET_ITEM(ans_list, 0, ans);
+  std::vector<std::pair<char*, double> >& answer = knn.majority();
+  PyObject* ans_list = PyList_New(answer.size());
+  for (size_t i = 0; i < answer.size(); ++i) {
+    // PyList_SET_ITEM steal references so this code only looks
+    // like it leaks. KWM
+    PyObject* ans = PyTuple_New(2);
+    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer[i].second));
+    PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer[i].first));
+    PyList_SET_ITEM(ans_list, i, ans);
+  }
   return ans_list;
 }
 
@@ -527,12 +531,14 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
     return 0;
   }
-  PyObject* unknown, *iterator;
-  if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
+  PyObject* unknown, *iterator, *container;
+  if (PyArg_ParseTuple(args, "OO", &container, &unknown) <= 0) {
     return 0;
   }
 
-  if (!PyIter_Check(iterator)) {
+  iterator = PyObject_GetIter(container);
+
+  if (iterator == NULL) {
     PyErr_SetString(PyExc_TypeError, "Known features must be iterable.");
     return 0;
   }
@@ -580,13 +586,17 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     knn.add(id_name, distance);
     Py_DECREF(cur);
   }
-  
-  std::pair<char*, double> answer = knn.majority();
-  PyObject* ans = PyTuple_New(2);
-  PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
-  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first));
-  PyObject* ans_list = PyList_New(1);
-  PyList_SET_ITEM(ans_list, 0, ans);
+
+  std::vector<std::pair<char*, double> >& answer = knn.majority();
+  PyObject* ans_list = PyList_New(answer.size());
+  for (size_t i = 0; i < answer.size(); ++i) {
+    // PyList_SET_ITEM steal references so this code only looks
+    // like it leaks. KWM
+    PyObject* ans = PyTuple_New(2);
+    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer[i].second));
+    PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer[i].first));
+    PyList_SET_ITEM(ans_list, i, ans);
+  }
   return ans_list;
 }
 
@@ -718,9 +728,9 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0) {
       }
       knn.add(o->id_names[j], distance);
     }
-    std::pair<char*, double> answer = knn.majority();
+    std::vector<std::pair<char*, double> >& answer = knn.majority();
     knn.reset();
-    if (strcmp(answer.first, o->id_names[i]) == 0)
+    if (strcmp(answer[0].first, o->id_names[i]) == 0)
       total_correct++;
   }
   return double(total_correct) / o->num_feature_vectors;

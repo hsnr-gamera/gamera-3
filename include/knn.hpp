@@ -45,18 +45,10 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double city_block_distance(IterA known, const IterA end,
-				      IterB unknown, IterC weight, double stop_dist = -1.0) {
+				      IterB unknown, IterC weight) {
       double distance = 0;
-      if (stop_dist > 0.0) {
-	for (; known != end; ++known, ++unknown, ++weight) {
-	  distance += *weight * std::abs(*unknown - *known);
-	  if (distance > stop_dist)
-	    return std::numeric_limits<double>::max();
-	}
-      } else {
-	for (; known != end; ++known, ++unknown, ++weight)
-	  distance += *weight * std::abs(*unknown - *known);
-      }
+      for (; known != end; ++known, ++unknown, ++weight)
+	distance += *weight * std::abs(*unknown - *known);
       return distance;
     }
 
@@ -71,18 +63,10 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double euclidean_distance(IterA known, const IterA end,
-				     IterB unknown, IterC weight, double stop_dist = -1.0) {
+				     IterB unknown, IterC weight) {
       double distance = 0;
-      if (stop_dist > 0.0) {
-	for (; known != end; ++known, ++unknown, ++weight) {
-	  distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
-	  if (distance > stop_dist)
-	    return std::numeric_limits<double>::max();
-	}
-      } else {
-	for (; known != end; ++known, ++unknown, ++weight)
-	  distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
-      }
+      for (; known != end; ++known, ++unknown, ++weight)
+	distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
       return distance;
     }
 
@@ -97,18 +81,10 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double fast_euclidean_distance(IterA known, const IterA end,
-					  IterB unknown, IterC weight, double stop_dist = -1.0) {
+					  IterB unknown, IterC weight) {
       double distance = 0;
-      if (stop_dist > 0.0) {
-	for (; known != end; ++known, ++unknown, ++weight) {
-	  distance += *weight * ((*unknown - *known) * (*unknown - *known));
-	  if (distance > stop_dist)
-	    return std::numeric_limits<double>::max();
-	}
-      } else {
-	for (; known != end; ++known, ++unknown, ++weight)
-	  distance += *weight * ((*unknown - *known) * (*unknown - *known));
-      }
+      for (; known != end; ++known, ++unknown, ++weight)
+	distance += *weight * ((*unknown - *known) * (*unknown - *known));
       return distance;
     }
 
@@ -138,6 +114,10 @@ namespace Gamera {
 	std::fill(m_sum2_vector, m_sum2_vector + m_num_features, 0.0);
       }
       ~Normalize() {
+	if (m_sum_vector != 0)
+	  delete[] m_sum_vector;
+	if (m_sum2_vector != 0)
+	  delete[] m_sum2_vector;
 	delete[] m_norm_vector;
       }
       template<class T>
@@ -166,7 +146,9 @@ namespace Gamera {
 	  m_norm_vector[i] = mean / stdev;
 	}
 	delete[] m_sum_vector;
+	m_sum_vector = 0;
 	delete[] m_sum2_vector;
+	m_sum2_vector = 0;
       }
       // in-place
       template<class T>
@@ -294,7 +276,8 @@ namespace Gamera {
 	Find the id of the majority of the k nearest neighbors. This
 	includes tie-breaking if necessary.
       */
-      std::pair<id_type, double> majority(double max_dist = -1) {
+      std::vector<std::pair<id_type, double> >& majority(double max_dist = -1) {
+	m_answer.clear();
 	double max_distance;
 	// used to avoid 0
 	double dither = .000001;
@@ -308,7 +291,9 @@ namespace Gamera {
 	// short circuit for k == 1
 	if (m_nn.size() == 1) {
 	  double confidence = 1.0 - ((m_nn[0].distance + dither) / (max_distance + dither));
-	  return std::make_pair(m_nn[0].id, confidence);
+	  m_answer.resize(1);
+	  m_answer[0] = std::make_pair(m_nn[0].id, confidence);
+	  return m_answer;
 	}
 	/*
 	  Create a histogram of the ids in the nearest neighbors. A map
@@ -339,8 +324,9 @@ namespace Gamera {
 	if (id_map.size() == 1) {
 	  double confidence = id_map.begin()->second.min_distance / (max_distance + dither);
 	  confidence = 1.0 - confidence;
-	  std::cout << "clear majority: " << confidence << std::endl;
-	  return std::make_pair(id_map.begin()->first, confidence);
+	  m_answer.resize(1);
+	  m_answer[0] = std::make_pair(id_map.begin()->first, confidence);
+	  return m_answer;
 	} else {
 	  /*
 	    Find the id(s) with the maximum
@@ -361,10 +347,23 @@ namespace Gamera {
 	    we are done.
 	  */
 	  if (max.size() == 1) {
-	    double confidence = .5 - ((max[0]->second.min_distance + dither) / max_distance);
-	    confidence += (double(max[0]->second.count) / m_k) / 2.0;
-	    std::cout << "unclear majority: " << confidence << std::endl;
-	    return std::make_pair(max[0]->first, confidence);
+	    // put the winner in the result vector
+	    m_answer.resize(id_map.size());
+	    double confidence = 1.0 - ((max[0]->second.min_distance + dither) / max_distance);
+	    //confidence += (double(max[0]->second.count) / m_k) / 2.0;
+	    m_answer[0] = std::make_pair(max[0]->first, confidence);
+	    // remove the winner from the id_map
+	    id_map.erase(max[0]);
+	    // add the rest to the answer vector
+	    size_t ans = 1;
+	    for (typename map_type::iterator i = id_map.begin();
+		 i != id_map.end(); ++i) {
+	      confidence = 1.0 - ((i->second.min_distance + dither) / max_distance);
+	      //confidence += (double(i->second.count) / m_k) / 2.0;
+	      m_answer[ans] = std::make_pair(i->first, confidence);
+	      ++ans;
+	    }
+	    return m_answer;
 	  } else {
 	    /*
 	      Tie-break by average distance
@@ -375,8 +374,10 @@ namespace Gamera {
 		  < min_dist->second.total_distance)
 		min_dist = max[i];
 	    }
-	    return std::make_pair(min_dist->first,
-				  min_dist->second.min_distance);
+	    m_answer.resize(1);
+	    double confidence = 1.0 - ((min_dist->second.min_distance + dither) / max_distance);
+	    m_answer[0] = std::make_pair(min_dist->first, confidence);
+	    return m_answer;
 	  }
 	}
       }
@@ -384,6 +385,7 @@ namespace Gamera {
       std::vector<neighbor_type> m_nn;
       size_t m_k;
       double m_max_distance;
+      std::vector<std::pair<id_type, double> > m_answer;
     };
 
   } // namespace kNN

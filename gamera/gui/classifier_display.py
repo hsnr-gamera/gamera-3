@@ -822,8 +822,8 @@ class ClassifierFrame(ImageFrameBase):
       self._classifier.change_feature_set(selected_features)
 
    def _OnClassifierProperties(self, event):
-      if self._classifier.classifier.supports_settings_dialog():
-         self._classifier.classifier.settings_dialog()
+      if self._classifier.supports_settings_dialog():
+         self._classifier.settings_dialog()
       else:
          gui_util.message("This classifier doesn't have a settings dialog.")
 
@@ -1196,6 +1196,7 @@ class SymbolTableEditorPanel(wxPanel):
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
       if sys.platform == 'win32':
          EVT_TEXT_ENTER(self, txID, self._OnEnter)
+         EVT_TEXT_TAB(self, txID, self._OnTab)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
@@ -1215,12 +1216,15 @@ class SymbolTableEditorPanel(wxPanel):
       if normalized_symbol != '':
          self.toplevel.classify_manual(normalized_symbol)
 
-   def _OnKey(self, evt):
-      find = self.text.GetValue()
-      if evt.KeyCode() == WXK_TAB:
+   def _OnTab(self, evt):
          find = self._symbol_table.autocomplete(find)
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
+      
+   def _OnKey(self, evt):
+      find = self.text.GetValue()
+      if evt.KeyCode() == WXK_TAB:
+         self._OnTab(evt)
       elif evt.KeyCode() == WXK_RETURN:
          self._OnEnter(evt)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():

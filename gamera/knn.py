@@ -150,7 +150,7 @@ class kNN(gamera.knncore.kNN):
         features = 0
         for x in self.feature_functions:
             features += x[1].return_type.length
-        self.num_features = features
+        self.num_features = features 
 
     def distance_from_images(self, images, glyph, max):
         from gamera import util
@@ -166,40 +166,6 @@ class kNN(gamera.knncore.kNN):
         if progress:
             progress.kill()
         return self._distance_from_images(iter(images), glyph, max)
-
-    def generate_features(self, images):
-        progress = None
-        for x in images:
-            if progress == None and \
-               x.feature_functions != self.feature_functions:
-                progress = util.ProgressFactory("Generating Features . . .", len(images))
-            x.generate_features(self.feature_functions)
-            if progress:
-                progress.step()
-        if progress:
-            progress.kill()        
-
-    def classify_with_images(self, images, glyph):
-        from gamera import util
-        glyph.generate_features(self.feature_functions)
-        progress = None
-        for x in images:
-            if progress == None and \
-               x.feature_functions != self.feature_functions:
-                progress = util.ProgressFactory("Generating Features . . .", len(images))
-            x.generate_features(self.feature_functions)
-            if progress:
-                progress.step()
-        if progress:
-            progress.kill()
-        return self._classify_with_images(iter(images), glyph)
-
-    def instantiate_from_images(self, images):
-        """Create a k-NN database from a list of images"""
-        assert(len(images) > 0)
-        for x in images:
-            x.generate_features(self.feature_functions)
-        return self._instantiate_from_images(images)
 
     def evaluate(self):
         """Evaluate the performance of the kNN classifier using

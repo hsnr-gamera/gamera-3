@@ -22,7 +22,7 @@ import util, gamera_xml, config
 import re
 
 """This file defines the Python part of classifiers.  These wrapper classes
-contain a reference to a core classifier class (unusally writting in C++), and an
+contain a reference to a core classifier class (unusally written in C++), and an
 optional GroupingClassifier.  They add functionality for XML loading/saving,
 splitting/grouping, and keeping track of a database of glyphs (in the Interactive
 case.)"""
@@ -46,7 +46,7 @@ class _Classifier:
    def set_groups(self, groups):
       self.grouping_classifier.set_groups(groups)
 
-   def merge_groups(self):
+   def merge_groups(self, groups):
       self.grouping_classifier.merge_groups(groups)
 
    def group_list_automatic(self, glyphs):
@@ -76,8 +76,11 @@ class _Classifier:
       are for internal use only."""
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
-      progress.add_length(len(glyphs))
+      progress.add_length(len(glyphs) * 2)
       try:
+         for glyph in glyphs:
+            glyph.generate_features(self.classifier.feature_functions)
+            progress.step()
          if (recursion_level > 10) or len(self._database) == 0:
             return [], []
          added = []
@@ -138,6 +141,7 @@ class _Classifier:
 
    def _from_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
+      self.generate_features(database)
       self.set_glyphs(database)
       self.set_groups(xml.groups)
 
@@ -149,11 +153,41 @@ class _Classifier:
 
    def _merge_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
+      self.generate_features(database)
       self.merge_glyphs(database)
       self.merge_groups(xml.groups)
 
+   ##############################################
+   # Settings
+   def load_settings(self, filename):
+      ff = self.get_feature_functions()
+      self.classifier.load_settings(filename)
+      if ff != self.get_feature_functions():
+         self.generate_features(self._database)
+
+   def save_settings(self, filename):
+      self.classifier.save_settings(filename)
+
+   def supports_settings_dialog(self):
+      return self.classifier.supports_settings_dialog()
+
+   def settings_dialog(self):
+      self.classifier.settings_dialog()
+      
+   ##############################################
+   # Features
    def get_feature_functions(self):
       return self.classifier.feature_functions
+   
+   def generate_features(self, glyphs):
+      """Generates features for all the given glyphs."""
+      progress = util.ProgressFactory("Generating features...", len(glyphs))
+      try:
+         for glyph in glyphs:
+            glyph.generate_features(self.classifier.feature_functions)
+            progress.step()
+      finally:
+         progress.kill()   
 
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, classifier=None, database=[], features='all',
@@ -203,6 +237,10 @@ class NonInteractiveClassifier(_Classifier):
       self._database = []
       self.grouping_classifier.clear_groups()
 
+   def load_settings(self, filename):
+      _Classifier.load_settings(filename)
+      self.classifier.instantiate_from_images(self._database)      
+
    ########################################
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
@@ -231,6 +269,7 @@ class InteractiveClassifier(_Classifier):
       if grouping_classifier is None:
          from gamera import polargrouping
          grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
+         
       grouping_classifier.set_parent_classifier(self)
       self.grouping_classifier = grouping_classifier
       self.is_dirty = 0
@@ -274,6 +313,8 @@ class InteractiveClassifier(_Classifier):
       strings, naming the feature functions to be used."""
       self.is_dirty = 1
       self.classifier.change_feature_set(features)
+      if len(self._database):
+         self.generate_features(self._database)
       self.grouping_classifier.change_feature_set()
 
    ########################################

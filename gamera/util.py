@@ -28,11 +28,23 @@ from gamera import config
 def is_sequence(obj):
   return type(obj) in (type([]), type(()))
 
+# determine if an object is a sequence
 def make_sequence(obj):
   if not type(obj) in (type([]), type(())):
     return (obj,)
   return obj
 
+def is_homogeneous_image_list(l):
+  from gamera.core import ImageBase
+  if not is_sequence(l) or not isinstance(l[0], ImageBase):
+    return 0
+  pixel_type = l[0].data.pixel_type
+  for image in l[1:]:
+    if (not isinstance(image, ImageBase) or
+        image.data.pixel_type != pixel_type):
+      return 0
+  return 1
+    
 # replaces the prefix a with b
 def replace_prefix(s, a, b):
   return b + s[len(a):]

@@ -298,16 +298,11 @@ class CIImageList(CustomIcon):
   get_icon = staticmethod(get_icon)
 
   def check(data):
-    if util.is_sequence(data):
-      for glyph in data:
-        if not isinstance(glyph, ImageBase):
-          return 0
-      return 1
-    return 0
+    return util.is_homogeneous_image_list(data)
   check = staticmethod(check)
 
   def double_click(self):
-    return 'display_multi(%s)' % label
+    return 'display_multi(%s)' % self.label
 
 class CIInteractiveClassifier(CustomIcon):
   def get_icon():
@@ -336,9 +331,9 @@ class CINonInteractiveClassifier(CustomIcon):
   def right_click(self, *args):
     pass
 
-builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
-                      CIFloatImage, CIOneBitImage,
-                      CIRGBSubImage, CIGreyScaleSubImage, CIGrey16SubImage,
-                      CIFloatSubImage, CIOneBitSubImage,
-                      CIImageList, CIInteractiveClassifier,
-                      CINonInteractiveClassifier)
+builtin_icon_types = (
+  CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
+  CIFloatImage, CIOneBitImage, CIRGBSubImage,
+  CIGreyScaleSubImage, CIGrey16SubImage, CIFloatSubImage,
+  CIOneBitSubImage, CIImageList, CIInteractiveClassifier,
+  CINonInteractiveClassifier)

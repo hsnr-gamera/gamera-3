@@ -1224,31 +1224,31 @@ class MultiImageWindow(wxPanel):
    def set_choices(self):
       methods = [x[0] + "()" for x in ImageBase.methods_flat_category("Features", ONEBIT)]
 
-      self.display_choices = [
+      self.display_choices = (
          "x.get_main_id()",
          "(x.offset_y, x.offset_x, x.nrows, x.ncols)",
          "x.label",
-         "x.properties"]
+         "x.properties")
       self.display_text_combo.Clear()
       for choice in self.display_choices:
          self.display_text_combo.Append(choice)
 
-      self.sort_choices = [
+      self.sort_choices = (
          "", "offset_x", "offset_y",
          "ncols", "nrows",
          "label", "get_main_id()",
-         "classification_state"]
+         "classification_state")
       self.sort_combo.Clear()
       for choice in self.sort_choices:
          self.sort_combo.Append(choice)
       for method in methods:
          self.sort_combo.Append(method)
 
-      self.select_choices = [
+      self.select_choices = (
          "", "x.unclassified()",
          "x.automatically_classified()",
          "x.manually_classified()",
-         "x.nrows < 2 or x.ncols < 2"]
+         "x.nrows < 2 or x.ncols < 2")
       self.select_combo.Clear()
       for choice in self.select_choices:
          self.select_combo.Append(choice)

@@ -98,8 +98,9 @@ class ProgressBox:
       self.done = 0
 
    def __del__(self):
-      self.done = 1
-      self.progress_box.Destroy()
+      if not self.done:
+         self.done = 1
+         self.progress_box.Destroy()
 
    def update(self, num, den):
       if not self.done:

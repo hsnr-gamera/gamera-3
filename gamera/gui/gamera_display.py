@@ -595,15 +595,16 @@ class ImageDisplay(wxScrolledWindow):
                   scaled_highlight.ncols, scaled_highlight.nrows)
                scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image)
+               tmpdc = wxMemoryDC()
                tmpdc.SelectObject(bmp)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
                dc.Blit(x_cc, y_cc,
                        scaled_highlight.ncols, scaled_highlight.nrows,
                        tmpdc, 0, 0, wxAND, true)
+               tmpdc.SetBrush(wxBrush(color, wxSOLID))
                tmpdc.SetLogicalFunction(wxAND_REVERSE)
                tmpdc.SetPen(wxTRANSPARENT_PEN)
-               tmpdc.SetBrush(wxBrush(color, wxSOLID))
                tmpdc.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight())
                dc.Blit(x_cc, y_cc,
                        scaled_highlight.ncols, scaled_highlight.nrows,

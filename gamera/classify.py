@@ -22,10 +22,9 @@ import util, gamera_xml, config
 import re
 
 """This file defines the Python part of classifiers.  These wrapper classes
-contain a reference to a core classifier class (unusally written in C++), and a
-optional GroupingClassifier.  They add functionality for XML loading/saving,
-splitting/grouping, and keeping track of a database of glyphs (in the
-Interactive case.)"""
+contain a reference to a core classifier class (unusally written in C++).
+They add functionality for XML loading/saving, splitting/grouping, and
+keeping track of a database of glyphs (in the Interactive case.)"""
 
 class ClassifierError(Exception):
    pass
@@ -40,17 +39,74 @@ class _Classifier:
 
    ########################################
    # GROUPING
-   def get_groups(self):
-      return self.grouping_classifier.get_groups()
-
-   def set_groups(self, groups):
-      self.grouping_classifier.set_groups(groups)
-
-   def merge_groups(self, groups):
-      self.grouping_classifier.merge_groups(groups)
-
    def group_list_automatic(self, glyphs):
-      return self.grouping_classifier.search(glyphs)
+      import time
+      if len(glyphs) == 0:
+         return
+      t = time.clock()
+      glyphs = [x for x in glyphs if x.classification_state != 3]
+      splits, removed = self.main_classifier.classify_list_automatic(glyphs)
+      glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]
+      G = self.pregroup(glyphs)
+      found_unions = self.find_group_unions(G)
+      print "Time: %s" % (str(time.clock() - t))
+      return found_unions + splits, removed
+
+   def pregroup(self, glyphs):
+      from gamera import graph
+      from fudge import Fudge
+      G = graph.Undirected()
+      G.add_nodes(glyphs)
+      progress = util.ProgressFactory("Pre-grouping glyphs...", len(glyphs))
+      try:
+         equivalencies = {}
+         group_no = 0
+         for i in range(len(glyphs)):
+            gi = glyphs[i]
+            fudge_gi = Fudge(gi, 6)
+            for j in range(i + 1, len(glyphs)):
+               gj = glyphs[j]
+               if fudge_gi.intersects(gj):
+                  G.add_edge(gi, gj)
+            progress.step()
+      finally:
+         progress.kill()
+      return G
+
+   def evaluate_subgroup(self, subgroup):
+      import image_utilities
+      if len(subgroup) > 1:
+         union = image_utilities.union_images(subgroup)
+         classification = self.main_classifier.guess_glyph_automatic(union)
+         if (classification[0][1].startswith("split") or
+             classification[0][1].startswith("skip")):
+            return 0
+         else:
+            return classification[0][0]
+      return subgroup[0].id_name[0][0]
+
+   def find_group_unions(self, G):
+      import image_utilities
+      progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
+      try:
+         found_unions = []
+         for root in G.get_subgraph_roots():
+            best_grouping = G.optimize_partitions(
+               root, self.evaluate_subgroup, 3)
+            for subgroup in best_grouping:
+               if len(subgroup) > 1:
+                  union = image_utilities.union_images(subgroup)
+                  found_unions.append(union)
+                  classification = self.main_classifier.guess_glyph_automatic(union)
+                  union.classify_heuristic(classification)
+                  part_name = "_group._part.%s" % classification[0][1]
+                  for glyph in subgroup:
+                     glyph.classify_heuristic(part_name)
+            progress.step()
+      finally:
+         progress.kill()
+      print "Number of groups created: %s" % str(len(found_unions))
+      return found_unions
 
    ########################################
    # AUTOMATIC CLASSIFICATION
@@ -122,7 +178,7 @@ class _Classifier:
          parts = id.split('.')
          if (len(parts) != 2 or not hasattr(glyph, parts[1])):
             raise ClassifierError("'%s' is not a known or valid split function." % parts[1])
-         splits = getattr(glyph, id[7:]).__call__(glyph)
+         splits = getattr(glyph, parts[1]).__call__(glyph)
          glyph.children_images = splits
          return splits
       return []
@@ -136,14 +192,12 @@ class _Classifier:
    def to_xml(self, stream):
       self.is_dirty = 0
       return gamera_xml.WriteXML(
-         glyphs=self.get_glyphs(),
-         groups=self.get_groups()).write_stream(stream)
+         glyphs=self.get_glyphs()).write_stream(stream)
 
    def to_xml_filename(self, filename):
       self.is_dirty = 0
       return gamera_xml.WriteXMLFile(
-         glyphs=self.get_glyphs(),
-         groups=self.get_groups()).write_filename(filename)
+         glyphs=self.get_glyphs()).write_filename(filename)
 
    def from_xml(self, stream):
       self._from_xml(gamera_xml.LoadXML().parse_stream(stream))
@@ -156,7 +210,6 @@ class _Classifier:
       database = [x for x in xml.glyphs
                   if x.classification_state != core.UNCLASSIFIED]
       self.set_glyphs(database)
-      self.set_groups(xml.groups)
 
    def merge_from_xml(self, stream):
       self._merge_xml(gamera_xml.LoadXML().parse_stream(stream))
@@ -168,19 +221,9 @@ class _Classifier:
       database = [x for x in xml.glyphs
                   if x.classification_state != core.UNCLASSIFIED]
       self.merge_glyphs(database)
-      self.merge_groups(xml.groups)
 
    ##############################################
    # Settings
-   def load_settings(self, filename):
-      ff = self.get_feature_functions()
-      self.classifier.load_settings(filename)
-      if ff != self.get_feature_functions():
-         self.generate_features(self._database)
-
-   def save_settings(self, filename):
-      self.classifier.save_settings(filename)
-
    def supports_settings_dialog(self):
       return self.classifier.supports_settings_dialog()
 
@@ -199,11 +242,11 @@ class _Classifier:
       self.classifier.change_feature_set(features)
       if len(self._database):
          self.generate_features(self._database)
-      self.grouping_classifier.change_feature_set()
    
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
-      progress = util.ProgressFactory("Generating features...", len(glyphs) / 10)
+      progress = util.ProgressFactory("Generating features...",
+                                      len(glyphs) / 10)
       feature_functions = self.get_feature_functions()
       try:
          for i, glyph in enumerate(glyphs):
@@ -215,25 +258,18 @@ class _Classifier:
 
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, classifier=None, database=[], features='all',
-                perform_splits=1, grouping_classifier=None):
+                perform_splits=1):
       """classifier: the core classifier to use.  If None, defaults to kNN
       database: a list of database to initialize the classifier with.
       features: a list of strings naming the features that will be used in the
                 classifier.
       perform_splits: (boolean) true if glyphs classified as split.* should be
-                      split.
-      grouping_classifier: an optional GroupingClassifier instance.  If None,
-                           groups will be remembered, but will not be
-                           automatically found."""
+                split."""
       if classifier is None:
          from gamera import knn
          classifier = knn.kNN()
       self.classifier = classifier
       self.classifier.change_feature_set(features)
-      if grouping_classifier is None:
-         from gamera import group
-         grouping_classifier = group.GroupingClassifier([], self)
-      self.grouping_classifier = grouping_classifier
       if database != []:
          self._database = database
          self.change_feature_set(features)
@@ -269,7 +305,6 @@ class NonInteractiveClassifier(_Classifier):
 
    def clear_glyphs(self):
       self._database = []
-      self.grouping_classifier.clear_groups()
 
    def load_settings(self, filename):
       _Classifier.load_settings(filename)
@@ -316,19 +351,14 @@ class NonInteractiveClassifier(_Classifier):
       self.classifier.load_settings(filename)
 
 class InteractiveClassifier(_Classifier):
-   _group_regex = re.compile('\_group\..*')
-   
    def __init__(self, classifier=None, database=[], features='all',
-                perform_splits=1, grouping_classifier=None):
+                perform_splits=1):
       """classifier: the core classifier to use.  If None, defaults to kNN
       database: a list of database to initialize the classifier with. (May be []).
       features: a list of strings naming the features that will be used in the
                 classifier.
       perform_splits: (boolean) true if glyphs classified as split.* should be
-                      split.
-      grouping_classifier: an optional GroupingClassifier instance.  If None,
-                           groups will be remembered, but will not be
-                           automatically found."""
+                      split."""
       if classifier == None:
          from gamera import knn
          classifier = knn.kNN()
@@ -337,13 +367,6 @@ class InteractiveClassifier(_Classifier):
             "InteractiveClassifier must be initialised with a" +
             "classifier that supports interaction.")                   
       self.classifier = classifier
-
-      if grouping_classifier is None:
-         from gamera import genericgrouping
-         grouping_classifier = genericgrouping.GenericGroupingClassifier([], self)
-         
-      grouping_classifier.set_parent_classifier(self)
-      self.grouping_classifier = grouping_classifier
       self.is_dirty = 0
       self.clear_glyphs()
       for glyph in database:
@@ -383,7 +406,6 @@ class InteractiveClassifier(_Classifier):
    def clear_glyphs(self):
       self.is_dirty = 1
       self._database = {}
-      self.grouping_classifier.clear_groups()
 
    ########################################
    # AUTOMATIC CLASSIFICATION
@@ -413,10 +435,9 @@ class InteractiveClassifier(_Classifier):
 
       # Deal with grouping
       if id.startswith('_group'):
-         added, removed = self.grouping_classifier.classify_group_manual([glyph], id[7:])
-         return added, removed
-      else:
-         removed = self.grouping_classifier.remove_groups_containing(glyph)
+         raise ClassifierError(
+            "You must select more than one connected component " +
+            "to create a group")
 
       for child in glyph.children_images:
          removed.append(child)
@@ -428,19 +449,20 @@ class InteractiveClassifier(_Classifier):
       return self._do_splits(glyph), removed
 
    def classify_list_manual(self, glyphs, id):
-      if self.grouping_classifier and id.startswith('_group'):
-         added, removed = self.grouping_classifier.classify_group_manual(glyphs, id[6:])
-         return added, removed
+      if id.startswith('_group'):
+         import image_utilities
+         parts = id.split('.')
+         sub = '.'.join(parts[1:])
+         union = image_utilities.union_images(glyphs)
+         for glyph in glyphs:
+            glyph.classify_heuristic('_group._part.' + sub)
+         return self.classify_glyph_manual(union, sub)
 
       added = []
       removed = {}
-
       for glyph in glyphs:
          for child in glyph.children_images:
             removed[child] = None
-         group_removed = self.grouping_classifier.remove_groups_containing(glyph)
-         for g in group_removed:
-            removed[g] = None
 
       feature_functions = self.get_feature_functions()
       for glyph in glyphs:
@@ -452,7 +474,6 @@ class InteractiveClassifier(_Classifier):
                self._database[glyph] = None
             glyph.classify_manual([(1.0, id)])
             added.extend(self._do_splits(glyph))
-
       return added, removed.keys()
 
    def add_to_database(self, glyphs):
@@ -472,17 +493,6 @@ class InteractiveClassifier(_Classifier):
             self.is_dirty = 1
             del self._database[glyph]
 
-   def rename_ids(self, old, new):
-      for glyph in self._database.iterkeys():
-         self.is_dirty = 1
-         new_ids = []
-         for id in glyph.id_name:
-            if id[1] == old:
-               new_ids.append((id[0], new))
-            else:
-               new_ids.append(id)
-         glyph.id_name = new_ids
-
    def noninteractive_copy(self, classifier=None):
       """Creates a noninteractive version of this classifier."""
       if len(self._database):
@@ -490,8 +500,7 @@ class InteractiveClassifier(_Classifier):
             classifier = self.classifier
          return NonInteractiveClassifier(
             classifier, self.get_glyphs(),
-            self.classifier.features, self.perform_splits,
-            self.grouping_classifier.noninteractive_copy())
+            self.classifier.features, self.perform_splits)
       raise ClassifierError(
          "Cannot create a noninteractive copy of an empty classifier.")
 
@@ -506,5 +515,14 @@ class InteractiveClassifier(_Classifier):
 
    def set_display(self, display):
       self._display = display
+
+   def load_settings(self, filename):
+      ff = self.get_feature_functions()
+      self.classifier.load_settings(filename)
+      if ff != self.get_feature_functions():
+         self.generate_features(self._database)
+
+   def save_settings(self, filename):
+      self.classifier.save_settings(filename)
 
 

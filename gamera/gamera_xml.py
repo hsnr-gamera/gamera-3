@@ -25,7 +25,6 @@ from xml.parsers import expat
 import core, util, config
 from util import word_wrap, ProgressFactory, is_image_list
 from gamera.symbol_table import SymbolTable
-from gamera.group import Group
 
 config.define_option(
    'xml', 'encoding', 'utf-8',
@@ -64,14 +63,13 @@ class XMLError(Exception):
 ################################################################################
 
 class WriteXML:
-   def __init__(self, glyphs=[], symbol_table=[], groups=[]):
+   def __init__(self, glyphs=[], symbol_table=[]):
       self.glyphs = glyphs
       if (not isinstance(symbol_table, SymbolTable) and
           not util.is_string_or_unicode_list(symbol_table)):
          raise XMLError(
             "symbol_table argument to WriteXML must be of type SymbolTable or a list of strings.")
       self.symbol_table = symbol_table
-      self.groups = groups
 
    def write_filename(self, filename):
       if not os.path.exists(os.path.split(os.path.abspath(filename))[0]):
@@ -95,7 +93,7 @@ class WriteXML:
       self._write_core(stream)
 
    def _write_core(self, stream, indent=0):
-      progress = util.ProgressFactory("Saving XML...", len(self.groups))
+      progress = util.ProgressFactory("Saving XML...", 1)
       try:
          self._write_symbol_table(stream, self.symbol_table, indent=indent)
          if isinstance(self.glyphs, core.ImageBase):
@@ -105,7 +103,6 @@ class WriteXML:
          else:
             progress.add_length(len(self.glyphs))
             self._write_glyphs(stream, self.glyphs, progress, indent=indent)
-         self._write_groups(stream, self.groups, progress, indent=indent)
       finally:
          progress.kill()
 
@@ -134,21 +131,6 @@ class WriteXML:
             progress.step()
          indent -= 1
          word_wrap(stream, '</glyphs>', indent)
-
-   def _write_groups(self, stream, groups, progress, indent=0):
-      if len(groups):
-         word_wrap(stream, '<groups>', indent)
-         indent += 1
-         for i, group in enumerate(groups):
-            word_wrap(stream, '<group id="%s">' % group.id, indent)
-            indent += 1
-            for glyph in group.glyphs:
-               self._write_glyph(stream, glyph, indent)
-            indent -= 1
-            word_wrap(stream, '</group>', indent)
-            progress.step()
-         indent -= 1
-         word_wrap(stream, '</groups>', indent)
 
    def _write_glyph(self, stream,  glyph, indent=0):
       tag = ('<glyph uly="%s" ulx="%s" nrows="%s" ncols="%s">' %
@@ -216,7 +198,7 @@ class WriteXMLFile(WriteXML):
 ################################################################################
 
 class LoadXML:
-   def __init__(self, parts = ['symbol_table', 'glyphs', 'groups']):
+   def __init__(self, parts = ['symbol_table', 'glyphs']):
       self._start_elements = {}
       self._end_elements = {}
       self._stream_length = 0
@@ -307,13 +289,9 @@ class LoadXML:
    def _append_glyph_to_glyphs(self, glyph):
       self.glyphs.append(glyph)
 
-   def _append_glyph_to_group(self, glyph):
-      self._group.append(glyph)
-
    def _setup_handlers(self):
       self.symbol_table = SymbolTable()
       self.glyphs = []
-      self.groups = []
       self._glyph_no = 0
       self.add_start_element_handler('gamera-database', self._tag_start_gamera_database)
       self.add_end_element_handler('gamera-database', self._tag_end_gamera_database)
@@ -337,9 +315,6 @@ class LoadXML:
       if 'glyphs' in self._parts:
          self.add_start_element_handler('glyphs', self._tag_start_glyphs)
          self.add_end_element_handler('glyphs', self._tag_end_glyphs)
-      if 'groups' in self._parts:
-         self.add_start_element_handler('groups', self._tag_start_groups)
-         self.add_end_element_handler('groups', self._tag_end_groups)
 
    def _tag_end_gamera_database(self):
       if 'symbol_table' in self._parts:
@@ -348,9 +323,6 @@ class LoadXML:
       if 'glyphs' in self._parts:
          self.remove_start_element_handler('glyphs')
          self.remove_end_element_handler('glyphs')
-      if 'groups' in self._parts:
-         self.remove_start_element_handler('groups')
-         self.remove_end_element_handler('groups')
 
    def _tag_start_symbols(self, a):
       self.add_start_element_handler('symbol', self._tag_start_symbol)
@@ -448,34 +420,6 @@ class LoadXML:
 
    def add_property_value(self, data):
       self._property_value += data
-
-   def _tag_start_groups(self, a):
-      self._append_glyph = self._append_glyph_to_group
-      self.add_start_element_handler('group', self._tag_start_group)
-      self.add_end_element_handler('group', self._tag_end_group)
-      self.add_start_element_handler('glyph', self._tag_start_glyph)
-      self.add_end_element_handler('glyph', self._tag_end_glyph)
-      self.add_start_element_handler('features', self._tag_start_features)
-      self.add_start_element_handler('ids', self._tag_start_ids)
-      self.add_start_element_handler('id', self._tag_start_id)
-      self.add_start_element_handler('data', self._tag_start_data)
-      self.add_end_element_handler('data', self._tag_end_data)
-      self.add_start_element_handler('property', self._tag_start_property)
-      self.add_end_element_handler('property', self._tag_end_property)
-
-   def _tag_end_groups(self):
-      self._append_glyph = None
-      for element in 'group glyph feautures ids id data property'.split():
-         self.remove_start_element_handler(element)
-      for element in 'group glyph data property'.split():
-         self.remove_end_element_handler(element)
-
-   def _tag_start_group(self, a):
-      self._group = []
-      self.group_id = self.try_type_convert(a, 'id', str, 'group')
-
-   def _tag_end_group(self):
-      self.groups.append(Group(self.group_id, self._group))
 
 def glyphs_from_xml(filename):
    """Return a list of glyphs from an xml file"""

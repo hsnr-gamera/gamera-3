@@ -288,6 +288,9 @@ class ShellFrame(wxFrame):
          self,
          (("&Open...", self._OnFileOpen),
           ("&Image browser...", self._OnImageBrowser),
+          (None, None),
+          ("Open &XML...", self._OnLoadXML),
+          (None, None),
           ("&Biollante...", self._OnBiollante),
           (None, None),
           ("E&xit...", self._OnCloseWindow)))
@@ -332,13 +335,28 @@ class ShellFrame(wxFrame):
       if filename:
          name = var_name.get("image", self.shell.locals)
          if name:
-            wxBeginBusyCursor()
-            self.shell.run('%s = load_image(r"%s")' % (name, filename))
-            wxEndBusyCursor()
+            try:
+               wxBeginBusyCursor()
+               self.shell.run('%s = load_image(r"%s")' % (name, filename))
+            finally:
+               wxEndBusyCursor()
 
    def _OnImageBrowser(self, event):
       browser = image_browser.ImageBrowserFrame()
       browser.Show(1)
+
+   def _OnLoadXML(self, event):
+      import gamera_xml
+      filename = gui_util.open_file_dialog(self, gamera_xml.extensions)
+      if filename:
+         name = var_name.get("glyphs", self.shell.locals)
+         if name:
+            wxBeginBusyCursor()
+            try:
+               self.shell.run("import gamera_xml")
+               self.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' % (name, filename))
+            finally:
+               wxEndBusyCursor()
 
    def _OnBiollante(self, event):
       from gamera.gui import gaoptimizer_display

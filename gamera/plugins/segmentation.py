@@ -39,7 +39,7 @@ class splitx(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
     return_type = ImageList("splits")
-    def __call__(self, image, center=0.5):
+    def __call__(self, center=0.5):
         return image.splitx(self._center, center)
 splitx = splitx()
 
@@ -47,7 +47,7 @@ class splity(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
     return_type = ImageList("splits")
-    def __call__(self, image, center=0.5):
+    def __call__(self, center=0.5):
         return image.splity(self._center, center)
 splity = splity()
 
@@ -55,7 +55,7 @@ class splitx_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
-    def __call__(self, image):
+    def __call__(self):
         return image.splitx(self._center)
     
 class splitx_left(splitx_base):
@@ -70,7 +70,7 @@ class splity_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
-    def __call__(self, image):
+    def __call__(self):
         return image.splity(self._center)
     
 class splity_top(splity_base):

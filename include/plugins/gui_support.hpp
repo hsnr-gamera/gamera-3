@@ -24,6 +24,7 @@
 #include "gamera.hpp"
 #include "vigra/resizeimage.hxx"
 #include "image_utilities.hpp"
+#include "connected_components.hpp"
 #include "Python.h"
 
 namespace Gamera {
@@ -200,6 +201,19 @@ Image *clip_image(T& m, U& rect) {
     return new T(m, ul_y, ul_x, lr_y - ul_y + 1, lr_x - ul_x + 1);
   } else {
     return new T(m, m.ul_y(), m.ul_x(), 1, 1);
+  };
+}
+
+template<class U>
+Image* clip_image(Cc& m, U& rect) {
+  if (m.intersects(rect)) {
+    size_t ul_y = MAX(m.ul_y(), rect.ul_y());
+    size_t ul_x = MAX(m.ul_x(), rect.ul_x());
+    size_t lr_y = MIN(m.lr_y(), rect.lr_y());
+    size_t lr_x = MIN(m.lr_x(), rect.lr_x());
+    return new Cc(m, ul_y, ul_x, lr_y - ul_y + 1, lr_x - ul_x + 1);
+  } else {
+    return new Cc(m, m.ul_y(), m.ul_x(), 1, 1);
   };
 }
 

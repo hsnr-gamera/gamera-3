@@ -333,6 +333,7 @@ class ClassifierFrame(ImageFrameBase):
       for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
          self._symbol_table.add("_split." + split[0])
       self._symbol_table.add("_group")
+      self._symbol_table.add("_group._part")
       # Add classifier database's symbols to the symbol table
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
@@ -429,9 +430,6 @@ class ClassifierFrame(ImageFrameBase):
          (("Guess all", self._OnGuessAll),
           ("&Guess selected", self._OnGuessSelected),
           (None, None),
-          ("Group all", self._OnGroupAll),
-          ("G&roup selected", self._OnGroupSelected),
-          (None, None),
           ("Group and guess all", self._OnGroupAndGuessAll),
           ("Group &and guess selected", self._OnGroupAndGuessSelected),
           (None, None),
@@ -493,8 +491,6 @@ class ClassifierFrame(ImageFrameBase):
       for glyph in self.multi_iw.id.GetAllItems():
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
-      for group in self._classifier.grouping_classifier.get_groups():
-         self._symbol_table.add('_group.' + group.id)
 
    def add_to_database(self, glyphs):
       self._classifier.add_to_database(glyphs)
@@ -745,19 +741,6 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message(str(e))
       self._AdjustAfterGuess(added, removed)
 
-   def _OnGroupAll(self, event):
-      self._OnGroup(self.multi_iw.id.GetAllItems())
-
-   def _OnGroupSelected(self, event):
-      self._OnGroup(self.multi_iw.id.GetSelectedItems())
-
-   def _OnGroup(self, list):
-      try:
-         added, removed = self._classifier.group_list_automatic(list)
-      except ClassifierError, e:
-         gui_util.message(str(e))
-      self._AdjustAfterGuess(added, removed)
-
    def _OnGroupAndGuessAll(self, event):
       self._OnGroupAndGuess(self.multi_iw.id.GetAllItems())
 
@@ -766,13 +749,10 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGroupAndGuess(self, list):
       try:
-         added1, removed1 = self._classifier.group_list_automatic(list)
-         added2, removed2 = self._classifier.classify_list_automatic(list + added1)
+         added, removed = self._classifier.group_list_automatic(list)
       except ClassifierError, e:
          gui_util.message(str(e))
-      self._AdjustAfterGuess(
-         util.combine_unique_elements(added1, added2),
-         util.combine_unique_elements(removed1, removed2))
+      self._AdjustAfterGuess(added, removed)
 
    def _AdjustAfterGuess(self, added, removed):
       wxBeginBusyCursor()
@@ -1174,6 +1154,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
          root = item
          if token != tokens[-1]:
             self.SetItemHasChildren(root)
+            self.Expand(root)
 
    def symbol_table_remove_callback(self, tokens):
       root = self.root
@@ -1306,6 +1287,8 @@ class SymbolTableEditorPanel(wxPanel):
       found = None
       for i in range(len(tokens)):
          token = tokens[i]
+         print token
+         found = None
          cookie = 0
          item, cookie = self.tree.GetFirstChild(root, cookie)
          while item.IsOk():

@@ -84,9 +84,9 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   def ShowClassifier(classifier, current_database, image):
+   def ShowClassifier(classifier, current_database, image, symbol_table):
       wxBeginBusyCursor()
-      img = classifier_display.ClassifierFrame(classifier)
+      img = classifier_display.ClassifierFrame(classifier, symbol_table)
       img.set_image(current_database, image)
       img.Show(1)
       wxEndBusyCursor()

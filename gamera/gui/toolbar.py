@@ -18,6 +18,7 @@
 #
 
 from wxPython.wx import *         # wxPython
+from wxPython.lib.buttons import *
 from gamera.gui import gamera_icons
 
 # This is our own custom toolbar class.
@@ -27,42 +28,49 @@ from gamera.gui import gamera_icons
 # own toolbar using a wxPanel and a wxBoxSizer.
 
 class ToolBar(wxPanel):
-    def __init__(self, parent, id=-1):
+    def __init__(self, parent, id=-1, hideable=1):
         self._close_toolbar_bitmap = gamera_icons.getToolbarCloseBitmap()
         self._open_toolbar_bitmap = gamera_icons.getToolbarOpenBitmap()
         self.controls = []
         self.layout_update_controls = []
         self.sizer = wxBoxSizer(wxHORIZONTAL)
         wxPanel.__init__(self, parent, id)
-        self.close_button = wxBitmapButton(
-            self, 1000,
-            self._close_toolbar_bitmap,
-            size=wxSize(11, 28))
-        self.close_button.SetToolTipString("Hide Toolbar")
-        self.sizer.Add(self.close_button)
-        EVT_BUTTON(self, 1000, self.OnHideToolbar)
-        self.close_button.SetCursor(wxStockCursor(wxCURSOR_HAND))
-        self.open_button = wxBitmapButton(
-            self, 1001,
-            self._open_toolbar_bitmap,
-            pos=wxPoint(0,0),
-            size=wxSize(28, 11))
-        self.open_button.Hide()
-        self.open_button.SetToolTipString("Show Toolbar")
-        EVT_BUTTON(self, 1001, self.OnShowToolbar)
-        self.open_button.SetCursor(wxStockCursor(wxCURSOR_HAND))
-        self.AddSeparator()
+        if hideable:
+            self.close_button = wxBitmapButton(
+                self, 1000,
+                self._close_toolbar_bitmap,
+                size=wxSize(11, 28))
+            self.close_button.SetToolTipString("Hide Toolbar")
+            self.sizer.Add(self.close_button)
+            EVT_BUTTON(self, 1000, self.OnHideToolbar)
+            self.close_button.SetCursor(wxStockCursor(wxCURSOR_HAND))
+            self.open_button = wxBitmapButton(
+                self, 1001,
+                self._open_toolbar_bitmap,
+                pos=wxPoint(0,0),
+                size=wxSize(28, 11))
+            self.open_button.Hide()
+            self.open_button.SetToolTipString("Show Toolbar")
+            EVT_BUTTON(self, 1001, self.OnShowToolbar)
+            self.open_button.SetCursor(wxStockCursor(wxCURSOR_HAND))
+            self.AddSeparator()
         self.SetSizer(self.sizer)
         self._closed = 0
 
-    def AddSimpleTool(self, id, bitmap, help_string, callback=None):
-        button = wxBitmapButton(self, id, bitmap, size=wxSize(28,28))
+    def AddSimpleTool(self, id, bitmap, help_string, callback=None, toggle=0):
+        if not toggle:
+            button = wxGenBitmapButton(self, id, bitmap, size=wxSize(28,28))
+        else:
+            button = wxGenBitmapToggleButton(self, id, bitmap, size=wxSize(28,28))
+        button.SetBezelWidth(1)
+        button.SetUseFocusIndicator(false)
         button.SetToolTipString(help_string)
         if callback:
             EVT_BUTTON(self, id, callback)
         self.sizer.Add(button, flag=wxALIGN_CENTER)
         self.sizer.SetSizeHints(self)
         self.controls.append(button)
+        return button
 
     def AddControl(self, control):
         self.sizer.Add(control, flag=wxALIGN_CENTER)

@@ -146,30 +146,36 @@ class ImageBase:
             self._methods_sub(methods, self._methods[type])
       return methods
 
-   def _methods_sub(self, dest, source):
+   def _methods_sub(cls, dest, source):
      for key, val in source.items():
        if type(val) == type({}):
          if not dest.has_key(key):
            dest[key] = {}
-         self._methods_sub(dest[key], val)
+         cls._methods_sub(dest[key], val)
        else:
          dest[key] = val
+   _methods_sub = classmethod(_methods_sub)
 
-   def methods_flat_category(self, category):
-      start = self.methods_for_menu()
-      if start.has_key(category):
-         return self._methods_flatten(start[category])
+   def methods_flat_category(cls, category, pixel_type):
+      methods = {}
+      for type in (ALL, pixel_type):
+         if cls._methods.has_key(type):
+            cls._methods_sub(methods, cls._methods[type])
+      if methods.has_key(category):
+         return cls._methods_flatten(methods[category])
       else:
          return []
+   methods_flat_category = classmethod(methods_flat_category)
 
-   def _methods_flatten(self, mat):
+   def _methods_flatten(cls, mat):
      list = []
      for key, val in mat.items():
        if type(val) == type({}):
-         list.extend(self._methods_flatten(val))
+         list.extend(cls._methods_flatten(val))
        else:
          list.append((key, val))
      return list
+   _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
       return load_image(filename, compression)
@@ -263,11 +269,11 @@ class ImageBase:
       """Create a SubImage from this Image (or SubImage)."""
       return SubImage(self, offset_y, offset_x, nrows, ncols)
 
-   def get_feature_functions(self, features='all'):
+   def get_feature_functions(cls, features='all'):
       global all_features
+      if all_features is None:
+         all_features = cls.methods_flat_category('Features', ONEBIT)
       if features == 'all':
-         if all_features is None:
-            all_features = self.methods_flat_category('Features')
          functions = all_features
       else:
          if not util.is_sequence(features):
@@ -275,20 +281,25 @@ class ImageBase:
          functions = []
          for feature in features:
             if type(feature) == type(''):
-               functions.append(getattr(self, feature))
-            elif inspect.ismethod(feature):
-               functions.append(feature)
+               found = 0
+               for i in all_features:
+                  if feature == i[0]:
+                     functions.append(i)
+                     found = 1
+                     break
+               if not found:
+                  raise ValueError("'%s' is not a known feature function.")
             else:
                raise ValueError("'%s' is not a valid way to specify a feature."
                                 % feature)
       functions.sort()
       return functions
+   get_feature_functions = classmethod(get_feature_functions)
 
    def generate_features(self, features=None):
       if features is None:
          features = self.get_feature_functions()
       if self.feature_functions == features:
-         print "skipping generation"
          return
       self.feature_functions = features
       self.features = array.array('d')
@@ -300,8 +311,8 @@ class ImageBase:
             self.features.extend(result)
          
    def to_xml(self, stream=None):
-      import database
-      return database.WriteXMLGlyphs([self]).write_stream(stream)
+      import gamera_xml
+      return gamera_xml.WriteXML(glyphs=[self]).write_stream(stream)
 
 ######################################################################
       

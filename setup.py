@@ -168,7 +168,7 @@ else:
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
 
-setup(name = "gamera", version="2.1.3",
+setup(name = "gamera", version="2.1.4",
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "mdboom@jhu.edu; karlmac@jhu.edu",

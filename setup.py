@@ -69,19 +69,19 @@ for util in command_line_utils:
    fd.close()
 os.chmod(file, 0700)
 
-########################################
-# Distutils setup
-
-ga_files = glob.glob("src/ga/*.cpp")
-ga_files.append("src/knncoremodule.cpp")
-graph_files = glob.glob("src/graph/*.cpp")
-
 ##########################################
 # generate the plugins
 plugin_extensions = []
 plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 plugin_extensions = gamera_setup.generate_plugins(
    plugins, "gamera.plugins", True)
+
+########################################
+# Non-plugin extensions
+
+ga_files = glob.glob("src/ga/*.cpp")
+ga_files.append("src/knncoremodule.cpp")
+graph_files = glob.glob("src/graph/*.cpp")
 
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
@@ -107,27 +107,30 @@ extensions = [Extension("gamera.gameracore",
                         **gamera_setup.extras)]
 extensions.extend(plugin_extensions)
 
+##########################################
+# Here's the basic distutils stuff
+
 description = ("This is the Gamera installer. " +
                "Please ensure that Python and wxPython 2.4.0 " +
                "(or later) are installed before proceeding.")
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
 
-if sys.platform=="win32":
-    include_path = "include/gamera"
-else:
-    include_path = "include/gamera/"
+include_path = "include/gamera"
 
 includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", os.path.join(a, b)))) for a, b in
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
+
+gamera_version = open("version", 'r').readlines()[0].strip()
+open("gamera/__version__.py", "w").write("ver = `%s`\n\n" % gamera_version)
             
 setup(name = "gamera",
-      version=open("version", 'r').readlines()[0].strip(),
+      version=gamera_version,
       url = "http://gamera.sourceforge.net/",
       author = "Michael Droettboom and Karl MacMillan",
-      author_email = "gamera-users@lists.sourceforge.net",
+      author_email = "gamera-devel@yahoogroups.com",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],

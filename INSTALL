@@ -140,7 +140,9 @@ Standard Build and Install
 ''''''''''''''''''''''''''
 
 Gamera is built using the Python-standard Distutils system.  Open a
-Cygwin command prompt and type::
+Microsoft Visual Studio Command Prompt (this should have been added to
+the Start Menu when you installed Visual Studio).  Change to the
+directory where the Gamera source is installed and type::
 
   python setup.py build
 

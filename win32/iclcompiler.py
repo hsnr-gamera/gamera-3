@@ -233,7 +233,7 @@ class ICLCompiler (CCompiler) :
  #       self.compile_options = [ '/nologo', '/fast', '/QxW', '/Qipo', '/Qparallel',
  #                                '/G7', '/MD', '/GX', '/W3','/DNDEBUG']
 
-        self.compile_options = [ '/nologo', '/G7', '/Qipo', '/QxB', '/GX', '/W3','/DNDEBUG']
+        self.compile_options = [ '/nologo', '/G7', '/Qipo', '/GX', '/fast', '/W3','/DNDEBUG']
         
         self.compile_options_debug = ['/nologo', '/Od', '/MDd', '/W3', '/GX',
                                       '/Z7', '/D_DEBUG']

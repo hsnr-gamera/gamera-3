@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Make sure X11 is running first
+lsof | grep X11 > /dev/null
+if [ "$?" == "1" ]; then
+        open -a "X11.app"
+fi
+
+# Script to run a program with the X path and display configured correctly
+
+for x in 0 1 2 3 4 5 6 7 8 9; do
+  if [ -O /tmp/.X$x-lock ]; then
+    DISPLAY=:$x.0
+	export DISPLAY; break
+  fi
+done
+
+for d in /usr/X11R6/bin /usr/bin/X11 /usr/local/bin/X11; do
+  if [ -d $d ]; then
+    case $PATH in
+      '')
+        PATH=$d
+        ;;
+      $d|$d:*|*:$d|*:$d:*)
+        : do nothing
+        ;;
+      *)
+        PATH=$PATH:$d
+        ;;
+    esac
+  fi
+done
+export PATH
+
+# redirect stdio?
+exec "/System/Library/Frameworks/Python.framework/Versions/2.3/bin/gamera_gui" "$@"

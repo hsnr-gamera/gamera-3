@@ -328,6 +328,7 @@ namespace Gamera {
       else
 	m_accessor.set(1, i + diff);
     }
+
     ImageAccessor<value_type> m_accessor;
   };
 

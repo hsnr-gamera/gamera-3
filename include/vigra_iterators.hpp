@@ -84,7 +84,7 @@ namespace Gamera {
       bool operator<(MoveY const & rhs) const {
 	return (offset_ < rhs.offset_); }
       int operator-(MoveY const & rhs) const {
-	return (offset_ - rhs.offset_) / width_;
+	return ((offset_ - rhs.offset_) / width_);
       }
       MoveY(size_t width)
         : width_(width), offset_(0) {}

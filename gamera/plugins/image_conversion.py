@@ -19,73 +19,31 @@
 
 from gamera.plugin import *
 
-# From rgb
-class rgb_to_greyscale(PluginFunction):
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE], "output")
-rgb_to_greyscale = rgb_to_greyscale()
+class to_rgb(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
+    return_type = ImageType([RGB])
+to_rgb = to_rgb()
 
-class rgb_to_grey16(PluginFunction):
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREY16], "output")
-rgb_to_grey16 = rgb_to_grey16()
+class to_greyscale(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
+    return_type = ImageType([GREYSCALE])
+to_greyscale = to_greyscale()
 
-class rgb_to_float(PluginFunction):
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT], "output")
-rgb_to_float = rgb_to_float()
+class to_grey16(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
+    return_type = ImageType([GREY16])
+to_grey16 = to_grey16()
 
-# From GreyScale
-class greyscale_to_float(PluginFunction):
-    self_type = ImageType([GREYSCALE])
-    return_type = ImageType([FLOAT], "output")
-greyscale_to_float = greyscale_to_float()
-
-class greyscale_to_grey16(PluginFunction):
-    self_type = ImageType([GREYSCALE])
-    return_type = ImageType([GREY16], "output")
-greyscale_to_grey16 = greyscale_to_grey16()
-
-class greyscale_to_rgb(PluginFunction):
-    self_type = ImageType([GREYSCALE])
-    return_type = ImageType([RGB], "output")
-greyscale_to_rgb = greyscale_to_rgb()
-
-# From Grey16
-class grey16_to_float(PluginFunction):
-    self_type = ImageType([GREY16])
-    return_type = ImageType([FLOAT], "output")
-grey16_to_float = grey16_to_float()
-
-# From OneBit
-class onebit_to_rgb(PluginFunction):
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([RGB], "output")
-onebit_to_rgb = onebit_to_rgb()
-
-class onebit_to_greyscale(PluginFunction):
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([GREYSCALE], "output")
-onebit_to_greyscale = onebit_to_greyscale()
-
-class onebit_to_grey16(PluginFunction):
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([GREY16], "output")
-onebit_to_grey16 = onebit_to_grey16()
-
-class onebit_to_float(PluginFunction):
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([FLOAT], "output")
-onebit_to_float = onebit_to_float()
+class to_float(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
+    return_type = ImageType([FLOAT])
+to_float = to_float()
 
 class ImageConversionModule(PluginModule):
     category = "Utility"
     cpp_headers=["image_conversion.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [rgb_to_greyscale, rgb_to_grey16, rgb_to_float,
-                 greyscale_to_float, greyscale_to_grey16,
-                 greyscale_to_rgb, grey16_to_float, onebit_to_rgb, onebit_to_greyscale,
-                 onebit_to_grey16, onebit_to_float]
+    functions = [to_rgb, to_greyscale, to_grey16, to_float]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

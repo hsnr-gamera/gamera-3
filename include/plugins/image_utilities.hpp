@@ -193,5 +193,28 @@ namespace Gamera {
     return values;
   }
 
+  /*
+    Find the maximum pixel value for an image
+  */
+  template<class T>
+  typename T::value_type find_max(const T& image) {
+    if (image.nrows() == 0 || image.ncols() == 0)
+      throw std::range_error("Image must have nrows and ncols > 0.");
+    typename T::const_row_iterator row = image.row_begin();
+    typename T::const_col_iterator col;
+    typename T::value_type tmp, max;
+    ImageAccessor<typename T::value_type> acc;
+    
+    max = acc.get(row); 
+    for ( ; row != image.row_end(); ++row) {
+      for (col = row.begin(); col != row.end(); ++col) {
+	tmp = acc.get(col);
+	if (tmp > max)
+	  max = tmp;
+      }
+    }
+    return max;
+  }
+
 }
 #endif

@@ -23,6 +23,7 @@
 
 #include "gamera.hpp"
 #include "vigra/resizeimage.hxx"
+#include "image_utilities.hpp"
 #include "Python.h"
 
 namespace Gamera {
@@ -57,12 +58,7 @@ namespace {
     void operator()(const Mat& mat, char* data) {
       char* i = data;
       FloatPixel max = 0;
-      Mat full_mat = mat.parent();
-      typename Mat::vec_iterator di = full_mat.vec_begin();
-      for (; di != full_mat.vec_end(); di++) {
-	if (max < *di)
-	  max = *di;
-      }
+      max = find_max(mat.parent());
       if (max > 0)
 	max = 255.0 / max;
       else 

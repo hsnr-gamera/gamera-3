@@ -20,7 +20,7 @@
 from gamera.plugin import *
 
 class guassian_smoothing(PluginFunction):
-    self_type = ImageType([GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("scale")])
     
 guassian_smoothing = guassian_smoothing()

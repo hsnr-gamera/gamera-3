@@ -248,11 +248,13 @@ namespace Gamera {
 				  typename T::const_iterator> ConstIterator;
     ConstIterator upperLeft() const {
       return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
-	+ Diff2D(offset_x(), offset_y());
+	+ Diff2D(offset_x() - m_image_data->page_offset_x(),
+		 offset_y() - m_image_data->page_offset_y());
     }
     ConstIterator lowerRight() const {
       return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
-	+ Diff2D(offset_x() + ncols(), offset_y() + nrows());
+	+ Diff2D(offset_x() + ncols() - m_image_data->page_offset_x(),
+		 offset_y() + nrows() - m_image_data->page_offset_y());
     }
 
     //

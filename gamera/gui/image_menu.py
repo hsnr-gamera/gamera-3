@@ -76,13 +76,13 @@ class ImageMenu:
     self.methods = images[0].methods_for_menu()
 
   # Given a list of variables and methods, put it all together
-  def create_menu(self, variables, methods, type):
+  def create_menu(self, variables, methods, type, type_name):
     global functions
     menu = wxMenu()
     # Top line
     if self.mode == HELP_MODE:
       menu.Append(0, "Help")
-    menu.Append(0, type + " Image")
+    menu.Append(0, type_name + " Image")
     menu.AppendSeparator()
 
     menu.Append(10000, "new reference")
@@ -122,14 +122,16 @@ class ImageMenu:
   def PopupMenu(self):
     menu = self.create_menu(self.variables,
                             self.methods,
+                            images[0].data.pixel_type,
                             images[0].pixel_type_name)
     self.parent.PopupMenu(menu, wxPoint(self.x, self.y))
     menu.Destroy()
 
   def GetMenu(self):
-    return self.create_main_menu(self.variables,
-                                 self.methods,
-                                 images[0].pixel_type_name)
+    return self.create_menu(self.variables,
+                            self.methods,
+                            images[0].data.pixel_type,
+                            images[0].pixel_type_name)
 
   def get_shell(self):
     if self.shell:

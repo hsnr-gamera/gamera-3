@@ -62,7 +62,7 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
 
 class IconDisplay(wxListCtrl):
   def __init__(self, parent):
-    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), wxLC_ICON)
+    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), wxLC_ICON|wxLC_ALIGN_TOP)
     self.data = {}
     self.locals = {}
     self.currentIcon = None
@@ -111,7 +111,9 @@ class IconDisplay(wxListCtrl):
     index = self.GetItemCount()
     data.index = index
     self.data[label] = data
-    self.InsertImageStringItem(index, label, icon)
+    item = self.InsertImageStringItem(index, label, icon)
+    self.GetItem(index).SetAlign(wxLIST_FORMAT_CENTRE)
+    self.GetItem(index).SetBackgroundColour(wxBLUE)
     
   def refresh_icon(self, key, data, icon):
     if data.type != self.data[key].type:
@@ -267,9 +269,6 @@ class CIGrey16Image(CustomIcon):
     return icon
 
   def check(self, data):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getBitmap())
-    return icon
     return isinstance(data, Image) and data.data.pixel_type == GREY16
 
 class CIFloatImage(CustomIcon):

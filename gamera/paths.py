@@ -26,7 +26,6 @@ if 1:
 lib = os.path.dirname(os.path.realpath(dummy.func_code.co_filename))
 # Figure out if we are in the source directory or installed
 plugins = os.path.realpath(os.path.join(lib, "plugins"))
-print lib, plugins
 sys.path.append(plugins)
 plugins_src = ""
 toolkits = os.path.realpath(os.path.join(lib, "toolkits"))
@@ -50,29 +49,36 @@ def get_toolkit_names(dir):
 
 def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
-   modules = map(lambda x: os.path.basename(x)[0:-3], modules)
+   modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
    # TODO: Take out this hard coding
-   modules = ["morphology", "feature", "map", "logical", "display", "file", "utility", "line"]
-   # modules = ["morphology"]
+   modules = ["logical"]
    if debug:
-      sys.stdout.write("Loading plugins: ----------------------------------------\n")
+      sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0
    first = 1
    for m in modules:
-      module = __import__(m, gl, lo, [])
-      if not first:
-         display = ", "
-      else:
-         display = ""
-         first = 0
-      display += m
-      column = column + len(display)
-      if debug:
-         if column > 70:
-            sys.stdout.write("\n")
-            column = len(display)
-         sys.stdout.write(display)
-         sys.stdout.flush()
+     try:
+       module = __import__(m, gl, lo, [])
+       failed = 0
+     except Exception, e:
+       raise e
+       failed = 1
+     if not first:
+       display = ", "
+     else:
+       display = ""
+       first = 0
+     if failed:
+       display += '[' + m + ']'
+     else:
+       display += m
+     column += len(display)
+     if debug:
+       if column > 70:
+         sys.stdout.write("\n")
+         column = len(display)
+       sys.stdout.write(display)
+       sys.stdout.flush()
    if debug:
-      sys.stdout.write("\n")
+     sys.stdout.write("\n")
 

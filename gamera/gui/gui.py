@@ -240,6 +240,13 @@ class ShellFrame(wxFrame):
       self.shell.push("from gamera.core import *")
       self.shell.push("config.add_option('__gui', gui.GameraGui)")
       self.shell.push("init_gamera()")
+
+      # TODO: hard coding:::
+      self.shell.push("greyscale = Image(5,5,50,50,GREYSCALE,DENSE)")
+      self.shell.push("rgb = Image(5,5,50,50,RGB,DENSE)")
+      self.shell.push("onebit = Image(5,5,50,50,ONEBIT,DENSE)")
+      self.shell.push("grey16 = Image(5,5,50,50,GREY16,DENSE)")
+
       self.shell.update = self.Update
       self.icon_display.shell = self.shell
       self.icon_display.main = self

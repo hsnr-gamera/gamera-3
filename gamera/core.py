@@ -23,6 +23,7 @@ import sys, os, types, os.path, inspect     # Python standard library
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
 from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+ALL = 255
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
@@ -53,7 +54,7 @@ class ImageBase:
       if self._display:
          self._display.close()
 
-   def add_plugin_method(cls, plug, func, category):
+   def add_plugin_method(cls, plug, func, category="Miscellaneous"):
       methods = cls._methods
       if func != None:
          setattr(cls, plug.__name__, func)
@@ -92,7 +93,7 @@ class ImageBase:
 
    def methods_for_menu(self):
       methods = {}
-      for type in ("All", self.pixel_type_name):
+      for type in (ALL, self.data.pixel_type):
          if self._methods.has_key(type):
             self._methods_sub(methods, self._methods[type])
       return methods
@@ -337,24 +338,24 @@ def init_gamera():
       for method in (
          plugin.PluginFactory("load_image", None, "File",
                               plugin.ImageType([], "image"),
-                              plugin.ImageType(["All"]),
+                              plugin.ImageType([ALL]),
                               (plugin.FileOpen("filename"))),
          plugin.PluginFactory("display", None, "Display",
                               None,
-                              plugin.ImageType(["All"]),
+                              plugin.ImageType([ALL]),
                               None),
          plugin.PluginFactory("display_children", None, "Display",
                               None,
-                              plugin.ImageType(["All"]),
+                              plugin.ImageType([ALL]),
                               None),
          plugin.PluginFactory("display_ccs", None, "Display",
                               None,
-                              plugin.ImageType(["OneBit"]),
+                              plugin.ImageType([ONEBIT]),
                               None),
          plugin.PluginFactory("display_cc", None, "Display",
                               None,
-                              plugin.ImageType(["OneBit"]),
-                              plugin.ImageType(["OneBit"], "cc"))
+                              plugin.ImageType([ONEBIT]),
+                              plugin.ImageType([ONEBIT], "cc"))
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)

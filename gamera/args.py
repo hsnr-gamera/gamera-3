@@ -24,7 +24,7 @@ try:
 except:
    _has_gui = _NO_GUI
 import sys, types, string   # Python standard library
-import util, paths, core  # Gamera specific
+import util, paths, core    # Gamera specific
 
 
 ######################################################################
@@ -153,7 +153,7 @@ if _has_gui == _WX_GUI:
 
       def OnHelp(self, event):
          
-         gamera.help(self.function)
+         core.help(self.function)
 else:
    class _guiArgs:
       def setup(self, parent, locals, wizard=0):
@@ -380,7 +380,8 @@ if _has_gui == _WX_GUI:
                if ((self.list_of and isinstance(i[1], type([])) and
                     len(i[1]) and isinstance(i[1][0], self.klass)) or
                    (not self.list_of and isinstance(i[1], self.klass))):
-                  if i.get_type() in self.pixel_types:
+                  if (core.ALL in self.pixel_types or
+                      i.data.pixel_types in self.pixel_types):
                      choices.append(i[0])
          return choices
 else:
@@ -388,10 +389,11 @@ else:
       pass
 
 class ImageType(_guiImage, Arg):
+   klass = core.Image
+   
    def __init__(self, pixel_types, name="self", list_of = 0):
       import gamera
       self.name = name
-      # self.klass = gamera.Image
       if not util.is_sequence(pixel_types):
          pixel_types = (pixel_types,)
       self.pixel_types = pixel_types

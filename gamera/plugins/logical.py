@@ -18,10 +18,11 @@
 #
 
 from gamera.plugin import *
+from gamera.core import ONEBIT
   
 class _LogicalBase(PluginFunction):
-  self_type = ImageType(['OneBit'])
-  args = Args([ImageType(['OneBit'])])
+  self_type = ImageType([ONEBIT])
+  args = Args([ImageType([ONEBIT])])
 
 class and_image(_LogicalBase):
   pass

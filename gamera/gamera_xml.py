@@ -450,7 +450,8 @@ Saves the given list of glyphs to a Gamera XML file.
 *with_features*
   When set to ``True``, features generated on the image are saved to the XML file.
 """
-
+   WriteXMLFile(glyphs, with_features=with_features).write_filename(filename) 	 
+ 
 class StripTag:
    # This is a ridiculous implementation that probably deserves some
    # explanation.  I want to use a full-fledged XML parser, (even though this

@@ -29,8 +29,6 @@
 #include <time.h>
 #include <algorithm>
 
-bool randset=0;
-
 /*
  * Rotate at an arbitrary angle.
  *
@@ -456,13 +454,15 @@ inline size_t noShift(size_t, double)
 }
 
 template<class T>
-typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float freq, int direction, int funcType, int offset)
+typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float freq, int direction, int funcType, int offset, double turbulence, long random_seed=0)
 {
 
   typedef typename ImageFactory<T>::data_type data_type;
   typedef typename ImageFactory<T>::view_type view_type;
 
   typedef typename T::value_type pixelFormat;
+
+  srand(random_seed);
 
   pixelFormat background = pixelFormat(0.0);
   
@@ -527,13 +527,13 @@ typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float fre
   
   if (direction) {
     for(size_t i=0; i<new_view->nrows(); i++) {
-	  double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset));
+	  double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset))+(turbulence*(rand()/RAND_MAX))+(turbulence/2.0);
 	  shear_x(src, *new_view, i, (size_t)(floor(shift)), background, (double)(shift-floor(shift)));
     }
   }
   else {
       for(size_t i=0; i<new_view->ncols(); i++) {
-	  double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset));
+	  double shift = ((double)amplitude/2)*(1-waveType(freq,(int)i-offset))+(turbulence*(rand()/RAND_MAX))+(turbulence/2.0);
 	  shear_y(src, *new_view, i, (size_t)(floor(shift)), background, (double)(shift - (size_t)(shift)));
       }
     }
@@ -545,7 +545,7 @@ typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float fre
 
 
 template<class T>
-typename ImageFactory<T>::view_type* noise(const T &src, int amplitude, int direction)
+typename ImageFactory<T>::view_type* noise(const T &src, int amplitude, int direction, long random_seed = 0)
 {
 
   typedef typename ImageFactory<T>::data_type data_type;
@@ -556,11 +556,7 @@ typename ImageFactory<T>::view_type* noise(const T &src, int amplitude, int dire
 
   //image_copy_fill(src, *new_view);
 
-
-  if (!randset) {
-    srand(time(0));
-    randset=1;
-  }
+  srand(random_seed);
 
   size_t (*vertExpand)(size_t), (*horizExpand)(size_t), (*vertShift)(size_t, double), (*horizShift)(size_t, double);
   
@@ -618,7 +614,7 @@ typename ImageFactory<T>::view_type* noise(const T &src, int amplitude, int dire
  */
 
 template<class T>
-typename ImageFactory<T>::view_type* inkrub(const T &src, int a) {
+typename ImageFactory<T>::view_type* inkrub(const T &src, int a, long random_seed=0) {
 
   typedef typename ImageFactory<T>::data_type data_type;
   typedef typename ImageFactory<T>::view_type view_type;
@@ -637,10 +633,7 @@ typename ImageFactory<T>::view_type* inkrub(const T &src, int a) {
 
   image_copy_fill(src, *new_view);
 
-  if (!randset) {
-    srand(time(0));
-    randset = 1;
-  } 
+  srand(random_seed);
 
   for (int i=0; ir != src.row_end(); ++ir, ++jr, i++) {
     typename IteratorI::iterator ic = ir.begin();
@@ -665,7 +658,7 @@ inline double dist(double i0, double j0, double i1, double j1)
 }	
 
 template<class T>
-typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double dropoff)
+typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double dropoff, long random_seed=0)
 {
   
   typedef typename ImageFactory<T>::data_type data_type;
@@ -686,10 +679,7 @@ typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double 
   double val, expSum;
   pixelFormat aggColor, currColor;
 
-  if (!randset) {
-    srand(time(NULL));
-    randset=1;
-  }
+  srand(random_seed);
   
   if (type == 0) {
 
@@ -733,8 +723,6 @@ typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double 
     for(; srcIter != src.vec_end(); ++srcIter, --destIter) {
       *destIter = *srcIter;
     }
-
-    // THIS IS CONFUSING YOU DO IT
 
     size_t starti, startj;
     double iD, jD;

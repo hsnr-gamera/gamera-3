@@ -36,29 +36,10 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       MultiImageDisplay.__init__(self, parent)
       self.last_image_no = None
       EVT_GRID_RANGE_SELECT(self, self.OnSelect)
-      if hasattr(self, "GetGridWindow"):
-         EVT_MOTION(self.GetGridWindow(), self.OnMotion)
-         EVT_LEAVE_WINDOW(self.GetGridWindow(), self.OnLeave)
-      self.tooltip = wxButton(self.GetGridWindow(), -1, "",
-                              wxPoint(0, 0), wxSize(175, 24))
-      font = self.tooltip.GetFont()
-      font.SetPointSize(14)
-      font.SetWeight(wxBOLD)
-      self.tooltip.SetFont(font)
-      self.tooltip.SetBackgroundColour(wxColor(red=247, green=243, blue=192))
-      self.tooltip.Show(false)
       self.last_sort = None
       # This is to turn off the display of row labels if a) we have done some classification
       # and b) we have done a sort other than the default. KWM
       self.display_row_labels = 0
-
-   def append_glyphs(self, list):
-      wxBeginBusyCursor()
-      self.BeginBatch()
-      self.list.extend(list)
-      self.resize_grid(do_auto_size=0)
-      self.EndBatch()
-      wxEndBusyCursor()
 
    ########################################
    # AUTO-MOVE

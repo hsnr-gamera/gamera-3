@@ -151,8 +151,8 @@ def word_wrap(stream, l, indent=0, width=78):
 
 def encode_binary(s):
   import zlib, binascii
-  return binascii.b2a_base64(s)
+  return binascii.b2a_base64(zlib.compress(s))
   
 def decode_binary(s):
   import zlib, binascii
-  return binascii.a2b_base64(s)
+  return zlib.decompress(binascii.a2b_base64(s))

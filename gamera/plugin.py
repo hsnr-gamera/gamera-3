@@ -168,7 +168,10 @@ def PluginFactory(name, func, category=None,
         cls.category = category
     cls.return_type = return_type
     cls.self_type = self_type
-    cls.args = args
+    if args is None:
+        cls.args = Args([])
+    else:
+        cls.args = args
     cls.__call__ = func
     return cls
 

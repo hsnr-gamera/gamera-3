@@ -25,6 +25,7 @@
 #endif
 #include <vector>
 #include <algorithm>
+#include <sstream>
 
 namespace Gamera {
   /*
@@ -202,39 +203,61 @@ namespace Gamera {
 #ifndef GAMERA_NO_PYTHON
 
   template<class T>
-  IntVector* to_rle(T& image) {
+  std::string to_rle(T& image) {
     // White first
-    IntVector* runs = new IntVector;
+    std::ostringstream oss;
 
     for (typename T::vec_iterator i = image.vec_begin();
 	 i != image.vec_end(); /* deliberately blank */) {
       typename T::vec_iterator start;
       start = i;
       white_run_end(i, image.vec_end());
-      runs->push_back(i - start);
+      oss << int(i - start) << " ";
       start = i;
       black_run_end(i, image.vec_end());
-      runs->push_back(i - start);
+      oss << int(i - start) << " ";
     }
 
-    return runs;
+    return oss.str();
   }
 
-#endif
+  char * next_number(char *s, size_t &number) {
+    number = 0;
 
-  template<class T, class U>
-  void from_rle(T& image, U run, const U runs_end) {
+    // Scan through whitespace
+    while (*s < '0' || *s > '9')
+      ++s;
+
+    // Read in number
+    for (; *s >= '0' && *s <= '9'; ++s) {
+      number *= 10;
+      number += *s - '0';
+    }
+    return s;
+  }
+
+  template<class T>
+  void from_rle(T& image, const char *runs) {
+    // I would love to use istream::scan for this, but it's a GNU
+    // extension.  Pretty much everywhere we compile is GNU anyway,
+    // but...
+    
     // White first
+
+    char *p = const_cast<char *>(runs);
+
     for (typename T::vec_iterator i = image.vec_begin();
-	 i != image.vec_end(),
-	   run != runs_end; /* deliberately blank */) {
+	 i != image.vec_end(); /* deliberately blank */) {
       // white
-      typename T::vec_iterator end = i + *(run++);
+      size_t run;
+      p = next_number(p, run);
+      typename T::vec_iterator end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, white(image));
       i = end;
-      end = i + *(run++);
+      p = next_number(p, run);
+      end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, black(image));
@@ -242,19 +265,8 @@ namespace Gamera {
     }
   }
 
-#ifndef GAMERA_NO_PYTHON
-
-  template<class T>
-  void from_rle(T& image, PyObject* runs) {
-    int* buf;
-    int size;
-    if (PyObject_AsReadBuffer(runs, (const void**)&buf, &size) < 0)
-      throw std::runtime_error("Object is not a buffer!");
-    int len = size / sizeof(int);
-    from_rle(image, buf, buf + len);
-  }
-
 #endif
+
 }
 
 #endif

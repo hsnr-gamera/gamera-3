@@ -165,7 +165,7 @@ else:
 
 class Args(_guiArgs):
    # list is a list of "Args"
-   def __init__(self, list, name="Arguments", function=None, title=None):
+   def __init__(self, list=[], name="Arguments", function=None, title=None):
       if not util.is_sequence(list):
          list = [list]
       for l in list:

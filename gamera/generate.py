@@ -168,7 +168,8 @@ template = Template("""
       [[elif isinstance(function.return_type, Float)]]
         double return_value = 0.0;
       [[elif isinstance(function.return_type, String)]]
-        char* return_value = 0;
+        [[# changed from char * to std::string  MGD #]]
+        std::string return_value; // Let C++ implicitly initialize this.
       [[elif isinstance(function.return_type, ImageType)]]
         Image* return_value = 0;
       [[elif isinstance(function.return_type, Class)]]
@@ -317,7 +318,7 @@ template = Template("""
       [[elif isinstance(function.return_type, ImageType)]]
         return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type, pybase_init);
       [[elif isinstance(function.return_type, String)]]
-        return PyString_FromStringAndSize(return_value.c_str(), return_value.size() + 1);
+        return PyString_FromStringAndSize(return_value.data(), return_value.size() [[# + 1 doesn't seem to be needed MGD #]]);
       [[elif isinstance(function.return_type, ImageInfo)]]
         return create_ImageInfoObject(return_value);
       [[elif isinstance(function.return_type, Int)]]

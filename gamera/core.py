@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import sys, os, types, os.path, inspect, new     # Python standard library
+import sys, os, types, os.path, inspect, new, cStringIO # Python standard library
 
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
@@ -126,7 +126,7 @@ class ImageBase:
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
                         'ul_x', 'ul_y', 'resolution', 'nrows', 'ncols',
-                        'memory_size', 'label')
+                        'memory_size', 'label', 'properties')
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu if hasattr(self, x)]
@@ -224,7 +224,7 @@ class ImageBase:
       self.cc = []
       for c in cc:
          if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c, ImageBase.to_buffer)
+            self._display.highlight_cc(c)
             self.cc.append(c)
       # This will adjust the scroll bars so the cc will be visible
       self._display.focus(self.cc)
@@ -275,6 +275,10 @@ class ImageBase:
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""
       return SubImage(self, offset_y, offset_x, nrows, ncols)
+
+   def to_xml(self, stream=None):
+      import database
+      return database.WriteXMLGlyphs([self]).write_stream(stream)
 
 ######################################################################
       

@@ -594,11 +594,8 @@ class ImageWindow(wxPanel):
       self.toolbar.AddSimpleTool(23, gamera_icons.getIconZoomViewBitmap(),
                                  "Zoom in on selected region", self.OnZoomViewClick)
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Quality: "))
-      self.zooming_qualities = {'low': 0,
-                                'medium': 1,
-                                'high': 2}
       self.zoom_slider = wxComboBox(
-         self.toolbar, 24, choices=['low','medium','high'])
+         self.toolbar, 24, choices=['low','medium','high'], style=wxCB_READONLY)
       EVT_COMBOBOX(self, 24, self.OnZoomTypeChange)
       self.toolbar.AddControl(self.zoom_slider)
 
@@ -673,7 +670,7 @@ class ImageWindow(wxPanel):
 
    def OnZoomTypeChange(self, event):
       self.id.SetZoomType(
-         self.zooming_qualities[self.zoom_slider.GetValue()])
+         self.zoom_slider.GetSelection())
 
    def OnMakeViewClick(self, event):
       self.id.MakeView()
@@ -743,8 +740,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                          float(rect.GetWidth()) / float(image.ncols))
             height = floor(image.height * factor)
             width = floor(image.width * factor)
-            scaled_image = image.resize_copy(height, width, 0)
-            scaled_image.label = image.label
+            scaled_image = image.resize_copy(height, width, 1)
             wx_image = wxEmptyImage(width, height)
             s = scaled_image.to_buffer(wx_image.GetDataBuffer())
          else:

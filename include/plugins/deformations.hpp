@@ -25,6 +25,7 @@
 #include "gamera_limits.hpp"
 #include "morphology.hpp"
 #include "plugins/image_utilities.hpp"
+#include "pixel.hpp"
 #include "vigra/resizeimage.hxx"
 #include "plugins/logical.hpp"
 #include <exception>
@@ -34,6 +35,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+using namespace vigra;
 
 namespace Gamera
 {
@@ -112,7 +114,7 @@ namespace Gamera
 		using namespace std;
 		
 		typedef typename ImageFactory<V>::view_type::value_type pixelFormat;
-		pixelFormat background = (pixelFormat)1.0;
+		pixelFormat background = (pixelFormat)(1.0);
 		size_t width1, height1;
 		T* out_data1;
 		U* out1;
@@ -130,15 +132,23 @@ namespace Gamera
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 
 		size_t i, iShears[height1];
-		for(i = 0; i<height1; i++)
+		double weights[height1];
+		if (dTan >= 0.0) for(i = 0; i<height1; i++) // Positive angle
 		{
-			if (dTan >= 0.0) // Positive angle
-				iShears[height1-i-1] = int(floor((double(i) + 0.5) * dTan));
-			else // Negative angle
-				iShears[i]=int(floor((double(i) + 0.5) * -dTan));
+			double d = (double(i) + 0.5) * dTan;
+			int in = int(floor(d));
+			iShears[height1-i-1] = in;
+			weights[height1-i-1] = d - in;
 		}
-		
-		for(i = 0; i<height1; i++) horizShift(img, out1, i, iShears[i], background);
+		else for(i = 0; i<height1; i++) // Negative angle
+		{
+			double d = (double(i) + 0.5) * -dTan;
+			int in = int(floor(d));
+			iShears[i]=in;
+			weights[i]=d-in;
+		}
+
+		for(i = 0; i<height1; i++) horizShift(img, out1, i, iShears[i], background, weights[i]);
 		delete img;
 		delete m;
 		img = out1;
@@ -155,17 +165,23 @@ namespace Gamera
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
 		size_t iShearsV[width1];
-		for(i = 0; i < width1; i++)
+		double weightsV[width1];
+		if (dSinE >= 0.0) for(i = 0; i < width1; i++) //Positive angle
 		{
-			if (dSinE >= 0.0) // Positive angle
-				iShearsV[width1 - i - 1] = size_t(floor((double(i)+0.5) * dSinE));
-			
-			else // Negative angle
-				iShearsV[i] = size_t(floor((double(i)+0.5) * -dSinE));
+			double d = (double(i)+0.5) * dSinE;
+			size_t in = size_t(floor(d));
+			iShearsV[width1 - i - 1] = in;
+		}
+		else for(i = 0; i < width1; i++) //Negative angle
+		{
+			double d = (double(i)+0.5) * -dSinE;
+			size_t in = size_t(floor(d));
+			iShearsV[i] = in;
+			weightsV[i] = d - in;
 		}
 		
 		for (i = 0; i < width1; i++)
-			vertShift(img, out1, i, iShearsV[width1-i-1], background);
+			vertShift(img, out1, i, iShearsV[width1-i-1], background, weightsV[i]);
 
 		delete img;
 		delete oldod;
@@ -183,21 +199,32 @@ namespace Gamera
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
 		size_t iShearsH[height1];
-		for(i = 0; i<height1; i++)
+		double weightsH[height1];
+		if (dTan >= 0.0) for(i = 0; i<height1; i++) // Positive angle
 		{
-			if (dTan >= 0.0) // Positive angle
-				iShearsH[height1-i-1] = int(floor((double(i) + 0.5) * dTan));
-			else // Negative angle
-				iShearsH[i]=int(floor((double(i) + 0.5) * -dTan));
+			double d = (double(i) + 0.5) * dTan;
+			int in = int(floor(d));
+			iShearsH[height1-i-1] = in;
+			weightsH[height1-i-1] = d - in;
+		}
+		else for(i = 0; i<height1; i++) // Negative angle
+		{
+			double d = (double(i) + 0.5) * -dTan;
+			int in = int(floor(d));
+			iShearsH[i]=in;
+			weightsH[i]=d-in;
 		}
 		
-		for(i = 0; i<height1; i++) horizShift(img, out1, i, iShearsH[i], background);
+		for(i = 0; i<height1; i++) horizShift(img, out1, i, iShearsH[i], background, weightsH[i]);
 
 		delete img;
 		delete oldod;
+		U* out = out1;
+		/* Filtering broke the simplistic border removal algorithm, so this will take some work to remedy
 		U* out = removeExcessBorder(out_data1, out1, background);
 		delete out1;
 		delete out_data1;
+		*/
 		return out;
 	}
 
@@ -209,13 +236,14 @@ namespace Gamera
 		//------------------------------------------------------------------------------------
 		size_t i=0;
 		size_t height1 = img->nrows(), width1 = img->ncols();
+		double tolerance = 5;
 		for(i = 0; i<height1; i++)
 		{
 			size_t j = 0;
 
 			for(;j<width1; j++)
 			{
-				if (img->get(i,j)!=background) goto a;
+				if (!equalwithinpct(img->get(i,j),background,tolerance)) goto a;
 			}
 		}
 a:		size_t newTop = i;
@@ -226,7 +254,7 @@ a:		size_t newTop = i;
 
 			for(;j<width1; j++)
 			{
-				if (img->get(i,j)!=background) goto b;
+				if (!equalwithinpct(img->get(i,j),background,tolerance)) goto b;
 			}
 		}
 b:		size_t newBott = i;
@@ -237,7 +265,7 @@ b:		size_t newBott = i;
 
 			for(;j<height1; j++)
 			{
-				if (img->get(j,i)!=background) goto c;
+				if (!equalwithinpct(img->get(i,j),background,tolerance)) goto c;
 			}
 		}
 c:		size_t newLeft = i;
@@ -248,7 +276,7 @@ c:		size_t newLeft = i;
 
 			for(;j<height1; j++)
 			{
-				if (img->get(j,i)!=background) goto d;
+				if (!equalwithinpct(img->get(i,j),background,tolerance)) goto d;
 			}
 		}
 d:		size_t newRight = i;
@@ -281,34 +309,44 @@ d:		size_t newRight = i;
 		return out1;
 	}
 	template<class T, class U>
-	void horizShift(T* orig, T* newbmp, size_t &row, size_t &amount, U bgcolor)
+	void horizShift(T* orig, T* newbmp, size_t &row, size_t &amount, U bgcolor, double weight)
 	{
 		size_t i;
 		size_t width1 = newbmp->ncols();
+		
 		for(i = 0; i<amount; i++) newbmp->set(row,i,bgcolor);  //leading background
+
+		U filt[3];
+		filt[2] = bgcolor;
+
 		for(; i<orig->ncols()+amount; i++)
 		{
-			U pxlSrc = (U)orig->get(row, i-amount);
+			filt[0] = (U)orig->get(row, i-amount);
+			pixelfilt(filt,weight);
 			if((i>=0) && (i<width1))
 			{
-				newbmp->set(row,i,pxlSrc);
+				newbmp->set(row,i,filt[0]);
 			}
 		}
 		for(; i<width1; i++) newbmp->set(row,i,bgcolor); //trailing background
 	}
 
 	template<class T, class U>
-	void vertShift(T* orig, T* newbmp, size_t &col, size_t &amount, U bgcolor=(U)1.0)
+	void vertShift(T* orig, T* newbmp, size_t &col, size_t &amount, U bgcolor=(U)black(), double weight)
 	{
 		size_t i;
 		size_t height1 = newbmp->nrows();
 		for(i = 0; i<amount; i++) newbmp->set(i,col,bgcolor);  //leading background
+
+		U filt[3];
+		filt[2] = bgcolor;
 		for(; i<orig->nrows()+amount; i++)
 		{
-			U pxlSrc = (U)orig->get(i-amount,col);
+			filt[0] = (U)orig->get(i-amount,col);
+			pixelfilt(filt,weight);
 			if((i>=0) && (i<height1))
 			{
-				newbmp->set(i,col,pxlSrc);
+				newbmp->set(i,col,filt[0]);
 			}
 		}
 		for(; i<height1; i++) newbmp->set(i,col,bgcolor); //trailing background
@@ -528,49 +566,104 @@ d:		size_t newRight = i;
 		return out;
 	}
 
-// 	/*
-// 	This copies all of the misc attributes of an image (like
-// 	label for Ccs or scaling).
-// 	*/
-// 	template<class T, class U>
-// 	void image_copy_attributes(const T& src, U& dest) {
-// 		dest.scaling(src.scaling());
-// 		dest.resolution(src.resolution());
-// 	}
+	template<class T>
+	inline void floatgreyfilt(T pixArr[3], double &weight){
+		pixArr[1] = (T)(weight * pixArr[0]);
 
-// 	/*
-// 	These are full specializations for ConnectedComponents. This
-// 	could be done with partial specialization, but that is broken
-// 	on so many compilers it is easier just to do it manually :/
-// 	*/
-// 	template<>
-// 	void image_copy_attributes(const Cc& src, Cc& dest) {
-// 		dest.scaling(src.scaling());
-// 		dest.resolution(src.resolution());
-// 		dest.label(src.label());
-// 	}
+		pixArr[0] = (T)(pixArr[0] - (pixArr[1] - pixArr[2]));
 
-// 	template<>
-// 	void image_copy_attributes(const RleCc& src, Cc& dest) {
-// 		dest.scaling(src.scaling());
-// 		dest.resolution(src.resolution());
-// 		dest.label(src.label());
-// 	}
+		pixArr[2] = pixArr[1];
+	}
+	inline void pixelfilt(FloatPixel pixArr[3], double weight) {
+		floatgreyfilt(pixArr, weight);
+	}
 
-// 	template<>
-// 	void image_copy_attributes(const Cc& src, RleCc& dest) {
-// 		dest.scaling(src.scaling());
-// 		dest.resolution(src.resolution());
-// 		dest.label(src.label());
-// 	}
+	inline void pixelfilt(GreyScalePixel pixArr[3], double &weight) {
+		floatgreyfilt(pixArr, weight);
+	}
 
-// 	template<>
-// 	void image_copy_attributes(const RleCc& src, RleCc& dest) {
-// 		dest.scaling(src.scaling());
-// 		dest.resolution(src.resolution());
-// 		dest.label(src.label());
-// 	}
+	inline void pixelfilt(Grey16Pixel pixArr[3], double &weight) {
+		floatgreyfilt(pixArr, weight);
+	}
 
+	inline void pixelfilt(RGBPixel pixArr[3], double &weight)
+	{
+		pixArr[1] = RGBPixel(GreyScalePixel(pixArr[0].red() * weight),
+							 GreyScalePixel(pixArr[0].green() * weight),
+							 GreyScalePixel(pixArr[0].blue() * weight));
+/*
+		pixArr[0].red() = GreyScalePixel(pixArr[0].red() - (pixArr[1].red() - pixArr[2].red()));
+		pixArr[0].green() = GreyScalePixel(pixArr[0].green() - (pixArr[1].green() - pixArr[2].green()));
+		pixArr[0].blue() = GreyScalePixel(pixArr[0].blue() - (pixArr[1].blue() - pixArr[2].blue()));
+*/
+		pixArr[0] = RGBPixel(GreyScalePixel(pixArr[0].red() - (pixArr[1].red() - pixArr[2].red())),
+							 GreyScalePixel(pixArr[0].green() - (pixArr[1].green() - pixArr[2].green())),
+							 GreyScalePixel(pixArr[0].blue() - (pixArr[1].blue() - pixArr[2].blue())));
+
+		pixArr[2] = pixArr[1];
+	}
+
+	inline void pixelfilt(OneBitPixel pixArr[3], double &weight) {
+		pixArr[1] = (OneBitPixel)(weight * pixArr[0]);
+
+		pixArr[0] = (OneBitPixel)(pixArr[0] - (pixArr[1] - pixArr[2]));
+
+		pixArr[2] = pixArr[1];
+	}
+
+	template<class T, class U>
+	inline bool ewpGeneric(T a, U b, double pct)
+	{
+		pct/=100;
+
+		return (a>=b*(1-pct) && a<=b*(1+pct));
+	}
+	
+	template<class T>
+	inline bool equalwithinpct(RGBPixel a, T b, double pct)
+	{
+		pct/=100;
+		bool red = (a.red()>=b.red()*(1-pct) && a.red()<=b.red()*(1+pct));
+		bool green = (a.green()>=b.green()*(1-pct) && a.green()<=b.green()*(1+pct));
+		bool blue = (a.blue()>=b.blue()*(1-pct) && a.blue()<=b.blue()*(1+pct));
+
+		return red && green && blue;
+	}
+	template<class T, class U>
+	inline bool equalwithinpct(T a, U b, double pct)
+	{
+		pct/=100;
+
+		return (a>=b*(1-pct) && a<=b*(1+pct));
+	}
+/*
+	inline bool equalwithinpct(FloatPixel &a, FloatPixel &b, double &pct)
+	{
+		return ewpGeneric(a,b,pct);
+	}
+	inline bool equalwithinpct(GreyScalePixel &a, GreyScalePixel &b, double &pct)
+	{
+		return ewpGeneric(a,b,pct);
+	}
+
+	inline bool equalwithinpct(Grey16Pixel &a, GreyScalePixel &b, double &pct)
+	{
+		return ewpGeneric(a,b,pct);
+	}
+	inline bool equalwithinpct(RGBPixel &a, RGBPixel &b, double pct)
+	{
+		pct/=100;
+		bool red = (a.red()>=b.red()*(1-pct) && a.red()<=b.red()*(1+pct));
+		bool green = (a.green()>=b.green()*(1-pct) && a.green()<=b.green()*(1+pct));
+		bool blue = (a.blue()>=b.blue()*(1-pct) && a.blue()<=b.blue()*(1+pct));
+
+		return red && green && blue;
+	}
+
+	inline bool equalwithininput(OneBitPixel &a, OneBitPixel &b, double &pct)
+	{
+		return a == b;
+	}*/
 }
 
 #endif

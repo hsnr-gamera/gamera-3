@@ -131,7 +131,6 @@ packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
 if sys.platform == 'darwin':
    packages.append("gamera.mac")
 elif sys.platform == 'win32':
-   packages.append("win32")
    if '--compiler=icl' in sys.argv:
        from distutils import ccompiler
        from win32.iclcompiler import ICLCompiler

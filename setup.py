@@ -62,8 +62,6 @@ if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
    extra_compile_args = ["/GR"]#, "/Zi"]
 elif sys.platform == 'darwin':
    extra_link_args = ['-F/System/Library/Frameworks/']
-   
-
 
 if 'build' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
@@ -119,7 +117,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"],
                         # FIXME
                         libraries=libs, extra_compile_args=extra_compile_args,
-			extra_link_args=extra_link_args
+			extra_link_args=extra_link_args,
                         ),
               Extension("gamera.knncore", ga_files,
                         include_dirs=["include", "src/ga", "src"],
@@ -138,9 +136,11 @@ if sys.platform == "win32":
    """the installer completes, run the 'gamera_post_install' script in\n""" +
    """'Scripts' directory of your Python installation.""")
 else:
-   description = "Welcome to Gamera.  Please ensure that Python 2.2 (or later) and wxPython 2.4.0 (or later) are installed before proceeding."
+   description = ("This is the Gamera installer." +
+                  "Please ensure that Python 2.2 (or later) and wxPython 2.4.0" +
+                  "(or later) are installed before proceeding.")
 
-setup(name = "gamera", version="2.1",
+setup(name = "gamera", version="2.1.1",
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "mdboom@jhu.edu; karlmac@jhu.edu",

@@ -25,6 +25,9 @@
   convenience.
  */
 
+#include <vector>
+#include <list>
+
 #include "pixel.hpp"
 #include "dimensions.hpp"
 #include "image_info.hpp"
@@ -40,9 +43,6 @@
 #include "vigra_support.hpp"
 #include "image_types.hpp"
 #include "accessor.hpp"
-
-#include <vector>
-#include <list>
 
 namespace Gamera {
 

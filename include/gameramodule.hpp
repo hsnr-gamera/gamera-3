@@ -20,8 +20,8 @@
 #ifndef KWM06292002_imagemodule
 #define KWM06292002_imagemodule
 
-#include "gamera.hpp"
 #include <Python.h>
+#include "gamera.hpp"
 
 /*
   This file holds the C++ interface for the Python objects that wrap
@@ -97,6 +97,7 @@ inline PyObject* get_ArrayInit() {
 		      "Unable to get array object.\n");
       return 0;
     }
+    Py_DECREF(array_module);
   }
   return t;
 }
@@ -846,7 +847,6 @@ inline PyObject* create_ImageObject(Image* image) {
     return 0;
   Py_DECREF(result);
   return init_image_members(i);
-  
 }
 
 /*

@@ -316,7 +316,7 @@ class _kNNBase(gamera.knncore.kNN):
          except Exception, e:
             raise gamera.gamera_xml.XMLError("While loading the weights " +
             "an unknown feature function '%s' was found." % key)
-         functions.append(func[0])
+         functions.append(func[0][0])
       functions.sort()
       self.change_feature_set(functions)
       # Create the weights array with the weights in the correct order
@@ -434,7 +434,7 @@ def simple_feature_selector(glyphs):
    all_features = []
    feature_indexes = {}
    offset = 0
-   for x in glyphs[0].get_feature_functions():
+   for x in glyphs[0].get_feature_functions()[0]:
       all_features.append(x[0])
       feature_indexes[x[0]] = range(offset, offset + x[1].return_type.length)
       offset += x[1].return_type.length

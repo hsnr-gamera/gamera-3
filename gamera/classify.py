@@ -392,16 +392,16 @@ class InteractiveClassifier(_Classifier):
       import time
       t = time.clock()
       progress = util.ProgressFactory("Generating features...",
-                                      len(glyphs) / 10)
+                                      len(glyphs) / 16)
       feature_functions = self.get_feature_functions()
       try:
          for i, glyph in enumerate(glyphs):
             glyph.generate_features(feature_functions)
-            if i % 10 == 0:
+            if i & 0xf == 0:
                progress.step()
       finally:
          progress.kill()
-      # print "generate features time:", time.clock() - t
+      print "generate features time:", time.clock() - t
 
    ########################################
    # MANUAL CLASSIFICATION

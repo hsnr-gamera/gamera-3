@@ -277,7 +277,7 @@ class ProgressNothing:
 
 class ProgressText:
    """A console-based progress bar."""
-   width = 70
+   width = 64
 
    def __init__(self, message, length=0):
       self._message = message

@@ -362,14 +362,21 @@ class ImageBase:
       else:
          return SubImage(self, offset_y, offset_x, nrows, ncols)
 
+   def _get_feature_vector_size(cls, functions):
+      num_features = 0
+      for name, function in functions:
+          num_features += function.return_type.length
+      return num_features
+   _get_feature_vector_size = classmethod(_get_feature_vector_size)
+
    def get_feature_functions(cls, features='all'):
       global all_features
-      if all_features is None:
-         all_features = cls.methods_flat_category('Features', ONEBIT)
-         all_features.sort()
       if features == 'all' or features is None:
+         if all_features is None:
+            all_features = cls.methods_flat_category('Features', ONEBIT)
+            all_features.sort()
          functions = all_features
-         return functions
+         return functions, cls._get_feature_vector_size(functions)
       features = util.make_sequence(features)
       features.sort()
       all_strings = 1
@@ -379,13 +386,18 @@ class ImageBase:
             break
       if not all_strings:
          import plugin
-         all_functions = 1
-         for feature in features:
-            if not (type(feature) == TupleType and
-                    type(feature[0]) == StringType and
-                    issubclass(feature[1], plugin.PluginFunction)):
-               all_functions = 0
-               break
+         all_functions = 0
+         if (type(features) == TupleType and
+             len(features) == 2 and
+             type(features[0]) == ListType and
+             type(features[1]) == IntegerType):
+            all_functions = 1
+            for feature in features:
+               if not (type(feature) == TupleType and
+                       type(feature[0]) == StringType and
+                       issubclass(feature[1], plugin.PluginFunction)):
+                  all_functions = 0
+                  break
          if not all_functions:
             raise ValueError(
                "'%s' is not a valid way to specify a list of features."
@@ -404,7 +416,7 @@ class ImageBase:
             if not found:
                raise ValueError("'%s' is not a known feature function.")
          functions.sort()
-         return functions
+         return functions, cls._get_feature_vector_size(functions)
    get_feature_functions = classmethod(get_feature_functions)
 
    def to_xml(self, stream=None):

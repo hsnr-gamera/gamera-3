@@ -65,6 +65,7 @@ class PluginFunction:
    pure_python = 0
    image_types_must_match = 0
    testable = 0
+   feature_function = False
 
    def register(cls, category=None, add_to_image=1):
       if hasattr(cls, 'category'):

@@ -304,6 +304,7 @@ Image* load_tiff(const char* filename, int storage) {
     fact::image_type* image =
       fact::create(0, 0, info->nrows(), info->ncols());
     tiff_load_rgb(*image, *info, filename);
+    delete info;
     return image;
   } else if (info->ncolors() == 1) {
     if (info->depth() == 1) {
@@ -313,6 +314,7 @@ Image* load_tiff(const char* filename, int storage) {
 	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
+	delete info;
 	return image;
       } else {
 	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
@@ -320,6 +322,7 @@ Image* load_tiff(const char* filename, int storage) {
 	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
+	delete info;
 	return image;
       }
     } else if (info->depth() == 8) {
@@ -328,6 +331,7 @@ Image* load_tiff(const char* filename, int storage) {
 	image = fact_type::create(0, 0, info->nrows(), info->ncols());
       image->resolution(info->x_resolution());
       tiff_load_greyscale(*image, *info, filename);
+      delete info;
       return image;
     } else if (info->depth() == 16) {
       typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
@@ -335,16 +339,18 @@ Image* load_tiff(const char* filename, int storage) {
 	image = fact_type::create(0, 0, info->nrows(), info->ncols());
       image->resolution(info->x_resolution());
       tiff_load_greyscale(*image, *info, filename);
+      delete info;
       return image;
     } else {
       throw std::runtime_error("Unable to load image of this type!");
+      delete info;
       return 0;
     }
   } else {
     throw std::runtime_error("Unable to load image of this type!");
+    delete info;
     return 0;
   }
-  
   delete info;
 }
 

@@ -44,13 +44,16 @@ extern "C" {
 }
 
 PyMethodDef gamera_module_methods[] = {
-  {NULL, NULL},
+  {NULL, NULL },
 };
+
+
 
 DL_EXPORT(void)
 initgameracore(void) {
   PyObject* m = Py_InitModule("gameracore", gamera_module_methods);
   PyObject* d = PyModule_GetDict(m);
+  
   init_SizeType(d);
   init_PointType(d);
   init_DimensionsType(d);

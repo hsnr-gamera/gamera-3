@@ -18,11 +18,14 @@
 #
 
 # Gamera specific
+from gamera.gui import has_gui
+has_gui.has_gui = has_gui.WX_GUI
+
 import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, gui_util, image_browser
+     icon_display, classifier_display, var_name, gui_util, image_browser, has_gui
 
 # wxPython
 from wxPython.wx import *

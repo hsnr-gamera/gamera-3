@@ -222,15 +222,14 @@ class LoadXML:
          self._stream_length = os.stat(filename).st_size
       except OSError, e:
          raise XMLError(str(e))
-      try:
+      if filename.endswith('gz'):
          fd = gzip.open(filename, 'r')
+      else:
+         fd = open(filename, 'r')
+      try:
          return self.parse_stream(fd)
-      except IOError:
-         try:
-            fd = open(filename, 'r')
-            return self.parse_stream(fd)
-         except Exception, e:
-            raise XMLError(str(e))
+      except Exception, e:
+         raise XMLError(str(e))
 
    def parse_string(self, s):
       self._stream_length = len(s)
@@ -376,7 +375,7 @@ class LoadXML:
          glyph.properties[key] = val
       glyph.scaling = self._scaling
       self._append_glyph(glyph)
-      if not self._glyph_no % 20:
+      if not self._glyph_no & 0xf:
          self._update_progress()
       self._glyph_no += 1
 

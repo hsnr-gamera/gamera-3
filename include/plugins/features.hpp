@@ -38,16 +38,17 @@ namespace Gamera {
   */
 
   template<class T>
-  FloatVector* black_area(const T& mat) {
+  void black_area(const T& mat, feature_t* buf) {
     int black_pixels = 0;
     for (typename T::const_vec_iterator i = mat.vec_begin();
 	 i != mat.vec_end(); ++i) {
       if (is_black(*i))
 	black_pixels++;
     }
-    FloatVector* vec = new FloatVector(1);
-    (*vec)[0] = (feature_t)black_pixels;
-    return vec;
+    //FloatVector* vec = new FloatVector(1);
+    //(*vec)[0] = (feature_t)black_pixels;
+    *buf = (feature_t)black_pixels;
+    // return vec;
   }
 
   // Ratio of black to white pixels
@@ -63,10 +64,8 @@ namespace Gamera {
   }
   
   template<class T>
-  FloatVector* volume(const T &m) {
-    FloatVector* vec = new FloatVector(1);
-    (*vec)[0] = volume0(m);
-    return vec;
+  void volume(const T &m, feature_t* buf) {
+    *buf = volume0(m);
   }
   
 
@@ -115,9 +114,7 @@ namespace Gamera {
   }
 
   template<class T>
-  FloatVector* moments(T &m) {
-    FloatVector* _output = new FloatVector(9);
-
+  FloatVector* moments(T &m, feature_t* buf) {
     size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
       m01 = 0, m02 = 0, m30 = 0, m03 = 0;
     size_t m00 = (unsigned int)(m.nrows() * m.ncols());
@@ -132,22 +129,19 @@ namespace Gamera {
     y2 = 2 * y * y;
 
     // This is just for convenience below
-    FloatVector& output = *_output;
-    output[0] = x / m.ncols(); // normalized center of gravity [0,1] 
-    output[1] = y / m.nrows(); // normalized center of gravity [0,1] 
+    *(buf++) = x / m.ncols(); // normalized center of gravity [0,1] 
+    *(buf++) = y / m.nrows(); // normalized center of gravity [0,1] 
   
     div = (feature_t)m00 * m00; // common normalization divisor 
-    output[2] = (m20 - (x * m10)) / div; // u20 
-    output[3] = (m02 - (y * m01)) / div; // u02 
-    output[4] = (m11 - (y * m10)) / div; // u11 
+    *(buf++) = (m20 - (x * m10)) / div; // u20 
+    *(buf++) = (m02 - (y * m01)) / div; // u02 
+    *(buf++) = (m11 - (y * m10)) / div; // u11 
   
     div *= (feature_t)sqrt((double)m00);  
-    output[5] = (m30 - (3 * x * m20) + (x2 * m10)) / div;                // u30
-    output[6] = (m12 - (2 * y * m11) - (x * m02) + (y2 * m10)) / div;    // u12
-    output[7] = (m21 - (2 * x * m11) - (y * m20) + (x2 * m01)) / div;    // u21
-    output[8] = (m03 - (3 * x * m02) + (y2 + m01)) / div;                // u03
-
-    return _output;
+    *(buf++) = (m30 - (3 * x * m20) + (x2 * m10)) / div;                // u30
+    *(buf++) = (m12 - (2 * y * m11) - (x * m02) + (y2 * m10)) / div;    // u12
+    *(buf++) = (m21 - (2 * x * m11) - (y * m20) + (x2 * m01)) / div;    // u21
+    *buf = (m03 - (3 * x * m02) + (y2 + m01)) / div;                // u03
   }
  
   // Number of holes in x and y direction
@@ -186,16 +180,14 @@ namespace Gamera {
   }
   
   template<class T>
-  FloatVector* nholes(T &m) {
-    FloatVector* output = new FloatVector(2);
+  void nholes(T &m, feature_t* buf) {
     size_t vert, horiz;
     
     vert = nholes_1d(m.col_begin(), m.col_end());
     horiz = nholes_1d(m.row_begin(), m.row_end());
     
-    (*output)[0] = (feature_t)vert / m.ncols();
-    (*output)[1] = (feature_t)horiz / m.nrows();
-    return output;
+    *(buf++) = (feature_t)vert / m.ncols();
+    *buf = (feature_t)horiz / m.nrows();
   }
 
   /*
@@ -206,38 +198,32 @@ namespace Gamera {
     each of the sections.
   */
   template<class T>
-  FloatVector* nholes_extended(const T& m) {
-    FloatVector* output = new FloatVector(8);
+  void nholes_extended(const T& m, feature_t* buf) {
     double quarter_cols = m.ncols() / 4.0;
     double start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
-      (*output)[i] = nholes_1d(m.col_begin() + size_t(start),
+      *(buf++) = nholes_1d(m.col_begin() + size_t(start),
 			       m.col_begin() + size_t(start) + size_t(quarter_cols));
       start += quarter_cols;
     }
     double quarter_rows = m.nrows() / 4.0;
     start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
-      (*output)[i + 4] = nholes_1d(m.row_begin() + size_t(start),
+      *(buf++) = nholes_1d(m.row_begin() + size_t(start),
 				   m.row_begin() + size_t(start)
 				   + size_t(quarter_rows));
       start += quarter_rows;
     }
-    return output;
   }
 
   template<class T>
-  FloatVector* area(const T& image) {
-    FloatVector* vec = new FloatVector(1);
-    (*vec)[0] = feature_t(image.nrows() * image.ncols()) / image.scaling();
-    return vec;
+  void area(const T& image, feature_t* buf) {
+    *buf = feature_t(image.nrows() * image.ncols()) / image.scaling();
   }
 
   template<class T>
-  FloatVector* aspect_ratio(const T& image) {
-    FloatVector* vec = new FloatVector(1);
-    (*vec)[0] = feature_t(image.ncols()) / feature_t(image.nrows());
-    return vec;
+  void aspect_ratio(const T& image, feature_t* buf) {
+    *buf = feature_t(image.ncols()) / feature_t(image.nrows());
   }
 
   /*
@@ -247,7 +233,7 @@ namespace Gamera {
     the volume of the image.
   */
   template<class T>
-  FloatVector* compactness(const T& image) {
+  void compactness(const T& image, feature_t* buf) {
     // I've converted this to a more efficient method.  Rather than
     // using (volume(outline) / volume(original)), I just use
     // volume(dilated) - volume(original) / volume(original).  This
@@ -266,9 +252,7 @@ namespace Gamera {
       delete copy->data();
       delete copy;
     }
-    FloatVector* vec = new FloatVector(1);
-    (*vec)[0] = result;
-    return vec;
+    *buf = result;
   }
 
   /*
@@ -278,24 +262,22 @@ namespace Gamera {
     each of those regions.
   */
   template<class T>
-  FloatVector* volume16regions(const T& image) {
+  void volume16regions(const T& image, feature_t* buf) {
     double rows = image.height() / 4.0;
     double cols = image.width() / 4.0;
     size_t rows_int = size_t(rows + 1);
     size_t cols_int = size_t(cols + 1);
     double start_col = double(image.offset_x());
-    FloatVector* volumes = new FloatVector(16);
     for (size_t i = 0; i < 4; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 4; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	(*volumes)[i * 4 + j] = volume0(tmp);
+	*(buf++) = volume0(tmp);
 	start_row += rows;
       }
       start_col += cols;
     }
-    return volumes;
   }
 
   /*
@@ -305,24 +287,22 @@ namespace Gamera {
     each of those regions.
   */
   template<class T>
-  FloatVector* volume64regions(const T& image) {
+  void volume64regions(const T& image, feature_t* buf) {
     double rows = image.height() / 8.0;
     double cols = image.width() / 8.0;
     size_t rows_int = size_t(rows + 1);
     size_t cols_int = size_t(cols + 1);
     double start_col = double(image.offset_x());
-    FloatVector* volumes = new FloatVector(64);
     for (size_t i = 0; i < 8; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 8; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	(*volumes)[i * 8 + j] = volume0(tmp);
+	*(buf++) = volume0(tmp);
 	start_row += rows;
       }
       start_col += cols;
     }
-    return volumes;
   }
 
   double zer_pol_R(int n, int m_in, double x, double y) {
@@ -364,14 +344,14 @@ namespace Gamera {
     }
   }
 
+  // This is my own modification so that all pixels in the image become 
+  // involved in the calculation.  I "imagine" a zernike circle that encompasses the
+  // entire bounding box rectangle.  (Rather than an ellipse that fits
+  // inside the bounding box.)  This not only helps to better distinguish
+  // glyphs, it is slightly more efficient since it removes an 'if' in the
+  // inner loop.
   template<class T>
-  FloatVector* zernike_moments(const T& image) {
-    // This is my own modification so that all pixels in the image become 
-    // involved in the calculation.  I "imagine" a zernike circle that encompasses the
-    // entire bounding box rectangle.  (Rather than an ellipse that fits
-    // inside the bounding box.)  This not only helps to better distinguish
-    // glyphs, it is slightly more efficient since it removes an 'if' in the
-    // inner loop.
+  void zernike_moments(const T& image, feature_t* buf) {
     size_t max_dimension = std::max(image.ncols(), image.nrows());
     double x_0 = (image.ncols() + 1) / 2.0;
     double y_0 = (image.nrows() + 1) / 2.0;
@@ -380,9 +360,10 @@ namespace Gamera {
 
     int m = 1;
 
-    FloatVector* moments = new FloatVector(26);
+    feature_t* begin = buf;
     for (size_t i = 0; i < 26; ++i)
-      (*moments)[i] = 0.0;
+      *(buf++) = 0.0;
+    buf = begin;
 
     typename T::const_vec_iterator it = image.vec_begin();
     for (size_t y = 0; y < image.nrows(); ++y)
@@ -393,8 +374,8 @@ namespace Gamera {
 	  for (size_t n = 1; n < 14; ++n) { 
 	    size_t idx = (n - 1) * 2;
 	    zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
-	    (*moments)[idx] += real_tmp;
-	    (*moments)[idx + 1] += (-imag_tmp);
+	    buf[idx] += real_tmp;
+	    buf[idx + 1] += (-imag_tmp);
 	  }
 	}
       }
@@ -402,19 +383,22 @@ namespace Gamera {
     for (size_t n = 1; n < 14; ++n) {
       size_t idx = (n-1) * 2;
       double multiplier = (n + 1) / M_PI;
-      (*moments)[idx] *= multiplier;
-      (*moments)[idx + 1] *= multiplier;
+      buf[idx] *= multiplier;
+      buf[idx + 1] *= multiplier;
     }
 
-    return moments;
   }
 
   template<class T>
-  FloatVector* skeleton_features(const T& image) {
+  void skeleton_features(const T& image, feature_t* buf) {
     if (image.nrows() == 1 || image.ncols() == 1) {
-      FloatVector* features = new FloatVector(6, 0.0);
-      std::fill(features->begin() + 3, features->end(), 1.0);
-      return features;
+      *(buf++) = 0.0;
+      *(buf++) = 0.0;
+      *(buf++) = 0.0;
+      *(buf++) = 3.0;
+      *(buf++) = 3.0;
+      *(buf++) = 3.0;
+      return;
     }
 
     typedef typename ImageFactory<T>::view_type* view_type;
@@ -453,8 +437,9 @@ namespace Gamera {
       }
     }
     if (total_pixels == 0) {
-      FloatVector* features = new FloatVector(6, 0.0);
-      return features;
+      for (size_t i = 0; i < 6; ++i)
+	*(buf++) = 0.0;
+      return;
     }
 
     center_x /= total_pixels;
@@ -477,14 +462,15 @@ namespace Gamera {
       } else 
 	last_pixel = false;
     
-    FloatVector* features = new FloatVector(6);
-    (*features)[0] = float(X_joints);
-    (*features)[1] = float(T_joints);
-    (*features)[2] = float(bend_points) / float(total_pixels);
-    (*features)[3] = float(end_points);
-    (*features)[4] = float(x_axis_crossings);
-    (*features)[5] = float(y_axis_crossings);
-    return features;
+    delete skel->data();
+    delete skel;
+
+    *(buf++) = float(X_joints);
+    *(buf++) = float(T_joints);
+    *(buf++) = float(bend_points) / float(total_pixels);
+    *(buf++) = float(end_points);
+    *(buf++) = float(x_axis_crossings);
+    *(buf++) = float(y_axis_crossings);
   }
 }
 #endif

@@ -18,23 +18,19 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-(_NO_GUI, _WX_GUI, _CURSES_GUI) = tuple(range(3))
-
-try:
-   import wxPython.wx   # wxPython
-   _has_gui = _WX_GUI
-except:
-   _has_gui = _NO_GUI
+from gamera.gui import has_gui
 import sys, string, os.path   # Python standard library
 from types import *
 import util, paths            # Gamera specific
 
+if has_gui.has_gui == has_gui.WX_GUI:
+   import wxPython.wx
 
 ######################################################################
 
 # This is a "self-generating" dialog box
 
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiArgs:
       def _create_controls(self, locals, parent):
          self.controls = []
@@ -256,7 +252,7 @@ class Arg:
       return result
    
 # Integer
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiInt:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxSpinCtrl(
@@ -290,7 +286,7 @@ class Int(_guiInt, Arg):
       return result
 
 # Real / Float
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _RealValidator(wxPython.wx.wxPyValidator):
       def __init__(self, name="Float entry box ", range=None):
          wxPython.wx.wxPyValidator.__init__(self)
@@ -379,7 +375,7 @@ class Real(_guiReal, Arg):
 Float = Real
 
 # String
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiString:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxTextCtrl(parent, -1, str(self.default))
@@ -400,7 +396,7 @@ class String(_guiString, Arg):
       self.default = default
 
 # Class (a drop-down list of instances of a given class in a given namespace)
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiClass:
       def determine_choices(self, locals):
          self.locals = locals
@@ -444,7 +440,7 @@ class Class(_guiClass, Arg):
       self.list_of = list_of
 
 # Image (a drop-down list of instances of a given class in a given namespace)
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiImageType(_guiClass):
       def determine_choices(self, locals):
          import core
@@ -482,7 +478,7 @@ class ImageType(_guiImageType, Arg):
       return result
 
 # Choice
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiChoice:
       def get_control(self, parent, locals=None):
          choices = []
@@ -524,7 +520,7 @@ class Choice(_guiChoice, Arg):
       self.default = default
 
 # Filename
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiFilename:
       def get_control(self, parent, locals=None):
          if sys.platform == 'darwin':
@@ -567,7 +563,7 @@ class _Filename(_guiFilename, Arg):
       self.default = default
       self.extension = extension
 
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class FileOpen(_Filename):
       def OnBrowse(self, event):
          from gui import gui_util
@@ -647,7 +643,7 @@ else:
       pass
 
 # Radio Buttons
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiRadio:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxRadioButton(parent, -1, self.radio_button)
@@ -668,7 +664,7 @@ class Radio(_guiRadio, Arg):
       self.radio_button = radio_button
 
 # Check Buttons
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiCheck:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxCheckBox(parent, -1, self.check_box)
@@ -748,7 +744,7 @@ class ImageList(_guiImageList, Arg):
       self.name = name
 
 # Info
-if _has_gui == _WX_GUI:
+if has_gui.has_gui == has_gui.WX_GUI:
    class _guiInfo:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxStaticText(parent, -1, "")

@@ -25,65 +25,84 @@ import _features
 class black_area(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
+    feature_function = True
 
 class moments(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=9)
+    feature_function = True
 
 class nholes(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=2)
+    feature_function = True
 
 class nholes_extended(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=8)
+    feature_function = True
 
 class volume(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
+    feature_function = True
 
 class area(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
+    feature_function = True
 
 class aspect_ratio(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
+    feature_function = True
 
 class compactness(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
+    feature_function = True
 
 class volume16regions(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=16)
+    feature_function = True
 
 class volume64regions(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=64)
+    feature_function = True
 
 class zernike_moments(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=26)
+    feature_function = True
 
 class skeleton_features(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=6)
+    feature_function = True
 
 class generate_features(PluginFunction):
     category = "Utility"
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = None
+    cache = {}
     def __call__(self, features=None):
       if features is None:
          features = self.get_feature_functions()
       if self.feature_functions == features:
          return
       self.feature_functions = features
-      self.features = array.array('d')
+      features, num_features = features
+      if len(self.features) != num_features:
+          if not generate_features.cache.has_key(num_features):
+              generate_features.cache[num_features] = [0] * num_features
+          self.features = array.array('d', generate_features.cache[num_features])
+      offset = 0
       for name, function in features:
-          self.features.extend(function.__call__(self))
+          function.__call__(self, offset)
+          offset += function.return_type.length
     __call__ = staticmethod(__call__)
 
 class FeaturesModule(PluginModule):
@@ -107,10 +126,13 @@ def get_features_length(features):
     multiple individual float values."""
     from gamera import core
     ff = core.ImageBase.get_feature_functions(features)
-    features = 0
-    for x in ff:
-        features += x[1].return_type.length
-    return features
+    return ff[1]
+
+_empty_feature_vector_cache = None
+_feature_functions = None
+def _get_empty_feature_vector(features):
+    global _empty_feature_vector_cache
+    
 
 def generate_features_list(list, feature_functions='all'):
    """Generate features on a list of images using either the feature

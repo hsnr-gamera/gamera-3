@@ -1,5 +1,4 @@
 /*
- *
  * Copyright (C) 2002 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
  *
  * This program is free software; you can redistribute it and/or
@@ -327,19 +326,23 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 }
 
 static void image_dealloc(PyObject* self) {
+  //std::cerr << "id";
   ImageObject* o = (ImageObject*)self;
+
+  // Added in an attempt to fix a leak.
+  //std::cerr << o->m_data->ob_refcnt << " " << o->m_features->ob_refcnt << " " << o->m_id_name->ob_refcnt << " " <<
+  //  o->m_children_images->ob_refcnt << " " << o->m_classification_state->ob_refcnt << "\n";
   Py_DECREF(o->m_data);
+  Py_DECREF(o->m_features);
+  Py_DECREF(o->m_id_name);
+  Py_DECREF(o->m_children_images);
+  Py_DECREF(o->m_classification_state);
+
   if (o->m_weakreflist != NULL) {
     //printf("dealing with weak refs\n");
     PyObject_ClearWeakRefs(self);
   }
   delete ((RectObject*)self)->m_x;
-
-  // Added in an attempt to fix a leak.
-  Py_DECREF(o->m_features);
-  Py_DECREF(o->m_id_name);
-  Py_DECREF(o->m_children_images);
-  Py_DECREF(o->m_classification_state);
 
   // PyObject_Del(self);
   self->ob_type->tp_free(self);

@@ -24,6 +24,7 @@
 #include "gamera.hpp"
 #include "gamera_limits.hpp"
 #include "morphology.hpp"
+#include "plugins/image_utilities.hpp"
 #include "vigra/resizeimage.hxx"
 #include "plugins/logical.hpp"
 #include <exception>
@@ -49,8 +50,8 @@ namespace Gamera
 		{
 			out_data = new typename fact::data_type(m.ncols(), m.nrows());
 			out = new typename fact::view_type(*out_data, 0, 0, m.ncols(), m.nrows());
-			for(UINT i = 0; i<m.nrows(); i++)
-				for(UINT j = 0; j<m.ncols();j++)
+			for(size_t i = 0; i<m.nrows(); i++)
+				for(size_t j = 0; j<m.ncols();j++)
 					out->set(j,out->ncols()-i,(typename fact::view_type::value_type)m.get(i, j));
 			hypot-=90;
 		}
@@ -58,8 +59,8 @@ namespace Gamera
 		{
 			out_data = new typename fact::data_type(m.nrows(), m.ncols());
 			out = new typename fact::view_type(*out_data, 0, 0, m.nrows(), m.ncols());
-			for(UINT i = 0; i<m.nrows(); i++)
-				for(UINT j = 0; j<m.ncols();j++)
+			for(size_t i = 0; i<m.nrows(); i++)
+				for(size_t j = 0; j<m.ncols();j++)
 					out->set(out->nrows()-i,out->ncols()-j,(typename fact::view_type::value_type)m.get(i, j));
 			hypot-=180;
 		}
@@ -67,8 +68,8 @@ namespace Gamera
 		{
 			out_data = new typename fact::data_type(m.ncols(), m.nrows());
 			out = new typename fact::view_type(*out_data, 0, 0, m.ncols(), m.nrows());
-			for(UINT i = 0; i<m.nrows(); i++)
-				for(UINT j = 0; j<m.ncols();j++)
+			for(size_t i = 0; i<m.nrows(); i++)
+				for(size_t j = 0; j<m.ncols();j++)
 					out->set(out->nrows()-j,i,(typename fact::view_type::value_type)m.get(i, j));
 			hypot-=270;
 		}
@@ -76,7 +77,7 @@ namespace Gamera
 		{
 			out_data = new typename fact::data_type(m.nrows(), m.ncols());
 			out = new typename fact::view_type(*out_data, 0, 0, m.nrows(), m.ncols());
-			UINT i, j;
+			size_t i, j;
 			for(i = 0; i<m.nrows(); i++)
 				for(j = 0; j<m.ncols();j++)
 					out->set(i,j,(typename fact::view_type::value_type)m.get(i, j));
@@ -128,7 +129,7 @@ namespace Gamera
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 
-		UINT i, iShears[height1];
+		size_t i, iShears[height1];
 		for(i = 0; i<height1; i++)
 		{
 			if (dTan >= 0.0) // Positive angle
@@ -146,21 +147,21 @@ namespace Gamera
 		// Second shear--vertical
 		//------------------------------------------------------------------------------------
 		width1 = img->ncols();
-		height1 = UINT(double(img->ncols() * fabs(dSinE))) + img->nrows();
+		height1 = size_t(double(img->ncols() * fabs(dSinE))) + img->nrows();
 
 		// Allocate image for 2nd shear
 		T* oldod = out_data1;
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
-		UINT iShearsV[width1];
+		size_t iShearsV[width1];
 		for(i = 0; i < width1; i++)
 		{
 			if (dSinE >= 0.0) // Positive angle
-				iShearsV[width1 - i - 1] = UINT(floor((double(i)+0.5) * dSinE));
+				iShearsV[width1 - i - 1] = size_t(floor((double(i)+0.5) * dSinE));
 			
 			else // Negative angle
-				iShearsV[i] = UINT(floor((double(i)+0.5) * -dSinE));
+				iShearsV[i] = size_t(floor((double(i)+0.5) * -dSinE));
 		}
 		
 		for (i = 0; i < width1; i++)
@@ -181,7 +182,7 @@ namespace Gamera
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
-		UINT iShearsH[height1];
+		size_t iShearsH[height1];
 		for(i = 0; i<height1; i++)
 		{
 			if (dTan >= 0.0) // Positive angle
@@ -206,51 +207,51 @@ namespace Gamera
 		//------------------------------------------------------------------------------------
 		// Prune background deadspace
 		//------------------------------------------------------------------------------------
-		UINT i=0;
+		size_t i=0;
 		size_t height1 = img->nrows(), width1 = img->ncols();
 		for(i = 0; i<height1; i++)
 		{
-			UINT j = 0;
+			size_t j = 0;
 
 			for(;j<width1; j++)
 			{
 				if (img->get(i,j)!=background) goto a;
 			}
 		}
-a:		UINT newTop = i;
+a:		size_t newTop = i;
 		
 		for(i = height1-1; i>=0; i--)
 		{
-			UINT j = 0;
+			size_t j = 0;
 
 			for(;j<width1; j++)
 			{
 				if (img->get(i,j)!=background) goto b;
 			}
 		}
-b:		UINT newBott = i;
+b:		size_t newBott = i;
 		
 		for(i = 0; i<width1; i++)
 		{
-			UINT j = 0;
+			size_t j = 0;
 
 			for(;j<height1; j++)
 			{
 				if (img->get(j,i)!=background) goto c;
 			}
 		}
-c:		UINT newLeft = i;
+c:		size_t newLeft = i;
 		
 		for(i = width1-1; i>=0; i--)
 		{
-			UINT j = 0;
+			size_t j = 0;
 
 			for(;j<height1; j++)
 			{
 				if (img->get(j,i)!=background) goto d;
 			}
 		}
-d:		UINT newRight = i;
+d:		size_t newRight = i;
 
 		bool dimsChanged = false;
 		if(width1 != newRight - newLeft)
@@ -271,7 +272,7 @@ d:		UINT newRight = i;
 		
 		for(i = newTop; i<newBott; i++)
 		{
-			UINT j = newLeft;
+			size_t j = newLeft;
 			for(; j<newRight; j++)
 			{
 				out1->set(i-newTop,j-newLeft, img->get(i,j));
@@ -280,9 +281,9 @@ d:		UINT newRight = i;
 		return out1;
 	}
 	template<class T, class U>
-	void horizShift(T* orig, T* newbmp, UINT &row, UINT &amount, U bgcolor)
+	void horizShift(T* orig, T* newbmp, size_t &row, size_t &amount, U bgcolor)
 	{
-		UINT i;
+		size_t i;
 		size_t width1 = newbmp->ncols();
 		for(i = 0; i<amount; i++) newbmp->set(row,i,bgcolor);  //leading background
 		for(; i<orig->ncols()+amount; i++)
@@ -297,9 +298,9 @@ d:		UINT newRight = i;
 	}
 
 	template<class T, class U>
-	void vertShift(T* orig, T* newbmp, UINT &col, UINT &amount, U bgcolor=(U)1.0)
+	void vertShift(T* orig, T* newbmp, size_t &col, size_t &amount, U bgcolor=(U)1.0)
 	{
-		UINT i;
+		size_t i;
 		size_t height1 = newbmp->nrows();
 		for(i = 0; i<amount; i++) newbmp->set(i,col,bgcolor);  //leading background
 		for(; i<orig->nrows()+amount; i++)
@@ -367,7 +368,7 @@ d:		UINT newRight = i;
 
 		out_data = new typename fact::data_type(m.nrows()+vertExpand(amplitude), m.ncols()+horizExpand(amplitude));
 		out = new typename fact::view_type(*out_data, 0, 0, m.nrows()+vertExpand(amplitude), m.ncols()+horizExpand(amplitude));
-		UINT i, j;
+		size_t i, j;
 		
 		for(i = 0; i<out->nrows(); i++) for(j=0; j<out->ncols(); j++) out->set(i,j, background);
 
@@ -449,7 +450,7 @@ d:		UINT newRight = i;
 	template<class T>
 	Image* noise(T &m, int amplitude, int direction)
 	{
-		UINT i,j;
+		size_t i,j;
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
 		typename fact::data_type* out_data;
@@ -496,7 +497,7 @@ d:		UINT newRight = i;
 		
 		out_data = new typename fact::data_type(m.nrows(), m.ncols());
 		out = new typename fact::view_type(*out_data, 0, 0, m.nrows(), m.ncols());
-		UINT i, j;
+		size_t i, j;
 
 		for(i = 0; i<m.nrows(); i++) for(j = 0; j<m.ncols();j++)
 		{
@@ -526,48 +527,50 @@ d:		UINT newRight = i;
 
 		return out;
 	}
-	/*
-	This copies all of the misc attributes of an image (like
-	label for Ccs or scaling).
-	*/
-	template<class T, class U>
-	void image_copy_attributes(const T& src, U& dest) {
-		dest.scaling(src.scaling());
-		dest.resolution(src.resolution());
-	}
 
-	/*
-	These are full specializations for ConnectedComponents. This
-	could be done with partial specialization, but that is broken
-	on so many compilers it is easier just to do it manually :/
-	*/
-	template<>
-	void image_copy_attributes(const Cc& src, Cc& dest) {
-		dest.scaling(src.scaling());
-		dest.resolution(src.resolution());
-		dest.label(src.label());
-	}
+// 	/*
+// 	This copies all of the misc attributes of an image (like
+// 	label for Ccs or scaling).
+// 	*/
+// 	template<class T, class U>
+// 	void image_copy_attributes(const T& src, U& dest) {
+// 		dest.scaling(src.scaling());
+// 		dest.resolution(src.resolution());
+// 	}
 
-	template<>
-	void image_copy_attributes(const RleCc& src, Cc& dest) {
-		dest.scaling(src.scaling());
-		dest.resolution(src.resolution());
-		dest.label(src.label());
-	}
+// 	/*
+// 	These are full specializations for ConnectedComponents. This
+// 	could be done with partial specialization, but that is broken
+// 	on so many compilers it is easier just to do it manually :/
+// 	*/
+// 	template<>
+// 	void image_copy_attributes(const Cc& src, Cc& dest) {
+// 		dest.scaling(src.scaling());
+// 		dest.resolution(src.resolution());
+// 		dest.label(src.label());
+// 	}
 
-	template<>
-	void image_copy_attributes(const Cc& src, RleCc& dest) {
-		dest.scaling(src.scaling());
-		dest.resolution(src.resolution());
-		dest.label(src.label());
-	}
+// 	template<>
+// 	void image_copy_attributes(const RleCc& src, Cc& dest) {
+// 		dest.scaling(src.scaling());
+// 		dest.resolution(src.resolution());
+// 		dest.label(src.label());
+// 	}
 
-	template<>
-	void image_copy_attributes(const RleCc& src, RleCc& dest) {
-		dest.scaling(src.scaling());
-		dest.resolution(src.resolution());
-		dest.label(src.label());
-	}
+// 	template<>
+// 	void image_copy_attributes(const Cc& src, RleCc& dest) {
+// 		dest.scaling(src.scaling());
+// 		dest.resolution(src.resolution());
+// 		dest.label(src.label());
+// 	}
+
+// 	template<>
+// 	void image_copy_attributes(const RleCc& src, RleCc& dest) {
+// 		dest.scaling(src.scaling());
+// 		dest.resolution(src.resolution());
+// 		dest.label(src.label());
+// 	}
+
 }
 
 #endif

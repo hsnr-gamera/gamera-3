@@ -68,9 +68,18 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
   double y_len = y2 - y1;
   double x_len = x2 - x1;
 
+  // Short circuit for a single pixel.  This speeds up
+  // drawing Bezier curves a little bit
+  if (y_len == 0 && x_len == 0) {
+    if (y1 >= 0 && y1 < image.nrows() &&
+	x1 >= 0 && x1 < image.ncols())
+      image.set((size_t)y1, (size_t)x1, value);
+    return;
+  }
+
   // Cut the line so it doesn't go outside of the image bounding box.
-  // This is much more efficient to do a little math now than
-  // to test when writing each pixel.
+  // It is more efficient to do a little math now than to test when 
+  // writing each pixel.
   if (y_len > 0)
     _cut_line(y1, x1, y2, x2, y_len, x_len, 
 	      0.0, (double)image.nrows() - 1);
@@ -205,31 +214,41 @@ void draw_marker(T& image, double& y1, double& x1, size_t size, size_t style, ty
   }
 }
 
+inline double square(double a) {
+  return a * a;
+}
+
 template<class T>
 void draw_bezier(T& image, 
 		 double start_y, double start_x, 
 		 double c1_y, double c1_x, 
 		 double c2_y, double c2_x,
 		 double end_y, double end_x,
-		 typename T::value_type value) {
-  double x_dist = abs(end_x - start_x);
-  double y_dist = abs(end_y - start_y);
-  double max = std::max(x_dist, y_dist);
-  double step = 1.0 / ((double)max * 2.0);
+		 typename T::value_type value,
+		 double accuracy = 0.1) {
+
+  // All of this is just to calculate epsilon given the accuracy and
+  // the length and "waviness" of the curve
+  double dd0 = square(start_x - 2*c1_x + c2_x) + square(start_y - 2*c1_y + c2_y);
+  double dd1 = square(c1_x - 2*c2_x + end_x) + square(c1_y - 2*c2_y + end_y);
+  double dd = 6.0 * sqrt(std::max(dd0, dd1));
+  double e2 = 8.0 * accuracy <= dd ? 8 * accuracy / dd : 1.0;
+  double epsilon = sqrt(e2);
 
   double y = start_y;
   double x = start_x;
-  for (double a = 1.0, b = 0.0; b <= 1.0; a -= step, b += step) {
+  for (double a = 1.0, b = 0.0; b <= 1.0; a -= epsilon, b += epsilon) {
     double a_3 = a * a * a;
-    double a_2_b = a * a * b * 3;
+    double a_2_b = a * a * b * 3.0;
     double b_3 = b * b * b;
-    double b_2_a = b * b * a * 3;
+    double b_2_a = b * b * a * 3.0;
 
     double new_x = start_x * a_3 + c1_x * a_2_b + c2_x * b_2_a + end_x * b_3;
     double new_y = start_y * a_3 + c1_y * a_2_b + c2_y * b_2_a + end_y * b_3;
     draw_line(image, y, x, new_y, new_x, value);
     y = new_y; x = new_x;
   }
+  draw_line(image, y, x, end_y, end_x, value);
 }
 
 /* From John R. Shaw's QuickFill code which is based on

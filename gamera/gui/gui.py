@@ -295,7 +295,7 @@ class ShellFrame(wxFrame):
          except Exception, e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             gui_util.message("Error importing file '%s':\n%s" %
-                             (file, "".join(traceback.format_exception_only(exc_type, exc_value))))
+                             (file, "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))))
 
    def make_menu(self):
       self.custom_menus = {}

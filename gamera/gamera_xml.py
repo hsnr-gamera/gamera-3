@@ -23,6 +23,7 @@ from xml.parsers import expat
 import core, util, config
 from util import word_wrap, ProgressFactory, is_image_list
 from gamera.symbol_table import SymbolTable
+from gamera.group import Group
 
 config.add_option_default('encoding', 'utf-8')
 
@@ -134,9 +135,9 @@ class WriteXML:
             word_wrap(stream, '<groups>', indent)
             indent += 1
             for i, group in enumerate(groups):
-               word_wrap(stream, '<group id="%s">' % group[0], indent)
+               word_wrap(stream, '<group id="%s">' % group.id, indent)
                indent += 1
-               for glyph in group[1]:
+               for glyph in group.group:
                   self._write_glyph(stream, glyph, indent)
                indent -= 1
                word_wrap(stream, '</group>', indent)
@@ -456,7 +457,7 @@ class LoadXML:
       self.group_id = self.try_type_convert(a, 'id', str, 'group')
 
    def _the_group(self):
-      self.groups.append((self.group_id, self._group))
+      self.groups.append(Group(self.group_id, self._group))
 
 def glyphs_from_xml(filename):
    """Return a list of glyphs from an xml file"""

@@ -154,12 +154,11 @@ namespace Gamera {
     This function creates a new image that is the summation of all of the images
     in the passed-in list.
   */
-  Image *union_images(std::vector<Image*> list_of_images) {
+  Image *union_images(std::vector<Image*> &list_of_images) {
     // TODO: get a proper maxint
-    size_t min_x = 0xffff;
-    size_t min_y = 0xffff;
-    size_t max_x = 0;
-    size_t max_y = 0;
+    size_t min_x, min_y, max_x, max_y;
+    min_x = min_y = std::numeric_limits<size_t>::max();
+    max_x = max_y = 0;
 
     // Determine bounding box
     for (std::vector<Image*>::iterator i = list_of_images.begin();
@@ -173,7 +172,6 @@ namespace Gamera {
 
     size_t ncols = max_x - min_x + 1;
     size_t nrows = max_y - min_y + 1;
-    
     OneBitImageData *dest_data = new OneBitImageData(nrows, ncols, min_y, min_x);
     OneBitImageView *dest = new OneBitImageView(*dest_data, min_y, min_x, nrows, ncols);
     std::fill(dest->vec_begin(), dest->vec_end(), white(*dest));

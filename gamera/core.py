@@ -34,7 +34,6 @@ from gameracore import ImageData, Size, Dimensions, Point, \
      Rect, Region, RegionMap, ImageInfo
 # import gamera.gameracore for subclassing
 import gameracore
-import gamera_xml
 from classify import InteractiveClassifier, NonInteractiveClassifier
 
 from gamera.classify import *
@@ -262,6 +261,10 @@ class ImageBase:
       if hasattr(self, 'children_images') and self.children_images != []:
          display_multi(self.children_images)
 
+   def unclassify(self):
+      self.id_name = []
+      self.classification_state = UNCLASSIFIED
+
    def classify_manual(self, id_name):
       id_name.sort()
       self.id_name = id_name
@@ -281,6 +284,20 @@ class ImageBase:
       if self.classification_state == UNCLASSIFIED:
          return 'UNCLASSIFIED'
       return self.id_name[0][1]
+
+   def has_id_name(self, name):
+      return name in [x[1] for x in self.id_name]
+
+   def match_id_name(self, regex):
+      """Returns true if any of the class names of the glyph match
+      the given regular expression."""
+      if type(regex) == StringType:
+         import re
+         regex = re.compile(regex)
+      for confidence, name in self.id_name:
+         if regex.match(name):
+            return 1
+      return 0
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""

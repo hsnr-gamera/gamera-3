@@ -166,6 +166,21 @@ def group_list(list, group_size):
     groups.append(list[i:min(i+group_size, len(list))])
   return groups
 
+def permute_list(alist, level=0):
+  """Yields all permutations of a given list."""
+  index, copy, printing = level, alist[:], level+1 == len(alist)
+  while 1:
+    if printing:
+      yield copy
+    else:
+      for x in permute_list(copy, level + 1):
+        yield x
+    if index != 0:
+      copy[index-1], copy[index] = copy[index], copy[index-1]
+    index -= 1
+    if index < 0:
+      break
+
 def word_wrap(stream, l, indent=0, width=78):
   """Writes to a stream with word wrapping.  indent is the size of the
   indent for every line.  width is the maximum width of the text."""
@@ -235,3 +250,5 @@ def ProgressFactory(message):
   else:
     return ProgressText(message)
   
+def build_id_regex(s):
+  parts = s.split('.')

@@ -975,6 +975,11 @@ class MultiImageDisplay(wxGrid):
    def append_glyphs(self, list):
       wxBeginBusyCursor()
       self.BeginBatch()
+      # Remove trailing 'None's
+      for i in range(len(self.list) - 1, -1, -1):
+         if not self.list[i] is None:
+            break
+      self.list = self.list[:i+1]
       self.list.extend(list)
       self.resize_grid(do_auto_size=0)
       self.EndBatch()

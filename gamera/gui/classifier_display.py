@@ -187,8 +187,6 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          column += 1
          column %= GRID_NCOLS
          prev_id = main_id
-      for i in range(column, GRID_NCOLS + column):
-         new_list.append(None)
       return new_list
 
    def default_sort(self, list):
@@ -256,16 +254,17 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    def delete_selected(self):
       self._delete_selected(self.GetSelectedItems(), 0)
-      self.RefreshSelected()
+      self.ForceRefresh()
 
    def _delete_selected(self, glyphs, setting):
       for glyph in glyphs:
-         if (setting == 0 and hasattr(item, 'dead')) or setting == -1:
-            del item.__dict__['dead']
+         if (setting == 0 and hasattr(glyph, 'dead')) or setting == -1:
+            if hasattr(glyph, 'dead'):
+               del glyph.__dict__['dead']
             self._delete_selected(glyph.children_images, -1)
-         elif (setting == 0 and not hasattr(item, 'dead')) or setting == 1:
-            item.dead = 1
-            self._delete_selected(glyph.children_images, -1)
+         elif (setting == 0 and not hasattr(glyph, 'dead')) or setting == 1:
+            glyph.dead = 1
+            self._delete_selected(glyph.children_images, 1)
 
    ########################################
    # CALLBACKS
@@ -403,6 +402,8 @@ class ClassifierFrame(ImageFrameBase):
       # Add 'splits' to symbol table
       for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
          self._symbol_table.add("split." + split[0])
+      self._symbol_table.add("group.skip")
+      self._symbol_table.add("group.part")
       # Add classifier database's symbols to the symbol table
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
@@ -661,8 +662,8 @@ class ClassifierFrame(ImageFrameBase):
       try:
          added, removed = self._classifier.classify_list_automatic(list)
       except classify.ClassifierError, e:
+         wxEndBusyCursor()
          gui_util.message(str(e))
-      wxBeginBusyCursor()
       self.multi_iw.id.BeginBatch()
       if len(added) or len(removed):
          if len(added):
@@ -670,7 +671,6 @@ class ClassifierFrame(ImageFrameBase):
          for glyph in removed:
             glyph.dead = 1
          self.multi_iw.id.Refresh()
-         wxEndBusyCursor()
       else:
          self.multi_iw.id.RefreshSelected()
       self.multi_iw.id.sort_images()
@@ -755,7 +755,7 @@ class ClassifierFrame(ImageFrameBase):
       # same glyph twice (it might be in both current and production databases)
       glyphs = {}
       if proddb:
-         for glyph in self._classifier.database:
+         for glyph in self._classifier.get_glyphs():
             glyphs[glyph] = None
       if currdb:
          for glyph in self.multi_iw.id.GetAllItems():
@@ -807,9 +807,9 @@ class ClassifierFrame(ImageFrameBase):
       if self._classifier.is_dirty:
          if gui_util.are_you_sure_dialog(
             "Are you sure you want to clear all glyphs in the production database?"):
-            self._classifier.database = []
+            self._classifier.clear_glyphs()
       else:
-         self._classifier.database = []
+         self._classifier.clear_glyphs()
 
    def _OnOpenCurrentDatabase(self, event):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
@@ -965,7 +965,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
          if new_path[0] == ".":
             new_path = new_path[1:]
          self.SetPyData(item, new_path)
-         if new_path.startswith("split"):
+         if new_path.startswith("split") or new_path.startswith("group"):
             self.SetItemBackgroundColour(item, wxColor(0xcc, 0xcc, 0xff))
          if is_parent:
             self.SetItemHasChildren(item, TRUE)

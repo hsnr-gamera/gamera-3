@@ -610,7 +610,6 @@ class IntVector(_guiIntVector, Arg):
       self.length = length
 
 # ImageList
-# These can only be used as return values
 class _guiImageList:
    pass
 

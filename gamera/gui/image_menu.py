@@ -187,7 +187,11 @@ class ImageMenu:
 
    def get_result_name(self, function, dict):
       if function.return_type not in ('', None):
-         return var_name.get(function.return_type.name, dict)
+         if function.return_type.name != None:
+            name = function.return_type.name
+         else:
+            name = function.__name__
+         return var_name.get(name, dict)
       return ''
 
    def OnPopupFunction(self, event):

@@ -33,7 +33,6 @@ from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
 import gamera.plugins.gui_support  # Gamera plugin
 
-XXX = None
 
 ##############################################################################
 
@@ -601,7 +600,7 @@ class ImageDisplay(wxScrolledWindow):
          # that could use too much memory.
          if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
             subimage = subimage.to_greyscale()
-         scaled_image = subimage.resize_copy(ceil(subimage.nrows * scaling),
+         scaled_image = subimage.resize(ceil(subimage.nrows * scaling),
                                              ceil(subimage.ncols * scaling),
                                              self.scaling_quality)
       else:
@@ -627,7 +626,7 @@ class ImageDisplay(wxScrolledWindow):
                   # nothingness, don't draw it.
                   if float(h) * scaling <= 1 or float(w) * scaling <= 1:
                      continue
-                  scaled_highlight = subhighlight.resize_copy(
+                  scaled_highlight = subhighlight.resize(
                      ceil(subhighlight.nrows * scaling),
                      ceil(subhighlight.ncols * scaling),
                      self.scaling_quality)
@@ -902,12 +901,12 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                sub_width = min((rect.GetWidth() + 1) / scaling, image.ncols)
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
-               scaled_image = sub_image.resize_copy(
+               scaled_image = sub_image.resize(
                   ceil(sub_image.nrows * scaling),
                   ceil(sub_image.ncols * scaling), 0)
             else:
                # This is the easy case - just scale the image.
-               scaled_image = image.resize_copy(height, width, 0)
+               scaled_image = image.resize(height, width, 0)
          else:
             # If we don't scale the image we can simply crop if the image is too
             # big to fit into the grid cell or otherwise do nothing.

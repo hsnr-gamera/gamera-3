@@ -22,10 +22,13 @@
 
 #include "gamera.hpp"
 #include "vigra/convolution.hxx"
+#include "image_utilities.hpp"
 
 template<class T>
-void guassian_smoothing(T& m, double scale) {
-  gaussianSmoothing(src_image_range(m), dest_image(m), scale);
+typename ImageFactory<T>::view_type* gaussian_smoothing(const T& m, double scale) {
+  typename ImageFactory<T>::view_type* output = simple_image_copy(m);
+  gaussianSmoothing(src_image_range(*output), dest_image(*output), scale);
+  return output; 
 }
 
 #endif

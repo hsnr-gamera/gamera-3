@@ -215,13 +215,13 @@ namespace Gamera {
       return (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
     }
 
-    FloatPixel const CIE_X() {
+    FloatPixel const cie_x() {
       return (data_[0] * 0.607 + data_[1] * 0.174 + data_[2] * 0.200) / 256.0;
     }
-    FloatPixel const CIE_Y() {
+    FloatPixel const cie_y() {
       return (data_[0] * 0.299 + data_[1] * 0.587 + data_[2] * 0.114) / 256.0;
     }
-    FloatPixel const CIE_Z() {
+    FloatPixel const cie_z() {
       return (data_[1] * 0.066 + data_[2] * 1.111) / 256.0;
     }
     GreyScalePixel const cyan() {

@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 namespace Gamera {
 
@@ -183,6 +184,7 @@ namespace Gamera {
     void create_data() {
       if (m_size > 0)
 	m_data = new T[m_size];
+      std::fill(m_data, m_data + m_size, pixel_traits<T>::white());
     }
 
     T* m_data;

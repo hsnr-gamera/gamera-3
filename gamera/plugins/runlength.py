@@ -21,53 +21,43 @@ from gamera.plugin import *
 
 class most_frequent_black_horizontal_run(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Int("value")
-most_frequent_black_horizontal_run = most_frequent_black_horizontal_run()
+    return_type = Int()
 
 class most_frequent_white_horizontal_run(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Int("value")
-most_frequent_white_horizontal_run = most_frequent_white_horizontal_run()
+    return_type = Int()
 
 class most_frequent_black_vertical_run(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Int("value")
-most_frequent_black_vertical_run = most_frequent_black_vertical_run()
+    return_type = Int()
 
 class most_frequent_white_vertical_run(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Int("value")
-most_frequent_white_vertical_run = most_frequent_white_vertical_run()
+    return_type = Int()
 
 class filter_narrow_runs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    args = Args(Int("max_width"))
-filter_narrow_runs = filter_narrow_runs()
+    args = Args(Int("size"))
 
 class filter_short_runs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    args = Args(Int("max_height"))
-filter_short_runs = filter_short_runs()
+    args = Args(Int("size"))
 
 class filter_tall_runs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    args = Args(Int("min_height"))
-filter_tall_runs = filter_tall_runs()
+    args = Args(Int("size"))
 
 class filter_wide_runs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    args = Args(Int("min_width"))
-filter_wide_runs = filter_wide_runs()
+    args = Args(Int("size"))
 
 class to_rle(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = String("runs")
-to_rle = to_rle()
 
 class from_rle(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args(String("runs"))
-from_rle = from_rle()
 
 class RunLengthModule(PluginModule):
     category = "Runlength"

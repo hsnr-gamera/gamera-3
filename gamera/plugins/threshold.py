@@ -30,15 +30,11 @@ pixels less than the given value become black."""
     def __call__(image, threshold, storage_format = 0):
         return _threshold.threshold(image, threshold, storage_format)
     __call__ = staticmethod(__call__)
-    
-threshold = threshold()
 
 class otsu_find_threshold(PluginFunction):
     """Finds a threshold point using the otsu algorithm"""
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")
-    
-otsu_find_threshold = otsu_find_threshold()
 
 class otsu_threshold(PluginFunction):
     """Creates a binary image by splitting along a threshold value determined
@@ -50,7 +46,6 @@ class otsu_threshold(PluginFunction):
     def __call__(image, storage_format = 0):
         return _threshold.otsu_threshold(image, storage_format)
     __call__ = staticmethod(__call__)
-otsu_threshold = otsu_threshold()
 
 class abutaleb_threshold(PluginFunction):
     """Creates a binary image by splitting along a threshold value determined
@@ -62,7 +57,6 @@ class abutaleb_threshold(PluginFunction):
     def __call__(image, storage_format = 0):
         return _threshold.abutaleb_threshold(image, storage_format)
     __call__ = staticmethod(__call__)
-abutaleb_threshold = abutaleb_threshold()
 
 class bernsen_threshold(PluginFunction):
     """Creates a binary image by splitting along a threshold value determined
@@ -77,13 +71,12 @@ class bernsen_threshold(PluginFunction):
     def __call__(image, storage_format = 0, region_size = 3, contrast_limit = 128, set_doubt_to_low = 0):
         return _threshold.bernsen_threshold(image, storage_format, region_size, contrast_limit, set_doubt_to_low)
     __call__ = staticmethod(__call__)
-bernsen_threshold = bernsen_threshold()
 
 class ThresholdModule(PluginModule):
     """This module provides functions that convert images between different
     pixel types.
     """
-    category = "Filter"
+    category = "Threshold"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold, otsu_find_threshold, otsu_threshold, abutaleb_threshold,
                  bernsen_threshold]

@@ -22,3 +22,6 @@ GREY16 = 2
 RGB = 3
 FLOAT = 4
 ALL = 0xffff
+
+DENSE = 0
+RLE = 1

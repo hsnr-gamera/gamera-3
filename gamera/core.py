@@ -296,10 +296,10 @@ class ImageBase:
       gui = config.options.__.gui
       if gui:
          if self._display:
-            self._display.set_image(self, "to_false_color")
+            self._display.set_image(self, "false_color")
          else:
             self.set_display(
-               gui.ShowImage(self, self.name, "to_false_color",
+               gui.ShowImage(self, self.name, "false_color",
                              owner=self))
       self.last_display = "normal"
       return self._display
@@ -422,15 +422,14 @@ class ImageBase:
       return self.property[name]
 
 ######################################################################
-      
+
 class Image(gameracore.Image, ImageBase):
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
-                pixel_format, storage_type):
+                pixel_format=ONEBIT, storage_type=DENSE):
       ImageBase.__init__(self)
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
    __getstate__ = ImageBase.__getstate__
-
 
 ######################################################################
 
@@ -540,3 +539,9 @@ else:
 
 if __name__ == "__main__":
    init_gamera()
+
+__all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
+           "ONEBIT GREYSCALE GREY16 RGB FLOAT ALL DENSE RLE "
+           "ImageData Size Dimensions Point Rect Region RegionMap "
+           "ImageInfo Image SubImage Cc load_image image_info "
+           "display_multi config ImageBase ").split()

@@ -22,7 +22,6 @@ from gamera.plugin import *
 class outline(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
-outline = outline()
 
 class MiscFiltersModule(PluginModule):
     category = "Filter"

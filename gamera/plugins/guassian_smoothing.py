@@ -19,16 +19,15 @@
 
 from gamera.plugin import *
 
-class guassian_smoothing(PluginFunction):
+class gaussian_smoothing(PluginFunction): 
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("scale")])
-    
-guassian_smoothing = guassian_smoothing()
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 
 class GSModule(PluginModule):
-    category = "Filter"
+    category = "Filter/Smoothing"
     cpp_headers = ["guassian_smoothing.hpp"]
-    functions = [guassian_smoothing]
+    functions = [gaussian_smoothing]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

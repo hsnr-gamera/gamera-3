@@ -97,7 +97,7 @@ template = Template("""
     void init[[module_name]](void);
     [[for function in module.functions]]
       [[if not function.pure_python]]
-        static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args);
+        static PyObject* call_[[function.__name__]](PyObject* self, PyObject* args);
       [[end]]
     [[end]]
   }
@@ -109,8 +109,8 @@ template = Template("""
   static PyMethodDef [[module_name]]_methods[] = {
     [[for function in module.functions]]
       [[if not function.pure_python]]
-        { \"[[function.__class__.__name__]]\",
-          call_[[function.__class__.__name__]], METH_VARARGS },
+        { \"[[function.__name__]]\",
+          call_[[function.__name__]], METH_VARARGS },
       [[end]]
     [[end]]
     { NULL }
@@ -125,7 +125,7 @@ template = Template("""
       [[else]]
         [[exec pyarg_format = '']]
       [[end]]
-      static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args) {
+      static PyObject* call_[[function.__name__]](PyObject* self, PyObject* args) {
       [[# this holds the self argument - note that the self passed into the function will #]]
       [[# be Null because this functions is not actually bound to an object #]]
       [[if not function.self_type is None]]
@@ -166,7 +166,7 @@ template = Template("""
           [[exec pyarg_format = pyarg_format + 'O']]
           std::vector<Image*> [[x.name + '_list_arg']];
         [[else]]
-          Something funny happened - [[x.__class__.__name__]]
+          Something funny happened - [[x.__name__]]
           [[isinstance(x, ImageType)]]
         [[end]]
       [[end]]
@@ -325,7 +325,7 @@ template = Template("""
                 [[if not function.return_type is None]]
                   return_value =
                 [[end]]
-                [[function.__class__.__name__]]
+                [[function.__name__]]
                 (
                 [[exec tmp_args = args + [current] ]]
                 [[exec arg_string = tmp_args[0] ]]
@@ -363,7 +363,7 @@ template = Template("""
         [[if function.return_type != None]]
           return_value =
         [[end]]
-        [[function.__class__.__name__]]
+        [[function.__name__]]
         (
         [[exec arg_string = '']]
         [[for i in range(len(function.args.list))]]

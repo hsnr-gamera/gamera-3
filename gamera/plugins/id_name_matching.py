@@ -107,7 +107,7 @@ class match_id_name(PluginFunction):
 match_id_name = match_id_name()
 
 class IdNameMatchingModule(PluginModule):
-    category = "Id"
+    category = "Classification"
     functions = [match_id_name]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

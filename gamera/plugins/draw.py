@@ -23,17 +23,14 @@ import _draw
 class draw_line(PluginFunction):
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
-draw_line = draw_line()
 
 class draw_hollow_rect(PluginFunction):
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
-draw_hollow_rect = draw_hollow_rect()
 
 class draw_filled_rect(PluginFunction):
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
-draw_filled_rect = draw_filled_rect()
 
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]

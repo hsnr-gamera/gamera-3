@@ -21,18 +21,15 @@ from gamera.plugin import *
 
 class thin_zs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT], "thinned")
-thin_zs = thin_zs()
+    return_type = ImageType([ONEBIT])
 
 class thin_hs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT], "thinned")
-thin_hs = thin_hs()
+    return_type = ImageType([ONEBIT])
 
 class thin_lc(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT], "thinned")
-thin_lc = thin_lc()
+    return_type = ImageType([ONEBIT])
 
 class ThinningModule(PluginModule):
     category = "Filter/Thinning"

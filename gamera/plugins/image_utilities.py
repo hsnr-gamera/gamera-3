@@ -26,51 +26,41 @@ import _image_utilities
 
 class image_copy(PluginFunction):
     """Copies an image, with all of its underlying data."""
-    category = "Utility/Copy"
+    category = "Utility"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Choice("storage format", ["DENSE", "RLE"])])
     def __call__(image, storage_format = 0):
         return _image_utilities.image_copy(image, storage_format)
     __call__ = staticmethod(__call__)
-image_copy = image_copy()
 
-class rotate_copy(PluginFunction):
-    """Copies and rotates an image"""
-    category = "Utility/Copy"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    args = Args(Float("angle"))
-rotate_copy = rotate_copy()
-
-class resize_copy(PluginFunction):
+class resize(PluginFunction):
     """Copies and resizes an image. In addition to size the type of
     interpolation can be specified to allow tradeoffs between speed
     and quality."""
-    category = "Utility/Copy"
+    category = "Utility"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Int("nrows"), Int("ncols"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-resize_copy = resize_copy()
 
-class scale_copy(PluginFunction):
+class scale(PluginFunction):
     """Copies and scales an image. In addition to size the type of
     interpolation can be specified to allow tradeoffs between speed
     and quality."""
-    category = "Utility/Copy"
+    category = "Utility"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Real("scaling"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-scale_copy = scale_copy()
 
 class histogram(PluginFunction):
     """Compute the histogram of an image. The return type is a
     Python array of doubles. The values are percentages. If a
     gui is being used the histogram is displayed."""
+    category = "Analysis"
     self_type = ImageType([GREYSCALE, GREY16])
-    return_type = FloatVector("histogram")
+    return_type = FloatVector()
     def __call__(image):
         hist = _image_utilities.histogram(image)
         gui = gamera.config.options.__.gui
@@ -78,31 +68,31 @@ class histogram(PluginFunction):
             gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
         return hist
     __call__ = staticmethod(__call__)
-histogram = histogram()
 
 class union_images(PluginFunction):
+    category = "Combine"
     self_type = None
     args = Args([ImageList('list_of_images')])
     return_type = ImageType([ONEBIT])
-union_images = union_images() 
 
 class projection_rows(PluginFunction):
     """Compute the projections of an image.  The computes the
     number of pixels in each row."""
+    category = "Analysis"
     self_type = ImageType([ONEBIT])
-    return_type = IntVector("rows")
-projection_rows = projection_rows()
+    return_type = IntVector()
 
 class projection_cols(PluginFunction):
     """Compute the projections of an image.  The computes the
     number of pixels in each row."""
+    category = "Analysis"
     self_type = ImageType([ONEBIT])
-    return_type = IntVector("cols")
-projection_cols = projection_cols()
+    return_type = IntVector()
 
 class projections(PluginFunction):
+    category = "Analysis"
     self_type = ImageType([ONEBIT])
-    return_type = Class("projections")
+    return_type = Class()
     pure_python = 1
     def __call__(image):
         rows = _image_utilities.projection_rows(image)
@@ -112,37 +102,37 @@ class projections(PluginFunction):
             gui.ShowProjections(rows, cols, image)
         return (rows, cols)
     __call__ = staticmethod(__call__)
-projections = projections()
 
 class fill_white(PluginFunction):
+    category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-fill_white = fill_white()
 
 class invert(PluginFunction):
+    category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
-invert = invert()
 
 class clip_image(PluginFunction):
     """Crops a subimage down so it only includes the intersection of
     it and another subimage."""
+    category = "Utility"
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT]))
-clip_image = clip_image()
+    args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT], "other"))
 
-class mask_image(PluginFunction):
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+class mask(PluginFunction):
+    """Masks an image using the given ONEBIT image"""
+    category = "Combine"
+    return_type = ImageType([GREYSCALE, GREY16, RGB, FLOAT])
     self_type = ImageType([GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args(ImageType([ONEBIT]))
-mask_image = mask_image()
+    args = Args(ImageType([ONEBIT], "mask"))
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
-    functions = [image_copy, rotate_copy, resize_copy, scale_copy,
+    functions = [image_copy, resize, scale,
                  histogram, union_images, projection_rows, projection_cols,
-                 projections, fill_white, invert, clip_image, mask_image]
+                 projections, fill_white, invert, clip_image, mask]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

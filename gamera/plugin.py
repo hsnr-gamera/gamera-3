@@ -21,7 +21,7 @@
 from gamera.args import *
 from gamera import paths
 import new, os, os.path, unittest, imp, inspect
-from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+from enums import *
 
 class PluginModule:
    category = None

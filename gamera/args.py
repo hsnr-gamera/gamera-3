@@ -276,7 +276,7 @@ else:
       pass
 
 class Int(_guiInt, Arg):
-   def __init__(self, name, range=(-sys.maxint, sys.maxint), default=0):
+   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=0):
       self.name = name
       self.rng = range
       self.default = default
@@ -363,7 +363,7 @@ else:
       pass
 
 class Real(_guiReal, Arg):
-   def __init__(self, name, range=(-sys.maxint, sys.maxint), default=0):
+   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=0):
       self.name = name
       self.rng = range
       self.default = default
@@ -395,7 +395,7 @@ else:
       pass
 
 class String(_guiString, Arg):
-   def __init__(self, name, default=''):
+   def __init__(self, name=None, default=''):
       self.name = name
       self.default = default
 
@@ -438,7 +438,7 @@ else:
       pass
 
 class Class(_guiClass, Arg):
-   def __init__(self, name, klass=None, list_of=0):
+   def __init__(self, name=None, klass=None, list_of=0):
       self.name = name
       self.klass = klass
       self.list_of = list_of
@@ -464,7 +464,7 @@ else:
       pass
 
 class ImageType(_guiImageType, Arg):
-   def __init__(self, pixel_types, name="self", list_of = 0):
+   def __init__(self, pixel_types, name=None, list_of = 0):
       import core
       self.name = name
       if not core is None:
@@ -518,7 +518,7 @@ else:
       pass
 
 class Choice(_guiChoice, Arg):
-   def __init__(self, name, choices, default=0):
+   def __init__(self, name=None, choices=[], default=0):
       self.name = name
       self.choices = choices
       self.default = default
@@ -558,7 +558,7 @@ else:
       pass
 
 class _Filename(_guiFilename, Arg):
-   def __init__(self, name, default="", extension="*.*"):
+   def __init__(self, name=None, default="", extension="*.*"):
       self.name = name
       self.default = default
       self.extension = extension
@@ -659,7 +659,7 @@ else:
       pass
 
 class Radio(_guiRadio, Arg):
-   def __init__(self, name, radio_button):
+   def __init__(self, name=None, radio_button=''):
       self.name = name
       self.radio_button = radio_button
 
@@ -682,7 +682,7 @@ else:
       pass
       
 class Check(_guiCheck, Arg):
-   def __init__(self, name, check_box, default=0, enabled=1):
+   def __init__(self, name=None, check_box='', default=0, enabled=1):
       self.name = name
       self.check_box = check_box
       self.default = default
@@ -694,7 +694,7 @@ class _guiRegion:
    pass
 
 class Region(_guiRegion, Arg):
-   def __init__(self, name):
+   def __init__(self, name=None):
       self.name = name
 
 # RegionMap
@@ -703,7 +703,7 @@ class _guiRegionMap:
    pass
 
 class RegionMap(_guiRegionMap, Arg):
-   def __init__(self, name):
+   def __init__(self, name=None):
       self.name = name
 
 # ImageInfo
@@ -712,7 +712,7 @@ class _guiImageInfo:
    pass
 
 class ImageInfo(_guiImageInfo, Arg):
-   def __init__(self, name):
+   def __init__(self, name=None):
       self.name = name
 
 # FloatVector
@@ -721,7 +721,7 @@ class _guiFloatVector:
    pass
 
 class FloatVector(_guiFloatVector, Arg):
-   def __init__(self, name, length=-1):
+   def __init__(self, name=None, length=-1):
       self.name = name
       self.length = length
 
@@ -731,7 +731,7 @@ class _guiIntVector:
    pass
 
 class IntVector(_guiIntVector, Arg):
-   def __init__(self, name, length=-1):
+   def __init__(self, name=None, length=-1):
       self.name = name
       self.length = length
 
@@ -740,7 +740,7 @@ class _guiImageList:
    pass
 
 class ImageList(_guiImageList, Arg):
-   def __init__(self, name):
+   def __init__(self, name=None):
       self.name = name
 
 # Info
@@ -758,7 +758,7 @@ else:
       pass
 
 class Info(_guiInfo, Arg):
-   def __init__(self, name):
+   def __init__(self, name=None):
       self.name = name
 
 class Wizard:

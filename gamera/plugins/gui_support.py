@@ -24,19 +24,17 @@ class to_string(PluginFunction):
 (i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     return_type = Class("image_as_string")
-to_string = to_string()
 
 class to_buffer(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
 (i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     args = Args(Class("Buffer"))
-to_buffer = to_buffer()
 
 class color_ccs(PluginFunction):
+    category = "Color"
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])
-color_ccs = color_ccs()
 
 # By default, the wxPython-devel RPM puts stuff here, but this
 # should be done better

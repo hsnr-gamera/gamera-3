@@ -30,7 +30,6 @@ class rotateShear(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args(Float("Rotation angle"))
-rotateShear = rotateShear()
 
 class wave(PluginFunction):
     """Causes periodic disturbance of user-defined frequency, amplitude, and direction"""
@@ -43,7 +42,6 @@ class wave(PluginFunction):
                  Choice('Waveform type',['Sinusoid','Square','Sawtooth','Triangle','Sinc']),\
                  Int('Waveform Offset')\
                 ])
-wave=wave()
 
 class noise(PluginFunction):
     """Causes random shifting of pixels within a user specified range, in a user-specified direction"""
@@ -53,7 +51,6 @@ class noise(PluginFunction):
     args = Args([Int("Amplitude"),\
                  Choice('Direction',['Horizontal','Vertical']),\
                 ])
-noise=noise()
 
 class inkrub(PluginFunction):
     """Simulates rubbing off of ink from another page"""
@@ -61,7 +58,6 @@ class inkrub(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args(Int("Transcription Probability 1 in"))
-inkrub = inkrub()
 
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
@@ -70,5 +66,4 @@ class DefModule(PluginModule):
     functions = [rotateShear,wave,noise,inkrub]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
-
 module = DefModule()

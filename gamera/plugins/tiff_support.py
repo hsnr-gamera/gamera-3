@@ -27,7 +27,6 @@ class tiff_info(PluginFunction):
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("tiff_info")
-tiff_info = tiff_info()
 
 class load_tiff(PluginFunction):
     self_type = None
@@ -37,13 +36,11 @@ class load_tiff(PluginFunction):
     def __call__(filename, compression = 0):
         return _tiff_support.load_tiff(filename, compression)
     __call__ = staticmethod(__call__)
-load_tiff = load_tiff()
 
 class save_tiff(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     args = Args([FileSave("image_file_name", "image.tiff", "*.tiff;*.tif")])
     return_type = None
-save_tiff = save_tiff()
 
 class TiffSupportModule(PluginModule):
     category = "File"

@@ -27,16 +27,14 @@ class polar_distance(PluginFunction):
     and non-normalized polar distance to another glyph (based on center points."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = FloatVector("polar")
-    args = Args([ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])])
-polar_distance = polar_distance()
+    args = Args([ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB], "other")])
 
 class polar_match(PluginFunction):
     """Returns a tuple containing the normalized distance, polar direction,
     and non-normalized polar distance to another glyph (based on center points."""
     self_type = None
-    return_type = Int('check')
+    return_type = Int("check")
     args = Args([Float('r1'), Float('q1'), Float('r2'), Float('q2')])
-polar_match = polar_match()
 
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]

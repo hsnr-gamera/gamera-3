@@ -206,50 +206,9 @@ namespace Gamera {
     }
     return dest;
   }
-
   
   template<class T>
-  Image* rotate_copy(T &m, float hypot) {
-    typedef ImageFactory<T> fact;
-    typename fact::data_type* out_data;
-    typename fact::view_type* out;
-    size_t out_nrows, out_ncols;
-    if (hypot == 90.0 || hypot == -270.0 || hypot == -90) {
-      out_nrows = m.ncols();
-      out_ncols = m.nrows();
-    } else if (hypot == 180 || hypot == -180) {
-      out_nrows = m.nrows();
-      out_ncols = m.ncols();
-    } else {
-      out_nrows = out_ncols = m.nrows() + m.ncols();
-    }
-    out_data = new typename fact::data_type(out_nrows, out_ncols);
-    out = new typename fact::view_type(*out_data, 0, 0, out_nrows, out_ncols);
-    double angle = atan(hypot);
-    double sin_angle = sin(angle);
-    double cos_angle = cos(angle);
-    int half_row = m.nrows() / 2;
-    int half_col = m.ncols() / 2;
-    int half_out_row = out->nrows() / 2;
-    int half_out_col = out->ncols() / 2;
-    for (int row = 0; row < int(m.nrows()); row++) {
-      for (int col = 0; col < int(m.ncols()); col++) {
-	double new_row = ((double(col - half_col) * sin_angle) + 
-			  (double(row - half_row) * cos_angle) +
-			  double(half_out_row));
-	double new_col = ((double(col - half_col) * cos_angle) - 
-			  (double(row - half_row) * sin_angle) +
-			  double(half_out_col));
-	out->set((int)(new_row + 0.5), (int)(new_col + 0.5),
-		 (typename fact::view_type::value_type)m.get(row, col));
-      }
-    }
-    image_copy_attributes(m, *out);
-    return out;
-  }
-
-  template<class T>
-  Image* resize_copy(T& image, int nrows, int ncols, int resize_quality) {
+  Image* resize(T& image, int nrows, int ncols, int resize_quality) {
     typename T::data_type* data = new typename T::data_type(nrows, ncols);
     ImageView<typename T::data_type>* view = 
       new ImageView<typename T::data_type>(*data, 0, 0, nrows ,ncols);
@@ -274,14 +233,13 @@ namespace Gamera {
   }
 
   template<class T>
-  Image* scale_copy(T& image, double scaling, int resize_quality) {
-    std::cout.flush();
+  Image* scale(T& image, double scaling, int resize_quality) {
     // nrows, ncols are cast to a double so that the multiplication happens
     // exactly as it does in Python
-    return resize_copy(image, 
-		       size_t(ceil(double(image.nrows()) * scaling)),
-		       size_t(ceil(double(image.ncols()) * scaling)), 
-		       resize_quality);
+    return resize(image, 
+		  size_t(ceil(double(image.nrows()) * scaling)),
+		  size_t(ceil(double(image.ncols()) * scaling)), 
+		  resize_quality);
   }
 
 
@@ -437,7 +395,7 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  typename ImageFactory<T>::view_type* mask_image(const T& a, U &b) {
+  typename ImageFactory<T>::view_type* mask(const T& a, U &b) {
     typename ImageFactory<T>::data_type* dest_data =
       new typename ImageFactory<T>::data_type(b.size(), b.offset_y(), b.offset_x());
     typename ImageFactory<T>::view_type* dest =

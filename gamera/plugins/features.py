@@ -24,63 +24,51 @@ import _features
 
 class black_area(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("black_area", 1)
-black_area = black_area()
+    return_type = FloatVector(length=1)
 
 class moments(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("moments", 9)
-moments = moments()
+    return_type = FloatVector(length=9)
 
 class nholes(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("nholes", 2)
-nholes = nholes()
+    return_type = FloatVector(length=2)
 
 class nholes_extended(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("nholes", 8)
-nholes_extended = nholes_extended()
+    return_type = FloatVector(length=8)
 
 class volume(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("volume", 1)
-volume = volume()
+    return_type = FloatVector(length=1)
 
 class area(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("area", 1)
-area = area()
+    return_type = FloatVector(length=1)
 
 class aspect_ratio(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("aspect_ratio", 1)
-aspect_ratio = aspect_ratio()
+    return_type = FloatVector(length=1)
 
 class compactness(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("compactness", 1)
-compactness = compactness()
+    return_type = FloatVector(length=1)
 
 class volume16regions(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("volumes", 16)
-volume16regions = volume16regions()
+    return_type = FloatVector(length=16)
 
 class volume64regions(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("volumes", 64)
-volume64regions = volume64regions()
+    return_type = FloatVector(length=64)
 
 class zernike_moments(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("zernike_moments", 26)
-zernike_moments = zernike_moments()
+    return_type = FloatVector(length=26)
 
 class skeleton_features(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("skeleton_features", 6)
-skeleton_features = skeleton_features()
+    return_type = FloatVector(length=6)
 
 class generate_features(PluginFunction):
     category = "Utility"
@@ -95,11 +83,8 @@ class generate_features(PluginFunction):
       self.feature_functions = features
       self.features = array.array('d')
       for name, function in features:
-          self.features.extend(function(self))
+          self.features.extend(function.__call__(self))
     __call__ = staticmethod(__call__)
-
-generate_features = generate_features()
-
 
 class FeaturesModule(PluginModule):
     category = "Features"
@@ -114,7 +99,6 @@ class FeaturesModule(PluginModule):
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()
-
 
 def get_features_length(features):
     """Given a list of feature functions return the number

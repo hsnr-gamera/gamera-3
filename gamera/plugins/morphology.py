@@ -20,29 +20,26 @@
 from gamera.plugin import *
 import _morphology
 
+#TODO: Change these to out-of-place
+
 class erode(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-erode = erode()
 
 class dilate(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-dilate = dilate()
 
 class erode_dilate(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('number of times', range=(0, 10), default=1), \
                Choice('direction', ['dilate', 'erode']), \
                Choice('window shape', ['rectangular', 'octagonal'])])
-erode_dilate = erode_dilate()
 
 class rank(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('rank', range=(1, 9))])
-rank = rank()
 
 class mean(PluginFunction):
   self_type = ImageType([GREYSCALE, FLOAT])
-mean = mean()
 
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]

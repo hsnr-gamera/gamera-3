@@ -239,45 +239,6 @@ class _kNNBase(gamera.knncore.kNN):
       classification."""
       return 1
 
-   def supports_optimization(self):
-      """Flag indicating that this classifier supports optimization."""
-      return 1
-
-   def start_optimizing(self):
-      """Start optizing the classifier using a Genetic Algorithm. This
-      function will not block. Instead it starts a background (daemon) thread that
-      will perform the optimization in the background. While the classifier is
-      performing classification no other methods should be called until stop_optimizing
-      has been called."""
-      self.ga_worker_stop = 0
-      self.ga_worker_thread = GaWorker(self)
-      self.ga_worker_thread.setDaemon(1)
-      self.ga_worker_thread.start()
-      return
-
-   def stop_optimizing(self):
-      """Stop optimization with the Genetic Algorithm. WARNING: this function
-      has to wait for the current GA generation to finish before returning, which
-      could take several secongs."""
-      if not self.ga_worker_thread:
-         return
-      self.ga_worker_stop = 1
-      self.ga_worker_thread.join()
-      self.ga_worker_thread = None
-      self._ga_destroy()
-
-   def add_optimization_callback(self, func):
-      """Add a function to be called everytime time the optimization updates the
-      classifier."""
-      self.ga_callbacks.append(func)
-
-   def remove_optimization_callback(self, func):
-      """Remove a function that is called everytime time the optimization updates the
-      classifier."""
-      try:
-         self.ga_callbacks.remove(func)
-      except:
-         pass
 
    def settings_dialog(self, parent):
       """Display a settings dialog for k-NN settings"""
@@ -394,6 +355,10 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
       return kNNNonInteractive(
          self.get_glyphs(), self.features, self._perform_splits)
 
+   def supports_optimization(self):
+      """Flag indicating that this classifier supports optimization."""
+      return True
+
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
    def __init__(self, database=[], features=None, perform_splits=1):
       classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
@@ -410,6 +375,46 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.num_features = features.get_features_length(self.features)
       classify.NonInteractiveClassifier.change_feature_set(self, f)
+
+   def supports_optimization(self):
+      """Flag indicating that this classifier supports optimization."""
+      return True
+
+   def start_optimizing(self):
+      """Start optizing the classifier using a Genetic Algorithm. This
+      function will not block. Instead it starts a background (daemon) thread that
+      will perform the optimization in the background. While the classifier is
+      performing classification no other methods should be called until stop_optimizing
+      has been called."""
+      self.ga_worker_stop = 0
+      self.ga_worker_thread = GaWorker(self)
+      self.ga_worker_thread.setDaemon(1)
+      self.ga_worker_thread.start()
+      return
+
+   def stop_optimizing(self):
+      """Stop optimization with the Genetic Algorithm. WARNING: this function
+      has to wait for the current GA generation to finish before returning, which
+      could take several secongs."""
+      if not self.ga_worker_thread:
+         return
+      self.ga_worker_stop = 1
+      self.ga_worker_thread.join()
+      self.ga_worker_thread = None
+      self._ga_destroy()
+
+   def add_optimization_callback(self, func):
+      """Add a function to be called everytime time the optimization updates the
+      classifier."""
+      self.ga_callbacks.append(func)
+
+   def remove_optimization_callback(self, func):
+      """Remove a function that is called everytime time the optimization updates the
+      classifier."""
+      try:
+         self.ga_callbacks.remove(func)
+      except:
+         pass
 
 def simple_feature_selector(glyphs):
    """simple_feature_selector does a brute-force search through all

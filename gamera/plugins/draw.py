@@ -57,21 +57,20 @@ Po-Han Lin and link to http://www.edepot.com is provided in source
 code and can been seen in compiled executable.
 """
   self_type = ImageType(ALL)
-  args = Args([Float("y1"), Float("x1"), Float("y2"), Float("x2"), Pixel("value")])
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
   authors = "Michael Droettboom based on Po-Han Lin's Extremely Fast Line Algorithm"
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_line(self, *args)
-    elif len(args) == 3:
+    else:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_line(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        pass
-    raise ValueError("Arguments are incorrect.")
+        raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
 class draw_hollow_rect(PluginFunction):
@@ -105,15 +104,14 @@ The coordinates can be specified either by four integers or two Points:
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_hollow_rect(self, *args)
-    elif len(args) == 3:
+    else:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_hollow_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        pass
-    raise ValueError("Arguments are incorrect.")
+        raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
 class draw_filled_rect(PluginFunction):
@@ -147,18 +145,17 @@ The coordinates can be specified either by four integers or two Points:
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_filled_rect(self, *args)
-    elif len(args) == 3:
+    else:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_filled_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        pass
-    raise ValueError("Arguments are incorrect.")
+        raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-class draw_bezier(PluginFunction):
+class draw_bezier_curve(PluginFunction):
   """Draws a bezier curve
 
 The coordinates can be specified either by six integers or three Points:
@@ -189,23 +186,22 @@ The coordinates can be specified either by six integers or three Points:
   The pixel value to set for the curve.
 """
   self_type = ImageType(ALL)
-  args = Args([Float("y1"), Float("x1"), Float("y2"), Float("x2"),
-               Float("y3"), Float("x3"), Pixel("value")])
+  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"),
+               Int("y3"), Int("x3"), Pixel("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 15, 20, 1)]
   def __call__(self, *args):
     if len(args) == 7:
-      return _draw.draw_bezier(self, *args)
-    elif len(args) == 4:
+      return _draw.draw_bezier_curve(self, *args)
+    else:
       try:
         a = args[0]
         b = args[1]
         c = args[2]
         value = args[3]
-        return _draw.draw_bezier(self, a.y, a.x, b.y, b.x,
+        return _draw.draw_bezier_curve(self, a.y, a.x, b.y, b.x,
                                        c.y, c.x, value)
       except KeyError, AttributeError:
-        pass
-      raise ValueError("Arguments are incorrect.")
+        raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
 class flood_fill(PluginFunction):
@@ -236,14 +232,13 @@ The coordinates can be specified either by two integers or one Point:
   def __call__(self, *args):
     if len(args) == 3:
       return _draw.flood_fill(self, *args)
-    elif len(args) == 2:
+    else:
       try:
         a = args[0]
         value = args[1]
         return _draw.flood_fill(self, a.y, a.x, value)
       except KeyError, AttributeError:
-        pass
-    raise ValueError("Arguments are incorrect.")
+        raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
 class remove_border(PluginFunction):
@@ -268,7 +263,7 @@ class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Draw"
-  functions = [draw_line, draw_bezier,
+  functions = [draw_line, draw_bezier_curve,
                draw_hollow_rect, draw_filled_rect, flood_fill,
                remove_border, highlight]
   author = "Michael Droettboom"

@@ -61,6 +61,10 @@ on either image to crop appropriately if necessary for your specific case.
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
+    self_type = ImageType(ALL)
+    args = Args([ImageType(ALL, 'other'), Check('in_place', default=False)])
+    return_type = ImageType(ALL)
+
     def __call__(self, other, in_place=False):
        return _arithmetic.subtract_images(self, other, in_place)
     __call__ = staticmethod(__call__)

@@ -18,6 +18,14 @@
 
 #include "edge.hpp"
 
+Edge::Edge(GraphObject* graph, Node* from_node,
+	   Node* to_node, CostType cost, PyObject* label) :
+  m_graph(graph), m_from_node(from_node), m_to_node(to_node),
+  m_cost(cost), m_label(label) {
+  if (label != NULL)
+    Py_INCREF(label);
+}
+
 extern "C" {
   static void edgeobject_dealloc(PyObject* self);
   static PyObject* edge___repr__(PyObject* self);
@@ -28,7 +36,6 @@ extern "C" {
   static int edge_set_cost(PyObject* self, PyObject* obj);
   static PyObject* edge_get_label(PyObject* self);
   static int edge_set_label(PyObject* self, PyObject* obj);
-  static PyObject* edge_get_other(PyObject* self);
 }
 static PyTypeObject EdgeType = {
   PyObject_HEAD_INIT(NULL)
@@ -48,29 +55,14 @@ PyGetSetDef edge_getset[] = {
     "Cost of traversing this node (get/set)", 0 },
   { "label", (getter)edge_get_label, (setter)edge_set_label,
     "An arbitrary label attached to the edge (get/set)", 0 },
-  { "other", (getter)edge_get_other, 0,
-    "For an undirected graph return the edge pointing in the oppisite direction." },
   { NULL }
 };
-
-Edge* edge_new(GraphObject* graph, Node* from_node,
-	       Node* to_node, CostType cost, PyObject* label) {
-  Edge* so = new Edge();
-  so->m_graph = graph;
-  so->m_other = NULL;
-  so->m_from_node = from_node;
-  so->m_to_node = to_node;
-  so->m_cost = cost;
-  so->m_label = label;
-  if (label != NULL)
-    Py_INCREF(label);
-  return so;
-}
 
 PyObject* edgeobject_new(Edge* edge) {
   EdgeObject* so;
   so = (EdgeObject*)EdgeType.tp_alloc(&EdgeType, 0);
   so->m_x = edge;
+  so->m_graph = edge->m_graph;
   Py_INCREF(edge->m_graph);
   return (PyObject*)so;
 }  
@@ -79,7 +71,8 @@ PyObject* edgeobject_new(GraphObject* graph, Node* from_node,
 			 Node* to_node, CostType cost, PyObject* label) {
   EdgeObject* so;
   so = (EdgeObject*)EdgeType.tp_alloc(&EdgeType, 0);
-  so->m_x = edge_new(graph, from_node, to_node, cost, label);
+  so->m_x = new Edge(graph, from_node, to_node, cost, label);
+  so->m_graph = graph;
   Py_INCREF(graph);
   return (PyObject*)so;
 }  
@@ -88,18 +81,12 @@ bool is_EdgeObject(PyObject* self) {
   return PyObject_TypeCheck(self, &EdgeType);
 }
 
-void edge_dealloc(Edge* so) {
-  if (so->m_label != NULL)
-    Py_DECREF(so->m_label);
-  delete so;
-}
-
 void edgeobject_dealloc(PyObject* self) {
 #ifdef DEBUG_DEALLOC
   std::cerr << "edgeobject dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
 #endif
   EdgeObject* so = (EdgeObject*)self;
-  Py_DECREF(so->m_x->m_graph);
+  Py_DECREF(so->m_graph);
   self->ob_type->tp_free(self);
 }
 
@@ -161,14 +148,6 @@ int edge_set_label(PyObject* self, PyObject* data) {
   so->m_label = data;
   Py_INCREF(so->m_label);
   return 0;
-}
-
-static PyObject* edge_get_other(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
-  Py_INCREF(so->m_other);
-  return (PyObject*)so->m_other;  
 }
 
 void init_EdgeType() {

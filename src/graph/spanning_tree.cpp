@@ -31,13 +31,16 @@ GraphObject* graph_create_spanning_tree(GraphObject* so, Node* root) {
     node_stack.pop();
     NP_VISITED(node) = true;
     Node* new_node1 = graph_add_node(tree, node->m_data);
-    for (EdgeList::iterator j = node->m_out_edges->begin();
-	 j != node->m_out_edges->end(); ++j)
-      if (!NP_VISITED((*j)->m_to_node)) {
-	Node* new_node2 = graph_add_node(tree, (*j)->m_to_node->m_data);
+    for (EdgeList::iterator j = node->m_edges.begin();
+	 j != node->m_edges.end(); ++j) {
+      Node* inner_node = (*j)->traverse(node);
+      if (!NP_VISITED(inner_node)) {
+	Node* new_node2 = graph_add_node(tree, inner_node->m_data);
 	graph_add_edge(tree, new_node1, new_node2, (*j)->m_cost);
-	node_stack.push((*j)->m_to_node);
+	node_stack.push(inner_node);
+	NP_VISITED(inner_node) = true;
       }
+    }
   }
   return tree;
 }
@@ -51,13 +54,14 @@ PyObject* graph_create_spanning_tree(PyObject* self, PyObject* pyobject) {
   return (PyObject*)graph_create_spanning_tree(so, root);
 }
 
+/*
+
 struct minimum_spanning_queue_comp_func
 {
   bool operator()(Edge* const& a, Edge* const& b) const { 
     return a->m_cost > b->m_cost;
   }
 };
-
 GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   // Kruskal's algorithm
   typedef std::priority_queue<Edge*, std::vector<Edge*>,
@@ -67,7 +71,7 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j) {
+	 j != (*i)->m_out_edges->end(); ++j)
       EP_VISITED(*j) = false;
   
   for (NodeVector::iterator i = so->m_nodes->begin();
@@ -119,3 +123,5 @@ PyObject* graph_create_minimum_spanning_tree(PyObject* self, PyObject* _) {
   GraphObject* so = ((GraphObject*)self);
   return (PyObject*)graph_create_minimum_spanning_tree(so);
 }
+
+*/

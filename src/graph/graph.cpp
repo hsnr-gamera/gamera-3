@@ -81,7 +81,7 @@ GraphObject* graph_new(size_t flags) {
   }
   so->m_flags = flags;
   so->m_nodes = new NodeVector();
-  so->m_nedges = 0;
+  so->m_edges = new EdgeVector();
   so->m_data_to_node = new DataToNodeMap();
   return so;
 }
@@ -103,18 +103,17 @@ void graph_dealloc(PyObject* self) {
   std::cerr << "graph_dealloc\n";
 #endif
   GraphObject* so = (GraphObject*)self;
-  // Decrease reference counts on node list
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j)
-      edge_dealloc(*j);
-      // (*j)->m_graph = NULL;
-    node_dealloc(*i);
+    delete (*i);
+  }
+  for (EdgeVector::iterator i = so->m_edges->begin();
+       i != so->m_edges->end(); ++i) {
+    delete (*i);
   }
   delete so->m_nodes;
+  delete so->m_edges;
   delete so->m_data_to_node;
-  // delete so->m_subgraph_roots;
   self->ob_type->tp_free(self);
 }
 
@@ -126,12 +125,11 @@ GraphObject* graph_copy(GraphObject* so, size_t flags) {
        i != so->m_nodes->end(); ++i)
     graph_add_node(result, (*i)->m_data);
 
-  for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i)
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j)
-      graph_add_edge(result, (*i)->m_data, (*j)->m_to_node->m_data,
-		     (*j)->m_cost);
+  for (EdgeVector::iterator j = so->m_edges->begin();
+       j != so->m_edges->end(); ++j)
+    graph_add_edge(result, (*j)->m_from_node->m_data,
+		   (*j)->m_to_node->m_data,
+		   (*j)->m_cost);
   return result;
 }
 
@@ -147,7 +145,7 @@ PyObject* graph_add_node(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
   Node* node = graph_find_node(so, pyobject, false);
   if (node == 0) {
-    node = (Node*)node_new(so, pyobject);
+    node = new Node(so, pyobject);
     graph_add_node(so, node);
     return PyInt_FromLong((long)1);
   }
@@ -292,7 +290,18 @@ PyObject* graph_is_undirected(PyObject* self, PyObject* args) {
 }
 
 void graph_make_directed(GraphObject* so) {
-  SET_FLAG(so->m_flags, FLAG_DIRECTED);
+  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
+    SET_FLAG(so->m_flags, FLAG_DIRECTED);
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i) {
+      for (EdgeList::iterator j, k = (*i)->m_edges.begin();
+	   k != (*i)->m_edges.end();) {
+	j = k++;
+	if ((*j)->m_from_node != *i)
+	  (*i)->m_edges.remove(*j);
+      }
+    }
+  }
 }
 
 void graph_make_undirected(GraphObject* so) {
@@ -302,17 +311,22 @@ void graph_make_undirected(GraphObject* so) {
     EdgeList edges;
     for (NodeVector::iterator i = so->m_nodes->begin();
 	 i != so->m_nodes->end(); ++i) {
-      for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	   j != (*i)->m_out_edges->end(); ++j)
+      for (EdgeList::iterator j = (*i)->m_edges.begin();
+	   j != (*i)->m_edges.end(); ++j) 
 	edges.push_back(*j);
       (*i)->m_disj_set = 0;
     }
 
     for (EdgeList::iterator i = edges.begin();
-	 i != edges.end(); ++i)
-      if (!graph_has_edge(so, (*i)->m_to_node, (*i)->m_from_node))
-	graph_add_edge0(so, (*i)->m_to_node, (*i)->m_from_node,
-			(*i)->m_cost, (*i)->m_label);
+	 i != edges.end(); ++i) {
+      (*i)->m_to_node->m_edges.push_back(*i);
+      size_t to_set_id = graph_disj_set_find_and_compress
+	(so, (*i)->m_to_node->m_set_id);
+      size_t from_set_id = graph_disj_set_find_and_compress
+	(so, (*i)->m_from_node->m_set_id);
+      if (from_set_id != to_set_id)
+	graph_disj_set_union_by_height(so, to_set_id, from_set_id);
+    }
   }
 }
 
@@ -354,7 +368,7 @@ void graph_make_acyclic(GraphObject* so) {
   if (HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
     graph_make_not_self_connected(so);
     graph_make_singly_connected(so);
-    if (so->m_nedges) {
+    if (so->m_edges->size()) {
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i)
 	NP_VISITED(*i) = false;
@@ -367,13 +381,16 @@ void graph_make_acyclic(GraphObject* so) {
 	    Node* node = node_stack.top();
 	    node_stack.pop();
 	    NP_VISITED(node) = true;
-	    for (EdgeList::iterator k, j = node->m_out_edges->begin();
-		 j != node->m_out_edges->end();) {
+	    for (EdgeList::iterator k, j = node->m_edges.begin();
+		 j != node->m_edges.end();) {
 	      k = j++;
-	      if (NP_VISITED((*k)->m_to_node))
+	      Node* inner_node = (*k)->traverse(node);
+	      if (NP_VISITED(inner_node))
 		graph_remove_edge(so, *k);
-	      else
-		node_stack.push((*k)->m_to_node);
+	      else {
+		node_stack.push(inner_node);
+		NP_VISITED(inner_node) = true;
+	      }
 	    }
 	  }
 	}
@@ -455,18 +472,18 @@ void graph_make_multi_connected(GraphObject* so) {
 
 void graph_make_singly_connected(GraphObject* so, bool maximum_cost) {
   if (HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
-    if (so->m_nedges) {
+    if (so->m_edges->size()) {
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i) {
 	NodeToEdgeMap node_map;
-	for (EdgeList::iterator j, j0 = (*i)->m_out_edges->begin();
-	     j0 != (*i)->m_out_edges->end(); ) {
+	for (EdgeList::iterator j, j0 = (*i)->m_edges.begin();
+	     j0 != (*i)->m_edges.end(); ) {
 	  j = j0++;
 	  NodeToEdgeMap::iterator l = node_map.find((*j)->m_to_node);
 	  if (l == node_map.end())
 	    node_map[(*j)->m_to_node] = *j;
 	  for (EdgeList::iterator k, k0 = j;
-	       k0 != (*i)->m_out_edges->end();) {
+	       k0 != (*i)->m_edges.end();) {
 	    k = k0++;
 	    if (*j == *k)
 	      continue;
@@ -529,14 +546,14 @@ void graph_make_self_connected(GraphObject* so) {
 
 void graph_make_not_self_connected(GraphObject* so) {
   if (HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED)) {
-    if (so->m_nedges) {
+    if (so->m_edges->size()) {
       EdgeList removals;
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i)
-	for (EdgeList::iterator j, j0 = (*i)->m_out_edges->begin();
-	     j0 != (*i)->m_out_edges->end();) {
+	for (EdgeList::iterator j, j0 = (*i)->m_edges.begin();
+	     j0 != (*i)->m_edges.end();) {
 	  j = j0++;
-	  if ((*j)->m_to_node == (*i))
+	  if ((*j)->traverse(*i) == (*i))
 	    graph_remove_edge(so, *j);
 	}
     }
@@ -630,9 +647,7 @@ PyObject* graph_has_edge(PyObject* self, PyObject* args) {
 
 PyObject* graph_get_nedges(PyObject* self) {
   GraphObject* so = (GraphObject*)self;
-  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED))
-    return PyInt_FromLong((long)so->m_nedges);
-  return PyInt_FromLong((long)(so->m_nedges / 2));
+  return PyInt_FromLong((long)(so->m_edges->size()));
 }
 
 struct SubGraphRootIterator : IteratorObject {

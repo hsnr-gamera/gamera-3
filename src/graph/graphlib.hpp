@@ -75,7 +75,7 @@ struct GraphObject {
   PyObject_HEAD
   size_t m_flags;
   NodeVector* m_nodes;
-  size_t m_nedges;
+  EdgeVector* m_edges;
   // NodeSet* m_subgraph_roots;
   DataToNodeMap* m_data_to_node;
 };

@@ -32,8 +32,20 @@
 #define NUM_EDGE_DATA_ELEMENTS 4
 
 struct Edge {
+  Edge(GraphObject* graph, Node* from_node,
+       Node* to_node, CostType cost = 1.0, PyObject* label = NULL);
+  inline ~Edge() {
+    if (m_label != NULL)
+      Py_DECREF(m_label);
+  }
+  inline Node* traverse(Node* from_node) {
+    if (HAS_FLAG(m_graph->m_flags, FLAG_DIRECTED)) {
+      return m_to_node;
+    }
+    return (from_node == m_from_node) ? m_to_node : m_from_node;
+  }
+
   GraphObject* m_graph;
-  Edge* m_other;
   Node* m_from_node;
   Node* m_to_node;
   CostType m_cost;
@@ -44,6 +56,7 @@ struct Edge {
 struct EdgeObject {
   PyObject_HEAD
   Edge* m_x;
+  GraphObject* m_graph;
 };
 
 #define EP_VISITED(a) ((a)->m_edge_properties[0].Bool)
@@ -54,12 +67,8 @@ struct EdgeObject {
 void init_EdgeType();
 PyObject* edgeobject_new(GraphObject* graph, Node* from_node, 
 			 Node* to_node, CostType cost = 1.0,
-			 PyObject* label = NULL);
+			 PyObject* label = NULL, bool directed = true);
 PyObject* edgeobject_new(Edge* edge);
-Edge* edge_new(GraphObject* graph, Node* from_node, 
-	       Node* to_node, CostType cost = 1.0,
-	       PyObject* label = NULL);
-void edge_dealloc(Edge* so);
 bool is_EdgeObject(PyObject* self);
 
 #endif

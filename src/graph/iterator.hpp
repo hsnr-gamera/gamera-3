@@ -98,12 +98,30 @@ struct EdgeIterator : IteratorObject {
     return 1;
   }
   static PyObject* next(IteratorObject* self) {
-    BasicIterator<T>* so = (BasicIterator<T>*)self;
+    EdgeIterator<T>* so = (EdgeIterator<T>*)self;
     if (so->m_it == so->m_end)
       return 0;
     return edgeobject_new(*((so->m_it)++));
   }
   typename T::iterator m_it, m_end;
+};
+
+template<class T>
+struct NodeEdgeIterator : IteratorObject {
+  int init(Node* node, typename T::iterator begin, typename T::iterator end) {
+    m_node = node;
+    m_it = begin;
+    m_end = end;
+    return 1;
+  }
+  static PyObject* next(IteratorObject* self) {
+    NodeEdgeIterator<T>* so = (NodeEdgeIterator<T>*)self;
+    if (so->m_it == so->m_end)
+      return 0;
+    return nodeobject_new((*((so->m_it)++))->traverse(so->m_node));
+  }
+  typename T::iterator m_it, m_end;
+  Node* m_node;
 };
 
 template<class T>
@@ -114,7 +132,7 @@ struct NodeIterator : IteratorObject {
     return 1;
   }
   static PyObject* next(IteratorObject* self) {
-    BasicIterator<T>* so = (BasicIterator<T>*)self;
+    NodeIterator<T>* so = (NodeIterator<T>*)self;
     if (so->m_it == so->m_end)
       return 0;
     return nodeobject_new(*((so->m_it)++));

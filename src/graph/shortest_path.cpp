@@ -49,9 +49,9 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root) {
       node_queue.pop();
       if (!NP_KNOWN(node)) {
 	NP_KNOWN(node) = true;
-	for (EdgeList::iterator i = node->m_out_edges->begin();
-	     i != node->m_out_edges->end(); ++i) {
-	  Node* other_node = (*i)->m_to_node;
+	for (EdgeList::iterator i = node->m_edges.begin();
+	     i != node->m_edges.end(); ++i) {
+	  Node* other_node = (*i)->traverse(node);
 	  if (!NP_KNOWN(other_node)) {
 	    if (NP_DISTANCE(node) + (*i)->m_cost < NP_DISTANCE(other_node)) {
 	      NP_DISTANCE(other_node) = NP_DISTANCE(node) + (*i)->m_cost;
@@ -79,12 +79,13 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root) {
       Node* node = node_stack.top();
       node_stack.pop();
       main_node_list->push_back(node);
-      for (EdgeList::iterator i = node->m_out_edges->begin();
-	   i != node->m_out_edges->end(); ++i) {
-	if (NP_DISTANCE(node) + (*i)->m_cost < NP_DISTANCE((*i)->m_to_node)) {
-	  node_stack.push((*i)->m_to_node);
-	  NP_DISTANCE((*i)->m_to_node) = NP_DISTANCE(node) + (*i)->m_cost;
-	  NP_PATH((*i)->m_to_node) = node;
+      for (EdgeList::iterator i = node->m_edges.begin();
+	   i != node->m_edges.end(); ++i) {
+	Node *other_node = (*i)->traverse(node);
+	if (NP_DISTANCE(node) + (*i)->m_cost < NP_DISTANCE(other_node)) {
+	  node_stack.push(other_node);
+	  NP_DISTANCE(other_node) = NP_DISTANCE(node) + (*i)->m_cost;
+	  NP_PATH(other_node) = node;
 	}
       }
     }
@@ -167,9 +168,9 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
     size_t row_index = (*i)->m_set_id * size;
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j) {
-      size_t index = row_index + (*j)->m_to_node->m_set_id;
+    for (EdgeList::iterator j = (*i)->m_edges.begin();
+	 j != (*i)->m_edges.end(); ++j) {
+      size_t index = row_index + (*j)->traverse(*i)->m_set_id;
       distances[index] = (*j)->m_cost;
       paths[index] = (*i)->m_set_id;
     }

@@ -32,11 +32,15 @@
 #define NUM_NODE_DATA_ELEMENTS 4
 
 struct Node {
-  //  PyObject_HEAD
+  Node(GraphObject* graph, PyObject* data);
+  inline ~Node() {
+    Py_DECREF((PyObject*)m_data);
+  }
+
   GraphObject* m_graph;
   PyObject* m_data;
-  EdgeList* m_out_edges;
-  EdgeList* m_in_edges;
+  EdgeList m_edges;
+  // EdgeList* m_in_edges;
   bool m_is_subgraph_root;
   size_t m_set_id;
   long m_disj_set;
@@ -46,6 +50,7 @@ struct Node {
 struct NodeObject {
   PyObject_HEAD
   Node* m_x;
+  GraphObject* m_graph;
 };
 
 #define NP_VISITED(a) ((a)->m_node_properties[0].Bool)
@@ -58,8 +63,6 @@ struct NodeObject {
 void init_NodeType();
 PyObject* nodeobject_new(GraphObject* graph, PyObject *data);
 PyObject* nodeobject_new(Node* node);
-Node* node_new(GraphObject* graph, PyObject* data);
-void node_dealloc(Node* so);
 bool is_NodeObject(PyObject* self);
 
 #endif

@@ -25,15 +25,17 @@
 
 extern "C" {
   PyObject* graph_create_spanning_tree(PyObject* self, PyObject* pyobject);
-  PyObject* graph_create_minimum_spanning_tree(PyObject* so, PyObject* args);
+  //  PyObject* graph_create_minimum_spanning_tree(PyObject* so, PyObject* args);
 }
 GraphObject* graph_create_spanning_tree(GraphObject* so, Node* root);
-GraphObject* graph_create_minimum_spanning_tree(GraphObject* so);
+// GraphObject* graph_create_minimum_spanning_tree(GraphObject* so);
 
 #define SPANNING_TREE_METHODS \
   { "create_spanning_tree", graph_create_spanning_tree, METH_O, \
-    "Returns a new graph with a spanning tree of all nodes reachable from the given node" }, \
+    "Returns a new graph with a spanning tree of all nodes reachable from the given node" },
+
+      /*
   { "create_minimum_spanning_tree", graph_create_minimum_spanning_tree, METH_NOARGS, \
-    "Creates a minimum spanning tree (in place)" },
+  "Creates a minimum spanning tree (in place)" }, */
 
 #endif

@@ -63,7 +63,6 @@ inline bool graph_add_edge(GraphObject* so, Node* from_node,
 inline bool graph_add_edge(GraphObject* so, PyObject* from_object,
 			   PyObject* to_object, CostType cost = 1.0,
 			   PyObject* label = NULL);
-inline bool graph_remove_edge0(GraphObject* so, Edge* edge, bool check = true);
 inline bool graph_remove_edge(GraphObject* so, Edge* edge);
 inline bool graph_remove_edge(GraphObject* so, Node* from_node,
 			      Node* to_node);
@@ -103,7 +102,7 @@ inline Node* graph_add_node(GraphObject* so, Node* node) {
 inline Node* graph_add_node(GraphObject* so, PyObject* pyobject) {
   Node* node = graph_find_node(so, pyobject, false);
   if (node == 0) {
-    node = node_new(so, pyobject);
+    node = new Node(so, pyobject);
     return graph_add_node(so, node);
   }
   return node;
@@ -113,25 +112,34 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
   // Remove all edges coming out of that node
   // Funny looping construct is so we can remove an edge and not
   // invalid the iterator
-  for (EdgeList::iterator i, j = node->m_out_edges->begin(); 
-       j != node->m_out_edges->end(); ) {
+
+  for (EdgeList::iterator i, j = node->m_edges.begin(); 
+       j != node->m_edges.end(); ) {
     i = j++;
     graph_remove_edge(so, *i);
   }  
 
-  // Remove all edges pointing into that node
-  // Funny looping construct is so we can remove an edge and not
-  // invalid the iterator
-  for (EdgeList::iterator i, j = node->m_in_edges->begin(); 
-       j != node->m_in_edges->end(); ) {
-    i = j++;
-    graph_remove_edge(so, *i);
-  }  
+  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
+    // Remove all edges pointing into that node
+    // Funny looping construct is so we can remove an edge and not
+    // invalid the iterator
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i) {
+      if (*i != node) {
+	for (EdgeList::iterator j, k = (*i)->m_edges.begin(); 
+	     k != (*i)->m_edges.end(); ) {
+	  j = k++;
+	  if ((*j)->m_to_node == node)
+	    graph_remove_edge(so, *j);
+	}
+      }  
+    }
+  }
 
   // Adjust the disjoint set
   // Fix all the pointers in the nodes themselves
   if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) ||
-      !(HAS_FLAG(so->m_flags, FLAG_CYCLIC))) {
+      !HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
     // LongVector* vec = (so->m_disj_set);
     size_t set_id = node->m_set_id;
     // Adjust all m_set_id's
@@ -155,21 +163,22 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
       break;
     }
 
-  node_dealloc(node);
+  delete node;
   return true;
 }
 
 inline bool graph_remove_node(GraphObject* so, Node* node) {
   // Stitch together edges
-  for (EdgeList::iterator i = node->m_in_edges->begin();
-       i != node->m_in_edges->end(); ++i) {
-    for (EdgeList::iterator j = node->m_out_edges->begin();
-	 j != node->m_out_edges->end(); ++j) {
-      graph_add_edge(so, (*i)->m_from_node, (*j)->m_to_node, 
-		     (*i)->m_cost + (*j)->m_cost);
-    }
-  }
-
+  for (NodeVector::iterator i = so->m_nodes->begin();
+       i != so->m_nodes->end(); ++i)
+    for (EdgeList::iterator j = (*i)->m_edges.begin();
+	 j != (*i)->m_edges.end(); ++j)
+      if ((*j)->traverse(*i) == node)
+	for (EdgeList::iterator k = node->m_edges.begin();
+	     k != node->m_edges.end(); ++k) 
+	  graph_add_edge(so, *i, (*k)->m_to_node, 
+			 (*j)->m_cost + (*k)->m_cost);
+  
   // Remove node and original edges
   return graph_remove_node_and_edges(so, node);
 }
@@ -213,12 +222,15 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
   bool found_cycle = false;
   if (check) {
     bool possible_cycle = true;
-    if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) || !HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
-      size_t to_set_id = graph_disj_set_find_and_compress(so, to_node->m_set_id);
-      size_t from_set_id = graph_disj_set_find_and_compress(so, from_node->m_set_id);
+    if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) ||
+	!HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
+      size_t to_set_id = graph_disj_set_find_and_compress
+	(so, to_node->m_set_id);
+      size_t from_set_id = graph_disj_set_find_and_compress
+	(so, from_node->m_set_id);
       if (from_set_id != to_set_id) {
-		  possible_cycle = false;
-		  graph_disj_set_union_by_height(so, to_set_id, from_set_id);
+	possible_cycle = false;
+	graph_disj_set_union_by_height(so, to_set_id, from_set_id);
       }
     }
 
@@ -244,10 +256,12 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
     }
   }
 
-  Edge* edge = edge_new(so, from_node, to_node, cost, label);
-  so->m_nedges++;
-  from_node->m_out_edges->push_back(edge);
-  to_node->m_in_edges->push_back(edge);
+  Edge* edge = new Edge(so, from_node, to_node, cost, label);
+  so->m_edges->push_back(edge);
+  from_node->m_edges.push_back(edge);
+  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED))
+    to_node->m_edges.push_back(edge);
+  // to_node->m_in_edges->push_back(edge);
   if (check && !found_cycle)
     to_node->m_is_subgraph_root = false;
 
@@ -264,21 +278,17 @@ inline Edge* graph_add_edge0(GraphObject* so, Node* from_node,
 
 inline bool graph_add_edge(GraphObject* so, Node* from_node,
 			   Node* to_node, CostType cost, PyObject* label) {
+
   if (!HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED) && from_node == to_node)
     return false;
   if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
-    for (EdgeList::iterator i = from_node->m_out_edges->begin();
-	 i != from_node->m_out_edges->end(); ++i)
+    for (EdgeList::iterator i = from_node->m_edges.begin();
+	 i != from_node->m_edges.end(); ++i)
       if ((*i)->m_to_node == to_node)
 	return false;
   }
 
   Edge* result = graph_add_edge0(so, from_node, to_node, cost, label);
-  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) && result) {
-    Edge* other = graph_add_edge0(so, to_node, from_node, cost, label, false);
-    result->m_other = other;
-    other->m_other = result;
-  }
   return result != NULL;
 }
 
@@ -291,11 +301,10 @@ inline bool graph_add_edge(GraphObject* so, PyObject* from_pyobject,
 }
 
 // WARNING: This is an internal function that assumes the edge already exists
-inline bool graph_remove_edge0(GraphObject* so, Edge* edge, bool check) {
+inline bool graph_remove_edge(GraphObject* so, Edge* edge) {
   Node* from_node = edge->m_from_node;
   Node* to_node = edge->m_to_node;
-  if (check && 
-      (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) || !HAS_FLAG(so->m_flags, FLAG_CYCLIC))) {
+  if ((!HAS_FLAG(so->m_flags, FLAG_DIRECTED) || !HAS_FLAG(so->m_flags, FLAG_CYCLIC))) {
     // O(nm)  (m: avg # edges per node)
     // Deal with subgraph roots and disjoint sets
     // I'd love to find a faster way to do this, but...
@@ -314,9 +323,9 @@ inline bool graph_remove_edge0(GraphObject* so, Edge* edge, bool check) {
 	if (!NP_VISITED(root)) {
 	  NP_VISITED(root) = true;
 	  size_t new_set_id = root->m_set_id;
-	  for (EdgeList::iterator j = root->m_out_edges->begin();
-	       j != root->m_out_edges->end(); ++j) {
-	    Node* node = (*j)->m_to_node;
+	  for (EdgeList::iterator j = root->m_edges.begin();
+	       j != root->m_edges.end(); ++j) {
+	    Node* node = (*j)->traverse(root);
 	    if (!(NP_VISITED(node))) {
 	      NP_VISITED(node) = true;
 	      node->m_disj_set = new_set_id;
@@ -328,7 +337,7 @@ inline bool graph_remove_edge0(GraphObject* so, Edge* edge, bool check) {
     }
   }
 
-  if (check && from_node->m_is_subgraph_root && HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
+  if (from_node->m_is_subgraph_root && HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
     DFSIterator* iterator = iterator_new<DFSIterator>();
     iterator->init(so, to_node);
     Node* node = (Node*)DFSIterator::next_node(iterator);
@@ -342,22 +351,18 @@ inline bool graph_remove_edge0(GraphObject* so, Edge* edge, bool check) {
     }
   }
 
-  from_node->m_out_edges->remove(edge);
-  to_node->m_in_edges->remove(edge);
-  so->m_nedges--;
-  edge_dealloc(edge);
-  return true;
-}
+  from_node->m_edges.remove(edge);
+  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED))
+    to_node->m_edges.remove(edge);
 
-inline bool graph_remove_edge(GraphObject* so, Edge* edge) {
-  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
-    if (edge->m_other != NULL) {
-      graph_remove_edge0(so, edge->m_other, false);
-      edge->m_other->m_other = NULL;
-      edge->m_other = NULL;
+  for (EdgeVector::iterator i = so->m_edges->begin();
+       i != so->m_edges->end(); ++i)
+    if ((*i) == edge) {
+      so->m_edges->erase(i);
+      break;
     }
-  }
-  return graph_remove_edge0(so, edge);
+  delete edge;
+  return true;
 }
 
 // WARNING: This is an internal function that assumes the nodes (but not necessarily
@@ -366,10 +371,10 @@ inline bool graph_remove_edge(GraphObject* so, Node* from_node, Node* to_node) {
   bool found_any = false;
   // Funny looping construct is so we can remove an edge and not
   // invalid the iterator
-  for(EdgeList::iterator i, j = from_node->m_out_edges->begin();
-      j != from_node->m_out_edges->end(); ) {
+  for(EdgeList::iterator i, j = from_node->m_edges.begin();
+      j != from_node->m_edges.end(); ) {
     i = j++;
-    if ((*i)->m_to_node == to_node) {
+    if ((*i)->traverse(from_node) == to_node) {
       graph_remove_edge(so, *i);
       found_any = true;
     }
@@ -385,15 +390,15 @@ inline bool graph_remove_edge(GraphObject* so, Node* from_node, Node* to_node) {
 inline void graph_remove_all_edges(GraphObject* so) {
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
-    (*i)->m_out_edges->clear();
-    (*i)->m_in_edges->clear();
+    (*i)->m_edges.clear();
+    // (*i)->m_in_edges->clear();
     (*i)->m_is_subgraph_root = true;
     (*i)->m_disj_set = 0;
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j)
-      edge_dealloc(*j);
   }
-  so->m_nedges = 0;
+  for (EdgeVector::iterator i = so->m_edges->begin();
+       i != so->m_edges->end(); ++i)
+    delete *i;
+  so->m_edges->clear();
 }
 
 inline bool graph_has_node(GraphObject* so, Node* node) {
@@ -412,9 +417,9 @@ inline size_t graph_has_edge(GraphObject* so, Node* from_node, Node* to_node) {
     return 0;
   }
   size_t count = 0;
-  for (EdgeList::iterator i = from_node->m_out_edges->begin();
-       i != from_node->m_out_edges->end(); ++i)
-    if ((*i)->m_to_node == to_node)
+  for (EdgeList::iterator i = from_node->m_edges.begin();
+       i != from_node->m_edges.end(); ++i)
+    if ((*i)->traverse(from_node) == to_node)
       count++;
   return count;
 }

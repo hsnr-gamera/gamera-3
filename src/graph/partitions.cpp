@@ -82,8 +82,8 @@ void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
   for (NodeVector::iterator i = graph->m_nodes->begin();
        i != graph->m_nodes->end(); ++i) {
     NP_VISITED(*i) = false;
-    for (EdgeList::iterator j = (*i)->m_out_edges->begin();
-	 j != (*i)->m_out_edges->end(); ++j) {
+    for (EdgeList::iterator j = (*i)->m_edges.begin();
+	 j != (*i)->m_edges.end(); ++j) {
       EP_VISITED(*j) = false;
     }
   }
@@ -98,13 +98,11 @@ void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
     node_stack.pop();
     m_subgraph->push_back(node);
     NP_NUMBER(node) = count++;
-    for (EdgeList::iterator j = node->m_out_edges->begin();
-	 j != node->m_out_edges->end(); ++j) {
-      Node* to_node = (*j)->m_to_node;
+    for (EdgeList::iterator j = node->m_edges.begin();
+	 j != node->m_edges.end(); ++j) {
+      Node* to_node = (*j)->traverse(node);
       if (!EP_VISITED(*j)) {
 	EP_VISITED(*j) = true;
-	if ((*j)->m_other)
-	  EP_VISITED((*j)->m_other) = true;
 	m_edges->push_back(*j);
       }
       if (!NP_VISITED(to_node)) {
@@ -133,8 +131,6 @@ void PartitionIterator::find_cycles(Node* root) {
     for (EdgeList::iterator j = m_edges->begin();
 	 j != m_edges->end(); ++j) {
       EP_VISITED(*j) = false;
-      if ((*j)->m_other)
-	EP_VISITED((*j)->m_other) = false;
     }
     Node* s = *i;
     cycle(s, s, path);
@@ -150,14 +146,12 @@ bool PartitionIterator::cycle(Node* s, Node* v,
 			      EdgeList& path) {
   bool flag = false;
   NP_AVAIL(v) = false;
-  for (EdgeList::iterator i = v->m_out_edges->begin();
-       i != v->m_out_edges->end(); ++i) {
-    Node* w = (*i)->m_to_node;
+  for (EdgeList::iterator i = v->m_edges.begin();
+       i != v->m_edges.end(); ++i) {
+    Node* w = (*i)->traverse(v);
     if (!NP_VISITED(w) && !EP_VISITED(*i)) {
       path.push_back(*i);
       EP_VISITED(*i) = true;
-      if ((*i)->m_other)
-	EP_VISITED((*i)->m_other) = true;
       if (w == s) {
 	if (path.size() > 2)
 	  m_cycles->push_back(path);
@@ -170,9 +164,9 @@ bool PartitionIterator::cycle(Node* s, Node* v,
   if (flag)
     unmark(v);
   else 
-    for (EdgeList::iterator i = v->m_out_edges->begin();
-	 i != v->m_out_edges->end(); ++i) {
-      Node* w = (*i)->m_to_node;
+    for (EdgeList::iterator i = v->m_edges.begin();
+	 i != v->m_edges.end(); ++i) {
+      Node* w = (*i)->traverse(v);
       if (!NP_VISITED(w))
 	NP_B(w)->insert(v);
     }
@@ -208,29 +202,25 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
        i != so->m_subgraph->end(); ++i)
     NP_VISITED(*i) = false;
 
-  NodeStack outer_node_stack;
-  NodeStack inner_node_stack;
   PyObject* result = PyList_New(0);
-  outer_node_stack.push(so->m_root);
-  while (!outer_node_stack.empty()) {
+  for (NodeList::iterator i = so->m_subgraph->begin();
+       i != so->m_subgraph->end(); ++i) {
     size_t id = 0;
-    Node* root = outer_node_stack.top();
-    outer_node_stack.pop();
-    if (!NP_VISITED(root)) {
+    if (!NP_VISITED(*i)) {
       PyObject* subresult = PyList_New(0);
-      inner_node_stack.push(root);
-      while (!inner_node_stack.empty()) {
-	root = inner_node_stack.top();
-	inner_node_stack.pop();
+      NodeStack node_stack;
+      node_stack.push(*i);
+      while (!node_stack.empty()) {
+	Node* root = node_stack.top();
+	node_stack.pop();
 	NP_VISITED(root) = true;
-	for (EdgeList::iterator j = root->m_out_edges->begin();
-	     j != root->m_out_edges->end(); ++j) {
-	  if (!NP_VISITED((*j)->m_to_node)) {
+	for (EdgeList::iterator j = root->m_edges.begin();
+	     j != root->m_edges.end(); ++j) {
+	  Node* inner_node = (*j)->traverse(root);
+	  if (!NP_VISITED(inner_node)) {
 	    if (EP_PARTITION_COUNTER(*j)) {
-	      NP_VISITED((*j)->m_to_node) = true;
-	      inner_node_stack.push((*j)->m_to_node);
-	    } else {
-	      outer_node_stack.push((*j)->m_to_node);
+	      NP_VISITED(inner_node) = true;
+	      node_stack.push(inner_node);
 	    }
 	  }
 	}
@@ -257,13 +247,9 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
 	 i != so->m_edges->end(); ++i) {
       if (EP_PARTITION_COUNTER(*i)) {
 	EP_PARTITION_COUNTER(*i) = false;
-	if ((*i)->m_other)
-	  EP_PARTITION_COUNTER((*i)->m_other) = false;
 	so->m_ones--;
       } else {
 	EP_PARTITION_COUNTER(*i) = true;
-	if ((*i)->m_other)
-	  EP_PARTITION_COUNTER((*i)->m_other) = true;
 	so->m_ones++;
 	break;
       }

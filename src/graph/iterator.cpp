@@ -90,9 +90,9 @@ inline Node* BFSIterator::next_node(IteratorObject* self) {
   }
   Node* node = so->m_node_queue->front();
   so->m_node_queue->pop();
-  for (EdgeList::iterator i = node->m_out_edges->begin();
-       i != node->m_out_edges->end(); ++i) {
-    Node* subnode = (*i)->m_to_node;
+  for (EdgeList::iterator i = node->m_edges.begin();
+       i != node->m_edges.end(); ++i) {
+    Node* subnode = (*i)->traverse(node);
     if (!NP_VISITED(subnode)) {
       NP_VISITED(subnode) = true;
       so->m_node_queue->push(subnode);
@@ -125,9 +125,9 @@ inline Node* DFSIterator::next_node(IteratorObject* self) {
   }
   Node* node = so->m_node_stack->top();
   so->m_node_stack->pop();
-  for (EdgeList::iterator i = node->m_out_edges->begin();
-       i != node->m_out_edges->end(); ++i) {
-    Node* subnode = (*i)->m_to_node;
+  for (EdgeList::iterator i = node->m_edges.begin();
+       i != node->m_edges.end(); ++i) {
+    Node* subnode = (*i)->traverse(node);
     if (!NP_VISITED(subnode)) {
       NP_VISITED(subnode) = true;
       so->m_node_stack->push(subnode);
@@ -146,8 +146,8 @@ PyObject* DFSIterator::next(IteratorObject* self) {
 int AllEdgeIterator::init(NodeVector::iterator begin, NodeVector::iterator end) {
   m_it = begin;
   m_end = end;
-  m_edge_it = (*begin)->m_out_edges->begin();
-  m_edge_end = (*begin)->m_out_edges->end();
+  m_edge_it = (*begin)->m_edges.begin();
+  m_edge_end = (*begin)->m_edges.end();
   return 1;
 }
 PyObject* AllEdgeIterator::next(IteratorObject* self) {
@@ -157,8 +157,8 @@ PyObject* AllEdgeIterator::next(IteratorObject* self) {
     if (so->m_it == so->m_end) {
       return 0;
     }
-    so->m_edge_it = (*(so->m_it))->m_out_edges->begin();
-    so->m_edge_end = (*(so->m_it))->m_out_edges->end();
+    so->m_edge_it = (*(so->m_it))->m_edges.begin();
+    so->m_edge_end = (*(so->m_it))->m_edges.end();
   }
   return edgeobject_new(*((so->m_edge_it)++));
 }

@@ -312,19 +312,19 @@ namespace Gamera {
     Specialization for pixel_traits
   */
 
-  OneBitPixel pixel_traits<OneBitPixel>::black() {
+  inline OneBitPixel pixel_traits<OneBitPixel>::black() {
     return 1;
   }
 
-  OneBitPixel pixel_traits<OneBitPixel>::white() {
+  inline OneBitPixel pixel_traits<OneBitPixel>::white() {
     return 0;
   }
   
-  RGBPixel pixel_traits<RGBPixel>::black() {
+  inline RGBPixel pixel_traits<RGBPixel>::black() {
     return RGBPixel(0, 0, 0);
   }
   
-  RGBPixel pixel_traits<RGBPixel>::white() {
+  inline RGBPixel pixel_traits<RGBPixel>::white() {
     return RGBPixel(std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max());

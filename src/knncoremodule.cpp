@@ -55,6 +55,8 @@ extern "C" {
   // distance
   static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
   static PyObject* knn_distance_between_images(PyObject* self, PyObject* args);
+  static PyObject* knn_distance_matrix(PyObject* self, PyObject* args);
+  static PyObject* knn_unique_distances(PyObject* self, PyObject* args);
   // settings
   static PyObject* knn_get_num_k(PyObject* self);
   static int knn_set_num_k(PyObject* self, PyObject* v);
@@ -145,6 +147,8 @@ PyMethodDef knn_methods[] = {
     "Use the list of images for non-interactive classification." },
   { "_distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { "_distance_between_images", knn_distance_between_images, METH_VARARGS, "" },
+  { "_distance_matrix", knn_distance_matrix, METH_VARARGS, "" },
+  { "_unique_distances", knn_unique_distances, METH_VARARGS, "" },
   { "set_weights", knn_set_weights, METH_VARARGS,
     "Set the weights used for classification." },
   { "get_weights", knn_get_weights, METH_VARARGS,
@@ -178,6 +182,11 @@ PyGetSetDef knn_getset[] = {
 
 // for type checking images - see initknn.
 static PyTypeObject* imagebase_type;
+static PyTypeObject* image_type;
+static PyTypeObject* subimage_type;
+static PyTypeObject* cc_type;
+static PyTypeObject* data_type;
+static PyObject* pybase_init;
 static PyObject* array_init;
 
 /*
@@ -624,8 +633,15 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
 		   o->num_features);
   return Py_BuildValue("f", distance);
 }
-#if 0
-PyObject* distance_matrix(PyObject* self, PyObject* args) {
+
+/*
+  Create a symmetric float matrix (image) containing all of the
+  distances between the images in the list passed in. This is useful
+  because it allows you to find the distance between any two pairs
+  of images regardless of the order of the pairs. NOTE: the features
+  are normalized before performing the distance calculations.
+*/
+PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
   if (PyArg_ParseTuple(args, "O", &images) <= 0)
@@ -640,11 +656,8 @@ PyObject* distance_matrix(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
     return 0;
   }
-  // create the list for the output
-  int list_len = ((images_len * images_len) - images_len) / 2;
-  PyObject* list = PyList_New(list_len);
-  size_t index = 0;
-  // create a default set of weights for the distance calculation.
+
+  // Check the number of features
   double* buf_a, *buf_b;
   int len_a, len_b;
   PyObject* cur_a, *cur_b;
@@ -664,27 +677,28 @@ PyObject* distance_matrix(PyObject* self, PyObject* args) {
   // create the normalization object
   kNN::Normalize norm(len_a);
   for (int i = 0; i < images_len; ++i) { 
-    cur_a = PyList_GetItem(images, i);
+    cur_a = PyList_GET_ITEM(images, i);
+    if (cur_a == NULL)
+      return 0;
     if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
       return 0;
     }
-    if (cur_a == NULL) {
-      delete[] weights;
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       return 0;
-    }
-    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
-      delete[] weights;
+    if (len_a != o->num_features) {
+      PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
       return 0;
     }
     norm.add(buf_a, buf_a + len_a);
   }
   norm.compute_normalization();
+
   double* tmp_a = new double[len_a];
   double* tmp_b = new double[len_a];
-  FloatImageData* data = new FloatImageData(images.size(), images.size());
-  FloatImageView* mat = new FloatImageView(*data, 0, 0, images.size(), images.size());
-  std::fill(mat->vec_begin(), mat->vec_end(), 0.0);
+  FloatImageData* data = new FloatImageData(images_len, images_len);
+  FloatImageView* mat = new FloatImageView(*data, 0, 0, images_len, images_len);
+  std::fill(mat->vec_begin(), mat->vec_end(), (float)0.0);
   // do the distance calculations
   for (int i = 0; i < images_len; ++i) { 
     cur_a = PyList_GetItem(images, i);
@@ -694,36 +708,33 @@ PyObject* distance_matrix(PyObject* self, PyObject* args) {
       goto mat_error;
     norm.apply(buf_a, buf_a + len_a, tmp_a);
     for (int j = i + 1; j < images_len; ++j) {
-
-  PyObject* image_list;
-  if (images.size() == 0)
-    throw std::out_of_range("list must be greater than 0.");
-
-  int features_len = images[0]->features_len;
-  if (features_len <= 0)
-    throw std::out_of_range("no features found.");
-
-    
-  for (size_t i = 0; i < images.size(); ++i) {
-    for (size_t j = 0; j < images.size(); ++j) {
-      if (images[j]->features_len != features_len)
-	throw std::out_of_range("feature vectors not the same size");
-      double distance = kNN::city_block_distance(images[i]->features,
-						 images[i]->features + features_len,
-						 images[j]->features, weights);
-      mat->set(i, j,(float)distance);
+      cur_b = PyList_GetItem(images, j);
+      if (cur_b == NULL)
+	goto mat_error;
+      if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
+	goto mat_error;
+      norm.apply(buf_b, buf_b + len_b, tmp_b);
+      double distance;
+      compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+      mat->set(i, j, (float)distance);
+      mat->set(j, i, (float)distance);
     }
   }
-  delete[] weights;
-  return mat;
+  return create_ImageObject(mat, image_type, subimage_type, cc_type,
+			    data_type, pybase_init);
+ mat_error:
+  // delete the image
+  delete mat; delete data;
+  // delete the tmp buffers
+  delete[] tmp_a; delete[] tmp_b;
+  return 0;
 }
 
-  /*
-    unique_distances takes a list of images and returns all of the unique
-    pairs of distances between the images. In the Python version it returns
-    a list of tuples ( (image, image, distance) ).
-  */
-PyObject* unique_distances(PyObject* self, PyObject* args) {
+/*
+  unique_distances takes a list of images and returns all of the unique
+  pairs of distances between the images.
+*/
+PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
   if (PyArg_ParseTuple(args, "O", &images) <= 0)
@@ -767,14 +778,10 @@ PyObject* unique_distances(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
       return 0;
     }
-    if (cur_a == NULL) {
-      delete[] weights;
+    if (cur_a == NULL)
       return 0;
-    }
-    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
-      delete[] weights;
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
       return 0;
-    }
     norm.add(buf_a, buf_a + len_a);
   }
   norm.compute_normalization();
@@ -801,7 +808,7 @@ PyObject* unique_distances(PyObject* self, PyObject* args) {
       }
       norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
-      compute_distance(CITY_BLOCK, tmp_a, len_a, tmp_b, &distance, weights);
+      compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       PyList_SET_ITEM(list, index, Py_BuildValue("(dOO)", distance, cur_a, cur_b));
       index++;
     }
@@ -814,11 +821,10 @@ PyObject* unique_distances(PyObject* self, PyObject* args) {
   return list;
   // in case of error
  uniq_error:
-  delete[] weights; delete[] tmp_a; delete[] tmp_b;
+  delete[] tmp_a; delete[] tmp_b;
   return 0;
 }
 
-#endif
 static PyObject* knn_get_num_k(PyObject* self) {
   return Py_BuildValue("i", ((KnnObject*)self)->num_k);
 }
@@ -1426,12 +1432,27 @@ DL_EXPORT(void) initknncore(void) {
     it is the base type for _all_ of the image classes in
     Gamera.
   */
-  PyObject* mod = PyImport_ImportModule("gamera.gameracore");
+    PyObject* mod = PyImport_ImportModule("gamera.core");
+  if (mod == 0) {
+    printf("Could not load gamera.py\n");
+    return;
+  }
+  PyObject* dict = PyModule_GetDict(mod);
+  if (dict == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+    return;
+  }
+  pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, "ImageBase"), "__init__");
+  image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
+  subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
+  cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
+  data_type = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
+  mod = PyImport_ImportModule("gamera.gameracore");
   if (mod == 0) {
     PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
     return;
   }
-  PyObject* dict = PyModule_GetDict(mod);
+  dict = PyModule_GetDict(mod);
   if (dict == 0) {
     PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
     return;

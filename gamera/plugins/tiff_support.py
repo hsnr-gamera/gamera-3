@@ -50,7 +50,8 @@ class TiffSupportModule(PluginModule):
     cpp_headers = ["tiff_support.hpp"]
     if sys.platform == 'win32':
         cpp_sources = glob.glob("src/libtiff/*.c")
-	cpp_sources.remove("src/libtiff/tif_unix.c")
+        print cpp_sources
+	cpp_sources.remove("src/libtiff\\tif_unix.c")
         extra_compile_args = ['-Dunix']
     elif sys.platform == 'darwin':
         cpp_sources = glob.glob("src/libtiff/*.c")

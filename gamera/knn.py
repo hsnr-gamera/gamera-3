@@ -164,17 +164,9 @@ class kNN(gamera.knncore.kNN):
       """Compute a list of distances between a list of images
       and a singe images. Distances greater than the max distance
       are not included in the output."""
+      from gamera.plugins import features
       glyph.generate_features(self.feature_functions)
-      progress = None
-      for x in images:
-         if progress == None and \
-            x.feature_functions != self.feature_functions:
-            progress = util.ProgressFactory("Generating Features . . .", len(images))
-         x.generate_features(self.feature_functions)
-         if progress:
-            progress.step()
-      if progress:
-         progress.kill()
+      features.generate_features_list(self.feature_functions)
       return self._distance_from_images(iter(images), glyph, max)
 
    def distance_between_images(self, imagea, imageb):
@@ -186,6 +178,26 @@ class kNN(gamera.knncore.kNN):
       imagea.generate_features(self.feature_functions)
       imageb.generate_features(self.feature_functions)
       return self._distance_between_images(imagea, imageb)
+
+   def distance_matrix(self, images):
+      """Create a symmetric float matrix (image) containing all of the
+      distances between the images in the list passed in. This is useful
+      because it allows you to find the distance between any two pairs
+      of images regardless of the order of the pairs. NOTE: the features
+      are normalized before performing the distance calculations."""
+      from gamera.plugins import features
+      features.generate_features_list(images, self.feature_functions)
+      return self._distance_matrix(images)
+
+   def unique_distances(self, images):
+      """Return a list of the unique pairs of images in the passed in list
+      and the distances between them. The return list is a list of tuples
+      of (distance, imagea, imageb) so that it easy to sort. NOTE: the
+      features are normalized before performing the distance calculations."""
+      from gamera.plugins import features
+      features.generate_features_list(images, self.feature_functions)
+      return self._unique_distances(images)
+      
 
    def evaluate(self):
       """Evaluate the performance of the kNN classifier using

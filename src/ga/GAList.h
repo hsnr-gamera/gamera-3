@@ -191,7 +191,7 @@ private:
 };
 
 #ifdef USE_BORLAND_INST
-#include <ga/GAList.C>
+#include <ga/GAList.cpp>
 #endif
 
 #endif

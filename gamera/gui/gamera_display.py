@@ -31,7 +31,7 @@ import sys, string, time, weakref
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
-import gui_support  # Gamera plugin
+import gamera.plugins.gui_support  # Gamera plugin
 
 ##############################################################################
 

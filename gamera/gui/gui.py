@@ -224,7 +224,7 @@ class ShellFrame(wxFrame):
    def __init__(self, parent, id, title):
       global shell
       wxFrame.__init__(
-         self, parent, id, title, wxDefaultPosition,
+         self, parent, id, title, (100, 100),
          # Win32 change
          [600, 550],
          style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)

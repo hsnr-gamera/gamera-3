@@ -33,6 +33,7 @@
 #include <ga/ga.h>
 #include <ga/GASimpleGA.h>
 #include <ga/GA1DArrayGenome.h>
+#include <ga/GA1DArrayGenome.cpp>
 // for rand
 #include <stdlib.h>
 #include <time.h>

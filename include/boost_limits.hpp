@@ -43,9 +43,9 @@
 #include <cfloat>
 //#include <boost/config.hpp>
 
-#ifndef BOOST_NO_CWCHAR
-#include <cwchar> // for WCHAR_MIN and WCHAR_MAX
-#endif
+//#ifndef BOOST_NO_CWCHAR
+//#include <cwchar> // for WCHAR_MIN and WCHAR_MAX
+//#endif
 
 #if defined(__sparc) || defined(__sparc__) || defined(__powerpc__) || defined(__ppc__) || defined(__hppa) || defined(_MIPSEB)
 #define BOOST_BIG_ENDIAN

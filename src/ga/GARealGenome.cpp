@@ -293,8 +293,8 @@ GARealBlendCrossover(const GAGenome& p1, const GAGenome& p2,
 // compilers require a syntax different than others when forcing the 
 // instantiation (i.e. GNU wants the 'template class', borland does not).
 #ifndef USE_AUTO_INST
-#include <ga/GAAllele.C>
-#include <ga/GA1DArrayGenome.C>
+#include <ga/GAAllele.cpp>
+#include <ga/GA1DArrayGenome.cpp>
 
 #if defined(__BORLANDC__)
 GAAlleleSet<float>;

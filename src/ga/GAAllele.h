@@ -198,7 +198,7 @@ operator>> (istream& is, GAAlleleSet<T> & arg)
 
 
 #ifdef USE_BORLAND_INST
-#include <ga/GAAllele.C>
+#include <ga/GAAllele.cpp>
 #endif
 
 #endif

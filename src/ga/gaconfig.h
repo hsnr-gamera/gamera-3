@@ -188,6 +188,7 @@ incorporate it into the code base.
 #elif defined(__GNUG__)
 //#define USE_PID
 #define USE_BORLAND_INST
+#define USE_AUTO_INST
 //#define USE_CPP_CASTS
 
 

@@ -259,12 +259,18 @@ class ImageDisplay(wxScrolledWindow):
          y = oy + origin_scaled[1]
          # For some reason, the rectangles wxWindows gives are
          # a bit too small, so we need to fudge their size
-         if not (x > self.image.lr_x or y > self.image.lr_y):
+         if not (x > self.image.width or y > self.image.height):
             fudge = int(self.scaling / 2.0)
             w = (max(min(int((rects.GetW() / scaling) + fudge),
-                         self.image.lr_x - ox), 0))
+                         self.image.width - ox), 0))
             h = (max(min(int((rects.GetH() / scaling) + fudge),
-                         self.image.lr_y - oy), 0))
+                         self.image.height - oy), 0))
+            # Quantize for scaling
+            if scaling > 1:
+               x = int(x / scaling) * scaling
+               y = int(y / scaling) * scaling
+               w = int(w / scaling) * scaling
+               h = int(h / scaling) * scaling
             self.PaintArea(x, y, w, h, check=0)
          rects.Next()
       self.draw_rubber()
@@ -285,19 +291,12 @@ class ImageDisplay(wxScrolledWindow):
              (w == 0 or h == 0)):
             return
 
-      if (y < self.image.ul_y):
-         h = h - (self.image.ul_y - y)
-         y = self.image.ul_y
-      if (x < self.image.ul_x):
-         w = w - (self.image.ul_x - x)
-         x = self.image.ul_x
+      if (y + h >= self.image.height):
+         h = self.image.height - y - 2
+      if (x + w >= self.image.width):
+         w = self.image.width - x - 2
 
-      if (y + h >= self.image.lr_y):
-         h = self.image.lr_y - y - 2
-      if (x + w >= self.image.lr_x):
-         w = self.image.lr_x - x - 2
-
-      # self.tmpDC.SetUserScale(scaling, scaling)
+      #self.tmpDC.SetUserScale(scaling, scaling)
       subimage = SubImage(self.image,
                           y + self.image.offset_y,
                           x + self.image.offset_x,
@@ -362,7 +361,7 @@ class ImageDisplay(wxScrolledWindow):
          self.tmpDC.SetBackgroundMode(wxSOLID)
          self.tmpDC.SetLogicalFunction(wxCOPY)
 
-      #self.tmpDC.SetUserScale(1, 1)
+##       self.tmpDC.SetUserScale(1, 1)
 ##       dc.Blit(x * scaling - origin[0],
 ##               y * scaling - origin[1],
 ##               w * scaling, h * scaling,
@@ -509,7 +508,9 @@ class ImageDisplay(wxScrolledWindow):
          else:
             image_menu.shell.run(
                "%s = SubImage(__image__, %d, %d, %d, %d)" %
-               (name, self.rubber_origin_y, self.rubber_origin_x,
+               (name,
+                self.rubber_origin_y + self.image.offset_y,
+                self.rubber_origin_x + self.image.offset_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
          del image_menu.shell.locals['__image__']
@@ -528,7 +529,9 @@ class ImageDisplay(wxScrolledWindow):
          else:
             image_menu.shell.run(
                "%s = SubImage(__image__, %d, %d, %d, %d).image_copy()" %
-               (name, self.rubber_origin_y, self.rubber_origin_x,
+               (name,
+                self.rubber_origin_y + self.image.offset_y,
+                self.rubber_origin_x + self.image.offset_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
          del image_menu.shell.locals['__image__']

@@ -50,6 +50,16 @@ class PluginModule:
         for function in self.functions:
             function.register(self.category)
 
+    def generate_results(self):
+        for function in functions:
+            function.get_test_case().generateResults()
+
+    def get_test_suite(self):
+        suite = unittest.TestSuite()
+        for function in functions:
+            suite.addTest(function.get_test_case())
+        return suite
+
 class PluginFunction:
     return_type = None
     self_type = ImageType((ONEBIT, GREYSCALE, GREY16, RGB, FLOAT))
@@ -78,23 +88,30 @@ class PluginFunction:
             gamera.core.ImageBase.add_plugin_method(cls, func, category)
     register = classmethod(register)
 
+    def get_test_case(self):
+        return PluginTest(self)
+
     def test(cls):
         # Testing function goes here
+        # This can be overridden to just call the plugin function a
+        # bunch of times with different arguments and return a list of
+        # results
         results = []
         if cls.image_types_must_match:
             for type in cls.self_type.pixel_types:
-                self = get_test_image(type + "_generic.tiff")
+                self = get_generic_test_image(type)
                 params = []
                 for i in cls.args:
                     if isinstance(i, ImageType):
-                        param = testing.get_test_image(type + "_generic.tiff")
+                        param = get_test_image(type)
                     else:
                         param = i.default
                     params.append(param)
                 cls._do_test(self, params, results)
         else:
             for type in cls.self_type.pixel_types:
-                self = get_test_image(type + "_generic.tiff")
+                type = util.get_pixel_type_name(type)
+                self = get_test_image(type)
                 cls._test_recurse(self, [], results)
         return results
                 
@@ -104,10 +121,10 @@ class PluginFunction:
         if len(params) == len(cls.args):
             cls._do_test(self, params, results)
         else:
-            arg = cls.args[level]
+            arg = cls.args[len(params)]
             if isinstance(arg, ImageType):
-                for i in arg.pixel_types:
-                    param = get_test_image(type + "_generic.tiff")
+                for type in arg.pixel_types:
+                    param = get_test_image(type)
                     params.append(param)
                     cls._test_recurse(self, params, results)
             else:
@@ -126,13 +143,18 @@ class PluginFunction:
             results.append(result)
             results.append(self)
             for i in params:
-                results.append(i)
+                if isinstance(i, gamera.core.ImageBase):
+                    results.append(i)
 
     _do_test = classmethod(_do_test)
 
 def get_test_image(filename):
-    # TODO: should search test image paths
     filename = os.path.join(paths.test, filename)
+    return gamera.core.load_image(filename)
+
+def get_generic_test_image(type):
+    # TODO: should search test image paths
+    filename = os.path.join(paths.test, util.get_image_type_name(type) + "_generic.tiff")
     return gamera.core.load_image(filename)
 
 def get_result_image(filename):
@@ -158,7 +180,7 @@ class PluginTest(unittest.TestCase):
         fd = file(self._results_filename(), "w")
         image_file_no = 0
         for result in results:
-            if isinstance(result, gamera.core.Image):
+            if isinstance(result, gamera.core.ImageBase):
                 image_file_name = save_test_image(result,
                                                   self.plugin_class.__name__,
                                                   image_file_no)
@@ -182,11 +204,9 @@ class PluginTest(unittest.TestCase):
                         "Different number of results than expected.")
         for result, compare in zip(results, compares):
             print result, compare
-            if (compare.startswith("Image File: ") and
-                isinstance(result, gamera.core.Image)):
+            if (compare.startswith("Image File: ")):
+                self.failUnless(isinstance(result, gamera.core.ImageBase))
                 image = get_result_image(compare[12:])
-                image.display()
-                result.display()
                 self.failUnless(image.compare(result))
             else:
                 self.failUnless(str(compare) == str(result))

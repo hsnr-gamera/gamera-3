@@ -51,7 +51,9 @@ config.add_option_default("__gui", None)
 
 def load_image(filename, compression = DENSE):
    import tiff_support
-   return tiff_support.load_tiff(filename, compression)
+   image = tiff_support.load_tiff(filename, compression)
+   image.name = filename
+   return image
 
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship

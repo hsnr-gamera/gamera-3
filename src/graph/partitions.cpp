@@ -100,7 +100,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
 						     const PyObject* eval_func, Parts& parts) {
   size_t node_number = NP_NUMBER(node);
   node_stack.push_back(node);
-  bits |= 1 << node_number;
+  bits |= (Bitfield)1 << node_number;
 
   // Get the score for this part by building a Python list and
   // passing it to Python
@@ -230,7 +230,7 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   Solution best_solution, partial_solution;
   best_solution.reserve(size); // Maximum size the solution can be
   partial_solution.reserve(size); // Maximum size the solution can be
-  Bitfield all_bits = (1 << size) - 1;
+  Bitfield all_bits = ((Bitfield)1 << size) - 1;
   double best_mean = 0;
   graph_optimize_partitions_find_solution(parts, 0, (*(parts.begin())).begin,
 					  best_solution, best_mean,
@@ -240,14 +240,21 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   // Now, build a Python list of the solution
   PyObject* result = PyList_New(best_solution.size());
   for (size_t i = 0; i < best_solution.size(); ++i) {
-    // Count the set bits (Kernighan's method) so that we can allocate the
-    // correct sized list from the get-go
     Bitfield solution_part = best_solution[i];
     size_t c = 0;
+    for (size_t b=0; b < BITFIELD_SIZE; ++b) {
+      if (((Bitfield)1 << b) & solution_part)
+	++c;
+    }
+    // Count the set bits (Kernighan's method) so that we can allocate the
+    // correct sized list from the get-go
+    // (Kernighan's method does not seem to work on OS-X PPC, so I've
+    // replaced it with the above)
+    /*    size_t c = 0;
     for (; solution_part; c++)
-      solution_part &= solution_part - 1;
+    solution_part &= solution_part - 1; */
     PyObject* subresult = PyList_New(c);
-    Bitfield k = 1;
+    Bitfield k = (Bitfield)1;
     solution_part = best_solution[i];
     for (size_t j = 0, l = 0; k < solution_part; ++j, k <<= 1)
       if (solution_part & k) {

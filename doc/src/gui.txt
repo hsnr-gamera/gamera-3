@@ -6,8 +6,7 @@ Starting the GUI
 ----------------
 
 There is a ``gamera_gui`` script installed somewhere on your system
-(the exact location is platform-specific, see `Building and Installing Gamera`__ ).
-Run it
+(platform-specific, see `Building and Installing Gamera`__).  Run it
 to start the Gamera GUI. 
 
 .. __: install.html
@@ -114,10 +113,7 @@ image.  You will be prompted for a variable name for the result.
 The **Info** submenu displays basic information about the image.
 
 The rest of the context menu contains plugin methods, sorted by category.  The
-`plugin methods`__ are documented in detail.
-
-.. __: plugins.html
-
+plugin methods are documented here__.
 Many of the plugin methods require arguments.  In that case, a dialog
 will be displayed.  For example the dialog for ``erode_dilate`` is:
 
@@ -129,6 +125,8 @@ to perform the operation and automatically run in the console:
 .. code:: Python
 
    >>>image.erode_dilate(5, 0, 1)
+
+.. __: plugins.html
 
 History
 ```````
@@ -190,7 +188,7 @@ The image display toolbar has the following buttons:
   +-----------------+--------------------------------------------------------------+
   | |ZoomNorm|      | Actual size.                                                 |
   +-----------------+--------------------------------------------------------------+
-  | |ZoomOut|       | Zoom out.                                                    |
+  | |ZoomIn|        | Zoom out.                                                    |
   +-----------------+--------------------------------------------------------------+
   | |ZoomHighlight| | Zoom so that the highlighted region is fit to the window     |
   |                 | as closely as possible.                                      |
@@ -250,7 +248,7 @@ The multi-display toolbar has the following items:
   +-----------------+--------------------------------------------------------------+
   | |ZoomNorm|      | Actual size.                                                 |
   +-----------------+--------------------------------------------------------------+
-  | |ZoomOut|       | Zoom out.                                                    |
+  | |ZoomIn|        | Zoom out.                                                    |
   +-----------------+--------------------------------------------------------------+
   | |Label|         | Displays a value within each cell. The value is determined by|
   |                 | the expression in the drop-down text box to the left of      |
@@ -386,7 +384,7 @@ Special class names begin with an underscore (``_``).
   that most closely match those trained as ``_split``, it will perform
   the splitting algorithm and then continue to recursively classify its parts.
 
-  The `splitting algorithms`__ are documented.
+  The splitting algorithms are documented `here`__.
 
 .. __: plugins.html#segmentation
 
@@ -485,6 +483,33 @@ File menu
   production and current databases.  This special directory can be
   reloaded using **Open all...**.
 
+The following options are used to save and load connected components in the
+`Gamera XML format`__.
+
+.. __: xml_format.html
+
+**Save by criteria...**
+  For *expert* users.  Provides a complex dialog box to save different
+  sets of glyphs to a single XML file.
+
+  .. image:: images/save_by_criteria.png
+
+**Production database**
+  The production database is the set of glyphs that affect the
+  currently active classifier.  This menu allows one to Open, Merge,
+  Save, Save As or Clear the production database.
+
+**Current database**
+  The current database is the set of glyphs visible in the connected
+  components display.  This menu allows one to Open, Merge, Save, Save
+  As the current database.  The selected
+  connected components only can also be saved.
+
+**Symbol names**
+  Import or export a set of symbol names.  Symbol names can be
+  imported from a full Gamera XML file containing images, or a symbol
+  name-only Gamera XML file.
+
 Image menu
 ''''''''''
 
@@ -518,35 +543,6 @@ Image menu
     - Current database
     - Selected glyphs
 
-XML menu
-''''''''
-
-The XML menu is used to save and load connected components in the
-`Gamera XML format`__.
-
-.. __: xml_format.html
-
-**Save by criteria...**
-  For *expert* users.  Provides a complex dialog box to save different
-  sets of glyphs to a single XML file.
-
-  .. image:: images/save_by_criteria.png
-
-**Production database**
-  The production database is the set of glyphs that affect the
-  currently active classifier.  This menu allows one to Open, Merge,
-  Save, Save As or Clear the production database.
-
-**Current database**
-  The current database is the set of glyphs visible in the connected
-  components display.  This menu allows one to Open, Merge, Save, or Save
-  As the current database.  The selected
-  connected components only can also be saved.
-
-**Symbol names**
-  Import or export a set of symbol names.  Symbol names can be
-  imported from a full Gamera XML file containing images, or a symbol
-  name-only Gamera XML file.
 
 Classifier menu
 '''''''''''''''
@@ -570,7 +566,7 @@ Classifier menu
 
 **Change set of features**
   Change which features of the connected components are used for
-  classification.  The `features generators`__ themselves are documented in the plugin documentation.
+  classification.  The features themselves are documented here__.
 
 .. __: plugins.html#features
 
@@ -588,6 +584,6 @@ Classifier menu
 Rules menu
 ''''''''''
 
-TODO: Not yet written.
+Unstable.
 
 TODO: Write me.

@@ -95,6 +95,8 @@ def display_multi(list):
       # If it's not a list, we'll get errors, so make it one
       if not util.is_sequence(list):
          list = [list]
+      if not len(list):
+         raise ValueError("Given list is empty.")
       return gui.ShowImages(list)
 
 # Used to cache the list of all features

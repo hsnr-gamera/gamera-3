@@ -387,21 +387,9 @@ class ClassifierFrame(ImageFrameBase):
       file_menu = gui_util.build_menu(
          self._frame,
          (("&Open all...", self._OnOpenAll),
-          ("&Save all...", self._OnSaveAll)))
-      image_menu = gui_util.build_menu(
-         self._frame,
-         (("&Open and segment image...", self._OnOpenAndSegmentImage),
-          ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
-          ("Se&lect image...", self._OnSelectImage),
+          ("&Save all...", self._OnSaveAll),
           (None, None),
-          ("&Save glyphs separately",
-           (("&Production database...", self._OnSaveProductionDatabaseAsImages),
-            ("&Current database...", self._OnSaveCurrentDatabaseAsImages),
-            ("&Selected glyphs...", self._OnSaveSelectedAsImages)))
-          ))
-      xml_menu = gui_util.build_menu(
-         self._frame,
-         (("Save &by criteria...", self._OnSaveByCriteria),
+          ("Save &by criteria...", self._OnSaveByCriteria),
           (None, None),
           ("&Production database", 
            (("&Open...", self._OnOpenProductionDatabase),
@@ -418,6 +406,17 @@ class ClassifierFrame(ImageFrameBase):
           ("&Symbol names",
            (("&Import...", self._OnImportSymbolTable),
             ("&Export...", self._OnExportSymbolTable)))))
+      image_menu = gui_util.build_menu(
+         self._frame,
+         (("&Open and segment image...", self._OnOpenAndSegmentImage),
+          ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
+          ("Se&lect image...", self._OnSelectImage),
+          (None, None),
+          ("&Save glyphs separately",
+           (("&Production database...", self._OnSaveProductionDatabaseAsImages),
+            ("&Current database...", self._OnSaveCurrentDatabaseAsImages),
+            ("&Selected glyphs...", self._OnSaveSelectedAsImages)))
+          ))
       classifier_settings = []
       if hasattr(self._classifier, "settings_dialog"):
          classifier_settings.append(("&Edit...", self._OnClassifierSettingsEdit))
@@ -457,7 +456,6 @@ class ClassifierFrame(ImageFrameBase):
       menubar = wxMenuBar()
       menubar.Append(file_menu, "&File")
       menubar.Append(image_menu, "&Image")
-      menubar.Append(xml_menu, "&XML")
       menubar.Append(classifier_menu, "&Classifier")
       menubar.Append(rules_menu, "&Rules")
       self._frame.SetMenuBar(menubar)
@@ -661,7 +659,7 @@ class ClassifierFrame(ImageFrameBase):
             pass
       if source and self.splitterhr.IsSplit():
          try:
-            self.single_iw.id.image.save_image(
+            self.single_iw.id.image.save_tiff(
                os.path.join(directory, "source_image.tiff"))
          except Exception, e:
             gui_util.message("Saving image: " + str(e))

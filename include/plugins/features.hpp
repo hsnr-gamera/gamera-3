@@ -167,8 +167,8 @@ namespace Gamera {
   // Page(s): 83 -89
   
   template<class Iterator>
-  inline size_t nholes_1d(Iterator begin, Iterator end) {
-    size_t hole_count = 0;
+  inline int nholes_1d(Iterator begin, Iterator end) {
+    int hole_count = 0;
     bool last;
     Iterator r = begin;
     for (; r != end; r++) {
@@ -190,7 +190,7 @@ namespace Gamera {
   
   template<class T>
   void nholes(T &m, feature_t* buf) {
-    size_t vert, horiz;
+    int vert, horiz;
     
     vert = nholes_1d(m.col_begin(), m.col_end());
     horiz = nholes_1d(m.row_begin(), m.row_end());
@@ -212,15 +212,15 @@ namespace Gamera {
     double start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.col_begin() + size_t(start),
-			       m.col_begin() + size_t(start) + size_t(quarter_cols));
+			   m.col_begin() + size_t(start) + size_t(quarter_cols));
       start += quarter_cols;
     }
     double quarter_rows = m.nrows() / 4.0;
     start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.row_begin() + size_t(start),
-				   m.row_begin() + size_t(start)
-				   + size_t(quarter_rows));
+			   m.row_begin() + size_t(start)
+			   + size_t(quarter_rows));
       start += quarter_rows;
     }
   }

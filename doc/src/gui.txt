@@ -483,6 +483,33 @@ File menu
   production and current databases.  This special directory can be
   reloaded using **Open all...**.
 
+The following options are used to save and load connected components in the
+`Gamera XML format`__.
+
+.. __: xml_format.html
+
+**Save by criteria...**
+  For *expert* users.  Provides a complex dialog box to save different
+  sets of glyphs to a single XML file.
+
+  .. image:: images/save_by_criteria.png
+
+**Production database**
+  The production database is the set of glyphs that affect the
+  currently active classifier.  This menu allows one to Open, Merge,
+  Save, Save As or Clear the production database.
+
+**Current database**
+  The current database is the set of glyphs visible in the connected
+  components display.  This menu allows one to Open, Merge, Save, Save
+  As the current database.  The selected
+  connected components only can also be saved.
+
+**Symbol names**
+  Import or export a set of symbol names.  Symbol names can be
+  imported from a full Gamera XML file containing images, or a symbol
+  name-only Gamera XML file.
+
 Image menu
 ''''''''''
 
@@ -516,35 +543,6 @@ Image menu
     - Current database
     - Selected glyphs
 
-XML menu
-''''''''
-
-The XML menu is used to save and load connected components in the
-`Gamera XML format`__.
-
-.. __: xml_format.html
-
-**Save by criteria...**
-  For *expert* users.  Provides a complex dialog box to save different
-  sets of glyphs to a single XML file.
-
-  .. image:: images/save_by_criteria.png
-
-**Production database**
-  The production database is the set of glyphs that affect the
-  currently active classifier.  This menu allows one to Open, Merge,
-  Save, Save As or Clear the production database.
-
-**Current database**
-  The current database is the set of glyphs visible in the connected
-  components display.  This menu allows one to Open, Merge, Save, Save
-  As the current database.  The selected
-  connected components only can also be saved.
-
-**Symbol names**
-  Import or export a set of symbol names.  Symbol names can be
-  imported from a full Gamera XML file containing images, or a symbol
-  name-only Gamera XML file.
 
 Classifier menu
 '''''''''''''''

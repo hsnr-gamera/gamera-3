@@ -84,10 +84,12 @@ class GameraGui:
 
    def ShowImages(list, view_function=None):
       wxBeginBusyCursor()
-      img = gamera_display.MultiImageFrame(title = "Multiple Images")
-      img.set_image(list, view_function)
-      img.Show(1)
-      wxEndBusyCursor()
+      try:
+         img = gamera_display.MultiImageFrame(title = "Multiple Images")
+         img.set_image(list, view_function)
+         img.Show(1)
+      finally:
+         wxEndBusyCursor()
       return img
    ShowImages = staticmethod(ShowImages)
 

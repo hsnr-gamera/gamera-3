@@ -39,20 +39,20 @@ namespace Gamera {
       m_depth = 0;
       m_ncolors = 0;
     }
-    float x_resolution() { return m_x_resolution; }
-    float y_resolution() { return m_y_resolution; }
+    double x_resolution() { return m_x_resolution; }
+    double y_resolution() { return m_y_resolution; }
     size_t nrows() { return m_nrows; }
     size_t ncols() { return m_ncols; }
     size_t depth() { return m_depth; }
     size_t ncolors() { return m_ncolors; }
-    void x_resolution(float res) { m_x_resolution = res; }
-    void y_resolution(float res) { m_y_resolution = res; }
+    void x_resolution(double res) { m_x_resolution = res; }
+    void y_resolution(double res) { m_y_resolution = res; }
     void nrows(size_t x) { m_nrows = x; }
     void ncols(size_t x) { m_ncols = x; }
     void depth(size_t x) { m_depth = x; }
     void ncolors(size_t x) { m_ncolors = x; }
   public:
-    float m_x_resolution, m_y_resolution;
+    double m_x_resolution, m_y_resolution;
     size_t m_nrows, m_ncols;
     size_t m_depth;
     size_t m_ncolors;

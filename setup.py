@@ -10,7 +10,8 @@ setup(name = "gameracore", version="1.1",
                                           "src/regionmapobject.cpp",
                                           "src/rgbpixelobject.cpp",
                                           "src/imagedataobject.cpp",
-                                          "src/imageobject.cpp"
+                                          "src/imageobject.cpp",
+                                          "src/imageinfoobject.cpp"
                                           ], include_dirs=["include"],
                                libraries=["stdc++"]),
                      Extension("knn", ["src/knnmodule.cpp"],

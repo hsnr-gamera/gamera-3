@@ -279,35 +279,32 @@ namespace Gamera {
     */
     void calculate_iterators() {
       m_begin = m_image_data->begin()
-	// row offset
-	+ (m_image_data->stride() * offset_y())
-	// col offset
-	+ offset_x();
+        // row offset
+        + (m_image_data->stride() * (offset_y() - m_image_data->page_offset_y()))
+        // col offset
+        + (offset_x() - m_image_data->page_offset_x());
       m_end = m_image_data->begin()
-	// row offset
-	+ (m_image_data->stride() * (offset_y() + nrows()))
-	// column offset
-	+ offset_x();
-      const T* mc = static_cast<const T*>(m_image_data);
-      m_const_begin = mc->begin()
-	// row offset
-	+ (m_image_data->stride() * offset_y())
-	// col offset
-	+ offset_x();
-      m_const_end = mc->begin()
-	// row offset
-	+ (m_image_data->stride() * (offset_y() + nrows()))
-	// column offset
-	+ offset_x();
+        // row offset
+        + (m_image_data->stride() * ((offset_y() - m_image_data->page_offset_y()) + nrows()))
+        // column offset
+        + (offset_x() - m_image_data->page_offset_x());
+      const T* cmd = static_cast<const T*>(m_image_data);
+      m_const_begin = cmd->begin()
+        // row offset
+	+ (m_image_data->stride() * (offset_y() - m_image_data->page_offset_y()))
+        // col offset
+        + (offset_x() - m_image_data->page_offset_x());
+      m_const_end = cmd->begin()
+        // row offset
+        + (m_image_data->stride() * ((offset_y() - m_image_data->page_offset_y()) + nrows()))
+        // column offset
+        + (offset_x() - m_image_data->page_offset_x());
     }
-    /*
-      This method makes certain that the view is not larger than the
-      underlying data. It is called whenever the dimensions of the
-      view change.
-    */
     void range_check() {
-      if (offset_y() + nrows() > m_image_data->nrows() ||
-	  offset_x() + ncols() > m_image_data->ncols()) {
+      if (offset_y() + nrows() - m_image_data->page_offset_y() > m_image_data->nrows() ||
+	  offset_x() + ncols() - m_image_data->page_offset_x() > m_image_data->ncols()
+	  || offset_y() < m_image_data->page_offset_y()
+	  || offset_x() < m_image_data->page_offset_x()) {
 	char error[1024];
 	sprintf(error, "Image view dimensions out of range for data\n");
 	sprintf(error, "%s\tnrows %d\n", error, (int)nrows());
@@ -315,8 +312,7 @@ namespace Gamera {
 	sprintf(error, "%s\tdata nrows %d\n", error, (int)m_image_data->nrows());
 	sprintf(error, "%s\tncols %d\n", error, (int)ncols());
 	sprintf(error, "%s\toffset_x %d\n", error, (int)offset_x());
-	sprintf(error, "%s\tdata ncols %d\n", error, (int)m_image_data->ncols());
-	
+	sprintf(error, "%s\tdata ncols %d\n", error,(int)m_image_data->ncols());
 	throw std::range_error(error);
       }
     }

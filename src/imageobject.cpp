@@ -51,7 +51,6 @@ static PyTypeObject ImageType = {
   0,
 };
 
-
 PyTypeObject* get_ImageType() {
   return &ImageType;
 }
@@ -157,8 +156,8 @@ static PyObject* init_image_members(ImageObject* o) {
 
 static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds) {
-  int nrows, ncols, pixel, format;
-  if (PyArg_ParseTuple(args, "iiii", &nrows, &ncols, &pixel, &format) <= 0) {
+  int nrows, ncols, pixel, format, offset_y, offset_x;
+  if (PyArg_ParseTuple(args, "iiiiii", &offset_y, &offset_x, &nrows, &ncols, &pixel, &format) <= 0) {
     return 0;
   }
   ImageObject* o;
@@ -175,55 +174,60 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
     through RTTI, but it is simpler to use an enum and makes it easier to
     export to Python.
   */
-  if (format == Python::DENSE) {
-    if (pixel == Python::ONEBIT) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      ImageData<OneBitPixel>* data =
-	((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<OneBitPixel> >(*data, 0, 0, nrows, ncols);
-    } else if (pixel == Python::GREYSCALE) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      ImageData<GreyScalePixel>* data =
-	((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<GreyScalePixel> >(*data, 0, 0, nrows, ncols);
-    } else if (pixel == Python::GREY16) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      ImageData<Grey16Pixel>* data =
-	((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<Grey16Pixel> >(*data, 0, 0, nrows, ncols);
-    } else if (pixel == Python::FLOAT) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      ImageData<FloatPixel>* data =
-	((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<FloatPixel> >(*data, 0, 0, nrows, ncols);
-    } else if (pixel == Python::RGB) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      ImageData<RGBPixel>* data =
-	((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<RGBPixel> >(*data, 0, 0, nrows, ncols);
+  try {
+    if (format == Python::DENSE) {
+      if (pixel == Python::ONEBIT) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<OneBitPixel>* data =
+	  ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Python::GREYSCALE) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<GreyScalePixel>* data =
+	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Python::GREY16) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<Grey16Pixel>* data =
+	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Python::FLOAT) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<FloatPixel>* data =
+	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Python::RGB) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<RGBPixel>* data =
+	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+	return 0;
+      }
+    } else if (format == Python::RLE) {
+      if (pixel == Python::ONEBIT) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	RleImageData<OneBitPixel>* data =
+	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError,
+			"Pixel type must be Onebit for Rle data!");
+	return 0;
+      }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
       return 0;
     }
-  } else if (format == Python::RLE) {
-    if (pixel == Python::ONEBIT) {
-      o->m_data = create_ImageDataObject(nrows, ncols, 0, 0, pixel, format);
-      RleImageData<OneBitPixel>* data =
-	((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<RleImageData<OneBitPixel> >(*data, 0, 0, nrows, ncols);
-    } else {
-      PyErr_SetString(PyExc_TypeError,
-		      "Pixel type must be Onebit for Rle data!");
-      return 0;
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+  } catch (std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
   return init_image_members(o);
@@ -247,52 +251,57 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   int pixel, format;
   pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
   format = ((ImageDataObject*)o->m_data)->m_storage_format;
-
-  if (format == Python::DENSE) {
-    if (pixel == Python::ONEBIT) {
-      ImageData<OneBitPixel>* data =
-	((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<OneBitPixel> >(*data, off_y, off_x, nrows, ncols);
-    } else if (pixel == Python::GREYSCALE) {
-      ImageData<GreyScalePixel>* data =
-	((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<GreyScalePixel> >(*data, off_y, off_x, nrows,
-						  ncols);
-    } else if (pixel == Python::GREY16) {
-      ImageData<Grey16Pixel>* data =
-	((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<Grey16Pixel> >(*data, off_y, off_x, nrows, ncols);
-    } else if (pixel == Python::FLOAT) {
-      ImageData<FloatPixel>* data =
-	((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<FloatPixel> >(*data, off_y, off_x, nrows, ncols);
-    } else if (pixel == Python::RGB) {
-      ImageData<RGBPixel>* data =
-	((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
+  
+  try {
+    if (format == Python::DENSE) {
+      if (pixel == Python::ONEBIT) {
+	ImageData<OneBitPixel>* data =
+	  ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<OneBitPixel> >(*data, off_y, off_x, nrows, ncols);
+      } else if (pixel == Python::GREYSCALE) {
+	ImageData<GreyScalePixel>* data =
+	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<GreyScalePixel> >(*data, off_y, off_x, nrows,
+						    ncols);
+      } else if (pixel == Python::GREY16) {
+	ImageData<Grey16Pixel>* data =
+	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<Grey16Pixel> >(*data, off_y, off_x, nrows, ncols);
+      } else if (pixel == Python::FLOAT) {
+	ImageData<FloatPixel>* data =
+	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<FloatPixel> >(*data, off_y, off_x, nrows, ncols);
+      } else if (pixel == Python::RGB) {
+	ImageData<RGBPixel>* data =
+	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+	return 0;
+      }
+    } else if (format == Python::RLE) {
+      if (pixel == Python::ONEBIT) {
+	RleImageData<OneBitPixel>* data =
+	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<RleImageData<OneBitPixel> >(*data, off_y, off_x, nrows,
+						    ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError,
+			"Pixel type must be Onebit for Rle data!");
+	return 0;
+      }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
       return 0;
     }
-  } else if (format == Python::RLE) {
-    if (pixel == Python::ONEBIT) {
-      RleImageData<OneBitPixel>* data =
-	((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ImageView<RleImageData<OneBitPixel> >(*data, off_y, off_x, nrows,
-						  ncols);
-    } else {
-      PyErr_SetString(PyExc_TypeError,
-		      "Pixel type must be Onebit for Rle data!");
-      return 0;
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+  } catch (std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
   return init_image_members(o);
@@ -317,29 +326,34 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   int pixel, format;
   pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
   format = ((ImageDataObject*)o->m_data)->m_storage_format;
-
-  if (pixel != Python::ONEBIT) {
-    PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
+  try {
+    if (pixel != Python::ONEBIT) {
+      PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
+      return 0;
+    }
+    
+    if (format == Python::DENSE) {
+      ImageData<OneBitPixel>* data =
+	((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, off_y,
+							off_x, nrows, ncols);
+    } else if (format == Python::RLE) {
+      RleImageData<OneBitPixel>* data =
+	((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label,
+							   off_y, off_x, nrows,
+							   ncols);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+      return 0;
+    }
+  } catch (std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
 
-  if (format == Python::DENSE) {
-    ImageData<OneBitPixel>* data =
-      ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-    ((RectObject*)o)->m_x =
-      new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, off_y,
-						      off_x, nrows, ncols);
-  } else if (format == Python::RLE) {
-    RleImageData<OneBitPixel>* data =
-      ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-    ((RectObject*)o)->m_x =
-      new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label,
-							 off_y, off_x, nrows,
-							 ncols);
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
-    return 0;
-  }
   return init_image_members(o);
 }
 

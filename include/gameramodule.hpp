@@ -184,7 +184,22 @@ struct CCObject {
 
 extern PyTypeObject* get_CCType();
 bool is_CCObject(PyObject* x);
-  
+
+
+/*
+  IMAGEINFO TYPE
+
+  Holds information about an image - primarily used for opening images.
+*/
+
+struct ImageInfoObject {
+  PyObject_HEAD
+  ImageInfo* m_x;
+};
+
+extern PyTypeObject* get_ImageInfoType();
+bool is_ImageInfoObject(PyObject* x);
+
 namespace Gamera {
   namespace Python {
     /*

@@ -35,6 +35,7 @@ void init_RegionMapType(PyObject* module_dict);
 void init_RGBPixelType(PyObject* module_dict);
 void init_ImageDataType(PyObject* module_dict);
 void init_ImageType(PyObject* module_dict);
+void init_ImageInfoType(PyObject* module_dict);
 
 
 extern "C" {
@@ -58,4 +59,5 @@ initgameracore(void) {
   init_RGBPixelType(d);
   init_ImageDataType(d);
   init_ImageType(d);
+  init_ImageInfoType(d);
 }

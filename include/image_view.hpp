@@ -220,8 +220,8 @@ namespace Gamera {
     // Misc
     //
     T* data() const { return m_image_data; }
-    self parent() { return self(*m_image_data, 0, 0, m_image_data->nrows(),
-				m_image_data->ncols()); }
+    self parent() { return self(*m_image_data, m_image_data->page_offset_y(), m_image_data->page_offset_x()
+				, m_image_data->nrows(), m_image_data->ncols()); }
     self& image() { return *this; }
 
     //
@@ -302,29 +302,31 @@ namespace Gamera {
     void calculate_iterators() {
       m_begin = m_image_data->begin()
         // row offset
-        + (m_image_data->stride() * offset_y())
+        + (m_image_data->stride() * (offset_y() - m_image_data->page_offset_y()))
         // col offset
-        + offset_x();
+        + (offset_x() - m_image_data->page_offset_x());
       m_end = m_image_data->begin()
         // row offset
-        + (m_image_data->stride() * (offset_y() + nrows()))
+        + (m_image_data->stride() * ((offset_y() - m_image_data->page_offset_y()) + nrows()))
         // column offset
-        + offset_x();
+        + (offset_x() - m_image_data->page_offset_x());
       const T* cmd = static_cast<const T*>(m_image_data);
       m_const_begin = cmd->begin()
         // row offset
-        + (m_image_data->stride() * offset_y())
+	+ (m_image_data->stride() * (offset_y() - m_image_data->page_offset_y()))
         // col offset
-        + offset_x();
+        + (offset_x() - m_image_data->page_offset_x());
       m_const_end = cmd->begin()
         // row offset
-        + (m_image_data->stride() * (offset_y() + nrows()))
+        + (m_image_data->stride() * ((offset_y() - m_image_data->page_offset_y()) + nrows()))
         // column offset
-        + offset_x();
+        + (offset_x() - m_image_data->page_offset_x());
     }
     void range_check() {
-      if (offset_y() + nrows() > m_image_data->nrows() ||
-	  offset_x() + ncols() > m_image_data->ncols()) {
+      if (offset_y() + nrows() - m_image_data->page_offset_y() > m_image_data->nrows() ||
+	  offset_x() + ncols() - m_image_data->page_offset_x() > m_image_data->ncols()
+	  || offset_y() < m_image_data->page_offset_y()
+	  || offset_x() < m_image_data->page_offset_x()) {
 	char error[1024];
 	sprintf(error, "Image view dimensions out of range for data\n");
 	sprintf(error, "%s\tnrows %d\n", error, (int)nrows());

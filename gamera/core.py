@@ -390,9 +390,9 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""
       if hasattr(self, "label"):
-         return Cc(self, self.label, offset_y, offset_x, nrows, ncols)
+         return Cc(self, self.label, int(offset_y), int(offset_x), int(nrows), int(ncols))
       else:
-         return SubImage(self, offset_y, offset_x, nrows, ncols)
+         return SubImage(self, int(offset_y), int(offset_x), int(nrows), int(ncols))
 
    def _get_feature_vector_size(cls, functions):
       num_features = 0

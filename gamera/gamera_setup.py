@@ -20,6 +20,13 @@
 
 """Utilities to make writing setup.py files for Gamera extensions easier"""
 
+import sys
+import os
+import glob
+from distutils.sysconfig import get_python_lib, get_python_inc, PREFIX
+
+# Fix RPM building
+#
 # This is a total hack to patch up an error in distutils.command.bdist_rpm
 import distutils.command.bdist_rpm
 def rpm_run(self):
@@ -36,11 +43,10 @@ def rpm_run(self):
 original_rpm_run = distutils.command.bdist_rpm.bdist_rpm.run
 setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', rpm_run)
 
-from distutils.core import setup, Extension
-from distutils.util import get_platform
-from distutils.sysconfig import get_python_lib
-import sys, os, time
-import glob
+if sys.platform == "darwin":
+   from gamera.mac import gamera_mac_setup
+   cmdclass = {'bdist_osx': gamera_mac_setup.bdist_osx}
+
 
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is
@@ -70,6 +76,9 @@ if version < required_version:
    print "You are running the following Python version:"
    print sys.version
    sys.exit(1)
+
+lib_path = os.path.join(get_python_lib()[len(PREFIX)+1:], "gamera")
+include_path = os.path.join(get_python_inc()[len(PREFIX)+1:], "gamera")
 
 def get_plugin_filenames(path):
    """Return all of the python plugin files in a specified path. This is not

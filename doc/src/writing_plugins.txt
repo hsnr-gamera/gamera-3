@@ -487,6 +487,71 @@ can be used:
 
    raise RuntimeError("Input is out of range")
 
+Progress bars
+-------------
+
+This section describes how to display a progress bar dialog from a
+long-running C++-based plugin.  When the GUI is running, the progress
+will be displayed in a window:
+
+  .. image:: images/progress_bar.png
+
+When the GUI is not running and the ``--progress-bar`` argument was
+provided when Gamera started, the progress bar will be displayed in
+the console::
+
+  Generating connected components
+  |========================================------------------------------|
+
+Progress bars will add some overhead when displayed, so they
+only make sense for plugins that take a long time to complete.
+Supporting progress bars adds very minimal overhead when they are not
+displayed.
+
+Plugin Metadata
+```````````````
+
+To create a plugin method with a progress bar, simply set the
+``progress_bar`` member to the message that will be displayed in the
+progress box.
+
+.. code:: Python
+
+  class cc_analysis(Segmenter):
+    ...
+    progress_bar = "Generating connected components"
+    ...
+
+C++ code
+````````
+
+Add an extra argument to the C++ function that takes an object of type
+``ProgressBar``.  This can be a default argument, to make it easier to
+call the plugin function code without requiring a ``ProgressBar`` instance.
+Creating a ``ProgressBar`` with no constructor arguments creates a
+dummy ``ProgressBar`` object where all methods are ignored.
+
+.. code:: CPP
+
+  template<class T>
+  ImageList* cc_analysis(T& image, ProgressBar progress_bar = ProgressBar()) {
+    ...
+  }
+
+The progress bar window will automatically disappear when the function returns.
+
+ProgressBar instances
+`````````````````````
+
+There are essentially two ways to update the progress bar:
+
+ - Call ``.set_length(*length*)`` to set the number of steps that will be
+   performed, and then call ``.step()`` to increase the step.
+
+ - Call ``.update(*num*, *den*)`` to say that *num* of *den* steps
+   have completed.  ``.update`` is useful when the number of steps can
+   not be pre-determined.
+
 Documenting Plugin functions
 ----------------------------
 

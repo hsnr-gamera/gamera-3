@@ -25,8 +25,12 @@ from types import *
 from math import pow
 from gamera.enums import *
 from gamera.gui import has_gui
-from gamera import config
+from gamera.config import config
 from gamera.backport import sets
+
+config.add_option(
+   "-p", "--progress-bar", action="store_true",
+   help="[console] Display textual progress bars on stdout")
 
 def is_sequence(obj):
    "Check if an object is a sequence."
@@ -273,7 +277,7 @@ class ProgressNothing:
       pass
    def ___(*args):
       pass
-   update = kill = step = add_length = ___
+   update = kill = step = add_length = set_length = ___
 
 class ProgressText:
    """A console-based progress bar."""
@@ -323,13 +327,10 @@ class ProgressText:
             sys.stdout.write("\n")
             sys.stdout.flush()
 
-config.config.add_option(
-   "-p", "--progress-bars", default=False,
-   help="[console] Display textual progress bars on stdout")
 def ProgressFactory(message, length=1):
    if has_gui.gui != None:
       return has_gui.gui.ProgressBox(message, length)
-   elif config.config.get("progress_bars"):
+   elif config.get("progress_bar"):
       return ProgressText(message, length)
    else:
       return ProgressNothing(message, length)

@@ -68,16 +68,16 @@ class ImageBase:
       if not func is None:
          func = new.instancemethod(func, None, Image)
          setattr(cls, plug.__name__, func)
-      if not category is None:
-         for type in plug.self_type.pixel_types:
-            if not methods.has_key(type):
-               methods[type] = {}
-            start = methods[type]
-            for subcategory in category.split('/'):
-               if not start.has_key(subcategory):
-                  start[subcategory] = {}
-               start = start[subcategory]
-            start[plug.__name__] = plug
+         if not category is None:
+            for type in plug.self_type.pixel_types:
+               if not methods.has_key(type):
+                  methods[type] = {}
+               start = methods[type]
+               for subcategory in category.split('/'):
+                  if not start.has_key(subcategory):
+                     start[subcategory] = {}
+                  start = start[subcategory]
+               start[plug.__name__] = plug
    add_plugin_method = classmethod(add_plugin_method)
 
    _pixel_type_names = {ONEBIT:     "OneBit",
@@ -176,11 +176,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, ImageBase.cc_mat_to_string)
+            self._display.set_image(self, Image.cc_mat_to_string)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             ImageBase.cc_mat_to_string, owner=self))
+                             Image.cc_mat_to_string, owner=self))
       self.last_display = "ccs"
 
    # Displays the image in its own window, highlighting the given
@@ -204,7 +204,7 @@ class ImageBase:
       self.cc = []
       for c in cc:
          if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c, ImageBase.to_string)
+            self._display.highlight_cc(c, Image.to_string)
             self.cc.append(c)
       # This will adjust the scroll bars so the cc will be visible
       self._display.focus(self.cc)
@@ -253,6 +253,8 @@ class ImageBase:
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       return SubImage(self, offset_y, offset_x, nrows, ncols)
+
+######################################################################
       
 class Image(ImageBase, gameracore.Image):
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,

@@ -583,6 +583,10 @@ Classifier menu
   are more similar to glyphs in the classifier.  This process
   can take considerably longer than one-by-one classification.
 
+  The parameters are described in greater detail in the classifier documentation__.
+
+.. __: classify.html#group-list-automatic
+
 **Confirm all** / **Confirm selected**
   Treats all automatically classified glyphs as if they were manually
   classified and adds them to the classifier.  Use this

@@ -88,7 +88,7 @@ void doMSVC()
 	char buff[2048];
 	printf("Compiling extensions with Microsoft Visual C compiler.\n");
 	getcwd(buff,2048);
-	chdir("..");
+	chdir("..\\..");
 	system("rmdir /S /Q build");
 	system("python setup.py build_ext");
 	system("mkdir .\\dist\\msvc\\Lib\\site-packages\\gamera\\");
@@ -111,7 +111,7 @@ void doICL()
 	char buff[2048];
 	printf("Compiling extensions with Intel compiler.\n");
 	getcwd(buff,2048);
-	chdir("..");
+	chdir("..\\..");
 	system("rmdir /S /Q build");
 	system("python setup.py build_ext --compiler=icl");
 	system("mkdir .\\dist\\icl\\Lib\\site-packages\\gamera\\");

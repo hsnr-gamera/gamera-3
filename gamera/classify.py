@@ -123,7 +123,7 @@ class _Classifier:
 
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
-      progress = gamera.util.ProgressFactory("Generating features...", len(list))
+      progress = util.ProgressFactory("Generating features...", len(list))
       try:
          for glyph in list:
             glyph.generate_features(self.feature_functions)

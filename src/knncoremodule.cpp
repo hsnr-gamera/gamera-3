@@ -550,13 +550,10 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   Compute the distance between a known and an unknown feature
   vector with weights.
 */
-inline int compute_distance(KnnObject* o, PyObject* known, PyObject* unknown,
-			    double* distance) {
-  double* known_buf, *unknown_buf;
-  int known_len, unknown_len;
-
-  if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0)
-    return -1;
+inline int compute_distance(KnnObject* o, PyObject* known, double* unknown_buf,
+			    double* distance, double* weights, int unknown_len) {
+  double* known_buf;
+  int known_len;
 
   if (image_get_fv(known, &known_buf, &known_len) < 0)
     return -1;
@@ -599,6 +596,21 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
+
+  double* unknown_buf, *weights;
+  int unknown_len;
+  if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
+      PyErr_SetString(PyExc_ValueError, 
+		      "knn: error getting feature vector \
+                       (This is most likely because features have not been generated.)");
+      return 0;
+  }
+  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
+    weights = new double[unknown_len];
+    std::fill(weights, weights + unknown_len, 1.0);
+  } else {
+    weights = o->weight_vector;
+  }
   
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
   PyObject* cur;
@@ -608,9 +620,10 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
       return 0;
     }
     double distance;
-    if (compute_distance(o, cur, unknown, &distance) < 0) {
+    if (compute_distance(o, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
-		      "knn: error in distance calculation (This is most likely because features have not been generated.)");
+		      "knn: error in distance calculation \
+                       (This is most likely because features have not been generated.)");
       return 0;
     }
     
@@ -622,6 +635,9 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     Py_DECREF(cur);
   }
 
+  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
+    delete weights;
+  }
 
   std::pair<char*, double> answer = knn.majority();
   PyObject* ans = PyTuple_New(2);
@@ -653,6 +669,20 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     return 0;
   }
   
+  double* unknown_buf, *weights;
+  int unknown_len;
+  if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
+      PyErr_SetString(PyExc_ValueError, 
+		      "knn: error getting feature vector \
+                       (This is most likely because features have not been generated.)");
+      return 0;
+  }
+  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
+    weights = new double[unknown_len];
+    std::fill(weights, weights + unknown_len, 1.0);
+  } else {
+    weights = o->weight_vector;
+  }
   PyObject* cur;
   PyObject* distance_list = PyList_New(0);
   PyObject* tmp_val;
@@ -662,7 +692,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
       return 0;
     }
     double distance;
-    if (compute_distance(o, cur, unknown, &distance) < 0) {
+    if (compute_distance(o, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, "knn: error in distance calculation (This is most likely because features have not been generated.)");
       return 0;
     }
@@ -672,6 +702,9 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
 	return 0;
     Py_DECREF(tmp_val);
     Py_DECREF(cur);
+  }
+  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
+    delete weights;
   }
   //Py_DECREF(distance_list);
   return distance_list;

@@ -55,42 +55,4 @@ int permute_list(PyObject* list) {
   return 1;
 }
 
-inline PyObject* all_compositions_(int n, int l, const int orig_l, PyObject* lst, PyObject* main_list) {
-  std::cerr << PyString_AsString(PyObject_Repr(lst)) << " " << n << " " << l << "\n";
-  if (l == 1) {
-    std::cerr << "l == 1";
-    PyObject* tmp = PyInt_FromLong(n);
-    Py_INCREF(tmp);
-    PyList_SET_ITEM(lst, 0, tmp);
-    PyObject* new_list = PyList_New(orig_l);
-    for (size_t i = 0; i < 0; ++i)
-      PyList_SET_ITEM(new_list, i, PyList_GET_ITEM(lst, i));
-    PyList_Append(main_list, new_list);
-  } else {
-    std::cerr << "else";
-    for (int j = n; j >= n/2 + 1; --j) {
-      PyObject* tmp = PyInt_FromLong(j);
-      Py_INCREF(tmp);
-      PyList_SET_ITEM(lst, l - 1, tmp);
-      std::cerr << ".";
-      all_compositions_(n - j, l - 1, orig_l, lst, main_list);
-    }
-  }
-  // FIXME Not certail why we have a return at all. KWM
-  return NULL;
-}
-
-PyObject* all_compositions(int n, int l) {
-  PyObject* main_list = PyList_New(0);
-  PyObject* lst = PyList_New(l);
-  for (int i = 0; i < l; ++i) {
-    PyObject* tmp = PyInt_FromLong(0);
-    Py_INCREF(tmp);
-    PyList_SET_ITEM(lst, 0, tmp);
-  }
-  all_compositions_(n, l, l, lst, main_list);
-  return main_list;
-}
-
-
 #endif

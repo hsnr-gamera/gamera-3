@@ -24,6 +24,10 @@ import glob
 import _tiff_support
 
 class tiff_info(PluginFunction):
+    """Returns an ``ImageInfo`` object describing a TIFF file.
+
+*image_file_name*
+  A TIFF image filename"""
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("tiff_info")
@@ -31,6 +35,18 @@ tiff_info_class = tiff_info
 tiff_info = tiff_info()
 
 class load_tiff(PluginFunction):
+    """Loads a TIFF file from disk.
+
+*image_file_name*
+  A TIFF image filename
+
+*storage_format* (optional)
+  specifies the compression type for the result:
+
+  DENSE (0)
+    no compression
+  RLE (1)
+    run-length encoding compression"""
     self_type = None
     args = Args([FileOpen("image_file_name", "", "*.tiff;*.tif"),
                  Choice("storage format", ["DENSE", "RLE"])])
@@ -42,6 +58,11 @@ load_tiff_class = load_tiff
 load_tiff = load_tiff()
 
 class save_tiff(PluginFunction):
+    """Saves an image to disk in TIFF format.
+
+*image_file_name*
+  A TIFF image filename
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     args = Args([FileSave("image_file_name", "image.tiff", "*.tiff;*.tif")])
     return_type = None

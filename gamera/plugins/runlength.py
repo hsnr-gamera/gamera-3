@@ -20,42 +20,77 @@
 from gamera.plugin import *
 
 class most_frequent_black_horizontal_run(PluginFunction):
+    """Returns the length of the most frequently occurring horizontal run of
+black pixels."""
     self_type = ImageType([ONEBIT])
     return_type = Int()
+    doc_examples = [(ONEBIT,)]
 
 class most_frequent_white_horizontal_run(PluginFunction):
+    """Returns the length of the most frequently occurring horizontal run of
+white pixels."""
     self_type = ImageType([ONEBIT])
     return_type = Int()
+    doc_examples = [(ONEBIT,)]
 
 class most_frequent_black_vertical_run(PluginFunction):
+    """Returns the length of the most frequently occurring vertical run of
+black pixels."""
     self_type = ImageType([ONEBIT])
     return_type = Int()
+    doc_examples = [(ONEBIT,)]
 
 class most_frequent_white_vertical_run(PluginFunction):
+    """Returns the length of the most frequently occurring vertical run of
+white pixels."""
     self_type = ImageType([ONEBIT])
     return_type = Int()
+    doc_examples = [(ONEBIT,)]
 
 class filter_narrow_runs(PluginFunction):
+    """Removes black horizontal runs narrower than a given length."""
     self_type = ImageType([ONEBIT])
     args = Args(Int("size"))
+    doc_examples = [(ONEBIT, 5)]
 
 class filter_short_runs(PluginFunction):
+    """Removes black vertical runs shorter than a given length."""
     self_type = ImageType([ONEBIT])
     args = Args(Int("size"))
+    doc_examples = [(ONEBIT, 5)]
 
 class filter_tall_runs(PluginFunction):
+    """Removes black vertical runs taller than a given length."""
     self_type = ImageType([ONEBIT])
     args = Args(Int("size"))
+    doc_examples = [(ONEBIT, 10)]
 
 class filter_wide_runs(PluginFunction):
+    """Removes black horizontal runs wider than a given length."""
     self_type = ImageType([ONEBIT])
     args = Args(Int("size"))
+    doc_examples = [(ONEBIT, 10)]
 
 class to_rle(PluginFunction):
+    """Encodes a string-based run-length encoded version of the image.
+
+The numbers alternate between "length of black run" and "length of white run".
+Runs go left-to-right, top-to-bottom.
+Runs rollover the right hand edge and continue on the left edge of the next run.
+
+To decode an RLE string, use from_rle_."""
     self_type = ImageType([ONEBIT])
     return_type = String("runs")
+    doc_examples = [(ONEBIT,)]
 
 class from_rle(PluginFunction):
+    """Decodes a string-based run-length encoded version of the image.
+
+The numbers alternate between "length of black run" and "length of white run".
+Runs go left-to-right, top-to-bottom.
+Runs rollover the right hand edge and continue on the left edge of the next run.
+
+To encode an RLE string, use to_rle_."""
     self_type = ImageType([ONEBIT])
     args = Args(String("runs"))
 

@@ -18,6 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+
 #ifndef kwm05212002_segmentation
 #define kwm05212002_segmentation
 
@@ -452,12 +453,14 @@ namespace Gamera {
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
+    delete ccs;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
 			       image.nrows(), image.ncols() - split_point));
-    delete ccs;
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
     delete ccs;
     return splits;
   }
@@ -476,12 +479,14 @@ namespace Gamera {
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
+    delete ccs;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point,
 			       image.nrows(), image.ncols() - split_point));
-    delete ccs;
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
     delete ccs;
     return splits;
   }
@@ -500,12 +505,14 @@ namespace Gamera {
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
+    delete ccs;
     view = simple_image_copy(T(image, image.ul_y() + split_point, image.ul_x(),
 			       image.nrows() - split_point, image.ncols()));
-    delete ccs;
     ccs = cc_analysis(*view);
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
+    delete view;
     delete ccs;
     return splits;
   }

@@ -1,0 +1,446 @@
+=============================
+Writing Gamera Plugins
+=============================
+
+Introduction
+============
+
+The functionality of Gamera can be extended by writing plugins in
+either C++ or Python.  A plugin is simply a set of methods (which are
+automagically added to the ``Image`` class) or free-standing functions.
+Plugins are technially just Python modules, but with more 
+information that allows for easier wrapping and compilation of C++ methods
+and to support all kinds of automatic things in the graphical user interface.
+
+Plugins can also be grouped together, with other tools, into toolkits.
+Toolkits provide higher-level workflow framework for end-to-end document
+recognition by joining together a number of steps from various
+plugins.  Toolkits are a whole other discussion, so see the
+`writing Gamera toolkits`__ for more information.
+
+.. __: writing_toolkits.html
+
+Before writing any plugin, you should make sure there isn't already a
+plugin included that does what you want.  Look here__.
+
+.. __: plugins.html
+
+The files involved
+------------------
+
+In the gamera source tree, the ``./gamera`` subdirectory contains all of the
+files that are needed at runtime, so this is where all of the Python
+source code, Python byte-code and compiled Python extensions live.
+C++ source code lives in ``./src`` and header files live in
+``./include``.  (For more information, see the `Directory heirarchy`__
+documentation).
+
+.. __: directory_heirarchy.html
+
+Each plugin is made up of two files: 
+
+1. A Python file that describes each method in the plugin and the
+   plugin itself.  If any methods are "pure Python", they can also be
+   defined here, or they can just delegate to functions in other
+   Python modules.  These files live in ``./gamera/plugins``.
+
+2. Optionally, a C++ header file containing implementations of any C++
+   methods of the plugin.  This is a header file (``.hpp``) and not an
+   implementation file (``.cpp``) because the code you write will be templatized
+   and the concrete methods and the glue code connecting to Python to
+   C++ will be generated automatically at compile time by the Gamera
+   build system.  (What templates are is beyond the scope of this
+   document, but it's covered very well in [Stroustrup1997]_.)
+   These C++ files live in ``./include/plugins``.
+
+
+If you keep these files in the proper directories, they will be
+automatically picked up by the build system and compiled.  When Gamera
+is started up, it will search the ``./gamera/plugins`` directory and load
+all plugins.
+
+A simple example
+================
+
+Plugin metadata
+---------------
+
+Let's look at a simple metadata file, ``example.py``.  Each method is
+described by creating a class that inherits from
+``gamera.plugin.PluginFunction`` and defining a number of special
+members.  The whole plugin is described by a class that inherits from
+``gamera.plugin.PluginModule``::
+
+  from gamera.plugin import *
+  import _example
+
+  # C++ method
+  class volume(PluginFunction):
+      """Returns the ratio of black pixels to white pixels within the
+      bounding box of the image."""
+      self_type = ImageType([ONEBIT])
+      return_type = FloatVector("volume", 1)
+      doc_examples = [(ONEBIT,)]
+
+  class ExampleModule(PluginModule):
+      category = "Example"
+      cpp_headers=["example.hpp"]
+      functions = [volume]
+      author = "Michael Droettboom and Karl MacMillan"
+      url = "http://gamera.dkc.jhu.edu/"
+  module = ExampleModule()
+
+Okay, now lets break it down.
+
+The ``gamera.plugin`` module contains all of the utilities necessary to
+create Gamera plugins, so the first thing we do is import it::
+
+  from gamera.plugin import *
+
+Next, we import the C++ side of the plugin, (described in the next
+section) which *always* has the same name as the Python metadata
+module, except with a leading underscore::
+
+  import _example
+
+Let's start by describing a minimal C++ method.  All methods and
+functions in a plugin are described using a class that inherits from
+``gamera.plugin.PluginFunction``::
+
+  # C++ method
+  class volume(PluginFunction):
+
+Each plugin can (and should) be documented in the usual `Python
+docstring`__ way::
+
+      """Returns the ratio of black pixels to white pixels within the
+      bounding box of the image."""
+
+.. __: http://www.python.org/doc/current/tut/node6.html
+
+On a related note, you can also have the documentation system
+(``doc/gendoc.py``) generate an example automatically.  The
+``doc_examples`` member is a list of tuples, each of which is a set of
+arguments to pass to the plugin method.  If the first argument in the
+tuple is a pixel type constant (e.g. ``ONEBIT``), a generic image will
+be loaded from disk and used as self to generate the example.  If the
+result of the method is an image, the image will be included in the
+HTML documentation.  If the result is not an image, a text
+representation of the result (obtained using the standard Python
+``repr()``) will be included.  (Look at the generated `Plugin
+documentation`__ for many examples of this.)::
+
+      doc_examples = [(ONEBIT,)]
+
+.. __: plugins.html
+
+Next, we define ``self_type``, which is the type of object this
+method can be called on.  If ``self_type`` is an ``ImageType``, the method
+will automatically be added to all ``Image`` objects in Gamera whenever
+the plugin is imported.  Within the ``ImageType`` specifier, you can
+choose which types of pixels are supported using a list of pixel type
+names. Valid options are ``ONEBIT``, ``GREYSCALE``, ``GREY16``, ``FLOAT`` and ``RGB``
+(these are all constants imported from the ``gamera.plugin module``)::
+
+      self_type = ImageType([ONEBIT])
+
+You can also optionally define ``return_type``.  This specifier is used to generate
+a variable name for the result in the GUI, and so the C++ wrapping
+machanism knows how to return the result to Python.  If you don't specify a
+return type, Gamera assumes there is no return result::
+
+      return_type = FloatVector("volume", 1)
+
+Obviously, this is a very simple plugin method with no arguments.  Some more
+involved examples are given below.  In the meantime, let's look at how
+this method is contained in a plugin module.
+
+For each plugin module, you also need a class to describe the entire
+plugin.  There may be *only one* of these classes per plugin.  This is
+done in a similar manner to how the methods are described.
+
+There is a class that inherits from ``gamera.plugin.PluginModule``::
+
+  class ExampleModule(PluginModule):
+
+You can specify a category for the plugin's methods on
+the context (right-click) menu in the GUI::
+
+    category = "Example"
+
+If you have any C++ methods (which we do in this case), you must
+specify the C++ header files to include which contain the
+corresponding method's source code::
+
+    cpp_headers=["example.hpp"]
+
+You must also list all of the plugins and methods in the file so they
+can be generated and loaded::
+
+    functions = [volume]
+
+Optionally, the author names and a URL for more information can be
+specified::
+
+    author = "Michael Droettboom and Karl MacMillan"
+    url = "http://dkc.jhu.edu/gamera/"
+
+Lastly, we create an instance of this class so the module loader can do its work::
+
+  module = ExampleModule()
+
+C++ code
+----------
+
+Since the ``volume`` method needs to look at individual pixels, it
+is likely going to be much faster written in C++ than in Python.  Below is
+the corresponding ``example.hpp`` that contains the C++ implementation::
+
+  #include "gamera.hpp"
+
+  using namespace Gamera;
+
+  template<class T>
+  float volume(const T &m) {
+    unsigned int count = 0;
+    typename T::const_vec_iterator i = m.vec_begin();
+    for (; i != m.vec_end(); i++)
+      if (is_black(*i))
+        count++;
+    return (feature_t(count) / (m.nrows() * m.ncols()));
+  }
+
+Most of the declarations needed for Gamera are in ``gamera.hpp``, and
+all of that stuff is in the ``Gamera`` namespace, to prevent name
+collisions.  You may find it most convenient to just put ``using
+namespace Gamera`` at the top of your plugin file, rather than
+specifying ``Gamera::...`` everywhere::
+
+  #include "gamera.hpp"
+ 
+  using namespace Gamera;
+
+Next we get to the function itself.  Note that it is templatized.
+Since it is our goal to write a single algorithm that may work on
+multiple image types, *all* plugin methods are templatized, and the
+instantiations of these templates are generated by the Gamera build
+system at compile-time based on the ``self_type`` specifier in the
+method metadata class (that we specified in ``example.py``).  See how the first argument
+``self`` is templatized as ``T`` so that any (image) type can be passed
+in.  The body of the function used the `Gamera C++ Image API`__ to access
+and examine the individual pixels::
+
+    template<class T>
+    float volume(const T &m) {
+      unsigned int count = 0;
+      typename T::const_vec_iterator i = m.vec_begin();
+      for (; i != m.vec_end(); i++)
+        if (is_black(*i))
+          count++;
+      return (feature_t(count) / (m.nrows() * m.ncols()));
+    }
+
+.. __: image_api.html
+
+Building the plugin
+-------------------
+
+Okay, so now we're done with the minimal plugin, but obviously
+something more has to happen in order to access the C++ code from Python.
+Fortunately, that is all done automatically by the Gamera build
+system.  If the ``example.py`` is placed in the ``./gamera/plugins``
+directory, the build system will automatically find it, use the
+metadata to generate a *wrapper* to access ``example.hpp``, and compile
+everything.  The next time Gamera is run, the plugin will
+automatically be loaded.  The plugin author does not have to learn
+about the intricacies of the `Python/C API`__.
+
+.. __: http://www.python.org/doc/current/api/api.html
+
+But, for the sake of some sadistic curiosity, the 
+generated code looks something like::
+
+  #include <string>
+  #include <stdexcept>
+  #include "Python.h"
+  #include <list>
+  #include "gameramodule.hpp"
+
+  init_features (void)
+  {
+    Py_InitModule ("_features", _features_methods);
+  }
+
+  #include "features.hpp"
+ 
+  using namespace Gamera;
+
+  extern "C"
+  {
+    void init_example (void);
+    static PyObject *call_volume (PyObject * self, PyObject * args);
+    static PyMethodDef _features_methods[] =
+      { {"volume", call_volume, METH_VARARGS} };
+
+    static PyObject *call_volume(PyObject * self, PyObject * args)
+    {
+      PyObject *real_self;
+      Image *real_self_image;
+
+      FloatVector *return_value = 0;
+
+      if (PyArg_ParseTuple(args, "O", &real_self) <= 0)
+        return 0;
+      if (!is_ImageObject(real_self)) {
+	PyErr_SetString(PyExc_TypeError, "Object is not an image as expected!");
+	return 0;
+      }
+      real_self_image = ((Image *) ((RectObject *) real_self)->m_x);
+      image_get_fv(real_self, &real_self_image->features, &real_self_image->features_len);
+      try {
+      switch (get_image_combination (real_self)) {
+	case ONEBITRLEIMAGEVIEW:
+	  return_value = volume(*((OneBitRleImageView *) real_self_image));
+	  break;
+	case RLECC:
+	  return_value = volume(*((RleCc *) real_self_image));
+	  break;
+	case CC:
+	  return_value = volume(*((Cc *) real_self_image));
+	  break;
+	case ONEBITIMAGEVIEW:
+	  return_value = volume (*((OneBitImageView *) real_self_image));
+	  break;
+	default:
+	  PyErr_SetString (PyExc_TypeError,
+			   "Image types do not match function signature.");
+	  return 0;
+	}
+      }
+      catch (std::exception & e)
+      {
+        PyErr_SetString (PyExc_RuntimeError, e.what());
+        return 0;
+      }
+      PyObject *array_init = get_ArrayInit();
+      if (array_init == 0)
+        return 0;
+      PyObject *str = PyString_FromStringAndSize((char *) (&((*return_value)[0])),
+			     	  return_value->size () * sizeof (double));
+      PyObject *array = PyObject_CallFunction(array_init, "sO", "d", str);
+      delete return_value;
+      return array;
+    }
+    DL_EXPORT (void) init_example (void)
+    {
+      Py_InitModule ("_example", _example_methods);
+    }
+  }
+
+**Aren't you glad you don't have to write something like that every
+time!**
+
+Advanced features
+=================
+
+Specifying arguments
+--------------------
+
+Of course, many plugin methods will need to have arguments.  See this
+``resize_copy`` method, for example::
+
+  # C++ image method with some arguments
+  class resize_copy(PluginFunction):
+      """Copies and resizes an image. In addition to size the type of
+      interpolation can be specified to allow tradeoffs between speed
+      and quality."""
+      category = "Utility/Copy"
+      self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+      args = Args([Int("nrows"), Int("ncols"),
+                  Choice("Interpolation Type", ["None", "Linear", "Spline"])])
+      return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+
+And the corresponding C++ declaration::
+
+  template<class T>
+  Image* resize_copy(T& image, int nrows, int ncols, int resize_quality);
+
+The ``args`` member variable specifies a list of the arguments that are
+passable to the method (excluding the first ``self`` argument).  This
+specification is used to generate wrapper code, and also to generate
+dialog boxes in the GUI.  The format of these argument lists are
+documented in `Specifying arguments`__.
+
+.. __: args.html
+
+Free functions
+--------------
+
+It doesn't always make sense to have everything be a method of
+images.  For example, you may want to create a function that requires
+a list of images as input.  Fortunately, you can still use the plugin
+system to automate the wrapping/building process, while foregoing the
+automatic inclusion in the Image class (and the right-click context
+menu). It's as simple as setting ``self_type``
+to ``None`` in the metadata object::
+
+  # C++ free function
+  class union_images(PluginFunction):
+      """Creates a new image by overlaying all the images in the given list."""
+      self_type = None
+      args = Args([ImageList('list_of_images')])
+      return_type = ImageType([ONEBIT])
+
+Pure Python methods
+-------------------
+
+Sometimes there is not much efficiency to be gained by writing the
+plugin method in C++, or you want the flexibility of Python for
+experimentation.  In that case you can implement the method in pure
+Python.  Everything else is the same, except you add a ``__call__`` method
+with the Python implementation.  It is important that this method is a
+``staticmethod``, since the first ``self`` argument is going to be an ``Image``
+object and not a ``PluginFunction`` object::
+
+  # Python image method
+  class area(PluginFunction):
+      """Returns the aspect ratio of the bounding box of the image"""
+      self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+      return_type = Float("area", 1)
+      def __call__(self):
+          return float(self.ncols) / float(self.nrows)
+      __call__ = staticmethod(__call__)
+
+Free pure Python functions
+--------------------------
+
+Since the plugin modules are also just regular Python modules under
+the hood, it's of course possible to just add ordinary Python
+functions as well::
+
+  # Python free function
+  def filter_small_images(l):
+      return [x for x in l if x.ncols > 2 and x.nrows > 2]
+
+Further reading
+===============
+
+- `Writing C++ plugin methods that processes Gamera images`__
+
+.. __: image_api.html
+
+- `Specifying arguments`__
+
+.. __: arguments.html
+
+- `Grouping plugins together into toolkits`__
+
+.. __: writing_toolkits.html
+
+- And of course, there's lots of examples in the Gamera code itself!
+
+References
+==========
+
+.. [Stroustrup1997] Stroustrup, B. 1997. *The C++ Programming
+   Language: Third Edition.*  Reading, MA: Addison-Wesley.

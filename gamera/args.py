@@ -65,6 +65,8 @@ if has_gui.has_gui == has_gui.WX_GUI:
       def _create_page_impl(self, locals, parent, page):
          gs = wxPython.wx.wxFlexGridSizer(len(page), 2, 8, 8)
          for item in page:
+            if item.name == None:
+               item.name = "ERROR!  No name given!"
             gs.Add(wxPython.wx.wxStaticText(parent, -1, item.name),
                    0,
                    (wxPython.wx.wxTOP|wxPython.wx.wxLEFT|wxPython.wx.wxRIGHT|
@@ -134,7 +136,7 @@ if has_gui.has_gui == has_gui.WX_GUI:
          self.border = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
          self.window.SetSizer(self.border)
          self.gs = self._create_controls(locals, self.window)
-         self.gs.RecalcSizes()
+         ## self.gs.RecalcSizes()
          if self.wizard:
             buttons = self._create_wizard_buttons()
          else:
@@ -169,14 +171,14 @@ if has_gui.has_gui == has_gui.WX_GUI:
                self.box, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 15)
          self.border.RecalcSizes()
          self.box.RecalcSizes()
-         self.gs.RecalcSizes()
+         # self.gs.RecalcSizes()
          self.border.Layout()
          self.border.Fit(self.window)
          size = self.window.GetSize()
          self.window.SetSize((max(400, size[0]), max(200, size[1])))
          self.window.Centre()
 
-      def show(self, parent, locals={}, function=None, wizard=0):
+      def show(self, parent=None, locals={}, function=None, wizard=0):
          self.wizard = wizard
          if function != None:
             self.function = function
@@ -187,15 +189,11 @@ if has_gui.has_gui == has_gui.WX_GUI:
             return None
          elif self.function is None:
             if function is None:
-               return self.get_args()
+               return tuple(self.get_args())
             else:
                return function + self.get_args_string()
          else:
             return self.function + self.get_args_string()
-
-      def OnHelp(self, event):
-         import core
-         core.help(self.function)
 else:
    class _guiArgs:
       def setup(self, parent, locals):
@@ -245,11 +243,8 @@ class Arg:
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
 
-   def html_repr(self, name=1):
-      result = self.__class__.__name__
-      if name:
-         result += " <i>" + self.name + "</i>"
-      return result
+   def rest_repr(self):
+      return self.__class__.__name__
    
 # Integer
 if has_gui.has_gui == has_gui.WX_GUI:
@@ -277,12 +272,10 @@ class Int(_guiInt, Arg):
       self.rng = range
       self.default = default
 
-   def html_repr(self, name=1):
-      result = "Int"
+   def rest_repr(self):
+      result = "int"
       if self.rng != (-sys.maxint, sys.maxint):
          result += str(self.rng)
-      if name:
-         result += " <i>" + self.name + "</i>"
       return result
 
 # Real / Float
@@ -364,12 +357,10 @@ class Real(_guiReal, Arg):
       self.rng = range
       self.default = default
 
-   def html_repr(self, name=1):
-      result = "Float"
+   def rest_repr(self):
+      result = "double"
       if self.rng != (-sys.maxint, sys.maxint):
          result += str(self.rng)
-      if name:
-         result += " <i>" + self.name + "</i>"
       return result
 
 Float = Real
@@ -434,10 +425,13 @@ else:
       pass
 
 class Class(_guiClass, Arg):
-   def __init__(self, name=None, klass=None, list_of=0):
+   def __init__(self, name=None, klass=None, list_of=False):
       self.name = name
       self.klass = klass
       self.list_of = list_of
+
+   def rest_rept(self):
+      return self.klass.__name__
 
 # Image (a drop-down list of instances of a given class in a given namespace)
 if has_gui.has_gui == has_gui.WX_GUI:
@@ -470,12 +464,8 @@ class ImageType(_guiImageType, Arg):
       self.pixel_types = pixel_types
       self.list_of = list_of
 
-   def html_repr(self, name=1):
-      result = ('|'.join([util.get_pixel_type_name(x) + "Image"
-                        for x in self.pixel_types]))
-      if name:
-         result += " <i>" + self.name + "</i>"
-      return result
+   def rest_repr(self):
+      return 'Image [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
 
 # Choice
 if has_gui.has_gui == has_gui.WX_GUI:
@@ -518,6 +508,9 @@ class Choice(_guiChoice, Arg):
       self.name = name
       self.choices = choices
       self.default = default
+
+   def rest_repr(self):
+      return 'Choice[%s]' % '|'.join(self.choices)
 
 # Filename
 if has_gui.has_gui == has_gui.WX_GUI:
@@ -682,47 +675,69 @@ else:
       pass
       
 class Check(_guiCheck, Arg):
-   def __init__(self, name=None, check_box='', default=0, enabled=1):
+   def __init__(self, name=None, check_box='', default=False, enabled=True):
       self.name = name
       self.check_box = check_box
       self.default = default
       self.enabled = enabled
 
-# RegionMap
-
-class _guiRegion:
-   pass
-
-class Region(_guiRegion, Arg):
-   def __init__(self, name=None):
-      self.name = name
+   def rest_repr(self):
+      return 'bool'
 
 # RegionMap
 
-class _guiRegionMap:
-   pass
-
-class RegionMap(_guiRegionMap, Arg):
+if has_gui.has_gui == has_gui.WX_GUI:
+   class _guiRegion(_guiClass):
+      def determine_choices(self, locals):
+         from gamera import core
+         self.klass = core.Region
+         return _guiClass.determine_choices(self, locals)
+else:
+   class _guiRegion:
+      pass
+class Region(_guiRegion, Class):
    def __init__(self, name=None):
-      self.name = name
+      Class.__init__(self, name, None)
+
+# RegionMap
+
+if has_gui.has_gui == has_gui.WX_GUI:
+   class _guiRegionMap(_guiClass):
+      def determine_choices(self, locals):
+         from gamera import core
+         self.klass = core.RegionMap
+         return _guiClass.determine_choices(self, locals)
+else:
+   class _guiRegionMap:
+      pass
+class RegionMap(_guiRegionMap, Class):
+   def __init__(self, name=None):
+      Class.__init__(self, name, None)
 
 # ImageInfo
 
-class _guiImageInfo:
-   pass
-
-class ImageInfo(_guiImageInfo, Arg):
+if has_gui.has_gui == has_gui.WX_GUI:
+   class _guiImageInfo(_guiClass):
+      def determine_choices(self, locals):
+         from gamera import core
+         self.klass = core.ImageInfo
+         return _guiClass.determine_choices(self, locals)
+else:
+   class _guiImageInfo:
+      pass
+class ImageInfo(_guiImageInfo, Class):
    def __init__(self, name=None):
-      self.name = name
+      Class.__init__(self, name, None)
 
 # FloatVector
 # These can only be used as return values
 class _guiFloatVector:
    pass
 
-class FloatVector(_guiFloatVector, Arg):
+class FloatVector(_guiFloatVector, Class):
    def __init__(self, name=None, length=-1):
-      self.name = name
+      import array
+      Class.__init__(self, name, type(array.array('d')))
       self.length = length
 
 # IntVector
@@ -730,18 +745,25 @@ class FloatVector(_guiFloatVector, Arg):
 class _guiIntVector:
    pass
 
-class IntVector(_guiIntVector, Arg):
+class IntVector(_guiIntVector, Class):
    def __init__(self, name=None, length=-1):
-      self.name = name
+      import array
+      Class.__init__(self, name, type(array.array('i')))
       self.length = length
 
 # ImageList
-class _guiImageList:
-   pass
-
-class ImageList(_guiImageList, Arg):
+if has_gui.has_gui == has_gui.WX_GUI:
+   class _guiImageList(_guiClass):
+      def determine_choices(self, locals):
+         from gamera import core
+         self.klass = core.ImageBase
+         return _guiClass.determine_choices(self, locals)
+else:
+   class _guiImageList:
+      pass
+class ImageList(_guiImageList, Class):
    def __init__(self, name=None):
-      self.name = name
+      Class.__init__(self, name, None, True)
 
 # Info
 if has_gui.has_gui == has_gui.WX_GUI:
@@ -777,3 +799,5 @@ class Wizard:
             next_dialog = dialog_history[-2]
             dialog_history = dialog_history[0:-1]
       self.done()
+
+__all__ = 'Args Int Real Float String Class ImageType Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard'.split()

@@ -19,10 +19,19 @@
 
 from gamera.plugin import *
 
-class gaussian_smoothing(PluginFunction): 
+class gaussian_smoothing(PluginFunction):
+    """Returns the Gaussian smoothing operation on the image.
+
+*scale*
+  The size of the Gaussian smoothing operator in pixels.
+
+This function was imported from VIGRA_.
+
+.. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/"""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("scale")])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    doc_examples = [(RGB, 5), (GREYSCALE, 5), (ONEBIT, 5)]
 
 class GSModule(PluginModule):
     category = "Filter/Smoothing"

@@ -119,6 +119,7 @@ namespace Gamera {
      * is done.
      */
     Rgb(OneBitPixel s) {
+      // TODO: fix for new ONEBIT
       if (s > 0) {
 	RGBValue<T>(1);
       } else {

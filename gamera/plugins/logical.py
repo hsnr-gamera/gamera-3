@@ -34,7 +34,6 @@ class and_image(_LogicalBase):
   | 1 | 0 | 1 |
   +---+---+---+
   """
-  testable = 1
 
 class or_image(_LogicalBase):
   """Perform the OR operation on two images.
@@ -47,7 +46,6 @@ class or_image(_LogicalBase):
   | 1 | 1 | 1 |
   +---+---+---+
   """
-  testable = 1
 
 class xor_image(_LogicalBase):
   """Perform the XOR operation on two images.
@@ -60,11 +58,10 @@ class xor_image(_LogicalBase):
   | 1 | 1 | 0 |
   +---+---+---+
   """
-  testable = 1
 
 class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""
-  category = "Combine"
+  category = "Utility/Combine"
   cpp_headers = ["logical.hpp"]
   cpp_namespaces=["Gamera"]
   functions = [and_image, or_image, xor_image]

@@ -23,23 +23,53 @@ import _morphology
 #TODO: Change these to out-of-place
 
 class erode(PluginFunction):
+  """Erodes the image by the image morphology method."""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  doc_examples = [(GREYSCALE,), (ONEBIT,)]
 
 class dilate(PluginFunction):
+  """Dilates the image by the image morphology method."""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  doc_examples = [(GREYSCALE,), (ONEBIT,)]
 
 class erode_dilate(PluginFunction):
+  """Erodes or dilates the image by the image morphology method.
+
+*ntimes*
+  The number of times to perform the operation.
+*direction*
+  dilate (0)
+    increase the presence of black
+  erode (1)
+    decrease the presence of black
+*shape*
+  rectangular (0)
+    use a 3x3 rectangular morphology operator
+  octagonal (1)
+    use a 3x3 octagonal morphology operator
+"""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  args = Args([Int('number of times', range=(0, 10), default=1), \
+  args = Args([Int('ntimes', range=(0, 10), default=1), \
                Choice('direction', ['dilate', 'erode']), \
-               Choice('window shape', ['rectangular', 'octagonal'])])
+               Choice('shape', ['rectangular', 'octagonal'])])
+  doc_examples = [(GREYSCALE, 10, 0, 1)]
 
 class rank(PluginFunction):
+  """Within each 3x3 window, set the center pixel to the *n*-th ranked
+value.
+
+*rank* (1 - 9)
+  The rank of the 9 pixels to select for the center.  5 is equivalent to
+  the median."""
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('rank', range=(1, 9))])
+  doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
 
 class mean(PluginFunction):
+  """Within each 3x3 window, set the center pixel to the mean value of
+all 9 pixels."""
   self_type = ImageType([GREYSCALE, FLOAT])
+  doc_examples = [(GREYSCALE,)]
 
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]

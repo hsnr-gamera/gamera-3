@@ -21,16 +21,61 @@ from gamera.plugin import *
 import _draw
 
 class draw_line(PluginFunction):
+  """Draws a straight line between two points.
+
+*x1*:
+  Starting *x* coordinate.
+*y1*:
+  Starting *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
+*y2*:
+  Ending *y* coordinate.
+*value*:
+  The pixel value to set for the line.
+
+.. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class draw_hollow_rect(PluginFunction):
+  """Draws a hollow rectangle.
+
+*x1*:
+  Starting *x* coordinate.
+*y1*:
+  Starting *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
+*y2*:
+  Ending *y* coordinate.
+*value*:
+  The pixel value to set for the lines.
+
+.. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class draw_filled_rect(PluginFunction):
+  """Draws a filled rectangle.
+
+*x1*:
+  Starting *x* coordinate.
+*y1*:
+  Starting *y* coordinate.
+*x2*:
+  Ending *x* coordinate.
+*y2*:
+  Ending *y* coordinate.
+*value*:
+  The pixel value to set for the rectangle.
+
+.. note:: This needs to be extended to support more pixel types."""
   self_type = ImageType([ONEBIT])
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
+  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]

@@ -152,9 +152,6 @@ template = Template("""
            [[elif isinstance(x, String) or isinstance(x, FileSave) or isinstance(x, FileOpen)]]
              char* [[x.name + '_arg']];
              [[exec pyarg_format = pyarg_format + 's']]
-           [[elif isinstance(x, Class)]]
-             PyObject* [[x.name + '_arg']];
-             [[exec pyarg_format = pyarg_format + 'O']]
            [[elif isinstance(x, Region)]]
              PyObject* [[x.name + '_arg']];
              Region* [[x.name + '_regionarg']];
@@ -171,6 +168,9 @@ template = Template("""
              PyObject* [[x.name + '_arg']];
              [[exec pyarg_format = pyarg_format + 'O']]
              std::vector<Image*> [[x.name + '_list_arg']];
+           [[elif isinstance(x, Class)]]
+             PyObject* [[x.name + '_arg']];
+             [[exec pyarg_format = pyarg_format + 'O']]
            [[else]]
              Something funny happened - [[x.__name__]]
              [[isinstance(x, ImageType)]]
@@ -188,8 +188,6 @@ template = Template("""
            std::string return_value; // Let C++ implicitly initialize this.
          [[elif isinstance(function.return_type, ImageType)]]
            Image* return_value = 0;
-         [[elif isinstance(function.return_type, Class)]]
-           PyObject* return_value = 0;
          [[elif isinstance(function.return_type, Region)]]
            Region* return_value = 0;
          [[elif isinstance(function.return_type, RegionMap)]]
@@ -202,6 +200,8 @@ template = Template("""
            IntVector* return_value = 0;
          [[elif isinstance(function.return_type, ImageList)]]
            std::list<Image*>* return_value = 0;
+         [[elif isinstance(function.return_type, Class)]]
+           PyObject* return_value = 0;
          [[end]]
 
          [[# Now that we have all of the arguments and variables for them we can parse #]]

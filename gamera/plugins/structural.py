@@ -24,14 +24,12 @@ from gamera.plugin import *
 
 class polar_distance(PluginFunction):
     """Returns a tuple containing the normalized distance, polar direction,
-    and non-normalized polar distance to another glyph (based on center points."""
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    and non-normalized polar distance to another glyph (based on center of bounding boxes)."""
+    self_type = ImageType(ALL)
     return_type = FloatVector("polar")
-    args = Args([ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB], "other")])
+    args = Args([ImageType(ALL, "other")])
 
 class polar_match(PluginFunction):
-    """Returns a tuple containing the normalized distance, polar direction,
-    and non-normalized polar distance to another glyph (based on center points."""
     self_type = None
     return_type = Int("check")
     args = Args([Float('r1'), Float('q1'), Float('r2'), Float('q2')])

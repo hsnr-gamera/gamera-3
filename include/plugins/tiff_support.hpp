@@ -297,7 +297,6 @@ namespace {
 }
 
 Image* load_tiff(const char* filename, int storage) {
-  printf("%s", filename);
   ImageInfo* info = tiff_info(filename);
   if (info->ncolors() == 3) {
     typedef TypeIdImageFactory<RGB, DENSE> fact;

@@ -20,8 +20,11 @@
 from gamera.plugin import *
 
 class outline(PluginFunction):
+    """Traces the outline of the image.  This result is obtained by
+dilating the image and then XOR'ing the result with the original."""
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
+    doc_examples = [(ONEBIT,)]
 
 class MiscFiltersModule(PluginModule):
     category = "Filter"

@@ -311,6 +311,7 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
 	else
 	  view->set(y, x, white(*view));
       }
+    delete average->data();
     delete average;
     return view;
   } else {
@@ -325,6 +326,7 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
 	  view->set(y, x, white(*view));
       }
 
+    delete average->data();
     delete average;
     return view;
   }

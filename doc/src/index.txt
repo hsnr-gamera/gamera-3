@@ -1,0 +1,36 @@
+====================
+Gamera documentation
+====================
+
+:Author: Michael Droettboom
+
+============
+Introduction
+============
+
+This is the Gamera documentation.  It is under the GNU FDL__.
+
+.. __: fdl.html
+
+.. warning:: Work in progress.
+
+- `Writing Gamera plugins`__: Learn how to write new image methods.
+
+.. __: writing_plugins.html
+
+   - `Specifying arguments for plugin generation and dialog boxes`__
+
+   .. __: args.html
+
+   - `The Gamera C++ Image API`__: How to work with Gamera's images from C++.
+
+   .. __: image_api.html
+
+       - `Image types`__: The different types of images available in Gamera
+
+       .. __: image_types.html
+
+- `Plugins`__: Documentation of all the included plugins.
+
+.. __: plugins.html
+

@@ -20,7 +20,7 @@
 
 from gamera.args import *
 from gamera import paths
-import new, os, os.path, unittest, imp, inspect
+import new, os, os.path, imp, inspect, sys
 from enums import *
 
 class PluginModule:
@@ -39,8 +39,8 @@ class PluginModule:
    functions = []
    pure_python = 0
    version = "1.0"
-   author = ""
-   url = ""
+   author = None
+   url = None
 
    def __init__(self):
       # FIXME - skip this if we can't get gamera.core (i.e.
@@ -49,26 +49,26 @@ class PluginModule:
       if core is None:
          return
       for function in self.functions:
-         function.register(self.category)
+         function.register(self, self.category)
 
-   def get_test_suite(self):
-      suite = unittest.TestSuite()
-      for function in self.functions:
-         if function.testable:
-            suite.addTest(function.get_test_case())
-      return suite
+class Builtin(PluginModule):
+   author = "Michael Droettboom and Karl MacMillan"
+   url = "http://dkc.jhu.edu/"
 
 class PluginFunction:
    return_type = None
-   self_type = ImageType((ONEBIT, GREYSCALE, GREY16, RGB, FLOAT))
+   self_type = ImageType(ALL)
    args = Args([])
    pure_python = 0
    image_types_must_match = 0
    testable = 0
    feature_function = False
+   category = None
+   doc_examples = []
 
-   def register(cls, category=None, add_to_image=1):
-      if hasattr(cls, 'category'):
+   def register(cls, module=Builtin, category=None, add_to_image=1):
+      cls.module = module
+      if cls.category != None:
          category = cls.category
       if not hasattr(cls, "__call__"):
          # This loads the actual C++ function if it is not directly
@@ -91,79 +91,11 @@ class PluginFunction:
          func = cls.__call__
       cls.__call__ = staticmethod(func)
       from gamera import core
-      if add_to_image and isinstance(cls.self_type, ImageType):
+      if add_to_image:
          core.ImageBase.add_plugin_method(cls, func, category)
    register = classmethod(register)
 
-   def get_test_case(self):
-      import testing
-      return testing.PluginTest(self)
-
-   def test(cls):
-      # Testing function goes here
-      # This can be overridden to just call the plugin function a
-      # bunch of times with different arguments and return a list of
-      # results
-      import testing
-      results = []
-      if cls.image_types_must_match:
-         for type in cls.self_type.pixel_types:
-            if type == FLOAT:
-               continue
-            self = testing.get_generic_test_image(type)
-            params = []
-            for i in cls.args:
-               if isinstance(i, ImageType):
-                  param = testing.get_generic_test_image(type)
-               else:
-                  param = i.default
-               params.append(param)
-            cls._do_test(self, params, results)
-      else:
-         for type in cls.self_type.pixel_types:
-            if type == FLOAT:
-               continue
-            self = testing.get_generic_test_image(type)
-            cls._test_recurse(self, [], results)
-      return results
-   test = classmethod(test)
-
-   def _test_recurse(cls, self, params, results):
-      import testing
-      if len(params) == len(cls.args.list):
-         cls._do_test(self, params, results)
-      else:
-         arg = cls.args[len(params)]
-         if isinstance(arg, ImageType):
-            for type in arg.pixel_types:
-               if type == FLOAT:
-                  continue
-               param = testing.get_generic_test_image(type)
-               params.append(param)
-               cls._test_recurse(self, params, results)
-         else:
-            param = arg.default
-            params.append(param)
-            cls._test_recurse(self, params, results)
-
-   _test_recurse = classmethod(_test_recurse)
-
-   def _do_test(cls, self, params, results):
-      from gamera import core
-      try:
-         result = apply(getattr(self, cls.__name__), tuple(params))
-      except Exception:
-         results.append(str(Exception))
-      else:
-         if result != None:
-            results.append(result)
-         results.append(self)
-         for i in params:
-            if isinstance(i, core.ImageBase):
-               results.append(i)
-   _do_test = classmethod(_do_test)
-
-def PluginFactory(name, func, category=None,
+def PluginFactory(name, category=None,
                   return_type=None,
                   self_type=ImageType((RGB,
                                        GREYSCALE,
@@ -171,6 +103,7 @@ def PluginFactory(name, func, category=None,
                                        ONEBIT,
                                        FLOAT)),
                   args=None):
+   from gamera import core
    cls = new.classobj(name, (PluginFunction,), {})
    if not category is None:
       cls.category = category
@@ -180,7 +113,10 @@ def PluginFactory(name, func, category=None,
       cls.args = Args([])
    else:
       cls.args = args
+   func = getattr(core.ImageBase, name)
    cls.__call__ = func
+   cls.__doc__ = func.__doc__
+   cls.module = Builtin
    return cls
 
 def get_config_options(command):

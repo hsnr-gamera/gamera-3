@@ -49,7 +49,7 @@ from types import *
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
 from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
-from enums import ALL
+from enums import ALL, NONIMAGE
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
@@ -100,7 +100,7 @@ class ImageBase:
    the necessary infrastructure to support dynamically added plugins."""
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
-   _methods = {}
+   methods = {}
 
    class Properties(dict):
       def __getitem__(self, attr):
@@ -140,12 +140,17 @@ class ImageBase:
       category -- menu category that the method should be placed under.
         Categories may be nested using '/' (i.e. "General/Specific")
       """
-      methods = cls._methods
+      from gamera import args
+      methods = cls.methods
       if not func is None:
          func = instancemethod(func, None, gameracore.Image)
          setattr(cls, plug.__name__, func)
       if not category is None:
-        for type in plug.self_type.pixel_types:
+        if isinstance(plug.self_type, args.ImageType):
+           pixel_types = plug.self_type.pixel_types
+        else:
+           pixel_types = [NONIMAGE]
+        for type in pixel_types:
           if not methods.has_key(type):
             methods[type] = {}
           start = methods[type]
@@ -189,27 +194,10 @@ class ImageBase:
    def methods_for_menu(self):
       """Returns a list of methods (in nested dictionaries by categories) for
       building user interfaces."""
-      methods = {}
-      for type in (ALL, self.data.pixel_type):
-         if self._methods.has_key(type):
-            self._methods_sub(methods, self._methods[type])
-      return methods
-
-   def _methods_sub(cls, dest, source):
-     for key, val in source.items():
-       if type(val) == DictType:
-         if not dest.has_key(key):
-           dest[key] = {}
-         cls._methods_sub(dest[key], val)
-       else:
-         dest[key] = val
-   _methods_sub = classmethod(_methods_sub)
+      return self.methods[self.data.pixel_type]
 
    def methods_flat_category(cls, category, pixel_type=None):
-      methods = {}
-      for type in (ALL, pixel_type):
-         if cls._methods.has_key(type):
-            cls._methods_sub(methods, cls._methods[type])
+      methods = cls.methods[pixel_type]
       if methods.has_key(category):
          return cls._methods_flatten(methods[category])
       else:
@@ -227,6 +215,7 @@ class ImageBase:
    _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
+      """Loads an image from disk.  Currently only TIFF images are supported."""
       return load_image(filename, compression)
    load_image = staticmethod(load_image)
 
@@ -238,7 +227,11 @@ class ImageBase:
       self._display = _display
 
    def display(self):
-      "Displays the image in its own window."
+      """Displays the image in its own window.  (See `Using the Gamera GUI`__).
+
+.. __: gui.html
+
+.. image:: images/display.png"""
       gui = config.options.__.gui
       if gui:
          if self._display:
@@ -251,6 +244,18 @@ class ImageBase:
       return self._display
 
    def display_ccs(self):
+      """Displays the image in its own window.  (See `Using the Gamera GUI`__).
+Each connected component
+is assigned to one of eight colors.  This display can be used to see how
+connected component analysis performs on a given image.  Uses color_ccs_ under
+the hood.
+
+.. note: Connected component analysis must already be performed on the image
+   (using cc_analysis_, for example) in order for this to work.
+
+.. __: gui.html
+
+.. image:: images/display_ccs.png"""
       gui = config.options.__.gui
       if gui:
          if self._display:
@@ -262,37 +267,10 @@ class ImageBase:
       self.last_display = "normal"
       return self._display
 
-   # Displays the image in its own window, coloring the connected-
-   # component labels
-   def display_cc(self, cc):
-      """Displays the image in its own window, coloring the connected
-      components."""
-      gui = config.options.__.gui
-      # If the last thing displayed was something other than a cc
-      # do a normal display to clear and refresh the window
-      if self.last_display != "cc" or not gui or not self._display:
-         self.display()
-      # If the last thing displayed was a cc, clear only those ccs
-      # This is much faster than clearing the whole image
-      if self.last_display == "cc":
-         for c in self.cc:
-            self._display.clear_highlight_cc(c)
-      if not util.is_sequence(cc):
-         cc = [cc]
-      self.cc = []
-      for c in cc:
-         if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c)
-            self.cc.append(c)
-      # This will adjust the scroll bars so the cc will be visible
-      self._display.focus(self.cc)
-      self.last_display = "cc"
-
-   def display_children(self):
-      if hasattr(self, 'children_images') and self.children_images != []:
-         display_multi(self.children_images)
-
    def display_false_color(self):
+      """Displays the image using false coloring.  (See false_color_).
+
+.. image:: images/display_false_color.png"""
       gui = config.options.__.gui
       if gui:
          if self._display:
@@ -305,10 +283,28 @@ class ImageBase:
       return self._display
 
    def unclassify(self):
+      """Sets the image back to an UNCLASSIFIED state.  Use this
+when you are not longer sure of the identity of the image and you
+want an automatic classifier to reclassify."""
       self.id_name = []
       self.classification_state = UNCLASSIFIED
 
    def classify_manual(self, id_name):
+      """Classifies the image as the value *id_name* and sets the state
+to MANUAL.  Use this method when an end user has classified this glyph.
+
+*id_name*
+  Can come in a two of forms:
+
+    **string**
+       image is classified using the given ``.``-delimited class name.
+    **list of tuples**
+       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
+
+       *confidence*
+         A value in range (0, 1), where 0 is uncertain and 1 is certain.
+       *class_name*
+         A ``.``-delimited class name."""
       if type(id_name) == StringType:
          id_name = [(1.0, id_name)]
       elif type(id_name) == ListType:
@@ -319,6 +315,21 @@ class ImageBase:
       self.classification_state = MANUAL
 
    def classify_automatic(self, id_name):
+      """Classifies the image as the value *id_name* and sets the state
+to AUTOMATIC.  Use this method when an automatic classifier has classified this glyph.
+
+*id_name*
+  Can come in a two of forms:
+
+    **string**
+       image is classified using the given ``.``-delimited class name.
+    **list of tuples**
+       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
+
+       *confidence*
+         A value in range (0, 1), where 0 is uncertain and 1 is certain.
+       *class_name*
+         A ``.``-delimited class name."""
       if type(id_name) == StringType:
          id_name = [(0.0, id_name)]
       elif type(id_name) == ListType:
@@ -329,6 +340,21 @@ class ImageBase:
       self.classification_state = AUTOMATIC
 
    def classify_heuristic(self, id_name):
+      """Classifies the image as the value *id_name* and sets the state
+to AUTOMATIC.  Use this method when a heuristic process has classified this glyph.
+
+*id_name*
+  Can come in a two of forms:
+
+    **string**
+       image is classified using the given ``.``-delimited class name.
+    **list of tuples**
+       A list of tuples where each tuple is the pair (*confidence*, *class_name*).
+
+       *confidence*
+         A value in range (0, 1), where 0 is uncertain and 1 is certain.
+       *class_name*
+         A ``.``-delimited class name."""
       if type(id_name) == StringType:
          id_name = [(0.5, id_name)]
       elif type(id_name) == ListType:
@@ -420,12 +446,18 @@ class ImageBase:
    get_feature_functions = classmethod(get_feature_functions)
 
    def to_xml(self, stream=None):
+      """Returns a string containing the Gamera XML representation of the image.
+(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
+"""
       import gamera_xml
-      return gamera_xml.WriteXML(glyphs=self).write_stream(stream)
+      return gamera_xml.WriteXML(glyphs=[self]).write_stream(stream)
 
    def to_xml_filename(self, filename):
+      """Saves the Gamera XML representation of the image to the given *filename*.
+(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
+"""
       import gamera_xml
-      return gamera_xml.WriteXML(glyphs=self).write_filename(filename)
+      return gamera_xml.WriteXML(glyphs=[self]).write_filename(filename)
 
    def set_property(self, name, value):
       self.property[name] = value
@@ -497,43 +529,37 @@ def _init_gamera():
    if not _gamera_initialised:
       import plugin, gamera_xml
       config.parse_options()
-      # Create the default functions for the menu
+      # Create the default functions for the menupl
       for method in (
          plugin.PluginFactory(
-            "load_image", None, "File", plugin.ImageType([], "image"),
-            plugin.ImageType([ALL]), (plugin.FileOpen("filename"),)),
+            "load_image", "File", plugin.ImageType(ALL, "image"),
+            plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
          plugin.PluginFactory(
-            "display", None, "Display", None, plugin.ImageType([ALL]), None),
+            "display", "Displaying", None, plugin.ImageType(ALL), None),
          plugin.PluginFactory(
-            "display_children", None, "Display", None, plugin.ImageType([ALL]),
+            "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
             None),
          plugin.PluginFactory(
-            "display_ccs", None, "Display", None, plugin.ImageType([ONEBIT]),
+            "display_false_color", "Displaying", None, plugin.ImageType([GREYSCALE, FLOAT]),
             None),
          plugin.PluginFactory(
-            "display_cc", None, "Display", None, plugin.ImageType([ONEBIT]),
-            plugin.ImageType([ONEBIT], "cc")),
+            "classify_manual", "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
          plugin.PluginFactory(
-            "display_false_color", None, "Display", None, plugin.ImageType([GREYSCALE, FLOAT]),
-            None),
+            "classify_heuristic", "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
          plugin.PluginFactory(
-            "classify_manual", None, "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.String("id")),
+            "classify_automatic", "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
          plugin.PluginFactory(
-            "classify_heuristic", None, "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.String("id")),
-         plugin.PluginFactory(
-            "classify_automatic", None, "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.String("id")),
-         plugin.PluginFactory(
-            "unclassify", None, "Classification", None,
+            "unclassify", "Classification", None,
             plugin.ImageType([ONEBIT]), None),
          plugin.PluginFactory(
-            "to_xml", None, "XML", plugin.String('xml'),
+            "to_xml", "XML", plugin.String('xml'),
             plugin.ImageType([ONEBIT]), None),
          plugin.PluginFactory(
-            "to_xml_filename", None, "XML", None, plugin.ImageType([ONEBIT]),
-            (plugin.FileSave("filename", extension=gamera_xml.extensions),))
+            "to_xml_filename", "XML", None, plugin.ImageType([ONEBIT]),
+            plugin.Args([plugin.FileSave("filename", extension=gamera_xml.extensions)]))
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)

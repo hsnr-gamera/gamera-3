@@ -1,0 +1,41 @@
+<!-- DTD for gamera glyph database files 
+  11/18/02 Michael Droettboom
+-->
+
+<!ELEMENT gamera-database (symbols*,glyphs*,groups*)>
+<!ATTLIST gamera-database version CDATA #REQUIRED>
+
+<!ELEMENT symbols (symbol*)>
+
+<!ELEMENT symbol EMPTY>
+<!ATTLIST symbol name CDATA #REQUIRED>
+
+<!ELEMENT glyphs (glyph*)>
+
+<!ELEMENT groups (group*)>
+
+<!ELEMENT group (glyph*)>
+<!ATTLIST group id CDATA #REQUIRED>
+
+<!ELEMENT glyph (ids,data,features?)>
+<!ATTLIST glyph uly CDATA #REQUIRED>
+<!ATTLIST glyph ulx CDATA #REQUIRED>
+<!ATTLIST glyph nrows CDATA #REQUIRED>
+<!ATTLIST glyph ncols CDATA #REQUIRED>
+
+<!ELEMENT ids (id*)>
+<!ATTLIST ids state 
+  (UNCLASSIFIED|HEURISTIC|AUTOMATIC|MANUAL) "UNCLASSIFIED">
+
+<!ELEMENT id EMPTY>
+<!ATTLIST id name CDATA "UNKNOWN">
+<!ATTLIST id confidence CDATA "1.0">
+
+<!ELEMENT data (#PCDATA)>
+
+<!ELEMENT features (feature*)>
+<!ATTLIST features scaling CDATA "1.0">
+
+<!ELEMENT feature (#PCDATA)>
+<!ATTLIST feature name CDATA #REQUIRED>
+

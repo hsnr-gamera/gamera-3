@@ -25,39 +25,76 @@ import gamera.config
 import _image_utilities 
 
 class image_copy(PluginFunction):
-    """Copies an image, with all of its underlying data."""
+    """Copies an image along with all of its underlying data.  Since the data is
+copied, changes to the new image do not affect the original image.
+
+*storage_format*
+  specifies the compression type for the returned copy:
+
+  DENSE (0)
+    no compression
+  RLE (1)
+    run-length encoding compression"""
     category = "Utility"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    args = Args([Choice("storage format", ["DENSE", "RLE"])])
+    self_type = ImageType(ALL)
+    return_type = ImageType(ALL)
+    args = Args([Choice("storage_format", ["DENSE", "RLE"])])
     def __call__(image, storage_format = 0):
         return _image_utilities.image_copy(image, storage_format)
     __call__ = staticmethod(__call__)
 
 class resize(PluginFunction):
-    """Copies and resizes an image. In addition to size the type of
-    interpolation can be specified to allow tradeoffs between speed
-    and quality."""
+    """Returns a resized copy of an image. In addition to size, the type of
+interpolation can be specified, with a tradeoff between speed
+and quality.
+
+If you need to maintain the aspect ratio of the original image,
+consider using scale_ instead.
+
+*nrows*
+   The height of the resulting image.
+*ncols*
+   The width of the resulting image.
+*interp_type* [None|Linear|Spline]
+   The type of interpolation used to resize the image.  Each option is
+   progressively higher quality, yet slower.
+"""
     category = "Utility"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType(ALL)
     args= Args([Int("nrows"), Int("ncols"),
-                Choice("Interpolation Type", ["None", "Linear", "Spline"])])
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+                Choice("interp_type", ["None", "Linear", "Spline"])])
+    return_type = ImageType(ALL)
+    doc_examples = [(RGB, 96, 32, 3)]
 
 class scale(PluginFunction):
-    """Copies and scales an image. In addition to size the type of
-    interpolation can be specified to allow tradeoffs between speed
-    and quality."""
+    """Returns a scaled copy of the image. In addition to scale, the type of
+interpolation can be specified, with a tradeoff between speed
+and quality.
+
+If you need to change the aspect ratio of the original image,
+consider using resize_ instead.
+
+*scale*
+   A scaling factor.  Values greater than 1 will result in a larger image.
+   Values less than 1 will result in a smaller image.
+*interp_type* [None|Linear|Spline]
+   The type of interpolation used to resize the image.  Each option is
+   progressively higher quality, yet slower.
+"""
     category = "Utility"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType(ALL)
     args= Args([Real("scaling"),
-                Choice("Interpolation Type", ["None", "Linear", "Spline"])])
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+                Choice("interp_type", ["None", "Linear", "Spline"])])
+    return_type = ImageType(ALL)
+    doc_examples = [(RGB, 0.5, 3), (RGB, 2.0, 3)]
 
 class histogram(PluginFunction):
-    """Compute the histogram of an image. The return type is a
-    Python array of doubles. The values are percentages. If a
-    gui is being used the histogram is displayed."""
+    """Compute the histogram of the pixel values in the given image.
+Returns a Python array of doubles, with each value being a percentage.
+
+If the GUI is being used, the histogram is displayed.
+
+.. image:: images/histogram.png"""
     category = "Analysis"
     self_type = ImageType([GREYSCALE, GREY16])
     return_type = FloatVector()
@@ -70,26 +107,36 @@ class histogram(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class union_images(PluginFunction):
-    category = "Combine"
+    """Returns an image that is the union of the given list of connected components."""
+    category = "Utility/Combine"
     self_type = None
     args = Args([ImageList('list_of_images')])
     return_type = ImageType([ONEBIT])
 
 class projection_rows(PluginFunction):
-    """Compute the projections of an image.  The computes the
-    number of pixels in each row."""
+    """Compute the horizontal projections of an image.  This computes the
+number of pixels in each row."""
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     return_type = IntVector()
 
 class projection_cols(PluginFunction):
-    """Compute the projections of an image.  The computes the
-    number of pixels in each row."""
+    """Compute the vertical projections of an image.  This computes the
+number of pixels in each column."""
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     return_type = IntVector()
 
 class projections(PluginFunction):
+    """Computes the projections in both the *row*- and *column*- directions.
+This is returned as a tuple (*rows*, *columns*), where each element is an
+``IntVector`` of projections.
+(Equivalent to ``(image.projections_rows(), image.projections_cols())``).
+
+If the GUI is being used, the result is displayed in a window:
+
+.. image:: images/projections.png
+"""
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     return_type = Class()
@@ -104,26 +151,31 @@ class projections(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class fill_white(PluginFunction):
+    """Fills the entire image with white."""
     category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 
 class invert(PluginFunction):
+    """Inverts the image."""
     category = "Draw"
-    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
+    doc_examples = [(RGB,), (GREYSCALE,), (ONEBIT,)]
 
 class clip_image(PluginFunction):
-    """Crops a subimage down so it only includes the intersection of
-    it and another subimage."""
+    """Crops an image so that the bounding box includes only the intersection of
+it and another image.  Returns a zero-sized image if the two images do
+not intersect."""
     category = "Utility"
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT], "other"))
+    return_type = ImageType(ALL)
+    self_type = ImageType(ALL)
+    args = Args(ImageType(ALL, "other"))
 
 class mask(PluginFunction):
-    """Masks an image using the given ONEBIT image"""
-    category = "Combine"
-    return_type = ImageType([GREYSCALE, GREY16, RGB, FLOAT])
-    self_type = ImageType([GREYSCALE, GREY16, RGB, FLOAT])
+    """Masks an image using the given ONEBIT image.  Parts of the ONEBIT
+image that are white will be changed to white in the resulting image."""
+    category = "Utility/Combine"
+    return_type = ImageType([GREYSCALE, RGB])
+    self_type = ImageType([GREYSCALE, RGB])
     args = Args(ImageType([ONEBIT], "mask"))
 
 class UtilModule(PluginModule):
@@ -135,5 +187,6 @@ class UtilModule(PluginModule):
                  projections, fill_white, invert, clip_image, mask]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
-
 module = UtilModule()
+
+union_images = union_images()

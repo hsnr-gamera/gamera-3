@@ -151,13 +151,14 @@ class WriteXML:
       word_wrap(stream, '<data>', indent)
       word_wrap(stream, glyph.to_rle(), indent+1)
       word_wrap(stream, '</data>', indent)
-      if len(glyph.feature_functions):
+      feature_functions = glyph.feature_functions[0]
+      if len(feature_functions):
          word_wrap(stream,
                    '<features scaling="%s">' % str(glyph.scaling),
                    indent)
          indent += 1
          feature_no = 0
-         for name, function in glyph.feature_functions:
+         for name, function in feature_functions:
             word_wrap(stream,
                       '<feature name="%s">' % name,
                       indent)

@@ -1,0 +1,74 @@
+===========
+Image types
+===========
+
+There are a number of different image types in Gamera that serve
+different purposes.  Fortunately, they all share a common interface,
+which allows many operations on images to be compiled for different
+image types from the same source code using C++ templates.  This is
+why *all* Gamera plugin methods are templatized (see `Writing Gamera
+Plugins`__).
+
+.. __: writing_plugins.html
+
+Image types are specified on two axes: 1] the type of pixels the
+contain, and 2] the storage type:
+
+Pixel types
+===========
+
+The pixels in an image can be one of the following types:
+
+   ``RGB``
+	24-bit color pixels (8-bits per pixel),
+	representing 2 ^ 24 (16,777,216) different colors.
+
+   ``GREYSCALE``
+        8-bit greyscale, representing 256 different levels
+        of grey.
+
+   ``GREY16``
+        16-bit greyscale, representing 65,536 different levels of
+        grey.
+
+   ``ONEBIT``
+	For black-and-white images.  The underlying representation is
+	actually 16 bits-per-pixel, since `connected component
+	labelling`__ stores information with each pixel.  This seems
+	like wasted space, but since connected component labelling is
+	so common in Gamera, it more often is a space savings from the
+	fact that the image data can be "shared."
+
+   ``FLOAT``
+        32-bit floating point greyscale.  This is useful for images
+        that need a really wide dynamic range.
+
+   .. warning:: Unfortunately, at this time ``FLOAT`` images can not be saved
+      or loaded.
+
+   .. note:: When ``FLOAT`` images are displayed in the GUI, the output is automatically
+      "normalized" so that the total range in the image is equal to the
+      range of brightnesses your monitor can display.
+
+.. __: plugins.html#cc_analysis
+
+Storage types
+=============
+
+Gamera has two ways of storing the image data in memory behind the scenes:
+
+   ``DENSE``
+	Uncompressed.  The image data is a contiguous chunk of memory
+	that is addressed in row-major order (left-to-right,
+	top-to-bottom).
+
+   ``RLE``
+	Run-length encoded.  For certain kinds of images,
+	run-length-encoding can be a performance improvement since
+	less data needs to be transferred between main memory and the
+	CPU.
+
+.. warning:: At present, ``RLE`` is only available for ``ONEBIT`` images.
+
+.. note:: Any performance improvement should be justified only
+   by profiling on real-world data

@@ -1,4 +1,25 @@
 #!/usr/bin/env python
+
+# vi:set tabsize=3:
+#
+# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
+#                          and Karl MacMillan
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
@@ -140,14 +161,16 @@ else:
                   "Please ensure that Python 2.2 (or later) and wxPython 2.4.0" +
                   "(or later) are installed before proceeding.")
 
+lib_path = os.path.join(get_python_lib(), 'gamera')
+
 setup(name = "gamera", version="2.1.1",
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "mdboom@jhu.edu; karlmac@jhu.edu",
       ext_modules = extensions,
       description = description,
-      packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits'],
-      data_files=[]
+      packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
+      data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))]
 #('include/gamera', glob.glob("include/*.hpp")),
 #                  ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
 #                  ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),
@@ -157,12 +180,3 @@ setup(name = "gamera", version="2.1.1",
 #                  (scripts_directory_name, scripts)]
       )
 
-##########################################
-# generate the non-plugin help pages
-# This needs to be done last since it requires a built system
-if 'build' in sys.argv:
-   # This is where things just got built
-   sys.path.append("build/lib.%s-%s/gamera" %
-                   (get_platform(), sys.version[0:3]))
-   import generate_help
-   generate_help.generate_help()

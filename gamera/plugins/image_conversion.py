@@ -20,22 +20,31 @@
 from gamera.plugin import *
 
 class to_rgb(PluginFunction):
+    """Converts the given image to an RGB image."""
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
     return_type = ImageType([RGB], "rgb")
 
 class to_greyscale(PluginFunction):
+    """Converts the given image to a GREYSCALE image."""
     self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB])
     return_type = ImageType([GREYSCALE], "greyscale")
+    doc_examples = [(RGB,)]
 
 class to_grey16(PluginFunction):
+    """Converts the given image to a GREY16 image."""
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
     return_type = ImageType([GREY16], "grey16")
 
 class to_float(PluginFunction):
+    """Converts the given image to a FLOAT image."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     return_type = ImageType([FLOAT], "float")
 
 class to_onebit(PluginFunction):
+    """Converts the given image to a ONEBIT image.  Uses the
+otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
+see the Thresholding_ category.
+"""
     pure_python = True
     self_type = ImageType([FLOAT, GREY16, RGB])
     return_type = ImageType([ONEBIT], "onebit")
@@ -43,6 +52,7 @@ class to_onebit(PluginFunction):
         image = self.to_greyscale()
         return image.otsu_threshold(storage_format)
     __call__ = staticmethod(__call__)
+    doc_examples = [(RGB,)]
 to_onebit_twostep = to_onebit
 
 class to_onebit(PluginFunction):

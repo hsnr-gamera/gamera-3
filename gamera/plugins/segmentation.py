@@ -20,11 +20,33 @@ from gamera.plugin import *
 import _segmentation
 
 class cc_analysis(PluginFunction):
+    """Performs connected component analysis on the image.
+
+This algorithm assumes 8-connected components, meaning any two pixels are
+considered "connected" if they are adjacent in any direction, including
+diagonally.
+
+The original image will have all of it's pixels "labeled" with a number
+representing each connected component.  This is so the connected components
+can share data with their source image and makes things much more efficient.
+
+Returns a list of ccs found in the image.  Since all the CC's share the same
+data with the original image, changing the CC's will affect the original.  If
+you do not want this behavior, use the image_copy_ function on each of the CCs::
+
+   ccs = [x.image_copy() for x in ccs]
+
+"""
     self_type = ImageType([ONEBIT])
     return_type = ImageList("ccs")
+    doc_examples = [(ONEBIT,)]
 
 class cc_and_cluster(PluginFunction):
-    pure_python = 1
+    """Performs connected component analysis using cc_analysis_ and then
+clusters the CC's according to their similarity.
+
+TODO: We need some more detailed documentation here."""
+    pure_python = True
     self_type = ImageType([ONEBIT])
     args = Args([Float('ratio', default = 1.0), Int('distance', default=2)])
     return_type = ImageList("ccs")
@@ -35,24 +57,40 @@ class cc_and_cluster(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class splitx(PluginFunction):
+    """Splits an image vertically.
+
+The split point is determined automatically
+by finding a valley in the projections near the center of the image."""
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
     return_type = ImageList("splits")
+    doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splitx(self, center)
+    __call__ = staticmethod(__call__)
 
 class splitx_max(PluginFunction):
+    """Splits an image vertically.
+
+The split point is determined automatically
+by finding a peak in the projections near the center of the image."""
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
     return_type = ImageList("splits")
+    doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splitx_max(self, center)
     __call__ = staticmethod(__call__)
 
 class splity(PluginFunction):
+    """Splits an image horizontally.
+
+The split point is determined automatically
+by finding a valley in the projections near the center of the image."""
     self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
     return_type = ImageList("splits")
+    doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splity(self, center)
     __call__ = staticmethod(__call__)
@@ -61,14 +99,23 @@ class splitx_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
+    doc_examples = [(ONEBIT,)]
     
 class splitx_left(splitx_base):
+    """Splits an image vertically.
+
+The split point is determined automatically
+by finding a valley in the projections near the left of the image."""
     _center = 0.25
     def __call__(self):
         return self.splitx(0.25)
     __call__ = staticmethod(__call__)
 
 class splitx_right(splitx_base):
+    """Splits an image vertically.
+
+The split point is determined automatically
+by finding a valley in the projections near the right of the image."""
     _center = 0.75
     def __call__(self):
         return self.splitx(0.75)
@@ -78,14 +125,23 @@ class splity_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
+    doc_examples = [(ONEBIT,)]
     
 class splity_top(splity_base):
+    """Splits an image horizontally.
+
+The split point is determined automatically
+by finding a valley in the projections near the top of the image."""
     _center = 0.25
     def __call__(self):
         return self.splity(0.25)
     __call__ = staticmethod(__call__)
 
 class splity_bottom(splity_base):
+    """Splits an image horizontally.
+
+The split point is determined automatically
+by finding a valley in the projections near the bottom of the image."""
     _center = 0.75
     def __call__(self):
         return self.splity(0.75)

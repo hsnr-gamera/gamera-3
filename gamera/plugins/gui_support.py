@@ -32,6 +32,17 @@ class to_buffer(PluginFunction):
     args = Args(Class("Buffer"))
 
 class color_ccs(PluginFunction):
+    """Returns an RGB image where each connected component of the
+image is colored one of eight different colors.  This function can
+be used to verify that ``cc_analysis`` is working correctly for your
+image.
+
+.. note: Connected component analysis must already be performed on the image
+   (using cc_analysis_, for example) in order for this to work.
+
+**Example 1:**
+
+.. image:: images/color_ccs.png"""
     category = "Color"
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])

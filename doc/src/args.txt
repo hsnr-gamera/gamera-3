@@ -1,0 +1,343 @@
+===========================================================
+Specifying arguments for plugin generation and dialog boxes
+===========================================================
+
+Introduction
+============
+
+Gamera includes a rich way to specify what arguments a plugin method
+can take.  This serves two main purposes:
+
+1. To generate the code necessary to call a C++ function from Python.
+
+2. To generate basic dialogs that help the user call the method from the
+   GUI.  (See example below.)
+
+.. image:: images/erode_dilate_dialog.png
+
+This argument interface can also be used to make Wizard-like
+interfaces (a sequence of dialogs) to help the user navigate through
+complex processes.  (See `Writing Wizards`_).
+
+All of the classes necessary to make this happen are in
+``gamera/args.py``, which is included in ``gamera/plugin.py``.
+
+This document will first describe the common case of using ``args.py``
+for  `specifying the type metadata of a plugin method`_.  Then
+`advanced usage`_ of ``args.py`` for other
+custom purposes, and `writing wizards`_ is covered.
+
+Specifying the type metadata of a plugin method
+===============================================
+
+Specifying the arguments of a plugin method is done by setting the
+``args`` member variable of a subclass of the ``PluginFunction``
+metadata class.  This is discussed in `Writing Gamera Plugins`__.
+
+.. __: writing_plugins.html
+
+The ``args`` member must be an instance of the ``Args`` class.  The
+``Args`` class is constructed as:
+
+    Args(*list*)
+
+(There are more optional arguments, but they are only used for
+`writing wizards`_).
+
+The *list* argument is a list of ``Arg`` instances, in the order the
+arguments appear in the function call.  For instance, to call a C++
+function with the following signature::
+
+  Image* resize_copy(T& image, int nrows, int ncols, int resize_quality);
+
+the ``Args`` constructor call would look like::
+
+  args = Args([Int("nrows", default=32), Int("ncols", default=32),
+               Choice("Interpolation Type", ["None", "Linear", "Spline"])])
+
+As you can see, Gamera's system is a much richer type information
+system than C, including things such as ranges, enumerations and default values.
+
+The same type objects are also used for the ``self_type`` and
+``return_type`` member variables in the plugin method metadata.
+
+The argument types
+include Int_, Real_, String_, Class_, ImageType_, Choice_, FileOpen_,
+FileSave_, Directory_, Check_, Region_, RegionMap_,
+ImageInfo_, FloatVector_, IntVector_, ImageList_, Info_ and Radio_.  Each of
+these is discussed in greater detail below.  
+
+This dialog box shows how the
+most common argument types are presented in the GUI:
+
+.. image:: images/arguments_dialog.png
+
+Incidentally, it was produced by the following code::
+
+   Args([Int("Int", range=(0, 5), default=1),
+         Real("Real", range=(0, 1), default=0.5),
+         String("String", default='Hello World'),
+         Class("Class", dict),
+         ImageType(ALL, "ImageType"),
+         FileOpen("FileOpen", "file.txt", "*.txt"),
+         FileSave("FileSave", "file.tiff", "*.tiff;*.tif"),
+         Directory("Directory"),
+         Radio("Radio 1", "Tastes great"),
+         Radio("Radio 2", "Less filling"),
+         Check("Check", "Power", default=True),
+         Info("Info: This is just for information!")
+         ]
+        )  
+
+Int
+---
+
+**Int** (string *name*, tuple *range*, int *default* = ``0``)
+
+A signed integers argument.  Corresponds to the C ``int`` type.
+
+Optionally, a *range* can be given as the
+tuple (*lower_bound*, *upper_bound*), and a *default* value.
+
+In the GUI, this is presented as a spin button.
+
+Real
+----
+
+**Real** (string *name*, tuple *range*, int *default* = ``0.0``)
+
+A real (floating-point) argument.   Corresponds to the C ``double`` type.
+
+Optionally, a *range* can be given as the
+tuple (*lower_bound*, *upper_bound*), and a *default* value.
+
+String
+------
+
+**String** (string *name*, int *default* = ``""``)
+
+A string argument.  Corresponds to the C ``char *`` or C++ ``std::string`` type.
+
+Optionally, a *default* value can be given.
+
+Class
+-----
+
+**Class** (string *name*, PyObject *klass*, bool *list_of* = ``False``)
+
+Class is a general purpose argument type.  Corresponds to the C
+``PyObject *`` type.
+
+The given *klass* is any Python type (built-in or otherwise) that is to be accepted as an
+argument.
+
+For example, to accept any Python dictionary, use::
+
+  Class("dict", dict)
+
+If the optional *list_of* is ``True``, then this argument refers to a
+Python list, in which all of its elements are instances of *klass*.
+
+``Class`` arguments are displayed in the GUI as a drop-down list of
+instances of that class.
+
+ImageType
+---------
+
+**ImageType** (list *pixel_types*, string *name*, bool *list_of* = ``False``)
+
+A Gamera ``Image``.  Corresponds to the subclasses of ``gamera::Image &`` on
+the C++ side.
+
+The accepted pixel types of the image are restricted to the given list
+of pixel types.  For example to accept only GreyScale and OneBit
+images::
+
+  ImageType([GREYSCALE, ONEBIT])
+
+For convenience you can use the constant ``ALL``, which is the list of
+all pixel types.
+
+If the optional *list_of* is ``True``, this argument refers to a
+Python list of Gamera Images, and on the C++ side will be passed in as
+a ``std::vector<gamera::Image*>``.
+
+ImageList
+---------
+
+**ImageList** (string *name*)
+
+``ImageList`` is a convenience alias for ``ImageType(ALL,`` *name* ``, list_of=True)``.
+
+Choice
+------
+
+**Choice** (string *name*, list *choices* = ``[]``, int *default* = ``0``)
+
+An enumeration.  Corresponds to the C type ``enum`` or ``int``.
+
+When an integer value is really logically a set of options, ``Choice``
+should be used so the user is presented with a drop-down list of named
+options.  For example, from the ``resize`` plugin method::
+
+    args = Args([Int("nrows"), Int("ncols"),
+                 Choice("interp_type", ["None", "Linear", "Spline"])])
+
+FileOpen
+--------
+
+**FileOpen** (string *name*, string *default* = ``""``, *extension* =
+  ``"*.*"``)
+
+A filename for opening.  Corresponds to the C ``char *`` or C++
+``std::string`` type.
+
+In the GUI, this is presented as a text box with a browse button.
+When the browse button is pressed, a file selection dialog is presented.
+
+*extensions* can be specified to limit the file types that are
+displayed in the file selection dialog.  Extensions is a string with
+one or more wildcard expressions separated by semicolons.  For
+example, to display TIFF and PNG images::
+
+   *.tiff;*.tif;*.TIF;*.png
+
+Since ``FileOpen`` is used exclusively for opening files, the GUI
+ensures that the file already exists before passing the value along to
+the underlying plugin method.
+
+FileSave
+--------
+
+**FileSave** (string *name*, string *default* = ``""``, *extension* =
+  ``"*.*"``)
+
+The counterpart to FileOpen_, except for saving files.
+
+If the file already exists, the user is presented with an "Are you
+sure?" dialog.
+
+Directory
+---------
+
+**Directory** (string *name*, string *default* = ``""``)
+
+A directory name.  Corresponds to the C ``char *`` or C++
+``std::string`` type.
+
+The GUI ensures that the directory exists before passing the path name
+to the underlying plugin method.
+
+Check
+-----
+
+**Check** (string *name*, string *check_box* = ``""``, bool *default* = ``False``)
+
+A boolean value.  Corresponds to the C ``int`` or C++ ``bool``.
+
+In the GUI, this is presented as a check box.
+
+*check_box* is an additional piece of text that will be placed to the
+right of the check box in the GUI.
+
+Region
+------
+
+**Region** (string *name*)
+
+A Gamera ``Region`` object.  Corresponds to ``gamera::Region &`` on
+the C++ side.
+
+RegionMap
+---------
+
+**RegionMap** (string *name*)
+
+A Gamera ``RegionMap`` object.  Corresponds to ``gamera::RegionMap &`` on
+the C++ side.
+
+ImageInfo
+---------
+
+**ImageInfo** (string *name*)
+
+A Gamera ``ImageInfo`` object.  Corresponds to ``gamera::ImageInfo &`` on
+the C++ side.
+
+FloatVector
+-----------
+
+**FloatVector** (string *name*, int *length* = ``-1``)
+
+A vector of floating-point values.  On the Python side this is an
+``array('d')`` object.  On the C++ side, this is a
+``std::vector<double> &``.
+
+The optional *length* argument should be given when the length of the
+argument is fixed.
+
+IntVector
+---------
+
+**IngVector** (string *name*, int *length* = ``-1``)
+
+A vector of integer values.  On the Python side this is an
+``array('i')`` object.  On the C++ side, this is a
+``std::vector<int> &``.
+
+The optional *length* argument should be given when the length of the
+argument is fixed.
+
+
+Advanced usage
+==============
+
+We've just seen how the ``args.py`` classes are used for specifying
+plugin method metadata.  Of course, it can also be used whenever a one-liner
+quick-and-dirty dialog box is needed.  For more complex tasks, you may
+still need to write a dialog box using the underlying wxPython_ toolkit.
+
+.. _wxPython: http://www.wxpython.org
+
+For example, we can create a simple dialog box with code below::
+
+   >>>from gamera.args import *
+   >>>dialog = Args([Int("your favorite number")], name="What is your favorite number?")
+
+The optional *name* argument was used to change the title bar text.
+To display the dialog to the user, we just use the ``.show()``
+method::
+
+   >>>dialog.show()
+
+This displays the following window:
+
+.. image:: images/arguments_example.png
+
+When the user clicks **Ok**, the results are returned in a list::
+
+   [6]
+
+If the user had clicked **Cancel**, ``None`` is returned::
+
+   None
+
+Writing Wizards
+===============
+
+Now we'll extend things even further to put a number of these dialog
+boxes together into a wizard.
+
+TODO: But that's for another day... ;)
+
+Info
+----
+
+X
+
+Radio
+-----
+
+**Radio** (string *name*, string *default* = ``""``, *extension* =
+  ``"*.*"``)
+

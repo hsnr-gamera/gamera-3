@@ -33,7 +33,6 @@ doc = os.path.realpath(os.path.join(lib, "doc"))
 sys.path.append(plugins)
 plugins_src = ""
 toolkits = os.path.realpath(os.path.join(lib, "toolkits"))
-doc = os.path.realpath(os.path.join(lib, "doc"))
 test = os.path.realpath(os.path.join(lib, "test"))
 test_results = os.path.realpath(os.path.join(lib, "test/results"))
 
@@ -75,6 +74,7 @@ def import_directory(dir, gl, lo, debug = 1):
       sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0
    first = 1
+   result = []
    for m in modules:
       if m == '__init__':
          continue
@@ -87,6 +87,7 @@ def import_directory(dir, gl, lo, debug = 1):
          display = '[%s %s]' % (m, str(failed))
       else:
          display = m
+         result.append(module)
       if m != modules[-1]:
          display += ", "
       column += len(display)
@@ -98,4 +99,4 @@ def import_directory(dir, gl, lo, debug = 1):
          sys.stdout.flush()
    if debug:
       sys.stdout.write("\n")
-
+   return result

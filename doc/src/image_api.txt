@@ -1,0 +1,477 @@
+========================
+The Gamera C++ Image API
+========================
+
+Introduction
+============
+
+This document describes how to manipulate Gamera images from C++.
+This deals primarily with low-level (pixel-level) operations.
+
+Data model
+==========
+
+Gamera uses a "shared" data model.  This means that
+different "views" are applied to the same "data."  Views may only look
+at a subset of the data, or they may change how the data is presented
+to the programmer. The goal of decoupling the "view" from the "data" is
+to allow a "view" on the data to be a very lightweight object. This
+allows it to be passed by value with little worry about performance. This
+also allows the processing of a portion of an image as if it were an entire
+image.
+
+For example, to create a new image, the programmer must first create
+the data::
+
+   OneBitImageData image_data(50, 50, 0, 0);
+
+Then you can create a view on all of the data::
+
+   OneBitImageView image_view(image_data);
+
+Later, if you want to view only a subset of the data, you can use a
+different overloaded version of the view constructor::
+
+   OneBitImageView subimage_view(image_data, 25, 25, 10, 10);
+
+Memory allocation pitfalls
+--------------------------
+
+Since multiple "views" can use the same "data," one must be very
+careful when deallocating data objects, or there may be views left
+around that "point" to deallocated data.  When using Gamera images in
+Python, the number of views that point to a data object are reference
+counted, so the data object is never deallocated prematurely. However,
+this is not the case in the C++ API, and the programmer must be very
+careful to prevent memory leaks.  The rule of thumb to follow is that the function or object
+that *creates* the data object is *always* responsible for destroying
+it.
+
+Another common mistake is to deallocate all views on some data,
+forgetting to deallocate the data itself.  Since there is no reference
+counting, deallocation of all views does not automatically trigger
+deallocation of the underlying data.  For example::
+
+   OneBitImageData image_data = new OneBitImageData(50, 50, 0, 0);
+   OneBitImageView image_view = new OneBitImageView(*image_data);
+   
+   ...
+
+   delete image_view->data(); // Don't forget to delete the data
+   delete image_view;
+
+Image types
+-----------
+
+You should probably familiarize yourself with different Gamera `image
+types`__ before reading further.
+
+.. __: image_types.html
+
+``ImageData<T>`` objects
+````````````````````````
+
+Data objects are instances of the ``ImageData<T>`` class (in
+``include/image_data.hpp``) where ``T`` is the pixel type.
+If you wish to use run-length encoding to store the data, you can use
+the ``RleImageData<T>`` class.  These classes both have the same
+interface and are completely interchangeable, but will exhibit
+different algorithmic complexities.
+
+There are some typedefs in ``image_types.hpp`` to make creating
+different kinds of image data objects more convenient::
+
+  /*
+    Image Data
+   */
+  typedef ImageData<GreyScalePixel> GreyScaleImageData;
+  typedef ImageData<Grey16Pixel> Grey16ImageData;
+  typedef ImageData<FloatPixel> FloatImageData;
+  typedef ImageData<RGBPixel> RGBImageData;
+  typedef ImageData<OneBitPixel> OneBitImageData;
+  typedef RleImageData<OneBitPixel> OneBitRleImageData;
+
+There are a few different constructors available for data objects::
+
+    ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
+	      size_t page_offset_x = 0);
+    ImageData(const Size& size, size_t page_offset_y = 0,
+	      size_t page_offset_x = 0);
+    ImageData(const Dimensions& dim, size_t page_offset_y = 0,
+	      size_t page_offset_x = 0);
+
+The arguments *page_offset_x* and *page_offset_y* are used to specify
+a logical offset of the data.  For instance, if the image data is from
+part of the page, the upper left corner may not be logically (0, 0).
+This is purely for logical purposes when your system needs to know the
+relative positions of image bounding boxes, and does not affect the
+size of the image data created in any way.
+
+The ``Size`` and ``Dimensions`` classes are simple ways of storing
+sizes and dimensions defined in ``gamera/dimensions.hpp``.
+
+While there are other public members and methods to the ``ImageData``
+class, we do not recommend using any of them unless you really know
+what you're doing.  All of the image data can be accessed much more
+flexibly and conveniently through ``ImageView`` objects.
+
+``ImageView<T>`` objects
+````````````````````````
+
+Views objects are instances of the ``ImageView<T>`` class (in
+``include/image_view.hpp``), where ``T`` is the data object type (a
+templatization of ``ImageData<T>``).  There is also a special version
+of ``ImageView<T>`` for connected components,
+``ConnectedComponent<T>`` defined in
+``include/connected_components.hpp``.  `Connected components`_ are
+discussed below.
+
+As with the data objects, there are some typedefs for convenience::
+
+  /*
+    ImageView
+   */
+  typedef ImageView<GreyScaleImageData> GreyScaleImageView;
+  typedef ImageView<Grey16ImageData> Grey16ImageView;
+  typedef ImageView<FloatImageData> FloatImageView;
+  typedef ImageView<RGBImageData> RGBImageView;
+  typedef ImageView<OneBitImageData> OneBitImageView;
+  typedef ImageView<OneBitRleImageData> OneBitRleImageView;
+
+  /*
+    Connected-components
+   */
+  typedef ConnectedComponent<OneBitImageData> Cc;
+  typedef ConnectedComponent<OneBitRleImageData> RleCc;
+
+There are a number of different ways to construct image views::
+
+  // Creates a view covering all of the data
+  ImageView(T& image_data);
+
+  // Creates a view with a specified bounding box
+  ImageView(T& image_data, size_t offset_y,
+	    size_t offset_x, size_t nrows, size_t ncols,
+	    bool do_range_check = true);
+  ImageView(T& image_data, const Point& upper_left,
+	    const Point& lower_right, bool do_range_check = true)
+  ImageView(T& image_data, const Point& upper_left,
+	    const Size& size, bool do_range_check = true)
+  ImageView(T& image_data, const Point& upper_left,
+	    const Dimensions& dim, bool do_range_check = true)
+
+The ``Size``, ``Point`` and ``Dimensions`` classes are simple ways of storing
+sizes and dimensions defined in ``gamera/dimensions.hpp``.
+
+Coordinates for any given bounding boxes are relative
+to the ``page_offset_x`` and ``page_offset_y`` of the underlying
+data.  Therefore::
+
+   // Create data with an size of (64, 64) and an offset of (32, 32);
+   OneBitImageData image_data(64, 64, 32, 32);
+   // This is a view over all of the data
+   OneBitImageView image_view(image_data, 32, 32, 64, 64);
+   // This raises an exception, since it's out of range for the data
+   OneBitImageView image_view(image_data, 0, 0, 64, 64);
+
+Creating images based on other images
+-------------------------------------
+
+TODO: Write about ``ImageFactory<T>``.
+
+Accessing pixels
+================
+
+One of the goals of the Gamera framework is to make it easy to
+incorporate code from other image processing frameworks as painlessly
+as possible.  Therefore, there are a number of interfaces that can be
+used to access and process the underlying pixel data of an image.
+
+.. note:: Whenever accessing individual pixels, the ``row`` and ``col``
+   given are *not* relative to the offsets of the view or the
+   underlying data.  In other words ``.get(0,0)`` will always return
+   the pixel in the upper-left hand corner of the view.  This makes it
+   easier for algorithms what work on the pixels of a view to ignore
+   the complexity of the "shared" data model.
+
+Different interfaces
+--------------------
+
+The different interfaces for accessing pixels are discussed below:
+
+``get`` and ``set`` methods
+```````````````````````````
+
+This is perhaps the most straightforward way to access the pixels of
+an image.  There are two public methods of ``ImageView``:
+
+   value_type **get** (size_t *row*, size_t *col*)
+   void **set** (size_t *row*, size_t *col*, value_type *value*)
+
+**get** returns the value of the pixel at the given row and column. 
+**set** changes the pixel at the given row and column to the given
+value.
+
+An example using ``get`` / ``set`` over an entire image::
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_get_set(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+    
+    for (size_t r = 0; r < in.nrows(); ++r) {
+      for (size_t c = 0; c < in.ncols(); ++c) {
+	new_view.set(r, c, image.get(r, c) / 2);
+      }
+    }
+
+    return new_view;
+  }
+
+
+C-style 2-dimensional array
+```````````````````````````
+
+An alternative is to use the notation of C-style 2-dimensional
+arrays::
+
+   value = image[row][col];
+   image[row][col] = value;
+
+This interface is provided as a convenience to support the large body
+of legacy code written in this style.  Keep in mind, it is not really
+a 2-diminsional array underneath -- this view is "faked."
+
+An example using the C-style 2-dimensional array interface::
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_c_2d(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+    
+    for (size_t r = 0; r < image.nrows(); ++r) {
+      for (size_t c = 0; c < image.ncols(); ++c) {
+	(*new_view)[r][c] = image[r][c] / 2;
+      }
+    }
+
+    return new_view;
+  }
+
+Iterators
+`````````
+
+The disadvantage of the ``get`` / ``set`` and C-style 2-dimensional
+array interface is that they require a multiply/add per pixel to
+determine the actual memory location of the pixel.  The concept of
+iterators, popularized in the C++ Standard Template Library (STL),
+don't have this shortcoming, since moving from one pixel to the next
+becomes pointer addition under the hood.
+
+Gamera has three kinds of iterators:
+
+1. ``vec_iterator``: a one-dimensional iterator that iterates from the
+   upper left hand corner, left-to-right, top-to-bottom.
+2. ``row_iterator``: Iterates along rows (left-to_right).  Incrementing the iterator
+   moves one row down.  Calling ``begin()`` on a ``row_iterator``,
+   returns a ``col_iterator`` that iterates across the current row.
+3. ``col_iterator``: Iterates along columns (top-to-bottom).
+   Incrementing the iterator moves one column to the right.  Calling
+   ``begin()`` on a ``col_iterator`` returns a ``row_iterator`` that
+   iterates down the current column.
+
+These iterators follow standard STL conventions, which are beyond the
+scope of this document.
+
+Note that you can call ``row_number( )`` or ``col_number( )`` on any
+iterator to obtain the current row and column position of the iterator.
+
+``vec_iterator``
+''''''''''''''''
+
+``vec_iterators`` can be convenient when the operation works one pixel
+at a time and does not need to be aware of any spatial relationships.
+
+An example using ``vec_iterators``::
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_vec_iterator(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+
+    typename T::const_vec_iterator i = image.vec_begin();
+    typename view_type::vec_iterator j = new_view->vec_begin();
+
+    for ( ; i != image.vec_end(); ++i, ++j) {
+      *j = *i / 2;
+    }
+
+    return new_view;
+  }
+
+``row_iterator`` and ``col_iterator``
+'''''''''''''''''''''''''''''''''''''
+
+Sometimes it is necessary to have nested loops, one for rows and one
+for columns.
+
+The following is an example using ``row_iterators`` and
+``col_iterators``::
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_row_col_iterator(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+
+    typedef typename T::const_row_iterator IteratorI;
+    IteratorI ir = image.row_begin();
+    typedef typename view_type::row_iterator IteratorJ;
+    IteratorJ jr = new_view->row_begin();
+    for ( ; ir != image.row_end(); ++ir, ++jr) {
+      typename IteratorI::iterator ic = ir.begin();
+      typename IteratorJ::iterator jc = jr.begin();
+      for ( ; ic != ir.end(); ++ic, ++jc)
+	*jc = *ic / 2;
+    }
+
+    return new_view;
+  }
+
+The fun thing about ``row_`` and ``col_iterators`` is that they are
+interchangable.  If you wish to iterate through the image in column
+major order instead, you could write::
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_col_row_iterator(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+
+    typedef typename T::const_col_iterator IteratorI;
+    IteratorI ir = image.col_begin();
+    typedef typename view_type::col_iterator IteratorJ;
+    IteratorJ jr = new_view->col_begin();
+    for ( ; ir != image.col_end(); ++ir, ++jr) {
+      typename IteratorI::iterator ic = ir.begin();
+      typename IteratorJ::iterator jc = jr.begin();
+      for ( ; ic != ir.end(); ++ic, ++jc)
+	*jc = *ic / 2;
+    }
+
+    return new_view;
+  }
+
+Of course, that really should be templatized on the iterator type.
+For an example of this, see ``include/plugins/projections.hpp``.
+
+Speed tests
+```````````
+
+The different interfaces are provided primarily to support different
+programming styles.  However, they do not run at the same speed.
+
+The following graph shows the relative speeds of different pixel
+access methods (using the examples above).  These results are largely
+processor and architecture dependent, so take them with a truckload of
+salt.
+
+.. image:: images/pixel_access_runtimes.png
+
+The performance of the 1-dimensional
+iterator is perhaps surprising, since it appears to be the simplest code.  Unfortunately,
+there is a lot of book-keeping that needs to go on behind the scenes
+with the 1-dimensional iterators to make them compatible with
+different storage formats and code from the VIGRA toolkit.  (See
+``gamera/iterators.hpp`` for details).  Hopefully
+this can be resolved in a future release.
+
+The 2-dimensional iterators in row major order (rows in the outer loop) is
+the clear winner.  Since the underlying data is stored row major order,
+accessing it in column major order is a major performance hit, in part
+due to the extra pointer arithmetic and in part due to worse cache performance.
+
+.. note:: Any performance improvement should be justified only
+   by profiling on real-world data
+
+Making generic programming work
+===============================
+
+Everything discussed so far has been completely polymorphic: they
+should work identically on all types of images.  However, where the
+images vary is in the pixel types themselves.  Careful programming
+can keep your algorithms generic against all pixel types, but when
+that is no longer possible, it is also possible to specialize
+(i.e. write a special version of an algorithm for a particular pixel
+type.)
+
+First, let's cover some more details of the various pixel types
+available in Gamera.  They are all defined in ``include/pixel.hpp``
+and more information is available there.  It is also possible to
+change the definitions of the pixel types there and then doing a full
+recompile.
+
+``RGB``
+	RGB pixels are represented by instances of the ``Rgb`` class.
+	By default, each plane is represented by an 8-bit ``unsigned char``
+	The individual RGB planes can be get/set using the ``red``,
+	``green`` and ``blue`` functions.  The values follow the
+	standard hardware conventions: larger values are higher
+	intensity.
+        There are also many utility methods
+	for converting the RGB pixel into other kinds
+	values.  See ``include/pixel.hpp`` for more information.
+	``Rgb`` instances are small enough (3 bytes) that you can safely pass
+	them by value without performance concerns.
+
+``GREYSCALE``
+	GreyScale pixels are 8-bit ``unsigned char`` s in the range 0
+	- 255.  These also
+	follow the hardware convention that larger values are higher
+	intensity (white).
+
+``FLOAT``
+	Float pixels are 32-bit floating-point ``float`` s.  This
+	follows the hardware convention that larger values are higher
+	intensity (white).  Unlike the integral pixel types, there is
+	no set range for the values (which can even be negative.)  For
+	this reason, the Gamera display will always find the lowest
+	and highest values and then normalize the display to match the
+	dynamic range of the display hardware.  Floating point images
+	are most useful to represent non-image data, such as the
+	results of the convolution of two images.
+
+``ONEBIT``
+	OneBit pixels are 16-bit ``unsigned char`` s.  Perhaps
+	confusingly, a value of 0 is white (which is usually
+	``background`` in most document images) and *all other values*
+	are black.  The extra bits of range are used when a connected
+	component analysis is performed.  Each connected component in
+	an image is assigned a ``label`` value, and its pixels are
+	labeled using the value.  Since the directionality of OneBit
+	pixels is different from all other pixel types, care must be
+	taken when writing algorithms that accept OneBit images and
+	other images.
+
+``white``, ``black``, ``is_white``, and ``is_black``
+----------------------------------------------------
+
+X
+
+Accessors
+=========
+
+X
+
+Connected components
+====================
+
+X

@@ -67,18 +67,20 @@ template = Template("""
   [[exec from plugin import *]]
   [[exec from util import get_pixel_type_name]]
 
+  #include \"gameramodule.hpp\"
+  #include \"knnmodule.hpp\"
+
+  [[# include the headers that the module needs #]]
+  [[# This should be included first in order to avoid libpng.h/setjmp.h problems. #]]
+  [[for header in module.cpp_headers]]
+    #include \"[[header]]\"
+  [[end]]
+
   [[# Standard headers used in the plugins #]]
   #include <string>
   #include <stdexcept>
   #include \"Python.h\"
   #include <list>
-  #include \"gameramodule.hpp\"
-  #include \"knnmodule.hpp\"
-
-  [[# include the headers that the module needs #]]
-  [[for header in module.cpp_headers]]
-    #include \"[[header]]\"
-  [[end]]
 
   using namespace Gamera;
   [[for x in module.cpp_namespaces]]

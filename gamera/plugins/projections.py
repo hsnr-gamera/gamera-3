@@ -161,7 +161,7 @@ Return Values:
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     args = Args([Float("minangle", default=-2.5), Float("maxangle", default=2.5), Float("accuracy", default=0)])
-    return_type = FloatVector("rotation angle", "accuracy")
+    return_type = FloatVector("rotation_angle_and_accuracy", 2)
     author = "Christoph Dalitz"
     pure_python = 1
 

@@ -913,6 +913,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       scaling = self.parent.scaling
       cell_padding = grid.cell_padding
       image_list = self.parent.list
+      tmp_dc = wxMemoryDC()
 
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(image_list):
@@ -925,7 +926,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          # Fill the background
          try:
             color = self._colors[classification_state]
-         except:
+         except KeyError:
             color = wxColor(200, 200, 200)
          dc.SetPen(wxTRANSPARENT_PEN)
          if isSelected:
@@ -954,8 +955,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
                scaled_image = sub_image.resize(
-                  int(ceil(sub_image.nrows * scaling)),
-                  int(ceil(sub_image.ncols * scaling)), 0)
+                  int(ceil(sub_height * scaling)),
+                  int(ceil(sub_width * scaling)), 0)
             else:
                # This is the easy case - just scale the image.
                scaled_image = image.resize(height, width, 0)
@@ -977,12 +978,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          wx_image = wxEmptyImage(width, height)
          scaled_image.to_buffer(wx_image.GetDataBuffer())
          bmp = wxBitmapFromImage(wx_image)
-         wx_image.Destroy()
-         del scaled_image
-         del wx_image
+
          # Display centered within the cell
 
-         tmp_dc = wxMemoryDC()
          tmp_dc.SelectObject(bmp)
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function

@@ -168,7 +168,7 @@ By categories
 
 - Draw_
 
-  - draw_bezier_curve_
+  - draw_bezier_
 
   - draw_filled_rect_
 
@@ -378,7 +378,7 @@ canny_edge_image_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classi
 
 **D**
 
-despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_curve_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
+despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
 
 **E**
 
@@ -534,7 +534,7 @@ zernike_moments_
 .. _display_ccs: displaying.html#display-ccs
 .. _display_false_color: displaying.html#display-false-color
 .. _Draw: draw.html#draw
-.. _draw_bezier_curve: draw.html#draw-bezier-curve
+.. _draw_bezier: draw.html#draw-bezier
 .. _draw_filled_rect: draw.html#draw-filled-rect
 .. _draw_hollow_rect: draw.html#draw-hollow-rect
 .. _draw_line: draw.html#draw-line

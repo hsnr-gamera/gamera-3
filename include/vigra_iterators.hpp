@@ -185,7 +185,7 @@ namespace Gamera {
       ret -= s;
       return ret;
     }
-    reference operator*() const {
+    value_type operator*() const {
       return *(x.current_ + y.offset_);
     }
     pointer operator->() const {
@@ -270,7 +270,7 @@ namespace Gamera {
       ret -= s;
       return ret;
     }
-    reference operator*() const {
+    value_type operator*() const {
       return *(x.current_ + y.offset_);
     }
     pointer operator->() const {

@@ -60,8 +60,8 @@ If the GUI is being used, the result is displayed in a window:
 
 class projection_skewed_cols(PluginFunction):
     """Computes all vertical projections of an image skewed by a list of
-angles. As in rotateShear_, angles are measured clockwise and in degrees.
-Thus a rotateShear followed by a projection_cols would be conceptually the
+angles. As in rotate_, angles are measured clockwise and in degrees.
+Thus a rotate followed by a projection_cols would be conceptually the
 same, albeit considerably slower.
 
 This function is overloaded to work both with a single angle and a list
@@ -80,11 +80,11 @@ in the following example:
    proj1 = projlist[0]
    proj2 = projlist[1]
 
-Note that unlike rotateShear_ the image size is not extended. Image regions
+Note that unlike rotate_ the image size is not extended. Image regions
 moved outside the original image size are simply clipped, which restricts
 this method to small angles.
 
-.. _rotateShear: deformations.html#rotateshear
+.. _rotate: deformations.html#rotate
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
@@ -104,11 +104,11 @@ class projection_skewed_rows(PluginFunction):
     """Computes all horizontal projections of an image skewed by a list of
 angles. For more details and an example see projection_skewed_cols_.
 
-Note that unlike rotateShear_ the image size is not extended. Image regions
+Note that unlike rotate_ the image size is not extended. Image regions
 moved outside the original image size are simply clipped, which restricts
 this method to small angles.
 
-.. _rotateShear: deformations.html#rotateshear
+.. _rotate: deformations.html#rotate
 """
     self_type = ImageType([ONEBIT])
     args = Args([FloatVector("Rotation angles")])
@@ -153,12 +153,12 @@ Return Values:
 
 *rotation angle*:
   The rotation angle necessary to deskew the image.
-  Can be used directly as input to rotateShear_
+  Can be used directly as input to rotate_
 
 *accuracy*:
   Accuracy of the returned angle.
 
-.. _rotateShear: deformations.html#rotateshear
+.. _rotate: deformations.html#rotate
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])

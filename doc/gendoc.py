@@ -136,35 +136,57 @@ def method_example(func, level, s):
    if len(func.doc_examples):
       s.write("\n----------\n\n")
    for i, doc_example in enumerate(func.doc_examples):
-      if isinstance(func.self_type, args.ImageType):
-         pixel_type = doc_example[0]
-         doc_example = doc_example[1:]
-         pixel_type_name = util.get_pixel_type_name(pixel_type)
-         image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
-         result = func.__call__(*tuple([image] + list(doc_example)))
-         s.write("**Example %d:** %s%s\n\n" % (i + 1, func.__name__, str(tuple(doc_example))))
-         s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
-      else:
-         s.write("**Example %d:** %s%s\n\n" % (i + 1, func.__name__, str(tuple(doc_example))))
-         result = func.__call__(*doc_example)
-      result_filename = "%s_plugin_%02d" % (func.__name__, i)
-      if isinstance(result, core.ImageBase):
-         result.save_PNG(doc_images_path + result_filename + ".png")
-         s.write(".. image:: images/%s.png\n\n" % (result_filename))
-      elif result is None:
-         image.save_PNG(doc_images_path + result_filename + ".png")
-         s.write(".. image:: images/%s.png\n\n" % (result_filename))
-      elif isinstance(func.return_type, args.ImageList):
-         subst = "\n\n"
-         for j, part in enumerate(result):
-            result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
-            part.save_PNG(doc_images_path + result_filename + ".png")
-            s.write("|%s| " % result_filename)
-            subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
-         s.write(subst)
-         s.write("\n")
-      else:
-         s.write("*result* = " + repr(result) + "\n\n")
+       if inspect.isroutine(doc_example[0]):
+           routine = doc_example[0]
+           doc_example = doc_example[1:]
+       else:
+           routine = None
+       if len(doc_example):
+           if isinstance(func.self_type, args.ImageType):
+               pixel_type = doc_example[0]
+               pixel_type_name = util.get_pixel_type_name(pixel_type)
+               src_image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
+               arguments = doc_example[1:]
+           else:
+               pixel_type = None
+               src_image = None
+               arguments = doc_example
+       else:
+           pixel_type = None
+           src_image = None
+           arguments = []
+       if routine is None:
+           if src_image is None:
+               result = func.__call__(*tuple(arguments))
+           else:
+               result = func.__call__(*tuple([src_image] + list(arguments)))
+           s.write("**Example %d:** %s%s\n\n" % (i + 1, func.__name__, str(tuple(arguments))))
+       else:
+           if src_image is None:
+               result = routine(*tuple(arguments))
+           else:
+               result = routine(*tuple([src_image] + list(arguments)))
+           s.write("**Example %d:** %s\n\n" % (i + 1, func.__name__))
+       if not pixel_type is None:
+           s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
+       result_filename = "%s_plugin_%02d" % (func.__name__, i)
+       if isinstance(result, core.ImageBase):
+           result.save_PNG(doc_images_path + result_filename + ".png")
+           s.write(".. image:: images/%s.png\n\n" % (result_filename))
+       elif result is None and isinstance(func.self_type, args.ImageType):
+           src_image.save_PNG(doc_images_path + result_filename + ".png")
+           s.write(".. image:: images/%s.png\n\n" % (result_filename))
+       elif isinstance(func.return_type, args.ImageList):
+           subst = "\n\n"
+           for j, part in enumerate(result):
+               result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
+               part.save_PNG(doc_images_path + result_filename + ".png")
+               s.write("|%s| " % result_filename)
+               subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
+           s.write(subst)
+           s.write("\n")
+       else:
+           s.write("*result* = " + repr(result) + "\n\n")
    s.write("\n\n")
            
 levels = "=-`:'"

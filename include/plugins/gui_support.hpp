@@ -39,13 +39,18 @@ namespace {
     void operator()(const Mat& mat, char* data) {
       char* i = data;
       ImageAccessor<T> acc;
-      typename Mat::const_vec_iterator it = mat.vec_begin();
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
       T tmp;
-      for (; it != mat.vec_end(); ++it) {
-	tmp = acc.get(it);
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
+	  tmp = acc.get(col);
+	  if (tmp > 255)
+	    tmp = 255;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	}
       }
     }
   };
@@ -80,18 +85,21 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       ImageAccessor<Grey16Pixel> acc;
-      typename Mat::const_vec_iterator it = mat.vec_begin();
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
       char tmp;
       char* i = data;
-      for (; it != mat.vec_end(); ++it) {
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
 	  /*
 	    This should correctly map the 16 bit grey values onto
 	    the rgb color space. KWM
 	  */
-	  tmp = char(acc.get(it));
+	  tmp = char(acc.get(col));
 	  *i = tmp; i++;
 	  *i = tmp; i++;
 	  *i = tmp; i++;
+	}
       }
     }
   };
@@ -101,13 +109,15 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       ImageAccessor<RGBPixel> acc;
-      typename Mat::const_vec_iterator it = mat.vec_begin();
-      register unsigned char* i = (unsigned char *)data;
-      for (; it != mat.vec_end(); ++it) {
-	RGBPixel tmp = acc.get(it);
-	*i = (unsigned char)tmp.red(); i++;
-	*i = (unsigned char)tmp.green(); i++;
-	*i = (unsigned char)tmp.blue(); i++;
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
+      for (size_t i = 0; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); i += 3, ++col) {
+	  RGBPixel tmp = acc.get(col);
+	  data[i] = (unsigned char)tmp.red();
+	  data[i + 1] = (unsigned char)tmp.green();
+	  data[i + 2] = (unsigned char)tmp.blue();
+	}
       }
     }
   };
@@ -117,20 +127,21 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       char* i = data;
-      typename Mat::const_vec_iterator it = mat.vec_begin();
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
       ImageAccessor<OneBitPixel> acc;
       OneBitPixel tmp;
-      unsigned char val;
-      for (; it != mat.vec_end(); ++it) {
-	tmp = acc(it);
-	if (is_white(tmp))
-	  tmp = 255;
-	else
-	  tmp = 0;
-	val = (unsigned char)tmp;
-	*i = val; i++;
-	*i = val; i++;
-	*i = val; i++;
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
+	  tmp = acc(col);
+	  if (is_white(tmp))
+	    tmp = 255;
+	  else
+	    tmp = 0;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	}
       }
     }
   };

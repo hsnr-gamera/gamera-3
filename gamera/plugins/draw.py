@@ -57,21 +57,33 @@ Po-Han Lin and link to http://www.edepot.com is provided in source
 code and can been seen in compiled executable.
 """
   self_type = ImageType(ALL)
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
-  doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
+  args = Args([Float("y1"), Float("x1"), Float("y2"), Float("x2"), Pixel("value")])
   authors = "Michael Droettboom based on Po-Han Lin's Extremely Fast Line Algorithm"
+
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_line(self, *args)
-    else:
+    elif len(args) == 3:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_line(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        raise ValueError("Arguments are incorrect.")
+        pass
+    raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
+
+  def __doc_example1__():
+    from random import randint
+    from gamera.core import Image
+    image = Image(0, 0, 100, 100, RGB, DENSE)
+    for i in range(10):
+      image.draw_line(randint(0, 100), randint(0, 100),
+                      randint(0, 100), randint(0, 100),
+                      RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
+    return image
+  doc_examples = [(__doc_example1__,)]
 
 class draw_hollow_rect(PluginFunction):
   """Draws a hollow rectangle.
@@ -104,15 +116,27 @@ The coordinates can be specified either by four integers or two Points:
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_hollow_rect(self, *args)
-    else:
+    elif len(args) == 3:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_hollow_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        raise ValueError("Arguments are incorrect.")
+        pass
+    raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
+
+  def __doc_example1__():
+    from random import randint
+    from gamera.core import Image
+    image = Image(0, 0, 100, 100, RGB, DENSE)
+    for i in range(10):
+      image.draw_hollow_rect(randint(0, 100), randint(0, 100),
+                             randint(0, 100), randint(0, 100),
+                             RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
+    return image
+  doc_examples = [(__doc_example1__,)]
 
 class draw_filled_rect(PluginFunction):
   """Draws a filled rectangle.
@@ -145,64 +169,98 @@ The coordinates can be specified either by four integers or two Points:
   def __call__(self, *args):
     if len(args) == 5:
       return _draw.draw_filled_rect(self, *args)
-    else:
+    elif len(args) == 3:
       try:
         a = args[0]
         b = args[1]
         value = args[2]
         return _draw.draw_filled_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
-        raise ValueError("Arguments are incorrect.")
+        pass
+    raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-class draw_bezier_curve(PluginFunction):
-  """Draws a bezier curve
+  def __doc_example1__():
+    from random import randint
+    from gamera.core import Image
+    image = Image(0, 0, 100, 100, RGB, DENSE)
+    for i in range(10):
+      image.draw_filled_rect(randint(0, 100), randint(0, 100),
+                             randint(0, 100), randint(0, 100),
+                             RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
+    return image
+  doc_examples = [(__doc_example1__,)]
+
+class draw_bezier(PluginFunction):
+  """Draws a cubic bezier curve
 
 The coordinates can be specified either by six integers or three Points:
 
-  *y1*:
+  *start_y*:
     Starting *y* coordinate.
-  *x1*:
+  *start_x*:
     Starting *x* coordinate.
-  *y2*:
+  *c1_y*:
+    Control point 1 *y* coordinate.
+  *c1_x*:
+    Control point 1 *x* coordinate.
+  *c2_y*
+    Control point 2 *y* coordinate.
+  *c2_x*
+    Control point 2 *x* coordinate.
+  *end_y*
     Ending *y* coordinate.
-  *x2*:
+  *end_x*
     Ending *x* coordinate.
-  *y3*
-    Control point *y* coordinate.
-  *x3*
-    Control point *x* coordinate.
 
 **or**
 
-  *a*:
+  *start*:
     The start ``Point``.
-  *b*:
+  *c1*:
+    The control point associated with the start point.
+  *c2*
+    The control point associated with the end point.
+  *end*
     The end ``Point``.
-  *c*
-    The control ``Point``.
 
 *value*:
   The pixel value to set for the curve.
 """
   self_type = ImageType(ALL)
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"),
-               Int("y3"), Int("x3"), Pixel("value")])
-  doc_examples = [(ONEBIT, 5, 5, 20, 25, 15, 20, 1)]
+  args = Args([Float("start_y"), Float("start_x"), Float("c1_y"), Float("c1_x"),
+               Float("c2_y"), Float("c2_x"), Float("end_y"), Float("end_x"),
+               Pixel("value")])
+
   def __call__(self, *args):
-    if len(args) == 7:
-      return _draw.draw_bezier_curve(self, *args)
-    else:
+    if len(args) == 9:
+      return _draw.draw_bezier(self, *args)
+    elif len(args) == 5:
       try:
         a = args[0]
         b = args[1]
         c = args[2]
-        value = args[3]
-        return _draw.draw_bezier_curve(self, a.y, a.x, b.y, b.x,
-                                       c.y, c.x, value)
+        d = args[3]
+        value = args[4]
+        return _draw.draw_bezier(self, a.y, a.x, b.y, b.x,
+                                 c.y, c.x, d.y, d.x, value)
       except KeyError, AttributeError:
-        raise ValueError("Arguments are incorrect.")
+        pass
+      raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
+
+  def __doc_example1__():
+    from random import randint
+    from gamera.core import Image
+    image = Image(0, 0, 100, 100, RGB, DENSE)
+    for i in range(10):
+      image.draw_bezier(randint(0, 100), randint(0, 100),
+                        randint(0, 100), randint(0, 100),
+                        randint(0, 100), randint(0, 100),
+                        randint(0, 100), randint(0, 100),
+                        RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
+    return image
+  doc_examples = [(__doc_example1__,)]
 
 class flood_fill(PluginFunction):
   """Flood fills from the given point using the given color.  This is similar
@@ -232,13 +290,14 @@ The coordinates can be specified either by two integers or one Point:
   def __call__(self, *args):
     if len(args) == 3:
       return _draw.flood_fill(self, *args)
-    else:
+    elif len(args) == 2:
       try:
         a = args[0]
         value = args[1]
         return _draw.flood_fill(self, a.y, a.x, value)
       except KeyError, AttributeError:
-        raise ValueError("Arguments are incorrect.")
+        pass
+    raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
 class remove_border(PluginFunction):
@@ -263,7 +322,7 @@ class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Draw"
-  functions = [draw_line, draw_bezier_curve,
+  functions = [draw_line, draw_bezier,
                draw_hollow_rect, draw_filled_rect, flood_fill,
                remove_border, highlight]
   author = "Michael Droettboom"

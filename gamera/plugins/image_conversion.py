@@ -58,7 +58,7 @@ see the Thresholding_ category.
             image = self
         return image.otsu_threshold(storage_format)
     __call__ = staticmethod(__call__)
-    doc_examples = [(RGB,)]
+    doc_examples = [(RGB,),]
 to_onebit_twostep = to_onebit
 
 class to_onebit(PluginFunction):

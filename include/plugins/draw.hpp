@@ -37,51 +37,105 @@ Po-Han Lin's "Extremely Fast Line Algorithm"
 Freely useable in non-commercial applications as long as credits to Po-Han Lin and link to http://www.edepot.com is provided in source code and can been seen in compiled executable. 
 */
 
+inline void _cut_line(double &y1, double &x1, double &y2, double &x2, 
+		      double y_len, double x_len, double lower, double upper) {
+  if (y1 < lower) {
+    x1 += (-y1 * x_len) / y_len;
+    y1 = 0;
+  }
+
+  if (y2 > upper) {
+    x2 += (-(y2 - upper) * x_len) / y_len;
+    y2 = upper;
+  }
+}
+
 template<class T>
-void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
-	       typename T::value_type value, double alpha = 1.0) {
-  size_t ul_y = std::min(y1, image.nrows());
-  size_t lr_y = std::min(y2, image.nrows());
-  size_t ul_x = std::min(x1, image.nrows());
-  size_t lr_x = std::min(x2, image.nrows());
-  
-  // The line doesn't pass through the image, so just skip
-  if (lr_y - ul_y == 0 && lr_x - ul_x == 0)
-    return;
+void draw_line(T& image, double y1, double x1, double y2, double x2,
+	       typename T::value_type value) {
+  y1 -= (double)image.ul_y();
+  y2 -= (double)image.ul_y();
+  x1 -= (double)image.ul_x();
+  x2 -= (double)image.ul_x();
 
   bool y_longer = false;
-  long increment_val, end_val;
-  long short_len = long(y2) - long(y1);
-  long long_len = long(x2) - long(x1);
+  double end_val;
+  double y_len = y2 - y1;
+  double x_len = x2 - x1;
+
+  // Cut the line so it doesn't go outside of the image bounding box.
+  // This is much more efficient to do a little math now than
+  // to test when writing each pixel.
+  if (y_len > 0)
+    _cut_line(y1, x1, y2, x2, y_len, x_len, 
+	      0.0, (double)image.nrows() - 1);
+  else
+    _cut_line(y2, x2, y1, x1, y_len, x_len, 
+	      0.0, (double)image.nrows() - 1);
+
+  if (x_len > 0)
+    _cut_line(x1, y1, x2, y2, x_len, y_len, 
+	      0.0, (double)image.ncols() - 1);
+  else
+    _cut_line(x2, y2, x1, y1, x_len, y_len, 
+	      0.0, (double)image.ncols() - 1);
+
+  if (!(y1 >= 0 && y1 < image.nrows() &&
+	x1 >= 0 && x1 < image.ncols() &&
+	y2 >= 0 && y2 < image.nrows() &&
+	x2 >= 0 && x2 < image.ncols()))
+    return;
+
+  double short_len = y2 - y1;
+  double long_len = x2 - x1;
   if (abs(short_len) > abs(long_len)) {
     std::swap(short_len, long_len);
     y_longer = true;
   }
 
-  end_val = long_len;
+  double dec_inc;
   if (long_len < 0) {
-    increment_val = -1;
+    end_val = long_len - 1;
     long_len = -long_len;
-  } else
-    increment_val = 1;
-
-  long dec_inc;
-  if (long_len == 0)
-    dec_inc = 0;
-  else
-    dec_inc = (short_len << 16) / long_len;
-
-  long j = 0;
-  if (y_longer) {
-    for (long i = 0; i != end_val; i += increment_val) {
-      image.set(size_t(y1 + i), size_t(x1 + (j >> 16)), value);
-      j += dec_inc;
-    }
+    dec_inc = short_len / long_len;
+    double j = 0.0;
+    if (y_longer) {
+      for (double i = 0; i > end_val; --i) {
+	size_t y = size_t(y1 + i);
+	size_t x = size_t(x1 + j);
+	image.set(y, x, value);
+	j += dec_inc;
+      }
+    } else {
+      for (double i = 0; i > end_val; --i) {
+	size_t y = size_t(y1 + j);
+	size_t x = size_t(x1 + i);
+	image.set(y, x, value);
+	j += dec_inc;
+      }
+    }      
   } else {
-    for (long i = 0; i != end_val; i += increment_val) {
-      image.set(size_t(y1 + (j >> 16)), size_t(x1 + i), value);
-      j += dec_inc;
-    }
+    end_val = long_len + 1;
+    if (long_len == 0)
+      dec_inc = short_len;
+    else
+      dec_inc = short_len / long_len;
+    double j = 0.0;
+    if (y_longer) {
+      for (double i = 0; i < end_val; ++i) {
+	size_t y = size_t(y1 + i);
+	size_t x = size_t(x1 + j);
+	image.set(y, x, value);
+	j += dec_inc;
+      }
+    } else {
+      for (double i = 0; i < end_val; ++i) {
+	size_t y = size_t(y1 + j);
+	size_t x = size_t(x1 + i);
+	image.set(y, x, value);
+	j += dec_inc;
+      }
+    }      
   }
 }
 
@@ -141,24 +195,27 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
 }
 
 template<class T>
-void draw_bezier_curve(T& image, size_t ya, size_t xa, 
-		       size_t yb, size_t xb, 
-		       size_t yc, size_t xc,
-		       typename T::value_type value) {
-  long x_dist = abs(long(xb) - long(xa));
-  long y_dist = abs(long(yb) - long(ya));
-  long max = std::max(x_dist, y_dist);
+void draw_bezier(T& image, 
+		 double start_y, double start_x, 
+		 double c1_y, double c1_x, 
+		 double c2_y, double c2_x,
+		 double end_y, double end_x,
+		 typename T::value_type value) {
+  double x_dist = abs(end_x - start_x);
+  double y_dist = abs(end_y - start_y);
+  double max = std::max(x_dist, y_dist);
   double step = 1.0 / ((double)max * 2.0);
 
-  size_t y = ya;
-  size_t x = xa;
-  for (double t = 0.0; t <= 1.0; t += step) {
-    size_t new_x = (size_t)(pow((1 - t), 2) * xa + 
-			    2 * t * (1 - t) * xc + 
-			    pow(t, 2) * xb);
-    size_t new_y = (size_t)(pow((1 - t), 2) * ya + 
-			    2 * t * (1 - t) * yc + 
-			    pow(t, 2) * yb);
+  double y = start_y;
+  double x = start_x;
+  for (double a = 1.0, b = 0.0; b <= 1.0; a -= step, b += step) {
+    double a_3 = a * a * a;
+    double a_2_b = a * a * b * 3;
+    double b_3 = b * b * b;
+    double b_2_a = b * b * a * 3;
+
+    double new_x = start_x * a_3 + c1_x * a_2_b + c2_x * b_2_a + end_x * b_3;
+    double new_y = start_y * a_3 + c1_y * a_2_b + c2_y * b_2_a + end_y * b_3;
     draw_line(image, y, x, new_y, new_x, value);
     y = new_y; x = new_x;
   }
@@ -283,6 +340,5 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
 	a.set(ya, xa, color);
     }
 }
-
 
 #endif

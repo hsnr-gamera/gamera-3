@@ -59,14 +59,13 @@ namespace Gamera {
   }
 
   // filter based on run-length
-  template<class Iter>
-  inline void filter_long_run(Iter i, const Iter end,
-			      const int min_length) {
+  template<class Iter, class Functor>
+  inline void filter_black_run(Iter i, const Iter end, const int min_length, const Functor& functor) {
     while (i != end) {
       if (is_black(*i)) {
 	Iter last = i;
 	black_run_end(i, end);
-	if (i - last > min_length)
+	if (functor(i - last, min_length))
 	  std::fill(last, i, white(i));
       } else {
 	white_run_end(i, end);
@@ -74,17 +73,16 @@ namespace Gamera {
     }
   }
 
-  template<class Iter>
-  inline void filter_short_run(Iter i, const Iter end,
-			       const int max_length) {
+  template<class Iter, class Functor>
+  inline void filter_white_run(Iter i, const Iter end, const int max_length, const Functor& functor) {
     while (i != end) {
-      if (is_black(*i)) {
+      if (is_white(*i)) {
 	Iter last = i;
-	black_run_end(i, end);
-	if (i - last < max_length)
-	  std::fill(last, i, white(i));
-      } else {
 	white_run_end(i, end);
+	if (functor(i - last, max_length))
+	  std::fill(last, i, black(i));
+      } else {
+	black_run_end(i, end);
       }
     }
   }
@@ -93,16 +91,43 @@ namespace Gamera {
   inline void image_filter_long_run(Iter i, const Iter end,
 			      const int min_length) {
     for (; i != end; i++)
-      filter_long_run(i.begin(), i.end(), min_length);
+      filter_black_run(i.begin(), i.end(), min_length, std::greater<size_t>());
   }
 
   template<class Iter>
   inline void image_filter_short_run(Iter i, const Iter end,
 			       const int max_length) {
     for (; i != end; i++)
-      filter_short_run(i.begin(), i.end(), max_length);
+      filter_black_run(i.begin(), i.end(), max_length, std::less<size_t>());
   }
 
+  template<class Iter>
+  inline void image_filter_long_black_run(Iter i, const Iter end,
+			      const int min_length) {
+    for (; i != end; i++)
+      filter_black_run(i.begin(), i.end(), min_length, std::greater<size_t>());
+  }
+
+  template<class Iter>
+  inline void image_filter_short_black_run(Iter i, const Iter end,
+			       const int max_length) {
+    for (; i != end; i++)
+      filter_black_run(i.begin(), i.end(), max_length, std::less<size_t>());
+  }
+
+  template<class Iter>
+  inline void image_filter_long_white_run(Iter i, const Iter end,
+			      const int min_length) {
+    for (; i != end; i++)
+      filter_white_run(i.begin(), i.end(), min_length, std::greater<size_t>());
+  }
+
+  template<class Iter>
+  inline void image_filter_short_white_run(Iter i, const Iter end,
+			       const int max_length) {
+    for (; i != end; i++)
+      filter_white_run(i.begin(), i.end(), max_length, std::less<size_t>());
+  }
 };
 
 #endif

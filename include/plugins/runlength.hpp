@@ -324,7 +324,6 @@ namespace Gamera {
     image_filter_short_run(image.col_begin(), image.col_end(), max_height);
   }
 
-
   template<class T>
   void filter_tall_runs(T& image, size_t min_height) {
     image_filter_long_run(image.col_begin(), image.col_end(), min_height);
@@ -333,6 +332,46 @@ namespace Gamera {
   template<class T>
   void filter_wide_runs(T& image, size_t min_width) {
     image_filter_long_run(image.row_begin(), image.row_end(), min_width);
+  }
+
+  template<class T>
+  void filter_narrow_black_runs(T& image, size_t max_width) {
+    image_filter_short_black_run(image.row_begin(), image.row_end(), max_width);
+  }
+
+  template<class T>
+  void filter_short_black_runs(T& image, size_t max_height) {
+    image_filter_short_black_run(image.col_begin(), image.col_end(), max_height);
+  }
+
+  template<class T>
+  void filter_tall_black_runs(T& image, size_t min_height) {
+    image_filter_long_black_run(image.col_begin(), image.col_end(), min_height);
+  }
+
+  template<class T>
+  void filter_wide_black_runs(T& image, size_t min_width) {
+    image_filter_long_black_run(image.row_begin(), image.row_end(), min_width);
+  }
+
+  template<class T>
+  void filter_narrow_white_runs(T& image, size_t max_width) {
+    image_filter_short_white_run(image.row_begin(), image.row_end(), max_width);
+  }
+
+  template<class T>
+  void filter_short_white_runs(T& image, size_t max_height) {
+    image_filter_short_white_run(image.col_begin(), image.col_end(), max_height);
+  }
+
+  template<class T>
+  void filter_tall_white_runs(T& image, size_t min_height) {
+    image_filter_long_white_run(image.col_begin(), image.col_end(), min_height);
+  }
+
+  template<class T>
+  void filter_wide_white_runs(T& image, size_t min_width) {
+    image_filter_long_white_run(image.row_begin(), image.row_end(), min_width);
   }
 
   /*

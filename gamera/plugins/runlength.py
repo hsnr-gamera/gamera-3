@@ -19,6 +19,7 @@
 
 from gamera.plugin import *
 import _runlength
+import warnings
 
 class FrequentRun(PluginFunction):
     self_type = ImageType([ONEBIT])
@@ -167,19 +168,79 @@ class FilterRuns(PluginFunction):
     args = Args(Int("size"))
 
 class filter_narrow_runs(FilterRuns):
-    """Removes black horizontal runs narrower than a given length."""
+    pure_python = True
+    """Removes black horizontal runs narrower than a given length.
+
+DEPRECATED: Use filter_narrow_black_runs_ instead.
+"""
+    def __call__(self, length):
+        warnings.warn("Use filter_narrow_black_runs instead of filter_narrow_runs.", DeprecationWarning)
+        return _runlength.filter_narrow_black_runs(self, length)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_short_runs(FilterRuns):
-    """Removes black vertical runs shorter than a given length."""
+    pure_python = True
+    """Removes black horizontal runs shorter than a given length.
+
+DEPRECATED: Use filter_short_black_runs_ instead.
+"""
+    def __call__(self, length):
+        warnings.warn("Use filter_short_black_runs instead of filter_short_runs.", DeprecationWarning)
+        return _runlength.filter_short_black_runs(self, length)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_tall_runs(FilterRuns):
+    pure_python = True
+    """Removes black horizontal runs taller than a given length.
+
+DEPRECATED: Use filter_tall_black_runs_ instead.
+"""
+    def __call__(self, length):
+        warnings.warn("Use filter_tall_black_runs instead of filter_tall_runs.", DeprecationWarning)
+        return _runlength.filter_tall_black_runs(self, length)
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_wide_runs(FilterRuns):
+    pure_python = True
+    """Removes black horizontal runs wider than a given length.
+
+DEPRECATED: Use filter_wide_black_runs_ instead.
+"""
+    def __call__(self, length):
+        warnings.warn("Use filter_wide_black_runs instead of filter_wide_runs.", DeprecationWarning)
+        return _runlength.filter_wide_black_runs(self, length)
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_narrow_black_runs(FilterRuns):
+    """Removes black horizontal runs narrower than a given length."""
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_short_black_runs(FilterRuns):
+    """Removes black vertical runs shorter than a given length."""
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_tall_black_runs(FilterRuns):
     """Removes black vertical runs taller than a given length."""
     doc_examples = [(ONEBIT, 10)]
 
-class filter_wide_runs(FilterRuns):
+class filter_wide_black_runs(FilterRuns):
     """Removes black horizontal runs wider than a given length."""
+    doc_examples = [(ONEBIT, 10)]
+
+class filter_narrow_white_runs(FilterRuns):
+    """Removes white horizontal runs narrower than a given length."""
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_short_white_runs(FilterRuns):
+    """Removes white vertical runs shorter than a given length."""
+    doc_examples = [(ONEBIT, 5)]
+
+class filter_tall_white_runs(FilterRuns):
+    """Removes white vertical runs taller than a given length."""
+    doc_examples = [(ONEBIT, 10)]
+
+class filter_wide_white_runs(FilterRuns):
+    """Removes white horizontal runs wider than a given length."""
     doc_examples = [(ONEBIT, 10)]
 
 class to_rle(PluginFunction):
@@ -222,8 +283,11 @@ class RunLengthModule(PluginModule):
                  white_vertical_run_histogram,
                  filter_narrow_runs, filter_short_runs,
                  filter_tall_runs,filter_wide_runs,
-                 to_rle,
-                 from_rle]
+                 filter_narrow_black_runs, filter_short_black_runs,
+                 filter_tall_black_runs,filter_wide_black_runs,
+                 filter_narrow_white_runs, filter_short_white_runs,
+                 filter_tall_white_runs,filter_wide_white_runs,
+                 to_rle, from_rle]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -560,9 +560,9 @@ struct ImageObject {
   PyObject* m_id_name; // a list of strings for the classified ids
   PyObject* m_children_images; // list of images
   PyObject* m_classification_state; // how (or whether) an image is classified
-  PyObject* m_region_maps; // RegionMap object - see the object docs
-  PyObject* m_region_map; // Current global region map
-  PyObject* m_action_depth; // for limiting recursions for "actions"
+//   PyObject* m_region_maps; // RegionMap object - see the object docs
+//   PyObject* m_region_map; // Current global region map
+//   PyObject* m_action_depth; // for limiting recursions for "actions"
   PyObject* m_weakreflist; // for Python weak references
 };
 
@@ -730,9 +730,10 @@ inline PyObject* init_image_members(ImageObject* o) {
     array_func = PyDict_GetItemString(array_dict, "array");
     if (array_func == 0)
       return 0;
+    Py_DECREF(array_module);
   }
   PyObject* arglist = Py_BuildValue("(s)", "d");
-  o->m_features = PyEval_CallObject(array_func, arglist);
+  o->m_features = PyObject_CallObject(array_func, arglist);
   Py_DECREF(arglist);
   if (o->m_features == 0)
     return 0;
@@ -749,7 +750,7 @@ inline PyObject* init_image_members(ImageObject* o) {
   o->m_classification_state = PyInt_FromLong(UNCLASSIFIED);
   if (o->m_classification_state == 0)
     return 0;
-  return (PyObject*)o;  
+  return (PyObject*)o;
 }
 
 /*
@@ -839,12 +840,11 @@ inline PyObject* create_ImageObject(Image* image) {
   i->m_data = (PyObject*)d;
   ((RectObject*)i)->m_x = image;
   PyObject* args = Py_BuildValue("(O)", (PyObject*)i);
-  PyObject* result = PyEval_CallObject(pybase_init, args);
+  PyObject* result = PyObject_CallObject(pybase_init, args);
   Py_DECREF(args);
   if (result == 0)
     return 0;
   Py_DECREF(result);
-    
   return init_image_members(i);
 }
 

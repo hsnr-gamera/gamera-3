@@ -450,7 +450,6 @@ def simple_feature_selector(glyphs):
    stop_threshold = ans[1] - ans[0]
    answer = (float(ans[0]) / float(ans[1]), all_features)
    for x in all_features:
-      print x
       ans = c.classifier.leave_one_out(feature_indexes[x], stop_threshold)
       num_wrong = ans[1] - ans[0]
       print num_wrong, ans[1], ans[0]
@@ -461,7 +460,6 @@ def simple_feature_selector(glyphs):
    # size subset of all of the features.
    for i in range(2, len(all_features) - 1):
       for x in CombGen(all_features, i):
-         print x
          indexes = []
          for y in x:
             indexes.extend(feature_indexes[y])

@@ -335,13 +335,15 @@ static void image_dealloc(PyObject* self) {
   }
   delete ((RectObject*)self)->m_x;
 
-  self->ob_type->tp_free(self);
-
   // Added in an attempt to fix a leak.
   Py_DECREF(o->m_features);
   Py_DECREF(o->m_id_name);
   Py_DECREF(o->m_children_images);
   Py_DECREF(o->m_classification_state);
+
+  // PyObject_Del(self);
+  self->ob_type->tp_free(self);
+  //free(self);
 }
 
 static PyObject* image_get(PyObject* self, int row, int col) {
@@ -601,7 +603,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_new = image_new;
   ImageType.tp_getattro = PyObject_GenericGetAttr;
   ImageType.tp_alloc = PyType_GenericAlloc;
-  ImageType.tp_free = _PyObject_Del;
+  ImageType.tp_free = NULL; //_PyObject_Del;
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   PyType_Ready(&ImageType);
   PyDict_SetItemString(module_dict, "Image", (PyObject*)&ImageType);
@@ -615,7 +617,7 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_new = sub_image_new;
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
   SubImageType.tp_alloc = PyType_GenericAlloc;
-  SubImageType.tp_free = _PyObject_Del;
+  SubImageType.tp_free = NULL; // _PyObject_Del;
   PyType_Ready(&SubImageType);
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
 
@@ -629,7 +631,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_getset = cc_getset;
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = PyType_GenericAlloc;
-  CCType.tp_free = _PyObject_Del;
+  CCType.tp_free = NULL; //_PyObject_Del;
   PyType_Ready(&CCType);
   PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
 

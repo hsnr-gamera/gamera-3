@@ -58,10 +58,10 @@ namespace Gamera {
     Image(const Rect& rect) : Rect(rect) {
       m_resolution = 0;
       m_scaling = 1.0;
-      features = 0;
-      features_len = 0;
+      //      features = 0;
+      //      features_len = 0;
     }
-    virtual ~Image() { }
+    virtual ~Image() { delete features; }
     double resolution() const { return m_resolution; }
     void resolution(double r) { m_resolution = r; }
     double scaling() const { return m_scaling; }

@@ -204,7 +204,7 @@ class LoadXML:
       self._stream_length = 0
       self._parts = parts
       self._progress_value = 0
-      
+
    def try_type_convert(self, dictionary, key, typename, tagname):
       try:
          return typename(dictionary[key])

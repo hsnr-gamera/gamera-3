@@ -23,13 +23,11 @@ class permute_list(PluginFunction):
    self_type = None
    args = Args([Class("list")])
    return_type = Int("continuaton")
-permute_list = permute_list()
 
 class all_compositions(PluginFunction):
    self_type = None
    args = Args([Int("sum"), Int("length")])
    return_type = Class("compositions")
-all_compositions = all_compositions()
 
 class ListUtilitiesModule(PluginModule):
     category = "List Utilities"

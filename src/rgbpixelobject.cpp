@@ -36,9 +36,9 @@ extern "C" {
   static PyObject* rgbpixel_get_hue(PyObject* self);
   static PyObject* rgbpixel_get_saturation(PyObject* self);
   static PyObject* rgbpixel_get_value(PyObject* self);
-  static PyObject* rgbpixel_get_CIE_X(PyObject* self);
-  static PyObject* rgbpixel_get_CIE_Y(PyObject* self);
-  static PyObject* rgbpixel_get_CIE_Z(PyObject* self);
+  static PyObject* rgbpixel_get_cie_x(PyObject* self);
+  static PyObject* rgbpixel_get_cie_y(PyObject* self);
+  static PyObject* rgbpixel_get_cie_z(PyObject* self);
   static PyObject* rgbpixel_get_cyan(PyObject* self);
   static PyObject* rgbpixel_get_magenta(PyObject* self);
   static PyObject* rgbpixel_get_yellow(PyObject* self);
@@ -66,12 +66,12 @@ static PyGetSetDef rgbpixel_getset[] = {
     "the saturation [0, 1.0]", 0 },
   { "value", (getter)rgbpixel_get_value, 0,
     "the value [0, 1.0]", 0 },
-  { "CIE_X", (getter)rgbpixel_get_CIE_X, 0,
-    "the CIE_X value [0, 1.0]", 0 },
-  { "CIE_Y", (getter)rgbpixel_get_CIE_Y, 0,
-    "the CIE_Y value [0, 1.0]", 0 },
-  { "CIE_Z", (getter)rgbpixel_get_CIE_Z, 0,
-    "the CIE_Z value [0, 1.0]", 0 },
+  { "cie_x", (getter)rgbpixel_get_cie_x, 0,
+    "the cie_x value [0, 1.0]", 0 },
+  { "cie_y", (getter)rgbpixel_get_cie_y, 0,
+    "the cie_y value [0, 1.0]", 0 },
+  { "cie_z", (getter)rgbpixel_get_cie_z, 0,
+    "the cie_z value [0, 1.0]", 0 },
   { "cyan", (getter)rgbpixel_get_cyan, 0,
     "the cyan value [0, 255]", 0 },
   { "magenta", (getter)rgbpixel_get_magenta, 0,
@@ -122,9 +122,9 @@ CREATE_SET_FUNC(blue)
 CREATE_FLOAT_GET_FUNC(hue)
 CREATE_FLOAT_GET_FUNC(saturation)
 CREATE_FLOAT_GET_FUNC(value)
-CREATE_FLOAT_GET_FUNC(CIE_X)
-CREATE_FLOAT_GET_FUNC(CIE_Y)
-CREATE_FLOAT_GET_FUNC(CIE_Z)
+CREATE_FLOAT_GET_FUNC(cie_x)
+CREATE_FLOAT_GET_FUNC(cie_y)
+CREATE_FLOAT_GET_FUNC(cie_z)
 CREATE_GET_FUNC(cyan)
 CREATE_GET_FUNC(magenta)
 CREATE_GET_FUNC(yellow)

@@ -429,6 +429,7 @@ template = Template("""
           PyList_SetItem(list, i, item);
         }
         delete return_value;
+        Py_DECREF(list);
         return list;
       [[else]]
         return return_value;

@@ -114,13 +114,17 @@ class projections(PluginFunction):
     __call__ = staticmethod(__call__)
 projections = projections()
 
+class fill_white(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+fill_white = fill_white()
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy,
                  histogram, union_images, projections_rows, projections_cols,
-                 projections]
+                 projections, fill_white]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

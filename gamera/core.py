@@ -53,6 +53,9 @@ def load_image(filename, compression = DENSE):
    image.name = filename
    return image
 
+def image_info(filename):
+   import tiff_support
+   return tiff_support.tiff_info(filename)
 
 # displays a list of images in a grid-like window
 def display_multi(list):

@@ -131,10 +131,9 @@ class OptimizerFrame(wxFrame):
 
     def open_cb(self, evt):
         import sys
-        dlg = gui_util.open_file_dialog(self, "*.*", wxOPEN)
-        if dlg.ShowModal() == wxID_OK:
-            self.filename = dlg.GetPath()
-            dlg.Destroy()
+        filename = gui_util.open_file_dialog(self, "*.xml")
+        if filename:
+            self.filename = filename
             wxBeginBusyCursor()
             self.stop()
             glyphs = None

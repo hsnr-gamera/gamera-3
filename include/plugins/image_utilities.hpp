@@ -353,5 +353,13 @@ namespace Gamera {
     }
     return projections;
   }
+
+  /*
+    Fill an image with white.
+  */
+  template<class T>
+  void fill_white(T& image) {
+    std::fill(image.vec_begin(), image.vec_end(), white(image));
+  }
 }
 #endif

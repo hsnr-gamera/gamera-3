@@ -280,7 +280,8 @@ class ImageDisplay(wxScrolledWindow):
          self.Clear()
       if scale == None or scale <= 0:
          scale = scaling
-      scale = pow(2.0, floor(log(scale) / log(2.0)))
+      # What is this for? KWM
+      #scale = pow(2.0, floor(log(scale) / log(2.0)))
       scroll_amount = self.scroll_amount
       scaling = self.scaling
       w = self.image.width * scale

@@ -22,7 +22,7 @@ import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, gui_util
+     icon_display, classifier_display, var_name, gui_util, image_browser
 
 # wxPython
 from wxPython.wx import *
@@ -273,6 +273,7 @@ class ShellFrame(wxFrame):
       file_menu = gui_util.build_menu(
          self,
          (("&Open...", self._OnFileOpen),
+          ("&Image browser", self._OnImageBrowser),
           (None, None),
           ("E&xit...", self._OnCloseWindow)))
       classify_menu = gui_util.build_menu(
@@ -319,6 +320,10 @@ class ShellFrame(wxFrame):
             wxBeginBusyCursor()
             self.shell.run('%s = load_image(r"%s")' % (name, filename))
             wxEndBusyCursor()
+
+   def _OnImageBrowser(self, event):
+      browser = image_browser.ImageBrowserFrame()
+      browser.Show(1)
 
    def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)

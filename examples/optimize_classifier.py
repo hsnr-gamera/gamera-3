@@ -1,3 +1,5 @@
+from sys import stdout
+
 # Import the Gamera core and initialise it
 from gamera.core import *
 init_gamera()
@@ -22,7 +24,8 @@ classifier = knn.kNNNonInteractive(glyphs)
 # Set up a function that displays the results of the
 # genetic algorithm as it progresses
 def optimizer_callback(classifier):
-   print "Leave one out performance: %f%%\r" % classifier.ga_best
+   stdout.write("Leave one out performance: %02f%%\r" % (classifier.ga_best * 100.0))
+   stdout.flush()
 classifier.add_optimization_callback(optimizer_callback)
 
 print "Starting optimization (press Ctrl+C to stop)..."
@@ -35,13 +38,14 @@ try:
       # in the Python optimizer
       x = 0
 except KeyboardInterrupt:
-   print "Ctrl+C pressed"
+   print "\nCtrl+C pressed"
 except:
    pass
 
 # When the user presses Ctrl+C *or* any other sort of
 # error happens, stop optimizing and then save to disk.
 print "Stopping optimization (please wait...)"
-classifier.stop_optimizing()
+final = classifier.stop_optimizing()
+print "Final leave one out performance: %.02f" % (final * 100.0)
 print "Saving to disk"
 classifier.serialize("training.knn")

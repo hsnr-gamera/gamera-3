@@ -25,8 +25,8 @@ recommended.
 
 The examples below demonstrate how to start creating Gamera-based
 applications.  The source code of these examples are available in the
-examples directory of the Gamera distribution.  
-Each example builds on the previous one.
+examples directory of the Gamera distribution.  Each example builds on
+the previous one.
 
 Hello, world!
 -------------
@@ -200,6 +200,8 @@ classifier is saved into a fast binary file format using
 
 .. code:: Python
 
+   from sys import stdout
+
    # Import the Gamera core and initialise it
    from gamera.core import *
    init_gamera()
@@ -224,7 +226,8 @@ classifier is saved into a fast binary file format using
    # Set up a function that displays the results of the
    # genetic algorithm as it progresses
    def optimizer_callback(classifier):
-      print "Leave one out performance: %f%%\r" % classifier.ga_best
+      stdout.write("Leave one out performance: %02f%%\r" % (classifier.ga_best * 100.0))
+      stdout.flush()
    classifier.add_optimization_callback(optimizer_callback)
 
    print "Starting optimization (press Ctrl+C to stop)..."
@@ -237,14 +240,15 @@ classifier is saved into a fast binary file format using
          # in the Python optimizer
          x = 0
    except KeyboardInterrupt:
-      print "Ctrl+C pressed"
+      print "\nCtrl+C pressed"
    except:
       pass
 
    # When the user presses Ctrl+C *or* any other sort of
    # error happens, stop optimizing and then save to disk.
    print "Stopping optimization (please wait...)"
-   classifier.stop_optimizing()
+   final = classifier.stop_optimizing()
+   print "Final leave one out performance: %.02f" % (final * 100.0)
    print "Saving to disk"
    classifier.serialize("training.knn")
 
@@ -258,8 +262,22 @@ loaded easily from your production script:
    
    from gamera import knn
 
+   # Load the classifier from the binary format
    classifier = knn.kNNNonInteractive("training.knn")
+   
+   # Then, we can use the classifier as we otherwise would...   
 
+   # Load the image, and convert it to onebit
+   image = load_image(sys.argv[-1])
+   onebit = image.to_onebit()
+
+   # Get the connected components from the image
+   ccs = onebit.cc_analysis()
+
+   # Classify the cc's
+   classifier.classify_list_automatic(ccs)
+
+   ...
 
 Where to go from here
 ---------------------

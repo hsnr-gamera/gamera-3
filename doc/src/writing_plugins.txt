@@ -490,7 +490,7 @@ rather than by using error codes.
 C++ exceptions are automatically propagated to Python.  (All C++
 exception types will be converted to Python ``RuntimeError``.)
 
-.. code:: C++
+.. code:: CPP
 
    throw std::runtime_error("Input is out of range");
 

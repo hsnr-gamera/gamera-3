@@ -217,6 +217,22 @@ chapter.
 
 .. __: writing_plugins.html#documenting-plugin-functions
 
+By default, the documentation generator will document all imported
+plugins.  Usually, this is the right thing to do.  However, your
+toolkit may import plugins from other toolkits or from the Gamera core
+that you do not wish to have documented.  In those cases, you can
+specify the categories of plugins you want to be documented using the
+``plugins`` keyword argument when calling the documentation
+generator from your `documentation generation script`_.
+
+For example, if the plugins in your toolkit were all in the category
+"Foo", and you only want to document those, you would use:
+
+.. code:: Python
+
+   gendoc.gendoc(plugins=["Foo"])
+
+
 Class documentation
 ```````````````````
 

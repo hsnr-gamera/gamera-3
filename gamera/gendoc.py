@@ -93,10 +93,11 @@ def underline(level, s, extra=0):
    return _underline_levels[level] * (len(s) + extra)
 
 class DocumentationGenerator:
-   def __init__(self, root_path=".", test_mode=False, classes=[]):
+   def __init__(self, root_path=".", test_mode=False, classes=[], plugins=None):
       self.set_paths(root_path)
       self.test_mode = test_mode
       self.classes = classes
+      self.plugins = plugins
 
    def set_paths(self, root):
       def check_path(path):
@@ -120,7 +121,7 @@ class DocumentationGenerator:
 
    def generate(self):
       self.copy_css(self.src_path, self.output_path)
-      PluginDocumentationGenerator(self)
+      PluginDocumentationGenerator(self, self.plugins)
       ClassDocumentationGenerator(self, self.classes)
       self.copy_images([self.src_images_path, self.icons_path],
                        self.output_images_path)
@@ -187,7 +188,7 @@ class DocumentationGenerator:
                   os.remove(output_file)
 
 class PluginDocumentationGenerator:
-   def __init__(self, docgen):
+   def __init__(self, docgen, plugins=None):
       print "Generating plugin documentation"
 
       self.docgen = docgen
@@ -195,7 +196,7 @@ class PluginDocumentationGenerator:
       images = self.get_generic_images()
       images['src_images_path'] = docgen.src_images_path
 
-      methods = self.get_methods()
+      methods = self.get_methods(plugins)
       if len(methods) == 0:
          return
 
@@ -221,14 +222,15 @@ class PluginDocumentationGenerator:
       return images
    get_generic_images = staticmethod(get_generic_images)
 
-   def get_methods():
+   def get_methods(plugins):
       def methods_flatten(dest, source, flat):
          for key, val in source.items():
           if type(val) == dict:
             if key != "Test":
-               if not dest.has_key(key):
-                  dest[key] = {}
-               methods_flatten(dest[key], val, flat)
+               if plugins is None or key in plugins:
+                  if not dest.has_key(key):
+                     dest[key] = {}
+                  methods_flatten(dest[key], val, flat)
           else:
             dest[key] = val
             flat[key] = val
@@ -535,7 +537,7 @@ def print_usage():
     print "   will be used.)"
     print 
    
-def gendoc(classes=[]):
+def gendoc(classes=[], plugins=None):
    print_usage()
    opts, args = getopt.getopt(sys.argv[1:], "d:t")
    root = '.'
@@ -546,7 +548,7 @@ def gendoc(classes=[]):
       elif flag == "-t":
          test_mode = True
    try:
-      docgen = DocumentationGenerator(root, test_mode, classes=classes)
+      docgen = DocumentationGenerator(root, test_mode, classes=classes, plugins=plugins)
    except Exception, e:
       print "Documentation generation failed with the following exception:"
       print e

@@ -187,6 +187,10 @@ class PyCrustGameraShell(shell.Shell):
       else:
          shell.Shell.OnKeyDown(self, event)
 
+   def writeOut(self, text):
+      self.write(text)
+      wxYield()
+
 ######################################################################
 
 class History(wxStyledTextCtrl):
@@ -350,14 +354,14 @@ class ShellFrame(wxFrame):
       browser.Show(1)
 
    def _OnLoadXML(self, event):
-      import gamera_xml
+      from gamera import gamera_xml
       filename = gui_util.open_file_dialog(self, gamera_xml.extensions)
       if filename:
          name = var_name.get("glyphs", self.shell.locals)
          if name:
             wxBeginBusyCursor()
             try:
-               self.shell.run("import gamera_xml")
+               self.shell.run("from gamera import gamera_xml")
                self.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' % (name, filename))
             finally:
                wxEndBusyCursor()

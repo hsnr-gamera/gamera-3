@@ -938,9 +938,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       if image != None:
          return wxSize(
             min(grid.max_cell_width,
-                image.nrows * grid.scaling + grid.cell_padding),
+                image.ncols * grid.scaling + grid.cell_padding),
             min(grid.max_cell_height,
-                image.ncols * grid.scaling + grid.cell_padding))
+                image.nrows * grid.scaling + grid.cell_padding))
       return wxSize(25, 25)
 
    def Clone(self):

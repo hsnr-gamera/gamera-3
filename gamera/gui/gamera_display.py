@@ -853,23 +853,67 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
               AUTOMATIC:    wxColor(198,145,145),
               HEURISTIC:    wxColor(240,230,140),
               MANUAL:       wxColor(180,238,180)}
-   def get_color(self, image):
-      return self._colors.get(
-         image.classification_state, wxColor(200,200,200))
+
+   
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+      def draw_emblems():
+         if isSelected:
+            dc.SetBrush(wxBrush(wxWHITE, wxSOLID))
+         else:
+            dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
+         if classification_state == AUTOMATIC:
+            emblem_size = cell_padding / 3
+            x0 = rect.x
+            x2 = rect.x + rect.width - emblem_size
+            y0 = rect.y
+            y2 = rect.y + rect.height - emblem_size
+            dc.DrawRectangle(x0, y0, emblem_size, emblem_size)
+            dc.DrawRectangle(x0, y2, emblem_size, emblem_size)
+            dc.DrawRectangle(x2, y0, emblem_size, emblem_size)
+            dc.DrawRectangle(x2, y2, emblem_size, emblem_size)
+         elif classification_state == HEURISTIC:
+            emblem_size = cell_padding / 3
+            x0 = rect.x
+            x1 = rect.x + emblem_size
+            x3 = rect.x + rect.width
+            x2 = x3 - emblem_size
+            y0 = rect.y
+            y1 = rect.y + emblem_size
+            y3 = rect.y + rect.height
+            y2 = y3 - emblem_size
+            dc.DrawPolygon([wxPoint(x0, y0), wxPoint(x1, y0), wxPoint(x0, y1)])
+            dc.DrawPolygon([wxPoint(x3, y0), wxPoint(x2, y0), wxPoint(x3, y1)])
+            dc.DrawPolygon([wxPoint(x0, y3), wxPoint(x1, y3), wxPoint(x0, y2)])
+            dc.DrawPolygon([wxPoint(x3, y3), wxPoint(x2, y3), wxPoint(x3, y2)])
+         elif classification_state == MANUAL:
+            quarter_cell = cell_padding / 4
+            radius = int(quarter_cell * 0.75)
+            x0 = rect.x + quarter_cell
+            x1 = rect.x + rect.width - quarter_cell
+            y0 = rect.y + quarter_cell
+            y1 = rect.y + rect.height - quarter_cell
+            dc.DrawCircle(x0, y0, radius)
+            dc.DrawCircle(x1, y0, radius)
+            dc.DrawCircle(x0, y1, radius)
+            dc.DrawCircle(x1, y1, radius)
+
       scaling = self.parent.scaling
-      tmp_dc = wxMemoryDC()
-      
+      cell_padding = grid.cell_padding
+
+      image_list = self.parent.list
       bitmap_no = row * grid.cols + col
-      if bitmap_no < len(self.parent.list):
-         image = self.parent.list[bitmap_no]
+      if bitmap_no < len(image_list):
+         image = image_list[bitmap_no]
+         classification_state = image.classification_state
       else:
          image = None
-      if image != None:
+
+      if not image is None:
          # Fill the background
-         color = self.get_color(image)
+         color = self._colors.get(
+            classification_state, wxColor(200,200,200))
          dc.SetPen(wxTRANSPARENT_PEN)
          if isSelected:
             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
@@ -922,16 +966,16 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          x = int(rect.x + (rect.width / 2) - (bmp.GetWidth() / 2))
          y = int(rect.y + (rect.height / 2) - (bmp.GetHeight() / 2))
 
+         tmp_dc = wxMemoryDC()
+         tmp_dc.SelectObject(bmp)
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function
             # (wxSRC_INVERT) didn't seem to get used under Windows.
-            tmp_dc.SelectObject(bmp)
             dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0,
                     wxSRC_INVERT)
          else:
-            tmp_dc = wxMemoryDC()
-            tmp_dc.SelectObject(bmp)
             dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxAND)
+
          if self.parent.display_names:
             label = self.parent.get_label(image)
             if label != '':
@@ -947,11 +991,16 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                   dc.SetTextForeground(wxBLACK)
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
+
+##          if classification_state:
+##             draw_emblems()
+            
          if isSelected:
             dc.SetLogicalFunction(wxAND)
             dc.SetBrush(wxBrush(color, wxSOLID))
             dc.SetPen(wxTRANSPARENT_PEN)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+
       if image is None or hasattr(image, 'dead'):
          # If there's no image in this cell, draw a hatch pattern
          dc.SetLogicalFunction(wxCOPY)

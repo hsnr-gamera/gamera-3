@@ -51,6 +51,7 @@ weighted reward/penalty method.
     args = Args([ImageType([ONEBIT], "template"),
                  Int("y_offset"), Int("x_offset"),
                  Float("bb"), Float("bw"), Float("wb"), Float("ww")])
+    progress_bar = "Correlating"
 
 class corelation_sum(PluginFunction):
     """Returns a floating-point value for how well an image is
@@ -66,6 +67,7 @@ more corelation.
     return_type = Float("corelation")
     self_type = ImageType([ONEBIT, GREYSCALE])
     args = Args([ImageType([ONEBIT], "template"), Int("y_offset"), Int("x_offset")])
+    progress_bar = "Correlating"
 
 class corelation_sum_squares(PluginFunction):
     """Returns a floating-point value for how well an image is
@@ -81,6 +83,7 @@ more corelation.
     return_type = Float("corelation")
     self_type = ImageType([ONEBIT, GREYSCALE])
     args = Args([ImageType([ONEBIT], "template"), Int("y_offset"), Int("x_offset")])
+    progress_bar = "Correlating"
 
 class CorelationModule(PluginModule):
     cpp_headers=["corelation.hpp"]

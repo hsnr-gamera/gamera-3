@@ -26,7 +26,7 @@
 namespace Gamera {
 
   template<class T, class U>
-  double corelation_weighted(const T& a, const U& b, size_t yo, size_t xo, double bb, double bw, double wb, double ww) {
+  double corelation_weighted(const T& a, const U& b, size_t yo, size_t xo, double bb, double bw, double wb, double ww, ProgressBar progress_bar = ProgressBar()) {
     size_t ul_y = std::max(a.ul_y(), yo);
     size_t ul_x = std::max(a.ul_x(), xo);
     size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
@@ -34,7 +34,8 @@ namespace Gamera {
     double result = 0;
     double area = 0;
 
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb)
+    progress_bar.set_length(lr_y - ul_y);
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
       for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) 
 	if (is_black(b.get(yb, xb))) {
 	  area++;
@@ -48,6 +49,8 @@ namespace Gamera {
 	  else
 	    result += ww;
 	}
+      progress_bar.step();
+    }
     return result / area;
   }
 
@@ -64,7 +67,8 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  double corelation_sum(const T& a, const U& b, size_t yo, size_t xo) {
+  double corelation_sum(const T& a, const U& b, size_t yo, size_t xo, 
+			ProgressBar progress_bar = ProgressBar()) {
     size_t ul_y = std::max(a.ul_y(), yo);
     size_t ul_x = std::max(a.ul_x(), xo);
     size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
@@ -72,7 +76,8 @@ namespace Gamera {
     double result = 0;
     double area = 0;
 
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb)
+    progress_bar.set_length(lr_y - ul_y);
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
       for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) {
 	typename T::value_type px_a = a.get(yb, xb);
 	typename U::value_type px_b = b.get(yb, xb);
@@ -80,6 +85,8 @@ namespace Gamera {
 	  area++;
 	result += corelation_absolute_distance(px_a, px_b);
       }
+      progress_bar.step();
+    }
     return result / area;
   }
 
@@ -99,7 +106,7 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  double corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo) {
+  double corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo, ProgressBar progress_bar = ProgressBar()) {
     size_t ul_y = std::max(a.ul_y(), yo);
     size_t ul_x = std::max(a.ul_x(), xo);
     size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
@@ -107,7 +114,8 @@ namespace Gamera {
     double result = 0;
     double area = 0;
 
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb)
+    progress_bar.set_length(lr_y - ul_y);
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
       for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) {
 	typename T::value_type px_a = a.get(yb, xb);
 	typename U::value_type px_b = b.get(yb, xb);
@@ -115,6 +123,8 @@ namespace Gamera {
 	  area++;
 	result += corelation_square_absolute_distance(px_a, px_b);
       }
+      progress_bar.step();
+    }
     return result / area;
   }
 }

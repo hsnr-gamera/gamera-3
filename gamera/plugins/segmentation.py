@@ -44,7 +44,7 @@ you do not want this behavior, use the image_copy_ function on each of the CCs::
    ccs = [x.image_copy() for x in ccs]
 
 .. _image_copy: utility.html#image-copy"""
-    pass
+    progress_bar = "Generating connected components"
 
 class cc_and_cluster(Segmenter):
     """Performs connected component analysis using cc_analysis_ and then

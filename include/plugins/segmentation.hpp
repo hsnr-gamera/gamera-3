@@ -271,7 +271,6 @@ namespace Gamera {
       }
     }
 
-    progress_bar.kill();
     return ccs;
   }
 

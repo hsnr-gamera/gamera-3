@@ -19,6 +19,7 @@
 
 from wxPython.wx import *   # wxPython
 import keyword              # Python standard library
+from types import *
 from gamera.core import *   # Gamera-specific
 from gamera import util
 from gamera.gui import var_name, gui_util
@@ -51,8 +52,7 @@ class ImageMenu:
     else:
       self.images = images_
     if not util.is_homogeneous_image_list(self.images):
-      gui_util
-      raise TypeError("All selected images are not of the same type.")
+      gui_util.message("All selected images are not of the same type.")
     self.image_name = name_
 
     members = self.images[0].members_for_menu()
@@ -61,6 +61,7 @@ class ImageMenu:
       members, methods,
       self.images[0].data.pixel_type,
       self.images[0].pixel_type_name)
+    self.did_something = 0
     self.parent.PopupMenu(menu, wxPoint(x, y))
     for i in range(10000, self._base_method_id + len(self.functions)):
       self.parent.Disconnect(i)
@@ -99,7 +100,7 @@ class ImageMenu:
     items = methods.items()
     items.sort()
     for key, val in items:
-      if type(val) == type({}):
+      if type(val) == types.DictType:
         item = self.create_methods(val, wxMenu())
         menu.AppendMenu(0, key, item)
       else:
@@ -175,6 +176,7 @@ class ImageMenu:
         else:
           self._run_in_shell(sh, result_name, func_call)
         wxEndBusyCursor()
+    self.did_something = 1
     sh.update()
 
   def _run_locally(self, sh, result_name, func_call):

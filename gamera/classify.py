@@ -34,6 +34,7 @@ class _Classifier:
    def generate_features(self, glyphs):
       progress = util.ProgressFactory("Generating features...")
       for i, glyph in util.enumerate(glyphs):
+         print "generate..."
          glyph.generate_features(self.feature_functions)
          progress.update(i, len(glyphs))
       progress.update(1,1)
@@ -131,6 +132,7 @@ class InteractiveClassifier(_Classifier):
          self.database[key] = None
       self.change_feature_set(features)
       self.perform_actions = perform_actions
+      self._display = None
 
    def get_glyphs(self):
       return self.database.keys()
@@ -188,7 +190,8 @@ class InteractiveClassifier(_Classifier):
       return splits
 
    def classify_glyph_automatic(self, glyph):
-      if not glyph.classification_state in (core.MANUAL, core.HEURISTIC):
+      if (len(self.database) and
+          not glyph.classification_state == core.MANUAL):
          glyph.generate_features(self.feature_functions)
          id = self.classifier.classify_with_images(self.database.iterkeys(), glyph)
          glyph.classify_automatic(id)
@@ -197,16 +200,14 @@ class InteractiveClassifier(_Classifier):
 
    def classify_list_automatic(self, glyphs, recursion_level=0, progress=None,
                                progress_i=0, progress_len=0):
-      if self.database == []:
-         return []
-      if recursion_level > 10:
+      if (len(self.database) == 0 or recursion_level > 10):
          return []
       splits = []
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
       progress_len += len(glyphs)
       for glyph in glyphs:
-         if not glyph.classification_state in (core.MANUAL, core.HEURISTIC):
+         if not glyph.classification_state == core.MANUAL:
             glyph.generate_features(self.feature_functions)
             id = self.classifier.classify_with_images(self.database.iterkeys(), glyph)
             glyph.classify_automatic(id)
@@ -229,7 +230,7 @@ class InteractiveClassifier(_Classifier):
             self.database.append(glyph)
 
    def rename_ids(self, old, new):
-      for glyph in self.database:
+      for glyph in self.database.iterkeys():
          new_ids = []
          for id in glyph.id_name:
             if id[1] == old:
@@ -246,4 +247,8 @@ class InteractiveClassifier(_Classifier):
 
    def display(self, current_database=[], context_image=None, symbol_table=[]):
       gui = config.get_option("__gui")
-      display = gui.ShowClassifier(self, current_database, context_image, symbol_table)
+      if gui and self._display is None:
+         self._display = gui.ShowClassifier(self, current_database, context_image, symbol_table)
+      else:
+         self._display.Show(1)
+         self._display.SetFocus()

@@ -20,21 +20,40 @@
 from __future__ import generators
 
 import string, UserList, sys, re   ## Python standard
+from types import *
 from math import pow
 from gamera.enums import *
 from gamera import config
 
-# determine if an object is a sequence
 def is_sequence(obj):
-  return type(obj) in (type([]), type(()))
+  "Check if an object is a sequence."
+  return type(obj) in (ListType, TupleType)
 
-# determine if an object is a sequence
 def make_sequence(obj):
-  if not type(obj) in (type([]), type(())):
+  "Make an object into a sequence if it isn't one."
+  if not type(obj) in (ListType, TupleType):
     return (obj,)
   return obj
 
+def is_image_list(l):
+  from gamera.core import ImageBase
+  if not is_sequence(l):
+    return 0
+  for image in l:
+    if not isinstance(l, ImageBase):
+      return 0
+  return 1
+
+def is_string_or_unicode_list(l):
+  if not is_sequence(l):
+    return 0
+  for s in l:
+    if s not in (StringType, UnicodeType):
+      return 0
+  return 1
+
 def is_homogeneous_image_list(l):
+  "Determines if a list contains only images of the same pixel type"
   from gamera.core import ImageBase
   if not is_sequence(l) or not isinstance(l[0], ImageBase):
     return 0
@@ -45,19 +64,17 @@ def is_homogeneous_image_list(l):
       return 0
   return 1
     
-# replaces the prefix a with b
 def replace_prefix(s, a, b):
-  return b + s[len(a):]
+  "replaces the prefix a in s with b"
+  if s.startswith(a):
+    return b + s[len(a):]
+  else:
+    return s
 
 def fast_cmp(x, y):
+  "Fast sorting on pre-cached values"
   return cmp(x.sort_cache, y.sort_cache)
 
-# determines if an object is a C/C++ object
-def is_cpp_instance(obj, name):
-  return name == string.split(repr(obj))[0][1:]
-
-# Returns true if the distance between a and b is
-# within range
 def rangeeq(a, b, range, mod = 0):
   """Returns true if the difference of *a* and *b* is within a given *range*.
 If *mod* is given, than the difference is always considered less than *mod*."""
@@ -74,9 +91,9 @@ def constains_instance(gl, klass):
       return 1
   return 0  
 
-# Converts any string into a valid Python identifier
 def string2identifier(str):
   """Defines how illegal variable names are converted to legal ones."""
+  # TODO: Not very robust.
   if len(str):
     name = re.sub('\-|/|\.|\ ', '_', str, 0)
     if name[0] in string.digits:
@@ -85,20 +102,20 @@ def string2identifier(str):
   else:
     return "DEFAULT"
 
-# Returns the sign of a number
 def sign(i):
+  "Returns the sign of a number"
   if i < 0:
     return -1
   return 1
 
-# A container with all unique elements
-class Set(UserList.UserList):
+class Set(list):
+    "A list-like container that contains only unique elements."
     def append(self, item):
-      if item not in self.data:
-        self.data.append(item)
+      if item not in self:
+        list.append(self, item)
     def insert(self, i, item):
-      if item not in self.data:
-        self.data.insert(i, item)
+      if item not in self:
+        list.insert(self, i, item)
     def extend(self, other):
       for item in other:
         self.append(item)
@@ -107,16 +124,16 @@ _byte_steps = (('Gb', float(1 << 30), float(1 << 30) * 1.1),
                ('Mb', float(1 << 20), float(1 << 20) * 1.1),
                ('kb', float(1 << 10), float(1 << 10) * 1.1),
                ('bytes', 1, -1))
-def pretty_print_bytes(bytes):
+def pretty_print_byte_size(bytes):
+  "Prints byte lengths in a nice human-readable way"
   for step in _byte_steps:
     if bytes > step[2]:
       return "%.2f %s" % (float(bytes) / step[1], step[0])
   return 'error (negative!)'
 
-# This is a back port of Python 2.3's enumerate function.
-# This will make our loops look a lot cleaner
 if float(sys.version[0:3]) < 2.3:
   def enumerate(collection):
+    """Backport to 2.2 of Python 2.3's enumerate function."""
     i = 0
     it = iter(collection)
     while 1:
@@ -137,12 +154,15 @@ def get_pixel_type_name(type_):
     return _pixel_type_names[type_]
 
 def group_list(list, group_size):
+  """Groups the list into fixed-size chunks."""
   groups = []
   for i in range(0, len(list), group_size):
     groups.append(list[i:min(i+group_size, len(list))])
   return groups
 
 def word_wrap(stream, l, indent=0, width=78):
+  """Writes to a stream with word wrapping.  indent is the size of the
+  indent for every line.  width is the maximum width of the text."""
   indent *= 2
   width -= indent
   indent_spaces = ' ' * (indent)
@@ -173,6 +193,7 @@ def decode_binary(s):
   return zlib.decompress(binascii.a2b_base64(s))
 
 class ProgressText:
+  """A console-based progress bar."""
   width = 70
   
   def __init__(self, message):

@@ -98,7 +98,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL
 
-   def find_glyphs_in_rect(self, x1, y1, x2, y2):
+   def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
       self.BeginBatch()
       matches = []
       if x1 == x2 or y1 == y2:
@@ -126,13 +126,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             col = index % GRID_NCOLS
             if index is last_index:
                self.updating = 0
-            self.SelectBlock(row, col, row, col, first)
+            self.SelectBlock(row, col, row, col, first or shift)
             if first == 0:
                self.MakeCellVisible(row, col)
                first = 1
       else:
-         self.toplevel.single_iw.id.clear_all_highlights()
-         self.ClearSelection()
+         if not shift:
+            self.toplevel.single_iw.id.clear_all_highlights()
+            self.ClearSelection()
       self.EndBatch()
 
    ########################################
@@ -243,7 +244,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                max_label = max(dc.GetTextExtent("<>")[0], max_label)
                self.SetRowLabelValue(i, "<>")
       self.EndBatch()
-      return max_label
+      return min(max_label, GRID_MAX_LABEL_LENGTH)
 
    def delete_selected(self):
       for item in self.GetSelectedItems():
@@ -337,10 +338,10 @@ class ClassifierImageDisplay(ImageDisplay):
       self.toplevel = toplevel
       ImageDisplay.__init__(self, parent)
 
-   def OnRubber(self):
+   def OnRubber(self, shift):
       self.toplevel.find_glyphs_in_rect(
          self.rubber_origin_x, self.rubber_origin_y,
-         self.rubber_x2, self.rubber_y2)
+         self.rubber_x2, self.rubber_y2, shift)
 
 class ClassifierImageWindow(ImageWindow):
    def __init__(self, toplevel, parent = None, id = -1):
@@ -522,8 +523,8 @@ class ClassifierFrame(ImageFrameBase):
          self.single_iw.id.highlight_cc(cc)
          self.single_iw.id.focus(cc)
 
-   def find_glyphs_in_rect(self, x1, y1, x2, y2):
-      self.multi_iw.id.find_glyphs_in_rect(x1, y1, x2, y2)
+   def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
+      self.multi_iw.id.find_glyphs_in_rect(x1, y1, x2, y2, shift)
 
    ########################################
    # CLASSIFICATION FUNCTIONS

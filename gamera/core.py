@@ -18,7 +18,9 @@
 #
 
 # Python standard library
-import sys, os, types, os.path, inspect, new, cStringIO, types, array
+from new import instancemethod
+from array import array
+from types import *
 
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
@@ -42,6 +44,7 @@ import paths, util, config  # Gamera-specific
 
 # Reference to the currently active gui
 config.add_option_default("__gui", None)
+config.add_option_default("__shell", None)
 
 ######################################################################
 
@@ -116,7 +119,7 @@ class ImageBase:
       """
       methods = cls._methods
       if not func is None:
-         func = new.instancemethod(func, None, gameracore.Image)
+         func = instancemethod(func, None, gameracore.Image)
          setattr(cls, plug.__name__, func)
       if not category is None:
         for type in plug.self_type.pixel_types:
@@ -147,7 +150,9 @@ class ImageBase:
                         'classification_state', 'properties')
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""
-      return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu if hasattr(self, x)]
+      return ["%s: %s" % (x, getattr(self, x))
+              for x in self._members_for_menu
+              if hasattr(self, x)]
 
    def methods_for_menu(self):
       """Returns a list of methods (in nested dictionaries by categories) for building user interfaces."""
@@ -159,7 +164,7 @@ class ImageBase:
 
    def _methods_sub(cls, dest, source):
      for key, val in source.items():
-       if type(val) == type({}):
+       if type(val) == DictType:
          if not dest.has_key(key):
            dest[key] = {}
          cls._methods_sub(dest[key], val)
@@ -181,7 +186,7 @@ class ImageBase:
    def _methods_flatten(cls, mat):
      list = []
      for key, val in mat.items():
-       if type(val) == type({}):
+       if type(val) == DictType:
          list.extend(cls._methods_flatten(val))
        else:
          list.append((key, val))
@@ -193,7 +198,7 @@ class ImageBase:
    load_image = staticmethod(load_image)
 
    def memory_size(self):
-      return util.pretty_print_bytes(self.data.bytes)
+      return util.pretty_print_byte_size(self.data.bytes)
    memory_size = property(memory_size)
 
    def set_display(self, _display):
@@ -296,7 +301,7 @@ class ImageBase:
             features = [features]
          functions = []
          for feature in features:
-            if type(feature) == type(''):
+            if type(feature) == StringType:
                found = 0
                for i in all_features:
                   if feature == i[0]:
@@ -318,10 +323,10 @@ class ImageBase:
       if self.feature_functions == features:
          return
       self.feature_functions = features
-      self.features = array.array('d')
+      self.features = array('d')
       for i in range(len(features)):
          result = apply(features[i][1].__call__, (self,))
-         if type(result) in (types.IntType, types.FloatType):
+         if type(result) in (IntType, FloatType):
             self.features.append(result)
          else:
             self.features.extend(result)

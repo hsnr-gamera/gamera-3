@@ -86,11 +86,11 @@ class GameraGui:
          from gamera import classify
          classifier = classify.InteractiveClassifier()
       wxBeginBusyCursor()
-      img = classifier_display.ClassifierFrame(classifier, symbol_table)
-      img.set_image(current_database, image)
-      img.Show(1)
+      class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
+      class_disp.set_image(current_database, image)
+      class_disp.Show(1)
       wxEndBusyCursor()
-      return img
+      return class_disp
    ShowClassifier = staticmethod(ShowClassifier)
 
    def UpdateIcons():

@@ -17,27 +17,34 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import core, util
-from util import word_wrap, ProgressFactory
 import gzip, os, os.path, cStringIO
-from gamera.symbol_table import SymbolTable
 from xml.parsers import expat
 
-classification_state_to_name = {
+import core, util, config
+from util import word_wrap, ProgressFactory, is_image_list
+from gamera.symbol_table import SymbolTable
+
+config.add_option_default('encoding', 'utf-8')
+
+_classification_state_to_name = {
    core.UNCLASSIFIED: "UNCLASSIFIED",
    core.MANUAL:       "MANUAL",
    core.HEURISTIC:    "HEURISTIC",
    core.AUTOMATIC:    "AUTOMATIC" }
+def classification_state_to_name(state):
+   return _classification_state_to_name[state]
 
-classification_state_to_number = {
+_classification_state_to_number = {
    "UNCLASSIFIED":    core.UNCLASSIFIED,
    "MANUAL":          core.MANUAL,
    "HEURISTIC":       core.HEURISTIC,
    "AUTOMATIC":       core.AUTOMATIC }
+def classification_state_to_number(state):
+   return _classification_state_to_number[state]
 
-saveable_types = {
-   'int': int,
-   'str': str,
+_saveable_types = {
+   'int':   int,
+   'str':   str,
    'float': float }
 
 extensions = "XML files (*.xml)|*.xml*"
@@ -48,11 +55,21 @@ extensions = "XML files (*.xml)|*.xml*"
 
 class WriteXML:
    def __init__(self, glyphs=[], symbol_table=[]):
+      if not is_image_list(glyphs):
+         raise TypeError(
+            "glyphs argument to WriteXML must be a list of images.")
       self.glyphs = glyphs
+      if (not isinstance(symbol_table, SymbolTable) and
+          not is_string_or_unicode_sequence(symbol_table)):
+         raise TypeError(
+            "symbol_table argument to WriteXML must be of type SymbolTable or a list of strings.")
       self.symbol_table = symbol_table
 
    def write_filename(self, filename):
-      self.filename = os.path.abspath(filename)
+      if not os.path.exists(os.path.split(os.path.abspath(filename))[0]):
+         raise ValueError(
+            "Cannot create a file at '%s'." %
+            os.path.split(os.path.abspath(filename))[0])
       if filename.endswith('gz'):
          fd = gzip.open(filename, 'w')
       else:
@@ -80,8 +97,9 @@ class WriteXML:
       progress.update(1, 1)
 
    def _write_symbol_table(self, stream, symbol_table, indent=0):
+      encoding = config.get_option('encoding')
       if (not isinstance(symbol_table, SymbolTable) and
-          util.is_sequence(symbol_table)):
+          util.is_string_or_unicode_sequence(symbol_table)):
          symbols = symbol_table
       else:
          symbols = symbol_table.symbols.keys()
@@ -90,7 +108,7 @@ class WriteXML:
          word_wrap(stream, '<symbols>', indent)
          indent += 1
          for x in symbols:
-            word_wrap(stream, '<symbol name="%s"/>' % str(x), indent)
+            word_wrap(stream, '<symbol name="%s"/>' % x.encode(encoding), indent)
          indent -= 1
          word_wrap(stream, '</symbols>', indent)
 
@@ -103,8 +121,6 @@ class WriteXML:
          word_wrap(stream, '</glyphs>', indent)
 
    def _write_glyph(self, stream,  glyph, indent=0):
-      if not isinstance(glyph, core.ImageBase):
-         raise ValueError("'%s' is not an Image instance." % str(glyph))
       tag = ('<glyph uly="%s" ulx="%s" nrows="%s" ncols="%s">' %
              (glyph.ul_y, glyph.ul_x, glyph.nrows, glyph.ncols))
       word_wrap(stream, tag, indent)
@@ -112,7 +128,7 @@ class WriteXML:
       word_wrap(
          stream,
          '<ids state="%s">' %
-         classification_state_to_name[glyph.classification_state],
+         classification_state_to_name(glyph.classification_state),
          indent)
       indent += 1
       for confidence, id in glyph.id_name:
@@ -160,7 +176,8 @@ class WriteXMLFile(WriteXML):
       if stream == None:
          return self.string()
       self.stream = stream
-      self.stream.write('<?xml version="1.0" ?>\n')
+      encoding = config.get_option('encoding')
+      self.stream.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
       self.stream.write('<gamera-database>\n')
       self._write_core(stream, progress, indent=1)
       self.stream.write('</gamera-database>\n')
@@ -181,6 +198,18 @@ class LoadXML:
       self._end_elements_global = []
       self._stream_length = 0
       self.setup_handlers()
+
+   def try_type_convert(self, dictionary, key, typename, tagname):
+      try:
+         return typename(dictionary[key])
+      except KeyError:
+         raise ValueError(
+            "XML ValueError: <%s> tag does not have a required element '%s'." %
+            (tagname, key))
+      except ValueError:
+         raise ValueError(
+            'XML ValueError: <%s %s="%s" ... is not of valid type' %
+            (tagname, key, dictionary[key]))
       
    def return_parse(self):
       pass
@@ -282,10 +311,11 @@ class LoadXMLGlyphs(LoadXML):
       return self.glyphs
 
    def ths_glyph(self, a):
-      self.ul_y = int(a['uly'])
-      self.ul_x = int(a['ulx'])
-      self.nrows = int(a['nrows'])
-      self.ncols = int(a['ncols'])
+      
+      self.ul_y = self.try_type_convert(a, 'uly', int, 'glyph')
+      self.ul_x = self.try_type_convert(a, 'ulx', int, 'glyph')
+      self.nrows = self.try_type_convert(a, 'nrows', int, 'glyph')
+      self.ncols = self.try_type_convert(a, 'ncols', int, 'glyph')
       self.scaling = 1.0
       self.id_name = []
       self.properties = {}
@@ -295,6 +325,7 @@ class LoadXMLGlyphs(LoadXML):
                          core.ONEBIT, core.DENSE)
       glyph.from_rle(str(self.data.strip()))
       glyph.classification_state = self.classification_state
+      self.id_name.sort()
       glyph.id_name = self.id_name
       for key, val in self.properties.items():
          glyph.properties[key] = val
@@ -302,20 +333,22 @@ class LoadXMLGlyphs(LoadXML):
       self.glyphs.append(glyph)
 
    def ths_ids(self, a):
-      if a.has_key('state'):
-         self.classification_state = classification_state_to_number[a['state']]
-      else:
-         self.classification_state = UNCLASSIFIED
+      self.classification_state = self.try_type_convert(
+         a, 'state', classification_state_to_number, 'ids')
 
    def ths_id(self, a):
-      self.id_name.append((float(a['confidence']), str(a['name'])))
+      confidence = self.try_type_convert(
+         a, 'confidence', float, 'id')
+      name = self.try_type_convert(
+         a, 'name', unicode, 'id')
+      self.id_name.append((confidence, name.encode()))
 
    def ths_features(self, a):
-      if a.has_key('scaling'):
-         self.scaling = float(a['scaling'])
+      self.scaling = self.try_type_convert(
+         a, 'scaling', float, 'features')
 
    def ths_data(self, a):
-      self.data = ''
+      self.data = u''
       self._parser.CharacterDataHandler = self.add_data
 
    def the_data(self):
@@ -325,8 +358,10 @@ class LoadXMLGlyphs(LoadXML):
       self.data += data
 
    def ths_property(self, a):
-      self.property_name = a['name']
-      self.property_type = a['type']
+      self.property_name = self.try_type_convert(
+         a, 'name', str, 'property')
+      self.property_type = self.try_type_convert(
+         a, 'type', str, 'property')
       self.property_value = ''
       self._parser.CharacterDataHandler = self.add_property_value
 
@@ -335,7 +370,7 @@ class LoadXMLGlyphs(LoadXML):
          self.properties[self.property_name] = \
             saveable_types[self.property_type](self.property_value)
       else:
-         self.properties[self.property_name] = self.data
+         self.properties[self.property_name] = self.data.encode()
 
    def add_property_value(self, data):
       self.property_value += data

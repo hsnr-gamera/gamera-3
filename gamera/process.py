@@ -17,21 +17,26 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import util, inspect, dis, types, os.path, sys, StringIO, string, UserList
+import os.path, sys, cStringIO
+from util import Set
+from dis import dis
+from inspect import getmodule
+from types import *
+
 from args import *
 
 # Finds the member variables that a method accesses and sets
 def find_method_dependencies(method):
-    buffer = StringIO.StringIO()
+    buffer = cStringIO.StringIO()
     stdout = sys.stdout
     sys.stdout = buffer
-    dis.dis(method)
+    dis(method)
     bytecodes = [x.split() for x in buffer.getvalue().split("\n")]
     sys.stdout = stdout
     buffer.close()
     
-    sets = util.Set()
-    requires = util.Set()
+    sets = Set()
+    requires = Set()
     self = 0
     for bytecode in bytecodes:
         if len(bytecode) > 3:
@@ -62,9 +67,9 @@ class Process:
     def get_step_number(self, step, default = 0):
         if step == None:
             return default
-        elif type(step) == types.StringType and step in self.steps:
+        elif type(step) == StringType and step in self.steps:
             return self.steps.index(step)
-        elif type(step) == types.IntType and step < len(self.steps):
+        elif type(step) == IntType and step < len(self.steps):
             return step
         raise KeyError("%s does not identify a step in the process." % step)
 
@@ -177,7 +182,7 @@ class ProcessWizard(Wizard):
                 end_step, start_step = start_step, end_step
             self.start_step = start_step
             self.end_step = end_step
-            saves = util.Set()
+            saves = Set()
             for step in range(start_step, end_step + 1):
                 deps = find_method_dependencies(
                     getattr(self.process, self.process.steps[step]))
@@ -205,7 +210,7 @@ class ProcessWizard(Wizard):
             
     def done(self):
         self.shell.run("%s.%s%s.process(%s, %s, %s)" %
-                       (inspect.getmodule(self.process).__name__,
+                       (getmodule(self.process).__name__,
                         self.process.__name__,
                         self.init_args,
                         repr(self.process.steps[self.start_step]),

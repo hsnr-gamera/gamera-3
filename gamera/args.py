@@ -24,7 +24,8 @@ try:
    _has_gui = _WX_GUI
 except:
    _has_gui = _NO_GUI
-import sys, types, string   # Python standard library
+import sys, string   # Python standard library
+from types import *
 import util, paths          # Gamera specific
 
 
@@ -194,7 +195,7 @@ class Args(_guiArgs):
       tuple = '('
       for i in range(len(results)):
          if results[i] != None:
-            if (type(results[i]) == type('') and self.wizard and
+            if (type(results[i]) == StringType and self.wizard and
                 results[i][0] != "'"):
                tuple = tuple + "'" + str(results[i]) + "'"
             else:
@@ -378,14 +379,14 @@ if _has_gui == _WX_GUI:
             choices = []
             self.locals = locals
             for i in locals.items():
-               if ((self.list_of and isinstance(i[1], type([])) and
+               if ((self.list_of and isinstance(i[1], ListType) and
                     len(i[1]) and isinstance(i[1][0], self.klass)) or
                    (not self.list_of and isinstance(i[1], self.klass))):
                   choices.append(i[0])
          return choices
 
       def get_control(self, parent, locals=None):
-         if type(self.klass) == type(''):
+         if type(self.klass) == StringType:
             self.klass = eval(self.klass)
          self.control = wxPython.wx.wxChoice(
             parent, -1, choices = self.determine_choices(locals))
@@ -415,7 +416,7 @@ if _has_gui == _WX_GUI:
          self.locals = locals
          if locals:
             for key, val in locals.items():
-               if ((self.list_of and isinstance(val, type([])) and
+               if ((self.list_of and isinstance(val, ListType) and
                     len(val) and isinstance(val[0], self.klass)) or
                    (not self.list_of and isinstance(val, self.klass))):
                   if (core.ALL in self.pixel_types or
@@ -450,7 +451,7 @@ if _has_gui == _WX_GUI:
       def get_control(self, parent, locals=None):
          choices = []
          for choice in self.choices:
-            if len(choice) == 2 and type(choice) != type(''):
+            if len(choice) == 2 and type(choice) != StringType:
                choices.append(choice[0])
             else:
                choices.append(choice)
@@ -464,7 +465,7 @@ if _has_gui == _WX_GUI:
       def get(self):
          selection = self.control.GetSelection()
          if (len(self.choices[selection]) == 2 and
-             type(self.choices[selection]) != type('')):
+             type(self.choices[selection]) != StringType):
             return self.choices[selection][1]
          else:
             return selection

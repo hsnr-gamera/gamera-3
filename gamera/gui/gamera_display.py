@@ -63,6 +63,7 @@ class ImageDisplay(wxScrolledWindow):
       self.image = None
       self.original_image = None
       self.highlights = []
+      self.boxed_highlights = 0
       self.color = 0
       self.rubber_on = 0
       self.rubber_origin_x = 0
@@ -235,6 +236,10 @@ class ImageDisplay(wxScrolledWindow):
                             set_y / scroll_amount)
          self.RefreshAll()
 
+   def BoxAroundHighlights(self, event):
+      self.boxed_highlights = event.GetIsDown()
+      self.RefreshAll()
+
    ########################################
    # SCALING
    #
@@ -343,7 +348,7 @@ class ImageDisplay(wxScrolledWindow):
       dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
       dc.SetLogicalFunction(wxCOPY)
 
-   def OnRubber(self):
+   def OnRubber(self, shift):
       #deliberately empty -- this is a callback to be overridden by subclasses
       pass
 
@@ -513,7 +518,21 @@ class ImageDisplay(wxScrolledWindow):
                bmp = wxBitmapFromImage(image, 1)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
-               print x, y, subhighlight.ul_x, subhighlight.ul_y, subimage.ul_x, subimage.ul_y
+               if self.boxed_highlights:
+                  x_rect = x + (highlight.ul_x - subimage.ul_x) * scaling
+                  y_rect = y + (highlight.ul_y - subimage.ul_y) * scaling
+                  dc.SetClippingRegion(
+                     x_cc, y_cc,
+                     subhighlight.ncols * scaling, subhighlight.nrows * scaling)
+                  dc.SetLogicalFunction(wxXOR)
+                  pen = wxCYAN_PEN
+                  pen.SetStyle(wxDOT)
+                  dc.SetPen(pen)
+                  dc.SetBrush(wxTRANSPARENT_BRUSH)
+                  box_cols = highlight.ncols * scaling
+                  box_rows = highlight.nrows * scaling
+                  dc.DrawRectangle(x_rect, y_rect, box_cols, box_rows)
+                  dc.DestroyClippingRegion()
                dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)
                dc.DrawBitmap(bmp, x_cc, y_cc)
@@ -537,29 +556,30 @@ class ImageDisplay(wxScrolledWindow):
               self.image.ncols - 1)
       y = min((event.GetY() + origin[1]) / self.scaling,
               self.image.nrows - 1)
-      if (x > self.rubber_origin_x and
-          x < self.rubber_origin_x + self.block_w):
+      if (x >= self.rubber_origin_x and
+          x <= self.rubber_origin_x + self.block_w):
          self.rubber_origin_x, self.rubber_x2 = \
                                self.rubber_x2, self.rubber_origin_x
-         if (y > self.rubber_origin_y and
-             y < self.rubber_origin_y + self.block_h):
+         if (y >= self.rubber_origin_y and
+             y <= self.rubber_origin_y + self.block_h):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
             self.draw_rubber()
             return
-         elif (y < self.rubber_y2 and
-               y > self.rubber_y2 - self.block_h):
+         elif (y <= self.rubber_y2 and
+               y >= self.rubber_y2 - self.block_h):
             self.draw_rubber()
             return
-      elif (x < self.rubber_x2 and x > self.rubber_x2 - self.block_w):
-         if (y > self.rubber_origin_y and
-             y < self.rubber_origin_y + self.block_h):
+      elif (x <= self.rubber_x2 and
+            x >= self.rubber_x2 - self.block_w):
+         if (y >= self.rubber_origin_y and
+             y <= self.rubber_origin_y + self.block_h):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
             self.draw_rubber()
             return
-         elif (y < self.rubber_y2 and
-               y > self.rubber_y2 - self.block_h):
+         elif (y <= self.rubber_y2 and
+               y >= self.rubber_y2 - self.block_h):
             self.draw_rubber()
             return
       self.rubber_origin_x = self.rubber_x2 = int(x)
@@ -593,10 +613,11 @@ class ImageDisplay(wxScrolledWindow):
 
    def _OnRightDown(self, event):
       from gamera.gui import image_menu
-      image_menu.ImageMenu(
+      menu = image_menu.ImageMenu(
          self, event.GetX(), event.GetY(),
          self.image)
-      self.reload_image()
+      if menu.did_something:
+         self.reload_image()
 
    def _OnMotion(self, event):
       if self.rubber_on:
@@ -624,7 +645,7 @@ class ImageDisplay(wxScrolledWindow):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
          self.rubber_on = 0
-         self.OnRubber()
+         self.OnRubber(event.ShiftDown() or event.ControlDown())
       if self.dragging:
          self.dragging = 0
 
@@ -639,14 +660,18 @@ class ImageWindow(wxPanel):
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
                                  "Refresh", self.id.reload_image)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
-                                 "Zoom in", self.id.ZoomIn)
-      self.toolbar.AddSimpleTool(21, gamera_icons.getIconZoomNormBitmap(),
-                                 "Zoom 100%", self.id.ZoomNorm)
-      self.toolbar.AddSimpleTool(22, gamera_icons.getIconZoomOutBitmap(),
-                                 "Zoom out", self.id.ZoomOut)
-      self.toolbar.AddSimpleTool(23, gamera_icons.getIconZoomViewBitmap(),
-                                 "Zoom in on selected region", self.id.ZoomView)
+      self.toolbar.AddSimpleTool(
+         20, gamera_icons.getIconZoomInBitmap(),
+         "Zoom in", self.id.ZoomIn)
+      self.toolbar.AddSimpleTool(
+         21, gamera_icons.getIconZoomNormBitmap(),
+         "Zoom 100%", self.id.ZoomNorm)
+      self.toolbar.AddSimpleTool(
+         22, gamera_icons.getIconZoomOutBitmap(),
+         "Zoom out", self.id.ZoomOut)
+      self.toolbar.AddSimpleTool(
+         23, gamera_icons.getIconZoomViewBitmap(),
+         "Zoom in on selected region", self.id.ZoomView)
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Quality: "))
       self.zoom_slider = wxComboBox(
          self.toolbar, 24, choices=['low','medium','high'], style=wxCB_READONLY)
@@ -654,11 +679,17 @@ class ImageWindow(wxPanel):
       self.toolbar.AddControl(self.zoom_slider)
 
       self.toolbar.AddSeparator()
-
-      self.toolbar.AddSimpleTool(31, gamera_icons.getIconMakeViewBitmap(),
-                                 "Make new view", self.id.MakeView)
-      self.toolbar.AddSimpleTool(32, gamera_icons.getIconImageCopyBitmap(),
-                                 "Make new copy", self.id.MakeCopy)
+      self.toolbar.AddSimpleTool(
+         25, gamera_icons.getIconMarkHighlightsBitmap(),
+         "Box around highlights", self.id.BoxAroundHighlights, 1)
+      
+      self.toolbar.AddSeparator()
+      self.toolbar.AddSimpleTool(
+         31, gamera_icons.getIconMakeViewBitmap(),
+         "Make new view", self.id.MakeView)
+      self.toolbar.AddSimpleTool(
+         32, gamera_icons.getIconImageCopyBitmap(),
+         "Make new copy", self.id.MakeCopy)
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.left.SameAs(self, wxLeft, 0)

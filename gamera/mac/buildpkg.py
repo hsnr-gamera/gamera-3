@@ -142,6 +142,7 @@ class PackageMaker:
         self.packageInfo.update(info)
         
         # variables set later
+	self.packageContentsFolder = None
         self.packageRootFolder = None
         self.packageResourceFolder = None
         self.sourceFolder = None
@@ -164,6 +165,7 @@ class PackageMaker:
 
         # set folder attributes
         self.sourceFolder = root
+
         if resources == None:
             self.resourceFolder = None
         else:
@@ -184,9 +186,9 @@ class PackageMaker:
  
         # do what needs to be done
         self._makeFolders()
-        self._addInfo()
+	self._addInfo()
+	self._addArchive()
         self._addBom()
-        self._addArchive()
         self._addResources()
         self._addSizes()
 
@@ -213,10 +215,10 @@ class PackageMaker:
         # packageName = "%s-%s" % (self.packageInfo["Title"], 
         #                          self.packageInfo["Version"]) # ??
 
-        contFolder = join(self.packageRootFolder, "Contents")
-        self.packageResourceFolder = join(contFolder, "Resources")
+        self.packageContentsFolder = join(self.packageRootFolder, "Contents")
+        self.packageResourceFolder = join(self.packageContentsFolder, "Resources")
         os.mkdir(self.packageRootFolder)
-        os.mkdir(contFolder)
+        os.mkdir(self.packageContentsFolder)
         os.mkdir(self.packageResourceFolder)
 
 
@@ -254,16 +256,30 @@ class PackageMaker:
     def _addArchive(self):
         "Write .pax.gz file, a compressed archive using pax/gzip."
 
+
+# FIX SYMBOLIC
+	cwd = os.getcwd()
+	os.chdir(self.sourceFolder)
+        # Pax is the enemy.  Make war.
+	sitepackages = join("System", "Library", "Frameworks", "Python.framework", "Versions", "2.3", "lib", "python2.3", "site-packages")
+
+	if isdir(join(cwd, self.sourceFolder, sitepackages)):
+	   librarypython23 = join("Library", "Python", "2.3")
+	   if not isdir(librarypython23):
+	   	os.makedirs(librarypython23)
+	   shutil.move(join(cwd, self.sourceFolder, sitepackages), join(cwd, self.sourceFolder, librarypython23))
+
+# END FIXING OF THE SYMBOLIC LINKS
+
         # Currently ignores if the 'pax' tool is not available.
 
-        cwd = os.getcwd()
-
         # create archive
-        os.chdir(self.sourceFolder)
         base = basename(self.packageInfo["Title"]) + ".pax"
         self.archPath = join(self.packageResourceFolder, base)
-        archPath = self._escapeBlanks(self.archPath)
-        cmd = "pax -w -f %s %s" % (archPath, ".")
+	working = join(cwd, self.archPath)
+        archPath = self._escapeBlanks(working)
+        cmd = "pax -wf %s %s" % (archPath, ".")
+	print archPath
         res = os.system(cmd)
         
         # compress archive
@@ -311,7 +327,6 @@ class PackageMaker:
         f = open(join(self.packageResourceFolder, base), "w")
         format = "NumFiles %d\nInstalledSize %d\nCompressedSize %d\n"
         f.write(format % (numFiles, installedSize, zippedSize))
-
 
 # Shortcut function interface
 

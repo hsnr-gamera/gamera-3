@@ -22,10 +22,33 @@ from distutils.core import Command
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
 from distutils import log
-from distutils.dir_util import remove_tree, create_tree
+from distutils.dir_util import remove_tree, create_tree, copy_tree
 from distutils.file_util import copy_file
+from os.path import join
 import os
 import glob
+import commands
+
+def _run_command(exc, line):
+    print line
+    try:
+        try:
+            status, output = commands.getstatusoutput(line)
+        except:
+            raise IOError("Error running %s" % exc)
+        if status:
+            raise IOError("Error running %s" % exc)
+    finally:
+        print output
+    return output
+
+def run_command(exc, *args):
+    line = " ".join([str(x) for x in [exc] + list(args)])
+    return _run_command(exc, line)
+
+def run_command_at(dir, exc, *args):
+    line = ("cd %s;" % dir) + " ".join([str(x) for x in [exc] + list(args)])
+    return _run_command(exc, line)
 
 class bdist_osx(Command):
    description = "create a Mac OS-X Installer.app package by calling out to buildpkg.py"
@@ -84,11 +107,6 @@ class bdist_osx(Command):
       if os.path.exists(pkg):
          remove_tree(pkg)
 
-      readmes = ['README', 'readme.txt', 'LICENSE', 'ACKNOWLEDGEMENTS']
-      for readme in readmes:
-          if os.path.exists(readme):
-              copy_file(readme, pkg_dir)
-
       copy_file('README', 'gamera/mac/resources/ReadMe.txt')
       copy_file('LICENSE', 'gamera/mac/resources/License.txt')
 
@@ -101,21 +119,45 @@ class bdist_osx(Command):
                Relocatable='NO',
                NeedsAuthorization='YES',
                UseUserMask='YES',
-               RootVolumeOnly='YES',
                OutputDir=pkg_dir)
 
       remove_tree(self.bdist_dir)
 
+      removals = [os.path.join(self.dist_dir, fullname + ".dmg")]
 
-      removals = [os.path.join(self.dist_dir, fullname + ".dmg"),
-                  os.path.join(self.dist_dir, "_%s.dmg" % fullname)]
       for removal in removals:
           if os.path.exists(removal):
               os.remove(removal)
 
-      import makedmg
-      log.info("Making %s.dmg..." % fullname)
-      makedmg.make_dmg(pkg_dir, self.dist_dir, fullname)
+      dmg_dir = join(self.dist_dir, 'pkg')
+      dmg_dir_gamera = join(dmg_dir, 'Gamera')
 
+      copy_tree('gamera/mac/gameraclick', join(dmg_dir, 'Gamera'))
+
+      readmes = ['README', 'readme.txt', 'LICENSE', 'ACKNOWLEDGEMENTS']
+      for readme in readmes:
+          if os.path.exists(readme):
+              copy_file(readme, dmg_dir_gamera)
+
+      # dmg background image     
+      copy_tree('gamera/mac/dmg_images', join(dmg_dir, '.images'))
+      # wxPython link
+      copy_file('gamera/mac/wxPython.html', join(dmg_dir, 'wxPython Build on Sourceforge.html'))
+
+      log.info("Making %s.dmg..." % fullname)
+      # Make a read/write DMG
+      output = run_command_at(self.dist_dir, "hdiutil", "create", "-format", "UDRW", "-fs", "HFS+", "-volname", "Gamera", "-srcfolder", "pkg", "temp.dmg")
+      # Mount it
+      output = run_command_at(self.dist_dir, "hdiutil", "mount", "temp.dmg")
+      # Change the DS Store so the background image and icon sizes will be fixed
+      copy_file('gamera/mac/dmg_ds_store', join('/Volumes', 'Gamera', '.DS_Store'))
+      # Unmount it
+      output = run_command("hdiutil unmount /Volumes/Gamera")
+      # Make it read only
+      output = run_command_at(self.dist_dir, "hdiutil", "convert", "-format", "UDRO", "-o", fullname+".osx.dmg", "temp.dmg")
+      # Internet Enable it (why I can do this read only, but I can't do the background, I dunno)
+      output = run_command_at(self.dist_dir, "hdiutil internet-enable -yes", fullname+".osx.dmg")
+      # Delete the temporary image
+      os.remove(join(self.dist_dir, "temp.dmg"))
       remove_tree(pkg_dir)
-      os.remove(removals[1])
+      

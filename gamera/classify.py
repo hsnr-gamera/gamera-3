@@ -373,7 +373,6 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
    def change_feature_set(self, features):
       self.is_dirty = True
       if len(self.database):
-         print self.database
          self.feature_functions = iter(self.database).next().get_feature_functions(features)
          self.generate_features(self.database)
          self.instantiate_from_images(self.database)

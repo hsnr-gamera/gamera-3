@@ -815,6 +815,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          if self.parent.display_names:
             label = self.parent.get_label(image)
             if label != '':
+               dc.SetLogicalFunction(wxCOPY)
                dc.SetBackgroundMode(wxTRANSPARENT)
                # The default font is too big under windows - this should
                # probably be a configurable option . . .

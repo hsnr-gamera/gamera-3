@@ -23,6 +23,8 @@ from gamera.knncore import CITY_BLOCK
 from gamera.knncore import EUCLIDEAN
 from gamera.knncore import FAST_EUCLIDEAN
 
+
+
 class kNN(gamera.knncore.kNN):
     def __init__(self):
         gamera.knncore.kNN.__init__(self)
@@ -48,3 +50,4 @@ class kNN(gamera.knncore.kNN):
         """Start optizing the classifier using a Genetic Algorithm"""
         self.ga_initial = self.ga_create()
         self.ga_best = self.ga_initial
+        

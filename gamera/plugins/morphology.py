@@ -89,7 +89,7 @@ require recursion.
   """
   self_type = ImageType([ONEBIT])
   args = Args([Int('cc_size', range=(1, 100))])
-  doc_examples = [(ONEBIT,)]
+  doc_examples = [(ONEBIT,5), (ONEBIT,15)]
 
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]

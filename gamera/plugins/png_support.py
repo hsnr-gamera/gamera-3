@@ -111,7 +111,7 @@ class PngSupportModule(PluginModule):
                           'infback.c','inffast.c','inflate.c','inftrees.c','trees.c',
                           'uncompr.c','zutil.c']]:
             cpp_sources.append(filename)
-        cpp_include_dirs = [internal_png_dir, "include"]
+        cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.1"]
         # zlib, which apparently is included in OS-X 10.3 by default
 #        extra_libraries = ["z"]
     functions = [save_PNG, PNG_info_class, load_PNG_class]

@@ -73,7 +73,9 @@ class WriteXML:
       self.symbol_table = symbol_table
       self.with_features = with_features
 
-   def write_filename(self, filename):
+   def write_filename(self, filename, with_features=None):
+      if not with_features is None:
+         self.with_features = with_features
       if not os.path.exists(os.path.split(os.path.abspath(filename))[0]):
          raise XMLError(
             "Cannot create a file at '%s'." %

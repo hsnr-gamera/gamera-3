@@ -156,10 +156,12 @@ a list of glyphs that is already updated for splitting and grouping."""
             return 0.0
          else:
             return classification[0][0]
-      classification = subgroup[0].id_name[0]
-      if classification[1].startswith('_group._part'):
-         return 0.0
-      return classification[0]
+      if len(subgroup):
+         classification = subgroup[0].id_name[0]
+         if classification[1].startswith('_group._part'):
+            return 0.0
+         return classification[0]
+      raise ValueError("Something is wrong here...  Either you don't have classifier data or there is an internal error in the grouping algorithm.")
 
    def _find_group_unions(self, G, evaluate_function, max_parts_per_group=5,
                           max_graph_size=16):
@@ -340,7 +342,7 @@ a list of glyphs that is already updated for splitting."""
    ########################################
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
-   def to_xml(self, stream):
+   def to_xml(self, stream, with_features=True):
       """**to_xml** (stream *stream*)
 
 Saves the training data in XML format to the given stream (which could
@@ -348,15 +350,15 @@ be any object supporting the file protocol, such as a file object or StringIO
 object)."""
       self.is_dirty = False
       return gamera_xml.WriteXML(
-         glyphs=self.get_glyphs()).write_stream(stream)
+         glyphs=self.get_glyphs()).write_stream(stream, with_features)
 
-   def to_xml_filename(self, filename):
+   def to_xml_filename(self, filename, with_features=True):
       """**to_xml_filename** (FileSave *filename*)
 
 Saves the training data in XML format to the given filename."""
       self.is_dirty = False
       return gamera_xml.WriteXMLFile(
-         glyphs=self.get_glyphs()).write_filename(filename)
+         glyphs=self.get_glyphs()).write_filename(filename, with_features)
 
    def from_xml(self, stream):
       """**from_xml** (stream *stream*)

@@ -102,6 +102,9 @@ extensions = [Extension("gamera.gameracore",
                         libraries=["stdc++"]),
               Extension("gamera.knncore", ga_files,
                         include_dirs=["include", "src/ga", "src"],
+                        libraries=["stdc++"]),
+              Extension("gamera.graph", ["src/graphmodule.cpp"],
+                        include_dirs=["include", "src"],
                         libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 

@@ -24,7 +24,7 @@ import string, UserList, sys, re   ## Python standard
 from types import *
 from math import pow
 from gamera.enums import *
-from gamera import config
+import config
 
 def is_sequence(obj):
    "Check if an object is a sequence."

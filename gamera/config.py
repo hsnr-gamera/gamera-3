@@ -195,9 +195,9 @@ def write_out(fd, callback, system=1):
          fd.write("[%s]\n" % section_name)
          start = '\n'
          for option in opts:
-            callback(fd, option)
+            callback(fd, option, section_name)
 
-def ini_file_callback(fd, option):
+def ini_file_callback(fd, option, section):
    util.word_wrap(fd, "# %s" % option.get_help())
    if option.get_type() == list:
       vals = option.get()
@@ -207,11 +207,13 @@ def ini_file_callback(fd, option):
    else:
       fd.write("%s = %s\n" % (option.get_name(), str(option.get())))
 
-def help_callback(fd, option):
+def help_callback(fd, option, section):
    if option.get_type() != list:
-      util.word_wrap(fd, '--%s=%s (%s)' %
-                     (option.get_name(), str(option.get()), str(option.get_default()))
-                     , 1)
+      util.word_wrap(
+         fd, '--%s.%s=%s (%s)' %
+         (section, option.get_name(),
+          str(option.get()), str(option.get_default())),
+         1)
       util.word_wrap(fd, option.get_help(), 3)
 
 def display_help():

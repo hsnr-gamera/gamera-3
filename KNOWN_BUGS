@@ -13,3 +13,6 @@ its wonderful Unicode support.  Until then, you can get around it by
 stripping off the UTF-8 on your LANG environment variable, such as:
 
 > export LANG=en_US
+
+Note: this problem is also fixed by upgrading to wxPython 2.3.4.2
+(or presumably higher).

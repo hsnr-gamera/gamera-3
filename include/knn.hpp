@@ -81,7 +81,7 @@ namespace Gamera {
 					  IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * (*known * *known - *unknown * *unknown);
+	distance += *weight * std::abs(*known * *known - *unknown * *unknown);
       return distance;
     }
 
@@ -92,7 +92,8 @@ namespace Gamera {
       a method of querying for the id of the majority of neighbors. This
       class is meant to be used once - after calling add for each item in
       a database and majority the state of the class is undefined. If another
-      search needs to be performed call reset.
+      search needs to be performed call reset (at which point add for each
+      element will need to be called again).
     */
     template<class IdType>
     class kNearestNeighbors {

@@ -1,10 +1,9 @@
 from pyplate import *
-import plugin
-import threshold
+import plugin, magic_import
 
-if __name__ == '__main__':
-  combinations = (('OneBit', 'Float', 'GreyScale'),
-                  ('GreyScale', 'RGB'))
+magic_import.magic_import_setup()
+
+def generate_plugin(plugin_filename):
   
   template = Template("""
   [[exec import string]]
@@ -188,25 +187,9 @@ if __name__ == '__main__':
   
   """)
 
-  template.execute(sys.stdout, threshold.__dict__)
+  module_name = plugin_filename.split('.')[0]
+  cpp_filename = "_" + module_name + ".cpp"
+  output_file = open(cpp_filename, "w")
+  module = __import__(module_name)
+  template.execute(output_file, module.__dict__)
 
-##  [[# This is a comment #]]
-##  [[# This example does recursive function calls need to generate feature combinations #]]
-##  [[def switch(layer, args)]]
-##     switch(m[[layer]].id) {
-##     [[for option in combinations[layer]]]
-##     [[exec current = option + '(m' + str(layer) + ')']]
-##     case [[option]]:
-##       [[if layer == layers - 1]]
-##         function_call([[string.join(args + [current], ',')]]);
-##       [[else]]
-##         [[call switch(layer + 1, args + [current])]]
-##       [[end]]
-##     break;
-##     [[end]]
-##     }
-##  [[end]]
-  
-##  PyObject *call_[[function_name]](PyObject* self, PyObject *args) {
-##  [[call switch(0, [])]]
-##  }

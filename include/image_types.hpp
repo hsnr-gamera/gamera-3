@@ -172,7 +172,7 @@ namespace Gamera {
 
   template<>
   struct TypeIdImageFactory<RGB, DENSE> {
-    typedef RBGImageData data_type;
+    typedef RGBImageData data_type;
     typedef RGBImageView image_type;
     image_type* create(size_t offset_y, size_t offset_x,
 		       size_t nrows, size_t ncols) {

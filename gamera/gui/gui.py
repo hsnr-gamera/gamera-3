@@ -35,7 +35,7 @@ from wxPython.html import *
 
 # Python standard library
 # import interactive
-import sys, types, traceback, os, string, webbrowser, resource
+import sys, types, traceback, os, string, webbrowser
 
 # Set default options
 config.add_option_default("shell_style_face", "Helvetica")

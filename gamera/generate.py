@@ -23,26 +23,30 @@ import sys
 from distutils.core import Extension
 from gamera import paths
 
+global std_import
+global plugins_to_ignore
+
 # magic_import and magic_import_setup
 #
-# This allows us to silently ignore importing modules prefixed
-# with and underscore. This allows us to import plugins that
-# depend on C++ moduels that are prefixed with underscores
-# when those C++ modules don't yet exist (which is the case
-# when we are generating and compiling the plugins!).
+# This allows us to ignore a list of modules passed into
+# magic_import_setup. generate_plugin uses this to prevent
+# the loading of C++ modules that may not exist yet during
+# the build process.
 def magic_import(name, globals_={}, locals_={}, fromlist=[]):
   if fromlist != None and "core" in fromlist:
     fromlist = list(fromlist)
     fromlist.remove("core")
 
-  if ((name[0] == '_' and name[1] != "_" and name != "_winreg") or
-      name == "core" or name == "gamera.core"):
-    return None
-  else:
-    return std_import(name, globals_, locals_, fromlist)
+  for x in plugins_to_ignore:
+    if name == x:
+      return None
+
+  return std_import(name, globals_, locals_, fromlist)
   
-def magic_import_setup():
+def magic_import_setup(ignore):
+  global plugins_to_ignore
   global std_import
+  plugins_to_ignore = ignore
   # Save the standard __import__ function so we can chain to it
   std_import = __builtins__['__import__']
   # Override the __import__ function with our new one
@@ -117,79 +121,100 @@ def generate_plugin(plugin_filename):
       [[exec pyarg_format = '']]
     [[end]]
     static PyObject* call_[[function.__class__.__name__]](PyObject* self, PyObject* args) {
-      [[# this holds the self argument - note that the self passed into the function will #]]
-      [[# be Null because this functions is not actually bound to an object #]]
-      [[if not function.self_type is None]]
-        PyObject* real_self;
-      [[end]]
+    [[# this holds the self argument - note that the self passed into the function will #]]
+    [[# be Null because this functions is not actually bound to an object #]]
+    [[if not function.self_type is None]]
+      PyObject* real_self;
+    [[end]]
 
-      [[# for each argument insert the appropriate conversion code into the string that will #]]
-      [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
-      [[for x in function.args.list]]
-        [[if isinstance(x, Int) or isinstance(x, Choice)]]
-          int [[x.name + '_arg']];
-          [[exec pyarg_format = pyarg_format + 'i']]
-        [[elif isinstance(x, Float)]]
-          double [[x.name + '_arg']];
-          [[exec pyarg_format = pyarg_format + 'd']]
-        [[elif isinstance(x, String)]]
-          char* [[x.name + '_arg']];
-          [[exec pyarg_format = pyarg_format + 's']]
-        [[elif isinstance(x, ImageType) or isinstance(x, Class)]]
-          PyObject* [[x.name + '_arg']];
-          [[exec pyarg_format = pyarg_format + 'O']]
+    [[# for each argument insert the appropriate conversion code into the string that will #]]
+    [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
+    [[for x in function.args.list]]
+      hello
+      [[if isinstance(x, Int) or isinstance(x, Choice)]]
+        int [[x.name + '_arg']];
+        [[exec pyarg_format = pyarg_format + 'i']]
+      [[elif isinstance(x, Float)]]
+        double [[x.name + '_arg']];
+        [[exec pyarg_format = pyarg_format + 'd']]
+      [[elif isinstance(x, String)]]
+        char* [[x.name + '_arg']];
+        [[exec pyarg_format = pyarg_format + 's']]
+      [[elif isinstance(x, ImageType) or isinstance(x, Class)]]
+        PyObject* [[x.name + '_arg']];
+        [[exec pyarg_format = pyarg_format + 'O']]
+      [[else]]
+        Something funny happened - [[x.__class__.__name__]]
+      [[end]]
+    [[end]]
+
+    [[# Create a variable to hold the return value of the plugin function - see #]]
+    [[# below for how the Image* is converted to a PyImageObject. #]]
+    [[if isinstance(function.return_type, Int)]]
+      int return_value = 0;
+    [[elif isinstance(function.return_type, Float)]]
+      double return_value = 0.0;
+    [[elif isinstance(function.return_type, String)]]
+      char* return_value = 0;
+    [[elif isinstance(function.return_type, ImageType)]]
+      Image* return_value = 0;
+    [[elif isinstance(function.return_type, Class)]]
+      PyObject* return_value = 0;
+    [[elif isinstance(function.return_type, ImageInfo)]]
+      ImageInfo* return_value = 0;
+    [[end]]
+
+    [[# Now that we have all of the arguments and variables for them we can parse #]]
+    [[# the argument tuple. Again, there is an assumption that there is at least one #]]
+    [[# argument #]]
+    [[if pyarg_format != '']]
+      if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
+        [[if not function.self_type is None]]
+          ,&real_self
         [[end]]
+      [[for i in range(len(function.args.list))]]
+        ,
+        &[[function.args.list[i].name + '_arg']]
       [[end]]
+      ) <= 0)
+        return 0;\
+    [[end]]
 
-      [[# Create a variable to hold the return value of the plugin function - see #]]
-      [[# below for how the Image* is converted to a PyImageObject. #]]
-      [[if isinstance(function.return_type, Int)]]
-        int return_value = 0;
-      [[elif isinstance(function.return_type, Float)]]
-        double return_value = 0.0;
-      [[elif isinstance(function.return_type, String)]]
-        char* return_value = 0;
-      [[elif isinstance(function.return_type, ImageType)]]
-        Image* return_value = 0;
-      [[elif isinstance(function.return_type, ImageInfo)]]
-        ImageInfo* return_value = 0;
-      [[elif isinstance(function.return_type, Class)]]
-        PyObject* return_value = 0;
-      [[end]]
-
-      [[# Now that we have all of the arguments and variables for them we can parse #]]
-      [[# the argument tuple. Again, there is an assumption that there is at least one #]]
-      [[# argument #]]
-      [[if pyarg_format != '']]
-        if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
-          [[if not function.self_type is None]]
-            ,&real_self
-          [[end]]
-        [[for i in range(len(function.args.list))]]
-          ,
-          &[[function.args.list[i].name + '_arg']]
+    [[# Type check the self argument #]]
+    [[if not function.self_type is None]]
+      if (!PyObject_TypeCheck(real_self, image_type)) {
+        PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
+        return 0;
+      }
+    [[end]]
+    [[# This code goes through each of the image arguments and builds up a list of #]]
+    [[# possible image type names. What is passed in is an abstract notion of #]]
+    [[# pixel type (which is saved and restored at the end of this process). That #]]
+    [[# is converted into strings used for the the enums (in the switch statemnt) #]]
+    [[# and for the casting of the pointers to the C++ objects held in the PyObjects. #]]
+    [[# Finally, type-checking code is inserted as well #]]      
+    [[if not function.self_type is None]]
+      [[exec tmp = [] ]]
+      [[exec orig_self_types = function.self_type.pixel_types[:] ]]
+      [[for type in function.self_type.pixel_types]]
+        [[if type == ONEBIT]]
+          [[exec tmp.append('OneBitRleImageView')]]
+          [[exec tmp.append('RleCc')]]
+          [[exec tmp.append('Cc')]]
         [[end]]
-        ) <= 0)
-          return 0;\
+        [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
       [[end]]
-
-      [[# Type check the self argument #]]
-      [[if not function.self_type is None]]
-        if (!PyObject_TypeCheck(real_self, image_type)) {
-          PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
-          return 0;
-        }
-      [[end]]
-      [[# This code goes through each of the image arguments and builds up a list of #]]
-      [[# possible image type names. What is passed in is an abstract notion of #]]
-      [[# pixel type (which is saved and restored at the end of this process). That #]]
-      [[# is converted into strings used for the the enums (in the switch statemnt) #]]
-      [[# and for the casting of the pointers to the C++ objects held in the PyObjects. #]]
-      [[# Finally, type-checking code is inserted as well #]]      
-      [[if not function.self_type is None]]
+      [[exec function.self_type.pixel_types = tmp]]
+      [[exec function.self_type.name = 'real_self']]
+      [[exec images = [function.self_type] ]]
+    [[else]]
+      [[exec images = [] ]]
+    [[end]]      
+    [[exec orig_image_types = [] ]]
+    [[for x in function.args.list]]
+      [[if isinstance(x, ImageType)]]
         [[exec tmp = [] ]]
-        [[exec orig_self_types = function.self_type.pixel_types[:] ]]
-        [[for type in function.self_type.pixel_types]]
+        [[for type in x.pixel_types]]
           [[if type == ONEBIT]]
             [[exec tmp.append('OneBitRleImageView')]]
             [[exec tmp.append('RleCc')]]
@@ -197,71 +222,53 @@ def generate_plugin(plugin_filename):
           [[end]]
           [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
         [[end]]
-        [[exec function.self_type.pixel_types = tmp]]
-        [[exec function.self_type.name = 'real_self']]
-        [[exec images = [function.self_type] ]]
-      [[else]]
-        [[exec images = [] ]]
-      [[end]]      
-      [[exec orig_image_types = [] ]]
-      [[for x in function.args.list]]
-        [[if isinstance(x, ImageType)]]
-          [[exec tmp = [] ]]
-          [[for type in x.pixel_types]]
-            [[if type == ONEBIT]]
-              [[exec tmp.append('OneBitRleImageView')]]
-              [[exec tmp.append('RleCc')]]
-              [[exec tmp.append('Cc')]]
-            [[end]]
-            [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
-          [[end]]
-          [[exec orig_image_types.append(x.pixel_types[:])]]
-          [[exec x.name = x.name + '_arg']]
-          [[exec x.pixel_types = tmp]]
-          [[exec images.append(x)]]
-          if (!PyObject_TypeCheck([[x.name]], image_type)) {
-            PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
-            return 0;
-          }
-        [[end]]
-      [[end]]
-
-      [[def switch(layer, args)]]
-        switch(get_image_combination([[images[layer].name]], cc_type)) {
-          [[for type in images[layer].pixel_types]]
-            [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name + ')->m_x)']]
-            case [[type.upper()]]:
-              [[if layer == len(images) - 1]]
-                [[if function.return_type != None]]
-                  return_value =
-                [[end]]
-                [[function.__class__.__name__]]
-                (
-                [[exec tmp_args = args + [current] ]]
-                [[exec arg_string = tmp_args[0] ]]
-                [[exec if len(function.args.list) > 0: arg_string += ', ']]
-                [[exec current_image = 1]]
-                [[for i in range(len(function.args.list))]]
-                  [[if isinstance(function.args.list[i], ImageType)]]
-                    [[exec arg_string += tmp_args[current_image] ]]
-                    [[exec current_image += 1]]
-                  [[else]]
-                    [[exec arg_string += function.args.list[i].name + '_arg']]
-                  [[end]]
-                  [[if i < len(function.args.list) - 1]]
-                    [[exec arg_string += ', ']]
-                  [[end]]
-                [[end]]
-                [[arg_string]]
-
-                );
-              [[else]]
-                [[call switch(layer + 1, args + [current])]]
-              [[end]]
-            break;
-          [[end]]
+        [[exec orig_image_types.append(x.pixel_types[:])]]
+        [[exec x.name = x.name + '_arg']]
+        [[exec x.pixel_types = tmp]]
+        [[exec images.append(x)]]
+        if (!PyObject_TypeCheck([[x.name]], image_type)) {
+          PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
+          return 0;
         }
       [[end]]
+    [[end]]
+
+    [[def switch(layer, args)]]
+      switch(get_image_combination([[images[layer].name]], cc_type)) {
+        [[for type in images[layer].pixel_types]]
+          [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name + ')->m_x)']]
+          case [[type.upper()]]:
+            [[if layer == len(images) - 1]]
+              [[if not function.return_type is None]]
+                return_value =
+              [[end]]
+              [[function.__class__.__name__]]
+              (
+              [[exec tmp_args = args + [current] ]]
+              [[exec arg_string = tmp_args[0] ]]
+              [[exec if len(function.args.list) > 0: arg_string += ', ']]
+              [[exec current_image = 1]]
+              [[for i in range(len(function.args.list))]]
+                [[if isinstance(function.args.list[i], ImageType)]]
+                  [[exec arg_string += tmp_args[current_image] ]]
+                  [[exec current_image += 1]]
+                [[else]]
+                  [[exec arg_string += function.args.list[i].name + '_arg']]
+                [[end]]
+                [[if i < len(function.args.list) - 1]]
+                  [[exec arg_string += ', ']]
+                [[end]]
+              [[end]]
+              [[arg_string]]
+
+              );
+            [[else]]
+              [[call switch(layer + 1, args + [current])]]
+            [[end]]
+          break;
+        [[end]]
+      }
+    [[end]]
     try {
     [[if images != [] ]]
       [[call switch(0, [])]]
@@ -335,12 +342,14 @@ def generate_plugin(plugin_filename):
 
   """)
   
-  magic_import_setup()
 
-  import plugin
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   sys.path.append(plug_path)
+  ignore = ["_" + module_name] + ["core", "gamera.core", "gameracore"]
+  magic_import_setup(ignore)
+
+  import plugin
   plugin_module = __import__(module_name)
   module_name = "_" + module_name
   cpp_filename = path.join(plug_path, module_name + ".cpp")

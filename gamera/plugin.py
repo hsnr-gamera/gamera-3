@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from gamera.args import *
+from args import *
 from gamera import paths
 import gamera.core
 import unittest, new, os, os.path, imp

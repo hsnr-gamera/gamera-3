@@ -18,32 +18,71 @@
 #
 
 from gamera.plugin import *
+import image_utilities, _image_conversion
 
 class to_rgb(PluginFunction):
-    """Converts the given image to an RGB image."""
+    """Converts the given image to an RGB image.
+
+Note, converting an image to one of the same type performs a copy operation.
+"""
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
     return_type = ImageType([RGB], "rgb")
 
+    def __call__(self):
+        if self.data.pixel_type == RGB:
+            return self.image_copy()
+        _image_conversion.to_rgb(self)
+    __call__ = staticmethod(__call__)
+
 class to_greyscale(PluginFunction):
-    """Converts the given image to a GREYSCALE image."""
+    """Converts the given image to a GREYSCALE image.
+
+Note, converting an image to one of the same type performs a copy operation.
+"""
     self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB])
     return_type = ImageType([GREYSCALE], "greyscale")
     doc_examples = [(RGB,)]
 
+    def __call__(self):
+        if self.data.pixel_type == GREYSCALE:
+            return self.image_copy()
+        _image_conversion.to_greyscale(self)
+    __call__ = staticmethod(__call__)
+
 class to_grey16(PluginFunction):
-    """Converts the given image to a GREY16 image."""
+    """Converts the given image to a GREY16 image.
+
+Note, converting an image to one of the same type performs a copy operation.
+"""
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
     return_type = ImageType([GREY16], "grey16")
 
+    def __call__(self):
+        if self.data.pixel_type == GREY16:
+            return self.image_copy()
+        _image_conversion.to_grey16(self)
+    __call__ = staticmethod(__call__)
+
 class to_float(PluginFunction):
-    """Converts the given image to a FLOAT image."""
+    """Converts the given image to a FLOAT image.
+
+Note, converting an image to one of the same type performs a copy operation.
+"""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     return_type = ImageType([FLOAT], "float")
+
+    def __call__(self):
+        if self.data.pixel_type == FLOAT:
+            return self.image_copy()
+        _image_conversion.to_float(self)
+    __call__ = staticmethod(__call__)
 
 class to_onebit(PluginFunction):
     """Converts the given image to a ONEBIT image.  Uses the
 otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
 see the Thresholding_ category.
+
+Note, converting an image to one of the same type performs a copy operation.
 
 .. _otsu_threshold: thresholding.html#otsu-threshold
 .. _Thresholding: thresholding.html
@@ -52,29 +91,21 @@ see the Thresholding_ category.
     self_type = ImageType([FLOAT, GREYSCALE, GREY16, RGB])
     return_type = ImageType([ONEBIT], "onebit")
     def __call__(self, storage_format=DENSE):
-        try:
-            image = self.to_greyscale()
-        except TypeError:
-            image = self
-        return image.otsu_threshold(storage_format)
-    __call__ = staticmethod(__call__)
-    doc_examples = [(RGB,),]
-to_onebit_twostep = to_onebit
-
-class to_onebit(PluginFunction):
-    pure_python = True
-    self_type = ImageType([GREYSCALE])
-    return_type = ImageType([ONEBIT], "onebit")
-    def __call__(self, storage_format=DENSE):
+        if self.data.pixel_type == ONEBIT:
+            return self.image_copy()
+        if self.data.pixel_type != GREYSCALE:
+            self = _image_conversion.to_greyscale(self)
         return self.otsu_threshold(storage_format)
     __call__ = staticmethod(__call__)
+    doc_examples = [(RGB,), (GREYSCALE,)]
+to_onebit = to_onebit
 
 class ImageConversionModule(PluginModule):
     category = "Conversion"
     cpp_headers=["image_conversion.hpp"]
     cpp_namespaces = ["Gamera"]
     functions = [to_rgb, to_greyscale, to_grey16, to_float,
-                 to_onebit, to_onebit_twostep]
+                 to_onebit, to_onebit]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -151,13 +151,15 @@ class ImageType(WrapperArg):
 
    def _get_choices(self):
       result = []
-      for type in self.pixel_types:
+      pixel_types = self.pixel_types[:]
+      pixel_types.sort()
+      for type in pixel_types:
          result.extend(self._get_choices_for_pixel_type(type))
       return result
 
    def _get_choices_for_pixel_type(self, pixel_type):
       if pixel_type == ONEBIT:
-         result = ["OneBitImageView", "OneBitRleImageView", "RleCc", "Cc"]
+         result = ["OneBitImageView", "Cc", "OneBitRleImageView", "RleCc"]
       else:
          result = [util.get_pixel_type_name(pixel_type) + "ImageView"]
       return [(x, pixel_type) for x in result]
@@ -167,12 +169,13 @@ class Rect(WrapperArg):
    convert_from_PyObject = True
 
    def from_python(self):
-      return """if (!is_RectObject(%(pysymbol)s)) {
-          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Rect");
-          return 0;
-        }
-        %(symbol)s = (((RectObject*)%(pysymbol)s)->m_x);
-        """ % self
+      return """
+      if (!is_RectObject(%(pysymbol)s)) {
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Rect");
+        return 0;
+      }
+      %(symbol)s = (((RectObject*)%(pysymbol)s)->m_x);
+      """ % self
 
    def to_python(self):
       return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
@@ -300,7 +303,9 @@ class Pixel(WrapperArg):
       if limit_choices is None:
          raise RuntimeError("You can not create a plugin that takes a Pixel argument that does not have a self type")
       pixel_type = limit_choices
-      new_output_args = output_args + ["pixel_from_python<%sPixel>::convert(%s)" % (util.get_pixel_type_name(pixel_type), self.pysymbol)]
+      new_output_args = (output_args +
+                         ["pixel_from_python<%sPixel>::convert(%s)" %
+                          (util.get_pixel_type_name(pixel_type), self.pysymbol)])
       if len(args) == 0:
          return self._do_call(function, new_output_args)
       else:
@@ -322,7 +327,6 @@ class PointVector(WrapperArg):
       %(pysymbol)s = PointVector_to_python(%(symbol)s);
       delete %(symbol)s;
       """ % self
-
 
 class ImageInfo(WrapperArg):
    arg_format = "O";

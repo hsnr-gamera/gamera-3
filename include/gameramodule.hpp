@@ -659,7 +659,8 @@ inline int get_pixel_type(PyObject* image) {
 
 inline const char* get_pixel_type_name(PyObject* image) {
   int pixel_type = get_pixel_type(image);
-  const char* pixel_type_names[5] = {"OneBit", "GreyScale", "Grey16", "RGB", "Float"};
+  const char* pixel_type_names[5] = {"OneBit", "GreyScale", "Grey16", 
+				     "RGB", "Float"};
   return pixel_type_names[pixel_type];
 }
 

@@ -371,9 +371,11 @@ class Choice:
          return int(selection)
 
 class _Filename:
-   def get_control(self, parent, locals=None):
+   def get_control(self, parent, locals=None, text=None):
+      if text is None:
+         text = self.default
       self.control = wxBoxSizer(wxHORIZONTAL)
-      self.text = wxTextCtrl(parent, -1, str(self.default), size=wxSize(200, 24))
+      self.text = wxTextCtrl(parent, -1, text, size=wxSize(200, 24))
       browseID = wxNewId()
       browse = wxButton(
          parent, browseID, "...", size=wxSize(24, 24))
@@ -521,6 +523,15 @@ class Info:
    get = get_string
 
 class Pixel(_Filename):
+   def get_control(self, parent, locals=None):
+      if type(self.default) == RGBPixel:
+         text = "RGBPixel(%d, %d, %d)" % (self.default.red,
+                                          self.default.green,
+                                          self.default.blue)
+      else:
+         text = str(self.default)
+      return _Filename.get_control(self, parent, locals, text)
+
    def OnBrowse(self, event):
       dialog = wxColourDialog(None)
       if dialog.ShowModal() == wxID_OK:

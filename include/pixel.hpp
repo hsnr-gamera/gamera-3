@@ -448,7 +448,8 @@ namespace Gamera {
    */
 
   inline FloatPixel invert(FloatPixel value) {
-    return 1.0 - value; // No normalization on image is possible
+    // Hard to know what makes sense here... MGD
+    return -value;
   }
 
   inline GreyScalePixel invert(GreyScalePixel value) {
@@ -460,9 +461,12 @@ namespace Gamera {
   }
 
   inline RGBPixel invert(RGBPixel value) {
-    return RGBPixel(std::numeric_limits<Grey16Pixel>::max() - value.red(),
-		    std::numeric_limits<Grey16Pixel>::max() - value.green(),
-		    std::numeric_limits<Grey16Pixel>::max() - value.blue());
+    return RGBPixel(std::numeric_limits<RGBPixel::value_type>::max() -
+		    value.red(),
+		    std::numeric_limits<RGBPixel::value_type>::max() -
+		    value.green(),
+		    std::numeric_limits<RGBPixel::value_type>::max() -
+		    value.blue());
   }
 
   inline OneBitPixel invert(OneBitPixel value) {

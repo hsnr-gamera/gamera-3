@@ -23,8 +23,9 @@
 #define NP_AVAIL(a) ((a)->m_node_properties[2].Bool)
 #define NP_B(a) ((a)->m_node_properties[3].NodeSet_)
 #define EP_PARTITION_COUNTER(a) ((a)->m_edge_properties[1].Bool)
+#define EP_IN_CYCLE(a) ((a)->m_edge_properties[2].SizeT)
 
-typedef std::list<EdgeList> Cycles;
+typedef std::vector<size_t> Cycles;
 
 struct PartitionIterator : IteratorObject {
   int init(GraphObject* graph, Node* root, bool ids, double m, double b);
@@ -47,6 +48,7 @@ private:
   NodeList* m_subgraph;
   EdgeList* m_edges;
   Cycles* m_cycles;
+  Cycles* m_cycle_sizes;
 };  
 
 int PartitionIterator::init(GraphObject* graph, Node* root, bool ids,
@@ -54,7 +56,6 @@ int PartitionIterator::init(GraphObject* graph, Node* root, bool ids,
   m_ids = ids;
   m_subgraph = new NodeList();
   m_edges = new EdgeList();
-  m_cycles = new Cycles();
   m_root = root;
 
   find_subgraph(graph, root);
@@ -67,6 +68,10 @@ int PartitionIterator::init(GraphObject* graph, Node* root, bool ids,
     return 1;
   }
 
+  m_cycles = new Cycles();
+  m_cycle_sizes = new Cycles();
+  m_cycles->reserve(m_subgraph->size());
+  m_cycle_sizes->reserve(m_subgraph->size());
   find_cycles(root);
 
   size_t nedges = m_edges->size();
@@ -104,6 +109,7 @@ void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
       if (!EP_VISITED(*j)) {
 	EP_VISITED(*j) = true;
 	EP_PARTITION_COUNTER(*j) = false;
+	EP_IN_CYCLE(*j) = 0;
 	m_edges->push_back(*j);
       }
       if (!NP_VISITED(to_node)) {
@@ -154,8 +160,14 @@ bool PartitionIterator::cycle(Node* s, Node* v,
       path.push_back(*i);
       EP_VISITED(*i) = true;
       if (w == s) {
-	if (path.size() > 2)
-	  m_cycles->push_back(path);
+	if (path.size() > 2) {
+	  size_t marker = 1 << m_cycles->size();
+	  for (EdgeList::iterator j = path.begin();
+	       j != path.end(); ++j)
+	    EP_IN_CYCLE(*j) |= marker;
+	  m_cycles->push_back(0);
+	  m_cycle_sizes->push_back(path.size() - 1);
+	}
 	flag = true;
       } else if NP_AVAIL(w)
 	flag |= cycle(s, w, path);
@@ -195,6 +207,7 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
     delete so->m_edges;
     delete so->m_subgraph;
     delete so->m_cycles;
+    delete so->m_cycle_sizes;
     return 0;
   }
     
@@ -248,9 +261,23 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
       if (EP_PARTITION_COUNTER(*i)) {
 	EP_PARTITION_COUNTER(*i) = false;
 	so->m_ones--;
+	if (EP_IN_CYCLE(*i)) {
+	  size_t bit = 1;
+	  for (size_t j = 0; j < so->m_cycles->size(); ++j) {
+	    (*(so->m_cycles))[j] -= (EP_IN_CYCLE(*i) & bit);
+	    bit <<= 1;
+	  }
+	}
       } else {
 	EP_PARTITION_COUNTER(*i) = true;
 	so->m_ones++;
+	if (EP_IN_CYCLE(*i)) {
+	  size_t bit = 1;
+	  for (size_t j = 0; j < so->m_cycles->size(); ++j) {
+	    (*(so->m_cycles))[j] += (EP_IN_CYCLE(*i) & bit);
+	    bit <<= 1;
+	  }
+	}
 	break;
       }
     }
@@ -261,17 +288,13 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
       // Constrain the cycles -- not entirely sure this actually speeds
       // things up
       bool good_set = true;
-      for (Cycles::iterator i = so->m_cycles->begin();
-	   i != so->m_cycles->end(); ++i) {
-	size_t count = 0;
-	for (EdgeList::iterator j = (*i).begin();
-	     j != (*i).end(); ++j)
-	  count += EP_PARTITION_COUNTER(*j);
-	if (count == (*i).size() - 1) {
+      Cycles::iterator i = so->m_cycles->begin();
+      Cycles::iterator j = so->m_cycle_sizes->begin();
+      for (; i != so->m_cycles->end(); ++i, ++j)
+	if (*i == *j) {
 	  good_set = false;
 	  break;
 	}
-      }
       if (good_set)
 	break;
     }

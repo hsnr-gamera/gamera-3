@@ -139,7 +139,7 @@ class OptimizerFrame(wxFrame):
 
    def open_cb(self, evt):
       import sys
-      filename = gui_util.open_file_dialog(self, "*.xml")
+      filename = gui_util.open_file_dialog(self, gamera.gamera_xml.extensions)
       if filename:
          self.filename = filename
          wxBeginBusyCursor()

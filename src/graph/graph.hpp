@@ -241,7 +241,7 @@ inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
   }
 
   if (possible_cycle) {
-    if (!HAS_FLAG(so->m_flags, FLAG_BLOB))
+    if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED))
       return NULL;
     else {
       if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) || 

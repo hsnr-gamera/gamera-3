@@ -2,20 +2,30 @@ BUILDING GAMERA
 ========================================
 2002 Michael Droettboom
 
-The following information is based on the generic information for
-building Python extensions written by Greg Ward
 
-
-Gamera requires that you install the following software:
+Gamera requires that you install the following software FIRST:
 
 - Python 2.2.1 (or greater) (www.python.org)
 - wxPython 2.3.3.1 (or greater) (www.wxpython.org)
 
 ========================================
 
+INSTALLING FROM A PRECOMPILED BINARY
+
+If you got the precompiled binary on Windows, simply run it to
+install Gamera.  Unfortunately, we're having trouble getting the
+startup script (gamera_gui.py) to be installed by the installer, so 
+you'll have to install that yourself.  You can place it anywhere,
+(such as the Desktop) and simply double-click it to start Gamera.
+(We hope to have this problem fixed shortly.)
+
+========================================
+
+INSTALLING FROM SOURCE
+
 Standard Build and Install
 
-As described in section , building and installing a module
+As described in section, building and installing a module
 distribution using the Distutils is usually one simple command:
 
 python setup.py install

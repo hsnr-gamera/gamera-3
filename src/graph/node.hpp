@@ -36,12 +36,12 @@ struct Node {
   inline ~Node() {
     Py_DECREF((PyObject*)m_data);
   }
-  GraphObject* m_graph;
-  PyObject* m_data;
-  EdgeList m_edges;
-  bool m_is_subgraph_root;
-  size_t m_set_id;
-  long m_disj_set;
+  GraphObject* m_graph;    // graph object this node is a part of
+  PyObject* m_data;        // data stored at this node
+  EdgeList m_edges;        // edges going out from this node
+  bool m_is_subgraph_root; // is this node a subgraph root?
+  size_t m_set_id;         // the position of this node in the graph's node vector
+  long m_disj_set;         // another node that can be reached from this node
   Any m_node_properties[NUM_NODE_DATA_ELEMENTS];
 };
 

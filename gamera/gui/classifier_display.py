@@ -707,6 +707,8 @@ class ClassifierFrame(ImageFrameBase):
    def _segment_image(self, image, segmenter):
       image_ref = image
       if image_ref.data.pixel_type == RGB:
+         image_ref = image_ref.to_grey16()
+      if image_ref.data.pixel_type == GREY16:
          image_ref = image_ref.to_greyscale()
       if image_ref.data.pixel_type != ONEBIT:
          image_ref = image_ref.otsu_threshold()

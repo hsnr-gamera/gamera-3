@@ -80,11 +80,10 @@ class _Classifier:
       # There is a slightly convoluted handling of the progress bar here, since
       # this function is called recursively on split glyphs
       if recursion_level == 0:
-         progress = util.ProgressFactory("Classifying glyphs...")
+         progress = util.ProgressFactory("Classifying glyphs...", len(glyphs))
       try:
          if (recursion_level > 10) or len(self._database) == 0:
             return [], []
-         progress.add_length(len(glyphs))
          added = []
          removed = {}
          feature_functions = self.get_feature_functions()
@@ -99,7 +98,9 @@ class _Classifier:
                    (core.UNCLASSIFIED, core.AUTOMATIC)):
                   id = self._classify_automatic_impl(glyph)
                   glyph.classify_automatic(id)
-                  added.extend(self._do_splits(glyph))
+                  adds = self._do_splits(glyph)
+                  progress.add_length(len(adds))
+                  added.extend(adds)
             progress.step()
          if len(added):
             added_recurse, removed_recurse = self.classify_list_automatic(

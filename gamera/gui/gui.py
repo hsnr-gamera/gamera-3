@@ -304,7 +304,7 @@ class ShellFrame(wxFrame):
       toolkits_menu = wxMenu()
       for toolkit in toolkits:
          toolkitID = wxNewId()
-         toolkit_menu = wxMenu()#style=wxMENU_TEAROFF)
+         toolkit_menu = wxMenu() #style=wxMENU_TEAROFF)
          toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
                              "Import %s toolkit" % toolkit)
          EVT_MENU(self, toolkitID, self._OnImportToolkit)
@@ -431,7 +431,7 @@ class GameraSplash(wxSplashScreen):
    def __init__(self):
       from gamera.gui import gamera_icons
       wxSplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
-                              wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+                              wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_NO_TIMEOUT,
                               1000, None, -1,
                               style = (wxSIMPLE_BORDER|
                                        wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP))
@@ -447,7 +447,6 @@ def run(startup=_show_shell):
    has_gui.has_gui = has_gui.WX_GUI
    has_gui.gui = GameraGui
    from gamera.gui import args_gui
-   
 
    class MyApp(wxApp):
       def __init__(self, startup, parent):
@@ -461,8 +460,8 @@ def run(startup=_show_shell):
          self.splash = GameraSplash()
          self.splash.Show()
          init_gamera()
-         self.splash.Show(0)
          self._startup()
+         self.splash.Show(0)
          del self.splash
          return True
 

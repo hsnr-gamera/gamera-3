@@ -112,11 +112,10 @@ class Template:
       raise ParserException(self.lineno, s)
 
    def execute_file(self, filename, data={}):
-      data_copy = {}
-      data_copy.update(data)
+      output = self.execute_string(data)
       file = open(filename, 'w')
-      self.execute(file, data_copy)
-      file.write("\n\n")
+      file.write(output)
+      file.write("\n")
       file.close()
 
    def execute_string(self, data={}):

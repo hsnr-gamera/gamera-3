@@ -119,7 +119,7 @@ namespace Gamera {
   }
 
   PyObject* _run_results_to_python(RunVector* runs, long n) {
-    if (n < 0 or n > (long)runs->size())
+    if ((n < 0) || (n > (long)runs->size()))
       n = (long)runs->size();
     PyObject* result = PyList_New(n);
     for (long i = 0; i < n; ++i) {

@@ -437,13 +437,19 @@ namespace Gamera {
 
   template<class T>
   std::list<Image*>* splitx(T& image, double& center) {
+    std::list<Image*>* splits = new std::list<Image*>();
+    typename ImageFactory<T>::view_type* view;
+    if (image.ncols() <= 1) {
+      view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
+				 image.nrows(), image.ncols()));
+      splits->push_back(view);
+      return splits;
+    }
     IntVector *projs = projection_cols(image);
     size_t split_point = find_split_point(projs, center);
     delete projs;
-    std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
-    typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       image.nrows(), split_point));
     try {
@@ -477,13 +483,19 @@ namespace Gamera {
 
   template<class T>
   std::list<Image*>* splitx_max(T& image, double& center) {
+    std::list<Image*>* splits = new std::list<Image*>();
+    typename ImageFactory<T>::view_type* view;
+    if (image.ncols() <= 1) {
+      view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
+				 image.nrows(), image.ncols()));
+      splits->push_back(view);
+      return splits;
+    }
     IntVector *projs = projection_cols(image);
     size_t split_point = find_split_point_max(projs, center);
     delete projs;
-    std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
-    typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       image.nrows(), split_point));
     try {
@@ -517,13 +529,19 @@ namespace Gamera {
 
   template<class T>
   std::list<Image*>* splity(T& image, double& center) {
+    std::list<Image*>* splits = new std::list<Image*>();
+    typename ImageFactory<T>::view_type* view;
+    if (image.nrows() <= 1) {
+      view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
+				 image.nrows(), image.ncols()));
+      splits->push_back(view);
+      return splits;
+    }
     IntVector *projs = projection_rows(image);
     size_t split_point = find_split_point(projs, center);
     delete projs;
-    std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
-    typename ImageFactory<T>::view_type* view;
     view = simple_image_copy(T(image, image.ul_y(), image.ul_x(),
 			       split_point, image.ncols()));
     try {

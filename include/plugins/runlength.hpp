@@ -221,10 +221,9 @@ namespace Gamera {
     return oss.str();
   }
 
-  void next_number(char* &s, size_t &number) {
+  inline size_t next_number(char* &s) {
     // I would love to use istream::scan for this, but it's a GNU
-    // extension.  Pretty much everywhere we compile is GNU anyway,
-    // but... portability...  Plus, this is probably faster anyway,
+    // extension.  Plus, this is probably faster anyway,
     // since it's more naive.
 
     // Scan through whitespace (literally, non-numeric)
@@ -234,12 +233,13 @@ namespace Gamera {
       ++s;
     }
 
-    number = 0;
+    size_t number = 0;
     // Read in number
     for (; *s >= '0' && *s <= '9'; ++s) {
       number *= 10;
       number += *s - '0';
     }
+    return number;
   }
 
   template<class T>
@@ -252,13 +252,14 @@ namespace Gamera {
 	 i != image.vec_end(); /* deliberately blank */) {
       // white
       size_t run;
-      next_number(p, run);
+      run = next_number(p);
       typename T::vec_iterator end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, white(image));
       i = end;
-      next_number(p, run);
+      // black
+      run = next_number(p);
       end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");

@@ -203,6 +203,7 @@ class LoadXML:
       self._end_elements = {}
       self._stream_length = 0
       self._parts = parts
+      self._progress_value = 0
       
    def try_type_convert(self, dictionary, key, typename, tagname):
       try:
@@ -284,7 +285,9 @@ class LoadXML:
       if self._stream_length:
          self._progress.update(self._stream.tell(), self._stream_length)
       else:
-         self._progress.update(self._stream.tell() % 50, 50)
+         self._progress_value += 1
+         self._progress_value %= 50
+         self._progress.update(self._progress_value, 50)
 
    def _append_glyph_to_glyphs(self, glyph):
       self.glyphs.append(glyph)
@@ -373,7 +376,7 @@ class LoadXML:
          glyph.properties[key] = val
       glyph.scaling = self._scaling
       self._append_glyph(glyph)
-      if not self._glyph_no % 10:
+      if not self._glyph_no % 20:
          self._update_progress()
       self._glyph_no += 1
 

@@ -139,9 +139,12 @@ class OptimizerFrame(wxFrame):
             self.stop()
             glyphs = None
             try:
+                print "1"
                 glyphs = gamera.gamera_xml.glyphs_with_features_from_xml(self.filename)
-            except:
+                print "2"
+            except Exception, e:
                 wxEndBusyCursor()
+                print e
                 gui_util.message("Error opening the xml file. The error was:\n\" "
                                  + str(sys.exc_info()[0]) + "\"")                
                 return
@@ -150,13 +153,14 @@ class OptimizerFrame(wxFrame):
                 gui_util.message("Too few glyphs were loaded from the xml file.")
                 return
             try:
+                print "3"
                 self.classifier.instantiate_from_images(glyphs)
             except:
                 wxEndBusyCursor()
                 gui_util.message("Error creating classifier. The error was:\n\" "
                                  + str(sys.exc_info()[0]) + "\"")
                 return
-                
+            print "4"
             self.weights_panel.new_classifier(self.classifier, glyphs)
             wxEndBusyCursor()
             id = self.file_menu.FindItem("Start")
@@ -207,7 +211,7 @@ class OptimizerFrame(wxFrame):
             self.status.initial_rate_display.SetValue(str(self.classifier.ga_initial * 100.0))
             self.status.current_rate_display.SetValue(str(self.classifier.ga_best * 100.0))
             self.status.generation_display.SetValue(str(self.classifier.ga_generation))
-            self.status.best_rate_display.SetValue(str(self.classifier.ga_best))
+            self.status.best_rate_display.SetValue(str(self.classifier.ga_best * 100.0))
             self.elapsed_time = time.time() - self.start_time
             hours = int(self.elapsed_time / 3600.0)
             minutes = int((self.elapsed_time - (hours * 3600)) / 60.0)
@@ -326,10 +330,10 @@ class WeightsPanel(wxScrolledWindow):
         self.bars = []
         for x in feature_functions:
             text = wxStaticText(self, -1, x)
-            sizer.Add(text, 1)
-            bar = wxGauge(self, -1, 100)
+            sizer.Add(text, 0)
+            bar = wxGauge(self, -1, 100, style=wxGA_SMOOTH, size=(200, 10))
             bar.SetAutoLayout(true)
-            sizer.Add(bar, flag=wxEXPAND | wxADJUST_MINSIZE)
+            sizer.Add(bar, 1, flag=wxGROW)
             self.bars.append(bar)
         sizer.Layout()
         self.SetSizer(sizer)
@@ -337,7 +341,7 @@ class WeightsPanel(wxScrolledWindow):
         self.SetScrollbars(10, 10, width / 10, height / 10)
 
     def update_cb(self):
-        weights = self.classifier.weights
+        weights = self.classifier.get_weights()
         for i in range(len(weights)):
             self.bars[i].SetValue(weights[i] * 100)
 

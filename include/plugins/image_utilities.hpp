@@ -110,13 +110,13 @@ namespace Gamera {
     returned rather that a ConnectedComponent (which is why the ImageFactory is used).
   */
   template<class T>
-  typename ImageFactory<T>::view_type simple_image_copy(const T& src) {
+  typename ImageFactory<T>::view_type* simple_image_copy(const T& src) {
     typename ImageFactory<T>::data_type* dest_data =
       new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
     typename ImageFactory<T>::view_type* dest =
       new typename ImageFactory<T>::view_type(*dest_data, src);
     image_copy_fill(src, *dest);
-    return *dest;
+    return dest;
   }
 
   

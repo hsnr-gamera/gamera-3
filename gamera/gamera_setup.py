@@ -46,7 +46,7 @@ def get_plugin_filenames(path):
     """Return all of the python plugin files in a specified path. This is not
     the same as glob.glob('*.py') in that it removes __init__.py files and
     normalizes the path in an os independent way."""
-    plugins = glob.glob(path)
+    plugins = glob.glob(path + "/*.py")
     norm_plugins = []
     for x in plugins:
         norm_plugins.append(os.path.normpath(os.path.abspath(x)))

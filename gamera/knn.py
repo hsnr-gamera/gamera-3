@@ -114,6 +114,12 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
     def _add_weights(self, data):
         self._data += data
 
+def _get_num_features(features):
+    ff = core.ImageBase.get_feature_functions(features)
+    features = 0
+    for x in ff:
+        features += x[1].return_type.length
+    return features
 
 class kNN(gamera.knncore.kNN):
     """k-NN classifier that supports optimization using
@@ -122,6 +128,7 @@ class kNN(gamera.knncore.kNN):
 
     def __init__(self, features='all'):
         gamera.knncore.kNN.__init__(self)
+        self.change_feature_set(features)
         self.ga_initial = 0.0
         self.ga_best = 0.0
         self.ga_worker_thread = None
@@ -129,17 +136,13 @@ class kNN(gamera.knncore.kNN):
         self.ga_generation = 0
         self.ga_callbacks = []
         self.features = features
-        self.change_feature_set(features)
 
     def change_feature_set(self, features):
         """Change the set of features used in the classifier.  features is a list of
         strings, naming the feature functions to be used."""
         self.features = features
         self.feature_functions = core.ImageBase.get_feature_functions(self.features)
-        features = 0
-        for x in self.feature_functions:
-            features += x[1].return_type.length
-        self.num_features = features 
+        self.num_features = _get_num_features(self.features)
 
     def distance_from_images(self, images, glyph, max):
         glyph.generate_features(self.feature_functions)
@@ -292,6 +295,24 @@ class kNN(gamera.knncore.kNN):
             weights.extend(loader.weights[x[0]])
         self.set_weights(weights)
             
+    def serialize(self, filename):
+        """Save the k-NN settings and data into an optimized, k-NN specific
+        file format."""
+        if self.features == 'all':
+            gamera.knncore.kNN.serialize(self, filename,['all'])
+        else:
+            gamera.knncore.kNN.serialize(self, filename,self.features)
+            
+
+    def unserialize(self, filename):
+        """Load the k-NN settings and data from an optimized, k-NN specific
+        file format"""
+        features = gamera.knncore.kNN.unserialize(self, filename)
+        if len(features) == 1 and features[0] == 'all':
+            self.change_feature_set('all')
+        else:
+            self.change_feature_set(features)
+
         
 
         

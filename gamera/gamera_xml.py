@@ -462,9 +462,8 @@ def glyphs_from_xml(filename):
 
 def glyphs_with_features_from_xml(filename, feature_functions = None):
    """Return a list of glyphs with features from an xml file"""
-   import features
    glyphs = LoadXML().parse_filename(filename).glyphs
-   features.generate_features_list(glyphs, feature_functions)
+   core.generate_features_list(glyphs, feature_functions)
    return glyphs
 
 def glyphs_to_xml(filename, glyphs):

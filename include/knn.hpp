@@ -279,8 +279,6 @@ namespace Gamera {
       std::vector<std::pair<id_type, double> >& majority(double max_dist = -1) {
 	m_answer.clear();
 	double max_distance;
-	// used to avoid 0
-	double dither = .000001;
 	if (max_dist = -1)
 	  max_distance = m_max_distance;
 	else
@@ -290,7 +288,7 @@ namespace Gamera {
 	  throw std::range_error("majority called without enough valid neighbors.");
 	// short circuit for k == 1
 	if (m_nn.size() == 1) {
-	  double confidence = 1.0 - ((m_nn[0].distance + dither) / (max_distance + dither));
+	  double confidence = get_confidence(m_nn[0].distance, max_distance);
 	  m_answer.resize(1);
 	  m_answer[0] = std::make_pair(m_nn[0].id, confidence);
 	  return m_answer;
@@ -322,8 +320,7 @@ namespace Gamera {
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
 	if (id_map.size() == 1) {
-	  double confidence = id_map.begin()->second.min_distance / (max_distance + dither);
-	  confidence = 1.0 - confidence;
+	  double confidence = get_confidence(id_map.begin()->second.min_distance, max_distance);
 	  m_answer.resize(1);
 	  m_answer[0] = std::make_pair(id_map.begin()->first, confidence);
 	  return m_answer;
@@ -349,7 +346,7 @@ namespace Gamera {
 	  if (max.size() == 1) {
 	    // put the winner in the result vector
 	    m_answer.resize(id_map.size());
-	    double confidence = 1.0 - ((max[0]->second.min_distance + dither) / max_distance);
+	    double confidence = get_confidence(max[0]->second.min_distance, max_distance);
 	    //confidence += (double(max[0]->second.count) / m_k) / 2.0;
 	    m_answer[0] = std::make_pair(max[0]->first, confidence);
 	    // remove the winner from the id_map
@@ -358,8 +355,7 @@ namespace Gamera {
 	    size_t ans = 1;
 	    for (typename map_type::iterator i = id_map.begin();
 		 i != id_map.end(); ++i) {
-	      confidence = 1.0 - ((i->second.min_distance + dither) / max_distance);
-	      //confidence += (double(i->second.count) / m_k) / 2.0;
+	      confidence = get_confidence(i->second.min_distance, max_distance);
 	      m_answer[ans] = std::make_pair(i->first, confidence);
 	      ++ans;
 	    }
@@ -375,11 +371,16 @@ namespace Gamera {
 		min_dist = max[i];
 	    }
 	    m_answer.resize(1);
-	    double confidence = 1.0 - ((min_dist->second.min_distance + dither) / max_distance);
+	    double confidence = get_confidence(min_dist->second.min_distance, max_distance);
 	    m_answer[0] = std::make_pair(min_dist->first, confidence);
 	    return m_answer;
 	  }
 	}
+      }
+    private:
+      double get_confidence(double dist, double max_dist) {
+	static double dither = std::numeric_limits<double>::min();
+	return std::pow(1.0 - (dist / (max_dist + dither)), 10);
       }
     private:
       std::vector<neighbor_type> m_nn;

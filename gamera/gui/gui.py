@@ -36,8 +36,8 @@ from wxPython.lib.splashscreen import SplashScreen
 import sys, types, traceback, os, string, os.path
 
 # Set default options
-config.add_option_default("shell_style_face", "Helvetica")
-config.add_option_default("shell_style_size", 12)
+config.add_option_default("shell_style_face", "Arial")
+config.add_option_default("shell_style_size", 10)
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
 

@@ -23,7 +23,7 @@ plugin_extensions = []
 # we grab all of the plugins except __init__.py - of course
 # to exclude this we have to go throug all sorts of crap . . .
 if not '--help' in sys.argv and not '--help-commands' in sys.argv:
-    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/*.py')
+    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 
     # Create the list of modules to ignore at import - because
     # we are in the middle of the build process a lot of C++
@@ -39,6 +39,7 @@ if not '--help' in sys.argv and not '--help-commands' in sys.argv:
     generate.magic_import_setup(ignore)
 
     plugin_extensions = gamera_setup.generate_plugins(plugins)
+    print plugin_extensions
 
     generate.restore_import()
 
@@ -102,7 +103,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include", "src/ga", "src"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
-setup(name = "Gamera", version="1.1",
+setup(name = "gamera", version="1.1",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
                   'gamera.toolkits.omr'],

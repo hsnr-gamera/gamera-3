@@ -294,10 +294,24 @@ namespace Gamera {
     }
     // intersection
     bool intersects_x(const self& v) const {
-      return (v.ul_x() <= lr_x() && v.lr_x() > ul_x());
+      coord_t sul = ul_x();
+      coord_t slr = lr_x();
+      coord_t vul = v.ul_x();
+      coord_t vlr = v.lr_x();
+      return (((vul >= sul) && (vul <= slr)) ||
+	      ((vlr >= sul) && (vlr <= slr)) ||
+	      ((sul >= vul) && (sul <= vlr)) ||
+	      ((slr >= vul) && (slr <= vlr)));
     }
     bool intersects_y(const self& v) const {
-      return (v.ul_y() <= lr_y() && v.lr_y() > ul_y());
+      coord_t sul = ul_y();
+      coord_t slr = lr_y();
+      coord_t vul = v.ul_y();
+      coord_t vlr = v.lr_y();
+      return (((vul >= sul) && (vul <= slr)) ||
+	      ((vlr >= sul) && (vlr <= slr)) ||
+	      ((sul >= vul) && (sul <= vlr)) ||
+	      ((slr >= vul) && (slr <= vlr)));
     }
     bool intersects(const self& v) const {
       return (intersects_x(v) && intersects_y(v));

@@ -632,6 +632,11 @@ class ImageDisplay(wxScrolledWindow):
                      ceil(subhighlight.ncols * scaling),
                      self.scaling_quality)
                else:
+                  # Sometimes we get an image with 0 rows or cols - I'm
+                  # not certain the cause, but this will prevent wxPython
+                  # errors. KWM
+                  if h == 0 or w == 0:
+                     continue
                   scaled_highlight = subhighlight
                image = wxEmptyImage(
                   scaled_highlight.ncols, scaled_highlight.nrows)
@@ -1775,8 +1780,8 @@ class ImageFrame(ImageFrameBase):
    def __repr__(self):
       return "<ImageFrame Window>"
 
-   def add_highlight_cc(self, cc):
-      self._iw.id.add_highlight_cc(cc)
+   def add_highlight_cc(self, cc, color):
+      self._iw.id.add_highlight_cc(cc, color)
    add_highlight_ccs = add_highlight_cc
 
    def highlight_rectangle(self, y, x, h, w, c, t):

@@ -137,7 +137,7 @@ static PyMethodDef rect_methods[] = {
   // to rect_union, since this really should be a static method.  At this point, 
   // the calling convention will just have to look a bit funny from Python.
   // (i.e. rect_instance.union vs Rect.union)
-  {"union_rects", rect_union, METH_O},
+  {"union_rects", rect_union_rects, METH_O},
   {"union", rect_union, METH_VARARGS},
   {"distance_euclid", rect_distance_euclid, METH_VARARGS},
   {"distance_cx", rect_distance_cx, METH_VARARGS},

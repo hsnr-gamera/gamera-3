@@ -560,9 +560,7 @@ salt.
 
 The performance of the 1-dimensional
 iterator is perhaps surprising, since it appears to be the simplest
-code.  In fact, however, ``vec_iterators`` are implemented under the
-hood as two-dimensional iterators, to be compatible with VIGRA_
-algorithms and to support the view model.  This introduces some overhead.
+code.  In fact, however, ``vec_iterators`` must support the image view model, and therefore do basic "range checking" upon each increment.  This introduces some overhead.
 
 .. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
 

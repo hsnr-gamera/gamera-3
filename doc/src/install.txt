@@ -47,6 +47,11 @@ Installing using the Windows installer
 If you downloaded the Windows installer, simply run it to
 install Gamera.
 
+.. note:: Windows is not our primary development environment, and the
+   Windows installer tends to lag a version or two behind and may not
+   be as thoroughly tested.  Anyone want to become the official
+   Windows builder/tester?
+
 Installing from source
 ----------------------
 
@@ -120,14 +125,12 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options::
-1) Use the Python Distutils Installer Maker::
+support, you have two options.
 
-  python setup.py build --compiler=mingw32 bdist_wininst
-  dist/gamera-X.X.X-win32.exe
+1) Use the (currently experimental) MSI creation support provided in 
+   the Gamera source tree (see MSI section).
 
-2) Use the (currently experimental) MSI creation support provided in 
-the Gamera source tree (see MSI section).
+2) Use the Python Distutils Installer Maker.
 
 Microsoft Visual Studio
 ```````````````````````
@@ -159,14 +162,12 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options::
-1) Use the Python Distutils Installer Maker::
+support, you have two options:
 
-  python setup.py build --compiler=mingw32 bdist_wininst
-  dist/gamera-X.X.X-win32.exe
+1) Use the (currently experimental) MSI creation support provided in 
+   the Gamera source tree (see MSI section).
 
-2) Use the (currently experimental) MSI creation support provided in 
-the Gamera source tree (see MSI section).
+2) Use the Python Distutils Installer Maker.
 
 MSI (Windows Installer Package)
 ```````````````````````````````
@@ -229,12 +230,39 @@ terminal and type::
   python setup.py build
   sudo python setup.py install
 
+Installing without root priviledges
+-----------------------------------
+
+If you do not have root access to your machine, you can make a local
+installation of Gamera.
+
+Make a local python module directory somewhere that you have write
+priviledges (such as your home directory)::
+  
+  mkdir ~/python
+
+From the Gamera build directory, install Gamera into that directory::
+
+  python setup.py install --home=~/python
+
+Set up an environment variables so Python can find stuff there (you
+may want to add this to your ~/.bash_profile file)::
+
+  export PYTHONPATH=~/python/lib/python
+
+Add the local Python scripts directory to your path::
+
+  export PATH=~/python/bin:$PATH
+
+Now you should be able to run the ``gamera_gui`` script from the
+command line.
+
 Running
 -------
 
-Run the ``gamera_gui.py`` script, which should have installed to
-``/usr/local/bin``.  
-This file can also be copied anywhere (such as the Desktop) and double-clicked to run Gamera.
+Run the ``gamera_gui`` script, which should have installed to
+``/usr/local/bin``.  This file can also be copied anywhere (such as
+the Desktop) and double-clicked to run Gamera.
 
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the Gamera compiled shared
@@ -288,7 +316,8 @@ The scripts can be installed by::
 
 .. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
   place on the PATH.  If you do not specify it, the scripts are by
-  default installed to ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
+  default installed to
+  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
 
 Running
 -------

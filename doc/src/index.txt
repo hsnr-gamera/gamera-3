@@ -33,6 +33,11 @@ How To
 
 .. __: install.html
 
+- `Training tutorial`__: A step-by-step tutorial about how to build 
+  training sets.
+
+.. __: training_tutorial.html
+
 - `Getting started writing Gamera scripts`__: How to start writing a
   Gamera-based application.
 

@@ -286,6 +286,11 @@ recognize different symbol types.
 
   .. image:: images/classifier_window.png
 
+A tutorial introduction to training image data is given in the
+`training tutorial`__.
+
+.. __: training_tutorial.html
+
 Concepts
 ````````
 
@@ -296,24 +301,22 @@ Glyph collections
 '''''''''''''''''
 
 In the classifier window, there are two sets of glyphs (connected
-components) involved: one in the classifier and one in the editor:
+components) involved: one in the classifier and one for the current page:
 
 Classifier glyphs
   The set of glyphs used by the classifier to make guesses about
-  unknown glyphs.  The classifier glyphs work "behind the scenes".  To
-  display the classifier glyphs in a read-only window, use the
-  *Classifier* -> *Display contents* menu item.
+  unknown glyphs.  The classifier glyphs work "behind the scenes".
 
-Editor glyphs
-  The set of glyphs displayed in the training editor grid, usually
-  taken from a single page image.
+Page glyphs
+  The set of glyphs on the current page.
 
-When glyphs in the editor are classified by the user, they
+When glyphs on the page are classified by the user, they
 are copied into the classifier.  When glyphs are deleted or renamed in
-the editor, they are deleted or renamed in the classifier.
+either collection, they are updated in both places.
 
-The number of glyphs in the editor and the classifier is displayed in
+The number of glyphs on the page and in the classifier are displayed in
 the status bar at the bottom of the window.
+
 
 Coloring
 ''''''''
@@ -345,7 +348,7 @@ colored according to how they were classified:
 Class names
 '''''''''''
 
-"Class names" name a particular class of symbol.  Class names are made
+"Class names" name a particular class of symbols.  Class names are made
 up of period-delimited parts so that they can be grouped into
 categories.  Names can be invented on the fly.
 
@@ -416,14 +419,23 @@ the top or double-clicking on a class name in the tree.  The text box
 features auto-completion (similar to the Unix shell), so you can type
 a partial name and then press the <Tab> key to attempt to complete it.
 
-Editor pane
-'''''''''''
+Connected component display
+'''''''''''''''''''''''''''
 
-The editor pane behaves identically to the `multiple
+The connected component display is made up of two collapsible
+displays.  To expand or collapse the panes, use the *+* and *X*
+buttons in the panes' title bars.  By default, only the page glyphs
+pane is displayed.
+
+.. note:: Training will run much slower with the classifier glyphs
+          displayed.  It is recommended that you leave it closed
+          unless you are interested in what is there.
+
+The connected components panes behave identically to the `multiple
 image display`_, with additional functionality.
 
-When connected components are selected, they are highlighted in the
-original image display below.
+When connected components are selected in the page glyphs pane, 
+they are highlighted in the original image display below.
 
 The background of connected components are colored based on their
 classification state.  (See `coloring`_).
@@ -477,6 +489,11 @@ Classifier menu
 File menu
 '''''''''
 
+.. note:: 
+   If you give any of the XML files a ``.gz`` extension, they
+   will be transparently converted to/from Gzip-compressed files.
+   This saving and loading is actually faster!
+
 **Open all...**
   Opens a special directory of files containing an original image, and
   contents of the editor and the classifier.  This directory should be one
@@ -504,10 +521,13 @@ The following options are used to save and load connected components in the
   Save, Save As or Clear the glyphs in the classifier.  (See `glyph
   collections`_).
 
-**Editor glyphs**
+**Page glyphs**
   This menu allows one to Open, Merge, Save, Save
-  As the glyphs in the editor display.  (See `glyph
+  As the glyphs on the current page display.  (See `glyph
   collections`_).
+
+**Save selected glyphs as...**
+  Saves the selected glyphs to a new file.
 
 **Symbol names**
   Import or export a set of symbol names.  Symbol names can be
@@ -522,7 +542,7 @@ Image menu
   algorithm on it to create connected components.  The segmentation
   algorithm can be selected from the drop-down list.  (If you're not
   sure which one to use, try ``cc_analysis``.)  The connected
-  components are loaded into the editor pane and the
+  components are loaded into the page glyphs pane and the
   original image is loaded into the original image display.
 
 **Select and segment image...**
@@ -530,24 +550,24 @@ Image menu
   segmentation algorithm on it to create connected components.  The
   segmentation algorithm can be selected from the drop-down list.  (If
   you're not sure which one to use, try ``cc_analysis``.)  The
-  connected components are loaded into the editor pane
+  connected components are loaded into the page glyphs pane
   and the original image is loaded into the original image display.
 
 **Select image...**
   Select an already-loaded image from the console and use it as the
   original image.  This image does not have to correspond to the
-  contents of the editor pane.
+  contents of the page glyphs pane.
 
-**Save glyphs separately...**
+**Save glyphs into separate files**
   Saves each of the connected components into a separate image file in
   a given directory using one of the following sets of connected
   components:
 
-    - Classifier glyphs... (the glyphs in the classifier)
-    - Editor glyphs... (the glyphs in the editor pane)
-    - Selected glyphs... (the selected glyphs in the editor pane)
+    - Classifier glyphs...)
+    - Page glyphs...
+    - Selected glyphs...
 
-  See 'glyph collections'_.
+  See `glyph collections`_.
 
 Classifier menu
 '''''''''''''''
@@ -609,6 +629,11 @@ Classifier optimization (Biollante)
 For our purposes, Biollante is a small GUI for optimizing kNN
 classifiers using a genetic algorithm.  The genetic algorithm is used
 to adjust the weights of the feature dimensions.
+
+How Biollante fits into training is described in the `training
+tutorial`__.
+
+.. __: training_tutorial.html
 
 Overview
 ````````

@@ -240,7 +240,7 @@ This is the formal definition of the Gamera XML Format.
     11/18/02 Michael Droettboom
   -->
 
-  <!ELEMENT gamera-database (symbols*,glyphs*,groups*)>
+  <!ELEMENT gamera-database (symbols*,glyphs*)>
   <!ATTLIST gamera-database version CDATA #REQUIRED>
 
   <!ELEMENT symbols (symbol*)>
@@ -249,11 +249,6 @@ This is the formal definition of the Gamera XML Format.
   <!ATTLIST symbol name CDATA #REQUIRED>
 
   <!ELEMENT glyphs (glyph*)>
-
-  <!ELEMENT groups (group*)>
-
-  <!ELEMENT group (glyph*)>
-  <!ATTLIST group id CDATA #REQUIRED>
 
   <!ELEMENT glyph (ids,data,features?)>
   <!ATTLIST glyph uly CDATA #REQUIRED>

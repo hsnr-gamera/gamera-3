@@ -18,57 +18,168 @@
 #
 
 from gamera.plugin import *
+import _runlength
 
-class most_frequent_black_horizontal_run(PluginFunction):
+class FrequentRun(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = Int()
+    doc_examples = [(ONEBIT,)]
+
+class most_frequent_black_horizontal_run(FrequentRun):
     """Returns the length of the most frequently occurring horizontal run of
 black pixels."""
-    self_type = ImageType([ONEBIT])
-    return_type = Int()
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class most_frequent_white_horizontal_run(PluginFunction):
+class most_frequent_white_horizontal_run(FrequentRun):
     """Returns the length of the most frequently occurring horizontal run of
 white pixels."""
-    self_type = ImageType([ONEBIT])
-    return_type = Int()
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class most_frequent_black_vertical_run(PluginFunction):
+class most_frequent_black_vertical_run(FrequentRun):
     """Returns the length of the most frequently occurring vertical run of
 black pixels."""
-    self_type = ImageType([ONEBIT])
-    return_type = Int()
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class most_frequent_white_vertical_run(PluginFunction):
+class most_frequent_white_vertical_run(FrequentRun):
     """Returns the length of the most frequently occurring vertical run of
 white pixels."""
-    self_type = ImageType([ONEBIT])
-    return_type = Int()
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class filter_narrow_runs(PluginFunction):
+class FrequentRuns(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    args = Args([Int("n", default=-1)])
+    return_type = Class()
+    doc_examples = [(ONEBIT, 10)]
+    author = "Michael Droettboom, after an idea by Christoph Dalitz"
+
+class most_frequent_black_horizontal_runs(FrequentRuns):
+    """Returns the lengths of the *n* most frequently occurring horizontal runs of
+black pixels.
+
+*n*
+   The number of runlengths to return.  If *n* < 0, all runlengths will be returned.
+
+The return value is a list of 2-tuples.  The first element in the tuple is the
+run length, and the second element is its frequency.  The list is sorted
+by descending frequency.
+"""
+    def __call__(self, n=-1):
+        return _runlength.most_frequent_black_horizontal_runs(self, n)
+    __call__ = staticmethod(__call__)
+
+class most_frequent_white_horizontal_runs(FrequentRuns):
+    """Returns the lengths of the *n* most frequently occurring horizontal runs of
+white pixels.
+
+*n*
+   The number of runlengths to return.  If *n* < 0, all runlengths will be returned.
+
+The return value is a list of 2-tuples.  The first element in the tuple is the
+run length, and the second element is its frequency.  The list is sorted
+by descending frequency.
+"""
+    def __call__(self, n=-1):
+        return _runlength.most_frequent_white_horizontal_runs(self, n)
+    __call__ = staticmethod(__call__)
+
+class most_frequent_black_vertical_runs(FrequentRuns):
+    """Returns the lengths of the *n* most frequently occurring vertical runs of
+black pixels.
+
+*n*
+   The number of runlengths to return.  If *n* < 0, all runlengths will be returned.
+
+The return value is a list of 2-tuples.  The first element in the tuple is the
+run length, and the second element is its frequency.  The list is sorted
+by descending frequency.
+"""
+    def __call__(self, n=-1):
+        return _runlength.most_frequent_black_vertical_runs(self, n)
+    __call__ = staticmethod(__call__)
+
+class most_frequent_white_vertical_runs(FrequentRuns):
+    """Returns the lengths of the *n* most frequently occurring vertical runs of
+white pixels.
+
+*n*
+   The number of runlengths to return.  If *n* < 0, all runlengths will be returned.
+
+The return value is a list of 2-tuples.  The first element in the tuple is the
+run length, and the second element is its frequency.  The list is sorted
+by descending frequency.
+"""
+    def __call__(self, n=-1):
+        return _runlength.most_frequent_white_vertical_runs(self, n)
+    __call__ = staticmethod(__call__)
+
+class RunHistogram(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = IntVector()
+    doc_examples = [(ONEBIT,)]
+    author = "Michael Droettboom"
+
+class black_horizontal_run_histogram(RunHistogram):
+    """Returns the histogram of the length of black horizontal runs.
+
+*return_value*
+   The return value is an integer array, of length == ``image.ncols``.
+   Each index in the array corresponds to a particular run length,
+   and the value at that index is the number of times that that
+   run length occurs in the image.
+"""
+    pass
+
+class white_horizontal_run_histogram(RunHistogram):
+    """Returns the histogram of the length of white horizontal runs.
+
+*return_value*
+   The return value is an integer array, of length == ``image.ncols``.
+   Each index in the array corresponds to a particular run length,
+   and the value at that index is the number of times that that
+   run length occurs in the image.
+"""
+    pass
+
+class black_vertical_run_histogram(RunHistogram):
+    """Returns the histogram of the length of black vertical runs.
+
+*return_value*
+   The return value is an integer array, of length == ``image.ncols``.
+   Each index in the array corresponds to a particular run length,
+   and the value at that index is the number of times that that
+   run length occurs in the image.
+"""
+    pass
+
+class white_vertical_run_histogram(RunHistogram):
+    """Returns the histogram of the length of white vertical runs.
+
+*return_value*
+   The return value is an integer array, of length == ``image.ncols``.
+   Each index in the array corresponds to a particular run length,
+   and the value at that index is the number of times that that
+   run length occurs in the image.
+"""
+    pass
+
+class FilterRuns(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    args = Args(Int("size"))
+
+class filter_narrow_runs(FilterRuns):
     """Removes black horizontal runs narrower than a given length."""
-    self_type = ImageType([ONEBIT])
-    args = Args(Int("size"))
     doc_examples = [(ONEBIT, 5)]
 
-class filter_short_runs(PluginFunction):
+class filter_short_runs(FilterRuns):
     """Removes black vertical runs shorter than a given length."""
-    self_type = ImageType([ONEBIT])
-    args = Args(Int("size"))
     doc_examples = [(ONEBIT, 5)]
 
-class filter_tall_runs(PluginFunction):
+class filter_tall_runs(FilterRuns):
     """Removes black vertical runs taller than a given length."""
-    self_type = ImageType([ONEBIT])
-    args = Args(Int("size"))
     doc_examples = [(ONEBIT, 10)]
 
-class filter_wide_runs(PluginFunction):
+class filter_wide_runs(FilterRuns):
     """Removes black horizontal runs wider than a given length."""
-    self_type = ImageType([ONEBIT])
-    args = Args(Int("size"))
     doc_examples = [(ONEBIT, 10)]
 
 class to_rle(PluginFunction):
@@ -102,6 +213,14 @@ class RunLengthModule(PluginModule):
                  most_frequent_white_horizontal_run,
                  most_frequent_black_vertical_run,
                  most_frequent_white_vertical_run,
+                 most_frequent_black_horizontal_runs,
+                 most_frequent_white_horizontal_runs,
+                 most_frequent_black_vertical_runs,
+                 most_frequent_white_vertical_runs,
+                 black_horizontal_run_histogram,
+                 white_horizontal_run_histogram,
+                 black_vertical_run_histogram,
+                 white_vertical_run_histogram,
                  filter_narrow_runs, filter_short_runs,
                  filter_tall_runs,filter_wide_runs,
                  to_rle, from_rle]
@@ -110,3 +229,7 @@ class RunLengthModule(PluginModule):
 
 module = RunLengthModule()
                  
+del FrequentRun
+del FrequentRuns
+del RunHistogram
+del FilterRuns

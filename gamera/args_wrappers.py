@@ -248,7 +248,7 @@ class ImageList(WrapperArg):
       return """
           const char* type_error_%(name)s = "Argument '%(name)s' must be an iterable of images.";
           PyObject* %(pysymbol)s_seq = PySequence_Fast(%(pysymbol)s, type_error_%(name)s);
-          if (%(pysymbol)s_seq)
+          if (%(pysymbol)s_seq == NULL)
             return 0;
           int %(symbol)s_size = PySequence_Fast_GET_SIZE(%(pysymbol)s_seq);
           %(symbol)s.resize(%(symbol)s_size);

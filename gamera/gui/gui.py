@@ -124,7 +124,7 @@ class GameraGui:
 
 class PyCrustGameraShell(shell.Shell):
    def __init__(self, main_win, parent, id, message):
-      shell.Shell.__init__(self, parent, id, introText=message)
+
       # Win32 change
       # WIN32TODO: This needs to be tested
       # if wxPython was compiled with Unicode
@@ -132,8 +132,11 @@ class PyCrustGameraShell(shell.Shell):
 ##          self.SetCodePage(wxSTC_CP_UTF8)
 ##       else:
 ##          self.SetCodePage(1)
+
       self.history_win = None
       self.update = None
+      shell.Shell.__init__(self, parent, id, introText=message)
+
       self.locals = self.interp.locals
       self.main_win = main_win
       self.SetMarginType(1, 0)

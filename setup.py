@@ -80,6 +80,9 @@ for file, content in command_line_utils.items():
 ########################################
 # Distutils setup
 
+ga_files = glob.glob("src/ga/*.C")
+ga_files.append("src/knncoremodule.cpp")
+
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
                          "src/sizeobject.cpp",
@@ -96,8 +99,8 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"],
                         # FIXME
                         libraries=["stdc++"]),
-              Extension("gamera.knncore", ["src/knncoremodule.cpp"],
-                        include_dirs=["include"], libraries=["stdc++"])]
+              Extension("gamera.knncore", ga_files,
+                        include_dirs=["include", "src/ga", "src"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
 setup(name = "gameracore", version="1.1",

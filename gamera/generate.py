@@ -366,6 +366,7 @@ template = Template("""
              return 0;
            Py_DECREF(result);
          }
+         Py_DECREF(array_func);
          Py_DECREF(arglist);
          [[if isinstance(function.return_type, FloatVector)]]
            double* buf;

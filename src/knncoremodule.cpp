@@ -28,6 +28,13 @@
 #include <Python.h>
 #include <assert.h>
 #include <stdio.h>
+// for ga optimization
+#include <ga/ga.h>
+#include <ga/GASimpleGA.h>
+#include <ga/GA1DArrayGenome.h>
+// for rand
+#include <stdlib.h>
+#include <time.h>
 
 using namespace Gamera;
 using namespace Gamera::kNN;
@@ -47,6 +54,11 @@ extern "C" {
   static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
   static PyObject* knn_serialize(PyObject* self, PyObject* args);
   static PyObject* knn_unserialize(PyObject* self, PyObject* args);
+  static PyObject* knn_get_weights(PyObject* self);
+  static int knn_set_weights(PyObject* self, PyObject* v);
+  static PyObject* knn_ga_create(PyObject* self, PyObject* args);
+  static PyObject* knn_ga_destroy(PyObject* self, PyObject* args);
+  static PyObject* knn_ga_step(PyObject* self, PyObject* args);
 }
 
 static PyTypeObject KnnType = {
@@ -88,6 +100,13 @@ struct KnnObject {
   double* feature_vectors;
   // The id_names for the feature vectors
   char** id_names;
+  /*
+    The weights are stored in a python array object for easy access
+    to and from python. To make things easier and faster for the 
+    C++ code the buffer pointer for the data is stored in the
+    weight_vector member below.
+  */
+  PyObject* weight_array;
   // The current weights applied to the distance calculation
   double* weight_vector;
   /*
@@ -106,6 +125,15 @@ struct KnnObject {
   size_t num_k;
   // the distance type currently being used.
   DistanceType distance_type;
+  /*
+    GA
+  */
+  GA1DArrayGenome<double>* genome;
+  GASteadyStateGA* ga;
+  size_t population;
+  double mutation;
+  double crossover;
+  bool ga_running;
 };
 
 
@@ -119,6 +147,9 @@ PyMethodDef knn_methods[] = {
   { "leave_one_out", knn_leave_one_out, METH_VARARGS, "" },
   { "serialize", knn_serialize, METH_VARARGS, "" },
   { "unserialize", knn_unserialize, METH_VARARGS, "" },
+  { "ga_create", knn_ga_create, METH_VARARGS, "" },
+  { "ga_destroy", knn_ga_destroy, METH_VARARGS, "" },
+  { "ga_step", knn_ga_step, METH_VARARGS, "" },
   { NULL }
 };
 
@@ -127,11 +158,44 @@ PyGetSetDef knn_getset[] = {
     "The value of k used for classification.", 0 },
   { "distance_type", (getter)knn_get_distance_type, (setter)knn_set_distance_type,
     "The type of distance calculation used.", 0 },
+  { "weights", (getter)knn_get_weights, (setter)knn_set_weights,
+    "The current weights used for distance calculation", 0 },
   { NULL }
 };
 
 // for type checking images - see initknn.
 static PyTypeObject* imagebase_type;
+static PyObject* array_init;
+
+int create_weights(KnnObject* o) {
+  PyObject* arglist = Py_BuildValue("(s)", "d");
+  PyObject* array = PyEval_CallObject(array_init, arglist);
+  if (array == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error creating array.");
+    return -1;
+  }
+  Py_DECREF(arglist);
+  PyObject* result;
+  for (size_t i = 0; i < o->num_features; ++i) {
+    result = PyObject_CallMethod(array, "append", "f", 1.0);
+    if (result == 0)
+      return -1;
+    Py_DECREF(result);
+  }
+  Py_DECREF(arglist);
+
+  int len;
+  if (!PyObject_CheckReadBuffer(array)) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
+    return -1;
+  }
+  if (PyObject_AsReadBuffer(array, (const void**)&o->weight_vector, &len) != 0) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
+    return -1;
+  }
+  o->weight_array = array;
+  return 0;
+}
 
 /*
   Create a new kNN object and initialize all of the data.
@@ -149,18 +213,25 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->weight_vector = 0;
   o->normalize = 0;
   o->normalized_unknown = 0;
-
   /*
     Initialize the weights.
   */
-  o->weight_vector = new double[o->num_features];
-  std::fill(o->weight_vector, o->weight_vector + o->num_features, 1.0);
-  Py_INCREF(Py_None);
+  if (create_weights(o) < 0)
+    return 0;
   /*
     Initialize the normalized unknown fv
   */
   o->normalized_unknown = new double[o->num_features];
+  /*
+    Initialize the ga
+  */
+  o->ga = 0;
+  o->genome = 0;
+  o->population = 20;
+  o->mutation = 0.01;
+  o->crossover = 0.6;
 
+  Py_INCREF(Py_None);
   return (PyObject*)o;
 }
 
@@ -185,9 +256,8 @@ static void knn_delete_feature_data(KnnObject* o) {
     delete o->normalize;
     o->normalize = 0;
   }
-  if (o->weight_vector != 0) {
-    delete o->weight_vector;
-    o->weight_vector = 0;
+  if (o->weight_array != 0) {
+    Py_DECREF(o->weight_array);
   }
   if (o->normalized_unknown != 0) {
     delete o->normalized_unknown;
@@ -207,20 +277,24 @@ static void knn_delete_feature_data(KnnObject* o) {
   easier and also allows certain features (like normalization) to become
   a lot easier.
 */
-static void knn_create_feature_data(KnnObject* o, size_t num_features,
+static int knn_create_feature_data(KnnObject* o, size_t num_features,
 				    size_t num_feature_vectors) {
-  o->num_features = num_features;
-  o->num_feature_vectors = num_feature_vectors;
-  assert(o->num_features > 0 && o->num_feature_vectors > 0);
-
-  o->feature_vectors = new double[o->num_features * o->num_feature_vectors];
-  o->id_names = new char*[o->num_feature_vectors];
-  for (size_t i = 0; i < o->num_feature_vectors; ++i)
-    o->id_names[i] = 0;
-  o->normalize = new Normalize(o->num_features);
-  o->weight_vector = new double[o->num_features];
-  std::fill(o->weight_vector, o->weight_vector + o->num_features, 1.0);
-  o->normalized_unknown = new double[o->num_features];
+  try {
+    o->num_features = num_features;
+    o->num_feature_vectors = num_feature_vectors;
+    assert(o->num_features > 0 && o->num_feature_vectors > 0);
+    
+    o->feature_vectors = new double[o->num_features * o->num_feature_vectors];
+    o->id_names = new char*[o->num_feature_vectors];
+    for (size_t i = 0; i < o->num_feature_vectors; ++i)
+      o->id_names[i] = 0;
+    o->normalize = new Normalize(o->num_features);
+    o->normalized_unknown = new double[o->num_features];
+  } catch (std::exception e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return -1;
+  }
+  return create_weights(o);
 }
 
 // destructor for Python
@@ -301,6 +375,10 @@ inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
 static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   PyObject* images;
   KnnObject* o = (KnnObject*)self;
+  if (o->ga_running = true) {
+    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    return 0;
+  }
   if (PyArg_ParseTuple(args, "O", &images) <= 0) {
     return 0;
   }
@@ -342,7 +420,8 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   /*
     Create all of the data
   */
-  knn_create_feature_data(o, tmp_fv_len, images_size);
+  if (knn_create_feature_data(o, tmp_fv_len, images_size) < 0)
+    return 0;
   /*
     Copy the id_names and the features to the internal data structures.
   */
@@ -390,6 +469,10 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
 */
 static PyObject* knn_classify(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
+  if (o->ga_running = true) {
+    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    return 0;
+  }
   if (o->feature_vectors == 0) {
       PyErr_SetString(PyExc_RuntimeError,
 		      "knn: classify called before instantiate from images");
@@ -482,6 +565,10 @@ inline int compute_distance(KnnObject* o, PyObject* known, PyObject* unknown,
 
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
+  if (o->ga_running = true) {
+    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    return 0;
+  }
   PyObject* unknown, *iterator;
   if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
     return 0;
@@ -551,7 +638,11 @@ static int knn_set_distance_type(PyObject* self, PyObject* v) {
   return 0;
 }
 
-static double leave_one_out(KnnObject* o) {
+static double leave_one_out(KnnObject* o, double* weight_vector = 0) {
+  double* weights = weight_vector;
+  if (weights == 0)
+    weights = o->weight_vector;
+  
   assert(o->feature_vectors != 0);
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
   size_t total_correct = 0;
@@ -565,17 +656,17 @@ static double leave_one_out(KnnObject* o) {
 	distance = euclidean_distance(&o->feature_vectors[i],
 				      &o->feature_vectors[i] + o->num_features,
 				      &o->feature_vectors[j],
-				      o->weight_vector);
+				      weights);
       } else if (o->distance_type == FAST_EUCLIDEAN) {
 	distance = fast_euclidean_distance(&o->feature_vectors[i],
 					   &o->feature_vectors[i] + o->num_features,
 					   &o->feature_vectors[j],
-					   o->weight_vector);
+					   weights);
       } else {
 	distance = city_block_distance(&o->feature_vectors[i],
 				       &o->feature_vectors[i] + o->num_features,
 				       &o->feature_vectors[j],
-				       o->weight_vector);
+				       weights);
       }
       knn.add(o->id_names[j], distance);
     }
@@ -748,7 +839,8 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   }
 
   knn_delete_feature_data(o);
-  knn_create_feature_data(o, (size_t)num_features, (size_t)num_feature_vectors);
+  if (knn_create_feature_data(o, (size_t)num_features, (size_t)num_feature_vectors) < 0)
+    return 0;
   o->num_k = num_k;
 
   for (size_t i = 0; i < o->num_feature_vectors; ++i) {
@@ -788,6 +880,96 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   Py_INCREF(Py_None);
   return Py_None;
 }
+
+static PyObject* knn_get_weights(PyObject* self) {
+  KnnObject* o = (KnnObject*)self;
+  Py_INCREF(o->weight_array);
+  return o->weight_array;
+}
+
+static int knn_set_weights(PyObject* self, PyObject* array) {
+  KnnObject* o = (KnnObject*)self;
+  int len;
+  if (!PyObject_CheckReadBuffer(array)) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
+    return -1;
+  }
+  if ((PyObject_AsReadBuffer(array, (const void**)&o->weight_vector, &len) != 0)
+      || size_t(len) != o->num_features * sizeof(double)) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
+    return -1;
+  }
+  Py_DECREF(o->weight_array);
+  o->weight_array = array;
+  return 0;
+}
+
+/*
+  GA
+*/
+float Fitness(GAGenome & g) {
+  GA1DArrayGenome<double> & genome = (GA1DArrayGenome<double> &)g;
+  KnnObject* knn = (KnnObject*)genome.userData();
+
+  double result = leave_one_out(knn, genome());
+
+  return (float)result;
+}
+
+void Initializer(GAGenome& genome) {
+  GA1DArrayGenome<double>& g = (GA1DArrayGenome<double>&)genome;
+  srand(time(0));
+  for (int i = 0; i < g.length(); i++) {
+    g.gene(i, rand() / (RAND_MAX + 1.0));
+  }
+}
+
+static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  o->ga_running = true;
+  if (o->ga != 0)
+    delete o->ga;
+  if (o->genome != 0)
+    delete o->genome;
+  o->genome = new GA1DArrayGenome<double>(o->num_features, Fitness);
+  o->genome->userData(o);
+  o->genome->initializer(Initializer);
+
+  GARandomSeed();
+  o->ga = new GASteadyStateGA(*o->genome);
+  o->ga->populationSize(o->population);
+  o->ga->nGenerations(1);
+  o->ga->pMutation(o->mutation);
+  o->ga->pCrossover(o->crossover);
+  o->ga->initialize();
+  return Py_BuildValue("f", o->ga->statistics().initial());
+}
+
+static PyObject* knn_ga_destroy(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  if (o->ga != 0)
+    delete o->ga;
+  if (o->genome != 0)
+    delete o->genome;
+  o->ga_running = false;
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* knn_ga_step(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  Py_BEGIN_ALLOW_THREADS
+  o->ga->populationSize(o->population);
+  o->ga->pMutation(o->mutation);
+  o->ga->pCrossover(o->crossover);
+  o->ga->step();
+  Py_END_ALLOW_THREADS
+  GA1DArrayGenome<double>& g =(GA1DArrayGenome<double>&)o->ga->statistics().bestIndividual();
+  for (size_t i = 0; i < o->num_features; i++)
+    o->weight_vector[i] = g.gene(i);
+  return Py_BuildValue("f", o->ga->statistics().maxEver());
+}
+
 
 PyMethodDef knn_module_methods[] = {
   { NULL }
@@ -836,4 +1018,20 @@ DL_EXPORT(void) initknncore(void) {
     return;
   }
   imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
+
+  PyObject* array_module = PyImport_ImportModule("array");
+  if (array_module == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get array module\n");
+    return;
+  }
+  PyObject* array_dict = PyModule_GetDict(array_module);
+  if (array_dict == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get array module dict\n");
+    return;
+  }
+  array_init = PyDict_GetItemString(array_dict, "array");
+  if (array_init == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get array init method\n");
+    return;
+  }
 }

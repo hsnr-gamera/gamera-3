@@ -26,6 +26,8 @@ from gamera.knncore import FAST_EUCLIDEAN
 class kNN(gamera.knncore.kNN):
     def __init__(self):
         gamera.knncore.kNN.__init__(self)
+        self.ga_initial = 0.0
+        self.ga_best = 0.0
 
     def evaluate(self):
         """Evaluate the performance of the kNN classifier using
@@ -41,3 +43,8 @@ class kNN(gamera.knncore.kNN):
     def supports_optimization():
         """Flag indicating that this classifier supports optimization."""
         return 1
+
+    def start_optimizing():
+        """Start optizing the classifier using a Genetic Algorithm"""
+        self.ga_initial = self.ga_create()
+        self.ga_best = self.ga_initial

@@ -18,8 +18,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+from gamera.core import *
 from gamera import knn
-# from gamera.plugins import distance
+from gamera.plugins import distance
 from gamera import util
 
 class Edge:
@@ -233,8 +234,12 @@ def create_forest(glyphs):
    return forest
 
 def create_graph(glyphs, ratio):
-   #forest = distance.unique_distances(glyphs)
-   forest = create_forest(glyphs)
+   import gamera.knn
+   k = gamera.knn.kNN()
+   k.load_settings("c:/Documents and Settings/Karl MacMillan/Desktop/default.xml")
+   generate_features_list(glyphs, k.feature_functions)
+   forest = distance.unique_distances(glyphs)
+   #forest = create_forest(glyphs)
    num_nodes = len(glyphs)
    next = 1
    g = Graph()

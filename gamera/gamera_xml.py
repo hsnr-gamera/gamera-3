@@ -144,7 +144,9 @@ class WriteXML:
                       indent)
          indent -= 1
          word_wrap(stream, '</features>', indent)
-      for key, val in glyph.properties.items():
+      properties = glyph.properties.items()
+      properties.sort()
+      for key, val in properties:
          if not val is None:
             word_wrap(stream, '<property name="%s" type="%s">%s</property>' %
                       (key, type(val).__name__, str(val)), indent)

@@ -69,8 +69,14 @@ class ImageBase:
    _methods = {}
 
    class Properties(dict):
+      def __getitem__(self, attr):
+         if dict.__hasitem__(self, attr):
+            return dict.__getitem__(self, attr)
+         else:
+            return None
+      
       def __getattr__(self, attr):
-         return dict.__getitem__(self, attr)
+         return self.__getitem__(attr)
       def __setattr__(self, attr, value):
          return dict.__setitem__(self, attr, value)
    
@@ -323,6 +329,12 @@ class ImageBase:
       import gamera_xml
       return gamera_xml.WriteXML(glyphs=[self]).write_stream(stream)
 
+   def set_property(self, name, value):
+      self.property[name] = value
+
+   def get_property(self, name):
+      return self.property[name]
+
 ######################################################################
       
 class Image(gameracore.Image, ImageBase):
@@ -397,7 +409,11 @@ def init_gamera():
          plugin.PluginFactory("display_cc", None, "Display",
                               None,
                               plugin.ImageType([ONEBIT]),
-                              plugin.ImageType([ONEBIT], "cc"))
+                              plugin.ImageType([ONEBIT], "cc")),
+         plugin.PluginFactory("to_xml", None, "XML",
+                              plugin.String('xml'),
+                              plugin.ImageType([ALL]),
+                              None)
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)

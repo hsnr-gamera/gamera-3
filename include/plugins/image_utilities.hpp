@@ -191,10 +191,11 @@ namespace Gamera {
       new ImageView<typename T::data_type>(*data, 0, 0, nrows ,ncols);
     /*
       Images with nrows or ncols == 1 cannot be scaled. This is a hack that
-      just returns a black image.
+      just returns an image with the same color as the upper-left pixel
     */
-    if (view->nrows() == 1 || view->ncols() == 1) {
-      std::fill(view->vec_begin(), view->vec_end(), black(*view));
+    if (image.nrows() <= 1 || image.ncols() <= 1 || 
+	view->nrows() <= 1 || view->ncols() <= 1) {
+      std::fill(view->vec_begin(), view->vec_end(), image.get(0, 0));
       return view;
     }
     if (resize_quality == 0) {

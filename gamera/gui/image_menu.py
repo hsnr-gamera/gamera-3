@@ -28,10 +28,6 @@ import weakref
 EXECUTE_MODE = 0
 HELP_MODE = 1
 
-
-######################################################################
-# These are redefined here from gamera_shell, since importing
-# gamera_shell here causes cyclic references
 def set_shell(sh):
   global shell
   shell = sh
@@ -40,41 +36,44 @@ def set_shell_frame(sf):
   global shell_frame
   shell_frame = sf
 
-
-
 ######################################################################
 
 class ImageMenu:
-  def __init__(self, parent, x, y, images_, name_, shell_=None,
+  _base_method_id = 10003
+
+  def __init__(self, parent, x, y, images_, name_=None, shell_=None,
                mode=EXECUTE_MODE):
     self.shell = shell_
-    self.x = x
-    self.y = y
     self.locals = locals
     self.mode = mode
     self.parent = parent
     if not util.is_sequence(images_):
       self.images = [weakref.proxy(images_)]
-      self.images_name = [name_]
     else:
       self.images = [weakref.proxy(x) for x in images_]
-      self.images_name = name_
-    self.variables = self.images[0].members_for_menu()
-    self.methods = self.images[0].methods_for_menu()
+    self.image_name = name_
+
+    members = self.images[0].members_for_menu()
+    methods = self.images[0].methods_for_menu()
+    menu = self.create_menu(members, methods,
+                            self.images[0].data.pixel_type,
+                            self.images[0].pixel_type_name)
+    self.parent.PopupMenu(menu, wxPoint(x, y))
+    for i in range(10000, self._base_method_id + len(self.functions)):
+      self.parent.Disconnect(i)
+    menu.Destroy()
 
   def __del__(self):
-    print "del!"
+    print 'ImageMenu deleted'
 
   # Given a list of variables and methods, put it all together
-  def create_menu(self, variables, methods, type, type_name):
-    global functions
+  def create_menu(self, members, methods, type, type_name):
     menu = wxMenu()
     # Top line
     if self.mode == HELP_MODE:
       menu.Append(0, "Help")
     menu.Append(0, type_name + " Image")
     menu.AppendSeparator()
-
     menu.Append(10000, "new reference")
     EVT_MENU(self.parent, 10000, self.OnCreateReference)
     menu.Append(10001, "new copy")
@@ -83,10 +82,9 @@ class ImageMenu:
 
     info_menu = wxMenu()
     menu.AppendMenu(0, "Info", info_menu)
-    
     # Variables
-    for i in range(len(variables)):
-      info_menu.Append(0, variables[i])
+    for member in members:
+      info_menu.Append(0, member)
 
     menu.AppendSeparator()
     # Methods
@@ -95,7 +93,6 @@ class ImageMenu:
     return menu
 
   def create_methods(self, methods, menu):
-    global self.functions
     items = methods.items()
     items.sort()
     for key, val in items:
@@ -103,25 +100,11 @@ class ImageMenu:
         item = self.create_methods(val, wxMenu())
         menu.AppendMenu(0, key, item)
       else:
-        menu.Append(len(self.functions), key)
-        self.parent.Disconnect(len(self.functions))
-        EVT_MENU(self.parent, len(self.functions), self.OnPopupFunction)
+        menu.Append(len(self.functions) + self._base_method_id, key)
+        EVT_MENU(self.parent, len(self.functions) + self._base_method_id,
+                 self.OnPopupFunction)
         self.functions.append(val)
     return menu
-
-  def PopupMenu(self):
-    self.menu = self.create_menu(self.variables,
-                            self.methods,
-                            self.images[0].data.pixel_type,
-                            self.images[0].pixel_type_name)
-    self.parent.PopupMenu(self.menu, wxPoint(self.x, self.y))
-    self.menu.Destroy()
-
-  def GetMenu(self):
-    return self.create_menu(self.variables,
-                            self.methods,
-                            self.images[0].data.pixel_type,
-                            self.images[0].pixel_type_name)
 
   def get_shell(self):
     if self.shell:
@@ -137,7 +120,7 @@ class ImageMenu:
         sh.locals[name] = self.images[0]
       else:
         sh.locals[name] = []
-        for i in range(len(images)):
+        for i in range(len(self.images)):
           sh.locals[name].append(self.images[i])
       sh.Update()
     sh.update()
@@ -160,7 +143,7 @@ class ImageMenu:
     if function.args.list in ('', None, (), []):
       # if not, we can just use empty parentheses
       return function.__name__ + "()"
-    # else, display the argument gui and use what is returns
+    # else, display the argument gui and use what it returns
     return function.args.show(self.parent,
                               sh.GetLocals(),
                               function.__name__)
@@ -170,22 +153,9 @@ class ImageMenu:
       return var_name.get(function.return_type.name, dict)
     return ''
 
-  def get_image_name(self, images_name, i):
-    # If the image exists at the top-level in the shell's
-    # namespace, we can use that to refer to it
-    if util.is_sequence(self.images_name):
-      # If it is a single image
-      return self.images_name[i]
-    elif type(self.images_name) == type('') and self.images_name != '':
-      # If is is a list of images
-      return self.images_name + "[" + str(i) + "]"
-    # The image does not exist at the top-level of the shell's
-    # namespace
-    return self.images_name
-
   def OnPopupFunction(self, event):
     sh = self.get_shell()
-    function = self.functions[event.GetId()]
+    function = self.functions[event.GetId() - self._base_method_id]
     if self.images:
       if self.mode == HELP_MODE:
         sh.run("help('" + function.__name__ + "')")
@@ -194,33 +164,54 @@ class ImageMenu:
         if func_call == None:  # User pressed cancel, so bail
           return
         result_name = self.get_result_name(function, sh.locals)
-        # if we're going to return multiple results, prepare the
-        # variable as a list
-        if len(self.images) > 1 and result_name != '':
-          sh.locals[result_name] = []
-        # Now let's run some code and get results
-        for i in range(len(self.images)):
-          image = self.images[i]
-          image_name = self.get_image_name(self.images_name, i)
-          # If the image name is a string, we can call the function
-          # directly in the shell
-          if type(image_name) == type(''):
-            source = image_name + "." + func_call
-            if result_name != '':
-              if len(self.images) > 1:
-                source = result_name + ".append(" + source + ")"
-              else:
-                source = result_name + " = " + source
-            sh.run(source)
-          # If the image name is not a string, we have to call the
-          # function here
-          else:
-            source = self.images_name + "[" + str(i) + "]." + func_call
-            if result_name != '':
-              if len(self.images) > 1:
-                sh.locals[result_name].append(eval(source))
-              else:
-                sh.locals[result_name] = eval(source)
-            else:
-              eval(source, globals(), sh.locals)
+        # If there is no image name, we have to run the code locally (i.e.
+        # not in the shell)
+        if self.image_name is None:
+          self._run_locally(sh, result_name, func_call)
+        else:
+          self._run_in_shell(sh, result_name, func_call)
     sh.update()
+
+  def _run_locally(self, sh, result_name, func_call):
+    if len(self.images) == 1:
+      namespace = {'image': self.images[0]}
+      source = 'image.%s' % func_call
+      print source
+      result = eval(source, namespace)
+      if result_name != '':
+        sh.locals[result_name] = result
+    else:
+      namespace = {'images': self.images}
+      if result_name != '':
+        sh.locals[result_name] = []
+      progress = util.ProgressFactory('Processing images...')
+      for i in range(len(self.images)):
+        source = "images[%d].%s" % (i, func_call)
+        result = eval(source, namespace)
+        if result_name != '':
+          sh.locals[result_name].append(result)
+        progress.update(i, len(self.images))
+      progress.update(1, 1)
+    if result_name != '':
+      sh.run(result_name)
+
+  def _run_in_shell(self, sh, result_name, func_call):
+    if len(self.images) == 1:
+      if result_name != '':
+        source = '%s = ' % result_name
+      else:
+        source = ''
+      source += '.'.join((self.image_name, func_call))
+      sh.run(source)
+    else:
+      progress = util.ProgressFactory('Processing images...')
+      if result_name != '':
+        sh.run('%s = []' % result_name)
+      for i in xrange(len(self.images)):
+        source = '%s[%d].%s' % (self.image_name, i, func_call)
+        if result_name != '':
+          source = '%s.append(%s)' % (result_name, source)
+        sh.run(source)
+        progress.update(i, len(self.images))
+      progress.update(1, 1)
+                       

@@ -21,7 +21,7 @@
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                         # Gamera specific
 from gamera import paths, util
-from gamera.gui import image_menu, var_name
+from gamera.gui import image_menu, var_name, gamera_icons
 
 ######################################################################
 
@@ -63,8 +63,7 @@ class IconDisplay(wxListCtrl):
     self.init_events()
     self.SetToolTip(wxToolTip(
       "Double-click to display.\n" + 
-      "Right-click to perform functions.\n" +
-      "Shift-right-click for help."))
+      "Right-click to perform functions.\n"))
     self.help_mode = 0
     self.dt = IconDisplayDropTarget(self)
     self.dt.display = self
@@ -78,13 +77,12 @@ class IconDisplay(wxListCtrl):
   def add_class(self, icon_description):
     add_it = 1
     for klass in self.classes:
-      if klass[0].__class__ == icon_description:
+      if klass[0] == icon_description:
         add_it = 0
         break
     if add_it:
-      id = icon_description()
-      icon = self.il.AddIcon(id.get_icon())
-      self.classes.append((id, icon))
+      icon = self.il.AddIcon(icon_description.get_icon())
+      self.classes.append((icon_description, icon))
     
   def init_events(self):
     tID = self.GetId()
@@ -105,7 +103,7 @@ class IconDisplay(wxListCtrl):
     self.InsertImageStringItem(index, label, icon)
     
   def refresh_icon(self, key, data, icon):
-    if data.type != self.data[key].type:
+    if data.__class__ != self.data[key].__class__:
       index = self.data[key].index
       data.index = index
       self.data[key] = data
@@ -136,7 +134,7 @@ class IconDisplay(wxListCtrl):
         except:
           pass
       if t != None:
-        obj = Icon(i[0], i[1], 0, t)
+        obj = t(i[0], i[1], 0)
         if self.data.has_key(i[0]):
           self.refresh_icon(i[0], obj, icon)
         else:
@@ -155,7 +153,7 @@ class IconDisplay(wxListCtrl):
     return None
 
   def OnItemSelected(self, event):
-    self.currentIconName = self.find_icon(event.m_itemIndex).label
+    self.currentIcon = self.find_icon(event.m_itemIndex)
 
   def OnRightDown(self, event):
     self.x = event.GetX()
@@ -173,152 +171,156 @@ class IconDisplay(wxListCtrl):
     self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
     currentIcon = self.find_icon(index)
     if currentIcon:
-      if isinstance(currentIcon.data, ImageBase):
-        if event.ShiftDown():
-          mode = image_menu.HELP_MODE
-        else:
-          mode = image_menu.EXECUTE_MODE
-          menu = image_menu.ImageMenu(self, self.x, self.y,
-                                      currentIcon.data,
-                                      currentIcon.label,
-                                      self.shell, mode)
-          menu.PopupMenu()
+      if event.ShiftDown():
+        mode = image_menu.HELP_MODE
+      else:
+        mode = image_menu.EXECUTE_MODE
+        menu = image_menu.ImageMenu(
+          self, event.GetX(), event.GetY(),
+          currentIcon.data, currentIcon.label,
+          self.shell, mode)
     event.Skip()
 
   def OnDoubleClick(self, event):
-    if self.currentIconName:
-      currentIcon = self.shell.locals[self.currentIconName]
-      if isinstance(currentIcon, ImageBase):
-        source = (self.currentIconName + ".display()")
-      else:
-        source = "display_multi(" + self.currentIconName + ")"
+    if self.currentIcon:
+      source = self.currentIcon.double_click()
       self.shell.run(source)
 
 # Standard icons for core Gamera
  
 class CustomIcon:
   is_custom_icon_description = 1
+  def __init__(self, label_, data_, index_):
+    self.label = label_
+    self.data = data_
+    self.index = index_
+  
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
-    return icon
-
-  def check(self, data):
+  def check(data):
     return 1
+  check = staticmethod(check)
+
+  def double_click(self):
+    return "%s.display()" % self.name
 
 class CIRGBImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageRgbBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageRgbBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, Image) and data.data.pixel_type == RGB
+  check = staticmethod(check)
 
 class CIGreyScaleImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageGreyBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageGreyBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, Image) and data.data.pixel_type == GREYSCALE
+  check = staticmethod(check)
 
 class CIGrey16Image(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageGrey16Bitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageGrey16Bitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, Image) and data.data.pixel_type == GREY16
+  check = staticmethod(check)
 
 class CIFloatImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageFloatBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageFloatBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, Image) and data.data.pixel_type == FLOAT
+  check = staticmethod(check)
 
 class CIOneBitImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageBinaryBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageBinaryBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, Image) and data.data.pixel_type == ONEBIT
+  check = staticmethod(check)
 
 class CIRGBSubImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconSubimageRgbBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconSubimageRgbBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, SubImage) and data.data.pixel_type == RGB
+  check = staticmethod(check)
 
 class CIGreyScaleSubImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconSubimageGreyBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconSubimageGreyBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, SubImage) and data.data.pixel_type == GREYSCALE
+  check = staticmethod(check)
 
 class CIGrey16SubImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconSubimageGrey16Bitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconSubimageGrey16Bitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, SubImage) and data.data.pixel_type == GREY16
+  check = staticmethod(check)
 
 class CIFloatSubImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconSubimageFloatBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconSubimageFloatBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, SubImage) and data.data.pixel_type == FLOAT
+  check = staticmethod(check)
 
 class CIOneBitSubImage(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconSubimageBinaryBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconSubimageBinaryBitmap())
+  get_icon = staticmethod(get_icon)
 
-  def check(self, data):
+  def check(data):
     return isinstance(data, SubImage) and data.data.pixel_type == ONEBIT
+  check = staticmethod(check)
 
 class CICC(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconCcBitmap())
-    return icon
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconCcBitmap())
+  get_icon = staticmethod(get_icon)
     
-  def check(self, data):
+  def check(data):
     return isinstance(data, Cc)
+  check = staticmethod(check)
 
 class CIImageList(CustomIcon):
-  def get_icon(self):
-    from gamera.gui import gamera_icons
-    icon = wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
-    return icon
-  
-  def check(self, data):
+  def get_icon():
+    return wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
+  get_icon = staticmethod(get_icon)
+
+  def check(data):
     if util.is_sequence(data):
       for glyph in data:
         if not isinstance(glyph, ImageBase):
           return 0
       return 1
     return 0
+  check = staticmethod(check)
+
+  def double_click(self, name):
+    return 'display_multi(%s)' % name
 
 builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
                       CIFloatImage, CIOneBitImage,

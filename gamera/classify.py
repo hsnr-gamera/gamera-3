@@ -128,11 +128,12 @@ class InteractiveClassifier(_Classifier):
    def change_feature_set(self, features):
       self.features = features
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
-      progress = util.ProgressFactory("Generating features...")
-      for i, glyph in enumerate(self.database.iterkeys()):
-         glyph.generate_features(self.feature_functions)
-         progress.update(i, len(self.database))
-      progress.update(1, 1)
+      if len(self.database):
+         progress = util.ProgressFactory("Generating features...")
+         for i, glyph in enumerate(self.database.iterkeys()):
+            glyph.generate_features(self.feature_functions)
+            progress.update(i, len(self.database))
+         progress.update(1, 1)
                          
    def guess_glyph(self, glyph):
       if len(self.database):

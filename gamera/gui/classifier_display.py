@@ -117,7 +117,6 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             if g != None:
                if r.contains_rect(g):
                   matches.append(i)
-                  
       if matches != []:
          first = 0
          self.updating = 1
@@ -209,7 +208,6 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_len = len(self.list)
-      # Remove "None"s and dead glyphs from the list
       new_list = self.GetAllItems()
       if len(new_list) != len(self.list):
          self.list = new_list
@@ -1035,7 +1033,8 @@ class SymbolTableEditorPanel(wxPanel):
          evt.Skip()
 
    def OnText(self, evt):
-      symbol, tokens = self._symbol_table.normalize_symbol(self.text.GetValue())
+      symbol, tokens = self._symbol_table.normalize_symbol(
+         self.text.GetValue())
       parent = item = self.tree.root
       cookie = 0
       self.tree.UnselectAll()

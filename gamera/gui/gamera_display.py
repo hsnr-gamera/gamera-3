@@ -382,7 +382,13 @@ class ImageDisplay(wxScrolledWindow):
              (x > origin_scaled[0] + size_scaled[0] and
               y > origin_scaled[1] + size_scaled[1])):
             return
-      if w < 1 or h < 1:
+         
+      # If the update region is smaller than a single pixel, you get
+      # "Floating point exceptions", so just bail, since you can't see
+      # zero pixels anyway <wink>
+      if float(w) * scaling < 1.0 or float(h) * scaling < 1.0:
+         if redraw_rubber:
+            self.draw_rubber(dc)
          return
 
       subimage = self.image.subimage(y, x, h, w)
@@ -397,14 +403,9 @@ class ImageDisplay(wxScrolledWindow):
          # that could use too much memory.
          if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
             subimage = subimage.to_greyscale()
-         scaled_image = subimage.scale_copy(
-            scaling,
-            self.scaling_quality)
-         image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
-      else:
-         scaled_image = subimage
-         image = wxEmptyImage(w, h)
-      scaled_image.to_buffer(image.GetDataBuffer())
+         subimage = subimage.scale_copy(scaling, self.scaling_quality)
+      image = wxEmptyImage(subimage.ncols, subimage.nrows)
+      subimage.to_buffer(image.GetDataBuffer())
 
       bmp = wxBitmapFromImage(image)
       x = (x - self.image.ul_x) * scaling - origin[0]
@@ -420,14 +421,13 @@ class ImageDisplay(wxScrolledWindow):
                h = subhighlight.nrows
                w = subhighlight.ncols
                if scaling != 1.0:
-                  scaled_highlight = subhighlight.scale_copy(
-                     scaling, 0)
-                  image = wxEmptyImage(
-                     scaled_highlight.ncols, scaled_highlight.nrows)
-               else:
-                  scaled_highlight = subhighlight
-                  image = wxEmptyImage(w, h)
-               scaled_highlight.to_buffer(image.GetDataBuffer())
+                  # If zooming has caused the glyph to shrink into
+                  # nothingness, don't draw it.
+                  if float(h) * scaling <= 1 or float(w) * scaling <= 1:
+                     continue
+                  subhighlight = subhighlight.scale_copy(scaling, 0)
+               image = wxEmptyImage(subhighlight.ncols, subhighlight.nrows)
+               subhighlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
                dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)
@@ -744,8 +744,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             # if necessary, we also do the cropping.
             height = ceil(image.nrows * scaling)
             width = ceil(image.ncols * scaling)
-            if (height >= rect.GetHeight() - GRID_PADDING_2 or
-                width >= rect.GetWidth() - GRID_PADDING_2):
+            if (height >= rect.GetHeight() or
+                width >= rect.GetWidth()):
                # If the scaled version is going to still be too large to fit in
                # the grid cell, we crop it first and then scale it. We could just
                # scale the whole image and then crop that to the appropriate size,
@@ -787,13 +787,14 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             dc.SetBrush(wxBrush(color, wxSOLID))
             dc.SetPen(wxTRANSPARENT_PEN)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-         if self.parent.display_names and not image.classification_state == UNCLASSIFIED:
-            dc.SetLogicalFunction(wxXOR)
-            dc.SetBackgroundMode(wxTRANSPARENT)
-            dc.SetTextForeground(color)
-            label = self.parent.get_label(image.id_name)
-            label = self.parent.reduce_label_length(dc, rect.width, label)
-            dc.DrawText(label, rect.x, rect.y)
+         if self.parent.display_names:
+            label = self.parent.get_label(image)
+            if label != '':
+               dc.SetLogicalFunction(wxXOR)
+               dc.SetBackgroundMode(wxTRANSPARENT)
+               dc.SetTextForeground(color)
+               label = self.parent.reduce_label_length(dc, rect.width, label)
+               dc.DrawText(label, rect.x, rect.y)
       if image is None or hasattr(image, 'dead'):
          # If there's no image in this cell, draw a hatch pattern
          dc.SetLogicalFunction(wxCOPY)
@@ -816,7 +817,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          image = None
       if image != None:
          return wxSize(min(GRID_MAX_CELL_WIDTH,
-                           image.ncols * self.parent.scaling + GRID_PADDING ),
+                           image.ncols * self.parent.scaling + GRID_PADDING),
                        min(GRID_MAX_CELL_HEIGHT,
                            image.nrows * self.parent.scaling + GRID_PADDING))
       return wxSize(50, 50)
@@ -829,7 +830,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 GRID_MAX_CELL_WIDTH = 200
 GRID_MAX_CELL_HEIGHT = 200
 GRID_MAX_LABEL_LENGTH = 200
-GRID_PADDING = 8
+GRID_PADDING = 20
 GRID_PADDING_2 = 16
 GRID_NCOLS = 8
 class MultiImageDisplay(wxGrid):
@@ -841,7 +842,7 @@ class MultiImageDisplay(wxGrid):
       self.frame = parent
       self.updating = 0
       self.sort_function = ""
-      self.display_details = 0
+      self.display_attribute = ""
       self.display_names = 0
       self.created = 0
       self.do_updates = 0
@@ -923,10 +924,12 @@ class MultiImageDisplay(wxGrid):
       wxEndBusyCursor()
 
    def scale(self, scaling):
-      self.scaling = scaling
-      x = self.GetSize()
-      self.AutoSize()
-      self.SetSize(x)
+      if self.scaling != scaling:
+         self.scaling = scaling
+         x = self.GetSize()
+         self.AutoSize()
+         self.SetSize(x)
+         self.MakeCellVisible(self.GetGridCursorRow(), self.GetGridCursorCol())
 
    ########################################
    # SORTING
@@ -1024,7 +1027,7 @@ class MultiImageDisplay(wxGrid):
                   index = self.get_image_no(row, col)
                   if index != None:
                      item = self.list[index]
-                     if item != None and not hasattr(item, 'dead'):
+                     if item != None:
                         image.append(item)
       elif row != None:
          image = [self.list[bitmap_no]]
@@ -1073,10 +1076,8 @@ class MultiImageDisplay(wxGrid):
       image = self.GetSelectedItems(row, col)
       if image != None:
          position = event.GetPosition()
-         menu = image_menu.ImageMenu(self, position.x,
-                                       position.y,
-                                       image, image, mode=0)
-         menu.PopupMenu()
+         image_menu.ImageMenu(self, position.x, position.y,
+                              image, mode=0)
          self.ForceRefresh()
 
    def OnLeftDoubleClick(self, event):
@@ -1084,13 +1085,17 @@ class MultiImageDisplay(wxGrid):
       if bitmap_no != None:
          self.list[bitmap_no].display()
 
-   def get_label(self, id):
-      if id == []:
-         return ''
-      if self.display_details:
-         return '\n'.join([("%s (%s)" % (y, str(x))) for x, y in id])
+   def get_label(self, glyph):
+      if self.display_attribute == '':
+         return glyph.get_main_id()
       else:
-         return id[0][1]
+         try:
+            label = str(
+               eval(self.display_attribute,
+                    {'x': glyph}))
+         except:
+            label = '<ERROR!>'
+         return label
 
    def reduce_label_length(self, dc, width, label):
       extent = dc.GetTextExtent(label)
@@ -1102,8 +1107,7 @@ class MultiImageDisplay(wxGrid):
          extent = dc.GetTextExtent(label)
       return label
 
-   def set_tooltip(self, id):
-      label = self.get_label(id)
+   def set_tooltip(self, label):
       self.tooltip.SetLabel(label)
       dc = wxClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
@@ -1121,13 +1125,13 @@ class MultiImageDisplay(wxGrid):
       else:
          image = self.list[image_no]
 
-      if image == None or image.classification_state == UNCLASSIFIED:
+      if image == None:
          self.tooltip.Show(false)
          last_image_no = None
       else:
          self.tooltip.Show(1)
          if self.last_image_no != image_no:
-            self.set_tooltip(image.id_name)
+            self.set_tooltip(self.get_label(image))
             self.last_image_no = image_no
          self.tooltip.Move(wxPoint(event.GetX() + 16, event.GetY() + 16))
       event.Skip()
@@ -1169,9 +1173,11 @@ class MultiImageWindow(wxPanel):
          22, gamera_icons.getIconZoomOutBitmap(),
          "Zoom out", self.OnZoomOutClick)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(
-         23, gamera_icons.getIconDetailsBitmap(),
-         "Display classification details", self.OnDisplayDetails, 1)
+      self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Display: "))
+      self.display_text_combo = wxComboBox(self.toolbar, 50, choices=[],
+                                     size = wxSize(150, 20))
+      EVT_COMBOBOX(self.display_text_combo, 50, self.OnChangeDisplayText)
+      self.toolbar.AddControl(self.display_text_combo)
       self.toolbar.AddSimpleTool(
          24, gamera_icons.getIconShowNameBitmap(),
          "Display classes on grid", self.OnDisplayClasses, 1)
@@ -1228,20 +1234,33 @@ class MultiImageWindow(wxPanel):
       return MultiImageDisplay(self)
 
    def set_choices(self):
-      methods = ImageBase.methods_flat_category("Features", ONEBIT)
+      methods = [x[0] + "()" for x in ImageBase.methods_flat_category("Features", ONEBIT)]
 
-      self.sort_choices = ["", "ncols", "nrows", "label", "id",
-                           "classification_state", "offset_x",
-                           "offset_y"]
-      for method in methods:
-         self.sort_choices.append(method[0] + "()")
+      self.display_choices = [
+         "x.get_main_id()",
+         "(x.offset_y, x.offset_x, x.nrows, x.ncols)",
+         "x.label",
+         "x.properties"]
+      self.display_text_combo.Clear()
+      for choice in self.display_choices:
+         self.display_text_combo.Append(choice)
+
+      self.sort_choices = [
+         "", "offset_x", "offset_y",
+         "ncols", "nrows",
+         "label", "get_main_id()",
+         "classification_state"]
       self.sort_combo.Clear()
       for choice in self.sort_choices:
          self.sort_combo.Append(choice)
-      self.select_choices = ["", "x.unclassified()",
-                             "x.automatically_classified()",
-                             "x.manually_classified()",
-                             "x.nrows < 2 or x.ncols < 2"]
+      for method in methods:
+         self.sort_combo.Append(method)
+
+      self.select_choices = [
+         "", "x.unclassified()",
+         "x.automatically_classified()",
+         "x.manually_classified()",
+         "x.nrows < 2 or x.ncols < 2"]
       self.select_combo.Clear()
       for choice in self.select_choices:
          self.select_combo.Append(choice)
@@ -1308,7 +1327,9 @@ class MultiImageWindow(wxPanel):
       wxEndBusyCursor()
 
    def OnSelectAll(self, event):
+      wxBeginBusyCursor()
       self.id.SelectAll()
+      wxEndBusyCursor()
 
    def OnSelectInvert(self, event):
       self.id.SelectInvert()
@@ -1321,6 +1342,16 @@ class MultiImageWindow(wxPanel):
 
    def OnZoomOutClick(self, event):
       self.id.ZoomOut()
+
+   def OnChangeDisplayText(self, event):
+      value = self.display_text_combo.GetValue()
+      self.id.display_attribute = value
+      if value not in self.display_choices:
+         self.display_choices.append(value)
+         self.display_text_combo.Append(value)
+      if self.id.display_names:
+         self.id.ForceRefresh()
+         
 
    def OnDisplayDetails(self, event):
       self.id.display_details = event.GetIsDown()
@@ -1490,7 +1521,6 @@ def clear_dc(dc):
    dc.SetBrush(wxBrush(wxWHITE, wxSOLID))
    dc.SetPen(wxTRANSPARENT_PEN)
    dc.DrawRectangle(0, 0, width, height)
-
 
 HISTOGRAM_PAD = 30
 class HistogramDisplay(wxFrame):

@@ -21,10 +21,20 @@ from os import path
 import os
 from gamera import util
 
+# To add a your custom stats pages --
+#    Create a new class that inherits from GlyphStats
+#    Override _write_core to call of the the page generating functions required
+#       (Do not forget to chain to the base class first.)
+#    In each page generating function, call _html_start with a new filename and title
+#       to get a file pointer in which you can write your stats.
+#    Close the file handle by calling _html_end.
+#    A front page will be automatically generated that links to each of your created
+#       stats pages.
+
 class GlyphStats:
     def __init__(self, glyphs):
         from gamera import pyplate, generate_help
-        self.header = pyplate.Template(generate_help.header + "[[call header(title, 0)]]")
+        self.header = pyplate.Template(generate_help.header + "[[call header(title, 1)]]<h1>[[title]]</h1>")
         self.footer = pyplate.Template(generate_help.footer + "[[exec toplevel_path='']][[call footer(0)]]")
         self._glyphs = glyphs
         
@@ -45,7 +55,9 @@ class GlyphStats:
         stream.close()
 
     def _write_core(self, directory):
-        self._save_images(directory)
+        sorted_glyphs = self._save_images(directory)
+        self._table_page(directory, sorted_glyphs)
+        self._histogram_page(directory, sorted_glyphs)
 
     def _save_images(self, directory):
         sorted_glyphs = {}
@@ -60,11 +72,15 @@ class GlyphStats:
             filename = "%s-%08d.tiff" % (name, number)
             glyph.save_tiff(path.join(directory, filename))
             progress.update(i, len(self._glyphs))
+        progress.update(1, 1)
+        return sorted_glyphs
+        
+    def _table_page(self, directory, sorted_glyphs):
         fd = self._html_start(directory, 'table', 'Table of glyphs')
         keys = sorted_glyphs.keys()
         keys.sort()
         for name in keys:
-            fd.write("<h3>%s</h3>" % name)
+            fd.write("<h2>%s</h2>" % name)
             size = 0
             for i, glyph in util.enumerate(sorted_glyphs[name]):
                 if size + glyph.ncols > 500:
@@ -73,4 +89,6 @@ class GlyphStats:
                 fd.write('<img src="%s-%08d.tiff" width="%d" height="%d"/>' %
                          (name, i, glyph.ncols, glyph.nrows))
         self._html_end(fd)
-        progress.update(1, 1)
+
+    def _histogram_page(self, directory, sorted_glyphs):
+        pass

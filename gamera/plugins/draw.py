@@ -167,7 +167,7 @@ The coordinates can be specified either by four integers, two Points, or one Rec
 
   **draw_hollow_rect** (*y1*, *x1*, *y2*, *x2*)
 
-  **draw_hollow_rect** (Point(*x1*, *y1*), Point(*x2*, *y2))
+  **draw_hollow_rect** (Point(*x1*, *y1*), Point(*x2*, *y2*))
 
   **draw_hollow_rect** (Rect *rect*)
 

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -25,6 +25,7 @@
 #define VIGRA_COLORCONVERSIONS_HXX
 
 #include <cmath>
+#include "vigra/mathutil.hxx"
 #include "vigra/rgbvalue.hxx"
 
 /** \page ColorConversions  Color Space Conversions
@@ -208,15 +209,15 @@ namespace detail
 double gammaCorrection(double value, double gamma)
 {
     return (value < 0.0) ? 
-            -std::pow(-value, gamma) :
-            std::pow(value, gamma);
+            -VIGRA_CSTD::pow(-value, gamma) :
+            VIGRA_CSTD::pow(value, gamma);
 }
 
 double gammaCorrection(double value, double gamma, double norm)
 {
     return (value < 0.0) ? 
-            -norm*std::pow(-value/norm, gamma) :
-            norm*std::pow(value/norm, gamma);
+            -norm*VIGRA_CSTD::pow(-value/norm, gamma) :
+            norm*VIGRA_CSTD::pow(value/norm, gamma);
 }
 
 } // namespace detail
@@ -259,10 +260,17 @@ class RGB2RGBPrimeFunctor
         */
     typedef typename NumericTraits<To>::RealPromote component_type;
     
+        /** Default constructor.
+            The maximum value for each RGB componentdefaults to 255
+        */
+    RGB2RGBPrimeFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGB2RGBPrimeFunctor(component_type max = 255.0)
+    RGB2RGBPrimeFunctor(component_type max)
     : max_(max)
     {}
     
@@ -289,7 +297,15 @@ class RGB2RGBPrimeFunctor<unsigned char, unsigned char>
   
     typedef RGBValue<unsigned char> value_type;
     
-    RGB2RGBPrimeFunctor(double max = 255.0)
+    RGB2RGBPrimeFunctor()
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::gammaCorrection(i, 0.45, 255.0));
+        }
+    }
+    
+    RGB2RGBPrimeFunctor(double max)
     {
         for(int i=0; i<256; ++i)
         {
@@ -341,10 +357,17 @@ class RGBPrime2RGBFunctor
         */
     typedef typename NumericTraits<To>::RealPromote component_type;
     
+        /** Default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2RGBFunctor()
+    : max_(255.0), gamma_(1.0/0.45)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2RGBFunctor(component_type max = 255.0)
+    RGBPrime2RGBFunctor(component_type max)
     : max_(max), gamma_(1.0/0.45)
     {}
     
@@ -372,7 +395,15 @@ class RGBPrime2RGBFunctor<unsigned char, unsigned char>
   
     typedef RGBValue<unsigned char> value_type;
     
-    RGBPrime2RGBFunctor(double max = 255.0)
+    RGBPrime2RGBFunctor()
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::gammaCorrection(i, 1.0/0.45, 255.0));
+        }
+    }
+    
+    RGBPrime2RGBFunctor(double max)
     {
         for(int i=0; i<256; ++i)
         {
@@ -427,10 +458,17 @@ class RGB2XYZFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGB2XYZFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGB2XYZFunctor(component_type max = 255.0)
+    RGB2XYZFunctor(component_type max)
     : max_(max)
     {}
     
@@ -487,10 +525,17 @@ class RGBPrime2XYZFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2XYZFunctor()
+    : max_(255.0), gamma_(1.0/ 0.45)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2XYZFunctor(component_type max = 255.0)
+    RGBPrime2XYZFunctor(component_type max)
     : max_(max), gamma_(1.0/ 0.45)
     {}
     
@@ -552,10 +597,17 @@ class XYZ2RGBFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    XYZ2RGBFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    XYZ2RGBFunctor(component_type max = 255.0)
+    XYZ2RGBFunctor(component_type max)
     : max_(max)
     {}
     
@@ -611,10 +663,17 @@ class XYZ2RGBPrimeFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    XYZ2RGBPrimeFunctor()
+    : max_(255.0), gamma_(0.45)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    XYZ2RGBPrimeFunctor(component_type max = 255.0)
+    XYZ2RGBPrimeFunctor(component_type max)
     : max_(max), gamma_(0.45)
     {}
     
@@ -697,7 +756,7 @@ class XYZ2LuvFunctor
         {
             component_type L = xyz[1] < 0.008856 ?
                                   903.3 * xyz[1] :
-                                  116.0 * std::pow(xyz[1], gamma_) - 16.0;
+                                  116.0 * VIGRA_CSTD::pow(xyz[1], gamma_) - 16.0;
             component_type denom = xyz[0] + 15.0*xyz[1] + 3.0*xyz[2];
             component_type uprime = 4.0 * xyz[0] / denom;
             component_type vprime = 9.0 * xyz[1] / denom;
@@ -762,7 +821,7 @@ class Luv2XYZFunctor
 
             result[1] = luv[0] < 8.0 ?
                                   luv[0] / 903.3 :
-                                  std::pow((luv[0] + 16.0) / 116.0, gamma_);
+                                  VIGRA_CSTD::pow((luv[0] + 16.0) / 116.0, gamma_);
             result[0] = 9.0*uprime*result[1] / 4.0 / vprime;
             result[2] = ((9.0 / vprime - 15.0)*result[1] - result[0])/ 3.0;
         }
@@ -825,9 +884,9 @@ class XYZ2LabFunctor
         */
     result_type operator()(TinyVector<T, 3> const & xyz) const
     {
-        component_type xgamma = std::pow(xyz[0] / 0.950456, gamma_);
-        component_type ygamma = std::pow(xyz[1], gamma_);
-        component_type zgamma = std::pow(xyz[2] / 1.088754, gamma_);
+        component_type xgamma = VIGRA_CSTD::pow(xyz[0] / 0.950456, gamma_);
+        component_type ygamma = VIGRA_CSTD::pow(xyz[1], gamma_);
+        component_type zgamma = VIGRA_CSTD::pow(xyz[2] / 1.088754, gamma_);
         component_type L = xyz[1] < 0.008856 ?
                               903.3 * xyz[1] :
                               116.0 * ygamma - 16.0;
@@ -882,10 +941,10 @@ class Lab2XYZFunctor
     {
         component_type Y = lab[0] < 8.0 ?
                               lab[0] / 903.3 :
-                              std::pow((lab[0] + 16.0) / 116.0, gamma_);
-        component_type ygamma = std::pow(Y, 1.0 / gamma_);
-        component_type X = std::pow(lab[1] / 500.0 + ygamma, gamma_) * 0.950456;
-        component_type Z = std::pow(-lab[2] / 200.0 + ygamma, gamma_) * 1.088754;
+                              VIGRA_CSTD::pow((lab[0] + 16.0) / 116.0, gamma_);
+        component_type ygamma = VIGRA_CSTD::pow(Y, 1.0 / gamma_);
+        component_type X = VIGRA_CSTD::pow(lab[1] / 500.0 + ygamma, gamma_) * 0.950456;
+        component_type Z = VIGRA_CSTD::pow(-lab[2] / 200.0 + ygamma, gamma_) * 1.088754;
         result_type result;
         result[0] = X;
         result[1] = Y;
@@ -948,10 +1007,17 @@ class RGB2LuvFunctor
         */
     typedef typename XYZ2LuvFunctor<component_type>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGB2LuvFunctor()
+    : rgb2xyz(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGB2LuvFunctor(component_type max = 255.0)
+    RGB2LuvFunctor(component_type max)
     : rgb2xyz(max)
     {}
     
@@ -1017,10 +1083,17 @@ class RGB2LabFunctor
         */
     typedef typename XYZ2LabFunctor<component_type>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGB2LabFunctor()
+    : rgb2xyz(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGB2LabFunctor(component_type max = 255.0)
+    RGB2LabFunctor(component_type max)
     : rgb2xyz(max)
     {}
     
@@ -1066,7 +1139,11 @@ class Luv2RGBFunctor
         */
     typedef typename XYZ2RGBFunctor<T>::result_type value_type;
     
-    Luv2RGBFunctor(component_type max = 255.0)
+    Luv2RGBFunctor()
+    : xyz2rgb(255.0)
+    {}
+    
+    Luv2RGBFunctor(component_type max)
     : xyz2rgb(max)
     {}
     
@@ -1110,10 +1187,17 @@ class Lab2RGBFunctor
         */
     typedef typename XYZ2RGBFunctor<T>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    Lab2RGBFunctor()
+    : xyz2rgb(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    Lab2RGBFunctor(component_type max = 255.0)
+    Lab2RGBFunctor(component_type max)
     : xyz2rgb(max)
     {}
     
@@ -1169,10 +1253,17 @@ class RGBPrime2LuvFunctor
         */
     typedef typename XYZ2LuvFunctor<component_type>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2LuvFunctor()
+    : rgb2xyz(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2LuvFunctor(component_type max = 255.0)
+    RGBPrime2LuvFunctor(component_type max)
     : rgb2xyz(max)
     {}
     
@@ -1231,10 +1322,17 @@ class RGBPrime2LabFunctor
         */
     typedef typename XYZ2LabFunctor<component_type>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2LabFunctor()
+    : rgb2xyz(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2LabFunctor(component_type max = 255.0)
+    RGBPrime2LabFunctor(component_type max)
     : rgb2xyz(max)
     {}
     
@@ -1281,10 +1379,17 @@ class Luv2RGBPrimeFunctor
         */
     typedef typename XYZ2RGBFunctor<T>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    Luv2RGBPrimeFunctor()
+    : xyz2rgb(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    Luv2RGBPrimeFunctor(component_type max = 255.0)
+    Luv2RGBPrimeFunctor(component_type max)
     : xyz2rgb(max)
     {}
     
@@ -1328,10 +1433,17 @@ class Lab2RGBPrimeFunctor
         */
     typedef typename XYZ2RGBFunctor<T>::result_type value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    Lab2RGBPrimeFunctor()
+    : xyz2rgb(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    Lab2RGBPrimeFunctor(component_type max = 255.0)
+    Lab2RGBPrimeFunctor(component_type max)
     : xyz2rgb(max)
     {}
     
@@ -1400,10 +1512,17 @@ class RGBPrime2YPrimePbPrFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2YPrimePbPrFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2YPrimePbPrFunctor(component_type max = 255.0)
+    RGBPrime2YPrimePbPrFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1456,10 +1575,17 @@ class YPrimePbPr2RGBPrimeFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    YPrimePbPr2RGBPrimeFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    YPrimePbPr2RGBPrimeFunctor(component_type max = 255.0)
+    YPrimePbPr2RGBPrimeFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1532,10 +1658,17 @@ class RGBPrime2YPrimeIQFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2YPrimeIQFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2YPrimeIQFunctor(component_type max = 255.0)
+    RGBPrime2YPrimeIQFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1588,10 +1721,17 @@ class YPrimeIQ2RGBPrimeFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    YPrimeIQ2RGBPrimeFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    YPrimeIQ2RGBPrimeFunctor(component_type max = 255.0)
+    YPrimeIQ2RGBPrimeFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1664,10 +1804,17 @@ class RGBPrime2YPrimeUVFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2YPrimeUVFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2YPrimeUVFunctor(component_type max = 255.0)
+    RGBPrime2YPrimeUVFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1720,10 +1867,17 @@ class YPrimeUV2RGBPrimeFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    YPrimeUV2RGBPrimeFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    YPrimeUV2RGBPrimeFunctor(component_type max = 255.0)
+    YPrimeUV2RGBPrimeFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1786,10 +1940,17 @@ class RGBPrime2YPrimeCbCrFunctor
         */
     typedef TinyVector<component_type, 3> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    RGBPrime2YPrimeCbCrFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    RGBPrime2YPrimeCbCrFunctor(component_type max = 255.0)
+    RGBPrime2YPrimeCbCrFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1842,10 +2003,17 @@ class YPrimeCbCr2RGBPrimeFunctor
         */
     typedef RGBValue<T> value_type;
     
+        /** default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    YPrimeCbCr2RGBPrimeFunctor()
+    : max_(255.0)
+    {}
+    
         /** constructor
             \arg max - the maximum value for each RGB component
         */
-    YPrimeCbCr2RGBPrimeFunctor(component_type max = 255.0)
+    YPrimeCbCr2RGBPrimeFunctor(component_type max)
     : max_(max)
     {}
     
@@ -1975,8 +2143,8 @@ polar2Lab(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = 100.0*brightness;
-    result[1] = normsat*std::cos(angle);
-    result[2] = normsat*std::sin(angle);
+    result[1] = normsat*VIGRA_CSTD::cos(angle);
+    result[2] = normsat*VIGRA_CSTD::sin(angle);
     return result;
 }
 
@@ -2007,11 +2175,11 @@ lab2Polar(TinyVector<float, 3> const & lab)
 {
     TinyVector<float, 3> result;
     result[1] = lab[0]/100.0;
-    double angle = std::atan2(lab[2], lab[1])/M_PI*180.0-39.9977;
+    double angle = VIGRA_CSTD::atan2(lab[2], lab[1])/M_PI*180.0-39.9977;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(lab[1]*lab[1] + lab[2]*lab[2])/133.809;
+    result[2] = VIGRA_CSTD::sqrt(lab[1]*lab[1] + lab[2]*lab[2])/133.809;
     return result;
 }
 
@@ -2056,8 +2224,8 @@ polar2Luv(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = 100.0*brightness;
-    result[1] = normsat*std::cos(angle);
-    result[2] = normsat*std::sin(angle);
+    result[1] = normsat*VIGRA_CSTD::cos(angle);
+    result[2] = normsat*VIGRA_CSTD::sin(angle);
     return result;
 }
 
@@ -2088,11 +2256,11 @@ luv2Polar(TinyVector<float, 3> const & luv)
 {
     TinyVector<float, 3> result;
     result[1] = luv[0]/100.0;
-    double angle = std::atan2(luv[2], luv[1])/M_PI*180.0-12.1727;
+    double angle = VIGRA_CSTD::atan2(luv[2], luv[1])/M_PI*180.0-12.1727;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(luv[1]*luv[1] + luv[2]*luv[2])/179.04;
+    result[2] = VIGRA_CSTD::sqrt(luv[1]*luv[1] + luv[2]*luv[2])/179.04;
     return result;
 }
 
@@ -2137,8 +2305,8 @@ polar2YPrimePbPr(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = brightness;
-    result[1] = -normsat*std::sin(angle);
-    result[2] = normsat*std::cos(angle);
+    result[1] = -normsat*VIGRA_CSTD::sin(angle);
+    result[2] = normsat*VIGRA_CSTD::cos(angle);
     return result;
 }
 
@@ -2169,16 +2337,15 @@ yPrimePbPr2Polar(TinyVector<float, 3> const & ypbpr)
 {
     TinyVector<float, 3> result;
     result[1] = ypbpr[0];
-    double angle = std::atan2(-ypbpr[1], ypbpr[2])/M_PI*180.0-18.6481;
+    double angle = VIGRA_CSTD::atan2(-ypbpr[1], ypbpr[2])/M_PI*180.0-18.6481;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(ypbpr[1]*ypbpr[1] + ypbpr[2]*ypbpr[2])/0.533887;
+    result[2] = VIGRA_CSTD::sqrt(ypbpr[1]*ypbpr[1] + ypbpr[2]*ypbpr[2])/0.533887;
     return result;
 }
 
-/** \fn TinyVector<float, 3> polar2YPrimeCbCr(double color, double brightness, double saturation)
-    \brief Init Y'CbCr color triple from polar representation.
+/** \brief Init Y'CbCr color triple from polar representation.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
@@ -2219,8 +2386,8 @@ polar2YPrimeCbCr(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = brightness*219.0 + 16.0;
-    result[1] = -normsat*std::sin(angle)+128.0;
-    result[2] = normsat*std::cos(angle)+128.0;
+    result[1] = -normsat*VIGRA_CSTD::sin(angle)+128.0;
+    result[2] = normsat*VIGRA_CSTD::cos(angle)+128.0;
     return result;
 }
 
@@ -2253,11 +2420,11 @@ yPrimeCbCr2Polar(TinyVector<float, 3> const & ycbcr)
     result[1] = (ycbcr[0]-16.0)/219.0;
     double cb = ycbcr[1]-128.0;
     double cr = ycbcr[2]-128.0;
-    double angle = std::atan2(-cb, cr)/M_PI*180.0-18.6482;
+    double angle = VIGRA_CSTD::atan2(-cb, cr)/M_PI*180.0-18.6482;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(cb*cb + cr*cr)/119.591;
+    result[2] = VIGRA_CSTD::sqrt(cb*cb + cr*cr)/119.591;
     return result;
 }
 
@@ -2302,8 +2469,8 @@ polar2YPrimeIQ(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = brightness;
-    result[1] = normsat*std::cos(angle);
-    result[2] = -normsat*std::sin(angle);
+    result[1] = normsat*VIGRA_CSTD::cos(angle);
+    result[2] = -normsat*VIGRA_CSTD::sin(angle);
     return result;
 }
 
@@ -2334,11 +2501,11 @@ yPrimeIQ2Polar(TinyVector<float, 3> const & yiq)
 {
     TinyVector<float, 3> result;
     result[1] = yiq[0];
-    double angle = std::atan2(-yiq[2], yiq[1])/M_PI*180.0+19.5807;
+    double angle = VIGRA_CSTD::atan2(-yiq[2], yiq[1])/M_PI*180.0+19.5807;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(yiq[1]*yiq[1] + yiq[2]*yiq[2])/0.632582;
+    result[2] = VIGRA_CSTD::sqrt(yiq[1]*yiq[1] + yiq[2]*yiq[2])/0.632582;
     return result;
 }
 
@@ -2383,8 +2550,8 @@ polar2YPrimeUV(double color, double brightness, double saturation)
     
     TinyVector<float, 3> result;
     result[0] = brightness;
-    result[1] = -normsat*std::sin(angle);
-    result[2] = normsat*std::cos(angle);
+    result[1] = -normsat*VIGRA_CSTD::sin(angle);
+    result[2] = normsat*VIGRA_CSTD::cos(angle);
     return result;
 }
 
@@ -2415,11 +2582,11 @@ yPrimeUV2Polar(TinyVector<float, 3> const & yuv)
 {
     TinyVector<float, 3> result;
     result[1] = yuv[0];
-    double angle = std::atan2(-yuv[1], yuv[2])/M_PI*180.0-13.4569;
+    double angle = VIGRA_CSTD::atan2(-yuv[1], yuv[2])/M_PI*180.0-13.4569;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
-    result[2] = std::sqrt(yuv[1]*yuv[1] + yuv[2]*yuv[2])/0.632324;
+    result[2] = VIGRA_CSTD::sqrt(yuv[1]*yuv[1] + yuv[2]*yuv[2])/0.632324;
     return result;
 }
 

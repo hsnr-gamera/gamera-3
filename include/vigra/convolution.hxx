@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -25,7 +25,7 @@
 #define VIGRA_CONVOLUTION_HXX
 
 #include <functional>
-#include "vigra/stdconvolution.hxx"
+#include "stdconvolution.hxx"
 #include "vigra/separableconvolution.hxx"
 #include "vigra/recursiveconvolution.hxx"
 #include "vigra/nonlineardiffusion.hxx"
@@ -186,6 +186,8 @@
 
 namespace vigra {
 
+
+
 /********************************************************/
 /*                                                      */
 /*             Common convolution filters               */
@@ -194,12 +196,321 @@ namespace vigra {
 
 /** \addtogroup CommonConvolutionFilters Common Filters
 
-    These functions calculate Gaussian smoothings and Gaussian derivative
-    filters by appropriate sequences of calls to
-    \link SeparableConvolution#separableConvolveX separableConvolveX\endlink()
+    These functions calculate common filters by appropriate sequences of calls 
+    to \link SeparableConvolution#separableConvolveX separableConvolveX\endlink()
     and \link SeparableConvolution#separableConvolveY separableConvolveY\endlink().
 */
 //@{
+
+/********************************************************/
+/*                                                      */
+/*                    convolveImage                     */
+/*                                                      */
+/********************************************************/
+
+/** \brief Apply two separable filters successively, the first in x-direction, 
+           the second in y-direction.
+
+    This function is a shorthand for the concatenation of a call to
+    \link SeparableConvolution#separableConvolveX separableConvolveX\endlink()
+    and \link SeparableConvolution#separableConvolveY separableConvolveY\endlink() 
+    with the given kernels.
+
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor,
+                  class T>
+        void convolveImage(SrcIterator supperleft,
+                           SrcIterator slowerright, SrcAccessor sa,
+                           DestIterator dupperleft, DestAccessor da,
+                           Kernel1D<T> const & kx, Kernel1D<T> const & ky);
+    }
+    \endcode
+
+
+    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor,
+                  class T>
+        inline void
+        convolveImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                      pair<DestIterator, DestAccessor> dest,
+                      Kernel1D<T> const & kx, Kernel1D<T> const & ky);
+    }
+    \endcode
+
+    <b> Usage:</b>
+
+    <b>\#include</b> "<a href="convolution_8hxx-source.html">vigra/convolution.hxx</a>"
+
+
+    \code
+    vigra::FImage src(w,h), dest(w,h);
+    ...
+
+    // implement sobel filter in x-direction
+    Kernel1D<double> kx, ky;
+    kx.initSymmetricGradient();
+    ky.initBinomial(1);
+    
+    vigra::convolveImage(srcImageRange(src), destImage(dest), kx, ky);
+
+    \endcode
+
+*/
+template <class SrcIterator, class SrcAccessor,
+          class DestIterator, class DestAccessor,
+          class T>
+void convolveImage(SrcIterator supperleft,
+                   SrcIterator slowerright, SrcAccessor sa,
+                   DestIterator dupperleft, DestAccessor da,
+                   Kernel1D<T> const & kx, Kernel1D<T> const & ky)
+{
+    typedef typename
+        NumericTraits<typename SrcAccessor::value_type>::RealPromote
+        TmpType;
+    BasicImage<TmpType> tmp(slowerright - supperleft);
+
+    separableConvolveX(srcIterRange(supperleft, slowerright, sa),
+                       destImage(tmp), kernel1d(kx));
+    separableConvolveY(srcImageRange(tmp),
+                       destIter(dupperleft, da), kernel1d(ky));
+}
+
+template <class SrcIterator, class SrcAccessor,
+          class DestIterator, class DestAccessor,
+          class T>
+inline void
+convolveImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+              pair<DestIterator, DestAccessor> dest,
+              Kernel1D<T> const & kx, Kernel1D<T> const & ky)
+{
+    convolveImage(src.first, src.second, src.third,
+                  dest.first, dest.second, kx, ky);
+}
+
+/********************************************************/
+/*                                                      */
+/*                    simpleSharpening                  */
+/*                                                      */
+/********************************************************/
+
+/** \brief Perform simple sharpening function.
+
+    This function use \link StandardConvolution#convolveImage convolveImage\endlink( ) with following filter:
+    
+    \code
+    -sharpening_factor/16.0,    -sharpening_factor/8.0,    -sharpening_factor/16.0,
+    -sharpening_factor/8.0,   1.0+sharpening_factor*0.75,  -sharpening_factor/8.0,
+    -sharpening_factor/16.0,    -sharpening_factor/8.0,    -sharpening_factor/16.0;    
+    \endcode
+    
+    and use <TT>BORDER_TREATMENT_REFLECT</TT> as border treatment mode.
+
+    <b> Preconditions:</b>
+    \code  
+    1. sharpening_factor >= 0
+    2. scale >= 0
+    \endcode
+
+    <b> Declarations:</b>
+
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+      template <class SrcIterator, class SrcAccessor,
+                class DestIterator, class DestAccessor>
+      void simpleSharpening(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
+                            DestIterator dest_ul, DestAccessor dest_acc, double sharpening_factor)
+
+    }
+    \endcode
+
+
+    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    \code
+    namespace vigra {
+      template <class SrcIterator, class SrcAccessor, 
+	        class DestIterator, class DestAccessor>
+      inline
+      void simpleSharpening(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+    	    		    pair<DestIterator, DestAccessor> dest, double sharpening_factor)
+      {
+	  simpleSharpening(src.first, src.second, src.third,
+		  	   dest.first, dest.second, sharpening_factor);
+      }
+
+    }
+    \endcode
+
+    <b> Usage:</b>
+
+    <b>\#include</b> "<a href="convolution_8hxx-source.html">vigra/convolution.hxx</a>"
+
+
+    \code
+    vigra::FImage src(w,h), dest(w,h);
+    ...
+
+    // sharpening with sharpening_factor = 0.1
+    vigra::simpleSharpening(srcImageRange(src), destImage(dest), 0.1);
+
+    \endcode
+
+*/    
+template <class SrcIterator, class SrcAccessor,
+	  class DestIterator, class DestAccessor>
+void simpleSharpening(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
+                    DestIterator dest_ul, DestAccessor dest_acc, double sharpening_factor)
+{
+
+    vigra_precondition(sharpening_factor >= 0.0,
+		       "simpleSharpening(): amount of sharpening must be >= 0.");
+
+    Kernel2D<double> kernel;
+
+    kernel.initExplicitly(Diff2D(-1,-1), Diff2D(1,1)) = -sharpening_factor/16.0,    -sharpening_factor/8.0,    -sharpening_factor/16.0,
+                                                        -sharpening_factor/8.0,   1.0+sharpening_factor*0.75,  -sharpening_factor/8.0,
+                                                        -sharpening_factor/16.0,    -sharpening_factor/8.0,    -sharpening_factor/16.0;
+
+    convolveImage(src_ul, src_lr, src_acc, dest_ul, dest_acc, 
+		  kernel.center(), kernel.accessor(), 
+		  kernel.upperLeft(), kernel.lowerRight() , BORDER_TREATMENT_REFLECT );
+}
+
+template <class SrcIterator, class SrcAccessor, 
+	  class DestIterator, class DestAccessor>
+inline
+void simpleSharpening(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+		    pair<DestIterator, DestAccessor> dest, double sharpening_factor)
+{
+    simpleSharpening(src.first, src.second, src.third,
+		     dest.first, dest.second, sharpening_factor);
+}
+
+
+/********************************************************/
+/*                                                      */
+/*                    gaussianSharpening                */
+/*                                                      */
+/********************************************************/
+
+/** \brief Perform sharpening function with gaussian filter.
+
+
+    This function use the 
+    \link vigra::gaussianSmoothing gaussianSmoothing \endlink()
+    at first and scale the source image 
+    (\code src \endcode) with the \code scale \endcode
+    factor in an temporary image (\code tmp \endcode). At second the new 
+    pixel in the destination image will be with following
+    formel calculate:
+    \code
+    dest = (1 + sharpening_factor)*src - sharpening_factor*tmp
+    \endcode
+
+    <b> Preconditions:</b>
+    \code  
+    1. sharpening_factor >= 0
+    2. scale >= 0
+    \endcode
+
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+      template <class SrcIterator, class SrcAccessor,
+	        class DestIterator, class DestAccessor>
+      void gaussianSharpening(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
+	  		      DestIterator dest_ul, DestAccessor dest_acc, double sharpening_factor, 
+			      double scale)
+    }
+    \endcode
+
+
+    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    \code
+    namespace vigra {
+      template <class SrcIterator, class SrcAccessor,
+	        class DestIterator, class DestAccessor>
+      void gaussianSharpening(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+	 		      pair<DestIterator, DestAccessor> dest, double sharpening_factor, 
+			      double scale)
+    }
+    \endcode
+
+    <b> Usage:</b>
+
+    <b>\#include</b> "<a href="convolution_8hxx-source.html">vigra/convolution.hxx</a>"
+
+
+    \code
+    vigra::FImage src(w,h), dest(w,h);
+    ...
+
+    // sharpening with sharpening_factor = 3.0
+    // smoothing with scale = 0.5
+    vigra::gaussianSmoothing(srcImageRange(src), destImage(dest), 3.0, 0.5);
+
+    \endcode
+
+*/    
+template <class SrcIterator, class SrcAccessor,
+	  class DestIterator, class DestAccessor>
+void gaussianSharpening(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
+			DestIterator dest_ul, DestAccessor dest_acc, double sharpening_factor, 
+			double scale)
+{
+    vigra_precondition(sharpening_factor >= 0.0,
+		       "gaussianSharpening(): amount of sharpening must be >= 0");
+    vigra_precondition(scale >= 0.0,
+		       "gaussianSharpening(): scale parameter should be >= 0.");
+
+    typedef typename NumericTraits<typename SrcAccessor::value_type>::RealPromote ValueType;
+
+    BasicImage<ValueType> tmp(src_lr - src_ul);
+    typename BasicImage<ValueType>::Accessor tmp_acc = tmp.accessor();
+
+    gaussianSmoothing(src_ul, src_lr, src_acc, tmp.upperLeft(), tmp_acc, scale);
+
+    SrcIterator i_src = src_ul;
+    DestIterator i_dest = dest_ul;
+    typename BasicImage<ValueType>::traverser tmp_ul = tmp.upperLeft();
+    typename BasicImage<ValueType>::traverser i_tmp = tmp_ul;
+
+    for(; i_src.y != src_lr.y ; i_src.y++, i_dest.y++, i_tmp.y++ )
+    {
+	for (;i_src.x != src_lr.x ; i_src.x++, i_dest.x++, i_tmp.x++ )
+        {
+	    dest_acc.set((1.0 + sharpening_factor)*src_acc(i_src) - sharpening_factor*tmp_acc(i_tmp), i_dest);
+	}
+	i_src.x = src_ul.x;
+	i_dest.x = dest_ul.x;
+	i_tmp.x = tmp_ul.x;
+    }
+}
+
+template <class SrcIterator, class SrcAccessor,
+	  class DestIterator, class DestAccessor>
+void gaussianSharpening(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+			pair<DestIterator, DestAccessor> dest, double sharpening_factor, 
+			double scale)
+{
+    gaussianSharpening(src.first, src.second, src.third,
+		       dest.first, dest.second,
+		       sharpening_factor, scale);
+}
+
+
 
 /********************************************************/
 /*                                                      */
@@ -212,7 +523,8 @@ namespace vigra {
     This function is a shorthand for the concatenation of a call to
     \link SeparableConvolution#separableConvolveX separableConvolveX\endlink()
     and \link SeparableConvolution#separableConvolveY separableConvolveY\endlink() with a
-    Gaussian kernel of the given scale.
+    Gaussian kernel of the given scale. The function uses 
+    <TT>BORDER_TREATMENT_REFLECT</TT>.
 
     <b> Declarations:</b>
 
@@ -270,6 +582,7 @@ void gaussianSmoothing(SrcIterator supperleft,
 
     Kernel1D<double> smooth;
     smooth.initGaussian(scale);
+    smooth.setBorderTreatment(BORDER_TREATMENT_REFLECT);
 
     separableConvolveX(srcIterRange(supperleft, slowerright, sa),
                        destImage(tmp), kernel1d(smooth));

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -29,6 +29,7 @@
 #include "vigra/config.hxx"
           
 /*! \page ErrorReporting Error Reporting
+    Exceptions and assertions provided by VIGRA
 
     <b>\#include</b> "<a href="error_8hxx-source.html">vigra/error.hxx</a>"
     
@@ -44,7 +45,7 @@
     \endcode
     
     The following associated macros throw the corresponding exception if 
-    their PREDICATE evaluates to '<TT>false<TT>':
+    their PREDICATE evaluates to '<TT>false</TT>':
     
     \code
     vigra_precondition(PREDICATE, MESSAGE);
@@ -53,8 +54,8 @@
     \endcode
     
     The MESSAGE is passed to the exception and can be retrieved via
-    the overloaded member function '<TT>exception.what()<TT>'. If the compiler
-    flag '<TT>NDEBUG<TT>' is <em> not</em> defined, the file name and line number of 
+    the overloaded member function '<TT>exception.what()</TT>'. If the compiler
+    flag '<TT>NDEBUG</TT>' is <em>not</em> defined, the file name and line number of 
     the error are automatically included in the message.
     
     The following macro
@@ -63,7 +64,7 @@
     vigra_fail(MESSAGE);
     \endcode
     
-    unconditionally throws a '<TT>std::runtime_error<TT>' constructed from the message 
+    unconditionally throws a '<TT>std::runtime_error</TT>' constructed from the message 
     (along with file name and line number, if NDEBUG is not set).
     
     <b> Usage:</b>
@@ -97,8 +98,6 @@
         return 0;
     }
     \endcode
-    
-    \brief Exceptions and assertions provided by VIGRA
 **/
 
 namespace vigra {

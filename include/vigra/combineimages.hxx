@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -25,7 +25,7 @@
 #define VIGRA_COMBINEIMAGES_HXX
 
 #include "vigra/utilities.hxx"
-#include "vigra/iteratortraits.hxx"
+#include "vigra/numerictraits.hxx"
 #include <cmath>
 
 namespace vigra {
@@ -158,7 +158,7 @@ combineThreeLines(SrcIterator1 s1,
     
     Note that <TT>SrcValueType</TT> must be replaced with the appropriate type (e.g. 
     the promote type of the input images' pixel type, see also 
-    \URef{NumericandPromotionTraits})
+    \ref NumericPromotionTraits)
     
     <b> Required Interface:</b>
     
@@ -298,7 +298,7 @@ combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1
 
     Note that <TT>SrcValueType</TT> must be replaced with the appropriate type (e.g. 
     the promote type of the input images' pixel type, see also 
-    \URef{NumericandPromotionTraits})
+    \ref NumericPromotionTraits)
     
     <b> Required Interface:</b>
     

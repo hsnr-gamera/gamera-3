@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -63,18 +63,18 @@ namespace vigra {
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor>
-        int labelImage(SrcIterator upperlefts,
-                       SrcIterator lowerrights, SrcAccessor sa,
-                       DestIterator upperleftd, DestAccessor da,
-                       bool eight_neighbors);
+        unsigned int labelImage(SrcIterator upperlefts,
+                                SrcIterator lowerrights, SrcAccessor sa,
+                                DestIterator upperleftd, DestAccessor da,
+                                bool eight_neighbors);
 
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor,
                   class EqualityFunctor>
-        int labelImage(SrcIterator upperlefts,
-                       SrcIterator lowerrights, SrcAccessor sa,
-                       DestIterator upperleftd, DestAccessor da,
-                       bool eight_neighbors, EqualityFunctor equal);
+        unsigned int labelImage(SrcIterator upperlefts,
+                                SrcIterator lowerrights, SrcAccessor sa,
+                                DestIterator upperleftd, DestAccessor da,
+                                bool eight_neighbors, EqualityFunctor equal);
     }
     \endcode
 
@@ -83,16 +83,16 @@ namespace vigra {
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor>
-        int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                       pair<DestIterator, DestAccessor> dest,
-                       bool eight_neighbors);
+        unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                                pair<DestIterator, DestAccessor> dest,
+                                bool eight_neighbors);
 
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor,
                   class EqualityFunctor>
-        int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                       pair<DestIterator, DestAccessor> dest,
-                       bool eight_neighbors, EqualityFunctor equal)
+        unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                                pair<DestIterator, DestAccessor> dest,
+                                bool eight_neighbors, EqualityFunctor equal)
     }
     \endcode
 
@@ -140,10 +140,10 @@ namespace vigra {
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class EqualityFunctor>
-int labelImage(SrcIterator upperlefts,
-               SrcIterator lowerrights, SrcAccessor sa,
-               DestIterator upperleftd, DestAccessor da,
-               bool eight_neighbors, EqualityFunctor equal)
+unsigned int labelImage(SrcIterator upperlefts,
+                        SrcIterator lowerrights, SrcAccessor sa,
+                        DestIterator upperleftd, DestAccessor da,
+                        bool eight_neighbors, EqualityFunctor equal)
 {
     int w = lowerrights.x - upperlefts.x;
     int h = lowerrights.y - upperlefts.y;
@@ -257,7 +257,7 @@ int labelImage(SrcIterator upperlefts,
     // so that labels for a consecutive sequence 1, 2, ...
     DestIterator yd(upperleftd);
 
-    int count = 0;
+    unsigned int count = 0;
     i = 0;
     for(y=0; y != h; ++y, ++yd.y)
     {

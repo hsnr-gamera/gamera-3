@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -153,7 +153,7 @@ void
 transformImage(SrcImageIterator src_upperleft,
                SrcImageIterator src_lowerright, SrcAccessor sa,
                DestImageIterator dest_upperleft, DestAccessor da,
-           Functor const & f)
+               Functor const & f)
 {
     int w = src_lowerright.x - src_upperleft.x;
 
@@ -170,8 +170,8 @@ template <class SrcImageIterator, class SrcAccessor,
 inline
 void
 transformImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
-           pair<DestImageIterator, DestAccessor> dest,
-           Functor const & f)
+               pair<DestImageIterator, DestAccessor> dest,
+               Functor const & f)
 {
     transformImage(src.first, src.second, src.third,
                    dest.first, dest.second, f);
@@ -271,10 +271,10 @@ template <class SrcImageIterator, class SrcAccessor,
           class Functor>
 void
 transformImageIf(SrcImageIterator src_upperleft,
-            SrcImageIterator src_lowerright, SrcAccessor sa,
-            MaskImageIterator mask_upperleft, MaskAccessor ma,
-            DestImageIterator dest_upperleft, DestAccessor da,
-            Functor const & f)
+                 SrcImageIterator src_lowerright, SrcAccessor sa,
+                 MaskImageIterator mask_upperleft, MaskAccessor ma,
+                 DestImageIterator dest_upperleft, DestAccessor da,
+                 Functor const & f)
 {
     int w = src_lowerright.x - src_upperleft.x;
 
@@ -295,13 +295,13 @@ template <class SrcImageIterator, class SrcAccessor,
 inline
 void
 transformImageIf(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
-             pair<MaskImageIterator, MaskAccessor> mask,
-             pair<DestImageIterator, DestAccessor> dest,
-             Functor const & f)
+                 pair<MaskImageIterator, MaskAccessor> mask,
+                 pair<DestImageIterator, DestAccessor> dest,
+                 Functor const & f)
 {
     transformImageIf(src.first, src.second, src.third,
                      mask.first, mask.second,
-             dest.first, dest.second, f);
+                     dest.first, dest.second, f);
 }
 
 /********************************************************/
@@ -312,13 +312,13 @@ transformImageIf(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
 
 /** \brief Calculate a function of the image gradient.
 
-    The gradient and the function
-    represented by <TT>Functor f</TT> are calculated in one go: for each location, the
-    symmetric difference in x- and y-directions (asymmetric difference at the
-    image borders) are passed to the given functor, and the result is written
-    the destination image. Functors to be used with this function
-    include \ref MagnitudeFunctor and
-    \ref RGBGradientMagnitudeFunctor.
+    The gradient and the function represented by <TT>Functor f</TT>
+    are calculated in one go: for each location, the symmetric
+    difference in x- and y-directions (asymmetric difference at the
+    image borders) are passed to the given functor, and the result is
+    written the destination image. Functors to be used with this
+    function include \ref MagnitudeFunctor and \ref
+    RGBGradientMagnitudeFunctor.
 
     <b> Declarations:</b>
 
@@ -385,7 +385,7 @@ template <class SrcImageIterator, class SrcAccessor,
           class DestImageIterator, class DestAccessor, class Functor>
 void
 gradientBasedTransform(SrcImageIterator srcul, SrcImageIterator srclr, SrcAccessor sa,
-              DestImageIterator destul, DestAccessor da, Functor const & grad)
+                       DestImageIterator destul, DestAccessor da, Functor const & grad)
 {
     int w = srclr.x - srcul.x;
     int h = srclr.y - srcul.y;
@@ -468,10 +468,10 @@ template <class SrcImageIterator, class SrcAccessor,
 inline
 void
 gradientBasedTransform(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
-               pair<DestImageIterator, DestAccessor> dest, Functor const & grad)
+                       pair<DestImageIterator, DestAccessor> dest, Functor const & grad)
 {
     gradientBasedTransform(src.first, src.second, src.third,
-                  dest.first, dest.second, grad);
+                           dest.first, dest.second, grad);
 }
 
 /** @} */
@@ -482,31 +482,32 @@ gradientBasedTransform(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> s
 */
 //@{
 
-template <class SrcValueType>
+template <class DestValueType, class Multiplier = double>
 class LinearIntensityTransform
 {
-   public:
-        /* the functors argument type
+  public:
+        /* the functors argument type (actually, since 
+           <tt>operator()</tt> is a template, much more types are possible)
         */
-    typedef SrcValueType argument_type;
+    typedef DestValueType argument_type;
 
         /* the functors result type
         */
-    typedef SrcValueType result_type;
+    typedef DestValueType result_type;
 
         /* \deprecated use argument_type and result_type
         */
-    typedef SrcValueType value_type;
+    typedef DestValueType value_type;
 
-        /** type of the offset (used in internal culculations to prevent
-            overflow).
+        /* type of the offset (used in internal calculations to prevent
+            overflows and minimize round-off errors).
         */
     typedef typename
-            NumericTraits<SrcValueType>::Promote argument_promote;
+            NumericTraits<DestValueType>::RealPromote argument_promote;
 
-        /** type of the scale factor
+        /* type of the scale factor
         */
-    typedef double scalar_multiplier_type;
+    typedef Multiplier scalar_multiplier_type;
 
         /* init scale and offset
         */
@@ -516,10 +517,10 @@ class LinearIntensityTransform
 
         /* calculate transform
         */
-    result_type operator()(argument_type const & s) const
+    template <class SrcValueType>
+    result_type operator()(SrcValueType const & s) const
     {
-        return NumericTraits<SrcValueType>::
-                fromRealPromote(scale_ * (s + offset_));
+        return NumericTraits<result_type>::fromRealPromote(scale_ * (s + offset_));
     }
 
   private:
@@ -529,25 +530,26 @@ class LinearIntensityTransform
 };
 
 
-template <class SrcValueType>
+template <class DestValueType, class Multiplier = double>
 class ScalarIntensityTransform
 {
-   public:
-        /* the functors argument type
+  public:
+        /* the functors argument type (actually, since 
+           <tt>operator()</tt> is a template, much more types are possible)
         */
-    typedef SrcValueType argument_type;
+    typedef DestValueType argument_type;
 
         /* the functors result type
         */
-    typedef SrcValueType result_type;
+    typedef DestValueType result_type;
 
         /* \deprecated use argument_type and result_type
         */
-    typedef SrcValueType value_type;
+    typedef DestValueType value_type;
 
-        /** type of the scale factor
+        /* type of the scale factor
         */
-    typedef double scalar_multiplier_type;
+    typedef Multiplier scalar_multiplier_type;
 
         /* init scale
         */
@@ -557,10 +559,10 @@ class ScalarIntensityTransform
 
         /* calculate transform
         */
-    result_type operator()(argument_type const & s) const
+    template <class SrcValueType>
+    result_type operator()(SrcValueType const & s) const
     {
-        return NumericTraits<SrcValueType>::
-                fromRealPromote(scale_ * s);
+        return NumericTraits<result_type>::fromRealPromote(scale_ * s);
     }
 
   private:
@@ -590,12 +592,13 @@ class ScalarIntensityTransform
 
     \code
     namespace vigra {
-        template <class SrcValueType>
-        LinearIntensityTransform<SrcValueType>
-        linearIntensityTransform(double scale, SrcValueType offset)
+        template <class Multiplier, class DestValueType>
+        LinearIntensityTransform<DestValueType, Multiplier>
+        linearIntensityTransform(Multiplier scale, DestValueType offset);
 
-        ScalarIntensityTransform<SrcValueType>
-        linearIntensityTransform(double scale)
+        template <class DestValueType, class Multiplier>
+        ScalarIntensityTransform<DestValueType, Multiplier>
+        linearIntensityTransform(Multiplier scale);
     }
     \endcode
 
@@ -631,22 +634,122 @@ class ScalarIntensityTransform
 
     <b> Required Interface:</b>
 
-    The source value type must be a model of \ref LinearSpace in both cases.
+    The source and destination value types must be models of \ref LinearSpace in both cases.
 
 */
-template <class SrcValueType>
-LinearIntensityTransform<SrcValueType>
-linearIntensityTransform(double scale, SrcValueType offset)
+template <class Multiplier, class DestValueType>
+LinearIntensityTransform<DestValueType, Multiplier>
+linearIntensityTransform(Multiplier scale, DestValueType offset)
 {
-    return LinearIntensityTransform<SrcValueType>(scale, offset);
+    return LinearIntensityTransform<DestValueType, Multiplier>(scale, offset);
 }
 
-template <class SrcValueType>
-ScalarIntensityTransform<SrcValueType>
-linearIntensityTransform(double scale)
+template <class DestValueType, class Multiplier>
+ScalarIntensityTransform<DestValueType, Multiplier>
+linearIntensityTransform(Multiplier scale)
 {
-    return ScalarIntensityTransform<SrcValueType>(scale);
+    return ScalarIntensityTransform<DestValueType, Multiplier>(scale);
 }
+
+/********************************************************/
+/*                                                      */
+/*                   linearRangeMapping                 */
+/*                                                      */
+/********************************************************/
+
+/** \brief Map a source intensity range linearly to a destination range.
+
+    Factory function for a functor that linearly transforms the
+    source pixel values. The functor applies the transform
+    '<TT>destvalue = scale * (srcvalue + offset)</TT>' to every pixel,
+    where <tt>scale = (dest_max - dest_min) / (src_max - src_min)</tt>
+    and <tt>offset = dest_min / scale - src_min</tt>. As a result,
+    the pixel values <tt>src_max</tt>, <tt>src_min</tt> in the source image 
+    are mapped onto <tt>dest_max</tt>, <tt>dest_min</tt> respectively. 
+    This works for scalar as well as vector pixel types.
+
+    <b> Declaration:</b>
+
+    \code
+    namespace vigra {
+        template <class SrcValueType, class DestValueType>
+        LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
+        linearRangeMapping(SrcValueType src_min, SrcValueType src_max, 
+                           DestValueType dest_min, DestValueType dest_max );
+    }
+    \endcode
+
+    <b> Usage:</b>
+
+        <b>\#include</b> "<a href="transformimage_8hxx-source.html">vigra/transformimage.hxx</a>"<br>
+        Namespace: vigra
+
+    \code
+    vigra::IImage src(width, height);
+    vigra::BImage dest(width, height);
+    ...
+    vigra::FindMinMax<IImage::PixelType> minmax;   // functor to find range
+
+    vigra::inspectImage(srcImageRange(src), minmax); // find original range
+
+    // transform to range 0...255
+    vigra::transformImage(srcImageRange(src), destImage(dest),
+                          linearRangeTransform(
+                            minmax.min, minmax.max,               // src range
+                            (unsigned char)0, (unsigned char)255) // dest range
+                          );
+    \endcode
+
+    <b> Required Interface:</b>
+
+    The source and destination value types must be models of \ref LinearSpace in both cases.
+
+*/
+template <class SrcValueType, class DestValueType>
+LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
+linearRangeMapping(SrcValueType src_min, SrcValueType src_max, 
+                   DestValueType dest_min, DestValueType dest_max )
+{
+    return linearRangeMapping(src_min, src_max, dest_min, dest_max,
+            typename NumericTraits<DestValueType>::isScalar());
+} 
+
+template <class SrcValueType, class DestValueType>
+LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
+linearRangeMapping(
+    SrcValueType src_min, SrcValueType src_max, 
+    DestValueType dest_min, DestValueType dest_max,
+    VigraTrueType /* isScalar */ )
+{
+    typedef typename NumericTraits<DestValueType>::RealPromote Multiplier;
+    Multiplier diff = src_max - src_min;
+    Multiplier scale = diff == NumericTraits<Multiplier>::zero()
+                     ? NumericTraits<Multiplier>::one() 
+                     : (dest_max - dest_min) / diff;
+    return LinearIntensityTransform<DestValueType, Multiplier>(
+                                   scale, dest_min / scale - src_min );
+} 
+
+template <class SrcValueType, class DestValueType>
+LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
+linearRangeMapping(
+    SrcValueType src_min, SrcValueType src_max, 
+    DestValueType dest_min, DestValueType dest_max,
+    VigraFalseType /* isScalar */ )
+{
+    typedef typename NumericTraits<DestValueType>::RealPromote Multiplier;
+    typedef typename Multiplier::value_type MComponent;
+    Multiplier scale(dest_max), offset(dest_max);
+    for(int i=0; i<src_min.size(); ++i)
+    { 
+        MComponent diff = src_max[i] - src_min[i];
+        scale[i] = diff == NumericTraits<MComponent>::zero()
+                     ? NumericTraits<MComponent>::one() 
+                     : (dest_max[i] - dest_min[i]) / diff;
+        offset[i] = dest_min[i] / scale[i] - src_min[i];
+    }
+    return LinearIntensityTransform<DestValueType, Multiplier>(scale, offset);
+} 
 
 /********************************************************/
 /*                                                      */
@@ -817,7 +920,7 @@ class BrightnessContrastFunctor
             increase brightness and contrast, < 1 will decrease them, and == 1 means
             no change.
         */
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
                               argument_type const & min, argument_type const & max)
     : b_(1.0/brightness),
       c_(1.0/contrast),
@@ -841,7 +944,7 @@ class BrightnessContrastFunctor
     }
 
   private:
-    double b_, c_;
+    promote_type b_, c_;
     argument_type min_;
     promote_type diff_, zero_, one_;
 };
@@ -849,16 +952,17 @@ class BrightnessContrastFunctor
 template <>
 class BrightnessContrastFunctor<unsigned char>
 {
-    unsigned char lut[256];
+    typedef NumericTraits<unsigned char>::RealPromote promote_type;
+     unsigned char lut[256];
 
  public:
 
     typedef unsigned char value_type;
 
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
                               value_type const & min = 0, value_type const & max = 255)
     {
-        BrightnessContrastFunctor<double> f(brightness, contrast, min, max);
+        BrightnessContrastFunctor<promote_type> f(brightness, contrast, min, max);
 
         for(int i = min; i <= max; ++i)
         {
@@ -878,13 +982,15 @@ class BrightnessContrastFunctor<unsigned char>
 template <class ComponentType>
 class BrightnessContrastFunctor<RGBValue<ComponentType> >
 {
+    typedef typename
+        NumericTraits<ComponentType>::RealPromote promote_type;
     BrightnessContrastFunctor<ComponentType> red, green, blue;
 
  public:
 
     typedef RGBValue<ComponentType> value_type;
 
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
                               value_type const & min, value_type const & max)
     : red(brightness, contrast, min.red(), max.red()),
       green(brightness, contrast, min.green(), max.green()),
@@ -903,13 +1009,14 @@ class BrightnessContrastFunctor<RGBValue<ComponentType> >
 template <>
 class BrightnessContrastFunctor<RGBValue<int> >
 {
+    typedef NumericTraits<int>::RealPromote promote_type;
     BrightnessContrastFunctor<int> red, green, blue;
 
  public:
 
     typedef RGBValue<int> value_type;
 
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
                               value_type const & min, value_type const & max)
     : red(brightness, contrast, min.red(), max.red()),
       green(brightness, contrast, min.green(), max.green()),
@@ -926,13 +1033,14 @@ class BrightnessContrastFunctor<RGBValue<int> >
 template <>
 class BrightnessContrastFunctor<RGBValue<float> >
 {
+    typedef NumericTraits<float>::RealPromote promote_type;
     BrightnessContrastFunctor<float> red, green, blue;
 
  public:
 
     typedef RGBValue<float> value_type;
 
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
                               value_type const & min, value_type const & max)
     : red(brightness, contrast, min.red(), max.red()),
       green(brightness, contrast, min.green(), max.green()),
@@ -951,13 +1059,14 @@ class BrightnessContrastFunctor<RGBValue<float> >
 template <>
 class BrightnessContrastFunctor<RGBValue<unsigned char> >
 {
+    typedef NumericTraits<unsigned char>::RealPromote promote_type;
     BrightnessContrastFunctor<unsigned char> red, green, blue;
 
  public:
 
     typedef RGBValue<unsigned char> value_type;
 
-    BrightnessContrastFunctor(double brightness, double contrast,
+    BrightnessContrastFunctor(promote_type brightness, promote_type contrast,
        value_type const & min = value_type(0,0,0),
        value_type const & max = value_type(255, 255, 255))
     : red(brightness, contrast, min.red(), max.red()),

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -166,7 +166,6 @@
         (i.e. <TT>sqrt, exp, log, log10, sin, asin, cos, acos, tan, 
         atan, abs, floor, ceil, pow, atan2, fmod, min, max</TT>) 
         are overloaded.
-.
     
     </DL>
     
@@ -671,8 +670,9 @@ Param(T const & v)
 
 
 template <class EXPR>
-struct UnaryAnalyser
+class UnaryAnalyser
 {
+  public:
     UnaryAnalyser(EXPR const & e)
     : expr_(e)
     {}

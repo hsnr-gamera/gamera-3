@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -587,8 +587,7 @@ discMedian(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    group arguments (use in conjuction with factory functions \ref srcRange(),
-    \ref mask(), and \ref dest()):
+    group arguments (use in conjuction with \ref ArgumentObjectFactories):
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -948,8 +947,7 @@ discRankOrderFilterWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    group arguments (use in conjuction with factory functions \ref srcRange(),
-    \ref mask(), and \ref dest()):
+    group arguments (use in conjuction with \ref ArgumentObjectFactories):
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -1029,8 +1027,7 @@ discErosionWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    group arguments (use in conjuction with factory functions \ref srcRange(),
-    \ref mask(), and \ref dest()):
+    group arguments (use in conjuction with \ref ArgumentObjectFactories):
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -1110,8 +1107,7 @@ discDilationWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    group arguments (use in conjuction with factory functions \ref srcRange(),
-    \ref mask(), and \ref dest()):
+    group arguments (use in conjuction with \ref ArgumentObjectFactories):
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,

@@ -184,6 +184,11 @@ class corelation(PluginFunction):
     self_type = ImageType([ONEBIT])
     args = Args([ImageType([ONEBIT], "template"), Int("x_offset"), Int("y_offset")])
 
+class highlight(PluginFunction):
+    category = "Utility"
+    self_type = ImageType([RGB])
+    args = Args([ImageType([ONEBIT], "cc")])
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
@@ -191,7 +196,7 @@ class UtilModule(PluginModule):
     functions = [image_copy, resize, scale,
                  histogram, union_images, projection_rows, projection_cols,
                  projections, fill_white, invert, clip_image, mask,
-                 corelation]
+                 corelation, highlight]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

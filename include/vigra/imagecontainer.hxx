@@ -1,4 +1,26 @@
-#ifndef IMAGECONTAINER_HXX // -*- indent-tabs-mode: nil -*-
+/************************************************************************/
+/*                                                                      */
+/*               Copyright 1998-2002 by Ullrich Koethe                  */
+/*       Cognitive Systems Group, University of Hamburg, Germany        */
+/*                                                                      */
+/*    This file is part of the VIGRA computer vision library.           */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    You may use, modify, and distribute this software according       */
+/*    to the terms stated in the LICENSE file included in               */
+/*    the VIGRA distribution.                                           */
+/*                                                                      */
+/*    The VIGRA Website is                                              */
+/*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
+/*    Please direct questions, bug reports, and contributions to        */
+/*        koethe@informatik.uni-hamburg.de                              */
+/*                                                                      */
+/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
+/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
+/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*                                                                      */
+/************************************************************************/
+ 
+#ifndef IMAGECONTAINER_HXX
 #define IMAGECONTAINER_HXX
 
 #include "vigra/utilities.hxx"
@@ -32,7 +54,7 @@ namespace vigra {
 template <class ImageType>
 class ImageArray
 {
-    Diff2D imageSize_;
+    Size2D imageSize_;
 
 protected:
     std::vector<ImageType> images_;
@@ -70,7 +92,7 @@ public:
     ImageArray(unsigned int numImages= 0)
         : images_(numImages)
     {
-        imageSize_= empty()? Diff2D(0, 0) : front().size();
+        imageSize_= empty()? Size2D(0, 0) : front().size();
     }
 
         /** fill constructor: Init an array with numImages copies of
@@ -81,17 +103,19 @@ public:
           images_(numImages, image)
     {
     }
-
+    
         /** range constructor: Construct an array containing copies of
             the images in [begin, end). Those images must all have the
             same size, see \ref imageSize(). (STL-Sequence interface)
          */
     template<class InputIterator>
     ImageArray(InputIterator begin, InputIterator end)
-        : imageSize_(begin!=end? (*begin).size() : Diff2D(0,0)),
+        : imageSize_(begin!=end? (*begin).size() : Size2D(0,0)),
           images_(begin, end)
     {
     }
+
+    virtual ~ImageArray() {}
 
         /** Operator for a vector-like access to the contained images
             (STL-Vector interface)
@@ -336,7 +360,7 @@ public:
          */
     void swap(const_reference other)
     {
-        Diff2D oldImageSize = imageSize_;
+        Size2D oldImageSize = imageSize_;
         images_.swap(other.images_);
         imageSize_ = other.imageSize_;
         other.imageSize_ = oldImageSize;
@@ -363,7 +387,7 @@ public:
             manually</em>. ImageArray currently has no way to detect or
             prevent this.
          */
-    Diff2D imageSize() const
+    Size2D imageSize() const
         { return imageSize_; }
 
         /** Resize all images to a common new size (No-op if
@@ -389,7 +413,7 @@ public:
         */
     void resizeImages(int width, int height)
     {
-        resizeImages(Diff2D(width, height));
+        resizeImages(Size2D(width, height));
     }
 };
 

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -19,8 +19,8 @@
 /*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
 /*                                                                      */
 /************************************************************************/
- 
- 
+
+
 #ifndef VIGRA_IMAGEITERATORADAPTER_HXX
 #define VIGRA_IMAGEITERATORADAPTER_HXX
 
@@ -29,8 +29,8 @@
 namespace vigra {
 
 /** \addtogroup ImageIteratorAdapters Image Iterator Adapters
-    
-     Iterate over rows, columns, and other image subsets
+
+     Iterate over rows, columns, neighborhoods, contours, and other image subsets
 */
 //@{
 
@@ -43,22 +43,22 @@ namespace vigra {
 /** \brief Iterator adapter to linearly access colums.
 
     This iterator may be initialized from any standard ImageIterator,
-    a MultibandImageIterator and so on. 
-    It gives you STL-combatibel (random access iterator) access to 
+    a MultibandImageIterator and so on.
+    It gives you STL-compatible (random access iterator) access to
     one column of the image. If the underlying iterator is a const iterator,
     the column iterator will also be const (i.e. doesn't allow to change
     the values it points to).
     The iterator gets associated with the accessor of the base iterator.
-    
-    Note that image iterators usually have a member <TT>columnIterator()</TT> 
+
+    Note that image iterators usually have a member <TT>columnIterator()</TT>
     which returns a column iterator optimized for that particular image class.
     ColumnIterator is only necessary if this 'native' column iterator
     is not usable in a particular situation or is not provided.
-    
+
     <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
-    
+
     Namespace: vigra
-    
+
 */
 template <class IMAGE_ITERATOR>
 class ColumnIterator : private IMAGE_ITERATOR
@@ -71,7 +71,7 @@ class ColumnIterator : private IMAGE_ITERATOR
         /** the iterator's value type
         */
     typedef typename IMAGE_ITERATOR::value_type PixelType;
-    
+
         /** the iterator's reference type (return type of <TT>*iter</TT>)
         */
     typedef typename IMAGE_ITERATOR::reference              reference;
@@ -83,7 +83,7 @@ class ColumnIterator : private IMAGE_ITERATOR
         /** the iterator's pointer type (return type of <TT>iter.operator->()</TT>)
         */
     typedef typename IMAGE_ITERATOR::pointer                pointer;
-    
+
         /** the iterator's difference type (argument type of <TT>iter[diff]</TT>)
         */
     typedef typename IMAGE_ITERATOR::difference_type::MoveY difference_type;
@@ -95,31 +95,31 @@ class ColumnIterator : private IMAGE_ITERATOR
         /** the type of the adapted iterator
         */
     typedef IMAGE_ITERATOR Adaptee;
-    
+
         /** Construct from an the image iterator to be adapted.
        */
     ColumnIterator(IMAGE_ITERATOR  const & i)
     : IMAGE_ITERATOR(i)
     {}
-    
+
         /** Assignment.
         */
     ColumnIterator & operator=(ColumnIterator  const & i)
     {
         IMAGE_ITERATOR::operator=(i);
-    
+
         return *this;
     }
-    
+
         /** Assign a new base iterator.
         */
     ColumnIterator & operator=(IMAGE_ITERATOR  const & i)
     {
         IMAGE_ITERATOR::operator=(i);
-    
+
         return *this;
     }
-    
+
     /** @name Navigation */
     //@{
         ///
@@ -135,14 +135,14 @@ class ColumnIterator : private IMAGE_ITERATOR
         (this->y)++;
         return ret;
     }
-    
+
         ///
     ColumnIterator &  operator--()
     {
         --(this->y);
         return *this;
     }
-    
+
         ///
     ColumnIterator  operator--(int)
     {
@@ -150,14 +150,14 @@ class ColumnIterator : private IMAGE_ITERATOR
         (this->y)--;
         return ret;
     }
-    
+
         ///
     ColumnIterator &  operator+=(int d)
     {
         this->y += d;
         return *this;
     }
-    
+
         ///
     ColumnIterator &  operator-=(int d)
     {
@@ -165,7 +165,7 @@ class ColumnIterator : private IMAGE_ITERATOR
         return *this;
     }
     //@}
-    
+
     /** @name Methods */
     //@{
         /** Construct iterator at a distance.
@@ -186,57 +186,57 @@ class ColumnIterator : private IMAGE_ITERATOR
     }
         /** Calculate distance.
         */
-    int operator-(ColumnIterator const & c) const 
+    int operator-(ColumnIterator const & c) const
     {
         return this->y - c.y;
     }
-    
+
         /** Equality.
         */
     bool operator==(ColumnIterator const & c) const
     {
         return IMAGE_ITERATOR::operator==(c);
     }
-    
+
         /** Inequality.
         */
     bool operator!=(ColumnIterator const & c) const
     {
         return IMAGE_ITERATOR::operator!=(c);
     }
-    
+
         /** Smaller than.
         */
     bool operator<(ColumnIterator const & c) const
     {
         return this->y < c.y;
     }
-    
+
         /** Access current pixel.
         */
     reference operator*() const
     {
-        return IMAGE_ITERATOR::operator*(); 
+        return IMAGE_ITERATOR::operator*();
     }
-    
+
         /** Access pixel at distance d.
         */
     index_reference operator[](int d) const
     {
         return IMAGE_ITERATOR::operator()(0, d);
     }
-   
+
         /** Call member function of current pixel.
         */
     pointer operator->() const
     {
-        return IMAGE_ITERATOR::operator->(); 
+        return IMAGE_ITERATOR::operator->();
     }
 
         /** Get a reference to the adapted iterator
         */
     Adaptee & adaptee() const { return (Adaptee &)*this; }
-    
+
     //@}
 };
 
@@ -249,22 +249,22 @@ class ColumnIterator : private IMAGE_ITERATOR
 /** \brief Iterator adapter to linearly access row.
 
     This iterator may be initialized from a standard ImageIterator,
-     a MultibandImageIterator and so on. 
-    It gives you STL-combatibel (random access iterator) access to 
+     a MultibandImageIterator and so on.
+    It gives you STL-compatible (random access iterator) access to
     one row of the image. If the underlying iterator is a const iterator,
     the row iterator will also be const (i.e. doesn't allow to change
     the values it points to).
     The iterator gets associated with the accessor of the base iterator.
-    
-    Note that image iterators usually have a member <TT>rowIterator()</TT> 
+
+    Note that image iterators usually have a member <TT>rowIterator()</TT>
     which returns a row iterator optimized for that particular image class.
     RowIterator is only necessary if this 'native' row iterator
     is not usable in a particular situation or is not provided.
-    
+
     <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
-    
+
     Namespace: vigra
-    
+
 */
 template <class IMAGE_ITERATOR>
 class RowIterator : private IMAGE_ITERATOR
@@ -277,11 +277,11 @@ class RowIterator : private IMAGE_ITERATOR
         /** the iterator's value type
         */
     typedef typename IMAGE_ITERATOR::value_type PixelType;
-    
+
         /** the iterator's reference type (return type of <TT>*iter</TT>)
         */
     typedef typename IMAGE_ITERATOR::reference              reference;
-    
+
         /** the iterator's index reference type (return type of <TT>iter[n]</TT>)
         */
     typedef typename IMAGE_ITERATOR::index_reference        index_reference;
@@ -289,7 +289,7 @@ class RowIterator : private IMAGE_ITERATOR
         /** the iterator's pointer type (return type of <TT>iter.operator->()</TT>)
         */
     typedef typename IMAGE_ITERATOR::pointer                pointer;
-    
+
         /** the iterator's difference type (argument type of <TT>iter[diff]</TT>)
         */
     typedef typename IMAGE_ITERATOR::difference_type::MoveY difference_type;
@@ -297,35 +297,35 @@ class RowIterator : private IMAGE_ITERATOR
         /** the iterator tag (random access iterator)
         */
     typedef std::random_access_iterator_tag                 iterator_category;
-    
+
         /** the type of the adapted iterator
         */
     typedef IMAGE_ITERATOR Adaptee;
-    
+
         /** Construct from an the image iterator to be adapted.
         */
     RowIterator(IMAGE_ITERATOR  const & i)
     : IMAGE_ITERATOR(i)
     {}
-    
+
         /** Assignment.
         */
     RowIterator & operator=(RowIterator  const & i)
     {
         IMAGE_ITERATOR::operator=(i);
-    
+
         return *this;
     }
-    
+
         /** Assign a new base iterator.
         */
     RowIterator & operator=(IMAGE_ITERATOR  const & i)
     {
         IMAGE_ITERATOR::operator=(i);
-    
+
         return *this;
     }
-    
+
     /** @name Navigation */
     //@{
         ///
@@ -341,14 +341,14 @@ class RowIterator : private IMAGE_ITERATOR
         (this->x)++;
         return ret;
     }
-    
+
         ///
     RowIterator &  operator--()
     {
         --(this->x);
         return *this;
     }
-    
+
         ///
     RowIterator  operator--(int)
     {
@@ -356,14 +356,14 @@ class RowIterator : private IMAGE_ITERATOR
         (this->x)--;
         return ret;
     }
-    
+
         ///
     RowIterator &  operator+=(int d)
     {
         this->x += d;
         return *this;
     }
-    
+
         ///
     RowIterator &  operator-=(int d)
     {
@@ -371,7 +371,7 @@ class RowIterator : private IMAGE_ITERATOR
         return *this;
     }
     //@}
-    
+
     /** @name Methods */
     //@{
         /** Construct iterator at a distance.
@@ -392,51 +392,51 @@ class RowIterator : private IMAGE_ITERATOR
     }
         /** Calculate distance.
         */
-    int operator-(RowIterator const & c) const 
+    int operator-(RowIterator const & c) const
     {
         return this->x - c.x;
     }
-    
+
         /** Equality.
         */
     bool operator==(RowIterator const & c) const
     {
         return IMAGE_ITERATOR::operator==(c);
     }
-    
+
         /** Inequality.
         */
     bool operator!=(RowIterator const & c) const
     {
         return IMAGE_ITERATOR::operator!=(c);
     }
-    
+
         /** Smaller than.
         */
     bool operator<(RowIterator const & c) const
     {
         return this->x < c.x;
     }
-    
+
         /** Access current pixel.
         */
     reference operator*() const
     {
-        return IMAGE_ITERATOR::operator*(); 
+        return IMAGE_ITERATOR::operator*();
     }
-    
+
         /** Access pixel at distance d.
         */
     index_reference operator[](int d) const
     {
         return IMAGE_ITERATOR::operator()(d, 0);
     }
-    
+
         /** Call member function of current pixel.
         */
     pointer operator->() const
     {
-        return IMAGE_ITERATOR::operator->(); 
+        return IMAGE_ITERATOR::operator->();
     }
 
         /** Get a reference to the adapted iterator
@@ -455,15 +455,15 @@ class RowIterator : private IMAGE_ITERATOR
 /** \brief Iterator adapter to iterate along an arbitrary line on the image.
 
     This iterator may be initialized from a standard ImageIterator,
-     a MultibandImageIterator and so on. 
-    It gives you STL-combatibel (forward iterator) access to 
+     a MultibandImageIterator and so on.
+    It gives you STL-compatible (forward iterator) access to
     an arbitraty line on the image.
     The iterator gets associated with the accessor of the base iterator.
-    
+
     <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
-    
+
     Namespace: vigra
-    
+
 */
 template <class IMAGE_ITERATOR>
 class LineIterator : private IMAGE_ITERATOR
@@ -476,7 +476,7 @@ class LineIterator : private IMAGE_ITERATOR
         /** the iterator's value type
         */
     typedef typename IMAGE_ITERATOR::value_type PixelType;
-    
+
         /** the iterator's reference type (return type of <TT>*iter</TT>)
         */
     typedef typename IMAGE_ITERATOR::reference              reference;
@@ -484,18 +484,18 @@ class LineIterator : private IMAGE_ITERATOR
         /** the iterator's pointer type (return type of <TT>iter.operator->()</TT>)
         */
     typedef typename IMAGE_ITERATOR::pointer                pointer;
-    
+
         /** the iterator tag (forward iterator)
         */
     typedef std::forward_iterator_tag                       iterator_category;
-    
+
         /** the type of the adapted iterator
         */
     typedef IMAGE_ITERATOR Adaptee;
-    
+
         /** Construct from an the image iterator to be adapted.
         */
-    LineIterator(IMAGE_ITERATOR  const & start, 
+    LineIterator(IMAGE_ITERATOR  const & start,
                  IMAGE_ITERATOR  const & end)
     : IMAGE_ITERATOR(start), x_(0.0), y_(0.0)
     {
@@ -511,7 +511,7 @@ class LineIterator : private IMAGE_ITERATOR
         if(adx > ady) y_ += dy_ / 2.0;
         else          x_ += dx_ / 2.0;
     }
-    
+
     /** @name Navigation */
     //@{
         ///
@@ -544,9 +544,9 @@ class LineIterator : private IMAGE_ITERATOR
         operator++();
         return ret;
     }
-    
+
     //@}
-    
+
     /** @name Methods */
     //@{
         /** Equality.
@@ -555,26 +555,26 @@ class LineIterator : private IMAGE_ITERATOR
     {
         return IMAGE_ITERATOR::operator==(c);
     }
-    
+
         /** Inequality.
        */
     bool operator!=(LineIterator const & c) const
     {
         return IMAGE_ITERATOR::operator!=(c);
     }
-    
+
         /** Access current pixel.
        */
     reference operator*() const
     {
-        return IMAGE_ITERATOR::operator*(); 
+        return IMAGE_ITERATOR::operator*();
     }
-    
+
         /** Call member function for current pixel.
        */
     pointer operator->() const
     {
-        return IMAGE_ITERATOR::operator->(); 
+        return IMAGE_ITERATOR::operator->();
     }
 
         /** Get a reference to the adapted iterator
@@ -584,7 +584,7 @@ class LineIterator : private IMAGE_ITERATOR
     //@}
 
   private:
-  
+
     double x_, y_, dx_, dy_;
 };
 

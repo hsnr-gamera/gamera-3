@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -26,9 +26,15 @@
 #include "vigra/utilities.hxx"
 #include "vigra/numerictraits.hxx"
 #include "vigra/rgbvalue.hxx"
-#include "vigra/tiff.h"
+extern "C"
+{
+#include <tiff.h>
+#include <tiffio.h>
+}
 
 namespace vigra {
+
+typedef TIFF TiffImage;
 
 /** \defgroup TIFFImpex Import/export of the TIFF format
 
@@ -633,13 +639,12 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
           
             for(unsigned int y=0; y<h; ++y, ++yd.y)
             {
-                RGBImageIterator xd(yd);
-
-                for(unsigned int x=0; x<w; ++x, ++xd.x)
+                typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                typename RGBImageIterator::row_iterator rowend = rowit + w;
+                for(int x=0; rowit<rowend; ++rowit,++x )
                 {
-                    a.setRed(TIFFGetR(raster[x+y*w]), xd);
-                    a.setGreen(TIFFGetG(raster[x+y*w]), xd);
-                    a.setBlue(TIFFGetB(raster[x+y*w]), xd);
+                    uint32 rast = raster[x+y*w];
+                    a.setRGB(TIFFGetR(rast),TIFFGetG(rast),TIFFGetB(rast),rowit);
                 }
             }
         }
@@ -695,14 +700,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pb = (uint8 *)bufb;
                         }
                         
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -729,14 +730,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pb = (uint16 *)bufb;
                         }
                         
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -762,15 +759,11 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pg = (uint32 *)bufg;
                             pb = (uint32 *)bufb;
                         }
-                        
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                                                                        
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -809,14 +802,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pb = (int8 *)bufb;
                         }
                         
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -842,15 +831,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pg = (int16 *)bufg;
                             pb = (int16 *)bufb;
                         }
-                        
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -876,15 +860,11 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pg = (int32 *)bufg;
                             pb = (int32 *)bufb;
                         }
-                        
-                        RGBImageIterator xd(yd);
 
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -921,14 +901,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pb = (float *)bufb;
                         }
                         
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -955,14 +931,10 @@ tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
                             pb = (double *)bufb;
                         }
                         
-                        RGBImageIterator xd(yd);
-
-                        for(unsigned int x=0; x<w; ++x, ++xd.x, pr+=offset, pg+=offset, pb+=offset)
-                        {
-                            a.setRed(*pr, xd);
-                            a.setGreen(*pg, xd);
-                            a.setBlue(*pb, xd);
-                        }
+                        typename RGBImageIterator::row_iterator rowit = yd.rowIterator();
+                        typename RGBImageIterator::row_iterator rowend = rowit + w;
+                        for(; rowit<rowend; ++rowit, pr+=offset, pg+=offset, pb+=offset)
+                            a.setRGB(*pr,*pg, *pb, rowit);
                     }
                     break;
                   }
@@ -1817,7 +1789,6 @@ struct CreateTiffImage<RGBValue<double> >
         createDRGBTiffImage(upperleft, lowerright, a, tiff);
     }
 };
-
 
 //@}
 

@@ -1,6 +1,6 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2002 by Ullrich Koethe                  */
+/*         Copyright 2002-2003 by Ullrich Koethe, Hans Meine            */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
@@ -20,42 +20,51 @@
 /*                                                                      */
 /************************************************************************/
 
+#ifndef VIGRA_MEMORY_HXX
+#define VIGRA_MEMORY_HXX
 
-#ifndef VIGRA_BASICS_HXX
-#define VIGRA_BASICS_HXX
+#include <vigra/metaprogramming.hxx>
 
-#include "vigra/config.hxx"
-#include "vigra/error.hxx"
-#include "vigra/metaprogramming.hxx"
-#include "vigra/tuple.hxx"
-#include "vigra/diff2d.hxx"
-#include "vigra/mathutil.hxx"
+namespace vigra { namespace detail {
 
-/*! \page Utilities Utilities
-    Basic helper functionality needed throughout.
+template <class T>
+void destroy_n(T * p, int n, VigraTrueType /* isPOD */)
+{
+}
 
-    <DL>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref RangesAndPoints
-     <DD><em>2-dimensioanl positions, extents, amd rectangles</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref PixelNeighborhood
-     <DD><em>4- and 8-neighborhood definitions and circulators</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref vigra::IteratorAdaptor
-     <DD><em>Quickly create STL-compatible 1D iterator adaptors</em>
-     <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref TupleTypes
-     <DD><em>pair, triple, tuple4, tuple5</em>
-      <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref MathConstants
-     <DD><em>M_PI, M_SQRT2</em>
-    </DL>
-*/
+template <class T>
+void destroy_n(T * p, int n, VigraFalseType /* isPOD */)
+{
+	T * end = p + n;
+	for(; p != end; ++p)
+		p->~T();
+}
 
-#endif // VIGRA_BASICS_HXX
+template <class T>
+void destroy_n(T * p, int n)
+{
+    destroy_n(p, n, typename TypeTraits<T>::isPOD());
+}
+
+/********************************************************************/
+
+template <class T>
+void destroy(T * p, VigraTrueType /* isPOD */)
+{
+}
+
+template <class T>
+void destroy(T * p, VigraFalseType /* isPOD */)
+{
+    p->~T();
+}
+
+template <class T>
+void destroy(T * p)
+{
+    destroy(p, typename TypeTraits<T>::isPOD());
+}
+
+} } // namespace vigra::detail
+
+#endif // VIGRA_MEMORY_HXX

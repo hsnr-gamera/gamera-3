@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.1.6, Oct 10 2002 )                                    */
+/*    ( Version 1.2.0, Aug 07 2003 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -866,15 +866,35 @@ class Kernel1D
   public:
         /** the kernel's value type
         */
-    typedef ARITHTYPE value_type;
+    typedef typename std::vector<ARITHTYPE>::value_type value_type;
+    
+        /** the kernel's reference type
+        */
+    typedef typename std::vector<ARITHTYPE>::reference reference;
+    
+        /** the kernel's const reference type
+        */
+    typedef typename std::vector<ARITHTYPE>::const_reference const_reference;
+    
+        /** deprecated -- use Kernel1D::iterator
+        */
+    typedef typename std::vector<ARITHTYPE>::iterator Iterator;
     
         /** 1D random access iterator over the kernel's values
         */
-    typedef typename std::vector<value_type>::iterator Iterator;
+    typedef typename std::vector<ARITHTYPE>::iterator iterator;
+    
+        /** const 1D random access iterator over the kernel's values
+        */
+    typedef typename std::vector<ARITHTYPE>::const_iterator const_iterator;
     
         /** the kernel's accessor
         */
-    typedef StandardAccessor<value_type> Accessor;
+    typedef StandardAccessor<ARITHTYPE> Accessor;
+    
+        /** the kernel's const accessor
+        */
+    typedef StandardConstAccessor<ARITHTYPE> ConstAccessor;
     
     struct InitProxy
     {
@@ -1174,7 +1194,12 @@ class Kernel1D
             center()[left()] ... center()[right()] are valid kernel positions 
             \endcode
         */
-    Iterator center() 
+    iterator center() 
+    {
+        return kernel_.begin() - left();
+    }
+    
+    const_iterator center() const
     {
         return kernel_.begin() - left();
     }
@@ -1187,7 +1212,12 @@ class Kernel1D
             left() <= location <= right() 
             \endcode
         */
-    value_type operator[](int location) 
+    reference operator[](int location) 
+    {
+        return kernel_[location - left()];
+    }
+    
+    const_reference operator[](int location) const
     {
         return kernel_[location - left()];
     }
@@ -1256,10 +1286,13 @@ class Kernel1D
         normalize(one());
     }
     
+        /** get a const accessor
+        */
+    ConstAccessor accessor() const { return ConstAccessor(); }   
+    
         /** get an accessor
         */
-    Accessor accessor() const { return Accessor(); }
-    
+    Accessor accessor() { return Accessor(); }
     
   private:
     std::vector<value_type> kernel_;
@@ -1272,7 +1305,7 @@ class Kernel1D
 
 template <class ARITHTYPE>
 void Kernel1D<ARITHTYPE>::initGaussian(double std_dev, 
-                                       Kernel1D<ARITHTYPE>::value_type norm)
+                                       value_type norm)
 {
     vigra_precondition(std_dev >= 0.0,
               "Kernel1D::initGaussian(): Standard deviation must be >= 0.");
@@ -1330,7 +1363,7 @@ template <class ARITHTYPE>
 void 
 Kernel1D<ARITHTYPE>::initGaussianDerivative(double std_dev, 
                     int order,
-                    Kernel1D<ARITHTYPE>::value_type norm)
+                    value_type norm)
 {
     vigra_precondition(order >= 0,
               "Kernel1D::initGaussianDerivative(): Order must be >= 0.");
@@ -1477,7 +1510,7 @@ Kernel1D<ARITHTYPE>::initGaussianDerivative(double std_dev,
 template <class ARITHTYPE>
 void 
 Kernel1D<ARITHTYPE>::initBinomial(int radius, 
-                           Kernel1D<ARITHTYPE>::value_type norm)
+                                  value_type norm)
 {
     vigra_precondition(radius > 0,
               "Kernel1D::initBinomial(): Radius must be > 0.");
@@ -1522,7 +1555,7 @@ Kernel1D<ARITHTYPE>::initBinomial(int radius,
 
 template <class ARITHTYPE>
 void Kernel1D<ARITHTYPE>::initAveraging(int radius, 
-                                       Kernel1D<ARITHTYPE>::value_type norm)
+                                        value_type norm)
 {
     vigra_precondition(radius > 0,
               "Kernel1D::initAveraging(): Radius must be > 0.");
@@ -1551,7 +1584,7 @@ void Kernel1D<ARITHTYPE>::initAveraging(int radius,
 
 template <class ARITHTYPE>
 void 
-Kernel1D<ARITHTYPE>::initSymmetricGradient(Kernel1D<ARITHTYPE>::value_type norm)
+Kernel1D<ARITHTYPE>::initSymmetricGradient(value_type norm)
 {
     kernel_.erase(kernel_.begin(), kernel_.end());
     kernel_.reserve(3);
@@ -1590,13 +1623,13 @@ kernel1d(KernelIterator ik, KernelAccessor ka,
 
 template <class T>
 inline
-tuple5<typename Kernel1D<T>::Iterator, typename Kernel1D<T>::Accessor, 
+tuple5<typename Kernel1D<T>::const_iterator, typename Kernel1D<T>::ConstAccessor, 
        int, int, BorderTreatmentMode>
-kernel1d(Kernel1D<T> & k)
+kernel1d(Kernel1D<T> const & k)
 
 {
     return 
-        tuple5<typename Kernel1D<T>::Iterator, typename Kernel1D<T>::Accessor, 
+        tuple5<typename Kernel1D<T>::const_iterator, typename Kernel1D<T>::ConstAccessor, 
                int, int, BorderTreatmentMode>(
                                      k.center(), 
                                      k.accessor(), 
@@ -1606,13 +1639,13 @@ kernel1d(Kernel1D<T> & k)
 
 template <class T>
 inline
-tuple5<typename Kernel1D<T>::Iterator, typename Kernel1D<T>::Accessor, 
+tuple5<typename Kernel1D<T>::const_iterator, typename Kernel1D<T>::ConstAccessor, 
        int, int, BorderTreatmentMode>
-kernel1d(Kernel1D<T> & k, BorderTreatmentMode border)
+kernel1d(Kernel1D<T> const & k, BorderTreatmentMode border)
 
 {
     return 
-        tuple5<typename Kernel1D<T>::Iterator, typename Kernel1D<T>::Accessor, 
+        tuple5<typename Kernel1D<T>::const_iterator, typename Kernel1D<T>::ConstAccessor, 
                int, int, BorderTreatmentMode>(
                                      k.center(), 
                                      k.accessor(), 

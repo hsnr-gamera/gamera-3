@@ -139,7 +139,7 @@ class _Classifier:
                g2, max_recursion, recursion_level + 1)
             all_splits.extend(recurse_splits)
             removed.extend(recurse_removed)
-         return splits, removed
+         return all_splits, removed
       return [], []
 
    def _classify_list_automatic(self, glyphs, max_recursion=10, recursion_level=0, progress=None):
@@ -197,7 +197,7 @@ class _Classifier:
       return result
 
    # Since splitting glyphs is optional (when the classifier instance is
-   # created) we have two versions of this function, so that there need not
+   # created) we have two versions of this function, so that there needn't
    # be an 'if' statement everywhere.
    def _do_splits_impl(self, glyph):
       id = glyph.get_main_id()
@@ -462,14 +462,17 @@ class InteractiveClassifier(_Classifier):
       return self._do_splits(self, glyph), removed.keys()
 
    def classify_list_manual(self, glyphs, id):
-      if id.startswith('_group'):
+      if id.startswith('_group') and len(glyphs) > 1:
          import image_utilities
          parts = id.split('.')
          sub = '.'.join(parts[1:])
          union = image_utilities.union_images(glyphs)
+         feature_functions = self.get_feature_functions()
          for glyph in glyphs:
-            glyph.classify_heuristic('_group._part.' + sub)
-            self._database[glyph] = None
+            if glyph.nrows > 2 and glyph.ncols > 2:
+               glyph.classify_manual('_group._part.' + sub)
+               glyph.generate_features(feature_functions)
+               self._database[glyph] = None
          added, removed = self.classify_glyph_manual(union, sub)
          added.append(union)
          return added, removed

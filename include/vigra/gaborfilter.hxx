@@ -1,4 +1,3 @@
-// -*- indent-tabs-mode: nil -*-
 #ifndef VIGRA_GABORFILTER_HXX
 #define VIGRA_GABORFILTER_HXX
 
@@ -266,7 +265,8 @@ protected:
             for(int scale= 0; scale<scaleCount_; scale++)
             {
                 double angle = direction * M_PI / directionCount();
-                double centerFrequency = maxCenterFrequency_ / VIGRA_CSTD::pow(2,scale);
+                double centerFrequency =
+                    maxCenterFrequency_ / VIGRA_CSTD::pow(2.0, (double)scale);
                 createGaborFilter(destImageRange(images_[filterIndex(direction, scale)]),
                                   angle, centerFrequency,
                                   angularGaborSigma(directionCount(), centerFrequency),
@@ -303,7 +303,7 @@ public:
     GaborFilterFamily(int width= stdFilterSize, int height= -1,
                       int directionCount = stdDirectionCount, int scaleCount = stdScaleCount,
                       double maxCenterFrequency = 3.0/8.0)
-        : ParentClass(directionCount*scaleCount, Diff2D(width, height > 0 ? height : width)),
+        : ParentClass(directionCount*scaleCount, Size2D(width, height > 0 ? height : width)),
           scaleCount_(scaleCount),
           directionCount_(directionCount),
           maxCenterFrequency_(maxCenterFrequency)

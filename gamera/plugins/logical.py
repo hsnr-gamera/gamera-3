@@ -26,47 +26,23 @@ class _LogicalBase(PluginFunction):
 class and_image(_LogicalBase):
   """Perform the AND operation on two images.
 
-The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
-first, if you do noe which to change the original data.
-
-  +---+---+---+
-  | \ | 0 | 1 |
-  +---+---+---+
-  | 0 | 0 | 0 |
-  +---+---+---+
-  | 1 | 0 | 1 |
-  +---+---+---+
-  """
+The result is written directly to the self image.  Create a new copy (using ``image_copy``)
+first, if you do not wish to change the original data.
+"""
 
 class or_image(_LogicalBase):
   """Perform the OR operation on two images.
 
-The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
-first, if you do noe which to change the original data.
-
-  +---+---+---+
-  | \ | 0 | 1 |
-  +---+---+---+
-  | 0 | 0 | 1 |
-  +---+---+---+
-  | 1 | 1 | 1 |
-  +---+---+---+
-  """
+The result is written directly to the self image.  Create a new copy (using ``image_copy``)
+first, if you do not wish to change the original data.
+"""
 
 class xor_image(_LogicalBase):
   """Perform the XOR operation on two images.
 
-The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
-first, if you do noe which to change the original data.
-
-  +---+---+---+
-  | \ | 0 | 1 |
-  +---+---+---+
-  | 0 | 0 | 1 |
-  +---+---+---+
-  | 1 | 1 | 0 |
-  +---+---+---+
-  """
+The result is written directly to the self image.  Create a new copy (using ``image_copy``)
+first, if you do not wish to change the original data.
+"""
 
 class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""

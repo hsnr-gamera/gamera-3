@@ -6,10 +6,9 @@
 ;      $Revision$
 ;          $Date$
 ;       $Logfile:   ./Gamera2.ver.pvcs  $
-;      COPYRIGHT:   (C)opyright Dennis Bareis, Australia, 2003
-;                   All rights reserved.
+;      COPYRIGHT:   
 ;
-;    DESCRIPTION:   Simple sample/test MSI.
+;    DESCRIPTION:   Gamera installer MSI.
 ;
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; ProductName = Gamera 2
@@ -22,6 +21,6 @@
 
 
 ;############################################################################
-VERSION : 2.20.01
-DATE    : 14 Jul 2004
-CHANGES : MSI Release for Gamera 2.2.0pre
+VERSION : 2.20.02
+DATE    : 17 Aug 2004
+CHANGES : MSI Release for Gamera 2.2.0pre2

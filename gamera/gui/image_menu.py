@@ -87,6 +87,8 @@ class ImageMenu:
       self._method_id += 1
       menu.Append(self._method_id, "new copy")
       EVT_MENU(self.parent, self._method_id, self.OnCreateCopy)
+      menu.Append(self._method_id, "delete image")
+      EVT_MENU(self.parent, self._method_id, self.OnDeleteImage)
       self._method_id += 1
       menu.AppendSeparator()
 
@@ -177,6 +179,11 @@ class ImageMenu:
          sh.Update()
       sh.update()
 
+   def OnDeleteImage(self,event):
+       sh = self.get_shell()
+       sh.run("del " + self.image_name)
+       sh.Update()
+   
    def get_function_call(self, sh, function):
       # determine if the function requires an argument gui
       if function.args.list in ('', None, (), []):

@@ -248,9 +248,21 @@ class ImageBase:
       self.last_display = "normal"
       return self._display
 
+   def display_ccs(self):
+      gui = config.options.__.gui
+      if gui:
+         if self._display:
+            self._display.set_image(self, "color_ccs")
+         else:
+            self.set_display(
+               gui.ShowImage(self, self.name, "color_ccs",
+                             owner=self))
+      self.last_display = "normal"
+      return self._display
+
    # Displays the image in its own window, coloring the connected-
    # component labels
-   def display_ccs(self):
+   def display_cc(self, cc):
       """Displays the image in its own window, coloring the connected
       components."""
       gui = config.options.__.gui
@@ -277,6 +289,18 @@ class ImageBase:
    def display_children(self):
       if hasattr(self, 'children_images') and self.children_images != []:
          display_multi(self.children_images)
+
+   def display_false_color(self):
+      gui = config.options.__.gui
+      if gui:
+         if self._display:
+            self._display.set_image(self, "to_false_color")
+         else:
+            self.set_display(
+               gui.ShowImage(self, self.name, "to_false_color",
+                             owner=self))
+      self.last_display = "normal"
+      return self._display
 
    def unclassify(self):
       self.id_name = []
@@ -465,6 +489,9 @@ def init_gamera():
          plugin.PluginFactory(
             "display_cc", None, "Display", None, plugin.ImageType([ONEBIT]),
             plugin.ImageType([ONEBIT], "cc")),
+         plugin.PluginFactory(
+            "display_false_color", None, "Display", None, plugin.ImageType([GREYSCALE, FLOAT]),
+            None),
          plugin.PluginFactory(
             "classify_manual", None, "Classification", None,
             plugin.ImageType([ONEBIT]), plugin.String("id")),

@@ -188,7 +188,7 @@ namespace Gamera {
     return dest;
   }
 
-
+  
   template<class T>
   Image* rotate_copy(T &m, float hypot) {
     typedef ImageFactory<T> fact;
@@ -228,7 +228,6 @@ namespace Gamera {
     image_copy_attributes(m, *out);
     return out;
   }
-
 
   template<class T>
   Image* resize_copy(T& image, int nrows, int ncols, int resize_quality) {

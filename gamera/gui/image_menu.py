@@ -216,14 +216,16 @@ class ImageMenu:
       sh.update()
 
    def _run_locally(self, sh, result_name, func_call):
+      namespace = {}
+      namespace.update(sh.locals)
       if len(self.images) == 1:
-         namespace = {'image': self.images[0]}
+         namespace['image'] = self.images[0]
          source = 'image.%s' % func_call
          result = eval(source, namespace)
          if result_name != '':
             sh.locals[result_name] = result
       else:
-         namespace = {'images': self.images}
+         namespace['images'] = self.images
          if result_name != '':
             sh.locals[result_name] = []
          progress = util.ProgressFactory(

@@ -563,7 +563,7 @@ namespace Gamera {
       table[i].red(0); table[i].green(255); table[i].blue(j);
     }
     j -= 4;
-    for (; i < 255; ++i, j -= 4) {
+    for (; i < 256; ++i, j -= 4) {
       table[i].red(0); table[i].green(j); table[i].blue(255);
     }
 

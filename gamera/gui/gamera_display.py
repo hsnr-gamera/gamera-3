@@ -109,7 +109,7 @@ class ImageDisplay(wxScrolledWindow):
    # Refreshes the image by recalling the to_string function
    def reload_image(self, *args):
       if self.view_function != None and self.original_image != None:
-         self.image = apply(self.view_function, (self.original_image,))
+         self.image = getattr(self.image, self.view_function)()
       if self.image != None:
          self.scale()
          return (self.image.width, self.image.height)

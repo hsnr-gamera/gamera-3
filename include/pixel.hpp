@@ -358,6 +358,32 @@ namespace Gamera {
     else
       return pixel_traits<OneBitPixel>::white();
   }
+
+  inline FloatPixel blend(FloatPixel original, FloatPixel add, double alpha) {
+    return alpha * original + (1.0 - alpha) * add; 
+  }
+
+  inline GreyScalePixel blend(GreyScalePixel original, GreyScalePixel add, double alpha) {
+    return (GreyScalePixel)(alpha * original + (1.0 - alpha) * add);
+  }
+
+  inline Grey16Pixel blend(Grey16Pixel original, GreyScalePixel add, double alpha) {
+    return (Grey16Pixel)(alpha * original + (1.0 - alpha) * add);
+  }
+
+  inline RGBPixel blend(RGBPixel original, RGBPixel add, double alpha) {
+    double inv_alpha = 1.0 - alpha;
+    return RGBPixel(GreyScalePixel(original.red() * alpha + add.red() * inv_alpha),
+		    GreyScalePixel(original.green() * alpha + add.green() * inv_alpha),
+		    GreyScalePixel(original.blue() * alpha + add.blue() * inv_alpha));
+  }
+
+  inline OneBitPixel blend(OneBitPixel original, RGBPixel add, double alpha) {
+    if (alpha > 0.5)
+      return original;
+    return add;
+  }
+
 };
 
 #endif

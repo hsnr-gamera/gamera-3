@@ -261,21 +261,21 @@ namespace Gamera {
   */
   template<class T>
   FloatVector* volume16regions(const T& image) {
-    float quarter_rows = image.height() / 4.0;
-    float quarter_cols = image.width() / 4.0;
-    size_t start_row = image.offset_y();
-    size_t start_col = image.offset_x();
+    double rows = image.height() / 4.0;
+    double cols = image.width() / 4.0;
+    size_t rows_int = size_t(rows + 1);
+    size_t cols_int = size_t(cols + 1);
+    double start_col = double(image.offset_x());
     FloatVector* volumes = new FloatVector(16);
     for (size_t i = 0; i < 4; ++i) {
+      double start_row = double(image.offset_y());
       for (size_t j = 0; j < 4; ++j) {
-	T tmp(image, start_row, start_col,
-	      size_t(quarter_rows + 1),
-	      size_t(quarter_cols + 1));
+	T tmp(image, size_t(start_row), size_t(start_col),
+	      rows_int, cols_int);
 	(*volumes)[i * 4 + j] = volume(tmp);
-	start_row += size_t(quarter_rows);
+	start_row += rows;
       }
-      start_col += size_t(quarter_cols);
-      start_row = image.offset_y();
+      start_col += cols;
     }
     return volumes;
   }
@@ -288,21 +288,21 @@ namespace Gamera {
   */
   template<class T>
   FloatVector* volume64regions(const T& image) {
-    float quarter_rows = image.height() / 8.0;
-    float quarter_cols = image.width() / 8.0;
-    size_t start_row = image.offset_y();
-    size_t start_col = image.offset_x();
+    double rows = image.height() / 8.0;
+    double cols = image.width() / 8.0;
+    size_t rows_int = size_t(rows + 1);
+    size_t cols_int = size_t(cols + 1);
+    double start_col = double(image.offset_x());
     FloatVector* volumes = new FloatVector(64);
     for (size_t i = 0; i < 8; ++i) {
+      double start_row = double(image.offset_y());
       for (size_t j = 0; j < 8; ++j) {
-	T tmp(image, start_row, start_col,
-	      size_t(quarter_rows + 1),
-	      size_t(quarter_cols + 1));
+	T tmp(image, size_t(start_row), size_t(start_col),
+	      rows_int, cols_int);
 	(*volumes)[i * 8 + j] = volume(tmp);
-	start_row += size_t(quarter_rows);
+	start_row += rows;
       }
-      start_col += size_t(quarter_cols);
-      start_row = image.offset_y();
+      start_col += cols;
     }
     return volumes;
   }
@@ -413,9 +413,9 @@ namespace Gamera {
 	  thin_zs_get(y, x, *skel, p, N, S);
 		  if (N == 4) // T-joint
 	    ++X_joints;
-	  else if (N == 3) // X-joint
+	  else if (N == 3)    // X-joint
 	    ++T_joints;
-	  else if (N == 2) { // Possibly a bend point
+	  else if (N == 2) {  // Possibly a bend point
 	    if (!((p[0] && p[4]) || // Crosswise pairs
 		  (p[1] && p[5]) ||
 		  (p[2] && p[6]) ||

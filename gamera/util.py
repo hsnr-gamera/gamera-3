@@ -45,11 +45,14 @@ def is_image_list(l):
          return 0
    return 1
 
+def is_string_or_unicode(s):
+   return type(s) in (StringType, UnicodeType)
+
 def is_string_or_unicode_list(l):
    if not is_sequence(l):
       return 0
    for s in l:
-      if s not in (StringType, UnicodeType):
+      if type(s) not in (StringType, UnicodeType):
          return 0
    return 1
 

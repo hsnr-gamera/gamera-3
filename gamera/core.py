@@ -311,7 +311,7 @@ to MANUAL.  Use this method when an end user has classified this glyph.
          A value in range (0, 1), where 0 is uncertain and 1 is certain.
        *class_name*
          A ``.``-delimited class name."""
-      if type(id_name) == StringType:
+      if util.is_string_or_unicode(id_name):
          id_name = [(1.0, id_name)]
       elif type(id_name) == ListType:
          id_name.sort()
@@ -336,7 +336,7 @@ to AUTOMATIC.  Use this method when an automatic classifier has classified this 
          A value in range (0, 1), where 0 is uncertain and 1 is certain.
        *class_name*
          A ``.``-delimited class name."""
-      if type(id_name) == StringType:
+      if util.is_string_or_unicode(id_name):
          id_name = [(0.0, id_name)]
       elif type(id_name) == ListType:
          id_name.sort()
@@ -361,7 +361,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
          A value in range (0, 1), where 0 is uncertain and 1 is certain.
        *class_name*
          A ``.``-delimited class name."""
-      if type(id_name) == StringType:
+      if util.is_string_or_unicode(id_name):
          id_name = [(0.5, id_name)]
       elif type(id_name) == ListType:
          id_name.sort()
@@ -413,7 +413,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
       features.sort()
       all_strings = True
       for feature in features:
-         if not type(feature) == StringType:
+         if util.is_string_or_unicode(feature):
             all_strings = False
             break
       if not all_strings:
@@ -426,7 +426,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
             all_functions = True
             for feature in features:
                if not (type(feature) == TupleType and
-                       type(feature[0]) == StringType and
+                       util.is_string_or_unicode(feature[0]) and
                        issubclass(feature[1], plugin.PluginFunction)):
                   all_functions = 0
                   break

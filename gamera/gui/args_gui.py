@@ -295,7 +295,7 @@ class Class:
       return choices
 
    def get_control(self, parent, locals=None):
-      if type(self.klass) == StringType:
+      if util.is_string_or_unicode(self.klass):
          self.klass = eval(self.klass)
       self.control = wxChoice(
          parent, -1, choices = self.determine_choices(locals))
@@ -331,7 +331,7 @@ class Choice:
    def get_control(self, parent, locals=None):
       choices = []
       for choice in self.choices:
-         if len(choice) == 2 and type(choice) != StringType:
+         if len(choice) == 2 and not util.is_string_or_unicode(choice):
             choices.append(choice[0])
          else:
             choices.append(choice)
@@ -345,7 +345,7 @@ class Choice:
    def get_string(self):
       selection = self.control.GetSelection()
       if (len(self.choices[selection]) == 2 and
-          type(self.choices[selection]) != StringType):
+          not util.is_string_or_unicode(self.choices[selection])):
          return str(self.choices[selection][1])
       else:
          return str(selection)
@@ -353,7 +353,7 @@ class Choice:
    def get(self):
       selection = self.control.GetSelection()
       if (len(self.choices[selection]) == 2 and
-          type(self.choices[selection]) != StringType):
+          not util.is_string_or_unicode(self.choices[selection])):
          return self.choices[selection][1]
       else:
          return int(selection)

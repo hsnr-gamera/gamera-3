@@ -639,25 +639,25 @@ class Region(Class):
    def determine_choices(self, locals):
       from gamera import core
       self.klass = core.Region
-      return _guiClass.determine_choices(self, locals)
+      return Class.determine_choices(self, locals)
 
 class RegionMap(Class):
    def determine_choices(self, locals):
       from gamera import core
       self.klass = core.RegionMap
-      return _guiClass.determine_choices(self, locals)
+      return Class.determine_choices(self, locals)
 
 class ImageInfo(Class):
    def determine_choices(self, locals):
       from gamera import core
       self.klass = core.ImageInfo
-      return _guiClass.determine_choices(self, locals)
+      return Class.determine_choices(self, locals)
 
 class ImageList(Class):
    def determine_choices(self, locals):
       from gamera import core
       self.klass = core.ImageBase
-      return _guiClass.determine_choices(self, locals)
+      return Class.determine_choices(self, locals)
 
 class Info:
    def get_control(self, parent, locals=None):
@@ -703,7 +703,7 @@ class PointVector:
    def determine_choices(self, locals):
       from gamera import core
       self.klass = core.Point
-      return _guiClass.determine_choices(self, locals)
+      return Class.determine_choices(self, locals)
 
 
 from gamera import args

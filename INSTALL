@@ -53,8 +53,8 @@ install Gamera.
 Installing from source
 ----------------------
 
-Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset.
-Support for Microsoft Visual Studio is coming.
+Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset or 
+Microsoft Visual Studio 6 or 7.
 
 Cygwin/Mingw32
 ``````````````
@@ -66,7 +66,7 @@ not supported.  However, you can compile Gamera using ``MingW32``, which
 means there will be no non-standard Windows runtime dependancies.
 
 Python
-``````
+''''''
 
 You have two options here
 
@@ -100,7 +100,7 @@ Use the MSVC-built Python from python.org:
    Now you should be ready to continue below.
 
 Standard Build and Install
-``````````````````````````
+''''''''''''''''''''''''''
 
 Gamera is built using the Python-standard Distutils system.  Open a
 Cygwin command prompt and type::
@@ -125,6 +125,35 @@ support::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
+
+Microsoft Visual Studio
+```````````````````````
+
+First and foremost, you will need to ensure that Python was compiled
+with the same version of Visual Studio as you use to compile Gamera.
+At the time of this writing, the "official" distribution of Python was
+compiled with Visual Studio 6.  If the compilers so not match, you may
+need to recompile Python, which is a daunting task beyond the scope of
+this document.
+
+Standard Build and Install
+''''''''''''''''''''''''''
+
+Gamera is built using the Python-standard Distutils system.  Open a
+Cygwin command prompt and type::
+
+  python setup.py build
+
+If you just want to install Gamera without the ability to uninstall::
+
+  python setup.py install
+
+If you'd like a real Windows installer, including uninstallation
+support::
+
+  python setup.py build --compiler=mingw32 bdist_wininst
+  dist/gamera-X.X.X-win32.exe
+
 
 Running
 ```````

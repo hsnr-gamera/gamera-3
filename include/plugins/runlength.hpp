@@ -192,13 +192,25 @@ namespace Gamera {
 
   template<class T>
   IntVector* black_vertical_run_histogram(const T& image) {
+    // MGD: Changed so data is accessed in row-major order.  This should make things
+    //      much faster.
     typedef typename T::const_col_iterator iterator;
     IntVector* hist = new IntVector(image.nrows() + 1, 0);
+    IntVector tmp(image.ncols(), 0);
 
-    iterator end = image.col_end();
-    for (iterator i = image.col_begin(); i != end; ++i) {
-      black_run_histogram(i.begin(), i.end(), *hist);
+    for (size_t r = 0; r != image.nrows(); ++r) {
+      for (size_t c = 0; c != image.ncols(); ++c) {
+	if (is_black(image.get(r, c))) {
+	  tmp[c]++;
+	} else {
+	  if (tmp[c] > 0) {
+	    (*hist)[tmp[c]]++;
+	    tmp[c] = 0;
+	  }
+	}
+      }
     }
+      
     return hist;
   }
 
@@ -256,14 +268,25 @@ namespace Gamera {
 
   template<class T>
   IntVector* white_vertical_run_histogram(const T& image) {
+    // MGD: Changed so data is accessed in row-major order.  This should make things
+    //      much faster.
     typedef typename T::const_col_iterator iterator;
     IntVector* hist = new IntVector(image.nrows() + 1, 0);
+    IntVector tmp(image.ncols(), 0);
 
-    iterator end = image.col_end();
-    for (iterator i = image.col_begin(); i != end; ++i) {
-      white_run_histogram(i.begin(), i.end(), *hist);
-
+    for (size_t r = 0; r != image.nrows(); ++r) {
+      for (size_t c = 0; c != image.ncols(); ++c) {
+	if (is_white(image.get(r, c))) {
+	  tmp[c]++;
+	} else {
+	  if (tmp[c] > 0) {
+	    (*hist)[tmp[c]]++;
+	    tmp[c] = 0;
+	  }
+	}
+      }
     }
+      
     return hist;
   }
 

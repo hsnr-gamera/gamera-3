@@ -31,13 +31,14 @@ def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
          continue
       mean = stats.mean(lengths)
       stdev2 = stats.samplestdev([mean, edge.cost])
+      #print mean, stdev2, edge.cost, len(lengths)
       if stdev2 > ratio:
          #graph.remove_edge(edge)
          remove.append(edge)
-   print "B"
+
    for edge in remove:
       graph.remove_edge(edge)
-   print "C"
+
    if relabel:
       cur_label = 0
       for node in graph.get_nodes():
@@ -46,24 +47,25 @@ def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
          if node().get_main_id() == "":
             label(graph, node, lab, cur_label)
             cur_label += 1
-   print "D"
+   print cur_label
+
    nodes = []
    for node in graph.get_nodes():
       nodes.append(node())
-   print "E"
+
    return nodes
 
 def make_spanning_tree(glyphs, k=None):
    if k is None:
       k = knn.kNNInteractive()
-   uniq_dists = k.distance_matrix(glyphs)
+   uniq_dists = k.distance_matrix(glyphs, 0)
    g = graph.Undirected()
    g.create_minimum_spanning_tree(glyphs, uniq_dists)
    return g
 
 def cluster(glyphs, ratio=1.0, distance=2, label="cluster.", k=None):
    g = make_spanning_tree(glyphs, k)
-   print "A"
+
    return make_subtrees_stddev(g, ratio, distance, lab=label)
 
 def cluster2(glyphs):

@@ -149,12 +149,13 @@ class _kNNBase(gamera.knncore.kNN):
          try:
             self.load_settings(settings)
          except Exception, e:
-            self.features = 'all'
-            self.change_feature_set(self.features)
+            print "Could not load settings "
+            self.change_feature_set('all')
 
    def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
+      self.features = f
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.num_features = features.get_features_length(self.features)
       classify.InteractiveClassifier.change_feature_set(self, f)

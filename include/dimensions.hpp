@@ -22,20 +22,21 @@
 
 namespace Gamera {
 
+  typedef size_t coord_t;
   /*
    * Point
    *
    * This is a simple class to hold a single coordinate (x/y value pair).
    */
-  template<class T>
+
   class Point {
   public:
     Point() : m_x(0), m_y(0) { }
-    Point(T x, T y) { m_x = x; m_y = y; }
-    T x() const { return m_x; }
-    T y() const { return m_y; }
-    void x(T x) { m_x = x; }
-    void y(T y) { m_y = y; }
+    Point(coord_t x, coord_t y) { m_x = x; m_y = y; }
+    coord_t x() const { return m_x; }
+    coord_t y() const { return m_y; }
+    void x(coord_t x) { m_x = x; }
+    void y(coord_t y) { m_y = y; }
     void move(int x, int y) {
       m_x += x;
       m_y += y;
@@ -53,7 +54,7 @@ namespace Gamera {
 	return false;
     }
   private:
-    T m_x, m_y;
+    coord_t m_x, m_y;
   };
 
   /*
@@ -70,17 +71,18 @@ namespace Gamera {
    * A simple class that holds width and height. These dimensions are
    * refer to nrows or ncols - 1.
    */
-  template<class T> class Size {
+
+  class Size {
   public:
     Size() : m_width(1), m_height(1) { }
-    Size(T width, T height) {
+    Size(coord_t width, coord_t height) {
       m_width = width;
       m_height = height;
     }
-    T width() const { return m_width; }
-    T height() const { return m_height; }
-    void width(T width) { m_width = width; }
-    void height(T height) { m_height = height; }
+    coord_t width() const { return m_width; }
+    coord_t height() const { return m_height; }
+    void width(coord_t width) { m_width = width; }
+    void height(coord_t height) { m_height = height; }
     bool operator==(const Size& other) const {
       if (m_width == other.width() && m_height == other.height())
 	return true;
@@ -94,7 +96,7 @@ namespace Gamera {
 	return false;
     }
   private:
-    T m_width, m_height;
+    coord_t m_width, m_height;
   };
 
   /*
@@ -103,17 +105,18 @@ namespace Gamera {
    * A simple class that holds nrows and ncols. These dimensions are
    * refer to width or height + 1.
    */
-  template<class T> class Dimensions {
+
+  class Dimensions {
   public:
     Dimensions() : m_ncols(1), m_nrows(1) { }
-    Dimensions(T rows, T cols) {
+    Dimensions(coord_t rows, coord_t cols) {
       m_ncols = cols;
       m_nrows = rows;
     }
-    T ncols() const { return m_ncols; }
-    T nrows() const { return m_nrows; }
-    void ncols(T ncols) { m_ncols = ncols; }
-    void nrows(T nrows) { m_nrows = nrows; }
+    coord_t ncols() const { return m_ncols; }
+    coord_t nrows() const { return m_nrows; }
+    void ncols(coord_t ncols) { m_ncols = ncols; }
+    void nrows(coord_t nrows) { m_nrows = nrows; }
     bool operator==(const Dimensions& other) const {
       if (m_ncols == other.ncols() && m_nrows == other.nrows())
 	return true;
@@ -127,7 +130,7 @@ namespace Gamera {
 	return false;
     }
   private:
-    T m_ncols, m_nrows;
+    coord_t m_ncols, m_nrows;
   };
 
   /*
@@ -135,146 +138,144 @@ namespace Gamera {
    *
    * A rectangle class
    */
-  template<class T>
+
   class Rect {
   public:
-    typedef Point<T> point_type;
-    typedef Size<T> size_type;
-    typedef Dimensions<T> dimensions_type;
     typedef Rect self;
+
     Rect() : m_origin(0, 0), m_lr(1, 1) { }
-    Rect(T origin_y, T origin_x, T nrows, T ncols)
+    Rect(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols)
       : m_origin(origin_x, origin_y),
       	m_lr(origin_x + ncols - 1, origin_y + nrows - 1) { }
-    Rect(const point_type& upper_left, const point_type& lower_right)
+    Rect(const Point& upper_left, const Point& lower_right)
       : m_origin(upper_left), m_lr(lower_right) { }
-    Rect(const point_type& upper_left, const size_type& size)
+    Rect(const Point& upper_left, const Size& size)
       : m_origin(upper_left), m_lr(upper_left.x() + size.width(),
 				   upper_left.y() + size.height()) { }
-    Rect(const point_type& upper_left, const dimensions_type& dim)
+    Rect(const Point& upper_left, const Dimensions& dim)
       : m_origin(upper_left), m_lr(upper_left.x() + dim.ncols() - 1,
 				   upper_left.y() + dim.nrows() - 1) { }
     virtual ~Rect() { }
     // Get
-    point_type ul() const { return m_origin; }
-    T ul_x() const { return m_origin.x(); }
-    T ul_y() const { return m_origin.y(); }
-    point_type ur() const { return point_type(m_lr.x(), m_origin.y()); }
-    T ur_x() const { return m_lr.x(); }
-    T ur_y() const { return m_origin.y(); }
-    point_type lr() const { return m_lr; }
-    T lr_x() const { return m_lr.x(); }
-    T lr_y() const { return m_lr.y(); }
-    point_type ll() const { return point_type(m_origin.x(), m_lr.y()); }
-    T ll_x() const { return m_origin.x(); }
-    T ll_y() const { return m_lr.y(); }
-    dimensions_type dimensions() const {
-      return dimensions_type(nrows(), ncols());
+    Point ul() const { return m_origin; }
+    coord_t ul_x() const { return m_origin.x(); }
+    coord_t ul_y() const { return m_origin.y(); }
+    Point ur() const { return Point(m_lr.x(), m_origin.y()); }
+    coord_t ur_x() const { return m_lr.x(); }
+    coord_t ur_y() const { return m_origin.y(); }
+    Point lr() const { return m_lr; }
+    coord_t lr_x() const { return m_lr.x(); }
+    coord_t lr_y() const { return m_lr.y(); }
+    Point ll() const { return Point(m_origin.x(), m_lr.y()); }
+    coord_t ll_x() const { return m_origin.x(); }
+    coord_t ll_y() const { return m_lr.y(); }
+    Dimensions dimensions() const {
+      return Dimensions(nrows(), ncols());
     }
-    size_type size() const { return size_type(width(), height()); }
-    T ncols() const { return m_lr.x() - m_origin.x() + 1; }
-    T nrows() const { return m_lr.y() - m_origin.y() + 1; }
-    T width() const { return m_lr.x() - m_origin.x(); }
-    T height() const { return m_lr.y() - m_origin.y(); }
-    T offset_x() const { return m_origin.x(); }
-    T offset_y() const { return m_origin.y(); }
+    Size size() const { return Size(width(), height()); }
+    coord_t ncols() const { return m_lr.x() - m_origin.x() + 1; }
+    coord_t nrows() const { return m_lr.y() - m_origin.y() + 1; }
+    coord_t width() const { return m_lr.x() - m_origin.x(); }
+    coord_t height() const { return m_lr.y() - m_origin.y(); }
+    coord_t offset_x() const { return m_origin.x(); }
+    coord_t offset_y() const { return m_origin.y(); }
     // Set
-    void ul(const point_type& ul) { m_origin = ul; dimensions_change(); }
-    void ul_x(T v) { m_origin.x(v); dimensions_change(); }
-    void ul_y(T v) { m_origin.y(v); dimensions_change(); }
-    void ur(const point_type& ur) {
+    void ul(const Point& ul) { m_origin = ul; dimensions_change(); }
+    void ul_x(coord_t v) { m_origin.x(v); dimensions_change(); }
+    void ul_y(coord_t v) { m_origin.y(v); dimensions_change(); }
+    void ur(const Point& ur) {
       m_lr.x(ur.x()); m_origin.y(ur.y()); dimensions_change();
     }
-    void ur_x(T v) { m_lr.x(v); dimensions_change(); }
-    void ur_y(T v) { m_origin.y(v); dimensions_change(); }
-    void lr(const point_type& lr) { m_lr = lr; dimensions_change(); }
-    void lr_x(T v) { m_lr.x(v); dimensions_change(); }
-    void lr_y(T v) { m_lr.y(v); dimensions_change(); }
-    void ll(const point_type& ll) {
+    void ur_x(coord_t v) { m_lr.x(v); dimensions_change(); }
+    void ur_y(coord_t v) { m_origin.y(v); dimensions_change(); }
+    void lr(const Point& lr) { m_lr = lr; dimensions_change(); }
+    void lr_x(coord_t v) { m_lr.x(v); dimensions_change(); }
+    void lr_y(coord_t v) { m_lr.y(v); dimensions_change(); }
+    void ll(const Point& ll) {
       m_origin.x(ll.x());
       m_lr.y(ll.y());
       dimensions_change();
     }
-    void ll_x(T v) { m_origin.x(v); dimensions_change(); }
-    void ll_y(T v) { m_lr.y(v); dimensions_change(); }
-    void dimensions(const dimensions_type& dim) {
+    void ll_x(coord_t v) { m_origin.x(v); dimensions_change(); }
+    void ll_y(coord_t v) { m_lr.y(v); dimensions_change(); }
+    void dimensions(const Dimensions& dim) {
       nrows(dim.nrows());
       ncols(dim.ncols());
       dimensions_change();
     }
-    void dimensions(T nrows, T ncols) {
+    void dimensions(coord_t nrows, coord_t ncols) {
       this->nrows(nrows);
       this->ncols(ncols);
       dimensions_change();
     }
-    void ncols(T v) {
+    void ncols(coord_t v) {
       m_lr.x(m_origin.x() + v - 1);
       dimensions_change();
     }
-    void nrows(T v) {
+    void nrows(coord_t v) {
       m_lr.y(m_origin.y() + v - 1);
       dimensions_change();
     }
-    void size(const size_type& size) {
+    void size(const Size& size) {
       width(size.width());
       height(size.height());
       dimensions_change();
     }
-    void size(T width, T height) {
+    void size(coord_t width, coord_t height) {
       this->width(width);
       this->height(height);
       dimensions_change();
     }
-    void width(T width) {
+    void width(coord_t width) {
       m_lr.x(m_origin.x() + width);
       dimensions_change();
     }
-    void height(T height) {
+    void height(coord_t height) {
       m_lr.y(m_origin.y() + height);
       dimensions_change();
     }
-    void rect_set(T origin_y, T origin_x, T nrows, T ncols) {
+    void rect_set(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols) {
       m_origin.x(origin_x);
       m_origin.y(origin_y);
       m_lr.x(origin_x + ncols - 1);
       m_lr.y(origin_y + nrows - 1);
       dimensions_change();
     }
-    void rect_set(const point_type& upper_left, const point_type& lower_right) {
+    void rect_set(const Point& upper_left, const Point& lower_right) {
       m_origin = upper_left;
       m_lr = lower_right;
       dimensions_change();
     }
-    void rect_set(const point_type& upper_left, const size_type& size) {
+    void rect_set(const Point& upper_left, const Size& size) {
       m_origin = upper_left;
       this->size(size);
       dimensions_change();
     }
-    void rect_set(const point_type& upper_left, const dimensions_type& dim) {
+    void rect_set(const Point& upper_left, const Dimensions& dim) {
       m_origin = upper_left;
       dimensions(dim);
       dimensions_change();
     }
-    void offset_x(T v) { m_origin.x(v); dimensions_change(); }
-    void offset_y(T v) { m_origin.y(v); dimensions_change(); }
+    void offset_x(coord_t v) { m_origin.x(v); dimensions_change(); }
+    void offset_y(coord_t v) { m_origin.y(v); dimensions_change(); }
     void move(int x, int y) {
       m_origin.move(x, y);
       m_lr.move(x, y);
     }
     // intersection
-    bool contains_x(T v) const {
+    bool contains_x(coord_t v) const {
       if (v >= m_origin.x() && v <= lr_x())
 	return true;
       else
 	return false;
     }
-    bool contains_y(T v) const {
+    bool contains_y(coord_t v) const {
       if (v >= m_origin.y() && v <= lr_y())
 	return true;
       else
 	return false;
     }
-    bool contains_point(const Point<T>& v) const {
+    bool contains_point(const Point& v) const {
       if (contains_x(v.x()) && contains_y(v.y()))
 	return true;
       else
@@ -301,7 +302,7 @@ namespace Gamera {
   protected:
     virtual void dimensions_change() { }
   private:
-    Point<T> m_origin, m_lr;
+    Point m_origin, m_lr;
   };
 
 };

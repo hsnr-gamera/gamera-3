@@ -47,14 +47,6 @@
 namespace Gamera {
 
   /*
-    Dimensions
-   */
-  typedef Size<size_t> IntSize;
-  typedef Dimensions<size_t> IntDimensions;
-  typedef Point<size_t> IntPoint;
-  typedef Rect<size_t> IntRect;
-
-  /*
     Features
    */
   typedef double feature_t;
@@ -76,7 +68,7 @@ namespace Gamera {
   /*
     Colors
   */
-#define COLOR_SET_SIZE 7
+  static const int COLOR_SET_SIZE;
   const unsigned char color_set[COLOR_SET_SIZE][3] = {
     {0xbc, 0x2d, 0x2d}, // Red
     {0xb4, 0x2d, 0xbc}, // Magenta

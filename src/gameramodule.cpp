@@ -6,7 +6,7 @@ void init_DimensionsType(PyObject* module_dict);
 void init_RectType(PyObject* module_dict);
 
 extern "C" {
-  void initgamera(void);
+  void initgameracore(void);
 }
 
 PyMethodDef gamera_module_methods[] = {
@@ -14,7 +14,7 @@ PyMethodDef gamera_module_methods[] = {
 };
 
 DL_EXPORT(void)
-initgamera(void) {
+initgameracore(void) {
   PyObject* m = Py_InitModule("gameracore", gamera_module_methods);
   PyObject* d = PyModule_GetDict(m);
   init_SizeType(d);

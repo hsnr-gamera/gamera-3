@@ -417,20 +417,12 @@ class ClassDocumentationGenerator:
       self.table_of_contents(classes)
 
    def document_class(self, cls_desc):
-      if type(cls_desc) in (tuple, list):
-         cls = cls_desc[0]
-         members = cls_desc[1]
-         if type(members) in (str, unicode):
-            members = members.split()
-      else:
-         cls = cls_desc
-         members = dir(cls).sort(lambda x, y: cmp(x.lower(), y.lower()))
-
-      cls_name = cls.__name__
-      module_name = inspect.getmodule(cls).__name__
-      combined_name = "%s.%s" % (module_name, cls_name)
+      module_name, cls_name, members = cls_desc
+      combined_name = ".".join([module_name, cls_name])
       self.class_names.append((cls_name, combined_name))
       print "  ", combined_name
+      if type(members) in (str, unicode):
+         members = members.split()
       s = open(os.path.join(self.docgen.src_path, combined_name + ".txt"), "w")
       s.write("class ``%s``\n%s\n\n" % (combined_name, underline(0, combined_name, 10)))
       s.write("``%s``\n%s\n\n" % (cls_name, underline(1, combined_name, 4)))

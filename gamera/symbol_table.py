@@ -23,30 +23,37 @@ import types, string, keyword
 class SymbolTable:
    def __init__(self):
       self.symbols = {}
-      self.listeners = []
-      self.rename_listeners = []
-      self.remove_listeners = []
+      self.add_callbacks = []
+      self.remove_callbacks = []
       self.add("skip", 0)
 
-   def add_listener(self, listener):
-      assert hasattr(listener, 'symbol_table_callback')
-      self.listeners.append(listener)
+   ########################################
+   # CALLBACKS
+
+   def evt_add(self, callback):
+      self.add_callbacks.append(callback)
       # Get the listener up-to-date
       for symbol in self.symbols.keys():
          self.alert_add(self.normalize_symbol(symbol)[1])
 
-   def remove_listener(self, listener):
-      self.listeners.remove(listener)
+   def evt_remove(self, callback):
+      self.remove_callbacks.append(callback)
+
+   def evt_del_add(self, callback):
+      self.add_callbacks.remove(callback)
+
+   def evt_del_remove(self, callback):
+      self.remove_callbacks.remove(callback)
 
    def alert_add(self, symbol):
       for l in self.listeners:
-         if hasattr(l, 'symbol_table_callback'):
-            l.symbol_table_callback(symbol)
+         l(symbol)
 
    def alert_remove(self, a):
       for l in self.listeners:
-         if hasattr(l, 'symbol_table_remove_callback'):
-            l.symbol_table_remove_callback(a)
+         l(a)
+
+   ########################################
 
    def normalize_symbol(self, symbol):
       # assert type(symbol) == types.StringType

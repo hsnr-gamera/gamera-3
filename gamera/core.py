@@ -48,8 +48,8 @@ from types import *
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
-from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX
-from enums import ALL, NONIMAGE
+from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+from enums import ALL, NONIMAGE, COMPLEX
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types

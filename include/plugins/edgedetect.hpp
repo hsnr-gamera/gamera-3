@@ -53,7 +53,7 @@ typename ImageFactory<T>::view_type* difference_of_exponential_crack_edge_image(
 template<class T>
 typename ImageFactory<T>::view_type* canny_edge_image(const T& src, double scale, double gradient_threshold) {
   if ((scale < 0) || (gradient_threshold < 0))
-    throw std::runtime_error("The scale and gradient threshold must be greater than 0");
+    throw std::runtime_error("The scale and gradient threshold must be >= 0");
 
   typename ImageFactory<T>::data_type* dest_data =
     new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());

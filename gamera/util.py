@@ -194,9 +194,7 @@ _pixel_type_names = {ONEBIT:     "OneBit",
                      GREYSCALE:  "GreyScale",
                      GREY16:     "Grey16",
                      RGB:        "RGB",
-                     FLOAT:      "Float",
-		     COMPLEX:    "Complex"}
-
+                     FLOAT:      "Float"}
 def get_pixel_type_name(type_):
    return _pixel_type_names[type_]
 
@@ -334,3 +332,96 @@ def ProgressFactory(message, length=1):
       return has_gui.gui.ProgressBox(message, length)
    else:
       return ProgressText(message, length)
+
+class CallbackList(list):
+   def __init__(self, initlist=None):
+      list.__init__(self, initlist)
+      self.add_callbacks = []
+      self.remove_callbacks = []
+   
+   def evt_add(self, callback):
+      if callback not in self.add_callbacks:
+         self.add_callbacks.append(callback)
+
+   def evt_remove(self, callback):
+      if callback not in self.remove_callbacks:
+         self.remove_callbacks.append(callback)
+
+   def evt_del_add(self, callback):
+      if callback in self.add_callbacks:
+         self.add_callbacks.remove(callback)
+
+   def evt_del_remove(self, callback):
+      if callback in self.remove_callbacks:
+         self.remove_callbacks.remove(callback)
+
+   def alert_add(self, item):
+      for callback in self.add_callbacks:
+         callback(item)
+      
+   def __setitem__(self, i, item):
+      if i < len(self):
+         self.alert_remove(self[i])
+         self.alert_add(item)
+      list.__setitem__(self, i, item)
+      
+   def __delitem__(self, i):
+       pass
+##       del self.data[i]
+##     def __getslice__(self, i, j):
+##         i = max(i, 0); j = max(j, 0)
+##         return self.__class__(self.data[i:j])
+##     def __setslice__(self, i, j, other):
+##         i = max(i, 0); j = max(j, 0)
+##         if isinstance(other, UserList):
+##             self.data[i:j] = other.data
+##         elif isinstance(other, type(self.data)):
+##             self.data[i:j] = other
+##         else:
+##             self.data[i:j] = list(other)
+##     def __delslice__(self, i, j):
+##         i = max(i, 0); j = max(j, 0)
+##         del self.data[i:j]
+##     def __add__(self, other):
+##         if isinstance(other, UserList):
+##             return self.__class__(self.data + other.data)
+##         elif isinstance(other, type(self.data)):
+##             return self.__class__(self.data + other)
+##         else:
+##             return self.__class__(self.data + list(other))
+##     def __radd__(self, other):
+##         if isinstance(other, UserList):
+##             return self.__class__(other.data + self.data)
+##         elif isinstance(other, type(self.data)):
+##             return self.__class__(other + self.data)
+##         else:
+##             return self.__class__(list(other) + self.data)
+##     def __iadd__(self, other):
+##         if isinstance(other, UserList):
+##             self.data += other.data
+##         elif isinstance(other, type(self.data)):
+##             self.data += other
+##         else:
+##             self.data += list(other)
+##         return self
+##     def __mul__(self, n):
+##         return self.__class__(self.data*n)
+##     __rmul__ = __mul__
+##     def __imul__(self, n):
+##         self.data *= n
+##         return self
+##     def append(self, item): self.data.append(item)
+##     def insert(self, i, item): self.data.insert(i, item)
+##     def pop(self, i=-1): return self.data.pop(i)
+##     def remove(self, item): self.data.remove(item)
+##     def count(self, item): return self.data.count(item)
+##     def index(self, item, *args): return self.data.index(item, *args)
+##     def reverse(self): self.data.reverse()
+##     def sort(self, *args): self.data.sort(*args)
+##     def extend(self, other):
+##         if isinstance(other, UserList):
+##             self.data.extend(other.data)
+##         else:
+##             self.data.extend(other)
+
+   

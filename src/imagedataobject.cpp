@@ -166,8 +166,6 @@ void init_ImageDataType(PyObject* module_dict) {
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",
 		       Py_BuildValue("i", Gamera::FLOAT));
-  PyDict_SetItemString(module_dict, "COMPLEX",
-		       Py_BuildValue("i", Gamera::COMPLEX));
   PyDict_SetItemString(module_dict, "ONEBIT",
 		       Py_BuildValue("i", ONEBIT));
   PyDict_SetItemString(module_dict, "GREYSCALE",

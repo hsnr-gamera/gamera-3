@@ -145,24 +145,6 @@ class Real(Arg):
 
 Float = Real
 
-class Complex(Arg):
-   def __init__(self, name=None, default=None):
-      Arg.__init__(self, name)
-      if default is None:
-         self.has_default = False
-         self.default = 0j
-      else:
-         self.has_default = True
-         self.default = default
-
-   def rest_repr(self, name=False):
-      result = "complex"
-      if name:
-         result += " *%s*" % self.name
-         if self.has_default:
-            result += " = %s" % self.default
-      return result
-
 class String(Arg):
    def __init__(self, name=None, default=None):
       Arg.__init__(self, name)
@@ -325,11 +307,6 @@ class IntVector(Class):
          raise TypeError("'length' must be an int")
       self.length = length
 
-class ComplexVector(Class):
-   def __init__(self, name=None, length=-1):
-      Class.__init__(self, name, None, True)
-      self.length = length
-
 class ImageList(Class):
    def __init__(self, name=None):
       Class.__init__(self, name, None, True)
@@ -364,7 +341,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector'.split()
+__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard Pixel PointVector'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

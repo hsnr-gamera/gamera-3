@@ -232,7 +232,7 @@ namespace Gamera {
     //
     // Misc
     //
-    virtual T* data() const { return m_image_data; }
+    virtual ImageDataBase* data() const { return m_image_data; }
     self parent() const { return self(*m_image_data, m_image_data->page_offset_y(), m_image_data->page_offset_x()
 				, m_image_data->nrows(), m_image_data->ncols()); }
     self& image() { return *this; }

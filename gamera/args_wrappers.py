@@ -99,19 +99,6 @@ class Float(WrapperArg):
    def to_python(self):
       return '%(pysymbol)s = PyFloat_FromDouble((double)%(symbol)s);' % self
 
-class Complex(WrapperArg):
-   arg_format = 'D'
-   c_type = 'Py_complex'
-
-   def to_python(self):
-      return '''%(pysymbol)s = PyComplex_FromDoubles(%(symbol)s.real(), %(symbol)s.imag());''' % self
-
-   def from_python(self):
-      return '''Py_complex %(pysymbol)s_temp = PyComplex_AsCComplex(%(pysymbol)s);
-      %(symbol)s = ComplexPixel(%(pysymbol)s_temp.real(), %(pysymbol)s_temp.imag());'''
-
-#return '%(pysymbol)s = Py_BuildValue("D", %(symbol)s);' % self
-
 class String(WrapperArg):
    arg_format = 's'
    c_type = 'char*'
@@ -305,23 +292,6 @@ class FloatVector(WrapperArg):
    def to_python(self):
       return """
       %(pysymbol)s = FloatVector_to_python(%(symbol)s);
-      delete %(symbol)s;
-      """ % self
-
-class ComplexVector(WrapperArg):
-   arg_format = 'O'
-   convert_from_PyObject = True
-   c_type = 'ComplexVector*'
-   delete_cpp = True
-
-   def from_python(self):
-      return """
-      %(symbol)s = ComplexVector_from_python(%(pysymbol)s);
-      """ % self
-
-   def to_python(self):
-      return """
-      %(pysymbol)s = ComplexVector_to_python(%(symbol)s);
       delete %(symbol)s;
       """ % self
 

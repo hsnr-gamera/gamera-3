@@ -122,7 +122,7 @@ class DocumentationGenerator:
    def generate_generic_pngs(self):
       print "Copying over generic images"
       for pixel_type in ALL:
-         if pixel_type in (FLOAT,):
+         if pixel_type in (FLOAT, COMPLEX):
             pixel_type_name = "GreyScale"
          else:
             pixel_type_name = util.get_pixel_type_name(pixel_type)
@@ -192,13 +192,13 @@ class PluginDocumentationGenerator:
          pixel_type_name = util.get_pixel_type_name(i)
          images[i] = core.load_image(os.path.join(
             paths.test, pixel_type_name + "_generic.tiff"))
-      for i in [FLOAT]:
+      for i in (FLOAT, COMPLEX):
          image = core.load_image(os.path.join(
             paths.test, "GreyScale_generic.tiff"))
          if i == FLOAT:
             images[i] = image.to_float()
-##          elif i == COMPLEX:
-##             images[i] = image.to_complex()
+         elif i == COMPLEX:
+            images[i] = image.to_complex()
       return images
    get_generic_images = staticmethod(get_generic_images)
 

@@ -795,11 +795,8 @@ class ClassifierFrame(ImageFrameBase):
       self._OnConfirm(self.multi_iw.id.GetSelectedItems())
 
    def _OnConfirm(self, list):
-      if len(list) == 0:
-         gui_util.message("There are no automatically classified glyphs to confirm.  No changes were made to the production database.")
-         return
       if not hasattr(self._classifier, 'classify_glyph_manual'):
-         gui_util.message("NonInteractive classifiers can not be trained.")
+         gui_util.message("This classifier can not be trained.")
          return
       wxBeginBusyCursor()
       try:
@@ -1155,12 +1152,14 @@ class SymbolTreeCtrl(wxTreeCtrl):
       EVT_KEY_DOWN(self, self._OnKey)
       EVT_LEFT_DOWN(self, self._OnLeftDown)
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
-      self.toplevel._symbol_table.add_listener(self)
+      self.toplevel._symbol_table.evt_add(self.symbol_table_add_callback)
+      self.toplevel._symbol_table.evt_remove(self.symbol_table_remove_callback)
       self.Expand(self.root)
       self.SelectItem(self.root)
 
    def __del__(self):
-      self._symbol_table.remove_listener(self)
+      self._symbol_table.evt_del_add(self.symbol_table_add_callback)
+      self._symbol_table.evt_del_remove(self.symbol_table_remove_callback)
 
    ########################################
    # CALLBACKS

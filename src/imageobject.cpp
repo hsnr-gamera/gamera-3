@@ -169,12 +169,6 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
-      } else if (pixel == Gamera::COMPLEX) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<ComplexPixel>* data =
-	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == RGB) {
 	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
 	ImageData<RGBPixel>* data =
@@ -250,11 +244,6 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<FloatPixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == Gamera::COMPLEX) {
-	ImageData<ComplexPixel>* data =
-	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<ComplexPixel> >(*data, off_y, off_x, nrows, ncols);
       } else if (pixel == RGB) {
 	ImageData<RGBPixel>* data =
 	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
@@ -404,16 +393,10 @@ static PyObject* image_get(PyObject* self, int row, int col) {
     case Gamera::ONEBIT:
       return PyInt_FromLong(((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
       break;
-    case Gamera::COMPLEX:
-      ComplexPixel temp = ((ComplexImageView*)o->m_x)->get((size_t)row, (size_t)col);
-      return PyComplex_FromDoubles(temp.real(), temp.imag());
-      // Gamera::pixel_to_python<ComplexPixel> convertor;
-      // return convertor.convert(((ComplexImageView*)o->m_x)->get((size_t)row, (size_t)col));
-      break;
+    default:
+      return 0;
     }
   }
-  PyErr_SetString(PyExc_TypeError, "Unknown image type");
-  return NULL;
 }
 
 static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
@@ -427,7 +410,7 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
     ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
     if (!PyFloat_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for Float objects must be a float.");
+      PyErr_SetString(PyExc_TypeError, "image_set for Float objects must be an float.");
       return 0;
     }
     ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, PyFloat_AS_DOUBLE(value));
@@ -459,14 +442,6 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
     }
     ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col,
 				    (Grey16Pixel)PyInt_AS_LONG(value));
-  } else if (od->m_pixel_type == Gamera::COMPLEX) {
-    if (!PyComplex_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for Complex objects must be a complex.");
-      return 0;
-    }
-    ComplexPixel temp(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
-    // Gamera::pixel_from_python<ComplexPixel> convertor;
-    ((ComplexImageView*)o->m_x)->set((size_t)row, (size_t)col, temp);
   } else if (od->m_pixel_type == ONEBIT) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");
@@ -568,9 +543,6 @@ static PyObject* image_sort(PyObject* self, PyObject* args) {
   } else if (od->m_pixel_type == GREY16) {
     Grey16ImageView* im = (Grey16ImageView*)image;
     std::sort(im->vec_begin(), im->vec_end());
-  } else if (od->m_pixel_type == Gamera::COMPLEX) {
-    PyErr_SetString(PyExc_TypeError, "Complex pixels cannot be sorted");
-    return 0;
   } else { // ONEBIT
     OneBitImageView* im = (OneBitImageView*)image;
     std::sort(im->vec_begin(), im->vec_end());

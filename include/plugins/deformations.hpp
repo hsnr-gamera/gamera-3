@@ -507,8 +507,9 @@ namespace Gamera
 		size_t hoffset = 0, voffset = 0;
 		for(i = voffset; i<out->nrows(); i++) for(j = hoffset; j<out->ncols(); j++)
 		{
-			pixelFormat px = m.get(i-voffset, m.ncols() - (j-hoffset));
-			if(px!=background && (a*rand()/RAND_MAX == 0)) out->set(i,j,px);
+			pixelFormat px1 = m.get(i-voffset, m.ncols() - (j-hoffset)),
+				    px2 = out->get(i,j);
+			if(a*rand()/RAND_MAX == 0) out->set(i,j,norm_weight_avg(px1,px2,0.5,0.5));
 		}
 
 		image_copy_attributes(m, *out);
@@ -589,7 +590,12 @@ namespace Gamera
 					GreyScalePixel(((pix1.green() * w1) + (pix2.green() * w2))/(w1 + w2)),
 					GreyScalePixel(((pix1.blue() * w1) + (pix2.blue() * w2))/(w1 + w2)));
 	}
-
+        inline OneBitPixel norm_weight_avg(OneBitPixel& pix1, OneBitPixel& pix2, double w1=1.0, double w2=1.0)
+	{
+		if(w1 == -w2) w1 = w2 = 1.0;
+                if(((pix1 * w1) + (pix2 * w2))/(w1 + w2) < 0.5) return OneBitPixel(0);
+		return OneBitPixel(1);
+	}
 	template <class T>
 	inline T norm_weight_avg(T& pix1, T& pix2, double w1=1.0, double w2=1.0)
 	{

@@ -488,9 +488,16 @@ class _CIVector(CustomIcon):
    check = classmethod(check)
 
    def double_click(self):
-      name = var_name.get("figure")
-      if name != None:
-         return "%s = plot(%s)" % (name, self.label)
+      from gamera.gui import matplotlib_support
+      if matplotlib_support.matplotlib_installed:
+         name = var_name.get("figure")
+         if name != None:
+            return "%s = plot(%s)" % (name, self.label)
+      else:
+         gui_util.message("Plotting is not supported because the optional matplotlib library\n"
+                       "could not be found.\n\n"
+                       "Download and install matplotlib from matplotlib.sourceforge.net,\n"
+                       "then restart Gamera to have plotting support.")
 
    def right_click(self, *args):
       pass

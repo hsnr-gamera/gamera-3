@@ -52,6 +52,7 @@ except ImportError:
                        "Download and install matplotlib from matplotlib.sourceforge.net,\n"
                        "then restart Gamera to have plotting support.")
    show_figure = plot
+   matplotlib_installed = False
 else:
    cursord = backend_wx.cursord
    
@@ -288,5 +289,7 @@ else:
    from matplotlib import backends
    backends.show = show
    backends.new_figure_manager = new_figure_manager
+
+   matplotlib_installed = True
    
 __all__ = "plot show_figure".split()

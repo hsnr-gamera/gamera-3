@@ -518,7 +518,7 @@ namespace Gamera
 	}
 
 	template<class T>
-	Image* ink_diffuse(T &m)
+	Image* ink_diffuse(T &m, int type, double dropoff)
 	{
 		
 		typedef ImageFactory<T> fact;
@@ -532,24 +532,42 @@ namespace Gamera
 		double val, expSum;
 		pixelFormat aggColor, currColor;
 		srand(time(NULL));
-		size_t type = 2;
-		if(type == 1)
-		for(i=0; i<m.ncols(); i++)
+		
+		if(type == 0)
 		{
-			aggColor = m.get(0,i);
-			expSum = 0;
-			for(j=0; j<m.nrows(); j++)
+			for(i=0; i<m.nrows(); i++)
 			{
-				val = 1.0/exp((double)j/70.0);
-				expSum += val;
-				currColor = m.get(j,i);
-				double weight = val / (val + expSum);
-				aggColor = norm_weight_avg(aggColor, currColor, 1-weight, weight);
-				out->set(j,i,norm_weight_avg(aggColor,currColor,val, 1.0-val));
+				aggColor = m.get(i,0);
+				expSum = 0;
+				for(j=0; j<m.ncols(); j++)
+				{
+					val = 1.0/exp((double)j/dropoff);
+					expSum += val;
+					currColor = m.get(i,j);
+					double weight = val / (val + expSum);
+					aggColor = norm_weight_avg(aggColor, currColor, 1-weight, weight);
+					out->set(i,j,norm_weight_avg(aggColor,currColor,val, 1.0-val));
+				}
+				
 			}
-			expSum += val;
 		}
-
+		else if(type == 1)
+		{
+			for(i=0; i<m.ncols(); i++)
+			{
+				aggColor = m.get(0,i);
+				expSum = 0;
+				for(j=0; j<m.nrows(); j++)
+				{
+					val = 1.0/exp((double)j/70.0);
+					expSum += val;
+					currColor = m.get(j,i);
+					double weight = val / (val + expSum);
+					aggColor = norm_weight_avg(aggColor, currColor, 1-weight, weight);
+					out->set(j,i,norm_weight_avg(aggColor,currColor,val, 1.0-val));
+				}
+			}
+		}
 		else if(type == 2)//try monte carlo simulation
 		{
 			for(i = 0; i<m.ncols(); i++) for(j=0; j<m.nrows(); j++) out->set(j,i,m.get(j,i));

@@ -66,10 +66,18 @@ class inkrub(PluginFunction):
     args = Args(Int("Transcription Probability 1 in"))
     args.list[0].rng = (0,500)
 
+class ink_diffuse(PluginFunction):
+    """Simulates water-driven diffusion of ink in paper"""
+    category = "Deformations"
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args = Args([Choice('Diffusion Type',["Linear Horizontal","Linear Vertical","Brownian"]),\
+                Float("Exponential decay constant 1 over")])
+
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
     category = "Deformations"
-    functions = [rotate,noise,inkrub,wave]
+    functions = [rotate,noise,inkrub,wave,ink_diffuse]
     author = "Albert Bzreckzo"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()

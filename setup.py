@@ -152,6 +152,13 @@ elif sys.platform == 'win32':
                                           'ICLCompiler',
                                           'Intel Compiler Library for Windows')
        ccompiler.new_compiler = ICLCompiler.ret_icl
+   elif '--compiler=freevc' in sys.argv:
+       from distutils import ccompiler
+       from win32.freevccompiler import FreeVCCompiler
+       ccompiler.compiler_class['freevc'] = ('win32.freevccompiler',
+                                          'FreeVCCompiler',
+                                          'Visual C++ 2003 Toolkit')
+       ccompiler.new_compiler = FreeVCCompiler.ret_freevc
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",
       version=gamera_version,

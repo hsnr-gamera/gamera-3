@@ -86,7 +86,7 @@ supported.
       try:
          image = _png_support.load_PNG(filename, compression)
       except RuntimeError, AttributeError:
-         raise RuntimeError("%s in not a TIFF or PNG file." % filename)
+         raise RuntimeError("%s is not a TIFF or PNG file." % filename)
    image.name = filename
    return image
 

@@ -35,6 +35,10 @@ extern "C" {
   static PyObject* knn_classify(PyObject* self, PyObject* args);
   static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
   static PyObject* knn_get_interactive(PyObject* self);
+  static PyObject* knn_get_num_k(PyObject* self);
+  static int knn_set_num_k(PyObject* self, PyObject* v);
+  static PyObject* knn_get_distance_type(PyObject* self);
+  static int knn_set_distance_type(PyObject* self, PyObject* v);
 }
 
 static PyTypeObject KnnType = {
@@ -43,9 +47,9 @@ static PyTypeObject KnnType = {
 };
 
 enum DistanceType {
-  CITY_BLOCK,
   EUCLIDEAN,
-  FAST_EUCLIDEAN
+  FAST_EUCLIDEAN,
+  CITY_BLOCK
 };
 
 struct KnnObject {
@@ -54,6 +58,8 @@ struct KnnObject {
   size_t num_feature_vectors;
   double* feature_vectors;
   char** id_names;
+  double* weight_vector;
+  double* normalization_vector;
   size_t num_k;
   DistanceType distance_type;
 };
@@ -72,6 +78,10 @@ PyMethodDef knn_methods[] = {
 PyGetSetDef knn_getset[] = {
   { "interactive", (getter)knn_get_interactive, 0,
     "bool property indicating whether this object supports interactive classification.", 0 },
+  { "num_k", (getter)knn_get_num_k, (setter)knn_set_num_k,
+    "The value of k used for classification.", 0 },
+  { "distance_type", (getter)knn_get_distance_type, (setter)knn_set_distance_type,
+    "The type of distance calculation used.", 0 },
   { NULL }
 };
 
@@ -87,6 +97,9 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->feature_vectors = 0;
   o->id_names = 0;
   o->num_k = 1;
+  o->distance_type = EUCLIDEAN;
+  o->weight_vector = 0;
+  o->normalization_vector = 0;
   return (PyObject*)o;
 }
 
@@ -98,6 +111,8 @@ static void knn_delete_data(KnnObject* o) {
       delete o->id_names[i];
     delete o->id_names;
   }
+  delete o->weight_vector;
+  delete o->normalization_vector;
   o->num_features = 0;
   o->num_feature_vectors = 0;
 }
@@ -197,6 +212,9 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   o->num_features = tmp_fv_len;
   o->feature_vectors = new double[o->num_feature_vectors * o->num_features];
   o->id_names = new char*[o->num_feature_vectors];
+  /*
+    Copy the id_names and the features to the internal data structures.
+  */
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
     PyObject* cur_image = PyList_GetItem(images, i);
@@ -223,6 +241,33 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
   }
+  /*
+    Determine the normalization.
+  */
+  current_features = o->feature_vectors;
+  o->normalization_vector = new double[o->num_features];
+  for (size_t i = 0; i < o->num_features; ++i) {
+    double sum = 0.0;
+    double sum2 = 0.0;
+    double* current = o->feature_vectors;
+    for (size_t j = 0; j < o->num_feature_vectors; ++j, current += o->num_features) {
+      sum += current[i];
+      sum2 += current[i] * current[i];
+    }
+    double mean = sum / o->num_feature_vectors;
+    double var = (o->num_feature_vectors * sum2 - sum * sum)
+      / (o->num_feature_vectors * (o->num_feature_vectors - 1));
+    double stdev = sqrt(var);
+    if (stdev < 0.00001)
+      stdev = 0.00001;
+    o->normalization_vector[i] = mean / stdev;
+    std::cout << o->normalization_vector[i] << " ";
+  }
+  std::cout << std::endl;
+  /*
+    Initialize the weights.
+  */
+  o->weight_vector = new double[o->num_features];  
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -259,8 +304,18 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   double* weights = new double[o->num_features];
   std::fill(weights, weights + o->num_features, 1.0);
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_known += o->num_features) {
-    double distance = city_block_distance(current_known, current_known + o->num_features,
-					  fv, weights);
+    double distance;
+    if (o->distance_type == EUCLIDEAN) {
+      distance = euclidean_distance(current_known, current_known + o->num_features,
+				    fv, weights);
+    } else if (o->distance_type == FAST_EUCLIDEAN) {
+      distance = fast_euclidean_distance(current_known, current_known + o->num_features,
+					 fv, weights);
+    } else {
+      distance = city_block_distance(current_known, current_known + o->num_features,
+				     fv, weights);
+    }
+
     knn.add(o->id_names[i], distance);
   }
   std::pair<char*, double> answer = knn.majority();
@@ -277,7 +332,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   Compute the distance between a known and an unknown feature
   vector with weights.
 */
-inline int compute_distance(PyObject* known, PyObject* unknown, double* weights,
+inline int compute_distance(KnnObject* o, PyObject* known, PyObject* unknown, double* weights,
 			    double* distance) {
   double* known_buf, *unknown_buf;
   int known_len, unknown_len;
@@ -293,12 +348,21 @@ inline int compute_distance(PyObject* known, PyObject* unknown, double* weights,
     return -1;
   }
 
-  *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				  weights);
+  if (o->distance_type == EUCLIDEAN) {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  } else if (o->distance_type == FAST_EUCLIDEAN) {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  } else {
+    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
+				    weights);
+  }
   return 0;
 }
 
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
   PyObject* unknown, *iterator;
   if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
     return 0;
@@ -324,14 +388,14 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   weights = new double[len];
   std::fill(weights, weights + len, 1.0);
 
-  kNearestNeighbors<char*, ltstr> knn(1);
+  kNearestNeighbors<char*, ltstr> knn(o->num_k);
   PyObject* cur;
   while ((cur = PyIter_Next(iterator))) {
     if (!PyObject_TypeCheck(cur, imagebase_type)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
     }
     double distance;
-    if (compute_distance(cur, unknown, weights, &distance) < 0)
+    if (compute_distance(o, cur, unknown, weights, &distance) < 0)
       return 0;
     
     char* id_name;
@@ -356,6 +420,32 @@ static PyObject* knn_get_interactive(PyObject* self) {
   return Py_True;
 }
 
+static PyObject* knn_get_num_k(PyObject* self) {
+  return Py_BuildValue("i", ((KnnObject*)self)->num_k);
+}
+
+static int knn_set_num_k(PyObject* self, PyObject* v) {
+  if (!PyInt_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "knn: expected an int.");
+    return -1;
+  }
+  ((KnnObject*)self)->num_k = PyInt_AS_LONG(v);
+  return 0;
+}
+
+static PyObject* knn_get_distance_type(PyObject* self) {
+  return Py_BuildValue("i", ((KnnObject*)self)->distance_type);
+}
+
+static int knn_set_distance_type(PyObject* self, PyObject* v) {
+  if (!PyInt_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "knn: expected an int.");
+    return -1;
+  }
+  ((KnnObject*)self)->distance_type = (DistanceType)PyInt_AS_LONG(v);
+  return 0;
+}
+
 
 PyMethodDef knn_module_methods[] = {
   { NULL }
@@ -376,7 +466,14 @@ DL_EXPORT(void) initknn(void) {
   KnnType.tp_free = _PyObject_Del;
   KnnType.tp_methods = knn_methods;
   KnnType.tp_getset = knn_getset;
+  PyType_Ready(&KnnType);
   PyDict_SetItemString(d, "kNN", (PyObject*)&KnnType);
+  PyDict_SetItemString(d, "CITY_BLOCK",
+		       Py_BuildValue("i", CITY_BLOCK));
+  PyDict_SetItemString(d, "EUCLIDEAN",
+		       Py_BuildValue("i", EUCLIDEAN));
+  PyDict_SetItemString(d, "FAST_EUCLIDEAN",
+		       Py_BuildValue("i", FAST_EUCLIDEAN));
 
   PyObject* mod = PyImport_ImportModule("gamera.gameracore");
   if (mod == 0) {

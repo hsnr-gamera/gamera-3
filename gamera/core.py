@@ -350,59 +350,6 @@ class Cc(gameracore.Cc, ImageBase):
       self._display.focus(self)
       self.last_display = "context"
 
-
-#####################################################################
-#
-# Copy Utilities
-#
-# The Python builtin copy utilities break when trying to
-# copy Gamera images. These utility functions allow you
-# to easily copy the portions of a Gamera image that you
-# want with the correct semantics (i.e. things like._display
-# are never copied, but they need to be properly initialized.
-#
-######################################################################
-
-def copy_image_classification(source, dest):
-   assert isinstance(source, Image)
-   assert isinstance(dest, Image)
-   from copy import copy
-   if source.features:
-      dest.features = type(source.features)()
-      for i in source.features:
-         dest.features.append(i)
-      if hasattr(source.features, 'id'):
-         dest.features.id(source.features.id())
-   if source.id_name:
-      dest.id_name = copy(source.id_name)
-   dest.unique_id = source.unique_id
-   dest.children_images = []
-   dest.action_depth = 0
-
-def copy_image_regions(source, dest):
-   assert isinstance(source, Image)
-   assert isinstance(dest, Image)
-   dest.region_maps = source.region_maps
-   dest.region_map = source.region_map
-   dest.scaling = source.scaling
-
-def copy_image_misc(source, dest):
-   assert isinstance(source, Image)
-   assert isinstance(dest, Image)
-   dest.name = source.name
-
-def copy_image_display(source, dest):
-   assert isinstance(source, Image)
-   assert isinstance(dest, Image)
-   dest._display = None
-   dest.last_display = None
-
-def copy_image_all(source, dest):
-   copy_image_classification(source, dest)
-   copy_image_regions(source, dest)
-   copy_image_misc(source, dest)
-   copy_image_display(source, dest)
-
 # this is a convenience function for using in a console
 _gamera_initialised = 0
 def init_gamera():
@@ -432,7 +379,7 @@ def init_gamera():
                               plugin.ImageType([ONEBIT]),
                               plugin.ImageType([ONEBIT], "cc"))
          ):
-        method.register()
+         method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)
       _gamera_initialised = 1
 

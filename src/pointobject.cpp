@@ -178,5 +178,6 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_free = _PyObject_Del;
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
+  PyType_Ready(&PointType);
   PyDict_SetItemString(module_dict, "Point", (PyObject*)&PointType);
 }

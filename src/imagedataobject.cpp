@@ -209,6 +209,7 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
   ImageDataType.tp_alloc = PyType_GenericAlloc;
   ImageDataType.tp_free = _PyObject_Del;
+  PyType_Ready(&ImageDataType);
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",

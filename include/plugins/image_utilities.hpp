@@ -26,6 +26,7 @@
 #include "vigra/resizeimage.hxx"
 #include <exception>
 #include <math.h>
+#include <algorithm>
 
 
 namespace Gamera {
@@ -142,6 +143,14 @@ namespace Gamera {
     typename T::data_type* data = new typename T::data_type(nrows, ncols);
     ImageView<typename T::data_type>* view = 
       new ImageView<typename T::data_type>(*data, 0, 0, nrows ,ncols);
+    /*
+      Images with nrows or ncols == 1 cannot be scaled. This is a hack that
+      just returns a black image.
+    */
+    if (view->nrows() == 1 || view->ncols() == 1) {
+      std::fill(view->vec_begin(), view->vec_end(), black(*view));
+      return view;
+    }
     if (resize_quality == 0) {
       resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
     } else if (resize_quality == 1) {

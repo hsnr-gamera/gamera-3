@@ -160,5 +160,6 @@ void init_SizeType(PyObject* module_dict) {
   SizeType.tp_richcompare = size_richcompare;
   SizeType.tp_free = _PyObject_Del;
   SizeType.tp_repr = size_repr;
+  PyType_Ready(&SizeType);
   PyDict_SetItemString(module_dict, "Size", (PyObject*)&SizeType);
 }

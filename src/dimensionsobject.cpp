@@ -160,5 +160,6 @@ void init_DimensionsType(PyObject* module_dict) {
   DimensionsType.tp_getset = dimensions_getset;
   DimensionsType.tp_free = _PyObject_Del;
   DimensionsType.tp_repr = dimensions_repr;
+  PyType_Ready(&DimensionsType);
   PyDict_SetItemString(module_dict, "Dimensions", (PyObject*)&DimensionsType);
 }

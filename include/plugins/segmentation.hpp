@@ -91,17 +91,8 @@ namespace {
 namespace Gamera {
 
   template<class T>
-  std::list<Image*>* cc_analysis(T& mat) {
+  std::list<Image*>* cc_analysis(T& image) {
     equiv_table eq;
-    /*
-      If this image has been labeled once already, it is necessary to start
-      with all the pixels labeled with 1.
-    */
-    for (typename T::row_iterator row = mat.row_begin(); row != mat.row_end(); ++row)
-      for (typename T::col_iterator col = row.begin(); col != row.end(); ++col)
-	if (*col > 0)
-	  *col = 1;
-
     // get the max value that can be held in the matrix
     typename T::value_type max_value = 
       std::numeric_limits<typename T::value_type>::max();
@@ -109,18 +100,35 @@ namespace Gamera {
     typename T::value_type curr_label = 2;
 
     typename T::value_type W, NW, N, NE;
-    for (size_t i = 0; i < mat.nrows(); i++) {
-      for (size_t j = 0; j < mat.ncols(); j++) {
-	if (mat.get(i, j) > 0) {
+    ImageAccessor<typename T::value_type> acc;
+    typename T::Iterator row, col, lr, ul, above;
+    lr = image.lowerRight();
+    ul = image.upperLeft();
+    for (row = image.upperLeft(); row.y != lr.y; ++row.y) {
+      for (col = row; col.x != lr.x; ++col.x) {
+	/*
+	  If this image has been labeled once already, it is necessary to start
+	  with all the pixels labeled with 1.
+	*/
+	if (acc(col) > 0)
+	  acc.set(1, col);
+	if (acc(col) > 0) {
 	  W = NW = N = NE = 0;
-	  if (i > 0)
-	    N = mat.get(i - 1, j);
-	  if (j > 0)
-	    W = mat.get(i, j - 1);
-	  if (i > 0 && j > 0)
-	    NW = mat.get(i - 1, j - 1);
-	  if (i > 0 && j < (mat.ncols() - 1))
-	    NE = mat.get(i - 1, j + 1);
+	  if (col.y != ul.y) {
+	    above = col;
+	    --above.y;
+	    N = acc(above);
+	    if (col.x != ul.x) {
+	      --above.x;
+	      NW = acc(above);
+	      ++above.x;
+	    }
+	    ++above.x;
+	    if (above.x != lr.x)
+	      NE = acc(above);
+	  }
+	  if (col.x != ul.x)
+	    W = acc(col - Diff2D(1, 0));
 				
 	  if (W  == 0) W  = max_value;
 	  if (NW == 0) NW = max_value;
@@ -134,13 +142,13 @@ namespace Gamera {
 	  if (smallest_label > NE) smallest_label = NE;
 				
 	  if (smallest_label == max_value) { // new object found!
-	    mat.set(i, j, curr_label);
+	    acc.set(curr_label, col);
 	    if (curr_label == max_value) {
 	      throw std::range_error("Max label exceeded - change OneBitPixel type in pixel.hpp");
 	    }
 	    curr_label++;
 	  } else {
-	    mat.set(i, j, smallest_label);
+	    acc.set(smallest_label, col);
 					
 	    // adjust equiv_table if necessary
 	    if (W  == max_value) W  = 0;
@@ -211,31 +219,34 @@ namespace Gamera {
       if(labels[labels[i]] < labels[i])
 	labels[i] = labels[labels[i]];
 	
-    // Second Pass - relabel with equivalences and get bounding boxes
-    typedef std::map<size_t, Rect> map_type;
-    map_type rects;
-	
-    for (size_t i = 0; i < mat.nrows(); i++) {
-      for (size_t j = 0; j < mat.ncols(); j++) {
+    /*
+      Second Pass - relabel with equivalences and get bounding boxes
+      This used to use a map, but I think that it is worth the memory
+      use to use a vector for mapping the labels to the rects. The 
+      vector is a lot faster.
+    */
+    typedef std::vector<Rect*> map_type;
+    map_type rects(labels.size(), 0);
+    row = image.upperLeft();
+    for (size_t i = 0; i < image.nrows(); i++, ++row.y) {
+      size_t j;
+      for (j = 0, col = row; j < image.ncols(); j++, ++col.x) {
 	// relabel
-	mat.set(i, j, labels[mat.get(i, j)]);
+	acc.set(labels[acc(col)], col);
 	// put bounding box in map
-	typename T::value_type label = mat.get(i, j);
+	typename T::value_type label = acc(col);
 	if (label) {
-	  if (rects.find(label) == rects.end()) {
-	    rects[label].ul_x(j);
-	    rects[label].ul_y(i);
-	    rects[label].lr_x(j);
-	    rects[label].lr_y(i);
+	  if (rects[label] == 0) {
+	    rects[label] = new Rect(i, j, 1, 1);
 	  } else {
-	    if (j < rects[label].ul_x())
-	      rects[label].ul_x(j);
-	    if (j > rects[label].lr_x())
-	      rects[label].lr_x(j);
-	    if (i < rects[label].ul_y())
-	      rects[label].ul_y(i);
-	    if (i > rects[label].lr_y())
-	      rects[label].lr_y(i);
+	    if (j < rects[label]->ul_x())
+	      rects[label]->ul_x(j);
+	    if (j > rects[label]->lr_x())
+	      rects[label]->lr_x(j);
+	    if (i < rects[label]->ul_y())
+	      rects[label]->ul_y(i);
+	    if (i > rects[label]->lr_y())
+	      rects[label]->lr_y(i);
 	  }
 	}
       }
@@ -243,9 +254,12 @@ namespace Gamera {
 	
     // create ConnectedComponents
     std::list<Image*>* ccs = new std::list<Image*>;
-    for (map_type::iterator k = rects.begin(); k != rects.end(); k++) {
-      ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)mat.data()),
-								   OneBitPixel(k->first), k->second));
+    for (size_t i = 0; i < rects.size(); ++i) {
+      if (rects[i] != 0) {
+	ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
+								   OneBitPixel(i), *rects[i]));
+	delete rects[i];
+      }
     }
     return ccs;
   }

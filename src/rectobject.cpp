@@ -519,5 +519,6 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_richcompare = rect_richcompare;
   RectType.tp_free = _PyObject_Del;
   RectType.tp_repr = rect_repr;
+  PyType_Ready(&RectType);
   PyDict_SetItemString(module_dict, "Rect", (PyObject*)&RectType);
 }

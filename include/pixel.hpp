@@ -47,8 +47,8 @@ namespace Gamera {
 
   typedef float FloatPixel;
   typedef unsigned char GreyScalePixel;
-  typedef unsigned short Grey16Pixel;
-  typedef unsigned int OneBitPixel;
+  typedef unsigned int Grey16Pixel;
+  typedef unsigned short OneBitPixel;
 
   /*
     The Gamera RGB pixel type is derived from the Vigra class RGBValue. The

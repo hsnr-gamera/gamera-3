@@ -129,5 +129,6 @@ void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.tp_alloc = PyType_GenericAlloc;
   ImageInfoType.tp_getset = imageinfo_getset;
   ImageInfoType.tp_free = _PyObject_Del;
+  PyType_Ready(&ImageInfoType);
   PyDict_SetItemString(module_dict, "ImageInfo", (PyObject*)&ImageInfoType);
 }

@@ -162,6 +162,6 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_getset = rgbpixel_getset;
   RGBPixelType.tp_free = _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
+  PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);
-
 }

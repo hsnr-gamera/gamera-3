@@ -78,6 +78,7 @@ class PngSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["png_support.hpp"]
     internal_png_dir = "src/libpng-1.2.5/"
+    internal_zlib_dir = "src/zlib-1.2.1/"
     if sys.platform == 'linux2':
         extra_libraries = ["png"]
     elif sys.platform == 'darwin':
@@ -104,10 +105,15 @@ class PngSupportModule(PluginModule):
                        ['png.c', 'pngset.c', 'pngget.c', 'pngrutil.c',
                         'pngtrans.c', 'pngwutil.c', 'pngread.c', 'pngrio.c',
                         'pngwio.c', 'pngwrite.c', 'pngrtran.c', 'pngwtran.c',
-                        'pngmem.c', 'pngerror.c', 'pngpread.c']]
-        cpp_include_dirs = [internal_png_dir]
+                        'pngmem.c', 'pngerror.c', 'pngpread.c',]]
+        for filename in [os.path.join(internal_zlib_dir, x) for x in
+                         ['adler32.c','compress.c','crc32.c','deflate.c','gzio.c',
+                          'infback.c','inffast.c','inflate.c','inftrees.c','trees.c',
+                          'uncompr.c','zutil.c']]:
+            cpp_sources.append(filename)
+        cpp_include_dirs = [internal_png_dir, "include"]
         # zlib, which apparently is included in OS-X 10.3 by default
-        extra_libraries = ["z"]
+#        extra_libraries = ["z"]
     functions = [save_PNG, PNG_info_class, load_PNG_class]
     author = "Michael Droettboom"
     url = "http://gamera.dkc.jhu.edu/"

@@ -67,12 +67,6 @@ if _has_gui == _WX_GUI:
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
                      5)
-         help = wxPython.wx.wxButton(self.window, 300, "Help")
-         buttons.Add(help,
-                     1,
-                     wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
-                     5)
-         wxPython.wx.EVT_BUTTON(help, 300, self.OnHelp)
          return buttons
 
       def _create_wizard_buttons(self):

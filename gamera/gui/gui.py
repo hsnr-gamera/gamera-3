@@ -22,7 +22,7 @@ import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, help_server
+     icon_display, classifier_display, var_name
 
 # wxPython
 from wxPython.wx import *
@@ -40,7 +40,6 @@ config.add_option_default("shell_style_face", "Helvetica")
 config.add_option_default("shell_style_size", 12)
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
-config.add_option_default("help_server_port", 8888)
 
 main_win = None
 app = None
@@ -84,16 +83,6 @@ class GameraGui:
       f = gamera_display.ProjectionsDisplay(x_data, y_data, image)
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
-
-##    help_window = None
-##    def help(cls, object=None):
-##       if cls.help_window is None:
-##          window = help_browser.HelpFrame(main_win, cls)
-##       if object is None:
-##          cls.help_window.load_page("")
-##       else:
-##          cls.help_window.set_page(pydoc.HTMLDoc().document(object))
-##    help = classmethod(help)
 
    def ShowClassifier(classifier, image, function):
       wxBeginBusyCursor()
@@ -393,9 +382,6 @@ class GameraSplash(wxSplashScreen):
       main_win = ShellFrame(NULL, -1, "Gamera")
       main_win.Show(true)
       evt.Skip()
-
-def help_server_callback(self):
-   print self.url
 
 def run():
    global app

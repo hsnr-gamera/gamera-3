@@ -115,7 +115,7 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
 
   double epsilon = 1e-5;
 
-  if (abs(angle-0.0) <= epsilon * abs(angle)) {
+  if (abs(angle) <= epsilon) {
     return new_view;
   } else {
     view_type* result = rot45(*new_view, angle, bgcolor);

@@ -41,7 +41,7 @@ class GlyphStats:
         return fd
 
     def _html_footer(self, stream):
-        footer.execute(fd, 
+        footer.execute(fd)
         stream.close()
 
     def _write_core(self, directory):
@@ -64,6 +64,7 @@ class GlyphStats:
         keys = sorted_glyphs.keys()
         keys.sort()
         for name in keys:
+            fd.write("<h3>%s</h3>" % name)
             for glyph in sorted_glyphs[name]:
                 doc
 

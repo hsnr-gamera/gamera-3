@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
-import sys, os, time, locale
+import sys, os, time, locale, os.path
 import glob
 
 # If gamera.generate is imported gamera.__init__.py will
@@ -13,9 +13,17 @@ import generate
 
 ##########################################
 # generate the plugins
+
+# we grab all of the plugins except __init__.py - of course
+# to exclude this we have to go throug all sorts of crap . . .
 plugins = glob.glob("gamera/plugins/*.py")
+norm_plugins = []
+for x in plugins:
+    norm_plugins.append(os.path.normpath(os.path.abspath(x)))
+plugins = norm_plugins
 try:
-    plugins.remove("gamera/plugins/__init__.py")
+    path = os.path.normpath(os.path.abspath("gamera/plugins/__init__.py"))
+    plugins.remove(path)
 except:
     pass
 

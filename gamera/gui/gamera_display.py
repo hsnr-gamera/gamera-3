@@ -798,10 +798,15 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
          y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
          if isSelected:
-            dc.SetLogicalFunction(wxSRC_INVERT)
+            # This used to use dc.DrawBitmap, but the correct logical function (wxSRC_INVERT)
+            # didn't seem to get used under Windows. This works fine, however.
+            tmp_dc = wxMemoryDC()
+            tmp_dc.SelectObject(bmp)
+            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxSRC_INVERT)
+            del tmp_dc
          else:
             dc.SetLogicalFunction(wxAND)
-         dc.DrawBitmap(bmp, x, y, 0)
+            dc.DrawBitmap(bmp, x, y, 0)
          if isSelected:
             dc.SetLogicalFunction(wxAND)
             dc.SetBrush(wxBrush(color, wxSOLID))
@@ -810,9 +815,18 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          if self.parent.display_names:
             label = self.parent.get_label(image)
             if label != '':
-               dc.SetLogicalFunction(wxXOR)
                dc.SetBackgroundMode(wxTRANSPARENT)
-               dc.SetTextForeground(color)
+               # The default font is too big under windows - this should
+               # probably be a configurable option . . .
+               dc.SetFont(wxFont(6, wxSWISS, wxNORMAL, wxNORMAL))
+               # the the logical function is ignored for Windows, so we have
+               # to set the Foreground and Background colors manually
+               if isSelected:
+                  dc.SetTextForeground(wxWHITE)
+                  dc.SetTextBackground(wxBLACK)
+               else:
+                  dc.SetTextForeground(wxBLACK)
+                  dc.SetTextBackground(wxWHITE)
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
       if image is None or hasattr(image, 'dead'):

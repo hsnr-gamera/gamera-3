@@ -894,6 +894,14 @@ class SymbolTreeCtrl(wxTreeCtrl):
    ########################################
    # CALLBACKS
 
+   def OnCompareItems(self, item1, item2):
+      print "hi"
+      t1 = self.GetItemText(item1)
+      t2 = self.GetItemText(item2)
+      if t1 < t2: return -1
+      if t1 == t2: return 0
+      return 1
+     
    def set_label_display(self, symbol):
       self.toplevel.text.SetValue(symbol)
       self.toplevel.text.SetSelection(0, len(symbol))
@@ -960,7 +968,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
 
 class SymbolTableEditorPanel(wxPanel):
    def __init__(self, symbol_table, toplevel, parent = None, id = -1):
-      wxPanel.__init__(self, parent, id)
+      wxPanel.__init__(self, parent, id, style=wxWANTS_CHARS)
       self.toplevel = toplevel
       self._symbol_table = symbol_table
       self.SetAutoLayout(true)
@@ -973,7 +981,7 @@ class SymbolTableEditorPanel(wxPanel):
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
                                  wxDefaultSize,
-                                 wxTR_HAS_BUTTONS)
+                                 wxTR_HAS_BUTTONS | wxTR_DEFAULT_STYLE)
       self.box.Add(self.tree, 1, wxEXPAND|wxALL)
       self.box.RecalcSizes()
       self.SetSizer(self.box)
@@ -982,12 +990,14 @@ class SymbolTableEditorPanel(wxPanel):
    # CALLBACKS
 
    def OnKey(self, evt):
+      print evt.KeyCode()
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
          find = self._symbol_table.autocomplete(find)
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
+         print "got and enter"
          self._symbol_table.add(find)
          self.toplevel.classify_manual(find)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():

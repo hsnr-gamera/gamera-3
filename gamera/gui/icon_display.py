@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import string
+import string, os.path
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                         # Gamera specific
 from gamera import paths, util, classify
@@ -35,6 +35,7 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
 
   def OnDropFiles(self, x, y, filenames):
     for filename in filenames:
+      filename = os.path.normpath(os.path.abspath(filename))
       name = var_name.get("image", self.display.shell.locals)
       splits = string.split(filename, ".")
       if len(splits) > 1 and (splits[-1] == "xml" or splits[-1] == "xmlgz"):
@@ -84,11 +85,7 @@ class IconDisplay(wxListCtrl):
     EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
     EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
 
-    # for wxMSW
-    EVT_COMMAND_RIGHT_CLICK(self, tID, self.OnRightClick)
-    # for wxGTK
-    EVT_RIGHT_UP(self, self.OnRightClick)
-    EVT_RIGHT_DOWN(self, self.OnRightDown)
+    EVT_LIST_ITEM_RIGHT_CLICK(self, tID, self.OnRightClick)
 
   def add_icon(self, label, data, icon):
     index = self.GetItemCount()
@@ -148,14 +145,8 @@ class IconDisplay(wxListCtrl):
   def OnItemSelected(self, event):
     self.currentIcon = self.find_icon(event.m_itemIndex)
 
-  def OnRightDown(self, event):
-    self.x = event.GetX()
-    self.y = event.GetY()
-    event.Skip()
-
   def OnRightClick(self, event):
-    index = self.HitTest(
-      wxPoint(event.GetX(), event.GetY()))[0]
+    index = event.GetIndex()
     if index < 0 or index >= self.GetItemCount():
       event.Skip()
       return
@@ -194,8 +185,9 @@ class CustomIcon:
     return "%s.display()" % self.label
 
   def right_click(self, parent, event, shell):
+    x,y = event.GetPoint()
     image_menu.ImageMenu(
-      parent, event.GetX(), event.GetY(),
+      parent, x, y,
       self.data, self.label,
       shell)
 

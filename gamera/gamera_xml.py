@@ -386,8 +386,8 @@ def glyphs_with_features_from_xml(filename, feature_functions = None):
    features.generate_features_list(glyphs, feature_functions)
    return glyphs
 
-def glyphs_to_xml(filename):
+def glyphs_to_xml(filename, glyphs):
    """Save a list of glyphs to an xml file"""
-   WriteXMLFile(glyphs=self.get_glyphs()).write_filename(filename)
+   WriteXMLFile(glyphs).write_filename(filename)
 
 

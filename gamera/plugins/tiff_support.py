@@ -49,12 +49,12 @@ class TiffSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["tiff_support.hpp"]
     if sys.platform == 'win32':
-        cpp_sources = glob.glob("include/libtiff/*.c")
+        cpp_sources = glob.glob("src/libtiff/*.c")
     else:
         extra_libraries = ["tiff"]
     cpp_namespaces = ["Gamera"]
     functions = [tiff_info, load_tiff, save_tiff]
-    cpp_include_dirs = ["include/libtiff"]
+    cpp_include_dirs = ["src/libtiff"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -33,7 +33,7 @@ from wxPython.lib.splashscreen import SplashScreen
 
 # Python standard library
 # import interactive
-import sys, types, traceback, os, string
+import sys, types, traceback, os, string, os.path
 
 # Set default options
 config.add_option_default("shell_style_face", "Helvetica")
@@ -136,7 +136,12 @@ class PyCrustGameraShell(shell.Shell):
    def GetLocals(self):
       return self.interp.locals
 
+   def run(self, source):
+      source = string.replace(source, '\\', '\\\\')
+      shell.Shell.run(self, source)
+      
    def push(self, source):
+      source = string.replace(source, '\\', '\\\\')
       shell.Shell.push(self, source)
       if source.strip().startswith("import "):
          new_modules = [x.strip() for x in source.strip()[7:].split(",")]

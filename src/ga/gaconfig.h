@@ -186,7 +186,7 @@ incorporate it into the code base.
 // if you use 2.8.x then you might want uncomment the USE_CPP_CASTS macro
 // since 2.8 will do rtti without requiring the -frtti flag.
 #elif defined(__GNUG__)
-#define USE_PID
+//#define USE_PID
 #define USE_BORLAND_INST
 //#define USE_CPP_CASTS
 

@@ -20,10 +20,11 @@
 #ifndef kwm08142002_knn
 #define kwm08142002_knn
 
+#include "gamera_limits.hpp"
 #include <vector>
 #include <map>
 #include <cmath>
-#include "gamera_limits.hpp"
+#include <algorithm>
 
 namespace Gamera {
   namespace kNN {
@@ -44,7 +45,7 @@ namespace Gamera {
 				      IterB unknown, IterC weight) {
       double distance = 0;
       for (; known != end; ++known, ++unknown, ++weight)
-	distance += *w * std::abs(*known - *unknown);
+	distance += *weight * std::abs(*known - *unknown);
       return distance;
     }
 
@@ -85,49 +86,6 @@ namespace Gamera {
     }
 
     /*
-      NEIGHBOR
-
-      This class holds the information needed for the Nearest Neighbor
-      computation.
-
-      IdType: the type for the id (possibilities includes longs and std::string)
-    */
-    template<class IdType>
-    class Neighbor {
-    public:
-      Neighbor() : id() {
-	/*
-	  we initialize distance to max so that there is
-	  special case in kNearestNeighbors::add for when
-	  the vector is not full
-	*/
-	distance = std::numeric_traits<double>::max();
-      }
-      bool operator<(const Neigbor& other) {
-	return distance < other.distance;
-      }
-      IdType id;
-      double distance;
-    };
-
-    namespace {
-
-      class IdStat {
-      public:
-	IdStat() {
-	  min_distance = std::numeric_traits<double>::max();
-	  count = 0;
-	}
-	IdStat(double distance, size_t c) {
-	  min_distance = distance;
-	  count = c;
-	}
-	double min_distance;
-	size_t count;
-      };
-    }
-
-    /*
       K NEAREST NEIGHBORS
 
       This class holds a list of the k nearest neighbors and provides
@@ -139,10 +97,56 @@ namespace Gamera {
     template<class IdType>
     class kNearestNeighbors {
     public:
+      /*
+	These nested classes are only used in kNearestNeighbors
+      */
+
+      /*
+	NEIGHBOR
+	
+	This class holds the information needed for the Nearest Neighbor
+	computation.
+	
+	IdType: the type for the id (possibilities includes longs
+	and std::string)
+      */
+      class Neighbor {
+      public:
+	Neighbor() : id() {
+	  /*
+	    we initialize distance to max so that there is no
+	    special case in kNearestNeighbors::add for when
+	    the vector is not full
+	  */
+	  distance = std::numeric_limits<double>::max();
+	}
+	bool operator<(const Neighbor& other) const {
+	  return distance < other.distance;
+	}
+	IdType id;
+	double distance;
+      };
+
+      class IdStat {
+      public:
+	IdStat() {
+	  min_distance = std::numeric_limits<double>::max();
+	  count = 0;
+	}
+	IdStat(double distance, size_t c) {
+	  min_distance = distance;
+	  count = c;
+	}
+	double min_distance;
+	double total_distance;
+	size_t count;
+      };
+
       // typedefs for convenience
       typedef IdType id_type;
-      typedef Neighbor<IdType> neighbor_type;
+      typedef Neighbor neighbor_type;
       typedef std::vector<neighbor_type> vec_type;
+
       // Constructor
       kNearestNeighbors(size_t k = 1) : m_nn(k), m_k(k) {
 	m_additions = 0;
@@ -158,7 +162,7 @@ namespace Gamera {
 	neighbors. The list of neighbors is always kept sorted
 	so that the largest distance is the last element.
       */
-      void add(double distance, const id_type& id) {
+      void add(const id_type& id, double distance) {
 	m_additions++;
 	if (distance < m_nn.back().distance) {
 	  m_nn.back().distance = distance;
@@ -170,7 +174,7 @@ namespace Gamera {
 	Find the id of the majority of the k nearest neighbors. This
 	includes tie-breaking if necessary.
       */
-      id_type majority() {
+      std::pair<id_type, double> majority() {
 	/*
 	  make certain that we have at least k valid
 	  entries in the list of neighbors. This is probably not
@@ -181,7 +185,7 @@ namespace Gamera {
 	  m_nn.resize(m_additions);
 	// short circuit for k == 1
 	if (m_nn.size() == 1)
-	  return m_nn[0];
+	  return std::make_pair(m_nn[0].id, m_nn[0].distance);
 	/*
 	  Create a histogram of the ids in the nearest neighbors. A map
 	  is used because the id_type could be anything. Additionally, even
@@ -190,14 +194,17 @@ namespace Gamera {
 	*/
 	typedef std::map<id_type, IdStat> map_type;
 	map_type id_map;
+	map_type::iterator current;
 	for (vec_type::iterator i = m_nn.begin(); i != m_nn.end(); ++i) {
-	  id_map::iterator current = id_map.find(i->id);
+	  current = id_map.find(i->id);
 	  if (current == id_map.end()) {
 	    id_map.insert(std::pair<id_type,
 			  IdStat>(i->id, IdStat(i->distance, 1)));
 	  } else {
 	    current->second.count++;
-	    
+	    current->second.total_distance += i->distance;
+	    if (current->second.min_distance > i->distance)
+	      current->second.min_distance = i->distance;
 	  }
 	}
 	/*
@@ -205,19 +212,20 @@ namespace Gamera {
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
 	if (id_map.size() == 1)
-	  return id_map.begin()->first;
+	  return make_pair(id_map.begin()->first,
+			   id_map.begin()->second.min_distance);
 	else {
 	  /*
 	    Find the id(s) with the maximum
 	  */
 	  std::vector<map_type::iterator> max;
 	  max.push_back(id_map.begin());
-	  for (map_type::iterator i = id_map.begin() + 1;
+	  for (map_type::iterator i = id_map.begin();
 	       i != id_map.end(); ++i) {
-	    if (i->second > max[0]->second) {
+	    if (i->second.count > max[0]->second.count) {
 	      max.clear();
 	      max.push_back(i);
-	    } else if (i->second == max[0]->second) {
+	    } else if (i->second.count == max[0]->second.count) {
 	      max.push_back(i);
 	    }
 	  }
@@ -226,18 +234,26 @@ namespace Gamera {
 	    we are done.
 	  */
 	  if (max.size() == 1)
-	    return max[0]->first;
+	    return make_pair(max[0]->first, max[0]->second.min_distance);
 	  else {
-	    
+	    /*
+	      Tie-break by average distance
+	    */
+	    map_type::iterator min_dist = max[0];
+	    for (size_t i = 1; i < max.size(); ++i) {
+	      if (max[i]->second.total_distance
+		  < min_dist->second.total_distance)
+		min_dist = max[i];
+	    }
+	    return make_pair(min_dist->first, min_dist->second.min_distance);
 	  }
 	}
       }
-
     private:
       std::vector<neighbor_type> m_nn;
       size_t m_additions; // counter for the number of neighbors added
       size_t m_k;
-    }
+    };
 
   } // namespace kNN
 } //namespace Gamera

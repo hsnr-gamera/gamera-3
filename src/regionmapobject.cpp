@@ -85,7 +85,6 @@ static PyObject* regionmap_lookup(PyObject* self, PyObject* args) {
 }
 
 static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
-  RegionMapObject* foo = (RegionMapObject*)self;
   PyObject* key;
   if (PyArg_ParseTuple(args, "O", &key) <= 0)
     return 0;

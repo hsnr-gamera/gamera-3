@@ -47,12 +47,6 @@ namespace Gamera {
       FLOAT
     };
     
-    enum ImageTypes {
-      VIEW,
-      STATIC,
-      CC
-    };
-    
     enum StorageTypes {
       DENSE,
       RLE
@@ -233,8 +227,8 @@ inline int get_image_combination(PyObject* image, PyTypeObject* cc_type) {
     else
       return -1;
   } else if (storage == Gamera::Python::RLE) {
-    return Gamera::Python::ONEBITERLEIMAGEVIEW;
-  } else if storage == Gamera::Python::Dense {
+    return Gamera::Python::ONEBITRLEIMAGEVIEW;
+  } else if (storage == Gamera::Python::DENSE) {
     return get_pixel_type(image);
   } else {
     return -1;
@@ -293,8 +287,10 @@ inline PyObject* init_image_members(ImageObject* o) {
   types to this function (the types are determined at module loading
   time).
 */
-inline PyObject* create_ImageObject(ImageBase* image, PyTypeObject* image_type,
-				    PyTypeObject* subimage_type, PyTypeObject* cc_type) {
+
+inline PyObject* create_ImageObject(Rect* image, PyTypeObject* image_type,
+				    PyTypeObject* subimage_type,
+				    PyTypeObject* cc_type) {
   int pixel_type;
   int storage_type;
   if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
@@ -310,7 +306,7 @@ inline PyObject* create_ImageObject(ImageBase* image, PyTypeObject* image_type,
     pixel_type = Gamera::Python::RGB;
     storage_type = Gamera::Python::DENSE;
   } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::OneBit;
+    pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::DENSE;
   } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
     pixel_type = Gamera::Python::ONEBIT;
@@ -318,7 +314,7 @@ inline PyObject* create_ImageObject(ImageBase* image, PyTypeObject* image_type,
   } else if (dynamic_cast<CC*>(image) != 0) {
     pixel_type = Gamera::Python::GREY16;
     storage_type = Gamera::Python::DENSE;
-  } else if (dynamic_cast<RLE*>(image) != 0) {
+  } else if (dynamic_cast<RleCC*>(image) != 0) {
     pixel_type = Gamera::Python::GREY16;
     storage_type = Gamera::Python::DENSE;
   } else {

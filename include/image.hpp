@@ -30,7 +30,8 @@ namespace Gamera {
 
     This is the base class for all matrices.
   */
-  template<class T> class ImageBase : public Rect {
+  template<class T>
+  class ImageBase : public Rect {
   public:
 
     ImageBase(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1,

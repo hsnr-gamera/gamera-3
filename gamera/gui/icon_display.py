@@ -22,8 +22,8 @@ import os.path
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify, gamera_xml
-from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui
-import inspect
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui, gamera_display
+import array, inspect
 
 ######################################################################
 
@@ -85,6 +85,7 @@ class IconDisplay(wxListCtrl):
 
    def init_events(self):
       tID = self.GetId()
+      EVT_LIST_BEGIN_DRAG(self, tID, self.OnMouseDown)
       EVT_LEFT_DCLICK(self, self.OnDoubleClick)
       EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
       EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
@@ -181,6 +182,18 @@ class IconDisplay(wxListCtrl):
          else: return
          if not source is None:
             self.shell.run(source)
+
+   def OnMouseDown(self, event):
+      if self.currentIcon:
+         source = self.currentIcon.drag()
+         if source is not None:
+            typename, source = source
+            data = wxCustomDataObject(wxCustomDataFormat(typename))
+            data.SetData(source)
+            icon = self.currentIcon.get_icon()
+            drop_source = wxDropSource(self, icon, icon, icon)
+            drop_source.SetData(data)
+            result = drop_source.DoDragDrop(True)
    
 ######################################################################
 
@@ -209,10 +222,7 @@ class CustomIcon:
    to_icon = staticmethod(to_icon)
 
    def get_icon():
-      if has_gui.has_gui:
-         return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
-      else:
-         return None
+      return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -242,6 +252,9 @@ class CustomIcon:
       if call is None: return None
       
       return self.label + ".image_save(r\'" + call[0] + "\'," + str(call[1]) + ")"
+
+   def drag(self):
+      return None
 
 class CIComplexImage(CustomIcon):
    def get_icon():
@@ -429,9 +442,73 @@ class CINonInteractiveClassifier(CustomIcon):
 
    def control_s(self): pass
 
+class _CIVector(CustomIcon):
+   def check(cls, data):
+      if data is ALL:
+         return False
+      if (isinstance(data, array.array) and
+          data.typecode == cls.typecode):
+         return True
+      try:
+         it = iter(data)
+      except Exception, e:
+         return False
+      else:
+         if not len(data):
+            return false
+         good = True
+         try:
+            for x in data:
+               if not isinstance(x, cls.klass):
+                  good = False
+                  break
+         except Exception, e:
+            print e
+            return False
+         else:
+            return good
+   check = classmethod(check)
+
+   def double_click(self):
+      f = gamera_display.GraphDisplay(self.data)
+      f.Show(1)
+
+   def right_click(self, *args):
+      pass
+
+   def control_s(self):
+      pass
+
+   def drag(self):
+      return ("Vector", str(self.data))
+
+class CIIntVector(_CIVector):
+   typecode = 'i'
+   klass = int
+   
+   def get_icon():
+      return wxIconFromBitmap(gamera_icons.getIntVectorBitmap())
+   get_icon = staticmethod(get_icon)
+
+class CIFloatVector(_CIVector):
+   typecode = 'd'
+   klass = float
+   
+   def get_icon():
+      return wxIconFromBitmap(gamera_icons.getFloatVectorBitmap())
+   get_icon = staticmethod(get_icon)
+
+class CIComplexVector(_CIVector):
+   typecode = None
+   klass = complex
+   
+   def get_icon():
+      return wxIconFromBitmap(gamera_icons.getComplexVectorBitmap())
+   get_icon = staticmethod(get_icon)
+
 builtin_icon_types = (
   CICC, CIRGBImage, CIComplexImage, CIGreyScaleImage, CIGrey16Image,
   CIFloatImage, CIOneBitImage, CIRGBSubImage,
   CIGreyScaleSubImage, CIGrey16SubImage, CIFloatSubImage,
   CIOneBitSubImage, CIComplexSubImage, CIImageList, CIInteractiveClassifier,
-  CINonInteractiveClassifier)
+  CINonInteractiveClassifier, CIIntVector, CIFloatVector, CIComplexVector)

@@ -1930,6 +1930,83 @@ def graph_vert(data, dc, x1, y1, x2, y2, mark=None, border=1):
       dc.SetBrush(wxTRANSPARENT_BRUSH)
       dc.DrawRectangle(x1 - 1, y1 - 1, x2 + 1 - x1, y2 - y1)
 
+# Draws a line graph
+def graph_line(data, min_data, max_data, length, data_range, dc, x1, y1, x2, y2, border=True, labels=True):
+   # This functionality is really limited for now.  All I really want to do is
+   # conveniently display the contents of a numeric list.  It's a very hard line
+   # to draw between that and a full-fledged graphing system.  Maybe someday
+   # Gamera will include one, but there don't seem to be any reasonable cross-
+   # platform options at this point.
+   def draw_y_label(i, scale_y, offset_y):
+      label = decimal_format % i
+      w, h = dc.GetTextExtent(label)
+      y = y2 - int((i - min_data) * scale_y)
+      dc.SetPen(wxBLACK_PEN)
+      dc.DrawText(label, x1 - w - (space_width * 2), int(y - h / 2.0))
+      dc.SetPen(wxLIGHT_GREY_PEN)
+      dc.DrawLine(x1 - space_width, y, x2, y)
+
+   def draw_x_label(i, scale_x):
+      w, h = dc.GetTextExtent(str(i))
+      x = int(i * scale_x + x1)
+      dc.SetPen(wxBLACK_PEN)
+      dc.DrawText(str(i), x - w / 2, y2 + space_width * 2)
+      dc.SetPen(wxLIGHT_GREY_PEN)
+      dc.DrawLine(x, y1, x, y2 + space_width)
+
+   decimal_format = "%.2f"
+   
+   if labels:
+      y_label_width, label_height = dc.GetTextExtent(decimal_format % max_data)
+      x_label_width, label_height = dc.GetTextExtent("%d" % length)
+      space_width, _ = dc.GetTextExtent(" ")
+      double_space_width = space_width * 2
+      x1 += y_label_width + (space_width * 2)
+      y2 -= label_height + (space_width * 2)
+   if x2 < x1 or y2 < y1:
+      return
+   height = y2 - y1
+   width = x2 - x1
+   scale_y = float(height) / float(data_range)
+   scale_x = float(width) / float(length - 1)
+   if labels:
+      num_y_labels = max(float(height + 1) / float(label_height * 4), 1.0)
+      y_label_gap = float(data_range) / num_y_labels
+      # No range for floating point, therefore...
+      i = max(0.0, min_data)
+      end = max_data - y_label_gap
+      while i <= end:
+         draw_y_label(i, scale_y, min_data)
+         i += y_label_gap
+      i = min(0.0, max_data)
+      end = min_data + y_label_gap
+      while i >= end:
+         draw_y_label(i, scale_y, min_data)
+         i -= y_label_gap
+      draw_y_label(min_data, scale_y, min_data)
+      draw_y_label(max_data, scale_y, max_data)
+
+      num_x_labels = max(float(width + 1) / float(x_label_width * 4), 1.0)
+      step = int(float(length) / num_x_labels) + 1
+      for i in xrange(0, length - step + 1, step):
+         draw_x_label(i, scale_x)
+      draw_x_label(length - 1, scale_x)
+
+   colors = gui_util.colors
+   for color, line in enumerate(data):
+      dc.SetPen(wxPen(colors[color % len(colors)], 2))
+      for i in range(len(line)):
+         datum = y2 - ((line[i] - min_data) * scale_y)
+         if i:
+            dc.DrawLine(int(x1 + (i - 1) * scale_x), int(last_datum),
+                        int(x1 + i * scale_x), int(datum))
+         last_datum = datum
+
+   if border:
+      dc.SetPen(wxBLACK_PEN)
+      dc.SetBrush(wxTRANSPARENT_BRUSH)
+      dc.DrawRectangle(x1 - 1, y1 - 1, x2 - x1 + 2, y2 - y1 + 1)
+
 # Draws a grey-scale scale
 def graph_scale(dc, x1, y1, x2, y2):
    scale_x = float(x2 - x1) / float(255)
@@ -2030,3 +2107,61 @@ class ProjectionDisplay(wxFrame):
       dc.DrawBitmap(bmp, x, y, 0)
       graph_horiz(self.data, dc, x, y + HISTOGRAM_PAD,
                   x + mat_width, y + HISTOGRAM_PAD, border=0)
+
+class GraphDisplayDropTarget(wxPyDropTarget):
+   def __init__(self, graph):
+      wxPyDropTarget.__init__(self)
+      self.df = wxCustomDataFormat("Vector")
+      self.data = wxCustomDataObject(self.df)
+      self.SetDataObject(self.data)
+      self.graph = graph
+
+   def OnEnter(self, *args):
+      return wxDragCopy
+      
+   def OnDrop(self, *args):
+      return True
+      
+   def OnDragOver(self, *args):
+      return wxDragCopy
+   
+   def OnData(self, x, y, d):
+      if self.GetData():
+         data = eval(self.data.GetData())
+         self.graph.data.append(data)
+         self.graph.recalculate_ranges()
+         self.graph.Refresh()
+      return d
+      
+class GraphDisplay(wxFrame):
+   def __init__(self, data=None, parent=None, title="Graph"):
+      wxFrame.__init__(self, parent, -1, title,
+                       style=wxRESIZE_BORDER|wxCAPTION)
+      try:
+         x = len(data[0])
+      except:
+         data = [data]
+      self.data = data
+      self.recalculate_ranges()
+      EVT_PAINT(self, self._OnPaint)
+      self.dt = GraphDisplayDropTarget(self)
+      self.SetDropTarget(self.dt)
+
+   def recalculate_ranges(self):
+      self._min_data = min([min(x) for x in self.data])
+      self._max_data = max([max(x) for x in self.data])
+      self._length = max([len(x) for x in self.data])
+      self._data_range = self._max_data - self._min_data
+      if self._data_range == 0.0:
+         self._min_data = float(self._min_data) - 0.5
+         self._max_data = float(self._max_data) + 0.5
+         self._data_range = 1.0
+
+   def _OnPaint(self, event):
+      dc = wxPaintDC(self)
+      width = dc.GetSize().x
+      height = dc.GetSize().y
+      clear_dc(dc)
+      graph_line(self.data, self._min_data, self._max_data, self._length,
+                 self._data_range, dc, HISTOGRAM_PAD * 2, HISTOGRAM_PAD * 2,
+                 width - HISTOGRAM_PAD * 2, height - HISTOGRAM_PAD * 2)

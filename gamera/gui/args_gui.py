@@ -417,8 +417,7 @@ class _Vector(Class):
       self.locals = locals
       choices = []
       for key, val in locals.items():
-         if (not self.typecode is None and
-             isinstance(val, array.array) and
+         if (isinstance(val, array.array) and
              val.typecode == self.typecode):
             choices.append(key)
          else:

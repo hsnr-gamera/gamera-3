@@ -152,22 +152,13 @@ class _kNNBase(gamera.knncore.kNN):
       self.num_features = features.get_features_length(self.features)
       classify.InteractiveClassifier.change_feature_set(self, f)
 
-##   def classify_with_images(self, database, glyph, cross_validation_mode=0):
-##      import confidence
-##      ans = gamera.knncore.kNN.classify_with_images(self, database, glyph,
-##                                                    cross_validation_mode, 1)
-##      gs = confidence.get_graph_stats(database, self)
-##      tmp = []
-##      for x in ans:
-##         conf = 1 - (x[0] / gs[x[1]])
-##         print conf, x[0]
-##         tmp.append((conf, x[1]))
-##      return tmp
-
    def distance_from_images(self, images, glyph, max=None):
-      """Compute a list of distances between a list of images
-      and a singe images. Distances greater than the max distance
-      are not included in the output."""
+      """**distance_from_images** (ImageList *glyphs*, Image *glyph*, Float *max* = ``None``)
+
+Compute a list of distances between a list of glyphs and a single glyph. Distances
+greater than *max* are not included in the output.  The return value is a list of
+floating-point distances.
+"""
       from gamera.plugins import features
       glyph.generate_features(self.feature_functions)
       features.generate_features_list(images, self.feature_functions)
@@ -177,21 +168,28 @@ class _kNNBase(gamera.knncore.kNN):
          return self._distance_from_images(iter(images), glyph, max)
 
    def distance_between_images(self, imagea, imageb):
-      """Compute the distance between two images using the settings
-      for the kNN object (distance_type, features, weights, etc). This
-      can be used when more control over the distance computations are
-      needed than with any of the other methods that work on multiple
-      images at once."""
+      """**distance_between_images** (Image *imagea*, Image *imageb*)
+
+Compute the distance between two images using the settings
+for the kNN object (distance_type, features, weights, etc). This
+can be used when more control over the distance computations are
+needed than with any of the other methods that work on multiple
+images at once."""
       imagea.generate_features(self.feature_functions)
       imageb.generate_features(self.feature_functions)
       return self._distance_between_images(imagea, imageb)
 
-   def distance_matrix(self, images, normalize=1):
-      """Create a symmetric float matrix (image) containing all of the
-      distances between the images in the list passed in. This is useful
-      because it allows you to find the distance between any two pairs
-      of images regardless of the order of the pairs. NOTE: the features
-      are normalized before performing the distance calculations by default."""
+   def distance_matrix(self, images, normalize=True):
+      """**distance_matrix** (ImageList *images*, Bool *normalize* = ``True``)
+
+Create a symmetric FloatImage containing all of the
+distances between the images in the list passed in. This is useful
+because it allows you to find the distance between any two pairs
+of images regardless of the order of the pairs.
+
+*normalize*
+  When true, the features are normalized before performing the distance
+  calculations."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
@@ -201,12 +199,16 @@ class _kNNBase(gamera.knncore.kNN):
       progress.kill()
       return m
 
-   def unique_distances(self, images, normalize=1):
-      """Return a list of the unique pairs of images in the passed in list
-      and the distances between them. The return list is a list of tuples
-      of (distance, imagea, imageb) so that it easy to sort. NOTE: the
-      features are normalized before performing the distance calculations
-      by default."""
+   def unique_distances(self, images, normalize=True):
+      """**unique_distances** (ImageList *images*, Bool *normalize* = ``True``)
+
+Return a list of the unique pairs of images in the passed in list
+and the distances between them. The return list is a list of tuples
+of (distance, imagea, imageb) so that it easy to sort.
+
+*normalize*
+  When true, the features are normalized before performing the distance
+  calculations."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
@@ -217,9 +219,13 @@ class _kNNBase(gamera.knncore.kNN):
       return dists
 
    def evaluate(self):
-      """Evaluate the performance of the kNN classifier using
-      leave-one-out cross-validation. The return value is a
-      floating-point number between 0.0 and 1.0"""
+      """Float **evaluate** ()
+
+Evaluate the performance of the kNN classifier using
+leave-one-out cross-validation. The return value is a
+floating-point number between 0.0 (0% correct) and 1.0 (100%
+correct).
+"""
       ans = self.leave_one_out()
       return float(ans[0]) / float(ans[1])
 
@@ -237,10 +243,12 @@ class _kNNBase(gamera.knncore.kNN):
       self.num_k, self.distance_type = results
 
    def save_settings(self, filename):
-      """Save the k-NN settings to filename. This settings file (which is xml)
-      includes k, distance type, GA mutation rate, GA crossover rate, GA population size,
-      and the current floating point weights. This file is different from the one produced
-      by serialize in that it contains only the settings and no data."""
+      """**save_settings** (FileSave *filename*)
+
+Save the kNN settings to the given filename. This settings file (which is XML)
+includes k, distance type, GA mutation rate, GA crossover rate, GA population size,
+and the current floating point weights. This file is different from the one produced
+by serialize in that it contains only the settings and no data."""
       from util import word_wrap
       file = open(filename, "w")
       indent = 0
@@ -274,9 +282,9 @@ class _kNNBase(gamera.knncore.kNN):
       file.close()
 
    def load_settings(self, filename):
-      """Load the k-NN settings from an xml file. If settings file contains
-      weights they are loading. Loading the weights can potentially change the
-      feature functions of which the classifier is aware."""
+      """**load_settings** (FileOpen *filename*)
+
+Load the kNN settings from an XML file.  See save_settings_."""
       from gamera import core
 
       loader = _KnnLoadXML()
@@ -309,16 +317,25 @@ class _kNNBase(gamera.knncore.kNN):
       self.set_weights(weights)
 
    def serialize(self, filename):
-      """Save the k-NN settings and data into an optimized, k-NN specific
-      file format."""
+      """**serialize** (FileSave *filename*)
+
+Saves the classifier-specific settings *and* data in an optimized and
+classifer-specific format.  
+
+.. note:: 
+   It is good practice to retain the XML
+   file, since it is portable across platforms and to future versions of
+   Gamera.  The binary format is not guaranteed to be portable."""
       if self.features == 'all':
          gamera.knncore.kNN.serialize(self, filename,['all'])
       else:
          gamera.knncore.kNN.serialize(self, filename,self.features)
 
    def unserialize(self, filename):
-      """Load the k-NN settings and data from an optimized, k-NN specific
-      file format"""
+      """**unserialize** (FileOpen *filename*)
+
+Opens the classifier-specific settings *and* data from an optimized and
+classifer-specific format."""
       features = gamera.knncore.kNN.unserialize(self, filename)
       if len(features) == 1 and features[0] == 'all':
          self.change_feature_set('all')
@@ -335,6 +352,9 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
       classify.InteractiveClassifier.__del__(self)
 
    def noninteractive_copy(self):
+      """**noninteractive_copy** ()
+
+Creates a non-interactive copy of the interactive classifier."""
       return kNNNonInteractive(
          self.get_glyphs(), self.features, self._perform_splits, num_k=self.num_k)
 
@@ -364,20 +384,35 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
       return True
 
    def start_optimizing(self):
-      """Start optizing the classifier using a Genetic Algorithm. This
-      function will not block. Instead it starts a background (daemon) thread that
-      will perform the optimization in the background. While the classifier is
-      performing classification no other methods should be called until stop_optimizing
-      has been called."""
+      """**start_optimizing** ()
+
+Starts the genetic algorithm optimization of the weights of the
+features.  The optimization is run in a background thread.
+
+For information about genetic algorithms, see [Holland1975]_.
+
+In the genetic algorithm, the population consists of vectors of
+feature weights.  The vectors are evaluated using the
+leave_one_out algorithm.  The vectors that perform well are
+allowed to reproduce to producing offspring using combination at a
+randomly chosen split point.
+
+For a user-friendly way to perform GA optimization, consider the Biollante_
+tool in the Gamera GUI.
+
+.. _Biollante: gui.html#classifier-optimization-biollante"""
       self.ga_worker_stop = False
       self.ga_worker_thread = GaWorker(self)
       self.ga_worker_thread.setDaemon(1)
       self.ga_worker_thread.start()
 
    def stop_optimizing(self):
-      """Stop optimization with the Genetic Algorithm. WARNING: this function
-      has to wait for the current GA generation to finish before returning, which
-      could take several secongs."""
+      """**stop_optimizing** ()
+
+Stops the background optimization thread.
+
+NOTE: This method has to wait for the current GA generation to finish before returning, which
+could take several seconds."""
       if not self.ga_worker_thread:
          return
       self.ga_worker_stop = 1
@@ -387,13 +422,18 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
       return self.ga_best
 
    def add_optimization_callback(self, func):
-      """Add a function to be called everytime time the optimization updates the
-      classifier."""
+      """**add_optimization_callback** (*function*)
+
+Adds a function that will be called everytime the optimization process
+improves the performance of the classifier.  This callback function must take
+one argument which is an instance of the kNN classifier."""
       self.ga_callbacks.append(func)
 
    def remove_optimization_callback(self, func):
-      """Remove a function that is called everytime time the optimization updates the
-      classifier."""
+      """**remove_optimization_callback** (*function*)
+
+Removes an optimization callback function added using
+add_optimization_callback_."""
       try:
          self.ga_callbacks.remove(func)
       except:

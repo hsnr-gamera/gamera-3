@@ -86,33 +86,33 @@ PyTypeObject* get_CCType() {
 }
 
 static PyGetSetDef image_getset[] = {
-  { "data", (getter)image_get_data, 0, "The underlying image data", 0 },
+  { "data", (getter)image_get_data, 0, "(read-only property)\n\nReturns the underlying ImageData__ object.\n\n.. __: gamera.core.ImageData.html", 0 },
   { "features", (getter)image_get_features, (setter)image_set_features,
-    "The features of the image", 0 },
+    "(read/write property)\n\nThe feature vector of the image (of type array)", 0 },
   { "id_name", (getter)image_get_id_name, (setter)image_set_id_name,
-    "A list of strings representing the classifications of the image.",
+    "(read/write property)\n\nA list of strings representing the classifications of the image.",
     0 },
   { "children_images", (getter)image_get_children_images, 
     (setter)image_set_children_images,
-    "A list of images created from classifications that produce images.", 0 },
+    "(read/write property)\n\nA list of images created from classifications that produce images, such as splitting algorithms.", 0 },
   { "classification_state", (getter)image_get_classification_state, 
     (setter)image_set_classification_state,
-    "How (or whether) an image is classified", 0 },
+    "(read/write property)\n\nHow (or whether) an image is classified", 0 },
   { "scaling", (getter)image_get_scaling, (setter)image_set_scaling,
-    "The scaling applied to the features", 0 },
+    "(read/write property)\n\nThe scaling (if any) applied to the features as a floating-point value.", 0 },
   { "resolution", (getter)image_get_resolution, (setter)image_set_resolution,
-    "The resolution of the image", 0 },
+    "(read/write property)\n\nThe resolution of the image", 0 },
   { NULL }
 };
 
 static PyGetSetDef cc_getset[] = {
-  { "label", (getter)cc_get_label, (setter)cc_set_label, "The label for the Cc", 0},
+  { "label", (getter)cc_get_label, (setter)cc_set_label, "(read/write property)\n\nThe pixel label value for the Cc", 0},
   { NULL }
 };
 
 static PyMethodDef image_methods[] = {
-  { "get", image_get, METH_VARARGS, "get a pixel at the given (y, x) coordinate" },
-  { "set", image_set, METH_VARARGS, "set a pixel at the given (y, x) coordinate to the given value" },
+  { "get", image_get, METH_VARARGS, "**get** (Int *y*, Int *x*)\n\nGets a pixel value at the given (y, x) coordinate.\n\nThis coordinate is relative to the image view, not the logical coordinates." },
+  { "set", image_set, METH_VARARGS, "**set** (Int *y*, Int *x*)\n\nSets a pixel value at the given (y, x) coordinate.\n\nThis coordinate is relative to the image view, not the logical coordinates." },
   { "__getitem__", image_getitem, METH_VARARGS },
   { "__setitem__", image_setitem, METH_VARARGS },  
   { "__len__", image_len, METH_NOARGS },  

@@ -55,9 +55,52 @@ class _Classifier:
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
                             evaluate_function=None, max_parts_per_group=4):
+      """**group_list_automatic** (ImageList *glyphs*, Function
+*grouping_function* = ``None``, Function *evaluate_function* = ``None``,
+int *max_size* = 5)
+
+Classifies the given list of glyphs.  Adjacent glyphs are joined
+together if doing so results in a higher global confidence.  Each part
+of a joined glyph is classified as HEURISTIC with the prefix
+``_group``.
+
+*glyphs*
+  The list of glyphs to group and classify.
+
+*grouping_function*
+  A function that determines how glyphs are initially
+  combined.  This function must take exactly two arguments, which the
+  grouping algorithm will pass an arbitrary pair of glyphs from
+  *glyphs*.  If the two glyphs should be considered for grouping, the
+  function should return ``True``, else ``False``.  
+
+  If no *grouping_function* is provided, a default one will be used.
+
+*evaluate_function*
+   A function that evaluates a grouping of glyphs.  This function must
+   take exactly one argument which is a list of glyphs.  The function
+   should return a confidence value between 0 and 1 (1 being most
+   confident) representing how confidently the grouping forms a valid
+   character.
+
+   If no *evaluate_function* is provided, a default one will be used.
+
+*max_size*
+   The maximum number of connected components that will be grouped
+   together and tested as a group.  For performance reasons, this
+   number should be kept relatively small.
+
+The list *glyphs* is never modified.  Instead, the function returns a
+2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of glyphs
+that were created by classifying any glyphs as a split (See
+Initialization_) or grouping.  *remove* is a list of glyphs that are
+no longer valid due to reclassifying glyphs from a split to something
+else.
+"""
       glyphs = [x for x in glyphs if x.classification_state != 3]
       if len(glyphs) == 0:
          return [], []
+
       splits, removed = self.classify_list_automatic(glyphs)
       glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]
       if grouping_function is None:
@@ -68,6 +111,16 @@ class _Classifier:
       found_unions = self._find_group_unions(
          G, evaluate_function, max_parts_per_group)
       return found_unions + splits, removed
+
+   def group_and_update_list_automatic(self, glyphs, *args, **kwargs):
+      """**group_and_update_list_automatic** (ImageList *glyphs*, Function
+*grouping_function* = ``None``, Function *evaluate_function* = ``None``,
+int *max_size* = 5)
+
+A convenience wrapper around group_list_automatic_ that returns
+a list of glyphs that is already updated for splitting and grouping."""
+      added, removed = self.group_list_automatic(glyphs, *args, **kwargs)
+      return self._update_after_classification(glyphs, added, removed)
 
    def _default_grouping_function(a, b):
       return Fudge(a, 4).intersects(b)
@@ -134,11 +187,25 @@ class _Classifier:
    ########################################
    # AUTOMATIC CLASSIFICATION
    def classify_glyph_automatic(self, glyph, max_recursion=10, recursion_level=0):
-      """Classifies a glyph and sets its ``classification_state`` and
-      ``id_name``.  (If you don't want it set, use
-      guess_glyph_automatic.)  Returns a pair of lists: glyphs to be
-      added to the current database, and glyphs to be removed from the
-      current database."""
+      """**classify_glyph_automatic** (Image *glyph*, int *max_recursion* = 10)
+
+Classifies a glyph and sets its ``classification_state`` and
+``id_name``.  (If you don't want the glyph changed, use
+guess_glyph_automatic_.)
+
+*glyph*
+  The glyph to classify.
+
+*max_recursion* (optional)
+  Limit the number of split recursions.
+
+Returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list
+of glyphs that were created by classifying *glyph* as a split (See
+Initialization_).  *remove* is a list of glyphs that are no longer
+valid due to reclassifying *glyph* from a split to something else.
+Most often, both of these lists will be empty.  You will normally want
+to use these lists to update the collection of glyphs on the current
+page."""
       if recursion_level > max_recursion or len(self.database) == 0:
          return [], []
       # Since we only have one glyph to classify, we can't do any grouping
@@ -198,20 +265,48 @@ class _Classifier:
       return added, removed.keys()
 
    def classify_list_automatic(self, glyphs, max_recursion=10, progress=None):
-      """Classifies a list of glyphs and sets the
-      classification_state and id_name of each glyph.  (If you don't want it set,
-      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
-      to the current database, and glyphs to be removed from the current
-      database."""
+      """**classify_list_automatic** (ImageList *glyphs*, int *max_recursion* = 10)
+
+Classifies a list of glyphs and sets the classification_state and
+id_name of each glyph.  (If you don't want it set, use guess_glyph_automatic_.)
+
+*glyphs*
+  A list of glyphs to classify.
+
+*max_recursion*
+  The maximum level of recursion to follow when splitting glyphs.
+  Since some glyphs will split into parts that then classify as
+  ``_split`` in turn, a maximum depth should be set to avoid infinite
+  recursion.  This number can normally be set quite low, depending on
+  the application.
+
+The list *glyphs* is never modified by the function.  Instead, it
+returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list
+of glyphs that were created by classifying any glyphs as a split (See
+Initialization_).  *remove* is a list of glyphs that are no longer
+valid due to reclassifying glyphs from a split to something else.
+Most often, both of these lists will be empty.  You will normally want
+to use these lists to update the collection of glyphs on the current
+page.  If you just want a new list returned with these updates already
+made, use classify_and_update_list_automatic_.
+"""
       return self._classify_list_automatic(glyphs, max_recursion, 0, progress)
 
-   def classify_and_update_list_automatic(self, glyphs, max_recursion=10, progress=None):
-      added, removed = self.classify_list_automatic(glyphs, max_recursion, progress)
+   def _update_after_classification(self, glyphs, added, removed):
       result = glyphs + added
       for g in removed:
          if g in result:
             result.remove(g)
       return result
+
+   def classify_and_update_list_automatic(self, glyphs, *args, **kwargs):
+      """**classify_and_update_list_automatic** (ImageList *glyphs*, Int
+*max_recursion* = ``10``)
+
+A convenience wrapper around classify_list_automatic_ that returns
+a list of glyphs that is already updated for splitting."""
+      added, removed = self.classify_list_automatic(glyphs, *args, **kwargs)
+      return self._update_after_classification(glyphs, added, removed)
 
    # Since splitting glyphs is optional (when the classifier instance is
    # created) we have two versions of this function, so that there needn't
@@ -242,25 +337,34 @@ class _Classifier:
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
    def to_xml(self, stream):
-      """Saves the training data in XML format to the given stream (which could
-be a file handle object)."""
+      """**to_xml** (stream *stream*)
+
+Saves the training data in XML format to the given stream (which could
+be any object supporting the file protocol, such as a file object or StringIO
+object)."""
       self.is_dirty = False
       return gamera_xml.WriteXML(
          glyphs=self.get_glyphs()).write_stream(stream)
 
    def to_xml_filename(self, filename):
-      """Saves the training data in XML format to the given filename."""
+      """**to_xml_filename** (FileSave *filename*)
+
+Saves the training data in XML format to the given filename."""
       self.is_dirty = False
       return gamera_xml.WriteXMLFile(
          glyphs=self.get_glyphs()).write_filename(filename)
 
    def from_xml(self, stream):
-      """Loads the training data from the given stream (which could be a file
-handle object)."""
+      """**from_xml** (stream *stream*)
+
+Loads the training data from the given stream (which could be any object 
+supporting the file protocol, such as a file object or StringIO object.)"""
       self._from_xml(gamera_xml.LoadXML().parse_stream(stream))
 
    def from_xml_filename(self, filename):
-      """Loads the training data from the given filename."""
+      """**from_xml_filename** (FileOpen *filename*)
+
+Loads the training data from the given filename."""
       stream = gamera_xml.LoadXML().parse_filename(filename)
       self._from_xml(stream)
 
@@ -270,12 +374,16 @@ handle object)."""
       self.set_glyphs(database)
 
    def merge_from_xml(self, stream):
-      """Loads the training data from the given stream (which could be a file
+      """**merge_from_xml** (stream *stream*)
+
+Loads the training data from the given stream (which could be a file
 handle or StringIO object) and adds it to the existing training data."""
       self._merge_xml(gamera_xml.LoadXML().parse_stream(stream))
 
    def merge_from_xml_filename(self, filename):
-      """Loads the training data from the given filename and adds it to the
+      """**merge_from_xml_filename** (stream *stream*)
+
+Loads the training data from the given filename and adds it to the
 existing training data."""
       self._merge_xml(gamera_xml.LoadXML().parse_filename(filename))
 
@@ -305,12 +413,49 @@ existing training data."""
    
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all', perform_splits=True):
+      """**Classifier** (ImageList *database* = ``[]``, *features* = ``'all'``,
+bool *perform_splits* = ``True``)
+
+Creates a new classifier instance.
+
+*database*
+        Any images in the list that were manually classified (have
+	classification_state == MANUAL) will be used as training data
+	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
+	classified images will be ignored.
+
+	When initializing a noninteractive classifier, the database
+	*must* be non-empty.
+
+*features*
+	A list of feature function names to use for classification.
+	These feature names
+	correspond to the `feature plugin methods`__.  To use all
+	available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features
+
+*perform_splits*
+	  If ``perform_splits`` is ``True``, glyphs trained with names
+	  beginning with ``_split.`` are run through a given splitting
+	  algorithm.  For instance, glyphs that need to be broken into
+	  upper and lower halves for further classification of those
+	  parts would be trained as ``_split.splity``.  When the
+	  automatic classifier encounters glyphs that most closely
+	  match those trained as ``_split``, it will perform the
+	  splitting algorithm and then continue to recursively
+	  classify its parts.
+
+	  The `splitting algorithms`__ are documented in the plugin documentation.
+
+.. __: plugins.html#segmentation
+
+          New splitting algorithms can be created by `writing plugin`__ methods
+          in the category ``Segmentation``.  
+
+.. __: writing_plugins.html
+
       """
-database: a list of database to initialize the classifier with.
-features: a list of strings naming the features that will be used in the
-          classifier.
-perform_splits: (boolean) true if glyphs classified as split.* should be
-          split."""
       self.features = features
       if type(database) == list:
          self._database = util.CallbackList(database)
@@ -330,31 +475,57 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
       del self._database
 
    def is_interactive():
+      """Boolean **is_interactive** ()
+
+Returns ``True`` if classifier is interactive, else ``False``."""
       return False
    is_interactive = staticmethod(is_interactive)
 
    ########################################
    # BASIC DATABASE MANIPULATION FUNCTIONS
    def get_glyphs(self):
+      """ImageList **get_glyphs** ()
+
+Returns a list of the glyphs in the classifier."""
       return list(self.database)
       
    def set_glyphs(self, glyphs):
-      # This operation can be quite expensive depending on core classifier
+      """**set_glyphs** (ImageList *glyphs*)
+
+Sets the training data for the classifier to the given list of glyphs.
+
+On some non-interactive classifiers, this operation can be quite
+expensive.
+"""
       self.generate_features(glyphs)
       self.database.clear()
       self.database.extend(glyphs)
       self.instantiate_from_images(self.database)
 
    def merge_glyphs(self, glyphs):
-      # This operation can be quite expensive depending on core classifier
+      """**merge_glyphs** (ImageList *glyphs*)
+
+Adds the given glyphs to the current set of training data.
+
+On some non-interactive classifiers, this operation can be quite
+expensive."""
       self.generate_features(glyphs)
       self.database.extend(glyphs)
       self.instantiate_from_images(self.database)
 
    def clear_glyphs(self):
+      """**clear_glyphs** ()
+
+Removes all training data from the classifier.
+"""
       self.database.clear()
 
    def load_settings(self, filename):
+      """**load_settings** (FileOpen *filename*)
+
+Loads classifier-specific settings from the given filename.  The
+format of this file is entirely dependant on the concrete classifier
+type."""
       _Classifier.load_settings(self, filename)
       self.instantiate_from_images(self.database)
 
@@ -362,6 +533,13 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
    def guess_glyph_automatic(self, glyph):
+      """id_name **guess_glyph_automatic** (Image *glyph*)
+
+Classifies the given *glyph* without setting its classification.  The
+return value is of the form of `id_name`__.
+
+.. __: #id-name
+"""
       glyph.generate_features(self.get_feature_functions())
       return self.classify(glyph)
 
@@ -380,12 +558,49 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
 class InteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all',
                 perform_splits=1):
-      """classifier: the core classifier to use.  If None, defaults to kNN
-      database: a list of database to initialize the classifier with. (May be []).
-      features: a list of strings naming the features that will be used in the
-                classifier.
-      perform_splits: (boolean) true if glyphs classified as split.* should be
-                      split."""
+      """**Classifier** (ImageList *database* = ``[]``, *features* = ``'all'``,
+bool *perform_splits* = ``True``)
+
+Creates a new classifier instance.
+
+*database*
+        Any images in the list that were manually classified (have
+	classification_state == MANUAL) will be used as training data
+	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
+	classified images will be ignored.
+
+	When initializing a noninteractive classifier, the database
+	*must* be non-empty.
+
+*features*
+	A list of feature function names to use for classification.
+	These feature names
+	correspond to the `feature plugin methods`__.  To use all
+	available feature functions, pass in ``'all'``.
+
+.. __: plugins.html#features
+
+*perform_splits*
+	  If ``perform_splits`` is ``True``, glyphs trained with names
+	  beginning with ``_split.`` are run through a given splitting
+	  algorithm.  For instance, glyphs that need to be broken into
+	  upper and lower halves for further classification of those
+	  parts would be trained as ``_split.splity``.  When the
+	  automatic classifier encounters glyphs that most closely
+	  match those trained as ``_split``, it will perform the
+	  splitting algorithm and then continue to recursively
+	  classify its parts.
+
+	  The `splitting algorithms`__ are documented in the plugin documentation.
+
+.. __: plugins.html#segmentation
+
+          New splitting algorithms can be created by `writing plugin`__ methods
+          in the category ``Segmentation``.  
+
+.. __: writing_plugins.html
+
+      """
       self._database = util.CallbackSet(database)
       self.features = features
       self.change_feature_set(features)
@@ -453,8 +668,21 @@ of strings, naming the feature functions to be used."""
    ########################################
    # MANUAL CLASSIFICATION
    def classify_glyph_manual(self, glyph, id):
-      """Classifies the given glyph using name id.  Returns a pair of lists: the
-      glyphs that should be added and removed to the current database."""
+      """**classify_glyph_manual** (Image *glyph*, String *id*)
+
+Sets the classification of the given *glyph* to the given *id* and
+then adds the glyph to the training data.  Call this function when the
+end user definitively knows the identity of the glyph.
+
+*glyph*
+	The glyph to classify.
+
+*id*
+	The class name.
+
+.. note::
+   Here *id* is a simple string, not of the `id_name`_ format, since
+   the confidence of a manual classification is always 1.0."""
       # Deal with grouping
       if id.startswith('_group'):
          raise ClassifierError(
@@ -472,6 +700,26 @@ of strings, naming the feature functions to be used."""
       return self._do_splits(self, glyph), removed.keys()
 
    def classify_list_manual(self, glyphs, id):
+      """**classify_list_manual** (ImageList *glyphs*, String *id*)
+
+Sets the classification of the given *glyphs* to the given *id* and
+then adds the glyphs to the training data.  Call this function when the
+end user definitively knows the identity of the glyphs.
+
+If *id* begins with the special prefix ``_group``, all of the glyphs
+in *glyphs* are combined and the result is added to the training
+data.  This is useful for characters that always appear with multiple
+connnected components, such as the lower-case *i*.
+
+*glyphs*
+	The glyphs to classify.
+
+*id*
+	The class name.
+
+.. note::
+   Here *id* is a simple string, not of the `id_name`_ format, since
+   the confidence of a manual classification is always 1.0."""
       if id.startswith('_group') and len(glyphs) > 1:
          import image_utilities
          parts = id.split('.')
@@ -506,7 +754,22 @@ of strings, naming the feature functions to be used."""
       self.database.extend(new_glyphs)
       return added, list(removed)
 
+   def classify_and_update_list_manual(self, glyphs, *args, **kwargs):
+      """**classify_and_update_list_manual** (ImageList *glyphs*, Function
+*grouping_function* = ``None``, Function *evaluate_function* = ``None``,
+int *max_size* = 5)
+
+A convenience wrapper around group_list_automatic_ that returns
+a list of glyphs that is already updated for splitting and grouping."""
+      added, removed = self.classify_list_manual(glyphs, *args, **kwargs)
+      return self._update_after_classification(glyphs, added, removed)
+
    def add_to_database(self, glyphs):
+      """**add_to_database** (ImageList *glyphs*)
+
+Adds the given glyphs to the classifier training data.  Will not add duplicates
+to the training data.
+"""
       glyphs = util.make_sequence(glyphs)
       new_glyphs = []
       feature_functions = self.get_feature_functions()
@@ -518,13 +781,34 @@ of strings, naming the feature functions to be used."""
       self.database.extend(new_glyphs)
 
    def remove_from_database(self, glyphs):
+      """**remove_from_database** (ImageList *glyphs*)
+
+Removes the given glyphs from the classifier training data.  Ignores silently
+if a given glyph is not in the training data.
+"""
       glyphs = util.make_sequence(glyphs)
       for glyph in glyphs:
          if glyph in self.database:
             self.database.remove(glyph)
 
-   def display(self, current_database=[],
-               context_image=None, symbol_table=[]):
+   def display(self, current_database=[], context_image=None, symbol_table=[]):
+      """**display** (ImageList *current_database* = ``[]``, Image
+*context_image* = ``None``, List *symbol_table* = ``[]``)
+
+Displays the `interactive classifier window`__, which is where manual
+training usually takes place.
+
+*current_database*
+  A list of glyphs yet to be trained.
+
+*context_image*
+  An image of the page where the glyphs in *current_database* came
+  from.
+
+*symbol_table*
+  A set of id names to insert by default into the symbol table.
+
+.. __: gui.html#interactive-classifier-window"""
       if has_gui.gui and self._display is None:
          self._display = has_gui.gui.ShowClassifier(
             self, current_database, context_image, symbol_table)

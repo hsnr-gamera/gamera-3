@@ -55,29 +55,29 @@ PyTypeObject* get_RGBPixelType() {
 
 static PyGetSetDef rgbpixel_getset[] = {
   { "red", (getter)rgbpixel_get_red, (setter)rgbpixel_set_red,
-    "the current red value [0,255]", 0 },
+    "(int property)\n\nThe current red value [0,255]", 0 },
   { "green", (getter)rgbpixel_get_green, (setter)rgbpixel_set_green,
-    "the current green value [0, 255]", 0 },
+    "(int property)\n\nThe current green value [0, 255]", 0 },
   { "blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
-    "the current blue value [0, 255]", 0 },
+    "(int property)\n\nThe current blue value [0, 255]", 0 },
   { "hue", (getter)rgbpixel_get_hue, 0,
-    "the hue [0, 1.0]", 0 },
+    "(float property)\n\nThe hue [0, 1.0]", 0 },
   { "saturation", (getter)rgbpixel_get_saturation, 0,
-    "the saturation [0, 1.0]", 0 },
+    "(float property)\n\nThe saturation [0, 1.0]", 0 },
   { "value", (getter)rgbpixel_get_value, 0,
-    "the value [0, 1.0]", 0 },
+    "(float property)\n\nThe value [0, 1.0]", 0 },
   { "cie_x", (getter)rgbpixel_get_cie_x, 0,
-    "the cie_x value [0, 1.0]", 0 },
+    "(float property)\n\nThe cie_x value [0, 1.0]", 0 },
   { "cie_y", (getter)rgbpixel_get_cie_y, 0,
-    "the cie_y value [0, 1.0]", 0 },
+    "(float property)\n\nThe cie_y value [0, 1.0]", 0 },
   { "cie_z", (getter)rgbpixel_get_cie_z, 0,
-    "the cie_z value [0, 1.0]", 0 },
+    "(float property)\n\nThe cie_z value [0, 1.0]", 0 },
   { "cyan", (getter)rgbpixel_get_cyan, 0,
-    "the cyan value [0, 255]", 0 },
+    "(int property)\n\nThe cyan value [0, 255]", 0 },
   { "magenta", (getter)rgbpixel_get_magenta, 0,
-    "the cyan value [0, 255]", 0 },
+    "(int property)\n\nThe cyan value [0, 255]", 0 },
   { "yellow", (getter)rgbpixel_get_yellow, 0,
-    "the cyan value [0, 255]", 0 },
+    "(int property)\n\nThe cyan value [0, 255]", 0 },
   { NULL }
 };
 
@@ -204,10 +204,11 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_getset = rgbpixel_getset;
   RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
-  RGBPixelType.tp_doc = "Represents a 24-bit RGBPixel value. " 
-    "The constructor takes three integers, (*red*, *green*, *blue*). "
+  RGBPixelType.tp_doc = "**RGBPixel** (*red*, *green*, *blue*).\n\n"
     "Example: RGBPixel(255, 0, 0). "
-    "Each color value is in the range 0-255 (8 bits).";
+    "Each color value is in the range 0-255 (8 bits).\n"
+    "For more information about color operations, see the `Color plugin docs`__.\n\n"
+    ".. __: color.html";
   PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);
 }

@@ -70,8 +70,15 @@ class SegmentationError(Exception):
 ######################################################################
 
 def load_image(filename, compression = DENSE):
-   """Load an image from a file optionally using the given type of
-   compression for the image object."""
+   """**load_image** (FileOpen *filename*, Choice *storage_format* = ``DENSE``)
+
+Load an image from the given filename.  At present, TIFF and PNG files are
+supported.
+
+*storage_format*
+  The type of `storage format`__ to use for the resulting image.
+
+.. __: image_types.html#storage-formats"""
    from gamera.plugins import _tiff_support, _png_support
    try:
       image = _tiff_support.load_tiff(filename, compression)
@@ -88,14 +95,25 @@ def nested_list_to_image(l, t=-1):
    return image_utilities.nested_list_to_image(l, t)
 
 def image_info(filename):
-   """Retrieve an ImageInfo about about a given filename. The ImageInfo
-   object gives information such as the type (color, b&w, onebit),
-   the bit-depth, resolution, size, etc."""
+   """ImageInfo **image_info** (FileOpen *filename*)
+
+Retrieve information about an image file without loading it.
+
+The result is an ImageInfo__ object about a given filename. The ImageInfo
+object gives information such as the type (color, greyscale, onebit),
+the bit-depth, resolution, size, etc.
+
+.. __: gamera.core.ImageInfo.html"""
    import tiff_support
    return tiff_support.tiff_info(filename)
 
 def display_multi(list):
-   """Display a list of images in a grid-like window."""
+   """**display_multi** (ImageList *list*)
+
+Displays a list of images in a grid-like window.  This function has
+no effect if the `Gamera GUI`__ is not running.
+
+.. __: gui.html"""
    # If it's not a list, we'll get errors, so make it one
    if not util.is_sequence(list):
       list = [list]
@@ -147,11 +165,12 @@ class ImageBase:
 
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
-      plug -- subclass of PluginFunction describing the function.
-      func -- raw function pointer.
-      category -- menu category that the method should be placed under.
-        Categories may be nested using '/' (i.e. "General/Specific")
-      """
+plug -- subclass of PluginFunction describing the function.
+func -- raw function pointer.
+category -- menu category that the method should be placed under.
+Categories may be nested using '/' (i.e. "General/Specific")
+
+Internal use only."""
       from gamera import args
       methods = cls.methods
       image_type =  isinstance(plug.self_type, args.ImageType)
@@ -175,22 +194,29 @@ class ImageBase:
    add_plugin_method = classmethod(add_plugin_method)
 
    def pixel_type_name(self):
-      """Returns a string representing the pixle type of the image. Can be
-      used for display purposes. Pixel types determine the type of data
-      stored in an image - i.e. RGB, GreyScale, Onebit."""
+      """String **pixel_type_name** ()
+
+Returns a string representing the pixel type of the image. Intended
+primarily for display (GUI) purposes, since using the integer values
+in ``Image.data.pixel_type`` is more efficient.
+
+See `pixel types`_ for more information."""
       return util.get_pixel_type_name(self.data.pixel_type)
-   pixel_type_name = property(pixel_type_name)
+   pixel_type_name = property(pixel_type_name, doc=pixel_type_name.__doc__)
 
    _storage_format_names = {DENSE:  "Dense",
                             RLE:    "RLE"}
    
    def storage_format_name(self):
-      """Returns a string representing the storage type of the image. Can
-      be used for display purposes. Storage formats determing the way
-      image data is stored in an image - i.e. Dense (uncompressed) or
-      RLE (runlength-encoded)."""
+      """String **storage_format_name** ()
+
+Returns a string representing the storage format of the image.
+Intended primarily for display (GUI) purposes, since using the integer
+values in ``Image.data.storage_format`` is more efficient.
+
+See `storage formats`_ for more information."""
       return self._storage_format_names[self.data.storage_format]
-   storage_format_name = property(storage_format_name)
+   storage_format_name = property(storage_format_name, doc=storage_format_name.__doc__)
    
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
@@ -198,15 +224,11 @@ class ImageBase:
                         'resolution', 'memory_size', 'label', 
                         'classification_state', 'properties')
    def members_for_menu(self):
-      """Returns a list of members (and their values) for convenient feedback
-      for the user."""
       return ["%s: %s" % (x, getattr(self, x))
               for x in self._members_for_menu
               if hasattr(self, x)]
 
    def methods_for_menu(self):
-      """Returns a list of methods (in nested dictionaries by categories) for
-      building user interfaces."""
       return self.methods[self.data.pixel_type]
 
    def methods_flat_category(cls, category, pixel_type=None):
@@ -228,21 +250,23 @@ class ImageBase:
    _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
-      """Loads an image from disk.  Currently only TIFF and PNG images are supported."""
       return load_image(filename, compression)
    load_image = staticmethod(load_image)
 
    def memory_size(self):
+      """Int **memory_size** ()
+
+Returns the memory used by the underlying data of the image (in
+bytes).  Note that this memory may be shared with other image views on
+the same data."""
       return self.data.bytes
-   memory_size = property(memory_size)
+   memory_size = property(memory_size, doc=memory_size.__doc__)
 
    def set_display(self, _display):
       self._display = _display
 
    def display(self):
-      """**display** ()
-
-Displays the image in its own window.  (See `Using the Gamera GUI`__).  If the GUI
+      """Displays the image in its own window.  (See `Using the Gamera GUI`__).  If the GUI
 process is not running, this method has no effect.
 
 .. __: gui.html
@@ -258,10 +282,9 @@ process is not running, this method has no effect.
 
    def display_ccs(self):
       """Displays the image in its own window.  (See `Using the Gamera GUI`__).
-Each connected component
-is assigned to one of eight colors.  This display can be used to see how
-connected component analysis performs on a given image.  Uses color_ccs_ under
-the hood.
+Each connected component is assigned to one of eight colors.  This
+display can be used to see how connected component analysis performs
+on a given image.  Uses color_ccs_ under the hood.
 
 .. __: gui.html
 .. _color_ccs: gui_support.html#color-ccs
@@ -379,24 +402,43 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
       self.classification_state = HEURISTIC
 
    def get_main_id(self):
+      """Returns the classification of the image with the highest likelihood.
+
+If the image is unclassified, the result is 'UNCLASSIFIED'.
+"""
       if self.classification_state == UNCLASSIFIED or not len(self.id_name):
          return 'UNCLASSIFIED'
       return self.id_name[0][1]
 
    def get_confidence(self):
-      """Returns the confidence of main id"""
+      """Returns the confidence of the classification with the highest likelihood.
+
+If the image is unclassified, returns -1.0.
+"""
       if self.classification_state == UNCLASSIFIED:
          return -1.0
       return self.id_name[0][0]
 
    def has_id_name(self, name):
+      """Returns ``True`` if the image has the given classification ``name``."""
       for confidence, id_name in self.id_name:
          if name == id_name:
             return True
       return False
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
-      """Create a SubImage from this Image (or SubImage)."""
+      """Create a SubImage from this Image (or SubImage).
+
+*offset_y*, *offset_x*
+  The offset *relative to the logical coordinates*, not to the upper left of the view.
+  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
+  refer to the area 10 pixels from the upper left of ``self``.
+
+*nrows* *ncols*
+  The size of the new subimage.
+
+This method is really just a thin wrapper around the ``SubImage`` constructor.
+"""
       if hasattr(self, "label"):
          return Cc(self, self.label, int(offset_y), int(offset_x), int(nrows), int(ncols))
       else:
@@ -489,12 +531,12 @@ See `Gamera image types`__.
 .. __: image_types.html"""
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
                 pixel_format=ONEBIT, storage_type=DENSE):
-      """**Image.__init__** (Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_format* = ``ONEBIT``, Choice *storage_format* = ``DENSE``)
+      """**Image** (Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_format* = ``ONEBIT``, Choice *storage_format* = ``DENSE``)
 
 Creates a new image with new underlying data.
 
 *page_offset_y*, *page_offset_x*
-  The logical offset of the page
+  The logical offset of the image
 
 *nrows*, *ncols*
   The size of the image
@@ -509,9 +551,7 @@ Creates a new image with new underlying data.
   An integer value specifying the method used to store the image data.
   See `storage formats`__ for more information. 
 
-.. __: image_types.html#storage-formats
-
-"""
+.. __: image_types.html#storage-formats"""
       ImageBase.__init__(self)
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
@@ -526,6 +566,20 @@ Creates a new image with new underlying data.
 
 class SubImage(gameracore.SubImage, ImageBase):
    def __init__(self, image, offset_y, offset_x, nrows, ncols):
+      """**SubImage** (Image *image*, Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*)
+
+Creates a view on existing image data.
+
+*image*
+  Another image view to base to create the ``SubImage`` from.
+
+*page_offset_y*, *page_offset_x*
+  The offset *relative to the logical coordinates*, not to the upper left of the view.
+  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
+  refer to the area 10 pixels from the upper left of ``self``.
+
+*nrows*, *ncols*
+  The size of the image"""
       ImageBase.__init__(self)
       gameracore.SubImage.__init__(self, image, int(offset_y), int(offset_x),
                                    int(nrows), int(ncols))
@@ -541,6 +595,25 @@ class SubImage(gameracore.SubImage, ImageBase):
 
 class Cc(gameracore.Cc, ImageBase):
    def __init__(self, image, label, offset_y, offset_x, nrows, ncols):
+      """**Cc** (Image *image*, Int *label*, Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*)
+
+Creates a connected component representing part of a OneBit image.  It is rare to
+create one of these objects directly: most often you will just use ``cc_analysis`` to
+create connected components.
+
+*image*
+  Another image view to base to create the ``Cc`` from.
+
+*label*
+  The pixel label associated with this ``Cc``.
+
+*page_offset_y*, *page_offset_x*
+  The offset *relative to the logical coordinates*, not to the upper left of the view.
+  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
+  refer to the area 10 pixels from the upper left of ``self``.
+
+*nrows*, *ncols*
+  The size of the image"""
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, image, label, offset_y, offset_x,
                              nrows, ncols)
@@ -550,8 +623,13 @@ class Cc(gameracore.Cc, ImageBase):
       if self._display:
          self._display.close()
    
-   # Displays this cc in context
    def display_context(self):
+      """**display_context** ()
+
+Displays the Cc in context, by opening a window displaying the underlying
+image with the given Cc highlighted.  This method has no effect if the GUI
+is not running.
+"""
       image = self.parent()
       if self._display:
          self._display.set_image(image)
@@ -598,6 +676,19 @@ def _init_gamera():
       plugin.PluginFactory(
          "unclassify", "Classification", None,
          plugin.ImageType([ONEBIT]), None),
+      plugin.PluginFactory(
+         "get_main_id", "Classification", plugin.String("id"),
+         plugin.ImageType([ONEBIT]), None),
+      plugin.PluginFactory(
+         "get_confidence", "Classification", plugin.Float("confidence"),
+         plugin.ImageType([ONEBIT]), None),
+      plugin.PluginFactory(
+         "has_id_name", "Classification", plugin.Check("result"),
+         plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
+      plugin.PluginFactory(
+         "subimage", "Utility", plugin.Check("result"),
+         plugin.ImageType(ALL), plugin.Args([plugin.Int("offset_y"), plugin.Int("offset_x"),
+                                             plugin.Int("nrows"), plugin.Int("ncols")])),
       plugin.PluginFactory(
          "to_xml", "XML", plugin.String('xml'),
          plugin.ImageType([ONEBIT]), None),

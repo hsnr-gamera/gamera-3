@@ -69,6 +69,8 @@ inline int image_get_fv(PyObject* image, double** buf, int* len) {
 */
 inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
   ImageObject* x = (ImageObject*)image;
+  PyObject_Print(x->m_id_name, stderr, 0);
+
   // PyList_Size shoule type check the argument
   if (PyList_Size(x->m_id_name) < 1) {
     PyErr_SetString(PyExc_TypeError, "knn: id_name not a list or list is empty.");

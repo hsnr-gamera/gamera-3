@@ -55,7 +55,7 @@ static PyGetSetDef imageinfo_getset[] = {
   { "nrows", (getter)imageinfo_get_nrows,
     (setter)imageinfo_set_nrows, "The number of rows of the image." },
   { "depth", (getter)imageinfo_get_depth,
-    (setter)imageinfo_set_depth, "The bit depth of the image." },
+    (setter)imageinfo_set_depth, "The bit depth of the image (in bits)." },
   { "ncolors", (getter)imageinfo_get_ncolors,
     (setter)imageinfo_set_ncolors, "The number of colors in the image." },
   { NULL }
@@ -124,6 +124,7 @@ void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageInfoType.tp_getset = imageinfo_getset;
   ImageInfoType.tp_free = NULL; // _PyObject_Del;
+  ImageInfoType.tp_doc = "The ImageInfo class allows the properties of a disk-based image file to be examined without loading it.\n\nTo get image info, call the image_info(*filename*) function in ``gamera.core``.";
   PyType_Ready(&ImageInfoType);
   PyDict_SetItemString(module_dict, "ImageInfo", (PyObject*)&ImageInfoType);
 }

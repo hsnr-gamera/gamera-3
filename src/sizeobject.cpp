@@ -41,9 +41,9 @@ static PyTypeObject SizeType = {
 
 static PyGetSetDef size_getset[] = {
   { "width", (getter)size_get_width, (setter)size_set_width,
-    "The current width", 0 },
+    "(int property)\n\nThe current width", 0 },
   { "height", (getter)size_get_height, (setter)size_set_height,
-    "The current height", 0 },
+    "(int property)\n\nThe current height", 0 },
   { NULL }
 };
 
@@ -147,6 +147,7 @@ void init_SizeType(PyObject* module_dict) {
   SizeType.tp_richcompare = size_richcompare;
   SizeType.tp_free = NULL; // _PyObject_Del;
   SizeType.tp_repr = size_repr;
+  SizeType.tp_doc = "Size stores a size (*width*, *height*)";
   PyType_Ready(&SizeType);
   PyDict_SetItemString(module_dict, "Size", (PyObject*)&SizeType);
 }

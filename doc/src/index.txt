@@ -84,6 +84,18 @@ Reference
 
 .. __: image_types.html
 
+   - `Dimension types`__: The various classes to manage bounding boxes and geometry.
+   
+.. __: dimension_types.html
+
+- `ImageData`__: Manages the underlying image data viewed by ``Image`` objects.
+
+.. __: gamera.core.ImageData.html
+
+- `ImageInfo objects`__: Used to examine on-disk image files without loading them
+
+.. __: gamera.core.ImageInfo.html
+
 - `XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html

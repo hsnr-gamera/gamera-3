@@ -43,13 +43,14 @@ static PyTypeObject PointType = {
 };
 
 static PyGetSetDef point_getset[] = {
-  { "x", (getter)point_get_x, (setter)point_set_x, "the current x value", 0},
-  { "y", (getter)point_get_y, (setter)point_set_y, "the current y value", 0},
+  { "x", (getter)point_get_x, (setter)point_set_x, "(int property)\n\nThe current x value", 0},
+  { "y", (getter)point_get_y, (setter)point_set_y, "(int property)\n\nThe current y value", 0},
   { NULL }
 };
 
 static PyMethodDef point_methods[] = {
-  { "move", point_move, METH_VARARGS },
+  { "move", point_move, METH_VARARGS,
+    "**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
   { NULL }
 };
 
@@ -165,6 +166,7 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_free = NULL; // _PyObject_Del;
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
+  PointType.tp_doc = "Point stores an (*x*, *y*) coordinate point.";
   PyType_Ready(&PointType);
   PyDict_SetItemString(module_dict, "Point", (PyObject*)&PointType);
 }

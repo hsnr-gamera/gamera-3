@@ -1,0 +1,52 @@
+=================
+Dimension classes
+=================
+
+This is a reference chapter for the various classes that manage coordinates, dimensions and bounding boxes.
+
+Point
+-----
+
+.. docstring:: gamera.core Point
+   :no_title:
+
+__init__
+''''''''
+
+**Point** (Int *x*, Int *y*)
+
+.. docstring:: gamera.core Point x y
+
+Size
+----
+
+.. docstring:: gamera.core Size
+   :no_title:
+
+__init__
+''''''''
+
+**Size** (Int *width*, Int *height*)
+
+.. docstring:: gamera.core Size width height
+
+Dimensions
+----------
+
+.. docstring:: gamera.core Dimensions
+   :no_title:
+
+__init__
+''''''''
+
+**Dimensions** (Int *nrows*, Int *ncols*)
+
+.. docstring:: gamera.core Dimensions nrows ncols
+
+Rect
+----
+
+.. docstring:: gamera.core Rect
+   :no_title:
+
+.. docstring:: gamera.core Rect ul_x ul_y ur ur_x ur_y lr lr_x lr_y ll ll_x ll_y dimensions size nrows ncols width height offset_x offset_y center center_x center_y contains_x contains_y contains_point contains_rect intersects intersects_x intersects_y union union_rects distance_euclid distance_bb distance_cx distance_cy

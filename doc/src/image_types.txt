@@ -2,6 +2,8 @@
 Image types
 ===========
 
+(c) 2004 Michael Droettboom
+
 There are a number of different image types in Gamera that serve
 different purposes.  Fortunately, they all share a common interface,
 which allows many operations on images to be compiled for different
@@ -22,6 +24,9 @@ The pixels in an image can be one of the following types:
    ``RGB``
 	24-bit color pixels (8-bits per pixel),
 	representing 2 ^ 24 (16,777,216) different colors.
+	``RGBPixel`` objects have some special `properties and methods`__.
+
+.. __: gamera.core.RGBPixel.html
 
    ``GREYSCALE``
         8-bit greyscale, representing 256 different levels
@@ -103,4 +108,81 @@ returns an integer corresponding to the constants ``DENSE`` and ``RLE``.
 
 .. note:: Any performance improvement should be justified only
    by profiling on real-world data
+
+Image methods
+=============
+
+The methods on images include all of the plugin methods in the current
+environment.  These are documented in the `plugin reference`__.  In
+addition, there are number of core properties and methods.
+
+.. __: plugins.html
+
+Constructors
+------------
+
+``Image.__init__``
+''''''''''''''''''
+
+.. docstring:: gamera.core Image __init__
+   :no_title:
+
+``SubImage.__init__``
+'''''''''''''''''''''
+
+.. docstring:: gamera.core SubImage __init__
+   :no_title:
+
+``Cc.__init__``
+'''''''''''''''
+
+.. docstring:: gamera.core Cc __init__
+   :no_title:
+
+Pixel access
+------------
+
+.. docstring:: gamera.core Image get set
+
+
+Informational
+-------------
+
+These methods provide information about the image.
+
+.. docstring:: gamera.core Image data
+.. docstring:: gamera.core ImageBase pixel_type_name storage_format_name memory_size 
+.. docstring:: gamera.core Image resolution
+.. docstring:: gamera.core Cc label
+
+Bounding box
+------------
+
+Bounding box operations on ``Image`` objects are inherited from the
+Rect__ class.  
+
+.. __: dimension_types.html#rect
+
+Classification
+--------------
+
+See `Classification plugins`__.
+
+.. __: classification.html
+
+
+Image functions
+===============
+
+There are a number of free functions for dealing with images.
+
+File
+----
+
+.. docstring:: gamera core load_image image_info
+
+GUI
+---
+
+.. docstring:: gamera core display_multi
 

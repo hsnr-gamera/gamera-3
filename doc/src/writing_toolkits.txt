@@ -260,10 +260,20 @@ One-class-per-file documentation
 
 To generate one-class-per-file documentation, use the
 ``classes`` keywoard argument when calling ``gendoc()`` (See below_).
-This argument takes a list of tuples, (*class*,
-*methods*).  The first element is the class to document, and the
-second element is a list of method names in the class, in the order to
-write them in the documentation.
+This argument takes a list of 3-tuples, (*module*, *class*,
+*methods*).  
+
+   *module*
+     The module that the object is in.  This may be a
+     dot-delimited package path, such as ``gamera.toolkits.skeleton``.
+     
+   *class*
+      The Python class to document.
+  
+   *members*
+      The members to document, in order.  This may be either a list of
+      strings (``['a', 'b', 'c']``) or a single string with method
+      names separated by whitespace (``'a b c'``).
 
 .. _below: #documentation-generation-script
 
@@ -272,10 +282,8 @@ the ``Image`` class in ``gamera.core``.
 
 .. code:: Python
 
-   from gamera import core
-
    gendoc.gendoc(classes=[
-                 (core.Image, ['__init__', 'display'])
+                 ("gamera.core", "Image", "__init__ display")
 	 	 ])
 
 This will have the same effect as the example above, except it will

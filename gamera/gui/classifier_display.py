@@ -1245,7 +1245,7 @@ class SymbolTableEditorPanel(wxPanel):
       self._symbol_table = symbol_table
       self.SetAutoLayout(True)
       self.box = wxBoxSizer(wxVERTICAL)
-      txID = NewId()
+      txID = wxNewId()
       self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB)
       EVT_KEY_DOWN(self.text, self._OnKey)
       EVT_TEXT(self, txID, self._OnText)
@@ -1254,7 +1254,7 @@ class SymbolTableEditorPanel(wxPanel):
       if platform == 'win32':
          EVT_TEXT_ENTER(self, txID, self._OnEnter)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
-      tID = NewId()
+      tID = wxNewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
                                  wxDefaultSize,
                                  wxTR_HAS_BUTTONS | wxTR_DEFAULT_STYLE)

@@ -54,7 +54,7 @@ class OptimizerFrame(wxFrame):
       self.weights_panel = WeightsPanel(self.notebook)
       self.notebook.AddPage(self.weights_panel, "Best Weights")
 
-      id = NewId()
+      id = wxNewId()
       self.timer = wxTimer(self, id)
       EVT_TIMER(self, id, self.timer_cb)
       self.last_generation = 0
@@ -66,44 +66,44 @@ class OptimizerFrame(wxFrame):
    def setup_menus(self):
       # open
       menu = wxMenu()
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Open", "Open a k-NN database")
       EVT_MENU(self, id, self.open_cb)
 
       # save
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Save", "Save the current weights")
       EVT_MENU(self, id, self.save_cb)
       menu.Enable(id, False)
 
       # save as
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Save as", "Save the current weights")
       EVT_MENU(self, id, self.save_as_cb)
       menu.Enable(id, False)
       menu.AppendSeparator()
 
       # start
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Start", "Start the optimization")
       EVT_MENU(self, id, self.start_cb)
       menu.Enable(id, False)
 
       # stop
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Stop", "Stop the optimization")
       EVT_MENU(self, id, self.stop_cb)
       menu.Enable(id, False)
 
       # Features
       menu.AppendSeparator()
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Features", "Set the features for the classifier")
       EVT_MENU(self, id, self.features_cb)
 
       # exit
       menu.AppendSeparator()
-      id = NewId()
+      id = wxNewId()
       menu.Append(id, "&Exit", "Exit the application")
       EVT_MENU(self, id, self.close_cb)
 
@@ -287,7 +287,7 @@ class StatusPanel(wxPanel):
 
       # population size
       sizer.Add(wxStaticText(self, -1, "Population Size:"), 1)
-      id = NewId()
+      id = wxNewId()
       self.population_display = wxSlider(
           self, id, 10, 10, 5000, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.population_display, 1)
@@ -295,7 +295,7 @@ class StatusPanel(wxPanel):
 
       # k
       sizer.Add(wxStaticText(self, -1, "Size of K:"), 1)
-      id = NewId()
+      id = wxNewId()
       self.k_display = wxSlider(
           self, id, 1, 1, 200, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.k_display, 1)
@@ -303,7 +303,7 @@ class StatusPanel(wxPanel):
 
       # crossover rate
       sizer.Add(wxStaticText(self, -1, "Crossover Rate:"), 1)
-      id = NewId()
+      id = wxNewId()
       self.crossover_display = wxSlider(
           self, id, 60, 0, 100, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.crossover_display, 1)
@@ -311,7 +311,7 @@ class StatusPanel(wxPanel):
 
       # mutation rate
       sizer.Add(wxStaticText(self, -1, "Mutation Rate:"), 1)
-      id = NewId()
+      id = wxNewId()
       self.mutation_display = wxSlider(
           self, id, 5, 0, 100, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.mutation_display, 1)

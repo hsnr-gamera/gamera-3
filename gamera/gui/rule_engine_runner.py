@@ -30,7 +30,7 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       self.undo_history = []
       self.added = []
       self.removed = []
-      id = NewId()
+      id = wxNewId()
       wxTreeCtrl.__init__(self, parent, id)
       self.root = self.AddRoot("RuleSets")
       self.SetItemHasChildren(self.root, TRUE)

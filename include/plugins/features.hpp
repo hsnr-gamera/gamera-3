@@ -45,10 +45,7 @@ namespace Gamera {
       if (is_black(*i))
 	black_pixels++;
     }
-    //FloatVector* vec = new FloatVector(1);
-    //(*vec)[0] = (feature_t)black_pixels;
     *buf = (feature_t)black_pixels;
-    // return vec;
   }
 
   // Ratio of black to white pixels
@@ -397,7 +394,7 @@ namespace Gamera {
       *(buf++) = 0.0;
       *(buf++) = 3.0;
       *(buf++) = 3.0;
-      *(buf++) = 3.0;
+      *buf = 3.0;
       return;
     }
 
@@ -465,12 +462,12 @@ namespace Gamera {
     delete skel->data();
     delete skel;
 
-    *(buf++) = float(X_joints);
-    *(buf++) = float(T_joints);
-    *(buf++) = float(bend_points) / float(total_pixels);
-    *(buf++) = float(end_points);
-    *(buf++) = float(x_axis_crossings);
-    *(buf++) = float(y_axis_crossings);
+    *(buf++) = feature_t(X_joints);
+    *(buf++) = feature_t(T_joints);
+    *(buf++) = feature_t(bend_points) / feature_t(total_pixels);
+    *(buf++) = feature_t(end_points);
+    *(buf++) = feature_t(x_axis_crossings);
+    *buf = feature_t(y_axis_crossings);
   }
 }
 #endif

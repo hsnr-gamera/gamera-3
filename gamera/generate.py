@@ -138,10 +138,8 @@ template = Template("""
       [[if function.feature_function]]
          int offset = -1;
          [[exec pyarg_format = 'O|i']]
-         if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
-           ,&real_self, &offset
-           ) <= 0)
-           return 0;\
+         if (PyArg_ParseTuple(args, \"[[pyarg_format]]\",&real_self, &offset) <= 0)
+           return 0;
       [[else]]
          [[for x in function.args.list]]
            [[exec x.name = re.sub(\"\s\", \"_\", x.name)]]
@@ -238,6 +236,10 @@ template = Template("""
            str = PyString_FromStringAndSize(NULL, [[function.return_type.length]] * sizeof(feature_t));
            feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
+           if (PyObject_Size(((ImageObject*)real_self)->m_features) < offset + [[function.return_type.length]]) {
+             PyErr_SetString(PyExc_ValueError, \"Offset as given will cause data to be written outside of array.  Perhaps you neglected to create a feature array?\");
+             return 0;
+           }
            feature_buffer = real_self_image->features + offset;
          }
       [[end]]

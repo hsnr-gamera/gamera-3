@@ -550,8 +550,11 @@ def strip_features(input_filename, output_filename):
 Strips the features from a Gamera XML file.  Provided mainly to reduce filesizes for
 files created before saving features was an option.
 
-*input_filename*: The input Gamera XML filename
-*output_filename*: The output Gamera XML filename"""
+*input_filename*
+  The input Gamera XML filename
+
+*output_filename*
+  The output Gamera XML filename"""
    StripTag(input_filename, output_filename, 'features')
    
    

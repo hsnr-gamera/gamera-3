@@ -109,9 +109,9 @@ extensions = [Extension("gamera.gameracore",
                         # FIXME
                         libraries=libs, extra_compile_args=extra_args
                         ),
-              Extension("gamera.knncore", ga_files,
-                        include_dirs=["include", "src/ga", "src"],
-                        libraries=libs, extra_compile_args=extra_args),
+##               Extension("gamera.knncore", ga_files,
+##                         include_dirs=["include", "src/ga", "src"],
+##                         libraries=libs, extra_compile_args=extra_args),
               Extension("gamera.graph", ["src/graphmodule.cpp"],
                         include_dirs=["include", "src"],
                         libraries=libs, extra_compile_args=extra_args)]

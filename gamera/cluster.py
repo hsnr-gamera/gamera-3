@@ -19,7 +19,7 @@
 #
 
 from gamera import knn
-from gamera.plugins import distance
+# from gamera.plugins import distance
 from gamera import util
 
 class Edge:
@@ -27,7 +27,7 @@ class Edge:
       self.cost = cost
       self.node1 = node1
       self.node2 = node2
-      self.visited = node1.visited
+      # self.visited = node1.visited
 
    def get_node(self, node):
       if node == self.node1:

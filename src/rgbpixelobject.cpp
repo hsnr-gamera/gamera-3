@@ -200,7 +200,7 @@ static PyObject* rgbpixel_str(PyObject* self) {
 static long rgbpixel_hash(PyObject* self) {
   RGBPixel* x = ((RGBPixelObject*)self)->m_x;
 
-  return (65536L*x->red() + 256L*x->green() + x->blue());
+  return ((x->red() << 16) & (x->green() << 8) & x->blue());
 }
 
 void init_RGBPixelType(PyObject* module_dict) {

@@ -110,7 +110,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
        i != node_stack.end(); ++i, ++j)
     PyList_SET_ITEM(result, j, (*i)->m_data);
 
-  PyObject* tuple = Py_BuildValue("N", result);
+  PyObject* tuple = Py_BuildValue("(O)", result);
   PyObject* evalobject = PyObject_CallObject(const_cast<PyObject*>(eval_func), tuple);
 
   double eval;

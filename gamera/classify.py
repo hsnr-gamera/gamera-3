@@ -51,7 +51,7 @@ class _Classifier:
          grouping_function = _Classifier._default_grouping_function
       G = self._pregroup(glyphs, grouping_function)
       if evaluate_function is None:
-         evaluate_function = _Classifier._evaluate_subgroup
+         evaluate_function = self._evaluate_subgroup
       found_unions = self._find_group_unions(G, evaluate_function)
       return found_unions + splits, removed
 
@@ -78,7 +78,7 @@ class _Classifier:
          progress.kill()
       return G
 
-   def _evaluate_subgroup(subgroup):
+   def _evaluate_subgroup(self, subgroup):
       import image_utilities
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
@@ -89,7 +89,6 @@ class _Classifier:
          else:
             return classification[0][0]
       return subgroup[0].id_name[0][0]
-   _evaulate_subgroup = staticmethod(_evaluate_subgroup)
 
    def _find_group_unions(self, G, evaluate_function):
       import image_utilities

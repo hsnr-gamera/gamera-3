@@ -458,18 +458,32 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
   return image_set(self, row, col, value);
 }
 
+// convert Python indexing into row/col format for images
+static inline int get_rowcol(Image* image, long index, size_t* row, size_t* col) {
+  if (index < 0) {
+    size_t len = image->ncols() * image->nrows();
+    size_t real_index = len + index;
+    *row = real_index / image->ncols();
+    *col = real_index - (*row * image->ncols());
+  } else { 
+    *row = (size_t)(index / image->ncols());
+    *col = (size_t)(index - (*row * image->ncols()));
+  }
+  if (size_t(*row) >= image->nrows() || size_t(*col) >= image->ncols()) {
+    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+    return -1;
+  }
+  return 0;
+}
+
 static PyObject* image_getitem(PyObject* self, PyObject* args) {
   Image* image = (Image*)((RectObject*)self)->m_x;
   int index;
   if (PyArg_ParseTuple(args, "i", &index) <= 0)
     return 0;
-  int row, col;
-  row = int(index / image->ncols());
-  col = index - (row * image->ncols());
-  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+  size_t row, col;
+  if (get_rowcol(image, index, &row, &col) < 0)
     return 0;
-  }
   return image_get(self, row, col);
 }
 
@@ -479,13 +493,9 @@ static PyObject* image_setitem(PyObject* self, PyObject* args) {
   PyObject* value;
   if (PyArg_ParseTuple(args, "iO", &index, &value) <= 0)
     return 0;
-  int row, col;
-  row = int(index / image->ncols());
-  col = index - (row * image->ncols());
-  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+  size_t row, col;
+  if (get_rowcol(image, index, &row, &col) < 0)
     return 0;
-  }
   return image_set(self, row, col, value);
 }
 

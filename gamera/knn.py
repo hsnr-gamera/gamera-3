@@ -160,14 +160,17 @@ class kNN(gamera.knncore.kNN):
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.num_features = features.get_features_length(self.features)
 
-   def distance_from_images(self, images, glyph, max):
+   def distance_from_images(self, images, glyph, max=None):
       """Compute a list of distances between a list of images
       and a singe images. Distances greater than the max distance
       are not included in the output."""
       from gamera.plugins import features
       glyph.generate_features(self.feature_functions)
-      features.generate_features_list(self.feature_functions)
-      return self._distance_from_images(iter(images), glyph, max)
+      features.generate_features_list(images, self.feature_functions)
+      if max is None:
+         return self._distance_from_images(iter(images), glyph)
+      else:
+         return self._distance_from_images(iter(images), glyph, max)
 
    def distance_between_images(self, imagea, imageb):
       """Compute the distance between two images using the settings

@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import sys
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 from fudge import Fudge
@@ -91,33 +92,28 @@ class _Classifier:
          progress.kill()
       return G
 
-   unions = [] ###
    def _evaluate_subgroup(self, subgroup):
       import image_utilities
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
-         self.unions.append(union) ###
-         union.properties.root_number = self.root_number ###
          classification = self.guess_glyph_automatic(union)
          classification_name = classification[0][1]
          if (classification_name.startswith("_split") or
              classification_name.startswith("skip")):
-            return 0
+            return 0.0
          else:
             return classification[0][0]
       classification = subgroup[0].id_name[0]
       if classification[1].startswith('_group._part'):
-         return 0
+         return 0.0
       return classification[0]
 
    def _find_group_unions(self, G, evaluate_function, max_parts_per_group=5):
-      self.root_number = 0 ###
       import image_utilities
       progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
-            self.root_number += 1 ###
             best_grouping = G.optimize_partitions(
                root, evaluate_function, max_parts_per_group)
             for subgroup in best_grouping:

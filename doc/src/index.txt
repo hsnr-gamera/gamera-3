@@ -4,24 +4,34 @@ Gamera documentation
 
 :Author: Michael Droettboom
 
-============
 Introduction
 ============
 
-This is the Gamera documentation.  It is under the GNU `Free
-Documentation License`__.
+This is the Gamera documentation.  Please note that it is still a work
+in progress and has many holes in it.  If you'd like any holes fill
+in, please contact Michael Droettboom at ``mdboom at jhu dot edu``.
 
-.. __: fdl.html
+This documentation consists of some HOW TO documentation and some
+reference documentation.  In addition, there are some more formal
+published papers available from the `Gamera website`__.
 
-.. warning:: Work in progress.
+.. __: http://dkc.jhu.edu/gamera/
 
-- `Building and installing Gamera`__: The basics to get you started.
+Overview
+========
+
+- `Gentle overview of Gamera`__: For a less-detailed idea of what Gamera
+  is and does.
+
+.. __: overview.html
+
+How-To
+======
+
+- `Building and installing Gamera`__: The basics to get you started
+  with running Gamera.
 
 .. __: install.html
-
-  - `Directory heirarchy`__: Where the files are.
-
-.. __: directory_heirarchy.html
 
 - `Writing Gamera plugins`__: Learn how to write new image methods.
 
@@ -31,26 +41,47 @@ Documentation License`__.
 
    .. __: args.html
 
-   - `The Gamera C++ Image API`__: How to work with Gamera's images from C++.
+- `The Gamera C++ Image API`__: How to work with Gamera's images from C++.
 
-   .. __: image_api.html
+.. __: image_api.html
 
-       - `Image types`__: The different types of images available in Gamera
+- `The Gamera GUI`__: How to use the integrated GUI.  Additionally,
+  this describes how to train images.
 
-       .. __: image_types.html
+.. __: gui.html
+
+- `Classifier API`__: How to use image classifiers from Python.
+
+.. __: classify.html
+
+Reference
+=========
 
 - `Plugins`__: Documentation of all the included plugins.
 
 .. __: plugins.html
 
-- `The Gamera GUI`__: How to use the integrated GUI.
+- `Directory heirarchy`__: Where the files are.
 
-.. __: gui.html
+.. __: directory_heirarchy.html
+
+- `Image types`__: The different types of images available in Gamera
+
+.. __: image_types.html
 
 - `XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html
 
-- `Classifier API`__: How to use image classifiers.
 
-.. __: classify.html
+Acknowledgements
+================
+
+Gamera is funded through the National
+Science Foundation's Digital Library Initiative 2 (Award \#9817430),
+an Institute of Museum and Library Services National Leadership Grant,
+and support from the Lester S. Levy Estate.
+
+These documents were produced using reStructuredText_.
+
+.. _reStructuredText: http://docutils.sourceforge.net/rst.html

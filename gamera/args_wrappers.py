@@ -231,7 +231,7 @@ class IntVector(WrapperArg):
         return 0;
       PyObject* str = PyString_FromStringAndSize(
         (char*)(&((*%(symbol)s)[0])),
-        %(symbol)s->size() * sizeof(double));
+        %(symbol)s->size() * sizeof(int));
       %(pysymbol)s = PyObject_CallFunction(
         array_init, "sO", "i", str);
       Py_DECREF(str);

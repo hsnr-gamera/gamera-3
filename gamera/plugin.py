@@ -70,6 +70,9 @@ class PluginFunction:
    pure_python = False
 
    def register(cls, add_to_image=1):
+      if cls.return_type != None:
+         if cls.return_type.name == None:
+            cls.return_type.name = cls.__name__
       if cls.category == None:
          category = cls.module.category
       else:

@@ -456,7 +456,7 @@ app = None
 def run():
    global app
    init_gamera()
-   wxInitAllImageHandlers()
+   # wxInitAllImageHandlers()
 
    class MyApp(wxApp):
       def __init__(self, parent):

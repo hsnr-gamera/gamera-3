@@ -78,7 +78,16 @@ Linux (and other \*nix)
 =======================
 
 Install binary packages for Python and wxPython (see correct versions
-at top of this document.)  libtiff 3.5.x will also need to be installed.
+at top of this document.)
+
+In addition, your Linux installation should also have:
+
+- libtiff 3.5.x
+- libpng 2.2.x
+- On some distributions, including SuSE, the files necessary to build
+  Python extensions are included in a separate development package.
+  Make sure you have the Python development package installed before
+  attempted to build Gamera.
 
 Standard Build and Install
 --------------------------

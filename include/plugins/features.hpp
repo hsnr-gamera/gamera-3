@@ -469,5 +469,41 @@ namespace Gamera {
     *(buf++) = feature_t(x_axis_crossings);
     *buf = feature_t(y_axis_crossings);
   }
+
+  template<class T>
+  void top_bottom(const T& m, feature_t* buf) {
+    int top = -1;
+    typename T::const_row_iterator ri = m.row_begin();
+    for (int i = 0; ri != m.row_end(); ri++, i++) {
+      typename T::const_col_iterator ci = ri.begin();
+      for (; ci != ri.end(); ci++)
+	if (is_black(*ci)) {
+	  top = i;
+	  break;
+	}
+      if (top != -1)
+	break;
+    }
+    if (top == -1) {
+      *(buf++) = 1.0;
+      *buf = 0.0;
+      return;
+    }
+    int bottom = -1;
+    ri = m.row_end();
+    --ri;
+    for (int i = m.nrows() - 1; ri != m.row_begin(); ri--, i--) {
+      typename T::const_col_iterator ci = ri.begin();
+      for (; ci != ri.end(); ci++)
+	if (is_black(*ci)) {
+	  bottom = i;
+	  break;
+	}
+      if (bottom != -1)
+	break;
+    }
+    *(buf++) = feature_t(top) / feature_t(m.nrows());
+    *buf = feature_t(bottom) / feature_t(m.nrows());
+  }
 }
 #endif

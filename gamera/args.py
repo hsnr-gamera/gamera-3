@@ -73,8 +73,8 @@ class Arg:
    length = 1
 
    def __init__(self, name=None):
-      if name is None:
-         name = "_" + str(hash(self))
+##       if name is None:
+##          name = "_" + str(hash(self))
       self.name = name
 
    def __repr__(self):

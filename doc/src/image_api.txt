@@ -315,7 +315,7 @@ passed into your function as a ``const ImageView<T> &``, you will not
 be able to change the pixels in the image, and thus will only be able
 to get ``const`` iterators from it.
 
-Note that you can call ``row_number( )`` or ``col_number( )`` on any
+Note that you can call ``row( )`` or ``col( )`` on any
 iterator to obtain the current row and column position of the iterator.
 
 All Gamera iterators can get/set their values in two ways, both of

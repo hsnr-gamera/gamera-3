@@ -185,6 +185,15 @@ guarantees that the pixels of the resulting skeleton are never more than
     return_type = FloatVector(length=6)
     feature_function = True
 
+class top_bottom(PluginFunction):
+    """Features useful only for segmentation-free analysis.  Currently, the
+first feature is the first row containing a black pixel, and the second feature
+is the last row containing a black pixel."""
+    self_type = ImageType([ONEBIT])
+    return_type = FloatVector(length=2)
+    feature_function = True
+    doc_examples = [(ONEBIT,)]
+
 class generate_features(PluginFunction):
     """Generates features for the image by calling a number of feature functions
 and storing the results in the image's ``features`` member variable (a Python ``array``).
@@ -231,7 +240,7 @@ class FeaturesModule(PluginModule):
                  aspect_ratio, compactness,
                  volume16regions, volume64regions,
                  generate_features, zernike_moments,
-                 skeleton_features]
+                 skeleton_features, top_bottom]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()

@@ -163,7 +163,7 @@ else:
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
 
-setup(name = "gamera", version="2.1.1",
+setup(name = "gamera", version="2.1.3",
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "mdboom@jhu.edu; karlmac@jhu.edu",
@@ -171,12 +171,5 @@ setup(name = "gamera", version="2.1.1",
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
       data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))]
-#('include/gamera', glob.glob("include/*.hpp")),
-#                  ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
-#                  ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),
-#                  ('gamera/doc', glob.glob("gamera/doc/*.html")),
-#                  ('gamera/doc/classes', glob.glob("gamera/doc/classes/*.html")),
-#                  ('gamera/doc/plugins', glob.glob("gamera/doc/plugins/*.html")),
-#                  (scripts_directory_name, scripts)]
       )
 

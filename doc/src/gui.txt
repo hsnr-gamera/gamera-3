@@ -41,8 +41,7 @@ members and methods of the image.
 Icon display
 ````````````
 
-On the left, all active image objects (at the top level of the
-Python interpreter) are displayed as icons.  When you load images,
+On the left, all active image objects (displayed as icons.  When you load images,
 they are displayed here.
 
 The icon indicates the pixel type of the image.  See `Image types`__

@@ -43,6 +43,7 @@ extern "C" {
   static PyObject* image_get_resolution(PyObject* self);
   static int image_set_features(PyObject* self, PyObject* v);
   static int image_set_id_name(PyObject* self, PyObject* v);
+  static int image_set_children_images(PyObject* self, PyObject* v);
   static int image_set_classification_state(PyObject* self, PyObject* v);
   static int image_set_scaling(PyObject* self, PyObject* v);
   static int image_set_resolution(PyObject* self, PyObject* v);
@@ -423,6 +424,7 @@ CREATE_SET_FUNC(features)
 CREATE_SET_FUNC(id_name)
 CREATE_GET_FUNC(id_name)
 CREATE_GET_FUNC(children_images)
+CREATE_SET_FUNC(children_images)
 CREATE_GET_FUNC(classification_state)
 CREATE_SET_FUNC(classification_state)
 

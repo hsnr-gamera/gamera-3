@@ -313,6 +313,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "Known features must be a list!");
     return 0;
   }
+  printf("supports iter %\n", PyIter_Check(known));
 
   int known_size = PyList_Size(known);
   if (known_size == 0) {

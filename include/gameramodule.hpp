@@ -225,7 +225,7 @@ inline PyObject* init_image_members(ImageObject* o) {
     return 0;
   // Classification state
   o->m_classification_state = Py_BuildValue("i", UNCLASSIFIED);
-  return (PyObject*)o;
+  return (PyObject*)o;  
 }
 
 /*

@@ -44,7 +44,7 @@ class ToolBar(wxPanel):
              self._close_toolbar_bitmap,
              size=wxSize(11, 28))
          self.close_button.SetBezelWidth(1)
-         self.close_button.SetUseFocusIndicator(false)
+         self.close_button.SetUseFocusIndicator(False)
          self.close_button.SetToolTipString("Hide Toolbar")
          self.sizer.Add(self.close_button)
          EVT_BUTTON(self, 1000, self.OnHideToolbar)
@@ -56,7 +56,7 @@ class ToolBar(wxPanel):
              size=wxSize(28, 11))
          self.open_button.Hide()
          self.open_button.SetBezelWidth(1)
-         self.open_button.SetUseFocusIndicator(false)
+         self.open_button.SetUseFocusIndicator(False)
          self.open_button.SetToolTipString("Show Toolbar")
          EVT_BUTTON(self, 1001, self.OnShowToolbar)
          self.open_button.SetCursor(wxStockCursor(wxCURSOR_HAND))
@@ -70,7 +70,7 @@ class ToolBar(wxPanel):
       else:
          button = wxGenBitmapToggleButton(self, id, bitmap, size=wxSize(28,28))
       button.SetBezelWidth(1)
-      button.SetUseFocusIndicator(false)
+      button.SetUseFocusIndicator(False)
       button.SetToolTipString(help_string)
       if callback:
          EVT_BUTTON(self, id, callback)
@@ -88,7 +88,7 @@ class ToolBar(wxPanel):
              self, id, None, text, size=wxSize(48,28))
       button.SetBitmapLabel(gamera_icons.getToolbarMenuBitmap())
       button.SetBezelWidth(1)
-      button.SetUseFocusIndicator(false)
+      button.SetUseFocusIndicator(False)
       button.SetToolTipString(help_string)
       if callback:
          EVT_BUTTON(self, id, callback)

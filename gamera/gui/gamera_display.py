@@ -569,7 +569,7 @@ class ImageDisplay(wxScrolledWindow):
 
       tmpdc.SelectObject(bmp)
       dc.Blit(x, y, scaled_image.ncols, scaled_image.nrows,
-              tmpdc, 0, 0, wxCOPY, true)
+              tmpdc, 0, 0, wxCOPY, True)
 
       if len(self.highlights):
          for highlight, color in self.highlights:
@@ -598,14 +598,14 @@ class ImageDisplay(wxScrolledWindow):
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
                dc.Blit(x_cc, y_cc,
                        scaled_highlight.ncols, scaled_highlight.nrows,
-                       tmpdc, 0, 0, wxAND, true)
+                       tmpdc, 0, 0, wxAND, True)
                tmpdc.SetBrush(wxBrush(color, wxSOLID))
                tmpdc.SetLogicalFunction(wxAND_REVERSE)
                tmpdc.SetPen(wxTRANSPARENT_PEN)
                tmpdc.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight())
                dc.Blit(x_cc, y_cc,
                        scaled_highlight.ncols, scaled_highlight.nrows,
-                       tmpdc, 0, 0, wxOR, true)
+                       tmpdc, 0, 0, wxOR, True)
       if redraw_rubber:
          self.draw_rubber(dc)
             
@@ -733,7 +733,7 @@ class ImageWindow(wxPanel):
       wxPanel.__init__(self, parent, id, style=
                        wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.id = self.get_display()
-      self.SetAutoLayout(true)
+      self.SetAutoLayout(True)
       self.toolbar = toolbar.ToolBar(self, -1)
       from gamera.gui import gamera_icons
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
@@ -772,14 +772,14 @@ class ImageWindow(wxPanel):
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.height.AsIs()
-      self.toolbar.SetAutoLayout(true)
+      self.toolbar.SetAutoLayout(True)
       self.toolbar.SetConstraints(lc)
       lc = wxLayoutConstraints()
       lc.top.Below(self.toolbar, 0)
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.bottom.SameAs(self, wxBottom, 0)
-      self.id.SetAutoLayout(true)
+      self.id.SetAutoLayout(True)
       self.id.SetConstraints(lc)
       self.Layout()
 
@@ -978,7 +978,7 @@ class MultiImageDisplay(wxGrid):
       self.scaling = 1.0
       self.tooltip = wxButton(self.GetGridWindow(), -1, "",
                               wxPoint(0, 0), wxSize(175, 24))
-      self.tooltip.Show(false)
+      self.tooltip.Show(False)
       EVT_GRID_CELL_LEFT_DCLICK(self, self._OnLeftDoubleClick)
       EVT_GRID_CELL_RIGHT_CLICK(self, self._OnRightClick)
       EVT_GRID_SELECT_CELL(self, self._OnSelect)
@@ -1279,7 +1279,7 @@ class MultiImageDisplay(wxGrid):
                 row = i / self.cols
                 col = i % self.cols
                 self.SelectBlock(
-                   row, col, row, col, true)
+                   row, col, row, col, True)
          self.updating = 0
          # self.OnSelectImpl()
       finally:
@@ -1434,7 +1434,7 @@ class MultiImageDisplay(wxGrid):
          image = self.list[image_no]
 
       if image == None:
-         self.tooltip.Show(false)
+         self.tooltip.Show(False)
          last_image_no = None
       else:
          self.tooltip.Show(1)
@@ -1465,7 +1465,7 @@ class MultiImageWindow(wxPanel):
       from gamera.gui import gamera_icons
       wxPanel.__init__(self, parent, id,
                        style=wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
-      self.SetAutoLayout(true)
+      self.SetAutoLayout(True)
       self.toolbar = toolbar.ToolBar(self, -1)
 
       self.toolbar.AddSimpleTool(
@@ -1515,14 +1515,14 @@ class MultiImageWindow(wxPanel):
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.height.AsIs()
-      self.toolbar.SetAutoLayout(true)
+      self.toolbar.SetAutoLayout(True)
       self.toolbar.SetConstraints(lc)
       lc = wxLayoutConstraints()
       lc.top.Below(self.toolbar, 0)
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.height.AsIs()
-      self.toolbar2.SetAutoLayout(true)
+      self.toolbar2.SetAutoLayout(True)
       self.toolbar2.SetConstraints(lc)
       self.id = self.get_display()
       lc = wxLayoutConstraints()
@@ -1530,7 +1530,7 @@ class MultiImageWindow(wxPanel):
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.bottom.SameAs(self, wxBottom, 0)
-      self.id.SetAutoLayout(true)
+      self.id.SetAutoLayout(True)
       self.id.SetConstraints(lc)
       self.Layout()
       self.sort_choices = []

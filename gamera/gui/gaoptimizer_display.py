@@ -41,7 +41,7 @@ class OptimizerFrame(wxFrame):
       self.classifier = NonInteractiveClassifier()
       self.knn = self.classifier.classifier
       self.notebook = wxNotebook(self, -1)
-      self.notebook.SetAutoLayout(true)
+      self.notebook.SetAutoLayout(True)
       self.running = 0
       self.elapsed_time = 0
       self.start_time = 0
@@ -74,26 +74,26 @@ class OptimizerFrame(wxFrame):
       id = NewId()
       menu.Append(id, "&Save", "Save the current weights")
       EVT_MENU(self, id, self.save_cb)
-      menu.Enable(id, false)
+      menu.Enable(id, False)
 
       # save as
       id = NewId()
       menu.Append(id, "&Save as", "Save the current weights")
       EVT_MENU(self, id, self.save_as_cb)
-      menu.Enable(id, false)
+      menu.Enable(id, False)
       menu.AppendSeparator()
 
       # start
       id = NewId()
       menu.Append(id, "&Start", "Start the optimization")
       EVT_MENU(self, id, self.start_cb)
-      menu.Enable(id, false)
+      menu.Enable(id, False)
 
       # stop
       id = NewId()
       menu.Append(id, "&Stop", "Stop the optimization")
       EVT_MENU(self, id, self.stop_cb)
-      menu.Enable(id, false)
+      menu.Enable(id, False)
 
       # Features
       menu.AppendSeparator()
@@ -120,18 +120,18 @@ class OptimizerFrame(wxFrame):
       self.timer.Stop()
       self.classifier.stop_optimizing()
       id = self.file_menu.FindItem("Start")
-      self.file_menu.Enable(id, true)
+      self.file_menu.Enable(id, True)
       id = self.file_menu.FindItem("Stop")
-      self.file_menu.Enable(id, false)
+      self.file_menu.Enable(id, False)
       self.running = 0
       self.status.state_display.SetValue("not running")
 
    def start(self):
       self.classifier.start_optimizing()
       id = self.file_menu.FindItem("Start")
-      self.file_menu.Enable(id, false)
+      self.file_menu.Enable(id, False)
       id = self.file_menu.FindItem("Stop")
-      self.file_menu.Enable(id, true)
+      self.file_menu.Enable(id, True)
       self.timer.Start(1000)
       self.running = 1
       self.elapsed_time = 0
@@ -156,11 +156,11 @@ class OptimizerFrame(wxFrame):
          self.weights_panel.new_classifier(self.knn, self.classifier.get_glyphs())
          wxEndBusyCursor()
          id = self.file_menu.FindItem("Start")
-         self.file_menu.Enable(id, true)
+         self.file_menu.Enable(id, True)
          id = self.file_menu.FindItem("Save")
-         self.file_menu.Enable(id, true)
+         self.file_menu.Enable(id, True)
          id = self.file_menu.FindItem("Save as")
-         self.file_menu.Enable(id, true)
+         self.file_menu.Enable(id, True)
          return
       dlg.Destroy()
 
@@ -317,7 +317,7 @@ class StatusPanel(wxPanel):
       sizer.Add(self.mutation_display, 1)
       EVT_COMMAND_SCROLL(self, id, self.mutation_cb)
 
-      self.SetAutoLayout(true)
+      self.SetAutoLayout(True)
       self.SetSizer(sizer)
       sizer.Fit(self)
 
@@ -355,7 +355,7 @@ class WeightsPanel(wxScrolledWindow):
          text = wxStaticText(self, -1, x)
          sizer.Add(text, 1)
          bar = wxGauge(self, -1, 100, style=wxGA_SMOOTH, size=(200, 10))
-         bar.SetAutoLayout(true)
+         bar.SetAutoLayout(True)
          sizer.Add(bar, 1, flag=wxGROW)
          self.bars.append(bar)
       sizer.Layout()
@@ -372,9 +372,9 @@ class BiollanteApp(wxApp):
    def OnInit(self):
       frame = OptimizerFrame(NULL, -1,
                              "GA Optimization for k-NN")
-      frame.Show(true)
+      frame.Show(True)
       self.SetTopWindow(frame)
-      return true
+      return True
 
 def run_ga_app():
    app = BiollanteApp(0)

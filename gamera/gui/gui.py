@@ -362,7 +362,7 @@ class ShellFrame(wxFrame):
       from gamera.gui import gaoptimizer_display
       frame = gaoptimizer_display.OptimizerFrame(NULL, -1,
                                                  "GA Optimization for k-NN")
-      frame.Show(true)
+      frame.Show(True)
 
    def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)
@@ -432,7 +432,7 @@ class GameraSplash(wxSplashScreen):
       global main_win
       main_win = ShellFrame(NULL, -1, "Gamera")
       # app.SetTopWindow(main_win)
-      main_win.Show(true)
+      main_win.Show(True)
       evt.Skip()
 
 app = None
@@ -452,7 +452,7 @@ def run():
          self.splash = GameraSplash()
          self.splash.Show()
          del self.splash
-         return true
+         return True
 
       def OnExit(self):
          pass

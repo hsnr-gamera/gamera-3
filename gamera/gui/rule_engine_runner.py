@@ -122,7 +122,7 @@ class RuleEngineRunnerPanel(wxPanel):
         self, parent, id,
         style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.toplevel = toplevel
-      self.SetAutoLayout(true)
+      self.SetAutoLayout(True)
       self.toolbar = toolbar.ToolBar(self, -1)
       from gamera.gui import gamera_icons
       self.tree = RuleEngineRunnerTree(toplevel, self)
@@ -146,14 +146,14 @@ class RuleEngineRunnerPanel(wxPanel):
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.height.AsIs()
-      self.toolbar.SetAutoLayout(true)
+      self.toolbar.SetAutoLayout(True)
       self.toolbar.SetConstraints(lc)
       lc = wxLayoutConstraints()
       lc.top.Below(self.toolbar, 0)
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.bottom.SameAs(self, wxBottom, 0)
-      self.tree.SetAutoLayout(true)
+      self.tree.SetAutoLayout(True)
       self.tree.SetConstraints(lc)
       self.Layout()
 

@@ -126,7 +126,6 @@ class ImageBase:
    def __getstate__(self):
       """Extremely basic pickling support for use in testing.
       Note that there is no unpickling support."""
-      import zlib, binascii
       dict = {}
       for key in self._members_for_menu:
          dict[key] = getattr(self, key)
@@ -516,6 +515,8 @@ def init_gamera():
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)
+      import sys
+      sys.path.append(".")
       _gamera_initialised = 1
 
 if __name__ == "__main__":

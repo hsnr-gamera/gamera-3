@@ -27,14 +27,17 @@
 namespace Gamera {
 
 template<class T, class U>
-void and_image(T& a, U& b) {
+void and_image(T& a, const U& b) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::range_error("Dimensions must match!");
   typename T::vec_iterator it_a, end;
-  typename U::vec_iterator it_b;
+  typename U::const_vec_iterator it_b;
+  ImageAccessor<typename T::value_type> a_accessor;
+  ImageAccessor<typename U::value_type> b_accessor;
+
   for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
        it_a != end; ++it_a, ++it_b) {
-    if (is_black(*it_a) && is_black(*it_b))
+    if (is_black(a_accessor.get(it_a)) && is_black(b_accessor.get(it_b)))
       *it_a = black(a);
     else
       *it_a = white(a);
@@ -42,11 +45,11 @@ void and_image(T& a, U& b) {
 }
 
 template<class T, class U>
-void or_image(T& a, U& b) {
+void or_image(T& a, const U& b) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::range_error("Dimensions must match!");
   typename T::vec_iterator it_a, end;
-  typename U::vec_iterator it_b;
+  typename U::const_vec_iterator it_b;
   ImageAccessor<typename T::value_type> a_accessor;
   ImageAccessor<typename U::value_type> b_accessor;
 
@@ -60,18 +63,22 @@ void or_image(T& a, U& b) {
 }
 
 template<class T, class U>
-void xor_image(T &a, const U &b) {
+void xor_image(T& a, const U& b) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::range_error("Dimensions must match!");
   typename T::vec_iterator it_a, end;
   typename U::const_vec_iterator it_b;
+  ImageAccessor<typename T::value_type> a_accessor;
+  ImageAccessor<typename U::value_type> b_accessor;
+
   for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
        it_a != end; ++it_a, ++it_b) {
-    if (is_black(*it_a) ^ is_black(*it_b))
+    if (is_black(a_accessor.get(it_a)) ^ is_black(b_accessor.get(it_b)))
       *it_a = black(a);
     else
       *it_a = white(a);
   }
 }
+
 }
 #endif

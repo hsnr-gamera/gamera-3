@@ -130,13 +130,19 @@ class clip_image(PluginFunction):
     args = Args(ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT]))
 clip_image = clip_image()
 
+class mask_image(PluginFunction):
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    self_type = ImageType([GREYSCALE, GREY16, RGB, FLOAT])
+    args = Args(ImageType([ONEBIT]))
+mask_image = mask_image()
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy,
                  histogram, union_images, projection_rows, projection_cols,
-                 projections, fill_white, invert, clip_image]
+                 projections, fill_white, invert, clip_image, mask_image]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -234,13 +234,13 @@ namespace Gamera {
       size_t j;
       for (j = 0, col = row; j < image.ncols(); j++, ++col.x) {
 	// relabel
-	acc.set(labels[acc(col)], col);
+	acc.set(labels[acc(col)], col); 
 	// put bounding box in map
 	typename T::value_type label = acc(col);
 	if (label) {
 	  if (rects[label] == 0) {
 	    rects[label] = new Rect(i, j, 1, 1);
-	  } else {
+ 	  } else {
 	    if (j < rects[label]->ul_x())
 	      rects[label]->ul_x(j);
 	    if (j > rects[label]->lr_x())
@@ -258,7 +258,7 @@ namespace Gamera {
     std::list<Image*>* ccs = new std::list<Image*>;
     for (size_t i = 0; i < rects.size(); ++i) {
       if (rects[i] != 0) {
-	ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
+ 	ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
 								     OneBitPixel(i),
 								     rects[i]->offset_y() + image.offset_y(),
 								     rects[i]->offset_x() + image.offset_x(),

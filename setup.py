@@ -131,7 +131,7 @@ if sys.platform == "win32":
 else:
    description = "Welcome to Gamera.  Please ensure that Python 2.2 (or later) and wxPython 2.4.0 (or later) are installed before proceeding."
 
-setup(name = "gamera", version="2.0",
+setup(name = "gamera", version="2.1",
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "mdboom@jhu.edu; karlmac@jhu.edu",

@@ -61,7 +61,8 @@ namespace Gamera {
       m_page_offset_y = page_offset_y;
       m_user_data = 0;
     }
-    virtual ~ImageDataBase() { }
+    virtual ~ImageDataBase() {
+    }
 
     /*
       Various information about dimensions.
@@ -140,6 +141,7 @@ namespace Gamera {
       if (m_data != 0) {
 	delete[] m_data;
       }
+      std::cerr << "deleted data";
     }
     
     virtual size_t bytes() const { return m_size * sizeof(T); }

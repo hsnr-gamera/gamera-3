@@ -106,13 +106,16 @@ class IconDisplay(wxListCtrl):
 
    def remove_icon(self, key):
       if self.data.has_key(key):
-         del self.data[key].data
-      index = self.data[key].index
-      self.DeleteItem(index)
-      del self.data[key]
-      for i in self.data.values():
-         if i.index > index:
-            i.index = i.index - 1
+         icon = self.data[key]
+         del icon.data
+         if hasattr(icon, 'extra_method'):
+            del icon.extra_method
+         index = icon.index
+         self.DeleteItem(index)
+         del self.data[key]
+         for i in self.data.values():
+            if i.index > index:
+               i.index = i.index - 1
 
    def update_icons(self, locals=None):
       if locals != None:
@@ -175,7 +178,7 @@ class IconDisplay(wxListCtrl):
 class CustomIcon:
    is_custom_icon_description = 1
 
-   _extra_methods = {}
+   extra_methods = {}
    def __init__(self, label_, data_, index_):
       self.label = label_
       self.data = data_
@@ -207,7 +210,8 @@ class CustomIcon:
       image_menu.ImageMenu(
         parent, x, y,
         self.data, self.label,
-        shell, extra_methods = self._extra_methods)
+        shell, extra_methods = self.extra_methods)
+      self._shell = None
 
 class CIRGBImage(CustomIcon):
    def get_icon():
@@ -311,7 +315,7 @@ class CICC(CustomIcon):
 class CIImageList(CustomIcon):
    def __init__(self, *args):
       CustomIcon.__init__(self, *args)
-      self._extra_methods =  _extra_methods = {
+      self.extra_method = {
         'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml},
                 'Features': {'generate_features_list' : self.generate_features}}}
 

@@ -425,8 +425,8 @@ template = Template("""
         PyObject* list = PyList_New(return_value->size());
         std::list<Image*>::iterator it = return_value->begin();
         for (size_t i = 0; i < return_value->size(); ++i, ++it) {
-          PyList_SET_ITEM(list, i,
-            create_ImageObject(*it));
+          PyObject *item = create_ImageObject(*it);
+          PyList_SET_ITEM(list, i, item);
         }
         delete return_value;
         return list;

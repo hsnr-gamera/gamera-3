@@ -436,5 +436,31 @@ namespace Gamera {
     };
   }
 
+  template<class T, class U>
+  typename ImageFactory<T>::view_type* mask_image(const T& a, U &b) {
+    typename ImageFactory<T>::data_type* dest_data =
+      new typename ImageFactory<T>::data_type(b.size(), b.offset_y(), b.offset_x());
+    typename ImageFactory<T>::view_type* dest =
+      new typename ImageFactory<T>::view_type(*dest_data, b);
+
+    typename ImageFactory<T>::view_type a_view =
+      typename ImageFactory<T>::view_type(a, b.ul(), b.size());
+
+    ImageAccessor<typename T::value_type> a_accessor;
+    ImageAccessor<typename U::value_type> b_accessor;
+
+    typename T::vec_iterator it_a, end;
+    typename U::vec_iterator it_b;
+    typename T::vec_iterator it_dest;
+
+    for (it_a = a_view.vec_begin(), end = a_view.vec_end(), it_b = b.vec_begin(), it_dest = dest->vec_begin();
+	 it_a != end; ++it_a, ++it_b, ++it_dest) {
+      if (is_black(b_accessor.get(it_b)))
+	a_accessor.set(a_accessor.get(it_a), it_dest);
+      else
+	a_accessor.set(white(*dest), it_dest);
+    }
+    return dest;
+  }
 }
 #endif

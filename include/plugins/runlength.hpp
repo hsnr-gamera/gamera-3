@@ -28,6 +28,9 @@
 #include <sstream>
 
 namespace Gamera {
+  typedef std::pair<size_t, int> RunPair;
+  typedef std::vector<RunPair> RunVector;
+
   /*
     Information about runs.
   */
@@ -93,6 +96,40 @@ namespace Gamera {
     is not filled with zeros so that successive calls can be made to this
     algorithm with the same vector to do the histogram of an entire image. KWM
   */
+  
+  template<class T>
+  struct SortBySecondFunctor {
+    bool operator()(const T& a, const T& b) {
+      if (a.second == b.second)
+	return a.first < b.first;
+      return a.second >= b.second;
+    }
+  };
+
+  RunVector* _sort_run_results(IntVector* hist) {
+    RunVector* runs = new RunVector(hist->size());
+    for (size_t i = 0; i < hist->size(); ++i) {
+      (*runs)[i].first = i;
+      (*runs)[i].second = (*hist)[i];
+    }
+    delete hist;
+    SortBySecondFunctor<RunPair> func;
+    std::sort(runs->begin(), runs->end(), func);
+    return runs;
+  }
+
+  PyObject* _run_results_to_python(RunVector* runs, long n) {
+    if (n < 0 or n > (long)runs->size())
+      n = (long)runs->size();
+    PyObject* result = PyList_New(n);
+    for (long i = 0; i < n; ++i) {
+      PyObject* tuple = Py_BuildValue("ii", (*runs)[i].first, (*runs)[i].second);
+      PyList_SET_ITEM(result, i, tuple);
+    }
+    delete runs;
+    return result;
+  }
+
   template<class T, class Vec>
   inline void black_run_histogram(T i, const T end, Vec& hist) {
     while (i != end) {
@@ -121,55 +158,133 @@ namespace Gamera {
     }
   }
 
+  template<class T>
+  IntVector* black_horizontal_run_histogram(const T& image) {
+    typedef typename T::const_row_iterator iterator;
+    IntVector* hist = new IntVector(image.ncols() + 1, 0);
+  
+    iterator end = image.row_end();
+    for (iterator i = image.row_begin(); i != end; ++i)
+      black_run_histogram(i.begin(), i.end(), *hist);
+
+    return hist;
+  }    
 
   template<class T>
   size_t most_frequent_black_horizontal_run(const T& image) {
-    typedef typename T::const_row_iterator iterator;
-    std::vector<size_t> hist(image.ncols() + 1, 0);
-  
-    iterator end = image.row_end();
-    for (iterator i = image.row_begin(); i != end; ++i) {
-      black_run_histogram(i.begin(), i.end(), hist);
+    IntVector* hist = black_horizontal_run_histogram(image);
+    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    delete hist;
+    return result;
+  }
 
+  template<class T>
+  RunVector* most_frequent_black_horizontal_runs(const T& image) {
+    IntVector* hist = black_horizontal_run_histogram(image);
+    return _sort_run_results(hist);
+  }
+
+  template<class T>
+  PyObject* most_frequent_black_horizontal_runs(const T& image, long n) {
+    RunVector* runs = most_frequent_black_horizontal_runs(image);
+    return _run_results_to_python(runs, n);
+  }
+
+  template<class T>
+  IntVector* black_vertical_run_histogram(const T& image) {
+    typedef typename T::const_col_iterator iterator;
+    IntVector* hist = new IntVector(image.nrows() + 1, 0);
+
+    iterator end = image.col_end();
+    for (iterator i = image.col_begin(); i != end; ++i) {
+      black_run_histogram(i.begin(), i.end(), *hist);
     }
-    return std::max_element(hist.begin(), hist.end()) - hist.begin();
+    return hist;
   }
 
   template<class T>
   size_t most_frequent_black_vertical_run(const T& image) {
-    typedef typename T::const_col_iterator iterator;
-    std::vector<size_t> hist(image.nrows() + 1, 0);
-
-    iterator end = image.col_end();
-    for (iterator i = image.col_begin(); i != end; ++i) {
-      black_run_histogram(i.begin(), i.end(), hist);
-    }
-    return std::max_element(hist.begin(), hist.end()) - hist.begin();
+    IntVector* hist = black_vertical_run_histogram(image);
+    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    delete hist;
+    return result;
   }
 
   template<class T>
-  size_t most_frequent_white_horizontal_run(const T& image) {
+  RunVector* most_frequent_black_vertical_runs(const T& image) {
+    IntVector* hist = black_vertical_run_histogram(image);
+    return _sort_run_results(hist);
+  }
+
+  template<class T>
+  PyObject* most_frequent_black_vertical_runs(const T& image, long n) {
+    RunVector* runs = most_frequent_black_vertical_runs(image);
+    return _run_results_to_python(runs, n);
+  }
+
+  template<class T>
+  IntVector* white_horizontal_run_histogram(const T& image) {
     typedef typename T::const_row_iterator iterator;
-    std::vector<size_t> hist(image.ncols() + 1, 0);
+    IntVector* hist = new IntVector(image.ncols() + 1, 0);
 
     iterator end = image.row_end();
     for (iterator i = image.row_begin(); i != end; ++i) {
-      white_run_histogram(i.begin(), i.end(), hist);
+      white_run_histogram(i.begin(), i.end(), *hist);
     }
-    return std::max_element(hist.begin(), hist.end()) - hist.begin();
+    return hist;
+  }    
+
+  template<class T>
+  size_t most_frequent_white_horizontal_run(const T& image) {
+    IntVector* hist = white_horizontal_run_histogram(image);
+    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    delete hist;
+    return result;
+  }
+
+  template<class T>
+  RunVector* most_frequent_white_horizontal_runs(const T& image) {
+    IntVector* hist = white_horizontal_run_histogram(image);
+    return _sort_run_results(hist);
+  }
+
+  template<class T>
+  PyObject* most_frequent_white_horizontal_runs(const T& image, long n) {
+    RunVector* runs = most_frequent_white_horizontal_runs(image);
+    return _run_results_to_python(runs, n);
+  }
+
+  template<class T>
+  IntVector* white_vertical_run_histogram(const T& image) {
+    typedef typename T::const_col_iterator iterator;
+    IntVector* hist = new IntVector(image.nrows() + 1, 0);
+
+    iterator end = image.col_end();
+    for (iterator i = image.col_begin(); i != end; ++i) {
+      white_run_histogram(i.begin(), i.end(), *hist);
+
+    }
+    return hist;
   }
 
   template<class T>
   size_t most_frequent_white_vertical_run(const T& image) {
-    typedef typename T::const_col_iterator iterator;
-    std::vector<size_t> hist(image.nrows() + 1, 0);
+    IntVector* hist = white_vertical_run_histogram(image);
+    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    delete hist;
+    return result;
+  }
 
-    iterator end = image.col_end();
-    for (iterator i = image.col_begin(); i != end; ++i) {
-      white_run_histogram(i.begin(), i.end(), hist);
+  template<class T>
+  RunVector* most_frequent_white_vertical_runs(const T& image) {
+    IntVector* hist = white_vertical_run_histogram(image);
+    return _sort_run_results(hist);
+  }
 
-    }
-    return std::max_element(hist.begin(), hist.end()) - hist.begin();
+  template<class T>
+  PyObject* most_frequent_white_vertical_runs(const T& image, long n) {
+    RunVector* runs = most_frequent_white_vertical_runs(image);
+    return _run_results_to_python(runs, n);
   }
 
   /*

@@ -469,5 +469,116 @@ namespace Gamera {
     }
     return dest;
   }
+  
+  template<class T>
+  struct _nested_list_to_image {
+    ImageView<ImageData<T> >* operator()(PyObject* obj) {
+      ImageData<T>* data;
+      ImageView<ImageData<T> >* image;
+      pixel_from_python<T> from_python;
+      
+      if (!PyList_Check(obj))
+	throw std::runtime_error("Must be a nested Python list of pixels.");
+      int nrows = PyList_GET_SIZE(obj);
+      if (nrows == 0)
+	throw std::runtime_error("Nested list must have at least one row.");
+      int ncols = -1;
+      
+      for (size_t r = 0; r < nrows; ++r) {
+	PyObject* row = PyList_GET_ITEM(obj, r);
+	if (!PyList_Check(row)) {
+	  from_python(row);
+	  row = obj;
+	  nrows = 1;
+	}
+	int this_ncols = PyList_GET_SIZE(row);
+	if (ncols == -1) {
+	  ncols = this_ncols;
+	  if (ncols == 0)
+	    throw std::runtime_error
+	      ("The rows must be at least one column wide.");
+	  data = new ImageData<T>(nrows, ncols);
+	  image = new ImageView<ImageData<T> >(*data, 0, 0, nrows, ncols);
+	} else {
+	  if (ncols != this_ncols) {
+	    delete image;
+	    delete data;
+	    throw std::runtime_error
+	      ("Each row of the nested list must be the same length.");
+	  }
+	}
+	for (size_t c = 0; c < ncols; ++c) {
+	  PyObject* item = PyList_GET_ITEM(row, c);
+	  T px = (T)from_python(item);
+	  image->set(r, c, px);
+	}
+      }
+      return image;
+    }
+  };
+    
+  Image* nested_list_to_image(PyObject* obj, int pixel_type) {
+    // If pixel_type == -1, attempt to do an auto-detect.
+    if (pixel_type < 0) {
+      if (!PyList_Check(obj))
+	throw std::runtime_error("Must be a nested Python list of pixels.");
+      if (PyList_GET_SIZE(obj) == 0)
+	throw std::runtime_error("Nested list must have at least one row.");
+      PyObject* row = PyList_GET_ITEM(obj, 0);
+      PyObject* pixel;
+      if (!PyList_Check(row)) {
+	pixel = row;
+      } else {
+	if (PyList_GET_SIZE(row) == 0)
+	  throw std::runtime_error("The rows must be at least one column wide.");
+	pixel = PyList_GET_ITEM(row, 0);
+      }
+      if (PyInt_Check(pixel))
+	pixel_type = GREYSCALE;
+      else if (PyFloat_Check(pixel))
+	pixel_type = FLOAT;
+      else if (is_RGBPixelObject(pixel))
+	pixel_type = RGB;
+      if (pixel_type < 0)
+	throw std::runtime_error
+	  ("The image type could not automatically be determined from the list.  Please specify an image type using the second argument.");
+    }
+      
+    switch (pixel_type) {
+    case ONEBIT:
+      _nested_list_to_image<OneBitPixel> func1;
+      return (Image*)func1(obj);
+    case GREYSCALE:
+      _nested_list_to_image<GreyScalePixel> func2;
+      return (Image*)func2(obj);
+    case GREY16:
+      _nested_list_to_image<Grey16Pixel> func3;
+      return (Image*)func3(obj);
+    case RGB:
+      _nested_list_to_image<RGBPixel> func4;
+      return (Image*)func4(obj);
+    case Gamera::FLOAT:
+      _nested_list_to_image<FloatPixel> func5;
+      return (Image*)func5(obj);
+    default:
+      throw std::runtime_error("Second argument is not a valid image type number.");
+    }
+  }
+ 
+  template<class T>
+  PyObject* to_nested_list(T& m) {
+    pixel_to_python<typename T::value_type> convertor;
+    PyObject* rows = PyList_New(m.nrows());
+    for (size_t r = 0; r < m.nrows(); ++r) {
+      PyObject* row = PyList_New(m.ncols());
+      for (size_t c = 0; c < m.ncols(); ++c) {
+	PyObject* px = convertor(m.get(r, c));
+	PyList_SET_ITEM(row, c, px);
+      }
+      PyList_SET_ITEM(rows, r, row);
+    }
+    return rows;
+  }
+ 
 }
 #endif

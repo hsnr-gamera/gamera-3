@@ -948,6 +948,55 @@ inline IntVector* IntVector_from_python(PyObject* py) {
     (*cpp)[i] = (int)PyInt_AsLong(PyObject_GetItem(py, PyInt_FromLong(i)));
   return cpp;
 }
+
+// Converting pixel types to/from Python
+
+template<class T>
+struct pixel_to_python {
+  inline PyObject* operator()(T obj);
+};
+
+inline PyObject* pixel_to_python<OneBitPixel>::operator()(OneBitPixel px) {
+  return PyInt_FromLong(px);
+}
+
+inline PyObject* pixel_to_python<GreyScalePixel>::operator()(GreyScalePixel px) {
+  return PyInt_FromLong(px);
+}
+
+inline PyObject* pixel_to_python<Grey16Pixel>::operator()(Grey16Pixel px) {
+  return PyInt_FromLong(px);
+}
+
+inline PyObject* pixel_to_python<RGBPixel>::operator()(RGBPixel px) {
+  return create_RGBPixelObject(px);
+}
+
+inline PyObject* pixel_to_python<FloatPixel>::operator()(FloatPixel px) {
+  return PyFloat_FromDouble(px);
+}
+
+template<class T>
+struct pixel_from_python {
+  inline T operator()(PyObject* obj);
+};
+
+template<class T>
+inline T pixel_from_python<T>::operator()(PyObject* obj) {
+  if (!PyFloat_Check(obj)) {
+    if (!PyInt_Check(obj))
+      throw std::runtime_error("Pixel value is not valid");
+    return (T)PyInt_AsLong(obj);
+  }
+  return (T)PyFloat_AsDouble(obj);
+}
+
+inline RGBPixel pixel_from_python<RGBPixel>::operator()(PyObject* obj) {
+  if (!is_RGBPixelObject(obj))
+    throw std::runtime_error("Pixel value is not an RGBPixel");
+  return RGBPixel(*(((RGBPixelObject*)obj)->m_x));
+}
+
 #endif
 
 #endif

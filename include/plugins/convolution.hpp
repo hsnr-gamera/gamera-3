@@ -22,14 +22,15 @@
 #define mgd_convolution
 
 #include "gamera.hpp"
-#include "plugins/image_utilities.hpp"
 #include "vigra/stdconvolution.hxx"
 
 using namespace Gamera;
 
-
 template<class T, class U>
 typename ImageFactory<T>::view_type* convolve(T& src, const U& k, int border_mode) {
+  if (k.nrows() > src.nrows() || k.ncols() > src.ncols())
+    throw std::runtime_error("The image must be bigger than the kernel.");
+
   typename ImageFactory<T>::data_type* dest_data =
     new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
 					    src.offset_x());
@@ -49,6 +50,62 @@ typename ImageFactory<T>::view_type* convolve(T& src, const U& k, int border_mod
      (BorderTreatmentMode)border_mode);
 
   vigra::convolveImage(src_image_range(src), dest_image(*dest), kernel); 
+  return dest;
+}
+
+template<class T, class U>
+typename ImageFactory<T>::view_type* convolve_x(T& src, const U& k, int border_mode) {
+  if (k.nrows() > src.nrows() || k.ncols() > src.ncols())
+    throw std::runtime_error("The image must be bigger than the kernel.");
+  if (k.nrows() != 1)
+    throw std::runtime_error("The 1D kernel must have only one row.");
+
+  typename ImageFactory<T>::data_type* dest_data =
+    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
+					    src.offset_x());
+  typename ImageFactory<T>::view_type* dest =
+    new typename ImageFactory<T>::view_type(*dest_data, src);
+
+  // I originally had the following two lines abstracted out in a function,
+  // but that seemed to choke and crash gcc 3.3.2
+  typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
+  tuple5<
+    typename U::const_vec_iterator,
+    typename choose_accessor<U>::accessor,
+    int, int, BorderTreatmentMode> kernel
+    (center, choose_accessor<U>::make_accessor(k), 
+     -int(k.center_x()), int(k.width()) - int(k.center_x()),
+     (BorderTreatmentMode)border_mode);
+
+  vigra::separableConvolveX(src_image_range(src), dest_image(*dest), kernel); 
+  return dest;
+}
+
+template<class T, class U>
+typename ImageFactory<T>::view_type* convolve_y(T& src, const U& k, int border_mode) {
+  if (k.nrows() > src.ncols() || k.ncols() > src.nrows())
+    throw std::runtime_error("The image must be bigger than the kernel.");
+  if (k.nrows() != 1)
+    throw std::runtime_error("The 1D kernel must have only one row.");
+
+  typename ImageFactory<T>::data_type* dest_data =
+    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
+					    src.offset_x());
+  typename ImageFactory<T>::view_type* dest =
+    new typename ImageFactory<T>::view_type(*dest_data, src);
+
+  // I originally had the following two lines abstracted out in a function,
+  // but that seemed to choke and crash gcc 3.3.2
+  typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
+  tuple5<
+    typename U::const_vec_iterator,
+    typename choose_accessor<U>::accessor,
+    int, int, BorderTreatmentMode> kernel
+    (center, choose_accessor<U>::make_accessor(k), 
+     -int(k.center_x()), int(k.width()) - int(k.center_x()),
+     (BorderTreatmentMode)border_mode);
+
+  vigra::separableConvolveY(src_image_range(src), dest_image(*dest), kernel); 
   return dest;
 }
 

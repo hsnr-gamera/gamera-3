@@ -54,7 +54,7 @@ from enums import ALL, NONIMAGE
 from gameracore import DENSE, RLE
 # import some of the basic types
 from gameracore import ImageData, Size, Dimensions, Point, \
-     Rect, Region, RegionMap, ImageInfo
+     Rect, Region, RegionMap, ImageInfo, RGBPixel
 # import gamera.gameracore for subclassing
 import gameracore
 # from classify import InteractiveClassifier, NonInteractiveClassifier
@@ -82,6 +82,10 @@ def load_image(filename, compression = DENSE):
          raise RuntimeError("%s in not a TIFF or PNG file." % filename)
    image.name = filename
    return image
+
+def nested_list_to_image(l, t=-1):
+   from gamera.plugins import image_utilities
+   return image_utilities.nested_list_to_image(l, t)
 
 def image_info(filename):
    """Retrieve an ImageInfo about about a given filename. The ImageInfo
@@ -127,9 +131,9 @@ class ImageBase:
       # have already been generated for this Image
       self.feature_functions = [[], 0]
 
-##    def __del__(self):
-##       if self._display:
-##          self._display.close()
+   def __del__(self):
+      if self._display:
+         self._display.close()
 
    def __getstate__(self):
       """Extremely basic pickling support for use in testing.
@@ -475,8 +479,8 @@ class Image(gameracore.Image, ImageBase):
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
 
-##    def __del__(self):
-##       ImageBase.__del__(self)
+   def __del__(self):
+      ImageBase.__del__(self)
 
    __getstate__ = ImageBase.__getstate__
 
@@ -488,8 +492,8 @@ class SubImage(gameracore.SubImage, ImageBase):
       gameracore.SubImage.__init__(self, image, int(offset_y), int(offset_x),
                                    int(nrows), int(ncols))
 
-##    def __del__(self):
-##       ImageBase.__del__(self)
+   def __del__(self):
+      ImageBase.__del__(self)
 
    __getstate__ = ImageBase.__getstate__
 
@@ -503,8 +507,8 @@ class Cc(gameracore.Cc, ImageBase):
                              nrows, ncols)
    __getstate__ = ImageBase.__getstate__
 
-##    def __del__(self):
-##       ImageBase.__del__(self)
+   def __del__(self):
+      ImageBase.__del__(self)
    
    # Displays this cc in context
    def display_context(self):
@@ -592,4 +596,4 @@ __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT ALL DENSE RLE "
            "ImageData Size Dimensions Point Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
-           "display_multi ImageBase ").split()
+           "display_multi ImageBase nested_list_to_image RGBPixel").split()

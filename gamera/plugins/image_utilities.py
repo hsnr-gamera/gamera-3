@@ -179,15 +179,86 @@ image that are white will be changed to white in the resulting image."""
     args = Args(ImageType([ONEBIT], "mask"))
 
 class corelation(PluginFunction):
+    """Returns a floating-point value for how well an image is corelated
+to another image placed at a given (*x*, *y*).  Uses the sum of squares
+method.  A greater result implies more corelation.
+
+*template*
+   The template image.
+*y*, *x*
+   The displacement of the template on the image.
+"""
     category = "Utility"
     return_type = Float("correlation")
     self_type = ImageType([ONEBIT])
-    args = Args([ImageType([ONEBIT], "template"), Int("x_offset"), Int("y_offset")])
+    args = Args([ImageType([ONEBIT], "template"), Int("y_offset"), Int("x_offset")])
 
 class highlight(PluginFunction):
-    category = "Utility"
     self_type = ImageType([RGB])
     args = Args([ImageType([ONEBIT], "cc")])
+
+class to_nested_list(PluginFunction):
+    """Converts an image to a nested Python list.
+This method is the inverse of ``nested_list_to_image``.
+
+The following table describes how each image type is converted to
+Python types:
+
+  - ONEBIT -> int
+  - GREYSCALE -> int
+  - GREY16 -> int
+  - RGB -> RGBPixel
+  - FLOAT -> float
+"""
+    category = "Utility/NestedLists"
+    self_type = ImageType(ALL)
+    return_type = Class("nested_list")
+    doc_examples = [(ONEBIT,)]
+
+class nested_list_to_image(PluginFunction):
+    """Converts a nested Python list to an Image.  Is the inverse of ``to_nested_list``.
+
+*nested_list*
+  A nested Python list in row-major order.  If the list is a flat list,
+  an image with a single row will be created.
+  
+*image_type*
+  The resulting image type.  Should be one of the integer Image type
+  constants (ONEBIT, GREYSCALE, GREY16, RGB, FLOAT).  If image_type
+  is not provided or less than 0, the image type will be determined
+  by auto-detection from the list.  The following list shows the mapping
+  from Python type to image type:
+
+    - int -> GREYSCALE
+    - float -> FLOAT
+    - RGBPixel -> RGB
+
+  To obtain other image types, the type number must be explicitly passed.
+
+TODO: Handle Python arrays.  This is difficult without a proper C API.
+
+.. code::
+
+   # Sobel kernel (implicitly will be a FLOAT image)
+   kernel = nested_list_to_image([[0.125, 0.0, -0.125],
+                                  [0.25 , 0.0, -0.25 ],
+                                  [0.125, 0.0, -0.125]])
+
+   # Single row image (note that nesting is optional)
+   image = nested_list_to_image([RGBPixel(255, 0, 0),
+                                 RGBPixel(0, 255, 0),
+                                 RGBPixel(0, 0, 255)])
+
+"""
+    category = "Utility/NestedLists"
+    self_type = None
+    args = Args([Class('nested_list'),
+                 Choice('image_type', ['ONEBIT', 'GREYSCALE',
+                                       'GREY16', 'RGB', 'FLOAT'])])
+    return_type = ImageType(ALL)
+    def __call__(l, t=-1):
+        return _image_utilities.nested_list_to_image(l, t)
+    __call__ = staticmethod(__call__)
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
@@ -196,9 +267,11 @@ class UtilModule(PluginModule):
     functions = [image_copy, resize, scale,
                  histogram, union_images, projection_rows, projection_cols,
                  projections, fill_white, invert, clip_image, mask,
-                 corelation, highlight]
+                 corelation, highlight, nested_list_to_image,
+                 to_nested_list]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()
 
 union_images = union_images()
+nested_list_to_image = nested_list_to_image()

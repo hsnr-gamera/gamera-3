@@ -291,6 +291,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->ncols() > max_width) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -304,6 +305,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->ncols() < min_width) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -317,6 +319,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->nrows() > max_height) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -330,6 +333,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->nrows() < min_height) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -343,6 +347,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->nrows() > max_size && (*i)->ncols() > max_size) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -356,6 +361,7 @@ namespace Gamera {
       for (i = ccs.begin(); i != ccs.end();) {
 	if ((*i)->nrows() < min_size && (*i)->ncols() < min_size) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -370,6 +376,7 @@ namespace Gamera {
 	int bai = (int)black_area(**i);
 	if (bai > max_area) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -384,6 +391,7 @@ namespace Gamera {
 	int bai = (int)black_area(**i);
 	if (bai < min_area) {
 	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
+	  delete *i;
 	  ccs.erase(i++);
 	} else {
 	  ++i;

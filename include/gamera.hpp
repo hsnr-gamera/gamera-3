@@ -47,27 +47,88 @@
 namespace Gamera {
 
   /*
-    Features
+   * This file contains a few typedefs to make standard classes
+   * easier to use.
+   */
+
+  /***********************************************************
+   * FEATURES
+   ***********************************************************/
+
+  /**
+   * Image feature type.
+   *
+   * The feature_t is a typedef for a floating point type
+   * used for all of the feature calculation functions
+   * in Gamera.
    */
   typedef double feature_t;
+
+  /**
+   * Floating-point vector.
+   *
+   * The Gamera::FloatVector type is used to pass arrays of
+   * floating-point data. Each element is of type feature_t
+   * and the container is a std::vector.
+   */
   typedef std::vector<feature_t> FloatVector;
 
-  /*
-    Utility
-  */
+  /***********************************************************
+   * UTILITY
+   ***********************************************************/
+
+  /**
+   * String Vector.
+   *
+   * The Gamera::StringVectors is a std::vector of std::strings.
+   */
   typedef std::vector<std::string> StringVector;
+
+  /**
+   * Int Vector.
+   *
+   * The Gamera::IntVector type is used to pass arrays of
+   * integers types. The container is a std::vector.
+   */
   typedef std::vector<int> IntVector;
+
+  /**
+   * SignedIntVector
+   *
+   * The Gamera::SignedIntVector type is used to pass arrays
+   * of signed integer types. In previous versions this was
+   * different from Gamera::IntVectors, which held unsigned
+   * types. Currently, however, IntVector and SignedIntVector
+   * are the same.
+   */
   typedef std::vector<int> SignedIntVector;
 
-  /*
-    RegionMap
-  */
+  /**
+   * Region
+   *
+   * The Gamera::Region type is used to associate a rectangular
+   * areas on an image with a set of values. These values are stored
+   * as key/value pairs (string/double). See RegionTemplate for more
+   * information.
+   */
   typedef RegionTemplate<double> Region;
+
+  /**
+   * Region Map
+   *
+   * The Gamera::RegionMap type is a list of regions. Regions can be
+   * added to the list and searched for by position.
+   */
   typedef RegionMapTemplate<double> RegionMap;
 
-  /*
-    Colors
-  */
+  /**
+   * Colors
+   *
+   * Gamera::color_set is a standard set of colors for use whenever
+   * colors need to be applied to an image. By limiting the size to
+   * eight it makes it easy to pick an arbitrary color by bitwise
+   * operators on pixels.
+   */
   static const int COLOR_SET_SIZE = 8;
   const unsigned char color_set[COLOR_SET_SIZE][3] = {
     {0xbc, 0x2d, 0x2d}, // Red

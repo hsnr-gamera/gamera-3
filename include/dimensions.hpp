@@ -22,33 +22,77 @@
 
 #include <vector>
 
+/*
+ * This file contains the basic geometric types for Gamera. On one hand it is
+ * absolutely silly that we have to implement these types of objects instead
+ * of using something from the C++ 'standard'. On the other hand, some of these
+ * have methods that are somewhat specific to document recognition.
+ */
+
 namespace Gamera {
 
+  /**
+   * The basic type used for all coordinates. An unsigned type is used - this can
+   * be inconvenient at times, but it makes interaction with the image processing
+   * layer a little easier.
+   */
   typedef size_t coord_t;
-  /*
+
+  /**
    * Point
    *
-   * This is a simple class to hold a single coordinate (x/y value pair).
+   * This is a simple class to hold a single coordinate on a plane (x/y value pair).
    */
-
   class Point {
   public:
+    /**
+     * Default constructor - x and y are 0
+     */
     Point() : m_x(0), m_y(0) { }
-    Point(coord_t x, coord_t y) { m_x = x; m_y = y; }
-    coord_t x() const { return m_x; }
-    coord_t y() const { return m_y; }
-    void x(coord_t x) { m_x = x; }
-    void y(coord_t y) { m_y = y; }
+
+    /**
+     * Construct a point for the given x and y coordinates.
+     */
+    Point(coord_t x, coord_t y) {
+      m_x = x;
+      m_y = y;
+    }
+
+    /// Return the x coordinate.
+    coord_t x() const {
+      return m_x;
+    }
+
+    /// Return the y coordinate.
+    coord_t y() const {
+      return m_y;
+    }
+
+    /// Set the x coordinate.
+    void x(coord_t x) {
+      m_x = x;
+    }
+
+    /// Set the y coordinate.
+    void y(coord_t y) {
+      m_y = y;
+    }
+    
+    /// Move this point the the coordinates x and y
     void move(int x, int y) {
       m_x += x;
       m_y += y;
     }
+
+    /// Equality operator
     bool operator==(const Point& x) const {
       if (m_x == x.m_x && m_y == x.m_y)
         return true;
       else
         return false;
     }
+
+    /// Inequality operator
     bool operator!=(const Point& x) const {
       if (m_x != x.m_x || m_y != x.m_y)
 	return true;
@@ -63,34 +107,55 @@ namespace Gamera {
    * There are size _and_ dimension objects so that users can use
    * whichever coordinate system is most natural.
    *
-   * A single point has the dimension Point(0,0)
-   * and Size(0, 0) or Dimensions(1, 1)
+   * A single point Point(0,0) and Size(0, 0) or Dimensions(1, 1)
    */
 
   /*
    * Size
    *
    * A simple class that holds width and height. These dimensions are
-   * refer to nrows or ncols - 1.
+   * refer to nrows - 1 or ncols - 1.
    */
-
   class Size {
   public:
+    /// Default constructor - set width and height to 0
     Size() : m_width(1), m_height(1) { }
+    
+    /// Construct a size object from width and height.
     Size(coord_t width, coord_t height) {
       m_width = width;
       m_height = height;
     }
-    coord_t width() const { return m_width; }
-    coord_t height() const { return m_height; }
-    void width(coord_t width) { m_width = width; }
-    void height(coord_t height) { m_height = height; }
+
+    /// Return the width
+    coord_t width() const {
+      return m_width;
+    }
+
+    /// Return the height
+    coord_t height() const {
+      return m_height;
+    }
+
+    /// Set the width
+    void width(coord_t width) {
+      m_width = width;
+    }
+
+    /// Set the height
+    void height(coord_t height) {
+      m_height = height;
+    }
+
+    /// Equality operator
     bool operator==(const Size& other) const {
       if (m_width == other.width() && m_height == other.height())
 	return true;
       else
 	return false;
     }
+    
+    /// Inequality operator
     bool operator!=(const Size& other) const {
       if (m_width != other.width() || m_height != other.height())
 	return true;
@@ -107,7 +172,6 @@ namespace Gamera {
    * A simple class that holds nrows and ncols. These dimensions are
    * refer to width or height + 1.
    */
-
   class Dimensions {
   public:
     Dimensions() : m_ncols(1), m_nrows(1) { }

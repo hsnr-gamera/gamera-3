@@ -20,22 +20,22 @@
 #ifndef kwm11162001_pixel_hpp
 #define kwm11162001_pixel_hpp
 
-/*
-  This header contains the definition for all of the standard 'pixels' in 
-  Gamera.  These include:
-
-    RGB - color pixels
-    Float - floating point pixels that are convenient for many image processing
-            algorithms
-    GreyScale - grey scale pixels that hold values from 0 - 255 (8bit)
-    OneBit - one bit pixels for black and white images.  These pixels actually
-             can hold more than 2 values, which is used for labeling the pixels
-             (using connected-components for example).  This seems like a lot
-             of space to waste on one bit images, but if run-length encoding
-             is used the space should be minimul.
-
-  In addition to the pixels themselves, there is information about the pixels
-  (white/black values, etc).
+/**
+ * This header contains the definition for all of the standard pixels in 
+ * Gamera.  These include:
+ *
+ *  RGB - color pixels
+ *  Float - floating point pixels that are convenient for many image processing
+ *          algorithms
+ *  GreyScale - grey scale pixels that hold values from 0 - 255 (8bit)
+ *  OneBit - one bit pixels for black and white images.  These pixels actually
+ *           can hold more than 2 values, which is used for labeling the pixels
+ *           (using connected-components for example).  This seems like a lot
+ *           of space to waste on one bit images, but if run-length encoding
+ *           is used the space should be minimul.
+ *
+ * In addition to the pixels themselves, there is information about the pixels
+ * (white/black values, etc).
  */
 
 #include "gamera_limits.hpp"
@@ -45,25 +45,79 @@ using namespace vigra;
 
 namespace Gamera {
 
+  /************************************************************************
+   * PIXEL TYPES
+   ************************************************************************/
+
+  /**
+   * Floating-point pixel.
+   *
+   * The Gamera::FloatPixel type represents a single pixel in a
+   * floating-point image. For floating-point images 0 is considerd
+   * black and max is considered white.
+   */
   typedef double FloatPixel;
+
+  /**
+   * GreyScalePixel
+   *
+   * The Gamera::GreyScalePixel type is for 8bit greyscale images. For GreyScale
+   * images 0 is considerd black and 255 is considered white.
+   */
   typedef unsigned char GreyScalePixel;
+
+  /**
+   * Grey16Pixel
+   *
+   * The Gamera::Grey16Pixel type is for 16bit greyscale images. For Grey16
+   * images 0 is considerd black and 255 is considered white.
+   */
   typedef unsigned int Grey16Pixel;
+
+  /**
+   * OneBitPixel
+   *
+   * The Gamera::OneBitPixel type is for OneBitImages. For OneBit
+   * images > 0 is considerd black and 0 is considered white. Also, see the note
+   * at the beginning of this file about why OneBitPixels are so large.
+   */
   typedef unsigned short OneBitPixel;
 
-  /*
-    The Gamera RGB pixel type is derived from the Vigra class RGBValue. The
-    only reason that this is a derived class instead of directly using the
-    Vigra type is to provide conversion operators to and from the standard
-    Gamera types (instead of using Vigra style promotion traits) and to provide
-    overloaded red, green, and blue functions instead of the set* functions
-    in the Vigra class.
-  */
+  /**
+   * RGB Pixels
+   *
+   * The Gamera::RGB pixel type is derived from the Vigra class RGBValue. The
+   * only reason that this is a derived class instead of directly using the
+   * Vigra type is to provide conversion operators to and from the standard
+   * Gamera types (instead of using Vigra style promotion traits) and to provide
+   * overloaded red, green, and blue functions instead of the set* functions
+   * in the Vigra class.
+   */
   template<class T>
   class Rgb : public RGBValue<T> {
   public:
+    /**
+     * Construct a RGB pixel from a GreyScalePixel. RGB are all
+     * set to the passed in GreyScalePixel.
+     */
     Rgb(GreyScalePixel grey) : RGBValue<T>(grey) { }
+
+    /**
+     * Construct a RGB pixel from a Grey16Pixel. RGB are all
+     * set to the passed in Grey16Pixel.
+     */
     Rgb(Grey16Pixel grey) : RGBValue<T>(grey) { }
+
+    /**
+     * Construct a RGB pixel from a Float. RGB are all
+     * set to the passed in Float (which is truncated first).
+     */
     Rgb(FloatPixel f) : RGBValue<T>((T)f) { }
+
+    /**
+     * Construct a RGB Pixel from a OneBitPixel. Appropriate conversion
+     * is done.
+     */
     Rgb(OneBitPixel s) {
       if (s > 0) {
 	RGBValue<T>(1);
@@ -71,29 +125,61 @@ namespace Gamera {
 	RGBValue<T>(0);
       }
     }
+    
+    /**
+     * Default constructor - RGB are all set to 0.
+     */
     Rgb() : RGBValue<T>() { }
+
+    /**
+     * Copy constructor.
+     */
     Rgb(const Rgb& other) : RGBValue<T>(other) { }
+    
+    /**
+     * Construct a RGB pixel from the passed in red, green, and blue
+     * values.
+     */
     Rgb(T red, T green, T blue) : RGBValue<T>(red, green, blue) { }
+
+    /**
+     * Construct a RGB pixel from the values contained in the iterator
+     * range passed in.
+     */
     template<class I>
     Rgb(I i, const I end) : RGBValue<T>(i, end) { }
+
+    /// Set the red component to the passed in value.
     void red(T v) {
       setRed(v);
     }
+
+    /// Set the green component to the passed in value.
     void green(T v) {
       setGreen(v);
     }
+
+    /// Set the blue component to the passed in value.
     void blue(T v) {
       setBlue(v);
     }
+
+    /// Retrieve the red component - the returned value is an lvalue.
     T const & red() const {
       return data_[0];
     }
+
+    /// Retrieve the green component - the returned value is an lvalue.
     T const & green() const {
       return data_[1];
     }
+
+    /// Retrieve the blue component - the returned value is an lvalue.
     T const & blue() const {
       return data_[2];
     }
+
+    /// Return the hue of this pixel.
     FloatPixel const hue() {
       FloatPixel maxc = (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
       FloatPixel minc = (FloatPixel)std::min(data_[0], std::min(data_[1], data_[2]));
@@ -114,6 +200,8 @@ namespace Gamera {
       h -= floor(h);
       return h;
     }
+
+    /// Return the saturation of this pixel
     FloatPixel const saturation() {
       FloatPixel maxc = (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
       FloatPixel minc = (FloatPixel)std::min(data_[0], std::min(data_[1], data_[2]));
@@ -121,9 +209,12 @@ namespace Gamera {
 	return 0;
       return (maxc - minc) / maxc;
     }
+
+    /// Return the value of this pixel (max of RGB)
     FloatPixel const value() {
       return (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
     }
+
     FloatPixel const CIE_X() {
       return (data_[0] * 0.607 + data_[1] * 0.174 + data_[2] * 0.200) / 256.0;
     }
@@ -142,15 +233,23 @@ namespace Gamera {
     GreyScalePixel const yellow() {
       return std::numeric_limits<T>::max() - data_[2];
     }
+
+    /// Conversion operator to a FloatPixel
     operator FloatPixel() {
       return FloatPixel(luminance());
     }
+
+    /// Conversion operator to a GreyScalePixel
     operator GreyScalePixel() {
       return GreyScalePixel(luminance());
     }
+
+    /// Conversion operator to a Grey16Pixel
     operator Grey16Pixel() {
       return Grey16Pixel(luminance());
     }
+
+    /// Conversion operator to a OneBitPixel
     operator OneBitPixel() {
       if (luminance())
 	return 1;
@@ -159,16 +258,19 @@ namespace Gamera {
     }
   };
 
+  /// This is the standard form of the RGB pixels
   typedef Rgb<GreyScalePixel> RGBPixel;
   
   /*
-    This is a test for black/white regardless of the pixel type.
-
-    This default implementation is here mainly for CCProxies (see
-    connected_components.hh).  Most of the real implementations are
-    further down.
-  */
-
+   * This is a test for black/white regardless of the pixel type. For some
+   * pixel types this test is complicated and this also allows us to use 0
+   * for white in OneBit images and max for white in others without sacrificing
+   * generality in the algorithms.
+   *
+   * This default implementation is here mainly for CCProxies (see
+   * connected_components.hpp).  Most of the real implementations are
+   * further down.
+   */
   template<class T>
   inline bool is_black(T value) {
     T tmp = value;
@@ -176,6 +278,9 @@ namespace Gamera {
     else return false;
   }
 
+  /*
+   * This is here for the same reason as is_black above.
+   */
   template<class T>
   inline bool is_white(T value) {
     T tmp = value;
@@ -183,7 +288,11 @@ namespace Gamera {
     else return false;
   }
 
-  // pixel traits
+  /*
+   * pixel_traits allows us to find out certain properties of pixels in a generic
+   * way. Again, this is primarily to allow the easy switching between min is white
+   * and min is black representations for different pixel types.
+   */
   template<class T>
   struct pixel_traits {
     static T white() {
@@ -195,20 +304,18 @@ namespace Gamera {
   };
 
   /*
-    Helper functions to get black/white from a given T that has a value_type
-    member that is a pixel - i.e.
-
-    DenseImage<OneBitPixel> ob;
-    black(ob);
-
-    The pixel_traits syntax is just too horrible to make users go through to
-    get white/black.  From within a template function it looks like:
-
-    Gamera::pixel_traits<typename T::value_type>::white();
-    
-    KWM 6/8/01
-  */
-  
+   * Helper functions to get black/white from a given T that has a value_type
+   * member that is a pixel - i.e.
+   *
+   * DenseImage<OneBitPixel> ob;
+   * black(ob);
+   *
+   * The pixel_traits syntax is just too horrible to make users go through to
+   * get white/black.  From within a template function it looks like:
+   *
+   * Gamera::pixel_traits<typename T::value_type>::white();
+   *
+   */
   template<class T>
   typename T::value_type black(T& container) {
     return pixel_traits<typename T::value_type>::black();
@@ -217,6 +324,65 @@ namespace Gamera {
   template<class T>
   typename T::value_type white(T& container) {
     return pixel_traits<typename T::value_type>::white();
+  }
+
+  /*
+   * Inversion of pixel values
+   *
+   * Generically invert pixel values.
+   */
+
+  inline FloatPixel invert(FloatPixel value) {
+    return 1.0 - value; // No normalization on image is possible
+  }
+
+  inline GreyScalePixel invert(GreyScalePixel value) {
+    return std::numeric_limits<GreyScalePixel>::max() - value;
+  }
+
+  inline Grey16Pixel invert(Grey16Pixel value) {
+    return std::numeric_limits<Grey16Pixel>::max() - value;
+  }
+
+  inline RGBPixel invert(RGBPixel value) {
+    return RGBPixel(std::numeric_limits<Grey16Pixel>::max() - value.red(),
+		    std::numeric_limits<Grey16Pixel>::max() - value.green(),
+		    std::numeric_limits<Grey16Pixel>::max() - value.blue());
+  }
+
+  inline OneBitPixel invert(OneBitPixel value) {
+    if (is_white(value))
+      return pixel_traits<OneBitPixel>::black();
+    else
+      return pixel_traits<OneBitPixel>::white();
+  }
+
+  /*
+   * Blend pixels together.
+   */
+  inline FloatPixel blend(FloatPixel original, FloatPixel add, double alpha) {
+    return alpha * original + (1.0 - alpha) * add; 
+  }
+
+  inline GreyScalePixel blend(GreyScalePixel original, GreyScalePixel add, double alpha) {
+    return (GreyScalePixel)(alpha * original + (1.0 - alpha) * add);
+  }
+
+  inline Grey16Pixel blend(Grey16Pixel original, GreyScalePixel add, double alpha) {
+    return (Grey16Pixel)(alpha * original + (1.0 - alpha) * add);
+  }
+
+  inline RGBPixel blend(RGBPixel original, RGBPixel add, double alpha) {
+    double inv_alpha = 1.0 - alpha;
+    return RGBPixel(GreyScalePixel(original.red() * alpha + add.red() * inv_alpha),
+		    GreyScalePixel(original.green() * alpha + add.green() * inv_alpha),
+		    GreyScalePixel(original.blue() * alpha + add.blue() * inv_alpha));
+  }
+
+  inline OneBitPixel blend(OneBitPixel original, RGBPixel add, double alpha) {
+    if (alpha > 0.5)
+      return original;
+    return add;
   }
 
   /*
@@ -328,60 +494,6 @@ namespace Gamera {
     return RGBPixel(std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max());
-  }
-
-  /*
-    Inversion of pixel values
-  */
-
-  inline FloatPixel invert(FloatPixel value) {
-    return 1.0 - value; // No normalization on image is possible
-  }
-
-  inline GreyScalePixel invert(GreyScalePixel value) {
-    return std::numeric_limits<GreyScalePixel>::max() - value;
-  }
-
-  inline Grey16Pixel invert(Grey16Pixel value) {
-    return std::numeric_limits<Grey16Pixel>::max() - value;
-  }
-
-  inline RGBPixel invert(RGBPixel value) {
-    return RGBPixel(std::numeric_limits<Grey16Pixel>::max() - value.red(),
-		    std::numeric_limits<Grey16Pixel>::max() - value.green(),
-		    std::numeric_limits<Grey16Pixel>::max() - value.blue());
-  }
-
-  inline OneBitPixel invert(OneBitPixel value) {
-    if (is_white(value))
-      return pixel_traits<OneBitPixel>::black();
-    else
-      return pixel_traits<OneBitPixel>::white();
-  }
-
-  inline FloatPixel blend(FloatPixel original, FloatPixel add, double alpha) {
-    return alpha * original + (1.0 - alpha) * add; 
-  }
-
-  inline GreyScalePixel blend(GreyScalePixel original, GreyScalePixel add, double alpha) {
-    return (GreyScalePixel)(alpha * original + (1.0 - alpha) * add);
-  }
-
-  inline Grey16Pixel blend(Grey16Pixel original, GreyScalePixel add, double alpha) {
-    return (Grey16Pixel)(alpha * original + (1.0 - alpha) * add);
-  }
-
-  inline RGBPixel blend(RGBPixel original, RGBPixel add, double alpha) {
-    double inv_alpha = 1.0 - alpha;
-    return RGBPixel(GreyScalePixel(original.red() * alpha + add.red() * inv_alpha),
-		    GreyScalePixel(original.green() * alpha + add.green() * inv_alpha),
-		    GreyScalePixel(original.blue() * alpha + add.blue() * inv_alpha));
-  }
-
-  inline OneBitPixel blend(OneBitPixel original, RGBPixel add, double alpha) {
-    if (alpha > 0.5)
-      return original;
-    return add;
   }
 
 };

@@ -600,9 +600,9 @@ class ImageDisplay(wxScrolledWindow):
          # that could use too much memory.
          if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
             subimage = subimage.to_greyscale()
-         scaled_image = subimage.resize(ceil(subimage.nrows * scaling),
-                                             ceil(subimage.ncols * scaling),
-                                             self.scaling_quality)
+         scaled_image = subimage.resize(int(ceil(subimage.nrows * scaling)),
+                                        int(ceil(subimage.ncols * scaling)),
+                                        self.scaling_quality)
       else:
          scaled_image = subimage
       image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
@@ -902,8 +902,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
                scaled_image = sub_image.resize(
-                  ceil(sub_image.nrows * scaling),
-                  ceil(sub_image.ncols * scaling), 0)
+                  int(ceil(sub_image.nrows * scaling)),
+                  int(ceil(sub_image.ncols * scaling)), 0)
             else:
                # This is the easy case - just scale the image.
                scaled_image = image.resize(height, width, 0)
@@ -1027,8 +1027,12 @@ class MultiImageDisplay(wxGrid):
       self.do_updates = 0
       self.last_image_no = None
       self.scaling = 1.0
+      if wxPlatform == '__WXMAC__':
+        size = wxSize(300, 24)
+      else:
+        size = wxSize(175, 24)
       self.tooltip = wxButton(self.GetGridWindow(), -1, "",
-                              wxPoint(0, 0), wxSize(175, 24))
+                              wxPoint(0, 0), size)
       self.tooltip.Show(False)
       EVT_GRID_CELL_LEFT_DCLICK(self, self._OnLeftDoubleClick)
       EVT_GRID_CELL_RIGHT_CLICK(self, self._OnRightClick)
@@ -1465,13 +1469,18 @@ class MultiImageDisplay(wxGrid):
          extent = dc.GetTextExtent(label)
       return label
 
+   if wxPlatform == '__WXMAC__':
+      _tooltip_extra = 32
+   else:
+      _tooltip_extra = 6
    def set_tooltip(self, label):
       #self.tooltip.SetLabel(label.decode('utf8'))
       self.tooltip.SetLabel(label)
       dc = wxClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
+	
       self.tooltip.SetDimensions(
-         -1,-1,extent[0]+6,extent[1]+6,wxSIZE_AUTO)
+         -1,-1,extent[0]+self._tooltip_extra,extent[1]+6,wxSIZE_AUTO)
 
    def _OnMotion(self, event):
       origin = self.GetViewStart()

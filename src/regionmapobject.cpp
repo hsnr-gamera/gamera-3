@@ -100,7 +100,7 @@ static PyObject* regionmap___getitem__(PyObject* self, int index) {
     return 0;
   }
   RegionMap::iterator it = (*r).begin();
-  for (size_t i = 0; i != index; ++i, ++it)
+  for (size_t i = 0; i != (unsigned int)index; ++i, ++it)
     ;
   return create_RegionObject(*it);
 }

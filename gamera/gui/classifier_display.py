@@ -18,7 +18,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from sys import platform
 import os.path
 from wxPython.wx import *
 from gamera.core import *
@@ -1259,7 +1258,7 @@ class SymbolTableEditorPanel(wxPanel):
       EVT_TEXT(self, txID, self._OnText)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
-      if platform == 'win32':
+      if wxPlatform == '__WXMSW__':
          EVT_TEXT_ENTER(self, txID, self._OnEnter)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = wxNewId()
@@ -1292,7 +1291,7 @@ class SymbolTableEditorPanel(wxPanel):
       elif evt.KeyCode() == WXK_F11:
          self.toplevel.move_back()
       # This behavior works automatically in GTK+
-      elif platform == 'win32' and evt.ControlDown():
+      elif wxPlatform == '__WXMSW__' and evt.ControlDown():
          if evt.KeyCode() == WXK_LEFT:
             current = self.text.GetInsertionPoint()
             if current != 0:

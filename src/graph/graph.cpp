@@ -797,8 +797,8 @@ PyObject* graph_get_nsubgraphs(PyObject* self, PyObject* _) {
 }
 
 PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
-  GraphObject* so = (GraphObject*)self;
-  bool result = false;
+  //  GraphObject* so = (GraphObject*)self;
+  //  bool result = false;
   return PyInt_FromLong((long)1);
 }
 

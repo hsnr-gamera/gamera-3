@@ -527,14 +527,18 @@ class Choice(_guiChoice, Arg):
 if _has_gui == _WX_GUI:
    class _guiFilename:
       def get_control(self, parent, locals=None):
+         if sys.platform == 'darwin':
+            size = 25
+         else:
+            size = 20		 
          self.control = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
          self.text = wxPython.wx.wxTextCtrl(parent,
                                             -1,
                                             str(self.default),
-                                            size=wxPython.wx.wxSize(200, 20))
+                                            size=wxPython.wx.wxSize(200, size))
          browseID = wxPython.wx.wxNewId()
          browse = wxPython.wx.wxButton(
-            parent, browseID, "...", size=wxPython.wx.wxSize(20, 20))
+            parent, browseID, "...", size=wxPython.wx.wxSize(size, size))
          wxPython.wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
          self.control.Add(self.text, 1, wxPython.wx.wxEXPAND)
          self.control.Add(browse, 0)

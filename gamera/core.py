@@ -440,8 +440,8 @@ class Image(gameracore.Image, ImageBase):
 class SubImage(gameracore.SubImage, ImageBase):
    def __init__(self, image, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
-      gameracore.SubImage.__init__(self, image, offset_y, offset_x,
-                                   nrows, ncols)
+      gameracore.SubImage.__init__(self, image, int(offset_y), int(offset_x),
+                                   int(nrows), int(ncols))
 
    def __del__(self):
       ImageBase.__del__(self)

@@ -56,10 +56,20 @@ else:
 
 scripts = [x[command_line_filename_at] for x in command_line_utils] + ["gamera_post_install.py"]
 
+extra_compile_args = []
+extra_link_args = []
+if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
+   extra_compile_args = ["/GR"]#, "/Zi"]
+elif sys.platform == 'darwin':
+   extra_link_args = ['-F/System/Library/Frameworks/']
+   
+
+
 if 'build' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
    plugin_extensions = gamera_setup.generate_plugins(
-      plugins, "gamera.plugins", 1)
+      plugins, "gamera.plugins", 1, extra_compile_args=extra_compile_args,
+      extra_link_args=extra_link_args)
 
 
    ########################################
@@ -93,10 +103,6 @@ libs = []
 if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
    libs = ["stdc++"] # Not for intel compiler
 
-extra_args = []
-if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-   extra_args = ["/GR"]#, "/Zi"]
-   
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
                          "src/sizeobject.cpp",
@@ -112,14 +118,17 @@ extensions = [Extension("gamera.gameracore",
                          ],
                         include_dirs=["include"],
                         # FIXME
-                        libraries=libs, extra_compile_args=extra_args
+                        libraries=libs, extra_compile_args=extra_compile_args,
+			extra_link_args=extra_link_args
                         ),
               Extension("gamera.knncore", ga_files,
                         include_dirs=["include", "src/ga", "src"],
-                        libraries=libs, extra_compile_args=extra_args),
+                        libraries=libs, extra_compile_args=extra_compile_args,
+			extra_link_args=extra_link_args),
               Extension("gamera.graph", graph_files,
                         include_dirs=["include", "src", "src/graph"],
-                        libraries=libs, extra_compile_args=extra_args)]
+                        libraries=libs, extra_compile_args=extra_compile_args,
+			extra_link_args=extra_link_args)]
 extensions.extend(plugin_extensions)
 
 if sys.platform == "win32":
@@ -138,13 +147,14 @@ setup(name = "gamera", version="2.1",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits'],
-      data_files=[('include/gamera', glob.glob("include/*.hpp")),
-                  ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
-                  ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),
-                  ('gamera/doc', glob.glob("gamera/doc/*.html")),
-                  ('gamera/doc/classes', glob.glob("gamera/doc/classes/*.html")),
-                  ('gamera/doc/plugins', glob.glob("gamera/doc/plugins/*.html")),
-                  (scripts_directory_name, scripts)]
+      data_files=[]
+#('include/gamera', glob.glob("include/*.hpp")),
+#                  ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
+#                  ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),
+#                  ('gamera/doc', glob.glob("gamera/doc/*.html")),
+#                  ('gamera/doc/classes', glob.glob("gamera/doc/classes/*.html")),
+#                  ('gamera/doc/plugins', glob.glob("gamera/doc/plugins/*.html")),
+#                  (scripts_directory_name, scripts)]
       )
 
 ##########################################

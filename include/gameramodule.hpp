@@ -846,6 +846,7 @@ inline PyObject* create_ImageObject(Image* image) {
     return 0;
   Py_DECREF(result);
   return init_image_members(i);
+  
 }
 
 /*

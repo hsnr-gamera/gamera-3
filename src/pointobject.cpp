@@ -148,7 +148,7 @@ static PyObject* point_richcompare(PyObject* a, PyObject* b, int op) {
 static PyObject* point_repr(PyObject* self) {
   Point* x = ((PointObject*)self)->m_x;
   return PyString_FromFormat("<gameracore.Point x: %i y: %i>",
-			     x->x(), x->y());
+			     (int)x->x(), (int)x->y());
 }
 
 void init_PointType(PyObject* module_dict) {

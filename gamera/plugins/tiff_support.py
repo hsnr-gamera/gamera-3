@@ -58,8 +58,11 @@ class TiffSupportModule(PluginModule):
         extra_compile_args = ['-Dunix']
     elif sys.platform == 'darwin':
         cpp_sources = glob.glob("src/libtiff/*.c")
-        cpp_sources.remove("src/libtiff/tif_win32.c")
-        extra_compile_args = ['-Dunix']
+        try:
+	   cpp_sources.remove("src/libtiff/tif_win32.c")
+	except:
+	   pass
+	extra_compile_args = ['-Dunix']
     else:
         extra_libraries = ["tiff"]
     cpp_namespaces = ["Gamera"]

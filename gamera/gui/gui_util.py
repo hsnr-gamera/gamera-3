@@ -104,7 +104,7 @@ class FileDialog(wxFileDialog):
          self, parent, "Choose a file",
          last_directory, "", extensions, flags)
       self.extensions = extensions
-      if not sys.platform == 'win32':
+      if wxPlatform == '__WXGTK__':
          self.button = wxButton(
             self, 10000, "Recent files...", wxPoint(95, 10))
          EVT_BUTTON(self, 10000, self._OnRecentMenu)

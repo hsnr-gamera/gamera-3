@@ -131,7 +131,7 @@ static PyObject* dimensions_richcompare(PyObject* a, PyObject* b, int op) {
 static PyObject* dimensions_repr(PyObject* self) {
   Dimensions* x = ((DimensionsObject*)self)->m_x;
   return PyString_FromFormat("<gameracore.Dimensions nrows: %i ncols: %i>",
-			     x->nrows(), x->ncols());
+			     (int)x->nrows(), (int)x->ncols());
 }
 
 void init_DimensionsType(PyObject* module_dict) {

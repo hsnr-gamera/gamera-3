@@ -59,7 +59,7 @@ def get_plugin_filenames(path):
       pass
    return plugins
 
-def generate_plugins(plugins, location, compiling_gamera=0):
+def generate_plugins(plugins, location, compiling_gamera=0, extra_compile_args=[], extra_link_args=[]):
    """Generate the necessary cpp wrappers from a list of python plugin
    filenames. The regeneration only happens if it is necessary (either
    the python file has changed or one of the files that it depends on
@@ -82,7 +82,7 @@ def generate_plugins(plugins, location, compiling_gamera=0):
    
    plugin_extensions = []
    for x in plugins:
-      extension = generate.generate_plugin(x, location, compiling_gamera)
+      extension = generate.generate_plugin(x, location, compiling_gamera, extra_compile_args, extra_link_args)
       if not extension is None:
          plugin_extensions.append(extension)
    

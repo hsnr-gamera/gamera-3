@@ -453,7 +453,7 @@ template = Template("""
 
   """)
   
-def generate_plugin(plugin_filename, location, compiling_gamera):
+def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_args=[], extra_link_args=[]):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")
@@ -505,15 +505,11 @@ def generate_plugin(plugin_filename, location, compiling_gamera):
   if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
      if "stdc++" not in extra_libraries:
         extra_libraries.append("stdc++")
-  compile_args = []
-  if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-     compile_args = ["/GR", "/Zi", "/Yd"]
-     #compile_args = ["/GR"]
   return Extension(location + "._" + module_name, cpp_files,
                    include_dirs=include_dirs,
                    library_dirs=plugin_module.module.library_dirs,
                    libraries=extra_libraries,
-                   extra_compile_args=plugin_module.module.extra_compile_args + compile_args,
-                   extra_link_args=plugin_module.module.extra_link_args,
+                   extra_compile_args=plugin_module.module.extra_compile_args + extra_compile_args,
+                   extra_link_args=plugin_module.module.extra_link_args + extra_link_args,
                    define_macros=plugin_module.module.define_macros,
                    extra_objects=plugin_module.module.extra_objects)

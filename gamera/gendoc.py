@@ -433,7 +433,7 @@ class ClassDocumentationGenerator:
       s = open(os.path.join(self.docgen.src_path, "classes.txt"), "w")
       s.write("=======\nClasses\n=======\n\n")
       s.write("Alphabetical\n-------------\n")
-      self.class_names.sort(lambda x, y: cmp(x.lower(), y.lower()))
+      self.class_names.sort(lambda x, y: cmp(x[0].lower(), y[0].lower()))
       letter = '~'
       first = True
       links = []

@@ -74,6 +74,8 @@ class Arg:
 
    def __init__(self, name):
       self.name = name
+      if name is not None and not util.is_string_or_unicode(name):
+         raise TypeError("'name' must be a string")
       self.has_default = False
 
    def __repr__(self):
@@ -90,6 +92,9 @@ class Arg:
 class Int(Arg):
    def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
       Arg.__init__(self, name)
+      if not (type(range) == tuple and len(range) == 2 and
+              type(range[0]) == int and type(range[1]) == int):
+         raise TypeError("'range' must be a 2-tuple of ints")
       self.rng = range
       if default is None:
          self.has_default = False
@@ -97,6 +102,8 @@ class Int(Arg):
       else:
          self.has_default = True
          self.default = default
+      if type(self.default) != int:
+         raise TypeError("'default' must be an int")
 
    def rest_repr(self, name=False):
       result = "int"
@@ -111,6 +118,9 @@ class Int(Arg):
 class Real(Arg):
    def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
       Arg.__init__(self, name)
+      if not (type(range) == tuple and len(range) == 2 and
+              type(range[0]) == float and type(range[1]) == float):
+         raise TypeError("'range' must be a 2-tuple of ints")
       self.rng = range
       if default is None:
          self.has_default = False
@@ -118,6 +128,8 @@ class Real(Arg):
       else:
          self.has_default = True
          self.default = default
+      if type(self.default) != float:
+         raise TypeError("'default' must be an float")
 
    def rest_repr(self, name=False):
       result = "float"
@@ -140,6 +152,8 @@ class String(Arg):
       else:
          self.has_default = True
          self.default = default
+      if not util.is_string_or_unicode(self.default):
+         raise TypeError("'default' must be an int")
 
    def rest_repr(self, name=False):
       result = "str"
@@ -153,6 +167,8 @@ class Class(Arg):
    def __init__(self, name=None, klass=None, list_of=False):
       Arg.__init__(self, name)
       self.klass = klass
+      if type(list_of) != bool:
+         raise TypeError("'list_of' must be a bool")
       self.list_of = list_of
 
    def rest_repr(self, name=False):
@@ -165,14 +181,18 @@ class Class(Arg):
       return result
 
 class ImageType(Arg):
-   def __init__(self, pixel_types, name=None, list_of = 0):
+   def __init__(self, pixel_types, name=None, list_of=False):
       import core
       Arg.__init__(self, name)
-      if not core is None:
-         self.klass = core.ImageBase
       if not util.is_sequence(pixel_types):
          pixel_types = (pixel_types,)
+      if not util.is_homogenous_list(pixel_types, (int,)):
+         raise TypeError("'pixel_types' must be a list of integers.")
+      if not core is None:
+         self.klass = core.ImageBase
       self.pixel_types = pixel_types
+      if type(list_of) != bool:
+         raise TypeError("'list_of' must be a bool")
       self.list_of = list_of
 
    def rest_repr(self, name=False):
@@ -182,23 +202,29 @@ class ImageType(Arg):
       return result
 
 class Rect(Arg):
-   def __init__(self, name=None, list_of = 0):
+   def __init__(self, name=None, list_of=False):
       import core
       Arg.__init__(self, name)
       if not core is None:
          self.klass = core.Rect
+      if type(list_of) != bool:
+         raise TypeError("'list_of' must be a bool")
       self.list_of = list_of
       
 class Choice(Arg):
    def __init__(self, name=None, choices=[], default=None):
       Arg.__init__(self, name)
+      if not util.is_string_or_unicode_list(choices):
+         raise TypeError("'choices' must be a list of strings.")
       self.choices = choices
       if default is None:
          self.has_default = False
-         self.default = ''
+         self.default = 0
       else:
          self.has_default = True
          self.default = default
+      if type(self.default) != int:
+         raise TypeError("'default' must be an int")
 
    def rest_repr(self, name = False):
       result = '``Choice`` [%s]' % '|'.join(self.choices)
@@ -211,7 +237,11 @@ class Choice(Arg):
 class _Filename(Arg):
    def __init__(self, name=None, default="", extension="*.*"):
       Arg.__init__(self, name)
+      if not util.is_string_or_unicode(default):
+         raise TypeError("'default' must be a string")
       self.default = default
+      if not util.is_string_or_unicode(extension):
+         raise TypeError("'extension' must be a string")
       self.extension = extension
 
 class FileOpen(_Filename):
@@ -231,13 +261,19 @@ class Radio(Arg):
 class Check(Arg):
    def __init__(self, name=None, check_box='', default=None, enabled=True):
       Arg.__init__(self, name)
+      if not util.is_string_or_unicode(checkbox):
+         raise TypeError("'check_box' must be a string")
       self.check_box = check_box
       if default is None:
          self.has_default = False
-         self.default = ''
+         self.default = False
       else:
          self.has_default = True
          self.default = default
+      if not type(self.default) == bool:
+         raise TypeError("'default' must be a bool")
+      if not type(enabled) == bool:
+         raise TypeError("'enabled' must be a bool")
       self.enabled = enabled
 
    def rest_repr(self, name=False):
@@ -266,12 +302,16 @@ class FloatVector(Class):
    def __init__(self, name=None, length=-1):
       import array
       Class.__init__(self, name, type(array.array('d')))
+      if type(length) != int:
+         raise TypeError("'length' must be an int")
       self.length = length
 
 class IntVector(Class):
    def __init__(self, name=None, length=-1):
       import array
       Class.__init__(self, name, type(array.array('i')))
+      if type(length) != int:
+         raise TypeError("'length' must be an int")
       self.length = length
 
 class ImageList(Class):

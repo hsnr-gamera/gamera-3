@@ -49,25 +49,28 @@ def is_image_list(l):
 def is_string_or_unicode(s):
    return type(s) in (StringType, UnicodeType)
 
-def is_string_or_unicode_list(l):
-   if not is_sequence(l):
-      return 0
-   for s in l:
-      if type(s) not in (StringType, UnicodeType):
-         return 0
-   return 1
-
 def is_homogeneous_image_list(l):
    "Determines if a list contains only images of the same pixel type"
    from gamera.core import ImageBase
    if not is_sequence(l) or not isinstance(l[0], ImageBase):
-      return 0
+      return False
    pixel_type = l[0].data.pixel_type
    for image in l[1:]:
       if (not isinstance(image, ImageBase) or
           image.data.pixel_type != pixel_type):
-         return 0
-   return 1
+         return False
+   return True
+
+def is_homogenous_list(l, t):
+   if not is_sequence(l):
+      return False
+   for e in l:
+      if type(e) not in t:
+         return False
+   return True
+
+def is_string_or_unicode_list(l):
+   return is_homogenous_list(l, (StringType, UnicodeType))
 
 def replace_prefix(s, a, b):
    "replaces the prefix a in s with b"

@@ -519,8 +519,8 @@ def _init_gamera():
       sys.path.append(".")
       _gamera_initialised = 1
 
-from sys import platform
-if platform == 'win32':
+import sys
+if sys.platform == 'win32':
    # Windows doesn't generally keep the console window open, making it difficult to
    # diagnose fatal errors.  This catch-all should help.
    def init_gamera():
@@ -534,6 +534,7 @@ if platform == 'win32':
          print
          print "Press <ENTER> to exit."
          x = raw_input()
+         sys.exit(1)
 else:
    init_gamera = _init_gamera
 

@@ -181,7 +181,7 @@ if float(sys.version[0:3]) < 2.3:
    __builtins__['True'] = 1
    __builtins__['False'] = 0
 else:
-   enumerate = __builtins__.enumerate
+   enumerate = __builtins__['enumerate']
 
 _pixel_type_names = {ONEBIT:     "OneBit",
                      GREYSCALE:  "GreyScale",

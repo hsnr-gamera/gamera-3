@@ -94,8 +94,8 @@ namespace Gamera {
       : Image(upper_left, dim) { }
     ImageBase(const Rect& rect) : Image(rect) { }
     virtual ~ImageBase() { }
-    size_t depth() const { return sizeof(T) * 8; }
-    size_t ncolors() const { return 1; }
+    inline size_t depth() const { return sizeof(T) * 8; }
+    inline size_t ncolors() const { return 1; }
   };
 
   inline size_t ImageBase<OneBitPixel>::depth() const { return 1; }

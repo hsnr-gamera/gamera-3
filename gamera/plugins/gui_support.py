@@ -21,8 +21,7 @@ from gamera.plugin import *
 
 class to_string(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    return_type = String("image_as_string")
-
+    return_type = Class("image_as_string")
 to_string = to_string()
 
 class GuiSupportModule(PluginModule):

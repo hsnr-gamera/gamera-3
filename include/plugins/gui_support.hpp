@@ -22,8 +22,7 @@
 #define kwm01102002_to_string
 
 #include "gamera.hpp"
-#include <string>
-#include <iostream>
+#include "Python.h"
 
 using namespace Gamera;
 
@@ -32,8 +31,8 @@ namespace {
   template<class T>
   struct to_string_impl {
     template<class Mat>
-    void operator()(const Mat& mat, std::string& data) {
-      std::string::iterator i = data.begin();
+    void operator()(const Mat& mat, char* data) {
+      char* i = data;
       typename Mat::const_vec_iterator vi = mat.vec_begin();
       T tmp;
       for (; vi != mat.vec_end(); vi++) {
@@ -54,8 +53,8 @@ namespace {
   template<>
   struct to_string_impl<FloatPixel> {
     template<class Mat>
-    void operator()(const Mat& mat, std::string& data) {
-      std::string::iterator i = data.begin();
+    void operator()(const Mat& mat, char* data) {
+      char* i = data;
       FloatPixel max = 0;
       Mat full_mat = mat.parent();
       typename Mat::vec_iterator di = full_mat.vec_begin();
@@ -88,10 +87,10 @@ namespace {
   template<>
   struct to_string_impl<Grey16Pixel> {
     template<class Mat>
-    void operator()(const Mat& mat, std::string& data) {
+    void operator()(const Mat& mat, char* data) {
       typename Mat::const_vec_iterator vi = mat.vec_begin();
       Grey16Pixel tmp;
-      std::string::iterator i = data.begin();
+      char* i = data;
       for (; vi != mat.vec_end(); vi++) {
 	/*
 	  This should correctly map the 16 bit grey values onto
@@ -112,7 +111,7 @@ namespace {
   template<>
   struct to_string_impl<RGBPixel> {
     template<class Mat>
-    void operator()(const Mat& mat, std::string& data) {
+    void operator()(const Mat& mat, char* data) {
       typename Mat::const_vec_iterator vi = mat.vec_begin();
       for (size_t i = 0; vi != mat.vec_end(); i += 3, vi++) {
 	RGBPixel tmp = *vi;
@@ -126,8 +125,8 @@ namespace {
   template<>
   struct to_string_impl<OneBitPixel> {
     template<class Mat>
-    void operator()(const Mat& mat, std::string& data) {
-      std::string::iterator i = data.begin();
+    void operator()(const Mat& mat, char* data) {
+      char* i = data;
       typename Mat::const_vec_iterator vi = mat.vec_begin();
       OneBitPixel tmp;
       for (; vi != mat.vec_end(); vi++) {
@@ -149,12 +148,14 @@ namespace {
 };
 
 template<class T>
-std::string to_string(T& m) {
-  std::string buffer;
-  buffer.resize(m.nrows() * m.ncols() * 3);
+PyObject* to_string(T& m) {
+  PyObject* str = PyString_FromString("this is stupid\n");
+  if (_PyString_Resize(&str, m.nrows() * m.ncols() * 3) != 0)
+    return 0;
+  char* buffer = PyString_AS_STRING(str);
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
-  return buffer;
+  return str;
 }
 
 #endif

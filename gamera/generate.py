@@ -61,6 +61,7 @@ def generate_plugin(plugin_filename):
   [[exec from plugin import *]]
   
   [[# Standard headers used in the plugins #]]
+  #include <string>
   #include \"gameramodule.hpp\"
   #include \"Python.h\"
 
@@ -115,20 +116,20 @@ def generate_plugin(plugin_filename):
       [[# this holds the self argument - note that the self passed into the function will #]]
       [[# be Null because this functions is not actually bound to an object #]]
       PyObject* real_self;
-      
+      printf(\"%p\\n\", self);
       [[# for each argument insert the appropriate conversion code into the string that will #]]
       [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
       [[for x in function.args.list]]
-        [[if isinstance(x, Int)]]
+        [[if isinstance(x, Int) or isinstance(x, Choice)]]
           int [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
         [[elif isinstance(x, Float)]]
           double [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'd']]
         [[elif isinstance(x, String)]]
-          char* [[x.name + '_arg']];
+          std::string [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
-        [[elif isinstance(x, ImageType)]]
+        [[elif isinstance(x, ImageType) or isinstance(x, Class)]]
           PyObject* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'O']]
         [[end]]
@@ -144,6 +145,8 @@ def generate_plugin(plugin_filename):
         char* return_value = 0;
       [[elif isinstance(function.return_type, ImageType)]]
         Image* return_value = 0;
+      [[elif isinstance(function.return_type, Class)]]
+        PyObject* return_value = 0;
       [[end]]
 
       [[# Now that we have all of the arguments and variables for them we can parse #]]
@@ -196,9 +199,10 @@ def generate_plugin(plugin_filename):
             [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
           [[end]]
           [[exec orig_image_types.append(x.pixel_types[:])]]
+          [[exec x.name = x.name + '_arg']]
           [[exec x.pixel_types = tmp]]
           [[exec images.append(x)]]
-          if (!PyObject_TypeCheck([[x.name + '_arg']], image_type)) {
+          if (!PyObject_TypeCheck([[x.name]], image_type)) {
             PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
             return 0;
           }
@@ -248,6 +252,8 @@ def generate_plugin(plugin_filename):
       return Py_None;
     [[elif isinstance(function.return_type, ImageType)]]
       return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type);
+    [[elif isinstance(function.return_type, String)]]
+      return PyString_FromStringAndSize(return_value.c_str(), return_value.size() + 1);
     [[else]]
       return return_value;
     [[end]]

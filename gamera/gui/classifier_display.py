@@ -281,7 +281,7 @@ class PageMultiImageDisplay(ExtendedMultiImageDisplay):
          if image.classification_state != MANUAL:
             id = self.toplevel.guess_glyph(image)
          else:
-            id = image
+            id = image.id_name
          self.toplevel.set_label_display(id[0][1])
          self.toplevel.display_label_at_cell(row, col, id[0][1])
 
@@ -441,9 +441,9 @@ class ClassifierImageWindow(ImageWindow):
 
    def _OnChooseImage(self, event):
       dlg = Args([Class("Image for context display", ImageBase)])
-      image = dlg.show(self, image_menu.shell.locals, name="Choose image")
+      image = dlg.show(self, image_menu.shell.locals)
       if image != None:
-         self.id.set_image(image)
+         self.id.set_image(image[0])
 
    def get_display(self):
       return ClassifierImageDisplay(self.toplevel, self)

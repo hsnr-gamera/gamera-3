@@ -54,15 +54,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       if state == []:
          return
 
-      # We may have multiple glyphs selected, so we need
-      # to start looking from the last one.  Since there's
-      # no way in wxPython to just get a list of the selected
-      # glyphs, we have to look for them, in this case backwards.
       if self.IsSelection():
          found = 0
          image_no = -1
-         for col in xrange(self.cols, -1, -1):
-            for row in xrange(self.rows, -1, -1):
+         for row in xrange(0, self.cols):
+            for col in xrange(0, self.rows):
                if self.IsInSelection(row, col):
                   image_no = self.get_image_no(row, col)
                   found = 1

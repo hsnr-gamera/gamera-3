@@ -18,6 +18,7 @@
 #
 
 from wxPython.wx import *        # wxPython
+from wxPython.lib.dialogs import wxScrolledMessageDialog
 from os import path
 from gamera import util
 
@@ -31,8 +32,11 @@ def get_color(number):
 
 # Displays a message box
 def message(message):
-   dlg = wxMessageDialog(None, message, "Message",
-                         wxOK | wxICON_INFORMATION)
+   if "\n" in message:
+      dlg = wxScrolledMessageDialog(None, message, "Message")
+   else:
+      dlg = wxMessageDialog(None, message, "Message",
+                            wxOK | wxICON_INFORMATION)
    dlg.ShowModal()
    dlg.Destroy()
 

@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import traceback, sys
 from gamera import group, util
 from fudge import Fudge
 
@@ -71,8 +72,8 @@ Rule functions take the basic form:
    
      Informal syntax definition:
        A|B                          # matches A or B
-       A.B|C                        # matches
-       A.B or A.C (A.B)|C           # matches A.B or C
+       A.B|C                        # matches A.B or A.C 
+       (A.B)|C                      # matches A.B or C
        *                            # multiple-character wildcard
        ?                            # single character wildcard
        ()                           # grouping can be performed with
@@ -124,6 +125,9 @@ grid cells.  This will affect how far apart symbols can be matched.
 TODO: There may be at some point some kind of Meta-RuleEngine for
 performing sets of rules in sequence or parallel or whatever...  """
 
+class RuleEngineError(Exception):
+  pass
+
 def example_rule(a="dot", b="letter*"):
   if (Fudge(a.lr_y) == b.lr_y and
       a.ul_x > b.lr_x and a.ul_x - b.lr_x < 20):
@@ -158,7 +162,15 @@ class RuleEngine:
   def get_rules(self):
     return self.rules.keys()
 
-  def _deal_with_result(self, result, added, removed):
+  def _deal_with_result(self, rule, glyphs, added, removed):
+    try:
+      current_stack = traceback.extract_stack()
+      result = rule(*glyphs)
+    except Exception, e:
+      lines = traceback.format_exception(*sys.exc_info())
+      del lines[1]
+      self._exceptions[''.join(lines)] = None 
+      return 0
     if result is None or result == ([],[]):
       return 0
     for a in result[0]:
@@ -169,6 +181,7 @@ class RuleEngine:
 
   def perform_rules(self, glyphs, grid_size=100, recurse=0,
                     progress=None, _recursion_level=0):
+    self._exceptions = {}
     if _recursion_level > 10:
       return [], []
     elif _recursion_level == 0:
@@ -196,18 +209,18 @@ class RuleEngine:
           glyph_specs = rule.func_defaults
           for glyph in grid_index.get_glyphs_by_key(regex):
             if len(glyph_specs) == 1:
-              self._deal_with_result(rule(glyph), added, removed)
+              self._deal_with_result(rule, (glyph,), added, removed)
             elif len(glyph_specs) == 2:
               for glyph2 in grid_index.get_glyphs_around_glyph_by_key(
                 glyph, glyph_specs[1]):
-                stop = self._deal_with_result(rule(glyph, glyph2), added, removed)
+                stop = self._deal_with_result(rule, (glyph, glyph2), added, removed)
                 if not self._reapply and stop:
                   break
             else:
               seed = [list(grid_index.get_glyphs_around_glyph_by_key(glyph, x))
                       for x in glyph_specs[1:]]
               for combination in util.combinations(seed):
-                stop = self._deal_with_result(rule(glyph, *combination), added, removed)
+                stop = self._deal_with_result(rule, [glyph] + combination, added, removed)
                 if not self._reapply and stop:
                   break
             progress.step()
@@ -218,5 +231,10 @@ class RuleEngine:
     if recurse and len(added):
       self._deal_with_result(
         self.perform_rules(added.keys(), 1, progress, _recursion_level + 1))
+
+    if len(self._exceptions):
+      s = ("One or more of the rule functions caused an exception.\n(Each exception listed only once:)\n\n" +
+           "\n".join(self._exceptions.keys()))
+      raise RuleEngineError(s)
 
     return added.keys(), removed.keys()

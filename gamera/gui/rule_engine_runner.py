@@ -21,7 +21,7 @@ from inspect import isfunction
 from os import path
 from wxPython.wx import *
 from gamera import ruleengine
-from gamera.gui import toolbar
+from gamera.gui import toolbar, gui_util
 
 class RuleEngineRunnerTree(wxTreeCtrl):
   def __init__(self, toplevel, parent):
@@ -53,7 +53,13 @@ class RuleEngineRunnerTree(wxTreeCtrl):
     else:
       # TODO: Do some module-level thing here
       return
-    added, removed = engine.perform_rules(multi_display.GetAllItems())
+    try:
+      added, removed = engine.perform_rules(multi_display.GetAllItems())
+    except ruleengine.RuleEngineError, e:
+      gui_util.message(str(e))
+      return
+    if added == [] and removed == []:
+      gui_util.message("No rules matched the data set.")
     multi_display.ClearSelection()
     multi_display.append_and_remove_glyphs(added, removed)
     single_display.highlight_cc(added, 0)
@@ -65,12 +71,15 @@ class RuleEngineRunnerTree(wxTreeCtrl):
     multi_display = self.toplevel.multi_iw.id
     single_display = self.toplevel.single_iw.id
     if len(self.undo_history):
-      self.added, self.removed = self.undo_history.pop()
+      added, removed = self.undo_history.pop()
       multi_display.ClearSelection()
-      for glyph in self.removed:
+      for glyph in removed:
         del glyph.__dict__['dead']
-      multi_display.append_and_remove_glyphs([], self.added)
-      single_display.clear_all_highlights()
+      multi_display.append_and_remove_glyphs([], added)
+      if len(self.undo_history):
+        self.added, self.removed = self.undo_history[-1]
+        single_display.highlight_cc(self.added, 0)
+        single_display.add_highlight_cc(self.removed, 1)
       
   def _OnReloadCode(self, event):
     for module in self.modules:

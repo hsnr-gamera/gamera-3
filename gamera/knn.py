@@ -19,7 +19,7 @@
 
 from threading import *
 
-from gamera import core
+from gamera import core, util
 import gamera.knncore
 import gamera.gamera_xml
 import array
@@ -153,7 +153,6 @@ class kNN(gamera.knncore.kNN):
         self.num_features = features 
 
     def distance_from_images(self, images, glyph, max):
-        from gamera import util
         glyph.generate_features(self.feature_functions)
         progress = None
         for x in images:

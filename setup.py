@@ -49,8 +49,11 @@ command_line_utils = (
    )
 if sys.platform == 'win32':
    command_line_filename_at = 1
+   scripts_directory_name = "Scripts"
 else:
    command_line_filename_at = 0
+   scripts_directory_name = "bin/"
+
 scripts = [x[command_line_filename_at] for x in command_line_utils] + ["gamera_post_install.py"]
 
 if 'build' in sys.argv:
@@ -141,7 +144,7 @@ setup(name = "gamera", version="2.0",
                   ('gamera/doc', glob.glob("gamera/doc/*.html")),
                   ('gamera/doc/classes', glob.glob("gamera/doc/classes/*.html")),
                   ('gamera/doc/plugins', glob.glob("gamera/doc/plugins/*.html")),
-                  ('Scripts', scripts)]
+                  (scripts_directory_name, scripts)]
       )
 
 ##########################################

@@ -6,6 +6,7 @@ recursive-include gamera/test *.tiff
 recursive-include gamera/test/results
 recursive-include src *.cpp *.c *.h makefile.* *.hpp
 recursive-include include *.hpp *.hxx
-include TODO INSTALL KNOWN_BUGS ACKNOWLEDGEMENTS setup.cfg
+include TODO INSTALL KNOWN_BUGS ACKNOWLEDGEMENTS setup.cfg gamera_post_install.py
+
 
 

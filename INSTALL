@@ -8,6 +8,9 @@ Gamera requires that you install the following software FIRST:
 - Python 2.2.1 (or greater) (www.python.org)
 - wxPython 2.3.3.1 (or greater) (www.wxpython.org)
 
+(Some users have reported problems with the wxPython RPMs.  You may
+wish to install wxPython from source if you are having problems.)
+
 ========================================
 
 INSTALLING FROM A PRECOMPILED BINARY

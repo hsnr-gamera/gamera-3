@@ -216,7 +216,6 @@ namespace Gamera {
 
   template<class T>
   feature_t area(const T& image) {
-    std::cout << image.nrows() << " " << image.ncols() << " " << image.scaling() << std::endl;
     return feature_t(image.nrows() * image.ncols()) / image.scaling();
   }
 

@@ -74,8 +74,21 @@ extern void free(void*);
 #endif
 
 #if defined(__APPLE__)
-
-
+#include <sys/types.h>
+#define HOST_FILLORDER FILLORDER_MSB2LSB
+#define HOST_BIGENDIAN	1
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+typedef double dblparam_t;
+#ifdef __STRICT_ANSI__
+#define	INLINE	__inline__
+#else
+#define	INLINE	inline
+#endif
+#define GLOBALDATA(TYPE,NAME)	extern TYPE NAME
 #endif
 #ifdef __cplusplus
 }

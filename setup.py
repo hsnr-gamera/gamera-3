@@ -1,4 +1,3 @@
-# vi:set tabsize=3:
 
 from distutils.core import setup, Extension
 from distutils.util import get_platform

@@ -119,10 +119,13 @@ description = ("This is the Gamera installer. " +
                "Please ensure that Python and wxPython 2.4.0 " +
                "(or later) are installed before proceeding.")
 
+print "prefix:", PREFIX
+
 lib_path = os.path.join(get_python_lib()[len(PREFIX)+1:], "gamera")
 print "lib_path:", lib_path
    
-include_path = "include/gamera"
+include_path = os.path.join(get_python_inc()[len(PREFIX)+1:], "gamera")
+print "include_path:", include_path
 
 includes = [(os.path.join(include_path, a),
              glob.glob(os.path.join("include",
@@ -131,7 +134,7 @@ includes = [(os.path.join(include_path, a),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
 
-if sys.platform == 'win32':
+if sys.platform == 'win32' and '--compiler=mingw32' in sys.argv:
    # Use os.system to get Cygwin path
    os.system("cp /usr/bin/mgwz.dll .")
    includes.append((os.path.join(lib_path, r'plugins'),

@@ -54,7 +54,6 @@ DL_EXPORT(void) initgraph(void) {
   PyObject* m = Py_InitModule("gamera.graph", graph_module_methods);
   PyObject* d = PyModule_GetDict(m);
 
-  init_IteratorType();
   init_NodeType();
   init_EdgeType();
   init_GraphType(d);

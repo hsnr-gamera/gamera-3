@@ -1012,6 +1012,24 @@ inline PointVector* PointVector_from_python(PyObject* py) {
   return cpp;
 }
 
+/* ITERATOR TYPE
+ */
+inline PyTypeObject* get_IteratorType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Iterator");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Iterator type from gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+
 // Converting pixel types to/from Python
 
 inline PyObject* pixel_to_python(OneBitPixel px) {

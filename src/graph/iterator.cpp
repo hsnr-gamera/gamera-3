@@ -18,58 +18,6 @@
 
 #include "iterator.hpp"
 
-extern "C" {
-  static PyObject* iterator_get_iter(PyObject* self);
-  static PyObject* iterator_next(PyObject* self);
-}
-
-static PyTypeObject IteratorType = {
-  PyObject_HEAD_INIT(NULL)
-  0,
-};
-
-PyTypeObject* get_IteratorType() {
-  return &IteratorType;
-}
-
-void iterator_dealloc(PyObject* self) {
-  IteratorObject* so = (IteratorObject*)self;
-#ifdef DEBUG_DEALLOC
-  std::cerr << "iterator dealloc\n";
-#endif
-  (*(so->m_fp_dealloc))(so);
-  self->ob_type->tp_free(self);
-}
-
-PyObject* iterator_get_iter(PyObject* self) {
-  Py_INCREF(self);
-  return self;
-}
-
-PyObject* iterator_next(PyObject* self) {
-  IteratorObject* so = (IteratorObject*)self;
-  PyObject* result = (*(so->m_fp_next))(so);
-  if (result == NULL) {
-    PyErr_SetString(PyExc_StopIteration, "");
-    return 0;
-  }
-  return result;
-}
-
-void init_IteratorType() {
-  IteratorType.ob_type = &PyType_Type;
-  IteratorType.tp_name = "gamera.graph.Iterator";
-  IteratorType.tp_basicsize = sizeof(IteratorObject);
-  IteratorType.tp_dealloc = iterator_dealloc;
-  IteratorType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
-  IteratorType.tp_getattro = PyObject_GenericGetAttr;
-  IteratorType.tp_alloc = NULL; // PyType_GenericAlloc;
-  IteratorType.tp_free = NULL; // _PyObject_Del;
-  IteratorType.tp_iter = iterator_get_iter;
-  IteratorType.tp_iternext = iterator_next;
-  PyType_Ready(&IteratorType);
-}
-
 // CONCRETE ITERATORS
 
 // struct BFSIterator : IteratorObject {

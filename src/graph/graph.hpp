@@ -147,6 +147,8 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
 	(*i)->m_set_id--;
       if ((*i)->m_disj_set > (long)set_id)
 	(*i)->m_disj_set--;
+      else if ((*i)->m_disj_set == (long)set_id)
+	(*i)->m_disj_set = -1;
     }
   }
 
@@ -162,26 +164,54 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
     }
 
   delete node;
+
   return true;
 }
 
+struct MemoEdge {
+  MemoEdge(Node* from_node_, Node* to_node_, CostType cost_) :
+    from_node(from_node_), to_node(to_node_), cost(cost_) {}
+  Node* from_node, *to_node;
+  CostType cost;
+};
+
 inline bool graph_remove_node(GraphObject* so, Node* node) {
   // Stitch together edges
+  typedef std::vector<MemoEdge> MemoEdgeList;
+  
+  MemoEdgeList edges;
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     for (EdgeList::iterator j = (*i)->m_edges.begin();
 	 j != (*i)->m_edges.end(); ++j)
       if ((*j)->traverse(*i) == node)
 	for (EdgeList::iterator k = node->m_edges.begin();
-	     k != node->m_edges.end(); ++k) 
-	  graph_add_edge(so, *i, (*k)->m_to_node, 
-			 (*j)->m_cost + (*k)->m_cost);
+	     k != node->m_edges.end(); ++k) {
+	  if ((*k)->m_from_node == node) {
+	    MemoEdge edge(*i, (*k)->m_to_node, (*j)->m_cost + (*k)->m_cost);
+	    edges.push_back(edge);
+	  }
+	}
+
   
   // Remove node and original edges
-  return graph_remove_node_and_edges(so, node);
+  if (graph_remove_node_and_edges(so, node)) {
+    // We reconnect the edges that used to go through node.
+    // This is done *after* removing the node and the edges because
+    // it's moderately faster (there's no extraneous edges around during
+    // graph_remove_node_and_edges).
+    for (MemoEdgeList::iterator i = edges.begin(); i != edges.end(); ++i) 
+      graph_add_edge(so, (*i).from_node, (*i).to_node, (*i).cost);
+    
+    return true;
+  } else {
+    return false;
+  }
 }
 
 inline size_t graph_disj_set_find_and_compress(GraphObject* so, size_t x) {
+#ifdef DEBUG_ADT
+#endif
   //LongVector* vec = (so->m_disj_set);
   size_t xm1 = x - 1;
   Node* node = (*(so->m_nodes))[xm1];
@@ -194,6 +224,9 @@ inline size_t graph_disj_set_find_and_compress(GraphObject* so, size_t x) {
 }
 
 inline void graph_disj_set_union_by_height(GraphObject* so, size_t a, size_t b) {
+#ifdef DEBUG_ADT
+  std::cerr << "graph_disj_set_union_by_height " << a << " " << b << std::endl;
+#endif
   //LongVector* vec = (so->m_disj_set);
   Node* node_a = (*(so->m_nodes))[a-1];
   Node* node_b = (*(so->m_nodes))[b-1];
@@ -213,17 +246,18 @@ inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
   if (!HAS_FLAG(so->m_flags, FLAG_SELF_CONNECTED) && from_node == to_node)
     return false;
   
-  /* if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
+  if (!HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
     for (EdgeList::iterator i = from_node->m_edges.begin();
 	 i != from_node->m_edges.end(); ++i)
       if ((*i)->traverse(from_node) == to_node)
 	return false;
-  } */
+  } 
 
 #ifdef DEBUG_ADT
+  std::cerr << "\nBefore\n";
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
-    std::cerr << (*i)->m_disj_set << " ";
+    std::cerr << "(" << &(*(*i)) << " " << (*i)->m_disj_set << ", " << (*i)->m_set_id << "), " ;
     std::cerr << " ";
 #endif  
 
@@ -272,7 +306,7 @@ inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
     to_node->m_is_subgraph_root = false;
 
 #ifdef DEBUG_ADT
-  std::cerr << "After";
+  std::cerr << "\nAfter\n";
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
     std::cerr << (*i)->m_disj_set << " ";
@@ -318,7 +352,7 @@ inline bool graph_remove_edge(GraphObject* so, Edge* edge) {
 	    Node* node = (*j)->traverse(root);
 	    if (!(NP_VISITED(node))) {
 	      NP_VISITED(node) = true;
-	      node->m_disj_set = new_set_id;
+	      graph_disj_set_union_by_height(so, node->m_set_id, new_set_id);
 	      node_stack.push(node);
 	    }
 	  }

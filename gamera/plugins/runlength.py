@@ -270,6 +270,26 @@ To encode an RLE string, use to_rle_."""
     self_type = ImageType([ONEBIT])
     args = Args(String("runs"))
 
+class RunIterator(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = Class("iterator")
+
+class iterate_black_horizontal_runs(RunIterator):
+    "Returns as iterator over the black horizontal runs in the image."
+    pass
+
+class iterate_black_vertical_runs(RunIterator):
+    "Returns as iterator over the black vertical runs in the image."
+    pass
+
+class iterate_white_horizontal_runs(RunIterator):
+    "Returns as iterator over the white horizontal runs in the image."
+    pass
+
+class iterate_white_vertical_runs(RunIterator):
+    "Returns as iterator over the white vertical runs in the image."
+    pass
+
 class RunLengthModule(PluginModule):
     category = "Runlength"
     cpp_headers=["runlength.hpp"]
@@ -291,7 +311,11 @@ class RunLengthModule(PluginModule):
                  filter_tall_black_runs,filter_wide_black_runs,
                  filter_narrow_white_runs, filter_short_white_runs,
                  filter_tall_white_runs,filter_wide_white_runs,
-                 to_rle, from_rle]
+                 to_rle, from_rle,
+                 iterate_black_horizontal_runs,
+                 iterate_black_vertical_runs,
+                 iterate_white_horizontal_runs,
+                 iterate_white_vertical_runs]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
@@ -301,3 +325,4 @@ del FrequentRun
 del FrequentRuns
 del RunHistogram
 del FilterRuns
+del RunIterator

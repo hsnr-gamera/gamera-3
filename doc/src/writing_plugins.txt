@@ -521,7 +521,9 @@ tuples or functions:
   the example.  The function will be passed one argument, ``images``,
   which is a dictionary of the standard Gamera example images.  Any
   images or values returned will be included in the documentation.  For
-  example:
+  example the following loads the standard RGB and GreyScale images,
+  clips them appropriately, adds them together, and then returns all of
+  them for inclusion in the documentation.
 
 .. code:: Python
 
@@ -532,9 +534,6 @@ tuples or functions:
         return [clipped, greyscale, clipped.add_images(greyscale.to_rgb(), False)]
     doc_examples = [__doc_example1__]
 
-  loads the standard RGB and GreyScale images, clips them
-  appropriately, adds them together, and then returns them all for
-  inclusion in the documentation.
 
 Examples
 ````````

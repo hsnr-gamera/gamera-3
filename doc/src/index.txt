@@ -96,6 +96,11 @@ Reference
 
 .. __: gamera.core.ImageInfo.html
 
+- `Graph objects`__: A simple library for dealing with graph
+  structures.
+
+.. __: graph.html
+
 - `XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html

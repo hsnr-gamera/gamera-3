@@ -128,7 +128,7 @@ h4 {
   background-color: #e1f0ee;
   color: #29493c;
   border-top-color: #72ada8;
-  border-top-style: dotted;
+  border-top-style: solid;
   border-top-width: 1px
 }
 
@@ -136,7 +136,7 @@ h5 {
   background-color: #e1f0ee;
   color: #29493c;
   border-top-color: #72ada8;
-  border-top-style: dotted;
+  border-top-style: solid;
   border-top-width: 0.5px
 }
 

@@ -130,7 +130,6 @@ def graphvis_output(G, filename):
       fd.write("}\n")
    fd.close()
 
-
 def analysis(glyphs):
    by_id = {}
    for x in glyphs:

@@ -552,11 +552,8 @@ def _init_gamera():
          "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
          None),
       plugin.PluginFactory(
-         "display_ccs", "Displaying", None, plugin.ImageType([COMPLEX]),
-         None),
-      plugin.PluginFactory(
          "display_false_color", "Displaying", None,
-         plugin.ImageType([GREYSCALE, FLOAT, COMPLEX]),
+         plugin.ImageType([GREYSCALE, FLOAT]),
          None),
       plugin.PluginFactory(
          "classify_manual", "Classification", None,

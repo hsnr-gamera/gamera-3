@@ -57,10 +57,10 @@ namespace Gamera {
   /*
     Connected-components
    */
-  typedef ConnectedComponent<OneBitImageData> CC;
-  typedef ConnectedComponent<OneBitRleImageData> RleCC;
-  typedef std::list<CC*> ConnectedComponents;
-  typedef std::list<RleCC*> RleConnectedComponents;
+  typedef ConnectedComponent<OneBitImageData> Cc;
+  typedef ConnectedComponent<OneBitRleImageData> RleCc;
+  typedef std::list<Cc*> ConnectedComponents;
+  typedef std::list<RleCc*> RleConnectedComponents;
 
   /*
     Factory for types.

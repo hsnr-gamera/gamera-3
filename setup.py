@@ -35,25 +35,29 @@ if os.name == 'posix':
         fd = open(file, 'w')
         fd.write(content % info)
         fd.close()
-        os.chmod(file, 0x755)
+        os.chmod(file, 755)
 
 ########################################
 # Distutils setup
 setup(name = "gameracore", version="1.1",
-      script_args = sys.argv[1:] + ['--build-lib=gamera'],
-      ext_modules = [Extension("gameracore", ["src/gameramodule.cpp",
-                                          "src/sizeobject.cpp",
-                                          "src/pointobject.cpp",
-                                          "src/dimensionsobject.cpp",
-                                          "src/rectobject.cpp",
-                                          "src/regionobject.cpp",
-                                          "src/regionmapobject.cpp",
-                                          "src/rgbpixelobject.cpp",
-                                          "src/imagedataobject.cpp",
-                                          "src/imageobject.cpp",
-                                          "src/imageinfoobject.cpp"
-                                          ], include_dirs=["include"],
+      ext_modules = [Extension("gamera.gameracore",
+                               ["src/gameramodule.cpp",
+                                "src/sizeobject.cpp",
+                                "src/pointobject.cpp",
+                                "src/dimensionsobject.cpp",
+                                "src/rectobject.cpp",
+                                "src/regionobject.cpp",
+                                "src/regionmapobject.cpp",
+                                "src/rgbpixelobject.cpp",
+                                "src/imagedataobject.cpp",
+                                "src/imageobject.cpp",
+                                "src/imageinfoobject.cpp"
+                                ],
+                               include_dirs=["include"],
+                               # FIXME
                                libraries=["stdc++"]),
-                     Extension("knn", ["src/knnmodule.cpp"],
-                               include_dirs=["include"], libraries=["stdc++"])]
+                     Extension("gamera.knn", ["src/knnmodule.cpp"],
+                               include_dirs=["include"], libraries=["stdc++"])],
+      packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
+                  'gamera.toolkits.omr']
       )

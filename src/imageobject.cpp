@@ -347,7 +347,7 @@ static PyObject* image_get(PyObject* self, PyObject* args) {
   int row, col;
   PyArg_ParseTuple(args, "ii", &row, &col);
   if (is_CCObject(self)) {
-    return Py_BuildValue("i", ((CC*)o->m_x)->get((size_t)row, (size_t)col));
+    return Py_BuildValue("i", ((Cc*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_pixel_type == Python::FLOAT) {
     return Py_BuildValue("d", ((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_storage_format == Python::RLE) {
@@ -370,7 +370,7 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
   if (is_CCObject(self)) {
     int value;
     PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((CC*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+    ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
   } else if (od->m_pixel_type == Python::FLOAT) {
     double value;
     PyArg_ParseTuple(args, "iid", &row, &col, &value);
@@ -459,7 +459,7 @@ void init_ImageType(PyObject* module_dict) {
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
 
   CCType.ob_type = &PyType_Type;
-  CCType.tp_name = "gameracore.CC";
+  CCType.tp_name = "gameracore.Cc";
   CCType.tp_basicsize = sizeof(CCObject);
   CCType.tp_dealloc = cc_dealloc;
   CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -469,7 +469,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_alloc = PyType_GenericAlloc;
   CCType.tp_free = _PyObject_Del;
   PyType_Ready(&CCType);
-  PyDict_SetItemString(module_dict, "CC", (PyObject*)&CCType);
+  PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
 
   // some constants
   PyDict_SetItemString(module_dict, "UNCLASSIFIED",

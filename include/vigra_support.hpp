@@ -380,17 +380,17 @@ namespace Gamera {
   };
 
   template<>
-  struct choose_accessor<CC> {
+  struct choose_accessor<Cc> {
     typedef CCAccessor accessor;
-    static accessor make_accessor(const CC& mat) {
+    static accessor make_accessor(const Cc& mat) {
       return accessor(mat.label());
     }
   };
 
   template<>
-  struct choose_accessor<RleCC> {
+  struct choose_accessor<RleCc> {
     typedef CCAccessor accessor;
-    static accessor make_accessor(const RleCC& mat) {
+    static accessor make_accessor(const RleCc& mat) {
       return accessor(mat.label());
     }
   };

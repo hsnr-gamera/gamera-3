@@ -510,27 +510,23 @@ class ImageWindow(wxPanel):
       wxPanel.__init__(self, parent, id)
       self.SetAutoLayout(true)
       self.toolbar = wxToolBar(self, -1, style=wxTB_HORIZONTAL)
-      self.toolbar.AddSimpleTool(10, wxBitmap(paths.pixmaps +
-                                              "icon_refresh.png",
-                                              wxBITMAP_TYPE_PNG), "Refresh")
+      from gamera.gui import gamera_icons
+      self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
+                                 "Refresh")
       EVT_TOOL(self, 10, self.OnRefreshClick)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(20, wxBitmap(paths.pixmaps +
-                                              "icon_zoom_in.png",
-                                              wxBITMAP_TYPE_PNG), "Zoom in")
+      self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomBitmap(),
+                                 "Zoom in")
       EVT_TOOL(self, 20, self.OnZoomInClick)
-      self.toolbar.AddSimpleTool(30, wxBitmap(paths.pixmaps +
-                                              "icon_zoom_out.png",
-                                              wxBITMAP_TYPE_PNG), "Zoom Out")
+      self.toolbar.AddSimpleTool(30, gamera_icons.getIconZoomOutBitmap(),
+                                 "Zoom Out")
       EVT_TOOL(self, 30, self.OnZoomOutClick)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(31, wxBitmap(paths.pixmaps +
-                                              "icon_make_view.png",
-                                              wxBITMAP_TYPE_PNG), "Make new view")
+      self.toolbar.AddSimpleTool(31, gamera_icons.getIconMakeViewBitmap(),
+                                 "Make new view")
       EVT_TOOL(self, 31, self.OnMakeViewClick)
-      self.toolbar.AddSimpleTool(32, wxBitmap(paths.pixmaps +
-                                              "icon_image_copy.png",
-                                              wxBITMAP_TYPE_PNG), "Make new copy")
+      self.toolbar.AddSimpleTool(32, gamera_icons.getIconImageCopyBitmap(),
+                                 "Make new copy")
       EVT_TOOL(self, 32, self.OnMakeCopyClick)
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
@@ -928,36 +924,29 @@ class MultiImageWindow(wxPanel):
       wxPanel.__init__(self, parent, id)
       self.SetAutoLayout(true)
       self.toolbar = wxToolBar(self, -1, style=wxTB_HORIZONTAL)
-      self.toolbar.AddSimpleTool(10, wxBitmap(paths.pixmaps + "icon_refresh.png",
-                                              wxBITMAP_TYPE_PNG), "Refresh")
+      from gamera.gui import gamera_icons
+      self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
+                                 "Refresh")
       EVT_TOOL(self, 10, self.OnRefreshClick)
       self.toolbar.AddSeparator()
 
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Sort: "))
       self.sort_combo = wxComboBox(self.toolbar, 100, choices=[])
       self.toolbar.AddControl(self.sort_combo)
-      self.toolbar.AddSimpleTool(101,
-                                 wxBitmap(paths.pixmaps + "icon_sort_asc.png",
-                                          wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(101, gamera_icons.getIconSortAscBitmap(),
                                  "Sort Ascending")
       EVT_TOOL(self, 101, self.OnSortAscending)
-      self.toolbar.AddSimpleTool(102,
-                                 wxBitmap(paths.pixmaps + "icon_sort_dec.png",
-                                          wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(102, gamera_icons.getIconSortDecBitmap(),
                                  "Sort Descending")
       EVT_TOOL(self, 102, self.OnSortDescending)
       self.toolbar.AddSeparator()
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Select: "))
       self.select_combo = wxComboBox(self.toolbar, 200, choices=[])
       self.toolbar.AddControl(self.select_combo)
-      self.toolbar.AddSimpleTool(201,
-                                 wxBitmap(paths.pixmaps + "icon_select.png",
-                                          wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(201, gamera_icons.getIconSelectBitmap(),
                                  "Select by given expression")
       EVT_TOOL(self, 201, self.OnSelect)
-      self.toolbar.AddSimpleTool(203,
-                                 wxBitmap(paths.pixmaps + "icon_select_all.png",
-                                          wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(203, gamera_icons.getIconSelectAllBitmap(),
                                  "Select All")
       EVT_TOOL(self, 203, self.OnSelectAll)
       self.select_choices = []
@@ -1108,7 +1097,9 @@ class ImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.iw = ImageWindow(self)
-      self.SetIcon(wxIcon(paths.pixmaps + "icon_image.png", wxBITMAP_TYPE_PNG))
+      from gamer.gui import gamera_icons
+      icon = wxIconFromBitmap(gamera_icon.getIconImageBitmap())
+      self.SetIcon(icon)
 
    def __repr__(self):
       return "<ImageFrame Window>"
@@ -1137,7 +1128,9 @@ class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.iw = MultiImageWindow(self)
-      self.SetIcon(wxIcon(paths.pixmaps + "icon_image_list.png", wxBITMAP_TYPE_PNG))
+      from gamera.gui import gamera_icons
+      icon = wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
+      self.SetIcon(icon)
 
    def __repr__(self):
       return "<MultiImageFrame Window>"

@@ -214,12 +214,12 @@ class IconDisplay(wxListCtrl):
     target = target.data
     if (isinstance(target, Image)
         and not isinstance(target, SubImage)
-        and not isinstance(target, CC)):
-      if (isinstance(source, CC) or
+        and not isinstance(target, Cc)):
+      if (isinstance(source, Cc) or
           isinstance(source, SubImage) or
           (util.is_sequence(source) and
            len(source) > 0 and
-          (isinstance(source[0], CC) or
+          (isinstance(source[0], Cc) or
            isinstance(source[0], SubImage)))):
         target.display_cc(source)
         self.update_icons()
@@ -235,91 +235,120 @@ class CustomIcon:
   is_custom_icon_description = 1
 
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_unknown.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+    return icon
 
   def check(self, data):
     return 1
 
 class CIRGBImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_rgb.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageRgbBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, Image) and data.get_type() == "RGB"
+    return isinstance(data, Image) and data.data.pixel_type == RGB
 
 class CIGreyScaleImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_grey.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageGreyBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, Image) and data.get_type() == "GreyScale"
+    return isinstance(data, Image) and data.data.pixel_type == GREYSCALE
 
 class CIGrey16Image(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_grey16.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageGrey16Bitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, Image) and data.get_type() == "Grey16"
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getBitmap())
+    return icon
+    return isinstance(data, Image) and data.data.pixel_type == GREY16
 
 class CIFloatImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_float.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageFloatBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, Image) and data.get_type() == "Float"
+    return isinstance(data, Image) and data.data.pixel_type == FLOAT
 
 class CIOneBitImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_binary.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageBinaryBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, Image) and data.get_type() == "OneBit"
+    return isinstance(data, Image) and data.data.pixel_type == ONEBIT
 
 class CIRGBSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_subimage_rgb.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconSubimageRgbBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, SubImage) and data.get_type() == "RGB"
+    return isinstance(data, SubImage) and data.data.pixel_type == RGB
 
 class CIGreyScaleSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_subimage_grey.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconSubimageGreyBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, SubImage) and data.get_type() == "GreyScale"
+    return isinstance(data, SubImage) and data.data.pixel_type == GREYSCALE
 
 class CIGrey16SubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_subimage_grey16.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconSubimageGrey16Bitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, SubImage) and data.get_type() == "Grey16"
+    return isinstance(data, SubImage) and data.data.pixel_type == GREY16
 
 class CIFloatSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_subimage_float.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconSubimageFloatBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, SubImage) and data.get_type() == "Float"
+    return isinstance(data, SubImage) and data.data.pixel_type == FLOAT
 
 class CIOneBitSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_subimage_binary.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconSubimageBinaryBitmap())
+    return icon
 
   def check(self, data):
-    return isinstance(data, SubImage) and data.get_type() == "OneBit"
+    return isinstance(data, SubImage) and data.data.pixel_type == ONEBIT
 
 class CICC(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_cc.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconCcBitmap())
+    return icon
     
   def check(self, data):
-    return isinstance(data, CC)
+    return isinstance(data, Cc)
 
 class CIImageList(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_image_list.png", wxBITMAP_TYPE_PNG)
+    from gamera.gui import gamera_icons
+    icon = wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
+    return icon
   
   def check(self, data):
     return util.is_sequence(data)

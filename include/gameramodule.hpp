@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef KWM06292002_gameramodule
-#define KWM06292002_gameramodule
+#ifndef KWM06292002_imagemodule
+#define KWM06292002_imagemodule
 
 #include "gamera.hpp"
 #include <Python.h>
@@ -313,11 +313,11 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
   } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
     pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::RLE;
-  } else if (dynamic_cast<CC*>(image) != 0) {
+  } else if (dynamic_cast<Cc*>(image) != 0) {
     pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::DENSE;
     cc = true;
-  } else if (dynamic_cast<RleCC*>(image) != 0) {
+  } else if (dynamic_cast<RleCc*>(image) != 0) {
     pixel_type = Gamera::Python::ONEBIT;
     storage_type = Gamera::Python::RLE;
     cc = true;
@@ -336,8 +336,8 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
 	   || image->ncols() < image->data()->ncols())
     i = (ImageObject*)subimage_type->tp_alloc(subimage_type, 0);
   else
-    i = (ImageObjecT*)image_type->tp_alloc(image_type, 0);
-  i->m_data = d;
+    i = (ImageObject*)image_type->tp_alloc(image_type, 0);
+  i->m_data = (PyObject*)d;
   ((RectObject*)i)->m_x = image;
   return init_image_members(i);
 }

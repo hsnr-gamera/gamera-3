@@ -95,8 +95,8 @@ if _has_gui == _WX_GUI:
          self.SetAutoLayout(wxPython.wx.true)
          if wizard:
             bigbox = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
-            bmp = wxPython.wx.wxBitmap(paths.pixmaps + "gamera_wizard.png",
-                                       wxPython.wx.wxBITMAP_TYPE_PNG)
+            from gamera.gui import gamera_icons
+            bmp = gamera_icons.getGameraWizardBitmap()
             bitmap = wxPython.wx.wxStaticBitmap(self, -1, bmp)
             bigbox.Add(bitmap, 0, wxPython.wx.wxALIGN_TOP)
          self.box = wxPython.wx.wxBoxSizer(wxPython.wx.wxVERTICAL)

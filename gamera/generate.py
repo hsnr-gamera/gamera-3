@@ -43,16 +43,16 @@ if __name__ == '__main__':
       PyObject* real_self;
       [[for x in function.args.list]]
         [[if isinstance(x, Int)]]
-          int [[x.name]];
+          int [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
         [[elif isinstance(x, Float)]]
-          double [[x.name]];
+          double [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'd']]
         [[elif isinstance(x, String)]]
-          char* [[x.name]];
+          char* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
         [[elif isinstance(x, ImageType)]]
-          PyObject* [[x.name]];
+          PyObject* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'O']]
         [[end]]
       [[end]]
@@ -64,17 +64,17 @@ if __name__ == '__main__':
       [[elif isinstance(function.return_type, String)]]
         char* return_value;
       [[elif isinstance(function.return_type, ImageType)]]
-        ImageBase* return_value;
+        Image* return_value;
       [[end]]
 
-      if (PyArg_ParseTuple(args, [[pyarg_format]],
+      if (PyArg_ParseTuple(args, \"[[pyarg_format]]\", &real_self,
       [[for i in range(len(function.args.list))]]
         [[if i != 0]]
           ,
         [[end]]
-        &[[function.args.list[i].name]]
+        &[[function.args.list[i].name + '_arg']]
       [[end]]
-      ) < == 0)
+      ) <= 0)
         return 0;
 
       if (!PyObject_TypeCheck(real_self, image_type)) {
@@ -85,12 +85,13 @@ if __name__ == '__main__':
       [[for type in function.self_type.pixel_types]]
         [[if type == 'OneBit']]
           [[exec tmp.append('OneBitRleImageView')]]
-          [[exec tmp.append('RleCC')]]
-          [[exec tmp.append('CC')]]
+          [[exec tmp.append('RleCc')]]
+          [[exec tmp.append('Cc')]]
         [[end]]
         [[exec tmp.append(type + 'ImageView')]]
       [[end]]
       [[exec function.self_type.pixel_types = tmp]]
+      [[exec function.self_type.name = 'real_self']]
       [[exec images = [function.self_type] ]]
       [[for x in function.args.list]]
         [[if isinstance(x, ImageType)]]
@@ -98,14 +99,14 @@ if __name__ == '__main__':
           [[for type in x.pixel_types]]
             [[if type == 'OneBit']]
               [[exec tmp.append('OneBitRleImageView')]]
-              [[exec tmp.append('RleCC')]]
-              [[exec tmp.append('CC')]]
+              [[exec tmp.append('RleCc')]]
+              [[exec tmp.append('Cc')]]
             [[end]]
             [[exec tmp.append(type + 'ImageView')]]
           [[end]]
           [[exec x.pixel_types = tmp]]
           [[exec images.append(x)]]
-          if (!PyObject_TypeCheck([[x.name]], image_type)) {
+          if (!PyObject_TypeCheck([[x.name + '_arg']], image_type)) {
             PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
             return 0;
           }
@@ -113,7 +114,7 @@ if __name__ == '__main__':
       [[end]]
 
       [[def switch(layer, args)]]
-        switch(get_image_combination([[images[layer].name]])) {
+        switch(get_image_combination([[images[layer].name]], cc_type)) {
           [[for type in images[layer].pixel_types]]
             [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name + ')->m_x)']]
             case [[type.upper()]]:
@@ -131,7 +132,7 @@ if __name__ == '__main__':
                     [[exec arg_string += tmp_args[current_image]]]
                     [[exec current_image += 1]]
                   [[else]]
-                    [[exec arg_string += function.args.list[i].name]]
+                    [[exec arg_string += function.args.list[i].name + '_arg']]
                   [[end]]
                   [[if i < len(function.args.list) - 1]]
                     [[exec arg_string += ', ']]
@@ -164,10 +165,10 @@ if __name__ == '__main__':
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\",
       [[module_name]]_methods);
-    PyObject* mod = PyImportModule(\"gamera\");
+    PyObject* mod = PyImport_ImportModule(\"gamera\");
     if (mod == 0) {
       printf(\"Could not load gamera.py - falling back to gameracore\n\");
-      mod = PyImportModule(\"gameracore\");
+      mod = PyImport_ImportModule(\"gameracore\");
       if (mod == 0) {
         PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\");
         return;

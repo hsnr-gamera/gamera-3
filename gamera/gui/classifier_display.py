@@ -336,20 +336,16 @@ class ClassifierMultiImageWindow(MultiImageWindow):
       self.toplevel = toplevel
       MultiImageWindow.__init__(self, parent, id, size)
       self.toolbar.AddSeparator()
-      self.toolbar.AddTool(20, wxBitmap(paths.pixmaps + "icon_next_unclass.png",
-                                        wxBITMAP_TYPE_PNG), isToggle=TRUE,
-                           shortHelpString =
-                           "Automatically move to next unclassified glyph.")
-      self.toolbar.AddTool(21, wxBitmap(paths.pixmaps + "icon_next_autoclass.png",
-                                        wxBITMAP_TYPE_PNG), isToggle=TRUE,
+      from gamera.gui import gamera_icons
+      self.toolbar.AddTool(20, gamera_icons.getIconNextUnclassBitmap(), isToggle=TRUE,
+                           shortHelpString = "Automatically move to next unclassified glyph.")
+      self.toolbar.AddTool(21, gamera_icons.getIconNextAutoclassBitmap(), isToggle=TRUE,
                            shortHelpString =
                            "Automatically move to next automatically classified glyph.")
-      self.toolbar.AddTool(22, wxBitmap(paths.pixmaps + "icon_next_heurclass.png",
-                                        wxBITMAP_TYPE_PNG), isToggle=TRUE,
+      self.toolbar.AddTool(22, gamera_icons.getIconNextHeurclassBitmap(), isToggle=TRUE,
                            shortHelpString =
                            "Automatically move to next heuristically classified glyph.")
-      self.toolbar.AddTool(23, wxBitmap(paths.pixmaps + "icon_next_manclass.png",
-                                        wxBITMAP_TYPE_PNG), isToggle=TRUE,
+      self.toolbar.AddTool(23, gamera_icons.getIconNextManclassBitmap(), isToggle=TRUE,
                            shortHelpString =
                            "Automatically move to next manually classified glyph.")
       EVT_TOOL_RANGE(self, 20, 23, self.OnAutoMove)
@@ -382,9 +378,9 @@ class ClassifierImageWindow(ImageWindow):
       self.toplevel = toplevel
       ImageWindow.__init__(self, parent, id)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(40, wxBitmap(paths.pixmaps +
-                                              "icon_choose_image.png",
-                                              wxBITMAP_TYPE_PNG), "Choose new image")
+      from gamera.gui import gamera_icons
+      self.toolbar.AddSimpleTool(40, gamera_icons.getIconChooseImageBitmap(),
+                                 "Choose new image")
       EVT_TOOL(self, 40, self.OnChooseImage)
 
    def OnChooseImage(self, event):
@@ -423,7 +419,9 @@ class ClassifierFrame(ImageFrameBase):
                                                   self, self.splitterv)
       self.splitterv.SetMinimumPaneSize(5)
       self.splitterv.SplitVertically(self.symbol_editor, self.splitterh, 160)
-      self.SetIcon(wxIcon(paths.pixmaps + "icon_classify.png", wxBITMAP_TYPE_PNG))
+      from gamera.gui import gamera_icons
+      icon = wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
+      self.SetIcon(icon)
       EVT_SIZE(self, self.OnSizeImpl)
       
       # GA optimizer
@@ -891,20 +889,16 @@ class SymbolTableEditorPanel(wxPanel):
       self.symbol_table = symbol_table
       self.SetAutoLayout(true)
       self.toolbar = wxToolBar(self, -1, style=wxTB_HORIZONTAL)
-      self.toolbar.AddSimpleTool(5, wxBitmap(paths.pixmaps +
-                                              "icon_file.png",
-                                              wxBITMAP_TYPE_PNG), "File Menu")
+      from gamera.gui import gamera_icons
+      self.toolbar.AddSimpleTool(5, gamera_icons.getIconFileBitmap(),
+                                 "File Menu")
       EVT_TOOL(self, 5, self.OnFileClick)
       EVT_LEFT_UP(self.toolbar, self.OnFileLeftUp)
       self.toolbar.AddSeparator()
-      self.toolbar.AddSimpleTool(10, wxBitmap(paths.pixmaps +
-                                              "icon_guess.png",
-                                              wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(10, gamera_icons.getIconGuessBitmap(),
                                  "Classify all glyphs")
       EVT_TOOL(self, 10, self.OnGuessClick)
-      self.toolbar.AddSimpleTool(11, wxBitmap(paths.pixmaps +
-                                              "icon_confirm.png",
-                                              wxBITMAP_TYPE_PNG),
+      self.toolbar.AddSimpleTool(11, gamera_icons.getIconConfirmBitmap(),
                                  "Confirm all guesses")
       EVT_TOOL(self, 11, self.OnConfirmClick)
       self.toolbar.AddSeparator()
@@ -1035,7 +1029,7 @@ class ClassifierWizard(Wizard):
    dlg_select_ccs = Args([
       Radio('Generate connected components from image', 'Generate'),
       Radio('Use connected components in memory', 'From memory'),
-      Class('    Connected components list', CC, list_of=1),
+      Class('    Connected components list', Cc, list_of=1),
       Radio('Load connected components (current database)', 'From disk'),
       FileOpen('    Current database', extension=extensions),
       Check('Apply scaling', '', 0),

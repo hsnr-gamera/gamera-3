@@ -56,35 +56,6 @@ wxLocale(wxLANGUAGE_ENGLISH)
 
 ######################################################################
 
-class GameraSplash(SplashScreen):
-   def OnPaint(self, event):
-      SplashScreen.OnPaint(self, event)
-      if self.glow >= 0:
-         self.PaintText()
-
-   def PaintText(self):
-      g = min(self.glow, 1.0)
-      dc = wxPaintDC(self)
-      font = wxFont(14, wxSWISS, wxNORMAL, wxBOLD)
-      dc.SetFont(font)
-      authors = ("Ichiro Fujinaga",
-                 "Michael Droettboom",
-                 "Karl MacMillan",
-                 "",
-                 "Developed at the",
-                 "Digital Knowledge Center",
-                 "Sheridan Libraries",
-                 "Johns Hopkins University")
-      for i in range(len(authors)):
-         for x in (0,1,2):
-            dc.SetTextForeground(wxColour(99*g,125*g,119*g))
-            for y in (0,1,2):
-               dc.DrawText(authors[i], 112 + x, 191 + y + i * 20)
-         dc.SetTextForeground(wxColour(180*g,213*g,215*g))
-         dc.DrawText(authors[i], 113, 192 + i * 20)
-
-######################################################################
-
 def message(message):
    dlg = wxMessageDialog(main_win, message, "Message",
                          wxOK | wxICON_INFORMATION)
@@ -408,8 +379,9 @@ class ShellFrame(wxFrame):
 
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)
-
-      self.SetIcon(wxIcon(paths.pixmaps + "icon.png", wxBITMAP_TYPE_PNG))
+      from gamera.gui import gamera_icons
+      icon = wxIconFromBitmap(gamera_icons.getIconBitmap())
+      self.SetIcon(icon)
       self.Move(wxPoint(int(config.get_option("shell_x")),
                         int(config.get_option("shell_y"))))
 
@@ -535,42 +507,33 @@ class CustomMenu:
 
 CustomIcon = icon_display.CustomIcon
 
+class GameraSplash(wxSplashScreen):
+   def __init__(self):
+      from gamera.gui import gamera_icons
+      wxSplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
+                              wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+                              4000, None, -1,
+                              style = (wxSIMPLE_BORDER|
+                                       wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP))
+      EVT_CLOSE(self, self.OnClose)
+         
+   def OnClose(self, evt):
+      global main_win
+      main_win = ShellFrame(NULL, -1, "Gamera")
+      main_win.Show(true)
+      evt.Skip()
+
 def run():
    global app
    wxInitAllImageHandlers()
-   # Every wxWindows application must have a class derived from wxApp
-   class MyApp(wxApp):
 
+   class MyApp(wxApp):
       # wxWindows calls this method to initialize the application
       def OnInit(self):
-         global main_win
-         self.splash = GameraSplash(None,
-                                    bitmapfile = paths.pixmaps +
-                                    'gamera_splash.png',
-                                    duration=2000,callback=self.AfterSplash)
-         self.splash.glow = -1
-         wxBeginBusyCursor()
-         self.splash.Show(true)
-         wxYield()
-         main_win = self.win = ShellFrame(NULL, -1, "Gamera")
-         self.win.Show(true)
-         self.SetTopWindow(self.win)
          self.SetAppName("Gamera")
-         self.splash.Raise()
+         self.splash = GameraSplash()
+         self.splash.Show()
          return true
-
-      def AfterSplash(self):
-         wxEndBusyCursor()
-         import time
-         glow = 0.01
-         start = time.time() + 2.5
-         while time.time() < start:
-            if glow < 1.0:
-               glow += 0.01
-               self.splash.glow = glow
-               self.splash.PaintText()
-            wxYield()
-         self.splash.Close(true)
 
       def RunScript(self, script):
          self.win.shell.run("import " + script)
@@ -582,6 +545,8 @@ def run():
       app.RunScript(script)
             
    app.MainLoop()
+
+
 
 if __name__ == "__main__":
    run()

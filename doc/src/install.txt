@@ -62,6 +62,8 @@ Compiling Gamera against the Cygwin DLL is theoretically possible, but
 not supported.  However, you can compile Gamera using ``MingW32``, which
 means there will be no non-standard Windows runtime dependencies.
 
+You must have ``gcc`` version 3.1 or later.
+
 Python
 ''''''
 
@@ -125,6 +127,7 @@ support, you have two options:
   dist/gamera-X.X.X-win32.exe
 
 2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see "MSI (Windows Installer Package)" section).
+
 Microsoft Visual Studio
 ```````````````````````
 
@@ -155,18 +158,26 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options:
-1) Use the Python Distutils Installer Maker::
+support, you have two options: 1) Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
-2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see "MSI (Windows Installer Package)" section).
+2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see MSI section).
 
 MSI (Windows Installer Package)
 ```````````````````````````````
 
-If you would like to create a Windows Installer package to install Gamera, the Gamera source tree currently includes experimental support to do so. The tools are located in win32/msisource. The main tool you will be using in this package is called createmsi, although createmsi has some dependencies. Since it is assumed you already have a compiler suitable for compiling Gamera as detailed above, you need only download and install the latest version of MakeMSI . Having done that, the next steps will be to change the working directory to msisource and compile the createmsi program. This process depends on what compiler you wish to use.
+If you would like to create a Windows Installer package to install
+Gamera, the Gamera source tree currently includes experimental support
+to do so. The tools are located in win32/msisource. The main tool you
+will be using in this package is called createmsi, although createmsi
+has some dependencies. Since it is assumed you already have a compiler
+suitable for compiling Gamera as detailed above, you need only
+download and install the latest version of MakeMSI . Having done that,
+the next steps will be to change the working directory to msisource
+and compile the createmsi program. This process depends on what
+compiler you wish to use.
 
 For Cygwin users::
 
@@ -183,9 +194,12 @@ For Intel Compiler 8.x users::
     cd win32/msisource
     icl createmsi.c
 
-.. note:: The proper operation of each compiler depends on the values of certain environment variables, so it is strongly advised that you use the command line shell that the compiler shipped with.
+.. note:: The proper operation of each compiler depends on the values
+  of certain environment variables, so it is strongly advised that you
+  use the command line shell that the compiler shipped with.
 
-Having completed this, you may now run createmsi, which takes the following arguments::
+Having completed this, you may now run createmsi, which takes the
+following arguments::
 
       -c [mingw|msvc|icl]  Specify C compiler for Gamera extensions
       -compiler [...]      Same as -c
@@ -194,11 +208,19 @@ Having completed this, you may now run createmsi, which takes the following argu
                             include them!)
       -include [...]       Same as -i
 
-For instance, suppose I wanted to build a cygwin/mingw32 compiled Gamera package and then make an MSI package out of it. The createmsi syntax would be::
+For instance, suppose I wanted to build a cygwin/mingw32 compiled
+Gamera package and then make an MSI package out of it. The createmsi
+syntax would be::
 
     createmsi -c mingw
 
-Once the build process completes, there will be a file called Gamera2.msi in the win32 directory (the parent directory of the one that contains createmsi). Provided there were no intermediate errors in the Gamera and MSI build processes, this will be a fully functional Windows Installer-based package for installing Gamera. You are free to use this package and distribute it under the terms of all applicable licenses/agreements.
+Once the build process completes, there will be a file called
+Gamera2.msi in the win32 directory (the parent directory of the one
+that contains createmsi). Provided there were no intermediate errors
+in the Gamera and MSI build processes, this will be a fully functional
+Windows Installer-based package for installing Gamera. You are free to
+use this package and distribute it under the terms of all applicable
+licenses/agreements.
 
 Running
 ```````
@@ -219,10 +241,12 @@ Linux (and other \*nix)
 Install binary packages for Python and wxPython (see correct versions
 at top of this document.)
 
+You must have ``gcc`` version 3.1 or later.
+
 In addition, your Linux installation should also have:
 
 - libtiff 3.5.x
-- libpng 2.2.x
+- libpng 1.2.x
 
 Standard Build and Install
 --------------------------
@@ -251,6 +275,8 @@ OS-X support can be considered working but preliminary at this point.
 Gamera will only run on Panther (10.3).  We do not plan to support
 earlier versions.  You will need to install the GNU development tools
 (gcc, g++, ld etc.), X11, and Python 2.3.
+
+You must have ``gcc`` version 3.1 or later.
 
 Prerequisites
 -------------

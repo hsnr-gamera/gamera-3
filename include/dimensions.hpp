@@ -333,6 +333,17 @@ namespace Gamera {
       }
       return new Rect(Point(min_x, min_y), Point(max_x, max_y));
     }
+
+    /**
+     * Expand this rectangle so that it contains all of the area
+     * of the rectangle passed in.
+    */
+    void merge(const self& other) {
+      ul_y(std::min(ul_y(), other.ul_y()));
+      lr_y(std::max(lr_y(), other.lr_y()));
+      ul_x(std::min(ul_x(), other.ul_x()));
+      lr_x(std::max(lr_x(), other.lr_x()));
+    }
   protected:
     virtual void dimensions_change() { }
   private:

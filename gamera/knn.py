@@ -97,3 +97,9 @@ class kNN(gamera.knncore.kNN):
             self.ga_callbacks.remove(func)
         except:
             pass
+
+    def settings_dialog(self):
+        dlg = Args([Int('k', range(0, 100), default=self.num_k)])
+        print dlg.show()
+        
+                    

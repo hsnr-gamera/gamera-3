@@ -204,8 +204,8 @@ class OptimizerFrame(wxFrame):
             self.status.state_display.SetValue("not running")
         else:
             self.status.state_display.SetValue("running")
-            self.status.initial_rate_display.SetValue(str(self.classifier.ga_initial))
-            self.status.current_rate_display.SetValue(str(self.classifier.ga_best))
+            self.status.initial_rate_display.SetValue(str(self.classifier.ga_initial * 100.0))
+            self.status.current_rate_display.SetValue(str(self.classifier.ga_best * 100.0))
             self.status.generation_display.SetValue(str(self.classifier.ga_generation))
             self.status.best_rate_display.SetValue(str(self.classifier.ga_best))
             self.elapsed_time = time.time() - self.start_time
@@ -307,11 +307,9 @@ class StatusPanel(wxPanel):
         self.classifier.ga_mutation = self.mutation_display.GetValue() / 100.0
 
 GAUGE_WIDTH = 300
-class WeightsPanel(wxPanel):
+class WeightsPanel(wxScrolledWindow):
     def __init__(self, parent):
-        wxPanel.__init__(self, parent, -1)
-        self.panel = wxPanel(self, -1)
-        self.sw = wxScrolledWindow(self.panel)
+        wxScrolledWindow.__init__(self, parent, -1)
         
     def new_classifier(self, classifier, glyphs):
         ff = glyphs[0].feature_functions
@@ -320,24 +318,26 @@ class WeightsPanel(wxPanel):
             tmp = x[1].__call__(glyphs[0])
             if isinstance(tmp, type(glyphs[0].features)):
                 for i in range(len(tmp)):
-                    feature_functions.append(x[0] + str(i))
+                    feature_functions.append(x[0] + " - " + str(i))
             else:
                 feature_functions.append(x[0])
         self.classifier = classifier
         sizer = wxFlexGridSizer(len(feature_functions), 2, 5, 5)
-        sizer.AddGrowableCol(1)
         self.bars = []
         for x in feature_functions:
             text = wxStaticText(self, -1, x)
             sizer.Add(text, 1)
             bar = wxGauge(self, -1, 100)
             bar.SetAutoLayout(true)
-            sizer.Add(bar, option=1, flag=wxEXPAND | wxADJUST_MINSIZE)
+            sizer.Add(bar, flag=wxEXPAND | wxADJUST_MINSIZE)
             self.bars.append(bar)
-        self.SetAutoLayout(true)
-        self.panel.SetAutoLayout(true)
-        self.panel.SetSizer(sizer)
-        sizer.Fit(self.panel)
+        sizer.Layout()
+        #sizer.SetAutoLayout(0)
+        sizer.FitInside(self)
+        sizer.SetVirtualSizeHints(self)
+        self.SetSizer(sizer)
+        print sizer.GetMinSize()
+        print sizer.GetSize()
 
     def update_cb(self):
         weights = self.classifier.weights

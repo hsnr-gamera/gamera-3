@@ -123,9 +123,9 @@ class _Classifier:
 
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
-      progress = util.ProgressFactory("Generating features...", len(list))
+      progress = util.ProgressFactory("Generating features...", len(glyphs))
       try:
-         for glyph in list:
+         for glyph in glyphs:
             glyph.generate_features(self.feature_functions)
             progress.step()
       finally:

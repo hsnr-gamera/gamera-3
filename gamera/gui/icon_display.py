@@ -307,12 +307,30 @@ class CIImageList(CustomIcon):
     return util.is_homogeneous_image_list(data)
   check = staticmethod(check)
 
+  def right_click(self, parent, event, shell):
+    x,y = event.GetPoint()
+    image_menu.ImageMenu(
+      parent, x, y,
+      self.data, self.label,
+      shell, extra_methods = {'Glyphs': {'glyphs_to_xml': self.glyphs_to_xml,
+                                         'generate_features_list' : self.generate_features}})
+
   def glyphs_to_xml(self, event):
+    from gamera import gamera_xml
     filename = gui_util.save_file_dialog(gamera_xml.extensions)
     if filename != None:
-      self._shell.run('from gamera import gamera_xml')
-      self._shell.run('gamera_xml.glyphs_to_xml(r"%s", %s)' % (filename, self.label))
-    del self._shell
+      gamera_xml.glyphs_to_xml(filename, self.data)
+
+  def generate_features(self, event):
+    import gamera.core
+    ff = gamera.core.Image.get_feature_functions()
+    progress = gamera.util.ProgressFactory("Generating features...", len(self.data))
+    try:
+      for glyph in self.data:
+        glyph.generate_features(ff)
+        progress.step()
+    finally:
+      progress.kill()
 
   def double_click(self):
     return 'display_multi(%s)' % self.label

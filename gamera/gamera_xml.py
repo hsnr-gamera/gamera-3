@@ -219,6 +219,9 @@ class LoadXML:
       self._end_elements = {}
       self._stream_length = 0
       self._parts = parts
+      
+   def __del__(self):
+      print "LoadXML destroyed."
 
    def try_type_convert(self, dictionary, key, typename, tagname):
       try:

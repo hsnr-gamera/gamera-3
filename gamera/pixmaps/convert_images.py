@@ -33,6 +33,6 @@ if __name__ == "__main__":
         args.append('-n')
         args.append(name)
         args.append(x)
-        args.append('gamera_icons.py')
+        args.append('../gui/gamera_icons.py')
         # run the script
         img2py.main(args)

@@ -20,6 +20,13 @@ import string, sys, os, urllib, imp
 
 options = {}
 
+def get_options(option=''):
+   result = {}
+   for key, val in options.iteritems():
+      if key.startswith(option):
+         result[key[len(option):]] = val
+   return result
+
 def get_option(option):
    if options.has_key(option):
       return options[option]
@@ -64,13 +71,13 @@ def parse():
    user_local = os.path.expanduser("~/.gamera")
    parse_file(user_local)
 
-##    for arg in sys.argv:
-##       if arg.startswith('--'):
-##          option, value = map(string.strip, string.split(arg[2:], "="))
-##          add_option(option, value)
-##       elif arg.startswith('-'):
-##          option, value = map(string.strip, string.split(arg[1:], "="))
-##          add_option(option, value)
+   for arg in sys.argv:
+      if arg.startswith('--'):
+         option, value = map(string.strip, string.split(arg[2:], "="))
+         add_option(option, value)
+      elif arg.startswith('-'):
+         option, value = map(string.strip, string.split(arg[1:], "="))
+         add_option(option, value)
 
    if get_option("configfile") != None:
       parse_file(get_option("configfile"))

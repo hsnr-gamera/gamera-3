@@ -32,8 +32,8 @@ HELP_MODE = 1
 functions = []
 shell = None
 shell_frame = None
-matrices = None
-matrices_name = None
+images = None
+images_name = None
 
 
 ######################################################################
@@ -57,23 +57,23 @@ def set_shell_frame(sf):
 ######################################################################
 
 class ImageMenu:
-  def __init__(self, parent, x, y, matrices_, name_, shell_=None,
+  def __init__(self, parent, x, y, images_, name_, shell_=None,
                mode=EXECUTE_MODE):
-    global matrices, matrices_name
+    global images, images_name
     self.shell = shell_
     self.x = x
     self.y = y
     self.locals = locals
     self.mode = mode
     self.parent = parent
-    if not util.is_sequence(matrices_):
-      matrices = [matrices_]
-      matrices_name = [name_]
+    if not util.is_sequence(images_):
+      images = [images_]
+      images_name = [name_]
     else:
-      matrices = matrices_
-      matrices_name = name_
-    self.variables = matrices[0].members()
-    self.methods = matrices[0].methods()
+      images = images_
+      images_name = name_
+    self.variables = images[0].members()
+    self.methods = images[0].methods()
 
   # Given a list of variables and methods, put it all together
   def create_menu(self, variables, methods, type):
@@ -118,14 +118,14 @@ class ImageMenu:
   def PopupMenu(self):
     menu = self.create_menu(self.variables,
                             self.methods,
-                            matrices[0].get_type())
+                            images[0].get_type())
     self.parent.PopupMenu(menu, wxPoint(self.x, self.y))
     menu.Destroy()
 
   def GetMenu(self):
     return self.create_main_menu(self.variables,
                                  self.methods,
-                                 matrices[0].get_type())
+                                 images[0].get_type())
 
   def get_shell(self):
     if self.shell:
@@ -137,24 +137,24 @@ class ImageMenu:
     sh = self.get_shell()
     name = var_name.get("ref", sh.locals)
     if name:
-      if len(matrices) == 1:
-        sh.locals[name] = matrices[0]
+      if len(images) == 1:
+        sh.locals[name] = images[0]
       else:
         sh.locals[name] = []
-        for i in range(len(matrices)):
-          sh.locals[name].append(matrices[i])
+        for i in range(len(images)):
+          sh.locals[name].append(images[i])
       sh.Update()    
 
   def OnCreateCopy(self, event):
     sh = self.get_shell()
     name = var_name.get("copy", sh.locals)
     if name:
-      if len(matrices) == 1:
-        sh.locals[name] = matrices[0].image_copy()
+      if len(images) == 1:
+        sh.locals[name] = images[0].image_copy()
       else:
         sh.locals[name] = []
-        for i in range(len(matrices)):
-          sh.locals[name].append(matrices[i].image_copy())
+        for i in range(len(images)):
+          sh.locals[name].append(images[i].image_copy())
       sh.Update()
 
   # TODO: not implemented
@@ -177,24 +177,24 @@ class ImageMenu:
       return var_name.get(function.return_type.name, dict)
     return ''
 
-  def get_image_name(self, matrices_name, i):
+  def get_image_name(self, images_name, i):
     # If the image exists at the top-level in the shell's
     # namespace, we can use that to refer to it
-    if util.is_sequence(matrices_name):
+    if util.is_sequence(images_name):
       # If it is a single image
-      return matrices_name[i]
-    elif type(matrices_name) == type('') and matrices_name != '':
-      # If is is a list of matrices
-      return matrices_name + "[" + str(i) + "]"
+      return images_name[i]
+    elif type(images_name) == type('') and images_name != '':
+      # If is is a list of images
+      return images_name + "[" + str(i) + "]"
     # The image does not exist at the top-level of the shell's
     # namespace
-    return matrices_name
+    return images_name
 
   def OnPopupFunction(self, event):
     sh = self.get_shell()
     
     function = functions[event.GetId()]
-    if matrices:
+    if images:
       if self.mode == HELP_MODE:
         sh.run("help('" + function.__name__ + "')")
       elif self.mode == EXECUTE_MODE:
@@ -204,18 +204,18 @@ class ImageMenu:
         result_name = self.get_result_name(function, sh.locals)
         # if we're going to return multiple results, prepare the
         # variable as a list
-        if len(matrices) > 1 and result_name != '':
+        if len(images) > 1 and result_name != '':
           sh.locals[result_name] = []
         # Now let's run some code and get results
-        for i in range(len(matrices)):
-          image = matrices[i]
-          image_name = self.get_image_name(matrices_name, i)
+        for i in range(len(images)):
+          image = images[i]
+          image_name = self.get_image_name(images_name, i)
           # If the image name is a string, we can call the function
           # directly in the shell
           if type(image_name) == type(''):
             source = image_name + "." + func_call
             if result_name != '':
-              if len(matrices) > 1:
+              if len(images) > 1:
                 source = result_name + ".append(" + source + ")"
               else:
                 source = result_name + " = " + source
@@ -223,9 +223,9 @@ class ImageMenu:
           # If the image name is not a string, we have to call the
           # function here
           else:
-            source = "matrices_name[" + str(i) + "]." + func_call
+            source = "images_name[" + str(i) + "]." + func_call
             if result_name != '':
-              if len(matrices) > 1:
+              if len(images) > 1:
                 sh.locals[result_name].append(eval(source))
               else:
                 sh.locals[result_name] = eval(source)

@@ -28,15 +28,7 @@ from wxPython.wx import *
 # Handle multiple versions of wxPython
 from wxPython.__version__ import ver
 # We use PyCrust on everything but 2.3.1 (2.3.1 is our minimum requirement
-USE_PYCRUST = 1
-if ver == '2.3.1':
-   USE_PYCRUST = 0
-# Import the correct shell
-if USE_PYCRUST:
-   from wxPython.lib.PyCrust import shell
-else:
-   from wxPython.lib.pyshell import PyShellWindow
-   from wxPython.lib.pyshell import _stderr_style, _stdout_style
+from wxPython.lib.PyCrust import shell
 from wxPython.stc import *
 from wxPython.lib.splashscreen import SplashScreen
 
@@ -45,14 +37,13 @@ from wxPython.lib.splashscreen import SplashScreen
 import sys, types, traceback, os, string, webbrowser, resource
 
 # Set default options
-config.add_option_default("shell_font", "face:Courier,size:12")
+config.add_option_default("shell_style_face", "Helvetica")
+config.add_option_default("shell_style_size", 12)
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
 
 main_win = None
 app = None
-
-wxLocale(wxLANGUAGE_ENGLISH)
 
 ######################################################################
 
@@ -66,24 +57,26 @@ def message(message):
 
 class GameraGui:
    browser = None
-   def GetImageFilename(self):
+   def GetImageFilename():
       dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
       if dlg.ShowModal() == wxID_OK:
          filename = dlg.GetPath()
          dlg.Destroy()
          return filename
+   GetImageFilename = staticmethod(GetImageFilename)
 
-   def ShowImage(self, image, title, function, owner=None):
+   def ShowImage(image, title, function, owner=None):
       wxBeginBusyCursor()
       img = gamera_display.ImageFrame(title = title, owner=owner)
       img.set_image(image, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
+   ShowImage = staticmethod(ShowImage)
 
-   def ShowMatrices(self, list, function):
+   def ShowImages(self, list, function):
       wxBeginBusyCursor()
-      img = gamera_display.MultiImageFrame(title = "Multiple Matrices")
+      img = gamera_display.MultiImageFrame(title = "Multiple Images")
       img.set_image(list, function)
       img.Show(1)
       wxEndBusyCursor()
@@ -124,178 +117,68 @@ class GameraGui:
       main_win.icon_display.update_icons()
 
    def TopLevel(self):
-      print main_win
+      return main_win
       
 
 ######################################################################
 
-if USE_PYCRUST:
-   class PyCrustGameraShell(shell.Shell):
-      def __init__(self, main_win, parent, id, message):
-         shell.Shell.__init__(self, parent, id, introText=message)
-         self.SetCodePage(1)
-         self.history_win = None
-         self.update = None
-         self.locals = self.interp.locals
-         self.main_win = main_win
-         self.SetMarginType(1, 0)
-         self.SetMarginWidth(1, 0)
-         # This is kind of silly, but we need to parse the option string to
-         # get separate font and size so that we can use the PyCrust setStyles
-         # method. That method takes the faces dictionary to set all of the
-         # relevant STC styles (there are a lot - look in the PyCrust shell.py
-         # file).
-         font = string.split(string.split(config.get_option("shell_font"),
-                                          ",")[0], ":")[1]
-         size = int(string.split(string.split(config.get_option("shell_font"),
-                                              ",")[1], ":")[1])
-         faces = { 'times'  : font,
-                   'mono'   : font,
-                   'helv'   : font,
-                   'lucida' : font,
-                   'other'  : font,
-                   'size'   : size,
-                   'lnsize' : size,
-                   'backcol': '#FFFFFF',
-                   }
-         self.setStyles(faces)
-         
-      def addHistory(self, command):
-         if self.history_win:
-            self.history_win.add_line(command)
-         if self.update:
-            self.update()
-            shell.Shell.addHistory(self, command)
-            
-      def GetLocals(self):
-         return self.interp.locals
-      
-      def runsource(self, source):
-         self.push(source)
-      def push(self, source):
-         shell.Shell.push(self, source)
-         if source.strip().startswith("import "):
-            new_modules = [x.strip() for x in source.strip()[7:].split(",")]
-            for module in new_modules:
-               if self.interp.locals.has_key(module):
-                  for obj in self.interp.locals[module].__dict__.values():
-                     if (inspect.isclass(obj)):
-                        if hasattr(obj, "is_custom_menu"):
-                           self.main_win.add_custom_menu(module, obj)
-                        elif hasattr(obj, "is_custom_icon_description"):
-                           self.main_win.add_custom_icon_description(obj)
-            self.update()
+class PyCrustGameraShell(shell.Shell):
+   def __init__(self, main_win, parent, id, message):
+      shell.Shell.__init__(self, parent, id, introText=message)
+      self.SetCodePage(1)
+      self.history_win = None
+      self.update = None
+      self.locals = self.interp.locals
+      self.main_win = main_win
+      self.SetMarginType(1, 0)
+      self.SetMarginWidth(1, 0)
+      faces = shell.faces
+      options = config.get_options("shell_style_")
+      for face in ('times', 'mono', 'helv', 'other'):
+         faces[face] = options['face']
+      faces.update(options)
+      faces['lnsize'] = int(faces['size']) - 2
+      self.setStyles(faces)
 
-      def OnKeyDown(self, event):
-         key = event.KeyCode()
-         if self.AutoCompActive():
-            event.Skip()
-         elif key == WXK_UP:
-            self.OnHistoryInsert(step=+1)
-         elif key == WXK_DOWN:
-            self.OnHistoryInsert(step=-1)
-         else:
-            shell.Shell.OnKeyDown(self, event)
-            
-      # Added so we can see progress as it proceeds
-      def write(self, source):
-         shell.Shell.write(self, source)
-         wxYield()
-else:
-   class PyShellGameraShell(PyShellWindow):
-      def Update(self):
-         if hasattr(self, 'update'):
-            self.update()
+   def addHistory(self, command):
+      if self.history_win:
+         self.history_win.add_line(command)
+      if self.update:
+         self.update()
+      shell.Shell.addHistory(self, command)
 
-      def insert_cached_line(self):
-         self.SetSelection(self.GetTextLength() - len(self.GetCurLine()[0]),
-                           self.GetTextLength())
-         self.ReplaceSelection('')
-         self.Prompt()
-         if self.lastUsedLine < len(self.lines):
-            self.AddText(self.lines[self.lastUsedLine])
+   def GetLocals(self):
+      return self.interp.locals
 
-      def OnKey(self, evt):
-         key = evt.KeyCode()
-         if key == WXK_RETURN:
-            self.SetCurrentPos(self.GetTextLength())
-            PyShellWindow.OnKey(self, evt)
-            self.update()
-         elif key == WXK_UP:
-            self.lastUsedLine = self.lastUsedLine - 1
-            if self.lastUsedLine < 0:
-               self.lastUsedLine = 0
-            self.insert_cached_line()
-         elif key == WXK_DOWN:
-            self.lastUsedLine = self.lastUsedLine + 1
-            if self.lastUsedLine > len(self.lines):
-               self.lastUsedLine = len(self.lines)
-            self.insert_cached_line()
-         elif key == WXK_PAGEUP or key == 312:
-            self.lastUsedLine = 0
-            self.insert_cached_line()
-         elif key == WXK_PAGEDOWN or key == 313:
-            self.lastUsedLine = len(self.lines)
-            self.insert_cached_line()
-         elif key == WXK_BACK or key == WXK_LEFT:
-            if self.GetCurrentPos() > self.lastPromptPos:
-               evt.Skip()
-         elif key == WXK_HOME:
-            self.SetCurrentPos(self.lastPromptPos)
-         else:
-            evt.Skip()
+   def push(self, source):
+      shell.Shell.push(self, source)
+      if source.strip().startswith("import "):
+         new_modules = [x.strip() for x in source.strip()[7:].split(",")]
+         for module in new_modules:
+            if self.interp.locals.has_key(module):
+               for obj in self.interp.locals[module].__dict__.values():
+                  if (inspect.isclass(obj)):
+                     if hasattr(obj, "is_custom_menu"):
+                        self.main_win.add_custom_menu(module, obj)
+                     elif hasattr(obj, "is_custom_icon_description"):
+                        self.main_win.add_custom_icon_description(obj)
+         self.update()
 
-      def PushLine(self, text):
-         if ((len(self.lines) > 0 and self.lines[-1] != text) or
-             len(self.lines) == 0):
-            self.lines.append(text)
-            self.history.add_line(text)
-         if len(self.lines) > 50:
-            self.lines = self.lines[1:]
-         self.lastUsedLine = len(self.lines)
-         self.SetFocus()
+   def OnKeyDown(self, event):
+      key = event.KeyCode()
+      if self.AutoCompActive():
+         event.Skip()
+      elif key == WXK_UP:
+         self.OnHistoryInsert(step=+1)
+      elif key == WXK_DOWN:
+         self.OnHistoryInsert(step=-1)
+      else:
+         shell.Shell.OnKeyDown(self, event)
 
-      def Prompt(self):
-         # is the current line non-empty?
-         text, pos = self.GetCurLine()
-         if pos != 0:
-            self.AddText('\n')
-         self.AddText(self.props['ps1'])
-         self.lastPromptPos = self.GetCurrentPos()
-         self.EnsureCaretVisible()
-         self.ScrollToColumn(0)
-
-      def chunk(self, s):
-         if len(s) > 40:
-            words = string.split(s)
-            s = ''
-            l = 0
-            for w in words:
-               if l + len(w) > 40:
-                  s = s + "\n"
-                  l = 0
-               s = s + w + " "
-               l = l + len(w)
-         return s
-
-      def pushcode(self, source):
-         self.write(source + "\n", wxSTC_STYLE_DEFAULT)
-         self.PushLine(source)
-         if not self.runsource(source):
-            self.Prompt()
-            self.SetFocus()
-         self.Update()
-
-      # for compatibility with pycrust
-      def run(self, source):
-         self.pushcode(source)
-
-      def pushresult(self, source):
-         self.write("\n" + source)
-         self.Prompt()
-         self.SetFocus()
-         self.Update()
-
+   # Added so we can see progress as it proceeds
+   def write(self, source):
+      shell.Shell.write(self, source)
+      wxYield()
 
 ######################################################################
 
@@ -303,8 +186,9 @@ class History(wxStyledTextCtrl):
    def __init__(self, parent):
       wxStyledTextCtrl.__init__(self, parent, -1,
                                 wxDefaultPosition, wxDefaultSize)
+      style = "face:%(face)s,size:%(size)d" % config.get_options("shell_style_")
       self.StyleSetSpec(wxSTC_STYLE_DEFAULT,
-                        config.get_option("shell_font"))
+                        style)
       self.SetTabWidth(2)
       EVT_KEY_DOWN(self, self.OnKey)
       EVT_LEFT_DCLICK(self, self.OnDoubleClick)
@@ -344,26 +228,18 @@ class ShellFrame(wxFrame):
       self.icon_display = icon_display.IconDisplay(self.splitter)
       self.icon_display
       
-      font = config.get_option('shell_font')
-
       self.history = History(self.hsplitter)
-      if USE_PYCRUST:
-         self.shell = PyCrustGameraShell(self, self.splitter, -1,
-                                         "Welcome to Gamera")
-         self.shell.history_win = self.history
-      else:
-         self.shell = PyShellGameraShell(self.splitter, -1,
-                                         banner="Welcome to Gamera",
-                                         properties={'default': font})
-         self.shell.history = self.history
+      self.shell = PyCrustGameraShell(self, self.splitter, -1,
+                                      "Welcome to Gamera")
+      self.shell.history_win = self.history
+
       self.history.shell = self.shell
       image_menu.set_shell(self.shell)
       image_menu.set_shell_frame(self)
-      #self.shell.run("")
-      self.shell.runsource("from gamera.gui import gui")
-      self.shell.runsource("from gamera.gamera import *")
-      #self.shell.runsource("set_interactive(gui.GameraGui())")
-      self.shell.runsource("init_gamera()")
+      self.shell.push("from gamera.gui import gui")
+      self.shell.push("from gamera.gamera import *")
+      self.shell.push("config.add_option('__gui', gui.GameraGui)")
+      self.shell.push("init_gamera()")
       self.shell.update = self.Update
       self.icon_display.shell = self.shell
       self.icon_display.main = self
@@ -470,13 +346,7 @@ class ShellFrame(wxFrame):
       app.ExitMainLoop()
 
    def Update(self):
-      try:
-         if USE_PYCRUST:
-            self.icon_display.update_icons(self.shell.interp.locals)
-         else:
-            self.icon_display.update_icons(self.shell.GetLocals())
-      except AttributeError:
-         pass
+      self.icon_display.update_icons(self.shell.interp.locals)
 
 class GameraSplitter(wxSplitterWindow):
    def __init__(self, parent=None, id=-1):
@@ -543,10 +413,8 @@ def run():
    script = config.get_option("script")
    if script != None:
       app.RunScript(script)
-            
+
    app.MainLoop()
-
-
 
 if __name__ == "__main__":
    run()

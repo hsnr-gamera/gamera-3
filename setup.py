@@ -35,7 +35,7 @@ if os.name == 'posix':
         fd = open(file, 'w')
         fd.write(content % info)
         fd.close()
-        os.chmod(file, 755)
+        os.chmod(file, 0700)
 
 ########################################
 # Distutils setup

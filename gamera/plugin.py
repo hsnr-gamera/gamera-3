@@ -37,8 +37,6 @@ class PluginModule:
 
     generate = classmethod(generate)
 
-
-
 class PluginFunction:
     return_type = None
     self_type = ImageType(("RGB", "GreyScale", "Grey16", "Float", "OneBit"))

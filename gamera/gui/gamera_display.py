@@ -169,14 +169,14 @@ class ImageDisplay(wxScrolledWindow):
       if self.scaling > 1:
          self.Refresh(0, rect=wxRect(0,0,self.GetSize().x,self.GetSize().y))
 
-   # Adjust the scrollbars so a group of highlighted submatrices are visible
-   def focus(self, submatrices):
-      if not util.is_sequence(submatrices):
-         submatrices = (submatrices,)
+   # Adjust the scrollbars so a group of highlighted subimages are visible
+   def focus(self, subimages):
+      if not util.is_sequence(subimages):
+         subimages = (subimages,)
       x1 = y1 = maxint
       x2 = y2 = 0
-      # Get a combined rectangle of all matrices in the list
-      for image in submatrices:
+      # Get a combined rectangle of all images in the list
+      for image in subimages:
          x1 = min(image.page_offset_x(), x1)
          y1 = min(image.page_offset_y(), y1)
          x2 = max(image.page_offset_x() + image.ncols(), x2)
@@ -681,7 +681,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       dc.SetLogicalFunction(wxCOPY)
 
-   # The matrices should be a little padded within the cells
+   # The images should be a little padded within the cells
    # Also, there is a max size for every cell
    def GetBestSize(self, grid, attr, dc, row, col):
       bitmap_no = row * GRID_NCOLS + col
@@ -722,13 +722,13 @@ class MultiImageDisplay(wxGrid):
       EVT_GRID_CELL_CHANGE(self, self.OnSelect)
 
    ########################################
-   # Sets a new list of matrices.  Can be performed multiple times
+   # Sets a new list of images.  Can be performed multiple times
    def set_image(self, list, function):
       wxBeginBusyCursor()
       self.BeginBatch()
       self.list = list
       self.do_updates = 0
-      self.sort_matrices()
+      self.sort_images()
       self.frame.set_choices(self.list[0])
       if not self.created:
          self.rows = 1
@@ -778,7 +778,7 @@ class MultiImageDisplay(wxGrid):
    ########################################
    # SORTING
 
-   # To minimize the size of the grid, we sort the matrices
+   # To minimize the size of the grid, we sort the images
    # first by height, and then within each row by width
    def default_sort(self, list):
       list.sort(lambda x, y: cmp(x.nrows(), y.nrows()))
@@ -792,9 +792,9 @@ class MultiImageDisplay(wxGrid):
          outlist.extend(sublist)
       return outlist
 
-   # Sorts the list of matrices by a given function, or the
+   # Sorts the list of images by a given function, or the
    # default function if None is given
-   def sort_matrices(self, function=None, order=0):
+   def sort_images(self, function=None, order=0):
       wxBeginBusyCursor()
       self.BeginBatch()
       if function != None:
@@ -830,7 +830,7 @@ class MultiImageDisplay(wxGrid):
    ########################################
    # SELECTING
 
-   def select_matrices(self, function):
+   def select_images(self, function):
       self.updating = 1
       self.ClearSelection()
       for i in range(len(self.list)):
@@ -1006,7 +1006,7 @@ class MultiImageWindow(wxPanel):
    def OnSortAscending(self, event, order=0):
       sort_string = string.strip(self.sort_combo.GetValue())
       if sort_string == "":
-         self.id.sort_matrices("", order)
+         self.id.sort_images("", order)
          return
       if sort_string[0:4] == "func":
          split = string.split(sort_string)
@@ -1028,7 +1028,7 @@ class MultiImageWindow(wxPanel):
          self.sort_choices.append(sort_string)
          self.sort_combo.Append(sort_string)
       wxBeginBusyCursor()
-      self.id.sort_matrices(sort_func, order)
+      self.id.sort_images(sort_func, order)
       wxEndBusyCursor()
 
    def OnSortDescending(self, event):
@@ -1048,7 +1048,7 @@ class MultiImageWindow(wxPanel):
          self.select_choices.append(select_string)
          self.select_combo.Append(select_string)
       wxBeginBusyCursor()
-      self.id.select_matrices(select_func)
+      self.id.select_images(select_func)
       wxEndBusyCursor()
 
    def OnSelectAll(self, event):

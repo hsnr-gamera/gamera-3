@@ -230,7 +230,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          new_list = self.insert_for_line_breaks(list)
       return new_list
 
-   def sort_matrices(self, function=None, order=0):
+   def sort_images(self, function=None, order=0):
       # Remove any "None"s in the list
       self.last_sort = None
       if function:
@@ -249,7 +249,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             new_list.append(item)
       if len(new_list) != len(self.list):
          self.list = new_list
-      MultiImageDisplay.sort_matrices(self, function, order)
+      MultiImageDisplay.sort_images(self, function, order)
       if orig_len != len(self.list):
          self.resize_grid()
       self.EndBatch()
@@ -523,7 +523,7 @@ class ClassifierFrame(ImageFrameBase):
    def guess(self):
       wxBeginBusyCursor()
       self.classifier.auto_classify_all()
-      self.multi_iw.id.sort_matrices(None)
+      self.multi_iw.id.sort_images(None)
       wxEndBusyCursor()
 
    def guess_list(self, list):

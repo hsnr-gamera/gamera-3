@@ -39,7 +39,6 @@ else:
   plugins_src = ""
   toolkits = os.path.abspath(lib + "/toolkits")
   sys.path.extend([lib, plugins])
-  pixmaps = os.path.abspath(lib + "/pixmaps") + "/"
   doc = os.path.abspath(lib + "/doc") + "/"
   test = os.path.abspath(lib + "/../test")
   test_results = os.path.abspath(lib + "/../test/results")

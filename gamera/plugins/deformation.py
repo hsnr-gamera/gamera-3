@@ -20,16 +20,22 @@
 """The deformations module contains plugins for applying
 deformations to images."""
 
-from gamera.plugin import * 
+from gamera.plugin import *
+try:
+    from gamera.core import *
+except:
+    0 + 1
+
 import gamera.config
 import _deformation
 
-class rotateShear(PluginFunction):
+class rotate(PluginFunction):
     """Rotates an image by skew method"""
     category = "Deformations"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])    
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    args = Args(Float("Rotation angle"))
+    args = Args([Float("Rotation angle"), Pixel("Background Color")])
+    args.list[0].rng = (-180,180)
 
 class wave(PluginFunction):
     """Causes periodic disturbance of user-defined frequency, amplitude, and direction"""
@@ -51,6 +57,7 @@ class noise(PluginFunction):
     args = Args([Int("Amplitude"),\
                  Choice('Direction',['Horizontal','Vertical']),\
                 ])
+    args.list[0].rng = (0,500)
 
 class inkrub(PluginFunction):
     """Simulates rubbing off of ink from another page"""
@@ -58,12 +65,13 @@ class inkrub(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args(Int("Transcription Probability 1 in"))
+    args.list[0].rng = (0,500)
 
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
     cpp_namespace=["Gamera"]
     category = "Deformations"
-    functions = [rotateShear,wave,noise,inkrub]
-    author = "Albert Brzeczko"
+    functions = [rotate,noise,inkrub]
+    author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()

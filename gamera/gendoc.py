@@ -78,6 +78,7 @@ docutils.parsers.rst.directives.register_directive( 'code', code_block )
 try:
    from gamera import core, args, paths, util
    from gamera.plugins import _png_support
+   from gamera.plugins import _image_conversion
    from gamera.enums import *
 except ImportError, e:
    print "Cannot load gameracore."
@@ -196,10 +197,10 @@ class PluginDocumentationGenerator:
          image = core.load_image(os.path.join(
             paths.test, "GreyScale_generic.tiff"))
          if i == FLOAT:
-            images[i] = image.to_float()
+            images[i] = _image_conversion.to_float(image)
          elif i == COMPLEX:
             try:
-               images[i] = image.to_complex()
+               images[i] = _image_conversion.to_complex(image)
             except:
                pass
       return images
@@ -387,7 +388,7 @@ class PluginDocumentationGenerator:
 
    def save_image(self, image, filename):
       if image.data.pixel_type in (COMPLEX, FLOAT):
-         image = image.to_greyscale()
+         image = _image_conversion.to_greyscale(image)
       _png_support.save_PNG(image, filename)
 
 def copy_images(path_obj):
@@ -403,7 +404,7 @@ def copy_images(path_obj):
 
 def copy_css(path_obj):
     open(os.path.join(path_obj.output_path, "default.css"), "w").write(
-        open(os.path.join(path_obj.src_path, "default.css"), "r").read())
+       open(os.path.join(path_obj.src_path, "default.css"), "r").read())
 
 class Paths:
     def __init__(self, root="."):

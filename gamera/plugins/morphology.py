@@ -92,7 +92,7 @@ require recursion.
   doc_examples = [(ONEBIT,5), (ONEBIT,15)]
 
 class MorphologyModule(PluginModule):
-  cpp_headers = ["morphology.hpp", "morphology_line_gaps.hpp"]
+  cpp_headers = ["morphology.hpp"]
   category = "Morphology"
   functions = [erode_dilate, erode, dilate, rank, mean, despeckle]
   author = "Michael Droettboom and Karl MacMillan"

@@ -280,7 +280,7 @@ FloatVector
 
 A vector of floating-point values.  On the Python side this is an
 ``array('d')`` object.  On the C++ side, this is a
-``std::vector<double> &``.
+``FloatVector *`` which is a typedef for ``std::vector<double> *``.
 
 The optional *length* argument should be given when the length of the
 argument is fixed.
@@ -292,7 +292,7 @@ IntVector
 
 A vector of integer values.  On the Python side this is an
 ``array('i')`` object.  On the C++ side, this is a
-``std::vector<int> &``.
+``IntVector *`` which is a typedef for ``std::vector<int> *``.
 
 The optional *length* argument should be given when the length of the
 argument is fixed.

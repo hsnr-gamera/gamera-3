@@ -59,7 +59,7 @@ namespace Gamera {
     size_t m_nrows, m_ncols;
     size_t m_depth;
     size_t m_ncolors;
-    size_t m_inverted;
+    bool m_inverted;
   };
 
 };

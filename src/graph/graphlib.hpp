@@ -31,7 +31,7 @@
 #include <list>
 #include <vector>
 #include <exception>
-#include <limits>
+#include "gamera_limits"
 
 //////////////////////////////////////////////////////////////////////////////
 // Forward references

@@ -198,7 +198,7 @@ class kNN(gamera.knncore.kNN):
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances . . .", l)
-      dists = self._unique_distances(images, progress)
+      dists = self._unique_distances(images, progress.step)
       progress.kill()
       return dists
 

@@ -112,7 +112,12 @@ description = ("This is the Gamera installer. " +
                "(or later) are installed before proceeding.")
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
-include_path = "include/gamera/"
+
+if sys.platform=="win32":
+    include_path = "include/gamera"
+else:
+    include_path = "include/gamera/"
+
 includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", os.path.join(a, b)))) for a, b in
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
@@ -126,5 +131,5 @@ setup(name = "gamera",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
-      scripts = scripts)
-      #data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)
+      scripts = scripts,
+      data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)

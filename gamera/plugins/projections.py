@@ -18,6 +18,7 @@
 #
 
 from gamera.plugin import *
+from gamera import has_gui
 import _projections
 
 class projection_rows(PluginFunction):
@@ -92,9 +93,9 @@ this method to small angles.
 
     def __call__(self, angles):
         if type(angles) != list:
-            return _skewed_projections.projection_skewed_cols(self, [angles])[0]
+            return _projections.projection_skewed_cols(self, [angles])[0]
         else:
-            return _skewed_projections.projection_skewed_cols(self, angles)
+            return _projections.projection_skewed_cols(self, angles)
     __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 15)]
 
@@ -115,9 +116,9 @@ this method to small angles.
 
     def __call__(self, angles):
         if type(angles) != list:
-            return _skewed_projections.projection_skewed_rows(self, [angles])[0]
+            return _projections.projection_skewed_rows(self, [angles])[0]
         else:
-            return _skewed_projections.projection_skewed_rows(self, angles)
+            return _projections.projection_skewed_rows(self, angles)
     __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 15)]
 

@@ -41,7 +41,7 @@ class _Classifier:
    ########################################
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
-                            evaluate_function=None):
+                            evaluate_function=None, max_size=5):
       if len(glyphs) == 0:
          return [], []
       glyphs = [x for x in glyphs if x.classification_state != 3]
@@ -52,7 +52,7 @@ class _Classifier:
       G = self._pregroup(glyphs, grouping_function)
       if evaluate_function is None:
          evaluate_function = self._evaluate_subgroup
-      found_unions = self._find_group_unions(G, evaluate_function)
+      found_unions = self._find_group_unions(G, evaluate_function, max_size)
       return found_unions + splits, removed
 
    def _default_grouping_function(a, b):
@@ -94,14 +94,14 @@ class _Classifier:
          return 0
       return classification[0]
 
-   def _find_group_unions(self, G, evaluate_function):
+   def _find_group_unions(self, G, evaluate_function, max_size=5):
       import image_utilities
       progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
             best_grouping = G.optimize_partitions(
-               root, evaluate_function, 3)
+               root, evaluate_function, max_size)
             for subgroup in best_grouping:
                if len(subgroup) > 1:
                   union = image_utilities.union_images(subgroup)

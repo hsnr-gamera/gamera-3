@@ -234,12 +234,6 @@ class _kNNBase(gamera.knncore.kNN):
       ans = self.leave_one_out()
       return float(ans[0]) / float(ans[1])
 
-   def supports_interactive(self):
-      """Flag indicating that this classifier supports interactive
-      classification."""
-      return 1
-
-
    def settings_dialog(self, parent):
       """Display a settings dialog for k-NN settings"""
       from gamera import args
@@ -357,7 +351,7 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
 
    def supports_optimization(self):
       """Flag indicating that this classifier supports optimization."""
-      return True
+      return False
 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
    def __init__(self, database=[], features=None, perform_splits=1):

@@ -4,13 +4,13 @@ The Directory Hierarchy
 
 The Gamera source tree looks something like this:
 
-+----------+---------------+------------------------------------------------+
-| ./       |               | Basic information files for building Gamera.   |
++----------+----------------------------------------------------------------+
+| ./       | Basic information files for building Gamera.                   |
 |          +---------------+------------------------------------------------+
 |          | setup.py      | A Python ``distutils``-based build script.     |
 |          |               | See `building and installing Gamera`_.         |
 +----------+---------------+------------------------------------------------+
-| doc/     |               | Documentation for Gamera                       |
+| doc/     | Documentation for Gamera                                       |
 |          +---------------+------------------------------------------------+
 |          | gendoc.py     | Script to generate documentation.              |
 |          |               | (requires that docutils_ be installed)         |
@@ -24,9 +24,9 @@ The Gamera source tree looks something like this:
 |          | latex/        | The generated LaTeX (and through that PDF)     |
 |          |               | documentation.                                 |
 +----------+---------------+------------------------------------------------+
-| gamera/  |               | All the files needed by Gamera at runtime.     |
-|          |               | Since Python is interpreted, these means       |
-|          |               | Python source files.                           |
+| gamera/  | All the files needed by Gamera at runtime.                     |
+|          | Since Python is interpreted, these means                       |
+|          | Python source files.                                           |
 |          +---------------+------------------------------------------------+
 |          | gui/          | Python source related to the GUI.  These are   |
 |          |               | optional.                                      |
@@ -41,9 +41,9 @@ The Gamera source tree looks something like this:
 |          |               | source code (``gamera/gui/gamera_icons.py``)   |
 |          |               | using the ``convert_images.py`` script.        |
 +----------+---------------+------------------------------------------------+
-| include/ |               | C++ header (``.hpp``) files.                   |
-|          |               | Since the Gamera C++ code is so heavily        |
-|          |               | templatized, most of the code is here.         |
+| include/ | C++ header (``.hpp``) files.                                   |
+|          | Since the Gamera C++ code is so heavily                        |
+|          | templatized, most of the code is here.                         |
 |          +---------------+------------------------------------------------+
 |          | plugins/      | Source code for the C++-based plugins.         |
 |          +---------------+------------------------------------------------+
@@ -51,13 +51,13 @@ The Gamera source tree looks something like this:
 |          |               | used by Gamera.  Gamera can use these methods  |
 |          |               | directly thanks to the ``vigra_*.hpp`` headers.|
 +----------+---------------+------------------------------------------------+
-| misc/    |               | Other miscellaneous files for information that |
-|          |               | are not used directly by Gamera.               |
+| misc/    | Other miscellaneous files for information that                 |
+|          | are not used directly by Gamera.                               |
 |          +---------------+------------------------------------------------+
 |          | gamera.dtd    | An XML DTD for Gamera's XML file format.       |
 +----------+---------------+------------------------------------------------+
-| src/     |               | Source code (that compiles directly to object  |
-|          |               | files.)                                        |
+| src/     | Source code (that compiles directly to object                  |
+|          | files.)                                                        |
 |          +---------------+------------------------------------------------+
 |          | ga/	   | GALib_: Matthew's Genetic Algorithm Library    |
 |          |               | Used to optimise the kNN classifier.           |

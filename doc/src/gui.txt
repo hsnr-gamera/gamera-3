@@ -369,7 +369,7 @@ Special class names
 Special class names begin with an underscore (``_``).
 
 ``_group``
-  Symbols trained with names beginning with ``_group.`` are first
+  Glyphs trained with names beginning with ``_group.`` are first
   grouped together and then trained as a single unit.  For instance,
   you may wish to train lowercase i's (which are made up of two
   connected components) as a single logical unit.  Select both parts
@@ -377,8 +377,8 @@ Special class names begin with an underscore (``_``).
   display) and then train as ``_group.lower.i``.
 
 ``_split``
-  Symbols trained with names beginning with ``_split.`` are run
-  through a given splitting algorithm.  For instance, symbols that
+  Glyphs trained with names beginning with ``_split.`` are run
+  through a given splitting algorithm.  For instance, glyphs that
   need to be broken into upper and lower halves for further
   classification of those parts would be trained as
   ``_split.splity``.  When the automatic classifier encounters glyphs
@@ -394,8 +394,8 @@ Special class names begin with an underscore (``_``).
 
 .. __: writing_plugins.html
 
-The window
-``````````
+Parts of the classifier window
+``````````````````````````````
 
 The interactive classifier window is divided into three parts: The
 symbol table, the connected component display, and the original image
@@ -467,8 +467,8 @@ There are some additional toolbar buttons:
 
 .. |Mark| image:: images/icon_mark_highlights.png
 
-Menu
-````
+Classifier menu
+```````````````
 
 File menu
 '''''''''

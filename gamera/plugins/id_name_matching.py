@@ -116,11 +116,12 @@ Regular expression    Description
                 return 1
         return 0
     __call__ = staticmethod(__call__)
+match_id_name_class = match_id_name
 match_id_name = match_id_name()
 
 class IdNameMatchingModule(PluginModule):
     category = "Classification"
-    functions = [match_id_name]
+    functions = [match_id_name_class]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     pure_python = 1

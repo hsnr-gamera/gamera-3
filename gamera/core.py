@@ -19,7 +19,7 @@
 #
 
 
-""" This module contains the core parts of Gamera including all of the image
+"""This module contains the core parts of Gamera including all of the image
 representation types, the dimension types, abstract mappings of values
 to regions on an image (ImageMap), image loading, and feature generation.
  
@@ -215,12 +215,12 @@ class ImageBase:
    _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
-      """Loads an image from disk.  Currently only TIFF images are supported."""
+      """Loads an image from disk.  Currently only TIFF and PNG images are supported."""
       return load_image(filename, compression)
    load_image = staticmethod(load_image)
 
    def memory_size(self):
-      return util.pretty_print_byte_size(self.data.bytes)
+      return self.data.bytes
    memory_size = property(memory_size)
 
    def set_display(self, _display):
@@ -405,19 +405,19 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
          return functions, cls._get_feature_vector_size(functions)
       features = util.make_sequence(features)
       features.sort()
-      all_strings = 1
+      all_strings = True
       for feature in features:
          if not type(feature) == StringType:
-            all_strings = 0
+            all_strings = False
             break
       if not all_strings:
          import plugin
-         all_functions = 0
+         all_functions = False
          if (type(features) == TupleType and
              len(features) == 2 and
              type(features[0]) == ListType and
              type(features[1]) == IntegerType):
-            all_functions = 1
+            all_functions = True
             for feature in features:
                if not (type(feature) == TupleType and
                        type(feature[0]) == StringType and
@@ -523,7 +523,7 @@ class Cc(gameracore.Cc, ImageBase):
       self.last_display = "context"
 
 # this is a convenience function for using in a console
-_gamera_initialised = 0
+_gamera_initialised = False
 def _init_gamera():
    global _gamera_initialised
    if not _gamera_initialised:
@@ -540,7 +540,8 @@ def _init_gamera():
             "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
             None),
          plugin.PluginFactory(
-            "display_false_color", "Displaying", None, plugin.ImageType([GREYSCALE, FLOAT]),
+            "display_false_color", "Displaying", None,
+            plugin.ImageType([GREYSCALE, FLOAT]),
             None),
          plugin.PluginFactory(
             "classify_manual", "Classification", None,
@@ -559,13 +560,14 @@ def _init_gamera():
             plugin.ImageType([ONEBIT]), None),
          plugin.PluginFactory(
             "to_xml_filename", "XML", None, plugin.ImageType([ONEBIT]),
-            plugin.Args([plugin.FileSave("filename", extension=gamera_xml.extensions)]))
+            plugin.Args([
+         plugin.FileSave("filename", extension=gamera_xml.extensions)]))
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)
       import sys
       sys.path.append(".")
-      _gamera_initialised = 1
+      _gamera_initialised = True
 
 import sys
 if sys.platform == 'win32':

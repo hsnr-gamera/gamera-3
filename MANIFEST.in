@@ -1,7 +1,8 @@
-recursive-include doc *.gif *.txt *.css *.py
-recursive-include gamera/pixmaps *.png *.py
+recursive-include misc *
+recursive-include mac *
+recursive-include doc *.png *.txt *.css *.py *.html
+recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff
-recursive-include gamera/test
 recursive-include src *.cpp *.c *.h makefile.* *.hpp
 recursive-include include *.hpp *.hxx
 include TODO INSTALL KNOWN_BUGS ACKNOWLEDGEMENTS setup.cfg gamera_post_install.py

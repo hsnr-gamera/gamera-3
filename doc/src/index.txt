@@ -47,6 +47,10 @@ Documentation License`__.
 
 .. __: gui.html
 
-- `Gamera XML format`__: The XML files that Gamera uses to store training data.
+- `XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html
+
+- `Classifier API`__: How to use image classifiers.
+
+.. __: classify.html

@@ -116,11 +116,11 @@ class _Classifier:
    ########################################
    # AUTOMATIC CLASSIFICATION
    def classify_glyph_automatic(self, glyph):
-      """Classifies a glyph using the core classifier.  Sets the
-      classification_state and id_name of the glyph.  (If you don't want it set,
-      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
-      to the current database, and glyphs to be removed from the current
-      database."""
+      """Classifies a glyph and sets its ``classification_state`` and
+      ``id_name``.  (If you don't want it set, use
+      guess_glyph_automatic.)  Returns a pair of lists: glyphs to be
+      added to the current database, and glyphs to be removed from the
+      current database."""
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
@@ -131,19 +131,14 @@ class _Classifier:
          return splits, removed
       return [], []
 
-   def classify_list_automatic(self, glyphs, recursion_level=0, progress=None):
-      """Classifies a list of glyphs using the core classifier.  Sets the
-      classification_state and id_name of the glyph.  (If you don't want it set,
-      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
-      to the current database, and glyphs to be removed from the current
-      database. The keyword arguments are for internal use only."""
+   def _classify_list_automatic(self, glyphs, max_recursion=10, recursion_level=0, progress=None):
 
       # There is a slightly convoluted handling of the progress bar here, since
       # this function is called recursively on split glyphs
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...", len(glyphs))
       try:
-         if (recursion_level > 10) or len(self._database) == 0:
+         if (recursion_level > max_recursion) or len(self._database) == 0:
             return [], []
          added = []
          removed = {}
@@ -164,8 +159,8 @@ class _Classifier:
                   added.extend(adds)
             progress.step()
          if len(added):
-            added_recurse, removed_recurse = self.classify_list_automatic(
-               added, recursion_level+1, progress)
+            added_recurse, removed_recurse = self._classify_list_automatic(
+               added, max_recursion, recursion_level+1, progress)
             added.extend(added_recurse)
             for glyph in removed_recurse:
                removed[glyph] = None
@@ -173,6 +168,22 @@ class _Classifier:
          if recursion_level == 0:
             progress.kill()
       return added, removed.keys()
+
+   def classify_list_automatic(self, glyphs, max_recursion=10, progress=None):
+      """Classifies a list of glyphs and sets the
+      classification_state and id_name of each glyph.  (If you don't want it set,
+      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
+      to the current database, and glyphs to be removed from the current
+      database."""
+      return self._classify_list_automatic(glyphs, max_recursion, 0, progress)
+
+   def classify_and_update_list_automatic(self, glyphs, max_recursion=10, progress=None):
+      added, removed = self.classify_list_automatic(glyphs, max_recursion, progress)
+      result = glyphs + added
+      for g in removed:
+         if g in result:
+            result.remove(g)
+      return result
 
    # Since splitting glyphs is optional (when the classifier instance is
    # created) we have two versions of this function, so that there need not
@@ -203,19 +214,25 @@ class _Classifier:
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
    def to_xml(self, stream):
-      self.is_dirty = 0
+      """Saves the training data in XML format to the given stream (which could
+be a file handle object)."""
+      self.is_dirty = False
       return gamera_xml.WriteXML(
          glyphs=self.get_glyphs()).write_stream(stream)
 
    def to_xml_filename(self, filename):
-      self.is_dirty = 0
+      """Saves the training data in XML format to the given filename."""
+      self.is_dirty = False
       return gamera_xml.WriteXMLFile(
          glyphs=self.get_glyphs()).write_filename(filename)
 
    def from_xml(self, stream):
+      """Loads the training data from the given stream (which could be a file
+handle object)."""
       self._from_xml(gamera_xml.LoadXML().parse_stream(stream))
 
    def from_xml_filename(self, filename):
+      """Loads the training data from the given filename."""
       stream = gamera_xml.LoadXML().parse_filename(filename)
       self._from_xml(stream)
 
@@ -225,9 +242,13 @@ class _Classifier:
       self.set_glyphs(database)
 
    def merge_from_xml(self, stream):
+      """Loads the training data from the given stream (which could be a file
+handle or StringIO object) and adds it to the existing training data."""
       self._merge_xml(gamera_xml.LoadXML().parse_stream(stream))
 
    def merge_from_xml_filename(self, filename):
+      """Loads the training data from the given filename and adds it to the
+existing training data."""
       self._merge_xml(gamera_xml.LoadXML().parse_filename(filename))
 
    def _merge_xml(self, xml):
@@ -241,14 +262,14 @@ class _Classifier:
       return self.feature_functions
    
 class NonInteractiveClassifier(_Classifier):
-   def __init__(self, database=[], features='all', perform_splits=1):
+   def __init__(self, database=[], features='all', perform_splits=True):
       """
       database: a list of database to initialize the classifier with.
       features: a list of strings naming the features that will be used in the
                 classifier.
       perform_splits: (boolean) true if glyphs classified as split.* should be
                 split."""
-      self.is_dirty = 0
+      self.is_dirty = False
       self._database = database
       self.features = features
       self.change_feature_set(features)
@@ -264,7 +285,7 @@ class NonInteractiveClassifier(_Classifier):
       del self._database
 
    def is_interactive():
-      return 0
+      return False
    is_interactive = staticmethod(is_interactive)
 
    ########################################
@@ -316,7 +337,7 @@ class InteractiveClassifier(_Classifier):
                 classifier.
       perform_splits: (boolean) true if glyphs classified as split.* should be
                       split."""
-      self.is_dirty = 0
+      self.is_dirty = False
       self.clear_glyphs()
       for glyph in database:
          self._database[glyph] = None
@@ -358,7 +379,7 @@ class InteractiveClassifier(_Classifier):
          self._database[glyph] = None
 
    def clear_glyphs(self):
-      self.is_dirty = 1
+      self.is_dirty = True
       self._database = {}
 
    ########################################
@@ -383,7 +404,7 @@ class InteractiveClassifier(_Classifier):
    def change_feature_set(self, features):
       """Change the set of features used in the classifier.  features is a list
       of strings, naming the feature functions to be used."""
-      self.is_dirty = 1
+      self.is_dirty = True
       if len(self._database):
          self.generate_features(self._database)
    
@@ -408,7 +429,7 @@ class InteractiveClassifier(_Classifier):
    def classify_glyph_manual(self, glyph, id):
       """Classifies the given glyph using name id.  Returns a pair of lists: the
       glyphs that should be added and removed to the current database."""
-      self.is_dirty = 1
+      self.is_dirty = True
 
       # Deal with grouping
       if id.startswith('_group'):
@@ -448,7 +469,7 @@ class InteractiveClassifier(_Classifier):
       for glyph in glyphs:
          # Don't re-insert removed children glyphs
          if not removed.has_key(glyph):
-            self.is_dirty = 1
+            self.is_dirty = True
             if not self._database.has_key(glyph):
                glyph.generate_features(feature_functions)
                self._database[glyph] = None
@@ -462,7 +483,7 @@ class InteractiveClassifier(_Classifier):
       for glyph in glyphs:
          if (glyph.classification_state == core.MANUAL and
              not self._database.has_key(glyph)):
-            self.is_dirty = 1
+            self.is_dirty = True
             glyph.generate_features(feature_functions)
             self._database[glyph] = None
 
@@ -470,7 +491,7 @@ class InteractiveClassifier(_Classifier):
       glyphs = util.make_sequence(glyphs)
       for glyph in glyphs:
          if self._database.has_key(glyph):
-            self.is_dirty = 1
+            self.is_dirty = True
             del self._database[glyph]
 
    def display(self, current_database=[],

@@ -228,8 +228,9 @@ The different interfaces for accessing pixels are discussed below:
 This is perhaps the most straightforward way to access the pixels of
 an image.  There are two public methods of ``ImageView``:
 
-   value_type **get** (size_t *row*, size_t *col*)
-   void **set** (size_t *row*, size_t *col*, value_type *value*)
+   - value_type **get** (size_t *row*, size_t *col*)
+
+   - void **set** (size_t *row*, size_t *col*, value_type *value*)
 
 **get** returns the value of the pixel at the given row and column. 
 **set** changes the pixel at the given row and column to the given

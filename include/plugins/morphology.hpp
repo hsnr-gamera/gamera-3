@@ -209,26 +209,27 @@ namespace Gamera {
     ImageData<value_type> mat_data(m.nrows(), m.ncols());
     ImageView<ImageData<value_type> > tmp(mat_data, 0, 0, m.nrows(), m.ncols());
 
-    typedef std::vector<Point> PixelStack;
-    PixelStack pixel_stack;
-    pixel_stack.reserve(size);
+    typedef std::vector<Point> PixelQueue;
+    PixelQueue pixel_queue;
+    pixel_queue.reserve(size * 2);
     for (size_t r = 0; r < m.nrows(); ++r) {
       for (size_t c = 0; c < m.ncols(); ++c) {
 	if (is_white(tmp.get(r, c)) && is_black(m.get(r, c))) {
-	  pixel_stack.clear();
-	  pixel_stack.push_back(Point(c, r));
+	  pixel_queue.clear();
+	  pixel_queue.push_back(Point(c, r));
 	  bool bail = false;
 	  tmp.set(r, c, 1);
-	  for (typename PixelStack::iterator i = pixel_stack.begin();
-	       (i != pixel_stack.end()) && (pixel_stack.size() < size); ++i) {
-	    Point& center = (*i);
+	  for (size_t i = 0;
+	       (i < pixel_queue.size()) && (pixel_queue.size() < size);
+	       ++i) {
+	    Point center = pixel_queue[i];
 	    for (size_t r2 = (center.y()>0) ? center.y() - 1 : 0; 
 		 r2 < std::min(center.y() + 2, m.nrows()); ++r2) {
 	      for (size_t c2 = (center.x()>0) ? center.x() - 1 : 0; 
 		   c2 < std::min(center.x() + 2, m.ncols()); ++c2) {
 		if (is_black(m.get(r2, c2)) && is_white(tmp.get(r2, c2))) {
 		  tmp.set(r2, c2, 1);
-		  pixel_stack.push_back(Point(c2, r2));
+		  pixel_queue.push_back(Point(c2, r2));
 		} else if (tmp.get(r2, c2) == 2) {
 		  bail = true;
 		  break;
@@ -240,14 +241,14 @@ namespace Gamera {
 	    if (bail)
 	      break;
 	  }
-	  if (!bail && pixel_stack.size() < size) {
-	    for (typename PixelStack::iterator i = pixel_stack.begin();
-		 i != pixel_stack.end(); ++i) {
+	  if (!bail && pixel_queue.size() < size) {
+	    for (typename PixelQueue::iterator i = pixel_queue.begin();
+		 i != pixel_queue.end(); ++i) {
 	      m.set(i->y(), i->x(), white(m));
 	    }
 	  } else {
-	    for (typename PixelStack::iterator i = pixel_stack.begin();
-		 i != pixel_stack.end(); ++i) {
+	    for (typename PixelQueue::iterator i = pixel_queue.begin();
+		 i != pixel_queue.end(); ++i) {
 	      tmp.set(i->y(), i->x(), 2);
 	    }
 	  }

@@ -28,6 +28,7 @@
 #include "vigra/iteratortraits.hxx"
 #include "accessor.hpp"
 #include "image_view_iterators.hpp"
+#include "iterator_base.hpp"
 
 namespace Gamera { 
 

@@ -222,6 +222,12 @@ namespace Gamera {
     void set(size_t row, size_t col, value_type value) {
       m_accessor.set(value, m_begin + (row * m_image_data->stride()) + col);
     }
+    value_type get(const Point& p) const {
+      return get(p.y(), p.x());
+    }
+    void set(const Point& p, value_type value) {
+      set(p.y(), p.x(), value);
+    }
 
     //
     // Misc

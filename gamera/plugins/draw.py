@@ -77,11 +77,36 @@ class draw_filled_rect(PluginFunction):
   args = Args([Int("x1"), Int("y1"), Int("x2"), Int("y2"), Float("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1)]
 
+class flood_fill(PluginFunction):
+  """Flood fills from the given point using the given color.  This is similar
+to the "bucket" tool found in many paint programs.
+
+*x*:
+  Starting *x* coordinate.
+*y*:
+  Starting *y* coordinate.
+*color*:
+  The pixel value to set for the rectangle.
+
+.. note:: This needs to be extended to support more pixel types."""
+  self_type = ImageType([ONEBIT])
+  args = Args([Int("x"), Int("y"), Float("color")])
+  doc_examples = [(ONEBIT, 5, 5, 0)]
+
+class remove_border(PluginFunction):
+  """This is a special case of the flood_fill algorithm that is designed to
+remove dark borders produced by photocopiers or flatbed scanners around the
+border of the image.
+
+.. note:: This needs to be extended to support more pixel types."""
+  self_type = ImageType([ONEBIT])
+
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Draw"
-  functions = [draw_line, draw_hollow_rect, draw_filled_rect]
+  functions = [draw_line, draw_hollow_rect, draw_filled_rect, flood_fill,
+               remove_border]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

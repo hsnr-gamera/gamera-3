@@ -170,6 +170,12 @@ namespace Gamera {
 	*(m_begin + (row * m_image_data->stride()) + col) = m_label;
 
     }
+    value_type get(const Point& p) const {
+      return get(p.y(), p.x());
+    }
+    void set(const Point& p, value_type value) {
+      set(p.y(), p.x(), value);
+    }
 
     //
     // DIMENSIONS

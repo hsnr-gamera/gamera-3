@@ -408,6 +408,40 @@ namespace Gamera {
       }
   }
 
+  template<class T>
+  void remove_borders(T& m) {
+    typedef typename T::value_type value_type;
+    ImageData<value_type> mat_data(m.nrows(), m.ncols());
+    ImageView<ImageData<value_type> > tmp(mat_data, 0, 0, m.nrows(), m.ncols());
+    if (is_black(m.get(0, 0)))
+      tmp.set(0, 0, black(tmp));
+    if (is_black(m.get(0, m.nrows() - 1)))
+      tmp.set(0, m.nrows() - 1, black(tmp));
+    if (is_black(m.get(m.ncols() - 1, 0)))
+      tmp.set(m.ncols() - 1, 0, black(tmp));
+    if (is_black(m.get(m.ncols() - 1, m.nrows() - 1)))
+      tmp.set(m.ncols() - 1, m.nrows() - 1, black(tmp));
+
+    for (size_t r = 0; r < m.nrows(); ++r) {
+      for (size_t c = 0; c < m.ncols(); ++c) {
+	if (is_black(tmp.get(r, c))) {
+	  m.set(r, c, white(m));
+	  for (size_t r2 = (r>0) ? r - 1 : 0; 
+	       r2 < std::min(r + 2, m.nrows()); ++r2) {
+	    for (size_t c2 = (c>0) ? c - 1 : 0; 
+		 c2 < std::min(c + 2, m.ncols()); ++c2) {
+	      if (r != r2 && c != c2) {
+		if (is_black(m.get(r2, c2))) {
+		  tmp.set(r2, c2, black(tmp));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
   template<class T, class U>
   typename ImageFactory<T>::view_type* mask(const T& a, U &b) {
     typename ImageFactory<T>::data_type* dest_data =

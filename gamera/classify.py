@@ -44,7 +44,7 @@ class _Classifier:
    def group_list_automatic(self, glyphs, grouping_function=None,
                             evaluate_function=None):
       if len(glyphs) == 0:
-         return
+         return [], []
       glyphs = [x for x in glyphs if x.classification_state != 3]
       splits, removed = self.classify_list_automatic(glyphs)
       glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]

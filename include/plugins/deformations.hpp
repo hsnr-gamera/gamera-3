@@ -47,8 +47,6 @@ bool randset=0;
 template<class T>
 typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename T::value_type bgcolor)
 {
-  std::cout << "What?";
-  
   // Adjust angle to a positve double between 0-360
   while(angle<=0.0) angle+=360;
   while(angle>=360.0) angle-=360;
@@ -61,8 +59,6 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
   view_type* new_view;
 
   // Rotate 90, 180, or 270 degrees (no interpolation required)
-
-  std::cout << "What the fuck";
 
   if ((angle>45.0) && (angle<=135.0)) {
     // Rotate 90 degrees by coping to a cols/rows view.

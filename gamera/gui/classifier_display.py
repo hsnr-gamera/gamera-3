@@ -795,6 +795,9 @@ class ClassifierFrame(ImageFrameBase):
       self._OnConfirm(self.multi_iw.id.GetSelectedItems())
 
    def _OnConfirm(self, list):
+      if len(list) == 0:
+         gui_util.message("There are no automatically classified glyphs to confirm.  No changes were made to the production database.")
+         return
       if not hasattr(self._classifier, 'classify_glyph_manual'):
          gui_util.message("NonInteractive classifiers can not be trained.")
          return

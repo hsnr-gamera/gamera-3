@@ -21,11 +21,17 @@
 
 using namespace Gamera;
 
+/*
+  These are prototyped here because this is the only file in which
+  they will be used. They are defined in the .cpp files for each of
+  the types.
+*/
 void init_SizeType(PyObject* module_dict);
 void init_PointType(PyObject* module_dict);
 void init_DimensionsType(PyObject* module_dict);
 void init_RectType(PyObject* module_dict);
 void init_RegionType(PyObject* module_dict);
+void init_RegionMapType(PyObject* module_dict);
 void init_RGBPixelType(PyObject* module_dict);
 void init_ImageDataType(PyObject* module_dict);
 void init_ImageType(PyObject* module_dict);
@@ -48,6 +54,7 @@ initgameracore(void) {
   init_DimensionsType(d);
   init_RectType(d);
   init_RegionType(d);
+  init_RegionMapType(d);
   init_RGBPixelType(d);
   init_ImageDataType(d);
   init_ImageType(d);

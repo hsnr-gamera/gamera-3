@@ -44,7 +44,7 @@ PyTypeObject* get_RegionType() {
   return &RegionType;
 }
 
-bool is_RegionType(PyObject* x) {
+bool is_RegionObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &RegionType))
     return true;
   else

@@ -28,6 +28,8 @@
 #include <exception>
 #include <string>
 
+#include <iostream>
+
 /*
   REGIONS
 
@@ -53,7 +55,7 @@ namespace Gamera {
     typedef std::map<std::string, V> map_type;
     RegionTemplate(size_t origin_y = 0, size_t origin_x = 0,
 		   size_t nrows = 1, size_t ncols = 1) :
-      Rect(origin_y, origin_x, nrows, ncols) { }
+      Rect(origin_y, origin_x, nrows, ncols), m_value_map() { }
     RegionTemplate(const Point& ul, const Point& lr) :
       Rect(ul, lr) { }
     RegionTemplate(const Rect& r) :
@@ -62,8 +64,8 @@ namespace Gamera {
       : Rect(ul, size) {}
     RegionTemplate(const Point& ul, const Dimensions& dim)
       : Rect(ul, dim) {}
-    V get(const std::string& key) {
-      typename map_type::iterator i = m_value_map.find(key);
+    V get(const std::string& key) const {
+      typename map_type::const_iterator i = m_value_map.find(key);
       if (i != m_value_map.end())
 	return i->second;
       else
@@ -72,7 +74,7 @@ namespace Gamera {
     void add(const std::string& key, V x) {
       m_value_map[key] = x;
     }
-  private:
+    //private:
     map_type m_value_map;
   };
   
@@ -122,11 +124,11 @@ namespace Gamera {
     typedef RegionMapTemplate self;
     typedef RegionTemplate<T> region_type;
     typedef Rect rect_t;
-    RegionMapTemplate() : std::list<RegionTemplate<T> >() { }
-    RegionMapTemplate(size_t n) : std::list<RegionTemplate<T> >(n) { }
+    RegionMapTemplate() : std::list<region_type>(1) { }
     virtual ~RegionMapTemplate() { }
     void add_region(const region_type& x) {
-      push_back(x);
+      region_type tmp;
+      push_back(tmp);
     }
     virtual region_type lookup(const rect_t& r) {
       typename self::iterator answer =

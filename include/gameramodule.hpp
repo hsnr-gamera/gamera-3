@@ -106,6 +106,18 @@ bool is_RegionObject(PyObject* x);
 extern PyObject* create_RegionObject(const Region& r);
 
 /*
+  REGION MAP OBJECT
+*/
+
+struct RegionMapObject {
+  RegionMap* m_x;
+};
+
+extern PyTypeObject* get_RegionMapType();
+bool is_RegionMapObject(PyObject* x);
+extern PyObject* create_RegionMapObject(const Region& r);
+
+/*
   IMAGE DATA OBJECT
 */
 struct ImageDataObject {

@@ -7,6 +7,7 @@ setup(name = "gameracore", version="1.1",
                                           "src/dimensionsobject.cpp",
                                           "src/rectobject.cpp",
                                           "src/regionobject.cpp",
+                                          "src/regionmapobject.cpp",
                                           "src/rgbpixelobject.cpp",
                                           "src/imagedataobject.cpp",
                                           "src/imageobject.cpp"

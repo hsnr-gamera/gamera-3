@@ -42,11 +42,11 @@ namespace Gamera {
       RowIterator(Image* image, const T iterator) : base(image, iterator) { }
       RowIterator() { }
 
-      reference operator*() const {
+      typename base::reference operator*() const {
 	return *m_iterator;
       }
 
-      pointer operator->() const {
+      typename base::pointer operator->() const {
 	return &*m_iterator;
       }
 
@@ -73,10 +73,10 @@ namespace Gamera {
       ColIterator(Image* image, const T iterator) : base(image, iterator) { }
       ColIterator() { }
 
-      reference operator*() const {
+      typename base::reference operator*() const {
 	return *m_iterator;
       }
-      pointer operator->() const {
+      typename base::pointer operator->() const {
 	return &*m_iterator;
       }
 
@@ -109,7 +109,7 @@ namespace Gamera {
 	return *m_iterator;
       }
 
-      pointer operator->() const {
+      typename base::pointer operator->() const {
 	return &*m_iterator;
       }
 
@@ -139,7 +139,7 @@ namespace Gamera {
       typename Image::value_type operator*() const {
 	return *m_iterator;
       }
-      pointer operator->() const {
+      typename base::pointer operator->() const {
 	return &*m_iterator;
       }
 
@@ -164,8 +164,8 @@ namespace Gamera {
       VecIterator() { }
 
       // Operators
-      reference operator*() const { return *m_coliterator; }
-      pointer operator->() const { return &*m_coliterator; }
+      typename base::reference operator*() const { return *m_coliterator; }
+      typename base::pointer operator->() const { return &*m_coliterator; }
     };
 
     template<class Image, class Row, class Col>
@@ -180,7 +180,7 @@ namespace Gamera {
 
       // Operators
       typename Image::value_type operator*() const { return *m_coliterator; }
-      pointer operator->() const { return &*m_coliterator; }
+      typename base::pointer operator->() const { return &*m_coliterator; }
     };
 
   } // namespace

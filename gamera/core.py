@@ -62,11 +62,18 @@ class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
    _methods = {}
+
+   class Properties(dict):
+      def __getattr__(self, attr):
+         return dict.__getitem__(self, attr)
+      def __setattr__(self, attr, value):
+         return dict.__setitem__(self, attr, value)
    
    def __init__(self):
       self.name = "Untitled"
       self._display = None
       self.last_display = None
+      self.properties = self.Properties()
 
    def __del__(self):
       if self._display:
@@ -79,9 +86,8 @@ class ImageBase:
       dict = {}
       for key in self._members_for_menu:
          dict[key] = getattr(self, key)
-      dict['encoded_data'] = binascii.b2a_base64(
-         zlib.compress(
-         self.to_string()))
+      dict['encoded_data'] = util.encode_binary(
+         self.to_string())
       return dict
 
    def add_plugin_method(cls, plug, func, category=None):
@@ -239,29 +245,29 @@ class ImageBase:
       elif self.classification_state == MANUAL:
          return (180,238,180)
 
-   def classify_manual(self, id_name):
+   def classify_manual(self, id_name, confidence=1.0):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
-         self.id_name = [id_name]
+         self.id_name = [(id_name, confidence)]
       else:
          self.id_name = list(id_name)
       self.classification_state = MANUAL
 
-   def classify_automatic(self, id_name):
+   def classify_automatic(self, id_name, confidence=1.0):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
-         self.id_name = [id_name]
+         self.id_name = [(id_name, confidence)]
       else:
          self.id_name = list(id_name)
       self.classification_state = AUTOMATIC
 
-   def classify_heuristic(self, id_name):
+   def classify_heuristic(self, id_name, confidence=1.0):
       if id_name[-1] == ".":
          id_name = id_name[:-1]
       if not util.is_sequence(id_name):
-         self.id_name = [id_name]
+         self.id_name = [(id_name, confidence)]
       else:
          self.id_name = list(id_name)
       self.classification_state = HEURISTIC

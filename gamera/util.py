@@ -32,17 +32,8 @@ def is_sequence(obj):
 def replace_prefix(s, a, b):
   return b + s[len(a):]
 
-# compares items faster by caching the results
-def fast_cmp(x, x_mem, y, y_mem):
-  if x.sort_cache != None:
-    x_mem = x.sort_cache
-  else:
-    x.sort_cache = x_mem
-  if y.sort_cache != None:
-    y_mem = y.sort_cache
-  else:
-    y.sort_cache = y_mem
-  return cmp(x_mem, y_mem)
+def fast_cmp(x, y):
+  return cmp(x.sort_cache, y.sort_cache)
 
 # determines if an object is a C/C++ object
 def is_cpp_instance(obj, name):
@@ -133,3 +124,35 @@ def group_list(list, group_size):
   for i in range(0, len(list), group_size):
     groups.append(list[i:min(i+group_size, len(list))])
   return groups
+
+def word_wrap(stream, l, indent=0, width=78):
+  indent *= 2
+  width -= indent
+  if not is_sequence(l):
+    if len(l) + indent < width:
+      stream.write(" " * indent)
+      stream.write(l)
+      stream.write("\n")
+      return
+    l = l.split()
+  position = indent
+  indent_spaces = " " * (indent + 1)
+  stream.write(" " * indent)
+  for item in l:
+    if position + len(item) + 1 > width:
+      stream.write("\n")
+      stream.write(indent_spaces)
+      position = indent
+    stream.write(item)
+    position += len(item)
+    stream.write(' ')
+    position += 1
+  stream.write("\n")
+
+def encode_binary(s):
+  import zlib, binascii
+  return binascii.b2a_base64(s)
+  
+def decode_binary(s):
+  import zlib, binascii
+  return binascii.a2b_base64(s)

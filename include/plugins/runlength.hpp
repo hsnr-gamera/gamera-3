@@ -199,6 +199,8 @@ namespace Gamera {
   /*
     To/From rle
   */
+#ifndef GAMERA_NO_PYTHON
+
   template<class T>
   IntVector* to_rle(T& image) {
     // White first
@@ -214,8 +216,11 @@ namespace Gamera {
       black_run_end(i, image.vec_end());
       runs->push_back(i - start);
     }
+
     return runs;
   }
+
+#endif
 
   template<class T, class U>
   void from_rle(T& image, U run, const U runs_end) {

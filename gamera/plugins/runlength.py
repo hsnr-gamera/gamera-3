@@ -61,7 +61,7 @@ filter_wide_runs = filter_wide_runs()
 
 class to_rle(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = IntVector("rle_vector")
+    return_type = IntVector("runs")
 to_rle = to_rle()
 
 class from_rle(PluginFunction):

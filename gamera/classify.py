@@ -662,8 +662,7 @@ class WriteXMLDatabaseBase(database.WriteXML):
       self.write_features_definition(self.classifier.features_list,
                                      self.classifier.knn_database.get_weights())
       self.write_symbol_table(self.classifier.symbol_table.all_names)
-      self.write_glyphs(db,
-                        self.save_images)
+      self.write_glyphs(db, self.save_images)
 
 class WriteXMLCurrentDatabase(WriteXMLDatabaseBase):
    def write_core(self):

@@ -309,11 +309,12 @@ class ImageDisplay(wxScrolledWindow):
                          self.image.nrows - oy), 0))
             # Quantize for scaling
             if scaling > 1:
-               x = int(x / scaling) * scaling
-               y = int(y / scaling) * scaling
-               w = int(w / scaling) * scaling
-               h = int(h / scaling) * scaling
-            self.PaintArea(x + self.image.ul_x, y + self.image.ul_y, w + 1, h + 1, check=0)
+               x = int(int(x / scaling) * scaling)
+               y = int(int(y / scaling) * scaling)
+               w = int(int(w / scaling) * scaling)
+               h = int(int(h / scaling) * scaling)
+            self.PaintArea(x + self.image.ul_x, y + self.image.ul_y,
+                           w, h, check=0)
          rects.Next()
       self.draw_rubber()
 
@@ -345,10 +346,10 @@ class ImageDisplay(wxScrolledWindow):
       subimage = SubImage(self.image, y, x, h, w)
       image = None
       if scaling != 1.0:
-         scaled_image = subimage.resize_copy(
-            h * scaling, w * scaling,
+         scaled_image = subimage.scale_copy(
+            scaling,
             self.scaling_quality)
-         image = wxEmptyImage(w * scaling, h * scaling)
+         image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
       else:
          scaled_image = subimage
          image = wxEmptyImage(w, h)
@@ -368,10 +369,10 @@ class ImageDisplay(wxScrolledWindow):
                h = subhighlight.nrows
                w = subhighlight.ncols
                if scaling != 1.0:
-                  scaled_highlight = subhighlight.resize_copy(
-                     h * scaling, w * scaling, 0)
+                  scaled_highlight = subhighlight.scale_copy(
+                     scaling, 0)
                   image = wxEmptyImage(
-                     w * scaling, h * scaling)
+                     scaled_highlight.ncols, scaled_highlight.nrows)
                else:
                   scaled_highlight = subhighlight
                   image = wxEmptyImage(w, h)
@@ -508,9 +509,11 @@ class ImageDisplay(wxScrolledWindow):
    def OnLeave(self, event):
       if self.rubber_on:
          if self.rubber_origin_x > self.rubber_x2:
-            self.rubber_origin_x, self.rubber_x2 = self.rubber_x2, self.rubber_origin_x
+            self.rubber_origin_x, self.rubber_x2 = \
+                                  self.rubber_x2, self.rubber_origin_x
          if self.rubber_origin_y > self.rubber_y2:
-            self.rubber_origin_y, self.rubber_y2 = self.rubber_y2, self.rubber_origin_y
+            self.rubber_origin_y, self.rubber_y2 = \
+                                  self.rubber_y2, self.rubber_origin_y
          self.rubber_on = 0
          self.OnRubber()
       if self.dragging:
@@ -576,9 +579,9 @@ class ImageWindow(wxPanel):
       self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
                                  "Zoom in", self.OnZoomInClick)
       self.toolbar.AddSimpleTool(21, gamera_icons.getIconZoomNormBitmap(),
-                                 "Zoom Out", self.OnZoomNormClick)
+                                 "Zoom 100%", self.OnZoomNormClick)
       self.toolbar.AddSimpleTool(22, gamera_icons.getIconZoomOutBitmap(),
-                                 "Zoom Out", self.OnZoomOutClick)
+                                 "Zoom out", self.OnZoomOutClick)
       self.toolbar.AddSimpleTool(23, gamera_icons.getIconZoomViewBitmap(),
                                  "Zoom in on selected region", self.OnZoomViewClick)
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Quality: "))
@@ -660,7 +663,8 @@ class ImageWindow(wxPanel):
       self.id.ZoomView()
 
    def OnZoomTypeChange(self, event):
-      self.id.SetZoomType(self.zooming_qualities[self.zoom_slider.GetValue()])
+      self.id.SetZoomType(
+         self.zooming_qualities[self.zoom_slider.GetValue()])
 
    def OnMakeViewClick(self, event):
       self.id.MakeView()
@@ -693,6 +697,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
       global stuff
+      scaling = self.parent.scaling
       
       bitmap_no = row * GRID_NCOLS + col
       if bitmap_no < len(self.parent.list):
@@ -712,8 +717,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          # If the image is bigger than the cell, crop it. This used to be done
          # in wxPython, but it is more efficient to do it with Gamera SubImages
 
-         if (image.ncols >= rect.GetWidth() or
-             image.nrows >= rect.GetHeight()):
+         if (image.ncols * scaling >= rect.GetWidth() or
+             image.nrows * scaling >= rect.GetHeight()):
 ##             height = rect.GetHeight() + 1
 ##             width = rect.GetWidth() + 1
 ##             # If we are dealing with a CC, we have to make a smaller CC withthe
@@ -725,18 +730,25 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 ##                sub_image = SubImage(image, image.offset_y, image.offset_x, height, width)
 ##             image = wxEmptyImage(width, height)
 ##             s = sub_image.to_buffer(image.GetDataBuffer())
-            factor = min(float(rect.GetHeight()) / float(image.height),
-                         float(rect.GetWidth()) / float(image.width))
+            factor = min(float(rect.GetHeight()) / float(image.nrows),
+                         float(rect.GetWidth()) / float(image.ncols))
             height = floor(image.height * factor)
             width = floor(image.width * factor)
-            scaled_image = image.resize_copy(image.height * factor, image.width * factor, 0)
+            scaled_image = image.resize_copy(height, width, 0)
             scaled_image.label = image.label
             wx_image = wxEmptyImage(width, height)
             s = scaled_image.to_buffer(wx_image.GetDataBuffer())
          else:
-            orig_image = image
-            wx_image = wxEmptyImage(image.ncols, image.nrows)
-            orig_image.to_buffer(wx_image.GetDataBuffer())
+            if scaling != 1.0 and image.nrows > 1 and image.ncols > 1:
+               height = ceil(image.nrows * scaling)
+               width = ceil(image.ncols * scaling)
+               scaled_image = image.resize_copy(height, width, 0)
+               scaled_image.label = image.label
+               wx_image = wxEmptyImage(width, height)
+            else:
+               scaled_image = image
+               wx_image = wxEmptyImage(image.ncols, image.nrows)
+            scaled_image.to_buffer(wx_image.GetDataBuffer())
          bmp = wx_image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
@@ -773,9 +785,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          image = None
       if image != None:
          return wxSize(min(GRID_MAX_CELL_WIDTH,
-                           image.ncols + GRID_PADDING),
+                           image.ncols * self.parent.scaling + GRID_PADDING ),
                        min(GRID_MAX_CELL_HEIGHT,
-                           image.nrows + GRID_PADDING))
+                           image.nrows * self.parent.scaling + GRID_PADDING))
       return wxSize(0, 0)
 
    def Clone(self):
@@ -799,6 +811,7 @@ class MultiImageDisplay(wxGrid):
       self.created = 0
       self.do_updates = 0
       self.last_image_no = None
+      self.scaling = 1.0
       self.tooltip = wxButton(self.GetGridWindow(), -1, "",
                               wxPoint(0, 0), wxSize(175, 24))
       self.tooltip.Show(false)
@@ -871,6 +884,12 @@ class MultiImageDisplay(wxGrid):
       self.EndBatch()
       wxEndBusyCursor()
 
+   def scale(self, scaling):
+      self.scaling = scaling
+      x = self.GetSize()
+      self.AutoSize()
+      self.SetSize(x)
+
    ########################################
    # SORTING
 
@@ -898,8 +917,6 @@ class MultiImageDisplay(wxGrid):
       if self.sort_function == "":
          self.list = self.default_sort(self.list)
       else:
-         for item in self.list:
-            item.sort_cache = None
          self.list.sort(self.sort_function)
          for item in self.list:
             del item.sort_cache
@@ -989,6 +1006,17 @@ class MultiImageDisplay(wxGrid):
    ########################################
    # CALLBACKS
 
+   def ZoomOut(self):
+      if self.scaling > pow(2, -8):
+         self.scale(self.scaling * 0.5)
+
+   def ZoomNorm(self):
+      self.scale(1.0)
+
+   def ZoomIn(self):
+      if self.scaling < pow(2, 8):
+         self.scale(self.scaling * 2.0)
+   
    def OnSelectImpl(self):
       pass
 
@@ -1056,29 +1084,37 @@ class MultiImageDisplay(wxGrid):
 
 class MultiImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
+      from gamera.gui import gamera_icons
       wxPanel.__init__(self, parent, id)
       self.SetAutoLayout(true)
       self.toolbar = toolbar.ToolBar(self, -1)
 
-      from gamera.gui import gamera_icons
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
                                  "Refresh", self.OnRefreshClick)
       self.toolbar.AddSeparator()
-
-      self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Sort: "))
-      self.sort_combo = wxComboBox(self.toolbar, 100, choices=[])
-      self.toolbar.AddControl(self.sort_combo)
-      self.toolbar.AddSimpleTool(101, gamera_icons.getIconSortAscBitmap(),
+      self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
+                                 "Zoom in", self.OnZoomInClick)
+      self.toolbar.AddSimpleTool(21, gamera_icons.getIconZoomNormBitmap(),
+                                 "Zoom 100%", self.OnZoomNormClick)
+      self.toolbar.AddSimpleTool(22, gamera_icons.getIconZoomOutBitmap(),
+                                 "Zoom out", self.OnZoomOutClick)
+      self.toolbar2 = toolbar.ToolBar(self, -1)
+      self.toolbar2.AddControl(wxStaticText(self.toolbar2, -1, "Sort: "))
+      self.sort_combo = wxComboBox(self.toolbar2, 100, choices=[],
+                                   size=wxSize(150, 20))
+      self.toolbar2.AddControl(self.sort_combo)
+      self.toolbar2.AddSimpleTool(101, gamera_icons.getIconSortAscBitmap(),
                                  "Sort Ascending", self.OnSortAscending)
-      self.toolbar.AddSimpleTool(102, gamera_icons.getIconSortDecBitmap(),
+      self.toolbar2.AddSimpleTool(102, gamera_icons.getIconSortDecBitmap(),
                                  "Sort Descending", self.OnSortDescending)
-      self.toolbar.AddSeparator()
-      self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Select: "))
-      self.select_combo = wxComboBox(self.toolbar, 200, choices=[])
-      self.toolbar.AddControl(self.select_combo)
-      self.toolbar.AddSimpleTool(201, gamera_icons.getIconSelectBitmap(),
+      self.toolbar2.AddSeparator()
+      self.toolbar2.AddControl(wxStaticText(self.toolbar2, -1, "Select: "))
+      self.select_combo = wxComboBox(self.toolbar2, 200, choices=[],
+                                     size=wxSize(150, 20))
+      self.toolbar2.AddControl(self.select_combo)
+      self.toolbar2.AddSimpleTool(201, gamera_icons.getIconSelectBitmap(),
                                  "Select by given expression", self.OnSelect)
-      self.toolbar.AddSimpleTool(203, gamera_icons.getIconSelectAllBitmap(),
+      self.toolbar2.AddSimpleTool(203, gamera_icons.getIconSelectAllBitmap(),
                                  "Select All", self.OnSelectAll)
       self.select_choices = []
       lc = wxLayoutConstraints()
@@ -1088,13 +1124,20 @@ class MultiImageWindow(wxPanel):
       lc.height.AsIs()
       self.toolbar.SetAutoLayout(true)
       self.toolbar.SetConstraints(lc)
-      self.id = self.get_display()
       lc = wxLayoutConstraints()
       lc.top.Below(self.toolbar, 0)
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
+      lc.height.AsIs()
+      self.toolbar2.SetAutoLayout(true)
+      self.toolbar2.SetConstraints(lc)
+      self.id = self.get_display()
+      lc = wxLayoutConstraints()
+      lc.top.Below(self.toolbar2, 0)
+      lc.left.SameAs(self, wxLeft, 0)
+      lc.right.SameAs(self, wxRight, 0)
       lc.bottom.SameAs(self, wxBottom, 0)
-      self.toolbar.SetAutoLayout(true)
+      self.id.SetAutoLayout(true)
       self.id.SetConstraints(lc)
       self.Layout()
       self.sort_choices = []
@@ -1148,17 +1191,21 @@ class MultiImageWindow(wxPanel):
          if len(split) >= 1:
             final = string.join(split[1:])
          else:
-            gui_util.message("The given sorting expressing contains a syntax error.")
+            gui_util.message(
+               "The given sorting expressing contains a syntax error.")
+            return
+         try:
+            sort_func = eval(final, globals(), image_menu.shell.locals)
+         except Exception, e:
+            gui_util.message(str(e))
             return
       else:
-         final = ("lambda x, y: util.fast_cmp(x, (x." +
-                  sort_string + "), y, (y." +
-                  sort_string + "))")
-      try:
-         sort_func = eval(final, globals(), image_menu.shell.locals)
-      except SyntaxError:
-         gui_util.message("The given sorting expression contains a syntax error.")
-         return
+         try:
+            for image in self.id.list:
+               image.sort_cache = eval("x." + sort_string, {'x': image})
+         except Exception, e:
+            gui_util.message(str(e))
+         sort_func = util.fast_cmp
       if sort_string not in self.sort_choices:
          self.sort_choices.append(sort_string)
          self.sort_combo.Append(sort_string)
@@ -1176,8 +1223,8 @@ class MultiImageWindow(wxPanel):
       try:
          select_func = eval("lambda x: (" + select_string + ")", globals(),
                             image_menu.shell.locals)
-      except SyntaxError:
-         gui_util.message("The given selection expression contains a syntax error.")
+      except Exception, e:
+         gui_util.message(str(e))
          return
       if select_string not in self.select_choices:
          self.select_choices.append(select_string)
@@ -1191,7 +1238,16 @@ class MultiImageWindow(wxPanel):
 
    def OnSelectInvert(self, event):
       self.id.SelectInvert()
-   
+
+   def OnZoomInClick(self, event):
+      self.id.ZoomIn()
+
+   def OnZoomNormClick(self, event):
+      self.id.ZoomNorm()
+
+   def OnZoomOutClick(self, event):
+      self.id.ZoomOut()
+
 
 ##############################################################################
 # TOP-LEVEL FRAMES
@@ -1226,7 +1282,7 @@ class ImageFrameBase:
       del self._iw
       if self.owner:
          self.owner.set_display(None)
-      self.Destroy()
+      self._frame.Destroy()
 
    def Show(self, flag=1):
       self._frame.Show(flag)

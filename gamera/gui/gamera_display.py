@@ -1360,10 +1360,10 @@ class MultiImageWindow(wxPanel):
 
    def OnSortAscending(self, event, order=0):
       sort_string = string.strip(self.sort_combo.GetValue())
-      if sort_string == "":
-         self.id.sort_images("", order)
+      if sort_string == '':
+         self.id.sort_images('', order)
          return
-      if sort_string[0:4] == "func":
+      if sort_string.startswith('func'):
          split = string.split(sort_string)
          if len(split) >= 1:
             final = string.join(split[1:])
@@ -1433,7 +1433,6 @@ class MultiImageWindow(wxPanel):
          self.display_text_combo.Append(value)
       if self.id.display_names:
          self.id.ForceRefresh()
-         
 
    def OnDisplayDetails(self, event):
       self.id.display_details = event.GetIsDown()

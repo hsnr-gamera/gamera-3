@@ -69,7 +69,7 @@ class SymbolTable:
    def add(self, symbol, id = -1):
       symbol, tokens = self.normalize_symbol(symbol)
       if self.symbols.has_key(symbol):
-         return
+         return symbol
       self.add_to_tree(symbol, tokens, id)
       return symbol
 

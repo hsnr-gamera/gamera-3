@@ -133,7 +133,6 @@ class _Classifier:
 
    ########################################
    # XML
-
    # Note that unclassified glyphs in the XML file are ignored.
    def to_xml(self, stream):
       import gamera_xml
@@ -247,23 +246,14 @@ class InteractiveClassifier(_Classifier):
       if classifier == None:
          from gamera import knn
          classifier = knn.kNN()
-
-      # TODO: This is a hack to eliminate the segfault caused by uninitialised weights
-      try:
-         import array
-         a = array.array('d')
-         for i in range(400):
-            a.append(1.0)
-         classifier.weights = a
-      except:
-         pass
-      
       self.classifier = classifier
+
       if grouping_classifier is None:
 ##          from gamera import polargrouping
 ##          grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
          from gamera import group
-         grouping_classifier = group.GroupingClassifier([], self)
+         grouping_classifier = group.GroupingClassifier([])
+      grouping_classifier.set_parent_classifier(self)
       self.grouping_classifier = grouping_classifier
       self.is_dirty = 0
       self._database = {}
@@ -288,6 +278,8 @@ class InteractiveClassifier(_Classifier):
       for glyph in glyphs:
          self.is_dirty = 1
          self._database[glyph] = None
+      if len(self._database):
+         self.classifier.instantiate_from_images(self._database.keys())
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
@@ -295,6 +287,8 @@ class InteractiveClassifier(_Classifier):
       for glyph in glyphs:
          self.is_dirty = 1
          self._database[glyph] = None
+      if len(self._database):
+         self.classifier.instantiate_from_images(self._database.keys())
 
    def clear_glyphs(self):
       self._database = {}
@@ -308,6 +302,7 @@ class InteractiveClassifier(_Classifier):
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       if len(self._database):
          self.generate_features(self._database.keys())
+         self.classifier.instantiate_from_images(self._database.keys())
       self.grouping_classifier.change_feature_set()
 
    ########################################
@@ -348,6 +343,8 @@ class InteractiveClassifier(_Classifier):
             del self._database[child]
       glyph.classify_manual([(0.0, id)])
       self._database[glyph] = None
+      if len(self._database) == 1:
+         self.classifier.instantiate_from_images(self._database.keys())
       return self._do_splits(glyph), removed
 
    def classify_list_manual(self, glyphs, id):
@@ -356,7 +353,9 @@ class InteractiveClassifier(_Classifier):
       if self.grouping_classifier and id.startswith('group'):
          added, removed = self.grouping_classifier.classify_group_manual(glyphs, id[6:])
          return added, removed
-               
+
+      instantiate = (len(self._database) == 0)
+
       for glyph in glyphs:
          for child in glyph.children_images:
             removed[child] = None
@@ -374,6 +373,10 @@ class InteractiveClassifier(_Classifier):
             glyph.generate_features(self.feature_functions)
          glyph.classify_manual([(0.0, id)])
          splits.extend(self._do_splits(glyph))
+
+      if instantiate:
+         self.classifier.instantiate_from_images(self._database.keys())
+      
       return splits, removed.keys()
 
    def add_to_database(self, glyphs):
@@ -398,7 +401,7 @@ class InteractiveClassifier(_Classifier):
       """Creates a noninteractive version of this classifier."""
       if len(self._database):
          if classifier is None:
-            classifier = self.classifier.__class__()
+            classifier = self.classifier
          return NonInteractiveClassifier(
             classifier, self.get_glyphs(),
             self.features, self.perform_splits,

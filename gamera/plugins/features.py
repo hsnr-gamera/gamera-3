@@ -21,7 +21,7 @@ import array
 from gamera.plugin import *
 import gamera.util
 
-def generate_features_list(list, feature_functions = None):
+def generate_features_list(list, feature_functions=None):
     import gamera.core
     ff = gamera.core.Image.get_feature_functions(feature_functions)
     progress = gamera.util.ProgressFactory("Generating features...", len(list))
@@ -94,9 +94,9 @@ class generate_features(PluginFunction):
          return
       self.feature_functions = features
       self.features = array.array('d')
-      for feature in features:
-         result = apply(feature[1].__call__, (self,))
-         if type(result) in (IntType, FloatType):
+      for name, function in features:
+         result = apply(function.__call__, (self,))
+         if function.return_type.length == 1:
             self.features.append(result)
          else:
             self.features.extend(result)

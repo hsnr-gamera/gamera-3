@@ -334,8 +334,9 @@ class ImageBase:
                all_functions = 0
                break
          if not all_functions:
-            raise ValueError("'%s' is not a valid way to specify a list of features."
-                             % features)
+            raise ValueError(
+               "'%s' is not a valid way to specify a list of features."
+               % features)
          else:
             return features
       else:

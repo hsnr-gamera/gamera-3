@@ -95,6 +95,7 @@ class match_id_name(PluginFunction):
                 return 1
         return 0
     __call__ = staticmethod(__call__)
+match_id_name = match_id_name()
 
 class IdNameMatchingModule(PluginModule):
     category = "Id"

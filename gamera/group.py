@@ -175,8 +175,11 @@ class GroupingClassifier:
     def __init__(self, groups=[], main_classifier=None):
         # main_classifier points to the classifier in which the
         # grouping classifier resides
-        self.main_classifier = main_classifier
+        self.set_parent_classifier(main_classifier)
         self.set_groups(groups)
+
+    def set_parent_classifier(self, classifier):
+        self.main_classifier = classifier
 
     ########################################
     # GET/SET GROUPS
@@ -222,11 +225,11 @@ class GroupingClassifier:
             for g in group.glyphs:
                 if glyph is g:
                     remove.append(group)
-                    continue
-                for child in g.children_images:
-                    if glyph is child:
-                        remove.append(group)
-                        continue
+                else:
+                    for child in g.children_images:
+                        if glyph is child:
+                            remove.append(group)
+                            break
         removed_glyphs = {}
         for group in remove:
             self.groups.remove(group)

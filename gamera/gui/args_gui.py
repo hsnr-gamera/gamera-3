@@ -186,22 +186,7 @@ class Args:
       else:
          return self.function + self.get_args_string()
 
-class Int:
-   def get_control(self, parent, locals=None):
-      self.control = wxSpinCtrl(
-         parent, -1,
-         value=str(self.default),
-         min=self.rng[0], max=self.rng[1],
-         initial=self.default)
-      return self
-
-   def get(self):
-      return int(self.control.GetValue())
-
-   def get_string(self):
-      return str(self.control.GetValue())
-
-class _RealValidator(wxPyValidator):
+class _NumericValidator(wxPyValidator):
    def __init__(self, name="Float entry box ", range=None):
       wxPyValidator.__init__(self)
       self.rng = range
@@ -209,7 +194,7 @@ class _RealValidator(wxPyValidator):
       EVT_CHAR(self, self.OnChar)
 
    def Clone(self):
-      return _RealValidator(self.name, self.rng)
+      return self.__class__(self.name, self.rng)
 
    def show_error(self, s):
       dlg = wxMessageDialog(
@@ -221,13 +206,13 @@ class _RealValidator(wxPyValidator):
 
    def Validate(self, win):
       tc = self.GetWindow()
-      val = tc.GetValue()
+      val = str(tc.GetValue())
       for x in val:
-         if x not in string.digits + "-.":
+         if x not in self._digits:
             self.show_error(self.name + " must be numeric.")
             return False
       try:
-         val = float(val)
+         val = self._type(val)
       except:
          self.show_error(self.caption + " is invalid.")
          return False
@@ -244,7 +229,7 @@ class _RealValidator(wxPyValidator):
           key == WXK_DELETE or key > 255):
          event.Skip()
          return
-      if chr(key) in string.digits + "-.":
+      if chr(key) in self._digits:
          event.Skip()
          return
       if not wxValidator_IsSilent():
@@ -255,6 +240,30 @@ class _RealValidator(wxPyValidator):
 
    def TransferFromWindow(self):
       return True
+
+class _IntValidator(_NumericValidator):
+   _digits = string.digits + "-"
+   _type = int
+
+class Int:
+   def get_control(self, parent, locals=None):
+      self.control = wxSpinCtrl(
+         parent, -1,
+         value=str(self.default),
+         min=self.rng[0], max=self.rng[1],
+         initial=self.default)
+      self.control.SetValidator(_IntValidator(name = self.name, range = self.rng))
+      return self
+
+   def get(self):
+      return int(self.control.GetValue())
+
+   def get_string(self):
+      return str(self.control.GetValue())
+
+class _RealValidator(_NumericValidator):
+   _digits = string.digits + "-."
+   _type = float
 
 class Real:
    def get_control(self, parent, locals=None):

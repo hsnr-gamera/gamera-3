@@ -104,6 +104,9 @@ extensions = [Extension("gamera.gameracore",
 extensions.extend(plugin_extensions)
 
 setup(name = "gamera", version="2.0",
+      url = "http://dkc.jhu.edu/gamera/",
+      author = "Michael Droettboom and Karl MacMillan",
+      author_email = "mdboom@jhu.edu; karlmac@jhu.edu",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits'],
       data_files=[('include/gamera', glob.glob("include/*.hpp")),

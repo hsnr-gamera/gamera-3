@@ -91,43 +91,10 @@ require recursion.
   args = Args([Int('cc_size', range=(1, 100))])
   doc_examples = [(ONEBIT,5), (ONEBIT,15)]
 
-class fill_horizontal_line_gaps(PluginFunction):
-  """Fills white gaps in horizontal lines with black.
-
-The image is scanned with a line of *windowwidth* pixels.
-When at least *blackness* percent pixels within the window are
-black, the middle pixel is turned black.
-
-Note that this is different from a convolution because black pixels
-are never turned white.
-  """
-  self_type = ImageType([ONEBIT])
-  args = Args([Int('windowwidth'), Int('blackness', range=(1, 100))])
-  # doc_examples = [(ONEBIT,5), (ONEBIT,15)]
-  category = "Morphology/LineGaps"
-  author = "Christoph Dalitz"
-
-class fill_vertical_line_gaps(PluginFunction):
-  """Fills white gaps in vertical lines with black.
-
-The image is scanned with a vertical line of *windowheight* pixels.
-When at least *blackness* percent pixels within the window are
-black, the middle pixel is turned black.
-
-Note that this is different from a convolution because black pixels
-are never turned white.
-  """
-  self_type = ImageType([ONEBIT])
-  args = Args([Int('windowheight'), Int('blackness', range=(1, 100))])
-  # doc_examples = [(ONEBIT,5), (ONEBIT,15)]
-  category = "Morphology/LineGaps"
-  author = "Christoph Dalitz"
-
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp", "morphology_line_gaps.hpp"]
   category = "Morphology"
-  functions = [erode_dilate, erode, dilate, rank, mean, despeckle,
-               fill_horizontal_line_gaps, fill_vertical_line_gaps]
+  functions = [erode_dilate, erode, dilate, rank, mean, despeckle]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

@@ -56,7 +56,7 @@ def set_shell_frame(sf):
 
 ######################################################################
 
-class MatrixMenu:
+class ImageMenu:
   def __init__(self, parent, x, y, matrices_, name_, shell_=None,
                mode=EXECUTE_MODE):
     global matrices, matrices_name
@@ -82,7 +82,7 @@ class MatrixMenu:
     # Top line
     if self.mode == HELP_MODE:
       menu.Append(0, "Help")
-    menu.Append(0, type + " Matrix")
+    menu.Append(0, type + " Image")
     menu.AppendSeparator()
 
     menu.Append(10000, "new reference")
@@ -132,7 +132,7 @@ class MatrixMenu:
       return self.shell
     return shell
 
-  # Creates a new top-level reference to the matrix
+  # Creates a new top-level reference to the image
   def OnCreateReference(self, event):
     sh = self.get_shell()
     name = var_name.get("ref", sh.locals)
@@ -150,11 +150,11 @@ class MatrixMenu:
     name = var_name.get("copy", sh.locals)
     if name:
       if len(matrices) == 1:
-        sh.locals[name] = matrices[0].matrix_copy()
+        sh.locals[name] = matrices[0].image_copy()
       else:
         sh.locals[name] = []
         for i in range(len(matrices)):
-          sh.locals[name].append(matrices[i].matrix_copy())
+          sh.locals[name].append(matrices[i].image_copy())
       sh.Update()
 
   # TODO: not implemented
@@ -177,16 +177,16 @@ class MatrixMenu:
       return var_name.get(function.return_type.name, dict)
     return ''
 
-  def get_matrix_name(self, matrices_name, i):
-    # If the matrix exists at the top-level in the shell's
+  def get_image_name(self, matrices_name, i):
+    # If the image exists at the top-level in the shell's
     # namespace, we can use that to refer to it
     if util.is_sequence(matrices_name):
-      # If it is a single matrix
+      # If it is a single image
       return matrices_name[i]
     elif type(matrices_name) == type('') and matrices_name != '':
       # If is is a list of matrices
       return matrices_name + "[" + str(i) + "]"
-    # The matrix does not exist at the top-level of the shell's
+    # The image does not exist at the top-level of the shell's
     # namespace
     return matrices_name
 
@@ -208,19 +208,19 @@ class MatrixMenu:
           sh.locals[result_name] = []
         # Now let's run some code and get results
         for i in range(len(matrices)):
-          matrix = matrices[i]
-          matrix_name = self.get_matrix_name(matrices_name, i)
-          # If the matrix name is a string, we can call the function
+          image = matrices[i]
+          image_name = self.get_image_name(matrices_name, i)
+          # If the image name is a string, we can call the function
           # directly in the shell
-          if type(matrix_name) == type(''):
-            source = matrix_name + "." + func_call
+          if type(image_name) == type(''):
+            source = image_name + "." + func_call
             if result_name != '':
               if len(matrices) > 1:
                 source = result_name + ".append(" + source + ")"
               else:
                 source = result_name + " = " + source
             sh.run(source)
-          # If the matrix name is not a string, we have to call the
+          # If the image name is not a string, we have to call the
           # function here
           else:
             source = "matrices_name[" + str(i) + "]." + func_call

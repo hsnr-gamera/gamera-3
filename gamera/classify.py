@@ -208,7 +208,7 @@ class SymbolTable:
 
 class Classifier:
    def __init__(self, glyphs=[], production_database=None,
-                current_database=None, symbol_table=None, parent_matrix=None,
+                current_database=None, symbol_table=None, parent_image=None,
                 features=None, gui=0):
       self._display = None
       self.gui = gamera.gui
@@ -356,7 +356,7 @@ class Classifier:
       self._regenerate_features()
 
    def find_number_of_features_in_each_function(self):
-      tmp_glyph = gamera.Matrix(10, 10, "OneBit")
+      tmp_glyph = gamera.Image(10, 10, "OneBit")
       for f in self.feature_functions:
          features = getattr(tmp_glyph, f[0])()
          try:
@@ -408,18 +408,18 @@ class Classifier:
    def dev_null(self, ignore):
       pass
 
-   def display(self, matrix=None):
-      assert matrix == None or isinstance(matrix, gamera.Matrix)
-      self.parent_image = matrix
+   def display(self, image=None):
+      assert image == None or isinstance(image, gamera.Image)
+      self.parent_image = image
       if self.gui:
-         if matrix:
-            self._display = self.gui.ShowClassifier(self, matrix,
-                                                    gamera.Matrix.to_string)
+         if image:
+            self._display = self.gui.ShowClassifier(self, image,
+                                                    gamera.Image.to_string)
          else:
             self._display = self.gui.ShowClassifier(self, None, None)
 
    def set_features(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       glyph.feature_names = self.features_list
       glyph.features = knn.FeatureVector(self.num_features)
       i = 0
@@ -456,10 +456,10 @@ class Classifier:
                removed = removed or self._remove_children(x)
                added_to_current = added_to_current + self._do_splits(x)
       if self._display and (added_to_current or removed):
-         self._display.set_matrix(self.current_database)
+         self._display.set_image(self.current_database)
 
    def auto_classify_glyph(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       if self.production_database == []:
          return
       if glyph.features == None:
@@ -470,7 +470,7 @@ class Classifier:
             removed = self._remove_children(glyph)
             did_splits = self._do_splits(glyph)
             if self._display and removed:
-               self._display.set_matrix(self.current_database)
+               self._display.set_image(self.current_database)
             elif self._display and did_splits:
                self._display.append_glyphs(self.current_database[-did_splits:])
 
@@ -482,7 +482,7 @@ class Classifier:
       return self.symbol_table.get_name_by_id(self.knn_database.classify(glyph.features))
 
    def manual_classify_glyph(self, glyph, id, update_display=1):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       self.is_dirty = 1
       glyph.set_id_name_manual(id)
       removed = self._remove_children(glyph)
@@ -490,7 +490,7 @@ class Classifier:
       self.add_glyph_to_database(glyph)
       if update_display:
          if self._display and removed:
-            self._display.set_matrix(self.current_database)
+            self._display.set_image(self.current_database)
          elif self._display and did_splits:
             self._display.append_glyphs(self.current_database[-did_splits:])
       return (did_splits, removed)
@@ -502,7 +502,7 @@ class Classifier:
    # This method handles the special split category - returns true if splits
    # were done, false otherwise
    def _do_splits(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       if glyph.action_depth > 10:
          glyph.id_name = ['action.terminated']
          return 0
@@ -522,7 +522,7 @@ class Classifier:
    #########################################################
    # Remove children from a glyph recursively
    def _remove_children(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       self.is_dirty = 1
       if glyph.children_images != []:
          todo_list = glyph.children_images
@@ -564,7 +564,7 @@ class Classifier:
          return 0
 
    def add_glyph_to_database(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       if glyph.id_name == []:
          return
       self.is_dirty = 1
@@ -581,7 +581,7 @@ class Classifier:
       self.production_database.append(glyph)
 
    def delete_glyph_from_database(self, glyph):
-      assert isinstance(glyph, gamera.Matrix)
+      assert isinstance(glyph, gamera.Image)
       self.is_dirty = 1
       self.knn_database.remove_by_unique_id(glyph.unique_id)
       if glyph in self.production_database:

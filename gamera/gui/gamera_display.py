@@ -24,7 +24,7 @@ from sys import maxint
 import string
 from gamera.gamera import *             # Gamera specific
 from gamera import find_members, paths, util
-from gamera.gui import matrix_menu, var_name
+from gamera.gui import image_menu, var_name
 
 ##############################################################################
 
@@ -54,7 +54,7 @@ def message(message):
 # SINGLE IMAGE DISPLAY
 ##############################################################################
 #
-# Image display is a scrolled window for displaying a single matrix
+# Image display is a scrolled window for displaying a single image
 
 class ImageDisplay(wxScrolledWindow):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
@@ -64,7 +64,7 @@ class ImageDisplay(wxScrolledWindow):
       self.width = 0
       self.height = 0
       self.scaling = 1.0
-      self.matrix = None
+      self.image = None
       self.highlighted = []
       self.tmpDC = wxMemoryDC()
       self.tmpDC.SetPen(wxTRANSPARENT_PEN)
@@ -89,21 +89,21 @@ class ImageDisplay(wxScrolledWindow):
       EVT_LEAVE_WINDOW(self, self.OnLeave)
 
    ########################################
-   # THE MAIN MATRIX
+   # THE MAIN IMAGE
 
-   # Sets the matrix being displayed
-   # Returns the size of the matrix
-   def set_matrix(self, matrix, function):
-      self.matrix = matrix
+   # Sets the image being displayed
+   # Returns the size of the image
+   def set_image(self, image, function):
+      self.image = image
       self.to_string_function = function
-      return self.reload_matrix()
+      return self.reload_image()
 
-   # Refreshes the matrix by recalling the to_string function
-   def reload_matrix(self):
-      self.width = self.matrix.width()
-      self.height = self.matrix.height()
+   # Refreshes the image by recalling the to_string function
+   def reload_image(self):
+      self.width = self.image.width()
+      self.height = self.image.height()
       self.scale()
-      return (self.matrix.width(), self.matrix.height())
+      return (self.image.width(), self.image.height())
 
    def add_click_callback(self, cb):
       self.click_callbacks.append(cb)
@@ -176,19 +176,19 @@ class ImageDisplay(wxScrolledWindow):
       x1 = y1 = maxint
       x2 = y2 = 0
       # Get a combined rectangle of all matrices in the list
-      for matrix in submatrices:
-         x1 = min(matrix.page_offset_x(), x1)
-         y1 = min(matrix.page_offset_y(), y1)
-         x2 = max(matrix.page_offset_x() + matrix.ncols(), x2)
-         y2 = max(matrix.page_offset_y() + matrix.nrows(), y2)
+      for image in submatrices:
+         x1 = min(image.page_offset_x(), x1)
+         y1 = min(image.page_offset_y(), y1)
+         x2 = max(image.page_offset_x() + image.ncols(), x2)
+         y2 = max(image.page_offset_y() + image.nrows(), y2)
       # Adjust for the scaling factor
       x1 = x1 * self.scaling
       y1 = y1 * self.scaling
       x2 = x2 * self.scaling
       y2 = y2 * self.scaling
       origin = self.GetViewStart()
-      maxwidth = self.matrix.width() * self.scaling
-      maxheight = self.matrix.height() * self.scaling
+      maxwidth = self.image.width() * self.scaling
+      maxheight = self.image.height() * self.scaling
       need_to_scroll = 0
       if (x1 < origin[0] or
           x2 > origin[0] + self.GetSize().x / self.scaling):
@@ -245,7 +245,7 @@ class ImageDisplay(wxScrolledWindow):
 
    def OnPaint(self, event):
       origin = self.GetViewStart()
-      if self.matrix:
+      if self.image:
          update_regions = self.GetUpdateRegion()
          rects = wxRegionIterator(update_regions)
          # Paint only where wxWindows tells us to, this is faster
@@ -283,13 +283,13 @@ class ImageDisplay(wxScrolledWindow):
              (w == 0 or h == 0)):
             return
       self.tmpDC.SetUserScale(self.scaling, self.scaling)
-      if (y + h > self.matrix.nrows()):
-         h = self.matrix.nrows() - y
-      if (x + w > self.matrix.ncols()):
-         w = self.matrix.ncols() - x
-      submatrix = SubMatrix(self.matrix, y, x, h, w)
+      if (y + h > self.image.nrows()):
+         h = self.image.nrows() - y
+      if (x + w > self.image.ncols()):
+         w = self.image.ncols() - x
+      subimage = SubImage(self.image, y, x, h, w)
       image = apply(wxEmptyImage, [w, h])
-      image.SetData(apply(self.to_string_function, (submatrix, )))
+      image.SetData(apply(self.to_string_function, (subimage, )))
       bmp = image.ConvertToBitmap()
       self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
 
@@ -350,9 +350,9 @@ class ImageDisplay(wxScrolledWindow):
       self.draw_rubber()
       origin = self.GetViewStart()
       x = min((event.GetX() + origin[0]) / self.scaling,
-              self.matrix.ncols() - 1)
+              self.image.ncols() - 1)
       y = min((event.GetY() + origin[1]) / self.scaling,
-              self.matrix.nrows() - 1)
+              self.image.nrows() - 1)
       if (x > self.rubber_origin_x and
           x < self.rubber_origin_x + self.block_w):
          self.rubber_origin_x, self.rubber_x2 = \
@@ -386,9 +386,9 @@ class ImageDisplay(wxScrolledWindow):
          self.draw_rubber()
          origin = self.GetViewStart()
          self.rubber_x2 = min((event.GetX() + origin[0]) / self.scaling,
-                              self.matrix.ncols() - 1)
+                              self.image.ncols() - 1)
          self.rubber_y2 = min((event.GetY() + origin[1]) / self.scaling,
-                              self.matrix.nrows() - 1)
+                              self.image.nrows() - 1)
          self.draw_rubber()
          try:
             for i in self.click_callbacks:
@@ -442,9 +442,9 @@ class ImageDisplay(wxScrolledWindow):
          self.draw_rubber()
          origin = self.GetViewStart()
          self.rubber_x2 = min((event.GetX() + origin[0]) / self.scaling,
-                              self.matrix.ncols() - 1)
+                              self.image.ncols() - 1)
          self.rubber_y2 = min((event.GetY() + origin[1]) / self.scaling,
-                              self.matrix.nrows() - 1)
+                              self.image.nrows() - 1)
          self.draw_rubber()
       if self.dragging:
          self.Scroll(self.dragging_origin_x - (event.GetX() - self.dragging_x),
@@ -466,43 +466,43 @@ class ImageDisplay(wxScrolledWindow):
       pass
 
    def MakeView(self):
-      name = var_name.get("view", matrix_menu.shell.locals)
+      name = var_name.get("view", image_menu.shell.locals)
       if name:
-         matrix_menu.shell.locals['__image__'] = self.matrix
+         image_menu.shell.locals['__image__'] = self.image
          if (self.rubber_y2 == self.rubber_origin_y and
              self.rubber_x2 == self.rubber_origin_x):
-            matrix_menu.shell.run(
-               "%s = SubMatrix(__image__, 0, 0, %d, %d)" %
-               (name, self.matrix.nrows(), self.matrix.ncols()))
+            image_menu.shell.run(
+               "%s = SubImage(__image__, 0, 0, %d, %d)" %
+               (name, self.image.nrows(), self.image.ncols()))
          else:
-            matrix_menu.shell.run(
-               "%s = SubMatrix(__image__, %d, %d, %d, %d)" %
+            image_menu.shell.run(
+               "%s = SubImage(__image__, %d, %d, %d, %d)" %
                (name, self.rubber_origin_y, self.rubber_origin_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
-         del matrix_menu.shell.locals['__image__']
+         del image_menu.shell.locals['__image__']
          # changed from adding a blank line - this is not ideal,
-         # but it seems better than matrix_menu.shell.pushcode(""). KWM
-         matrix_menu.shell_frame.icon_display.update_icons()
+         # but it seems better than image_menu.shell.pushcode(""). KWM
+         image_menu.shell_frame.icon_display.update_icons()
 
    def MakeCopy(self):
-      name = var_name.get("copy", matrix_menu.shell.locals)
+      name = var_name.get("copy", image_menu.shell.locals)
       if name:
-         matrix_menu.shell.locals['__image__'] = self.matrix
+         image_menu.shell.locals['__image__'] = self.image
          if (self.rubber_y2 == self.rubber_origin_y and
              self.rubber_x2 == self.rubber_origin_x):
-            matrix_menu.shell.pushcode(
-               "%s = __image__.matrix_copy()" % name)
+            image_menu.shell.pushcode(
+               "%s = __image__.image_copy()" % name)
          else:
-            matrix_menu.shell.run(
-               "%s = SubMatrix(__image__, %d, %d, %d, %d).matrix_copy()" %
+            image_menu.shell.run(
+               "%s = SubImage(__image__, %d, %d, %d, %d).image_copy()" %
                (name, self.rubber_origin_y, self.rubber_origin_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
-         del matrix_menu.shell.locals['__image__']
+         del image_menu.shell.locals['__image__']
          # changed from adding a blank line - this is not ideal,
-         # but it seems better than matrix_menu.shell.pushcode(""). KWM
-         matrix_menu.shell_frame.icon_display.update_icons()
+         # but it seems better than image_menu.shell.pushcode(""). KWM
+         image_menu.shell_frame.icon_display.update_icons()
 
          
 class ImageWindow(wxPanel):
@@ -529,7 +529,7 @@ class ImageWindow(wxPanel):
                                               wxBITMAP_TYPE_PNG), "Make new view")
       EVT_TOOL(self, 31, self.OnMakeViewClick)
       self.toolbar.AddSimpleTool(32, wxBitmap(paths.pixmaps +
-                                              "icon_matrix_copy.png",
+                                              "icon_image_copy.png",
                                               wxBITMAP_TYPE_PNG), "Make new copy")
       EVT_TOOL(self, 32, self.OnMakeCopyClick)
       lc = wxLayoutConstraints()
@@ -563,8 +563,8 @@ class ImageWindow(wxPanel):
    def refresh(self):
       self.id.Refresh(0)
 
-   def set_matrix(self, matrix, function):
-      return self.id.set_matrix(matrix, function)
+   def set_image(self, image, function):
+      return self.id.set_image(image, function)
 
    def highlight_rectangle(self, y, x, h, w, color=-1, text=''):
       self.id.highlight_rectangle(y, x, h, w, color, text)
@@ -582,7 +582,7 @@ class ImageWindow(wxPanel):
    ########################################
    # CALLBACKS
    def OnRefreshClick(self, event):
-      self.id.reload_matrix()
+      self.id.reload_image()
 
    def OnZoomInClick(self, event):
       self.id.ZoomIn()
@@ -609,9 +609,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       wxPyGridCellRenderer.__init__(self)
       self.parent = parent
 
-   def get_color(self, matrix):
-      if hasattr(matrix, 'color'):
-         color = matrix.color()
+   def get_color(self, image):
+      if hasattr(image, 'color'):
+         color = image.color()
       if color == None:
          color = (255,255,255)
       color = wxColor(red = color[0], green = color[1],
@@ -624,40 +624,40 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       
       bitmap_no = row * GRID_NCOLS + col
       if bitmap_no < len(self.parent.list):
-         matrix = self.parent.list[bitmap_no]
+         image = self.parent.list[bitmap_no]
       else:
-         matrix = None
-      if matrix != None:
+         image = None
+      if image != None:
          dc.SetBackgroundMode(wxSOLID)
          # Fill the background
-         color = self.get_color(matrix)
+         color = self.get_color(image)
          dc.SetPen(wxTRANSPARENT_PEN)
          if isSelected:
             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
          else:
             dc.SetBrush(wxBrush(color, wxSOLID))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-         # If the matrix is bigger than the cell, crop it. This used to be done
+         # If the image is bigger than the cell, crop it. This used to be done
          # in wxPython, but it is more efficient to do it with Gamera SubImages
          image = None
-         if (matrix.ncols() >= rect.GetWidth() or
-             matrix.nrows() >= rect.GetHeight()):
-            height = min(rect.GetHeight() + 1, matrix.nrows())
-            width = min(rect.GetWidth() + 1, matrix.ncols())
+         if (image.ncols() >= rect.GetWidth() or
+             image.nrows() >= rect.GetHeight()):
+            height = min(rect.GetHeight() + 1, image.nrows())
+            width = min(rect.GetWidth() + 1, image.ncols())
             # If we are dealing with a CC, we have to make a smaller CC withthe
             # same label. This is unfortunately a two step process.
-            if isinstance(matrix, CC):
-               tmp_image = SubImage(matrix, 0, 0, height, width)
-               sub_image = CC(tmp_image, matrix.label())
+            if isinstance(image, CC):
+               tmp_image = SubImage(image, 0, 0, height, width)
+               sub_image = CC(tmp_image, image.label())
             # Otherwise just a SubImage will do.
             else:
-               sub_image = SubImage(matrix, 0, 0, height, width)
+               sub_image = SubImage(image, 0, 0, height, width)
             image = wxEmptyImage(width, height)
             s = sub_image.to_string()
             image.SetData(s)
          else:
-            image = wxEmptyImage(matrix.ncols(), matrix.nrows())
-            s = matrix.to_string()
+            image = wxEmptyImage(image.ncols(), image.nrows())
+            s = image.to_string()
             image.SetData(s)
          bmp = image.ConvertToBitmap()
          # Display centered within the cell
@@ -674,7 +674,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             dc.SetPen(wxTRANSPARENT_PEN)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       else:
-         # If there's no matrix in this cell, draw a hatch pattern
+         # If there's no image in this cell, draw a hatch pattern
          dc.SetBackgroundMode(wxSOLID)
          dc.SetBrush(wxBrush(wxLIGHT_GREY, wxSOLID))
          dc.SetPen(wxTRANSPARENT_PEN)
@@ -690,14 +690,14 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    def GetBestSize(self, grid, attr, dc, row, col):
       bitmap_no = row * GRID_NCOLS + col
       if bitmap_no < len(self.parent.list):
-         matrix = self.parent.list[bitmap_no]
+         image = self.parent.list[bitmap_no]
       else:
-         matrix = None
-      if matrix != None:
+         image = None
+      if image != None:
          return wxSize(min(GRID_MAX_CELL_WIDTH,
-                           matrix.ncols() + GRID_PADDING),
+                           image.ncols() + GRID_PADDING),
                        min(GRID_MAX_CELL_HEIGHT,
-                           matrix.nrows() + GRID_PADDING))
+                           image.nrows() + GRID_PADDING))
       return wxSize(0, 0)
 
    def Clone(self):
@@ -727,7 +727,7 @@ class MultiImageDisplay(wxGrid):
 
    ########################################
    # Sets a new list of matrices.  Can be performed multiple times
-   def set_matrix(self, list, function):
+   def set_image(self, list, function):
       wxBeginBusyCursor()
       self.BeginBatch()
       self.list = list
@@ -854,7 +854,7 @@ class MultiImageDisplay(wxGrid):
    ########################################
    # UTILITY FUNCTIONS
 
-   def get_matrix_no(self, row, col):
+   def get_image_no(self, row, col):
       no =  row * GRID_NCOLS + col
       if no >= len(self.list):
          return None
@@ -863,26 +863,26 @@ class MultiImageDisplay(wxGrid):
 
    def GetSelectedItems(self, row = None, col = None):
       if row != None:
-         bitmap_no = self.get_matrix_no(row, col)
+         bitmap_no = self.get_image_no(row, col)
          # if bitmap_no != None:
          #   self.SetGridCursor(row, col)
-      matrix = []
+      image = []
       if self.IsSelection():
          for row in range(self.rows):
             for col in range(self.cols):
                if self.IsInSelection(row, col):
-                  index = self.get_matrix_no(row, col)
+                  index = self.get_image_no(row, col)
                   if index != None:
                      item = self.list[index]
                      if item != None:
-                        matrix.append(item)
+                        image.append(item)
       elif row != None:
-         matrix = [self.list[bitmap_no]]
-      return matrix
+         image = [self.list[bitmap_no]]
+      return image
 
    def RefreshSelected(self, row = None, col = None):
       if row != None:
-         bitmap_no = self.get_matrix_no(row, col)
+         bitmap_no = self.get_image_no(row, col)
          if bitmap_no != None:
             self.SetGridCursor(row, col)
       if self.IsSelection():
@@ -901,7 +901,7 @@ class MultiImageDisplay(wxGrid):
       pass
 
    def OnSelect(self, event):
-      bitmap_no = self.get_matrix_no(event.GetRow(), event.GetCol())
+      bitmap_no = self.get_image_no(event.GetRow(), event.GetCol())
       if bitmap_no != None:
          event.Skip()
          self.OnSelectImpl()
@@ -909,17 +909,17 @@ class MultiImageDisplay(wxGrid):
    def OnRightClick(self, event):
       row = event.GetRow()
       col = event.GetCol()
-      matrix = self.GetSelectedItems(row, col)
-      if matrix != None:
+      image = self.GetSelectedItems(row, col)
+      if image != None:
          position = event.GetPosition()
-         menu = matrix_menu.MatrixMenu(self, position.x,
+         menu = image_menu.ImageMenu(self, position.x,
                                        position.y,
-                                       matrix, matrix, mode=0)
+                                       image, image, mode=0)
          menu.PopupMenu()
          self.ForceRefresh()
 
    def OnLeftDoubleClick(self, event):
-      bitmap_no = self.get_matrix_no(event.GetRow(), event.GetCol())
+      bitmap_no = self.get_image_no(event.GetRow(), event.GetCol())
       if bitmap_no != None:
          self.list[bitmap_no].display()
 
@@ -980,8 +980,8 @@ class MultiImageWindow(wxPanel):
    def get_display(self):
       return MultiImageDisplay(self)
 
-   def set_matrix(self, matrix, function):
-      return self.id.set_matrix(matrix, function)
+   def set_image(self, image, function):
+      return self.id.set_image(image, function)
 
    def set_choices(self, prototype):
       members = find_members.find_members(prototype)
@@ -1031,7 +1031,7 @@ class MultiImageWindow(wxPanel):
                   sort_string + "), y, (y." +
                   sort_string + "))")
       try:
-         sort_func = eval(final, globals(), matrix_menu.shell.locals)
+         sort_func = eval(final, globals(), image_menu.shell.locals)
       except SyntaxError:
          message("The given sorting expression contains a syntax error.")
          return
@@ -1051,7 +1051,7 @@ class MultiImageWindow(wxPanel):
          return
       try:
          select_func = eval("lambda x: (" + select_string + ")", globals(),
-                            matrix_menu.shell.locals)
+                            image_menu.shell.locals)
       except SyntaxError:
          message("The given selection expression contains a syntax error.")
          return
@@ -1080,8 +1080,8 @@ class ImageFrameBase(wxFrame):
       self.owner = owner
       EVT_CLOSE(self, self.OnCloseWindow)
 
-   def set_matrix(self, matrix, function):
-      size = self.iw.set_matrix(matrix, function)
+   def set_image(self, image, function):
+      size = self.iw.set_image(image, function)
       self.SetSize((max(200, min(600, size[0] + 30)),
                     max(200, min(400, size[1] + 60))))
 
@@ -1108,7 +1108,7 @@ class ImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.iw = ImageWindow(self)
-      self.SetIcon(wxIcon(paths.pixmaps + "icon_matrix.png", wxBITMAP_TYPE_PNG))
+      self.SetIcon(wxIcon(paths.pixmaps + "icon_image.png", wxBITMAP_TYPE_PNG))
 
    def __repr__(self):
       return "<ImageFrame Window>"
@@ -1137,13 +1137,13 @@ class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.iw = MultiImageWindow(self)
-      self.SetIcon(wxIcon(paths.pixmaps + "icon_matrix_list.png", wxBITMAP_TYPE_PNG))
+      self.SetIcon(wxIcon(paths.pixmaps + "icon_image_list.png", wxBITMAP_TYPE_PNG))
 
    def __repr__(self):
       return "<MultiImageFrame Window>"
 
-   def set_matrix(self, matrix, function):
-      size = self.iw.set_matrix(matrix, function)
+   def set_image(self, image, function):
+      size = self.iw.set_image(image, function)
 
 
 ##############################################################################
@@ -1245,14 +1245,14 @@ class HistogramDisplay(wxFrame):
 
 
 class ProjectionsDisplay(wxFrame):
-   def __init__(self, x_data=None, y_data=None, matrix=None, parent=None, title="Projections"):
+   def __init__(self, x_data=None, y_data=None, image=None, parent=None, title="Projections"):
       wxFrame.__init__(self, parent, -1, title,
                        style=wxCAPTION,
-                       size=((matrix.ncols() * 2) + (HISTOGRAM_PAD * 3),
-                             (matrix.nrows() * 2) + (HISTOGRAM_PAD * 3)))
+                       size=((image.ncols() * 2) + (HISTOGRAM_PAD * 3),
+                             (image.nrows() * 2) + (HISTOGRAM_PAD * 3)))
       self.x_data = x_data
       self.y_data = y_data
-      self.matrix = matrix
+      self.image = image
       EVT_PAINT(self, self.OnPaint)
 
    def OnPaint(self, event):
@@ -1260,10 +1260,10 @@ class ProjectionsDisplay(wxFrame):
       clear_dc(dc)
       dc_width = dc.GetSize().x
       dc_height = dc.GetSize().y
-      mat_width = self.matrix.ncols()
-      mat_height = self.matrix.nrows()
-      image = wxEmptyImage(self.matrix.ncols(), self.matrix.nrows())
-      image.SetData(self.matrix.to_string())
+      mat_width = self.image.ncols()
+      mat_height = self.image.nrows()
+      image = wxEmptyImage(self.image.ncols(), self.image.nrows())
+      image.SetData(self.image.to_string())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell
       x = (dc_width / 2) + (HISTOGRAM_PAD / 2)

@@ -20,7 +20,7 @@
 from wxPython.wx import *
 from gamera.gamera import *
 from gamera.args import *
-from gamera.gui import gaoptimizer_display, matrix_menu, var_name
+from gamera.gui import gaoptimizer_display, image_menu, var_name
 from gamera.gui.gamera_display import *
 import string
 
@@ -34,7 +34,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    def __init__(self, toplevel, parent):
       self.toplevel = toplevel
       MultiImageDisplay.__init__(self, parent)
-      self.last_matrix_no = None
+      self.last_image_no = None
       EVT_GRID_RANGE_SELECT(self, self.OnSelect)
       if hasattr(self, "GetGridWindow"):
          EVT_MOTION(self.GetGridWindow(), self.OnMotion)
@@ -74,8 +74,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                   if self.IsInSelection(row, col):
                      lastrow = row
                      lastcol = col
-         matrix_no = self.get_matrix_no(lastrow, lastcol)
-         for i in range(matrix_no + 1, len(self.list)):
+         image_no = self.get_image_no(lastrow, lastcol)
+         for i in range(image_no + 1, len(self.list)):
             if (self.list[i] != None and
                 self.list[i].classification_state in state):
                found = i
@@ -155,8 +155,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                self.MakeCellVisible(row, col)
                first = 1
       else:
-         for matrix in self.toplevel.last_cc_displayed:
-            self.toplevel.single_iw.clear_highlight_cc(matrix)
+         for image in self.toplevel.last_cc_displayed:
+            self.toplevel.single_iw.clear_highlight_cc(image)
          self.toplevel.single_iw.focus(self.toplevel.last_cc_displayed)
          self.toplevel.last_cc_displayed = []
          self.ClearSelection()
@@ -190,16 +190,16 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       column = 0
       prev_id = -1
       new_list = []
-      for matrix in list:
-         if matrix.id_name != prev_id and column != 0:
+      for image in list:
+         if image.id_name != prev_id and column != 0:
             for i in range(GRID_NCOLS - column):
                new_list.append(None)
             column = 0
-         new_list.append(matrix)
+         new_list.append(image)
          column = column + 1
          if column >= GRID_NCOLS:
             column = 0
-         prev_id = matrix.id_name
+         prev_id = image.id_name
       for i in range(column, GRID_NCOLS):
          new_list.append(None)
       return new_list
@@ -264,14 +264,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          self.SetColLabelValue(i, "")
       for i in range(self.rows):
          try:
-            matrix = self.list[i * GRID_NCOLS]
+            image = self.list[i * GRID_NCOLS]
          except IndexError:
             self.SetRowLabelValue(i, "")
          else:
-            if matrix == None or matrix.unclassified():
+            if image == None or image.unclassified():
                self.SetRowLabelValue(i, "")
             elif self.display_row_labels:
-               label = matrix.id_name[0]
+               label = image.id_name[0]
                max_label = max(max_label, len(label))
                self.SetRowLabelValue(i, label)
             else:
@@ -285,12 +285,12 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    # Display selected items in the context display
    def OnSelectImpl(self):
       if not self.updating:
-         matrix = self.GetSelectedItems()
-         if matrix != []:
+         image = self.GetSelectedItems()
+         if image != []:
             symbol_table = self.toplevel.classifier.symbol_table
-            id = matrix[0].id_name
+            id = image[0].id_name
             all_same = 1
-            for x in matrix:
+            for x in image:
                if x.id_name != id:
                   all_same = 0
                   break
@@ -298,7 +298,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                self.toplevel.set_label_display(id)
             else:
                self.toplevel.set_label_display([])
-            self.toplevel.display_cc(matrix)
+            self.toplevel.display_cc(image)
 
    def OnSelect(self, event):
       event.Skip()
@@ -311,20 +311,20 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       units = self.GetScrollPixelsPerUnit()
       row = self.YToRow(event.GetY() + origin[1] * units[1])
       col = self.XToCol(event.GetX() + origin[0] * units[0])
-      matrix_no = self.get_matrix_no(row, col)
-      if matrix_no == None or matrix_no >= len(self.list) or matrix_no < 0:
-         matrix = None
+      image_no = self.get_image_no(row, col)
+      if image_no == None or image_no >= len(self.list) or image_no < 0:
+         image = None
       else:
-         matrix = self.list[matrix_no]
-      if matrix == None or matrix.unclassified():
+         image = self.list[image_no]
+      if image == None or image.unclassified():
          self.tooltip.Show(false)
       else:
-         id = matrix.id_name
+         id = image.id_name
          self.tooltip.Show(true)
          self.tooltip.Move(wxPoint(event.GetX() + 14, event.GetY() + 14))
-         if self.last_matrix_no != matrix_no:
+         if self.last_image_no != image_no:
             self.tooltip.SetLabel(id[0])
-      self.last_matrix_no = matrix_no
+      self.last_image_no = image_no
       event.Skip()
 
    def OnLeave(self, event):
@@ -383,18 +383,18 @@ class ClassifierImageWindow(ImageWindow):
       ImageWindow.__init__(self, parent, id)
       self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(40, wxBitmap(paths.pixmaps +
-                                              "icon_choose_matrix.png",
-                                              wxBITMAP_TYPE_PNG), "Choose new matrix")
-      EVT_TOOL(self, 40, self.OnChooseMatrix)
+                                              "icon_choose_image.png",
+                                              wxBITMAP_TYPE_PNG), "Choose new image")
+      EVT_TOOL(self, 40, self.OnChooseImage)
 
-   def OnChooseMatrix(self, event):
+   def OnChooseImage(self, event):
       from args import Args, Class
-      dlg = Args([Class("Image for context display", "gamera.Matrix")])
-      function = dlg.show(self, matrix_menu.shell.locals, "")
+      dlg = Args([Class("Image for context display", "gamera.Image")])
+      function = dlg.show(self, image_menu.shell.locals, "")
       if function != None:
          function = function[1:-1]
-         matrix = matrix_menu.shell.locals[function]
-         self.id.set_matrix(matrix, Matrix.to_string)
+         image = image_menu.shell.locals[function]
+         self.id.set_image(image, Image.to_string)
 
    def get_display(self):
       return ClassifierImageDisplay(self.toplevel, self)
@@ -405,7 +405,7 @@ class ClassifierFrame(ImageFrameBase):
                 owner=None):
       global toplevel
       toplevel = self
-      self.matrix = None
+      self.image = None
       self.menu = None
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self.SetSize((800, 600))
@@ -487,17 +487,17 @@ class ClassifierFrame(ImageFrameBase):
       self.SetStatusBarPositions()
       event.Skip()
 
-   def set_matrix(self, ccs, matrix=None, function=None):
+   def set_image(self, ccs, image=None, function=None):
       self.to_string_function = function
       self.ccs = ccs
-      self.multi_iw.set_matrix(ccs, function)
-      if matrix != None:
-         self.matrix = matrix
-         if self.matrix == None:
+      self.multi_iw.set_image(ccs, function)
+      if image != None:
+         self.image = image
+         if self.image == None:
             self.splitterh.SetSashPosition(10000)
-            self.matrix = Matrix(300, 200)
-            self.to_string_function = Matrix.to_string
-         self.single_iw.set_matrix(self.matrix, self.to_string_function)
+            self.image = Image(300, 200)
+            self.to_string_function = Image.to_string
+         self.single_iw.set_image(self.image, self.to_string_function)
 
    def append_glyphs(self, list):
       self.multi_iw.id.append_glyphs(list)
@@ -506,13 +506,13 @@ class ClassifierFrame(ImageFrameBase):
    # DISPLAY
 
    def display_cc(self, cc):
-      if self.matrix != None:
-         for matrix in self.last_cc_displayed:
-            if matrix not in cc:
-               self.single_iw.clear_highlight_cc(matrix)
-         for matrix in cc:
-            if matrix not in self.last_cc_displayed:
-               self.single_iw.highlight_cc(matrix, Matrix.to_string)
+      if self.image != None:
+         for image in self.last_cc_displayed:
+            if image not in cc:
+               self.single_iw.clear_highlight_cc(image)
+         for image in cc:
+            if image not in self.last_cc_displayed:
+               self.single_iw.highlight_cc(image, Image.to_string)
          self.single_iw.focus(cc)
          self.last_cc_displayed = cc
 
@@ -557,13 +557,13 @@ class ClassifierFrame(ImageFrameBase):
       removed = 0
       did_splits = 0
       for item in list:
-         if isinstance(item, gamera.Matrix):
+         if isinstance(item, gamera.Image):
             a, b = self.classifier.manual_classify_glyph(
                item, id, update_display=0)
          did_splits = did_splits + a
          removed = removed or b
       if removed:
-         self.set_matrix(self.classifier.current_database)
+         self.set_image(self.classifier.current_database)
       elif did_splits:
          self.append_glyphs(self.classifier.current_database[-did_splits:])
 
@@ -1025,7 +1025,7 @@ name = "Classifier Wizard"
 class ClassifierWizard(Wizard):
    dlg_select_image = Args([
       Radio('Use an image that is already loaded', 'From memory'),
-      Class('    Image variable name', Matrix),
+      Class('    Image variable name', Image),
       Radio('Load an image from disk', 'From disk'),
       FileOpen('    Image filename', '', extension="*.*")],
       name=name,

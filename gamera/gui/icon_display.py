@@ -20,7 +20,7 @@
 from wxPython.wx import *                    # wxPython
 from gamera.gamera import *                         # Gamera specific
 from gamera import paths, util
-from gamera.gui import matrix_menu, var_name
+from gamera.gui import image_menu, var_name
 
 ######################################################################
 
@@ -121,8 +121,8 @@ class IconDisplay(wxListCtrl):
       self.SetStringItem(index, 0, key, icon)
 
   def remove_icon(self, key):
-    if isinstance(self.data[key].data, Matrix):
-      # removed custom callback from Matrix in gamera.py
+    if isinstance(self.data[key].data, Image):
+      # removed custom callback from Image in gamera.py
       del self.data[key].data
     index = self.data[key].index
     self.DeleteItem(index)
@@ -176,12 +176,12 @@ class IconDisplay(wxListCtrl):
     self.currentIcon = self.find_icon(self.HitTest(
       wxPoint(event.GetX(), event.GetY()))[0])
     if self.currentIcon:
-      if isinstance(self.currentIcon.data, Matrix):
+      if isinstance(self.currentIcon.data, Image):
         if event.ShiftDown():
-          mode = matrix_menu.HELP_MODE
+          mode = image_menu.HELP_MODE
         else:
-          mode = matrix_menu.EXECUTE_MODE
-          menu = matrix_menu.MatrixMenu(self, self.x, self.y,
+          mode = image_menu.EXECUTE_MODE
+          menu = image_menu.ImageMenu(self, self.x, self.y,
                                         self.currentIcon.data,
                                         self.currentIcon.label,
                                         self.shell, mode)
@@ -190,7 +190,7 @@ class IconDisplay(wxListCtrl):
 
   def OnDoubleClick(self, event):
     if self.currentIcon:
-      if isinstance(self.currentIcon.data, Matrix):
+      if isinstance(self.currentIcon.data, Image):
         source = (self.currentIconName + ".display()")
       else:
         source = "display_multi(" + self.currentIconName + ")"
@@ -212,15 +212,15 @@ class IconDisplay(wxListCtrl):
       event.Skip()
     source = self.drag.data
     target = target.data
-    if (isinstance(target, Matrix)
-        and not isinstance(target, SubMatrix)
+    if (isinstance(target, Image)
+        and not isinstance(target, SubImage)
         and not isinstance(target, CC)):
       if (isinstance(source, CC) or
-          isinstance(source, SubMatrix) or
+          isinstance(source, SubImage) or
           (util.is_sequence(source) and
            len(source) > 0 and
           (isinstance(source[0], CC) or
-           isinstance(source[0], SubMatrix)))):
+           isinstance(source[0], SubImage)))):
         target.display_cc(source)
         self.update_icons()
     elif (util.is_sequence(target) and
@@ -235,80 +235,80 @@ class CustomIcon:
   is_custom_icon_description = 1
 
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_unknown.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_unknown.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
     return 1
 
-class CIRGBMatrix(CustomIcon):
+class CIRGBImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_rgb.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_rgb.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, Matrix) and data.get_type() == "RGB"
+    return isinstance(data, Image) and data.get_type() == "RGB"
 
-class CIGreyScaleMatrix(CustomIcon):
+class CIGreyScaleImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_grey.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_grey.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, Matrix) and data.get_type() == "GreyScale"
+    return isinstance(data, Image) and data.get_type() == "GreyScale"
 
-class CIGrey16Matrix(CustomIcon):
+class CIGrey16Image(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_grey16.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_grey16.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, Matrix) and data.get_type() == "Grey16"
+    return isinstance(data, Image) and data.get_type() == "Grey16"
 
-class CIFloatMatrix(CustomIcon):
+class CIFloatImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_float.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_float.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, Matrix) and data.get_type() == "Float"
+    return isinstance(data, Image) and data.get_type() == "Float"
 
-class CIOneBitMatrix(CustomIcon):
+class CIOneBitImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_binary.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_binary.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, Matrix) and data.get_type() == "OneBit"
+    return isinstance(data, Image) and data.get_type() == "OneBit"
 
-class CIRGBSubMatrix(CustomIcon):
+class CIRGBSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_submatrix_rgb.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_subimage_rgb.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, SubMatrix) and data.get_type() == "RGB"
+    return isinstance(data, SubImage) and data.get_type() == "RGB"
 
-class CIGreyScaleSubMatrix(CustomIcon):
+class CIGreyScaleSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_submatrix_grey.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_subimage_grey.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, SubMatrix) and data.get_type() == "GreyScale"
+    return isinstance(data, SubImage) and data.get_type() == "GreyScale"
 
-class CIGrey16SubMatrix(CustomIcon):
+class CIGrey16SubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_submatrix_grey16.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_subimage_grey16.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, SubMatrix) and data.get_type() == "Grey16"
+    return isinstance(data, SubImage) and data.get_type() == "Grey16"
 
-class CIFloatSubMatrix(CustomIcon):
+class CIFloatSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_submatrix_float.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_subimage_float.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, SubMatrix) and data.get_type() == "Float"
+    return isinstance(data, SubImage) and data.get_type() == "Float"
 
-class CIOneBitSubMatrix(CustomIcon):
+class CIOneBitSubImage(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_submatrix_binary.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_subimage_binary.png", wxBITMAP_TYPE_PNG)
 
   def check(self, data):
-    return isinstance(data, SubMatrix) and data.get_type() == "OneBit"
+    return isinstance(data, SubImage) and data.get_type() == "OneBit"
 
 class CICC(CustomIcon):
   def get_icon(self):
@@ -317,15 +317,15 @@ class CICC(CustomIcon):
   def check(self, data):
     return isinstance(data, CC)
 
-class CIMatrixList(CustomIcon):
+class CIImageList(CustomIcon):
   def get_icon(self):
-    return wxIcon(paths.pixmaps + "icon_matrix_list.png", wxBITMAP_TYPE_PNG)
+    return wxIcon(paths.pixmaps + "icon_image_list.png", wxBITMAP_TYPE_PNG)
   
   def check(self, data):
     return util.is_sequence(data)
 
-builtin_icon_types = (CICC, CIRGBMatrix, CIGreyScaleMatrix, CIGrey16Matrix,
-                      CIFloatMatrix, CIOneBitMatrix,
-                      CIRGBSubMatrix, CIGreyScaleSubMatrix, CIGrey16SubMatrix,
-                      CIFloatSubMatrix, CIOneBitSubMatrix,
-                      CIMatrixList)
+builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
+                      CIFloatImage, CIOneBitImage,
+                      CIRGBSubImage, CIGreyScaleSubImage, CIGrey16SubImage,
+                      CIFloatSubImage, CIOneBitSubImage,
+                      CIImageList)

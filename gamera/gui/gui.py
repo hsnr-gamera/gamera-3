@@ -21,7 +21,7 @@
 import inspect
 from gamera.gamera import *
 from gamera import paths, config, magic_import
-from gamera.gui import gamera_display, matrix_menu, icon_display, classifier_display, var_name
+from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
 
 # wxPython
 from wxPython.wx import *
@@ -45,12 +45,14 @@ from wxPython.lib.splashscreen import SplashScreen
 import sys, types, traceback, os, string, webbrowser, resource
 
 # Set default options
-config.add_option_default("shell_font", "face:Courier,size:12")
+config.add_option_default("shell_font", "face:Helvetica,size:12")
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
 
 main_win = None
 app = None
+
+wxLocale(wxLANGUAGE_ENGLISH)
 
 ######################################################################
 
@@ -100,10 +102,10 @@ class GameraGui:
          dlg.Destroy()
          return filename
 
-   def ShowMatrix(self, matrix, title, function, owner=None):
+   def ShowImage(self, image, title, function, owner=None):
       wxBeginBusyCursor()
       img = gamera_display.ImageFrame(title = title, owner=owner)
-      img.set_matrix(matrix, function)
+      img.set_image(image, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
@@ -111,7 +113,7 @@ class GameraGui:
    def ShowMatrices(self, list, function):
       wxBeginBusyCursor()
       img = gamera_display.MultiImageFrame(title = "Multiple Matrices")
-      img.set_matrix(list, function)
+      img.set_image(list, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
@@ -120,8 +122,8 @@ class GameraGui:
       f = gamera_display.HistogramDisplay(hist, mark=mark)
       f.Show(1)
 
-   def ShowProjections(self, x_data, y_data, matrix):
-      f = gamera_display.ProjectionsDisplay(x_data, y_data, matrix)
+   def ShowProjections(self, x_data, y_data, image):
+      f = gamera_display.ProjectionsDisplay(x_data, y_data, image)
       f.Show(1)
 
    def DisplayHTML(self, file):
@@ -133,10 +135,10 @@ class GameraGui:
    def Message(self, message):
       message(message)
 
-   def ShowClassifier(self, classifier, matrix, function):
+   def ShowClassifier(self, classifier, image, function):
       wxBeginBusyCursor()
       img = classifier_display.ClassifierFrame(classifier)
-      img.set_matrix(classifier.current_database, matrix, function)
+      img.set_image(classifier.current_database, image, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
@@ -383,8 +385,8 @@ class ShellFrame(wxFrame):
                                          properties={'default': font})
          self.shell.history = self.history
       self.history.shell = self.shell
-      matrix_menu.set_shell(self.shell)
-      matrix_menu.set_shell_frame(self)
+      image_menu.set_shell(self.shell)
+      image_menu.set_shell_frame(self)
       #self.shell.run("")
       self.shell.runsource("from gamera.gui import gui")
       self.shell.runsource("from gamera.gamera import *")

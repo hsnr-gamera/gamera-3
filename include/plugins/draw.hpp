@@ -31,54 +31,66 @@ inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x
   x2 = std::min(x2, image.nrows());
 }
 
+/* 
+Po-Han Lin's "Extremely Fast Line Algorithm"
+
+Freely useable in non-commercial applications as long as credits to Po-Han Lin and link to http://www.edepot.com is provided in source code and can been seen in compiled executable. 
+*/
+
 template<class T>
 void draw_line(T& image, size_t y1, size_t x1, size_t y2, size_t x2,
 	       typename T::value_type value, double alpha = 1.0) {
-  // Breshenham's Algorithm
+  size_t ul_y = std::min(y1, image.nrows());
+  size_t lr_y = std::min(y2, image.nrows());
+  size_t ul_x = std::min(x1, image.nrows());
+  size_t lr_x = std::min(x2, image.nrows());
+  
+  // The line doesn't pass through the image, so just skip
+  if (lr_y - ul_y == 0 && lr_x - ul_x == 0)
+    return;
 
-  int x_dist = int(x2) - int(x1);
-  int y_dist = int(y2) - int(y1);
-  int x_dist_abs = abs(x_dist);
-  int y_dist_abs = abs(y_dist);
+  bool y_longer = false;
+  long increment_val, end_val;
+  long short_len = long(y2) - long(y1);
+  long long_len = long(x2) - long(x1);
+  if (abs(short_len) > abs(long_len)) {
+    std::swap(short_len, long_len);
+    y_longer = true;
+  }
 
-  if (x_dist_abs > y_dist_abs) { // x is controlling axis
-    if (x1 > x2) {
-      std::swap(x1, x2);
-      std::swap(y1, y2);
-    }
-    int y_sign = sign((int)y2 - (int)y1);
-    int e = y_dist_abs - x_dist_abs;
-    int y = y1;
-    for (int x = x1; x <= (int)x2; ++x, e += y_dist_abs) {
-      // We could be more clever about determining where the line exits/enters
-      // the image, but...
-      if (y >= 0 && y < (int)image.nrows() && x >= 0 && x < (int)image.ncols())
-	image.set(y, x, value);
-      if (e > 0.0) {
-	y += y_sign;
-	e -= x_dist_abs;
-      }
+  end_val = long_len;
+  if (long_len < 0) {
+    increment_val = -1;
+    long_len = -long_len;
+  } else
+    increment_val = 1;
+
+  long dec_inc;
+  if (long_len == 0)
+    dec_inc = 0;
+  else
+    dec_inc = (short_len << 16) / long_len;
+
+  long j = 0;
+  if (y_longer) {
+    for (long i = 0; i != end_val; i += increment_val) {
+      image.set(size_t(y1 + i), size_t(x1 + (j >> 16)), value);
+      j += dec_inc;
     }
   } else {
-    if (y1 > y2) {
-      std::swap(x1, x2);
-      std::swap(y1, y2);
-    }
-    int x_sign = sign(int(x2) - int(x1));
-    int e = x_dist_abs - y_dist_abs;
-    int x = x1;
-    for (int y = y1; y <= (int)y2; ++y, e += x_dist_abs) {
-      // We could be more clever about determining where the line exits/enters
-      // the image, but...
-      if (y >= 0 && y < (int)image.nrows() && x >= 0 && x < (int)image.ncols())
-	image.set(y, x, value);
-      if (e > 0.0) {
-	x += x_sign;
-	e -= y_dist_abs;
-      }
+    for (long i = 0; i != end_val; i += increment_val) {
+      image.set(size_t(y1 + (j >> 16)), size_t(x1 + i), value);
+      j += dec_inc;
     }
   }
 }
+
+template<class T>
+void draw_line_points(T& image, Point& a, Point& b,
+		      typename T::value_type value, double alpha = 1.0) {
+  draw_line(image, a.y(), a.x(), b.y(), b.x(), value, alpha);
+}
+
 
 template<class T>
 void draw_hollow_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
@@ -126,6 +138,30 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
   for (size_t y = y1; y < y2; ++y) 
     for (size_t x = x1; x < x2; ++x)
       image.set(y, x, value);
+}
+
+template<class T>
+void draw_bezier_curve(T& image, size_t ya, size_t xa, 
+		       size_t yb, size_t xb, 
+		       size_t yc, size_t xc,
+		       typename T::value_type value) {
+  long x_dist = abs(long(xb) - long(xa));
+  long y_dist = abs(long(yb) - long(ya));
+  long max = std::max(x_dist, y_dist);
+  double step = 1.0 / ((double)max * 2.0);
+
+  size_t y = ya;
+  size_t x = xa;
+  for (double t = 0.0; t <= 1.0; t += step) {
+    size_t new_x = (size_t)(pow((1 - t), 2) * xa + 
+			    2 * t * (1 - t) * xc + 
+			    pow(t, 2) * xb);
+    size_t new_y = (size_t)(pow((1 - t), 2) * ya + 
+			    2 * t * (1 - t) * yc + 
+			    pow(t, 2) * yb);
+    draw_line(image, y, x, new_y, new_x, value);
+    y = new_y; x = new_x;
+  }
 }
 
 /* From John R. Shaw's QuickFill code which is based on

@@ -18,6 +18,8 @@ By categories
 
   - projections_
 
+  - rotation_angle_projections_
+
 - Classification_
 
   - classify_automatic_
@@ -154,9 +156,7 @@ By categories
 
   - noise_
 
-  - rotateShear_
-
-  - wave_
+  - rotate_
 
 - Displaying_
 
@@ -167,6 +167,8 @@ By categories
   - display_false_color_
 
 - Draw_
+
+  - draw_bezier_curve_
 
   - draw_filled_rect_
 
@@ -186,11 +188,11 @@ By categories
 
 - Edge_
 
-  - cannyEdgeImage_
+  - canny_edge_image_
 
-  - differenceOfExponentialCrackEdgeImage_
+  - difference_of_exponential_crack_edge_image_
 
-  - differenceOfExponentialEdgeImage_
+  - difference_of_exponential_edge_image_
 
 - Features_
 
@@ -346,6 +348,8 @@ By categories
 
   - image_copy_
 
+  - image_save_
+
   - resize_
 
   - scale_
@@ -370,11 +374,11 @@ bernsen_threshold_, BinomialKernel_, black_area_, blue_
 
 **C**
 
-cannyEdgeImage_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_sum_, corelation_sum_squares_, corelation_weighted_, cyan_
+canny_edge_image_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_sum_, corelation_sum_squares_, corelation_weighted_, cyan_
 
 **D**
 
-despeckle_, differenceOfExponentialCrackEdgeImage_, differenceOfExponentialEdgeImage_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
+despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_curve_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
 
 **E**
 
@@ -394,7 +398,7 @@ hessian_matrix_of_gaussian_, highlight_, histogram_, hue_
 
 **I**
 
-image_copy_, inkrub_, invert_
+image_copy_, image_save_, inkrub_, invert_
 
 **L**
 
@@ -418,7 +422,7 @@ permute_list_, PNG_info_, polar_distance_, polar_match_, projection_cols_, proje
 
 **R**
 
-rank_, red_, remove_border_, resize_, rotateShear_
+rank_, red_, remove_border_, resize_, rotate_, rotation_angle_projections_
 
 **S**
 
@@ -435,10 +439,6 @@ unclassify_, union_images_
 **V**
 
 value_, volume_, volume16regions_, volume64regions_
-
-**W**
-
-wave_
 
 **X**
 
@@ -459,6 +459,7 @@ zernike_moments_
 .. _projection_skewed_cols: analysis.html#projection-skewed-cols
 .. _projection_skewed_rows: analysis.html#projection-skewed-rows
 .. _projections: analysis.html#projections
+.. _rotation_angle_projections: analysis.html#rotation-angle-projections
 .. _Classification: classification.html#classification
 .. _classify_automatic: classification.html#classify-automatic
 .. _classify_heuristic: classification.html#classify-heuristic
@@ -527,13 +528,13 @@ zernike_moments_
 .. _Deformations: deformations.html#deformations
 .. _inkrub: deformations.html#inkrub
 .. _noise: deformations.html#noise
-.. _rotateShear: deformations.html#rotateshear
-.. _wave: deformations.html#wave
+.. _rotate: deformations.html#rotate
 .. _Displaying: displaying.html#displaying
 .. _display: displaying.html#display
 .. _display_ccs: displaying.html#display-ccs
 .. _display_false_color: displaying.html#display-false-color
 .. _Draw: draw.html#draw
+.. _draw_bezier_curve: draw.html#draw-bezier-curve
 .. _draw_filled_rect: draw.html#draw-filled-rect
 .. _draw_hollow_rect: draw.html#draw-hollow-rect
 .. _draw_line: draw.html#draw-line
@@ -543,9 +544,9 @@ zernike_moments_
 .. _invert: draw.html#invert
 .. _remove_border: draw.html#remove-border
 .. _Edge: edge.html#edge
-.. _cannyEdgeImage: edge.html#cannyedgeimage
-.. _differenceOfExponentialCrackEdgeImage: edge.html#differenceofexponentialcrackedgeimage
-.. _differenceOfExponentialEdgeImage: edge.html#differenceofexponentialedgeimage
+.. _canny_edge_image: edge.html#canny-edge-image
+.. _difference_of_exponential_crack_edge_image: edge.html#difference-of-exponential-crack-edge-image
+.. _difference_of_exponential_edge_image: edge.html#difference-of-exponential-edge-image
 .. _Features: features.html#features
 .. _area: features.html#area
 .. _aspect_ratio: features.html#aspect-ratio
@@ -623,6 +624,7 @@ zernike_moments_
 .. _clip_image: utility.html#clip-image
 .. _generate_features: utility.html#generate-features
 .. _image_copy: utility.html#image-copy
+.. _image_save: utility.html#image-save
 .. _resize: utility.html#resize
 .. _scale: utility.html#scale
 .. _XML: xml.html#xml

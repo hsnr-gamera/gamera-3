@@ -31,14 +31,18 @@ ARITHMETIC_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
 class add_images(PluginFunction):
     """Adds the corresponding pixels of two images together.
 
-The two images must be the same size and type.
+The two images must be the same type.
+
+Since it would be difficult to determine what exactly to do if the images
+are a different size, the two images must be the same size.  Use .subimage
+on either image to crop appropriately if necessary for your specific case.
 
 *in_place*
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
     self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Int("in_place", default=False)])
+    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
     return_type = ImageType(ARITHMETIC_TYPES)
     image_types_must_match = True
 
@@ -49,14 +53,18 @@ The two images must be the same size and type.
 class subtract_images(PluginFunction):
     """Adds the pixels of another image from the current image.
 
-The two images must be the same size and type.
+The two images must be the same type.
+
+Since it would be difficult to determine what exactly to do if the images
+are a different size, the two images must be the same size.  Use .subimage
+on either image to crop appropriately if necessary for your specific case.
 
 *in_place*
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
     self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Int("in_place", default=False)])
+    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
     return_type = ImageType(ARITHMETIC_TYPES)
     image_types_must_match = True
 
@@ -68,14 +76,18 @@ class divide_images(PluginFunction):
     """Divides the pixels of the current image by the pixels of
 another image.
 
-The two images must be the same size and type.
+The two images must be the same type.
+
+Since it would be difficult to determine what exactly to do if the images
+are a different size, the two images must be the same size.  Use .subimage
+on either image to crop appropriately if necessary for your specific case.
 
 *in_place*
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
-    args = Args([ImageType([GREYSCALE, GREY16, FLOAT], 'other'), Int("in_place", default=False)])
+    args = Args([ImageType([GREYSCALE, GREY16, FLOAT], 'other'), Check("in_place", default=False)])
     return_type = ImageType([GREYSCALE, GREY16, FLOAT])
     image_types_must_match = True
 
@@ -86,14 +98,18 @@ The two images must be the same size and type.
 class multiply_images(PluginFunction):
     """Multiplies the corresponding pixels of two images together.
 
-The two images must be the same size and type.
+The two images must be the same type.
+
+Since it would be difficult to determine what exactly to do if the images
+are a different size, the two images must be the same size.  Use .subimage
+on either image to crop appropriately if necessary for your specific case.
 
 *in_place*
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
     self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Int("in_place", default=False)])
+    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
     return_type = ImageType(ARITHMETIC_TYPES)
     image_types_must_match = True
 

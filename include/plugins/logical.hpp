@@ -21,65 +21,85 @@
 #define kwm10092002_logical
 
 #include "gamera.hpp"
-#include "accessor.hpp"
+#include <functional>
 #include <exception>
 
 namespace Gamera {
 
-template<class T, class U>
-void and_image(T& a, const U& b) {
-  size_t ul_y = std::max(a.ul_y(), b.ul_y());
-  size_t ul_x = std::max(a.ul_x(), b.ul_x());
-  size_t lr_y = std::min(a.lr_y(), b.lr_y());
-  size_t lr_x = std::min(a.lr_x(), b.lr_x());
-
-  if (ul_y >= lr_y || ul_x >= lr_x)
-    return;
-  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
-    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
-      if (is_black(a.get(ya, xa)) && is_black(b.get(yb, xb))) 
-	a.set(ya, xa, black(a));
-      else
-	a.set(ya, xa, white(a));
-    }
-}
-
-template<class T, class U>
-void or_image(T& a, const U& b) {
-  size_t ul_y = std::max(a.ul_y(), b.ul_y());
-  size_t ul_x = std::max(a.ul_x(), b.ul_x());
-  size_t lr_y = std::min(a.lr_y(), b.lr_y());
-  size_t lr_x = std::min(a.lr_x(), b.lr_x());
-
-  if (ul_y >= lr_y || ul_x >= lr_x)
-    return;
-  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
-    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
-      if (is_black(a.get(ya, xa)) || is_black(b.get(yb, xb))) {
-	a.set(ya, xa, black(a));
-      } else
-	a.set(ya, xa, white(a));
-    }
-}
-
-template<class T, class U>
-void xor_image(T& a, const U& b) {
-  size_t ul_y = std::max(a.ul_y(), b.ul_y());
-  size_t ul_x = std::max(a.ul_x(), b.ul_x());
-  size_t lr_y = std::min(a.lr_y(), b.lr_y());
-  size_t lr_x = std::min(a.lr_x(), b.lr_x());
+template<class T, class U, class FUNCTOR>
+typename ImageFactory<T>::view_type* 
+logical_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
+  if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
+    throw std::runtime_error("Images must be the same size.");
   
-  if (ul_y >= lr_y || ul_x >= lr_x)
-    return;
-  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb) {
-    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
-      if (is_black(a.get(ya, xa)) ^ is_black(b.get(yb, xb))) 
-	a.set(ya, xa, black(a));
+  typedef typename T::value_type TVALUE;
+  typedef typename ImageFactory<T>::view_type VIEW;
+
+  if (in_place) {
+    typename T::vec_iterator ia = a.vec_begin();
+    typename U::const_vec_iterator ib = b.vec_begin();
+    typename choose_accessor<T>::accessor ad = choose_accessor<T>::make_accessor(a);
+    for (; ia != a.vec_end(); ++ia, ++ib) {
+      bool b = functor(is_black(*ia), is_black(*ib));
+      if (b)
+	ad.set(white(a), ia);
       else
-	a.set(ya, xa, white(a));
+	ad.set(black(a), ia);
     }
 
+    // Returning NULL is converted to None by the wrapper mechanism
+    return NULL;
+  } else {
+    typename ImageFactory<T>::data_type* dest_data =
+      new typename ImageFactory<T>::data_type(a.size(), a.offset_y(), 
+					    a.offset_x());
+    VIEW* dest = new VIEW(*dest_data, a);
+    typename T::vec_iterator ia = a.vec_begin();
+    typename U::const_vec_iterator ib = b.vec_begin();
+    typename VIEW::vec_iterator id = dest->vec_begin();
+    typename choose_accessor<VIEW>::accessor ad = choose_accessor<VIEW>::make_accessor(*dest);
+
+    // Vigra's combineTwoImages does not clip back to one of the standard
+    // Gamera image types, so we have to do this differently ourselves.  MGD
+
+    for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
+      bool b = functor(is_black(*ia), is_black(*ib));
+      if (b)
+	ad.set(white(a), id);
+      else
+	ad.set(black(a), id);
+    }
+    return dest;
   }
+}
+
+template<class T, class U>
+typename ImageFactory<T>::view_type* 
+and_image(T& a, const U& b, bool in_place=true) {
+  typedef typename T::value_type value_type;
+  return logical_combine(a, b, std::logical_and<bool>(), in_place);
+}
+
+template<class T, class U>
+typename ImageFactory<T>::view_type* 
+or_image(T& a, const U& b, bool in_place=true) {
+  typedef typename T::value_type value_type;
+  return logical_combine(a, b, std::logical_or<bool>(), in_place);
+};
+
+  // We make our own, since logical_xor is not in STL
+  
+template <class _Tp>
+struct logical_xor : public std::binary_function<_Tp,_Tp,bool>
+{
+  bool operator()(const _Tp& __x, const _Tp& __y) const { return __x ^ __y; }
+};
+
+template<class T, class U>
+typename ImageFactory<T>::view_type* 
+xor_image(T& a, const U& b, bool in_place=true) {
+  typedef typename T::value_type value_type;
+  return logical_combine(a, b, logical_xor<bool>(), in_place);
 }
 
 }

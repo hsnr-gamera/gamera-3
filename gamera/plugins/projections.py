@@ -157,6 +157,8 @@ Return Values:
 
 *accuracy*:
   Accuracy of the returned angle.
+
+.. _rotateShear: deformations.html#rotateshear
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])

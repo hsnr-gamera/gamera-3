@@ -849,9 +849,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       wxPyGridCellRenderer.__init__(self)
       self.parent = parent
 
-      self.times = 0
-      self.n_times = 0
-
    _colors = {UNCLASSIFIED: wxColor(255,255,255),
               AUTOMATIC:    wxColor(198,145,145),
               HEURISTIC:    wxColor(240,230,140),
@@ -859,47 +856,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
-##       def draw_emblems():
-##          if isSelected:
-##             dc.SetBrush(wxBrush(wxWHITE, wxSOLID))
-##          else:
-##             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
-##          if classification_state == AUTOMATIC:
-##             emblem_size = cell_padding / 3
-##             x0 = rect.x
-##             x2 = rect.x + rect.width - emblem_size
-##             y0 = rect.y
-##             y2 = rect.y + rect.height - emblem_size
-##             dc.DrawRectangle(x0, y0, emblem_size, emblem_size)
-##             dc.DrawRectangle(x0, y2, emblem_size, emblem_size)
-##             dc.DrawRectangle(x2, y0, emblem_size, emblem_size)
-##             dc.DrawRectangle(x2, y2, emblem_size, emblem_size)
-##          elif classification_state == HEURISTIC:
-##             emblem_size = cell_padding / 3
-##             x0 = rect.x
-##             x1 = rect.x + emblem_size
-##             x3 = rect.x + rect.width
-##             x2 = x3 - emblem_size
-##             y0 = rect.y
-##             y1 = rect.y + emblem_size
-##             y3 = rect.y + rect.height
-##             y2 = y3 - emblem_size
-##             dc.DrawPolygon([wxPoint(x0, y0), wxPoint(x1, y0), wxPoint(x0, y1)])
-##             dc.DrawPolygon([wxPoint(x3, y0), wxPoint(x2, y0), wxPoint(x3, y1)])
-##             dc.DrawPolygon([wxPoint(x0, y3), wxPoint(x1, y3), wxPoint(x0, y2)])
-##             dc.DrawPolygon([wxPoint(x3, y3), wxPoint(x2, y3), wxPoint(x3, y2)])
-##          elif classification_state == MANUAL:
-##             quarter_cell = cell_padding / 4
-##             radius = int(quarter_cell * 0.75)
-##             x0 = rect.x + quarter_cell
-##             x1 = rect.x + rect.width - quarter_cell
-##             y0 = rect.y + quarter_cell
-##             y1 = rect.y + rect.height - quarter_cell
-##             dc.DrawCircle(x0, y0, radius)
-##             dc.DrawCircle(x1, y0, radius)
-##             dc.DrawCircle(x0, y1, radius)
-##             dc.DrawCircle(x1, y1, radius)
-
       view_start = grid.GetViewStart()
       view_units = grid.GetScrollPixelsPerUnit()
       view_size = grid.GetClientSize()

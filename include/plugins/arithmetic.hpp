@@ -71,7 +71,7 @@ arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
 
 template<class T>
 typename ImageFactory<T>::view_type* 
-add_images(T& a, const T& b, bool in_place) {
+add_images(T& a, const T& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::plus<PROMOTE>(), in_place);
@@ -79,7 +79,7 @@ add_images(T& a, const T& b, bool in_place) {
 
 template<class T>
 typename ImageFactory<T>::view_type* 
-subtract_images(T& a, const T& b, bool in_place) {
+subtract_images(T& a, const T& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::minus<PROMOTE>(), in_place);
@@ -87,7 +87,7 @@ subtract_images(T& a, const T& b, bool in_place) {
 
 template<class T>
 typename ImageFactory<T>::view_type* 
-multiply_images(T& a, const T& b, bool in_place) {
+multiply_images(T& a, const T& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::multiplies<PROMOTE>(), in_place);
@@ -95,7 +95,7 @@ multiply_images(T& a, const T& b, bool in_place) {
 
 template<class T>
 typename ImageFactory<T>::view_type* 
-divide_images(T& a, const T& b, bool in_place) {
+divide_images(T& a, const T& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::divides<PROMOTE>(), in_place);

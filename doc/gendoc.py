@@ -98,13 +98,13 @@ def method_doc(func, level, s):
    if func.return_type != None:
       s.write(func.return_type.rest_repr() + " ")
    header = "**%s** (%s)\n" % (func.__name__, ', '.join(
-       ['``%s`` *%s*' % (x.rest_repr(), x.name) for x in func.args.list]))
+       [x.rest_repr(True) for x in func.args.list]))
    s.write(header)
    s.write("\n\n")
    if func.self_type != None:
-      s.write(":Operates on: ``%s``\n" % func.self_type.rest_repr())
+      s.write(":Operates on: ``%s``\n" % func.self_type.rest_repr(False))
    if func.return_type != None:
-      s.write(":Returns: ``%s``\n" % (func.return_type.rest_repr()))
+      s.write(":Returns: ``%s``\n" % (func.return_type.rest_repr(False)))
    if func.category == None:
       category = func.module.category
    else:

@@ -76,43 +76,80 @@ class Arg:
 ##       if name is None:
 ##          name = "_" + str(hash(self))
       self.name = name
+      self.has_default = False
 
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
 
-   def rest_repr(self):
-      return self.__class__.__name__
+   def rest_repr(self, name=False):
+      result = "``%s``" % self.__class__.__name__
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % str(self.default)
+      return result
    
 class Int(Arg):
-   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=0):
+   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
       Arg.__init__(self, name)
       self.rng = range
-      self.default = default
+      if default is None:
+         self.has_default = False
+         self.default = 0
+      else:
+         self.has_default = True
+         self.default = default
 
-   def rest_repr(self):
+   def rest_repr(self, name=False):
       result = "int"
       if self.rng != (-sys.maxint, sys.maxint):
-         result += str(self.rng)
+         result += "(%d, %d)" % tuple([int(x) for x in self.rng])
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %d" % self.default
       return result
 
 class Real(Arg):
-   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=0):
+   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
       Arg.__init__(self, name)
       self.rng = range
-      self.default = default
+      if default is None:
+         self.has_default = False
+         self.default = 0
+      else:
+         self.has_default = True
+         self.default = default
 
-   def rest_repr(self):
-      result = "double"
+   def rest_repr(self, name=False):
+      result = "float"
       if self.rng != (-sys.maxint, sys.maxint):
-         result += str(self.rng)
+         result += "(%.02f, %.02f)" % tuple([float(x) for x in self.rng])
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %.02f" % self.default
       return result
 
 Float = Real
 
 class String(Arg):
-   def __init__(self, name=None, default=''):
+   def __init__(self, name=None, default=None):
       Arg.__init__(self, name)
-      self.default = default
+      if default is None:
+         self.has_default = False
+         self.default = ''
+      else:
+         self.has_default = True
+         self.default = default
+
+   def rest_repr(self, name=False):
+      result = "str"
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %d" % self.default
+      return result
 
 class Class(Arg):
    def __init__(self, name=None, klass=None, list_of=False):
@@ -120,8 +157,14 @@ class Class(Arg):
       self.klass = klass
       self.list_of = list_of
 
-   def rest_rept(self):
-      return self.klass.__name__
+   def rest_repr(self, name=False):
+      if self.klass is None:
+         result = "``object``"
+      else:
+         result = "``%s``" % self.klass.__name__
+      if name:
+         result += " *%s*" % self.name
+      return result
 
 class ImageType(Arg):
    def __init__(self, pixel_types, name=None, list_of = 0):
@@ -134,8 +177,11 @@ class ImageType(Arg):
       self.pixel_types = pixel_types
       self.list_of = list_of
 
-   def rest_repr(self):
-      return 'Image [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
+   def rest_repr(self, name=False):
+      result = '``Image`` [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
+      if name:
+         result += " *%s*" % self.name
+      return result
 
 class Rect(Arg):
    def __init__(self, name=None, list_of = 0):
@@ -145,17 +191,24 @@ class Rect(Arg):
          self.klass = core.Rect
       self.list_of = list_of
       
-   def rest_repr(self):
-      return 'Rect'
-
 class Choice(Arg):
-   def __init__(self, name=None, choices=[], default=0):
+   def __init__(self, name=None, choices=[], default=None):
       Arg.__init__(self, name)
       self.choices = choices
-      self.default = default
+      if default is None:
+         self.has_default = False
+         self.default = ''
+      else:
+         self.has_default = True
+         self.default = default
 
-   def rest_repr(self):
-      return 'Choice[%s]' % '|'.join(self.choices)
+   def rest_repr(self, name = False):
+      result = '``Choice`` [%s]' % '|'.join(self.choices)
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % self.choices[self.default]
+      return result
 
 class _Filename(Arg):
    def __init__(self, name=None, default="", extension="*.*"):
@@ -178,14 +231,24 @@ class Radio(Arg):
       self.radio_button = radio_button
 
 class Check(Arg):
-   def __init__(self, name=None, check_box='', default=False, enabled=True):
+   def __init__(self, name=None, check_box='', default=None, enabled=True):
       Arg.__init__(self, name)
       self.check_box = check_box
-      self.default = default
+      if default is None:
+         self.has_default = False
+         self.default = ''
+      else:
+         self.has_default = True
+         self.default = default
       self.enabled = enabled
 
-   def rest_repr(self):
-      return 'bool'
+   def rest_repr(self, name=False):
+      result = '``bool``'
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % str(self.default)
+      return result
 
 Bool = Check
 
@@ -251,14 +314,8 @@ __all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileS
 
 ___mixin_locals = locals()
 def mixin(module, name):
-   sys.stdout.write("Mixing in args for %s:\n" % name)
-   first = True
    for cls_name in __all__:
       cls = ___mixin_locals[cls_name]
       if module.has_key(cls_name):
-         if not first:
-            sys.stdout.write(", ")
-         first = False
-         sys.stdout.write(cls_name)
          cls.__bases__ = tuple([module[cls_name]] + list(cls.__bases__))
    sys.stdout.write("\n")

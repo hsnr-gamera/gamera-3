@@ -37,7 +37,6 @@ def magic_import(name, globals_={}, locals_={}, fromlist=[]):
     fromlist.remove("core")
 
   if (name[0] == '_' and name[1] != "_" and name != "_winreg") or name == "core" or name == "gamera.core":
-    print name
     return None
   else:
     return std_import(name, globals_, locals_, fromlist)
@@ -139,13 +138,13 @@ def generate_plugin(plugin_filename):
       [[# Create a variable to hold the return value of the plugin function - see #]]
       [[# below for how the Image* is converted to a PyImageObject. #]]
       [[if isinstance(function.return_type, Int)]]
-        int return_value;
+        int return_value = 0;
       [[elif isinstance(function.return_type, Float)]]
-        double return_value;
+        double return_value = 0.0;
       [[elif isinstance(function.return_type, String)]]
-        char* return_value;
+        char* return_value = 0;
       [[elif isinstance(function.return_type, ImageType)]]
-        Image* return_value;
+        Image* return_value = 0;
       [[end]]
 
       [[# Now that we have all of the arguments and variables for them we can parse #]]
@@ -254,7 +253,7 @@ def generate_plugin(plugin_filename):
       return return_value;
     [[end]]
 
-    [[ exec function.self_type.pixel_types = orig_self_types]]
+    [[exec function.self_type.pixel_types = orig_self_types]]
     [[for i in range(len(function.args.list))]]
       [[if isinstance(function.args.list[i], ImageType)]]
         [[exec function.args.list[i].pixel_types = orig_image_types[i] ]]
@@ -268,16 +267,16 @@ def generate_plugin(plugin_filename):
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
     PyObject* mod = PyImport_ImportModule(\"gamera.core\");
     if (mod == 0) {
-      printf(\"Could not load gamera.py - falling back to gameracore\n\");
+      printf(\"Could not load gamera.py - falling back to gameracore\\n\");
       mod = PyImport_ImportModule(\"gamera.gameracore\");
       if (mod == 0) {
-        PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\");
+        PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\\n\");
         return;
       }
     }
     PyObject* dict = PyModule_GetDict(mod);
     if (dict == 0) {
-      PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\");
+      PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\\n\");
       return;
     }
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
@@ -286,7 +285,7 @@ def generate_plugin(plugin_filename):
     data_type = (PyTypeObject*)PyDict_GetItemString(dict, \"ImageData\");
 
   }
-  
+
   """)
   
   magic_import_setup()
@@ -299,9 +298,12 @@ def generate_plugin(plugin_filename):
   module_name = "_" + module_name
   cpp_filename = path.join(plug_path, module_name + ".cpp")
   output_file = open(cpp_filename, "w")
+  output_file = open(cpp_filename, "aw")
 
   template.execute(output_file, plugin_module.__dict__)
-
+  # add newline to make gcc shut-up about no newline at end of file!
+  output_file.write('\n')
+  output_file.close()
   restore_import()
 
   # make the a distutils extension class for this plugin

@@ -17,6 +17,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+"""The image utilities module contains plugins for copy, rotating, resizing,
+and computing histograms."""
+
 from gamera.plugin import *
 import gamera.config
 import _image_utilities
@@ -39,6 +42,9 @@ class rotate_copy(PluginFunction):
 rotate_copy = rotate_copy()
 
 class resize_copy(PluginFunction):
+    """Copies and resizes an image. In addition to size the type of
+    interpolation can be specified to allow tradeoffs between speed
+    and quality."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Int("nrows"), Int("ncols"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])
@@ -46,6 +52,9 @@ class resize_copy(PluginFunction):
 resize_copy = resize_copy()
 
 class scale_copy(PluginFunction):
+    """Copies and scales an image. In addition to size the type of
+    interpolation can be specified to allow tradeoffs between speed
+    and quality."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Real("scaling"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])
@@ -53,6 +62,9 @@ class scale_copy(PluginFunction):
 scale_copy = scale_copy()
 
 class histogram(PluginFunction):
+    """Compute the histogram of an image. The return type is a
+    Python array of doubles. The values are percentages. If a
+    gui is being used the histogram is displayed."""
     self_type = ImageType([GREYSCALE, GREY16])
     return_type = FloatVector("histogram")
     def __call__(image):

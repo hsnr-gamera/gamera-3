@@ -546,14 +546,15 @@ class _Filename:
 
 class FileOpen(_Filename):
    def OnBrowse(self, event):
-      
-      filename = gui_util.open_file_dialog(self.text, self.extension)
+      parent = self.text.GetParent()
+      filename = gui_util.open_file_dialog(parent, self.extension)
       if filename:
          self.text.SetValue(filename)
-      self.text.GetParent().Raise()
+      parent.Raise()
+      if wxIsBusy():
+         wxEndBusyCursor()
 
    def get(self):
-      
       while 1:
          text = self.text.GetValue()
          if not os.path.exists(os.path.abspath(text)):
@@ -564,7 +565,6 @@ class FileOpen(_Filename):
       return _Filename.get(self)
 
    def get_string(self):
-      
       while 1:
          text = self.text.GetValue()
          if not os.path.exists(os.path.abspath(text)):
@@ -576,21 +576,25 @@ class FileOpen(_Filename):
 
 class FileSave(_Filename):
    def OnBrowse(self, event):
-      filename = gui_util.save_file_dialog(self.text, self.extension)
+      parent = self.text.GetParent()
+      filename = gui_util.save_file_dialog(parent, self.extension)
       if filename:
          self.text.SetValue(filename)
-      self.text.GetParent().Raise()
+      parent.Raise()
+      if wxIsBusy():
+         wxEndBusyCursor()
 
 class Directory(_Filename):
    def OnBrowse(self, event):
-      
+      parent = self.text.GetParent()
       filename = gui_util.directory_dialog(self.text)
       if filename:
          self.text.SetValue(filename)
-      self.text.GetParent().Raise()
+      parent.Raise()
+      if wxIsBusy():
+         wxEndBusyCursor()
 
    def get(self):
-      
       while 1:
          text = self.text.GetValue()
          if not os.path.exists(os.path.abspath(text)):
@@ -601,7 +605,6 @@ class Directory(_Filename):
       return _Filename.get(self)
 
    def get_string(self):
-      
       while 1:
          text = self.text.GetValue()
          if not os.path.exists(os.path.abspath(text)):
@@ -704,7 +707,6 @@ class PointVector:
       from gamera import core
       self.klass = core.Point
       return Class.determine_choices(self, locals)
-
 
 from gamera import args
 args.mixin(locals(), "GUI")

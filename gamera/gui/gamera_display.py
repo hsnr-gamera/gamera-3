@@ -966,6 +966,7 @@ class MultiImageDisplay(wxGrid):
          self.SetSize(wxSize(-1, height))
       finally:
          self.EndBatch()
+         self.GetGridWindow().SetVirtualSize(self.GetSize())
          self.GetGridWindow().Layout()
          self.GetGridWindow().GetParent().Layout()
          wxEndBusyCursor()
@@ -994,7 +995,6 @@ class MultiImageDisplay(wxGrid):
          self.AutoSize()
       finally:
          self.EndBatch()
-         self.GetGridWindow().GetParent().Layout()
          wxEndBusyCursor()
 
    def append_glyphs(self, list):
@@ -1015,10 +1015,9 @@ class MultiImageDisplay(wxGrid):
    def scale(self, scaling):
       if self.scaling != scaling:
          self.scaling = scaling
-         #x = self.GetSize()
          self.AutoSize()
-         #self.SetSize(x)
-         self.MakeCellVisible(self.GetGridCursorRow(), self.GetGridCursorCol())
+         self.MakeCellVisible(
+            self.GetGridCursorRow(), self.GetGridCursorCol())
 
    ########################################
    # SORTING

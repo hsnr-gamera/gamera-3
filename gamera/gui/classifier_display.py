@@ -168,7 +168,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       if r == 0:
          r = cmp(b.classification_state, a.classification_state)
          if r == 0 and a.classification_state != UNCLASSIFIED:
-            r = cmp(a.id_name[0][0], b.id_name[0][0])
+            r = cmp(b.id_name[0][0], a.id_name[0][0])
       return r
 
    def split_classified_from_unclassified(self, list):

@@ -255,6 +255,7 @@ class InteractiveClassifier(_Classifier):
       self.clear_glyphs()
       for glyph in glyphs:
          self._database[glyph] = None
+      self.classifier.generate_features(self._database)
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)

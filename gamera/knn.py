@@ -152,6 +152,18 @@ class kNN(gamera.knncore.kNN):
             features += x[1].return_type.length
         self.num_features = features
 
+    def generate_features(self, images):
+        progress = None
+        for x in images:
+            if progress == None and \
+               x.feature_functions != self.feature_functions:
+                progress = util.ProgressFactory("Generating Features . . .", len(images))
+            x.generate_features(self.feature_functions)
+            if progress:
+                progress.step()
+        if progress:
+            progress.kill()        
+
     def classify_with_images(self, images, glyph):
         from gamera import util
         glyph.generate_features(self.feature_functions)

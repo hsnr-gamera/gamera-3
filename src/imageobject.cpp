@@ -141,6 +141,8 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
   // we do not call rect_new here because we do all of the
   // required initializations
   o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  // initialize the weakreflist
+  o->m_weakreflist = NULL;
   /*
     This is looks really awful, but it is not. We are simply creating a
     matrix view and some matrix data based on the pixel type and storage
@@ -337,11 +339,16 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 static void image_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
   Py_DECREF(o->m_data);
+  if (o->m_weakreflist != NULL) {
+    printf("dealing with weak refs\n");
+    PyObject_ClearWeakRefs(self);
+  }
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
 }
 
 static PyObject* image_get(PyObject* self, PyObject* args) {
+  printf("image ref count is %d\n\n", self->ob_refcnt);
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
   int row, col;
@@ -481,7 +488,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_name = "gameracore.Image";
   ImageType.tp_basicsize = sizeof(ImageObject);
   ImageType.tp_dealloc = image_dealloc;
-  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS;
   ImageType.tp_base = get_RectType();
   ImageType.tp_getset = image_getset;
   ImageType.tp_methods = image_methods;
@@ -489,6 +496,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_getattro = PyObject_GenericGetAttr;
   ImageType.tp_alloc = PyType_GenericAlloc;
   ImageType.tp_free = _PyObject_Del;
+  ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   PyType_Ready(&ImageType);
   PyDict_SetItemString(module_dict, "Image", (PyObject*)&ImageType);
 

@@ -23,6 +23,7 @@ from gamera.core import *   # Gamera-specific
 from gamera import util
 from gamera.gui import var_name
 from gamera.args import *
+import weakref
 
 EXECUTE_MODE = 0
 HELP_MODE = 1
@@ -53,10 +54,10 @@ class ImageMenu:
     self.mode = mode
     self.parent = parent
     if not util.is_sequence(images_):
-      self.images = [images_]
+      self.images = [weakref.proxy(images_)]
       self.images_name = [name_]
     else:
-      self.images = images_
+      self.images = [weakref.proxy(x) for x in images_]
       self.images_name = name_
     self.variables = self.images[0].members_for_menu()
     self.methods = self.images[0].methods_for_menu()
@@ -214,7 +215,7 @@ class ImageMenu:
           # If the image name is not a string, we have to call the
           # function here
           else:
-            source = "images_name[" + str(i) + "]." + func_call
+            source = self.images_name + "[" + str(i) + "]." + func_call
             if result_name != '':
               if len(self.images) > 1:
                 sh.locals[result_name].append(eval(source))

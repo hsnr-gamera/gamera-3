@@ -84,7 +84,9 @@ class ImageBase:
       self.feature_functions = []
 
    def __del__(self):
+      print "in ImageBase.__del__"
       if self._display:
+         print "closing display"
          self._display.close()
 
    def __getstate__(self):

@@ -23,6 +23,9 @@ from wxPython.lib.stattext import wxGenStaticText as wxStaticText
 from math import ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, time
+import weakref
+# This is a work around for a problem with compositing in wxPython
+# for wxGTK (wxBlack and wxWhite are reversed for the compositing).
 if sys.platform == 'win32':
    real_white = wxWHITE
    real_black = wxBLACK
@@ -88,8 +91,8 @@ class ImageDisplay(wxScrolledWindow):
    # Sets the image being displayed
    # Returns the size of the image
    def set_image(self, image, view_function=None):
-      self.original_image = image
-      self.image = image
+      self.original_image = weakref.proxy(image)
+      self.image = weakref.proxy(image)
       self.view_function = view_function
       return self.reload_image()
 
@@ -1336,7 +1339,10 @@ class ImageFrameBase:
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       self._frame = wxFrame(parent, id, title,
                            wxDefaultPosition, (600, 400))
-      self.owner = owner
+      if (owner != None):
+         self.owner = weakref.proxy(owner)
+      else:
+         self.owner = None
       EVT_CLOSE(self._frame, self._OnCloseWindow)
 
    def set_image(self, image, view_function=None):
@@ -1362,6 +1368,8 @@ class ImageFrameBase:
       if self.owner:
          self.owner.set_display(None)
       self._frame.Destroy()
+      del self._frame
+      print "hi"
 
    def Show(self, flag=1):
       self._frame.Show(flag)

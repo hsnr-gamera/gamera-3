@@ -145,6 +145,7 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
 }
  
 static void imagedata_dealloc(PyObject* self) {
+  printf("deleting the imagedata object\n\n");
   ImageDataObject* x = (ImageDataObject*)self;
   delete x->m_x;
   self->ob_type->tp_free(self);

@@ -152,6 +152,7 @@ struct ImageObject {
   PyObject* m_region_maps; // RegionMap object - see the object docs
   PyObject* m_region_map; // Current global region map
   PyObject* m_action_depth; // for limiting recursions for "actions"
+  PyObject* m_weakreflist; // for Python weak references
 };
 
 extern PyTypeObject* get_ImageType();

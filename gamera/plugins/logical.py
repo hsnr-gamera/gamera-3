@@ -37,7 +37,7 @@ are a different size, the two images must be the same size.
 See or_image_ for some usage examples.
 """
   def __call__(self, other, in_place=False):
-    return _arithmetic.and_image(self, other, in_place)
+    return _logical.and_image(self, other, in_place)
   __call__ = staticmethod(__call__)
 
 class or_image(LogicalCombine):
@@ -95,7 +95,7 @@ Removing a connected component from its original image.
   # cc: a cc on that image
   src.clip_image(cc).xor_image(cc, True)"""
   def __call__(self, other, in_place=False):
-    return _arithmetic.or_image(self, other, in_place)
+    return _logical.or_image(self, other, in_place)
   __call__ = staticmethod(__call__)
 
 class xor_image(LogicalCombine):
@@ -111,7 +111,7 @@ are a different size, the two images must be the same size.
 See or_image_ for some usage examples.
 """
   def __call__(self, other, in_place=False):
-    return _arithmetic.xor_images(self, other, in_place)
+    return _logical.xor_images(self, other, in_place)
   __call__ = staticmethod(__call__)
 
 class LogicalModule(PluginModule):

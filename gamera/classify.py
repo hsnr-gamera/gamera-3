@@ -249,10 +249,10 @@ class InteractiveClassifier(_Classifier):
       self.classifier = classifier
 
       if grouping_classifier is None:
-##          from gamera import polargrouping
-##          grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
-         from gamera import group
-         grouping_classifier = group.GroupingClassifier([])
+         from gamera import polargrouping
+         grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
+##          from gamera import group
+##          grouping_classifier = group.GroupingClassifier([])
       grouping_classifier.set_parent_classifier(self)
       self.grouping_classifier = grouping_classifier
       self.is_dirty = 0

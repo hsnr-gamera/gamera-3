@@ -17,6 +17,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+# TODO: These are fixed values.  We need an intelligent way to vary them.
+
+# This whole approach to fuzziness is syntactically convenient, but maybe
+# not very efficient.
+
 FUDGE_AMOUNT = 3
 FUDGE_AMOUNT_2 = 6
 

@@ -104,7 +104,7 @@ class ProgressBox:
       if not self.done:
          self.done = 1
          self.progress_box.Destroy()
-      wxEndBusyCursor()
+         wxEndBusyCursor()
 
    def add_length(self, l):
       self._den += l
@@ -118,6 +118,7 @@ class ProgressBox:
          self.progress_box.Update((float(num) / float(den)) * 100.0)
          if num >= den:
             self.done = 1
+            wxEndBusyCursor()
             self.progress_box.Destroy()
 
    def kill(self):

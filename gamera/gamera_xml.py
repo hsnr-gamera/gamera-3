@@ -398,7 +398,6 @@ class LoadXML:
 
    def _the_data(self):
       self._parser.CharacterDataHandler = None
-      print "<" + self._data + ">"
 
    def add_data(self, data):
       self._data += data

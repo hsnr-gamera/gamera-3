@@ -181,6 +181,25 @@ def permute_list(alist, level=0):
     if index < 0:
       break
 
+def combinations(seed):
+  length = len(seed)
+  count = [0] * len(seed)
+  lengths = [len(x) for x in seed]
+  if 0 in lengths:
+    return
+  while 1:
+    yield [x[y] for x, y in zip(seed, count)]
+    i = 0
+    while 1:
+      count[i] += 1
+      if count[i] == lengths[i]:
+        count[i] = 0
+        i += 1
+        if i == length:
+          return
+      else:
+        break
+  
 def word_wrap(stream, l, indent=0, width=78):
   """Writes to a stream with word wrapping.  indent is the size of the
   indent for every line.  width is the maximum width of the text."""

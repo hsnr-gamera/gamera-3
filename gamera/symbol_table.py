@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import types, string
+import types, string, keyword
 
 class SymbolTable:
    def __init__(self):
@@ -58,7 +58,7 @@ class SymbolTable:
       for i in ' !@#$%^&*()-=+~`|\{}[];:"\',<>?/':
          symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
-      if symbol[0] in string.digits:
+      if symbol[0] in string.digits or keyword.iskeyword(symbol):
          symbol = '_' + symbol
       # Split by '.' delimiters
       tokens = symbol.strip().split('.')

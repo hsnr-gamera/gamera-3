@@ -18,6 +18,19 @@
 #
 
 from gamera.plugin import *
+import gamera.util
+
+def generate_features_list(list, feature_functions = None):
+    ff = None
+    if (feature_functions == None):
+        import gamera.core
+        ff = gamera.core.Image.get_feature_functions()
+    else:
+        ff = feature_functions
+    progress = gamera.util.ProgressFactory("Generating features...")
+    for i in range(len(list)):
+        list[i].generate_features(ff)
+        progress.update(i, len(list))
 
 class black_area(PluginFunction):
     self_type = ImageType([ONEBIT])

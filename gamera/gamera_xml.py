@@ -375,3 +375,19 @@ class LoadXMLGlyphs(LoadXML):
    def add_property_value(self, data):
       self.property_value += data
 
+def glyphs_from_xml(filename):
+   """Return a list of glyphs from an xml file"""
+   return LoadXMLGlyphs().parse_filename(filename)
+
+def glyphs_with_features_from_xml(filename, feature_functions = None):
+   """Return a list of glyphs with features from an xml file"""
+   import features
+   glyphs = LoadXMLGlyphs().parse_filename(filename)
+   features.generate_features_list(glyphs, feature_functions)
+   return glyphs
+
+def glyphs_to_xml(filename):
+   """Save a list of glyphs to an xml file"""
+   WriteXMLFile(glyphs=self.get_glyphs()).write_filename(filename)
+
+

@@ -19,5 +19,25 @@
 
 import gamera.knncore
 
+from gamera.knncore import CITY_BLOCK
+from gamera.knncore import EUCLIDEAN
+from gamera.knncore import FAST_EUCLIDEAN
+
 class kNN(gamera.knncore.kNN):
-    pass
+    def __init__(self):
+        gamera.knncore.kNN.__init__(self)
+
+    def evaluate(self):
+        """Evaluate the performance of the kNN classifier using
+        leave-one-out cross-validation. The return value is a
+        floating-point number between 0.0 and 1.0"""
+        return self.leave_one_out()
+
+    def supports_interactive():
+        """Flag indicating that this classifier supports interactive
+        classification."""
+        return 1
+
+    def supports_optimization():
+        """Flag indicating that this classifier supports optimization."""
+        return 1

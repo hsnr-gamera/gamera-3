@@ -45,10 +45,18 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double city_block_distance(IterA known, const IterA end,
-				      IterB unknown, IterC weight) {
+				      IterB unknown, IterC weight, double stop_dist = -1.0) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * std::abs(*unknown - *known);
+      if (stop_dist > 0.0) {
+	for (; known != end; ++known, ++unknown, ++weight) {
+	  distance += *weight * std::abs(*unknown - *known);
+	  if (distance > stop_dist)
+	    return std::numeric_limits<double>::max();
+	}
+      } else {
+	for (; known != end; ++known, ++unknown, ++weight)
+	  distance += *weight * std::abs(*unknown - *known);
+      }
       return distance;
     }
 
@@ -63,10 +71,18 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double euclidean_distance(IterA known, const IterA end,
-				     IterB unknown, IterC weight) {
+				     IterB unknown, IterC weight, double stop_dist = -1.0) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
+      if (stop_dist > 0.0) {
+	for (; known != end; ++known, ++unknown, ++weight) {
+	  distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
+	  if (distance > stop_dist)
+	    return std::numeric_limits<double>::max();
+	}
+      } else {
+	for (; known != end; ++known, ++unknown, ++weight)
+	  distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
+      }
       return distance;
     }
 
@@ -81,10 +97,18 @@ namespace Gamera {
     */
     template<class IterA, class IterB, class IterC>
     inline double fast_euclidean_distance(IterA known, const IterA end,
-					  IterB unknown, IterC weight) {
+					  IterB unknown, IterC weight, double stop_dist = -1.0) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-	distance += *weight * ((*unknown - *known) * (*unknown - *known));
+      if (stop_dist > 0.0) {
+	for (; known != end; ++known, ++unknown, ++weight) {
+	  distance += *weight * ((*unknown - *known) * (*unknown - *known));
+	  if (distance > stop_dist)
+	    return std::numeric_limits<double>::max();
+	}
+      } else {
+	for (; known != end; ++known, ++unknown, ++weight)
+	  distance += *weight * ((*unknown - *known) * (*unknown - *known));
+      }
       return distance;
     }
 
@@ -163,8 +187,15 @@ namespace Gamera {
       size_t num_features() const {
 	return m_num_features;
       }
-      double* norm_vector() const {
+      double* get_norm_vector() const {
 	return m_norm_vector;
+      }
+      template<class T>
+      void set_norm_vector(T begin, const T end) {
+	assert(size_t(end - in_begin) == m_num_features);
+	double* cur = m_norm_vector;
+	for (; begin != end; ++begin, ++cur)
+	  *cur = *begin;	
       }
     private:
       size_t m_num_features;
@@ -245,15 +276,17 @@ namespace Gamera {
 	neighbors. The list of neighbors is always kept sorted
 	so that the largest distance is the last element.
       */
-      void add(const id_type id, double distance) {
+      double add(const id_type id, double distance) {
 	if (m_nn.size() < m_k) {
 	  m_nn.push_back(neighbor_type(id, distance));
 	  std::sort(m_nn.begin(), m_nn.end());
-	  } else if (distance < m_nn.back().distance) {
+	  return -1.0; // -1 means that we haven't found k neighbors yet
+	} else if (distance < m_nn.back().distance) {
 	  m_nn.back().distance = distance;
 	  m_nn.back().id = id;
 	  std::sort(m_nn.begin(), m_nn.end());
 	}
+	return m_nn.back().distance;
       }
       /*
 	Find the id of the majority of the k nearest neighbors. This

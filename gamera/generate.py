@@ -287,6 +287,9 @@ template = Template("""
               [[end]]
             break;
           [[end]]
+          default:
+            PyErr_SetString(PyExc_TypeError, \"Image types do not match function signature.\");
+            return 0;
         }
       [[end]]
       try {

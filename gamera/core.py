@@ -55,7 +55,7 @@ def load_image(filename, compression = DENSE):
    return image
 
 
-# displays a list of matrices in a grid-like window
+# displays a list of images in a grid-like window
 def display_multi(list):
    gui = config.get_option("__gui")
    if gui:
@@ -94,7 +94,6 @@ class ImageBase:
       self.feature_functions = []
 
    def __del__(self):
-      print "in ImageBase.__del__"
       if self._display:
          print "closing display"
          self._display.close()

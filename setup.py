@@ -19,13 +19,6 @@ try:
 except:
     pass
 
-plugins = ["gamera/plugins/image_utilities.py",
-           "gamera/plugins/morphology.py",
-           "gamera/plugins/tiff_support.py",
-           "gamera/plugins/threshold.py",
-           "gamera/plugins/gui_support.py",
-           "gamera/plugins/logical.py"]
-
 plugin_extensions = []
 for x in plugins:
     print x

@@ -88,7 +88,7 @@ namespace {
       ImageAccessor<Grey16Pixel> acc;
       typename Mat::const_row_iterator row = mat.row_begin();
       typename Mat::const_col_iterator col;
-      Grey16Pixel tmp;
+      char tmp;
       char* i = data;
       for (; row != mat.row_end(); ++row) {
 	for (col = row.begin(); col != row.end(); ++col) {
@@ -96,10 +96,10 @@ namespace {
 	    This should correctly map the 16 bit grey values onto
 	    the rgb color space. KWM
 	  */
-	  tmp = acc.get(col) / 257;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
+	  tmp = char(acc.get(col));
+	  *i = tmp; i++;
+	  *i = tmp; i++;
+	  *i = tmp; i++;
 	}
       }
     }

@@ -363,6 +363,8 @@ template = Template("""
          }
          delete return_value;
          return array;
+      [[else]]
+        return return_value;
       [[end]]
 
       [[if not function.self_type is None]]

@@ -194,8 +194,9 @@ namespace Gamera {
 	*/
 	typedef std::map<id_type, IdStat> map_type;
 	map_type id_map;
-	map_type::iterator current;
-	for (vec_type::iterator i = m_nn.begin(); i != m_nn.end(); ++i) {
+	typename map_type::iterator current;
+	for (typename vec_type::iterator i = m_nn.begin();
+	     i != m_nn.end(); ++i) {
 	  current = id_map.find(i->id);
 	  if (current == id_map.end()) {
 	    id_map.insert(std::pair<id_type,
@@ -212,15 +213,15 @@ namespace Gamera {
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
 	if (id_map.size() == 1)
-	  return make_pair(id_map.begin()->first,
-			   id_map.begin()->second.min_distance);
+	  return std::make_pair(id_map.begin()->first,
+				id_map.begin()->second.min_distance);
 	else {
 	  /*
 	    Find the id(s) with the maximum
 	  */
-	  std::vector<map_type::iterator> max;
+	  std::vector<typename map_type::iterator> max;
 	  max.push_back(id_map.begin());
-	  for (map_type::iterator i = id_map.begin();
+	  for (typename map_type::iterator i = id_map.begin();
 	       i != id_map.end(); ++i) {
 	    if (i->second.count > max[0]->second.count) {
 	      max.clear();
@@ -234,18 +235,19 @@ namespace Gamera {
 	    we are done.
 	  */
 	  if (max.size() == 1)
-	    return make_pair(max[0]->first, max[0]->second.min_distance);
+	    return std::make_pair(max[0]->first, max[0]->second.min_distance);
 	  else {
 	    /*
 	      Tie-break by average distance
 	    */
-	    map_type::iterator min_dist = max[0];
+	    typename map_type::iterator min_dist = max[0];
 	    for (size_t i = 1; i < max.size(); ++i) {
 	      if (max[i]->second.total_distance
 		  < min_dist->second.total_distance)
 		min_dist = max[i];
 	    }
-	    return make_pair(min_dist->first, min_dist->second.min_distance);
+	    return std::make_pair(min_dist->first,
+				  min_dist->second.min_distance);
 	  }
 	}
       }

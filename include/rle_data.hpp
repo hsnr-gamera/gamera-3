@@ -402,12 +402,12 @@ namespace Gamera {
     template<class V>
     class RleVectorIterator : public RleVectorIteratorBase<V, RleVectorIterator<V>,
 							   typename V::list_type::iterator> {
+	public:
       using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_i;
       using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_vec;
       using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_chunk;
       using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_pos;
 
-    public:
       typedef RLEProxy<V> proxy_type;
       typedef proxy_type reference;
       typedef proxy_type pointer;
@@ -432,12 +432,12 @@ namespace Gamera {
     class ConstRleVectorIterator
       : public RleVectorIteratorBase<V, ConstRleVectorIterator<V>,
 				     typename V::list_type::const_iterator> {
+	public:
       using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_i;
       using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_vec;
       using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_chunk;
       using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_pos;
 
-    public:
       typedef void reference;
       typedef typename V::value_type* pointer;
 

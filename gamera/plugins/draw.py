@@ -309,24 +309,31 @@ The coordinates can be specified either by eight floats or four Points:
 
 *value*:
   The pixel value to set for the curve.
+
+*accuracy*:
+  The rendering accuracy (in pixels)
 """
   self_type = ImageType(ALL)
   args = Args([Float("start_y"), Float("start_x"), Float("c1_y"), Float("c1_x"),
                Float("c2_y"), Float("c2_x"), Float("end_y"), Float("end_x"),
-               Pixel("value")])
+               Pixel("value"), Float("accuracy", default=0.1)])
 
   def __call__(self, *args):
-    if len(args) == 9:
+    if len(args) == 10:
       return _draw.draw_bezier(self, *args)
-    elif len(args) == 5:
+    elif len(args) in (5, 6):
       try:
         a = args[0]
         b = args[1]
         c = args[2]
         d = args[3]
         value = args[4]
+        if len(args) == 6:
+          accuracy = args[5]
+        else:
+          accuracy = 0.1
         return _draw.draw_bezier(self, a.y, a.x, b.y, b.x,
-                                 c.y, c.x, d.y, d.x, value)
+                                 c.y, c.x, d.y, d.x, value, accuracy)
       except KeyError, AttributeError:
         pass
       raise ValueError("Arguments are incorrect.")
@@ -412,5 +419,3 @@ class DrawModule(PluginModule):
   url = "http://gamera.dkc.jhu.edu/"
 
 module = DrawModule()
-
-del RGBPixel

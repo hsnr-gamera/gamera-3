@@ -20,8 +20,6 @@ def make_subtrees_stddev(graph, ratio):
    cur_label = 0
    remove = []
    i = 0
-   visited_edges = { }
-   remove = []
    for edge in graph.get_edges():
       lengths = []
       path = { }
@@ -64,7 +62,49 @@ def make_spanning_tree(glyphs):
    g.create_minimum_spanning_tree(glyphs, uniq_dists)
    return g
 
-def go(glyphs):
+def do_tests(filename):
+   from gamera import gamera_xml
+   from gamera import core
+   import os.path
+
+   image = core.load_image(filename)
+   glyphs = image.cc_analysis()
    g = make_spanning_tree(glyphs)
+   g_orig = g.copy()
+   c = make_subtrees_stddev(g, 1.5)
+   gamera_xml.glyphs_to_xml(c, os.path.abspath(os.path.dirname(filename) + "cluster_1_5_" + os.path.basename(filename)))
+   g = g_orig.copy()
+   c = make_subtrees_stddev(g, 2.0)
+   gamera_xml.glyphs_to_xml(c, os.path.abspath(os.path.dirname(filename) + "cluster_2_0_" + os.path.basename(filename)))
+   g = g_orig.copy()
+   c = make_subtrees_stddev(g, 2.5)
+   gamera_xml.glyphs_to_xml(c, os.path.abspath(os.path.dirname(filename) + "cluster_2_5_" + os.path.basename(filename)))
+   g = g_orig.copy()
+   c = make_subtrees_stddev(g, 3.0)
+   gamera_xml.glyphs_to_xml(c, os.path.abspath(os.path.dirname(filename) + "cluster_3_0_" + os.path.basename(filename)))
+
+def make_unique_names(glyphs):
+   for i in range(len(glyphs)):
+      glyphs[i].classify_automatic(glyphs[i].get_main_id() + str(i))
+
+def graphvis_output(G, filename):
+   fd = open(filename, 'w')
+   if G.is_directed():
+      fd.write("digraph G {\n")
+      for node in G.get_nodes():
+         for edge in node.out_edges:
+            fd.write('   %s -> %s [ label = %f ];\n' % (node(), edge.to_node(), edge()))
+      fd.write("}\n")
+   else:
+      fd.write("graph G {\n")
+      for edge in G.get_edges():
+         fd.write('   "%s" -- "%s" [label="%.2f",len="%f"];\n'
+                  % (edge.from_node().get_main_id(), edge.to_node().get_main_id(),
+                     edge.cost, edge.cost / 4))
+      fd.write("}\n")
+   fd.close()
 
 
+
+
+   

@@ -201,12 +201,12 @@ namespace {
 	size_t bit_index = 0, k = 32;
 	for (size_t j = 0; j < matrix.ncols(); j++, k--, it++) {
 	  if (is_black(*it))
-	    bits[k] = 1;
+	    bits[k - 1] = 1;
 	  else
-	    bits[k] = 0;
+	    bits[k - 1] = 0;
 	  if (k == 0) {
 	    data[bit_index] = bits.to_ulong();
-            #if defined(__i386__)
+            #if defined(__i386__) || defined(_MSC_VER)
 	    byte_swap32((unsigned char *)&data[bit_index]);
             #endif
 	    bit_index++;
@@ -216,7 +216,7 @@ namespace {
 	// The last 32 pixels need to be saved, even if they are not full
 	if (k != 32) {
 	  data[bit_index] = bits.to_ulong();
-          #if defined(__i386__)
+          #if defined(__i386__) || defined(_MSC_VER)
 	  byte_swap32((unsigned char *)&data[bit_index]);
           #endif
 	}

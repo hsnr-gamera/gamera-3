@@ -135,7 +135,7 @@ GraphObject* graph_copy(GraphObject* so, size_t flags) {
 
 PyObject* graph_copy(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  long flags = FLAG_DEFAULT;
+  long flags = so->m_flags;
   if (PyArg_ParseTuple(args, "|i", &flags) <= 0)
     return 0;
   return (PyObject*)graph_copy(so, (size_t)flags);

@@ -31,8 +31,6 @@ class tiff_info(PluginFunction):
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("tiff_info")
-tiff_info_class = tiff_info
-tiff_info = tiff_info()
 
 class load_tiff(PluginFunction):
     """Loads a TIFF file from disk.
@@ -87,9 +85,11 @@ class TiffSupportModule(PluginModule):
     else:
         extra_libraries = ["tiff"]
     cpp_namespaces = ["Gamera"]
-    functions = [tiff_info_class, load_tiff_class, save_tiff]
+    functions = [tiff_info, load_tiff_class, save_tiff]
     cpp_include_dirs = ["src/libtiff"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
 module = TiffSupportModule()
+
+tiff_info = tiff_info()

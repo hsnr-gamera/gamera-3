@@ -19,7 +19,12 @@
 
 from gamera.plugin import *
 
-class thin_zs(PluginFunction):
+class Thinning(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT])
+    doc_examples = [(ONEBIT,)]
+
+class thin_zs(Thinning):
     """Thins (skeletonizes) a ONEBIT image using the Zhang and Suen algorithm
 
 T. Y. Zhang and C. Y. Suen. 1984.
@@ -30,11 +35,9 @@ R. C. Gonzalez and P. Wintz. 1987
 *Digital Image Processing.*,
 2. edition. 398-402. 
 """
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT])
-    doc_examples = [(ONEBIT,)]
-
-class thin_hs(PluginFunction):
+    pass
+    
+class thin_hs(Thinning):
     """Thins (skeletonizes) a ONEBIT image using the Haralick and Shapiro algorithm
 
 This algorithm has the interesting property that all pixels are never more than
@@ -45,20 +48,16 @@ R. M. Haralick and L. G. Shapiro. 1992.
 Vol. 1, Chapter 5 (especially 5.10.1).
 Reading, MA: Addison-Wesley.
 """
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT])
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class thin_lc(PluginFunction):
+class thin_lc(Thinning):
     """Thins (skeletonizes) a ONEBIT image using the Lee and Chen algorithm.
 
 H.-J. Lee and B. Chen. 1992.
 Recognition of handwritten chinese characters via short
 line segments. *Pattern Recognition*. 25(5) 543-552.
 """
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT])
-    doc_examples = [(ONEBIT,)]
+    pass
 
 class ThinningModule(PluginModule):
     category = "Filter/Thinning"
@@ -68,3 +67,5 @@ class ThinningModule(PluginModule):
     author = "Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)"
     url = "http://gamera.dkc.jhu.edu/"
 module = ThinningModule()
+
+del Thinning

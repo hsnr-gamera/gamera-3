@@ -52,14 +52,13 @@ class image_save(PluginFunction):
                  Choice("File format", ["TIFF", "PNG"])
                  ])
     def __call__(image, name, format):
-
-        if format==0:
+        if format == 0 or format.upper() == "TIFF":
             try:
                 from gamera.plugins import tiff_support
                 image.save_tiff(name)
             except:
                 print "Image could not be saved because TIFF Support is not functioning properly."
-        else:
+        elif format == 1 or format.upper() == "PNG":
             try:
                 from gamera.plugins import png_support
                 image.save_PNG(name)

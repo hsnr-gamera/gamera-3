@@ -25,10 +25,13 @@ import _arithmetic
 
 ARITHMETIC_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
 
-########################################
-# Convolution methods
+class ArithmeticCombine(PluginFunction):
+    self_type = ImageType(ARITHMETIC_TYPES)
+    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check('in_place', default=False)])
+    return_type = ImageType(ARITHMETIC_TYPES)
+    image_types_must_match = True
 
-class add_images(PluginFunction):
+class add_images(ArithmeticCombine):
     """Adds the corresponding pixels of two images together.
 
 The two images must be the same type.
@@ -41,16 +44,11 @@ on either image to crop appropriately if necessary for your specific case.
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
-    self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
-    return_type = ImageType(ARITHMETIC_TYPES)
-    image_types_must_match = True
-
     def __call__(self, other, in_place=False):
        return _arithmetic.add_images(self, other, in_place)
     __call__ = staticmethod(__call__)
 
-class subtract_images(PluginFunction):
+class subtract_images(ArithmeticCombine):
     """Adds the pixels of another image from the current image.
 
 The two images must be the same type.
@@ -63,16 +61,11 @@ on either image to crop appropriately if necessary for your specific case.
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
-    self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
-    return_type = ImageType(ARITHMETIC_TYPES)
-    image_types_must_match = True
-
     def __call__(self, other, in_place=False):
        return _arithmetic.subtract_images(self, other, in_place)
     __call__ = staticmethod(__call__)
 
-class divide_images(PluginFunction):
+class divide_images(ArithmeticCombine):
     """Divides the pixels of the current image by the pixels of
 another image.
 
@@ -87,15 +80,15 @@ on either image to crop appropriately if necessary for your specific case.
    contents of the current image.
 """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
-    args = Args([ImageType([GREYSCALE, GREY16, FLOAT], 'other'), Check("in_place", default=False)])
+    args = Args([ImageType([GREYSCALE, GREY16, FLOAT], 'other'),
+                 Check("in_place", default=False)])
     return_type = ImageType([GREYSCALE, GREY16, FLOAT])
-    image_types_must_match = True
-
+                  
     def __call__(self, other, in_place=False):
        return _arithmetic.divide_images(self, other, in_place)
     __call__ = staticmethod(__call__)
 
-class multiply_images(PluginFunction):
+class multiply_images(ArithmeticCombine):
     """Multiplies the corresponding pixels of two images together.
 
 The two images must be the same type.
@@ -108,11 +101,6 @@ on either image to crop appropriately if necessary for your specific case.
    If true, the operation will be performed in-place, changing the
    contents of the current image.
 """
-    self_type = ImageType(ARITHMETIC_TYPES)
-    args = Args([ImageType(ARITHMETIC_TYPES, 'other'), Check("in_place", default=False)])
-    return_type = ImageType(ARITHMETIC_TYPES)
-    image_types_must_match = True
-
     def __call__(self, other, in_place=False):
        return _arithmetic.multiply_images(self, other, in_place)
     __call__ = staticmethod(__call__)
@@ -126,3 +114,5 @@ class ArithmeticModule(PluginModule):
     url = "http://gamera.dkc.jhu.edu/"
 module = ArithmeticModule()
     
+del ARITHMETIC_TYPES
+del ArithmeticCombine

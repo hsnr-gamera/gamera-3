@@ -51,6 +51,7 @@
 
 #include "vigra/rgbvalue.hxx"
 #include "vigra/accessor.hxx"
+#include "vigra/interpolating_accessor.hxx"
 #include "image_types.hpp"
 #include "static_image.hpp"
 
@@ -293,6 +294,59 @@ namespace Gamera {
     ImageAccessor<value_type> m_accessor;
   };
 
+  class RawCCAccessor {
+  public:
+    typedef OneBitPixel value_type;
+    typedef OneBitPixel VALUETYPE;
+
+    RawCCAccessor(OneBitPixel label) : m_label(label) { }
+    
+    template <class ITERATOR>
+    VALUETYPE operator()(ITERATOR const & i) const {
+      if (m_label == m_accessor(i))
+	return 1;
+      else
+	return 0;
+    }
+    
+    template <class ITERATOR, class DIFFERENCE>
+    VALUETYPE operator()(ITERATOR & i, DIFFERENCE diff) const
+    {
+      ITERATOR tmp = i + diff;
+      if (m_label == m_accessor(tmp))
+        return 1; 
+      else
+	return 0;
+    }
+
+    template <class V, class ITERATOR>
+    void set(V const & value, ITERATOR & i) const 
+    {
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
+      if (m_accessor(i) == m_label)
+	if (tmp) {
+	  m_accessor.set(m_label, i);
+	} else {
+	  m_accessor.set(0, i);
+	}
+    }
+
+    template <class V, class ITERATOR, class DIFFERENCE>
+    void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
+    { 
+        VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
+	ITERATOR tmpi = i + diff;
+	if (m_accessor(tmpi) == m_label)
+	  if (tmp) {
+	    m_accessor.set(m_label, tmpi);
+	  } else {
+	    m_accessor.set(0, tmpi);
+	  }
+    }
+    OneBitPixel m_label;
+    ImageAccessor<value_type> m_accessor;
+  };
+
   /*
     The OneBitAccessor hides the fact that OneBitValues can be something other
     than 0 or 1 in Gamera images.
@@ -340,6 +394,46 @@ namespace Gamera {
     ImageAccessor<value_type> m_accessor;
   };
 
+  // A OneBitAccessor that doesn't do any pixel inversion.  Should
+  // only be used when converting a OneBit image to another OneBit image.
+
+  class RawOneBitAccessor {
+  public:
+    typedef OneBitPixel value_type;
+    typedef OneBitPixel VALUETYPE;
+    
+    template <class ITERATOR>
+    VALUETYPE operator()(ITERATOR const & i) const {
+      return m_accessor(i);
+    }
+    
+    template <class ITERATOR, class DIFFERENCE>
+    VALUETYPE operator()(ITERATOR & i, DIFFERENCE diff) const
+    { 
+      return m_accessor(i + diff);
+    }
+    
+    template <class V, class ITERATOR>
+    void set(V const & value, ITERATOR & i) const 
+    { 
+      if (value)
+	m_accessor.set(1, i);
+      else
+	m_accessor.set(0, i);
+    }
+    
+    template <class V, class ITERATOR, class DIFFERENCE>
+    void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
+    { 
+      if (value)
+	m_accessor.set(1, i + diff);
+      else
+	m_accessor.set(0, i + diff);
+    }
+
+    ImageAccessor<value_type> m_accessor;
+  };
+
   /*
     These classes are used to make the selection of the appropriate accessor for a
     given type easier. They are, in essence, compile time factories that use
@@ -354,6 +448,14 @@ namespace Gamera {
     static accessor make_accessor(const T& mat) {
       return accessor();
     }
+    typedef Accessor<typename T::value_type> raw_accessor;
+    static raw_accessor make_raw_accessor(const T& mat) {
+      return raw_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, typename T::value_type> interp_accessor;
+    static interp_accessor make_interp_accessor(const T& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
   };
 
   template<>
@@ -361,6 +463,14 @@ namespace Gamera {
     typedef Gamera::RGBAccessor<RGBPixel> accessor;
     static accessor make_accessor(const RGBImageView& mat) {
       return accessor();
+    }
+    typedef Gamera::RGBAccessor<RGBPixel> raw_accessor;
+    static raw_accessor make_raw_accessor(const RGBImageView& mat) {
+      return raw_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, RGBPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const RGBImageView& mat) {
+      return interp_accessor(make_raw_accessor(mat));
     }
   };
 
@@ -370,6 +480,14 @@ namespace Gamera {
     static accessor make_accessor(const OneBitImageView& mat) {
       return accessor();
     }
+    typedef RawOneBitAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const OneBitImageView& mat) {
+      return raw_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const OneBitImageView& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
   };
 
   template<>
@@ -377,6 +495,14 @@ namespace Gamera {
     typedef OneBitAccessor accessor;
     static accessor make_accessor(const OneBitRleImageView& mat) {
       return accessor();
+    }
+    typedef RawOneBitAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const OneBitRleImageView& mat) {
+      return raw_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const OneBitRleImageView& mat) {
+      return interp_accessor(make_raw_accessor(mat));
     }
   };
 
@@ -386,6 +512,14 @@ namespace Gamera {
     static accessor make_accessor(const StaticImage<OneBitPixel>& mat) {
       return accessor();
     }
+    typedef RawOneBitAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const StaticImage<OneBitPixel>& mat) {
+      return raw_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const StaticImage<OneBitPixel>& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
   };
 
   template<>
@@ -394,6 +528,14 @@ namespace Gamera {
     static accessor make_accessor(const Cc& mat) {
       return accessor(mat.label());
     }
+    typedef RawCCAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const Cc& mat) {
+      return raw_accessor(mat.label());
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const Cc& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
   };
 
   template<>
@@ -401,6 +543,14 @@ namespace Gamera {
     typedef CCAccessor accessor;
     static accessor make_accessor(const RleCc& mat) {
       return accessor(mat.label());
+    }
+    typedef RawCCAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const RleCc& mat) {
+      return raw_accessor(mat.label());
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(const RleCc& mat) {
+      return interp_accessor(make_raw_accessor(mat));
     }
   };
 
@@ -512,7 +662,6 @@ namespace vigra {
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;
   };
-
 }
 #endif
 

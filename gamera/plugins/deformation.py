@@ -24,9 +24,8 @@ from gamera.plugin import *
 try:
     from gamera.core import *
 except:
-    0 + 1
+    pass
 
-import gamera.config
 import _deformation
 
 class rotate(PluginFunction):
@@ -72,6 +71,7 @@ class DefModule(PluginModule):
     cpp_namespace=["Gamera"]
     category = "Deformations"
     functions = [rotate,noise,inkrub,wave]
-    author = "Michael Droettboom and Karl MacMillan"
+    author = "Albert Bzreckzo"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()
+

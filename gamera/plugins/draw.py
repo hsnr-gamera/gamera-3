@@ -25,10 +25,81 @@ except:
   def RGBPixel(*args):
     pass
 
+class draw_marker(PluginFunction):
+  """Draws a marker at a given point.
+
+Coordinates are relative to the offset of the image.  Therefore, if the image
+offset is (5, 5), a marker at (5, 5) will be in the upper left hand corner
+of the image.
+
+The coordinates can be specified either by two floats or two Points:
+
+  *y1*:
+    Starting *y* coordinate.
+  *x1*:
+    Starting *x* coordinate.
+
+**or**
+
+  *a*:
+    The start ``Point``.
+
+*size*
+  The size of the marker (number of pixels)
+
+*style*
+  PLUS + (0)
+
+  X + (1)
+
+  HOLLOW_SQUARE (2)
+
+  FILLED_SQUARE (3)
+
+*value*:
+  The pixel value to set for the line.
+"""
+  self_type = ImageType(ALL)
+  args = Args([Float("y1"), Float("x1"), Int("size", default=5),
+               Choice("style", "+ x hollow_square filled_square".split(), default=0), Pixel("value")])
+  authors = "Michael Droettboom"
+
+  def __call__(self, *args):
+    if len(args) == 5:
+      return _draw.draw_marker(self, *args)
+    elif len(args) == 4:
+      try:
+        a = args[0]
+        size = args[1]
+        style = args[2]
+        value = args[3]
+        return _draw.draw_marker(self, a.y, a.x, size, style, value)
+      except KeyError, AttributeError:
+        pass
+    raise ValueError("Arguments are incorrect.")
+  __call__ = staticmethod(__call__)
+
+  def __doc_example1__():
+    from random import randint
+    from gamera.core import Image
+    image = Image(0, 0, 100, 100, RGB, DENSE)
+    points = [randint(0, 100) for x in range(8)]
+    image.draw_bezier(*tuple(list(points) + [RGBPixel(255, 0, 0)]))
+    image.draw_marker(points[0], points[1], 7, 0, RGBPixel(0, 0, 255))
+    image.draw_marker(points[2], points[3], 7, 1, RGBPixel(0, 255, 0))
+    image.draw_marker(points[4], points[5], 7, 1, RGBPixel(0, 255, 0))
+    image.draw_marker(points[6], points[7], 7, 0, RGBPixel(0, 0, 255))
+    return image
+  doc_examples = [(__doc_example1__,)]
+
 class draw_line(PluginFunction):
   """Draws a straight line between two points.
 
-The coordinates can be specified either by four integers or two Points:
+Coordinates are relative to the offset of the image.  Therefore, if the image
+offset is (5, 5), a line at (5, 5) will be in the upper left hand corner
+of the image.
+
+The coordinates can be specified either by four floats or two Points:
 
   *y1*:
     Starting *y* coordinate.
@@ -88,6 +159,10 @@ code and can been seen in compiled executable.
 class draw_hollow_rect(PluginFunction):
   """Draws a hollow rectangle.
 
+Coordinates are relative to the offset of the image.  Therefore, if the image
+offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
+of the image.
+
 The coordinates can be specified either by four integers or two Points:
 
   *y1*:
@@ -110,7 +185,7 @@ The coordinates can be specified either by four integers or two Points:
   The pixel value to set for the lines.
 """
   self_type = ImageType(ALL)
-  args = Args([Int("y1"), Int("x1"), Int("y2"), Int("x2"), Pixel("value")])
+  args = Args([Float("y1"), Float("x1"), Float("y2"), Float("x2"), Pixel("value")])
   doc_examples = [(ONEBIT, 5, 5, 20, 25, 1), (RGB, 5, 5, 20, 25, RGBPixel(255, 0, 0))]
 
   def __call__(self, *args):
@@ -140,6 +215,10 @@ The coordinates can be specified either by four integers or two Points:
 
 class draw_filled_rect(PluginFunction):
   """Draws a filled rectangle.
+
+Coordinates are relative to the offset of the image.  Therefore, if the image
+offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
+of the image.
 
 The coordinates can be specified either by four integers or two Points:
 
@@ -194,7 +273,11 @@ The coordinates can be specified either by four integers or two Points:
 class draw_bezier(PluginFunction):
   """Draws a cubic bezier curve
 
-The coordinates can be specified either by six integers or three Points:
+Coordinates are relative to the offset of the image.  Therefore, if the image
+offset is (5, 5), a curve at (5, 5) will be in the upper left hand corner
+of the image.
+
+The coordinates can be specified either by eight floats or four Points:
 
   *start_y*:
     Starting *y* coordinate.
@@ -322,10 +405,12 @@ class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Draw"
-  functions = [draw_line, draw_bezier,
+  functions = [draw_line, draw_bezier, draw_marker,
                draw_hollow_rect, draw_filled_rect, flood_fill,
                remove_border, highlight]
   author = "Michael Droettboom"
   url = "http://gamera.dkc.jhu.edu/"
 
 module = DrawModule()
+
+del RGBPixel

@@ -19,7 +19,13 @@
 from gamera.plugin import *
 import _segmentation
 
-class cc_analysis(PluginFunction):
+
+class Segmenter(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("ccs")
+    doc_examples = [(ONEBIT,)]
+
+class cc_analysis(Segmenter):
     """Performs connected component analysis on the image.
 
 This algorithm assumes 8-connected components, meaning any two pixels are
@@ -36,20 +42,15 @@ you do not want this behavior, use the image_copy_ function on each of the CCs::
 
    ccs = [x.image_copy() for x in ccs]
 
-.. _image_copy: utility.html#image-copy
+.. _image_copy: utility.html#image-copy"""
+    pass
 
-"""
-    self_type = ImageType([ONEBIT])
-    return_type = ImageList("ccs")
-    doc_examples = [(ONEBIT,)]
-
-class cc_and_cluster(PluginFunction):
+class cc_and_cluster(Segmenter):
     """Performs connected component analysis using cc_analysis_ and then
 clusters the CC's according to their similarity.
 
 TODO: We need some more detailed documentation here."""
     pure_python = True
-    self_type = ImageType([ONEBIT])
     args = Args([Float('ratio', default = 1.0), Int('distance', default=2)])
     return_type = ImageList("ccs")
     def __call__(image, ratio = 1.0, distance = 2):
@@ -59,50 +60,40 @@ TODO: We need some more detailed documentation here."""
     __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT,)]
 
-class splitx(PluginFunction):
+class splitx(Segmenter):
     """Splits an image vertically.
 
 The split point is determined automatically
 by finding a valley in the projections near the center of the image."""
-    self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
-    return_type = ImageList("splits")
     doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splitx(self, center)
     __call__ = staticmethod(__call__)
 
-class splitx_max(PluginFunction):
+class splitx_max(Segmenter):
     """Splits an image vertically.
 
 The split point is determined automatically
 by finding a peak in the projections near the center of the image."""
-    self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
-    return_type = ImageList("splits")
-    doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splitx_max(self, center)
     __call__ = staticmethod(__call__)
 
-class splity(PluginFunction):
+class splity(Segmenter):
     """Splits an image horizontally.
 
 The split point is determined automatically
 by finding a valley in the projections near the center of the image."""
-    self_type = ImageType([ONEBIT])
     args = Args([Float("center")])
-    return_type = ImageList("splits")
-    doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
         return _segmentation.splity(self, center)
     __call__ = staticmethod(__call__)
 
-class splitx_base(PluginFunction):
-    pure_python = 1
-    self_type = ImageType([ONEBIT])
+class splitx_base(Segmenter):
+    pure_python = True
     return_type = ImageList("splits")
-    doc_examples = [(ONEBIT,)]
     
 class splitx_left(splitx_base):
     """Splits an image vertically.
@@ -124,11 +115,9 @@ by finding a valley in the projections near the right of the image."""
         return self.splitx(0.75)
     __call__ = staticmethod(__call__)
 
-class splity_base(PluginFunction):
-    pure_python = 1
-    self_type = ImageType([ONEBIT])
+class splity_base(Segmenter):
+    pure_python = True
     return_type = ImageList("splits")
-    doc_examples = [(ONEBIT,)]
     
 class splity_top(splity_base):
     """Splits an image horizontally.
@@ -235,3 +224,7 @@ class SegmentationModule(PluginModule):
     url = "http://gamera.dkc.jhu.edu/"
 
 module = SegmentationModule()
+
+del Segmenter
+del splitx_base
+del splity_base

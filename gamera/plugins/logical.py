@@ -18,12 +18,13 @@
 #
 
 from gamera.plugin import *
+import _logical
   
-class _LogicalBase(PluginFunction):
+class LogicalCombine(PluginFunction):
   self_type = ImageType([ONEBIT])
   args = Args([ImageType([ONEBIT], "mask"), Check("in_place", default=False)])
 
-class and_image(_LogicalBase):
+class and_image(LogicalCombine):
   """Perform the AND operation on two images.
 
 Since it would be difficult to determine what exactly to do if the images
@@ -35,8 +36,11 @@ are a different size, the two images must be the same size.
 
 See or_image_ for some usage examples.
 """
+  def __call__(self, other, in_place=False):
+    return _arithmetic.and_image(self, other, in_place)
+  __call__ = staticmethod(__call__)
 
-class or_image(_LogicalBase):
+class or_image(LogicalCombine):
   """Perform the OR operation on two images.
 
 Since it would be difficult to determine what exactly to do if the images
@@ -54,7 +58,7 @@ objects that keep track of a bounding box and refer to the underlying data,
 therefore creating/destroying a number of these on the fly should not have
 a significant impact on performance.
 
-"Padding" an image.
+Padding an image.
 
 .. code:: Python
 
@@ -64,7 +68,7 @@ a significant impact on performance.
     new_image.subimage(padding, padding, image.nrows, image.ncols).or_image(image, True)
     return new_image
 
-"Stamping" an image over a larger image.  Use subimage to change the
+Stamping an image over a larger image.  Use subimage to change the
 destination of the stamp.
 
 .. code:: Python
@@ -89,10 +93,12 @@ Removing a connected component from its original image.
 
   # src: the original image
   # cc: a cc on that image
-  src.clip_image(cc).xor_image(cc, True)
-"""
+  src.clip_image(cc).xor_image(cc, True)"""
+  def __call__(self, other, in_place=False):
+    return _arithmetic.or_image(self, other, in_place)
+  __call__ = staticmethod(__call__)
 
-class xor_image(_LogicalBase):
+class xor_image(LogicalCombine):
   """Perform the XOR operation on two images.
 
 Since it would be difficult to determine what exactly to do if the images
@@ -104,6 +110,9 @@ are a different size, the two images must be the same size.
 
 See or_image_ for some usage examples.
 """
+  def __call__(self, other, in_place=False):
+    return _arithmetic.xor_images(self, other, in_place)
+  __call__ = staticmethod(__call__)
 
 class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""
@@ -115,3 +124,5 @@ class LogicalModule(PluginModule):
   url = "http://gamera.dkc.jhu.edu/"
 
 module = LogicalModule()
+
+del LogicalCombine

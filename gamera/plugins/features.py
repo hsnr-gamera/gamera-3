@@ -18,20 +18,22 @@
 
 import array
 from gamera.plugin import *
-import gamera.util
 import _features
 
-class black_area(PluginFunction):
-    """The simplest of all feature-generating functions, ``black_area`` simply
-returns the number of black pixels.
-
-.. warning: This feature is not scale invariant."""
+class Feature(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=1)
     feature_function = True
     doc_examples = [(ONEBIT,)]
 
-class moments(PluginFunction):
+class black_area(Feature):
+    """The simplest of all feature-generating functions, ``black_area`` simply
+returns the number of black pixels.
+
+.. warning: This feature is not scale invariant."""
+    pass
+
+class moments(Feature):
     """Returns *moments* of the image.
 
 The elements of the returned ``FloatVector`` are:
@@ -46,12 +48,9 @@ The rest of these I'm not so sure about anymore.
 
 These features are scale invariant.
 """
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=9)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class nholes(PluginFunction):
+class nholes(Feature):
     """Returns the average number of transitions from white to black in each
 row or column.
 
@@ -62,12 +61,9 @@ The elements of the returned ``FloatVector`` are:
 
 These features are scale invariant.
 """
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=2)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class nholes_extended(PluginFunction):
+class nholes_extended(Feature):
     """Divides the image into four quadrants and then does a
 nholes_ analysis on each of those quadrants.
 
@@ -80,43 +76,31 @@ The elements of the returned ``FloatVector`` are:
 
 These features are scale invariant.
 """
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=8)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class volume(PluginFunction):
+class volume(Feature):
     """The percentage of black pixels within the rectangular bounding
 box of the image.  Result in range (0, 1].
 
 This feature is scale and rotation invariant.
 """
-    self_type = ImageType([ONEBIT])
-    return_type = FloatVector(length=1)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class area(PluginFunction):
+class area(Feature):
     """The area of the bounding box (i.e. *nrows* * *ncols*).
 
 .. warning: this feature is not scale invariant.
     """
-    self_type = ImageType([ONEBIT])
-    return_type = FloatVector(length=1)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
+    pass
 
-class aspect_ratio(PluginFunction):
+class aspect_ratio(Feature):
     """The aspect ratio of the bounding box (i.e. *ncols* / *nrows*).
 
 This feature is scale invariant.
     """
-    self_type = ImageType([ONEBIT])
-    return_type = FloatVector(length=1)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
-
-class compactness(PluginFunction):
+    pass
+    
+class compactness(Feature):
     """Loosely speaking, compactness is a volume to surface area ratio
 of the connected components.  Highly ornate connected components have
 a low compactness, whereas a perfect circle has very high compactness.
@@ -134,28 +118,19 @@ This feature is relatively scale and rotation invariant, though as the
 image scales, the pixel size relative to the image size diminishes.  This
 is currently not corrected for.
 """
-    self_type = ImageType([ONEBIT])
-    return_type = FloatVector(length=1)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
+    pass
     
-class volume16regions(PluginFunction):
+class volume16regions(Feature):
     """Divides the image into a 4 x 4 grid of 16 regions and calculates
 the volume within each."""
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=16)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class volume64regions(PluginFunction):
+class volume64regions(Feature):
     """Divides the image into a 8 x 8 grid of 64 regions and calculates
 the volume within each."""
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=64)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class zernike_moments(PluginFunction):
+class zernike_moments(Feature):
     """I can't say I understand much about Zernike moments, except that
 they are well known for all kinds of invariance, and are often detailed
 enough to reconstruct many shapes in a reasonable way.
@@ -163,12 +138,9 @@ enough to reconstruct many shapes in a reasonable way.
 A. Khotanzad and Y. Hong. Invariant image recognition by Zernike moments.
 *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 12(5), 1990.
 """
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=26)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
-class skeleton_features(PluginFunction):
+class skeleton_features(Feature):
     """Generates a number of features based on the skeleton of an image.
 First, the image in skeletonized using the Lee and Chen algorithm, which
 guarantees that the pixels of the resulting skeleton are never more than
@@ -182,18 +154,13 @@ guarantees that the pixels of the resulting skeleton are never more than
 4. Number of *x*-axis crossings
 5. Number of *y*-axis crossings
 """
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=6)
-    feature_function = True
 
-class top_bottom(PluginFunction):
+class top_bottom(Feature):
     """Features useful only for segmentation-free analysis.  Currently, the
 first feature is the first row containing a black pixel, and the second feature
 is the last row containing a black pixel."""
-    self_type = ImageType([ONEBIT])
     return_type = FloatVector(length=2)
-    feature_function = True
-    doc_examples = [(ONEBIT,)]
 
 class generate_features(PluginFunction):
     """Generates features for the image by calling a number of feature functions
@@ -271,3 +238,8 @@ def generate_features_list(list, features='all'):
              progress.step()
    finally:
        progress.kill()
+
+generate_features = generate_features()
+
+del Feature
+del array

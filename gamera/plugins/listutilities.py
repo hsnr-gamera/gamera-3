@@ -17,7 +17,6 @@
 #
 
 from gamera.plugin import *
-# import _listutilities
 
 class permute_list(PluginFunction):
    """Permutes the given list (in place) one step.
@@ -52,6 +51,4 @@ class ListUtilitiesModule(PluginModule):
 module = ListUtilitiesModule()
 
 permute_list = permute_list()
-
-__all__ = 'module permute_list'.split()
 

@@ -175,6 +175,7 @@ static PyObject* rgbpixel_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* rgbpixel_repr(PyObject* self) {
   RGBPixel* x = ((RGBPixelObject*)self)->m_x;
+  std::cerr << *x;
   return PyString_FromFormat("<gameracore.RGBPixel red: %i green: %i blue: %i>",
 			     x->red(), x->green(), x->blue());
 }

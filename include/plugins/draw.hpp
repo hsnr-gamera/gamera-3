@@ -22,9 +22,14 @@
 #define mgd12032001_draw_hpp
 
 #include <stack>
+#include <stdio.h>
 
 template<class T>
 inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x2) {
+  y1 -= image.ul_y();
+  y2 -= image.ul_y();
+  x1 -= image.ul_x();
+  x2 -= image.ul_x();
   y1 = std::min(y1, image.nrows());
   y2 = std::min(y2, image.nrows());
   x1 = std::min(x1, image.nrows());
@@ -147,30 +152,12 @@ void draw_line_points(T& image, Point& a, Point& b,
 
 
 template<class T>
-void draw_hollow_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
+void draw_hollow_rect(T& image, double y1_, double x1_, double y2_, double x2_,
 		      typename T::value_type value) {
-  size_t x1, x2, y1, y2;
-  if (x1_ > x2_)
-    x1 = x2_, x2 = x1_;
-  else
-    x1 = x1_, x2 = x2_;
-
-  if (y1_ > y2_)
-    y1 = y2_, y2 = y1_;
-  else
-    y1 = y1_, y2 = y2_;
-
-  _clip_points(image, y1, x1, y2, x2);
-
-  for (size_t x = x1; x < x2; ++x) {
-    image.set(y1, x, value);
-    image.set(y2, x, value);
-  }
-
-  for (size_t y = y1; y < y2; ++y) {
-    image.set(y, x1, value);
-    image.set(y, x2, value);
-  }
+  draw_line(image, y1_, x1_, y1_, x2_, value);
+  draw_line(image, y1_, x1_, y2_, x1_, value);
+  draw_line(image, y2_, x2_, y2_, x1_, value);
+  draw_line(image, y2_, x2_, y1_, x2_, value);
 }
 
 template<class T>
@@ -192,6 +179,30 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
   for (size_t y = y1; y < y2; ++y) 
     for (size_t x = x1; x < x2; ++x)
       image.set(y, x, value);
+}
+
+template<class T>
+void draw_marker(T& image, double& y1, double& x1, size_t size, size_t style, typename T::value_type value) {
+  double half_size = ceil(double(size) / 2.0);
+  switch (style) {
+  case 0:
+    draw_line(image, y1 - half_size, x1, y1 + half_size, x1, value);
+    draw_line(image, y1, x1 - half_size, y1, x1 + half_size, value);
+    break;
+  case 1:
+    draw_line(image, y1 - half_size, x1 - half_size, y1 + half_size, x1 + half_size, value);
+    draw_line(image, y1 - half_size, x1 + half_size, y1 + half_size, x1 - half_size, value);
+    break;
+  case 2:
+    draw_hollow_rect(image, y1 - half_size, x1 - half_size, y1 + half_size, x1 + half_size, value);
+    break;
+  case 3:
+    draw_filled_rect(image, size_t(std::max(y1 - half_size, 0.0)), size_t(std::max(x1 - half_size, 0.0)), 
+		     size_t(y1 + half_size), size_t(x1 + half_size), value);
+    break;
+  default:
+    throw std::runtime_error("Invalid style.");
+  }
 }
 
 template<class T>
@@ -295,6 +306,8 @@ struct FloodFill {
 
 template<class T>
 void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
+  y -= image.ul_y();
+  x -= image.ul_x();
   if (y >= image.nrows() || x >= image.ncols())
     throw std::runtime_error("Coordinate out of range.");
   typename T::value_type interior = image.get(y, x);

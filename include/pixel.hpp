@@ -99,25 +99,25 @@ namespace Gamera {
      * Construct a RGB pixel from a GreyScalePixel. RGB are all
      * set to the passed in GreyScalePixel.
      */
-    Rgb(GreyScalePixel grey) : RGBValue<T>(grey) { }
-
+    explicit Rgb(GreyScalePixel grey) : RGBValue<T>(grey) { }
+    
     /**
      * Construct a RGB pixel from a Grey16Pixel. RGB are all
      * set to the passed in Grey16Pixel.
      */
-    Rgb(Grey16Pixel grey) : RGBValue<T>(grey) { }
+    explicit Rgb(Grey16Pixel grey) : RGBValue<T>(grey) { }
 
     /**
      * Construct a RGB pixel from a Float. RGB are all
      * set to the passed in Float (which is truncated first).
      */
-    Rgb(FloatPixel f) : RGBValue<T>((T)f) { }
+    explicit Rgb(FloatPixel f) : RGBValue<T>((T)f) { }
 
     /**
      * Construct a RGB Pixel from a OneBitPixel. Appropriate conversion
      * is done.
      */
-    Rgb(OneBitPixel s) {
+    explicit Rgb(OneBitPixel s) {
       // TODO: fix for new ONEBIT
       if (s > 0) {
 	RGBValue<T>(1);
@@ -125,7 +125,7 @@ namespace Gamera {
 	RGBValue<T>(0);
       }
     }
-    
+
     /**
      * Default constructor - RGB are all set to 0.
      */
@@ -134,6 +134,9 @@ namespace Gamera {
     /**
      * Copy constructor.
      */
+    template <class U>
+    Rgb(RGBValue<U> const & r) : RGBValue<T>(r) { }
+
     Rgb(const Rgb& other) : RGBValue<T>(other) { }
     
     /**
@@ -494,7 +497,7 @@ namespace Gamera {
   inline OneBitPixel blend(OneBitPixel original, RGBPixel add, double alpha) {
     if (alpha > 0.5)
       return original;
-    return add;
+    return add.luminance();
   }
 
 };

@@ -30,8 +30,6 @@
 #   We always use the local copy of libpng
 
 from gamera.plugin import *
-import sys
-import os.path
 
 class PNG_info(PluginFunction):
     """Returns an ``ImageInfo`` object describing a PNG file.
@@ -41,8 +39,6 @@ class PNG_info(PluginFunction):
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("PNG_info")
-PNG_info_class = PNG_info
-PNG_info = PNG_info()
 
 class load_PNG(PluginFunction):
    """Loads a PNG format image file.
@@ -66,8 +62,6 @@ class load_PNG(PluginFunction):
       return _png_support.load_PNG(filename, compression)
    __call__ = staticmethod(__call__)
    loads_extensions = ['png']
-load_PNG_class = load_PNG
-load_PNG = load_PNG()
 
 class save_PNG(PluginFunction):
    """Saves the image to a PNG format file."""
@@ -75,6 +69,8 @@ class save_PNG(PluginFunction):
    args = Args([FileSave("image_file_name", "image.png", "*.png")])
 
 class PngSupportModule(PluginModule):
+    import sys
+    import os.path
     category = "File"
     cpp_headers = ["png_support.hpp"]
     internal_png_dir = "src/libpng-1.2.5/"
@@ -115,8 +111,10 @@ class PngSupportModule(PluginModule):
         # zlib, which apparently is included in OS-X 10.3 by default
 #        extra_libraries = ["z"]
     functions = [save_PNG, PNG_info_class, load_PNG_class]
-    author = "Michael Droettboom"
+    author = "Michael Droettboom and Albert Bzreckzo"
     url = "http://gamera.dkc.jhu.edu/"
 module = PngSupportModule()
 
+PNG_info = PNG_info()
+load_PNG = load_PNG()
 

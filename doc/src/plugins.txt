@@ -176,6 +176,8 @@ By categories
 
   - draw_line_
 
+  - draw_marker_
+
   - fill_white_
 
   - flood_fill_
@@ -276,6 +278,10 @@ By categories
 
 - Runlength_
 
+  - black_horizontal_run_histogram_
+
+  - black_vertical_run_histogram_
+
   - filter_narrow_runs_
 
   - filter_short_runs_
@@ -288,13 +294,25 @@ By categories
 
   - most_frequent_black_horizontal_run_
 
+  - most_frequent_black_horizontal_runs_
+
   - most_frequent_black_vertical_run_
+
+  - most_frequent_black_vertical_runs_
 
   - most_frequent_white_horizontal_run_
 
+  - most_frequent_white_horizontal_runs_
+
   - most_frequent_white_vertical_run_
 
+  - most_frequent_white_vertical_runs_
+
   - to_rle_
+
+  - white_horizontal_run_histogram_
+
+  - white_vertical_run_histogram_
 
 - Segmentation_
 
@@ -370,7 +388,7 @@ abutaleb_threshold_, add_images_, and_image_, area_, aspect_ratio_, AveragingKer
 
 **B**
 
-bernsen_threshold_, BinomialKernel_, black_area_, blue_
+bernsen_threshold_, BinomialKernel_, black_area_, black_horizontal_run_histogram_, black_vertical_run_histogram_, blue_
 
 **C**
 
@@ -378,7 +396,7 @@ canny_edge_image_, cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classi
 
 **D**
 
-despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_, draw_filled_rect_, draw_hollow_rect_, draw_line_, dtw_matrix_, dtw_matrix_with_function_
+despeckle_, difference_of_exponential_crack_edge_image_, difference_of_exponential_edge_image_, dilate_, display_, display_ccs_, display_false_color_, divide_images_, draw_bezier_, draw_filled_rect_, draw_hollow_rect_, draw_line_, draw_marker_, dtw_matrix_, dtw_matrix_with_function_
 
 **E**
 
@@ -406,7 +424,7 @@ laplacian_of_gaussian_, load_image_, load_PNG_, load_tiff_
 
 **M**
 
-magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_vertical_run_, most_frequent_white_horizontal_run_, most_frequent_white_vertical_run_, multiply_images_
+magenta_, mask_, match_id_name_, mean_, moments_, most_frequent_black_horizontal_run_, most_frequent_black_horizontal_runs_, most_frequent_black_vertical_run_, most_frequent_black_vertical_runs_, most_frequent_white_horizontal_run_, most_frequent_white_horizontal_runs_, most_frequent_white_vertical_run_, most_frequent_white_vertical_runs_, multiply_images_
 
 **N**
 
@@ -439,6 +457,10 @@ unclassify_, union_images_
 **V**
 
 value_, volume_, volume16regions_, volume64regions_
+
+**W**
+
+white_horizontal_run_histogram_, white_vertical_run_histogram_
 
 **X**
 
@@ -538,6 +560,7 @@ zernike_moments_
 .. _draw_filled_rect: draw.html#draw-filled-rect
 .. _draw_hollow_rect: draw.html#draw-hollow-rect
 .. _draw_line: draw.html#draw-line
+.. _draw_marker: draw.html#draw-marker
 .. _fill_white: draw.html#fill-white
 .. _flood_fill: draw.html#flood-fill
 .. _highlight: draw.html#highlight
@@ -588,16 +611,24 @@ zernike_moments_
 .. _polar_distance: relational.html#polar-distance
 .. _polar_match: relational.html#polar-match
 .. _Runlength: runlength.html#runlength
+.. _black_horizontal_run_histogram: runlength.html#black-horizontal-run-histogram
+.. _black_vertical_run_histogram: runlength.html#black-vertical-run-histogram
 .. _filter_narrow_runs: runlength.html#filter-narrow-runs
 .. _filter_short_runs: runlength.html#filter-short-runs
 .. _filter_tall_runs: runlength.html#filter-tall-runs
 .. _filter_wide_runs: runlength.html#filter-wide-runs
 .. _from_rle: runlength.html#from-rle
 .. _most_frequent_black_horizontal_run: runlength.html#most-frequent-black-horizontal-run
+.. _most_frequent_black_horizontal_runs: runlength.html#most-frequent-black-horizontal-runs
 .. _most_frequent_black_vertical_run: runlength.html#most-frequent-black-vertical-run
+.. _most_frequent_black_vertical_runs: runlength.html#most-frequent-black-vertical-runs
 .. _most_frequent_white_horizontal_run: runlength.html#most-frequent-white-horizontal-run
+.. _most_frequent_white_horizontal_runs: runlength.html#most-frequent-white-horizontal-runs
 .. _most_frequent_white_vertical_run: runlength.html#most-frequent-white-vertical-run
+.. _most_frequent_white_vertical_runs: runlength.html#most-frequent-white-vertical-runs
 .. _to_rle: runlength.html#to-rle
+.. _white_horizontal_run_histogram: runlength.html#white-horizontal-run-histogram
+.. _white_vertical_run_histogram: runlength.html#white-vertical-run-histogram
 .. _Segmentation: segmentation.html#segmentation
 .. _cc_analysis: segmentation.html#cc-analysis
 .. _cc_and_cluster: segmentation.html#cc-and-cluster

@@ -191,20 +191,21 @@ is equivalent to what the Vigra library calls "Separable Convolution".
 ########################################
 # Convolution kernels
 
+class ConvolutionKernel(PluginFunction):
+    self_type = None
+    return_type = ImageType([FLOAT])
+    category = "Convolution/Kernels"
 
-class GaussianKernel(PluginFunction):
+class GaussianKernel(ConvolutionKernel):
     """Init as a Gaussian function. The radius of the kernel is 
 always 3*standard_deviation.
 
 *standard_deviation*
    The standard deviation of the Gaussian kernel.
 """
-    self_type = None
     args = Args([Float("standard_deviation", default=1.0)])
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
     
-class GaussianDerivativeKernel(PluginFunction):
+class GaussianDerivativeKernel(ConvolutionKernel):
     """Init as a Gaussian derivative of order 'order'.  The radius of
 the kernel is always 3*std_dev.
 
@@ -214,51 +215,38 @@ the kernel is always 3*std_dev.
 *order*
    The order of the Gaussian kernel.
 """
-    self_type = None
-    args = Args([Float("standard_deviation", default=1.0), Int("order", default=1)])
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
+    args = Args([Float("standard_deviation", default=1.0),
+                 Int("order", default=1)])
 
-class BinomialKernel(PluginFunction):
+class BinomialKernel(ConvolutionKernel):
     """Creates a binomial filter kernel for use with separable
     convolution of a given radius.
 
 *radius*
    The radius of the kernel.
 """
-    self_type = None
     args = Args([Int("radius", default=3)])
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
 
-class AveragingKernel(PluginFunction):
+class AveragingKernel(ConvolutionKernel):
     """Creates an Averaging filter kernel for use with separable
 convolution.  The window size is (2*radius+1) * (2*radius+1).
 
 *radius*
    The radius of the kernel.
 """
-    self_type = None
     args = Args([Int("radius", default=3)])
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
 
-class SymmetricGradientKernel(PluginFunction):
+class SymmetricGradientKernel(ConvolutionKernel):
     """Init as a symmetric gradient filter of the form
        [ 0.5, 0.0, -0.5]
 """
-    self_type = None
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
+    args = Args([])
 
-class SimpleSharpeningKernel(PluginFunction):
+class SimpleSharpeningKernel(ConvolutionKernel):
     """Creates a kernel for simple sharpening.
 
 """
-    self_type = None
     args = Args([Float('sharpening_factor', default=0.5)])
-    return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
 
 ########################################
 # Convolution applications
@@ -421,4 +409,7 @@ GaussianDerivativeKernel = GaussianDerivativeKernel()
 BinomialKernel = BinomialKernel()
 AveragingKernel = AveragingKernel()
 SymmetricGradientKernel = SymmetricGradientKernel()
-SimpleSharpeningKernel = SimpleSharpeningKernel();
+SimpleSharpeningKernel = SimpleSharpeningKernel()
+
+del CONVOLUTION_TYPES
+del ConvolutionKernel

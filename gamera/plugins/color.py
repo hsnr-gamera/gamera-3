@@ -19,107 +19,93 @@
 
 from gamera.plugin import *
 
-class hue(PluginFunction):
+class ExtractFloatChannel(PluginFunction):
+    self_type = ImageType([RGB])
+    return_type = ImageType([FLOAT])
+    doc_examples = [(RGB,)]
+
+class ExtractGreyscaleChannel(PluginFunction):
+    self_type = ImageType([RGB])
+    return_type = ImageType([FLOAT])
+    doc_examples = [(RGB,)]
+
+class hue(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a hue value in range [0, 1).
 Since the hue space is continuous, the shortest *distance* between 1 and 0 is
 0.  For more information, Google HSV color space."""
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class saturation(PluginFunction):
+class saturation(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a saturation value
 in range [0, 1).  For more information, Google for HSV color space."""
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class value(PluginFunction):
+class value(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a saturation value
 in range [0, 1).  For more information, Google for HSV color space."""
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class cie_x(PluginFunction):
+class cie_x(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a *x* value in the `CIE 1964 Colorimetric`__ system 
 in range [0, 1).
 
 .. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class cie_y(PluginFunction):
+class cie_y(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a *y* value in the `CIE 1964
 Colorimetric`__ system 
 in range [0, 1).
 
 .. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class cie_z(PluginFunction):
+class cie_z(ExtractFloatChannel):
     """Returns a FLOAT image where each pixel is a *z* value in the `CIE 1964
 Colorimetric`__ system 
 in range [0, 1).
 
 .. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([FLOAT])
-    doc_examples = [(RGB,)]
+    pass
 
-class cyan(PluginFunction):
+class cyan(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the cyan component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
-class magenta(PluginFunction):
+class magenta(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the magenta component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
-class yellow(PluginFunction):
+class yellow(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the yellow component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
-class red(PluginFunction):
+class red(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the red component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
-class green(PluginFunction):
+class green(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the green component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
-class blue(PluginFunction):
+class blue(ExtractGreyscaleChannel):
     """Returns a GREYSCALE image where each pixel is the blue component of the
 original.
 """
-    self_type = ImageType([RGB])
-    return_type = ImageType([GREYSCALE])
-    doc_examples = [(RGB,)]
+    pass
 
 class false_color(PluginFunction):
     """Returns a false color representation of the given image.  Low values
@@ -142,3 +128,6 @@ class ColorModule(PluginModule):
     url = "http://gamera.dkc.jhu.edu/"
 
 module = ColorModule()
+
+del ExtractFloatChannel
+del ExtractGreyscaleChannel

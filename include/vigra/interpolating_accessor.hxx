@@ -103,8 +103,8 @@ class BilinearInterpolatingAccessor
             else
             {
                 ret = detail::RequiresExplicitCast<value_type>::cast(
-                  (1.0 - dy) * a_(i, Diff2D(ix, iy)) +
-                  dy * a_(i, Diff2D(ix, iy + 1)));
+                  (1.0 - dy) * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix, iy))) +
+                  dy * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix, iy + 1))));
             }
         }
         else
@@ -112,16 +112,16 @@ class BilinearInterpolatingAccessor
             if(dy == 0.0)
             {
                 ret = detail::RequiresExplicitCast<value_type>::cast(
-                  (1.0 - dx) * a_(i, Diff2D(ix, iy)) + 
-                  dx * a_(i, Diff2D(ix + 1, iy)));
+                  (1.0 - dx) * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix, iy))) + 
+                  dx * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix + 1, iy))));
             }
             else
             {
                 ret = detail::RequiresExplicitCast<value_type>::cast(
-                  (1.0 - dx) * (1.0 - dy) * a_(i, Diff2D(ix, iy)) +
-                  dx * (1.0 - dy) * a_(i, Diff2D(ix + 1, iy)) +
-                  (1.0 - dx) * dy * a_(i, Diff2D(ix, iy + 1)) +
-                  dx * dy * a_(i, Diff2D(ix + 1, iy + 1)));
+                  (1.0 - dx) * (1.0 - dy) * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix, iy))) +
+                  dx * (1.0 - dy) * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix + 1, iy))) +
+                  (1.0 - dx) * dy * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix, iy + 1))) +
+                  dx * dy * detail::RequiresExplicitCast<value_type>::cast(a_(i, Diff2D(ix + 1, iy + 1))));
             }
         }
             

@@ -700,8 +700,8 @@ operator<<(std::ostream & out, vigra::TinyVectorBase<V1, SIZE, DATA, DERIVED> co
     out << "(";
     int i;
     for(i=0; i<SIZE-1; ++i)
-        out << l[i] << ", ";
-    out << l[i] << ")";
+        out << vigra::NumericTraits<V1>::Promote(l[i]) << ", ";
+    out << vigra::NumericTraits<V1>::Promote(l[i]) << ")";
     return out;
 }
 

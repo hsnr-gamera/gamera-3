@@ -20,7 +20,7 @@
 from gamera.plugin import *
 from gamera.gui import has_gui
 import _projections
-import math
+from math import pi
 
 class projection_rows(PluginFunction):
     """Compute the horizontal projections of an image.  This computes the
@@ -178,7 +178,7 @@ Return Values:
 
         # some arguments checking
         if (accuracy == 0):
-            accuracy = 180 * 0.5 / (self.ncols * math.pi)
+            accuracy = 180 * 0.5 / (self.ncols * pi)
         if (maxangle <= minangle):
             raise RuntimeError("maxangle %f must be greater than minangle %f\n" \
                                % (maxangle, minangle))

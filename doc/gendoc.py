@@ -102,9 +102,9 @@ def method_doc(func, level, s):
    s.write(header)
    s.write("\n\n")
    if func.self_type != None:
-      s.write(":Operates on: ``%s``\n" % func.self_type.rest_repr(False))
+      s.write(":Operates on: %s\n" % func.self_type.rest_repr(False))
    if func.return_type != None:
-      s.write(":Returns: ``%s``\n" % (func.return_type.rest_repr(False)))
+      s.write(":Returns: %s\n" % (func.return_type.rest_repr(False)))
    if func.category == None:
       category = func.module.category
    else:
@@ -160,7 +160,8 @@ def method_example(func, level, s):
                result = func.__call__(*tuple(arguments))
            else:
                result = func.__call__(*tuple([src_image] + list(arguments)))
-           s.write("**Example %d:** %s%s\n\n" % (i + 1, func.__name__, str(tuple(arguments))))
+           s.write("**Example %d:** %s(%s)\n\n" %
+                   (i + 1, func.__name__, ", ".join([str(x) for x in arguments])))
        else:
            if src_image is None:
                result = routine(*tuple(arguments))

@@ -21,43 +21,43 @@
 from gamera.plugin import * 
 import re
 
+
 def build_id_regex(s):
+    def _build_id_regex_parts(s):
+        if s == '':
+            return ''
+        regex_parts = []
+        parts = s.split('.')
+        for part in parts:
+            ors = part.split('|')
+            l = []
+            for part0 in ors:
+                part0 = part0.replace('*', '[^.]*')
+                part0 = part0.replace('?', '[^.]')
+                l.append(part0)
+            regex_parts.append('(?:%s)' % '|'.join(['(?:%s)' % x for x in l]))
+        regex = '\.'.join(regex_parts)
+        return regex
+
+    def _build_id_regex_parens(s):
+        lparen = s.find('(')
+        rparen = s.find(')')
+        if s == '':
+            return '', ''
+        elif s[0] == '|':
+            r, s = _build_id_regex_parens(s[1:])
+            return '|' + r, s
+        elif lparen != -1 and lparen < rparen:
+            result = _build_id_regex_parts(s[:lparen])
+            r1, s1 = _build_id_regex_parens(s[lparen+1:])
+            r2, s2 = _build_id_regex_parens(s1)
+            return result + r1 + r2, s2
+        elif rparen != -1:
+            return _build_id_regex_parts(s[:rparen]), s[rparen+1:]
+        else:
+            return _build_id_regex_parts(s), ''
     regex, s = _build_id_regex_parens(s)
     return re.compile(regex, re.IGNORECASE)
-
-def _build_id_regex_parens(s):
-    lparen = s.find('(')
-    rparen = s.find(')')
-    if s == '':
-        return '', ''
-    elif s[0] == '|':
-        r, s = _build_id_regex_parens(s[1:])
-        return '|' + r, s
-    elif lparen != -1 and lparen < rparen:
-        result = _build_id_regex_parts(s[:lparen])
-        r1, s1 = _build_id_regex_parens(s[lparen+1:])
-        r2, s2 = _build_id_regex_parens(s1)
-        return result + r1 + r2, s2
-    elif rparen != -1:
-        return _build_id_regex_parts(s[:rparen]), s[rparen+1:]
-    else:
-        return _build_id_regex_parts(s), ''
-
-def _build_id_regex_parts(s):
-    if s == '':
-        return ''
-    regex_parts = []
-    parts = s.split('.')
-    for part in parts:
-        ors = part.split('|')
-        l = []
-        for part0 in ors:
-            part0 = part0.replace('*', '[^.]*')
-            part0 = part0.replace('?', '[^.]')
-            l.append(part0)
-        regex_parts.append('(?:%s)' % '|'.join(['(?:%s)' % x for x in l]))
-    regex = '\.'.join(regex_parts)
-    return regex
 
 regex_cache = {}
 dummy_regex = re.compile('')
@@ -116,14 +116,14 @@ Regular expression    Description
                 return 1
         return 0
     __call__ = staticmethod(__call__)
-match_id_name_class = match_id_name
-match_id_name = match_id_name()
 
 class IdNameMatchingModule(PluginModule):
     category = "Classification"
-    functions = [match_id_name_class]
+    functions = [match_id_name]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     pure_python = 1
 
 module = IdNameMatchingModule()
+
+match_id_name = match_id_name()

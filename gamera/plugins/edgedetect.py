@@ -46,7 +46,9 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
 	(0 retains all edges).  Values near 10 are suggested.
 """
       self_type = ImageType([GREYSCALE, GREY16, FLOAT])
-      args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0), Int("min_edge_length", [0, 32000], default=0)])
+      args = Args([Real("scale", [0, 1e300], default=0.8),
+                   Real("gradient_threshold", [0, 1e300], default=4.0),
+                   Int("min_edge_length", [0, 32000], default=0)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
       def __call__(self, scale=0.8, gradient_threshold=4.0, min_edge_length=0):
             return _edgedetect.difference_of_exponential_edge_image(
@@ -81,7 +83,11 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
 	See the VIGRA Docs.
 """
       self_type = ImageType([GREYSCALE, GREY16, FLOAT])
-      args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0), Int("min_edge_length", [0, 32000], default=0), Check("close_gaps", default=0), Check("beautify", default=0)])
+      args = Args([Real("scale", [0, 1e300], default=0.8),
+                   Real("gradient_threshold", [0, 1e300], default=4.0),
+                   Int("min_edge_length", [0, 32000], default=0),
+                   Check("close_gaps", default=False), 
+                   Check("beautify", default=False)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
       def __call__(self, scale=0.8, gradient_threshold=4.0, min_edge_length=0,
                    close_gaps=False, beautify=False):
@@ -108,7 +114,8 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
 	gradient_threshold.
 """
       self_type = ImageType([GREYSCALE, GREY16, FLOAT])
-      args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0)])
+      args = Args([Real("scale", [0, 1e300], default=0.8),
+                   Real("gradient_threshold", [0, 1e300], default=4.0)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
       def __call__(self, scale=0.8, gradient_threshold=4.0):
             return _edgedetect.canny_edge_image(self, scale, gradient_threshold)
@@ -125,3 +132,4 @@ class EdgeDetect(PluginModule):
       author = "Ullrich Koethe (wrapped by Robert Ferguson)"
       url = "http://gamera.dkc.jhu.edu"
 module = EdgeDetect()
+

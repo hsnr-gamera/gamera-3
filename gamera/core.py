@@ -33,7 +33,7 @@ from gameracore import ImageData, Size, Dimensions, Point, \
 import gameracore
 
 #import classify
-import paths, util, config  # Gamera-specific
+import paths, util, config, new  # Gamera-specific
 
 ######################################################################
 
@@ -66,6 +66,7 @@ class ImageBase:
    def add_plugin_method(cls, plug, func, category=None):
       methods = cls._methods
       if not func is None:
+         func = new.instancemethod(func, None, Image)
          setattr(cls, plug.__name__, func)
       if not category is None:
          for type in plug.self_type.pixel_types:
@@ -175,11 +176,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, Image._cc_mat_to_string)
+            self._display.set_image(self, ImageBase.cc_mat_to_string)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             Image._cc_mat_to_string, owner=self))
+                             ImageBase.cc_mat_to_string, owner=self))
       self.last_display = "ccs"
 
    # Displays the image in its own window, highlighting the given
@@ -203,7 +204,7 @@ class ImageBase:
       self.cc = []
       for c in cc:
          if isinstance(c, Cc) or isinstance(c, SubImage):
-            self._display.highlight_cc(c, Image.to_string)
+            self._display.highlight_cc(c, ImageBase.to_string)
             self.cc.append(c)
       # This will adjust the scroll bars so the cc will be visible
       self._display.focus(self.cc)
@@ -262,7 +263,7 @@ class Image(ImageBase, gameracore.Image):
 
 ######################################################################
 
-class SubImage(ImageBase, gameracore.SubImage):
+class SubImage(Image, gameracore.SubImage):
    def __init__(self, image, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.SubImage.__init__(self, image, offset_y, offset_x,
@@ -270,7 +271,7 @@ class SubImage(ImageBase, gameracore.SubImage):
 
 ######################################################################
 
-class Cc(ImageBase, gameracore.Cc):
+class Cc(Image, gameracore.Cc):
    def __init__(self, image, label, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, image, label, offset_y, offset_x,

@@ -77,7 +77,7 @@ class PluginFunction:
                                 cls.__name__)
         cls.__call__ = staticmethod(func)
         if isinstance(cls.self_type, ImageType):
-            gamera.core.Image.add_plugin_method(cls, func, category)
+            gamera.core.ImageBase.add_plugin_method(cls, func, category)
     register = classmethod(register)
 
     def test(cls):

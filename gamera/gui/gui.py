@@ -90,7 +90,7 @@ class GameraGui:
    def help(cls, object):
       if cls.help_window is None:
          cls.help_window = HelpWindow(main_win.shell.GetLocals(), globals(), main_win)
-      cls.help_window.set_content(object)
+      cls.help_window.help_on_object(object)
    help = classmethod(help)
 
    def ShowClassifier(classifier, image, function):
@@ -401,15 +401,18 @@ class HtmlRedirect(wxHtmlWindow):
    def LoadPage(self, location):
       if ':' not in location:
          location = location.sub("#", ".")
-         self.SetPage(pydoc.help.HTMLDoc().document(
-            eval(location, self._locals, self._globals)))
+         self.help_on_object(
+            eval(location, self._locals, self._globals))
       else:
          wxHtmlWindow.LoadPage(self, location)
+
+   def help_on_object(self, object):
+      self.SetPage(pydoc.HTMLDoc().document(object))
 
 class HelpWindow:
    frame = None
 
-   def __init__(cls, locals_, globals_, parent, content):
+   def __init__(cls, locals_, globals_, parent):
       if cls.frame is None:
          cls._locals = locals_
          cls._globals = globals_
@@ -417,9 +420,11 @@ class HelpWindow:
          cls.html = HtmlRedirect(cls.frame, locals_, globals_)
       cls.frame.Show(1)
       cls.html.Show(1)
-      cls.html.SetPage(content)
    __init__ = classmethod(__init__)
 
+   def help_on_object(cls, object):
+      cls.html.help_on_object(object)
+   help_on_object = classmethod(help_on_object)
 
 def run():
    global app

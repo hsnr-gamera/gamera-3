@@ -110,11 +110,10 @@ class PngSupportModule(PluginModule):
         cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.1"]
         # zlib, which apparently is included in OS-X 10.3 by default
 #        extra_libraries = ["z"]
-    functions = [save_PNG, PNG_info_class, load_PNG_class]
+    functions = [save_PNG, PNG_info, load_PNG]
     author = "Michael Droettboom and Albert Bzreckzo"
     url = "http://gamera.dkc.jhu.edu/"
 module = PngSupportModule()
 
 PNG_info = PNG_info()
 load_PNG = load_PNG()
-

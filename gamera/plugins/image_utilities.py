@@ -144,21 +144,6 @@ The images must be the same size.
     self_type = ImageType([GREYSCALE, RGB])
     args = Args(ImageType([ONEBIT], "mask"))
 
-class corelation(PluginFunction):
-    """Returns a floating-point value for how well an image is corelated
-to another image placed at a given (*x*, *y*).  Uses the sum of squares
-method.  A greater result implies more corelation.
-
-*template*
-   The template image.
-*y*, *x*
-   The displacement of the template on the image.
-"""
-    category = "Utility"
-    return_type = Float("correlation")
-    self_type = ImageType([ONEBIT])
-    args = Args([ImageType([ONEBIT], "template"), Int("y_offset"), Int("x_offset")])
-
 class to_nested_list(PluginFunction):
     """Converts an image to a nested Python list.
 This method is the inverse of ``nested_list_to_image``.
@@ -266,7 +251,7 @@ class UtilModule(PluginModule):
     functions = [image_copy, resize, scale,
                  histogram, union_images,
                  fill_white, invert, clip_image, mask,
-                 corelation, nested_list_to_image,
+                 nested_list_to_image,
                  to_nested_list, shear_row, shear_column]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

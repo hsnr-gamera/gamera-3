@@ -132,6 +132,14 @@ By categories
 
   - sobel_edge_detection_
 
+- Corelation_
+
+  - corelation_sum_
+
+  - corelation_sum_squares_
+
+  - corelation_weighted_
+
 - DTW_
 
   - dtw_matrix_
@@ -326,8 +334,6 @@ By categories
 
   - clip_image_
 
-  - corelation_
-
   - generate_features_
 
   - image_copy_
@@ -356,7 +362,7 @@ bernsen_threshold_, BinomialKernel_, black_area_, blue_
 
 **C**
 
-cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_, cyan_
+cc_analysis_, cc_and_cluster_, cie_x_, cie_y_, cie_z_, classify_automatic_, classify_heuristic_, classify_manual_, clip_image_, color_ccs_, compactness_, convolve_, convolve_x_, convolve_xy_, convolve_y_, corelation_sum_, corelation_sum_squares_, corelation_weighted_, cyan_
 
 **D**
 
@@ -502,6 +508,10 @@ zernike_moments_
 .. _laplacian_of_gaussian: convolution.html#laplacian-of-gaussian
 .. _simple_sharpen: convolution.html#simple-sharpen
 .. _sobel_edge_detection: convolution.html#sobel-edge-detection
+.. _Corelation: corelation.html#corelation
+.. _corelation_sum: corelation.html#corelation-sum
+.. _corelation_sum_squares: corelation.html#corelation-sum-squares
+.. _corelation_weighted: corelation.html#corelation-weighted
 .. _DTW: dtw.html#dtw
 .. _dtw_matrix: dtw.html#dtw-matrix
 .. _dtw_matrix_with_function: dtw.html#dtw-matrix-with-function
@@ -599,7 +609,6 @@ zernike_moments_
 .. _nested_list_to_image: utility.html#nested-list-to-image
 .. _to_nested_list: utility.html#to-nested-list
 .. _clip_image: utility.html#clip-image
-.. _corelation: utility.html#corelation
 .. _generate_features: utility.html#generate-features
 .. _image_copy: utility.html#image-copy
 .. _resize: utility.html#resize

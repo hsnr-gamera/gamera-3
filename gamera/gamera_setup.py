@@ -66,10 +66,7 @@ elif '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
 
 # Check that we are running a recent enough version of Python.
 # This depends on the platform.
-required_versions = {'posix': 222,
-                     'linux2': 222,
-                     'win32': 231,
-                     'darwin': 230}
+required_versions = {'posix':  222, 'linux2': 222, 'win32':  231, 'darwin': 230}
 version = float(''.join([str(x) for x in sys.version_info[0:3]]))
 required_version = required_versions[sys.platform]
 if version < required_version:

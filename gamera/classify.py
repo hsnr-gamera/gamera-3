@@ -84,12 +84,16 @@ class _Classifier:
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
          classification = self.guess_glyph_automatic(union)
-         if (classification[0][1].startswith("split") or
-             classification[0][1].startswith("skip")):
+         classification_name = classification[0][1]
+         if (classification_name.startswith("_split") or
+             classification_name.startswith("skip")):
             return 0
          else:
             return classification[0][0]
-      return subgroup[0].id_name[0][0]
+      classification = subgroup[0].id_name[0]
+      if classification[1].startswith('_group'):
+         return 0
+      return classification[0]
 
    def _find_group_unions(self, G, evaluate_function):
       import image_utilities
@@ -471,9 +475,8 @@ of strings, naming the feature functions to be used."""
          feature_functions = self.get_feature_functions()
          for glyph in glyphs:
             if glyph.nrows > 2 and glyph.ncols > 2:
-               glyph.classify_manual('_group._part.' + sub)
+               glyph.classify_heuristic('_group._part.' + sub)
                glyph.generate_features(feature_functions)
-               self._database[glyph] = None
          added, removed = self.classify_glyph_manual(union, sub)
          added.append(union)
          return added, removed

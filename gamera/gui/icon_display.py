@@ -88,7 +88,6 @@ class IconDisplay(wxListCtrl):
       EVT_LEFT_DCLICK(self, self.OnDoubleClick)
       EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
       EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
-
       EVT_LIST_ITEM_RIGHT_CLICK(self, tID, self.OnRightClick)
 
    def add_icon(self, label, data, icon):

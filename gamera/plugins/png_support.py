@@ -67,7 +67,7 @@ class PngSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["png_support.hpp"]
     internal_png_dir = "src/libpng-1.2.5/"
-    if sys.platform == 'linux':
+    if sys.platform == 'linux2':
         extra_libraries = ["png"]
     elif sys.platform == 'darwin':
         found_png = None

@@ -799,7 +799,7 @@ result.
 
 ----------
 
-**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x87fc86c>)
+**Example 1:** dtw_matrix_with_function((0, 1, 2, 3, 4, 5), (0, 1, 2, 1, 0), <function <lambda> at 0x99ef86c>)
 
 .. image:: images/dtw_matrix_with_function_plugin_00.png
 
@@ -1541,8 +1541,8 @@ ImageInfo **PNG_info** (``String`` *image_file_name*)
 
 Returns an ``ImageInfo`` object describing a PNG file.
 
-    *image_file_name*
-      A PNG image filename
+*image_file_name*
+  A PNG image filename
 
 
 ``load_PNG``

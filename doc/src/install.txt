@@ -118,11 +118,13 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support::
+support, you have two options:
+1) Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
+2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see "MSI (Windows Installer Package)" section).
 Microsoft Visual Studio
 ```````````````````````
 
@@ -153,11 +155,50 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support::
+support, you have two options:
+1) Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
+2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see "MSI (Windows Installer Package)" section).
+
+MSI (Windows Installer Package)
+```````````````````````````````
+
+If you would like to create a Windows Installer package to install Gamera, the Gamera source tree currently includes experimental support to do so. The tools are located in win32/msisource. The main tool you will be using in this package is called createmsi, although createmsi has some dependencies. Since it is assumed you already have a compiler suitable for compiling Gamera as detailed above, you need only download and install the latest version of MakeMSI . Having done that, the next steps will be to change the working directory to msisource and compile the createmsi program. This process depends on what compiler you wish to use.
+
+For Cygwin users::
+
+    cd win32/msisource
+    cc -mno-cygwin -o createmsi.exe createmsi.c
+
+For Visual C++ users::
+
+    cd win32/msisource
+    cl createmsi.c
+
+For Intel Compiler 8.x users::
+
+    cd win32/msisource
+    icl createmsi.c
+
+.. note:: The proper operation of each compiler depends on the values of certain environment variables, so it is strongly advised that you use the command line shell that the compiler shipped with.
+
+Having completed this, you may now run createmsi, which takes the following arguments::
+
+      -c [mingw|msvc|icl]  Specify C compiler for Gamera extensions
+      -compiler [...]      Same as -c
+      -i [mingw|msvc|icl]  Include existing build products into MSI
+                           (please ensure these exist before attempting to
+                            include them!)
+      -include [...]       Same as -i
+
+For instance, suppose I wanted to build a cygwin/mingw32 compiled Gamera package and then make an MSI package out of it. The createmsi syntax would be::
+
+    createmsi -c mingw
+
+Once the build process completes, there will be a file called Gamera2.msi in the win32 directory (the parent directory of the one that contains createmsi). Provided there were no intermediate errors in the Gamera and MSI build processes, this will be a fully functional Windows Installer-based package for installing Gamera. You are free to use this package and distribute it under the terms of all applicable licenses/agreements.
 
 Running
 ```````

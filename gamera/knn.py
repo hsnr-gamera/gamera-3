@@ -19,7 +19,7 @@
 
 from threading import *
 import sys, os
-from gamera import core, util, config
+from gamera import core, util, config, classify
 from gamera.plugins import features
 import gamera.knncore, gamera.gamera_xml
 import array
@@ -124,7 +124,7 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
    def _add_weights(self, data):
       self._data += data
 
-class kNN(gamera.knncore.kNN):
+class _kNNBase(gamera.knncore.kNN):
    """k-NN classifier that supports optimization using
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
@@ -147,7 +147,6 @@ class kNN(gamera.knncore.kNN):
       if self.features is None:
          settings = config.options.knn.default_settings
          try:
-            print settings
             self.load_settings(settings)
          except Exception, e:
             self.features = 'all'
@@ -156,9 +155,10 @@ class kNN(gamera.knncore.kNN):
    def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
-      self.features = f
+      print "changing"
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.num_features = features.get_features_length(self.features)
+      classify.InteractiveClassifier.change_feature_set(self, f)
 
    def distance_from_images(self, images, glyph, max=None):
       """Compute a list of distances between a list of images
@@ -261,10 +261,6 @@ class kNN(gamera.knncore.kNN):
          self.ga_callbacks.remove(func)
       except:
          pass
-
-   def supports_settings_dialog(self):
-      """Flag to indicate that this classifier has a settings dialog"""
-      return 1
 
    def settings_dialog(self, parent):
       """Display a settings dialog for k-NN settings"""
@@ -369,6 +365,19 @@ class kNN(gamera.knncore.kNN):
       else:
          self.change_feature_set(features)
 
+class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
+   def __init__(self, database=[], features=None, perform_splits=1):
+      classify.InteractiveClassifier.__init__(self, database, features, perform_splits)
+      _kNNBase.__init__(self, features)
+
+   def noninteractive_copy(self):
+      return kNNNonInteractive(
+         self.get_glyphs(), self.features, self._perform_splits)
+
+class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
+   def __init__(self, database=[], features=None, perform_splits=1):
+      classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
+      _kNNBase.__init__(self, features)
 
 def simple_feature_selector(glyphs):
    """simple_feature_selector does a brute-force search through all
@@ -376,11 +385,10 @@ def simple_feature_selector(glyphs):
    tuples (accuracy, features). WARNING: this function should take
    a long time to complete."""
 
-   import classify
    if len(glyphs) <= 1:
       raise RuntimeError("Lenght of list must be greater than 1")
    
-   c = classify.NonInteractiveClassifier()
+   c = classify.kNNNonInteractive()
 
    # For efficiency we calculate all of the features and pass in the
    # indexes of the features vector that we want to use for the distance
@@ -427,7 +435,7 @@ def simple_feature_selector(glyphs):
             stop_threshold = num_wrong
             answer = (float(ans[0]) / float(ans[1]), x)
    return answer
-   
+
 
 class CombGen:
    """Generate the k-combinations of a sequence. This is a iterator

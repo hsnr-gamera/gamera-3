@@ -25,7 +25,7 @@ from wxPython.wx import __version__ as __wx_version__
 if __wx_version__[-1] == 'u':
    __wx_version__ = __wx_version__[0:-1]
 __wx_version__ = int(''.join(__wx_version__.split('.')))
-from math import sin, sqrt, ceil, log, floor, pi # Python standard library
+from math import sqrt, ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, time, weakref
 from gamera.core import *             # Gamera specific
@@ -189,7 +189,6 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc)
       if refresh_at_once:
          self.RefreshAll()
-         
    add_highlight_ccs = add_highlight_cc
 
    # Clears a CC in the display.  Multiple CCs
@@ -237,7 +236,8 @@ class ImageDisplay(wxScrolledWindow):
       # Adjust for the scaling factor
       scaling = self.scaling
       x1, y1, x2, y2 = tuple([x * scaling for x in (x1, y1, x2, y2)])
-      origin_x, origin_y = tuple([x * self.scroll_amount for x in self.GetViewStart()])
+      origin_x, origin_y = tuple(
+         [x * self.scroll_amount for x in self.GetViewStart()])
       maxwidth = self.image.width * scaling
       maxheight = self.image.height * scaling
       size = self.GetSize()
@@ -404,7 +404,7 @@ class ImageDisplay(wxScrolledWindow):
    ########################################
    # UTILITY
    #
-   def MakeView(self, *args):
+   def _OnMakeView(self, *args):
       name = var_name.get("view", image_menu.shell.locals)
       if name:
          if (self.rubber_y2 == self.rubber_origin_y and
@@ -419,11 +419,9 @@ class ImageDisplay(wxScrolledWindow):
                self.rubber_y2 - self.rubber_origin_y + 1,
                self.rubber_x2 - self.rubber_origin_x + 1)
          image_menu.shell.locals[name] = subimage
-         # changed from adding a blank line - this is not ideal,
-         # but it seems better than image_menu.shell.pushcode(""). KWM
          image_menu.shell.update()
 
-   def MakeCopy(self, *args):
+   def _OnMakeCopy(self, *args):
       name = var_name.get("copy", image_menu.shell.locals)
       if name:
          if (self.rubber_y2 == self.rubber_origin_y and
@@ -436,8 +434,6 @@ class ImageDisplay(wxScrolledWindow):
                self.rubber_y2 - self.rubber_origin_y + 1,
                self.rubber_x2 - self.rubber_origin_x + 1).image_copy()
          image_menu.shell.locals[name] = copy
-         # changed from adding a blank line - this is not ideal,
-         # but it seems better than image_menu.shell.pushcode(""). KWM
          image_menu.shell_frame.icon_display.update_icons()
 
    ########################################
@@ -704,10 +700,12 @@ class ImageDisplay(wxScrolledWindow):
       if self.rubber_on:
          self.draw_rubber()
          origin = [x * self.scroll_amount for x in self.GetViewStart()]
-         self.rubber_x2 = int(max(min((event.GetX() + origin[0]) / self.scaling,
-                                      self.image.ncols - 1), 0))
-         self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
-                                      self.image.nrows - 1), 0))
+         self.rubber_x2 = int(
+            max(min((event.GetX() + origin[0]) / self.scaling,
+                    self.image.ncols - 1), 0))
+         self.rubber_y2 = int(
+            max(min((event.GetY() + origin[1]) / self.scaling,
+                    self.image.nrows - 1), 0))
          self.draw_rubber()
       if self.dragging:
          self.Scroll(
@@ -763,10 +761,10 @@ class ImageWindow(wxPanel):
       self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(
          31, gamera_icons.getIconMakeViewBitmap(),
-         "Make new view", self.id.MakeView)
+         "Make new view", self.id._OnMakeView)
       self.toolbar.AddSimpleTool(
          32, gamera_icons.getIconImageCopyBitmap(),
-         "Make new copy", self.id.MakeCopy)
+         "Make new copy", self.id._OnMakeCopy)
 
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)

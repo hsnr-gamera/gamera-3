@@ -97,8 +97,8 @@ class GameraGui:
 
    def ShowClassifier(classifier=None, current_database=[], image=None, symbol_table=[]):
       if classifier is None:
-         from gamera import classify
-         classifier = classify.InteractiveClassifier()
+         from gamera import knn
+         classifier = knn.knnInteractive()
       wxBeginBusyCursor()
       class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
       class_disp.set_image(current_database, image)
@@ -367,7 +367,8 @@ class ShellFrame(wxFrame):
    def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)
       if name:
-         self.shell.run("%s = InteractiveClassifier()" % name)
+         self.shell.run("from gamera import knn")
+         self.shell.run("%s = knn.kNNInteractive()" % name)
          self.shell.run("%s.display()" % name)
 
    def _OnImportToolkit(self, event):

@@ -95,8 +95,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          if image.classification_state != MANUAL:
             id = self.toplevel.guess_glyph(image)
          else:
-            id = image.id_name
-         self.toplevel.set_label_display(id)
+            id = image
+         self.toplevel.set_label_display(id[0][1])
          self.toplevel.display_label_at_cell(row, col, id[0][1])
 
    def move_back(self):
@@ -114,7 +114,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          id = self.toplevel.guess_glyph(image)
       else:
          id = image.id_name
-      self.toplevel.set_label_display(id)
+      self.toplevel.set_label_display(id[0][1])
       self.toplevel.display_label_at_cell(row, col, id[0][1])
 
    ########################################
@@ -207,23 +207,21 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             self._last_selection = images
          else:
             return
+         ids = {}
          if images != []:
-            id = images[0].id_name
-            all_same = 1
             for x in images:
-               if x.id_name != id:
-                  all_same = 0
-                  break
-            if all_same:
-               self.toplevel.set_label_display(id)
+               ids[x.get_main_id()] = None
+            if len(ids) == 1:
+               self.toplevel.set_label_display(ids.keys()[0])
             else:
-               self.toplevel.set_label_display([])
+               self.toplevel.set_label_display('')
+            ids = ids.keys()
+            ids.sort()
+            self.toplevel.set_glyph_ids_status(ids)
             self.toplevel.display_cc(images)
-      if len(images) == 1:
-         text = "1 selected glyph"
-      else:
-         text = "%s selected glyphs" % len(images)
-      self.toplevel._frame.GetStatusBar().SetStatusText(text, 0)
+      self.toplevel.set_number_of_glyphs_selected_status(len(images))
+      if len(images) == 0:
+         self.toplevel.set_glyph_ids_status([])
 
    def _OnSelect(self, event):
       event.Skip()
@@ -379,7 +377,8 @@ class ClassifierFrame(ImageFrameBase):
       self.rule_engine_runner = rule_engine_runner.RuleEngineRunnerPanel(
          self, self.splitterhl)
       self.splitterhl.SetMinimumPaneSize(3)
-      self.splitterhl.SplitHorizontally(self.symbol_editor, self.rule_engine_runner, 300)
+      self.splitterhl.SplitHorizontally(
+         self.symbol_editor, self.rule_engine_runner, 300)
       self.splitterhl.Unsplit()
       self.splitterv.SetMinimumPaneSize(3)
       self.splitterv.SplitVertically(self.splitterhl, self.splitterhr, 160)
@@ -420,14 +419,15 @@ class ClassifierFrame(ImageFrameBase):
           ("&Symbol names",
            (("&Import...", self._OnImportSymbolTable),
             ("&Export...", self._OnExportSymbolTable)))))
-      if self._classifier.supports_settings_dialog():
-         classifier_settings = [("&Edit...", self._OnClassifierSettingsEdit)]
-      classifier_settings.extend([
-         ("&Open...", self._OnClassifierSettingsOpen),
-         ("&Save...", self._OnClassifierSettingsSave)])
-      classifier_menu = gui_util.build_menu(
-         self._frame,
-         (("Guess all", self._OnGuessAll),
+      classifier_settings = []
+      if hasattr(self._classifier, "settings_dialog"):
+         classifier_settings.append(("&Edit...", self._OnClassifierSettingsEdit))
+      if hasattr(self._classifier, "load_settings"):
+         classifier_settings.append(("&Open...", self._OnClassifierSettingsOpen))
+      if hasattr(self._classifier, "save_settings"):
+         classifier_settings.append(("&Save...", self._OnClassifierSettingsSave))
+      classifier_menu_spec = 
+         [("Guess all", self._OnGuessAll),
           ("&Guess selected", self._OnGuessSelected),
           (None, None),
           ("Group and guess all", self._OnGroupAndGuessAll),
@@ -436,11 +436,19 @@ class ClassifierFrame(ImageFrameBase):
           ("Confirm all", self._OnConfirmAll),
           ("&Confirm selected", self._OnConfirmSelected),
           (None, None),
-          ("Change set of &features...", self._OnChangeSetOfFeatures),
-          (None, None),
-          ("Classifier &settings", classifier_settings),
-          (None, None),
-          ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)))
+          ("Change set of &features...", self._OnChangeSetOfFeatures)]
+      if classifier_settings != []:
+         classifier_menu_spec.extend([
+            (None, None),
+            ("Classifier &settings", classifier_settings)])
+      if hasattr(self._classifier, 'noninteractive_copy'):
+         classifier_menu_spec.extend([
+            (None, None),
+            ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)])
+      classifier_menu = gui_util.build_menu(
+         self._frame,
+         classifier_menu_spec)
+
       rules_menu = gui_util.build_menu(
          self._frame,
          (("Show rule testing panel", self._OnShowRuleTestingPanel),
@@ -493,10 +501,12 @@ class ClassifierFrame(ImageFrameBase):
             self._symbol_table.add(id[1])
 
    def add_to_database(self, glyphs):
-      self._classifier.add_to_database(glyphs)
+      if hasattr(self._classifier, 'add_to_database'):
+         self._classifier.add_to_database(glyphs)
 
    def remove_from_database(self, glyphs):
-      self._classifier.remove_from_database(glyphs)
+      if hasattr(self._classifier, 'remove_from_database'):
+         self._classifier.remove_from_database(glyphs)
 
    ########################################
    # DISPLAY
@@ -509,6 +519,18 @@ class ClassifierFrame(ImageFrameBase):
    def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
       self.multi_iw.id.find_glyphs_in_rect(x1, y1, x2, y2, shift)
 
+   def set_number_of_glyphs_selected_status(self, number):
+      if number < 0:
+         text = "Error!"
+      elif number == 1:
+         text = "1 selected glyph"
+      else:
+         text = "%d selected glyphs" % number
+      self._frame.GetStatusBar().SetStatusText(text, 0)
+
+   def set_glyph_ids_status(self, ids):
+      self._frame.GetStatusBar().SetStatusText(", ".join(ids), 1)
+
    ########################################
    # CLASSIFICATION FUNCTIONS
    def guess_glyph(self, glyph):
@@ -520,6 +542,9 @@ class ClassifierFrame(ImageFrameBase):
    def classify_manual(self, id):
       # if type(id) == types.StringType
       # id = id.encode('utf8')
+      if not hasattr(self._classifier, 'classify_list_manual'):
+         gui_util.message("NonInteractive classifiers can not be trained.")
+         return
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
          self.multi_iw.id.GetGridCursorCol())
@@ -539,7 +564,7 @@ class ClassifierFrame(ImageFrameBase):
                wxEndBusyCursor()
          self.multi_iw.id.RefreshSelected()
          if not self.do_auto_move():
-            self.set_label_display([(0.0, id)])
+            self.set_label_display(id)
 
    ########################################
    # AUTO-MOVE
@@ -551,26 +576,11 @@ class ClassifierFrame(ImageFrameBase):
    def move_back(self):
       self.multi_iw.id.move_back()
 
-   def set_label_display(self, ids):
-      if ids != []:
-         self.symbol_editor.tree.set_label_display(ids[0][1])
-      else:
-         self.symbol_editor.tree.set_label_display("")
+   def set_label_display(self, symbol):
+      self.symbol_editor.tree.set_label_display(symbol)
 
    def display_label_at_cell(self, row, col, label):
       self.multi_iw.id.display_label_at_cell(row, col, label)
-
-   def symbol_table_rename_callback(self, old, new):
-      for glyph in self.multi_iw.id.list:
-         new_ids = []
-         if glyph != None:
-            for id in glyph.id_name:
-               if id[1] == old:
-                  new_ids.append((id[0], new))
-               else:
-                  new_ids.append(id)
-            glyph.id_name = new_ids
-      self._classifier.rename_ids(old, new)
 
    ########################################
    # FILE MENU
@@ -775,6 +785,9 @@ class ClassifierFrame(ImageFrameBase):
       self._OnConfirm(self.multi_iw.id.GetSelectedItems())
 
    def _OnConfirm(self, list):
+      if not hasattr(self._classifier, 'classify_glyph_manual'):
+         gui_util.message("NonInteractive classifiers can not be trained.")
+         return
       wxBeginBusyCursor()
       try:
          for x in list:
@@ -808,7 +821,7 @@ class ClassifierFrame(ImageFrameBase):
       self._classifier.change_feature_set(selected_features)
 
    def _OnClassifierSettingsEdit(self, event):
-      if self._classifier.supports_settings_dialog():
+      if hasattr(self._classifier, 'settings_dialog'):
          self._classifier.settings_dialog(self._frame)
       else:
          gui_util.message("This classifier doesn't have a settings dialog.")
@@ -1287,7 +1300,6 @@ class SymbolTableEditorPanel(wxPanel):
       found = None
       for i in range(len(tokens)):
          token = tokens[i]
-         print token
          found = None
          cookie = 0
          item, cookie = self.tree.GetFirstChild(root, cookie)

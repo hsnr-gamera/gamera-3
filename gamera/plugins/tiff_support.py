@@ -46,6 +46,7 @@ save_tiff = save_tiff()
 class TiffSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["tiff_support.hpp"]
+    cpp_namespaces = ["Gamera"]
     functions = [tiff_info, load_tiff, save_tiff]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

@@ -29,9 +29,9 @@
 #include "gamera.hpp"
 #include "neighbor.hpp"
 
-using namespace Gamera;
 using namespace std;
 
+namespace Gamera {
 
 template<class T>
 class Max {
@@ -107,4 +107,5 @@ void erode_dilate(T &m, unsigned int times, int direction, int geo) {
   delete result;
 }
 
+}
 #endif

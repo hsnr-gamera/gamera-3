@@ -643,25 +643,26 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
          # If the image is bigger than the cell, crop it. This used to be done
          # in wxPython, but it is more efficient to do it with Gamera SubImages
-         image = None
+
          if (image.ncols >= rect.GetWidth() or
              image.nrows >= rect.GetHeight()):
             height = min(rect.GetHeight() + 1, image.nrows)
             width = min(rect.GetWidth() + 1, image.ncols)
             # If we are dealing with a CC, we have to make a smaller CC withthe
             # same label. This is unfortunately a two step process.
-            if isinstance(image, CC):
-               tmp_image = SubImage(image, 0, 0, height, width)
-               sub_image = CC(tmp_image, image.label())
+            if isinstance(image, Cc):
+               tmp_image = SubImage(image, image.offset_y, image.offset_x, height, width)
+               sub_image = Cc(tmp_image, image.label())
             # Otherwise just a SubImage will do.
             else:
-               sub_image = SubImage(image, 0, 0, height, width)
-            image = wxEmptyImage(width, height)
+               sub_image = SubImage(image, image.offset_y, image.offset_x, height, width)
+            image = wxEmptyImage(width - 1, height - 1)
             s = sub_image.to_string()
             image.SetData(s)
          else:
+            s = image.to_string()
             image = wxEmptyImage(image.ncols, image.nrows)
-            s = image.to_string(image.GetDataBuffer())
+            image.SetData(s)
          bmp = image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
@@ -976,12 +977,16 @@ class MultiImageWindow(wxPanel):
    def get_display(self):
       return MultiImageDisplay(self)
 
-   def set_image(self, image, function):
-      return self.id.set_image(image, function)
+   def set_image(self, image, function, scaling_function):
+      return self.id.set_image(image, function, scaling_function)
 
    def set_choices(self, prototype):
-      members = find_members.find_members(prototype)
-      methods = find_members.find_methods_flat_category(prototype, "Features")
+      members = prototype.members_for_menu()
+      methods = "Foo"
+      try:
+         methods = prototype.methods_flat_category("Features")
+      except:
+         pass
       self.sort_choices = ["", "ncols", "nrows", "label()", "id",
                            "classification_state", "page_offset_x()",
                            "page_offset_y()"]

@@ -21,7 +21,7 @@
 
 #include "gamera.hpp"
 
-using namespace Gamera;
+namespace Gamera {
 /*
   From RGB
 */
@@ -161,4 +161,143 @@ RGBImageView* greyscale_to_rgb(const GreyScaleImageView& image) {
   return view;
 }
 
+/*
+  From Grey16
+*/
+
+FloatImageView* grey16_to_float(const Grey16ImageView& image) {
+  FloatImageData* data =
+    new FloatImageData(image.nrows(), image.ncols(),
+			   image.offset_y(), image.offset_x());
+  FloatImageView* view =
+    new FloatImageView(*data, image.offset_y(), image.offset_x(),
+			   image.nrows(), image.ncols());
+  Grey16ImageView::const_row_iterator in_row = image.row_begin();
+  Grey16ImageView::const_col_iterator in_col;
+  FloatImageView::row_iterator out_row = view->row_begin();
+  FloatImageView::col_iterator out_col;
+  ImageAccessor<Grey16Pixel> in_acc;
+  ImageAccessor<FloatPixel> out_acc;
+  for (; in_row != image.row_end(); ++in_row, ++out_row) {
+    for (in_col = in_row.begin(), out_col = out_row.begin();
+	 in_col != in_row.end(); ++in_col, ++out_col) {
+      out_acc.set(float(in_acc(in_col)), out_col);
+    }
+  }
+  return view;
+}
+
+/*
+  From OneBit
+*/
+
+template<class T>
+RGBImageView* onebit_to_rgb(const T& image) {
+  RGBImageData* data =
+    new RGBImageData(image.nrows(), image.ncols(),
+			   image.offset_y(), image.offset_x());
+  RGBImageView* view =
+    new RGBImageView(*data, image.offset_y(), image.offset_x(),
+		     image.nrows(), image.ncols());
+  typename T::const_row_iterator in_row = image.row_begin();
+  typename T::const_col_iterator in_col;
+  typename RGBImageView::row_iterator out_row = view->row_begin();
+  typename RGBImageView::col_iterator out_col;
+  ImageAccessor<OneBitPixel> in_acc;
+  ImageAccessor<RGBPixel> out_acc;
+  for (; in_row != image.row_end(); ++in_row, ++out_row) {
+    for (in_col = in_row.begin(), out_col = out_row.begin();
+	 in_col != in_row.end(); ++in_col, ++out_col) {
+      OneBitPixel tmp = in_acc(in_col);
+      if (is_white(tmp))
+	out_acc.set(white(*view), out_col);
+      else
+	out_acc.set(black(*view), out_col);
+    }
+  }
+  return view;
+}
+
+template<class T>
+GreyScaleImageView* onebit_to_greyscale(const T& image) {
+  GreyScaleImageData* data =
+    new GreyScaleImageData(image.nrows(), image.ncols(),
+			   image.offset_y(), image.offset_x());
+  GreyScaleImageView* view =
+    new GreyScaleImageView(*data, image.offset_y(), image.offset_x(),
+		     image.nrows(), image.ncols());
+  typename T::const_row_iterator in_row = image.row_begin();
+  typename T::const_col_iterator in_col;
+  typename GreyScaleImageView::row_iterator out_row = view->row_begin();
+  typename GreyScaleImageView::col_iterator out_col;
+  ImageAccessor<OneBitPixel> in_acc;
+  ImageAccessor<GreyScalePixel> out_acc;
+  for (; in_row != image.row_end(); ++in_row, ++out_row) {
+    for (in_col = in_row.begin(), out_col = out_row.begin();
+	 in_col != in_row.end(); ++in_col, ++out_col) {
+      OneBitPixel tmp = in_acc(in_col);
+      if (is_white(tmp))
+	out_acc.set(white(*view), out_col);
+      else
+	out_acc.set(black(*view), out_col);
+    }
+  }
+  return view;
+}
+
+template<class T>
+Grey16ImageView* onebit_to_grey16(const T& image) {
+  Grey16ImageData* data =
+    new Grey16ImageData(image.nrows(), image.ncols(),
+			   image.offset_y(), image.offset_x());
+  Grey16ImageView* view =
+    new Grey16ImageView(*data, image.offset_y(), image.offset_x(),
+		     image.nrows(), image.ncols());
+  typename T::const_row_iterator in_row = image.row_begin();
+  typename T::const_col_iterator in_col;
+  typename Grey16ImageView::row_iterator out_row = view->row_begin();
+  typename Grey16ImageView::col_iterator out_col;
+  ImageAccessor<OneBitPixel> in_acc;
+  ImageAccessor<Grey16Pixel> out_acc;
+  for (; in_row != image.row_end(); ++in_row, ++out_row) {
+    for (in_col = in_row.begin(), out_col = out_row.begin();
+	 in_col != in_row.end(); ++in_col, ++out_col) {
+      OneBitPixel tmp = in_acc(in_col);
+      if (is_white(tmp))
+	out_acc.set(white(*view), out_col);
+      else
+	out_acc.set(black(*view), out_col);
+    }
+  }
+  return view;
+}
+
+template<class T>
+FloatImageView* onebit_to_float(const T& image) {
+  FloatImageData* data =
+    new FloatImageData(image.nrows(), image.ncols(),
+			   image.offset_y(), image.offset_x());
+  FloatImageView* view =
+    new FloatImageView(*data, image.offset_y(), image.offset_x(),
+		     image.nrows(), image.ncols());
+  typename T::const_row_iterator in_row = image.row_begin();
+  typename T::const_col_iterator in_col;
+  typename FloatImageView::row_iterator out_row = view->row_begin();
+  typename FloatImageView::col_iterator out_col;
+  ImageAccessor<OneBitPixel> in_acc;
+  ImageAccessor<FloatPixel> out_acc;
+  for (; in_row != image.row_end(); ++in_row, ++out_row) {
+    for (in_col = in_row.begin(), out_col = out_row.begin();
+	 in_col != in_row.end(); ++in_col, ++out_col) {
+      OneBitPixel tmp = in_acc(in_col);
+      if (is_white(tmp))
+	out_acc.set(white(*view), out_col);
+      else
+	out_acc.set(black(*view), out_col);
+    }
+  }
+  return view;
+}
+
+}
 #endif

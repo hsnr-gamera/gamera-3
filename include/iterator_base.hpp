@@ -354,7 +354,7 @@ namespace Gamera {
       return m_coliterator < other.m_coliterator;
     }
     bool operator>(const VecIteratorBase& other) const {
-      return m_coliterator < other.m_coliterator;
+      return m_coliterator > other.m_coliterator;
     }
     difference_type operator-(const self& other) const {
       size_t nrows = m_rowiterator - other.m_rowiterator;

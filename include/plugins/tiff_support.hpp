@@ -28,7 +28,7 @@
 #include <bitset>
 #include "gamera.hpp"
 
-using namespace Gamera;
+namespace Gamera {
 
 // forward declarations
 ImageInfo* tiff_info(const char* filename);
@@ -361,5 +361,7 @@ void save_tiff(const T& matrix, const char* filename) {
   saver(matrix, tif);
 	
   TIFFClose(tif);
+}
+
 }
 #endif

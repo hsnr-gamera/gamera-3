@@ -28,7 +28,7 @@
 #include <math.h>
 
 
-using namespace Gamera;
+namespace Gamera {
 
 template<class T>
 Image* image_copy(T &a, int storage_format) {
@@ -156,4 +156,5 @@ FloatVector* histogram(const T& image) {
   return values;
 }
 
+}
 #endif

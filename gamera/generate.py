@@ -69,6 +69,7 @@ template = Template("""
   [[# Standard headers used in the plugins #]]
   #include <string>
   #include <stdexcept>
+  #include <list>
   #include \"gameramodule.hpp\"
   #include \"Python.h\"
 
@@ -78,6 +79,9 @@ template = Template("""
   [[end]]
   
   using namespace Gamera;
+  [[for x in module.cpp_namespaces]]
+    using namespace [[x]];
+  [[end]]
   
   [[# Generate the plugin path and module name from the filename. #]]
   [[# The module name for our purposes will be prefixed with an underscore #]]
@@ -173,11 +177,14 @@ template = Template("""
         ImageInfo* return_value = 0;
       [[elif isinstance(function.return_type, FloatVector)]]
         FloatVector* return_value = 0;
+      [[elif isinstance(function.return_type, IntVector)]]
+        IntVector* return_value = 0;
+      [[elif isinstance(function.return_type, ImageList)]]
+        std::list<Image*>* return_value = 0;
       [[end]]
 
       [[# Now that we have all of the arguments and variables for them we can parse #]]
-      [[# the argument tuple. Again, there is an assumption that there is at least one #]]
-      [[# argument #]]
+      [[# the argument tuple. #]]
       [[if pyarg_format != '']]
         if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
           [[if not function.self_type is None]]
@@ -317,7 +324,7 @@ template = Template("""
         return Py_BuildValue(\"i\", return_value);
       [[elif isinstance(function.return_type, Float)]]
         return Py_BuildValue(\"f\", return_value);
-      [[elif isinstance(function.return_type, FloatVector)]]
+      [[elif isinstance(function.return_type, FloatVector) or isinstance(function.return_type, IntVector)]]
          [[# This is pretty expensive, but simple#]]
          PyObject* array_func;
          PyObject* array_module = PyImport_ImportModule(\"array\");
@@ -329,7 +336,11 @@ template = Template("""
          array_func = PyDict_GetItemString(array_dict, \"array\");
          if (array_func == 0)
            return 0;
-         PyObject* arglist = Py_BuildValue(\"(s)\", \"d\");
+         [[if isinstance(function.return_type, FloatVector)]]
+           PyObject* arglist = Py_BuildValue(\"(s)\", \"d\");
+         [[else]]
+           PyObject* arglist = Py_BuildValue(\"(s)\", \"i\");
+         [[end]]
          PyObject* array = PyEval_CallObject(array_func, arglist);
          Py_DECREF(arglist);
          [[# There isn't a way to create an array of a set size!?!?!#]]
@@ -339,7 +350,11 @@ template = Template("""
          array_func = PyObject_GetAttrString(array, \"append\");
          if (array_func == 0)
            return 0;         
-         arglist = Py_BuildValue(\"(f)\", 0.0);
+         [[if isinstance(function.return_type, FloatVector)]]
+           arglist = Py_BuildValue(\"(f)\", 0.0);
+         [[else]]
+           arglist = Py_BuildValue(\"(i)\", 0);
+         [[end]]
          PyObject* result;
          for (size_t i = 0; i < return_value->size(); ++i) {
            result = PyEval_CallObject(array_func, arglist);
@@ -348,11 +363,19 @@ template = Template("""
            Py_DECREF(result);
          }
          Py_DECREF(arglist);
-         double* buf;
+         [[if isinstance(function.return_type, FloatVector)]]
+           double* buf;
+         [[else]]
+           int* buf;
+         [[end]]
          int len;
          if (PyObject_AsWriteBuffer(array, (void**)&buf, &len) < 0)
            return 0;
-         if (len / sizeof(double) != return_value->size()) {
+         [[if isinstance(function.return_type, FloatVector)]]
+           if (len / sizeof(double) != return_value->size()) {
+         [[else]]
+           if (len / sizeof(int) != return_value->size()) {
+         [[end]]
            Py_DECREF(array);
            PyErr_SetString(PyExc_RuntimeError, \"There was a problem creating the array\");
            return 0;
@@ -362,6 +385,15 @@ template = Template("""
          }
          delete return_value;
          return array;
+      [[elif isinstance(function.return_type, ImageList)]]
+        PyObject* list = PyList_New(return_value->size());
+        std::list<Image*>::iterator it = return_value->begin();
+        for (size_t i = 0; i < return_value->size(); ++i, ++it) {
+          PyList_SET_ITEM(list, i,
+            create_ImageObject(*it, image_type, subimage_type, cc_type, data_type, pybase_init));
+        }
+        delete return_value;
+        return list;
       [[else]]
         return return_value;
       [[end]]
@@ -394,7 +426,7 @@ template = Template("""
     pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, \"ImageBase\"), \"__init__\");
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, \"SubImage\");
-    cc_type = (PyTypeObject*)PyDict_GetItemString(dict, \"CC\");
+    cc_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Cc\");
     data_type = (PyTypeObject*)PyDict_GetItemString(dict, \"ImageData\");
     mod = PyImport_ImportModule(\"gamera.gameracore\");
     if (mod == 0) {
@@ -421,8 +453,6 @@ def generate_plugin(plugin_filename):
     regenerate = 1
 
   sys.path.append(plug_path)
-  ignore = ["_" + module_name] + ["core", "gamera.core", "gameracore"]
-  magic_import_setup(ignore)
 
   #import plugin
   plugin_module = __import__(module_name)
@@ -453,7 +483,6 @@ def generate_plugin(plugin_filename):
   else:
     print "skipping wrapper generation for", module_name, "plugin (output up-to-date)"
   # add newline to make gcc shut-up about no newline at end of file!
-  restore_import()
 
   # make the a distutils extension class for this plugin
   cpp_files = [cpp_filename]

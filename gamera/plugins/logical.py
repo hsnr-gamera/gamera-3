@@ -69,6 +69,7 @@ class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""
   category = "Logical"
   cpp_headers = ["logical.hpp"]
+  cpp_namespaces=["Gamera"]
   functions = [and_image, or_image, xor_image]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"

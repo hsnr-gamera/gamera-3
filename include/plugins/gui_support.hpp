@@ -25,7 +25,7 @@
 #include "vigra/resizeimage.hxx"
 #include "Python.h"
 
-using namespace Gamera;
+namespace Gamera {
 
 namespace {
 
@@ -130,11 +130,10 @@ namespace {
       char* i = data;
       typename Mat::const_row_iterator row = mat.row_begin();
       typename Mat::const_col_iterator col;
-      ImageAccessor<OneBitPixel> acc;
       OneBitPixel tmp;
       for (; row != mat.row_end(); ++row) {
 	for (col = row.begin(); col != row.end(); ++col) {
-	  tmp = acc.get(col);
+	  tmp = *col;
 	  if (is_white(tmp))
 	    tmp = 255;
 	  else if (is_black(tmp))
@@ -184,6 +183,8 @@ void to_buffer(T& m, PyObject *py_buffer) {
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
+}
+
 }
 
 #endif

@@ -272,6 +272,13 @@ namespace Gamera {
     return 0;
   }
   
+  RGBPixel pixel_traits<RGBPixel>::black() {
+    return RGBPixel(0, 0, 0);
+  }
+  
+  RGBPixel pixel_traits<RGBPixel>::white() {
+    return RGBPixel(255, 255, 255);
+  }
 };
 
 #endif

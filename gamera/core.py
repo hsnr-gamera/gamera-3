@@ -48,6 +48,16 @@ def load_image(filename, compression = DENSE):
    image.name = filename
    return image
 
+
+# displays a list of matrices in a grid-like window
+def display_multi(list):
+   gui = config.get_option("__gui")
+   if gui:
+      # If it's not a list, we'll get errors, so make it one
+      if not util.is_sequence(list):
+         list = [list]
+      gui.ShowImages(list, ImageBase.to_string, ImageBase.scaled_to_string)
+   
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
@@ -134,7 +144,7 @@ class ImageBase:
 
    def methods_flat_category(self, category):
       
-     methods = self.methods()
+     methods = self._methods
      start = methods
      for subcategory in category.split('/'):
        if start.has_key(subcategory):

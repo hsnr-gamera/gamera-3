@@ -23,6 +23,8 @@
 #include "gamera.hpp"
 #include <exception>
 
+namespace Gamera {
+
 template<class T, class U>
 void and_image(T& a, U& b) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
@@ -67,5 +69,5 @@ void xor_image(T &a, const U &b) {
       *it_a = white(a);
   }
 }
-
+}
 #endif

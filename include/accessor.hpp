@@ -42,6 +42,7 @@ namespace Gamera {
     value_type get(const Iterator& i) const {
       return i.get();
     }
+    
     value_type get(value_type* i) const {
       return *i;
     }

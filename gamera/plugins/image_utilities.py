@@ -77,6 +77,7 @@ histogram = histogram()
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
+    cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy, histogram]
     author = "Michael Droettboom and Karl MacMillan"

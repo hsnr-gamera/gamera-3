@@ -19,12 +19,27 @@ try:
 except:
     pass
 
+# Create the list of modules to ignore at import - because
+# we are in the middle of the build process a lot of C++
+# plugins don't yet exist. By preventing the import of
+# the core of gamera and all of the plugins we allow the
+# plugins to be imported for the build process to examine
+# them.
+ignore = ["core", "gamera.core", "gameracore"]
+for x in plugins:
+    plug_path, filename = os.path.split(x)
+    module_name = "_" + filename.split('.')[0]
+    ignore.append(module_name)
+generate.magic_import_setup(ignore)
+
 plugin_extensions = []
 for x in plugins:
     print x
     extension = generate.generate_plugin(x)
     if not extension is None:
         plugin_extensions.append(extension)
+
+generate.restore_import()
 
 ########################################
 # Check that this is at least Python 2.2

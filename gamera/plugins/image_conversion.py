@@ -51,12 +51,41 @@ class greyscale_to_rgb(PluginFunction):
     return_type = ImageType([RGB], "output")
 greyscale_to_rgb = greyscale_to_rgb()
 
+# From Grey16
+class grey16_to_float(PluginFunction):
+    self_type = ImageType([GREY16])
+    return_type = ImageType([FLOAT], "output")
+grey16_to_float = grey16_to_float()
+
+# From OneBit
+class onebit_to_rgb(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([RGB], "output")
+onebit_to_rgb = onebit_to_rgb()
+
+class onebit_to_greyscale(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([GREYSCALE], "output")
+onebit_to_greyscale = onebit_to_greyscale()
+
+class onebit_to_grey16(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([GREY16], "output")
+onebit_to_grey16 = onebit_to_grey16()
+
+class onebit_to_float(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([FLOAT], "output")
+onebit_to_float = onebit_to_float()
+
 class ImageConversionModule(PluginModule):
     category = "Utility"
     cpp_headers=["image_conversion.hpp"]
+    cpp_namespaces = ["Gamera"]
     functions = [rgb_to_greyscale, rgb_to_grey16, rgb_to_float,
                  greyscale_to_float, greyscale_to_grey16,
-                 greyscale_to_rgb]
+                 greyscale_to_rgb, grey16_to_float, onebit_to_rgb, onebit_to_greyscale,
+                 onebit_to_grey16, onebit_to_float]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

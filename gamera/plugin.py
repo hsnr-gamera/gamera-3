@@ -24,6 +24,7 @@ from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 
 class PluginModule:
     category = None
+    cpp_namespaces = []
     cpp_sources = []
     cpp_headers = []
     cpp_defines = []

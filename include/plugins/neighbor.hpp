@@ -27,7 +27,7 @@
 #include <vector>
 #include "gamera.hpp"
 
-using namespace Gamera;
+namespace Gamera {
 
 /* Steps through the image using a 4x4 window, replacing the center pixel
    with a value determined by a given function.
@@ -286,6 +286,7 @@ void neighbor4o(T& m, F& func) {
   tmp = new ImageView<ImageData<value_type> >(mat_data, 0, 0, m.nrows(), m.ncols());
   neighbor4o(m, func, *tmp);
   delete tmp;
+}
 }
 
 #endif

@@ -44,11 +44,11 @@ namespace Gamera {
 
   // Print a image to the console
   template<class T>
-  void print_image(const T& mat) {
-    typename T::const_row_iterator i = mat.row_begin();
+  void print_image(const T& image) {
+    typename T::const_row_iterator i = image.row_begin();
     typename T::const_row_iterator::iterator j;
     std::cout << "[" << std::endl;
-    for (; i != mat.row_end(); i++) {
+    for (; i != image.row_end(); i++) {
       j = i.begin();
       for (; j != i.end(); j++) {
 	std::cout << *j << " ";
@@ -58,100 +58,6 @@ namespace Gamera {
     std::cout << "]" << std::endl;
   }
 
-  /*
-    Various statistics about runs
-  */
-
-  template<class T>
-  inline void black_run_end(T& i, const T end) {
-    for (; i != end; ++i) {
-      if (is_white(*i))
-	break;
-    }
-  }
-	
-  template<class T>
-  inline void white_run_end(T& i, const T end) {
-    for (; i != end; ++i) {
-      if (is_black(*i))
-	break;
-    }
-  }
-  
-  /*
-    These functions find the length of the largest run in a a row
-    or column of a image.
-  */
-  template<class T>
-  inline size_t max_black_run(T i, const T end) {
-    size_t max = 0;
-    while (i != end) {
-      if (is_black(*i)) {
-	T last = i;
-	black_run_end(i, end);
-	size_t cur_length = i - last;
-	if (cur_length > max)
-	  max = cur_length;
-      } else {
-	white_run_end(i, end);
-      }
-    }
-    return max;
-  }
-	
-  template<class T>
-  inline size_t max_white_run(T i, const T end) {
-    size_t max = 0;
-    while (i != end) {
-      if (is_white(*i)) {
-	T last = i;
-	white_run_end(i, end);
-	size_t cur_length = i - last;
-	if (cur_length > max)
-	  max = cur_length;
-      } else {
-	black_run_end(i, end);
-      }
-    }
-    return max;
-  }
-
-  /*
-    Run-length histograms. These make a histogram of the lenght of the runs
-    in an image. They take an iterator range and a random-access container
-    for the result (that should be appropriately sized). The histogram vector
-    is not filled with zeros so that successive calls can be made to this
-    algorithm with the same vector to do the histogram of an entire image. KWM
-  */
-  template<class T, class Vec>
-  inline void black_run_histogram(T i, const T end, Vec& hist) {
-    while (i != end) {
-      if (is_black(*i)) {
-	T last = i;
-	black_run_end(i, end);
-	size_t cur_length = i - last;
-	hist[cur_length]++;
-      } else {
-	white_run_end(i, end);
-      }
-    }
-  }
-
-  template<class T, class Vec>
-  inline void white_run_histogram(T i, const T end, Vec& hist) {
-    while (i != end) {
-      if (is_white(*i)) {
-	T last = i;
-	white_run_end(i, end);
-	size_t cur_length = i - last;
-	hist[cur_length]++;
-      } else {
-	black_run_end(i, end);
-      }
-    }
-  }
-
-	
   // Shear a single column or row
   template<class T>
   inline void simple_shear(T begin, const T end, int distance) {

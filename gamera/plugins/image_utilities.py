@@ -73,7 +73,7 @@ class histogram(PluginFunction):
     return_type = FloatVector("histogram")
     def __call__(image):
         hist = _image_utilities.histogram(image)
-        gui = gamera.config.get_option("__gui")
+        gui = gamera.config.options.__.gui
         if gui:
             gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
         return hist

@@ -186,7 +186,6 @@ namespace Gamera {
     }
   };
 
-
   /*
     TypeIdImageFactory
 

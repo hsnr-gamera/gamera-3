@@ -17,6 +17,7 @@
 #
 
 from gamera.plugin import *
+import _segmentation
 
 class cc_analysis(PluginFunction):
     self_type = ImageType([ONEBIT])
@@ -40,7 +41,7 @@ class splitx(PluginFunction):
     args = Args([Float("center")])
     return_type = ImageList("splits")
     def __call__(self, center=0.5):
-        return image.splitx(self._center, center)
+        return _segmentation.splitx(self, center)
 splitx = splitx()
 
 class splity(PluginFunction):
@@ -48,37 +49,46 @@ class splity(PluginFunction):
     args = Args([Float("center")])
     return_type = ImageList("splits")
     def __call__(self, center=0.5):
-        return image.splity(self._center, center)
+        return _segmentation.splity(self, center)
+    __call__ = staticmethod(__call__)
 splity = splity()
 
 class splitx_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
-    def __call__(self):
-        return image.splitx(self._center)
     
 class splitx_left(splitx_base):
     _center = 0.25
+    def __call__(self):
+        return self.splitx(0.25)
+    __call__ = staticmethod(__call__)
 splitx_left = splitx_left()
 
 class splitx_right(splitx_base):
     _center = 0.75
+    def __call__(self):
+        return self.splitx(0.75)
+    __call__ = staticmethod(__call__)
 splitx_right = splitx_right()
 
 class splity_base(PluginFunction):
     pure_python = 1
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
-    def __call__(self):
-        return image.splity(self._center)
     
 class splity_top(splity_base):
     _center = 0.25
+    def __call__(self):
+        return self.splity(0.25)
+    __call__ = staticmethod(__call__)
 splity_top = splity_top()
 
 class splity_bottom(splity_base):
     _center = 0.75
+    def __call__(self):
+        return self.splity(0.75)
+    __call__ = staticmethod(__call__)
 splity_bottom = splity_bottom()
 
 class SegmentationModule(PluginModule):

@@ -63,7 +63,7 @@ class _Classifier:
          group_no = 0
          for i in range(len(glyphs)):
             gi = glyphs[i]
-            fudge_gi = Fudge(gi, 6)
+            fudge_gi = Fudge(gi, 8)
             for j in range(i + 1, len(glyphs)):
                gj = glyphs[j]
                if fudge_gi.intersects(gj):
@@ -370,6 +370,8 @@ class InteractiveClassifier(_Classifier):
    
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
+      import time
+      t = time.clock()
       progress = util.ProgressFactory("Generating features...",
                                       len(glyphs) / 10)
       feature_functions = self.get_feature_functions()
@@ -379,7 +381,8 @@ class InteractiveClassifier(_Classifier):
             if i % 10 == 0:
                progress.step()
       finally:
-         progress.kill()   
+         progress.kill()
+      print "generate features time:", time.clock() - t
 
    ########################################
    # MANUAL CLASSIFICATION

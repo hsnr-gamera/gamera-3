@@ -20,10 +20,11 @@
 import array
 from gamera.plugin import *
 import gamera.util
+import _features
 
 class black_area(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Int("black_area")
+    return_type = FloatVector("black_area", 1)
 black_area = black_area()
 
 class moments(PluginFunction):
@@ -43,22 +44,22 @@ nholes_extended = nholes_extended()
 
 class volume(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Float("volume")
+    return_type = FloatVector("volume", 1)
 volume = volume()
 
 class area(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Float("area")
+    return_type = FloatVector("area", 1)
 area = area()
 
 class aspect_ratio(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Float("aspect_ratio")
+    return_type = FloatVector("aspect_ratio", 1)
 aspect_ratio = aspect_ratio()
 
 class compactness(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = Float("compactness")
+    return_type = FloatVector("compactness", 1)
 compactness = compactness()
 
 class volume16regions(PluginFunction):
@@ -92,14 +93,12 @@ class generate_features(PluginFunction):
       if self.feature_functions == features:
          return
       self.feature_functions = features
+      self_tuple = (self,)
       self.features = array.array('d')
       for name, function in features:
-         result = apply(function.__call__, (self,))
-         if function.return_type.length == 1:
-            self.features.append(result)
-         else:
-            self.features.extend(result)
+          self.features.extend(function.__call__(self))
     __call__ = staticmethod(__call__)
+
 generate_features = generate_features()
 
 

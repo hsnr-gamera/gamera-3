@@ -74,6 +74,49 @@ inline PyObject* get_gameracore_dict() {
   return dict;
 }
 
+#ifndef GAMERACORE_INTERNAL
+inline PyObject* get_ArrayInit() {
+  static PyObject* t = 0;
+  if (t == 0) {
+    PyObject* array_module = PyImport_ImportModule("array");
+    if (array_module == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get array module.\n");
+      return 0;
+    }
+    PyObject* array_dict = PyModule_GetDict(array_module);
+    if (array_dict == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get array module dictionary.\n");
+      return 0;
+    }
+    t = PyDict_GetItemString(array_dict, "array");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get array object.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+
+inline PyObject* get_ArrayAppend() {
+  static PyObject* t = 0;
+  if (t == 0) {
+    PyObject* array_init = get_ArrayInit();
+    if (array_init == 0)
+      return 0;
+    t = PyObject_GetAttrString(array_init, "append");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get array append method.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#endif
+
 /*
   SIZE OBJECT
 */

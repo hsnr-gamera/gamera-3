@@ -186,6 +186,7 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
 
   NodeVector subgraph;
   root = graph_optimize_partitions_find_root(root, subgraph);
+
   size_t size = subgraph.size();
   // We can't do the grouping if there's more than 64 nodes,
   // so just return them all.  Also, if there's only one node,
@@ -219,6 +220,24 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   }
 
   graph_optimize_partitions_find_skips(parts);
+
+  for (NodeVector::iterator i = subgraph.begin();
+       i != subgraph.end(); ++i) {
+    std::cerr << PyString_AsString(PyObject_Repr((*i)->m_data)) << "\n";
+  }
+
+  size_t j = 0;
+  for (Parts::iterator i = parts.begin();
+       i != parts.end(); ++i, ++j) {
+    std::cerr << j << " & ";
+    for (size_t k = 0; k < size; ++k) {
+      if ((*i).bits & 1 << k)
+	std::cerr << "$\\bullet$ & ";
+      else
+	std::cerr << "$\\circ$ & ";
+    }
+    std::cerr << (*i).begin << " & " << (*i).end << " & " << (*i).score << "\\\\ \n";
+  }
 
   // Now, we find a solution
   Solution best_solution, partial_solution;

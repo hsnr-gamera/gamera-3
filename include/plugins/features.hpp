@@ -38,26 +38,35 @@ namespace Gamera {
   */
 
   template<class T>
-  int black_area(const T& mat) {
+  FloatVector* black_area(const T& mat) {
     int black_pixels = 0;
     for (typename T::const_vec_iterator i = mat.vec_begin();
 	 i != mat.vec_end(); ++i) {
       if (is_black(*i))
 	black_pixels++;
     }
-    return black_pixels;
+    FloatVector* vec = new FloatVector(1);
+    (*vec)[0] = (feature_t)black_pixels;
+    return vec;
   }
 
   // Ratio of black to white pixels
-  
+
   template<class T>
-  feature_t volume(const T &m) {
+  feature_t volume0(const T &m) {
     unsigned int count = 0;
     typename T::const_vec_iterator i = m.vec_begin();
     for (; i != m.vec_end(); i++)
       if (is_black(*i))
 	count++;
     return (feature_t(count) / (m.nrows() * m.ncols()));
+  }
+  
+  template<class T>
+  FloatVector* volume(const T &m) {
+    FloatVector* vec = new FloatVector(1);
+    (*vec)[0] = volume0(m);
+    return vec;
   }
   
 
@@ -218,13 +227,17 @@ namespace Gamera {
   }
 
   template<class T>
-  feature_t area(const T& image) {
-    return feature_t(image.nrows() * image.ncols()) / image.scaling();
+  FloatVector* area(const T& image) {
+    FloatVector* vec = new FloatVector(1);
+    (*vec)[0] = feature_t(image.nrows() * image.ncols()) / image.scaling();
+    return vec;
   }
 
   template<class T>
-  feature_t aspect_ratio(const T& image) {
-    return feature_t(image.ncols()) / feature_t(image.nrows());
+  FloatVector* aspect_ratio(const T& image) {
+    FloatVector* vec = new FloatVector(1);
+    (*vec)[0] = feature_t(image.ncols()) / feature_t(image.nrows());
+    return vec;
   }
 
   /*
@@ -234,23 +247,28 @@ namespace Gamera {
     the volume of the image.
   */
   template<class T>
-  feature_t compactness(const T& image) {
+  FloatVector* compactness(const T& image) {
     // I've converted this to a more efficient method.  Rather than
     // using (volume(outline) / volume(original)), I just use
     // volume(dilated) - volume(original) / volume(original).  This
     // prevents the unnecessary xor_image pixel-by-pixel operation from
     // happening.  We still need to create a copy to dilate, however,
     // since we don't want to touch the original.
-    feature_t vol = volume(image);
+    feature_t vol = volume0(image);
+    feature_t result;
     if (vol == 0)
-      return std::numeric_limits<feature_t>::max();
-    typedef typename ImageFactory<T>::view_type* view_type;
-    view_type copy = simple_image_copy(image);
-    dilate(*copy);
-    feature_t result = (volume(*copy) - vol) / vol;
-    delete copy->data();
-    delete copy;
-    return result;
+      result = std::numeric_limits<feature_t>::max();
+    else {
+      typedef typename ImageFactory<T>::view_type* view_type;
+      view_type copy = simple_image_copy(image);
+      dilate(*copy);
+      result = (volume0(*copy) - vol) / vol;
+      delete copy->data();
+      delete copy;
+    }
+    FloatVector* vec = new FloatVector(1);
+    (*vec)[0] = result;
+    return vec;
   }
 
   /*
@@ -272,7 +290,7 @@ namespace Gamera {
       for (size_t j = 0; j < 4; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	(*volumes)[i * 4 + j] = volume(tmp);
+	(*volumes)[i * 4 + j] = volume0(tmp);
 	start_row += rows;
       }
       start_col += cols;
@@ -299,7 +317,7 @@ namespace Gamera {
       for (size_t j = 0; j < 8; ++j) {
 	T tmp(image, size_t(start_row), size_t(start_col),
 	      rows_int, cols_int);
-	(*volumes)[i * 8 + j] = volume(tmp);
+	(*volumes)[i * 8 + j] = volume0(tmp);
 	start_row += rows;
       }
       start_col += cols;

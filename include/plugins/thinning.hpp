@@ -337,7 +337,7 @@ static bool thin_lc_look_up[16][16]=
 	  size_t y_after = (y == nrows - 1) ? nrows - 2 : y + 1;
 	  size_t x_after = (x == ncols - 1) ? ncols - 2 : x + 1;
 
-	  /* size_t a, b, c, d;
+	  size_t a, b, c, d;
 	  
 	  a = is_black(thin_view->get(y_before, x)) ? 1 : 0;
 	  b = is_black(thin_view->get(y_before, x_after)) ? 2 : 0;
@@ -351,26 +351,8 @@ static bool thin_lc_look_up[16][16]=
 	  c = is_black(thin_view->get(y, x_before)) ? 4 : 0;
 	  d = is_black(thin_view->get(y_before, x_before)) ? 8 : 0;
 
-	  size_t i = a | b | c | d; */
+	  size_t i = a | b | c | d;
 
-	  size_t j = 0;
-	  j |= is_black(thin_view->get(y_before, x));
-	  j<<1;
-	  j |= is_black(thin_view->get(y_before, x_after));
-	  j<<1;
-	  j |= is_black(thin_view->get(y, x_after));
-	  j<<1;
-	  j |= is_black(thin_view->get(y_after, x_after));
-
-	  size_t i = 0;
-	  i |= is_black(thin_view->get(y_after, x));
-	  i<<1;
-	  i |= is_black(thin_view->get(y_after, x_before));
-	  i<<1;
-	  i |= is_black(thin_view->get(y, x_before));
-	  i<<1;
-	  i |= is_black(thin_view->get(y_before, x_before));
-		       
 	  if (thin_lc_look_up[i][j])
 	    *it = white(*thin_view);
 	}

@@ -47,11 +47,13 @@ setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', rpm_run)
 class smart_install_data(install_data.install_data):
    def run(self):
       install_cmd = self.get_finalized_command("install")
-      install_dir = getattr(install_cmd, "install_lib")
+      install_dir = os.path.join(getattr(install_cmd, "install_lib"), "gamera")
+      print "INSTALL DIRECTORY", install_dir
       output = []
       for path, files in self.data_files:
-         if path.startswith("gamera"):
-            path = os.path.join(install_dir, path)
+         if "$LIB" in path:
+            path = path[path.find("$LIB"):]
+            path = path.replace("$LIB", install_dir)
          output.append((path, files))
       self.data_files = output
       return install_data.install_data.run(self)

@@ -170,4 +170,4 @@ setup(cmdclass = gamera_setup.cmdclass,
       description = description,
       packages = packages,
       scripts = scripts,
-      data_files=[(os.path.join(gamera_setup.lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)
+      data_files=[(os.path.join(gamera_setup.lib_path, "$LIB/test"), glob.glob("gamera/test/*.tiff"))] + includes)

@@ -1317,10 +1317,14 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGroupAndGuess(self, list):
       try:
+         wxBeginBusyCursor()
          added, removed = self._classifier.group_list_automatic(list)
       except ClassifierError, e:
          gui_util.message(str(e))
-      self._AdjustAfterGuess(added, removed)
+      finally:
+         wxEndBusyCursor()
+      else:
+         self._AdjustAfterGuess(added, removed)
 
    def _AdjustAfterGuess(self, added, removed):
       wxBeginBusyCursor()

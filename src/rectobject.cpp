@@ -79,6 +79,7 @@ extern "C" {
   static PyObject* rect_contains_y(PyObject* self, PyObject* args);
   static PyObject* rect_contains_point(PyObject* self, PyObject* args);
   static PyObject* rect_contains_rect(PyObject* self, PyObject* args);
+  static PyObject* rect_expand(PyObject* self, PyObject* args);
   static PyObject* rect_intersects_x(PyObject* self, PyObject* args);
   static PyObject* rect_intersects_y(PyObject* self, PyObject* args);
   static PyObject* rect_intersects(PyObject* self, PyObject* args);
@@ -157,6 +158,8 @@ static PyMethodDef rect_methods[] = {
    "bool **contains_point** (Point *point*)\n\n``True`` if the rectangle contains the given ``Point`` in logical coordinate space"},
   {"contains_rect", rect_contains_rect, METH_VARARGS,
    "bool **contains_rect** (Rect *other*)\n\n``True`` if rectangle completely contains the given rectangle in logical coordinate space."},
+  {"expand", rect_expand, METH_VARARGS,
+   "Rect **expand** (int *size*)\n\nReturns a new Rect that is padded on all four sides by *size*."},
   {"intersects_x", rect_intersects_x, METH_VARARGS,
    "bool **intersects_x** (Rect *other*)\n\n``True`` if rectangle intersects the given rectangle in the *x* direction (completely ignoring the *y* direction.  (``True`` if the two rectangles are merely \"vertically aligned\".)"},
   {"intersects_y", rect_intersects_y, METH_VARARGS,
@@ -463,6 +466,17 @@ static PyObject* rect_contains_rect(PyObject* self, PyObject* args) {
     Py_INCREF(Py_False);
     return Py_False;
   }
+}
+
+static PyObject* rect_expand(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  long size;
+  if (PyArg_ParseTuple(args, "i", &size) <= 0)
+    return 0;
+  PyTypeObject* pytype = get_RectType();
+  RectObject* so = (RectObject*)pytype->tp_alloc(pytype, 0);
+  so->m_x = new Rect(x->expand(size));
+  return (PyObject*)so;
 }
 
 static PyObject* rect_intersects_x(PyObject* self, PyObject* args) {

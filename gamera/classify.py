@@ -110,7 +110,7 @@ else.
       splits, removed = self.classify_list_automatic(glyphs)
       glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]
       if grouping_function is None:
-         grouping_function = _Classifier._default_grouping_function
+         grouping_function = BoundingBoxGroupingFunction(4)
       G = self._pregroup(glyphs, grouping_function)
       if evaluate_function is None:
          evaluate_function = self._evaluate_subgroup
@@ -128,18 +128,12 @@ a list of glyphs that is already updated for splitting and grouping."""
       added, removed = self.group_list_automatic(glyphs, *args, **kwargs)
       return self._update_after_classification(glyphs, added, removed)
 
-   def _default_grouping_function(a, b):
-      return Fudge(a, 4).intersects(b)
-   _default_grouping_function = staticmethod(_default_grouping_function)
-
    def _pregroup(self, glyphs, function):
       from gamera import graph
       G = graph.Undirected()
       G.add_nodes(glyphs)
       progress = util.ProgressFactory("Pre-grouping glyphs...", len(glyphs))
       try:
-         equivalencies = {}
-         group_no = 0
          for i in range(len(glyphs)):
             gi = glyphs[i]
             for j in range(i + 1, len(glyphs)):
@@ -174,19 +168,20 @@ a list of glyphs that is already updated for splitting and grouping."""
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
-            if G.size_of_subgraph(root) > max_graph_size:
-               continue
+##             if G.size_of_subgraph(root) > max_graph_size:
+##                continue
             best_grouping = G.optimize_partitions(
-               root, evaluate_function, max_parts_per_group)
-            for subgroup in best_grouping:
-               if len(subgroup) > 1:
-                  union = image_utilities.union_images(subgroup)
-                  found_unions.append(union)
-                  classification = self.guess_glyph_automatic(union)
-                  union.classify_heuristic(classification)
-                  part_name = "_group._part." + classification[0][1]
-                  for glyph in subgroup:
-                     glyph.classify_heuristic(part_name)
+               root, evaluate_function, max_parts_per_group, max_graph_size)
+            if not best_grouping is None:
+               for subgroup in best_grouping:
+                  if len(subgroup) > 1:
+                     union = image_utilities.union_images(subgroup)
+                     found_unions.append(union)
+                     classification = self.guess_glyph_automatic(union)
+                     union.classify_heuristic(classification)
+                     part_name = "_group._part." + classification[0][1]
+                     for glyph in subgroup:
+                        glyph.classify_heuristic(part_name)
             progress.step()
       finally:
          progress.kill()
@@ -836,6 +831,24 @@ class BasicGroupingFunction:
 
    def __call__(self, a, b):
       return Fudge(a, self._threshold).intersects(b)
+
+class _ExternalGroupingFunction:
+   def __call__(self, a, b):
+      return self._function(a, b, self._threshold)
+
+class ShapedGroupingFunction(_ExternalGroupingFunction):
+   def __init__(self, threshold):
+      from gamera.plugins import structural
+      self._function = structural.shaped_grouping_function
+      self._threshold = threshold
+      self.__call__ = self.__class__.__call__
+
+class BoundingBoxGroupingFunction(_ExternalGroupingFunction):
+   def __init__(self, threshold):
+      from gamera.plugins import structural
+      self._function = structural.bounding_box_grouping_function
+      self._threshold = threshold
+      self.__call__ = self.__class__.__call__
 
 def average_bb_distance(ccs):
    """Calculates the average distance between the bounding boxes

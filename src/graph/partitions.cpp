@@ -221,7 +221,8 @@ inline void graph_optimize_partitions_find_solution
 }
 
 PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
-				    const PyObject* eval_func, const size_t max_parts_per_group) {
+				    const PyObject* eval_func, const size_t max_parts_per_group,
+				    const size_t max_graph_size) {
 
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
@@ -235,7 +236,7 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
     // We can't do the grouping if there's more than 64 nodes,
     // so just return them all.  Also, if there's only one node,
     // just trivially return it to save time.
-    if (size > BITFIELD_SIZE - 2 || size == 1) {
+    if (size > BITFIELD_SIZE - 2 || size > max_graph_size || size == 1) {
       // Now, build a Python list of the solution
       PyObject* result = PyList_New(subgraph.size());
       for (size_t i = 0; i < subgraph.size(); ++i) {
@@ -319,12 +320,13 @@ PyObject* graph_optimize_partitions(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   PyObject* a, *eval_func;
   int max_parts_per_group = 5;
-  if (PyArg_ParseTuple(args, "OO|i", &a, &eval_func, &max_parts_per_group) <= 0)
+  int max_graph_size = 16;
+  if (PyArg_ParseTuple(args, "OO|ii", &a, &eval_func, &max_parts_per_group, &max_graph_size) <= 0)
     return 0;
   Node* root = graph_find_node(so, (PyObject*)a);
   if (root == NULL)
     return 0;
-  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_parts_per_group);
+  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_parts_per_group, max_graph_size);
   return result;
 }
 

@@ -357,6 +357,14 @@ namespace Gamera {
       else
 	return false;
     }
+    
+    Rect expand(size_t expansion) const {
+      return Rect(size_t(std::max((long)ul_y() - (long)expansion, 0l)),
+		  size_t(std::max((long)ul_x() - (long)expansion, 0l)),
+		  nrows() + expansion * 2,
+		  ncols() + expansion * 2);
+    }
+
     // intersection
     bool intersects_x(const self& v) const {
       coord_t sul = ul_x();
@@ -380,6 +388,14 @@ namespace Gamera {
     }
     bool intersects(const self& v) const {
       return (intersects_x(v) && intersects_y(v));
+    }
+
+    Rect intersection(const self& other) const {
+      size_t ulx = std::max(ul_x(), other.ul_x());
+      size_t uly = std::max(ul_y(), other.ul_y());
+      size_t lrx = std::min(lr_x(), other.lr_x());
+      size_t lry = std::min(lr_y(), other.lr_y());
+      return Rect(Point(ulx, uly), Point(lrx, lry));
     }
 
     // Equality

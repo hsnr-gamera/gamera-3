@@ -735,8 +735,10 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
          self.reload_image()
 
    def _OnMotion(self, event):
-      scaling = self.scaling
       image = self.image
+      if image is None:
+         return
+      scaling = self.scaling
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       x2 = int(max(min((event.GetX() + origin[0]) / scaling, image.ncols - 1), 0))
       y2 = int(max(min((event.GetY() + origin[1]) / scaling, image.nrows - 1), 0))

@@ -235,7 +235,7 @@ class RegionMap(WrapperArg):
       delete %(symbol)s;""" % self
 
 class ImageList(WrapperArg):
-   c_type = 'std::vector<Image*>'
+   c_type = 'ImageVector'
    return_type = 'std::list<Image*>*'
    convert_from_PyObject = True
    
@@ -254,9 +254,9 @@ class ImageList(WrapperArg):
               PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
               return 0;
             }
-            %(symbol)s[i] = (Image*)(((RectObject*)element)->m_x);
-            image_get_fv(element, &%(symbol)s[i]->features,
-                         &%(symbol)s[i]->features_len);
+            %(symbol)s[i] = std::pair<Image*, int>((Image*)(((RectObject*)element)->m_x), get_image_combination(element));
+            image_get_fv(element, &%(symbol)s[i].first->features,
+                         &%(symbol)s[i].first->features_len);
           }""" % self
 
    def to_python(self):

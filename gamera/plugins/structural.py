@@ -22,6 +22,16 @@ between glyphs."""
 
 from gamera.plugin import * 
 
+class bounding_box_grouping_function(PluginFunction):
+    self_type = None
+    args = Args([Rect("a"), Rect("b"), Int("threshold")])
+    return_type = Check("connected")
+
+class shaped_grouping_function(PluginFunction):
+    self_type = None
+    args = Args([ImageType(ONEBIT, "a"), ImageType(ONEBIT, "b"), Int("threshold")])
+    return_type = Check("connected")
+
 class polar_distance(PluginFunction):
     """Returns a tuple containing the normalized distance, polar direction,
     and non-normalized polar distance to another glyph (based on center of bounding boxes)."""
@@ -37,8 +47,13 @@ class polar_match(PluginFunction):
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]
     category = "Relational"
-    functions = [polar_distance, polar_match]
+    functions = [polar_distance, polar_match,
+                 bounding_box_grouping_function,
+                 shaped_grouping_function]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
 module = RelationalModule()
+
+bounding_box_grouping_function = bounding_box_grouping_function()
+shaped_grouping_function = shaped_grouping_function()

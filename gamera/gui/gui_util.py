@@ -87,8 +87,12 @@ def build_menu(parent, menu_spec):
 
 NUM_RECENT_FILES = 9
 class FileDialog(wxFileDialog):
+   last_directory = None
+   
    def __init__(self, parent, extensions="*.*", multiple=0):
-      last_directory = config.get("default_dir")
+      cls = self.__class__
+      if cls.last_directory is None:
+         cls.last_directory = config.get("default_dir")
       flags = self._flags
       if multiple:
          flags |= wxMULTIPLE
@@ -97,19 +101,22 @@ class FileDialog(wxFileDialog):
          self._multiple = 0
       wxFileDialog.__init__(
          self, parent, "Choose a file",
-         last_directory, "", extensions, flags)
+         cls.last_directory, "", extensions, flags)
       self.extensions = extensions
 
    def show(self):
+      cls = self.__class__
       result = self.ShowModal()
       self.Destroy()
       if result == wxID_CANCEL:
          return None
       if self._multiple:
          filenames = self.GetPaths()
+         cls.last_directory = path.dirname(filenames[0])
          return filenames
       else:
          filename = self.GetPath()
+         cls.last_directory = path.dirname(filename)
          return filename
 
 class OpenFileDialog(FileDialog):

@@ -174,16 +174,15 @@ namespace Gamera {
       }
   }
 
-  Image *union_images(std::vector<Image*> &list_of_images) {
-    // TODO: get a proper maxint
+  Image *union_images(ImageVector &list_of_images) {
     size_t min_x, min_y, max_x, max_y;
     min_x = min_y = std::numeric_limits<size_t>::max();
     max_x = max_y = 0;
 
     // Determine bounding box
-    for (std::vector<Image*>::iterator i = list_of_images.begin();
+    for (ImageVector::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
-      Image* image = (*i);
+      Image* image = (*i).first;
       min_x = std::min(min_x, image->ul_x());
       min_y = std::min(min_y, image->ul_y());
       max_x = std::max(max_x, image->lr_x());
@@ -194,13 +193,28 @@ namespace Gamera {
     size_t nrows = max_y - min_y + 1;
     OneBitImageData *dest_data = new OneBitImageData(nrows, ncols, min_y, min_x);
     OneBitImageView *dest = new OneBitImageView(*dest_data, min_y, min_x, nrows, ncols);
-    std::fill(dest->vec_begin(), dest->vec_end(), white(*dest));
+    // std::fill(dest->vec_begin(), dest->vec_end(), white(*dest));
     
-    for (std::vector<Image*>::iterator i = list_of_images.begin();
+    for (ImageVector::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
-      Image* image = *i;
-      OneBitImageView* one_bit_image = static_cast<OneBitImageView*>(image);
-      _union_image(*dest, *one_bit_image);
+      Image* image = (*i).first;
+      switch((*i).second) {
+      case ONEBITIMAGEVIEW:
+	_union_image(*dest, *((OneBitImageView*)image));
+	break;
+      case CC:
+	_union_image(*dest, *((Cc*)image));
+	break;
+      case ONEBITRLEIMAGEVIEW:
+	_union_image(*dest, *((OneBitRleImageView*)image));
+	break;
+      case RLECC:
+	_union_image(*dest, *((RleCc*)image));
+	break;
+      default:
+	throw std::runtime_error
+	  ("There is an Image in the list that is not a OneBit image.");
+      }
     }
 
     return dest;

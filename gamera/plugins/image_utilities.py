@@ -22,6 +22,7 @@ and computing histograms."""
 
 from gamera.plugin import * 
 from gamera.gui import has_gui
+import sys
 import _image_utilities 
 
 class image_copy(PluginFunction):

@@ -85,6 +85,13 @@ namespace Gamera {
   typedef std::vector<std::string> StringVector;
 
   /**
+   * ImageVector Vector.
+   *
+   * The Gamera::ImageVectors is a std::vector of pairs of Image* and image type codes.
+   */
+  typedef std::vector<std::pair<Image*, int> > ImageVector;
+
+  /**
    * Int Vector.
    *
    * The Gamera::IntVector type is used to pass arrays of

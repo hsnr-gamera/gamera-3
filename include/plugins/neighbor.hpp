@@ -55,8 +55,6 @@ void neighbor16(const T& m, F& func, M& tmp,
 
   for (unsigned int row = 0; row < m.nrows() - 4; row++) {
     for (unsigned int col = 0; col < m.ncols() - 4; col++) {
-      // This may seem silly, but it's significantly faster than using
-      // sixteen iterators
       window[0] = m.get(row, col);
       window[1] = m.get(row, col + 1);
       window[2] = m.get(row, col + 2);
@@ -83,14 +81,14 @@ void neighbor16(const T& m, F& func, M& tmp,
 /* Steps through the image using a 3x3 window, replacing the center pixel
    with a value determined by a given function.
    This version uses all nine pixels in the 3x3 window:
-      ###
-      ###
-      ###
+      ###  012
+      ###  345
+      ###  678
    The temporary matrix required may be passed in to avoid reallocating for
    each pass of a multi-pass algorithm. (see erode)
 */
 template<class T, class F, class M>
-void neighbor9(const T& m, F& func, M& tmp) {
+void neighbor9(const T& m, F func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(9);
@@ -101,44 +99,42 @@ void neighbor9(const T& m, F& func, M& tmp) {
   unsigned int ncols_m2 = m.ncols() - 2;
 
   // Upper-left
-  for (unsigned int i = 0; i < 9; ++i)
+  for (unsigned int i = 0; i < 4; ++i)
     window[i] = white(m);
   window[4] = m.get(0, 0);
   window[5] = m.get(0, 1);
+  window[6] = white(m);
   window[7] = m.get(1, 0);
   window[8] = m.get(1, 1);
   tmp.set(0, 0, func(window.begin(), window.end()));
   
   // Upper-right
-  for (unsigned int i = 0; i < 9; ++i)
-    window[i] = white(m);
   window[3] = m.get(0, ncols_m2);
   window[4] = m.get(0, ncols_m1);
   window[6] = m.get(1, ncols_m2);
   window[7] = m.get(1, ncols_m1);
+  window[5] = window[8] = white(m);
   tmp.set(0, ncols_m1, func(window.begin(), window.end()));
   
   // Lower-left
-  for (unsigned int i = 0; i < 9; ++i)
-    window[i] = white(m);
   window[1] = m.get(nrows_m2, 0);
   window[2] = m.get(nrows_m2, 1);
   window[4] = m.get(nrows_m1, 0);
   window[5] = m.get(nrows_m1, 1);
+  window[6] = white(m);
+  window[3] = window[7] = white(m);
   tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower-right
-  for (unsigned int i = 0; i < 9; ++i)
-    window[i] = white(m);
   window[0] = m.get(nrows_m2, ncols_m2);
   window[1] = m.get(nrows_m2, ncols_m1);
   window[3] = m.get(nrows_m1, ncols_m2);
   window[4] = m.get(nrows_m1, ncols_m1);
+  window[2] = window[4] = white(m);
   tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
-  for (unsigned int i = 0; i < 3; ++i)
-    window[i] = white(m);
+  window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
     window[3] = m.get(0, col - 1);
     window[4] = m.get(0, col);
@@ -150,8 +146,7 @@ void neighbor9(const T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  for (unsigned int i = 6; i < 9; ++i)
-    window[i] = white(m);
+  window[6] = window[7] = window[8] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
     window[0] = m.get(nrows_m2, col - 1);
     window[1] = m.get(nrows_m2, col);
@@ -163,21 +158,19 @@ void neighbor9(const T& m, F& func, M& tmp) {
   }
 
   // Left edge
-  for (unsigned int i = 0; i < 7; i += 3)
-    window[i] = white(m);
+  window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
     window[1] = m.get(row - 1, 0);
     window[2] = m.get(row - 1, 1);
     window[4] = m.get(row, 0);
     window[5] = m.get(row, 1);
-    window[6] = m.get(row + 1, 0);
-    window[7] = m.get(row + 1, 1);
+    window[7] = m.get(row + 1, 0);
+    window[8] = m.get(row + 1, 1);
     tmp.set(row, 0, func(window.begin(), window.end()));
   }
 
   // Right edge
-  for (unsigned int i = 2; i < 7; i += 3)
-    window[i] = white(m);
+  window[2] = window[5] = window[8] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
     window[0] = m.get(row - 1, ncols_m2);
     window[1] = m.get(row - 1, ncols_m1);
@@ -194,10 +187,9 @@ void neighbor9(const T& m, F& func, M& tmp) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
       typename std::vector<typename T::value_type>::iterator window_it = window.begin();
-      for (int ri = -1; ri < 2; ++ri) {
+      for (int ri = -1; ri < 2; ++ri)
 	for (int ci = -1; ci < 2; ++ci, ++window_it) 
 	  *window_it = m.get(row + ri, col + ci);
-      }
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
@@ -206,9 +198,9 @@ void neighbor9(const T& m, F& func, M& tmp) {
 /* Steps through the image using a 3x3 window, replacing the center pixel
    with a value determined by a given function.
    This version uses all the eight pixels around the center pixel:
-      ###
-      # #
-      ###
+      ###  012
+      # #  3 4
+      ###  567
    The temporary matrix required may be passed in to avoid reallocating for
    each pass of a multi-pass algorithm. (see erode)
 */
@@ -227,68 +219,76 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   // efficient than all of the if's one would have to do in the inner loop
   
   // Upper-left
-  window[0] = m.get(1, 1);
-  window[1] = m.get(1, 0);
-  window[2] = m.get(0, 1);
-  for (unsigned int i = 3; i < 8; ++i)
+  for (unsigned int i = 0; i < 4; ++i)
     window[i] = white(m);
+  window[4] = m.get(0, 1);
+  window[5] = white(m);
+  window[6] = m.get(1, 0);
+  window[7] = m.get(1, 1);
   tmp.set(0, 0, func(window.begin(), window.end()));
   
   // Upper-right
-  window[0] = m.get(1, ncols_m2);
-  window[1] = m.get(1, ncols_m1);
-  window[2] = m.get(0, ncols_m2);
+  window[3] = m.get(0, ncols_m2);
+  window[5] = m.get(1, ncols_m2);
+  window[6] = m.get(1, ncols_m1);
+  window[4] = window[7] = white(m);
   tmp.set(0, ncols_m1, func(window.begin(), window.end()));
   
   // Lower-left
-  window[0] = m.get(nrows_m2, 1);
-  window[1] = m.get(nrows_m1, 1);
-  window[2] = m.get(nrows_m2, 0);
+  window[1] = m.get(nrows_m2, 0);
+  window[2] = m.get(nrows_m2, 1);
+  window[4] = m.get(nrows_m1, 1);
+  window[3] = window[5] = window[6] = white(m);
   tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower-right
   window[0] = m.get(nrows_m2, ncols_m2);
-  window[1] = m.get(nrows_m1, ncols_m2);
-  window[2] = m.get(nrows_m2, ncols_m1);
+  window[1] = m.get(nrows_m2, ncols_m1);
+  window[3] = m.get(nrows_m1, ncols_m2);
+  window[2] = window[4] = white(m);
   tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
+  window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(0, col - 1);
-    window[1] = m.get(0, col + 1);
-    window[2] = m.get(1, col - 1);
-    window[3] = m.get(1, col);
-    window[4] = m.get(1, col + 1);
+    window[3] = m.get(0, col - 1);
+    window[4] = m.get(0, col + 1);
+    window[5] = m.get(1, col - 1);
+    window[6] = m.get(1, col);
+    window[7] = m.get(1, col + 1);
     tmp.set(0, col, func(window.begin(), window.end()));
   }
 
   // Bottom edge
+  window[5] = window[6] = window[7] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m1, col - 1);
-    window[1] = m.get(nrows_m1, col + 1);
-    window[2] = m.get(nrows_m2, col - 1);
-    window[3] = m.get(nrows_m2, col);
-    window[4] = m.get(nrows_m2, col + 1);
+    window[0] = m.get(nrows_m2, col - 1);
+    window[1] = m.get(nrows_m2, col);
+    window[2] = m.get(nrows_m2, col + 1);
+    window[3] = m.get(nrows_m1, col - 1);
+    window[4] = m.get(nrows_m1, col + 1);
     tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
+  window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, 0);
-    window[1] = m.get(row + 1, 0);
-    window[2] = m.get(row - 1, 1);
-    window[3] = m.get(row, 1);
-    window[4] = m.get(row + 1, 1);
+    window[1] = m.get(row - 1, 1);
+    window[2] = m.get(row - 1, 0);
+    window[4] = m.get(row, 1);
+    window[6] = m.get(row + 1, 0);
+    window[7] = m.get(row + 1, 1);
     tmp.set(row, 0, func(window.begin(), window.end()));
   }
 
   // Right edge
+  window[2] = window[4] = window[7] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, ncols_m1);
-    window[1] = m.get(row + 1, ncols_m1);
-    window[2] = m.get(row - 1, ncols_m2);
+    window[0] = m.get(row - 1, ncols_m2);
+    window[1] = m.get(row - 1, ncols_m1);
     window[3] = m.get(row, ncols_m2);
-    window[4] = m.get(row + 1, ncols_m2);
+    window[5] = m.get(row + 1, ncols_m2);
+    window[6] = m.get(row + 1, ncols_m1);
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
@@ -313,9 +313,9 @@ void neighbor8o(const T& m, F& func, M& tmp) {
 /* Steps through the image using a 3x3 window, replacing the center pixel
    with a value determined by a given function.
    This version uses four surrounding pixels in the 3x3 window:
-      # #
-       # 
-      # #
+      # #  0 1
+       #    2
+      # #  3 4
    The temporary matrix required may be passed in to avoid reallocating for
    each pass of a multi-pass algorithm. (see erode)
 */
@@ -334,55 +334,62 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   // efficient than all of the if's one would have to do in the inner loop
 
   // Upper left
-  window[0] = m.get(0, 0);
-  window[1] = m.get(1, 1);
-  window[2] = window[3] = window[4] = white(m);
+  window[2] = m.get(0, 0);
+  window[4] = m.get(1, 1);
+  window[0] = window[1] = window[3] = white(m);
   tmp.set(0, 0, func(window.begin(), window.end()));
 
   // Upper right
-  window[0] = m.get(0, ncols_m1);
-  window[1] = m.get(1, ncols_m2);
+  window[2] = m.get(0, ncols_m1);
+  window[3] = m.get(1, ncols_m2);
+  window[4] = white(m);
   tmp.set(0, ncols_m1, func(window.begin(), window.end()));
 
   // Lower left
-  window[0] = m.get(nrows_m1, 0);
   window[1] = m.get(nrows_m2, 1);
+  window[2] = m.get(nrows_m1, 0);
+  window[3] = white(m);
   tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower right
-  window[0] = m.get(nrows_m1, ncols_m1);
-  window[1] = m.get(nrows_m2, ncols_m2);
+  window[0] = m.get(nrows_m2, ncols_m2);
+  window[1] = white(m);
+  window[2] = m.get(nrows_m1, ncols_m1);
   tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
+  window[0] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(0, col);
-    window[1] = m.get(1, col - 1);
-    window[2] = m.get(1, col + 1);
+    window[2] = m.get(0, col);
+    window[3] = m.get(1, col - 1);
+    window[4] = m.get(1, col + 1);
     tmp.set(0, col, func(window.begin(), window.end()));
   }
 
   // Bottom edge
+  window[3] = window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m1, col);
-    window[1] = m.get(nrows_m2, col - 1);
-    window[2] = m.get(nrows_m2, col + 1);
+    window[0] = m.get(nrows_m2, col - 1);
+    window[1] = m.get(nrows_m2, col + 1);
+    window[2] = m.get(nrows_m1, col);
     tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
+  window[0] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row, 0);
     window[1] = m.get(row - 1, 1);
-    window[2] = m.get(row + 1, 1);
+    window[2] = m.get(row, 0);
+    window[4] = m.get(row + 1, 1);
     tmp.set(row, 0, func(window.begin(), window.end()));
   }
 
   // Right edge
+  window[1] = window[4] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row, ncols_m1);
-    window[1] = m.get(row - 1, ncols_m2);
-    window[2] = m.get(row + 1, ncols_m2);
+    window[0] = m.get(row - 1, ncols_m2);
+    window[2] = m.get(row, ncols_m1);
+    window[3] = m.get(row + 1, ncols_m2);
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
@@ -391,9 +398,9 @@ void neighbor4x(const T& m, F& func, M& tmp) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
-      window[0] = m.get(row, col);
-      window[1] = m.get(row - 1, col - 1);
-      window[2] = m.get(row - 1, col + 1);
+      window[0] = m.get(row - 1, col - 1);
+      window[1] = m.get(row - 1, col + 1);
+      window[2] = m.get(row, col);
       window[3] = m.get(row + 1, col - 1);
       window[4] = m.get(row + 1, col + 1);
       tmp.set(row, col, func(window.begin(), window.end()));
@@ -404,9 +411,9 @@ void neighbor4x(const T& m, F& func, M& tmp) {
 /* Steps through the image using a 3x3 window, replacing the center pixel
    with a value determined by a given function.
    This version uses four surrounding pixels in the 3x3 window:
-       #
-      ### 
-       #
+       #   0
+      ### 123
+       #   4
    The temporary matrix required may be passed in to avoid reallocating for
    each pass of a multi-pass algorithm. (see erode)
 */
@@ -426,63 +433,70 @@ void neighbor4o(const T& m, F& func, M& tmp) {
 
   // Corners
   // Upper-left
-  window[0] = m.get(0, 0);
-  window[1] = m.get(1, 0);
-  window[2] = m.get(0, 1);
-  window[3] = window[4] = white(m);
+  window[0] = window[1] = white(m);
+  window[2] = m.get(0, 0);
+  window[3] = m.get(0, 1);
+  window[4] = m.get(1, 0);
   tmp.set(0, 0, func(window.begin(), window.end()));
 
   // Upper-right
-  window[0] = m.get(0, ncols_m1);
   window[1] = m.get(0, ncols_m2);
-  window[2] = m.get(1, ncols_m1);
+  window[2] = m.get(0, ncols_m1);
+  window[3] = white(m);
+  window[4] = m.get(1, ncols_m1);
   tmp.set(0, ncols_m1, func(window.begin(), window.end()));
 
   // Lower-left
-  window[0] = m.get(nrows_m1, 0);
-  window[1] = m.get(nrows_m1, 1);
-  window[2] = m.get(nrows_m2, 0);
+  window[0] = m.get(nrows_m2, 0);
+  window[2] = m.get(nrows_m1, 0);
+  window[3] = m.get(nrows_m1, 1);
+  window[1] = window[4] = white(m);
   tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
 
   // Lower-right
-  window[0] = m.get(nrows_m1, ncols_m1);
-  window[1] = m.get(nrows_m2, ncols_m1);
-  window[2] = m.get(nrows_m1, ncols_m2);
+  window[0] = m.get(nrows_m2, ncols_m1);
+  window[1] = m.get(nrows_m1, ncols_m2);
+  window[2] = m.get(nrows_m1, ncols_m1);
+  window[3] = white(m);
   tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
+  window[0] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(0, col);
     window[1] = m.get(0, col - 1);
-    window[2] = m.get(0, col + 1);
-    window[3] = m.get(1, col);
+    window[2] = m.get(0, col);
+    window[3] = m.get(0, col + 1);
+    window[4] = m.get(1, col);
     tmp.set(0, col, func(window.begin(), window.end()));
   }
 
   // Bottom edge
+  window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m1, col);
+    window[0] = m.get(nrows_m2, col);
     window[1] = m.get(nrows_m1, col - 1);
-    window[2] = m.get(nrows_m1, col + 1);
-    window[3] = m.get(nrows_m2, col);
+    window[2] = m.get(nrows_m1, col);
+    window[3] = m.get(nrows_m1, col + 1);
     tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
+  window[1] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row, 0);
-    window[1] = m.get(row - 1, 0);
-    window[2] = m.get(row + 1, 0);
+    window[0] = m.get(row - 1, 0);
+    window[2] = m.get(row, 0);
     window[3] = m.get(row, 1);
+    window[4] = m.get(row + 1, 0);
     tmp.set(row, 0, func(window.begin(), window.end()));
   }
 
   // Right edge
+  window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row, ncols_m1);
-    window[1] = m.get(row - 1, ncols_m1);
-    window[2] = m.get(row + 1, ncols_m1);
-    window[3] = m.get(row, ncols_m2);
+    window[0] = m.get(row - 1, ncols_m1);
+    window[1] = m.get(row, ncols_m2);
+    window[2] = m.get(row, ncols_m1);
+    window[4] = m.get(row + 1, ncols_m1);
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
@@ -491,9 +505,9 @@ void neighbor4o(const T& m, F& func, M& tmp) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
-      window[0] = m.get(row, col);
-      window[1] = m.get(row - 1, col);
-      window[2] = m.get(row, col - 1);
+      window[0] = m.get(row - 1, col);
+      window[1] = m.get(row, col - 1);
+      window[2] = m.get(row, col);
       window[3] = m.get(row, col + 1);
       window[4] = m.get(row + 1, col);
       tmp.set(row, col, func(window.begin(), window.end()));

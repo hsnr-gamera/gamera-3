@@ -322,5 +322,37 @@ namespace Gamera {
     return max;
   }
 
+  template<class T>
+  IntVector* projections_rows(const T& image) {
+    IntVector* projections = new IntVector(image.nrows());
+    typename T::const_row_iterator row = image.row_begin();
+    typename T::const_col_iterator col;
+   
+    IntVector::iterator proj_it = projections->begin();
+    for (; row != image.row_end(); ++row, ++proj_it) {
+      *proj_it = 0;
+      for (col = row.begin(); col != row.end(); ++col)
+	if (is_black(*col))
+	  *proj_it += 1;
+    }
+    return projections;
+  }
+
+  template<class T>
+  IntVector* projections_cols(const T& image) {
+    IntVector* projections = new IntVector(image.ncols());
+    typename T::const_col_iterator col = image.col_begin();
+    typename T::const_row_iterator row;
+   
+    IntVector::iterator proj_it = projections->begin();
+    for (; col != image.col_end(); ++col, ++proj_it) {
+      *proj_it = 0;
+      for (row = col.begin(); row != col.end(); ++row)
+	if (is_black(*row))
+	  *proj_it += 1;
+    }
+    return projections;
+  }
+
 }
 #endif

@@ -106,6 +106,7 @@ namespace Gamera {
   template<class T>
   FloatVector* moments(T &m) {
     FloatVector* _output = new FloatVector(9);
+    // This is just for convenience below
     FloatVector& output = *_output;
 
     size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 

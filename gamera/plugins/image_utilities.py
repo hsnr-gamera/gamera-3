@@ -86,11 +86,40 @@ class union_images(PluginFunction):
     return_type = ImageType([ONEBIT])
 union_images = union_images() 
 
+class projections_rows(PluginFunction):
+    """Compute the projections of an image.  The computes the
+    number of pixels in each row."""
+    self_type = ImageType([ONEBIT])
+    return_type = IntVector("rows")
+projections_rows = projections_rows()
+
+class projections_cols(PluginFunction):
+    """Compute the projections of an image.  The computes the
+    number of pixels in each row."""
+    self_type = ImageType([ONEBIT])
+    return_type = IntVector("cols")
+projections_cols = projections_cols()
+
+class projections(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = Class("projections")
+    pure_python = 1
+    def __call__(image):
+        rows = _image_utilities.projections_rows(image)
+        cols = _image_utilities.projections_cols(image)
+        gui = gamera.config.get_option("__gui")
+        if gui:
+            gui.ShowProjections(cols, rows, image)
+        return (rows, cols)
+projections = projections()
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
-    functions = [image_copy, rotate_copy, resize_copy, scale_copy, histogram, union_images]
+    functions = [image_copy, rotate_copy, resize_copy, scale_copy,
+                 histogram, union_images, projections_rows, projections_cols,
+                 projections]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

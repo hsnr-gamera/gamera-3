@@ -31,10 +31,10 @@ typename ImageFactory<T>::view_type* difference_of_exponential_crack_edge_image(
     throw std::runtime_error("The scale and gradient threshold must be greater than 0");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
+    new typename ImageFactory<T>::data_type(src.nrows() * 2, src.ncols() *2, src.offset_y(), src.offset_x());
 
   typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data, src);
+    new typename ImageFactory<T>::view_type(*dest_data);
 
   vigra::differenceOfExponentialCrackEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold, NumericTraits<typename T::value_type>::one());
 

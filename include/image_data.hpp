@@ -34,15 +34,56 @@
 
 namespace Gamera {
 
-  /*
-    A base class for ImageData objects - this
-    is only used for RTTI. There is not an abstract base class
-    using virtual functions for performance reasons (virtual
-    functions often are not properly inlined).
-  */
   class ImageDataBase {
   public:
+    ImageDataBase(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
+		  size_t page_offset_x = 0) {
+      m_size = nrows * ncols;
+      m_stride = ncols;
+      m_page_offset_x = page_offset_x;
+      m_page_offset_y = page_offset_y;
+    }
+    ImageDataBase(const Size& size, size_t page_offset_y = 0,
+		  size_t page_offset_x = 0) {
+      m_size = (size.height() + 1) * (size.width() + 1);
+      m_stride = size.width() + 1;
+      m_page_offset_x = page_offset_x;
+      m_page_offset_y = page_offset_y;
+    }
+    ImageDataBase(const Dimensions& dim, size_t page_offset_y = 0,
+		  size_t page_offset_x = 0) {
+      m_size = dim.nrows() * dim.ncols();
+      m_stride = dim.ncols();
+      m_page_offset_x = page_offset_x;
+      m_page_offset_y = page_offset_y;
+    }
     virtual ~ImageDataBase() { }
+
+    /*
+      Various information about dimensions.
+    */
+    size_t stride() const { return m_stride; }
+    size_t ncols() const { return m_stride; }
+    size_t nrows() const { return size() / m_stride; }
+    size_t page_offset_x() const { return m_page_offset_x; }
+    size_t page_offset_y() const { return m_page_offset_y; }
+    size_t size() const { return m_size; }
+    virtual size_t bytes() const = 0;
+    virtual double mbytes() const = 0;
+
+    /*
+      Setting dimensions
+    */
+    void page_offset_x(size_t x) { m_page_offset_x = x; }
+    void page_offset_y(size_t y) { m_page_offset_y = y; }
+    virtual void nrows(size_t nrows) = 0;
+    virtual void ncols(size_t ncols) = 0;
+    virtual void dimensions(size_t rows, size_t cols) = 0;
+  protected:
+    size_t m_size;
+    size_t m_stride;
+    size_t m_page_offset_x;
+    size_t m_page_offset_y;
   };
 
   template<class T>
@@ -58,36 +99,28 @@ namespace Gamera {
     typedef T* iterator;
     typedef const T* const_iterator;
 
-    /*
-      Constructors
-    */
     ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-	       size_t page_offset_x = 0) {
-      m_size = nrows * ncols;
-      m_stride = ncols;
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+	      size_t page_offset_x = 0) : ImageDataBase(nrows, ncols,
+							page_offset_y,
+							page_offset_x) {
       m_data = 0;
       create_data();
     }
     ImageData(const Size& size, size_t page_offset_y = 0,
-	       size_t page_offset_x = 0) {
-      m_size = (size.height() + 1) * (size.width() + 1);
-      m_stride = size.width() + 1;
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+	      size_t page_offset_x = 0) : ImageDataBase(size,
+							page_offset_y,
+							page_offset_x) {
       m_data = 0;
       create_data();
     }
     ImageData(const Dimensions& dim, size_t page_offset_y = 0,
-	       size_t page_offset_x = 0) {
-      m_size = dim.nrows() * dim.ncols();
-      m_stride = dim.ncols();
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+	      size_t page_offset_x = 0) : ImageDataBase(dim,
+							page_offset_y,
+							page_offset_x) {
       m_data = 0;
       create_data();
     }
+
     /*
       Destructor
     */
@@ -97,44 +130,19 @@ namespace Gamera {
       }
     }
     
-    /*
-      Various information about dimensions.
-    */
-    size_t stride() const { return m_stride; }
-    size_t ncols() const { return m_stride; }
-    size_t nrows() const { return size() / m_stride; }
-    size_t page_offset_x() const { return m_page_offset_x; }
-    size_t page_offset_y() const { return m_page_offset_y; }
-    size_t size() const { return m_size; }
-    size_t bytes() const { return m_size * sizeof(T); }
-    double mbytes() const { return (m_size * sizeof(T)) / 1048576.0; }
-
-    /*
-      Setting dimensions
-    */
-    void page_offset_x(size_t x) { m_page_offset_x = x; }
-    void page_offset_y(size_t y) { m_page_offset_y = y; }
-    void nrows(size_t nrows) { resize(nrows * ncols()); }
-    void ncols(size_t ncols) { m_stride = ncols; resize(nrows() * m_stride); }
-    void dimensions(size_t rows, size_t cols) {
+    virtual size_t bytes() const { return m_size * sizeof(T); }
+    virtual double mbytes() const { return (m_size * sizeof(T)) / 1048576.0; }
+    virtual void dimensions(size_t rows, size_t cols) {
       m_stride = cols; resize(rows * cols); }
-    void resize(size_t size) {
-      if (size > 0) {
-	size_t smallest = std::min(m_size, size);
-	m_size = size;
-	T* new_data = new T[m_size];
-	for (size_t i = 0; i < smallest; ++i)
-	  new_data[i] = m_data[i];
-	if (m_data)
-	  delete[] m_data;
-	m_data = new_data;
-      } else {
-	if (m_data)
-	  delete[] m_data;
-	m_data = 0;
-	m_size = 0;
-      }
+
+    virtual void nrows(size_t nrows) {
+      resize(nrows * m_stride);
     }
+    virtual void ncols(size_t ncols) {
+      m_stride = ncols;
+      resize((m_size / m_stride) * m_stride);
+    }
+
 
     /*
       Iterators
@@ -153,10 +161,24 @@ namespace Gamera {
       if (m_size > 0)
 	m_data = new T[m_size];
     }
-    size_t m_size;
-    size_t m_stride;
-    size_t m_page_offset_x;
-    size_t m_page_offset_y;
+    void resize(size_t size) {
+      if (size > 0) {
+	size_t smallest = std::min(m_size, size);
+	m_size = size;
+	T* new_data = new T[m_size];
+	for (size_t i = 0; i < smallest; ++i)
+	  new_data[i] = m_data[i];
+	if (m_data)
+	  delete[] m_data;
+	m_data = new_data;
+      } else {
+	if (m_data)
+	  delete[] m_data;
+	m_data = 0;
+	m_size = 0;
+      }
+    }
+
     T* m_data;
   };
 }

@@ -677,30 +677,20 @@ namespace Gamera {
     typedef typename RleDataDetail::RleVector<T>::const_iterator const_iterator;
 
     RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-		  size_t page_offset_x = 0) : RleDataDetail::RleVector<T>(nrows * ncols) {
-      m_stride = ncols;
-      m_page_offset_y = page_offset_y;
-      m_page_offset_x = page_offset_x;
+		  size_t page_offset_x = 0) : RleDataDetail::RleVector<T>(nrows * ncols),
+					      ImageDataBase(nrows, ncols, page_offset_y,
+							    page_offset_x) {
     }
     RleImageData(const Size& size, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0)
-      : RleDataDetail::RleVector<T>((size.height() + 1) * (size.width() + 1)) {
-      m_stride = size.width() + 1;
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+      : RleDataDetail::RleVector<T>((size.height() + 1) * (size.width() + 1)),
+	ImageDataBase(size, page_offset_y, page_offset_x) {
     }
     RleImageData(const Dimensions& dim, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0)
-      : RleDataDetail::RleVector<T>(dim.nrows() * dim.ncols()) {
-      m_stride = dim.ncols();
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+      : RleDataDetail::RleVector<T>(dim.nrows() * dim.ncols()),
+	ImageDataBase(dim, page_offset_y, page_offset_x) {
     }
-    size_t stride() const { return m_stride; }
-    size_t ncols() const { return m_stride; }
-    size_t nrows() const { return size() / m_stride; }
-    size_t page_offset_x() const { return m_page_offset_x; }
-    size_t page_offset_y() const { return m_page_offset_y; }
     /*
       This is a little tricky and potentially expensive. The C++ standard
       (according the www.sgi.com/tech/stl) does not garuntee that list.size()
@@ -711,7 +701,7 @@ namespace Gamera {
       is what gcc does and any other sane implementation will do). This should
       give us an idea of the size, but nothing exact.
     */
-    size_t bytes() const {
+    virtual size_t bytes() const {
       size_t run_size = sizeof(RleDataDetail::Run<T>);
       size_t run_ptr_size = sizeof(RleDataDetail::Run<T>*);
       size_t num_runs = 0;
@@ -719,17 +709,18 @@ namespace Gamera {
 	num_runs += m_data[i].size();
       return num_runs * (run_size + run_ptr_size + run_ptr_size);
     }
-    double mbytes() const { return bytes() / 1048576.0; }
-
-    void page_offset_x(size_t x) { m_page_offset_x = x; }
-    void page_offset_y(size_t y) { m_page_offset_y = y; }
-    void nrows(size_t nrows) { resize(nrows * ncols()); }
-    void ncols(size_t ncols) { m_stride = ncols; resize(nrows() * m_stride); }
-    void dimensions(size_t rows, size_t cols) { m_stride = cols; resize(rows * cols); }
-  private:
-    size_t m_stride;
-    size_t m_page_offset_y;
-    size_t m_page_offset_x;
+    virtual double mbytes() const { return bytes() / 1048576.0; }
+    virtual void nrows(size_t nrows) {
+      resize(nrows * ncols());
+    }
+    virtual void ncols(size_t ncols) {
+      m_stride = ncols;
+      resize(nrows() * m_stride);
+    }
+    virtual void dimensions(size_t rows, size_t cols) {
+      m_stride = cols;
+      resize(rows * cols);
+    }
   };
 }
 

@@ -420,24 +420,6 @@ void parker_threshold_min_grad_abs(const T& in, FloatImageView& out) {
   for (size_t y = 0; y < in.ncols(); ++y)
     for (size_t y = 0; x < in.ncols(); ++x) {
       parker_threshold_get_neighbors(in, y, x, p);
-      temp = 0;
-      for (size_t i = 0; i < 8; ++i) {
-	if (temp < p[i])
-	  temp = p[i];
-      }
-      out.set(y, x, in.get(y, x) - temp);
-    }
-}
-
-template<class T>
-void parker_threshold_min_grad_abs(const T& in, FloatImageView& out) {
-  typedef typename T::value_type pixel_type;
-  pixel_type p[8];
-  pixel_type temp, diff;
-  temp = 0;
-  for (size_t y = 0; y < in.ncols(); ++y)
-    for (size_t y = 0; x < in.ncols(); ++x) {
-      parker_threshold_get_neighbors(in, y, x, p);
       diff = 255.0;
       for (size_t i = 0; i < 8; ++i) {
 	if (temp > (diff = fabs(in.get(y, x) - p[i])))
@@ -460,8 +442,9 @@ void parker_threshold_reg_mean_dev(const T& in, FloatImageView& dev_view, FloatI
       yend = (ysize * ry) / dev.nrows();
       size_t n = 0;
       double sum = 0, sum2 = 0;
-      for (size_t x = xstart; x <= xend; ++x)
-	for (size_t y = ystart; y <= yend; ++y) {
+      size_t x, y;
+      for (x = xstart; x <= xend; ++x)
+	for (y = ystart; y <= yend; ++y) {
 	  ++n;
 	  pixel_type pixel = in.get(y, x);
 	  sum += pixel;

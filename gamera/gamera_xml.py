@@ -22,13 +22,14 @@ import gzip, os, os.path, cStringIO
 from weakref import proxy
 from xml.parsers import expat
 
-import core, util, config
+import core, util
 from util import word_wrap, ProgressFactory, is_image_list
 from gamera.symbol_table import SymbolTable
+from config import config
 
-config.define_option(
-   'xml', 'encoding', 'utf-8',
-   help='Character encoding to use when saving XML files')
+config.add_option(
+   "", "--xml-encoding", action="store", default="utf-8",
+   help='[xml] Character encoding to use when saving XML files')
 
 GAMERA_XML_FORMAT_VERSION = 2.0
 
@@ -107,7 +108,7 @@ class WriteXML:
          progress.kill()
 
    def _write_symbol_table(self, stream, symbol_table, indent=0):
-      encoding = config.options.xml.encoding
+      encoding = config.get("xml_encoding")
       if (not isinstance(symbol_table, SymbolTable) and
           util.is_string_or_unicode_list(symbol_table)):
          symbols = symbol_table
@@ -187,7 +188,7 @@ class WriteXMLFile(WriteXML):
       if stream == None:
          return self.string()
       self.stream = stream
-      encoding = config.options.xml.encoding
+      encoding = config.get("xml_encoding")
       self.stream.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
       self.stream.write('<gamera-database version="%s">\n' % str(GAMERA_XML_FORMAT_VERSION))
       self._write_core(stream, indent=1)

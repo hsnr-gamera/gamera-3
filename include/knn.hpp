@@ -405,18 +405,9 @@ namespace Gamera {
 	  */
 	  if (max.size() == 1) {
 	    // put the winner in the result vector
-	    answer.resize(id_map.size());
-	    answer[0] = std::make_pair(max[0]->first, max[0]->second.min_distance);
+	    answer.push_back(std::make_pair(max[0]->first, max[0]->second.min_distance));
 	    // remove the winner from the id_map
 	    id_map.erase(max[0]);
-	    // add the rest to the answer vector
-	    size_t ans = 1;
-	    for (typename map_type::iterator i = id_map.begin();
-		 i != id_map.end(); ++i) {
-	      answer[ans] = std::make_pair(i->first, i->second.min_distance);
-	      ++ans;
-	    }
-	    return;
 	  } else {
 	    /*
 	      Tie-break by average distance
@@ -427,9 +418,15 @@ namespace Gamera {
 		  < min_dist->second.total_distance)
 		min_dist = max[i];
 	    }
-	    answer.resize(1);
-	    answer[0] = std::make_pair(min_dist->first, min_dist->second.min_distance);
+	    answer.push_back(std::make_pair(min_dist->first, min_dist->second.min_distance));
+	    id_map.erase(min_dist);
 	  }
+	  for (typename map_type::iterator i = id_map.begin();
+	       i != id_map.end(); ++i) {
+	    if (i->second.min_distance < 1)
+	      answer.push_back(std::make_pair(i->first, i->second.min_distance));
+	  }
+	  return;
 	}
       }
       void calculate_simple_confidences() {

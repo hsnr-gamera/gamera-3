@@ -112,7 +112,7 @@ class ImageType(WrapperArg):
 
    def from_python(self):
       return """if (!is_ImageObject(%(pysymbol)s)) {
-          PyErr_SetString(PyExc_TypeError, "Object is not an image as expected!");
+          PyErr_SetString(PyExc_TypeError, "Object is not an image");
           return 0;
         }
         %(symbol)s = ((Image*)((RectObject*)%(pysymbol)s)->m_x);
@@ -146,6 +146,21 @@ class ImageType(WrapperArg):
          else:
             result.append(util.get_pixel_type_name(type) + "ImageView")
       return result
+
+class Rect(WrapperArg):
+   c_type = 'Rect*'
+   convert_from_PyObject = True
+
+   def from_python(self):
+      return """if (!is_RectObject(%(pysymbol)s)) {
+          PyErr_SetString(PyExc_TypeError, "Object is not a Rect");
+          return 0;
+        }
+        %(symbol)s = (((RectObject*)%(pysymbol)s)->m_x);
+        """ % self
+
+   def to_python(self):
+      return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
             
 class Region(WrapperArg):
    c_type = 'Region*'

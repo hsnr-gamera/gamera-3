@@ -185,8 +185,8 @@ class CustomIcon:
       self.index = index_
 
    def register(cls):
-      if has_gui.has_gui:
-         icon_display = main_win = config.options.__.gui.TopLevel().icon_display
+      if has_gui.gui.TopLevel() != None:
+         icon_display = main_win = has_gui.gui.TopLevel().icon_display
          icon_display.add_class(cls)
    register = classmethod(register)
 

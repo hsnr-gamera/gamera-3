@@ -28,55 +28,57 @@ namespace Gamera {
 
 template<class T, class U>
 void and_image(T& a, const U& b) {
-  if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
-    throw std::range_error("Dimensions must match!");
-  typename T::vec_iterator it_a, end;
-  typename U::const_vec_iterator it_b;
-  ImageAccessor<typename T::value_type> a_accessor;
-  ImageAccessor<typename U::value_type> b_accessor;
+  size_t ul_y = std::max(a.ul_y(), b.ul_y());
+  size_t ul_x = std::max(a.ul_x(), b.ul_x());
+  size_t lr_y = std::min(a.lr_y(), b.lr_y());
+  size_t lr_x = std::min(a.lr_x(), b.lr_x());
 
-  for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
-       it_a != end; ++it_a, ++it_b) {
-    if (is_black(a_accessor.get(it_a)) && is_black(b_accessor.get(it_b)))
-      *it_a = black(a);
-    else
-      *it_a = white(a);
-  }
+  if (ul_y >= lr_y || ul_x >= lr_x)
+    return;
+  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
+    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
+      if (is_black(a.get(ya, xa)) && is_black(b.get(yb, xb))) 
+	a.set(ya, xa, black(a));
+      else
+	a.set(ya, xa, white(a));
+    }
 }
 
 template<class T, class U>
 void or_image(T& a, const U& b) {
-  if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
-    throw std::range_error("Dimensions must match!");
-  typename T::vec_iterator it_a, end;
-  typename U::const_vec_iterator it_b;
-  ImageAccessor<typename T::value_type> a_accessor;
-  ImageAccessor<typename U::value_type> b_accessor;
+  size_t ul_y = std::max(a.ul_y(), b.ul_y());
+  size_t ul_x = std::max(a.ul_x(), b.ul_x());
+  size_t lr_y = std::min(a.lr_y(), b.lr_y());
+  size_t lr_x = std::min(a.lr_x(), b.lr_x());
 
-  for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
-       it_a != end; ++it_a, ++it_b) {
-    if (is_black(a_accessor.get(it_a)) || is_black(b_accessor.get(it_b)))
-      *it_a = black(a);
-    else
-      *it_a = white(a);
-  }
+  if (ul_y >= lr_y || ul_x >= lr_x)
+    return;
+  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb)
+    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
+      if (is_black(a.get(ya, xa)) || is_black(b.get(yb, xb))) {
+	a.set(ya, xa, black(a));
+      } else
+	a.set(ya, xa, white(a));
+    }
 }
 
 template<class T, class U>
 void xor_image(T& a, const U& b) {
-  if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
-    throw std::range_error("Dimensions must match!");
-  typename T::vec_iterator it_a, end;
-  typename U::const_vec_iterator it_b;
-  ImageAccessor<typename T::value_type> a_accessor;
-  ImageAccessor<typename U::value_type> b_accessor;
+  size_t ul_y = std::max(a.ul_y(), b.ul_y());
+  size_t ul_x = std::max(a.ul_x(), b.ul_x());
+  size_t lr_y = std::min(a.lr_y(), b.lr_y());
+  size_t lr_x = std::min(a.lr_x(), b.lr_x());
+  
+  if (ul_y >= lr_y || ul_x >= lr_x)
+    return;
+  for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); y <= lr_y; ++y, ++ya, ++yb) {
+    for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); x <= lr_x; ++x, ++xa, ++xb) {
+      if (is_black(a.get(ya, xa)) ^ is_black(b.get(yb, xb))) 
+	a.set(ya, xa, black(a));
+      else
+	a.set(ya, xa, white(a));
+    }
 
-  for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
-       it_a != end; ++it_a, ++it_b) {
-    if (is_black(a_accessor.get(it_a)) ^ is_black(b_accessor.get(it_b)))
-      *it_a = black(a);
-    else
-      *it_a = white(a);
   }
 }
 

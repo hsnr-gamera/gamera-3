@@ -131,7 +131,8 @@ if sys.platform == 'win32' and '--compiler=mingw32' in sys.argv:
    includes.append((os.path.join(gamera_setup.lib_path, r'plugins'),
                     ["mgwz.dll"]))
 
-packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits']
+packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
+            'gamera.backport']
 if sys.platform == 'darwin':
    packages.append("gamera.mac")
             

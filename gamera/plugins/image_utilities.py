@@ -21,7 +21,7 @@
 and computing histograms."""
 
 from gamera.plugin import * 
-import gamera.config
+from gamera.gui import has_gui
 import _image_utilities 
 
 class image_copy(PluginFunction):
@@ -100,7 +100,7 @@ If the GUI is being used, the histogram is displayed.
     return_type = FloatVector()
     def __call__(image):
         hist = _image_utilities.histogram(image)
-        gui = gamera.config.options.__.gui
+        gui = has_gui.gui
         if gui:
             gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
         return hist
@@ -144,7 +144,7 @@ If the GUI is being used, the result is displayed in a window:
     def __call__(image):
         rows = _image_utilities.projection_rows(image)
         cols = _image_utilities.projection_cols(image)
-        gui = gamera.config.options.__.gui
+        gui = has_gui.gui
         if gui:
             gui.ShowProjections(rows, cols, image)
         return (rows, cols)
@@ -168,7 +168,7 @@ not intersect."""
     category = "Utility"
     return_type = ImageType(ALL)
     self_type = ImageType(ALL)
-    args = Args(ImageType(ALL, "other"))
+    args = Args(Rect("other"))
 
 class mask(PluginFunction):
     """Masks an image using the given ONEBIT image.  Parts of the ONEBIT
@@ -178,13 +178,20 @@ image that are white will be changed to white in the resulting image."""
     self_type = ImageType([GREYSCALE, RGB])
     args = Args(ImageType([ONEBIT], "mask"))
 
+class corelation(PluginFunction):
+    category = "Utility"
+    return_type = Float("correlation")
+    self_type = ImageType([ONEBIT])
+    args = Args([ImageType([ONEBIT], "template"), Int("x_offset"), Int("y_offset")])
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, resize, scale,
                  histogram, union_images, projection_rows, projection_cols,
-                 projections, fill_white, invert, clip_image, mask]
+                 projections, fill_white, invert, clip_image, mask,
+                 corelation]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

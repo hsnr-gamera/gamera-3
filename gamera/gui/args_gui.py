@@ -327,6 +327,9 @@ class ImageType(Class):
                   choices.append(key)
       return choices
 
+class Rect(Class):
+   pass
+
 class Choice:
    def get_control(self, parent, locals=None):
       choices = []

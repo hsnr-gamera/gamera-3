@@ -20,7 +20,8 @@
 # Gamera specific
 import inspect
 from gamera.core import *
-from gamera import paths, config, util
+from gamera.config import config
+from gamera import paths, util
 from gamera.gui import gamera_display, image_menu, \
      icon_display, classifier_display, var_name, gui_util, image_browser, has_gui
 
@@ -42,23 +43,17 @@ from wxPython.lib.splashscreen import SplashScreen
 import sys, types, traceback, os, string, os.path
 
 # Set default options
-config.define_option(
-   "shell", "face", "Arial",
-   help="Font face used in the shell")
+config.add_option(
+   "", "--shell-font-face", default="Arial",
+   help="[shell] Font face used in the shell")
 if wxPlatform == '__WXMSW__':
-   config.define_option(
-      "shell", "size", 10,
-      help="Font size used in the shell")
+   config.add_option(
+      "", "--shell-font-size", default=10, type="int",
+      help="[shell] Font size used in the shell")
 else:
-   config.define_option(
-      "shell", "size", 9,
-      help="Font size used in the shell")
-config.define_option(
-   "shell", "x_position", 30,
-   help="Position of the shell window", system=1)
-config.define_option(
-   "shell", "y_position", 30,
-   help="Position of the shell window", system=1)
+   config.add_option(
+      "", "--shell-font-size", default=9, type="int",
+      help="[shell] Font size used in the shell")
 main_win = None
 app = None
 
@@ -76,7 +71,7 @@ class GameraGui:
       try:
          img = gamera_display.ImageFrame(title=title, owner=owner)
          img.set_image(image, view_function)
-         img.Show(1)
+         img.Show(True)
       finally:
          wxEndBusyCursor()
       return img
@@ -116,7 +111,6 @@ class GameraGui:
    ShowClassifier = staticmethod(ShowClassifier)
 
    def UpdateIcons():
-      global main_win
       main_win.icon_display.update_icons()
    UpdateIcons = staticmethod(UpdateIcons)
 
@@ -200,7 +194,7 @@ class History(wxStyledTextCtrl):
          wxDefaultPosition, wxDefaultSize,
          style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       style = "face:%s,size:%d" % (
-         config.options.shell.face, config.options.shell.size)
+         config.get("shell_font_face"), config.get("shell_font_size"))
       self.StyleSetSpec(wxSTC_STYLE_DEFAULT,
                         style)
       self.SetTabWidth(2)
@@ -235,7 +229,6 @@ class ShellFrame(wxFrame):
          [600, 550],
          style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       EVT_CLOSE(self, self._OnCloseWindow)
-      EVT_MOVE(self, self._OnMoveWindow)
 
       self.known_modules = {}
       self.menu = self.make_menu()
@@ -252,7 +245,6 @@ class ShellFrame(wxFrame):
 
       self.icon_display = icon_display.IconDisplay(self.splitter, self)
       
-      
       self.history = History(self.hsplitter)
       self.shell = PyCrustGameraShell(self, self.splitter, -1,
                                       "Welcome to Gamera")
@@ -263,7 +255,6 @@ class ShellFrame(wxFrame):
       image_menu.set_shell_frame(self)
       self.shell.push("from gamera.gui import gui")
       self.shell.push("from gamera.core import *")
-      self.shell.push("config.options.__.gui = gui.GameraGui")
       self.shell.push("init_gamera()")
 
       self.Update()
@@ -286,8 +277,8 @@ class ShellFrame(wxFrame):
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconBitmap())
       self.SetIcon(icon)
-      self.Move(wxPoint(int(config.options.shell.x_position),
-                        int(config.options.shell.y_position)))
+      self.Move(wxPoint(int(30),
+                        int(30)))
 
    def make_menu(self):
       self.custom_menus = {}
@@ -395,11 +386,6 @@ class ShellFrame(wxFrame):
       self.Destroy()
       app.ExitMainLoop()
 
-   def _OnMoveWindow(self, event):
-      position = self.GetPosition()
-      config.options.shell.x_position = position.x
-      config.options.shell.y_position = position.y
-
    def Update(self):
       self.icon_display.update_icons(self.shell.interp.locals)
 
@@ -409,7 +395,9 @@ class CustomMenu:
    def __init__(self):
       if not has_gui.has_gui:
          return
-      main_win = config.options.__.gui.TopLevel()
+      main_win = has_gui.gui.TopLevel()
+      if not main_win:
+         return
       name = self.__class__.__module__.split('.')[-1]
       if not main_win.custom_menus.has_key(name):
          main_win.custom_menus[name] = None
@@ -443,25 +431,23 @@ class GameraSplash(wxSplashScreen):
                               1000, None, -1,
                               style = (wxSIMPLE_BORDER|
                                        wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP))
-      EVT_CLOSE(self, self.OnClose)
-         
-   def OnClose(self, evt):
-      global main_win
-      main_win = ShellFrame(NULL, -1, "Gamera")
-      # app.SetTopWindow(main_win)
-      main_win.Show(True)
-      evt.Skip()
+
+def _show_shell():
+   global main_win
+   main_win = ShellFrame(NULL, -1, "Gamera")
+   main_win.Show(True)
 
 app = None
-def run():
+def run(startup=_show_shell):
    global app
    has_gui.has_gui = has_gui.WX_GUI
+   has_gui.gui = GameraGui
    from gamera.gui import args_gui
    init_gamera()
-   # wxInitAllImageHandlers()
 
    class MyApp(wxApp):
-      def __init__(self, parent):
+      def __init__(self, startup, parent):
+         self._startup = startup
          wxApp.__init__(self, parent)
          self.SetExitOnFrameDelete(1)
 
@@ -470,13 +456,14 @@ def run():
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()
+         self._startup()
          del self.splash
          return True
 
       def OnExit(self):
          pass
 
-   app = MyApp(0)
+   app = MyApp(startup, 0)
    app.MainLoop()
 
 if __name__ == "__main__":

@@ -217,7 +217,6 @@ namespace Gamera {
     //  FUNCTION ACCESS
     //
     value_type get(size_t row, size_t col) const {
-      // std::cerr << row << " " << col << " " << nrows() << " " << ncols() << std::endl;
       return m_accessor(m_const_begin + (row * m_image_data->stride()) + col);
     }
     void set(size_t row, size_t col, value_type value) {

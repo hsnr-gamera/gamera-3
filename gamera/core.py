@@ -58,9 +58,11 @@ from gameracore import ImageData, Size, Dimensions, Point, \
 # import gamera.gameracore for subclassing
 import gameracore
 # from classify import InteractiveClassifier, NonInteractiveClassifier
+from gamera.gui import has_gui
 
 # from gamera.classify import *
-import paths, util, config    # Gamera-specific
+import paths, util    # Gamera-specific
+from config import config
 
 class SegmentationError(Exception):
    pass
@@ -90,14 +92,12 @@ def image_info(filename):
 
 def display_multi(list):
    """Display a list of images in a grid-like window."""
-   gui = config.options.__.gui
-   if gui:
-      # If it's not a list, we'll get errors, so make it one
-      if not util.is_sequence(list):
-         list = [list]
-      if not len(list):
-         raise ValueError("Given list is empty.")
-      return gui.ShowImages(list)
+   # If it's not a list, we'll get errors, so make it one
+   if not util.is_sequence(list):
+      list = [list]
+   if not len(list):
+      raise ValueError("Given list is empty.")
+   return has_gui.gui.ShowImages(list)
 
 # Used to cache the list of all features
 all_features = None
@@ -125,7 +125,7 @@ class ImageBase:
       self.properties = self.__class__.Properties()
       # Keep a list of tuples of (feature_name, feature_function) that
       # have already been generated for this Image
-      self.feature_functions = []
+      self.feature_functions = [[], 0]
 
    def __del__(self):
       if self._display:
@@ -240,14 +240,11 @@ class ImageBase:
 .. __: gui.html
 
 .. image:: images/display.png"""
-      gui = config.options.__.gui
-      if gui:
-         if self._display:
-            self._display.set_image(self)
-         else:
-            self.set_display(
-               gui.ShowImage(self, self.name,
-                             owner=self))
+      if self._display:
+         self._display.set_image(self)
+      else:
+         self.set_display(
+            has_gui.gui.ShowImage(self, self.name, owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -264,14 +261,12 @@ the hood.
 .. __: gui.html
 
 .. image:: images/display_ccs.png"""
-      gui = config.options.__.gui
-      if gui:
-         if self._display:
-            self._display.set_image(self, "color_ccs")
-         else:
-            self.set_display(
-               gui.ShowImage(self, self.name, "color_ccs",
-                             owner=self))
+      if self._display:
+         self._display.set_image(self, "color_ccs")
+      else:
+         self.set_display(
+            has_gui.gui.ShowImage(self, self.name, "color_ccs",
+                          owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -279,14 +274,12 @@ the hood.
       """Displays the image using false coloring.  (See false_color_).
 
 .. image:: images/display_false_color.png"""
-      gui = config.options.__.gui
-      if gui:
-         if self._display:
-            self._display.set_image(self, "false_color")
-         else:
-            self.set_display(
-               gui.ShowImage(self, self.name, "false_color",
-                             owner=self))
+      if self._display:
+         self._display.set_image(self, "false_color")
+      else:
+         self.set_display(
+            has_gui.gui.ShowImage(self, self.name, "false_color",
+                          owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -405,17 +398,17 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
 
    def get_feature_functions(cls, features='all'):
       global all_features
+      if all_features is None:
+         all_features = cls.methods_flat_category('Features', ONEBIT)
+         all_features.sort()
       if features == 'all' or features is None:
-         if all_features is None:
-            all_features = cls.methods_flat_category('Features', ONEBIT)
-            all_features.sort()
          functions = all_features
          return functions, cls._get_feature_vector_size(functions)
       features = util.make_sequence(features)
       features.sort()
       all_strings = True
       for feature in features:
-         if util.is_string_or_unicode(feature):
+         if not util.is_string_or_unicode(feature):
             all_strings = False
             break
       if not all_strings:
@@ -448,7 +441,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
                   found = 1
                   break
             if not found:
-               raise ValueError("'%s' is not a known feature function.")
+               raise ValueError("'%s' is not a known feature function." % feature)
          functions.sort()
          return functions, cls._get_feature_vector_size(functions)
    get_feature_functions = classmethod(get_feature_functions)
@@ -515,15 +508,12 @@ class Cc(gameracore.Cc, ImageBase):
    
    # Displays this cc in context
    def display_context(self):
-      gui = config.options.__.gui
-      if not gui:
-         return
       image = self.parent()
       if self._display:
          self._display.set_image(image)
       else:
          self.set_display(
-            gui.ShowImage(image,
+            has_gui.gui.ShowImage(image,
                           "Connected Component",
                           owner=self))
       self._display.highlight_cc(self)
@@ -537,7 +527,6 @@ def _init_gamera():
    if _gamera_initialised:
       return
    import plugin, gamera_xml, sys
-   config.parse_options()
    # Create the default functions for the menupl
    for method in (
       plugin.PluginFactory(
@@ -603,4 +592,4 @@ __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT ALL DENSE RLE "
            "ImageData Size Dimensions Point Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
-           "display_multi config ImageBase ").split()
+           "display_multi ImageBase ").split()

@@ -181,29 +181,10 @@ namespace Gamera {
     for (std::vector<Image*>::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
       Image* image = *i;
-      OneBitImageView* tmp = new OneBitImageView(*dest_data,
-						 image->ul_y(), image->ul_x(),
-						 image->nrows(), image->ncols());
-      Cc* cc_image = static_cast<Cc*>(image);
-      if (cc_image) {
-	or_image(*tmp, *cc_image);
-      } else {
-	RleCc* cc_rle_image = static_cast<RleCc*>(image);
-	if (cc_rle_image) {
-	  or_image(*tmp, *cc_rle_image);
-	} else {
-	  OneBitImageView* one_bit_image = static_cast<OneBitImageView*>(image);
-	  if (one_bit_image) {
-	    or_image(*tmp, *one_bit_image);
-	  } else {
-	    OneBitRleImageView* one_bit_rle_image = static_cast<OneBitRleImageView*>(image);
-	    if (one_bit_rle_image) {
-	      or_image(*tmp, *one_bit_rle_image);
-	    }
-	  }
-	}
-      }
+      OneBitImageView* one_bit_image = static_cast<OneBitImageView*>(image);
+      or_image(*dest, *one_bit_image);
     }
+
     return dest;
   }
   
@@ -382,16 +363,33 @@ namespace Gamera {
   }
 
   template<class T>
-  Image *clip_image(T& m, const Rect& rect) {
-    if (m.intersects(rect)) {
-      size_t ul_y = std::max(m.ul_y(), rect.ul_y());
-      size_t ul_x = std::max(m.ul_x(), rect.ul_x());
-      size_t lr_y = std::min(m.lr_y(), rect.lr_y());
-      size_t lr_x = std::min(m.lr_x(), rect.lr_x());
+  Image *clip_image(T& m, const Rect* rect) {
+    if (m.intersects(*rect)) {
+      size_t ul_y = std::max(m.ul_y(), rect->ul_y());
+      size_t ul_x = std::max(m.ul_x(), rect->ul_x());
+      size_t lr_y = std::min(m.lr_y(), rect->lr_y());
+      size_t lr_x = std::min(m.lr_x(), rect->lr_x());
       return new T(m, ul_y, ul_x, lr_y - ul_y, lr_x - ul_x + 1);
     } else {
       return new T(m, m.ul_y(), m.ul_x(), 1, 1);
     };
+  }
+
+  template<class T, class U>
+  double corelation(const T& a, const U& b, size_t yo, size_t xo) {
+    size_t ul_y = std::max(a.ul_y(), yo);
+    size_t ul_x = std::max(a.ul_x(), xo);
+    size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
+    size_t lr_x = std::min(a.lr_x(), xo + b.ncols());
+    double result = 0;
+
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb)
+      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) 
+	if (is_black(b.get(yb, xb)) == is_black(a.get(ya, xa)))
+	  ++result;
+	else
+	  result -= 0.5;
+    return result;
   }
 
   template<class T, class U>

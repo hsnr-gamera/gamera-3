@@ -24,6 +24,7 @@ import string, UserList, sys, re   ## Python standard
 from types import *
 from math import pow
 from gamera.enums import *
+from gamera.gui import has_gui
 import config
 
 def is_sequence(obj):
@@ -324,8 +325,7 @@ class ProgressText:
             sys.stdout.flush()
 
 def ProgressFactory(message, length=1):
-   gui = config.options.__.gui
-   if gui:
-      return gui.ProgressBox(message, length)
+   if has_gui.gui != None:
+      return has_gui.gui.ProgressBox(message, length)
    else:
       return ProgressText(message, length)

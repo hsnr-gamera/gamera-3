@@ -137,6 +137,17 @@ class ImageType(Arg):
    def rest_repr(self):
       return 'Image [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
 
+class Rect(Arg):
+   def __init__(self, name=None, list_of = 0):
+      import core
+      Arg.__init__(self, name)
+      if not core is None:
+         self.klass = core.Rect
+      self.list_of = list_of
+      
+   def rest_repr(self):
+      return 'Rect'
+
 class Choice(Arg):
    def __init__(self, name=None, choices=[], default=0):
       Arg.__init__(self, name)
@@ -228,7 +239,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float String Class ImageType Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard'.split()
+__all__ = 'Args Int Real Float String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ImageList Info Wizard'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

@@ -30,10 +30,6 @@ from gamera.knncore import FAST_EUCLIDEAN
 
 KNN_XML_FORMAT_VERSION = 1.0
 
-config.define_option(
-   "knn", "default_settings", "",
-   "File name for the default kNN settings")
-
 _distance_type_to_name = {
     CITY_BLOCK: "CITY-BLOCK",
     EUCLIDEAN: "EUCLIDEAN",
@@ -50,8 +46,8 @@ class GaWorker(Thread):
       self.knn = knn
 
    def run(self):
-      self.ga_initial = self.knn._ga_create()
-      self.ga_best = self.ga_initial
+      self.knn.ga_initial = self.knn._ga_create()
+      self.knn.ga_best = self.knn.ga_initial
       while(1):
          if self.knn.ga_worker_stop:
             return
@@ -129,7 +125,7 @@ class _kNNBase(gamera.knncore.kNN):
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
 
-   def __init__(self, features=None):
+   def __init__(self, features=None, num_k=1):
       """Constructor for knn object. Features is a list
       of feature names to use for classification. If features
       is none then the default settings will be loaded from a
@@ -137,20 +133,13 @@ class _kNNBase(gamera.knncore.kNN):
       settings file specified then all of the features will be
       used."""
       gamera.knncore.kNN.__init__(self)
+      self.num_k = num_k
       self.ga_initial = 0.0
       self.ga_best = 0.0
       self.ga_worker_thread = None
       self.ga_worker_stop = 0
       self.ga_generation = 0
       self.ga_callbacks = []
-      self.features = features
-      if self.features is None:
-         settings = config.options.knn.default_settings
-         try:
-            self.load_settings(settings)
-         except Exception, e:
-            print "Could not load settings "
-            self.change_feature_set('all')
 
    def __del__(self):
       pass
@@ -337,9 +326,9 @@ class _kNNBase(gamera.knncore.kNN):
          self.change_feature_set(features)
 
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
-   def __init__(self, database=[], features=None, perform_splits=1):
+   def __init__(self, database=[], features=None, perform_splits=1, num_k=1):
+      _kNNBase.__init__(self, features, num_k=num_k)
       classify.InteractiveClassifier.__init__(self, database, features, perform_splits)
-      _kNNBase.__init__(self, features)
 
    def __del__(self):
       _kNNBase.__del__(self)
@@ -347,16 +336,16 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
 
    def noninteractive_copy(self):
       return kNNNonInteractive(
-         self.get_glyphs(), self.features, self._perform_splits)
+         self.get_glyphs(), self.features, self._perform_splits, num_k=self.num_k)
 
    def supports_optimization(self):
       """Flag indicating that this classifier supports optimization."""
       return False
 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
-   def __init__(self, database=[], features=None, perform_splits=1):
+   def __init__(self, database=[], features=None, perform_splits=1, num_k=1):
+      _kNNBase.__init__(self, features, num_k=num_k)
       classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
-      _kNNBase.__init__(self, features)
 
    def __del__(self):
       _kNNBase.__del__(self)
@@ -380,11 +369,10 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
       will perform the optimization in the background. While the classifier is
       performing classification no other methods should be called until stop_optimizing
       has been called."""
-      self.ga_worker_stop = 0
+      self.ga_worker_stop = False
       self.ga_worker_thread = GaWorker(self)
       self.ga_worker_thread.setDaemon(1)
       self.ga_worker_thread.start()
-      return
 
    def stop_optimizing(self):
       """Stop optimization with the Genetic Algorithm. WARNING: this function
@@ -396,6 +384,7 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
       self.ga_worker_thread.join()
       self.ga_worker_thread = None
       self._ga_destroy()
+      return self.ga_best
 
    def add_optimization_callback(self, func):
       """Add a function to be called everytime time the optimization updates the

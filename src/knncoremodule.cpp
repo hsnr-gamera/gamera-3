@@ -444,7 +444,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "knn: features not the correct size");
     return 0;
   }
-  
+
   // normalize the unknown
   o->normalize->apply(fv, fv + o->num_features, o->normalized_unknown);
   // create the kNN object
@@ -900,8 +900,9 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
       // We don't want to do the calculation if there is no
       // hope that kNN will return the correct answer (because
       // there aren't enough examples in the database).
-      if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2))
+      if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2)) {
 	continue;
+      }
       double* current_known = o->feature_vectors;
       double* unknown = &o->feature_vectors[i * o->num_features];
       for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
@@ -1228,6 +1229,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
     return 0;
   o->num_k = num_k;
 
+  std::map<char*, int, ltstr> id_name_histogram;
   for (size_t i = 0; i < o->num_feature_vectors; ++i) {
     unsigned long len;
     if (fread((void*)&len, sizeof(unsigned long), 1, file) != 1) {
@@ -1239,6 +1241,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
       return 0;
     }
+    id_name_histogram[o->id_names[i]]++;
   }
 
   double* tmp_norm = new double[o->num_features];
@@ -1259,6 +1262,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
       return 0;
     }
+    o->id_name_histogram[i] = id_name_histogram[o->id_names[i]];
   }
 
   fclose(file);

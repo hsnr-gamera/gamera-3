@@ -1,5 +1,4 @@
 #
-#
 # Copyright (C) 2002 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or

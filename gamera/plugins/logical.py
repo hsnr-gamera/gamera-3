@@ -26,6 +26,9 @@ class _LogicalBase(PluginFunction):
 class and_image(_LogicalBase):
   """Perform the AND operation on two images.
 
+The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
+first, if you do noe which to change the original data.
+
   +---+---+---+
   | \ | 0 | 1 |
   +---+---+---+
@@ -38,6 +41,9 @@ class and_image(_LogicalBase):
 class or_image(_LogicalBase):
   """Perform the OR operation on two images.
 
+The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
+first, if you do noe which to change the original data.
+
   +---+---+---+
   | \ | 0 | 1 |
   +---+---+---+
@@ -49,6 +55,9 @@ class or_image(_LogicalBase):
 
 class xor_image(_LogicalBase):
   """Perform the XOR operation on two images.
+
+The result is written directly to the self image.  Create a new copy (using ``image_copy``_)
+first, if you do noe which to change the original data.
 
   +---+---+---+
   | \ | 0 | 1 |

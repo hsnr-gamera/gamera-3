@@ -20,3 +20,13 @@
 
 (NO_GUI, WX_GUI, CURSES_GUI) = tuple(range(3))
 has_gui = NO_GUI
+
+class NullGui:
+   class NullMethod:
+      def __call__(*args, **kwargs):
+         pass
+   
+   def __getattr__(self, attr):
+      return self.NullMethod()
+   
+gui = NullGui()

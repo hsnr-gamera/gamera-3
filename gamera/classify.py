@@ -21,6 +21,7 @@ import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 import re
 from fudge import Fudge
+from gamera.gui import has_gui
 
 """This file defines the Python part of classifiers.  These wrapper classes
 contain a reference to a core classifier class (unusally written in C++).
@@ -115,19 +116,29 @@ class _Classifier:
 
    ########################################
    # AUTOMATIC CLASSIFICATION
-   def classify_glyph_automatic(self, glyph):
+   def classify_glyph_automatic(self, glyph, max_recursion=10, recursion_level=0):
       """Classifies a glyph and sets its ``classification_state`` and
       ``id_name``.  (If you don't want it set, use
       guess_glyph_automatic.)  Returns a pair of lists: glyphs to be
       added to the current database, and glyphs to be removed from the
       current database."""
+      if recursion_level > max_recursion or len(self._database) == 0:
+         return [], []
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
+         feature_functions = self.get_feature_functions()
+         glyph.generate_features(feature_functions)
          removed = glyph.children_images
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
          splits = self._do_splits(self, glyph)
+         all_splits = splits[:]
+         for g2 in splits:
+            recurse_splits, recurse_removed = self.classify_glyph_automatic(
+               g2, max_recursion, recursion_level + 1)
+            all_splits.extend(recurse_splits)
+            removed.extend(recurse_removed)
          return splits, removed
       return [], []
 
@@ -272,8 +283,11 @@ class NonInteractiveClassifier(_Classifier):
       self.is_dirty = False
       self._database = database
       self.features = features
-      self.change_feature_set(features)
-      self.instantiate_from_images(database)
+      if type(database) == type([]):
+         self.change_feature_set(features)
+         self.instantiate_from_images(database)
+      else:
+         self.unserialize(database)
 
       if perform_splits:
          self._do_splits = self.__class__._do_splits_impl
@@ -325,7 +339,8 @@ class NonInteractiveClassifier(_Classifier):
    #########################################
    # Features
    def change_feature_set(self, features):
-      if len(self._database):
+      if type(self._database) == type([]) and len(self._database):
+         self.feature_functions = self._database[0].get_feature_functions(features)
          self.instantiate_from_images(self._database)
 
 class InteractiveClassifier(_Classifier):
@@ -406,6 +421,7 @@ class InteractiveClassifier(_Classifier):
       of strings, naming the feature functions to be used."""
       self.is_dirty = True
       if len(self._database):
+         self.feature_functions = self._database.keys()[0].get_feature_functions(features)
          self.generate_features(self._database)
    
    def generate_features(self, glyphs):
@@ -494,9 +510,8 @@ class InteractiveClassifier(_Classifier):
 
    def display(self, current_database=[],
                context_image=None, symbol_table=[]):
-      gui = config.options.__.gui
-      if gui and self._display is None:
-         self._display = gui.ShowClassifier(
+      if has_gui.gui and self._display is None:
+         self._display = has_gui.gui.ShowClassifier(
             self, current_database, context_image, symbol_table)
       else:
          self._display.Show(1)

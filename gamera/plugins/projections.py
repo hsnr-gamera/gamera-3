@@ -19,6 +19,7 @@
 
 from gamera.plugin import *
 from gamera.gui import has_gui
+from gamera import util
 import _projections
 from math import pi
 
@@ -93,12 +94,12 @@ this method to small angles.
     author = "Christoph Dalitz"
 
     def __call__(self, angles):
-        if type(angles) != list:
+        if not util.is_sequence(angles):
             return _projections.projection_skewed_cols(self, [angles])[0]
         else:
             return _projections.projection_skewed_cols(self, angles)
     __call__ = staticmethod(__call__)
-    doc_examples = [(ONEBIT, 15)]
+    doc_examples = [(ONEBIT, 15.0)]
 
 class projection_skewed_rows(PluginFunction):
     """Computes all horizontal projections of an image skewed by a list of
@@ -116,12 +117,12 @@ this method to small angles.
     author = "Christoph Dalitz"
 
     def __call__(self, angles):
-        if type(angles) != list:
+        if not util.is_sequence(angles):
             return _projections.projection_skewed_rows(self, [angles])[0]
         else:
             return _projections.projection_skewed_rows(self, angles)
     __call__ = staticmethod(__call__)
-    doc_examples = [(ONEBIT, 15)]
+    doc_examples = [(ONEBIT, 15.0)]
 
 class rotation_angle_projections(PluginFunction):
     """Estimates the rotation angle of a document with the aid of skewed

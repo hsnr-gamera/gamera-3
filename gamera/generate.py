@@ -106,6 +106,7 @@ def generate_plugin(plugin_filename):
   [[# These hold the types for the various image types defined in gameracore - this #]]
   [[# is for type checking the arguments and creating the return types. See the init #]]
   [[# function for more details. #]]
+  static PyTypeObject* imagebase_type;
   static PyTypeObject* image_type;
   static PyTypeObject* subimage_type;
   static PyTypeObject* cc_type;
@@ -143,6 +144,7 @@ def generate_plugin(plugin_filename):
         [[exec pyarg_format = pyarg_format + 'O']]
       [[else]]
         Something funny happened - [[x.__class__.__name__]]
+        [[isinstance(x, ImageType)]]
       [[end]]
     [[end]]
 
@@ -180,7 +182,7 @@ def generate_plugin(plugin_filename):
 
     [[# Type check the self argument #]]
     [[if not function.self_type is None]]
-      if (!PyObject_TypeCheck(real_self, image_type)) {
+      if (!PyObject_TypeCheck(real_self, imagebase_type)) {
         PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
         return 0;
       }
@@ -224,7 +226,7 @@ def generate_plugin(plugin_filename):
         [[exec x.name = x.name + '_arg']]
         [[exec x.pixel_types = tmp]]
         [[exec images.append(x)]]
-        if (!PyObject_TypeCheck([[x.name]], image_type)) {
+        if (!PyObject_TypeCheck([[x.name]], imagebase_type)) {
           PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
           return 0;
         }
@@ -335,7 +337,13 @@ def generate_plugin(plugin_filename):
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, \"SubImage\");
     cc_type = (PyTypeObject*)PyDict_GetItemString(dict, \"CC\");
     data_type = (PyTypeObject*)PyDict_GetItemString(dict, \"ImageData\");
-
+    mod = PyImport_ImportModule(\"gamera.gameracore\");
+    if (mod == 0) {
+      PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\\n\");
+      return;
+    }
+    dict = PyModule_GetDict(mod);
+    imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
   }
 
   """)
@@ -347,7 +355,7 @@ def generate_plugin(plugin_filename):
   ignore = ["_" + module_name] + ["core", "gamera.core", "gameracore"]
   magic_import_setup(ignore)
 
-  import plugin
+  #import plugin
   plugin_module = __import__(module_name)
   module_name = "_" + module_name
   cpp_filename = path.join(plug_path, module_name + ".cpp")

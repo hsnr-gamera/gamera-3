@@ -184,13 +184,14 @@ Image* load_tiff(const char* filename, int storage) {
       fact.create(0, 0, info->nrows(), info->ncols());
     tiff_load_rgb(*image, *info, filename);
     return image;
-  } else if (info->ncolors() == 2) {
+  } else if (info->ncolors() == 1) {
     if (info->depth() == 1) {
       if (storage == DENSE) {
 	TypeIdImageFactory<ONEBIT, DENSE> fact;
 	TypeIdImageFactory<ONEBIT, DENSE>::image_type*
 	  image = fact.create(0, 0, info->nrows(), info->ncols());
 	tiff_load_onebit(*image, *info, filename);
+	printf("hi");
 	return image;
       } else {
 	TypeIdImageFactory<ONEBIT, RLE> fact;

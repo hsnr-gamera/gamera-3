@@ -63,23 +63,6 @@ class ImageBase:
       if self._display:
          self._display.close()
 
-   def add_plugin_method(cls, plug, func, category=None):
-      methods = cls._methods
-      if not func is None:
-         func = new.instancemethod(func, None, Image)
-         setattr(cls, plug.__name__, func)
-         if not category is None:
-            for type in plug.self_type.pixel_types:
-               if not methods.has_key(type):
-                  methods[type] = {}
-               start = methods[type]
-               for subcategory in category.split('/'):
-                  if not start.has_key(subcategory):
-                     start[subcategory] = {}
-                  start = start[subcategory]
-               start[plug.__name__] = plug
-   add_plugin_method = classmethod(add_plugin_method)
-
    _pixel_type_names = {ONEBIT:     "OneBit",
                         GREYSCALE:  "GreyScale",
                         GREY16:     "Grey16",
@@ -99,6 +82,24 @@ class ImageBase:
                         'storage_format_name',
                         'ul_x', 'ul_y', 'nrows', 'ncols',
                         'size')
+
+   def add_plugin_method(cls, plug, func, category=None):
+      methods = cls._methods
+      if not func is None:
+         func = new.instancemethod(func, None, ImageBase)
+         setattr(cls, plug.__name__, func)
+         if not category is None:
+            for type in plug.self_type.pixel_types:
+               if not methods.has_key(type):
+                  methods[type] = {}
+               start = methods[type]
+               for subcategory in category.split('/'):
+                  if not start.has_key(subcategory):
+                     start[subcategory] = {}
+                  start = start[subcategory]
+               start[plug.__name__] = plug
+   add_plugin_method = classmethod(add_plugin_method)
+
    def members_for_menu(self):
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
 
@@ -160,11 +161,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, Image.to_string)
+            self._display.set_image(self, ImageBase.to_string)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             Image.to_string, owner=self))
+                             ImageBase.to_string, owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -256,24 +257,26 @@ class ImageBase:
 
 ######################################################################
       
-class Image(ImageBase, gameracore.Image):
+class Image(gameracore.Image, ImageBase):
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
                 pixel_format, storage_type):
       ImageBase.__init__(self)
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
 
+
 ######################################################################
 
-class SubImage(gameracore.SubImage, Image):
+class SubImage(gameracore.SubImage, ImageBase):
    def __init__(self, image, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.SubImage.__init__(self, image, offset_y, offset_x,
                                    nrows, ncols)
 
+
 ######################################################################
 
-class Cc(gameracore.Cc, Image):
+class Cc(gameracore.Cc, ImageBase):
    def __init__(self, image, label, offset_y, offset_x, nrows, ncols):
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, image, label, offset_y, offset_x,

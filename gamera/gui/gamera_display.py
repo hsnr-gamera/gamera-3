@@ -131,6 +131,17 @@ class ImageDisplay(wxScrolledWindow):
          return gui_util.get_color(color)
       return -1
 
+   def _box_highlight(self, highlight):
+      for i in range(32, 8, -2):
+         self.draw_rubber()
+         self.rubber_origin_x = highlight.ul_x - i
+         self.rubber_origin_y = highlight.ul_y - i
+         self.rubber_x2 = highlight.lr_x + i
+         self.rubber_y2 = highlight.lr_y + i
+         self.draw_rubber()
+         wxUsleep(20)
+         wxYield()
+
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=-1):
       color = self._get_highlight_color(color)
@@ -158,6 +169,8 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc[0])
       if refresh_at_once:
          self.RefreshAll()
+      if len(self.highlights) == 1 and self.boxed_highlights:
+         self._box_highlight(self.highlights[0][0])
    highlight_ccs = highlight_cc
 
    # Adds a list of ccs to be highlighted in the display
@@ -176,6 +189,9 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc)
       if refresh_at_once:
          self.RefreshAll()
+      if len(self.highlights) == 1 and self.boxed_highlights:
+         self._box_highlight(self.highlights[0][0])
+         
    add_highlight_ccs = add_highlight_cc
 
    # Clears a CC in the display.  Multiple CCs
@@ -192,6 +208,9 @@ class ImageDisplay(wxScrolledWindow):
                break
       if refresh_at_once:
          self.RefreshAll()
+      if len(self.highlights) == 1 and self.boxed_highlights:
+         self._box_highlight(self.highlights[0][0])
+
    unhighlight_ccs = unhighlight_cc
       
    # Clears all of the highlighted CCs in the display   
@@ -290,14 +309,14 @@ class ImageDisplay(wxScrolledWindow):
          wxEndBusyCursor()
          
    def ZoomOut(self, *args):
-      if self.scaling > pow(2, -8):
+      if self.scaling > pow(2, -4):
          self.scale(self.scaling * 0.5)
 
    def ZoomNorm(self, *args):
       self.scale(1.0)
 
    def ZoomIn(self, *args):
-      if self.scaling < pow(2, 8):
+      if self.scaling < pow(2, 4):
          self.scale(self.scaling * 2.0)
 
    def ZoomView(self, *args):
@@ -316,6 +335,8 @@ class ImageDisplay(wxScrolledWindow):
          x = y = x2 = y2 = 0
       scaling = min(float(size.x) / float(rubber_w),
                     float(size.y) / float(rubber_h))
+      scaling = min(scaling, pow(2, -4))
+      scaling = max(scaling, pow(2, 4))
       self.scale(scaling)
       self.focus_rect(x, y, x2, y2)
 
@@ -531,24 +552,6 @@ class ImageDisplay(wxScrolledWindow):
                bmp = wxBitmapFromImage(image, 1)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
-               if self.boxed_highlights:
-                  x_rect = x + (highlight.ul_x - subimage.ul_x) * scaling
-                  y_rect = y + (highlight.ul_y - subimage.ul_y) * scaling
-                  dc.SetClippingRegion(
-                     x_cc, y_cc,
-                     subhighlight.ncols * scaling, subhighlight.nrows * scaling)
-                  dc.SetLogicalFunction(wxXOR)
-                  pen = wxCYAN_PEN
-                  pen.SetStyle(wxDOT)
-                  dc.SetPen(pen)
-                  dc.SetBrush(wxTRANSPARENT_BRUSH)
-                  box_cols = highlight.ncols * scaling
-                  box_rows = highlight.nrows * scaling
-                  for i in range(3):
-                     dc.DrawRectangle(
-                        x_rect + i, y_rect + i,
-                        box_cols - i * 2, box_rows - i * 2)
-                  dc.DestroyClippingRegion()
                dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)
                dc.DrawBitmap(bmp, x_cc, y_cc)
@@ -1148,14 +1151,14 @@ class MultiImageDisplay(wxGrid):
    # CALLBACKS
 
    def ZoomOut(self):
-      if self.scaling > pow(2, -8):
+      if self.scaling > pow(2, -4):
          self.scale(self.scaling * 0.5)
 
    def ZoomNorm(self):
       self.scale(1.0)
 
    def ZoomIn(self):
-      if self.scaling < pow(2, 8):
+      if self.scaling < pow(2, 4):
          self.scale(self.scaling * 2.0)
    
    def OnSelectImpl(self):

@@ -297,7 +297,7 @@ class LoadXML:
       if self._stream_length:
          self._progress.update(self._stream.tell(), self._stream_length)
       else:
-         self._progress.update(self._stream.tell() % 49, 50)
+         self._progress.update(self._stream.tell() % 50, 50)
 
    def _append_glyph_to_glyphs(self, glyph):
       self.glyphs.append(glyph)

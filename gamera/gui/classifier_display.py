@@ -98,6 +98,9 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL
 
+   _search_order = ((0,0),                          # center
+                    (-1,0), (0,-1), (1,0), (0,1),   # +
+                    (-1,-1), (-1,1), (1,-1), (1,1)) # x
    def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
       self.BeginBatch()
       if shift:
@@ -113,8 +116,9 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          for i in range(len(self.list)):
             g = self.list[i]
             if g != None:
-               if g.contains_point(point):
-                  if (g.get(y1 - g.ul_y, x1 - g.ul_x) != 0):
+               for x, y in self._search_order:
+                  if (g.contains_point(Point(x1 + x, y1 + y)) and
+                      (g.get(y1 + y - g.ul_y, x1 + x - g.ul_x) != 0)):
                      matches.append(i)
                      break
       else:
@@ -122,8 +126,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          r = Rect(y1, x1, y2 - y1 + 1, x2 - x1 + 1)
          for i in range(len(self.list)):
             g = self.list[i]
-            if g != None:
-               if r.contains_rect(g):
+            if g != None and r.contains_rect(g):
                   matches.append(i)
       if matches != []:
          if shift:

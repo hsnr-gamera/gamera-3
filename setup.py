@@ -125,12 +125,6 @@ includes = [(os.path.join(gamera_setup.include_path, path),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
 
-if sys.platform == 'win32' and '--compiler=mingw32' in sys.argv:
-   # Use os.system to get Cygwin path
-   os.system("cp /usr/bin/mgwz.dll .")
-   includes.append((os.path.join(gamera_setup.lib_path, r'plugins'),
-                    ["mgwz.dll"]))
-
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']
 

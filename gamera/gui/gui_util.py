@@ -202,7 +202,6 @@ class ProgressBox:
             self.done = 1
             wxEndBusyCursor()
             self.progress_box.Destroy()
-            print "KILL!"
 
    def kill(self):
       self.update(1, 1)

@@ -22,7 +22,7 @@ def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
    i = 0
    for edge in graph.get_edges():
       lengths = []
-      path = { }
+      path = {}
       #print node().get_main_id(), edge.cost
       get_lengths(edge.from_node, distance, lengths, 0, path)
       lengths.remove(edge.cost)
@@ -35,10 +35,8 @@ def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
       if stdev2 > ratio:
          #graph.remove_edge(edge)
          remove.append(edge)
-
    for edge in remove:
       graph.remove_edge(edge)
-
    if relabel:
       cur_label = 0
       for node in graph.get_nodes():
@@ -47,12 +45,9 @@ def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
          if node().get_main_id() == "":
             label(graph, node, lab, cur_label)
             cur_label += 1
-   print cur_label
-
    nodes = []
    for node in graph.get_nodes():
       nodes.append(node())
-
    return nodes
 
 def make_spanning_tree(glyphs, k=None):
@@ -65,7 +60,6 @@ def make_spanning_tree(glyphs, k=None):
 
 def cluster(glyphs, ratio=1.0, distance=2, label="cluster.", k=None):
    g = make_spanning_tree(glyphs, k)
-
    return make_subtrees_stddev(g, ratio, distance, lab=label)
 
 def cluster2(glyphs):

@@ -99,7 +99,7 @@ class ImageMenu:
 
     # Methods
     menu.AppendSeparator()
-    self.functions = [None]
+    self.functions = {}
     menu = self.create_methods(methods, menu)
 
     # Extra methods
@@ -120,8 +120,8 @@ class ImageMenu:
       else:
         menu.Append(self._method_id, key)
         EVT_MENU(self.parent, self._method_id, self.OnPopupFunction)
+        self.functions[self._method_id] = val
         self._method_id += 1
-        self.functions.append(val)
     return menu
 
   def create_extra_methods(self, methods, menu):
@@ -185,7 +185,7 @@ class ImageMenu:
 
   def OnPopupFunction(self, event):
     sh = self.get_shell()
-    function = self.functions[event.GetId() - self._base_method_id]
+    function = self.functions[event.GetId()]
     if self.images:
       if self.mode == HELP_MODE:
         sh.run("help('" + function.__name__ + "')")

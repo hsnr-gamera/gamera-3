@@ -963,11 +963,9 @@ class MultiImageDisplay(wxGrid):
          for col in range(self.cols - 1, -1, -1):
             self.SetColSize(col, col_max[col])
             width += col_max[col]
-         self.SetSize(wxSize(-1, height))
       finally:
          self.EndBatch()
          self.GetGridWindow().SetVirtualSize(self.GetSize())
-         self.GetGridWindow().Layout()
          self.GetGridWindow().GetParent().Layout()
          wxEndBusyCursor()
 

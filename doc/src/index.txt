@@ -65,6 +65,11 @@ How To
 
 .. __: gui.html
 
+  - `matplotlib support`__: Using Gamera support for the popular matplotlib_ plotting library.
+
+.. __: matplotlib_support.html
+.. _matplotlib: http://matplotlib.sourceforge.net/
+
 - `Classifier API`__: How to use image classifiers from Python.
 
 .. __: classify.html

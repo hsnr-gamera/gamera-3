@@ -22,7 +22,8 @@ import os.path
 from wxPython.wx import *                    # wxPython
 from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify, gamera_xml
-from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui, gamera_display
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui
+from gamera.gui.matplotlib_support import *
 import array, inspect
 
 ######################################################################
@@ -162,24 +163,41 @@ class IconDisplay(wxListCtrl):
       self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
       currentIcon = self.find_icon(index)
       if currentIcon:
-         currentIcon.right_click(self, event, self.shell)
+         try:
+            currentIcon.right_click(self, event, self.shell)
+         except Exception, e:
+            gui_util.message(str(e))
       event.Skip()
 
    def OnDoubleClick(self, event):
       if self.currentIcon:
-         source = self.currentIcon.double_click()
-         if not source is None:
-            self.shell.run(source)
+         try:
+            source = self.currentIcon.double_click()
+         except Exception, e:
+            gui_util.message(str(e))
+         else:
+            if not source is None:
+               source = source.split("\n")
+               for s in source:
+                  self.shell.run(s)
    
    def OnKeyPress(self,event):
       keyID = event.GetKeyCode()
       if self.currentIcon:
-         if(keyID == 127 or keyID == 8):
-            source = self.currentIcon.delete_key()
-            self.currentIcon = None
+         if keyID in (127, 8):
+            try:
+               source = self.currentIcon.delete_key()
+            except Exception, e:
+               gui_util.message(str(e))
+            else:
+               self.currentIcon = None
          elif(keyID==19):
-            source = self.currentIcon.control_s()
-         else: return
+            try:
+               source = self.currentIcon.control_s()
+            except Exception, e:
+               gui_util.message(str(e))
+         else:
+            return
          if not source is None:
             self.shell.run(source)
 
@@ -470,8 +488,9 @@ class _CIVector(CustomIcon):
    check = classmethod(check)
 
    def double_click(self):
-      f = gamera_display.GraphDisplay(self.data)
-      f.Show(1)
+      name = var_name.get("figure")
+      if name != None:
+         return "%s = plot(%s)" % (name, self.label)
 
    def right_click(self, *args):
       pass
@@ -480,7 +499,7 @@ class _CIVector(CustomIcon):
       pass
 
    def drag(self):
-      return ("Vector", str(self.data))
+      return ("Vector", str(list(self.data)))
 
 class CIIntVector(_CIVector):
    typecode = 'i'

@@ -82,7 +82,7 @@ Note that unlike rotateShear_ the image size is not extended. Image regions
 moved outside the original image size are simply clipped, which restricts
 this method to small angles.
 
-.. _rotateShear: deformations.html#rotateShear
+.. _rotateShear: deformations.html#rotateshear
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
@@ -106,7 +106,7 @@ Note that unlike rotateShear_ the image size is not extended. Image regions
 moved outside the original image size are simply clipped, which restricts
 this method to small angles.
 
-.. _rotateShear: deformations.html#rotateShear
+.. _rotateShear: deformations.html#rotateshear
 """
     self_type = ImageType([ONEBIT])
     args = Args(FloatVector("Rotation angles"))

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -40,6 +40,10 @@ namespace vigra {
     This class provides the same interface as \ref vigra::BasicImage
     (with the exception of <tt>resize()</tt>) but the image's
     memory is provided from the outside instead of allocated internally.
+    
+    A <tt>BasicImageView</tt> can also be created from a 
+    \ref vigra::MultiArrayView with the appropriate shape -- see
+    \ref MultiArrayToImage.
     
     <b>\#include</b> "<a href="basicimageview_8hxx-source.html">vigra/basicimageview.hxx</a>"
 

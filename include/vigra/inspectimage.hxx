@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -123,7 +123,7 @@ inspectTwoLinesIf(SrcIterator1 s1,
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, class Functor>
@@ -142,7 +142,7 @@ inspectTwoLinesIf(SrcIterator1 s1,
     // init functor
     vigra::BImage img;
 
-    vigra::FindMinMax<vigra::BImage::PixelType> minmax();
+    vigra::FindMinMax<vigra::BImage::PixelType> minmax;
 
     vigra::inspectImage(srcImageRange(img), minmax);
 
@@ -241,7 +241,7 @@ inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor,
@@ -349,7 +349,7 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator1, class Accessor1,
@@ -374,7 +374,7 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
     SomeStatisticsFunctor stats(...);     // init functor
 
     vigra::inspectTwoImages(srcImageRange(image1), srcImage(image2),
-                            region_stats);
+                            stats);
 
 
     \endcode
@@ -459,7 +459,7 @@ inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator1, class Accessor1,
@@ -932,7 +932,7 @@ class FindBoundingRectangle
 
         /** the functors result type
         */
-    typedef pair<Diff2D, Diff2D> result_type;
+    typedef Rect2D result_type;
 
         /** \deprecated use argument_type
         */
@@ -1001,14 +1001,20 @@ class FindBoundingRectangle
         }
     }
 
+        /** Get size of current rectangle.
+        */
+    Size2D size() const
+    {
+        return lowerRight - upperLeft;
+    }
+
         /** Get current rectangle. <TT>result_type::first</TT> is the upper
             left corner of the rectangle, <TT>result_type::second</TT>
             the lower right.
-
         */
     result_type operator()() const
     {
-        return std::make_pair(upperLeft, lowerRight);
+        return result_type(upperLeft, lowerRight);
     }
 };
 

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -195,6 +195,14 @@ public:
         */
     pointer operator->() const
         { return &pos_; }
+
+        /** Access pixel to the right of the crack edge (outside of
+         * the region bounded by the crack contour we walk on). Note
+         * that after operator++, the iterator can still point to the
+         * same pixel (looking from another direction now).
+         */
+    IMAGEITERATOR outerPixel() const
+        { return NEIGHBORHOODCIRCULATOR(neighborCirc_).turnRight().base(); }
 
         /** Get the offset from the current corner of the contour
             to the next one.

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -24,6 +24,13 @@
 #define VIGRA_METAPROGRAMMING_HXX
 
 namespace vigra {
+
+template <int N>
+class MetaInt
+{
+  public:
+    enum { value = N };
+};
 
 struct VigraTrueType
 {
@@ -80,6 +87,7 @@ class TypeTraits
 };
 
 #ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
 template<class T> 
 class TypeTraits<T *>
 {
@@ -95,7 +103,8 @@ class TypeTraits<T const *>
     typedef VigraTrueType isPOD;
     typedef VigraTrueType isBuiltinType;
 };
-#endif
+
+#endif // NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 #define VIGRA_TYPE_TRAITS(type) \
 template<> \
@@ -122,6 +131,22 @@ VIGRA_TYPE_TRAITS(long double)
 #undef VIGRA_TYPE_TRAITS
 
 //@}
+
+#ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
+template <class PREDICATE, class TRUECASE, class FALSECASE>
+struct If
+{
+    typedef TRUECASE type;
+};
+
+template <class TRUECASE, class FALSECASE>
+struct If<VigraFalseType, TRUECASE, FALSECASE>
+{
+    typedef FALSECASE type;
+};
+
+#endif // NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
 } // namespace vigra
 

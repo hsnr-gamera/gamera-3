@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -102,7 +102,7 @@ transformLineIf(SrcIterator s,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -116,16 +116,16 @@ transformLineIf(SrcIterator s,
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="transformimage_8hxx-source.html">vigra/transformimage.hxx</a>"<br>
-        Namespace: vigra
+    <b>\#include</b> "<a href="transformimage_8hxx-source.html">vigra/transformimage.hxx</a>"<br>
+    Namespace: vigra
 
     \code
 
-    #include <math.h>         // for sqrt()
+    #include <cmath>         // for sqrt()
 
     vigra::transformImage(srcImageRange(src),
                           destImage(dest),
-                          &::sqrt );
+                          &std::sqrt );
 
     \endcode
 
@@ -214,7 +214,7 @@ transformImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -334,7 +334,7 @@ transformImageIf(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -486,7 +486,7 @@ template <class DestValueType, class Multiplier = double>
 class LinearIntensityTransform
 {
   public:
-        /* the functors argument type (actually, since 
+        /* the functors argument type (actually, since
            <tt>operator()</tt> is a template, much more types are possible)
         */
     typedef DestValueType argument_type;
@@ -534,7 +534,7 @@ template <class DestValueType, class Multiplier = double>
 class ScalarIntensityTransform
 {
   public:
-        /* the functors argument type (actually, since 
+        /* the functors argument type (actually, since
            <tt>operator()</tt> is a template, much more types are possible)
         */
     typedef DestValueType argument_type;
@@ -586,7 +586,7 @@ class ScalarIntensityTransform
     If you leave out the second parameter / offset, you will get an
     optimized version of the functor which only scales by the given
     factor, however you have to make the template parameter (pixel
-    type) explicit.
+    type) explicit then.
 
     <b> Declaration:</b>
 
@@ -664,8 +664,8 @@ linearIntensityTransform(Multiplier scale)
     '<TT>destvalue = scale * (srcvalue + offset)</TT>' to every pixel,
     where <tt>scale = (dest_max - dest_min) / (src_max - src_min)</tt>
     and <tt>offset = dest_min / scale - src_min</tt>. As a result,
-    the pixel values <tt>src_max</tt>, <tt>src_min</tt> in the source image 
-    are mapped onto <tt>dest_max</tt>, <tt>dest_min</tt> respectively. 
+    the pixel values <tt>src_max</tt>, <tt>src_min</tt> in the source image
+    are mapped onto <tt>dest_max</tt>, <tt>dest_min</tt> respectively.
     This works for scalar as well as vector pixel types.
 
     <b> Declaration:</b>
@@ -674,7 +674,7 @@ linearIntensityTransform(Multiplier scale)
     namespace vigra {
         template <class SrcValueType, class DestValueType>
         LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
-        linearRangeMapping(SrcValueType src_min, SrcValueType src_max, 
+        linearRangeMapping(SrcValueType src_min, SrcValueType src_max,
                            DestValueType dest_min, DestValueType dest_max );
     }
     \endcode
@@ -707,49 +707,49 @@ linearIntensityTransform(Multiplier scale)
 */
 template <class SrcValueType, class DestValueType>
 LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
-linearRangeMapping(SrcValueType src_min, SrcValueType src_max, 
+linearRangeMapping(SrcValueType src_min, SrcValueType src_max,
                    DestValueType dest_min, DestValueType dest_max )
 {
     return linearRangeMapping(src_min, src_max, dest_min, dest_max,
             typename NumericTraits<DestValueType>::isScalar());
-} 
+}
 
 template <class SrcValueType, class DestValueType>
 LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
 linearRangeMapping(
-    SrcValueType src_min, SrcValueType src_max, 
+    SrcValueType src_min, SrcValueType src_max,
     DestValueType dest_min, DestValueType dest_max,
     VigraTrueType /* isScalar */ )
 {
     typedef typename NumericTraits<DestValueType>::RealPromote Multiplier;
     Multiplier diff = src_max - src_min;
     Multiplier scale = diff == NumericTraits<Multiplier>::zero()
-                     ? NumericTraits<Multiplier>::one() 
+                     ? NumericTraits<Multiplier>::one()
                      : (dest_max - dest_min) / diff;
     return LinearIntensityTransform<DestValueType, Multiplier>(
                                    scale, dest_min / scale - src_min );
-} 
+}
 
 template <class SrcValueType, class DestValueType>
 LinearIntensityTransform<DestValueType, typename NumericTraits<DestValueType>::RealPromote>
 linearRangeMapping(
-    SrcValueType src_min, SrcValueType src_max, 
+    SrcValueType src_min, SrcValueType src_max,
     DestValueType dest_min, DestValueType dest_max,
     VigraFalseType /* isScalar */ )
 {
     typedef typename NumericTraits<DestValueType>::RealPromote Multiplier;
     typedef typename Multiplier::value_type MComponent;
     Multiplier scale(dest_max), offset(dest_max);
-    for(int i=0; i<src_min.size(); ++i)
-    { 
+    for(unsigned int i=0; i<src_min.size(); ++i)
+    {
         MComponent diff = src_max[i] - src_min[i];
         scale[i] = diff == NumericTraits<MComponent>::zero()
-                     ? NumericTraits<MComponent>::one() 
+                     ? NumericTraits<MComponent>::one()
                      : (dest_max[i] - dest_min[i]) / diff;
         offset[i] = dest_min[i] / scale[i] - src_min[i];
     }
     return LinearIntensityTransform<DestValueType, Multiplier>(scale, offset);
-} 
+}
 
 /********************************************************/
 /*                                                      */
@@ -1080,6 +1080,96 @@ class BrightnessContrastFunctor<RGBValue<unsigned char> >
         return value_type(red(v.red()), green(v.green()), blue(v.blue()));
     }
 };
+
+
+
+/********************************************************/
+/*                                                      */
+/*                     VectorNormFunctor                */
+/*                                                      */
+/********************************************************/
+
+/** \brief A functor for computing the vector norm
+
+    Calculate the magnitude or norm from a given vector-valued
+    entity. The vector type will typically be some sort of
+    ref vigra::TinyVector. If the vector is represented by a pair of 
+    scalar-valued images, use \ref vigra::MagnitudeFunctor instead.
+
+    At least, the vector type is required to have a function
+    '<em>result</em><TT> = dot(v,v)</TT>'.
+    
+
+    <b> Usage:</b>
+
+        <b>\#include</b> "<a href="transformimage_8hxx-source.html">vigra/transformimage.hxx</a>"<br>
+        Namespace: vigra
+
+    \code
+    typedef vigra::TinyVector<float> Vector;
+    vigra::BasicImage<Vector> grad(width, height);
+    vigra::FImage magn(width,height);
+    ...
+    vigra::transformImage(srcImageRange(grad), destImage(magn),
+                          VectorNormFunctor<float>()
+                          );
+    \endcode
+
+    \see vigra::TinyVector, dot(), vigra::MagnitudeFunctor
+*/
+template <class ValueType>
+class VectorNormFunctor
+{
+public:
+  /** the functor's argument type
+   */
+  typedef ValueType argument_type;
+  
+  /** the functor's result type
+   */
+  typedef typename NumericTraits<typename ValueType::value_type>::RealPromote result_type;
+  
+  /** calculate transform '<TT>sqrt(v1*v1 + v2*v2 + ...)</TT>'.
+   */
+  result_type operator()( const argument_type &a ) const
+  {
+    return VIGRA_CSTD::sqrt( dot(a,a) );
+  }
+};    //-- class VectorNormFunctor
+
+
+/** \brief A functor for computing the squared vector norm
+
+    Calculate the squared magnitude or norm from a given
+    vector-valued entity. The vector type will typically be some
+    sort of TinyVector.
+
+    At least, the vector type is required to have a function
+    '<em>result</em><TT> = dot(v,v)</TT>'.
+
+    For an example of its usage see VectorNormFunctor
+
+    \see TinVector, dot()
+*/
+template <class ValueType>
+class VectorNormSqFunctor
+{
+public:
+  /** the functor's argument type
+   */
+  typedef ValueType argument_type;
+
+  /** the functor's result type
+   */
+  typedef typename NumericTraits<typename ValueType::value_type>::RealPromote result_type;
+
+  /** calculate transform '<TT>v1*v1 + v2*v2 + ...</TT>'.
+   */
+  result_type operator()( const argument_type &a ) const
+  {
+    return dot(a,a);
+  }
+};    //-- class VectorNormSqFunctor
 
 //@}
 

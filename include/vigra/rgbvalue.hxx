@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -317,10 +317,13 @@ struct NumericTraits<RGBValue<T> >
     typedef RGBValue<T> Type;
     typedef RGBValue<typename NumericTraits<T>::Promote> Promote;
     typedef RGBValue<typename NumericTraits<T>::RealPromote> RealPromote;
-
-    typedef typename NumericTraits<T>::isIntegral isIntegral;
-    typedef VigraFalseType isScalar;
+    typedef RGBValue<typename NumericTraits<T>::ComplexPromote> ComplexPromote;
+    typedef T ValueType; 
+    
+    typedef typename NumericTraits<T>::isIntegral isIntegral; 
+    typedef VigraFalseType isScalar; 
     typedef VigraFalseType isOrdered;
+    typedef VigraFalseType isComplex; 
 
     static RGBValue<T> zero() {
         return RGBValue<T>(NumericTraits<T>::zero());
@@ -374,12 +377,16 @@ struct PromoteTraits<double, RGBValue<T> >
 template<>\
 struct NumericTraits<RGBValue<T> >\
 {\
-    typedef RGBValue<T> Type;\
-    typedef RGBValue<NumericTraits<T>::Promote> Promote;\
-    typedef RGBValue<NumericTraits<T>::RealPromote> RealPromote;\
-    typedef NumericTraits<T>::isIntegral isIntegral;\
-    typedef VigraFalseType isScalar;\
-    typedef VigraFalseType isOrdered;\
+    typedef RGBValue<T> Type; \
+    typedef RGBValue<NumericTraits<T>::Promote> Promote; \
+    typedef RGBValue<NumericTraits<T>::RealPromote> RealPromote; \
+    typedef RGBValue<NumericTraits<T>::ComplexPromote> ComplexPromote; \
+    typedef T ValueType; \
+    \
+    typedef NumericTraits<T>::isIntegral isIntegral; \
+    typedef VigraFalseType isScalar; \
+    typedef VigraFalseType isOrdered; \
+    typedef VigraFalseType isComplex; \
     \
     static RGBValue<T> zero() { \
         return RGBValue<T>(NumericTraits<T>::zero()); \

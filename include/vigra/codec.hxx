@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -42,8 +42,50 @@
 
 namespace vigra
 {
+    template <class T>
+    struct TypeAsString
+    {
+        static std::string result() { return "undefined"; }
+    };
+    
+    template <>
+    struct TypeAsString<unsigned char>
+    {
+        static std::string result() { return "UINT8"; }
+    };
+    
+    template <>
+    struct TypeAsString<short>
+    {
+        static std::string result() { return "INT16"; }
+    };
+    
+    template <>
+    struct TypeAsString<int>
+    {
+        static std::string result() { return "INT32"; }
+    };
+    
+    template <>
+    struct TypeAsString<long>
+    {
+        static std::string result() { return "INT32"; }
+    };
+    
+    template <>
+    struct TypeAsString<float>
+    {
+        static std::string result() { return "FLOAT"; }
+    };
+    
+    template <>
+    struct TypeAsString<double>
+    {
+        static std::string result() { return "DOUBLE"; }
+    };
+    
+    
     // codec description
-
     struct CodecDesc
     {
         std::string fileType;
@@ -51,6 +93,7 @@ namespace vigra
         std::vector<std::string> compressionTypes;
         std::vector<std::vector<char> > magicStrings;
         std::vector<std::string> fileExtensions;
+        std::vector<int> bandNumbers;
     };
 
     // Decoder and Encoder are pure virtual types that define a common
@@ -94,6 +137,8 @@ namespace vigra
 
         virtual void * currentScanlineOfBand( unsigned int ) = 0;
         virtual void nextScanline() = 0;
+        
+        struct TIFFNoLZWException {};
     };
 
     // codec factory for registration at the codec manager
@@ -122,7 +167,12 @@ namespace vigra
 
     std::vector<std::string> queryCodecPixelTypes( const std::string & );
 
+    bool negotiatePixelType( std::string const & codecname,
+                 std::string const & srcPixeltype, std::string & destPixeltype);
+
     bool isPixelTypeSupported( const std::string &, const std::string & );
+
+    bool isBandNumberSupported( const std::string &, int bands );
 }
 
 #endif // VIGRA_CODEC_HXX

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -34,15 +34,15 @@ namespace vigra {
 
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
-          class KernelIterator, class KernelAccessor>
+          class KernelIterator, class KernelAccessor,
+          class KSumType>
 void internalPixelEvaluationByClip(int x, int y, int w, int h, SrcIterator xs,
                                    SrcAccessor src_acc, DestIterator xd, DestAccessor dest_acc,
-                                   KernelIterator ki, Diff2D kul, Diff2D klr, KernelAccessor ak)
+                                   KernelIterator ki, Diff2D kul, Diff2D klr, KernelAccessor ak,
+                                   KSumType norm)
 {
     typedef typename
         NumericTraits<typename SrcAccessor::value_type>::RealPromote SumType;
-    typedef typename
-        NumericTraits<typename KernelAccessor::value_type>::RealPromote KSumType;
     typedef
         NumericTraits<typename DestAccessor::value_type> DestTraits;
 
@@ -50,23 +50,8 @@ void internalPixelEvaluationByClip(int x, int y, int w, int h, SrcIterator xs,
     int kernel_width = klr.x - kul.x + 1;
     int kernel_height = klr.y - kul.y + 1;
 
-    KSumType norm = NumericTraits<KSumType>::zero();
     SumType sum = NumericTraits<SumType>::zero();
     int xx, yy;
-
-    //klr (kernel_lowerright) ist Diff2D !!!
-    KernelIterator yk  = ki + klr;
-
-    //Die Summe der Punkte im Kernel wird ermittelt (= norm)
-    for(yy=0; yy<kernel_height; ++yy, --yk.y)
-    {
-        KernelIterator xk  = yk;
-        for(xx=0; xx<kernel_width; ++xx, --xk.x)
-        {
-            norm += ak(xk);
-        }
-    }
-
     int x0, y0, x1, y1;
 
     y0 = (y<klr.y) ?  -y : -klr.y;
@@ -76,7 +61,7 @@ void internalPixelEvaluationByClip(int x, int y, int w, int h, SrcIterator xs,
     x1 = (w-x-1<-kul.x) ? w-x-1 : -kul.x;
 
     SrcIterator yys = xs + Diff2D(x0, y0);
-    yk  = ki - Diff2D(x0, y0);
+    KernelIterator yk  = ki - Diff2D(x0, y0);
 
     KSumType ksum = NumericTraits<KSumType>::zero();
     kernel_width = x1 - x0 + 1;
@@ -338,7 +323,7 @@ The functions need a suitable 2D kernel to operate.
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor, 
@@ -517,7 +502,26 @@ void convolveImage(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
                 if (border == BORDER_TREATMENT_CLIP)
                 {
 
-                    internalPixelEvaluationByClip(x, y, w, h, xs, src_acc, xd, dest_acc, ki, kul, klr, ak);
+                    typedef typename
+                        NumericTraits<typename KernelAccessor::value_type>::RealPromote KSumType;
+                    KSumType norm = NumericTraits<KSumType>::zero();
+
+                    int kernel_width = klr.x - kul.x + 1;
+                    int kernel_height = klr.y - kul.y + 1;
+                    int xx, yy;
+                    KernelIterator yk  = ki + klr;
+
+                    //Die Summe der Punkte im Kernel wird ermittelt (= norm)
+                    for(yy=0; yy<kernel_height; ++yy, --yk.y)
+                    {
+                        KernelIterator xk  = yk;
+                        for(xx=0; xx<kernel_width; ++xx, --xk.x)
+                        {
+                            norm += ak(xk);
+                        }
+                    }
+
+                    internalPixelEvaluationByClip(x, y, w, h, xs, src_acc, xd, dest_acc, ki, kul, klr, ak, norm);
 
                 }
                 else
@@ -597,7 +601,7 @@ void convolveImage(
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor, 
@@ -731,11 +735,11 @@ convolveImageWithMask(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_ac
     KSumType norm = ak(ki);
     int xx, yy;
     KernelIterator yk  = ki + klr;
-    for(yy=0; yy<hk; ++yy, --yk.y)
+    for(yy=0; yy<kernel_height; ++yy, --yk.y)
     {
         KernelIterator xk  = yk;
         
-        for(xx=0; xx<wk; ++xx, --xk.x)
+        for(xx=0; xx<kernel_width; ++xx, --xk.x)
         {
             norm += ak(xk);
         }
@@ -952,19 +956,20 @@ public:
             unchanged.
         */
     Kernel2D()
-        : kernel_(1, 1, Kernel2D<ARITHTYPE>::one()),
+        : kernel_(1, 1, one()),
           left_(0, 0),
           right_(0, 0),
+	  norm_(one()),
           border_treatment_(BORDER_TREATMENT_CLIP)
     {}
 
         /** Copy constructor.
          */
     Kernel2D(Kernel2D const & k)
-        : left_(k.left_),
+        : kernel_(k.kernel_),
+          left_(k.left_),
           right_(k.right_),
           norm_(k.norm_),
-          kernel_(k.kernel_),
           border_treatment_(k.border_treatment_)
     {}
 
@@ -974,15 +979,16 @@ public:
     {
         if(this != &k)
         {
+	    kernel_ = k.kernel_;
             left_ = k.left_;
             right_ = k.right_;
             norm_ = k.norm_;
-            kernel_ = k.kernel_;
+	    border_treatment_ = k.border_treatment_;
         }
         return *this;
     }
 
-        /** Initialisation.
+        /** Initialization.
             This initializes the kernel with the given constant. The norm becomes
             v*width()*height().
 
@@ -1270,6 +1276,16 @@ public:
          */
     value_type operator()(int x, int y) const
     { return kernel_[Diff2D(x,y) - left_]; }
+
+        /** Access kernel entry at given position.
+         */
+    value_type & operator[](Diff2D const & d)
+    { return kernel_[d - left_]; }
+
+        /** Read kernel entry at given position.
+         */
+    value_type operator[](Diff2D const & d) const
+    { return kernel_[d - left_]; }
 
         /** Norm of the kernel (i.e. sum of its elements).
          */

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -96,7 +96,7 @@ namespace vigra {
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -323,7 +323,7 @@ void differenceOfExponentialEdgeImage(
     Zero crossings are detected in the resulting difference image. Whenever the
     gradient at a zero crossing is greater than the given <TT>gradient_threshold</TT>,
     an edge point is marked (using <TT>edge_marker</TT>) in the destination image 
-    <i>between</i>} the corresponding original pixels. Topologically, this means we 
+    <i>between</i> the corresponding original pixels. Topologically, this means we 
     must insert additional pixels between the original ones to represent the
     boundaries between the pixels (the so called zero- and one-cells, with the original
     pixels being two-cells). Within VIGRA, such an image is called \ref CrackEdgeImage.
@@ -374,7 +374,7 @@ sign of difference image     insert zero- and one-cells     resulting edge point
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -678,7 +678,7 @@ void differenceOfExponentialCrackEdgeImage(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class Iterator, class Accessor, class SrcValue>
@@ -810,7 +810,7 @@ void removeShortEdges(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor, class SrcValue>
@@ -1022,7 +1022,7 @@ void closeGapsInCrackEdgeImage(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor, class SrcValue>
@@ -1050,7 +1050,7 @@ void closeGapsInCrackEdgeImage(
                                          0.8, 4.0, 1);
                     
     // beautify edge image for visualization
-    vigra::beautifyCrackEdgeImage(srcImageRange(edges), 1, 0);
+    vigra::beautifyCrackEdgeImage(destImageRange(edges), 1, 0);
     
     // show to the user
     window.open(edges);
@@ -1165,15 +1165,23 @@ class Edgel
 
         */
     float orientation;
+    
+    Edgel()
+    : x(0.0f), y(0.0f), strength(0.0f), orientation(0.0f)
+    {}
+    
+    Edgel(float ix, float iy, float is, float io)
+    : x(ix), y(iy), strength(is), orientation(io)
+    {}
 };
 
-template <class Image>
-void internalCannyFindEdgels(Image const & dx,
-                             Image const & dy,
-                             Image const & magnitude,
+template <class Image1, class Image2>
+void internalCannyFindEdgels(Image1 const & dx,
+                             Image1 const & dy,
+                             Image2 const & magnitude,
                              std::vector<Edgel> & edgels)
 {
-    typedef typename Image::PixelType PixelType;
+    typedef typename Image1::value_type PixelType;
     
     PixelType zero = NumericTraits<PixelType>::zero();
     double tan22_5 = M_SQRT2 - 1.0;
@@ -1270,7 +1278,7 @@ void internalCannyFindEdgels(Image const & dx,
             
             if(maximum_found)
             {
-                double orientation = atan2(-grady, gradx) - M_PI * 1.5;
+                double orientation = VIGRA_CSTD::atan2(-grady, gradx) - M_PI * 1.5;
                 if(orientation < 0.0)
                     orientation += 2.0*M_PI;
                 edgel.orientation = orientation;
@@ -1311,7 +1319,7 @@ void internalCannyFindEdgels(Image const & dx,
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor>
@@ -1424,7 +1432,7 @@ cannyEdgelList(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,

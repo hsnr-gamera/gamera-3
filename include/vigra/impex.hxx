@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -45,6 +45,7 @@
 #include "vigra/inspectimage.hxx"
 #include "vigra/transformimage.hxx"
 #include "vigra/copyimage.hxx"
+#include "vigra/multi_array.hxx"
 
 // TODO
 // next refactoring: pluggable conversion algorithms
@@ -85,6 +86,9 @@ namespace vigra
         const size_type width = dec->getWidth();
         const size_type height = dec->getHeight();
         const size_type num_bands = dec->getNumBands();
+        
+        vigra_precondition(num_bands == a.size(ys),
+           "importImage(): number of bands (color channels) in file and destination image differ.");
 
         SrcValueType const * scanline;
         DstRowIterator xs;
@@ -263,7 +267,7 @@ namespace vigra
         }
         \endcode
 
-        use argument objects in conjuction with \ref ArgumentObjectFactories:
+        use argument objects in conjunction with \ref ArgumentObjectFactories:
         \code
         namespace vigra {
             template <class ImageIterator, class Accessor>
@@ -368,7 +372,7 @@ namespace vigra
         const size_type height = lr.y - ul.y;
         enc->setWidth(width);
         enc->setHeight(height);
-        const size_type num_bands = a(ul).size();
+        const size_type num_bands = a.size(ul);
         enc->setNumBands(num_bands);
         enc->finalizeSettings();
 
@@ -383,7 +387,37 @@ namespace vigra
                 scanline = static_cast< DstValueType * >
                     (enc->currentScanlineOfBand(b));
                 for( size_type x = 0; x < width; ++x, ++xs ) {
-                    *scanline = a.getComponent( xs, b );
+                    *scanline = detail::RequiresExplicitCast<DstValueType>::cast(a.getComponent( xs, b ));
+                    scanline += enc->getOffset();
+                }
+            }
+            enc->nextScanline();
+        }
+    } // write_bands()
+
+    template< class MArray, class DstValueType >
+    void write_bands( Encoder * enc, MArray const & array, DstValueType)
+    {
+        typedef unsigned int size_type;
+
+        // complete decoder settings
+        const size_type width = array.shape(0);
+        const size_type height = array.shape(1);
+        enc->setWidth(width);
+        enc->setHeight(height);
+        const size_type num_bands = array.shape(2);
+        enc->setNumBands(num_bands);
+        enc->finalizeSettings();
+
+        DstValueType * scanline;
+
+        // iterate
+        for( size_type y = 0; y < height; ++y ) {
+            for( size_type b = 0; b < num_bands; ++b ) {
+                scanline = static_cast< DstValueType * >
+                    (enc->currentScanlineOfBand(b));
+                for( size_type x = 0; x < width; ++x) {
+                    *scanline = array(x, y, b);
                     scanline += enc->getOffset();
                 }
             }
@@ -436,51 +470,108 @@ namespace vigra
             xs = ys.rowIterator();
             scanline = static_cast< DstValueType * >(enc->currentScanlineOfBand(0));
             for( size_type x = 0; x < width; ++x, ++xs, ++scanline )
-                *scanline = a(xs);
+                *scanline = detail::RequiresExplicitCast<DstValueType>::cast(a(xs));
             enc->nextScanline();
         }
     } // write_band()
 
+namespace detail {
+        
     template < class SrcIterator, class SrcAccessor,
                class DestIterator, class DestAccessor >
-    void mapVectorImageToByteImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                                    DestIterator dul, DestAccessor dget )
+    void mapScalarImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                                         DestIterator dul, DestAccessor dget )
+    {
+        typedef typename SrcAccessor::value_type SrcValue;
+        typedef typename DestAccessor::value_type DestValue;
+        typedef typename NumericTraits<SrcValue>::RealPromote PromoteValue;
+        
+        FindMinMax<SrcValue> minmax;
+        inspectImage( sul, slr, sget, minmax );
+        double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
+                       (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
+        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
+        transformImage( sul, slr, sget, dul, dget,
+                        linearIntensityTransform( scale, offset ) );
+    }
+    
+    // export scalar images with conversion (if necessary)
+    template < class SrcIterator, class SrcAccessor, class T >
+    void exportScalarImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                           Encoder * enc, bool downcast, T zero)
+    {
+        if (!downcast) {
+            write_band( enc, sul, slr, sget, zero );
+        } else {
+            // convert to unsigned char in the usual way
+            BasicImage<T> image(slr-sul);
+            mapScalarImageToLowerPixelType(sul, slr, sget, image.upperLeft(), image.accessor());
+            write_band( enc, image.upperLeft(),
+                        image.lowerRight(), image.accessor(), zero );
+        }
+    }
+        
+    template < class SrcIterator, class SrcAccessor,
+               class MArray>
+    void mapVectorImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                                         MArray & array )
     {
         typedef typename SrcAccessor::value_type SrcValue;
         typedef typename SrcValue::value_type SrcComponent;
-        typedef typename NumericTraits<SrcValue>::RealPromote PromoteValue;
-        typedef typename PromoteValue::value_type PromoteComponent;
+        typedef typename MArray::value_type DestValue;
         
-        vigra::FindMinMax<SrcComponent> minmax;
-        vigra::inspectImage( sul, slr, sget, minmax );
-        const PromoteComponent scale = 255.0 / (minmax.max - minmax.min);
-        const PromoteValue offset( -minmax.min, -minmax.min, -minmax.min );
-        vigra::transformImage( sul, slr, sget, dul, dget,
-                               linearIntensityTransform( scale, offset ) );
+        FindMinMax<SrcComponent> minmax;
+        for(unsigned int i=0; i<sget.size(sul); ++i)
+        {
+            VectorElementAccessor<SrcAccessor> band(i, sget);
+            inspectImage( sul, slr, band, minmax );
+        }
+        double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
+                       (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
+        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
+        for(unsigned int i=0; i<sget.size(sul); ++i)
+        {
+            BasicImageView<DestValue> subImage = makeBasicImageView(array.bindOuter(i));
+            VectorElementAccessor<SrcAccessor> band(i, sget);
+            transformImage( sul, slr, band, subImage.upperLeft(), subImage.accessor(),
+                            linearIntensityTransform( scale, offset ) );
+        }
     }
     
-    template < class SrcIterator, class SrcAccessor,
-               class DestIterator, class DestAccessor >
-    void mapScalarImageToByteImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                                    DestIterator dul, DestAccessor dget )
+    // export vector images with conversion (if necessary)
+    template < class SrcIterator, class SrcAccessor, class T >
+    void exportVectorImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                           Encoder * enc, bool downcast, T zero)
     {
-        typedef typename SrcAccessor::value_type SrcValue;
-        typedef typename NumericTraits<SrcValue>::RealPromote PromoteValue;
-        
-        vigra::FindMinMax<SrcValue> minmax;
-        vigra::inspectImage( sul, slr, sget, minmax );
-        const PromoteValue scale = 255.0 / (minmax.max - minmax.min);
-        const PromoteValue offset = -minmax.min;
-        vigra::transformImage( sul, slr, sget, dul, dget,
-                               linearIntensityTransform( scale, offset ) );
-    }
+        int bands = sget.size(sul);
+        vigra_precondition(isBandNumberSupported(enc->getFileType(), bands),
+           "exportImage(): file format does not support requested number of bands (color channels)");
+        if ( !downcast ) 
+        {
+            write_bands( enc, sul, slr, sget, zero );
+        }
+        else 
+        {
+            // convert to unsigned char in the usual way
+            int w = slr.x - sul.x;
+            int h = slr.y - sul.y;
+            
+            typedef vigra::MultiArray<3, T> MArray;
+            MArray array(MArray::difference_type(w, h, bands));
+            
+            mapVectorImageToLowerPixelType(sul, slr, sget, array);
+            
+            write_bands( enc, array, zero );
+        }
+    }    
+} // namespace detail
     
+
     /*!
-      \brief used for writing images of floating point vector type, such as floating point rgb.
+      \brief Deprecated.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
-        Namespace: vigra
-
+        Use \ref exportImage() instead.
+        
         <b> Declaration:</b>
 
         \code
@@ -490,65 +581,18 @@ namespace vigra
                                             const ImageExportInfo & info )
         }
         \endcode
-
-      \param SrcIterator   the image iterator type for the source image
-      \param SrcAccessor   the image accessor type for the source image
-      \param sul           image iterator referencing the upper left pixel of the source image
-      \param slr           image iterator referencing the lower right pixel of the source image
-      \param sget          image accessor for the source image
-      \param info          user supplied image export information
     */
     template < class SrcIterator, class SrcAccessor >
     void exportFloatingVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
     {
-        typedef typename SrcAccessor::value_type AccessorValueType;
-        typedef typename AccessorValueType::value_type SrcValueType;
-
-        std::auto_ptr<Encoder> enc = encoder(info);
-
-        switch(sizeof(SrcValueType)) {
-        case 4:
-            // pixel type is float
-            if ( isPixelTypeSupported( enc->getFileType(), "FLOAT" ) ) {
-                enc->setPixelType( "FLOAT" );
-                write_bands( enc.get(), sul, slr, sget, float() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BRGBImage image(slr-sul);
-                mapVectorImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_bands( enc.get(), image.upperLeft(),
-                             image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        case 8:
-            // pixel type is double
-            if ( isPixelTypeSupported( enc->getFileType(), "DOUBLE" ) ) {
-                enc->setPixelType( "DOUBLE" );
-                write_bands( enc.get(), sul, slr, sget, double() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BRGBImage image(slr-sul);
-                mapVectorImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_bands( enc.get(), image.upperLeft(),
-                             image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        default:
-            vigra_precondition( false, "unsupported floating point size" );
-        }
-
-        // close the encoder
-        enc->close();
+        exportImage(sul, slr, sget, info);
     }
 
     /*!
-      \brief used for writing images of integral vector type, such as integer rgb.
+      \brief Deprecated.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
-        Namespace: vigra
+        Use \ref exportImage() instead.
 
         <b> Declaration:</b>
 
@@ -559,67 +603,18 @@ namespace vigra
                                             const ImageExportInfo & info )
         }
         \endcode
-
-      \param SrcIterator   the image iterator type for the source image
-      \param SrcAccessor   the image accessor type for the source image
-      \param sul           image iterator referencing the upper left pixel of the source image
-      \param slr           image iterator referencing the lower right pixel of the source image
-      \param sget          image accessor for the source image
-      \param info          user supplied image export information
     */
     template < class SrcIterator, class SrcAccessor >
     void exportIntegralVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
     {
-        typedef typename SrcAccessor::value_type AccessorValueType;
-        typedef typename AccessorValueType::value_type SrcValueType;
-
-        std::auto_ptr<Encoder> enc = encoder(info);
-
-        switch(sizeof(SrcValueType)) {
-        case 1:
-            enc->setPixelType( "UINT8" );
-            write_bands( enc.get(), sul, slr, sget, (unsigned char)0 );
-            break;
-        case 2:
-            if ( isPixelTypeSupported( enc->getFileType(), "INT16" ) ) {
-                enc->setPixelType( "INT16" );
-                write_bands( enc.get(), sul, slr, sget, short() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BRGBImage image(slr-sul);
-                mapVectorImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_bands( enc.get(), image.upperLeft(),
-                             image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        case 4:
-            if ( isPixelTypeSupported( enc->getFileType(), "INT32" ) ) {
-                enc->setPixelType( "INT32" );
-                write_bands( enc.get(), sul, slr, sget, int() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BRGBImage image(slr-sul);
-                mapVectorImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_bands( enc.get(), image.upperLeft(),
-                             image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        default:
-            vigra_precondition( false, "unsupported integer size" );
-        }
-
-        // close the encoder
-        enc->close();
+        exportImage(sul, slr, sget, info);
     }
 
     /*!
-      \brief used for writing images of floating point scalar type, such as floating point grayscale.
+      \brief Deprecated.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
-        Namespace: vigra
+        Use \ref exportImage() instead.
 
         <b> Declaration:</b>
 
@@ -630,64 +625,18 @@ namespace vigra
                                             const ImageExportInfo & info )
         }
         \endcode
-
-      \param SrcIterator   the image iterator type for the source image
-      \param SrcAccessor   the image accessor type for the source image
-      \param sul           image iterator referencing the upper left pixel of the source image
-      \param slr           image iterator referencing the lower right pixel of the source image
-      \param sget          image accessor for the source image
-      \param info          user supplied image export information
     */
     template < class SrcIterator, class SrcAccessor >
     void exportFloatingScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
     {
-        typedef typename SrcAccessor::value_type SrcValueType;
-
-        std::auto_ptr<Encoder> enc = encoder(info);
-
-        switch(sizeof(SrcValueType)) {
-        case 4:
-            // pixel type is float
-            if ( isPixelTypeSupported( enc->getFileType(), "FLOAT" ) ) {
-                enc->setPixelType( "FLOAT" );
-                write_band( enc.get(), sul, slr, sget, float() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BImage image(slr-sul);
-                mapScalarImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_band( enc.get(), image.upperLeft(),
-                            image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        case 8:
-            // pixel type is double
-            if ( isPixelTypeSupported( enc->getFileType(), "DOUBLE" ) ) {
-                enc->setPixelType( "DOUBLE" );
-                write_band( enc.get(), sul, slr, sget, double() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BImage image(slr-sul);
-                mapScalarImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_band( enc.get(), image.upperLeft(),
-                            image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        default:
-            vigra_precondition( false, "unsupported floating point size" );
-        }
-
-        // close the encoder
-        enc->close();
+        exportImage(sul, slr, sget, info);
     }
 
     /*!
-      \brief used for writing images of integral scalar type, such as integer grayscale.
+      \brief Deprecated.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
-        Namespace: vigra
+        Use \ref exportImage() instead.
 
         <b> Declaration:</b>
 
@@ -698,127 +647,61 @@ namespace vigra
                                             const ImageExportInfo & info )
         }
         \endcode
-
-      \param SrcIterator   the image iterator type for the source image
-      \param SrcAccessor   the image accessor type for the source image
-      \param sul           image iterator referencing the upper left pixel of the source image
-      \param slr           image iterator referencing the lower right pixel of the source image
-      \param sget          image accessor for the source image
-      \param info          user supplied image export information
     */
     template < class SrcIterator, class SrcAccessor >
     void exportIntegralScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
     {
-        typedef typename SrcAccessor::value_type SrcValueType;
+        exportImage(sul, slr, sget, info);
+    }
 
+    template < class SrcIterator, class SrcAccessor >
+    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                      const ImageExportInfo & info, VigraFalseType /*not scalar */)
+    {
+        typedef typename SrcAccessor::value_type AccessorValueType;
+        typedef typename AccessorValueType::value_type SrcValueType;
+        std::string pixeltype = info.getPixelType();
         std::auto_ptr<Encoder> enc = encoder(info);
-
-        switch(sizeof(SrcValueType)) {
-        case 1:
-            enc->setPixelType( "UINT8" );
-            write_band( enc.get(), sul, slr, sget, (unsigned char)0 );
-            break;
-        case 2:
-            if ( isPixelTypeSupported( enc->getFileType(), "INT16" ) ) {
-                enc->setPixelType( "INT16" );
-                write_band( enc.get(), sul, slr, sget, short() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BImage image(slr-sul);
-                mapScalarImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_band( enc.get(), image.upperLeft(),
-                            image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        case 4:
-            if ( isPixelTypeSupported( enc->getFileType(), "INT32" ) ) {
-                enc->setPixelType( "INT32" );
-                write_band( enc.get(), sul, slr, sget, int() );
-            } else {
-                // convert to unsigned char in the usual way
-                enc->setPixelType( "UINT8" );
-                vigra::BImage image(slr-sul);
-                mapScalarImageToByteImage(sul, slr, sget, image.upperLeft(), image.accessor());
-                write_band( enc.get(), image.upperLeft(),
-                            image.lowerRight(), image.accessor(), (unsigned char)0 );
-            }
-            break;
-        default:
-            vigra_precondition( false, "unsupported integer size" );
-        }
-
-        // close the encoder
+        bool downcast = negotiatePixelType(enc->getFileType(), 
+                        TypeAsString<SrcValueType>::result(), pixeltype);
+        enc->setPixelType(pixeltype);
+        if(pixeltype == "UINT8")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (unsigned char)0);
+        else if(pixeltype == "INT16")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, short());
+        else if(pixeltype == "INT32")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, int());
+        else if(pixeltype == "FLOAT")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, float());
+        else if(pixeltype == "DOUBLE")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, double());
         enc->close();
     }
 
     template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info, VigraFalseType )
-    {
-        exportFloatingVectorImage( sul, slr, sget, info );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info, VigraTrueType )
-    {
-        exportIntegralVectorImage( sul, slr, sget, info );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info )
-    {
-        typedef typename NumericTraits<typename SrcAccessor::value_type>::isIntegral is_integral;
-        exportVectorImage( sul, slr, sget, info, is_integral() );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info, VigraFalseType )
-    {
-        exportFloatingScalarImage( sul, slr, sget, info );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info, VigraTrueType )
-    {
-        exportIntegralScalarImage( sul, slr, sget, info );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                            const ImageExportInfo & info )
-    {
-        typedef typename NumericTraits<typename SrcAccessor::value_type>::isIntegral is_integral;
-        exportScalarImage( sul, slr, sget, info, is_integral() );
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
     void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                      const ImageExportInfo & info, VigraFalseType )
+                      const ImageExportInfo & info, VigraTrueType /*scalar*/ )
     {
-        exportVectorImage( sul, slr, sget, info );
+        typedef typename SrcAccessor::value_type SrcValueType;
+        std::string pixeltype = info.getPixelType();
+        std::auto_ptr<Encoder> enc = encoder(info);
+        bool downcast = negotiatePixelType(enc->getFileType(), 
+                           TypeAsString<SrcValueType>::result(), pixeltype);
+        enc->setPixelType(pixeltype);
+        if(pixeltype == "UINT8")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (unsigned char)0);
+        else if(pixeltype == "INT16")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, short());
+        else if(pixeltype == "INT32")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, int());
+        else if(pixeltype == "FLOAT")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, float());
+        else if(pixeltype == "DOUBLE")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, double());
+        enc->close();
     }
-
-    template < class SrcIterator, class SrcAccessor >
-    inline
-    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                      const ImageExportInfo & info, VigraTrueType )
-    {
-        exportScalarImage( sul, slr, sget, info );
-    }
-
+    
 /********************************************************/
 /*                                                      */
 /*                     exportImage                      */
@@ -827,6 +710,33 @@ namespace vigra
 
 /** \brief Write an image, given an \ref vigra::ImageExportInfo object.
 
+    If the file format to be exported to supports the pixel type of the
+    source image, the pixel type will be kept (e.g. <tt>float</tt>
+    can be stored as TIFF without conversion, in contrast to most other
+    image export toolkits). Otherwise, the pixel values are transformed
+    to the range 0.255 and converted to <tt>unsigned char</tt>. Currently,
+    the following file formats are supported. The pixel types given in 
+    brackets are those that are written without conversion:
+    
+    <DL>
+    <DT>"BMP"<DD> Microsoft Windows bitmap image file (pixel types: UINT8 as gray and RGB).
+    <DT>"GIF"<DD> CompuServe graphics interchange format; 8-bit color (pixel types: UINT8 as gray and RGB).
+    <DT>"JPEG"<DD> Joint Photographic Experts Group JFIF format; compressed 24-bit color 
+                  (pixel types: UINT8 as gray and RGB). (only available if libjpeg is installed)
+    <DT>"PNG"<DD> Portable Network Graphic (pixel types: UINT8 and UINT16 with up to 4 channels). 
+                  (only available if libpng is installed)
+    <DT>"PBM"<DD> Portable bitmap format (black and white).
+    <DT>"PGM"<DD> Portable graymap format (pixel types: UINT8, INT16, INT32 as gray scale)).
+    <DT>"PNM"<DD> Portable anymap (pixel types: UINT8, INT16, INT32 as gray and RGB).
+    <DT>"PPM"<DD> Portable pixmap format (pixel types: UINT8, INT16, INT32 as RGB).
+    <DT>"SUN"<DD> SUN Rasterfile (pixel types: UINT8 as gray and RGB).
+    <DT>"TIFF"<DD> Tagged Image File Format 
+                (pixel types: UINT8, INT16, INT32, FLOAT, DOUBLE with up to 4 channels). 
+                (only available if libtiff is installed.)
+    <DT>"VIFF"<DD> Khoros Visualization image file 
+        (pixel types: UINT8, INT16, INT32, FLOAT, DOUBLE with arbitrary many channels).
+    </DL>
+    
     <b> Declarations:</b>
 
     pass arguments explicitly:
@@ -839,7 +749,7 @@ namespace vigra
     \endcode
 
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor>
@@ -863,28 +773,20 @@ namespace vigra
     vigra::exportImage(srcImageRange(out),
                       vigra::ImageExportInfo("myimage.jpg").setCompression("80"));
 
+
+    // force it to a particular pixel type (the pixel type must be supported by the 
+    // desired image file format, otherwise an \ref vigra::PreconditionViolation exception will be thrown)
+    vigra::exportImage(srcImageRange(out),
+                      vigra::ImageExportInfo("myINT16image.tif").setPixelType("INT16"));
     \endcode
 
     <b> Preconditions:</b>
 
     <UL>
 
-    <LI> the image file must be writable
-    <LI> the file type must be one of
+    <LI> the image file must be writable.
+    <LI> the file type must be one of the supported file types.
 
-            <DL>
-            <DT>"BMP"<DD> Microsoft Windows bitmap image file.
-            <DT>"GIF"<DD> CompuServe graphics interchange format; 8-bit color.
-            <DT>"JPEG"<DD> Joint Photographic Experts Group JFIF format; compressed 24-bit color. (only available if libjpeg is installed)
-            <DT>"PNG"<DD> Portable Network Graphic. (only available if libpng is installed)
-            <DT>"PBM"<DD> Portable bitmap format (black and white).
-            <DT>"PGM"<DD> Portable graymap format (gray scale).
-            <DT>"PNM"<DD> Portable anymap.
-            <DT>"PPM"<DD> Portable pixmap format (color).
-            <DT>"SUN"<DD> SUN Rasterfile.
-            <DT>"TIFF"<DD> Tagged Image File Format. (only available if libtiff is installed.)
-            <DT>"VIFF"<DD> Khoros Visualization image file.
-            </DL>
 
     </UL>
 **/
@@ -894,7 +796,16 @@ namespace vigra
                       const ImageExportInfo & info )
     {
         typedef typename NumericTraits<typename SrcAccessor::value_type>::isScalar is_scalar;
-        exportImage( sul, slr, sget, info, is_scalar() );
+        
+        try
+        {
+            exportImage( sul, slr, sget, info, is_scalar() );
+        }
+        catch(Encoder::TIFFNoLZWException &)
+        {
+            const_cast<ImageExportInfo &>(info).setCompression("");
+            exportImage( sul, slr, sget, info, is_scalar() );
+        }
     }
 
     template < class SrcIterator, class SrcAccessor >

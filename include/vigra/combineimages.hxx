@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -125,7 +125,7 @@ combineThreeLines(SrcIterator1 s1,
     \endcode
     
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -262,7 +262,7 @@ combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1
     \endcode
     
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -408,7 +408,7 @@ combineTwoImagesIf(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
     \endcode
     
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -532,6 +532,9 @@ combineThreeImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
 
 /** Calculate the magnitude from two arguments.
     Can be used in conjunction with \ref gradientBasedTransform().
+    
+    If the gradient is represented by a vector-valued image instead of 
+    a pair of scalar images, use \ref vigra::VectorNormFunctor.
 */
 template <class ValueType>
 class MagnitudeFunctor

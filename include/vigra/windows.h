@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -26,9 +26,16 @@
 // prevent the global namespace to become polluted with 
 // badly named Windows macros
 
-#define NOMINMAX
-#include <windows.h>
-#undef NOMINMAX
-#undef DIFFERENCE
+#ifndef NOMINMAX
+# define NOMINMAX
+# include <windows.h>
+# undef NOMINMAX
+#else
+# include <windows.h>
+#endif
+
+#ifdef DIFFERENCE
+# undef DIFFERENCE
+#endif
 
 #endif /* VIGRA_WINDOWS_H */

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -59,6 +59,10 @@
         <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
         \ref CombineFunctor
         <DD> <em>frequently used binary transformations functors</em>
+    <DT>
+        <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
+        \ref MultiPointoperators
+        <DD> <em>Point operators on multi-dimensional arrays</em>
     </DL>
     
     <b>\#include</b> "<a href="stdimagefunctions_8hxx-source.html">vigra/stdimagefunctions.hxx</a>"<br>

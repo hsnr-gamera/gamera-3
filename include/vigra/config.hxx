@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -19,9 +19,9 @@
 /*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
 /*                                                                      */
 /************************************************************************/
- 
- 
-#ifndef VIGRA_CONFIG_HXX 
+
+
+#ifndef VIGRA_CONFIG_HXX
 #define VIGRA_CONFIG_HXX
 
 #include <stdexcept>
@@ -46,14 +46,14 @@
 		#define NO_INLINE_STATIC_CONST_DEFINITION
 		#define CMATH_NOT_IN_STD
 		#define NO_COVARIANT_RETURN_TYPES
-	    
+
 		#ifdef VIGRA_NO_STD_MINMAX  // activate if necessary
 		namespace std {
-	    
+
 		template<class T>
 		const T& min(const T& x, const T& y)
 		{
-			return (y < x) 
+			return (y < x)
 				? y
 				: x;
 		}
@@ -61,7 +61,7 @@
 		template<class T>
 		const T& max(const T& x, const T& y)
 		{
-			return (x < y) 
+			return (x < y)
 				? y
 				: x;
 		}
@@ -83,24 +83,34 @@
 	    #ifndef CMATH_NOT_IN_STD
                 }
 	    #endif // CMATH_NOT_IN_STD
-        #endif / _MSC_EXTENSIONS
+        #endif // _MSC_EXTENSIONS
     #endif // _MSC_VER < 1310
 
-
+    #define VIGRA_NEED_BIN_STREAMS
 #endif // _MSC_VER
 
 ///////////////////////////////////////////////////////////
 //                                                       //
-//                        egcs 1.1                       //
+//                           gcc                         //
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-#if defined(__GNUC__) 
+#if defined(__GNUC__)
     #if  __GNUC__ < 2 || ((__GNUC__ == 2) && (__GNUC_MINOR__ <= 8))
-        #error "Need at least egcs 1.1 or g++ 2.95"
-    #endif 
+        #error "Need at least g++ 2.95"
+    #endif
     #define HAS_HASH_CONTAINERS
 #endif  // __GNUC__
+
+///////////////////////////////////////////////////////////
+//                                                       //
+//                         MingW                         //
+//                                                       //
+///////////////////////////////////////////////////////////
+
+#if defined(__MINGW32__)
+    #define VIGRA_NEED_BIN_STREAMS
+#endif  // __MINGW32__
 
 ///////////////////////////////////////////////////////////
 //                                                       //
@@ -108,7 +118,7 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-#if defined(__sgi) && !defined(__GNUC__) 
+#if defined(__sgi) && !defined(__GNUC__)
     #if _COMPILER_VERSION < 720
         #error "Need SGI C++ 7.2 or later"
     #endif

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -108,7 +108,7 @@ initLineFunctorIf(DestIterator d, DestIterator dend, DestAccessor dest,
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, class VALUETYPE>
@@ -189,7 +189,7 @@ initImage(triple<ImageIterator, ImageIterator, Accessor> img, VALUETYPE v)
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, class FUNCTOR>
@@ -279,7 +279,7 @@ initImageWithFunctor(triple<ImageIterator, ImageIterator, Accessor> img, FUNCTOR
     }
     \endcode    
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, 
@@ -377,7 +377,7 @@ initImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, class VALUETYPE>

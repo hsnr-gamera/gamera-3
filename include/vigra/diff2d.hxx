@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -45,7 +45,7 @@ class Diff2DConstRowIteratorPolicy
     typedef Diff const *                    pointer;
     typedef std::random_access_iterator_tag iterator_category;
 
-    static void initialize(BaseType & d) {}
+    static void initialize(BaseType &) {}
 
     static reference dereference(BaseType const & d)
         { return d; }
@@ -87,7 +87,7 @@ class Diff2DConstColumnIteratorPolicy
     typedef Diff const *                    pointer;
     typedef std::random_access_iterator_tag iterator_category;
 
-    static void initialize(BaseType & d) {}
+    static void initialize(BaseType & /*d*/) {}
 
     static reference dereference(BaseType const & d)
         { return d; }
@@ -335,9 +335,16 @@ class Diff2D
 
         /** Calculate length of difference vector.
         */
+    int squaredMagnitude() const
+    {
+        return x*x + y*y;
+    }
+
+        /** Calculate length of difference vector.
+        */
     double magnitude() const
     {
-        return VIGRA_CSTD::sqrt((double)(x*x + y*y));
+        return VIGRA_CSTD::sqrt((double)squaredMagnitude());
     }
 
         /** Equality.
@@ -481,18 +488,25 @@ public:
     : Diff2D(v)
     {}
 
-        /** Query the width
+        /** Query the width.
          */
     int width() const
     {
         return x;
     }
 
-        /** Query the height
+        /** Query the height.
          */
     int height() const
     {
         return y;
+    }
+
+        /** Returns width()*height(), the area of a rectangle of this size.
+         */
+    int area() const
+    {
+        return width()*height();
     }
 
         /** Copy Assigment.
@@ -716,6 +730,79 @@ inline Point2D operator+(Size2D const & s, Point2D const & p)
 {
     return Point2D(s.x + p.x, s.y + p.y);
 }
+
+inline Point2D operator*(Point2D l, double r)
+{
+    l *= r;
+    return l;
+}
+
+inline Point2D operator*(double l, Point2D r)
+{
+    r *= l;
+    return r;
+}
+
+inline Size2D operator*(Size2D l, double r)
+{
+    l *= r;
+    return l;
+}
+
+inline Size2D operator*(double l, Size2D r)
+{
+    r *= l;
+    return r;
+}
+
+inline Point2D operator/(Point2D l, double r)
+{
+    l /= r;
+    return l;
+}
+
+inline Size2D operator/(Size2D l, double r)
+{
+    l /= r;
+    return l;
+}
+
+inline Point2D operator*(Point2D l, int r)
+{
+    l *= r;
+    return l;
+}
+
+inline Point2D operator*(int l, Point2D r)
+{
+    r *= l;
+    return r;
+}
+
+inline Size2D operator*(Size2D l, int r)
+{
+    l *= r;
+    return l;
+}
+
+inline Size2D operator*(int l, Size2D r)
+{
+    r *= l;
+    return r;
+}
+
+inline Point2D operator/(Point2D l, int r)
+{
+    l /= r;
+    return l;
+}
+
+inline Size2D operator/(Size2D l, int r)
+{
+    l /= r;
+    return l;
+}
+
 
 /********************************************************/
 /*                                                      */
@@ -1060,7 +1147,7 @@ public:
          * rectangle and the point. If isEmpty returns true, the union
          * will be a rectangle containing only the given point.
          */
-    Rect2D operator|(Point2D const &p)
+    Rect2D operator|(Point2D const &p) const
     {
         Rect2D result(*this);
         result |= p;

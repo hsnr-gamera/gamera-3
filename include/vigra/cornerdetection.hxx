@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -137,7 +137,7 @@ struct BeaudetCornerFunctor
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -295,7 +295,7 @@ void cornerResponseFunction(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -405,9 +405,12 @@ void foerstnerCornerDetector(
 /** \brief Find corners in an image (3).
 
     This algorithm implements yet another structure tensor-based corner detector, 
-    according to [K. Rohr: <em> "Untersuchung von grauwertabh&auml;ngigen 
+    according to [K. Rohr: <em>"Untersuchung von grauwertabh&auml;ngigen 
     Transformationen zur Ermittlung der optischen Flusses in Bildfolgen"</em>, 
-    Diploma thesis, Inst. f&uuml;r Nachrichtensysteme, Univ. Karlsruhe, 1987]. 
+    Diploma thesis, Inst. f&uuml;r Nachrichtensysteme, Univ. Karlsruhe, 1987, see also
+    K. Rohr: <em>"Modelling and Identification of Characteristic Intensity Variations"</em>,
+    Image and Vision Computing 10:2 (1992) 66-76 and K. Rohr: <em>"Localization Properties of 
+    Direct Corner Detectors"</em>, J. of Mathematical Imaging and Vision 4:2 (1994) 139-150]. 
     
     The algorithm first determines the structure tensor at each pixel by calling
     \link CommonConvolutionFilters#structureTensor structureTensor\endlink(). 
@@ -440,7 +443,7 @@ void foerstnerCornerDetector(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -576,7 +579,7 @@ void rohrCornerDetector(
     }
     \endcode
     
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -78,7 +78,7 @@ namespace vigra {
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -282,9 +282,9 @@ template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class EqualityFunctor>
 inline
-int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-               pair<DestIterator, DestAccessor> dest,
-               bool eight_neighbors, EqualityFunctor equal)
+unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                        pair<DestIterator, DestAccessor> dest,
+                        bool eight_neighbors, EqualityFunctor equal)
 {
     return labelImage(src.first, src.second, src.third,
                       dest.first, dest.second, eight_neighbors, equal);
@@ -293,10 +293,10 @@ int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline
-int labelImage(SrcIterator upperlefts,
-               SrcIterator lowerrights, SrcAccessor sa,
-               DestIterator upperleftd, DestAccessor da,
-               bool eight_neighbors)
+unsigned int labelImage(SrcIterator upperlefts,
+                        SrcIterator lowerrights, SrcAccessor sa,
+                        DestIterator upperleftd, DestAccessor da,
+                        bool eight_neighbors)
 {
     return labelImage(upperlefts, lowerrights, sa,
                  upperleftd, da, eight_neighbors,
@@ -306,9 +306,9 @@ int labelImage(SrcIterator upperlefts,
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline
-int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-               pair<DestIterator, DestAccessor> dest,
-               bool eight_neighbors)
+unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                        pair<DestIterator, DestAccessor> dest,
+                        bool eight_neighbors)
 {
     return labelImage(src.first, src.second, src.third,
                  dest.first, dest.second, eight_neighbors,
@@ -364,7 +364,7 @@ int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -435,11 +435,12 @@ int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class ValueType, class EqualityFunctor>
-int labelImageWithBackground(SrcIterator upperlefts,
-               SrcIterator lowerrights, SrcAccessor sa,
-               DestIterator upperleftd, DestAccessor da,
-               bool eight_neighbors,
-               ValueType background_value, EqualityFunctor equal)
+unsigned int labelImageWithBackground(
+    SrcIterator upperlefts,
+    SrcIterator lowerrights, SrcAccessor sa,
+    DestIterator upperleftd, DestAccessor da,
+    bool eight_neighbors,
+    ValueType background_value, EqualityFunctor equal)
 {
     int w = lowerrights.x - upperlefts.x;
     int h = lowerrights.y - upperlefts.y;
@@ -570,10 +571,11 @@ template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class ValueType, class EqualityFunctor>
 inline
-int labelImageWithBackground(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                             pair<DestIterator, DestAccessor> dest,
-                             bool eight_neighbors,
-                             ValueType background_value, EqualityFunctor equal)
+unsigned int labelImageWithBackground(
+    triple<SrcIterator, SrcIterator, SrcAccessor> src,
+    pair<DestIterator, DestAccessor> dest,
+    bool eight_neighbors,
+    ValueType background_value, EqualityFunctor equal)
 {
     return labelImageWithBackground(src.first, src.second, src.third,
                                     dest.first, dest.second,
@@ -584,10 +586,11 @@ template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class ValueType>
 inline
-int labelImageWithBackground(triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                             pair<DestIterator, DestAccessor> dest,
-                             bool eight_neighbors,
-                             ValueType background_value)
+unsigned int labelImageWithBackground(
+    triple<SrcIterator, SrcIterator, SrcAccessor> src,
+    pair<DestIterator, DestAccessor> dest,
+    bool eight_neighbors,
+    ValueType background_value)
 {
     return labelImageWithBackground(src.first, src.second, src.third,
                             dest.first, dest.second,
@@ -599,11 +602,12 @@ template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class ValueType>
 inline
-int labelImageWithBackground(SrcIterator upperlefts,
-               SrcIterator lowerrights, SrcAccessor sa,
-               DestIterator upperleftd, DestAccessor da,
-               bool eight_neighbors,
-               ValueType background_value)
+unsigned int labelImageWithBackground(
+    SrcIterator upperlefts,
+    SrcIterator lowerrights, SrcAccessor sa,
+    DestIterator upperleftd, DestAccessor da,
+    bool eight_neighbors,
+    ValueType background_value)
 {
     return labelImageWithBackground(upperlefts, lowerrights, sa,
                             upperleftd, da,
@@ -657,7 +661,7 @@ int labelImageWithBackground(SrcIterator upperlefts,
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -868,7 +872,7 @@ void regionImageToCrackEdgeImage(
     }
     \endcode
 
-    use argument objects in conjuction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -179,6 +179,11 @@ This class implements the interface of both MultiArray and MultiArrayView.
 By default, MultiArrayViews are tagged as unstrided. I necessary, strided arrays are
 constructed automatically by calls to a variant of the bind...() function.
 
+If you want to apply an algorithm requiring an image to a <tt>MultiArrayView</tt>
+if appropriate shape, you can create a \ref vigra::BasicImageView 
+that acts as a wrapper with the necessary interface -- see
+\ref MultiArrayToImage.
+    
 <b>\#include</b>
 "<a href="multi_array_8hxx-source.html">vigra/multi_array.hxx</a>"
 
@@ -247,14 +252,14 @@ public:
 
 protected:
 
+        /** the shape of the image pointed to is stored here.
+	 */
+    difference_type m_shape;
+
         /** the strides (offset of a sample to the next) for every dimension
             are stored here.
         */
     difference_type m_stride;
-
-        /** the shape of the image pointed to is stored here.
-         */
-    difference_type m_shape;
 
         /** pointer to the image.
          */
@@ -952,17 +957,24 @@ public:
          */
     MultiArray ();
 
+        /** construct with given allocator
+         */
+    MultiArray (allocator_type const & alloc);
+
         /** construct with given shape
          */
-    MultiArray (const difference_type &shape);
+    explicit MultiArray (const difference_type &shape, 
+                         allocator_type const & alloc = allocator_type());
 
         /** construct from shape with an initial value
          */
-    MultiArray (const difference_type &shape, const_reference init);
+    MultiArray (const difference_type &shape, const_reference init, 
+                         allocator_type const & alloc = allocator_type());
 
         /** construct from shape and copy values from the given array
          */
-    MultiArray (const difference_type &shape, const_pointer init);
+    MultiArray (const difference_type &shape, const_pointer init, 
+                         allocator_type const & alloc = allocator_type());
 
         /** copy constructor
          */
@@ -1030,8 +1042,16 @@ MultiArray <N, T, A>::MultiArray ()
 {}
 
 template <unsigned int N, class T, class A>
-MultiArray <N, T, A>::MultiArray (const difference_type &shape)
-    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0)
+MultiArray <N, T, A>::MultiArray (allocator_type const & alloc)
+    : MultiArrayView <N, T> (difference_type (0), difference_type (0), 0),
+      m_alloc(alloc)
+{}
+
+template <unsigned int N, class T, class A>
+MultiArray <N, T, A>::MultiArray (const difference_type &shape, 
+                                  allocator_type const & alloc)
+    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0),
+      m_alloc(alloc)
 {
     if (N == 0)
     {
@@ -1043,8 +1063,10 @@ MultiArray <N, T, A>::MultiArray (const difference_type &shape)
 
 template <unsigned int N, class T, class A>
 MultiArray <N, T, A>::MultiArray (const difference_type &shape,
-                                  const_reference init)
-    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0)
+                                  const_reference init, 
+                                  allocator_type const & alloc)
+    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0),
+      m_alloc(alloc)
 {
     if (N == 0)
     {
@@ -1056,8 +1078,10 @@ MultiArray <N, T, A>::MultiArray (const difference_type &shape,
 
 template <unsigned int N, class T, class A>
 MultiArray <N, T, A>::MultiArray (const difference_type &shape,
-                                  const_pointer init)
-    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0)
+                                  const_pointer init, 
+                                  allocator_type const & alloc)
+    : MultiArrayView <N, T> (shape, detail::defaultStride <actual_dimension> (shape), 0),
+      m_alloc(alloc)
 {
     if (N == 0)
     {
@@ -1161,27 +1185,162 @@ void MultiArray <N, T, A>::deallocate (pointer & ptr, std::size_t s)
     ptr = 0;
 }
 
+
+/********************************************************/
+/*                                                      */
+/*              argument object factories               */
+/*                                                      */
+/********************************************************/
+
+template <unsigned int N, class T, class C>
+inline triple<typename MultiArrayView<N,T,C>::const_traverser,
+		      typename MultiArrayView<N,T,C>::difference_type,
+		      typename AccessorTraits<T>::default_const_accessor >
+srcMultiArrayRange( MultiArrayView<N,T,C> const & array )
+{
+    return triple<typename MultiArrayView<N,T,C>::const_traverser,
+                  typename MultiArrayView<N,T,C>::difference_type,
+                  typename AccessorTraits<T>::default_const_accessor >
+      ( array.traverser_begin(),
+        array.shape(),
+        typename AccessorTraits<T>::default_const_accessor() );
+}
+
+template <unsigned int N, class T, class C, class Accessor>
+inline triple<typename MultiArrayView<N,T,C>::const_traverser,
+		      typename MultiArrayView<N,T,C>::difference_type,
+		      Accessor >
+srcMultiArrayRange( MultiArrayView<N,T,C> const & array, Accessor a )
+{
+    return triple<typename MultiArrayView<N,T,C>::const_traverser,
+                  typename MultiArrayView<N,T,C>::difference_type,
+                  Accessor >
+      ( array.traverser_begin(),
+        array.shape(),
+        a);
+}
+
+template <unsigned int N, class T, class C>
+inline pair<typename MultiArrayView<N,T,C>::const_traverser,
+		    typename AccessorTraits<T>::default_const_accessor >
+srcMultiArray( MultiArrayView<N,T,C> const & array )
+{
+    return pair<typename MultiArrayView<N,T,C>::const_traverser,
+		        typename AccessorTraits<T>::default_const_accessor >
+      ( array.traverser_begin(),
+        typename AccessorTraits<T>::default_const_accessor() );
+}
+
+template <unsigned int N, class T, class C, class Accessor>
+inline pair<typename MultiArrayView<N,T,C>::const_traverser,
+		    Accessor >
+srcMultiArray( MultiArrayView<N,T,C> const & array, Accessor a )
+{
+    return pair<typename MultiArrayView<N,T,C>::const_traverser,
+		        Accessor >
+      ( array.traverser_begin(), a );
+}
+
+template <unsigned int N, class T, class C>
+inline triple<typename MultiArrayView<N,T,C>::traverser,
+	          typename MultiArrayView<N,T,C>::difference_type,
+	          typename AccessorTraits<T>::default_accessor >
+destMultiArrayRange( MultiArrayView<N,T,C> & array )
+{
+    return triple<typename MultiArrayView<N,T,C>::traverser,
+                  typename MultiArrayView<N,T,C>::difference_type,
+                  typename AccessorTraits<T>::default_accessor >
+      ( array.traverser_begin(),
+        array.shape(),
+        typename AccessorTraits<T>::default_accessor() );
+}
+
+template <unsigned int N, class T, class C, class Accessor>
+inline triple<typename MultiArrayView<N,T,C>::traverser,
+	          typename MultiArrayView<N,T,C>::difference_type,
+	          Accessor >
+destMultiArrayRange( MultiArrayView<N,T,C> & array, Accessor a )
+{
+    return triple<typename MultiArrayView<N,T,C>::traverser,
+                  typename MultiArrayView<N,T,C>::difference_type,
+                  Accessor >
+      ( array.traverser_begin(),
+        array.shape(),
+        a );
+}
+
+template <unsigned int N, class T, class C>
+inline pair<typename MultiArrayView<N,T,C>::traverser,
+	        typename AccessorTraits<T>::default_accessor >
+destMultiArray( MultiArrayView<N,T,C> & array )
+{
+    return pair<typename MultiArrayView<N,T,C>::traverser,
+                typename AccessorTraits<T>::default_accessor >
+        ( array.traverser_begin(),
+          typename AccessorTraits<T>::default_accessor() );
+}
+
+template <unsigned int N, class T, class C, class Accessor>
+inline pair<typename MultiArrayView<N,T,C>::traverser,
+	        Accessor >
+destMultiArray( MultiArrayView<N,T,C> & array, Accessor a )
+{
+    return pair<typename MultiArrayView<N,T,C>::traverser,
+                Accessor >
+        ( array.traverser_begin(), a );
+}
+
+/********************************************************/
+/*                                                      */
+/*                  makeBasicImageView                  */
+/*                                                      */
+/********************************************************/
+
+/** \addtogroup MultiArrayToImage Wrap a \ref vigra::MultiArrayView in 
+                                  a \ref vigra::BasicImageView
+*/
+//@{
+/** Create a \ref vigra::BasicImageView from an unstrided 2-dimensional 
+    \ref vigra::MultiArrayView.
+    
+    The \ref vigra::BasicImageView will have the same <tt>value_type </tt>
+    as the original \ref vigra::MultiArrayView.
+*/
 template <class T>
 BasicImageView <T>
-makeBasicImageView (MultiArrayView <2, T, UnstridedArrayTag> &array)
+makeBasicImageView (MultiArrayView <2, T, UnstridedArrayTag> const &array)
 {
     return BasicImageView <T> (array.data (), array.shape (0),
                                array.shape (1));
 }
 
+/** Create a \ref vigra::BasicImageView from a 3-dimensional 
+    \ref vigra::MultiArray.
+    
+    This wrapper flattens the two innermost dimensions of the array 
+    into single rows of the resulting image.
+    The \ref vigra::BasicImageView will have the same <tt>value_type </tt>
+    as the original \ref vigra::MultiArray.
+*/
 template <class T>
 BasicImageView <T>
-makeBasicImageView (MultiArray <3, T> &array)
+makeBasicImageView (MultiArray <3, T> const &array)
 {
-    vigra_precondition (
-        array.shape (0) == 1, "makeBasicImageView(): array.shape(0) must be 1.");
     return BasicImageView <T> (array.data (), 
-                               array.shape (1), array.shape (2));
+                               array.shape (0)*array.shape (1), array.shape (2));
 }
 
+/** Create a \ref vigra::BasicImageView from a 3-dimensional 
+    \ref vigra::MultiArray.
+    
+    This wrapper only works if <tt>T</tt> is a scalar type and the 
+    array's innermost dimension has size 3. It then re-interprets 
+    the data array as a 2-dimensional array with value_type
+    <tt>RGBValue&lt; T &gt;</tt>.
+*/
 template <class T>
 BasicImageView <RGBValue<T> >
-makeRGBImageView (MultiArray<3, T> &array)
+makeRGBImageView (MultiArray<3, T> const &array)
 {
     vigra_precondition (
         array.shape (0) == 3, "makeRGBImageView(): array.shape(0) must be 3.");
@@ -1189,6 +1348,8 @@ makeRGBImageView (MultiArray<3, T> &array)
         reinterpret_cast <RGBValue <T> *> (array.data ()), 
         array.shape (1), array.shape (2));
 }
+
+//@}
 
 } // namespace vigra
 

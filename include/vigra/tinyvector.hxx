@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -28,7 +28,9 @@
 #include <cstdlib>  // abs(int)
 #include <iosfwd>   // ostream
 #include "vigra/config.hxx"
+#include "vigra/error.hxx"
 #include "vigra/numerictraits.hxx"
+#include "vigra/error.hxx"
 
 namespace vigra {
 
@@ -250,7 +252,7 @@ struct UnrollLoop<0>
 };
 
 template <bool PREDICATE>
-struct If
+struct TinyVectorIf
 {
     template <class T, class F>
     struct res
@@ -260,7 +262,7 @@ struct If
 };
 
 template <>
-struct If<false>
+struct TinyVectorIf<false>
 {
     template <class T, class F>
     struct res
@@ -272,7 +274,7 @@ struct If<false>
 template <int SIZE>
 struct LoopType
 {
-    typedef typename If<SIZE < 5>::
+    typedef typename TinyVectorIf<SIZE < 5>::
             template res<UnrollLoop<SIZE>, ExecLoop<SIZE> >::type type;
 };
 
@@ -296,7 +298,7 @@ class TinyVectorView;
 
 /** \brief Base class for fixed size vectors.
 
-    This class contains functionality shared by 
+    This class contains functionality shared by
     \ref TinyVector and \ref TinyVectorBase, and enables these classes
     to be freely mixed within expressions. It is typically not used directly.
 
@@ -311,7 +313,7 @@ class TinyVectorBase
     TinyVectorBase & operator=(TinyVectorBase const & other); // do not use
 
   protected:
-  
+
     typedef typename detail::LoopType<SIZE>::type Loop;
 
     TinyVectorBase()
@@ -357,6 +359,10 @@ class TinyVectorBase
         /** the scalar type for the outer product
         */
     typedef double scalar_multiplier;
+
+        /** the vector's size
+        */
+    enum { static_size = SIZE };
 
         /** Initialize from another sequence (must have length SIZE!)
         */
@@ -455,6 +461,11 @@ class TinyVectorBase
         */
     size_type size() const { return SIZE; }
 
+    pointer data() { return data_; }
+
+    const_pointer data() const { return data_; }
+
+
   protected:
     DATA data_;
 };
@@ -475,6 +486,26 @@ class TinyVectorBase
     VIGRA algorithms typically use \ref vigra::VectorAccessor to access
     TinyVectors as a whole, or specific components of them.
 
+    See also:<br>
+    <DL>
+        <DT>
+            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
+            \ref vigra::TinyVectorBase
+            <DD>
+        <DT>
+            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
+            \ref vigra::TinyVectorView
+            <DD>
+        <DT>
+            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
+            \ref TinyVectorTraits
+            <DD>
+        <DT>
+            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
+            \ref TinyVectorOperators
+            <DD>
+    </DL>
+    
     <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
     Namespace: vigra
 **/
@@ -503,7 +534,7 @@ class TinyVector
     explicit TinyVector(value_type const & initial)
     : BaseType()
     {
-        Loop::assignScalar(begin(), initial);
+        Loop::assignScalar(BaseType::begin(), initial);
     }
 
         /** Construction with explicit values.
@@ -512,8 +543,8 @@ class TinyVector
     TinyVector(value_type const & i1, value_type const & i2)
     : BaseType()
     {
-        data_[0] = i1;
-        data_[1] = i2;
+        BaseType::data_[0] = i1;
+        BaseType::data_[1] = i2;
     }
 
         /** Construction with explicit values.
@@ -522,9 +553,9 @@ class TinyVector
     TinyVector(value_type const & i1, value_type const & i2, value_type const & i3)
     : BaseType()
     {
-        data_[0] = i1;
-        data_[1] = i2;
-        data_[2] = i3;
+        BaseType::data_[0] = i1;
+        BaseType::data_[1] = i2;
+        BaseType::data_[2] = i3;
     }
 
         /** Construction with explicit values.
@@ -534,10 +565,10 @@ class TinyVector
                value_type const & i3, value_type const & i4)
     : BaseType()
     {
-        data_[0] = i1;
-        data_[1] = i2;
-        data_[2] = i3;
-        data_[3] = i4;
+        BaseType::data_[0] = i1;
+        BaseType::data_[1] = i2;
+        BaseType::data_[2] = i3;
+        BaseType::data_[3] = i4;
     }
 
        /** Default constructor (initializes all components with zero)
@@ -545,7 +576,7 @@ class TinyVector
     TinyVector()
     : BaseType()
     {
-        Loop::assignScalar(data_, NumericTraits<value_type>::zero());
+        Loop::assignScalar(BaseType::data_, NumericTraits<value_type>::zero());
     }
 
         /** Copy constructor.
@@ -553,14 +584,14 @@ class TinyVector
     TinyVector(TinyVector const & r)
     : BaseType()
     {
-        Loop::assign(data_, r.data_);
+        Loop::assign(BaseType::data_, r.data_);
     }
 
         /** Copy assignment.
         */
     TinyVector & operator=(TinyVector const & r)
     {
-        Loop::assign(data_, r.data_);
+        Loop::assign(BaseType::data_, r.data_);
         return *this;
     }
 
@@ -570,7 +601,7 @@ class TinyVector
     TinyVector(TinyVectorBase<U, SIZE, DATA, DERIVED> const & r)
     : BaseType()
     {
-		Loop::assignCast(data_, r.begin());
+        Loop::assignCast(BaseType::data_, r.begin());
     }
 
         /** Copy assignment with type conversion.
@@ -578,7 +609,7 @@ class TinyVector
     template <class U, class DATA, class DERIVED>
     TinyVector & operator=(TinyVectorBase<U, SIZE, DATA, DERIVED> const & r)
     {
-		Loop::assignCast(data_, r.begin());
+        Loop::assignCast(BaseType::data_, r.begin());
         return *this;
     }
 
@@ -605,6 +636,14 @@ class TinyVector
     VIGRA algorithms typically use \ref vigra::VectorAccessor to access
     TinyVectorViews as a whole, or specific components of them.
 
+    <b>See also:</b>
+    <ul>
+        <li> \ref vigra::TinyVectorBase
+        <li> \ref vigra::TinyVector
+        <li> \ref TinyVectorTraits
+        <li> \ref TinyVectorOperators
+    </ul>
+    
     <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
     Namespace: vigra
 **/
@@ -628,13 +667,13 @@ class TinyVectorView
     typedef typename BaseType::difference_type difference_type;
     typedef typename BaseType::scalar_multiplier scalar_multiplier;
 
-        /** Default constructor 
+        /** Default constructor
             (pointer to wrapped data is NULL).
         */
     TinyVectorView()
     : BaseType()
     {
-        data_ = 0;
+        BaseType::data_ = 0;
     }
 
         /** Construct view for given data array
@@ -642,7 +681,7 @@ class TinyVectorView
     TinyVectorView(const_pointer data)
     : BaseType()
     {
-        data_ = const_cast<pointer>(data);
+        BaseType::data_ = const_cast<pointer>(data);
     }
 
         /** Copy constructor (shallow copy).
@@ -650,7 +689,7 @@ class TinyVectorView
     TinyVectorView(TinyVectorView const & other)
     : BaseType()
     {
-        data_ = const_cast<pointer>(other.data_);
+        BaseType::data_ = const_cast<pointer>(other.data_);
     }
 
         /** Construct view from other TinyVector.
@@ -659,14 +698,14 @@ class TinyVectorView
     TinyVectorView(TinyVectorBase<T, SIZE, DATA, DERIVED> const & other)
     : BaseType()
     {
-        data_ = const_cast<pointer>(other.data_);
+        BaseType::data_ = const_cast<pointer>(other.data());
     }
 
         /** Copy the data (not the pointer) of the rhs.
         */
    TinyVectorView & operator=(TinyVectorView const & r)
     {
-        Loop::assign(data_, r.begin());
+        Loop::assign(BaseType::data_, r.begin());
         return *this;
     }
 
@@ -675,11 +714,10 @@ class TinyVectorView
     template <class U, class DATA, class DERIVED>
     TinyVectorView & operator=(TinyVectorBase<U, SIZE, DATA, DERIVED> const & r)
     {
-        Loop::assignCast(data_, r.begin());
+        Loop::assignCast(BaseType::data_, r.begin());
         return *this;
     }
 };
-
 
 } // namespace vigra
 
@@ -700,8 +738,8 @@ operator<<(std::ostream & out, vigra::TinyVectorBase<V1, SIZE, DATA, DERIVED> co
     out << "(";
     int i;
     for(i=0; i<SIZE-1; ++i)
-        out << vigra::NumericTraits<V1>::Promote(l[i]) << ", ";
-    out << vigra::NumericTraits<V1>::Promote(l[i]) << ")";
+        out << l[i] << ", ";
+    out << l[i] << ")";
     return out;
 }
 
@@ -740,7 +778,8 @@ inline bool
 operator!=(TinyVectorBase<V1, SIZE, D1, D2> const & l,
            TinyVectorBase<V2, SIZE, D3, D4> const & r)
 {
-    return detail::LoopType<SIZE>::type::notEqual(l.begin(), r.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    return ltype::notEqual(l.begin(), r.begin());
 }
 
 //@}
@@ -796,10 +835,13 @@ struct NumericTraits<TinyVector<T, SIZE> >
     typedef TinyVector<T, SIZE> Type;
     typedef TinyVector<typename NumericTraits<T>::Promote, SIZE> Promote;
     typedef TinyVector<typename NumericTraits<T>::RealPromote, SIZE> RealPromote;
-
+    typedef TinyVector<typename NumericTraits<T>::ComplexPromote, SIZE> ComplexPromote;
+    typedef T ValueType; 
+    
     typedef typename NumericTraits<T>::isIntegral isIntegral;
     typedef VigraFalseType isScalar;
     typedef VigraFalseType isOrdered;
+    typedef VigraFalseType isComplex; 
 
     static TinyVector<T, SIZE> zero() {
         return TinyVector<T, SIZE>(NumericTraits<T>::zero());
@@ -828,7 +870,8 @@ struct NumericTraits<TinyVector<T, SIZE> >
     fromPromote(TinyVectorBase<typename NumericTraits<T>::Promote, SIZE, D1, D2> const & v)
     {
         TinyVector<T, SIZE> res(detail::dontInit());
-        detail::LoopType<SIZE>::type::fromPromote(res.begin(), v.begin());
+        typedef typename detail::LoopType<SIZE>::type ltype;
+        ltype::fromPromote(res.begin(), v.begin());
         return res;
     }
 
@@ -837,7 +880,8 @@ struct NumericTraits<TinyVector<T, SIZE> >
     fromRealPromote(TinyVectorBase<typename NumericTraits<T>::RealPromote, SIZE, D1, D2> const & v)
     {
         TinyVector<T, SIZE> res(detail::dontInit());
-        detail::LoopType<SIZE>::type::fromRealPromote(res.begin(), v.begin());
+        typedef typename detail::LoopType<SIZE>::type ltype;
+        ltype::fromRealPromote(res.begin(), v.begin());
         return res;
     }
 };
@@ -849,10 +893,13 @@ struct NumericTraits<TinyVectorView<T, SIZE> >
     typedef TinyVector<T, SIZE> Type;
     typedef TinyVector<typename NumericTraits<T>::Promote, SIZE> Promote;
     typedef TinyVector<typename NumericTraits<T>::RealPromote, SIZE> RealPromote;
+    typedef TinyVector<typename NumericTraits<T>::ComplexPromote, SIZE> ComplexPromote;
+    typedef T ValueType; 
 
     typedef typename NumericTraits<T>::isIntegral isIntegral;
     typedef VigraFalseType isScalar;
     typedef VigraFalseType isOrdered;
+    typedef VigraFalseType isComplex; 
 };
 
 template <class T1, class T2, int SIZE>
@@ -913,9 +960,12 @@ struct NumericTraits<TinyVector<T, SIZE> >\
     typedef TinyVector<T, SIZE> Type;\
     typedef TinyVector<NumericTraits<T>::Promote, SIZE> Promote;\
     typedef TinyVector<NumericTraits<T>::RealPromote, SIZE> RealPromote;\
+    typedef TinyVector<NumericTraits<T>::ComplexPromote, SIZE> ComplexPromote;\
+    typedef T ValueType; \
     typedef NumericTraits<T>::isIntegral isIntegral;\
     typedef VigraFalseType isScalar;\
     typedef VigraFalseType isOrdered;\
+    typedef VigraFalseType isComplex;\
     \
     static TinyVector<T, SIZE> zero() { \
         return TinyVector<T, SIZE>(NumericTraits<T>::zero()); \
@@ -1087,7 +1137,8 @@ TinyVector<V, SIZE>
 operator-(TinyVectorBase<V, SIZE, D1, D2> const & v)
 {
     TinyVector<V, SIZE> res(detail::dontInit());
-    detail::LoopType<SIZE>::type::neg(res.begin(), v.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    ltype::neg(res.begin(), v.begin());
     return res;
 }
 
@@ -1098,7 +1149,8 @@ TinyVector<V, SIZE>
 abs(TinyVectorBase<V, SIZE, D1, D2> const & v)
 {
     TinyVector<V, SIZE> res(detail::dontInit());
-    detail::LoopType<SIZE>::type::abs(res.begin(), v.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    ltype::abs(res.begin(), v.begin());
     return res;
 }
 
@@ -1110,7 +1162,8 @@ TinyVector<V, SIZE>
 ceil(TinyVectorBase<V, SIZE, D1, D2> const & v)
 {
     TinyVector<V, SIZE> res(detail::dontInit());
-    detail::LoopType<SIZE>::type::ceil(res.begin(), v.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    ltype::ceil(res.begin(), v.begin());
     return res;
 }
 
@@ -1122,7 +1175,8 @@ TinyVector<V, SIZE>
 floor(TinyVectorBase<V, SIZE, D1, D2> const & v)
 {
     TinyVector<V, SIZE> res(detail::dontInit());
-    detail::LoopType<SIZE>::type::floor(res.begin(), v.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    ltype::floor(res.begin(), v.begin());
     return res;
 }
 
@@ -1133,7 +1187,8 @@ typename PromoteTraits<V1, V2>::Promote
 dot(TinyVectorBase<V1, SIZE, D1, D2> const & l,
     TinyVectorBase<V2, SIZE, D3, D4> const & r)
 {
-    return detail::LoopType<SIZE>::type::dot(l.begin(), r.begin());
+    typedef typename detail::LoopType<SIZE>::type ltype;
+    return ltype::dot(l.begin(), r.begin());
 }
 
 //@}

@@ -4,7 +4,7 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.2.0, Aug 07 2003 )                                    */
+/*    ( Version 1.3.0, Sep 10 2004 )                                    */
 /*    You may use, modify, and distribute this software according       */
 /*    to the terms stated in the LICENSE file included in               */
 /*    the VIGRA distribution.                                           */
@@ -28,7 +28,7 @@
 namespace vigra { namespace detail {
 
 template <class T>
-void destroy_n(T * p, int n, VigraTrueType /* isPOD */)
+void destroy_n(T * /* p */, int /* n */, VigraTrueType /* isPOD */)
 {
 }
 
@@ -48,6 +48,9 @@ void destroy_n(T * p, int n)
 
 /********************************************************************/
 
+// g++ 2.95 has std::destroy() in the STL
+#if !defined(__GNUC__) ||  __GNUC__ >= 3
+
 template <class T>
 void destroy(T * p, VigraTrueType /* isPOD */)
 {
@@ -64,6 +67,18 @@ void destroy(T * p)
 {
     destroy(p, typename TypeTraits<T>::isPOD());
 }
+
+#else
+
+} } // namespace vigra::detail
+
+#include <memory>
+
+namespace vigra { namespace detail {
+
+using std::destroy;
+
+#endif
 
 } } // namespace vigra::detail
 

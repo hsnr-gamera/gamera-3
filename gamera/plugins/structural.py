@@ -48,12 +48,28 @@ class polar_match(PluginFunction):
     return_type = Int("check")
     args = Args([Float('r1'), Float('q1'), Float('r2'), Float('q2')])
 
+class least_squares_fit(PluginFunction):
+    """Performs a least squares fit on a given list of points.
+
+The result is a tuple of the form (*m*, *b*, *q*) where *m* is the slope of the line,
+*b* is the *y*-offset, and *q* is the gamma fit of the line to the points.  (This
+assumes the same statistical significance for all points.
+
+See Numerical Recipes in C, section 15.2__ for more information.
+
+.. __: http://www.library.cornell.edu/nr/bookcpdf/c15-2.pdf
+"""
+    self_type = None
+    return_type = Class("a_b_q")
+    args = Args([PointVector("points")])
+
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]
     category = "Relational"
     functions = [polar_distance, polar_match,
                  bounding_box_grouping_function,
-                 shaped_grouping_function]
+                 shaped_grouping_function,
+                 least_squares_fit]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
@@ -61,3 +77,4 @@ module = RelationalModule()
 
 bounding_box_grouping_function = bounding_box_grouping_function()
 shaped_grouping_function = shaped_grouping_function()
+least_squares_fit = least_squares_fit()

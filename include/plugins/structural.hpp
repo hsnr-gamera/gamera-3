@@ -156,5 +156,148 @@ namespace Gamera {
       q = std::min(q, fabs((M_PI - q2) - q1));
     return (q < ANGULAR_THRESHOLD && (distance1 / distance2) < DISTANCE_THRESHOLD);
   }
+
+#define ITMAX 100
+#define EPS 3.0e-7
+#define FPMIN 1.0e-30
+  
+  // From Numerical Recipes in C
+  double gammln(const double xx) {
+    static double cof[6] = {76.18009172947146,-86.50532032941677,
+			    24.01409824083091,-1.231739572450155,
+			    0.1208650973866179e-2,-0.5395239384953e-5};
+    double x, y;
+    x = y = xx;
+    double tmp = x + 5.5;
+    tmp -= (x + 0.5) * log(tmp);
+    double ser = 1.000000000190015;
+    for (size_t i = 0; i < 6; ++i) {
+      y += 1.0;
+      ser += cof[i] / y;
+    }
+    return -tmp / log(2.5066282746310005 * ser / x);
+  }
+
+  // From Numerical Recipes in C
+  void gser(const double a, const double x, double& gamser, double& gln) {
+    gln = gammln(a);
+    if (x < 0.0)
+      throw std::range_error("x less than 0.0 in argument to gser");
+    else if (x == 0) {
+      gamser = 0.0;
+      return;
+    }
+
+    double ap = a;
+    double delta, sum;
+    delta = sum = 1.0 / a;
+    for (size_t i = 0; i < ITMAX; ++i) {
+      ap += 1;
+      delta *= x / ap;
+      sum += delta;
+      if (fabs(delta) < fabs(sum) * EPS) {
+	gamser = sum * exp(-x + a * log(x) - gln);
+	return;
+      }
+    }
+    throw std::range_error("a too large to compute in gser.");
+  }
+
+  // From Numerical Recipes in C
+  void gcf(const double a, const double x, double& gammcf, double& gln) {
+    gln = gammln(a);
+    double b, c, d, h;
+    b = x + 1.0 - a;
+    c = 1.0 / FPMIN;
+    h = d = 1.0 / b;
+    double i = 1;
+    for (; i <= ITMAX; ++i) {
+      double an = -i * (i - a);
+      b += 2.0;
+      d = an * d + b;
+      if (fabs(d) < FPMIN)
+	d = FPMIN;
+      c = b + an / c;
+      if (fabs(c) < FPMIN)
+	c = FPMIN;
+      d = 1.0 / d;
+      double delta = d * c;
+      h *= delta;
+      if (fabs(delta - 1.0) < EPS)
+	break;
+    }
+    if (i > ITMAX)
+      throw std::runtime_error("a too large in gcf.");
+    try {
+      gammcf = exp(-x + a * log(x) - gln) * h;
+    } catch (std::overflow_error) {
+      gammcf = std::numeric_limits<double>::max();
+    }
+  }
+  
+  // From Numerical Recipes in C
+  double gammq(const double a, const double x) {
+    double gamser, gln;
+    if (x < 0.0 || a <= 0.0)
+      throw std::range_error("Invalid arguments to gammq.");
+    if (x < a + 1.0) {
+      gser(a, x, gamser, gln);
+      return 1.0 - gamser;
+    } else {
+      gcf(a, x, gamser, gln);
+      return gamser;
+    }
+  }
+
+  // From Numerical Recipes in C
+  void least_squares_fit(const PointVector& points, double& a, double& b, double& q) {
+    if (points.size() == 1) {
+      a = 0.0;
+      b = points[0].x();
+      q = 1.0;
+      return;
+    }
+    
+    double sx, sy, st2, sxoss, chi2;
+    sx = sy = st2 = a = b = chi2 = 0.0;
+  
+    for (PointVector::const_iterator i = points.begin(); i != points.end(); ++i) {
+      sx += double((*i).x());
+      sy += double((*i).y());
+    }
+
+    sxoss = sx / points.size();
+
+    for (PointVector::const_iterator i = points.begin(); i != points.end(); ++i) {
+      double t = double((*i).x()) - sxoss;
+      st2 += t * t;
+      b += t * double((*i).y());
+    }
+  
+    b /= st2;
+    a = (sy - sx * b) / points.size();
+  
+    for (PointVector::const_iterator i = points.begin(); i != points.end(); ++i) {
+      double tmp = (double((*i).y()) - a - b * double((*i).x()));
+      chi2 += tmp * tmp;
+    }
+
+    q = 1.0;
+    
+    if (points.size() >= 3) {
+      try {
+	q = gammq(0.5 * (points.size() - 2), 0.5 * chi2);
+      } catch (std::exception) {
+	;
+      }
+    }
+  }
+
+  PyObject* least_squares_fit(const PointVector* points) {
+    double a, b, q;
+    least_squares_fit(*points, a, b, q);
+    return Py_BuildValue("fff", b, a, q);
+  }
+  
 }
 #endif

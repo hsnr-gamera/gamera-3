@@ -91,12 +91,19 @@ class splity_bottom(splity_base):
     __call__ = staticmethod(__call__)
 splity_bottom = splity_bottom()
 
+class spann_wilson(PluginFunction):
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int('quad_tree_level', range=(2, 20), default=2),
+                 Int('histogram_window_size', range=(0, 30), default=15),
+                 Choice('method', ['mean', 'median'])])
+spann_wilson = spann_wilson()
+
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
     functions = [cc_analysis, cc_and_cluster, splitx, splity, splitx_left, splitx_right,
-                 splity_top, splity_bottom]
+                 splity_top, splity_bottom, spann_wilson]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -117,8 +117,6 @@ namespace Gamera {
   template<class T>
   FloatVector* moments(T &m) {
     FloatVector* _output = new FloatVector(9);
-    // This is just for convenience below
-    FloatVector& output = *_output;
 
     size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
       m01 = 0, m02 = 0, m30 = 0, m03 = 0;
@@ -133,6 +131,8 @@ namespace Gamera {
     y = (feature_t)m01 / m00;
     y2 = 2 * y * y;
 
+    // This is just for convenience below
+    FloatVector& output = *_output;
     output[0] = x / m.ncols(); // normalized center of gravity [0,1] 
     output[1] = y / m.nrows(); // normalized center of gravity [0,1] 
   
@@ -253,7 +253,7 @@ namespace Gamera {
     // volume(dilated) - volume(original) / volume(original).  This
     // prevents the unnecessary xor_image pixel-by-pixel operation from
     // happening.  We still need to create a copy to dilate, however,
-    // since we don't want to touch the original.
+    // since we don't want to change the original.
     feature_t vol = volume0(image);
     feature_t result;
     if (vol == 0)
@@ -384,13 +384,14 @@ namespace Gamera {
     for (size_t i = 0; i < 26; ++i)
       (*moments)[i] = 0.0;
 
+    typename T::const_vec_iterator it = image.vec_begin();
     for (size_t y = 0; y < image.nrows(); ++y)
-      for (size_t x = 0; x < image.ncols(); ++x) {
+      for (size_t x = 0; x < image.ncols(); ++x, ++it) {
 	y_dist = (y - y_0) / scale;
 	x_dist = (x - x_0) / scale;
-	if (is_black(image.get(y, x))) {
+	if (is_black(*it)) {
 	  for (size_t n = 1; n < 14; ++n) { 
-	    size_t idx = (n-1) * 2;
+	    size_t idx = (n - 1) * 2;
 	    zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
 	    (*moments)[idx] += real_tmp;
 	    (*moments)[idx + 1] += (-imag_tmp);
@@ -415,9 +416,10 @@ namespace Gamera {
       std::fill(features->begin() + 3, features->end(), 1.0);
       return features;
     }
+
     typedef typename ImageFactory<T>::view_type* view_type;
     view_type skel = thin_lc(image);
-    bool p[8];
+    unsigned char p;
     size_t T_joints = 0, X_joints = 0, bend_points = 0;
     size_t end_points = 0, total_pixels = 0;
     size_t center_x = 0, center_y = 0;
@@ -429,18 +431,24 @@ namespace Gamera {
 	  center_y += y;
 	  size_t N, S;
 	  thin_zs_get(y, x, *skel, p, N, S);
-		  if (N == 4) // T-joint
+	  switch (N) {
+	  case 4:
 	    ++X_joints;
-	  else if (N == 3)    // X-joint
+	    break;
+	  case 3:
 	    ++T_joints;
-	  else if (N == 2) {  // Possibly a bend point
-	    if (!((p[0] && p[4]) || // Crosswise pairs
-		  (p[1] && p[5]) ||
-		  (p[2] && p[6]) ||
-		  (p[3] && p[7]))) 
+	    break;
+	  case 2:
+	    if (!(((p & 17) == 17) || // Crosswise pairs
+		  ((p & 34) == 34) ||
+		  ((p & 68) == 68) ||
+		  ((p & 136) == 136))) 
 	      ++bend_points;
-	  } else if (N == 1)
+	    break;
+	  case 1:
 	    ++end_points;
+	    break;
+	  }
 	}
       }
     }
@@ -448,6 +456,7 @@ namespace Gamera {
       FloatVector* features = new FloatVector(6, 0.0);
       return features;
     }
+
     center_x /= total_pixels;
     size_t x_axis_crossings = 0;
     bool last_pixel = false;

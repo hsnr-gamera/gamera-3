@@ -441,6 +441,53 @@ namespace Gamera {
     return splits;
   }
 
+  template<class T>
+  void pyramid_aver2(T& in, T& out) {
+    for (size_t y = 0; y < in.nrows(); y += 2)
+      for (size_t x = 0; x < in.ncols(); x += 2) {
+	typename T::value_type sum;
+	sum += in.get(y, x);
+	sum += in.get(y + 1, x);
+	sum += in.get(y, x + 1);
+	sum += in.get(y + 1, x + 1);
+	out.set(y << 1, x << 1, sum / 4);
+      }
+  }
+
+  template<class T>
+  void spann_wilson(T& image, size_t n, size_t m, size_t method) {
+    if (n <= 2)
+      throw std::range_error("Quad tree depth must be at least (2 <= n < inf)");
+    if (m < 0 || m > 127)
+      throw std::range_error("Histogram size out of range (0 < n < 127)");
+    if (method < 0 || method > 1)
+      throw std::range_error("Method must be 0 (mean) or 1 (median)");
+
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* out_data = new data_type(in.size(), in.offset_y(), in.offset_x());
+    view_type* out_view = new view_type(*out_data);
+    std::vector<data_type*> pyr_data(n - 1);
+    std::vector<view_type*> pyr_view(n - 1);
+    pyr_data[0] = new data_type(in.size(), in.offset_y(), in.offset_x());
+    pyr_view[0] = new view_type(*(pyr_data[0]));
+    image_copy_fill(image, *(pyr_view[0]));
+    size_t nrows = image.nrows();
+    size_t ncols = image.ncols();
+    for (size_t i = 1; i < n - 1; ++i) {
+      nrows /= 2;
+      ncols /= 2;
+      pyr_data[i] = new data_type(Size(nrows, ncols), in.offset_y(), in.offset_x());
+      pyr_view[i] = new view_type(*(pyr_data[i]));
+      pyramid_aver2(pyr_view[i-1], pyr_view[i]);
+    }
+      
+    
+    delete pyr_data;
+    delete pyr_view;
+    return out_view;
+  }
+
 }
 
 #endif

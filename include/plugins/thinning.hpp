@@ -45,43 +45,43 @@ namespace Gamera {
   */
 
   template<class T>
-  void thin_zs_get(size_t y, size_t x, T& image, bool* p, size_t& N, size_t& S) {
+  void thin_zs_get(size_t y, size_t x, const T& image, unsigned char& p,
+		   size_t& N, size_t& S) {
     size_t y_before = (y == 0) ? 1 : y - 1;
     size_t x_before = (x == 0) ? 1 : x - 1;
     size_t y_after = (y == image.nrows() - 1) ? image.nrows() - 2 : y + 1;
     size_t x_after = (x == image.ncols() - 1) ? image.ncols() - 2 : x + 1;
-    p[0] = (is_black(image.get(y_before, x)));
-    p[1] = (is_black(image.get(y_before, x_after)));
-    p[2] = (is_black(image.get(y, x_after)));
-    p[3] = (is_black(image.get(y_after, x_after)));
-    p[4] = (is_black(image.get(y_after, x)));
-    p[5] = (is_black(image.get(y_after, x_before)));
-    p[6] = (is_black(image.get(y, x_before)));
-    p[7] = (is_black(image.get(y_before, x_before)));
+    p = (is_black(image.get(y_before, x))) |
+      (is_black(image.get(y_before, x_after)) << 1) |
+      (is_black(image.get(y, x_after)) << 2) |
+      (is_black(image.get(y_after, x_after)) << 3) |
+      (is_black(image.get(y_after, x)) << 4) |
+      (is_black(image.get(y_after, x_before)) << 5) |
+      (is_black(image.get(y, x_before)) << 6) |
+      (is_black(image.get(y_before, x_before)) << 7);
     N = 0;
     S = 0;
-    bool prev = p[7];
-    for (size_t i = 0; i < 8; i++) {
-      if (p[i]) {
+    bool prev = p & (1 << 7);
+    for (unsigned char p_copy = p; p_copy; p_copy >>= 1) {
+      if (p_copy & 1) {
 	++N;
-	if (!prev)
-	  ++S;
+	S += !prev;
       }
-      prev = p[i];
+      prev = p_copy & 1;
     }
   }
 
   template<class T>
-  void thin_zs_flag_bp1(T& thin, T& flag) {
-    bool p[8];
+  void thin_zs_flag_bp1(const T& thin, T& flag) {
+    unsigned char p;
     size_t N, S;
     for (size_t y = 0; y < thin.nrows(); ++y)
       for (size_t x = 0; x < thin.ncols(); ++x) {
 	thin_zs_get(y, x, thin, p, N, S);
 	if ((N <= 6) && (N >= 2) &&
 	    (S == 1) &&
-	    !(p[0] && p[2] && p[4]) &&
-	    !(p[2] && p[4] && p[6]))
+	    !((p & 21) == 21) && // 00010101
+	    !((p & 84) == 84))   // 01010100
 	  flag.set(y, x, black(flag));
 	else
 	  flag.set(y, x, white(flag));
@@ -89,16 +89,16 @@ namespace Gamera {
   }
   
   template<class T>
-  void thin_zs_flag_bp2(T& thin, T& flag) {
-    bool p[8];
+  void thin_zs_flag_bp2(const T& thin, T& flag) {
+    unsigned char p;
     size_t N, S;
     for (size_t y = 0; y < thin.nrows(); ++y)
       for (size_t x = 0; x < thin.ncols(); ++x) {
 	thin_zs_get(y, x, thin, p, N, S);
 	if ((N <= 6) && (N >= 2) &&
 	    (S == 1) &&
-	    !(p[0] && p[2] && p[6]) &&
-	    !(p[0] && p[4] && p[6]))
+	    !((p & 69) == 69) && // 01000101
+	    !((p & 81) == 81))   // 01010001
 	  flag.set(y, x, black(flag));
 	else
 	  flag.set(y, x, white(flag));
@@ -106,14 +106,14 @@ namespace Gamera {
   }
     
   template<class T>
-  bool thin_zs_del_fbp(T& thin, T& flag) {
+  bool thin_zs_del_fbp(T& thin, const T& flag) {
     bool deleted = false;
-    for (size_t y = 0; y < thin.nrows(); ++y) 
-      for (size_t x = 0; x < thin.ncols(); ++x) {
-	if ((is_black(flag.get(y, x))) && (is_black(thin.get(y, x)))) {
-	  thin.set(y, x, white(thin));
-	  deleted = true;
-	}
+    typename T::vec_iterator thin_it = thin.vec_begin();
+    typename T::const_vec_iterator flag_it = flag.vec_begin();
+    for (; thin_it != thin.vec_end(); ++thin_it, ++flag_it)
+      if (is_black(*flag_it) && is_black(*thin_it)) {
+	(*thin_it) = white(thin);
+	deleted = true;
       }
     return deleted;
   }
@@ -186,50 +186,51 @@ namespace Gamera {
      {{true, true,   false}, {true,   false,   false}, {  false,   false,   false}}};/*K8*/
 
   template<class T>
-  void thin_hs_diff_image(T& in, T& other) {
-    bool temp;
-    for (size_t r = 0; r < in.nrows(); ++r)
-      for (size_t c = 0; c < in.ncols(); ++c) {
-	temp = is_black(in.get(r, c)) ^ is_black(other.get(r, c));
-	if (temp) 
-	  in.set(r, c, black(in));
-        else
-	  in.set(r, c, white(in));
-      }
+  void thin_hs_diff_image(T& in, const T& other) {
+    typename T::vec_iterator in_it = in.vec_begin();
+    typename T::const_vec_iterator other_it = other.vec_begin();
+    for (; in_it != in.vec_end(); ++in_it, ++other_it) {
+      if (is_black(*in_it) ^ is_black(*other_it)) 
+	*in_it = black(in);
+      else
+	*in_it = white(in);
+    }
   }
 
   template<class T>
-  bool thin_hs_hit_and_miss(T& in, T& H_M, size_t j, size_t k) {
+  bool thin_hs_hit_and_miss(const T& in, T& H_M, size_t j, size_t k) {
     bool hit_flag, miss_flag, flag;
-    Rect rect(0, 0, in.nrows(), in.ncols());
+    size_t nrows = in.nrows() - 1;
+    size_t ncols = in.ncols() - 1;
 
     /* HIT operation */
     flag = true;
+    typename T::vec_iterator H_M_it = H_M.vec_begin();
     for (size_t r = 0; r < in.nrows(); ++r)
-      for (size_t c = 0; c < in.ncols(); ++c) {
+      for (size_t c = 0; c < in.ncols(); ++c, ++H_M_it) {
 	hit_flag = true;
-	for (size_t l = 0; l < 3; ++l) 
-	  for (size_t m = 0; m < 3; ++m) {
+	const size_t l_start = r == 0;
+	const size_t l_end = 3 - (r == nrows);
+	const size_t m_start = c == 0;
+	const size_t m_end = 3 - (c == ncols);
+	for (size_t l = l_start; l < l_end; ++l) 
+	  for (size_t m = m_start; m < m_end; ++m)
 	    if (thin_hs_elements[j][l][m] &&
-		rect.contains_point(Point(c + m - 1, r + l - 1)))
-	      if (is_white(in.get(r + l - 1, c + m - 1)))
-		hit_flag = false;
-	  }
+		is_white(in.get(r + l - 1, c + m - 1)))
+	      hit_flag = false;
 
 	miss_flag = true;
-	for (size_t l = 0; l < 3; ++l) 
-	  for (size_t m = 0; m < 3; ++m) {
+	for (size_t l = l_start; l < l_end; ++l) 
+	  for (size_t m = m_start; m < m_end; ++m)
 	    if (thin_hs_elements[k][l][m] &&
-		rect.contains_point(Point(c + m - 1, r + l - 1)))
-	      if (is_black(in.get(r + l - 1, c + m - 1)))
-		miss_flag = false;
-	  }
+		is_black(in.get(r + l - 1, c + m - 1)))
+	      miss_flag = false;
 	
 	if (hit_flag && miss_flag) {
-	  H_M.set(r, c, black(H_M));
+	  *H_M_it = black(H_M);
 	  flag = false; 
 	} else
-	  H_M.set(r, c, white(H_M));
+	  *H_M_it = white(H_M);
       }
 
     return flag;
@@ -237,7 +238,6 @@ namespace Gamera {
 
   template<class T>
   bool thin_hs_one_pass(T& in, T& H_M) {
-
     bool update_flag = false;
     for (size_t i = 0; i < 8; ++i) {
       size_t j = i * 2;
@@ -263,9 +263,8 @@ namespace Gamera {
     data_type* H_M_data = new data_type(in.size(), in.offset_y(), in.offset_x());
     view_type* H_M_view = new view_type(*H_M_data);
     bool not_finished = true;
-    while (not_finished) {
+    while (not_finished)
       not_finished = thin_hs_one_pass(*thin_view, *H_M_view);
-    }
     delete H_M_view;
     delete H_M_data;
     return thin_view;
@@ -276,7 +275,8 @@ namespace Gamera {
      
   BASED on code in Xite.
   
-  This version takes much less memory (only requires two buffers vs. five).
+  This version takes much less memory (only requires two buffers vs. five) than
+  the Xite implementation.
 
   &[1]H.-J. Lee and B. Chen,
   "Recognition of handwritten chinese characters via short
@@ -289,22 +289,22 @@ namespace Gamera {
   */
 
 static bool thin_lc_look_up[16][16]= 
-  {{true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true}, /* 0 */ 
-   {true, true, true, true, false, true, false, false, true, true, true, true, true, false, true, true}, /* 1 */ 
-   {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true}, /* 2 */ 
-   {true, true, true, true, false, false, false, false, true, true, true, true, true, false, true, true}, /* 3 */ 
-   {true, false, true, false, true, true, true, false, true, true, true, true, true, false, true, false}, /* 4 */ 
-   {false, true, true, false, true, true, false, true, false, false, true, false, false, true, false, true}, /* 5 */ 
-   {true, false, true, false, true, false, true, false, true, true, true, true, true, false, true, false}, /* 6 */ 
-   {true, false, true, false, false, true, false, true, true, false, true, false, true, true, true, true}, /* 7 */ 
-   {true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true}, /* 8 */ 
-   {true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, true}, /* 9 */ 
-   {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true}, /* A */ 
-   {true, true, true, true, true, false, true, false, true, true, true, true, true, false, true, false}, /* B */ 
-   {true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, true}, /* C */
-   {false, false, true, false, false, true, false, true, false, false, true, false, false, true, false, true}, /* D */ 
-   {true, true, true, true, true, false, true, true, true, true, true, true, true, false, true, false}, /* E */ 
-   {true, true, true, true, false, true, false, true, true, true, true, false, true, true, false, true}};/* F */
+  {{false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 0 */ 
+   {false, false, false, false, true, false, true, true, false, false, false, false, false, true, false, false}, /* 1 */ 
+   {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* 2 */ 
+   {false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false}, /* 3 */ 
+   {false, true, false, true, false, false, false, true, false, false, false, false, false, true, false, true}, /* 4 */ 
+   {true, false, false, true, false, false, true, false, true, true, false, true, true, false, true, false}, /* 5 */ 
+   {false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, true}, /* 6 */ 
+   {false, true, false, true, true, false, true, false, false, true, false, true, false, false, false, false}, /* 7 */ 
+   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 8 */ 
+   {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false}, /* 9 */ 
+   {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* A */ 
+   {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true}, /* B */ 
+   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* C */
+   {true, true, false, true, true, false, true, false, true, true, false, true, true, false, true, false}, /* D */ 
+   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, true}, /* E */ 
+   {false, false, false, false, true, false, true, false, false, false, false, true, false, false, true, false}};/* F */
 
   template<class T>
   typename ImageFactory<T>::view_type* thin_lc(const T& in) {
@@ -315,25 +315,26 @@ static bool thin_lc_look_up[16][16]=
       image_copy_fill(in, *thin_view);
       return thin_view;
     }
-    for (size_t y = 0; y < thin_view->nrows(); ++y)
-      for (size_t x = 0; x < thin_view->ncols(); ++x) {
-	if (is_black(thin_view->get(y, x))) {
+    size_t nrows = thin_view->nrows();
+    size_t ncols = thin_view->ncols();
+    typename view_type::vec_iterator it = thin_view->vec_begin();
+    for (size_t y = 0; y < nrows; ++y)
+      for (size_t x = 0; x < ncols; ++x, ++it) {
+	if (is_black(*it)) {
 	  size_t y_before = (y == 0) ? 1 : y - 1;
 	  size_t x_before = (x == 0) ? 1 : x - 1;
-	  size_t y_after = (y == thin_view->nrows() - 1) ? thin_view->nrows() - 2 : y + 1;
-	  size_t x_after = (x == thin_view->ncols() - 1) ? thin_view->ncols() - 2 : x + 1;
-	  size_t j = 0;
-	  j += (is_black(thin_view->get(y_before, x))) << 0;
-	  j += (is_black(thin_view->get(y_before, x_after))) << 1;
-	  j += (is_black(thin_view->get(y, x_after))) << 2;
-	  j += (is_black(thin_view->get(y_after, x_after))) << 3;
-	  size_t i = 0;
-	  i += (is_black(thin_view->get(y_after, x))) << 0;
-	  i += (is_black(thin_view->get(y_after, x_before))) << 1;
-	  i += (is_black(thin_view->get(y, x_before))) << 2;
-	  i += (is_black(thin_view->get(y_before, x_before))) << 3;
-	  if (!thin_lc_look_up[i][j])
-	    thin_view->set(y, x, white(*thin_view));
+	  size_t y_after = (y == nrows - 1) ? nrows - 2 : y + 1;
+	  size_t x_after = (x == ncols - 1) ? ncols - 2 : x + 1;
+	  size_t j = ((is_black(thin_view->get(y_before, x))) |
+		      (is_black(thin_view->get(y_before, x_after)) << 1) |
+		      (is_black(thin_view->get(y, x_after)) << 2) |
+		      (is_black(thin_view->get(y_after, x_after)) << 3));
+	  size_t i = ((is_black(thin_view->get(y_after, x))) |
+		      (is_black(thin_view->get(y_after, x_before)) << 1) |
+		      (is_black(thin_view->get(y, x_before)) << 2) |
+		      (is_black(thin_view->get(y_before, x_before)) << 3));
+	  if (thin_lc_look_up[i][j])
+	    *it = white(*thin_view);
 	}
       }
     return thin_view;

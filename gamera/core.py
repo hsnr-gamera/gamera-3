@@ -22,7 +22,7 @@ import sys, os, types, os.path, inspect, pydoc     # Python standard library
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
-# from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 from enums import ALL
 # import the storage types
 from gameracore import DENSE, RLE

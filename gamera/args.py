@@ -32,42 +32,42 @@ import util, paths          # Gamera specific
 # This is a "self-generating" dialog box
 
 if _has_gui == _WX_GUI:
-   class _guiArgs(wxPython.wx.wxDialog):
+   class _guiArgs:
       def _create_controls(self, locals):
          # Controls
          self.gs = wxPython.wx.wxFlexGridSizer(len(self.list), 2, 10, 10)
          self.controls = []
          for item in self.list:
-            self.gs.Add(wxPython.wx.wxStaticText(self, -1, item.name),
+            self.gs.Add(wxPython.wx.wxStaticText(self.window, -1, item.name),
                         0,
                         (wxPython.wx.wxEXPAND|
                          wxPython.wx.wxALIGN_CENTER_VERTICAL|
                          wxPython.wx.wxALIGN_LEFT))
-            control = item.get_control(self, locals)
+            control = item.get_control(self.window, locals)
             self.controls.append(control)
-            self.gs.Add(control,
+            self.gs.Add(control.control,
                         0,
                         (wxPython.wx.wxEXPAND|
                          wxPython.wx.wxALIGN_CENTER_VERTICAL|
                          wxPython.wx.wxALIGN_RIGHT))
          # Add some empties at the bottom for padding
          for i in range(2):
-            self.gs.Add(wxPython.wx.wxPanel(self, -1))
+            self.gs.Add(wxPython.wx.wxPanel(self.window, -1))
          self.gs.AddGrowableCol(1)
 
       def _create_buttons(self):
          # Buttons
          buttons = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
-         ok = wxPython.wx.wxButton(self, wxPython.wx.wxID_OK, "OK")
+         ok = wxPython.wx.wxButton(self.window, wxPython.wx.wxID_OK, "OK")
          ok.SetDefault()
          buttons.Add(ok, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 5)
-         buttons.Add(wxPython.wx.wxButton(self,
+         buttons.Add(wxPython.wx.wxButton(self.window,
                                           wxPython.wx.wxID_CANCEL,
                                           "Cancel"),
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
                      5)
-         help = wxPython.wx.wxButton(self, 300, "Help")
+         help = wxPython.wx.wxButton(self.window, 300, "Help")
          buttons.Add(help,
                      1,
                      wxPython.wx.wxEXPAND|wxPython.wx.wxALL,
@@ -78,7 +78,7 @@ if _has_gui == _WX_GUI:
       def _create_wizard_buttons(self):
          # Buttons
          buttons = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
-         buttons.Add(wxPython.wx.wxButton(self,
+         buttons.Add(wxPython.wx.wxButton(self.window,
                                           wxPython.wx.wxID_CANCEL,
                                           "< Back"),
                      1,
@@ -96,14 +96,14 @@ if _has_gui == _WX_GUI:
 
       # generates the dialog box
       def setup(self, parent, locals, wizard=0):
-         wxPython.wx.wxDialog.__init__(self, parent, -1, self.name,
-                                       style=wxPython.wx.wxRESIZE_BORDER)
-         self.SetAutoLayout(wxPython.wx.true)
+         self.window = wxPython.wx.wxDialog(parent, -1, self.name,
+                                            style=wxPython.wx.wxRESIZE_BORDER)
+         self.window.SetAutoLayout(wxPython.wx.true)
          if wizard:
             bigbox = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
             from gamera.gui import gamera_icons
             bmp = gamera_icons.getGameraWizardBitmap()
-            bitmap = wxPython.wx.wxStaticBitmap(self, -1, bmp)
+            bitmap = wxPython.wx.wxStaticBitmap(self.window, -1, bmp)
             bigbox.Add(bitmap, 0, wxPython.wx.wxALIGN_TOP)
          self.box = wxPython.wx.wxBoxSizer(wxPython.wx.wxVERTICAL)
          self.border = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
@@ -114,7 +114,7 @@ if _has_gui == _WX_GUI:
             buttons = self._create_buttons()
          # Put it all together
          if self.title != None:
-            static_text = wxPython.wx.wxStaticText(self, -1, self.title)
+            static_text = wxPython.wx.wxStaticText(self.window, -1, self.title)
             font = wxPython.wx.wxFont(12,
                                       wxPython.wx.wxSWISS,
                                       wxPython.wx.wxNORMAL,
@@ -137,19 +137,19 @@ if _has_gui == _WX_GUI:
             self.border.Add(bigbox, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 10)
          else:
             self.border.Add(self.box, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 15)
-         self.border.Fit(self)
-         self.SetSizer(self.border)
-         size = self.GetSize()
-         self.SetSize((max(400, size[0]), max(200, size[1])))
-         self.Centre()
+         self.border.Fit(self.window)
+         self.window.SetSizer(self.border)
+         size = self.window.GetSize()
+         self.window.SetSize((max(400, size[0]), max(200, size[1])))
+         self.window.Centre()
 
       def show(self, parent, locals, function=None, wizard=0):
          self.wizard = wizard
          if function != None:
             self.function = function
          self.setup(parent, locals, wizard=wizard)
-         result = wxPython.wx.wxDialog.ShowModal(self)
-         self.Destroy()
+         result = wxPython.wx.wxDialog.ShowModal(self.window)
+         self.window.Destroy()
          if result == wxPython.wx.wxID_CANCEL:
             return None
          elif self.function == None:
@@ -231,16 +231,16 @@ class Arg:
    
 # Integer
 if _has_gui == _WX_GUI:
-   class _guiInt(wxPython.wx.wxSpinCtrl):
+   class _guiInt:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxSpinCtrl.__init__(self, parent, -1,
-                                         value=str(self.default),
-                             min=self.rng[0], max=self.rng[1],
-                             initial=self.default)
+         self.control = wxPython.wx.wxSpinCtrl(parent, -1,
+                                               value=str(self.default),
+                                               min=self.rng[0], max=self.rng[1],
+                                               initial=self.default)
          return self
 
       def get(self):
-         return self.GetValue()
+         return self.control.GetValue()
 else:
    class _guiInt:
       pass
@@ -315,15 +315,15 @@ if _has_gui == _WX_GUI:
       def TransferFromWindow(self):
          return wxPython.wx.true
 
-   class _guiReal(wxPython.wx.wxTextCtrl):
+   class _guiReal:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxTextCtrl.__init__(
-            self, parent, -1, str(self.default),
+         self.control = wxPython.wx.wxTextCtrl(
+            parent, -1, str(self.default),
             validator=_RealValidator(name=self.name, range=self.rng))
          return self
 
       def get(self):
-         return self.GetValue()
+         return self.control.GetValue()
 else:
    class _guiReal:
       pass
@@ -345,13 +345,13 @@ Float = Real
 
 # String
 if _has_gui == _WX_GUI:
-   class _guiString(wxPython.wx.wxTextCtrl):
+   class _guiString:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxTextCtrl.__init__(self, parent, -1, str(self.default))
+         self.control = wxPython.wx.wxTextCtrl(parent, -1, str(self.default))
          return self
 
       def get(self):
-         return "'" + self.GetString() + "'"
+         return "'" + self.control.GetString() + "'"
 else:
    class _guiString:
       pass
@@ -363,7 +363,7 @@ class String(_guiString, Arg):
 
 # Class (a drop-down list of instances of a given class in a given namespace)
 if _has_gui == _WX_GUI:
-   class _guiClass(wxPython.wx.wxChoice):
+   class _guiClass:
       def determine_choices(self, locals):
          if self.klass is None:
             choices = locals.keys()
@@ -380,13 +380,13 @@ if _has_gui == _WX_GUI:
       def get_control(self, parent, locals=None):
          if type(self.klass) == type(''):
             self.klass = eval(self.klass)
-         wxPython.wx.wxChoice.__init__(
-            self, parent, -1, choices = self.determine_choices(locals))
+         self.control = wxPython.wx.wxChoice(
+            parent, -1, choices = self.determine_choices(locals))
          return self
 
       def get(self):
-         if self.Number() > 0:
-            return self.GetStringSelection()
+         if self.control.Number() > 0:
+            return self.control.GetStringSelection()
          else:
             return 'None'
 else:
@@ -439,7 +439,7 @@ class ImageType(_guiImage, Arg):
 
 # Choice
 if _has_gui == _WX_GUI:
-   class _guiChoice(wxPython.wx.wxChoice):
+   class _guiChoice:
       def get_control(self, parent, locals=None):
          choices = []
          for choice in self.choices:
@@ -447,16 +447,16 @@ if _has_gui == _WX_GUI:
                choices.append(choice[0])
             else:
                choices.append(choice)
-         wxPython.wx.wxChoice.__init__(self, parent, -1, choices=choices)
+         self.control = wxPython.wx.wxChoice(parent, -1, choices=choices)
          if self.default < 0:
             self.default = len(choices) + self.default
          if self.default >= 0 and self.default < len(self.choices):
-            self.SetSelection(self.default)
+            self.control.SetSelection(self.default)
          return self
 
       def get(self):
          if self.Number() > 0:
-            selection = self.GetSelection()
+            selection = self.control.GetSelection()
             if (len(self.choices[selection]) == 2 and
                 type(self.choices[selection]) != type('')):
                return self.choices[selection][1]
@@ -476,9 +476,9 @@ class Choice(_guiChoice, Arg):
 
 # Filename
 if _has_gui == _WX_GUI:
-   class _guiFilename(wxPython.wx.wxBoxSizer):
+   class _guiFilename:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxBoxSizer.__init__(self, wxPython.wx.wxHORIZONTAL)
+         self.control = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
          self.text = wxPython.wx.wxTextCtrl(parent,
                                             -1,
                                             str(self.default),
@@ -491,11 +491,11 @@ if _has_gui == _WX_GUI:
          return self
 
       def get(self):
-         text = self.text.GetValue()
+         text = self.control.text.GetValue()
          if text == "":
             return "None"
          else:
-            return "'" + self.text.GetValue() + "'"
+            return "'" + self.control.text.GetValue() + "'"
 else:
    class _guiFilename:
       pass
@@ -540,13 +540,13 @@ else:
 
 # Radio Buttons
 if _has_gui == _WX_GUI:
-   class _guiRadio(wxPython.wx.wxRadioButton):
+   class _guiRadio:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxRadioButton.__init__(self, parent, -1, self.radio_button)
+         self.control = wxPython.wx.wxRadioButton(parent, -1, self.radio_button)
          return self
 
       def get(self):
-         return self.GetValue()
+         return self.control.GetValue()
 else:
    class _guiRadio:
       pass
@@ -558,14 +558,14 @@ class Radio(_guiRadio, Arg):
 
 # Check Buttons
 if _has_gui == _WX_GUI:
-   class _guiCheck(wxPython.wx.wxCheckBox):
+   class _guiCheck:
       def get_control(self, parent, locals=None):
-         wxPython.wx.wxCheckBox.__init__(self, parent, -1, self.check_box)
+         self.control = wxPython.wx.wxCheckBox(parent, -1, self.check_box)
          self.SetValue(self.default)
          return self
 
       def get(self):
-         return self.GetValue()
+         return self.controlGetValue()
 else:
    class _guiCheck:
       pass

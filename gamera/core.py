@@ -75,7 +75,7 @@ class ImageBase:
   Categories may be nested using '/' (i.e. "General/Specific")"""
       methods = cls._methods
       if not func is None:
-         func = new.instancemethod(func, None, Image)
+         func = new.instancemethod(func, None, gameracore.Image)
          setattr(cls, plug.__name__, func)
          if not category is None:
             for type in plug.self_type.pixel_types:
@@ -144,9 +144,9 @@ feedback for the user."""
          list.append(val)
      return list
 
-   def size_mbytes(self):
-      return self.data.mbytes
-   size_mbytes = property(size_mbytes)
+   def load_image(filename=None):
+      return load_image(filename)
+   load_image = staticmethod(load_image)
 
    def memory_size(self):
       return util.pretty_print_bytes(self.data.bytes)
@@ -154,9 +154,6 @@ feedback for the user."""
 
    def set_display(self, _display):
       self._display = _display
-
-   def set_resolution(self, v):
-      self.m.resolution(v)
 
    def display(self):
       "Displays the image in its own window."

@@ -138,7 +138,7 @@ def generate_plugin(plugin_filename):
       [[elif isinstance(x, Float)]]
         double [[x.name + '_arg']];
         [[exec pyarg_format = pyarg_format + 'd']]
-      [[elif isinstance(x, String)]]
+      [[elif isinstance(x, String) or isinstance(x, FileSave) or isinstance(x, FileOpen)]]
         char* [[x.name + '_arg']];
         [[exec pyarg_format = pyarg_format + 's']]
       [[elif isinstance(x, ImageType) or isinstance(x, Class)]]

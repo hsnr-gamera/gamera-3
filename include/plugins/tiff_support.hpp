@@ -174,6 +174,120 @@ namespace {
     _TIFFfree(buf);
     TIFFClose(tif);
   }
+
+    template<class Pixel>
+  struct tiff_saver {
+
+  };
+
+  /*
+    FIXME - this assumes that the only little endian machine is i386
+  */
+  template<>
+  struct tiff_saver<OneBitPixel> {
+    template<class T>
+    void operator()(const T& matrix, TIFF* tif) {
+      TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+      if (!buf)
+	throw std::runtime_error("Error allocating scanline");
+      TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISWHITE);
+      std::bitset<32> bits;
+      unsigned long* data = (unsigned long *)buf;
+      typename T::const_vec_iterator it = matrix.vec_begin();
+      for (size_t i = 0; i < matrix.nrows(); i++) {
+	size_t bit_index = 0, k = 32;
+	for (size_t j = 0; j < matrix.ncols(); j++, k--, it++) {
+	  if (is_black(*it))
+	    bits[k] = 1;
+	  else
+	    bits[k] = 0;
+	  if (k == 0) {
+	    data[bit_index] = bits.to_ulong();
+            #if defined(__i386__)
+	    byte_swap32((unsigned char *)&data[bit_index]);
+            #endif
+	    bit_index++;
+	    k = 32;
+	  }
+	}
+	// The last 32 pixels need to be saved, even if they are not full
+	if (k != 32) {
+	  data[bit_index] = bits.to_ulong();
+          #if defined(__i386__)
+	  byte_swap32((unsigned char *)&data[bit_index]);
+          #endif
+	}
+	TIFFWriteScanline(tif, buf, i);
+      }
+      _TIFFfree(buf);
+    }
+  };
+
+  template<>
+  struct tiff_saver<GreyScalePixel> {
+    template<class T>
+    void operator()(const T& matrix, TIFF* tif) {
+      TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+      if (!buf)
+	throw std::runtime_error("Error allocating scanline");
+      typename T::value_type pix;
+      unsigned char* data = (unsigned char *)buf;
+      for (size_t i = 0; i < matrix.nrows(); i++) {
+	for (size_t j = 0; j < matrix.ncols(); j++) {
+	  pix = matrix[i][j];
+	  data[j] = (unsigned char)pix;
+	}
+	TIFFWriteScanline(tif, buf, i);
+      }
+      _TIFFfree(buf);
+    }
+  };
+
+  template<>
+  struct tiff_saver<Grey16Pixel> {
+    template<class T>
+    void operator()(const T& matrix, TIFF* tif) {
+      TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+      if (!buf)
+	throw std::runtime_error("Error allocating scanline");
+      typename T::value_type pix;
+      unsigned short* data = (unsigned short *)buf;
+      for (size_t i = 0; i < matrix.nrows(); i++) {
+	for (size_t j = 0; j < matrix.ncols(); j++) {
+	  pix = matrix[i][j];
+	  data[j] = (unsigned short)pix;
+	}
+	TIFFWriteScanline(tif, buf, i);
+      }
+      _TIFFfree(buf);
+    }
+  };
+
+  template<>
+  struct tiff_saver<RGBPixel> {
+    template<class T>
+    void operator()(const T& matrix, TIFF* tif) {
+      TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+      if (!buf)
+	throw std::runtime_error("Error allocating scanline");
+      typename T::value_type pix;
+      unsigned char* data = (unsigned char *)buf;
+      for (size_t i = 0; i < matrix.nrows(); i++) {
+	for (size_t j = 0, k = 0; j < matrix.ncols(); j++) {
+	  pix = matrix[i][j];
+	  data[k++] = pix.red();
+	  data[k++] = pix.green();
+	  data[k++] = pix.blue();
+	}
+	TIFFWriteScanline(tif, buf, i);
+      }
+      _TIFFfree(buf);
+    }
+  };
 }
 
 Image* load_tiff(const char* filename, int storage) {
@@ -224,5 +338,25 @@ Image* load_tiff(const char* filename, int storage) {
   delete info;
 }
 
+template<class T>
+void save_tiff(const T& matrix, const char* filename) {
+  TIFF* tif = 0;
+  tif = TIFFOpen(filename, "w");
+  if (tif == 0)
+    throw std::invalid_argument("Failed to create image.");
 
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, matrix.ncols());
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, matrix.nrows());
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, matrix.depth());
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, matrix.resolution());
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, matrix.resolution());
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, matrix.ncolors());
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+
+
+  tiff_saver<typename T::value_type> saver;
+  saver(matrix, tif);
+	
+  TIFFClose(tif);
+}
 #endif

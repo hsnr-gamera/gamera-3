@@ -37,12 +37,16 @@ class load_tiff(PluginFunction):
     __call__ = staticmethod(__call__)
 load_tiff = load_tiff()
 
+class save_tiff(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
+    args = Args([FileOpen("image_file_name", "image.tiff", "*.tiff;*.tif")])
+    return_type = None
+save_tiff = save_tiff()
+
 class TiffSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["tiff_support.hpp"]
-    cpp_include_dirs = ["include/libtiff"]
-    library_dirs = ["include/libtiff"]
-    functions = [tiff_info, load_tiff]
+    functions = [tiff_info, load_tiff, save_tiff]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     extra_libraries = ["tiff", "jpeg", "z"]

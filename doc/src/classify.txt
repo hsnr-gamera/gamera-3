@@ -56,6 +56,11 @@ are:
      Noninteractive *k* nearest neighbor classifier.  The weights of
      the dimensions can be optimised using a genetic algorithm.
 
+     For a user-friendly way to perform GA optimization, consider the Biollante_
+     tool in the Gamera GUI.
+
+.. _Biollante: gui.html#classifier-optimization-biollante
+
 
 Classifying images without a classifier
 ---------------------------------------
@@ -144,11 +149,10 @@ bool *perform_splits* = ``True``)
 Creates a new classifier instance.
 
 *database*
-        Any images in
-	the list that were manually classified (have
+        Any images in the list that were manually classified (have
 	classification_state == MANUAL) will be used as training data
-        for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
-        classified images will be ignored.
+	for the classifier.  Any UNCLASSIFIED or AUTOMATICALLY
+	classified images will be ignored.
 
 	When initializing a noninteractive classifier, the database
 	*must* be non-empty.
@@ -214,12 +218,13 @@ Classifies a list of glyphs and sets the classification_state and
 id_name of each glyph.  (If you don't want it set, use
 guess_glyph_automatic_.)
 
-Returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of
-glyphs that were created by classifying any glyphs as a split (See
-Initialization_).  *remove* is a list of glyphs that are no longer valid due
-to reclassifying glyphs from a split to something else.  Most
-often, both of these lists will be empty.  You will normally want to
-use these lists to update the collection of glyphs on the current
+The list *glyphs* is never modified by the function.  Instead, it
+returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list
+of glyphs that were created by classifying any glyphs as a split (See
+Initialization_).  *remove* is a list of glyphs that are no longer
+valid due to reclassifying glyphs from a split to something else.
+Most often, both of these lists will be empty.  You will normally want
+to use these lists to update the collection of glyphs on the current
 page.  If you just want a new list returned with these updates already
 made, use classify_and_update_list_automatic_.
 
@@ -287,10 +292,12 @@ together if doing so results in a higher global confidence.  Each part
 of a joined glyph is classified as HEURISTIC with the prefix
 ``_group``.
 
-Returns a 2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of
-glyphs that were created by classifying any glyphs as a split (See
+The list *glyphs* is never modified.  Instead, the function returns a
+2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of glyphs
+that were created by classifying any glyphs as a split (See
 Initialization_) or grouping.  *remove* is a list of glyphs that are
-no longer valid due to reclassifying glyphs from a split to something else.  
+no longer valid due to reclassifying glyphs from a split to something
+else.
 
 *glyphs*
   The list of glyphs to group and classify.
@@ -543,6 +550,11 @@ classifier API.  It adds some methods of its own.
 - The weights of the features can be optimized using a genetic
   algorithm.  (See start_optimizing_).
 
+  For a user-friendly way to perform GA optimization, consider the Biollante_
+  tool in the Gamera GUI.
+
+.. _Biollante: gui.html#classifier-optimization-biollante
+
 - The training data can be serialized to a classifier-specific binary file
   format.  This format saves and loads much faster than the Gamera XML
   file format.
@@ -594,12 +606,17 @@ leave_one_out_ algorithm.  The vectors that perform well are
 allowed to reproduce to producing offspring using combination at a
 randomly chosen split point.
 
+For a user-friendly way to perform GA optimization, consider the Biollante_
+tool in the Gamera GUI.
+
+.. _Biollante: gui.html#classifier-optimization-biollante
+
 ``stop_optimizing``
 ```````````````````
 
 **stop_optimizing** ()
 
-Stops the background optimzation thread.
+Stops the background optimization thread.
 
 ``add_optimization_callback``
 `````````````````````````````

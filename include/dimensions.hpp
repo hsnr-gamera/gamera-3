@@ -21,6 +21,7 @@
 #define kwm11162001_dimensions_hpp
 
 #include <vector>
+#include <iostream>
 
 /*
  * This file contains the basic geometric types for Gamera. On one hand it is
@@ -438,6 +439,20 @@ namespace Gamera {
 	return cy - other_cy;
       else
 	return other_cy - cy;
+    }
+    double distance_bb(const self& other) {
+      double min_y = (double)std::min
+	(std::min(abs((long)ul_y() - (long)other.ul_y()),
+		  abs((long)ul_y() - (long)other.lr_y())),
+	 std::min(abs((long)lr_y() - (long)other.ul_y()),
+		  abs((long)lr_y() - (long)other.lr_y())));
+      double min_x = (double)std::min
+	(std::min(abs((long)ul_x() - (long)other.ul_x()),
+		  abs((long)ul_x() - (long)other.lr_x())),
+	 std::min(abs((long)lr_x() - (long)other.ul_x()),
+		  abs((long)lr_x() - (long)other.lr_x())));
+      
+      return std::sqrt(min_y*min_y + min_x*min_x);
     }
   private:
     double euclid(coord_t x1, coord_t y1, coord_t x2, coord_t y2) {

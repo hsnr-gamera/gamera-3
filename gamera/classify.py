@@ -20,6 +20,7 @@
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 import re
+import sys
 from fudge import Fudge
 from gamera.gui import has_gui
 
@@ -528,4 +529,27 @@ of strings, naming the feature functions to be used."""
    def set_display(self, display):
       self._display = display
 
+########################################
+# GROUPING UTILITIES
 
+class BasicGroupingFunction:
+   def __init__(self, threshold):
+      self._threshold = threshold
+
+   def __call__(self, a, b):
+      return Fudge(a, self._threshold).intersects(b)
+
+def average_bb_distance(ccs):
+   """Calculates the average distance between the bounding boxes
+in the given list of ccs."""
+   average = 0
+   for i, cc in enumerate(ccs):
+      minimum = None
+      for j in range(i + 1, len(ccs)):
+         distance = cc.distance_bb(ccs[j])
+         if distance < minimum or minimum is None:
+            minimum = distance
+      if not minimum is None:
+         average += minimum
+   average /= float(len(ccs))
+   return average

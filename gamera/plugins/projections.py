@@ -20,6 +20,7 @@
 from gamera.plugin import *
 from gamera.gui import has_gui
 import _projections
+import math
 
 class projection_rows(PluginFunction):
     """Compute the horizontal projections of an image.  This computes the
@@ -72,7 +73,7 @@ in the following example:
 
    # called twice with a single angle as input
    proj1 = img.projection_skewed_cols(0.5)
-   proj1 = img.projection_skewed_cols(1.0)
+   proj2 = img.projection_skewed_cols(1.0)
    
    # the same result with one function call
    projlist = img.projection_skewed_cols([0.5,1.0])
@@ -122,12 +123,150 @@ this method to small angles.
     __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 15)]
 
+class skew_angle_projections(PluginFunction):
+    """Estimates the skew angle of a document with the aid of skewed
+projections (see Ha, Bunke: 'Image Processing Methods for Document Image
+Analysis' in 'Handbook of Character Recognition and Document Image Analysis'
+edited by Bunke and Wang, World Scientific 1997). The returned angle can
+be used as input for rotateShear_ to remove the image skew.
+
+This method works for a wide range of documents (text, music, forms), but
+can become slow for large images. This particular implementation can be
+accelerated by reducing the number of black pixels in the image, eg. by
+scaling it down, only considering a fraction of the image or by removing
+'uninteresting' pixels.
+
+Arguments:
+
+*minangle*, *maxangle* (optional):
+  angle interval that is searched for the skew angle;
+  default values are -2.5 and +2.5
+
+*accuracy* (optional):
+  error bound for the skew angle estimate;
+  default value is zero
+
+When *accuracy* is set to zero, a default value of *sqrt(atan(1/image.ncols))*
+is used, which corresponds to a rotation of one pixel in the rightmost
+column (the square root stems from the golden section maximum search method,
+see Press et al.: 'Numerical Recipes', Cambridge University Press 1989).
+"""
+    category = "Analysis"
+    self_type = ImageType([ONEBIT])
+    args = Args([Float("minangle", default=-2.5), Float("maxangle", default=2.5), Float("accuracy", default=0)])
+    return_type = Float("skew_angle")
+    author = "Christoph Dalitz"
+    pure_python = 1
+
+    def __call__(self, minangle = -2.5, maxangle = 2.5, accuracy = 0):
+
+        # l2norm: compute L2-Norm of derivative of vec
+        def l2norm(vec):
+            var = 0
+            for i in range(0,len(vec)-1):
+                var += (vec[i] - vec[i+1])**2
+            return var
+
+        # some arguments checking
+        if (accuracy == 0):
+            accuracy = math.atan(1.0/self.ncols)**0.5
+        if (maxangle <= minangle):
+            raise RuntimeError("maxangle %f must be greater than minangle %f\n" \
+                               % (maxangle, minangle))
+
+        #
+        # rough guess where the maximum is
+        # necessary because l2norm has many local maxima
+        #
+        roughacc = 0.5
+        if ((maxangle - minangle)/4.0) < roughacc:
+            # at least five trial points
+            roughacc = (maxangle - minangle) / 4.0
+        else:
+            roughacc = (maxangle-minangle) / round((maxangle-minangle)/roughacc)
+        angle = [(minangle + x*roughacc) for x in \
+                    range(0,int(round((maxangle - minangle)/roughacc))+1)]
+        alist = [l2norm(x) for x in self.projection_skewed_rows(angle)]
+        # find maximum in list
+        fb = alist[0]; bi = 0
+        for i in range(1,len(alist)):
+            if alist[i] > fb:
+                fb = alist[i]; bi = i
+        b = angle[bi]
+
+        #
+        # initialize values for golden section search
+        #
+        if (bi == 0):
+            # maximum on lower iterval end: check neighborhood
+            c = b + 1.5*accuracy;
+            fc = l2norm(self.projection_skewed_rows(c))
+            if (fc > fb) and (c < angle[bi+1]):
+                a = b; fa = fb;
+                b = c; fb = fc;
+                c = angle[bi+1]; fc = alist[bi+1];
+            else:
+                raise RuntimeError("maximum found on interval end %f\n" \
+                                   % angle[bi])
+        elif (bi == len(angle)-1):
+            # maximum on upper iterval end: check neighborhood
+            a = b - 1.5*accuracy;
+            fa = l2norm(self.projection_skewed_rows(a))
+            if (fa > fb) and (a > angle[bi-1]):
+                c = b; fc = fb;
+                b = a; fb = fa;
+                a = angle[bi-1]; fa = alist[bi-1];
+            else:
+                raise RuntimeError("maximum found on interval end %f\n" \
+                                   % angle[bi])
+        else:
+            # the normal case: maximum somewhere in the middle
+            a = angle[bi-1]; fa = alist[bi-1];
+            c = angle[bi+1]; fc = alist[bi+1];
+
+        #
+        # fine tuning with golden section search
+        #
+        golden = 0.38197  # (3 - sqrt(2)) / 2
+        x = 500   # dummy value for recognition of first iteration
+        while (c-b > accuracy) or (b-a > accuracy):
+            if (x == 500):
+                # special case first iteration
+                if (fc > fa):
+                    x = b + golden * (c - b)
+                else:
+                    x = b - golden * (b - a)
+            else:
+                # ordinary situation
+                if (c-b > b-a):
+                    x = b + golden * (c - b)
+                else:
+                    x = b - golden * (b - a)
+            fx = l2norm(self.projection_skewed_rows(x))
+            if (x > b):
+                if (fx < fb):
+                    c = x; fc = fx
+                else:
+                    a = b; fa = fb;
+                    b = x; fb = fx;
+            else:
+                if (fx < fb):
+                    a = x; fa = fx
+                else:
+                    c = b; fc = fb;
+                    b = x; fb = fx;
+        return b
+
+    __call__ = staticmethod(__call__)
+
+
 class ProjectionsModule(PluginModule):
     cpp_headers=["projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Analysis"
     functions = [projection_rows, projection_cols, projections,
-                 projection_skewed_rows, projection_skewed_cols]
+                 projection_skewed_rows, projection_skewed_cols,
+                 skew_angle_projections]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = ProjectionsModule()

@@ -85,6 +85,7 @@ extern "C" {
   static PyObject* rect_union_rects(PyObject* _, PyObject* rects);
   static PyObject* rect_union(PyObject* self, PyObject* args);
   static PyObject* rect_distance_euclid(PyObject* self, PyObject* args);
+  static PyObject* rect_distance_bb(PyObject* self, PyObject* args);
   static PyObject* rect_distance_cx(PyObject* self, PyObject* args);
   static PyObject* rect_distance_cy(PyObject* self, PyObject* args);
   static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op);
@@ -140,6 +141,7 @@ static PyMethodDef rect_methods[] = {
   {"union_rects", rect_union_rects, METH_O},
   {"union", rect_union, METH_VARARGS},
   {"distance_euclid", rect_distance_euclid, METH_VARARGS},
+  {"distance_bb", rect_distance_bb, METH_VARARGS},
   {"distance_cx", rect_distance_cx, METH_VARARGS},
   {"distance_cy", rect_distance_cy, METH_VARARGS},
   {NULL, NULL}
@@ -526,6 +528,18 @@ static PyObject* rect_distance_euclid(PyObject* self, PyObject* args) {
     return 0;
   }
   return PyFloat_FromDouble(x->distance_euclid(*((RectObject*)rect)->m_x));
+}
+
+static PyObject* rect_distance_bb(PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  return PyFloat_FromDouble(x->distance_bb(*((RectObject*)rect)->m_x));
 }
 
 static PyObject* rect_distance_cx(PyObject* self, PyObject* args) {

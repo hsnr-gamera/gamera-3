@@ -47,13 +47,15 @@ void or_image(T& a, U& b) {
     throw std::range_error("Dimensions must match!");
   typename T::vec_iterator it_a, end;
   typename U::vec_iterator it_b;
-  for (size_t r = 0; r < a.nrows(); ++r) {
-    for (size_t c = 0; c < a.ncols(); ++c) {
-      if (is_black(a.get(r, c)) || is_black(b.get(r, c)))
-	a.set(r, c, black(a));
-      else
-	a.set(r, c, white(a));
-    }
+  ImageAccessor<typename T::value_type> a_accessor;
+  ImageAccessor<typename U::value_type> b_accessor;
+
+  for (it_a = a.vec_begin(), end = a.vec_end(), it_b = b.vec_begin();
+       it_a != end; ++it_a, ++it_b) {
+    if (is_black(a_accessor.get(it_a)) || is_black(b_accessor.get(it_b)))
+      *it_a = black(a);
+    else
+      *it_a = white(a);
   }
 }
 

@@ -28,10 +28,10 @@ from gamera.gui import gamera_display, image_menu, \
 from wxPython.wx import *
 # Handle multiple versions of wxPython
 try:
-   from wxPython.lib.PyCrust import shell
-except:
    from wx import py
    shell = py.shell
+except:
+   from wxPython.lib.PyCrust import shell
    
 from wxPython.stc import *
 from wxPython.lib.splashscreen import SplashScreen

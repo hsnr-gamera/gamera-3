@@ -180,21 +180,29 @@ namespace Gamera {
     
     for (std::vector<Image*>::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
+      Image* image = *i;
       OneBitImageView* tmp = new OneBitImageView(*dest_data,
 						 image->ul_y(), image->ul_x(),
 						 image->nrows(), image->ncols());
-      try {
-	std::cerr << "CC";
-	Cc* cc_image = dynamic_cast<Cc *>(*i);
+      Cc* cc_image = static_cast<Cc*>(image);
+      if (cc_image) {
 	or_image(*tmp, *cc_image);
-      } catch {
-	try {
-	  std::cerr << "CCRle";
-	  CcRle* cc_rle_image = dynamic_cast<CcRle *>(*i);
+      } else {
+	RleCc* cc_rle_image = static_cast<RleCc*>(image);
+	if (cc_rle_image) {
 	  or_image(*tmp, *cc_rle_image);
-	} catch {
-	  std::cerr << "OneBitImageView";
-	  OneBitImageView
+	} else {
+	  OneBitImageView* one_bit_image = static_cast<OneBitImageView*>(image);
+	  if (one_bit_image) {
+	    or_image(*tmp, *one_bit_image);
+	  } else {
+	    OneBitRleImageView* one_bit_rle_image = static_cast<OneBitRleImageView*>(image);
+	    if (one_bit_rle_image) {
+	      or_image(*tmp, *one_bit_rle_image);
+	    }
+	  }
+	}
+      }
     }
     return dest;
   }

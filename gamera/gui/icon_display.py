@@ -23,6 +23,7 @@ from wxPython.wx import *                    # wxPython
 from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify, gamera_xml
 from gamera.gui import image_menu, var_name, gamera_icons, gui_util
+import inspect
 
 ######################################################################
 
@@ -49,11 +50,13 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
 ######################################################################
 
 class IconDisplay(wxListCtrl):
-   def __init__(self, parent):
+   def __init__(self, parent, main_win):
       wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1),
                           wxLC_LIST|wxLC_SINGLE_SEL|wxLC_ALIGN_TOP)
       self.data = {}
       self.locals = {}
+      self.modules = {}
+      self.main_win = main_win
       self.currentIcon = None
       self.currentIconName = None
       self.init_events()
@@ -115,24 +118,33 @@ class IconDisplay(wxListCtrl):
       if locals != None:
          self.locals = locals
       okay = []
-      for i in self.locals.items():
-         t = None
-         for klass, icon in self.classes:
-            try:
-               if klass.check(i[1]):
-                  t = klass
-                  break
-            except:
-               pass
-         if t != None:
-            if self.data.has_key(i[0]):
-               self.refresh_icon(i[0], t, i[1], icon)
-            else:
-               obj = t(i[0], i[1], 0)
-               self.add_icon(i[0], obj, icon)
-            okay.append(i[0])
-         elif self.data.has_key(i[0]):
-            self.remove_icon(i[0])
+      for key, val in self.locals.items():
+         if inspect.ismodule(val) and not self.modules.has_key(val):
+            self.modules[val] = None
+            print "MODULE", klass
+##             for obj in val.__dict__.values():
+##                if hasattr(val, "is_custom_menu"):
+##                   self.main_win.add_custom_menu(val, obj)
+##                elif hasattr(klass, "is_custom_icon_description"):
+##                   self.main_win.add_custom_icon_description(obj)
+         else:
+            t = None
+            for klass, icon in self.classes:
+               try:
+                  if klass.check(val):
+                     t = klass
+                     break
+               except:
+                  pass
+            if t != None:
+               if self.data.has_key(key):
+                  self.refresh_icon(key, t, val, icon)
+               else:
+                  obj = t(key, val, 0)
+                  self.add_icon(key, obj, icon)
+               okay.append(key)
+            elif self.data.has_key(key):
+               self.remove_icon(key)
       for i in self.data.keys():
          if i not in okay:
             self.remove_icon(i)

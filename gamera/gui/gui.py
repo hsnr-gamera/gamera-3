@@ -246,8 +246,8 @@ class ShellFrame(wxFrame):
          style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
          wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
 
-      self.icon_display = icon_display.IconDisplay(self.splitter)
-      self.icon_display
+      self.icon_display = icon_display.IconDisplay(self.splitter, self)
+      
       
       self.history = History(self.hsplitter)
       self.shell = PyCrustGameraShell(self, self.splitter, -1,

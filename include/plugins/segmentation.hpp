@@ -415,7 +415,7 @@ namespace Gamera {
   std::list<Image*>* splitx(T& image, double& center) {
     IntVector *projs = projection_cols(image);
     size_t split_point = find_split_point(projs, center);
-    delete projs;
+    // delete projs;
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
@@ -437,7 +437,7 @@ namespace Gamera {
   std::list<Image*>* splity(T& image, double& center) {
     IntVector *projs = projection_rows(image);
     size_t split_point = find_split_point(projs, center);
-    delete projs;
+    // delete projs;
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;

@@ -447,7 +447,7 @@ def run(startup=_show_shell):
    has_gui.has_gui = has_gui.WX_GUI
    has_gui.gui = GameraGui
    from gamera.gui import args_gui
-   init_gamera()
+   
 
    class MyApp(wxApp):
       def __init__(self, startup, parent):
@@ -460,6 +460,8 @@ def run(startup=_show_shell):
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()
+         init_gamera()
+         self.splash.Show(0)
          self._startup()
          del self.splash
          return True

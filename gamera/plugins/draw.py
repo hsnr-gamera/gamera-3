@@ -166,7 +166,9 @@ of the image.
 The coordinates can be specified either by four integers, two Points, or one Rect:
 
   **draw_hollow_rect** (*y1*, *x1*, *y2*, *x2*)
+
   **draw_hollow_rect** (Point(*x1*, *y1*), Point(*x2*, *y2))
+
   **draw_hollow_rect** (Rect *rect*)
 
 *value*:
@@ -187,7 +189,7 @@ The coordinates can be specified either by four integers, two Points, or one Rec
         return _draw.draw_hollow_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
         pass
-    else len(args) == 2:
+    elif len(args) == 2:
       try:
         a = args[0]
         value = args[1]
@@ -218,7 +220,9 @@ of the image.
 The coordinates can be specified either by four integers, two Points, or one Rect:
 
   **draw_filled_rect** (*y1*, *x1*, *y2*, *x2*)
-  **draw_filled_rect** (Point(*x1*, *y1*), Point(*x2*, *y2))
+
+  **draw_filled_rect** (Point(*x1*, *y1*), Point(*x2*, *y2*))
+
   **draw_filled_rect** (Rect *rect*)
 
 *value*:
@@ -239,7 +243,7 @@ The coordinates can be specified either by four integers, two Points, or one Rec
         return _draw.draw_filled_rect(self, a.y, a.x, b.y, b.x, value)
       except KeyError, AttributeError:
         pass
-    else len(args) == 2:
+    elif len(args) == 2:
       try:
         a = args[0]
         value = args[1]
@@ -300,7 +304,7 @@ The coordinates can be specified either by eight floats or four Points:
 *value*:
   The pixel value to set for the curve.
 
-*accuracy*:
+*accuracy* = ``0.1``:
   The rendering accuracy (in pixels)
 """
   self_type = ImageType(ALL)

@@ -208,7 +208,7 @@ combo box will be presented which will allow the user to enter in a
 value that is not in the list of choices.
 
 Note that outside of the GUI, the plugin system does not verify the
-calue of the string, so the plugin method must be prepared to accept
+value of the string, so the plugin method must gracefully accept
 any string as input and deal with it accordingly.
 
 FileOpen

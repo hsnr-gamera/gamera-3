@@ -2,8 +2,10 @@ recursive-include gamera/doc *.gif *.txt *.html *.dtd
 recursive-include gamera/doc/classes
 recursive-include gamera/doc/plugins
 recursive-include gamera/pixmaps *.png *.py
+recursive-include gamera/test *.tiff
+recursive-include gamera/test/results
 recursive-include src *.cpp *.c *.h makefile.* *.hpp
 recursive-include include *.hpp *.hxx
-include TODO INSTALL KNOWN_BUGS ACKNOWLEDGEMENTS
+include TODO INSTALL KNOWN_BUGS ACKNOWLEDGEMENTS setup.cfg
 
 

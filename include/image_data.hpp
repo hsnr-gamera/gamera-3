@@ -18,21 +18,21 @@
  */
 
 /*
-  The MatrixData class is dense storage for Gamera matrices. This class is used
+  The ImageData class is dense storage for Gamera matrices. This class is used
   rather than a standard vector so that we can control the iterator type - the
   Vigra iterators assume that the iterator type is T* and some std::vectors
   don't use that as the iterator type.
 */
 
-#ifndef kwm11162001_matrix_data_hpp
-#define kwm11162001_matrix_data_hpp
+#ifndef kwm11162001_image_data_hpp
+#define kwm11162001_image_data_hpp
 
 #include <cstddef>
 #include <cmath>
 
 namespace Gamera {
 
-  template<class T> class MatrixData {
+  template<class T> class ImageData {
   public:
     /*
       Standard typedefs
@@ -47,7 +47,7 @@ namespace Gamera {
     /*
       Constructors
     */
-    MatrixData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
+    ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
 	       size_t page_offset_x = 0) {
       m_size = nrows * ncols;
       m_stride = ncols;
@@ -56,7 +56,7 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    MatrixData(const Size<size_t>& size, size_t page_offset_y = 0,
+    ImageData(const Size<size_t>& size, size_t page_offset_y = 0,
 	       size_t page_offset_x = 0) {
       m_size = (size.height() + 1) * (size.width() + 1);
       m_stride = size.width() + 1;
@@ -65,7 +65,7 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    MatrixData(const Dimensions<size_t>& dim, size_t page_offset_y = 0,
+    ImageData(const Dimensions<size_t>& dim, size_t page_offset_y = 0,
 	       size_t page_offset_x = 0) {
       m_size = dim.nrows() * dim.ncols();
       m_stride = dim.ncols();
@@ -74,7 +74,7 @@ namespace Gamera {
       m_data = 0;
       create_data();
     }
-    ~MatrixData() {
+    ~ImageData() {
       if (m_data != 0) {
 	delete[] m_data;
       }

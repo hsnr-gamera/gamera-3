@@ -41,65 +41,65 @@ namespace Gamera {
     return (curr - row_begin) - mat->offset_x();
   }
   
-  template<class Matrix, class Iterator, class T>
+  template<class Image, class Iterator, class T>
   class RowIteratorBase {
   public:
     // Standard typedefs
-    typedef typename Matrix::value_type value_type;
-    typedef typename Matrix::reference reference;
-    typedef typename Matrix::pointer pointer;
-    typedef typename Matrix::difference_type difference_type;
+    typedef typename Image::value_type value_type;
+    typedef typename Image::reference reference;
+    typedef typename Image::pointer pointer;
+    typedef typename Image::difference_type difference_type;
     typedef std::random_access_iterator_tag iterator_category;
 
     // Convenience typedefs
     typedef Iterator self;
-    typedef MatrixAccessor<value_type> accessor;
+    typedef ImageAccessor<value_type> accessor;
     
     // Constructor
-    RowIteratorBase(Matrix* matrix, const T iterator)
-      : m_matrix(matrix), m_iterator(iterator) { }
+    RowIteratorBase(Image* image, const T iterator)
+      : m_image(image), m_iterator(iterator) { }
     RowIteratorBase() { }
     
     self& operator++() {
-      m_iterator += m_matrix->data()->stride();
+      m_iterator += m_image->data()->stride();
       return (self&)*this;
     }
     self operator++(int) {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator;
-      m_iterator += m_matrix->data()->stride();
+      m_iterator += m_image->data()->stride();
       return tmp;
     }
     self& operator--() {
-      m_iterator -= m_matrix->data()->stride();
+      m_iterator -= m_image->data()->stride();
       return (self&)*this;
     }
     self operator--(int) {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator;
-      m_iterator -= m_matrix->data()->stride();
+      m_iterator -= m_image->data()->stride();
       return tmp;
     }
     self& operator+=(size_t n) {
-      m_iterator += m_matrix->data()->stride() * n;
+      m_iterator += m_image->data()->stride() * n;
       return (self&)*this;
     }
     self operator+(size_t n) const {
       self tmp;
-      tmp.m_matrix = m_matrix;
-      tmp.m_iterator = m_iterator + (m_matrix->data()->stride() * n);
+      tmp.m_image = m_image;
+      tmp.m_iterator = m_iterator + (m_image->data()->stride() * n);
       return tmp;
     }
     self& operator-=(size_t n) {
-      m_iterator -= m_matrix->data()->stride() * n;
+      m_iterator -= m_image->data()->stride() * n;
       return (self&)*this;
     }
     self operator-(size_t n) const {
       self tmp;
-      tmp.m_matrix = m_matrix;
-      tmp.m_iterator = m_iterator - (m_matrix->data()->stride() * n);
+      tmp.m_image = m_image;
+      tmp.m_iterator = m_iterator - (m_image->data()->stride() * n);
       return tmp;
     }
     bool operator==(const RowIteratorBase& other) const {
@@ -115,14 +115,14 @@ namespace Gamera {
       return m_iterator > other.m_iterator;
     }
     difference_type operator-(const RowIteratorBase& other) const {
-      return (m_iterator - other.m_iterator) / m_matrix->data()->stride();
+      return (m_iterator - other.m_iterator) / m_image->data()->stride();
     }
     
     size_t row() const {
-      return row_number(m_matrix, m_iterator);
+      return row_number(m_image, m_iterator);
     }
     size_t col() const {
-      return col_number(m_matrix, m_iterator);
+      return col_number(m_image, m_iterator);
     }
     value_type get() const {
       return m_accessor(m_iterator);
@@ -131,30 +131,30 @@ namespace Gamera {
       m_accessor.set(m_iterator, v);
     }
   public:
-    Matrix* m_matrix;
+    Image* m_image;
     T m_iterator;
     accessor m_accessor;
   };
 
-  template<class Matrix, class Iterator, class T>
+  template<class Image, class Iterator, class T>
   class ColIteratorBase {
   public:
     // Standard typedefs
-    typedef typename Matrix::value_type value_type;
-    typedef typename Matrix::reference reference;
-    typedef typename Matrix::pointer pointer;
-    typedef typename Matrix::difference_type difference_type;
+    typedef typename Image::value_type value_type;
+    typedef typename Image::reference reference;
+    typedef typename Image::pointer pointer;
+    typedef typename Image::difference_type difference_type;
     typedef std::random_access_iterator_tag iterator_category;
 
     // Typedefs for Cols
-    typedef MatrixAccessor<value_type> accessor;
+    typedef ImageAccessor<value_type> accessor;
 
     // Convenience typedefs
     typedef Iterator self;
     
     // Constructor
-    ColIteratorBase(Matrix* matrix, const T iterator) : m_iterator(iterator),
-						    m_matrix(matrix) { }
+    ColIteratorBase(Image* image, const T iterator) : m_iterator(iterator),
+						    m_image(image) { }
     ColIteratorBase() { }
 
     self& operator++() {
@@ -163,7 +163,7 @@ namespace Gamera {
     }
     self operator++(int) {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator;
       ++m_iterator;
       return tmp;
@@ -174,7 +174,7 @@ namespace Gamera {
     }
     self operator--(int) {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator;
       --m_iterator;
       return tmp;
@@ -185,7 +185,7 @@ namespace Gamera {
     }
     self operator+(size_t n) const {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator + n;
       return tmp;
     }
@@ -195,7 +195,7 @@ namespace Gamera {
     }
     self operator-(size_t n) const {
       self tmp;
-      tmp.m_matrix = m_matrix;
+      tmp.m_image = m_image;
       tmp.m_iterator = m_iterator - n;
       return tmp;
     }
@@ -215,12 +215,12 @@ namespace Gamera {
       return (m_iterator - other.m_iterator);
     }
 
-    // Matrix specific
+    // Image specific
     size_t row() const {
-      return row_number(m_matrix, m_iterator);
+      return row_number(m_image, m_iterator);
     }
     size_t col() const {
-      return col_number(m_matrix, m_iterator);
+      return col_number(m_image, m_iterator);
     }
     value_type get() const {
       return m_accessor(m_iterator);
@@ -230,23 +230,23 @@ namespace Gamera {
     }
   public:
     T m_iterator;
-    Matrix* m_matrix;
+    Image* m_image;
     accessor m_accessor;
   };
 
-  template<class Matrix, class Row, class Col, class Iterator>
+  template<class Image, class Row, class Col, class Iterator>
   class VecIteratorBase {
   public:
     // Standard typedefs
-    typedef typename Matrix::value_type value_type;
-    typedef typename Matrix::reference reference;
-    typedef typename Matrix::pointer pointer;
-    typedef typename Matrix::difference_type difference_type;
+    typedef typename Image::value_type value_type;
+    typedef typename Image::reference reference;
+    typedef typename Image::pointer pointer;
+    typedef typename Image::difference_type difference_type;
     typedef std::random_access_iterator_tag iterator_category;
     
     // Convenience typedefs
     typedef Iterator self;
-    typedef MatrixAccessor<value_type> accessor;
+    typedef ImageAccessor<value_type> accessor;
 			
     // Constructor
     VecIteratorBase(const Row iterator)

@@ -18,7 +18,7 @@
  */
 
 /*
-  Compressed Matrix Data (run-length compression)
+  Compressed Image Data (run-length compression)
 
   Authors
   -------
@@ -46,7 +46,7 @@ namespace Gamera {
   namespace RleDataDetail {
     /*
       This file contains a run-length compressed vector (not quite a complete
-      interface for std::vector) and a Matrix Data object based on that vector.
+      interface for std::vector) and a Image Data object based on that vector.
       This is for use with very large 1-bit matrices. The performance should be
       acceptable for images that compress well (i.e. have few transitions from
       white to black), but will perform _very_ poorly as the number of transitions
@@ -663,10 +663,10 @@ namespace Gamera {
   } // namespace RleDataDetail
   /*
     This is an RleVector with the additional interface necessary to allow
-    it to be used with a MatrixView or ConnectedComponent object.
+    it to be used with a ImageView or ConnectedComponent object.
   */
   template<class T>
-  class RleMatrixData : public RleDataDetail::RleVector<T> {
+  class RleImageData : public RleDataDetail::RleVector<T> {
   public:
     typedef T value_type;
     typedef typename RleDataDetail::RleVector<T>::reference reference;
@@ -674,20 +674,20 @@ namespace Gamera {
     typedef typename RleDataDetail::RleVector<T>::iterator iterator;
     typedef typename RleDataDetail::RleVector<T>::const_iterator const_iterator;
 
-    RleMatrixData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
+    RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0) : RleDataDetail::RleVector<T>(nrows * ncols) {
       m_stride = ncols;
       m_page_offset_y = page_offset_y;
       m_page_offset_x = page_offset_x;
     }
-    RleMatrixData(const Size<size_t>& size, size_t page_offset_y = 0,
+    RleImageData(const Size<size_t>& size, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0)
       : RleDataDetail::RleVector<T>((size.height() + 1) * (size.width() + 1)) {
       m_stride = size.width() + 1;
       m_page_offset_x = page_offset_x;
       m_page_offset_y = page_offset_y;
     }
-    RleMatrixData(const Dimensions<size_t>& dim, size_t page_offset_y = 0,
+    RleImageData(const Dimensions<size_t>& dim, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0)
       : RleDataDetail::RleVector<T>(dim.nrows() * dim.ncols()) {
       m_stride = dim.ncols();

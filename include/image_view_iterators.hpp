@@ -17,29 +17,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef kwm01022002_matrix_view_iterators_hpp
-#define kwm01022002_matrix_view_iterators_hpp
+#ifndef kwm01022002_image_view_iterators_hpp
+#define kwm01022002_image_view_iterators_hpp
 
 #include "accessor.hpp"
 #include "iterator_base.hpp"
 
 namespace Gamera {
-  namespace MatrixViewDetail {
+  namespace ImageViewDetail {
 
-    template<class Matrix, class T> class ColIterator;
+    template<class Image, class T> class ColIterator;
 
-    template<class Matrix, class T>
-    class RowIterator : public RowIteratorBase<Matrix, RowIterator<Matrix, T>, T> {
+    template<class Image, class T>
+    class RowIterator : public RowIteratorBase<Image, RowIterator<Image, T>, T> {
     public:
       // Typedefs for rows
-      typedef ColIterator<Matrix, T> iterator;
+      typedef ColIterator<Image, T> iterator;
 
       // Convenience typedefs
       typedef RowIterator self;
-      typedef RowIteratorBase<Matrix, self, T> base;
+      typedef RowIteratorBase<Image, self, T> base;
 
       // Constructor
-      RowIterator(Matrix* matrix, const T iterator) : base(matrix, iterator) { }
+      RowIterator(Image* image, const T iterator) : base(image, iterator) { }
       RowIterator() { }
 
       reference operator*() const {
@@ -51,26 +51,26 @@ namespace Gamera {
       }
 
       iterator begin() const {
-	return iterator(m_matrix, m_iterator);
+	return iterator(m_image, m_iterator);
       }
 
       iterator end() const {
-	return iterator(m_matrix, m_iterator + m_matrix->ncols());
+	return iterator(m_image, m_iterator + m_image->ncols());
       }
     };
 
-    template<class Matrix, class T>
-    class ColIterator : public ColIteratorBase<Matrix, ColIterator<Matrix, T>, T> {
+    template<class Image, class T>
+    class ColIterator : public ColIteratorBase<Image, ColIterator<Image, T>, T> {
     public:
       // Typedefs for Cols
-      typedef RowIterator<Matrix, T> iterator;
+      typedef RowIterator<Image, T> iterator;
 
       // Convenience typedefs
       typedef ColIterator self;
-      typedef ColIteratorBase<Matrix, self, T> base;
+      typedef ColIteratorBase<Image, self, T> base;
 
       // Constructor
-      ColIterator(Matrix* matrix, const T iterator) : base(matrix, iterator) { }
+      ColIterator(Image* image, const T iterator) : base(image, iterator) { }
       ColIterator() { }
 
       reference operator*() const {
@@ -80,32 +80,32 @@ namespace Gamera {
 	return &*m_iterator;
       }
 
-      // Matrix specific
+      // Image specific
       iterator begin() const {
-	return iterator(m_matrix, m_iterator);
+	return iterator(m_image, m_iterator);
       }
       iterator end() const {
-	return iterator(m_matrix, m_iterator) + m_matrix->nrows();
+	return iterator(m_image, m_iterator) + m_image->nrows();
       }
     };
 
-    template<class Matrix, class T> class ConstColIterator;
+    template<class Image, class T> class ConstColIterator;
 
-    template<class Matrix, class T>
-    class ConstRowIterator : public RowIteratorBase<Matrix, ConstRowIterator<Matrix, T>, T> {
+    template<class Image, class T>
+    class ConstRowIterator : public RowIteratorBase<Image, ConstRowIterator<Image, T>, T> {
     public:
       // Typedefs for rows
-      typedef ConstColIterator<Matrix, T> iterator;
+      typedef ConstColIterator<Image, T> iterator;
 
       // Convenience typedefs
       typedef ConstRowIterator self;
-      typedef RowIteratorBase<Matrix, self, T> base;
+      typedef RowIteratorBase<Image, self, T> base;
 
       // Constructor
-      ConstRowIterator(Matrix* matrix, const T iterator) : base(matrix, iterator) { }
+      ConstRowIterator(Image* image, const T iterator) : base(image, iterator) { }
       ConstRowIterator() { }
 
-      typename Matrix::value_type operator*() const {
+      typename Image::value_type operator*() const {
 	return *m_iterator;
       }
 
@@ -114,51 +114,51 @@ namespace Gamera {
       }
 
       iterator begin() const {
-	return iterator(m_matrix, m_iterator);
+	return iterator(m_image, m_iterator);
       }
 
       iterator end() const {
-	return iterator(m_matrix, m_iterator + m_matrix->ncols());
+	return iterator(m_image, m_iterator + m_image->ncols());
       }
     };
 
-    template<class Matrix, class T>
-    class ConstColIterator : public ColIteratorBase<Matrix, ConstColIterator<Matrix, T>, T> {
+    template<class Image, class T>
+    class ConstColIterator : public ColIteratorBase<Image, ConstColIterator<Image, T>, T> {
     public:
       // Typedefs for Cols
-      typedef ConstRowIterator<Matrix, T> iterator;
+      typedef ConstRowIterator<Image, T> iterator;
 
       // Convenience typedefs
       typedef ConstColIterator self;
-      typedef ColIteratorBase<Matrix, self, T> base;
+      typedef ColIteratorBase<Image, self, T> base;
 
       // Constructor
-      ConstColIterator(Matrix* matrix, const T iterator) : base(matrix, iterator) { }
+      ConstColIterator(Image* image, const T iterator) : base(image, iterator) { }
       ConstColIterator() { }
 
-      typename Matrix::value_type operator*() const {
+      typename Image::value_type operator*() const {
 	return *m_iterator;
       }
       pointer operator->() const {
 	return &*m_iterator;
       }
 
-      // Matrix specific
+      // Image specific
       iterator begin() const {
-	return iterator(m_matrix, m_iterator);
+	return iterator(m_image, m_iterator);
       }
       iterator end() const {
-	return iterator(m_matrix, m_iterator) + m_matrix->nrows();
+	return iterator(m_image, m_iterator) + m_image->nrows();
       }
     };
 
 
-    template<class Matrix, class Row, class Col>
-    class VecIterator : public VecIteratorBase<Matrix, Row, Col,
-					       VecIterator<Matrix, Row, Col> > {
+    template<class Image, class Row, class Col>
+    class VecIterator : public VecIteratorBase<Image, Row, Col,
+					       VecIterator<Image, Row, Col> > {
     public:
       typedef VecIterator self;
-      typedef VecIteratorBase<Matrix, Row, Col, self> base;
+      typedef VecIteratorBase<Image, Row, Col, self> base;
       // Constructor
       VecIterator(const Row iterator) : base(iterator) { }
       VecIterator() { }
@@ -168,18 +168,18 @@ namespace Gamera {
       pointer operator->() const { return &*m_coliterator; }
     };
 
-    template<class Matrix, class Row, class Col>
-    class ConstVecIterator : public VecIteratorBase<Matrix, Row, Col,
-						    ConstVecIterator<Matrix, Row, Col> > {
+    template<class Image, class Row, class Col>
+    class ConstVecIterator : public VecIteratorBase<Image, Row, Col,
+						    ConstVecIterator<Image, Row, Col> > {
     public:
       typedef ConstVecIterator self;
-      typedef VecIteratorBase<Matrix, Row, Col, self> base;
+      typedef VecIteratorBase<Image, Row, Col, self> base;
       // Constructor
       ConstVecIterator(const Row iterator) : base(iterator) { }
       ConstVecIterator() { }
 
       // Operators
-      typename Matrix::value_type operator*() const { return *m_coliterator; }
+      typename Image::value_type operator*() const { return *m_coliterator; }
       pointer operator->() const { return &*m_coliterator; }
     };
 

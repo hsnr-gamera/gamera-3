@@ -150,7 +150,7 @@ namespace Gamera {
     Helper functions to get black/white from a given T that has a value_type
     member that is a pixel - i.e.
 
-    DenseMatrix<OneBitPixel> ob;
+    DenseImage<OneBitPixel> ob;
     black(ob);
 
     The pixel_traits syntax is just too horrible to make users go through to

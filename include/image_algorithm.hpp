@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef __matrix_algorithm_hh__
-#define __matrix_algorithm_hh__
+#ifndef __image_algorithm_hh__
+#define __image_algorithm_hh__
 
 #include <algorithm>
 #include <vector>
@@ -26,7 +26,7 @@
 #include "gamera.hpp"
 
 /*
-  Matrix Algorithm
+  Image Algorithm
 
   This file contains a variety of utility algorithms for Gamera matrices.
 
@@ -42,9 +42,9 @@
 
 namespace Gamera {
 
-  // Print a matrix to the console
+  // Print a image to the console
   template<class T>
-  void print_matrix(const T& mat) {
+  void print_image(const T& mat) {
     typename T::const_row_iterator i = mat.row_begin();
     typename T::const_row_iterator::iterator j;
     std::cout << "[" << std::endl;
@@ -80,7 +80,7 @@ namespace Gamera {
   
   /*
     These functions find the length of the largest run in a a row
-    or column of a matrix.
+    or column of a image.
   */
   template<class T>
   inline size_t max_black_run(T i, const T end) {
@@ -204,14 +204,14 @@ namespace Gamera {
   }
 
   template<class Iter>
-  inline void matrix_filter_long_run(Iter i, const Iter end,
+  inline void image_filter_long_run(Iter i, const Iter end,
 			      const int min_length) {
     for (; i != end; i++)
       filter_long_run(i.begin(), i.end(), min_length);
   }
 
   template<class Iter>
-  inline void matrix_filter_short_run(Iter i, const Iter end,
+  inline void image_filter_short_run(Iter i, const Iter end,
 			       const int max_length) {
     for (; i != end; i++)
       filter_short_run(i.begin(), i.end(), max_length);

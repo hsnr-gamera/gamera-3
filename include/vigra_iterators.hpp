@@ -24,10 +24,10 @@
 #ifndef kwm05192002_vigra_iterator
 #define kwm05192002_vigra_iterator
 
-#include "../vigra/utilities.hxx"
-#include "../vigra/iteratortraits.hxx"
+#include "vigra/utilities.hxx"
+#include "vigra/iteratortraits.hxx"
 #include "accessor.hpp"
-#include "matrix_view_iterators.hpp"
+#include "image_view_iterators.hpp"
 
 namespace Gamera { 
 
@@ -132,21 +132,21 @@ namespace Gamera {
     int width() const { return y.width_; }
   }; 
     
-  template <class Matrix, class I>
-  class ImageIterator : public ImageIteratorBase<typename Matrix::value_type, I> {
+  template <class Image, class I>
+  class ImageIterator : public ImageIteratorBase<typename Image::value_type, I> {
   public:
-    typedef typename Matrix::value_type value_type;
+    typedef typename Image::value_type value_type;
     typedef value_type PixelType;
-    typedef typename Matrix::reference reference;
+    typedef typename Image::reference reference;
     typedef reference index_reference;
-    typedef typename Matrix::pointer pointer;
+    typedef typename Image::pointer pointer;
     typedef Diff2D difference_type;
     typedef image_traverser_tag  iterator_category;
     typedef I column_iterator;
-    typedef MatrixViewDetail::RowIterator<Matrix,
-	    typename Matrix::data_type::iterator> row_iterator;
+    typedef ImageViewDetail::RowIterator<Image,
+	    typename Image::data_type::iterator> row_iterator;
 
-    ImageIterator(Matrix* mat, I base, size_t offset)
+    ImageIterator(Image* mat, I base, size_t offset)
       : ImageIteratorBase<value_type, I>(base, offset), m_mat(mat) { }
     ImageIterator(const ImageIterator & rhs)
       : ImageIteratorBase<value_type, I>(rhs) {
@@ -212,25 +212,25 @@ namespace Gamera {
       m_accessor.set(x.current_ + y.offset_, v);
     }
   private:
-    MatrixAccessor<value_type> m_accessor;
-    Matrix* m_mat;
+    ImageAccessor<value_type> m_accessor;
+    Image* m_mat;
   };
 
-  template <class Matrix, class I>
-  class ConstImageIterator : public ImageIteratorBase<typename Matrix::value_type, I> {
+  template <class Image, class I>
+  class ConstImageIterator : public ImageIteratorBase<typename Image::value_type, I> {
   public:
-    typedef typename Matrix::value_type value_type;
+    typedef typename Image::value_type value_type;
     typedef value_type PixelType;
-    typedef typename Matrix::reference reference;
+    typedef typename Image::reference reference;
     typedef reference index_reference;
-    typedef typename Matrix::pointer pointer;
+    typedef typename Image::pointer pointer;
     typedef Diff2D difference_type;
     typedef image_traverser_tag  iterator_category;
     typedef I column_iterator;
-    typedef MatrixViewDetail::ConstRowIterator<Matrix,
-	    typename Matrix::data_type::const_iterator> row_iterator;
+    typedef ImageViewDetail::ConstRowIterator<Image,
+	    typename Image::data_type::const_iterator> row_iterator;
 
-    ConstImageIterator(Matrix* mat, I base, size_t offset)
+    ConstImageIterator(Image* mat, I base, size_t offset)
       : ImageIteratorBase<value_type, I>(base, offset), m_mat(mat) {
     }
     ConstImageIterator(const ConstImageIterator & rhs)
@@ -294,8 +294,8 @@ namespace Gamera {
       return m_accessor(x.current_ + y.offset_);
     }
   private:
-    MatrixAccessor<value_type> m_accessor;
-    Matrix* m_mat;
+    ImageAccessor<value_type> m_accessor;
+    Image* m_mat;
   };
 }
 

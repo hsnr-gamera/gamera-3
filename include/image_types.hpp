@@ -17,48 +17,48 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef kwm03112002_matrix_types
-#define kwm03112002_matrix_types
+#ifndef kwm03112002_image_types
+#define kwm03112002_image_types
 
 #include "pixel.hpp"
-#include "matrix_data.hpp"
-#include "matrix_view.hpp"
+#include "image_data.hpp"
+#include "image_view.hpp"
 #include "rle_data.hpp"
 #include "connected_components.hpp"
 
 #include <list>
 
 /*
-  The standard matrix types.
+  The standard image types.
 */
 
 namespace Gamera {
 
   /*
-    Matrix Data
+    Image Data
    */
-  typedef MatrixData<GreyScalePixel> GreyScaleMatrixData;
-  typedef MatrixData<Grey16Pixel> Grey16MatrixData;
-  typedef MatrixData<FloatPixel> FloatMatrixData;
-  typedef MatrixData<RGBPixel> RGBMatrixData;
-  typedef MatrixData<OneBitPixel> OneBitMatrixData;
-  typedef RleMatrixData<OneBitPixel> OneBitRleMatrixData;
+  typedef ImageData<GreyScalePixel> GreyScaleImageData;
+  typedef ImageData<Grey16Pixel> Grey16ImageData;
+  typedef ImageData<FloatPixel> FloatImageData;
+  typedef ImageData<RGBPixel> RGBImageData;
+  typedef ImageData<OneBitPixel> OneBitImageData;
+  typedef RleImageData<OneBitPixel> OneBitRleImageData;
 
   /*
-    MatrixView
+    ImageView
    */
-  typedef MatrixView<GreyScaleMatrixData> GreyScaleMatrixView;
-  typedef MatrixView<Grey16MatrixData> Grey16MatrixView;
-  typedef MatrixView<FloatMatrixData> FloatMatrixView;
-  typedef MatrixView<RGBMatrixData> RGBMatrixView;
-  typedef MatrixView<OneBitMatrixData> OneBitMatrixView;
-  typedef MatrixView<OneBitRleMatrixData> OneBitRleMatrixView;
+  typedef ImageView<GreyScaleImageData> GreyScaleImageView;
+  typedef ImageView<Grey16ImageData> Grey16ImageView;
+  typedef ImageView<FloatImageData> FloatImageView;
+  typedef ImageView<RGBImageData> RGBImageView;
+  typedef ImageView<OneBitImageData> OneBitImageView;
+  typedef ImageView<OneBitRleImageData> OneBitRleImageView;
 
   /*
     Connected-components
    */
-  typedef ConnectedComponent<OneBitMatrixData> CC;
-  typedef ConnectedComponent<OneBitRleMatrixData> RleCC;
+  typedef ConnectedComponent<OneBitImageData> CC;
+  typedef ConnectedComponent<OneBitRleImageData> RleCC;
   typedef std::list<CC> ConnectedComponents;
   typedef std::list<RleCC> RleConnectedComponents;
 
@@ -66,8 +66,8 @@ namespace Gamera {
     Factory for types.
   */
   template<class T>
-  struct matrix_factory {
-    typedef MatrixView<typename T::data_type> view_type;
+  struct image_factory {
+    typedef ImageView<typename T::data_type> view_type;
     typedef ConnectedComponent<typename T::data_type> cc_type;
     typedef std::list<cc_type> ccs_type;
   };

@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef kwm11162001_matrix_view_hpp
-#define kwm11162001_matrix_view_hpp
+#ifndef kwm11162001_image_view_hpp
+#define kwm11162001_image_view_hpp
 
-#include "matrix_view_iterators.hpp"
+#include "image_view_iterators.hpp"
 #include "dimensions.hpp"
-#include "matrix.hpp"
+#include "image.hpp"
 #include "accessor.hpp"
 #include "vigra_iterators.hpp"
 #include "vigra/utilities.hxx"
@@ -35,9 +35,9 @@
 #include <utility>
 
 /*
-  MATRIXVIEW
+  IMAGEVIEW
   ----------
-  This is the "standard" view on a matrix data object. The goal
+  This is the "standard" view on a image data object. The goal
   of this class is to convert a 1-dimensional data structure
   (something like an array) into a 2-dimensional image that may
   or may not encompass the entire data available.
@@ -81,13 +81,13 @@
   This class presents several interfaces in an effort to ease porting of older
   code or integration with other libraries. The simplist access is through
   get and set methods:
-    pixel_value = matrix.get(row, col);
-    matrix.set(row, col, value);
+    pixel_value = image.get(row, col);
+    image.set(row, col, value);
   The disadvantage of this method is that each access requires a multiply and
   add.  A similar interface to the get/set method is the operator[] interface. This
   presents an interface similar to a C multi-dimensional array. For example:
-    pixel_value = matrix[row][column];
-    matrix[row][column] = value;
+    pixel_value = image[row][column];
+    image[row][column] = value;
 */
 
 namespace Gamera {
@@ -95,8 +95,8 @@ namespace Gamera {
   using namespace vigra;
 
   template<class T>
-  class MatrixView
-    : public MatrixBase<typename T::value_type> {
+  class ImageView
+    : public ImageBase<typename T::value_type> {
   public:
     // standard STL typedefs
     typedef typename T::value_type value_type;
@@ -106,65 +106,65 @@ namespace Gamera {
 
     // Gamera specific
     typedef T data_type;
-    typedef MatrixAccessor<value_type> accessor;
+    typedef ImageAccessor<value_type> accessor;
 
     // Vigra typedefs
     typedef value_type PixelType;
 
     // convenience typedefs
-    typedef MatrixView self;
-    typedef MatrixBase<typename T::value_type> base_type;
+    typedef ImageView self;
+    typedef ImageBase<typename T::value_type> base_type;
 
     //
     // CONSTRUCTORS
     //
-    MatrixView() : base_type() {
-      m_matrix_data = 0;
+    ImageView() : base_type() {
+      m_image_data = 0;
     }
     // range check is optional at construction to allow for cases
     // the data is not correctly sized at creation time. See
-    // dense_matrix.hpp for a situation where this occurs. KWM
-    MatrixView(T& matrix_data, size_t offset_y,
+    // dense_image.hpp for a situation where this occurs. KWM
+    ImageView(T& image_data, size_t offset_y,
 	       size_t offset_x, size_t nrows, size_t ncols,
 	       bool do_range_check = true)
       : base_type(offset_y, offset_x, nrows, ncols) {
-      m_matrix_data = &matrix_data;
+      m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
       }
     }
-    MatrixView(T& matrix_data, const Rect<size_t>& rect,
+    ImageView(T& image_data, const Rect<size_t>& rect,
 	       bool do_range_check = true)
       : base_type(rect) {
-      m_matrix_data = &matrix_data;
+      m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
       }
     }
-    MatrixView(T& matrix_data, const Point<size_t>& upper_left,
+    ImageView(T& image_data, const Point<size_t>& upper_left,
 	       const Point<size_t>& lower_right, bool do_range_check = true)
       : base_type(upper_left, lower_right) {
-      m_matrix_data = &matrix_data;
+      m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
       }
     }
-    MatrixView(T& matrix_data, const Point<size_t>& upper_left,
+    ImageView(T& image_data, const Point<size_t>& upper_left,
 	       const Size<size_t>& size, bool do_range_check = true)
       : base_type(upper_left, size) {
-      m_matrix_data = &matrix_data;
+      m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
       }
     }
-    MatrixView(T& matrix_data, const Point<size_t>& upper_left,
+    ImageView(T& image_data, const Point<size_t>& upper_left,
 	       const Dimensions<size_t>& dim, bool do_range_check = true)
       : base_type(upper_left, dim) {
-      m_matrix_data = &matrix_data;
+      m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
@@ -173,37 +173,37 @@ namespace Gamera {
     //
     // COPY CONSTRUCTORS
     //
-    MatrixView(const self& other, size_t offset_y,
+    ImageView(const self& other, size_t offset_y,
 	       size_t offset_x, size_t nrows, size_t ncols)
       : base_type(offset_y, offset_x, nrows, ncols) {
-      m_matrix_data = other.data();
+      m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    MatrixView(const self& other, const Rect<size_t>& rect)
+    ImageView(const self& other, const Rect<size_t>& rect)
       : base_type(rect) {
-      m_matrix_data = other.data();
+      m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    MatrixView(const self& other, const Point<size_t>& upper_left,
+    ImageView(const self& other, const Point<size_t>& upper_left,
 	       const Point<size_t>& lower_right)
       : base_type(upper_left, lower_right) {
-      m_matrix_data = other.data();
+      m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    MatrixView(const self& other, const Point<size_t>& upper_left,
+    ImageView(const self& other, const Point<size_t>& upper_left,
 	       const Size<size_t>& size)
       : base_type(upper_left, size) {
-      m_matrix_data = other.data();
+      m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
-    MatrixView(const self& other, const Point<size_t>& upper_left,
+    ImageView(const self& other, const Point<size_t>& upper_left,
 	       const Dimensions<size_t>& dim)
       : base_type(upper_left, dim) {
-      m_matrix_data = other.data();
+      m_image_data = other.data();
       range_check();
       calculate_iterators();
     }
@@ -211,31 +211,31 @@ namespace Gamera {
     //  FUNCTION ACCESS
     //
     value_type get(size_t row, size_t col) const {
-      return m_accessor(m_begin + (row * m_matrix_data->stride()) + col);
+      return m_accessor(m_begin + (row * m_image_data->stride()) + col);
     }
     void set(size_t row, size_t col, value_type value) {
-      m_accessor.set(m_begin + (row * m_matrix_data->stride()) + col, value);
+      m_accessor.set(m_begin + (row * m_image_data->stride()) + col, value);
     }
 
     //
     // Misc
     //
-    T* data() const { return m_matrix_data; }
-    self parent() { return self(*m_matrix_data, 0, 0, m_matrix_data->nrows(),
-				m_matrix_data->ncols()); }
-    self& matrix() { return *this; }
+    T* data() const { return m_image_data; }
+    self parent() { return self(*m_image_data, 0, 0, m_image_data->nrows(),
+				m_image_data->ncols()); }
+    self& image() { return *this; }
 
     //
     // Iterators
     //
-    typedef MatrixViewDetail::RowIterator<self,
+    typedef ImageViewDetail::RowIterator<self,
       typename T::iterator> row_iterator;
     row_iterator row_begin() {
       return row_iterator(this, m_begin); }
     row_iterator row_end() {
       return row_iterator(this, m_end); }
 
-    typedef MatrixViewDetail::ColIterator<self, typename T::iterator> col_iterator;
+    typedef ImageViewDetail::ColIterator<self, typename T::iterator> col_iterator;
     col_iterator col_begin() {
       return col_iterator(this, m_begin); }
     col_iterator col_end() {
@@ -244,14 +244,14 @@ namespace Gamera {
     //
     // Const Iterators
     //
-    typedef MatrixViewDetail::ConstRowIterator<const self,
+    typedef ImageViewDetail::ConstRowIterator<const self,
       typename T::const_iterator> const_row_iterator;
     const_row_iterator row_begin() const {
       return const_row_iterator(this, m_const_begin); }
     const_row_iterator row_end() const {
       return const_row_iterator(this, m_const_end); }
 
-    typedef MatrixViewDetail::ConstColIterator<const self,
+    typedef ImageViewDetail::ConstColIterator<const self,
       typename T::const_iterator> const_col_iterator;
     const_col_iterator col_begin() const {
       return const_col_iterator(this, m_const_begin); }
@@ -262,25 +262,25 @@ namespace Gamera {
     //
     // 2D iterators
     //
-    typedef Gamera::ImageIterator<MatrixView, typename T::iterator> Iterator;
-    Iterator upperLeft() { return Iterator(this, m_begin, m_matrix_data->stride()); }
-    Iterator lowerRight() { return Iterator(this, m_begin, m_matrix_data->stride())
+    typedef Gamera::ImageIterator<ImageView, typename T::iterator> Iterator;
+    Iterator upperLeft() { return Iterator(this, m_begin, m_image_data->stride()); }
+    Iterator lowerRight() { return Iterator(this, m_begin, m_image_data->stride())
 			      + Diff2D(ncols(), nrows()); }
-    typedef Gamera::ConstImageIterator<const MatrixView, typename T::const_iterator> ConstIterator;
+    typedef Gamera::ConstImageIterator<const ImageView, typename T::const_iterator> ConstIterator;
     ConstIterator upperLeft() const { return ConstIterator(this, m_const_begin,
-							   m_matrix_data->stride()); }
+							   m_image_data->stride()); }
     ConstIterator lowerRight() const {
-      return ConstIterator(this, m_const_begin, m_matrix_data->stride()) + Diff2D(ncols(), nrows());
+      return ConstIterator(this, m_const_begin, m_image_data->stride()) + Diff2D(ncols(), nrows());
     }
 
     //
     // Vector iterator
     //
-    typedef MatrixViewDetail::VecIterator<self, row_iterator, col_iterator> vec_iterator;
+    typedef ImageViewDetail::VecIterator<self, row_iterator, col_iterator> vec_iterator;
     vec_iterator vec_begin() { return vec_iterator(row_begin()); }
     vec_iterator vec_end() { return vec_iterator(row_end()); }
 
-    typedef MatrixViewDetail::ConstVecIterator<self,
+    typedef ImageViewDetail::ConstVecIterator<self,
       const_row_iterator, const_col_iterator> const_vec_iterator;
     const_vec_iterator vec_begin() const {
       return const_vec_iterator(row_begin());
@@ -301,44 +301,44 @@ namespace Gamera {
       calculate_iterators();
     }
     void calculate_iterators() {
-      m_begin = m_matrix_data->begin()
+      m_begin = m_image_data->begin()
         // row offset
-        + (m_matrix_data->stride() * offset_y())
+        + (m_image_data->stride() * offset_y())
         // col offset
         + offset_x();
-      m_end = m_matrix_data->begin()
+      m_end = m_image_data->begin()
         // row offset
-        + (m_matrix_data->stride() * (offset_y() + nrows()))
+        + (m_image_data->stride() * (offset_y() + nrows()))
         // column offset
         + offset_x();
-      const T* cmd = static_cast<const T*>(m_matrix_data);
+      const T* cmd = static_cast<const T*>(m_image_data);
       m_const_begin = cmd->begin()
         // row offset
-        + (m_matrix_data->stride() * offset_y())
+        + (m_image_data->stride() * offset_y())
         // col offset
         + offset_x();
       m_const_end = cmd->begin()
         // row offset
-        + (m_matrix_data->stride() * (offset_y() + nrows()))
+        + (m_image_data->stride() * (offset_y() + nrows()))
         // column offset
         + offset_x();
     }
     void range_check() {
-      if (offset_y() + nrows() > m_matrix_data->nrows() ||
-	  offset_x() + ncols() > m_matrix_data->ncols()) {
+      if (offset_y() + nrows() > m_image_data->nrows() ||
+	  offset_x() + ncols() > m_image_data->ncols()) {
 	char error[1024];
-	sprintf(error, "Matrix view dimensions out of range for data\n");
+	sprintf(error, "Image view dimensions out of range for data\n");
 	sprintf(error, "%s\tnrows %d\n", error, (int)nrows());
 	sprintf(error, "%s\toffset_y %d\n", error, (int)offset_y());
-	sprintf(error, "%s\tdata nrows %d\n", error, (int)m_matrix_data->nrows());
+	sprintf(error, "%s\tdata nrows %d\n", error, (int)m_image_data->nrows());
 	sprintf(error, "%s\tncols %d\n", error, (int)ncols());
 	sprintf(error, "%s\toffset_x %d\n", error, (int)offset_x());
-	sprintf(error, "%s\tdata ncols %d\n", error,(int)m_matrix_data->ncols());
+	sprintf(error, "%s\tdata ncols %d\n", error,(int)m_image_data->ncols());
 	std::cerr << error << std::endl;
 	throw std::range_error(error);
       }
     }
-    T* m_matrix_data;
+    T* m_image_data;
     typename T::iterator m_begin, m_end;
     typename T::const_iterator m_const_begin, m_const_end;
     accessor m_accessor;

@@ -480,10 +480,14 @@ class ImageDisplay(wxScrolledWindow):
          w = int(int(w / scaling) * scaling)
          h = int(int(h / scaling) * scaling)
 
+      if (y < self.image.ul_y):
+         y = self.image.ul_y
+      if (x < self.image.ul_x):
+         x = self.image.ul_x
       if (y + h >= self.image.lr_y):
-         h = self.image.lr_y - y # + 1
+         h = self.image.lr_y - y + 1
       if (x + w >= self.image.lr_x):
-         w = self.image.lr_x - x # + 1
+         w = self.image.lr_x - x + 1
 
       if check:
          if ((x + w < origin_scaled[0]) and
@@ -500,8 +504,6 @@ class ImageDisplay(wxScrolledWindow):
             self.draw_rubber(dc)
          return
 
-      print y, x, h, w
-      print self.image
       subimage = self.image.subimage(y, x, h, w)
       image = None
       if scaling != 1.0:

@@ -20,7 +20,7 @@
 
 from gamera.args import *
 from gamera import paths
-import new, os, os.path, unittest
+import new, os, os.path, unittest, imp, inspect
 from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 
 class PluginModule:
@@ -73,16 +73,14 @@ class PluginFunction:
          # This loads the actual C++ function if it is not directly
          # linked in the Python PluginFunction class
          parts = cls.__module__.split('.')
-         cpp_module_name = '.'.join(parts[:-1])
-         if not cpp_module.startswith('gamera'):
-             module = __import__('_' + parts[-1],
-                                 locals(),
-                                 globals())
-         else:
-             module = __import__(cpp_module_name,
-                                 locals(),
-                                 globals(),
-                                 '_' + parts[-1])
+         file = inspect.getfile(cls)
+         cpp_module_name = '_' + parts[-1]
+         directory = os.path.split(file)[0]
+         sys.path.append(directory)
+         found = imp.find_module(cpp_module_name)
+         del sys.path[-1]
+         if found:
+             module = imp.load_module(cpp_module_name, *found)
          if module == None:
             return
          func = getattr(module, cls.__name__)

@@ -197,6 +197,12 @@ static PyObject* rgbpixel_str(PyObject* self) {
 			     x->red(), x->green(), x->blue());
 }
 
+static long rgbpixel_hash(PyObject* self) {
+  RGBPixel* x = ((RGBPixelObject*)self)->m_x;
+
+  return (65536L*x->red() + 256L*x->green() + x->blue());
+}
+
 void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.ob_type = &PyType_Type;
   RGBPixelType.tp_name = "gameracore.RGBPixel";
@@ -211,6 +217,7 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
   RGBPixelType.tp_str = rgbpixel_str;
+  RGBPixelType.tp_hash = rgbpixel_hash;
   RGBPixelType.tp_doc = "**RGBPixel** (*red*, *green*, *blue*).\n\n"
     "Example: ``RGBPixel(255, 0, 0)``.\n\n"
     "Each color value is in the range 0-255 (8 bits).\n\n"

@@ -40,7 +40,7 @@ def get(default='untitled', dict={}):
                 break
         dlg = wxTextEntryDialog(NULL,
                                 'Please enter a variable name for the result',
-                                name, name)
+                                'Select a variable name', name)
         button = dlg.ShowModal()
         if button == wxID_OK:
             result = dlg.GetValue()

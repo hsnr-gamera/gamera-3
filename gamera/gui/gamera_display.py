@@ -24,7 +24,7 @@ from sys import maxint
 import sys, string, time
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
-from gamera.gui import image_menu, var_name, gui_util
+from gamera.gui import image_menu, var_name, gui_util, toolbar
 import gui_support
 
 ##############################################################################
@@ -237,11 +237,14 @@ class ImageDisplay(wxScrolledWindow):
 
    def OnResize(self, event):
       size = self.GetSize()
-      self.tmpDC.SelectObject(wxEmptyBitmap(
-         size.GetWidth(), size.GetHeight()))
-      self.tmpDC.SetPen(wxTRANSPARENT_PEN)
-      event.Skip()
-      self.scale()
+      if size.x > 0 and size.y > 0:
+         self.tmpDC.SelectObject(wxEmptyBitmap(
+            size.GetWidth(), size.GetHeight()))
+         self.tmpDC.SetPen(wxTRANSPARENT_PEN)
+         event.Skip()
+         self.scale()
+      else:
+         event.Skip()
 
    def OnPaint(self, event):
       if not self.image:
@@ -290,7 +293,7 @@ class ImageDisplay(wxScrolledWindow):
              (y + h < origin_scaled[1]) or
              (x > origin_scaled[0] + size_scaled[0] and
               y > origin_scaled[1] + size_scaled[1]) or
-             (w == 0 or h == 0)):
+             (w <= 0 or h <= 0)):
             return
 
       if (y + h >= self.image.height):
@@ -517,25 +520,20 @@ class ImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1):
       wxPanel.__init__(self, parent, id)
       self.SetAutoLayout(true)
-      self.toolbar = wxToolBar(self, -1, style=wxTB_HORIZONTAL)
+      self.toolbar = toolbar.ToolBar(self, -1)
       from gamera.gui import gamera_icons
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
-                                 "Refresh")
-      EVT_TOOL(self, 10, self.OnRefreshClick)
+                                 "Refresh", self.OnRefreshClick)
       self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
-                                 "Zoom in")
-      EVT_TOOL(self, 20, self.OnZoomInClick)
+                                 "Zoom in", self.OnZoomInClick)
       self.toolbar.AddSimpleTool(30, gamera_icons.getIconZoomOutBitmap(),
-                                 "Zoom Out")
-      EVT_TOOL(self, 30, self.OnZoomOutClick)
+                                 "Zoom Out", self.OnZoomOutClick)
       self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(31, gamera_icons.getIconMakeViewBitmap(),
-                                 "Make new view")
-      EVT_TOOL(self, 31, self.OnMakeViewClick)
+                                 "Make new view", self.OnMakeViewClick)
       self.toolbar.AddSimpleTool(32, gamera_icons.getIconImageCopyBitmap(),
-                                 "Make new copy")
-      EVT_TOOL(self, 32, self.OnMakeCopyClick)
+                                 "Make new copy", self.OnMakeCopyClick)
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.left.SameAs(self, wxLeft, 0)
@@ -551,6 +549,7 @@ class ImageWindow(wxPanel):
       lc.bottom.SameAs(self, wxBottom, 0)
       self.id.SetAutoLayout(true)
       self.id.SetConstraints(lc)
+      self.Layout()
 
    def get_display(self):
       return ImageDisplay(self)
@@ -929,38 +928,35 @@ class MultiImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       wxPanel.__init__(self, parent, id)
       self.SetAutoLayout(true)
-      self.toolbar = wxToolBar(self, -1, style=wxTB_HORIZONTAL)
+      self.toolbar = toolbar.ToolBar(self, -1)
+
       from gamera.gui import gamera_icons
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
-                                 "Refresh")
-      EVT_TOOL(self, 10, self.OnRefreshClick)
+                                 "Refresh", self.OnRefreshClick)
       self.toolbar.AddSeparator()
 
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Sort: "))
       self.sort_combo = wxComboBox(self.toolbar, 100, choices=[])
       self.toolbar.AddControl(self.sort_combo)
       self.toolbar.AddSimpleTool(101, gamera_icons.getIconSortAscBitmap(),
-                                 "Sort Ascending")
-      EVT_TOOL(self, 101, self.OnSortAscending)
+                                 "Sort Ascending", self.OnSortAscending)
       self.toolbar.AddSimpleTool(102, gamera_icons.getIconSortDecBitmap(),
-                                 "Sort Descending")
-      EVT_TOOL(self, 102, self.OnSortDescending)
+                                 "Sort Descending", self.OnSortDescending)
       self.toolbar.AddSeparator()
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Select: "))
       self.select_combo = wxComboBox(self.toolbar, 200, choices=[])
       self.toolbar.AddControl(self.select_combo)
       self.toolbar.AddSimpleTool(201, gamera_icons.getIconSelectBitmap(),
-                                 "Select by given expression")
-      EVT_TOOL(self, 201, self.OnSelect)
+                                 "Select by given expression", self.OnSelect)
       self.toolbar.AddSimpleTool(203, gamera_icons.getIconSelectAllBitmap(),
-                                 "Select All")
-      EVT_TOOL(self, 203, self.OnSelectAll)
+                                 "Select All", self.OnSelectAll)
       self.select_choices = []
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.height.AsIs()
+      self.toolbar.SetAutoLayout(true)
       self.toolbar.SetConstraints(lc)
       self.id = self.get_display()
       lc = wxLayoutConstraints()
@@ -968,7 +964,9 @@ class MultiImageWindow(wxPanel):
       lc.left.SameAs(self, wxLeft, 0)
       lc.right.SameAs(self, wxRight, 0)
       lc.bottom.SameAs(self, wxBottom, 0)
+      self.toolbar.SetAutoLayout(true)
       self.id.SetConstraints(lc)
+      self.Layout()
       self.sort_choices = []
 
    # This can be overridden to change the internal display class

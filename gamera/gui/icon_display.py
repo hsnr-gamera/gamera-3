@@ -168,6 +168,8 @@ class IconDisplay(wxListCtrl):
  
 class CustomIcon:
   is_custom_icon_description = 1
+
+  _extra_methods = {}
   def __init__(self, label_, data_, index_):
     self.label = label_
     self.data = data_
@@ -186,10 +188,11 @@ class CustomIcon:
 
   def right_click(self, parent, event, shell):
     x,y = event.GetPoint()
+    self._shell = shell
     image_menu.ImageMenu(
       parent, x, y,
       self.data, self.label,
-      shell)
+      shell, extra_methods = self._extra_methods)
 
 class CIRGBImage(CustomIcon):
   def get_icon():
@@ -291,6 +294,11 @@ class CICC(CustomIcon):
   check = staticmethod(check)
 
 class CIImageList(CustomIcon):
+  def __init__(self, *args):
+    CustomIcon.__init__(self, *args)
+    self._extra_methods =  _extra_methods = {
+      'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml}}}
+
   def get_icon():
     return wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
   get_icon = staticmethod(get_icon)
@@ -299,18 +307,12 @@ class CIImageList(CustomIcon):
     return util.is_homogeneous_image_list(data)
   check = staticmethod(check)
 
-  def right_click(self, parent, event, shell):
-    x,y = event.GetPoint()
-    image_menu.ImageMenu(
-      parent, x, y,
-      self.data, self.label,
-      shell, extra_methods = {'XML': {'glyphs_to_xml': self.glyphs_to_xml}})
-
   def glyphs_to_xml(self, event):
     filename = gui_util.save_file_dialog(gamera_xml.extensions)
     if filename != None:
-      shell.run('from gamera import gamera_xml')
-      shell.run('gamera_xml.glyphs_to_xml(r"%s", %s)' % (filename, self.label))
+      self._shell.run('from gamera import gamera_xml')
+      self._shell.run('gamera_xml.glyphs_to_xml(r"%s", %s)' % (filename, self.label))
+    del self._shell
 
   def double_click(self):
     return 'display_multi(%s)' % self.label

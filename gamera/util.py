@@ -213,14 +213,14 @@ def word_wrap(stream, l, indent=0, width=78):
   while i != -1:
     stream.write(indent_spaces)
     if len(l) - p < width:
-      stream.write(l[p:].strip())
+      stream.write(l[p:])
       stream.write('\n')
       break
     else:
       i = l.rfind(' ', p, p + width)
       if i == -1:
-        stream.write(l[p:].strip())
-      stream.write(l[p:i].strip())
+        stream.write(l[p:])
+      stream.write(l[p:i])
     stream.write('\n')
     p = i + 1
 
@@ -231,6 +231,14 @@ def encode_binary(s):
 def decode_binary(s):
   import zlib, binascii
   return zlib.decompress(binascii.a2b_base64(s))
+
+class ProgressNothing:
+  """A progress bar that actually does nothing (for batch mode.)"""
+  def __init__(self, message, length=0):
+    pass
+  def ___(*args):
+    pass
+  update = kill = step = add_length = ___
 
 class ProgressText:
   """A console-based progress bar."""
@@ -280,5 +288,3 @@ def ProgressFactory(message, length=1):
     return gui.ProgressBox(message, length)
   else:
     return ProgressText(message, length)
-  
-

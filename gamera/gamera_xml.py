@@ -217,13 +217,8 @@ class LoadXML:
    def __init__(self, parts = ['symbol_table', 'glyphs', 'groups']):
       self._start_elements = {}
       self._end_elements = {}
-      self._start_elements_global = []
-      self._end_elements_global = []
       self._stream_length = 0
       self._parts = parts
-
-   def __del__(self):
-      print "LoadXML destroyed."
 
    def try_type_convert(self, dictionary, key, typename, tagname):
       try:
@@ -252,10 +247,6 @@ class LoadXML:
       return self.parse_stream(stream)
 
    def parse_stream(self, stream):
-      self._start_elements = {}
-      self._end_elements = {}
-      self._start_elements_global = []
-      self._end_elements_global = []
       self._setup_handlers()
       self._parser = expat.ParserCreate()
       self._parser.StartElementHandler = self._start_element_handler
@@ -263,13 +254,13 @@ class LoadXML:
       self._stream = stream
       self._progress = util.ProgressFactory("Loading XML...")
       try:
-         self._parser.ParseFile(stream)
+         try:
+            self._parser.ParseFile(stream)
+         except expat.ExpatError, e:
+            raise
       finally:
          self._progress.kill()
-         self._start_elements = {}
-         self._end_elements = {}
-         self._start_elements_global = []
-         self._end_elements_global = []
+         self._remove_handlers()
          self._parser.StartElementHandler = None
          self._parser.EndElementHandler = None
          del self._parser
@@ -281,15 +272,7 @@ class LoadXML:
    def remove_start_element_handler(self, name):
       del self._start_elements[name]
 
-   def add_global_start_element_handler(self, func):
-      self._start_elements_global.append(func)
-
-   def remove_global_start_element_handler(self, func):
-      self._start_elements_global.remove(func)
-      
    def _start_element_handler(self, name, attributes):
-      for x in self._start_elements_global:
-         x(name, attributes)
       try:
          self._start_elements[name](attributes)
       except KeyError:
@@ -301,19 +284,13 @@ class LoadXML:
    def remove_end_element_handler(self, name):
       del self._end_elements[name]
 
-   def add_global_end_element_handler(self, func):
-      self._end_elements_global.append(func)
-
-   def remove_global_end_element_handler(self, func):
-      self._end_elements_global.remove(func)
-
    def _end_element_handler(self, name):
-      for x in self._end_elements_global:
-         x(name)
       try:
          self._end_elements[name]()
       except KeyError:
          pass
+
+   def _update_progress(self):
       if self._stream_length:
          self._progress.update(self._stream.tell(), self._stream_length)
       else:
@@ -339,6 +316,17 @@ class LoadXML:
          self.add_start_element_handler('groups', self._ths_groups)
          self.add_end_element_handler('groups', self._the_groups)
 
+   def _remove_handlers(self):
+      if 'symbol_table' in self._parts:
+         self.remove_start_element_handler('symbols')
+         self.remove_end_element_handler('symbols')
+      if 'glyphs' in self._parts:
+         self.remove_start_element_handler('glyphs')
+         self.remove_end_element_handler('glyphs')
+      if 'groups' in self._parts:
+         self.remove_start_element_handler('groups')
+         self.remove_end_element_handler('groups')
+
    def _ths_symbols(self, a):
       self.add_start_element_handler('symbol', self._ths_symbol)
 
@@ -347,6 +335,7 @@ class LoadXML:
    
    def _ths_symbol(self, a):
       self.symbol_table.add(str(a['name']))
+      self._update_progress()
 
    def _ths_glyphs(self, a):
       self._append_glyph = self._append_glyph_to_glyphs
@@ -362,15 +351,10 @@ class LoadXML:
 
    def _the_glyphs(self):
       self._append_glyph = None
-      self.remove_start_element_handler('glyph')
-      self.remove_end_element_handler('glyph')
-      self.remove_start_element_handler('features')
-      self.remove_start_element_handler('ids')
-      self.remove_start_element_handler('id')
-      self.remove_start_element_handler('data')
-      self.remove_end_element_handler('data')
-      self.remove_start_element_handler('property')
-      self.remove_end_element_handler('property')
+      for element in 'glyph features ids id data property'.split():
+         self.remove_start_element_handler(element)
+      for element in 'glyph data property'.split():
+         self.remove_end_element_handler(element)
 
    def _ths_glyph(self, a):
       self._ul_y = self.try_type_convert(a, 'uly', int, 'glyph')
@@ -392,6 +376,7 @@ class LoadXML:
          glyph.properties[key] = val
       glyph.scaling = self._scaling
       self._append_glyph(glyph)
+      self._update_progress()
 
    def _ths_ids(self, a):
       self._classification_state = self.try_type_convert(
@@ -437,11 +422,6 @@ class LoadXML:
    def add_property_value(self, data):
       self._property_value += data
 
-   def setup_handlers(self):
-      self.add_start_element_handler('groups', self._ths_groups)
-      self.add_end_element_handler('groups', self._the_groups)
-      self.groups = []
-
    def _ths_groups(self, a):
       self._append_glyph = self._append_glyph_to_group
       self.add_start_element_handler('group', self._ths_group)
@@ -458,17 +438,10 @@ class LoadXML:
 
    def _the_groups(self):
       self._append_glyph = None
-      self.remove_start_element_handler('group')
-      self.remove_end_element_handler('group')
-      self.remove_start_element_handler('glyph')
-      self.remove_end_element_handler('glyph')
-      self.remove_start_element_handler('features')
-      self.remove_start_element_handler('ids')
-      self.remove_start_element_handler('id')
-      self.remove_start_element_handler('data')
-      self.remove_end_element_handler('data')
-      self.remove_start_element_handler('property')
-      self.remove_end_element_handler('property')
+      for element in 'group glyph feautures ids id data property'.split():
+         self.remove_start_element_handler(element)
+      for element in 'group glyph data property'.split():
+         self.remove_end_element_handler(element)
 
    def _ths_group(self, a):
       self._group = []

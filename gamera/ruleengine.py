@@ -78,7 +78,7 @@ Rule functions take the basic form:
 
    For performing tests that need to be somewhat "fuzzy", you may want to use Fudge objects.  Comparisons
    on Fudge objects have a built-in fuzzy zone around the core int, Point or Rect that make comparing
-   things that just must be "close enough" easier.  (See fudge.py)
+   things to be "close enough" easier.  (See fudge.py)
 
 3. In the body, the rule function can modify the glyph attributes in any way it sees fit.
 

@@ -480,8 +480,8 @@ class ClassifierFrame(ImageFrameBase):
       self._symbol_table.add("_group._part")
       # Add classifier database's symbols to the symbol table
       for glyph in self._classifier.get_glyphs():
-         for id in glyph.id_name:
-            self._symbol_table.add(id[1])
+         for idx in glyph.id_name:
+            self._symbol_table.add(idx[1])
 
       self.classifier_collection_filename = None
       self.page_collection_filename = None

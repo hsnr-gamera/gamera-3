@@ -901,8 +901,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
       scaling = self.parent.scaling
       cell_padding = grid.cell_padding
-
       image_list = self.parent.list
+
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(image_list):
          image = image_list[bitmap_no]
@@ -929,16 +929,15 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             # if necessary, we also do the cropping.
             height = ceil(image.nrows * scaling)
             width = ceil(image.ncols * scaling)
-            if (height >= rect.GetHeight() or
-                width >= rect.GetWidth()):
+            if (height >= rect.height or width >= rect.width):
                # If the scaled version is going to still be too large to fit in
                # the grid cell, we crop it first and then scale it. We could
                # just scale the whole image and then crop that to the
                # appropriate size, but that could be very expensive. Instead we
                # figure out how big of a cropped image to create so that after
                # scaling it is the appropriate size.
-               sub_height = min(int((rect.GetHeight() + 1) / scaling), image.nrows)
-               sub_width = min(int((rect.GetWidth() + 1) / scaling), image.ncols)
+               sub_height = min(int((rect.height + 1) / scaling), image.nrows)
+               sub_width = min(int((rect.width + 1) / scaling), image.ncols)
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
                scaled_image = sub_image.resize(
@@ -950,10 +949,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          else:
             # If we don't scale the image we can simply crop if the image is too
             # big to fit into the grid cell or otherwise do nothing.
-            if (image.nrows >= rect.GetHeight() or
-                image.ncols >= rect.GetWidth()):
-               height = min(image.nrows, rect.GetHeight() + 1)
-               width = min(image.ncols, rect.GetWidth() + 1)
+            if (image.nrows >= rect.height or image.ncols >= rect.width):
+               height = min(image.nrows, rect.height + 1)
+               width = min(image.ncols, rect.width + 1)
                scaled_image = image.subimage(
                   image.offset_y, image.offset_x, height, width)
             else:
@@ -1357,7 +1355,7 @@ class MultiImageDisplay(wxGrid):
          return no
 
    def GetAllItems(self):
-      return [x for x in self.list if x != None and not hasattr(x, 'dead')]
+      return [x for x in self.list if not x is None and not hasattr(x, 'dead')]
 
    def GetSelectedItems(self, row = None, col = None):
       if row != None:

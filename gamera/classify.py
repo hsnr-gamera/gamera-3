@@ -20,7 +20,7 @@
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 import re
-import sys
+import sys, gc
 from fudge import Fudge
 from gamera.gui import has_gui
 

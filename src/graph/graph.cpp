@@ -106,7 +106,6 @@ void graph_dealloc(PyObject* self) {
   NodeVector* nodes = so->m_nodes;
   EdgeVector* edges = so->m_edges;
   DataToNodeMap* data_to_node = so->m_data_to_node;
-  self->ob_type->tp_free(self);
 
   for (NodeVector::iterator i = nodes->begin();
        i != nodes->end(); ++i) {
@@ -119,6 +118,7 @@ void graph_dealloc(PyObject* self) {
   delete nodes;
   delete edges;
   delete data_to_node;
+  self->ob_type->tp_free(self);
 }
 
 GraphObject* graph_copy(GraphObject* so, size_t flags) {

@@ -32,8 +32,8 @@ from gamera.core import Rect
 def Fudge(o, amount = FUDGE_AMOUNT):
    # For rectangles, just return a new rectangle that is slightly larger
    if isinstance(o, Rect):
-      return Rect(o.ul_y - amount, o.ul_x - amount,
-                  o.nrows + amount * 2, o.ncols + amount * 2)
+      return Rect(int(o.ul_y - amount), int(o.ul_x - amount),
+                  int(o.nrows + amount * 2), int(o.ncols + amount * 2))
 
    # For integers, return one of our "fudge number proxies"
    elif isinstance(o, int):

@@ -155,7 +155,6 @@ class _kNNBase(gamera.knncore.kNN):
    def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
-      print "changing"
       self.feature_functions = core.ImageBase.get_feature_functions(self.features)
       self.num_features = features.get_features_length(self.features)
       classify.InteractiveClassifier.change_feature_set(self, f)

@@ -119,32 +119,23 @@ class IconDisplay(wxListCtrl):
          self.locals = locals
       okay = []
       for key, val in self.locals.items():
-         if inspect.ismodule(val) and not self.modules.has_key(val):
-            self.modules[val] = None
-            print "MODULE", klass
-##             for obj in val.__dict__.values():
-##                if hasattr(val, "is_custom_menu"):
-##                   self.main_win.add_custom_menu(val, obj)
-##                elif hasattr(klass, "is_custom_icon_description"):
-##                   self.main_win.add_custom_icon_description(obj)
-         else:
-            t = None
-            for klass, icon in self.classes:
-               try:
-                  if klass.check(val):
-                     t = klass
-                     break
-               except:
-                  pass
-            if t != None:
-               if self.data.has_key(key):
-                  self.refresh_icon(key, t, val, icon)
-               else:
-                  obj = t(key, val, 0)
-                  self.add_icon(key, obj, icon)
-               okay.append(key)
-            elif self.data.has_key(key):
-               self.remove_icon(key)
+         t = None
+         for klass, icon in self.classes:
+            try:
+               if klass.check(val):
+                  t = klass
+                  break
+            except:
+               pass
+         if t != None:
+            if self.data.has_key(key):
+               self.refresh_icon(key, t, val, icon)
+            else:
+               obj = t(key, val, 0)
+               self.add_icon(key, obj, icon)
+            okay.append(key)
+         elif self.data.has_key(key):
+            self.remove_icon(key)
       for i in self.data.keys():
          if i not in okay:
             self.remove_icon(i)
@@ -187,6 +178,11 @@ class CustomIcon:
       self.label = label_
       self.data = data_
       self.index = index_
+
+   def register(cls):
+      icon_display = main_win = config.options.__.gui.TopLevel().icon_display
+      icon_display.add_class(cls)
+   register = classmethod(register)
 
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())

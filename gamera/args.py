@@ -756,18 +756,19 @@ class Info(_guiInfo, Arg):
    def __init__(self, name):
       self.name = name
 
-class Wizard(Args):
+class Wizard:
    def show(self, dialog):
-      dialog_history = ['start']
+      dialog_history = ['start', dialog]
       next_dialog = dialog
       while next_dialog != None:
          if next_dialog == 'start':
             return
          result = next_dialog.show(self.parent, self.locals, wizard=1)
-         if result != None:
-            dialog_history.append(next_dialog)
-            next_dialog = getattr(self, result)
+         if not result is None:
+            next_dialog = getattr(self, next_dialog.function)(*next_dialog.get_args())
+            if next_dialog != dialog_history[-1]:
+               dialog_history.append(next_dialog)
          else:
-            next_dialog = dialog_history[-1]
+            next_dialog = dialog_history[-2]
             dialog_history = dialog_history[0:-1]
       self.done()

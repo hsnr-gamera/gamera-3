@@ -57,9 +57,9 @@ from gameracore import ImageData, Size, Dimensions, Point, \
      Rect, Region, RegionMap, ImageInfo
 # import gamera.gameracore for subclassing
 import gameracore
-from classify import InteractiveClassifier, NonInteractiveClassifier
+# from classify import InteractiveClassifier, NonInteractiveClassifier
 
-from gamera.classify import *
+# from gamera.classify import *
 import paths, util, config    # Gamera-specific
 
 ######################################################################

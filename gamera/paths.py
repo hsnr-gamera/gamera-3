@@ -42,7 +42,7 @@ def get_toolkit_names(dir):
    listing = dircache.listdir(dir)
    dircache.annotate(dir, listing)
    for toolkit in listing:
-      if toolkit.endswith(".py"):
+      if toolkit.endswith(".py") and toolkit != "__init__.py":
          toolkits.append(toolkit[:-3])
       elif toolkit.endswith("module.so"):
          toolkits.append(toolkit[:-9])

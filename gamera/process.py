@@ -157,7 +157,7 @@ class ProcessWizard(Wizard):
            Radio("Perform part of the process", "Custom"),
            Choice("   Starting step", self.process.steps),
            Choice("   Ending step", self.process.steps, -1)],
-          caption=self.caption,
+#          caption=self.caption,
           function='cb_select_steps',
           title=('Select which steps of the %s process you would like to perform.' % self.process.__name__))
 
@@ -211,7 +211,7 @@ class ProcessWizard(Wizard):
 
    def done(self):
       self.shell.run("%s.%s%s.process(%s, %s, %s)" %
-                     (getmodule(self.process).__name__,
+                     (getmodule(self.process).__name__.split[-1],
                       self.process.__name__,
                       self.init_args,
                       repr(self.process.steps[self.start_step]),

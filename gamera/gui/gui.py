@@ -286,7 +286,7 @@ class ShellFrame(wxFrame):
                         int(config.options.shell.y_position)))
 
    def make_menu(self):
-      self.custom_menus = []
+      self.custom_menus = {}
       file_menu = gui_util.build_menu(
          self,
          (("&Open...", self._OnFileOpen),
@@ -300,28 +300,29 @@ class ShellFrame(wxFrame):
       classify_menu = gui_util.build_menu(
          self,
          (("&Interactive classifier", self._OnClassifier),))
-##       toolkits = paths.get_toolkit_names(paths.toolkits)
-##       self.import_toolkits = {}
-##       self.reload_toolkits = {}
-##       self.toolkit_menus = {}
-##       for toolkit in toolkits:
-##          toolkitID = wxNewId()
-##          toolkit_menu = wxMenu(style=wxMENU_TEAROFF)
-##          toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
-##                              "Import %s toolkit" % toolkit)
-##          EVT_MENU(self, toolkitID, self.OnImportToolkit)
-##          self.import_toolkits[toolkitID] = toolkit
-##          toolkitID = wxNewId()
-##          toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
-##                              "Reload %s toolkit" % toolkit)
-##          EVT_MENU(self, toolkitID, self.OnReloadToolkit)
-##          self.reload_toolkits[toolkitID] = toolkit
-##          self.toolkit_menu.AppendMenu(wxNewId(), toolkit, toolkit_menu)
-##          self.toolkit_menus[toolkit] = toolkit_menu
-##       menubar.Append(self.toolkit_menu, "&Toolkits")
+      toolkits = paths.get_toolkit_names(paths.toolkits)
+      self.import_toolkits = {}
+      self.reload_toolkits = {}
+      self.toolkit_menus = {}
+      toolkits_menu = wxMenu()
+      for toolkit in toolkits:
+         toolkitID = wxNewId()
+         toolkit_menu = wxMenu(style=wxMENU_TEAROFF)
+         toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
+                             "Import %s toolkit" % toolkit)
+         EVT_MENU(self, toolkitID, self._OnImportToolkit)
+         self.import_toolkits[toolkitID] = toolkit
+         toolkitID = wxNewId()
+         toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
+                             "Reload %s toolkit" % toolkit)
+         EVT_MENU(self, toolkitID, self._OnReloadToolkit)
+         self.reload_toolkits[toolkitID] = toolkit
+         toolkits_menu.AppendMenu(wxNewId(), toolkit, toolkit_menu)
+         self.toolkit_menus[toolkit] = toolkit_menu
       menubar = wxMenuBar()
       menubar.Append(file_menu, "&File")
       menubar.Append(classify_menu, "&Classify")
+      menubar.Append(toolkits_menu, "&Toolkits")
       return menubar
 
    def add_custom_menu(self, name, menu):
@@ -375,10 +376,12 @@ class ShellFrame(wxFrame):
          self.shell.run("%s.display()" % name)
 
    def _OnImportToolkit(self, event):
-      self.shell.run("import %s\n" % self.import_toolkits[event.GetId()])
+      self.shell.run("from gamera.toolkits import %s\n" %
+                     self.import_toolkits[event.GetId()])
 
    def _OnReloadToolkit(self, event):
-      self.shell.run("reload(%s)\n" % self.reload_toolkits[event.GetId()])
+      self.shell.run("reload(%s)\n" %
+                     self.reload_toolkits[event.GetId()])
 
    def _OnCloseWindow(self, event):
       for window in self.GetChildren():
@@ -405,19 +408,25 @@ class StatusBar(wxStatusBar):
 class CustomMenu:
    is_custom_menu = 1
    items = []
-   def __init__(self, menu, shell, locals):
-      self.shell = shell
-      self.locals = locals
-      if self.items == []:
-         menu.Append(wxNewId(), "--- empty ---")
-      else:
-         for item in self.items:
-            if item == "-":
-               menu.Break()
-            else:
-               menuID = wxNewId()
-               EVT_MENU(menu, menuID, getattr(self, item))
-               menu.Append(menuID, item)
+   def __init__(self):
+      main_win = config.options.__.gui.TopLevel()
+      name = self.__class__.__module__.split('.')[-1]
+      if not main_win.custom_menus.has_key(name):
+         main_win.custom_menus[name] = None
+         self.shell = main_win.shell
+         self.locals = main_win.shell.locals
+         menu = main_win.toolkit_menus[name]
+         menu.AppendSeparator()
+         if self._items == []:
+            menu.Append(wxNewId(), "--- empty ---")
+         else:
+            for item in self._items:
+               if item == "-":
+                  menu.Break()
+               else:
+                  menuID = wxNewId()
+                  EVT_MENU(menu, menuID, getattr(self, "_On" + util.string2identifier(item)))
+                  menu.Append(menuID, item)
 
 CustomIcon = icon_display.CustomIcon
 

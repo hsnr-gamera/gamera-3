@@ -292,7 +292,7 @@ class LoadXMLGlyphs(LoadXML):
 
    def the_glyph(self):
       glyph = core.Image(self.ul_y, self.ul_x, self.nrows, self.ncols,
-                      core.ONEBIT, core.DENSE)
+                         core.ONEBIT, core.DENSE)
       glyph.from_rle(str(self.data.strip()))
       glyph.classification_state = self.classification_state
       glyph.id_name = self.id_name
@@ -308,11 +308,11 @@ class LoadXMLGlyphs(LoadXML):
          self.classification_state = UNCLASSIFIED
 
    def ths_id(self, a):
-      self.id_name.append((float(a['confidence']), a['name']))
+      self.id_name.append((float(a['confidence']), str(a['name'])))
 
    def ths_features(self, a):
       if a.has_key('scaling'):
-         self.scaling = eval(a['scaling'])
+         self.scaling = float(a['scaling'])
 
    def ths_data(self, a):
       self.data = ''

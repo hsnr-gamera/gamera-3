@@ -61,7 +61,7 @@ class Builtin(PluginModule):
 
 class PluginFunction:
    return_type = None
-   self_type = ImageType(ALL)
+   self_type = ImageType(ALL+[COMPLEX])
    args = Args([])
    image_types_must_match = 0
    testable = 0
@@ -113,7 +113,8 @@ def PluginFactory(name, category=None,
                                        GREYSCALE,
                                        GREY16,
                                        ONEBIT,
-                                       FLOAT)),
+                                       FLOAT,
+				       COMPLEX)),
                   args=None):
    from gamera import core
    cls = new.classobj(name, (PluginFunction,), {})

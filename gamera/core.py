@@ -48,7 +48,7 @@ from types import *
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
-from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX
 from enums import ALL, NONIMAGE
 # import the storage types
 from gameracore import DENSE, RLE
@@ -552,8 +552,11 @@ def _init_gamera():
          "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
          None),
       plugin.PluginFactory(
+         "display_ccs", "Displaying", None, plugin.ImageType([COMPLEX]),
+         None),
+      plugin.PluginFactory(
          "display_false_color", "Displaying", None,
-         plugin.ImageType([GREYSCALE, FLOAT]),
+         plugin.ImageType([GREYSCALE, FLOAT, COMPLEX]),
          None),
       plugin.PluginFactory(
          "classify_manual", "Classification", None,
@@ -602,7 +605,7 @@ if __name__ == "__main__":
    init_gamera()
 
 __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
-           "ONEBIT GREYSCALE GREY16 RGB FLOAT ALL DENSE RLE "
+           "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL  DENSE RLE "
            "ImageData Size Dimensions Point Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel").split()

@@ -343,6 +343,15 @@ class CIOneBitSubImage(CustomIcon):
       return isinstance(data, SubImage) and data.data.pixel_type == ONEBIT
    check = staticmethod(check)
 
+class CIComplexSubImage(CustomIcon):
+   def get_icon():
+      return wxIconFromBitmap(gamera_icons.getIconSubimageComplexBitmap())
+   get_icon = staticmethod(get_icon)
+
+   def check(data):
+      return isinstance(data, SubImage) and data.data.pixel_type == COMPLEX
+   check = staticmethod(check)
+
 class CICC(CustomIcon):
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconCcBitmap())
@@ -422,7 +431,7 @@ class CINonInteractiveClassifier(CustomIcon):
    def control_s(self): pass
 
 builtin_icon_types = (
-  CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,
+  CICC, CIRGBImage, CIComplexImage, CIGreyScaleImage, CIGrey16Image,
   CIFloatImage, CIOneBitImage, CIRGBSubImage,
   CIGreyScaleSubImage, CIGrey16SubImage, CIFloatSubImage,
   CIOneBitSubImage, CIImageList, CIInteractiveClassifier,

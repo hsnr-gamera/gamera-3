@@ -25,7 +25,7 @@ class to_rgb(PluginFunction):
 
 Note, converting an image to one of the same type performs a copy operation.
 """
-    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16])
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, COMPLEX, GREY16])
     return_type = ImageType([RGB], "rgb")
 
     def __call__(self):
@@ -39,7 +39,7 @@ class to_greyscale(PluginFunction):
 
 Note, converting an image to one of the same type performs a copy operation.
 """
-    self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB])
+    self_type = ImageType([ONEBIT, FLOAT, COMPLEX, GREY16, RGB])
     return_type = ImageType([GREYSCALE], "greyscale")
     doc_examples = [(RGB,)]
 
@@ -54,7 +54,7 @@ class to_grey16(PluginFunction):
 
 Note, converting an image to one of the same type performs a copy operation.
 """
-    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, COMPLEX, RGB])
     return_type = ImageType([GREY16], "grey16")
 
     def __call__(self):
@@ -68,13 +68,27 @@ class to_float(PluginFunction):
 
 Note, converting an image to one of the same type performs a copy operation.
 """
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, COMPLEX])
     return_type = ImageType([FLOAT], "float")
 
     def __call__(self):
         if self.data.pixel_type == FLOAT:
             return self.image_copy()
         return _image_conversion.to_float(self)
+    __call__ = staticmethod(__call__)
+
+class to_complex(PluginFunction):
+    """Converts the given image to a COMPLEX image.
+
+Note, converting an image to one of the same type performs a copy operation.
+"""
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    return_type = ImageType([COMPLEX], "complex")
+
+    def __call__(self):
+        if self.data.pixel_type == COMPLEX:
+            return self.image_copy()
+        return _image_conversion.to_complex(self)
     __call__ = staticmethod(__call__)
 
 class to_onebit(PluginFunction):
@@ -88,7 +102,7 @@ Note, converting an image to one of the same type performs a copy operation.
 .. _Thresholding: thresholding.html
 """
     pure_python = True
-    self_type = ImageType([FLOAT, GREYSCALE, GREY16, RGB])
+    self_type = ImageType([FLOAT, COMPLEX, GREYSCALE, GREY16, RGB])
     return_type = ImageType([ONEBIT], "onebit")
     def __call__(self, storage_format=DENSE):
         if self.data.pixel_type == ONEBIT:
@@ -104,7 +118,7 @@ class ImageConversionModule(PluginModule):
     category = "Conversion"
     cpp_headers=["image_conversion.hpp"]
     functions = [to_rgb, to_greyscale, to_grey16, to_float,
-                 to_onebit, to_onebit]
+                 to_onebit, to_onebit, to_complex]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

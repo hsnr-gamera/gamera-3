@@ -37,11 +37,12 @@ import _deformation
 class rotate(PluginFunction):
     """Rotates an image by skew method"""
     category = "Deformations"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])    
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, FLOAT, COMPLEX, RGB])    
+    return_type = ImageType([ONEBIT, FLOAT, COMPLEX, RGB])
     args = Args([Float("Rotation angle"), Pixel("Background Color")])
-    args.list[0].rng = (-180,180)
-    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255))]
+    #args.list[0].rng = (-180,180)
+    image_types_must_match = True
+    #doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255))]
 
 class wave(PluginFunction):
     """Causes periodic disturbance of user-defined frequency, amplitude, and direction"""
@@ -98,7 +99,7 @@ class batch_deform(PluginFunction):
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
     category = "Deformations"
-    functions = [rotate,noise,inkrub,wave,ink_diffuse]
+    functions = [rotate, noise, inkrub, wave, ink_diffuse]
     author = "Albert Brzeczko"
     url = "http://gamera.dkc.jhu.edu/"
 module = DefModule()

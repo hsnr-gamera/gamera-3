@@ -22,13 +22,13 @@ from gamera.plugin import *
 class to_string(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
 (i.e. 8-bit RGB triplets)."""
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX])
     return_type = Class("image_as_string")
 
 class to_buffer(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
 (i.e. 8-bit RGB triplets)."""
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX])
     args = Args(Class("Buffer"))
 
 class color_ccs(PluginFunction):

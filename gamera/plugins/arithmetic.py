@@ -24,7 +24,7 @@ from gamera.plugin import *
 import _arithmetic
 import _logical
 
-ARITHMETIC_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
+ARITHMETIC_TYPES = [GREYSCALE, GREY16, FLOAT, RGB, COMPLEX]
 
 class ArithmeticCombine(PluginFunction):
     self_type = ImageType(ARITHMETIC_TYPES)

@@ -194,7 +194,9 @@ _pixel_type_names = {ONEBIT:     "OneBit",
                      GREYSCALE:  "GreyScale",
                      GREY16:     "Grey16",
                      RGB:        "RGB",
-                     FLOAT:      "Float"}
+                     FLOAT:      "Float",
+		     COMPLEX:    "Complex"}
+
 def get_pixel_type_name(type_):
    return _pixel_type_names[type_]
 

@@ -86,7 +86,7 @@ consider using scale_ instead.
     self_type = ImageType(ALL)
     args= Args([Int("nrows"), Int("ncols"),
                 Choice("interp_type", ["None", "Linear", "Spline"])])
-    return_type = ImageType(ALL)
+    return_type = ImageType(ALL+[COMPLEX])
     doc_examples = [(RGB, 96, 32, 3)]
 
 class scale(PluginFunction):
@@ -108,7 +108,7 @@ consider using resize_ instead.
     self_type = ImageType(ALL)
     args= Args([Real("scaling"),
                 Choice("interp_type", ["None", "Linear", "Spline"])])
-    return_type = ImageType(ALL)
+    return_type = ImageType(ALL+[COMPLEX])
     doc_examples = [(RGB, 0.5, 3), (RGB, 2.0, 3)]
 
 class histogram(PluginFunction):
@@ -139,7 +139,7 @@ class union_images(PluginFunction):
 class fill_white(PluginFunction):
     """Fills the entire image with white."""
     category = "Draw"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, COMPLEX, RGB])
 
 class fill(PluginFunction):
     """Fills the entire image with value.
@@ -280,7 +280,7 @@ TODO: Handle Python arrays.  This is difficult without a proper C API.
     self_type = None
     args = Args([Class('nested_list'),
                  Choice('image_type', ['ONEBIT', 'GREYSCALE',
-                                       'GREY16', 'RGB', 'FLOAT'])])
+                                       'GREY16', 'RGB', 'FLOAT', 'COMPLEX'])])
     return_type = ImageType(ALL)
     def __call__(l, t=-1):
         return _image_utilities.nested_list_to_image(l, t)

@@ -202,7 +202,7 @@ class _kNNBase(gamera.knncore.kNN):
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
-      progress = util.ProgressFactory("Generating unique distances . . .", l)
+      progress = util.ProgressFactory("Generating unique distances...", l)
       m = self._distance_matrix(images, progress.step, normalize)
       #m = self._distance_matrix(images)
       progress.kill()
@@ -217,7 +217,7 @@ class _kNNBase(gamera.knncore.kNN):
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
       l = len(images)
-      progress = util.ProgressFactory("Generating unique distances . . .", l)
+      progress = util.ProgressFactory("Generating unique distances...", l)
       dists = self._unique_distances(images, progress.step, normalize)
       #dists = self._unique_distances(images)
       progress.kill()

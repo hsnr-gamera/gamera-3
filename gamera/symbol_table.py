@@ -72,6 +72,7 @@ class SymbolTable:
       symbol, tokens = self.normalize_symbol(symbol)
       if self.symbols.has_key(symbol):
          return symbol
+      print symbol
       self.symbols[symbol] = None
       self.alert_add(tokens)
       return symbol

@@ -139,6 +139,6 @@ def generate_features_list(list, feature_functions='all'):
       for i, glyph in enumerate(list):
          glyph.generate_features(ff)
          if i % 10 == 0:
-            progress.step()
+             progress.step()
    finally:
-      progress.kill()
+       progress.kill()

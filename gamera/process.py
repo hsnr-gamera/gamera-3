@@ -132,7 +132,7 @@ class Process:
          print ("WARNING: %s is not defined, therefore it can not be saved."
                 % save)
       if not hasattr(self, "save_" + save):
-         raise RuntimeError("The processor wants to save %s, "
+         raise RuntimeError("The Gamera process system wants to save %s, "
                             "but there is no save_%s function defined."
                             % (save, save))
       else:

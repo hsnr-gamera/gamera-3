@@ -168,6 +168,8 @@ class IconDisplay(wxListCtrl):
          if not source is None:
             self.shell.run(source)
 
+######################################################################
+
 # Standard icons for core Gamera
 
 class CustomIcon:
@@ -183,6 +185,10 @@ class CustomIcon:
       icon_display = main_win = config.options.__.gui.TopLevel().icon_display
       icon_display.add_class(cls)
    register = classmethod(register)
+
+   def to_icon(bitmap):
+      return wxIconFromBitmap(bitmap)
+   to_icon = staticmethod(to_icon)
 
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconImageUnknownBitmap())

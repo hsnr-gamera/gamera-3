@@ -301,7 +301,7 @@ class ClassifierImageWindow(ImageWindow):
          "Choose new image", self._OnChooseImage)
 
    def _OnChooseImage(self, event):
-      dlg = Args([Class("Image for context display", core.ImageBase)])
+      dlg = Args([Class("Image for context display", ImageBase)])
       image = dlg.show(self, image_menu.shell.locals, name="Choose image")
       if image != None:
          self.id.set_image(image)
@@ -464,8 +464,11 @@ class ClassifierFrame(ImageFrameBase):
       self._frame.SetMenuBar(menubar)
 
    def set_image(self, current_database, image=None, weak=1):
+      print "1"
       self.set_multi_image(current_database)
+      print "2"
       self.set_single_image(image, weak=weak)
+      print "3"
 
    def set_multi_image(self, current_database):
       wxBeginBusyCursor()
@@ -602,16 +605,21 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("You must provide a directory to load.")
          return
       if settings:
-         self._OpenClassifierSettings(os.path.join(directory, "classifier_settings.xml"))
+         self._OpenClassifierSettings(
+            os.path.join(directory, "classifier_settings.xml"))
       if current:
-         self._OpenCurrentDatabase(os.path.join(directory, "current_database.xml"))
+         self._OpenCurrentDatabase(
+            os.path.join(directory, "current_database.xml"))
       if production:
-         self._OpenProductionDatabase(os.path.join(directory, "production_database.xml"))
+         self._OpenProductionDatabase(
+            os.path.join(directory, "production_database.xml"))
       if symbols:
-         self._ImportSymbolTable(os.path.join(directory, "symbol_table.xml"))
+         self._ImportSymbolTable(
+            os.path.join(directory, "symbol_table.xml"))
       if source:
          try:
-            self.set_single_image(load_image(os.path.join(directory, "source_image.tiff")))
+            self.set_single_image(
+               load_image(os.path.join(directory, "source_image.tiff")))
          except Exception, e:
             gui_util.message("Loading image: " + str(e))
 
@@ -621,7 +629,8 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Current database', self._save_state_dialog[1]),
           Check('', 'Production database', self._save_state_dialog[2]),
           Check('', 'Symbol table', self._save_state_dialog[3]),
-          Check('', 'Source image', self._save_state_dialog[4], enabled=self.splitterhr.IsSplit()),
+          Check('', 'Source image', self._save_state_dialog[4],
+                enabled=self.splitterhr.IsSplit()),
           Directory('Save directory')], name="Save classifier window")
       results = dialog.show(self._frame)
       if results == None:
@@ -632,16 +641,20 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message("You must provide a directory to load.")
          return
       if settings:
-         self._SaveClassifierSettings(os.path.join(directory, "classifier_settings.xml"))
+         self._SaveClassifierSettings(
+            os.path.join(directory, "classifier_settings.xml"))
       if current:
-         self._SaveCurrentDatabase(os.path.join(directory, "current_database.xml"))
+         self._SaveCurrentDatabase(
+            os.path.join(directory, "current_database.xml"))
       if production:
-         self._SaveProductionDatabase(os.path.join(directory, "production_database.xml"))
+         self._SaveProductionDatabase(
+            os.path.join(directory, "production_database.xml"))
       if symbols:
          self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
       if source and self.splitterhr.IsSplit():
          try:
-            self.single_iw.id.image.save_image(os.path.join(directory, "source_image.tiff"))
+            self.single_iw.id.image.save_image(
+               os.path.join(directory, "source_image.tiff"))
          except Exception, e:
             gui_util.message("Saving image: " + str(e))
 
@@ -677,6 +690,7 @@ class ClassifierFrame(ImageFrameBase):
          wxEndBusyCursor()
          return
       wxEndBusyCursor()
+      print "Finished callback"
 
    def _OnSelectAndSegmentImage(self, event):
       segmenters = [x[0] for x in
@@ -684,7 +698,7 @@ class ClassifierFrame(ImageFrameBase):
       if self.default_segmenter == -1:
          self.default_segmenter = segmenters.index("cc_analysis")
       dialog = Args(
-         [Class("Image", core.ImageBase),
+         [Class("Image", ImageBase),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
          name="Select and segment image...")
       results = dialog.show(self._frame, image_menu.shell.locals)
@@ -702,7 +716,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnSelectImage(self, event):
       dialog = Args(
-         [Class("Image", core.ImageBase)],
+         [Class("Image", ImageBase)],
          name="Select image...")
       results = dialog.show(self._frame, image_menu.shell.locals)
       if results is None:
@@ -720,6 +734,7 @@ class ClassifierFrame(ImageFrameBase):
          image_ref = image_ref.otsu_threshold()
       ccs = getattr(image_ref, segmenter)()
       self.set_image(ccs, image, weak=0)
+      print "REALLY DONE!"
 
    def _OnSaveCurrentDatabaseAsImages(self, event):
       self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
@@ -899,6 +914,7 @@ class ClassifierFrame(ImageFrameBase):
          glyphs = util.combine_unique_elements(glyphs, self._classifier.get_glyphs())
       if currdb:
          elements = util.combine_unique_elements(glyphs, self.multi_iw.id.GetAllItems())
+
       # One big-ass filtering list comprehension
       glyphs = [x for x in glyphs.iterkeys()
                 if ((x != None and not hasattr(x, 'dead')) and
@@ -1087,7 +1103,8 @@ class ClassifierFrame(ImageFrameBase):
          self.rule_engine_runner.Hide()
       else:
          self.splitterhl.SplitHorizontally(
-            self.symbol_editor, self.rule_engine_runner, self._frame.GetSize()[1] / 2)
+            self.symbol_editor, self.rule_engine_runner,
+            self._frame.GetSize()[1] / 2)
          self.rule_engine_runner.Show()
 
    def _OnOpenRuleModule(self, event):
@@ -1097,7 +1114,8 @@ class ClassifierFrame(ImageFrameBase):
       
       if not self.splitterhl.IsSplit():
          self.splitterhl.SplitHorizontally(
-            self.symbol_editor, self.rule_engine_runner, self._frame.GetSize()[1] / 2)
+            self.symbol_editor, self.rule_engine_runner,
+            self._frame.GetSize()[1] / 2)
          self.rule_engine_runner.Show()
 
    ########################################

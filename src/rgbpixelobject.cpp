@@ -32,6 +32,15 @@ extern "C" {
   static PyObject* rgbpixel_get_red(PyObject* self);
   static PyObject* rgbpixel_get_green(PyObject* self);
   static PyObject* rgbpixel_get_blue(PyObject* self);
+  static PyObject* rgbpixel_get_hue(PyObject* self);
+  static PyObject* rgbpixel_get_saturation(PyObject* self);
+  static PyObject* rgbpixel_get_value(PyObject* self);
+  static PyObject* rgbpixel_get_CIE_X(PyObject* self);
+  static PyObject* rgbpixel_get_CIE_Y(PyObject* self);
+  static PyObject* rgbpixel_get_CIE_Z(PyObject* self);
+  static PyObject* rgbpixel_get_cyan(PyObject* self);
+  static PyObject* rgbpixel_get_magenta(PyObject* self);
+  static PyObject* rgbpixel_get_yellow(PyObject* self);
 }
 
 static PyTypeObject RGBPixelType = {
@@ -63,6 +72,24 @@ static PyGetSetDef rgbpixel_getset[] = {
     "the current green value", 0 },
   { "blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
     "the current blue value", 0 },
+  { "hue", (getter)rgbpixel_get_hue, 0,
+    "the hue [0, 1.0]", 0 },
+  { "saturation", (getter)rgbpixel_get_saturation, 0,
+    "the saturation [0, 1.0]", 0 },
+  { "value", (getter)rgbpixel_get_value, 0,
+    "the value [0, 1.0]", 0 },
+  { "CIE_X", (getter)rgbpixel_get_CIE_X, 0,
+    "the CIE_X value [0, 1.0]", 0 },
+  { "CIE_Y", (getter)rgbpixel_get_CIE_Y, 0,
+    "the CIE_Y value [0, 1.0]", 0 },
+  { "CIE_Z", (getter)rgbpixel_get_CIE_Z, 0,
+    "the CIE_Z value [0, 1.0]", 0 },
+  { "cyan", (getter)rgbpixel_get_cyan, 0,
+    "the cyan value [0, 255]", 0 },
+  { "magenta", (getter)rgbpixel_get_magenta, 0,
+    "the cyan value [0, 255]", 0 },
+  { "yellow", (getter)rgbpixel_get_yellow, 0,
+    "the cyan value [0, 255]", 0 },
   { NULL }
 };
 
@@ -87,6 +114,11 @@ static void rgbpixel_dealloc(PyObject* self) {
   return Py_BuildValue("i", (int)x->name()); \
 }
 
+#define CREATE_FLOAT_GET_FUNC(name) static PyObject* rgbpixel_get_##name(PyObject* self) {\
+  RGBPixel* x = ((RGBPixelObject*)self)->m_x; \
+  return Py_BuildValue("f", (double)x->name()); \
+}
+
 #define CREATE_SET_FUNC(name) static int rgbpixel_set_##name(PyObject* self, PyObject* value) {\
   RGBPixel* x = ((RGBPixelObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
@@ -99,6 +131,15 @@ CREATE_GET_FUNC(blue)
 CREATE_SET_FUNC(red)
 CREATE_SET_FUNC(green)
 CREATE_SET_FUNC(blue)
+CREATE_FLOAT_GET_FUNC(hue)
+CREATE_FLOAT_GET_FUNC(saturation)
+CREATE_FLOAT_GET_FUNC(value)
+CREATE_FLOAT_GET_FUNC(CIE_X)
+CREATE_FLOAT_GET_FUNC(CIE_Y)
+CREATE_FLOAT_GET_FUNC(CIE_Z)
+CREATE_GET_FUNC(cyan)
+CREATE_GET_FUNC(magenta)
+CREATE_GET_FUNC(yellow)
 
 static PyObject* rgbpixel_richcompare(PyObject* a, PyObject* b, int op) {
   if (!is_RGBPixelObject(a) || !is_RGBPixelObject(b)) {

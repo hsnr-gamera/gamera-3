@@ -21,32 +21,22 @@
 
 #define NP_VISITED2(a) ((a)->m_node_properties[2].Bool)
 
-void print_bits(size_t bits) {
-  for (int i = 31; i >= 0; --i) {
-    if (1 << i & bits)
-      std::cerr << "1";
-    else
-      std::cerr << "-";
-  }
-}
-
 #ifdef _MSC_VER
 typedef unsigned __int64 Bitfield;
 #else
 typedef unsigned long long Bitfield;
 #endif
 struct Part;
-typedef std::list<Part> Parts;
 class Part {
 public:
   inline Part(Bitfield _bits, double _score) :
-    bits(_bits), score(_score), begin(NULL), end(NULL) {};
+    bits(_bits), score(_score), begin(), end() {};
   Bitfield bits;
   double score;
-  Parts::iterator begin;
-  Parts::iterator end;
+  size_t begin, end;
 };
 typedef std::vector<Bitfield> Solution;
+typedef std::vector<Part> Parts;
 
 inline Node* graph_optimize_partitions_find_root(Node* root, NodeVector& subgraph) {
   // Find the node with the minimum edges
@@ -138,25 +128,26 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
   return;
 }
 
-inline void graph_optimize_partitions_find_skips(const Parts::iterator begin,
-						 const Parts::iterator end) {
-  for (Parts::iterator i = begin; i != end; ++i) {
-    Parts::iterator j = i;
-    for (; j != end; ++j)
-      if (!((*i).bits & (*j).bits))
+inline void graph_optimize_partitions_find_skips(Parts &parts) {
+  for (size_t i = 0; i < parts.size(); ++i) {
+    Part& root = parts[i];
+    size_t j = i;
+    for (; j < parts.size(); ++j)
+      if (!(root.bits & parts[j].bits))
 	break;
-    (*i).begin = j;
-    Bitfield temp = (*i).bits << 1;
-    Parts::iterator k = j;
-    for (; k != end; ++k)
-      if (!(temp & (*k).bits))
+    root.begin = j;
+    Bitfield temp = root.bits << 1;
+    size_t k = j;
+    for (; k < parts.size(); ++k)
+      if (!(temp & parts[k].bits))
 	break;
-    (*i).end = k;
+    parts[i].end = k;
   }
 }
 
-inline void graph_optimize_partitions_find_solution(Parts::iterator begin, 
-						    Parts::iterator end, 
+inline void graph_optimize_partitions_find_solution(const Parts &parts,
+						    size_t begin, 
+						    size_t end, 
 						    Solution& best_solution, 
 						    double &best_mean,
 						    Solution& partial_solution, 
@@ -170,13 +161,14 @@ inline void graph_optimize_partitions_find_solution(Parts::iterator begin,
     }
   }
 
-  for (Parts::iterator i = begin; i != end; ++i) {
-    if (!((*i).bits & bits)) { // If this part "fits into" the current part(s)
-      partial_solution.push_back((*i).bits);
+  for (size_t i = begin; i < end; ++i) {
+    const Part& root = parts[i];
+    if (!(root.bits & bits)) { // If this part "fits into" the current part(s)
+      partial_solution.push_back(root.bits);
       graph_optimize_partitions_find_solution
-	((*i).begin, (*i).end, best_solution, best_mean,
-	 partial_solution, partial_mean + (*i).score,
-	 bits | (*i).bits, all_bits);
+	(parts, root.begin, root.end, best_solution, best_mean,
+	 partial_solution, partial_mean + root.score,
+	 bits | root.bits, all_bits);
       partial_solution.pop_back();
     }
   }
@@ -216,6 +208,7 @@ PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
   // That gives us an idea of the number of nodes in the graph,
   // now go through and find the parts
   Parts parts;
+  parts.reserve(size * max_size);
   for (NodeVector::iterator i = subgraph.begin();
        i != subgraph.end(); ++i) {
     NodeList node_stack;
@@ -224,12 +217,7 @@ PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
 					     node_stack, bits, eval_func, parts);
   }
 
-  graph_optimize_partitions_find_skips(parts.begin(), parts.end());
-
-  /* for (Parts::iterator i = parts.begin(); i != parts.end(); ++i) {
-    print_bits((*i).bits);
-    std::cerr << " " << (*i).score << "\n";
-    } */
+  graph_optimize_partitions_find_skips(parts);
 
   // Now, we find a solution
   Solution best_solution, partial_solution;
@@ -237,7 +225,7 @@ PyObject* graph_optimize_partitions(GraphObject* so, Node* root,
   partial_solution.reserve(size);
   Bitfield all_bits = (1 << size) - 1;
   double best_mean = 0;
-  graph_optimize_partitions_find_solution(parts.begin(), (*(parts.begin())).begin,
+  graph_optimize_partitions_find_solution(parts, 0, (*(parts.begin())).begin,
 					  best_solution, best_mean,
 					  partial_solution, 0.0,
 					  0, all_bits);

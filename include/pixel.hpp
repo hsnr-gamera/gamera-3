@@ -94,6 +94,54 @@ namespace Gamera {
     T const & blue() const {
       return data_[2];
     }
+    FloatPixel const hue() {
+      FloatPixel maxc = (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
+      FloatPixel minc = (FloatPixel)std::min<T>(data_[0], std::min<T>(data_[1], data_[2]));
+      if (minc == maxc)
+	return 0;
+      FloatPixel den = (maxc - minc);
+      FloatPixel rc = (maxc - data_[0]) / den;
+      FloatPixel gc = (maxc - data_[1]) / den;
+      FloatPixel bc = (maxc - data_[2]) / den;
+      FloatPixel h;
+      if (data_[0] == maxc)
+	h = bc - gc;
+      else if (data_[1] == maxc)
+	h = 2.0 + rc - bc;
+      else
+	h = 4.0 + gc - rc;
+      h /= 6.0;
+      h -= floor(h);
+      return h;
+    }
+    FloatPixel const saturation() {
+      FloatPixel maxc = (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
+      FloatPixel minc = (FloatPixel)std::min<T>(data_[0], std::min<T>(data_[1], data_[2]));
+      if (minc == maxc)
+	return 0;
+      return (maxc - minc) / maxc;
+    }
+    FloatPixel const value() {
+      return (FloatPixel)std::max<T>(data_[0], std::max<T>(data_[1], data_[2]));
+    }
+    FloatPixel const CIE_X() {
+      return (data_[0] * 0.607 + data_[1] * 0.174 + data_[2] * 0.200) / 256.0;
+    }
+    FloatPixel const CIE_Y() {
+      return (data_[0] * 0.299 + data_[1] * 0.587 + data_[2] * 0.114) / 256.0;
+    }
+    FloatPixel const CIE_Z() {
+      return (data_[1] * 0.066 + data_[2] * 1.111) / 256.0;
+    }
+    GreyScalePixel const cyan() {
+      return 255 - data_[0];
+    }
+    GreyScalePixel const magenta() {
+      return 255 - data_[1];
+    }
+    GreyScalePixel const yellow() {
+      return 255 - data_[2];
+    }
     operator FloatPixel() {
       return FloatPixel(luminance());
     }

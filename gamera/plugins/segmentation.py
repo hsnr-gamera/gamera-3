@@ -37,24 +37,56 @@ cc_and_cluster = cc_and_cluster()
 
 class splitx(PluginFunction):
     self_type = ImageType([ONEBIT])
+    args = Args([Float("center")])
     return_type = ImageList("splits")
+    def __call__(self, image, center=0.5):
+        return image.splitx(self._center, center)
 splitx = splitx()
 
 class splity(PluginFunction):
     self_type = ImageType([ONEBIT])
+    args = Args([Float("center")])
     return_type = ImageList("splits")
+    def __call__(self, image, center=0.5):
+        return image.splity(self._center, center)
 splity = splity()
 
-class tracing_segmentation(PluginFunction):
+class splitx_base(PluginFunction):
+    pure_python = 1
     self_type = ImageType([ONEBIT])
-tracing_segmentation = tracing_segmentation()
+    return_type = ImageList("splits")
+    def __call__(self, image):
+        return image.splitx(self._center)
+    
+class splitx_left(splitx_base):
+    _center = 0.25
+splitx_left = splitx_left()
+
+class splitx_right(splitx_base):
+    _center = 0.75
+splitx_right = splitx_right()
+
+class splity_base(PluginFunction):
+    pure_python = 1
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("splits")
+    def __call__(self, image):
+        return image.splity(self._center)
+    
+class splity_top(splity_base):
+    _center = 0.25
+splity_top = splity_top()
+
+class splity_bottom(splity_base):
+    _center = 0.75
+splity_bottom = splity_bottom()
 
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis, cc_and_cluster,
-                 splitx, splity, tracing_segmentation]
+    functions = [cc_analysis, splitx, splity, splitx_left, splitx_right,
+                 splity_top, splity_bottom]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -380,9 +380,9 @@ namespace Gamera {
     }
   }
 
-  size_t find_split_point(IntVector *projections) {
+  size_t find_split_point(IntVector *projections, double& center) {
     double minimum = std::numeric_limits<size_t>::max();
-    double middle = double(projections->size()) / 2.0;
+    double middle = double(projections->size()) * center;
     IntVector::iterator proj_it = projections->begin();
     size_t minimum_index = 0;
     for (size_t i=0; proj_it != projections->end(); ++i, ++proj_it) {
@@ -394,11 +394,11 @@ namespace Gamera {
       }
     }
     return minimum_index;
-  }    
+  }
 
   template<class T>
-  std::list<Image*>* splitx(T& image) {
-    size_t split_point = find_split_point(projections_cols(image));
+  std::list<Image*>* splitx(T& image, double& center) {
+    size_t split_point = find_split_point(projections_cols(image), center);
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
@@ -415,8 +415,8 @@ namespace Gamera {
   }
 
   template<class T>
-  std::list<Image*>* splity(T& image) {
-    size_t split_point = find_split_point(projections_rows(image));
+  std::list<Image*>* splity(T& image, double& center) {
+    size_t split_point = find_split_point(projections_rows(image), center);
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
@@ -430,104 +430,6 @@ namespace Gamera {
     for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
       splits->push_back(*ccs_it);
     return splits;
-  }
-
-  size_t trace_mask[48][2] = {
-    {3, 6}, {3, 5}, {3, 4}, {2, 6}, {2, 5},
-    {1, 6}, {0, 6}, {1, 5}, {2, 4}, {0, 5}, {1, 4},
-    {0, 4}, {0, 3}, {1, 3}, {2, 3}, {0, 2}, {1, 2},
-    {0, 1}, {0, 0}, {1, 1}, {2, 2}, {1, 0}, {2, 1},
-    {2, 0}, {3, 0}, {3, 1}, {3, 2}, {4, 0}, {4, 1},
-    {5, 0}, {6, 0}, {5, 1}, {4, 2}, {6, 1}, {5, 2},
-    {6, 2}, {6, 3}, {5, 3}, {4, 3}, {6, 4}, {5, 4},
-    {6, 5}, {6, 6}, {5, 5}, {4, 4}, {5, 6}, {4, 5},
-    {4, 6}};
-  
-  template<class T>
-  void tracing_segmentation(T& image) {
-    std::cerr << "BUGGY!\n";
-    
-    bool found_something = true;
-    size_t cc_no = 2;
-    while (found_something) {
-      size_t start_y = 0;
-      size_t start_x = 0;
-      found_something = false;
-      for (start_x = image.ncols() - 1; start_x > 0; --start_x) { // Right-to-left IMPORTANT!!!
-	for (start_y = 0; start_y < image.nrows(); ++start_y)
-	  if (image.get(start_y, start_x) == 1) {
-	    found_something = true;
-	    break;
-	  }
-	if (found_something)
-	  break;
-      }
-
-      std::cerr << ".";
-      if (found_something) {
-	size_t start_looking_at = 0;
-	size_t x = start_x, y = start_y;
-	size_t min_x = x, max_x = x;
-	size_t min_y = y, max_y = y;
-	image.set(y, x, cc_no);
-	bool finished_cc = false;
-	bool finished_look = false;
-	size_t steps = 0;
-	while (!finished_cc) {
-	  finished_look = false;
-	  size_t i = 0;
-	  for (; i < 48; ++i) {
-	    size_t looking_at = (start_looking_at + i) % 48;
-	    int y_look = y + trace_mask[looking_at][0] - 3;
-	    int x_look = x + trace_mask[looking_at][1] - 3;
-	    if ((size_t)x_look == start_x && (size_t)y_look == start_y) {
-	      finished_cc = true;
-	      finished_look = true;
-	      break;
-	    }
-	    if (!(y_look < 0 || (size_t)y_look >= image.nrows() ||
-		  x_look < 0 || (size_t)x_look >= image.ncols())) {
-	      size_t pixel = image.get((size_t)y_look, (size_t)x_look);
-	      if (pixel == 1 || pixel == cc_no) {
-		x = (size_t)x_look; y = (size_t)y_look;
-		image.set(y, x, cc_no);
-		start_looking_at = (looking_at + 37) % 48;
-		finished_look = true;
-		min_x = std::min(min_x, x);
-		max_x = std::max(max_x, x);
-		min_y = std::min(min_y, y);
-		max_y = std::max(max_y, y);
-		break;
-	      }
-	    }
-	  }
-	  if ((!finished_look) | (steps > 500)) {
-	    std::cerr << "ERROR!";
-	    break;
-	  }
-	  steps++;
-	}
-	
-	std::cerr << "@";
-
-	bool did_something = true;
-	while (did_something) {
-	  did_something = false;
-	  for (y = min_y; y < max_y; ++y)
-	    for (x = min_x; x < max_x; ++x) {
-	      if (image.get(y, x) == cc_no)
-		for (int i = 0; i < 3; ++i)
-		  for (int j = 0; j < 3; ++j)
-		    if (image.get(y + i - 1, x + j - 1) == 1) {
-		      image.set(y + i - 1, x + j - 1, cc_no);
-		      did_something = true;
-		    }
-	    }
-	}
-	cc_no++;
-      }
-      std::cerr << "*";
-    }
   }
 
 }

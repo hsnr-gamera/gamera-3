@@ -393,6 +393,102 @@ namespace Gamera {
     return conv(image);
   }
 
+#define CONVERSION_FUNCTION(name, output) \
+  template<class T> \
+  output* to_##name(const T& image) { \
+    output* view = _image_conversion::creator<typename output::value_type>::image(image); \
+    typename T::const_vec_iterator in = image.vec_begin(); \
+    typename output::vec_iterator out = view->vec_begin(); \
+    ImageAccessor<typename T::value_type> in_acc; \
+    ImageAccessor<typename output::value_type> out_acc; \
+    for (; in != image.vec_end(); ++in, ++out) \
+      out_acc.set(typename output::value_type(in_acc.get(in).name()), out); \
+    return view; \
+  }
+
+CONVERSION_FUNCTION(hue, FloatImageView)
+CONVERSION_FUNCTION(saturation, FloatImageView)
+CONVERSION_FUNCTION(value, FloatImageView)
+CONVERSION_FUNCTION(CIE_X, FloatImageView)
+CONVERSION_FUNCTION(CIE_Y, FloatImageView)
+CONVERSION_FUNCTION(CIE_Z, FloatImageView)
+CONVERSION_FUNCTION(cyan, GreyScaleImageView)
+CONVERSION_FUNCTION(magenta, GreyScaleImageView)
+CONVERSION_FUNCTION(yellow, GreyScaleImageView)
+
+  RGBImageView* to_false_color(const FloatImageView& image) {
+    RGBImageView* view = _image_conversion::creator<RGBPixel>::image(image);
+    FloatPixel max = 0;
+    max = find_max(image.parent());
+
+    // We don't use a table (as with 8-bit greyscale) because we can get
+    // much greater color "depth" this way (The table method only uses
+    // 64 values per plane)
+
+    FloatImageView::const_vec_iterator in = image.vec_begin();
+    RGBImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<FloatPixel> in_acc;
+    ImageAccessor<RGBPixel> out_acc;
+    for (; in != image.vec_end(); ++in, ++out) {
+      double h = (in_acc.get(in) / max) * 4.0;
+      size_t i = (size_t)h;
+      GreyScalePixel f = (GreyScalePixel)((h - (double)i) * 255.0);
+      GreyScalePixel q = 255 - f;
+      // v == 255, p == 0
+      switch (i) {
+      case 0:
+	out_acc.set(RGBPixel(255, f, 0), out);
+	break;
+      case 1:
+	out_acc.set(RGBPixel(q, 255, 0), out);
+	break;
+      case 2:
+	out_acc.set(RGBPixel(0, 255, f), out);
+	break;
+      case 3:
+	out_acc.set(RGBPixel(0, q, 255), out);
+	break;
+      case 4: // The end (should only represent a single value)
+	out_acc.set(RGBPixel(0, 0, 255), out); 
+	break;
+      }
+    }
+    return view;	
+  }
+
+  RGBImageView* to_false_color(const GreyScaleImageView& image) {
+    RGBImageView* view = _image_conversion::creator<RGBPixel>::image(image);
+    GreyScaleImageView::const_vec_iterator in = image.vec_begin();
+    RGBImageView::vec_iterator out = view->vec_begin();
+    ImageAccessor<GreyScalePixel> in_acc;
+    ImageAccessor<RGBPixel> out_acc;
+    
+    // Build a table mapping greyscale values to false color RGBPixels
+    RGBPixel table[256];
+    size_t i = 0, j = 0;
+    for (; i < 64; ++i, j += 4) {
+      table[i].red(255); table[i].green(j); table[i].blue(0);
+    }
+    j -= 4;
+    for (; i < 128; ++i, j -= 4) {
+      table[i].red(j); table[i].green(255); table[i].blue(0);
+    }
+    j = 0;
+    for (; i < 192; ++i, j += 4) {
+      table[i].red(0); table[i].green(255); table[i].blue(j);
+    }
+    j -= 4;
+    for (; i < 255; ++i, j -= 4) {
+      table[i].red(0); table[i].green(j); table[i].blue(255);
+    }
+
+    // Create RGB based on table
+    for (; in != image.vec_end(); ++in, ++out)
+      out_acc.set(table[in_acc.get(in)], out); 
+      
+    return view;	
+  }
+
   template<class T>
   GreyScaleImageView* to_greyscale(const T& image) {
     _image_conversion::to_greyscale_converter<typename T::value_type> conv;

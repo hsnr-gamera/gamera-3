@@ -240,7 +240,10 @@ class ImageBase:
       self._display = _display
 
    def display(self):
-      """Displays the image in its own window.  (See `Using the Gamera GUI`__).
+      """**display** ()
+
+Displays the image in its own window.  (See `Using the Gamera GUI`__).  If the GUI
+process is not running, this method has no effect.
 
 .. __: gui.html
 
@@ -479,8 +482,36 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
 ######################################################################
 
 class Image(gameracore.Image, ImageBase):
+   """The core Gamera Image type.  Use this constructor to create new underlying image data.
+
+See `Gamera image types`__.
+
+.. __: image_types.html"""
    def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
                 pixel_format=ONEBIT, storage_type=DENSE):
+      """**Image.__init__** (Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_format* = ``ONEBIT``, Choice *storage_format* = ``DENSE``)
+
+Creates a new image with new underlying data.
+
+*page_offset_y*, *page_offset_x*
+  The logical offset of the page
+
+*nrows*, *ncols*
+  The size of the image
+
+*pixel_format*
+  An integer value specifying the type of the pixels in the image.
+  See `pixel types`__ for more information.
+
+.. __: image_types.html#pixel-types
+
+*storage_format*
+  An integer value specifying the method used to store the image data.
+  See `storage formats`__ for more information. 
+
+.. __: image_types.html#storage-formats
+
+"""
       ImageBase.__init__(self)
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)

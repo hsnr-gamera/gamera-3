@@ -26,6 +26,9 @@ from gamera import util, enums
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
 
+class ArgInvalidException(Exception):
+   pass
+
 class Args:
    def _create_controls(self, locals, parent):
       self.controls = []
@@ -87,8 +90,8 @@ class Args:
       ok.SetDefault()
       buttons.Add(ok, 1, wxEXPAND|wxALL, 5)
       buttons.Add(wxButton(self.window,
-                                       wxID_CANCEL,
-                                       "Cancel"),
+                           wxID_CANCEL,
+                           "Cancel"),
                   1,
                   wxEXPAND|wxALL,
                   5)
@@ -98,14 +101,14 @@ class Args:
       # Buttons
       buttons = wxBoxSizer(wxHORIZONTAL)
       buttons.Add(wxButton(self.window,
-                                       wxID_CANCEL,
-                                       "< Back"),
+                           wxID_CANCEL,
+                           "< Back"),
                   1,
                   wxEXPAND|wxALL,
                   5)
       ok = wxButton(self.window,
-                                wxID_OK,
-                                "Next >")
+                    wxID_OK,
+                    "Next >")
       ok.SetDefault()
       buttons.Add(ok,
                   1,
@@ -116,7 +119,7 @@ class Args:
    # generates the dialog box
    def setup(self, parent, locals):
       self.window = wxDialog(parent, -1, self.name,
-                                         style=wxCAPTION)
+                             style=wxCAPTION)
       self.window.SetAutoLayout(1)
       if self.wizard:
          bigbox = wxBoxSizer(wxHORIZONTAL)
@@ -162,29 +165,42 @@ class Args:
             self.box, 1, wxEXPAND|wxALL, 15)
       self.border.RecalcSizes()
       self.box.RecalcSizes()
-      # self.gs.RecalcSizes()
       self.border.Layout()
       self.border.Fit(self.window)
       size = self.window.GetSize()
       self.window.SetSize((max(400, size[0]), max(200, size[1])))
       self.window.Centre()
 
+   def get_args_string(self):
+      results = [x.get_string() for x in self.controls]
+      tuple = '(' + ', '.join(results) + ')'
+      return tuple
+
+   def get_args(self):
+      return [control.get() for control in self.controls]
+
    def show(self, parent=None, locals={}, function=None, wizard=0):
       self.wizard = wizard
       if function != None:
          self.function = function
       self.setup(parent, locals)
-      result = wxDialog.ShowModal(self.window)
-      self.window.Destroy()
-      if result == wxID_CANCEL:
-         return None
-      elif self.function is None:
-         if function is None:
-            return tuple(self.get_args())
+      while 1:
+         result = wxDialog.ShowModal(self.window)
+         try:
+            if result == wxID_CANCEL:
+               return None
+            elif self.function is None:
+               if function is None:
+                  return tuple(self.get_args())
+               else:
+                  return function + self.get_args_string()
+            else:
+               return self.function + self.get_args_string()
+         except ArgInvalidException, e:
+            gui_util.message(str(e))
          else:
-            return function + self.get_args_string()
-      else:
-         return self.function + self.get_args_string()
+            break
+      self.window.Destroy()
 
 class _NumericValidator(wxPyValidator):
    def __init__(self, name="Float entry box ", range=None):
@@ -331,43 +347,83 @@ class Class:
       if self.control.Number() > 0:
          return self.locals[self.control.GetStringSelection()]
       else:
-         return None
+         if self.list_of:
+            return []
+         else:
+            return None
 
    def get_string(self):
       if self.control.Number() > 0:
          return self.control.GetStringSelection()
       else:
-         return 'None'
+         if self.list_of:
+            return '[]'
+         else:
+            return 'None'
 
 class _Vector(Class):
+   def get_control(self, parent, locals=None):
+      if util.is_string_or_unicode(self.klass):
+         self.klass = eval(self.klass)
+      self.choices = self.determine_choices(locals)
+      self.control = wxComboBox( 
+        parent, -1, str(self.default), choices=self.choices, style=wxCB_DROPDOWN)
+      return self
+
+   def get(self):
+      value = self.control.GetValue()
+      if value in self.choices:
+         return self.locals[self.control.GetStringSelection()]
+      else:
+         try:
+            x = eval(value)
+         except SyntaxError:
+            raise ArgInvalidException("Syntax error in '%s'.  Must be a %s" % (value, self.__class__.__name__))
+         if not self.is_vector(x):
+            raise ArgInvalidException("Argument '%s' must be a %s" % (value, self.__class__.__name__))
+         return x
+
+   def get_string(self):
+      value = self.control.GetValue()
+      if value in self.choices:
+         return value
+      else:
+         try:
+            x = eval(value)
+         except SyntaxError:
+            raise ArgInvalidException("Syntax error in '%s'.  Must be a %s" % (value, self.__class__.__name__))
+         if not self.is_vector(x):
+            raise ArgInvalidException("Argument '%s' must be a %s" % (value, self.__class__.__name__))
+         return value
+
+   def is_vector(self, val):
+      try:
+         it = iter(val)
+      except:
+         return False
+      else:
+         good = True
+         try:
+            for x in val:
+               if not isinstance(x, self.klass):
+                  good = False
+                  break
+         except:
+            return False
+         else:
+            return good
+
    def determine_choices(self, locals):
       self.locals = locals
-      if self.klass is None:
-         choices = locals.keys()
-      else:
-         choices = []
-         for key, val in locals.items():
-            if isinstance(val, array.array) and val.typecode == self.typecode:
+      choices = []
+      for key, val in locals.items():
+         if (not self.typecode is None and
+             isinstance(val, array.array) and
+             val.typecode == self.typecode):
+            choices.append(key)
+         else:
+            if self.is_vector(val):
                choices.append(key)
-            else:
-               try:
-                  it = iter(val)
-               except:
-                  pass
-               else:
-                  good = True
-                  try:
-                     for x in val:
-                        if not isinstance(x, self.klass):
-                           good = False
-                           break
-                     if good:
-                        choices.append(key)
-                  except:
-                     pass
-                  else:
-                     if good:
-                        choices.append(key)
       return choices
 
 class ImageType(Class):

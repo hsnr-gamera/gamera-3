@@ -37,10 +37,8 @@ class NoGUIArgs:
 class Args(NoGUIArgs):
    # list is a list of "Arg s"
    def __init__(self, list=[], name="Arguments", function=None, title=None):
-      if not util.is_sequence(list):
-         list = [list]
+      self.list = util.make_sequence(list)
       self.valid = 1
-      self.list = list
       self.name = name
       self.function = function
       self.title = title
@@ -48,21 +46,12 @@ class Args(NoGUIArgs):
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
 
-   def get_args_string(self):
-      results = [x.get_string() for x in self.controls]
-      tuple = '(' + ', '.join(results) + ')'
-      return tuple
-
-   def get_args(self):
-      return [control.get() for control in self.controls]
-
    def __getitem__(self, i):
       return self.list[i]
    index = __getitem__
 
    def __len__(self, i):
       return len(self.list)
-   
 
 ######################################################################
 
@@ -312,27 +301,37 @@ class ImageInfo(Class):
       Class.__init__(self, name, None)
 
 class _Vector(Class):
-   def __init__(self, name=None, klass=None, typecode=None, length=-1):
-      Class.__init__(self, name, klass)
-      self.typecode = typecode
+   def __init__(self, name=None, default=None, length=-1):
+      Class.__init__(self, name, self.klass)
       if type(length) != int:
          raise TypeError("'length' must be an int")
       self.length = length
+      if self.default is None:
+         self.default = []
+         self.has_default = False
+      else:
+         self.default = default
+         self.has_default = True
+
+   def rest_repr(self, name=False):
+      result = "``%s``" % self.__class__.__name__
+      if name:
+         result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % str(self.default)
+      return result
 
 class FloatVector(_Vector):
-   def __init__(self, name=None, length=-1):
-      _Vector.__init__(self, name, float, 'd', length)
+   klass = float
+   typecode = "d"
 
 class IntVector(_Vector):
-   def __init__(self, name=None, length=-1):
-      _Vector.__init__(self, name, int, 'i', length)
+   klass = int
+   typecode = "i"
 
-class ComplexVector(Class):
-   def __init__(self, name=None, length=-1):
-      Class.__init__(self, name, complex, True)
-      if type(length) != int:
-         raise TypeError("'length' must be an int")
-      self.length = length
+class ComplexVector(_Vector):
+   klass = complex
+   typecode = None
 
 class ImageList(Class):
    def __init__(self, name=None):

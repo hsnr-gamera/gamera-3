@@ -176,6 +176,7 @@ DEPRECATED: Use filter_narrow_black_runs_ instead.
     def __call__(self, length):
         warnings.warn("Use filter_narrow_black_runs instead of filter_narrow_runs.", DeprecationWarning)
         return _runlength.filter_narrow_black_runs(self, length)
+    __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_short_runs(FilterRuns):
@@ -187,6 +188,7 @@ DEPRECATED: Use filter_short_black_runs_ instead.
     def __call__(self, length):
         warnings.warn("Use filter_short_black_runs instead of filter_short_runs.", DeprecationWarning)
         return _runlength.filter_short_black_runs(self, length)
+    __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_tall_runs(FilterRuns):
@@ -198,6 +200,7 @@ DEPRECATED: Use filter_tall_black_runs_ instead.
     def __call__(self, length):
         warnings.warn("Use filter_tall_black_runs instead of filter_tall_runs.", DeprecationWarning)
         return _runlength.filter_tall_black_runs(self, length)
+    __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_wide_runs(FilterRuns):
@@ -209,6 +212,7 @@ DEPRECATED: Use filter_wide_black_runs_ instead.
     def __call__(self, length):
         warnings.warn("Use filter_wide_black_runs instead of filter_wide_runs.", DeprecationWarning)
         return _runlength.filter_wide_black_runs(self, length)
+    __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 5)]
 
 class filter_narrow_black_runs(FilterRuns):

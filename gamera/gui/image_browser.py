@@ -56,7 +56,7 @@ class FileList(wxGenericDirCtrl):
 class ImageBrowserFrame(wxFrame):
    def __init__(self):
       wxFrame.__init__(self, NULL, -1, "Image File Browser",
-                       wxDefaultPosition,(400, 500))
+                       wxDefaultPosition,(600, 400))
       icon = wxIconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
       self.SetIcon(icon)
       self.splitter = wxSplitterWindow(self, -1)

@@ -120,13 +120,14 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options:
+support, you have two options::
 1) Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
-2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see "MSI (Windows Installer Package)" section).
+2) Use the (currently experimental) MSI creation support provided in 
+the Gamera source tree (see MSI section).
 
 Microsoft Visual Studio
 ```````````````````````
@@ -158,69 +159,40 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options: 1) Use the Python Distutils Installer Maker::
+support, you have two options::
+1) Use the Python Distutils Installer Maker::
 
   python setup.py build --compiler=mingw32 bdist_wininst
   dist/gamera-X.X.X-win32.exe
 
-2) Use the (currently experimental) createmsi program provided in gamera/win32/msisource (see MSI section).
+2) Use the (currently experimental) MSI creation support provided in 
+the Gamera source tree (see MSI section).
 
 MSI (Windows Installer Package)
 ```````````````````````````````
 
 If you would like to create a Windows Installer package to install
 Gamera, the Gamera source tree currently includes experimental support
-to do so. The tools are located in win32/msisource. The main tool you
-will be using in this package is called createmsi, although createmsi
-has some dependencies. Since it is assumed you already have a compiler
-suitable for compiling Gamera as detailed above, you need only
-download and install the latest version of MakeMSI . Having done that,
-the next steps will be to change the working directory to msisource
-and compile the createmsi program. This process depends on what
-compiler you wish to use.
+to do so. The most straightforward way to build the MSI is to issue the
+command "bdist_msi" to setup.py after building Gamera from source.  
+Successful execution of this command depends on having the latest versions 
+of MakeMSI (http://www.labyrinth.net.au/~dbareis/makemsi.htm) and the 
+Microsoft Platform SDK (http://www.microsoft.com/msdownload/platformsdk/sdkupdate) 
+installed.  For example, if you are using the MSVC compiler::
 
-For Cygwin users::
+    python setup.py build bdist_msi
 
-    cd win32/msisource
-    cc -mno-cygwin -o createmsi.exe createmsi.c
+will create a Windows Installer package in the dist/ directory. Or if 
+you have already built Gamera::
 
-For Visual C++ users::
+    python setup.py bdist_msi
 
-    cd win32/msisource
-    cl createmsi.c
+will suffice.
 
-For Intel Compiler 8.x users::
-
-    cd win32/msisource
-    icl createmsi.c
-
-.. note:: The proper operation of each compiler depends on the values
-  of certain environment variables, so it is strongly advised that you
-  use the command line shell that the compiler shipped with.
-
-Having completed this, you may now run createmsi, which takes the
-following arguments::
-
-      -c [mingw|msvc|icl]  Specify C compiler for Gamera extensions
-      -compiler [...]      Same as -c
-      -i [mingw|msvc|icl]  Include existing build products into MSI
-                           (please ensure these exist before attempting to
-                            include them!)
-      -include [...]       Same as -i
-
-For instance, suppose I wanted to build a cygwin/mingw32 compiled
-Gamera package and then make an MSI package out of it. The createmsi
-syntax would be::
-
-    createmsi -c mingw
-
-Once the build process completes, there will be a file called
-Gamera2.msi in the win32 directory (the parent directory of the one
-that contains createmsi). Provided there were no intermediate errors
-in the Gamera and MSI build processes, this will be a fully functional
-Windows Installer-based package for installing Gamera. You are free to
-use this package and distribute it under the terms of all applicable
-licenses/agreements.
+If you would like to include multiple Gamera binaries in one MSI (to 
+aid in delivering targeted optimized binaries, for instance), the 
+appropriate tools are located in win32/msisource. Please consult 
+README.txt in that directory for more details.
 
 Running
 ```````

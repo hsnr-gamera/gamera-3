@@ -401,8 +401,9 @@ namespace Gamera {
     typename ImageFactory<T>::view_type* dest =
       new typename ImageFactory<T>::view_type(*dest_data, b);
 
-    typename ImageFactory<T>::view_type a_view =
-      typename ImageFactory<T>::view_type(a, b.ul(), b.size());
+    typename ImageFactory<T>::view_type a_view = 
+		//typename 
+		ImageFactory<T>::view_type(a, b.ul(), b.size());
 
     ImageAccessor<typename T::value_type> a_accessor;
     ImageAccessor<typename U::value_type> b_accessor;

@@ -131,8 +131,8 @@ namespace Gamera
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 
-		size_t i, iShears[height1];
-		double weights[height1];
+		size_t i, *iShears = new size_t[height1];//iShears[height1];
+		double* weights=new double[height1];
 		if (dTan >= 0.0) for(i = 0; i<height1; i++) // Positive angle
 		{
 			double d = (double(i) + 0.5) * dTan;
@@ -164,8 +164,8 @@ namespace Gamera
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
-		size_t iShearsV[width1];
-		double weightsV[width1];
+		size_t* iShearsV = new size_t[width1];
+		double* weightsV = new double[width1];
 		if (dSinE >= 0.0) for(i = 0; i < width1; i++) //Positive angle
 		{
 			double d = (double(i)+0.5) * dSinE;
@@ -198,8 +198,8 @@ namespace Gamera
 		out_data1 = new T(height1,width1);
 		out1 = new U(*out_data1, 0, 0, height1, width1);
 		
-		size_t iShearsH[height1];
-		double weightsH[height1];
+		size_t* iShearsH = new size_t[height1];
+		double* weightsH = new double[height1];
 		if (dTan >= 0.0) for(i = 0; i<height1; i++) // Positive angle
 		{
 			double d = (double(i) + 0.5) * dTan;
@@ -232,11 +232,15 @@ namespace Gamera
 	U* removeExcessBorder(T* img_data, U* img, V background)
 	{
 		//------------------------------------------------------------------------------------
-		// Prune background deadspace
+		// Prune background deadspace (cl.exe support not yet complete)
 		//------------------------------------------------------------------------------------
+#ifdef _MSC_VER
+		return img;
+#else
 		size_t i=0;
 		size_t height1 = img->nrows(), width1 = img->ncols();
 		double tolerance = 5;
+
 		for(i = 0; i<height1; i++)
 		{
 			size_t j = 0;
@@ -307,6 +311,8 @@ d:		size_t newRight = i;
 			}
 		}
 		return out1;
+#endif
+
 	}
 	template<class T, class U>
 	void horizShift(T* orig, T* newbmp, size_t &row, size_t &amount, U bgcolor, double weight)
@@ -332,7 +338,7 @@ d:		size_t newRight = i;
 	}
 
 	template<class T, class U>
-	void vertShift(T* orig, T* newbmp, size_t &col, size_t &amount, U bgcolor=(U)black(), double weight)
+	void vertShift(T* orig, T* newbmp, size_t &col, size_t &amount, U bgcolor, double weight)
 	{
 		size_t i;
 		size_t height1 = newbmp->nrows();

@@ -94,7 +94,9 @@ template = Template("""
   [[# Declare all of the functions - because this is a C++ file we have to #]]
   [[# declare the functions as C functions so that Python can access them #]]
   extern \"C\" {
+#ifndef _MSC_VER
     void init[[module_name]](void);
+#endif
     [[for function in module.functions]]
       [[if not function.pure_python]]
         static PyObject* call_[[function.__name__]](PyObject* self, PyObject* args);

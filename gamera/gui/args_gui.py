@@ -20,6 +20,7 @@
 
 from wxPython.wx import *
 import os.path
+import string
 from types import *
 from gamera import util, enums
 from gamera.gui import gui_util

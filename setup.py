@@ -126,5 +126,5 @@ setup(name = "gamera",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
-      scripts = scripts,
-      data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)
+      scripts = scripts)
+      #data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))] + includes)

@@ -57,6 +57,7 @@ inline PyObject* get_module_dict(char* module_name) {
   if (dict == 0)
     return PyErr_Format(PyExc_RuntimeError,
 			"Unable to get dict for module %s.\n", module_name);
+  Py_DECREF(mod);
   return dict;
 }
 
@@ -744,8 +745,10 @@ inline PyObject* init_image_members(ImageObject* o) {
   if (o->m_children_images == 0)
     return 0;
   // Classification state
-  o->m_classification_state = Py_BuildValue("i", UNCLASSIFIED);
-  Py_DECREF(o->m_classification_state);
+  // o->m_classification_state = Py_BuildValue("i", UNCLASSIFIED);
+  o->m_classification_state = PyInt_FromLong(UNCLASSIFIED);
+  if (o->m_classification_state == 0)
+    return 0;
   return (PyObject*)o;  
 }
 

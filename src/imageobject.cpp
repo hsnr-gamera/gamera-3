@@ -333,16 +333,15 @@ static void image_dealloc(PyObject* self) {
     //printf("dealing with weak refs\n");
     PyObject_ClearWeakRefs(self);
   }
-  //std::cerr << "deleting image\n" << std::endl;
   delete ((RectObject*)self)->m_x;
+
+  self->ob_type->tp_free(self);
 
   // Added in an attempt to fix a leak.
   Py_DECREF(o->m_features);
   Py_DECREF(o->m_id_name);
   Py_DECREF(o->m_children_images);
   Py_DECREF(o->m_classification_state);
-  
-  self->ob_type->tp_free(self);
 }
 
 static PyObject* image_get(PyObject* self, int row, int col) {

@@ -114,7 +114,7 @@ class ImageBase:
       self.name = "Untitled"
       self._display = None
       self.last_display = None
-      self.properties = self.Properties()
+      self.properties = self.__class__.Properties()
       # Keep a list of tuples of (feature_name, feature_function) that
       # have already been generated for this Image
       self.feature_functions = []
@@ -470,7 +470,7 @@ class Cc(gameracore.Cc, ImageBase):
 
 # this is a convenience function for using in a console
 _gamera_initialised = 0
-def init_gamera():
+def _init_gamera():
    global _gamera_initialised
    if not _gamera_initialised:
       import plugin, gamera_xml
@@ -518,6 +518,24 @@ def init_gamera():
       import sys
       sys.path.append(".")
       _gamera_initialised = 1
+
+from sys import platform
+if platform == 'win32':
+   # Windows doesn't generally keep the console window open, making it difficult to
+   # diagnose fatal errors.  This catch-all should help.
+   def init_gamera():
+      try:
+         _init_gamera()
+      except:
+         import traceback
+         print "Gamera made a fatal error:"
+         print
+         traceback.print_exc()
+         print
+         print "Press <ENTER> to exit."
+         x = raw_input()
+else:
+   init_gamera = _init_gamera
 
 if __name__ == "__main__":
    init_gamera()

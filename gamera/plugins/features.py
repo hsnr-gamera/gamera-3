@@ -93,10 +93,9 @@ class generate_features(PluginFunction):
       if self.feature_functions == features:
          return
       self.feature_functions = features
-      self_tuple = (self,)
       self.features = array.array('d')
       for name, function in features:
-          self.features.extend(function.__call__(self))
+          self.features.extend(function(self))
     __call__ = staticmethod(__call__)
 
 generate_features = generate_features()

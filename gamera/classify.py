@@ -127,7 +127,7 @@ class _Classifier:
          removed = glyph.children_images
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
-         splits = self._do_splits(glyph)
+         splits = self._do_splits(self, glyph)
          return splits, removed
       return [], []
 
@@ -159,7 +159,7 @@ class _Classifier:
                    (core.UNCLASSIFIED, core.AUTOMATIC)):
                   id = self._classify_automatic_impl(glyph)
                   glyph.classify_automatic(id)
-                  adds = self._do_splits(glyph)
+                  adds = self._do_splits(self, glyph)
                   progress.add_length(len(adds))
                   added.extend(adds)
             progress.step()
@@ -255,10 +255,13 @@ class NonInteractiveClassifier(_Classifier):
       self.instantiate_from_images(database)
 
       if perform_splits:
-         self._do_splits = self._do_splits_impl
+         self._do_splits = self.__class__._do_splits_impl
       else:
-         self._do_splits = self._do_splits_null
+         self._do_splits = self.__class__._do_splits_null
       self._perform_splits = perform_splits
+
+   def __del__(self):
+      del self._database
 
    def is_interactive():
       return 0
@@ -320,11 +323,14 @@ class InteractiveClassifier(_Classifier):
       self.features = features
       self.change_feature_set(features)
       if perform_splits:
-         self._do_splits = self._do_splits_impl
+         self._do_splits = self.__class__._do_splits_impl
       else:
-         self._do_splits = self._do_splits_null
+         self._do_splits = self.__class__._do_splits_null
       self._perform_splits = perform_splits
       self._display = None
+
+   def __del__(self):
+      del self._database
 
    def is_interactive():
       return 1
@@ -418,7 +424,7 @@ class InteractiveClassifier(_Classifier):
       glyph.classify_manual([(1.0, id)])
       glyph.generate_features(self.get_feature_functions())
       self._database[glyph] = None
-      return self._do_splits(glyph), removed.keys()
+      return self._do_splits(self, glyph), removed.keys()
 
    def classify_list_manual(self, glyphs, id):
       if id.startswith('_group'):
@@ -447,7 +453,7 @@ class InteractiveClassifier(_Classifier):
                glyph.generate_features(feature_functions)
                self._database[glyph] = None
             glyph.classify_manual([(1.0, id)])
-            added.extend(self._do_splits(glyph))
+            added.extend(self._do_splits(self, glyph))
       return added, removed.keys()
 
    def add_to_database(self, glyphs):

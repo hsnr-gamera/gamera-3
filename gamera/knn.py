@@ -152,6 +152,9 @@ class _kNNBase(gamera.knncore.kNN):
             print "Could not load settings "
             self.change_feature_set('all')
 
+   def __del__(self):
+      pass
+
    def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
@@ -383,6 +386,10 @@ class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
       classify.InteractiveClassifier.__init__(self, database, features, perform_splits)
       _kNNBase.__init__(self, features)
 
+   def __del__(self):
+      _kNNBase.__del__(self)
+      classify.InteractiveClassifier.__del__(self)
+
    def noninteractive_copy(self):
       return kNNNonInteractive(
          self.get_glyphs(), self.features, self._perform_splits)
@@ -391,6 +398,10 @@ class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
    def __init__(self, database=[], features=None, perform_splits=1):
       classify.NonInteractiveClassifier.__init__(self, database, features, perform_splits)
       _kNNBase.__init__(self, features)
+
+   def __del__(self):
+      _kNNBase.__del__(self)
+      classify.NonInteractiveClassifier.__del__(self)
 
    def change_feature_set(self, f):
       """Change the set of features used in the classifier.  features is a list of
@@ -529,7 +540,6 @@ def comma_delim_stats(glyphs, filename):
       file.write(str(x[1][3]))
       file.write('\n')
    file.close()
-
 
 def glyphs_by_category(glyphs):
    klasses = {}

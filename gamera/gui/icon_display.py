@@ -26,8 +26,6 @@ from gamera.gui import image_menu, var_name, gamera_icons, gui_util
 
 ######################################################################
 
-######################################################################
-
 class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
   def __init__(self, parent):
     wxFileDropTarget.__init__(self)
@@ -313,8 +311,9 @@ class CIImageList(CustomIcon):
     image_menu.ImageMenu(
       parent, x, y,
       self.data, self.label,
-      shell, extra_methods = {'Glyphs': {'glyphs_to_xml': self.glyphs_to_xml,
-                                         'generate_features_list' : self.generate_features}})
+      shell, extra_methods = {'Glyphs': {
+      'glyphs_to_xml': self.glyphs_to_xml,
+      'generate_features_list' : self.generate_features}})
 
   def glyphs_to_xml(self, event):
     from gamera import gamera_xml

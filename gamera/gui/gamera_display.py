@@ -138,7 +138,7 @@ class ImageDisplay(wxScrolledWindow):
       return -1
 
    def _OnBoxHighlight(self, event):
-      if len(self.highlights) == 1:
+      if len(self.highlights) == 1 and not self.rubber_on:
          self._boxed_highlight_position &= 0x7  # mod 8
          highlight = self.highlights[0][0]
          i = (16 + abs(4 - self._boxed_highlight_position)) / self.scaling
@@ -594,7 +594,6 @@ class ImageDisplay(wxScrolledWindow):
 
    def _OnLeftDown(self, event):
       self.CaptureMouse()
-      self.clear_all_highlights()
       self.rubber_on = 1
       self.draw_rubber()
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -642,7 +641,14 @@ class ImageDisplay(wxScrolledWindow):
          self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
                                       self.image.nrows - 1), 0))
          self.draw_rubber()
-         self._OnLeave(event)
+         if self.rubber_origin_x > self.rubber_x2:
+            self.rubber_origin_x, self.rubber_x2 = \
+                                  self.rubber_x2, self.rubber_origin_x
+         if self.rubber_origin_y > self.rubber_y2:
+            self.rubber_origin_y, self.rubber_y2 = \
+                                  self.rubber_y2, self.rubber_origin_y
+         self.rubber_on = 0
+         self.OnRubber(event.ShiftDown() or event.ControlDown())
 
    def _OnMiddleDown(self, event):
       self.dragging = 1
@@ -671,7 +677,6 @@ class ImageDisplay(wxScrolledWindow):
          self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
                                       self.image.nrows - 1), 0))
          self.draw_rubber()
-
       if self.dragging:
          self.Scroll(
             (self.dragging_origin_x - (event.GetX() - self.dragging_x)) /
@@ -1087,6 +1092,7 @@ class MultiImageDisplay(wxGrid):
          if self.sort_function == "":
             self.list = self.default_sort(self.list)
          else:
+            self.list = self.GetAllItems()
             self.list.sort(self.sort_function)
             for item in self.list:
                del item.sort_cache
@@ -1458,7 +1464,7 @@ class MultiImageWindow(wxPanel):
             return
       else:
          try:
-            for image in self.id.list:
+            for image in self.GetAllItems():
                image.sort_cache = eval("x." + sort_string, {'x': image})
          except Exception, e:
             gui_util.message(str(e))

@@ -214,7 +214,7 @@ class ShellFrame(wxFrame):
          # Win32 change
          [600, 550],
          style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-      EVT_CLOSE(self, self.OnCloseWindow)
+      EVT_CLOSE(self, self._OnCloseWindow)
 
       self.known_modules = {}
       self.menu = self.make_menu()
@@ -270,37 +270,36 @@ class ShellFrame(wxFrame):
 
    def make_menu(self):
       self.custom_menus = []
+      file_menu = gui_util.build_menu(
+         self,
+         (("&Open...", self._OnFileOpen),
+          (None, None),
+          ("E&xit...", self._OnCloseWindow)))
+      classify_menu = gui_util.build_menu(
+         self,
+         (("&Interactive classifier", self._OnClassifier),))
+##       toolkits = paths.get_toolkit_names(paths.toolkits)
+##       self.import_toolkits = {}
+##       self.reload_toolkits = {}
+##       self.toolkit_menus = {}
+##       for toolkit in toolkits:
+##          toolkitID = wxNewId()
+##          toolkit_menu = wxMenu(style=wxMENU_TEAROFF)
+##          toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
+##                              "Import %s toolkit" % toolkit)
+##          EVT_MENU(self, toolkitID, self.OnImportToolkit)
+##          self.import_toolkits[toolkitID] = toolkit
+##          toolkitID = wxNewId()
+##          toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
+##                              "Reload %s toolkit" % toolkit)
+##          EVT_MENU(self, toolkitID, self.OnReloadToolkit)
+##          self.reload_toolkits[toolkitID] = toolkit
+##          self.toolkit_menu.AppendMenu(wxNewId(), toolkit, toolkit_menu)
+##          self.toolkit_menus[toolkit] = toolkit_menu
+##       menubar.Append(self.toolkit_menu, "&Toolkits")
       menubar = wxMenuBar()
-      menu = wxMenu()
-      openID = wxNewId()
-      menu.Append(openID, "&Open", "Open an image")
-      EVT_MENU(self, openID, self.OnFileOpen)
-      menubar.Append(menu, "&File")
-      menu = wxMenu()
-      classifyID = wxNewId()
-      menu.Append(classifyID, "&Interactive Classifier", "Start the classifier")
-      EVT_MENU(self, classifyID, self.OnClassifier)
-      menubar.Append(menu, "&Classify")
-      self.toolkit_menu = wxMenu()
-      toolkits = paths.get_toolkit_names(paths.toolkits)
-      self.import_toolkits = {}
-      self.reload_toolkits = {}
-      self.toolkit_menus = {}
-      for toolkit in toolkits:
-         toolkitID = wxNewId()
-         toolkit_menu = wxMenu(style=wxMENU_TEAROFF)
-         toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
-                             "Import %s toolkit" % toolkit)
-         EVT_MENU(self, toolkitID, self.OnImportToolkit)
-         self.import_toolkits[toolkitID] = toolkit
-         toolkitID = wxNewId()
-         toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
-                             "Reload %s toolkit" % toolkit)
-         EVT_MENU(self, toolkitID, self.OnReloadToolkit)
-         self.reload_toolkits[toolkitID] = toolkit
-         self.toolkit_menu.AppendMenu(wxNewId(), toolkit, toolkit_menu)
-         self.toolkit_menus[toolkit] = toolkit_menu
-      menubar.Append(self.toolkit_menu, "&Toolkits")
+      menubar.Append(file_menu, "&File")
+      menubar.Append(classify_menu, "&Classify")
       return menubar
 
    def add_custom_menu(self, name, menu):
@@ -312,7 +311,7 @@ class ShellFrame(wxFrame):
    def add_custom_icon_description(self, icon_description):
       self.icon_display.add_class(icon_description)
 
-   def OnFileOpen(self, event):
+   def _OnFileOpen(self, event):
       filename = gui_util.open_file_dialog()
       if filename:
          name = var_name.get("image", self.shell.locals)
@@ -321,18 +320,18 @@ class ShellFrame(wxFrame):
             self.shell.run('%s = load_image(r"%s")' % (name, filename))
             wxEndBusyCursor()
 
-   def OnClassifier(self, event):
+   def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)
       self.shell.run("%s = InteractiveClassifier()" % name)
       self.shell.run("%s.display()" % name)
 
-   def OnImportToolkit(self, event):
+   def _OnImportToolkit(self, event):
       self.shell.run("import %s\n" % self.import_toolkits[event.GetId()])
 
-   def OnReloadToolkit(self, event):
+   def _OnReloadToolkit(self, event):
       self.shell.run("reload(%s)\n" % self.reload_toolkits[event.GetId()])
 
-   def OnCloseWindow(self, event):
+   def _OnCloseWindow(self, event):
       for window in self.GetChildren():
          if isinstance(window, wxFrame):
             if not window.Close():

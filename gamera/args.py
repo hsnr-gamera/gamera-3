@@ -37,7 +37,7 @@ if _has_gui == _WX_GUI:
    class _guiArgs:
       def _create_controls(self, locals):
          # Controls
-         self.gs = wxPython.wx.wxFlexGridSizer(len(self.list), 2, 10, 10)
+         self.gs = wxPython.wx.wxFlexGridSizer(len(self.list), 2, 8, 8)
          self.controls = []
          for item in self.list:
             self.gs.Add(wxPython.wx.wxStaticText(self.window, -1, item.name),
@@ -500,7 +500,7 @@ if _has_gui == _WX_GUI:
          if text == "":
             return "None"
          else:
-            return "'" + self.text.GetValue() + "'"
+            return "r'" + self.text.GetValue() + "'"
 else:
    class _guiFilename:
       pass
@@ -650,20 +650,3 @@ class Wizard:
             next_dialog = dialog_history[-1]
             dialog_history = dialog_history[0:-1]
       self.done()
-
-class ProgressDialog:
-   def __init__(self, caption):
-      self.caption = caption
-      self.dialog = wxPython.wx.wxProgressDialog("Progress", caption, 100)
-   
-   def Update(self, value):
-      if self.dialog == None:
-         self.dialog = wxPython.wx.wxProgressDialog("Progress", self.caption, 100)
-      self.dialog.Update(value)
-      if value == 100 and self.dialog != None:
-         self.dialog.Destroy()
-         self.dialog = None
-
-   def Destroy(self):
-      self.dialog.Destroy()
-      self.dialog = None

@@ -123,7 +123,8 @@ void neighbor9(T& m, F& func, M& tmp) {
   window[1] = m.get(1, 0);
   window[2] = m.get(0, 1);
   window[3] = m.get(0, 0);
-  window[4] = window[5] = window[6] = window[7] = white(m);
+  for (unsigned int i = 4; i < 9; ++i)
+    window[i] = white(m);
   tmp.set(0, 0, func(window.begin(), window.end()));
   
   // Upper-right
@@ -166,7 +167,7 @@ void neighbor9(T& m, F& func, M& tmp) {
     window[3] = m.get(nrows_m2, col);
     window[4] = m.get(nrows_m2, col + 1);
     window[5] = m.get(nrows_m1, col);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
@@ -191,19 +192,17 @@ void neighbor9(T& m, F& func, M& tmp) {
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
-  for (unsigned int row = 1; row < nrows_m1; row++) {
-    for (unsigned int col = 1; col < ncols_m1; col++) {
+  
+  // Core of image
+  for (int row = 1; row < int(nrows_m1); ++row) {
+    for (int col = 1; col < int(ncols_m1); ++col) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
-      window[0] = m.get(row, col);
-      window[1] = m.get(row - 1, col);
-      window[2] = m.get(row - 1, col + 1);
-      window[3] = m.get(row, col + 1);
-      window[4] = m.get(row + 1, col + 1);
-      window[5] = m.get(row + 1, col);
-      window[6] = m.get(row + 1, col - 1);
-      window[7] = m.get(row, col - 1);
-      window[8] = m.get(row - 1, col - 1);
+      typename std::vector<typename T::value_type>::iterator window_it = window.begin();
+      for (int ri = -1; ri < 2; ++ri) {
+	for (int ci = -1; ci < 2; ++ci, ++window_it) 
+	  *window_it = m.get(row + ri, col + ci);
+      }
       tmp.set(row, col, func(window.begin(), window.end()));
     }
   }
@@ -252,7 +251,8 @@ void neighbor8o(T& m, F& func, M& tmp) {
   window[0] = m.get(1, 1);
   window[1] = m.get(1, 0);
   window[2] = m.get(0, 1);
-  window[3] = window[4] = window[5] = window[6] = window[7] = white(m);
+  for (unsigned int i = 3; i < 8; ++i)
+    window[i] = white(m);
   tmp.set(0, 0, func(window.begin(), window.end()));
   
   // Upper-right
@@ -290,7 +290,7 @@ void neighbor8o(T& m, F& func, M& tmp) {
     window[2] = m.get(nrows_m2, col - 1);
     window[3] = m.get(nrows_m2, col);
     window[4] = m.get(nrows_m2, col + 1);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
   }
 
   // Left edge
@@ -313,6 +313,7 @@ void neighbor8o(T& m, F& func, M& tmp) {
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
+  // Core of image
   for (unsigned int row = 1; row < nrows_m1; row++) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
@@ -388,7 +389,7 @@ void neighbor4x(T& m, F& func, M& tmp) {
   // Lower right
   window[0] = m.get(nrows_m1, ncols_m1);
   window[1] = m.get(nrows_m2, ncols_m2);
-  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
 
   // Top edge
   for (unsigned int col = 1; col < ncols_m1; col++) {
@@ -422,6 +423,7 @@ void neighbor4x(T& m, F& func, M& tmp) {
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
+  // Core of image
   for (unsigned int row = 1; row < nrows_m1; row++) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
@@ -538,6 +540,7 @@ void neighbor4o(T& m, F& func, M& tmp) {
     tmp.set(row, ncols_m1, func(window.begin(), window.end()));
   }
 
+  // Core of image
   for (unsigned int row = 1; row < nrows_m1; row++) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using

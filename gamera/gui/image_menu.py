@@ -217,7 +217,6 @@ class ImageMenu:
     if len(self.images) == 1:
       namespace = {'image': self.images[0]}
       source = 'image.%s' % func_call
-      print source
       result = eval(source, namespace)
       if result_name != '':
         sh.locals[result_name] = result

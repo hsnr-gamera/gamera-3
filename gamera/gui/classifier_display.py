@@ -429,6 +429,7 @@ class ClassifierFrame(ImageFrameBase):
       self.image = None
       self.menu = None
       self.default_segmenter = -1
+      self._save_by_criteria_dialog = [1] * 10
 
       ImageFrameBase.__init__(
          self, parent, id,
@@ -674,7 +675,7 @@ class ClassifierFrame(ImageFrameBase):
       
       wxBeginBusyCursor()
       try:
-         image = load_image(filename[1:-1])
+         image = load_image(filename[2:-1])
          self._segment_image(image, segmenters[segmenter])
       finally:
          wxEndBusyCursor()
@@ -841,13 +842,13 @@ class ClassifierFrame(ImageFrameBase):
    def _OnSaveByCriteria(self, event):
       dialog = Args(
          [Info('Set of glyphs to save:'),
-          Check('', 'Production database', 1),
-          Check('', 'Current database', 1),
+          Check('', 'Production database', self._save_by_criteria_dialog[1]),
+          Check('', 'Current database', self._save_by_criteria_dialog[2]),
           Info('Kind of glyphs to save:'),
-          Check('', 'Unclassified', 1),
-          Check('', 'Automatically classified', 1),
-          Check('', 'Heuristically classified', 1),
-          Check('', 'Manually classified', 1),
+          Check('', 'Unclassified', self._save_by_criteria_dialog[4]),
+          Check('', 'Automatically classified', self._save_by_criteria_dialog[5]),
+          Check('', 'Heuristically classified', self._save_by_criteria_dialog[6]),
+          Check('', 'Manually classified', self._save_by_criteria_dialog[6]),
           FileSave('Save glyphs to file', '',
                    extension=gamera_xml.extensions)],
          name = 'Save by criteria...')
@@ -855,12 +856,15 @@ class ClassifierFrame(ImageFrameBase):
       if results is None:
          return
       skip, proddb, currdb, skip, un, auto, heur, man, filename = results
+      self._save_by_criteria_dialog = results
       if ((proddb == 0 and currdb == 0) or
           (un == 0 and auto == 0 and heur == 0 and man == 0)):
          gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
+         self._OnSaveByCriteria(event)
          return
       if filename == 'None':
          gui_util.message("You must select a filename to save into.")
+         self._OnSaveByCriteria(event)
          return
       # We build a dictionary here, since we don't want to save the
       # same glyph twice (it might be in both current and production databases)

@@ -99,7 +99,7 @@ class _Classifier:
                added, recursion_level+1)
             added.extend(added_recurse)
             removed.extend(removed_recurse)
-      except:
+      finally:
          if recursion_level == 0:
             progress.kill()
       return added, removed
@@ -274,12 +274,9 @@ class InteractiveClassifier(_Classifier):
    def set_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
       self.is_dirty = len(glyphs) > 0
-      self._database = {}
+      self.clear_glyphs()
       for glyph in glyphs:
-         self.is_dirty = 1
          self._database[glyph] = None
-      if len(self._database):
-         self.classifier.instantiate_from_images(self._database.keys())
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
@@ -287,10 +284,9 @@ class InteractiveClassifier(_Classifier):
       for glyph in glyphs:
          self.is_dirty = 1
          self._database[glyph] = None
-      if len(self._database):
-         self.classifier.instantiate_from_images(self._database.keys())
 
    def clear_glyphs(self):
+      self.is_dirty = 1
       self._database = {}
       self.grouping_classifier.clear_groups()
 
@@ -343,8 +339,6 @@ class InteractiveClassifier(_Classifier):
             del self._database[child]
       glyph.classify_manual([(0.0, id)])
       self._database[glyph] = None
-      if len(self._database) == 1:
-         self.classifier.instantiate_from_images(self._database.keys())
       return self._do_splits(glyph), removed
 
    def classify_list_manual(self, glyphs, id):
@@ -353,8 +347,6 @@ class InteractiveClassifier(_Classifier):
       if self.grouping_classifier and id.startswith('group'):
          added, removed = self.grouping_classifier.classify_group_manual(glyphs, id[6:])
          return added, removed
-
-      instantiate = (len(self._database) == 0)
 
       for glyph in glyphs:
          for child in glyph.children_images:
@@ -374,9 +366,6 @@ class InteractiveClassifier(_Classifier):
          glyph.classify_manual([(0.0, id)])
          splits.extend(self._do_splits(glyph))
 
-      if instantiate:
-         self.classifier.instantiate_from_images(self._database.keys())
-      
       return splits, removed.keys()
 
    def add_to_database(self, glyphs):

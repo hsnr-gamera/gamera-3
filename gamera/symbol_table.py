@@ -55,7 +55,7 @@ class SymbolTable:
       # assert type(symbol) == types.StringType
       if symbol == '':
          return '', []
-      for i in '!@#$%^&*()-=+~`|\{}[];:"\',<>?/ ':
+      for i in ' !@#$%^&*()-=+~`|\{}[];:"\',<>?/':
          symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
       if symbol[0] in string.digits:

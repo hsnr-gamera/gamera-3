@@ -650,8 +650,14 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
 
 static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
+  if (o->ga_running == true) {
+    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    return 0;
+  }
+
   PyObject* unknown, *iterator;
   double maximum_distance;
+
   if (PyArg_ParseTuple(args, "OOd", &iterator, &unknown, &maximum_distance) <= 0) {
     maximum_distance = std::numeric_limits<double>::max();
     if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
@@ -693,7 +699,9 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     }
     double distance;
     if (compute_distance(o, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
-      PyErr_SetString(PyExc_ValueError, "knn: error in distance calculation (This is most likely because features have not been generated.)");
+      PyErr_SetString(PyExc_ValueError, 
+		      "knn: error in distance calculation \
+                       (This is most likely because features have not been generated.)");
       return 0;
     }
     tmp_val = Py_BuildValue("(fO)", distance, cur);

@@ -349,37 +349,41 @@ class PluginDocumentationGenerator:
                       (i + 1, func.__name__,
                        ", ".join([str(x) for x in doc_example])))
           if not pixel_type is None:
-              s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
+             s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
           result_filename = "%s_plugin_%02d" % (func.__name__, i)
           if isinstance(result, core.ImageBase):
-              _png_support.save_PNG(
-                 result,
-                 self.docgen.output_images_path + result_filename + ".png")
+             self.save_image(
+                result, 
+                os.path.join(self.docgen.output_images_path, result_filename + ".png"))
               s.write(".. image:: images/%s.png\n\n" % (result_filename))
           elif (result is None and
                 isinstance(func.self_type, args.ImageType) and
                 src_image is not None):
-              _png_support.save_PNG(
-                 src_image,
-                 self.docgen.output_images_path + result_filename + ".png")
-              s.write(".. image:: images/%s.png\n\n" % (result_filename))
+             self.save_image(
+                src_image,
+                os.path.join(self.docgen.output_images_path, result_filename + ".png"))
+             s.write(".. image:: images/%s.png\n\n" % (result_filename))
           elif util.is_image_list(result):
-              subst = "\n\n"
-              for j, part in enumerate(result):
-                  result_filename = ("%s_plugin_%02d_%02d" %
-                                     (func.__name__, i, j))
-                  _png_support.save_PNG(
-                     part,
-                     self.docgen.output_images_path + result_filename + ".png")
-                  s.write("|%s| " % result_filename)
-                  subst += (".. |%s| image:: images/%s.png\n" %
-                            (result_filename, result_filename))
-              s.write(subst)
-              s.write("\n")
+             subst = "\n\n"
+             for j, part in enumerate(result):
+                result_filename = ("%s_plugin_%02d_%02d" %
+                                   (func.__name__, i, j))
+                self.save_image(
+                   part,
+                   os.path.join(self.docgen.output_images_path, result_filename + ".png"))
+                s.write("|%s| " % result_filename)
+                subst += (".. |%s| image:: images/%s.png\n" %
+                          (result_filename, result_filename))
+             s.write(subst)
+             s.write("\n")
           else:
               s.write("*result* = " + repr(result) + "\n\n")
       s.write("\n\n")
-           
+
+   def save_image(self, image, filename):
+      if image.pixel_type in (COMPLEX, FLOAT):
+         image = image.to_greyscale()
+      _png_support.save_PNG(image, filename)
 
 def copy_images(path_obj):
    if not os.path.exists(path_obj.output_images_path):

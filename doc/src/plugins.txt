@@ -1459,8 +1459,8 @@ ImageInfo **PNG_info** (``String`` *image_file_name*)
 
 Returns an ``ImageInfo`` object describing a PNG file.
 
-*image_file_name*
-  A PNG image filename
+    *image_file_name*
+      A PNG image filename
 
 
 ``load_PNG``

@@ -49,4 +49,32 @@ Rect
 .. docstring:: gamera.core Rect
    :no_title:
 
-.. docstring:: gamera.core Rect ul_x ul_y ur ur_x ur_y lr lr_x lr_y ll ll_x ll_y dimensions size nrows ncols width height offset_x offset_y center center_x center_y contains_x contains_y contains_point contains_rect intersects intersects_x intersects_y union union_rects distance_euclid distance_bb distance_cx distance_cy
+Position and dimensions
+'''''''''''''''''''''''
+
+.. docstring:: gamera.core Rect ul_x ul_y ur ur_x ur_y lr lr_x lr_y ll ll_x ll_y dimensions size nrows ncols width height offset_x offset_y 
+
+Center
+''''''
+
+.. docstring:: gamera.core Rect center center_x center_y 
+
+Containment
+'''''''''''
+
+.. docstring:: gamera.core Rect contains_x contains_y contains_point contains_rect 
+
+Intersection
+''''''''''''
+
+.. docstring:: gamera.core Rect intersects intersects_x intersects_y intersection 
+
+Union
+'''''
+
+.. docstring:: gamera.core Rect union union_rects 
+
+Distance
+''''''''
+
+.. docstring:: gamera.core Rect distance_euclid distance_bb distance_cx distance_cy

@@ -83,6 +83,7 @@ extern "C" {
   static PyObject* rect_intersects_x(PyObject* self, PyObject* args);
   static PyObject* rect_intersects_y(PyObject* self, PyObject* args);
   static PyObject* rect_intersects(PyObject* self, PyObject* args);
+  static PyObject* rect_intersection(PyObject* self, PyObject* args);
   static PyObject* rect_union_rects(PyObject* _, PyObject* rects);
   static PyObject* rect_union(PyObject* self, PyObject* args);
   static PyObject* rect_distance_euclid(PyObject* self, PyObject* args);
@@ -161,11 +162,13 @@ static PyMethodDef rect_methods[] = {
   {"expand", rect_expand, METH_VARARGS,
    "Rect **expand** (int *size*)\n\nReturns a new Rect that is padded on all four sides by *size*."},
   {"intersects_x", rect_intersects_x, METH_VARARGS,
-   "bool **intersects_x** (Rect *other*)\n\n``True`` if rectangle intersects the given rectangle in the *x* direction (completely ignoring the *y* direction.  (``True`` if the two rectangles are merely \"vertically aligned\".)"},
+   "bool **intersects_x** (Rect *other*)\n\n``True`` if rectangle intersects the given rectangle in the *x* direction (completely ignoring the *y* direction).  (``True`` if the two rectangles are merely \"vertically aligned\".)"},
   {"intersects_y", rect_intersects_y, METH_VARARGS,
-   "bool **intersects_y** (Rect *other*)\n\n``True`` if rectangle intersects the given rectangle in the *y* direction (completely ignoring the *x* direction.  (``True`` if the two rectangles are merely \"horizontally aligned\".)"},
+   "bool **intersects_y** (Rect *other*)\n\n``True`` if rectangle intersects the given rectangle in the *y* direction (completely ignoring the *x* direction).  (``True`` if the two rectangles are merely \"horizontally aligned\".)"},
   {"intersects", rect_intersects, METH_VARARGS,
    "bool **intersects** (Rect *other*)\n\n``True`` if rectangle intersects with the given rectangle."},
+  {"intersection", rect_intersection, METH_VARARGS,
+   "bool **intersection** (Rect *other*)\n\nReturns a new Rect that is the intersection of ``self`` and the given Rect object."},
   {"move", rect_move, METH_VARARGS},
   // TODO: If and when we move to Python 2.3, we should add the METH_STATIC flag
   // to rect_union, since this really should be a static method.  At this point, 
@@ -194,37 +197,41 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
 			  PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 4) {
-    int offset_x, offset_y, nrows, ncols;
-    if (PyArg_ParseTuple(args, "iiii", &offset_x, &offset_y, &nrows, &ncols)
+    int offset_y, offset_x, nrows, ncols;
+    if (PyArg_ParseTuple(args, "iiii", &offset_y, &offset_x, &nrows, &ncols)
 	<= 0)
       return 0;
     RectObject* so;
     so = (RectObject*)pytype->tp_alloc(pytype, 0);
-    so->m_x = new Rect((size_t)offset_x, (size_t)offset_y, (size_t)nrows,
-			  (size_t)ncols);
+    so->m_x = new Rect((size_t)offset_x, (size_t)offset_y, (size_t)nrows, (size_t)ncols);
     return (PyObject*)so;
   } else if (num_args == 2) {
     PyObject *a, *b;
     if (PyArg_ParseTuple(args, "OO", &a, &b) <= 0)
       return 0;
-    if (is_PointObject(a) && is_PointObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Rect(*((PointObject*)a)->m_x, *((PointObject*)b)->m_x);
-      return (PyObject*)so;
-    } else if (is_PointObject(a) && is_SizeObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Rect(*((PointObject*)a)->m_x, *((SizeObject*)b)->m_x);
-      return (PyObject*)so;
-    } else if (is_PointObject(a) && is_DimensionsObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Rect(*((PointObject*)a)->m_x,
-      			    *((DimensionsObject*)b)->m_x);
-      return (PyObject*)so;
+    if (is_PointObject(a)) {
+      if (is_PointObject(b)) {
+	RectObject* so;
+	so = (RectObject*)pytype->tp_alloc(pytype, 0);
+	so->m_x = new Rect(*((PointObject*)a)->m_x, *((PointObject*)b)->m_x);
+	return (PyObject*)so;
+      } else if (is_SizeObject(b)) {
+	RectObject* so;
+	so = (RectObject*)pytype->tp_alloc(pytype, 0);
+	so->m_x = new Rect(*((PointObject*)a)->m_x, *((SizeObject*)b)->m_x);
+	return (PyObject*)so;
+      } else if (is_DimensionsObject(b)) {
+	RectObject* so;
+	so = (RectObject*)pytype->tp_alloc(pytype, 0);
+	so->m_x = new Rect(*((PointObject*)a)->m_x,
+			   *((DimensionsObject*)b)->m_x);
+	return (PyObject*)so;
+      } else {
+	PyErr_SetString(PyExc_TypeError, "Incorrect arguments types.");
+	return 0;
+      }
     } else {
-      PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
+      PyErr_SetString(PyExc_TypeError, "Incorrect arguments.");
       return 0;
     }
   } else if (num_args == 1) {
@@ -237,7 +244,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
       so->m_x = new Rect(*((RectObject*)other)->m_x);
       return (PyObject*)so;
     } else {
-      PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
+      PyErr_SetString(PyExc_TypeError, "Incorrect arguments.");
       return 0;
     }
   } else if (num_args == 0) {
@@ -246,7 +253,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
     so->m_x = new Rect();
     return (PyObject*)so;
   } else {
-    PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
+    PyErr_SetString(PyExc_TypeError, "Incorrect arguments.");
     return 0;
   }
 }
@@ -533,6 +540,21 @@ static PyObject* rect_intersects(PyObject* self, PyObject* args) {
   }
 }
 
+static PyObject* rect_intersection (PyObject* self, PyObject* args) {
+  Rect* x = ((RectObject*)self)->m_x;
+  PyObject* rect;
+  if (PyArg_ParseTuple(args, "O", &rect) <= 0)
+    return 0;
+  if (!is_RectObject(rect)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
+    return 0;
+  }
+  PyTypeObject* pytype = get_RectType();
+  RectObject* so = (RectObject*)pytype->tp_alloc(pytype, 0);
+  so->m_x = new Rect(x->intersection(*((RectObject*)rect)->m_x));
+  return (PyObject*)so;
+}
+
 static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* list) {
   if (!PyList_Check(list)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
@@ -681,7 +703,7 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_richcompare = rect_richcompare;
   RectType.tp_free = NULL; // _PyObject_Del;
   RectType.tp_repr = rect_repr;
-  RectType.tp_doc = "The ``Rect`` class manages bounding boxes, and has a number of operations on those bounding boxes.";
+  RectType.tp_doc = "The ``Rect`` class manages bounding boxes, and has a number of operations on those bounding boxes.\n\nThere are multiple ways to create a Rect:\n\n  - **Rect** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Rect** (Point *upper_left*, Point *lower_right*)\n\n  - **Rect** (Point *upper_left*, Size *size*)\n\n  - **Rect** (Point *upper_left*, Dimensions *dimensions*)\n";
   PyType_Ready(&RectType);
   PyDict_SetItemString(module_dict, "Rect", (PyObject*)&RectType);
 }

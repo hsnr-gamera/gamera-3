@@ -92,8 +92,7 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
 		       &page_offset_x, &pixel, &format) <= 0)
     return 0;
   
-  return create_ImageDataObject(nrows, ncols, page_offset_y, page_offset_x,
-				pixel, format);
+  return create_ImageDataObject(nrows, ncols, page_offset_y, page_offset_x, pixel, format);
 }
  
 static void imagedata_dealloc(PyObject* self) {

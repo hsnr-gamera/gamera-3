@@ -440,23 +440,26 @@ If the image is unclassified, returns -1.0.
             return True
       return False
 
-   def subimage(self, offset_y, offset_x, nrows, ncols):
-      """Create a SubImage from this Image (or SubImage).
+   def subimage(self, *args, **kwargs):
+      """Creates a new view that is part of an existing image.
 
-*offset_y*, *offset_x*
-  The offset *relative to the logical coordinates*, not to the upper left of the view.
-  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
-  refer to the area 10 pixels from the upper left of ``self``.
+There are a number of ways to create a subimage:
 
-*nrows* *ncols*
-  The size of the new subimage.
+  - **subimage** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)
 
-This method is really just a thin wrapper around the ``SubImage`` constructor.
-"""
+  - **subimage** (Point *upper_left*, Point *lower_right*)
+
+  - **subimage** (Point *upper_left*, Size *size*)
+
+  - **subimage** (Point *upper_left*, Dimensions *dimensions*)
+
+  - **subimage** (Rect *rectangle*)
+
+Changes to subimages will affect all other subimages viewing the same data."""
       if hasattr(self, "label"):
-         return Cc(self, self.label, int(offset_y), int(offset_x), int(nrows), int(ncols))
+         return Cc(self, *args, **kwargs)
       else:
-         return SubImage(self, int(offset_y), int(offset_x), int(nrows), int(ncols))
+         return SubImage(self, *args, **kwargs)
 
    def _get_feature_vector_size(cls, functions):
       num_features = 0
@@ -538,65 +541,23 @@ This method is really just a thin wrapper around the ``SubImage`` constructor.
 ######################################################################
 
 class Image(gameracore.Image, ImageBase):
-   """The core Gamera Image type.  Use this constructor to create new underlying image data.
-
-See `Gamera image types`__.
-
-.. __: image_types.html"""
-   def __init__(self, page_offset_y, page_offset_x, nrows, ncols,
-                pixel_format=ONEBIT, storage_type=DENSE):
-      """**Image** (Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_format* = ``ONEBIT``, Choice *storage_format* = ``DENSE``)
-
-Creates a new image with new underlying data.
-
-*page_offset_y*, *page_offset_x*
-  The logical offset of the image
-
-*nrows*, *ncols*
-  The size of the image
-
-*pixel_format*
-  An integer value specifying the type of the pixels in the image.
-  See `pixel types`__ for more information.
-
-.. __: image_types.html#pixel-types
-
-*storage_format*
-  An integer value specifying the method used to store the image data.
-  See `storage formats`__ for more information. 
-
-.. __: image_types.html#storage-formats"""
+   def __init__(self, *args, **kwargs):
       ImageBase.__init__(self)
-      gameracore.Image.__init__(self, page_offset_y, page_offset_x,
-                                nrows, ncols, pixel_format, storage_type)
+      gameracore.Image.__init__(self, *args, **kwargs)
+   __init__.__doc__ = gameracore.Image.__doc__
 
    def __del__(self):
       if self._display:
          self._display.close()
-
    __getstate__ = ImageBase.__getstate__
 
 ######################################################################
 
 class SubImage(gameracore.SubImage, ImageBase):
-   def __init__(self, image, offset_y, offset_x, nrows, ncols):
-      """**SubImage** (Image *image*, Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*)
-
-Creates a view on existing image data.
-
-*image*
-  Another image view to base to create the ``SubImage`` from.
-
-*page_offset_y*, *page_offset_x*
-  The offset *relative to the logical coordinates*, not to the upper left of the view.
-  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
-  refer to the area 10 pixels from the upper left of ``self``.
-
-*nrows*, *ncols*
-  The size of the image"""
+   def __init__(self, *args, **kwargs):
       ImageBase.__init__(self)
-      gameracore.SubImage.__init__(self, image, int(offset_y), int(offset_x),
-                                   int(nrows), int(ncols))
+      gameracore.SubImage.__init__(self, *args, **kwargs)
+   __init__.__doc__ = gameracore.SubImage.__doc__
 
    def __del__(self):
       if self._display:
@@ -604,33 +565,14 @@ Creates a view on existing image data.
 
    __getstate__ = ImageBase.__getstate__
 
-
 ######################################################################
 
 class Cc(gameracore.Cc, ImageBase):
-   def __init__(self, image, label, offset_y, offset_x, nrows, ncols):
-      """**Cc** (Image *image*, Int *label*, Int *page_offset_y*, Int *page_offset_x*, Int *nrows*, Int *ncols*)
-
-Creates a connected component representing part of a OneBit image.  It is rare to
-create one of these objects directly: most often you will just use ``cc_analysis`` to
-create connected components.
-
-*image*
-  Another image view to base to create the ``Cc`` from.
-
-*label*
-  The pixel label associated with this ``Cc``.
-
-*page_offset_y*, *page_offset_x*
-  The offset *relative to the logical coordinates*, not to the upper left of the view.
-  For example, if ``self`` has a *page_offset* of (50, 50), ``subimage(60, 60...`` will
-  refer to the area 10 pixels from the upper left of ``self``.
-
-*nrows*, *ncols*
-  The size of the image"""
+   def __init__(self, *args, **kwargs):
       ImageBase.__init__(self)
-      gameracore.Cc.__init__(self, image, label, offset_y, offset_x,
-                             nrows, ncols)
+      gameracore.Cc.__init__(self, *args, **kwargs)
+   __init__.__doc__ = gameracore.Cc.__doc__
+
    __getstate__ = ImageBase.__getstate__
 
    def __del__(self):

@@ -121,18 +121,8 @@ static PyMethodDef image_methods[] = {
   { NULL }
 };
 
-static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
-			   PyObject* kwds) {
-  int nrows, ncols, pixel, format, offset_y, offset_x;
-  if (PyArg_ParseTuple(args, "iiiiii", &offset_y, &offset_x, &nrows, &ncols, &pixel, &format) <= 0) {
-    return 0;
-  }
-  ImageObject* o;
-  // we do not call rect_new here because we do all of the
-  // required initializations
-  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
-  // initialize the weakreflist
-  o->m_weakreflist = NULL;
+static bool _image_new(int offset_y, int offset_x, int nrows, int ncols, int pixel, int format, 
+		       ImageDataObject* &py_data, Rect* &image) {
   /*
     This is looks really awful, but it is not. We are simply creating a
     matrix view and some matrix data based on the pixel type and storage
@@ -146,195 +136,398 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
   try {
     if (format == DENSE) {
       if (pixel == ONEBIT) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<OneBitPixel>* data =
-	  ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<OneBitPixel>* data = (ImageData<OneBitPixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == GREYSCALE) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<GreyScalePixel>* data =
-	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<GreyScalePixel>* data = (ImageData<GreyScalePixel>*)(py_data->m_x);
+	image = (Rect *)new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == GREY16) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<Grey16Pixel>* data =
-	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<Grey16Pixel>* data = (ImageData<Grey16Pixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == Gamera::FLOAT) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<FloatPixel>* data =
-	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<FloatPixel>* data = (ImageData<FloatPixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == RGB) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<RGBPixel>* data =
-	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<RGBPixel>* data = (ImageData<RGBPixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else if (pixel == Gamera::COMPLEX) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	ImageData<ComplexPixel>* data =
-	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<ComplexPixel>* data = (ImageData<ComplexPixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else {
 	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
-	return 0;
+	return false;
       }
     } else if (format == RLE) {
       if (pixel == ONEBIT) {
-	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
-	RleImageData<OneBitPixel>* data =
-	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	RleImageData<OneBitPixel>* data = (RleImageData<OneBitPixel>*)(py_data->m_x);
+	image = (Rect*)new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else {
 	PyErr_SetString(PyExc_TypeError,
 			"Pixel type must be Onebit for Rle data!");
-	return 0;
+	return false;
       }
     } else {
       PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return 0;
+      return false;
     }
   } catch (std::exception& e) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
+    return false;
+  }
+  return true;
+}
+
+static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
+			   PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  Rect* image = NULL;
+  ImageDataObject* py_data = NULL;
+  if (num_args >= 4 && num_args <= 6) {
+    int offset_y, offset_x, nrows, ncols, pixel, format;
+    pixel = format = 0;
+    static char *kwlist[] = {"offset_y", "offset_x", "nrows", "ncols", "pixel_type", "storage_format", NULL};
+    if (PyArg_ParseTupleAndKeywords(args, kwds, "iiii|ii", kwlist, 
+				    &offset_y, &offset_x, &nrows, &ncols, &pixel, &format) > 0) {
+      if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
+	return 0;
+    }
+  }
+  if (image == NULL && num_args >= 2 && num_args <= 4) {
+    PyObject *a, *b;
+    int pixel, format;
+    pixel = format = 0;
+    static char *kwlist[] = {"a", "b", "pixel_type", "storage_format", NULL};
+    if (PyArg_ParseTupleAndKeywords(args, kwds, "OO|ii", kwlist, 
+				    &a, &b, &pixel, &format)) {
+      if (is_PointObject(a)) {
+	if (is_PointObject(b)) {
+	  // We could have just delegated to the overloaded constructors of Rect here,
+	  // but since ImageData is not overloaded in the same way, we have to do this
+	  // manually anyway, so we just convert to the four integer parameters each time.
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Point* point_b = ((PointObject*)b)->m_x;
+	  int nrows = point_b->y() - point_a->y() + 1;
+	  int ncols = point_b->x() - point_a->x() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
+	    return 0;
+	} else if (is_SizeObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Size* size_b = ((SizeObject*)b)->m_x;
+	  int nrows = size_b->height() + 1;
+	  int ncols = size_b->width() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
+	    return 0;
+	} else if (is_DimensionsObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
+	  int nrows = size_b->nrows();
+	  int ncols = size_b->ncols();
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
+	    return 0;
+	}
+      }
+    }
+  }
+      
+  if (image == NULL && num_args >= 1 && num_args <= 3) {
+    PyObject *src;
+    int pixel, format;
+    pixel = format = -1;
+    static char *kwlist[] = {"image", "pixel_type", "storage_format", NULL};
+    if (PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", kwlist, 
+				    &src, &pixel, &format)) {
+      if (is_ImageObject(src)) {
+	ImageObject* py_src = (ImageObject*)src;
+	Rect* rect = ((RectObject*)src)->m_x;
+	if (pixel == -1) {
+	  pixel = ((ImageDataObject*)py_src->m_data)->m_pixel_type;
+	}
+	if (format == -1) {
+	  format = ((ImageDataObject*)py_src->m_data)->m_storage_format;
+	}
+	if (!_image_new(rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), pixel, format, py_data, image))
+	  return 0;
+      }
+    }
+  }
+
+  if (image == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid arguments to image constructor.");
     return 0;
   }
+      
+  ImageObject* o;
+  // we do not call rect_new here because we do all of the
+  // required initializations
+  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  // initialize the weakreflist
+  o->m_weakreflist = NULL;
+  o->m_data = (PyObject*)py_data;
+  ((RectObject*)o)->m_x = image;
   return init_image_members(o);
 }
 
-PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
-  PyObject* image;
-  int nrows, ncols, off_x, off_y;
-  if (PyArg_ParseTuple(args, "Oiiii", &image, &off_y, &off_x, &nrows,
-		       &ncols) <= 0)
-    return 0;
-  if (!is_ImageObject(image)) {
+static bool _sub_image_new(PyObject* py_src, int offset_y, int offset_x, int nrows, int ncols, 
+			   Rect* &image) {
+  if (!is_ImageObject(py_src)) {
     PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
+    return false;
+  }
+  int pixel, format;
+  ImageObject* src = (ImageObject*)py_src;
+  pixel = ((ImageDataObject*)src->m_data)->m_pixel_type;
+  format = ((ImageDataObject*)src->m_data)->m_storage_format;
+
+  try {
+    if (format == DENSE) {
+      if (pixel == ONEBIT) {
+	ImageData<OneBitPixel>* data =
+	  ((ImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image =	(Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == GREYSCALE) {
+	ImageData<GreyScalePixel>* data =
+	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect*)new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == GREY16) {
+	ImageData<Grey16Pixel>* data =
+	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Gamera::FLOAT) {
+	ImageData<FloatPixel>* data =
+	  ((ImageData<FloatPixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == RGB) {
+	ImageData<RGBPixel>* data =
+	  ((ImageData<RGBPixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Gamera::COMPLEX) {
+	ImageData<ComplexPixel>* data =
+	  ((ImageData<ComplexPixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
+	return false;
+      }
+    } else if (format == RLE) {
+      if (pixel == ONEBIT) {
+	RleImageData<OneBitPixel>* data =
+	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
+	image = (Rect *)new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else {
+	PyErr_SetString(PyExc_TypeError,
+			"Pixel type must be Onebit for Rle data!");
+	return false;
+      }
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
+      return false;
+    }
+  } catch (std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return false;
+  }
+  return true;
+}
+			   
+
+PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  PyObject* image = NULL;
+  Rect* subimage = NULL;
+  if (num_args == 5) {
+    int offset_y, offset_x, nrows, ncols;
+    if (PyArg_ParseTuple(args, "Oiiii", 
+			 &image, &offset_y, &offset_x, &nrows, &ncols) > 0) {
+      if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
+	  return 0;
+    }
+  }
+  if (subimage == NULL && num_args == 3) {
+    PyObject *a, *b;
+    if (PyArg_ParseTuple(args, "OOO", &image, &a, &b)) {
+      if (is_PointObject(a)) {
+	if (is_PointObject(b)) {
+	  // We could have just delegated to the overloaded constructors of Rect here,
+	  // but since ImageData is not overloaded in the same way, we have to do this
+	  // manually anyway, so we just convert to the four integer parameters each time.
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Point* point_b = ((PointObject*)b)->m_x;
+	  int nrows = point_b->y() - point_a->y() + 1;
+	  int ncols = point_b->x() - point_a->x() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
+	    return 0;
+	} else if (is_SizeObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Size* size_b = ((SizeObject*)b)->m_x;
+	  int nrows = size_b->height() + 1;
+	  int ncols = size_b->width() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
+	    return 0;
+	} else if (is_DimensionsObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
+	  int nrows = size_b->nrows();
+	  int ncols = size_b->ncols();
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
+	    return 0;
+	}
+      }
+    }
+  }
+      
+  if (subimage == NULL && num_args == 2) {
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, "OO", &image, &pyrect)) {
+      if (is_RectObject(pyrect)) {
+	Rect* rect = ((RectObject*)pyrect)->m_x;
+	if (!_sub_image_new(image, rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), subimage))
+	  return 0;
+      }
+    }
+  }
+
+  if (subimage == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid arguments to SubImage constructor.");
     return 0;
   }
 
   ImageObject* o;
   o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  ((RectObject*)o)->m_x = subimage;
   o->m_data = ((ImageObject*)image)->m_data;
   Py_INCREF(o->m_data);
-  int pixel, format;
-  pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
-  format = ((ImageDataObject*)o->m_data)->m_storage_format;
-  
-  try {
-    if (format == DENSE) {
-      if (pixel == ONEBIT) {
-	ImageData<OneBitPixel>* data =
-	  ((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<OneBitPixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == GREYSCALE) {
-	ImageData<GreyScalePixel>* data =
-	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<GreyScalePixel> >(*data, off_y, off_x, nrows,
-						    ncols);
-      } else if (pixel == GREY16) {
-	ImageData<Grey16Pixel>* data =
-	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<Grey16Pixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == Gamera::FLOAT) {
-	ImageData<FloatPixel>* data =
-	  ((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<FloatPixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == RGB) {
-	ImageData<RGBPixel>* data =
-	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
-      } else if (pixel == Gamera::COMPLEX) {
-	ImageData<ComplexPixel>* data =
-	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<ImageData<ComplexPixel> >(*data, off_y, off_x, nrows, ncols);
-      } else {
-	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
-	return 0;
-      }
-    } else if (format == RLE) {
-      if (pixel == ONEBIT) {
-	RleImageData<OneBitPixel>* data =
-	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-	((RectObject*)o)->m_x =
-	  new ImageView<RleImageData<OneBitPixel> >(*data, off_y, off_x, nrows,
-						    ncols);
-      } else {
-	PyErr_SetString(PyExc_TypeError,
-			"Pixel type must be Onebit for Rle data!");
-	return 0;
-      }
-    } else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return 0;
-    }
-  } catch (std::exception& e) {
-    PyErr_SetString(PyExc_RuntimeError, e.what());
-    return 0;
-  }
-  // set the resolution
   ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
   return init_image_members(o);
 }
 
-PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
-  PyObject* image;
-  int nrows, ncols, off_x, off_y;
-  int label;
-  if (PyArg_ParseTuple(args, "Oiiiii", &image, &label, &off_y, &off_x, &nrows,
-		       &ncols) <= 0)
-    return 0;
-  if (!is_ImageObject(image)) {
+static bool _cc_new(PyObject* py_src, int label, int offset_y, int offset_x, int nrows, int ncols, Rect* &cc) {
+  if (!is_ImageObject(py_src)) {
     PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
+    return false;
+  }
+  int pixel, format;
+  ImageObject* src = (ImageObject*)py_src;
+  pixel = ((ImageDataObject*)src->m_data)->m_pixel_type;
+  format = ((ImageDataObject*)src->m_data)->m_storage_format;
+
+  try {
+    if (pixel != ONEBIT) {
+      PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
+      return false;
+    }
+    
+    if (format == DENSE) {
+      ImageData<OneBitPixel>* data =
+	((ImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
+      cc = (Rect*)new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, offset_y, offset_x, nrows, ncols);
+    } else if (format == RLE) {
+      RleImageData<OneBitPixel>* data =
+	((RleImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
+      cc = (Rect*)new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label, offset_y, offset_x, nrows, ncols);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
+      return false;
+    }
+  } catch (std::exception& e) {
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return false;
+  }
+  return true;
+}
+
+PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  PyObject* image = NULL;
+  Rect* cc = NULL;
+  if (num_args == 6) {
+    int offset_y, offset_x, nrows, ncols, label;
+    if (PyArg_ParseTuple(args, "Oiiiii", 
+			 &image, &label, &offset_y, &offset_x, &nrows, &ncols) > 0) {
+      if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
+	  return 0;
+    }
+  }
+  if (cc == NULL && num_args == 4) {
+    PyObject *a, *b;
+    int label;
+    if (PyArg_ParseTuple(args, "OiOO", &image, &label, &a, &b)) {
+      if (is_PointObject(a)) {
+	if (is_PointObject(b)) {
+	  // We could have just delegated to the overloaded constructors of Rect here,
+	  // but since ImageData is not overloaded in the same way, we have to do this
+	  // manually anyway, so we just convert to the four integer parameters each time.
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Point* point_b = ((PointObject*)b)->m_x;
+	  int nrows = point_b->y() - point_a->y() + 1;
+	  int ncols = point_b->x() - point_a->x() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
+	    return 0;
+	} else if (is_SizeObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Size* size_b = ((SizeObject*)b)->m_x;
+	  int nrows = size_b->height() + 1;
+	  int ncols = size_b->width() + 1;
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
+	    return 0;
+	} else if (is_DimensionsObject(b)) {
+	  Point* point_a = ((PointObject*)a)->m_x;
+	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
+	  int nrows = size_b->nrows();
+	  int ncols = size_b->ncols();
+	  int offset_y = point_a->y();
+	  int offset_x = point_a->x();
+	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
+	    return 0;
+	}
+      }
+    }
+  }
+      
+  if (cc == NULL && num_args == 3) {
+    int label;
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, "OiO", &image, &label, &pyrect)) {
+      if (is_RectObject(pyrect)) {
+	Rect* rect = ((RectObject*)pyrect)->m_x;
+	if (!_cc_new(image, label, rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), cc))
+	  return 0;
+      }
+    }
+  }
+
+  if (cc == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Invalid arguments to image constructor.");
     return 0;
   }
 
   ImageObject* o;
   o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  ((RectObject*)o)->m_x = cc;
   o->m_data = ((ImageObject*)image)->m_data;
   Py_INCREF(o->m_data);
-  int pixel, format;
-  pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
-  format = ((ImageDataObject*)o->m_data)->m_storage_format;
-  try {
-    if (pixel != ONEBIT) {
-      PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
-      return 0;
-    }
-    
-    if (format == DENSE) {
-      ImageData<OneBitPixel>* data =
-	((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, off_y,
-							off_x, nrows, ncols);
-    } else if (format == RLE) {
-      RleImageData<OneBitPixel>* data =
-	((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
-      ((RectObject*)o)->m_x =
-	new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label,
-							   off_y, off_x, nrows,
-							   ncols);
-    } else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return 0;
-    }
-  } catch (std::exception& e) {
-    PyErr_SetString(PyExc_RuntimeError, e.what());
-    return 0;
-  }
   // set the resolution
   ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
   return init_image_members(o);
@@ -628,6 +821,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   ImageType.tp_traverse = image_traverse;
   ImageType.tp_clear = image_clear;
+  ImageType.tp_doc = "The Image constructor creates a new image with newly allocated underlying data.\n\nThere are multiple ways to create an Image:\n\n  - **Image** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Point *lower_right*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Size *size*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Dimensions *dimensions*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Rect *rectangle*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Image *image*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\nNote that the last constructor creates a new image with the same position\nand dimensions as the passed in image, but does not copy the data.\n(For that use image_copy).\n\n*pixel_type*\n  An integer value specifying the type of the pixels in the image.\n  See `pixel types`__ for more information.\n\n.. __: image_types.html#pixel-types\n\n*storage_format*\n  An integer value specifying the method used to store the image data.\n  See `storage formats`__ for more information.\n\n.. __: image_types.html#storage-formats\n";
   PyType_Ready(&ImageType);
   PyDict_SetItemString(module_dict, "Image", (PyObject*)&ImageType);
 
@@ -642,6 +836,7 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
   SubImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   SubImageType.tp_free = NULL; // _PyObject_Del;
+  SubImageType.tp_doc = "Creates a new view on existing data.\n\nThere are a number of ways to create a subimage:\n\n  - **SubImage** (Image *image*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Point *lower_right*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Size *size*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **SubImage** (Image *image*, Rect *rectangle*)\n\nChanges to subimages will affect all other subimages viewing the same data.";
   PyType_Ready(&SubImageType);
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
 
@@ -657,6 +852,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = PyType_GenericAlloc;
   CCType.tp_free = NULL; //_PyObject_Del;
+  CCType.tp_doc = "Creates a connected component representing part of a OneBit image. It is rare to create one of these objects directly: most often you will just use cc_analysis to create connected components.\n\nThere are a number of ways to create a Cc:\n\n  - **Cc** (Image *image*, Int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Point *lower_right*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Size *size*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **Cc** (Image *image*, Int *label*, Rect *rectangle*)\n\n*label*\n  The pixel value used to represent this Cc.";
   PyType_Ready(&CCType);
   PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
 

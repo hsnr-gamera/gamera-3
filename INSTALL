@@ -15,7 +15,7 @@ Gamera requires that you install the following software FIRST:
 
 	For Microsoft Windows:
 	    Only Python 2.3 is supported, since it has a much better
-	    installer.
+	    installer generator.
 	
 	For Mac OS-X:
 	    Only Python 2.3 is supported, and only on OS-X 10.3 with
@@ -37,6 +37,10 @@ Gamera requires that you install the following software FIRST:
 	if you're having GUI-related problems, I would recommend
 	downloading that **exact** version before submitting a bug report.
 
+	The stable branch is a little hidden on the wxPython website.
+	It can be downloaded here__.
+
+.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
 Microsoft Windows
 =================

@@ -15,7 +15,7 @@ Gamera requires that you install the following software FIRST:
 
 	For Microsoft Windows:
 	    Only Python 2.3 is supported, since it has a much better
-	    installer.
+	    installer generator.
 	
 	For Mac OS-X:
 	    Only Python 2.3 is supported, and only on OS-X 10.3 with
@@ -37,6 +37,10 @@ Gamera requires that you install the following software FIRST:
 	if you're having GUI-related problems, I would recommend
 	downloading that **exact** version before submitting a bug report.
 
+	The stable branch is a little hidden on the wxPython website.
+	It can be downloaded here__.
+
+.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
 Microsoft Windows
 =================
@@ -125,12 +129,15 @@ If you just want to install Gamera without the ability to uninstall::
   python setup.py install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options.
+support, you have two options:
 
-1) Use the (currently experimental) MSI creation support provided in 
-   the Gamera source tree (see MSI section).
+1) Use the Python Distutils Installer Maker::
 
-2) Use the Python Distutils Installer Maker.
+  python setup.py build --compiler=mingw32 bdist_wininst
+  dist/gamera-X.X.X-win32.exe
+
+2) Use the (currently experimental) MSI creation support provided in 
+the Gamera source tree (see MSI section).
 
 Microsoft Visual Studio
 ```````````````````````
@@ -164,10 +171,13 @@ If you just want to install Gamera without the ability to uninstall::
 If you'd like a real Windows installer, including uninstallation
 support, you have two options:
 
-1) Use the (currently experimental) MSI creation support provided in 
-   the Gamera source tree (see MSI section).
+1) Use the Python Distutils Installer Maker::
 
-2) Use the Python Distutils Installer Maker.
+  python setup.py build --compiler=mingw32 bdist_wininst
+  dist/gamera-X.X.X-win32.exe
+
+2) Use the (currently experimental) MSI creation support provided in 
+the Gamera source tree (see MSI section).
 
 MSI (Windows Installer Package)
 ```````````````````````````````

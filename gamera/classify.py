@@ -832,23 +832,23 @@ class BasicGroupingFunction:
    def __call__(self, a, b):
       return Fudge(a, self._threshold).intersects(b)
 
-class _ExternalGroupingFunction:
-   def __call__(self, a, b):
-      return self._function(a, b, self._threshold)
-
-class ShapedGroupingFunction(_ExternalGroupingFunction):
+class ShapedGroupingFunction:
    def __init__(self, threshold):
       from gamera.plugins import structural
       self._function = structural.shaped_grouping_function
       self._threshold = threshold
-      self.__call__ = self.__class__.__call__
 
-class BoundingBoxGroupingFunction(_ExternalGroupingFunction):
+   def __call__(self, a, b):
+      return self._function(a, b, self._threshold)
+
+class BoundingBoxGroupingFunction:
    def __init__(self, threshold):
       from gamera.plugins import structural
       self._function = structural.bounding_box_grouping_function
       self._threshold = threshold
-      self.__call__ = self.__class__.__call__
+
+   def __call__(self, a, b):
+      return self._function(a, b, self._threshold)
 
 def average_bb_distance(ccs):
    """Calculates the average distance between the bounding boxes

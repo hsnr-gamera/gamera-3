@@ -1307,7 +1307,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGroupAndGuessAll(self, event):
       self._OnGroupAndGuess(self.multi_iw.id.GetAllItems())
-
+      
    def _OnGroupAndGuessSelected(self, event):
       selected = list(self.multi_iw.id.GetSelectedItems())
       if len(selected) == 0:
@@ -1317,12 +1317,13 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGroupAndGuess(self, list):
       try:
-         wxBeginBusyCursor()
-         added, removed = self._classifier.group_list_automatic(list)
+         try:
+            wxBeginBusyCursor()
+            added, removed = self._classifier.group_list_automatic(list)
+         finally:
+            wxEndBusyCursor()
       except ClassifierError, e:
          gui_util.message(str(e))
-      finally:
-         wxEndBusyCursor()
       else:
          self._AdjustAfterGuess(added, removed)
 

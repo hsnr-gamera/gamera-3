@@ -316,6 +316,7 @@ class ImageBase:
       global all_features
       if all_features is None:
          all_features = cls.methods_flat_category('Features', ONEBIT)
+         all_features.sort()
       if features == 'all' or features is None:
          functions = all_features
          return functions

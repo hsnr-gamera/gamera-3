@@ -62,7 +62,7 @@ class _Classifier:
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
           not glyph.classification_state in (core.MANUAL, core.HEURISTIC)):
-         glyph.generate_features(self.feature_functions)
+         glyph.generate_features(self.classifier.feature_functions)
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
          splits = self._do_splits(glyph)
@@ -80,7 +80,7 @@ class _Classifier:
       progress.add_length(len(glyphs) * 2)
       try:
          for glyph in glyphs:
-            glyph.generate_features(self.feature_functions)
+            glyph.generate_features(self.classifier.feature_functions)
             progress.step()
          if (recursion_level > 10) or len(self._database) == 0:
             return [], []
@@ -94,7 +94,7 @@ class _Classifier:
                progress.step()
          if len(added):
             for glyph in added:
-               glyph.generate_features(self.feature_functions)
+               glyph.generate_features(self.classifier.feature_functions)
             added_recurse, removed_recurse = self.classify_list_automatic(
                added, recursion_level+1)
             added.extend(added_recurse)
@@ -126,7 +126,7 @@ class _Classifier:
       progress = util.ProgressFactory("Generating features...", len(glyphs))
       try:
          for glyph in glyphs:
-            glyph.generate_features(self.feature_functions)
+            glyph.generate_features(self.classifier.feature_functions)
             progress.step()
       finally:
          progress.kill()
@@ -185,6 +185,7 @@ class NonInteractiveClassifier(_Classifier):
          from gamera import knn
          classifier = knn.kNN()
       self.classifier = classifier
+      self.classifier.change_feature_set(features)
       if grouping_classifier is None:
          from gamera import group
          grouping_classifier = group.GroupingClassifier([], self)
@@ -192,8 +193,7 @@ class NonInteractiveClassifier(_Classifier):
       if not util.is_sequence(database) or database == []:
          raise ValueError("You can not initialize a NonInteractiveClassifier an empty database.")
       self._database = database
-      self.features = features
-      self.feature_functions = core.ImageBase.get_feature_functions(self.features)
+
       if perform_splits:
          self._do_splits = self._do_splits_impl
       else:
@@ -224,7 +224,7 @@ class NonInteractiveClassifier(_Classifier):
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
    def guess_glyph_automatic(self, glyph):
-      glyph.generate_features(self.feature_functions)
+      glyph.generate_features(self.classifier.feature_functions)
       return self.classifier.classify(glyph)
 
    def _classify_automatic_impl(self, glyph):
@@ -290,11 +290,9 @@ class InteractiveClassifier(_Classifier):
       """Change the set of features used in the classifier.  features is a list of
       strings, naming the feature functions to be used."""
       self.is_dirty = 1
-      self.features = features
-      self.feature_functions = core.ImageBase.get_feature_functions(self.features)
+      self.classifier.change_feature_set(features)
       if len(self._database):
          self.generate_features(self._database.keys())
-         self.classifier.instantiate_from_images(self._database.keys())
       self.grouping_classifier.change_feature_set()
 
    ########################################
@@ -307,7 +305,7 @@ class InteractiveClassifier(_Classifier):
 
    def guess_glyph_automatic(self, glyph):
       if len(self._database):
-         glyph.generate_features(self.feature_functions)
+         glyph.generate_features(self.classifier.feature_functions)
          return self.classifier.classify_with_images(
             self._database.iterkeys(), glyph)
       else:
@@ -328,7 +326,7 @@ class InteractiveClassifier(_Classifier):
       else:
          removed = self.grouping_classifier.remove_groups_containing(glyph)
 
-      glyph.generate_features(self.feature_functions)
+      glyph.generate_features(self.classifier.feature_functions)
       for child in glyph.children_images:
          removed.append(child)
          if self._database.has_key(child):
@@ -358,7 +356,7 @@ class InteractiveClassifier(_Classifier):
          self.is_dirty = 1
          if not self._database.has_key(glyph):
             self._database[glyph] = None
-            glyph.generate_features(self.feature_functions)
+            glyph.generate_features(self.classifier.feature_functions)
          glyph.classify_manual([(0.0, id)])
          splits.extend(self._do_splits(glyph))
 
@@ -389,7 +387,7 @@ class InteractiveClassifier(_Classifier):
             classifier = self.classifier
          return NonInteractiveClassifier(
             classifier, self.get_glyphs(),
-            self.features, self.perform_splits,
+            self.classifier.features, self.perform_splits,
             self.grouping_classifier.noninteractive_copy())
       return None
 

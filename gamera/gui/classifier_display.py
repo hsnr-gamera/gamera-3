@@ -653,7 +653,7 @@ class ClassifierFrame(ImageFrameBase):
       
       wxBeginBusyCursor()
       try:
-         image = load_image(filename[2:-1])
+         image = load_image(filename[1:-1])
          image_ref = image
          if image_ref.data.pixel_type == RGB:
             image_ref = image_ref.to_greyscale()

@@ -19,6 +19,7 @@
 
 from threading import *
 
+from gamera import core
 import gamera.knncore
 import gamera.gamera_xml
 import array
@@ -60,7 +61,7 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
 
     def _setup_handlers(self):
         self.feature_functions = []
-        self.weights = array.array('d')
+        self.weights = { }
         self.num_k = None
         self.distance_type = None
         self.ga_mutation = None
@@ -71,6 +72,8 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
         self.add_start_element_handler('ga-mutation', self._ths_ga_mutation)
         self.add_start_element_handler('ga-crossover', self._ths_ga_crossover)
         self.add_start_element_handler('ga-population', self._ths_ga_population)
+        self.add_start_element_handler('weight', self._ths_weight)
+        self.add_end_element_handler('weight', self._the_weight)
         
     def _remove_handlers(self):
         self.remove_start_element_handler('num-k')
@@ -78,6 +81,8 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
         self.remove_start_element_handler('ga-mutation')
         self.remove_start_element_handler('ga-crossover')
         self.remove_start_element_handler('ga-population')
+        self.remove_start_element_handler('weight')
+        self.remove_end_element_handler('weight')
 
     def _ths_num_k(self, a):
         self.num_k = self.try_type_convert(a, 'value', int, 'num-k')
@@ -95,9 +100,33 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
     def _ths_ga_population(self, a):
         self.ga_population = self.try_type_convert(a, 'value', int, 'ga-population')
 
+    def _ths_weight(self, a):
+        self._data = u''
+        self._weight_name = a["name"]
+        self._parser.CharacterDataHandler = self._add_weights
+
+    def _the_weight(self):
+        import string
+        self._parser.CharacterDataHandler = None
+        self.weights[self._weight_name] = array.array('d')
+        tmp = array.array('d')
+        nums = string.split(self._data, u' ')
+        for x in nums:
+            if x == u'' or x == u'\n':
+                continue
+            tmp.append(float(x))
+        self.weights[self._weight_name] = tmp
+        
+
+    def _add_weights(self, data):
+        self._data += data
+
 
 class kNN(gamera.knncore.kNN):
-    def __init__(self):
+    """k-NN classifier that supports optimization using
+    a Genetic Algorithm. This classifier supports all of
+    the Gamera interactive/non-interactive classifier interface."""
+    def __init__(self, features='all'):
         gamera.knncore.kNN.__init__(self)
         self.ga_initial = 0.0
         self.ga_best = 0.0
@@ -105,13 +134,27 @@ class kNN(gamera.knncore.kNN):
         self.ga_worker_stop = 0
         self.ga_generation = 0
         self.ga_callbacks = []
-        self.feature_functions = None
+        self.features = features
+        self.change_feature_set(features)
 
+    def change_feature_set(self, features):
+        """Change the set of features used in the classifier.  features is a list of
+        strings, naming the feature functions to be used."""
+        self.features = features
+        self.feature_functions = core.ImageBase.get_feature_functions(self.features)
+        features = 0
+        for x in self.feature_functions:
+            features += x[1].return_type.length
+        self.num_features = features
+
+    def classify_with_images(self, images, glyph):
+        self._classify_with_images(images, glyph)
+      
     def instantiate_from_images(self, images):
         """Create a k-NN database from a list of images"""
         assert(len(images) > 0)
-        assert(images[0].feature_functions != [])
-        self.feature_functions = images[0].feature_functions
+        for x in images:
+            x.generate_features(self.feature_functions)
         self._instantiate_from_images(images)
 
     def evaluate(self):
@@ -130,7 +173,11 @@ class kNN(gamera.knncore.kNN):
         return 1
 
     def start_optimizing(self):
-        """Start optizing the classifier using a Genetic Algorithm"""
+        """Start optizing the classifier using a Genetic Algorithm. This
+        function will not block. Instead it starts a background (daemon) thread that
+        will perform the optimization in the background. While the classifier is
+        performing classification no other methods should be called until stop_optimizing
+        has been called."""
         self.ga_worker_stop = 0
         self.ga_worker_thread = GaWorker(self)
         self.ga_worker_thread.setDaemon(1)
@@ -179,7 +226,10 @@ class kNN(gamera.knncore.kNN):
         self.distance_type = distance
 
     def save_settings(self, filename):
-        """Save the k-NN settings to filename."""
+        """Save the k-NN settings to filename. This settings file (which is xml)
+        includes k, distance type, GA mutation rate, GA crossover rate, GA population size,
+        and the current floating point weights. This file is different from the one produced
+        by serialize in that it contains only the settings and no data."""
         from util import word_wrap
         file = open(filename, "w")
         indent = 0
@@ -212,6 +262,13 @@ class kNN(gamera.knncore.kNN):
         file.close()
 
     def load_settings(self, filename):
+        """Load the k-NN settings from an xml file. If settings file contains
+        weights they are loading. Loading the weights can potentially change the
+        feature functions of which the classifier is aware."""
+        from gamera import core
+        from gamera import config
+        from gamera.gui.gui_util import message
+        
         loader = _KnnLoadXML()
         loader.parse_filename(filename)
         self.num_k = loader.num_k
@@ -219,6 +276,36 @@ class kNN(gamera.knncore.kNN):
         self.ga_mutation = loader.ga_mutation
         self.ga_crossover = loader.ga_crossover
         self.ga_population = loader.ga_population
+        # In order to correctly set the weights we need to look
+        # up all of the feature functions for the individual weights
+        # so that we can set self.feature_functions. This allows the
+        # classification methods to know whether the weights should
+        # be used or not (according to whether the features on the
+        # image passed in match the features we currently know about).
+        functions = []
+        for key in loader.weights:
+            try:
+                func = core.ImageBase.get_feature_functions(str(key))
+            except Exception, e:
+                if config.get_option("__gui"):
+                    message("While loading the weights an unknown " +
+                            "feature function was found. The feature name was: " + key)
+                    return
+                else:
+                    raise LookupError("While loading the weights \
+                    an unknown feature function was found.")
+            functions.append(func[0])
+        functions.sort()
+        self.feature_functions = functions
+        # Create the weights array with the weights in the correct order
+        self.interactive_weights = array.array('d')
+        for x in self.feature_functions:
+            print self.feature_functions
+            print x
+            tmp = loader.weights[str(x[0])]
+            print tmp
+            print self.interactive_weights
+            self.interactive_weights.extend(tmp)
         
 
         

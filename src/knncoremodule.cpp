@@ -66,6 +66,8 @@ extern "C" {
   static int knn_set_ga_crossover(PyObject* self, PyObject* v);
   static PyObject* knn_get_ga_population(PyObject* self);
   static int knn_set_ga_population(PyObject* self, PyObject* v);
+  static PyObject* knn_get_num_features(PyObject* self);
+  static int knn_set_num_features(PyObject* self, PyObject* v);
 
 }
 
@@ -146,7 +148,7 @@ struct KnnObject {
 
 
 PyMethodDef knn_methods[] = {
-  { "classify_with_images", knn_classify_with_images, METH_VARARGS,
+  { "_classify_with_images", knn_classify_with_images, METH_VARARGS,
     "classify an unknown image using a list of images." },
   { "_instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
@@ -175,6 +177,8 @@ PyGetSetDef knn_getset[] = {
     "The crossover rate for GA optimization.", 0 },
   { "ga_population", (getter)knn_get_ga_population, (setter)knn_set_ga_population,
     "The population for GA optimization.", 0 },
+  { "num_features", (getter)knn_get_num_features, (setter)knn_set_num_features,
+    "The current number of features.", 0 },
   { NULL }
 };
 
@@ -279,7 +283,6 @@ static void knn_delete_feature_data(KnnObject* o) {
     delete o->normalized_unknown;
     o->normalized_unknown = 0;
   }
-  o->num_features = 0;
   o->num_feature_vectors = 0;
 }
 
@@ -293,12 +296,10 @@ static void knn_delete_feature_data(KnnObject* o) {
   easier and also allows certain features (like normalization) to become
   a lot easier.
 */
-static int knn_create_feature_data(KnnObject* o, size_t num_features,
-				    size_t num_feature_vectors) {
+static int knn_create_feature_data(KnnObject* o, size_t num_feature_vectors) {
   try {
-    o->num_features = num_features;
     o->num_feature_vectors = num_feature_vectors;
-    assert(o->num_features > 0 && o->num_feature_vectors > 0);
+    assert(o->num_feature_vectors > 0);
     
     o->feature_vectors = new double[o->num_features * o->num_feature_vectors];
     o->id_names = new char*[o->num_feature_vectors];
@@ -419,28 +420,16 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   }
 
   /*
-    Determine the number of features by querying the first image
-    in the list.
-  */
-  PyObject* first_image = PyList_GET_ITEM(images, 0);
-  if (!PyObject_TypeCheck(first_image, imagebase_type)) {
-    PyErr_SetString(PyExc_TypeError, "knn: expected an image");
-    return 0;
-  }
-  double* tmp_fv;
-  int tmp_fv_len;
-  if (image_get_fv(first_image, &tmp_fv, &tmp_fv_len) < 0) {
-    PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
-    return 0;
-  }
-  /*
     Create all of the data
   */
-  if (knn_create_feature_data(o, tmp_fv_len, images_size) < 0)
+  if (knn_create_feature_data(o, images_size) < 0)
     return 0;
   /*
     Copy the id_names and the features to the internal data structures.
   */
+  double* tmp_fv = new double[o->num_features];
+  int tmp_fv_len;
+
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
     PyObject* cur_image = PyList_GetItem(images, i);
@@ -454,9 +443,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
       PyErr_SetString(PyExc_TypeError, "knn: feature vector lengths don't match");
       return 0;      
     }
-    for (size_t feature = 0; feature < o->num_features; ++feature) {
-      current_features[feature] = tmp_fv[feature];
-    }
+    std::copy(tmp_fv, tmp_fv + o->num_features, current_features);
     o->normalize->add(tmp_fv, tmp_fv + o->num_features);
     char* tmp_id_name;
     int len;
@@ -468,6 +455,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
   }
+  delete tmp_fv;
   /*
     Apply the normalization
   */
@@ -945,7 +933,8 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   }
 
   knn_delete_feature_data(o);
-  if (knn_create_feature_data(o, (size_t)num_features, (size_t)num_feature_vectors) < 0)
+  o->num_features = (size_t)num_features;
+  if (knn_create_feature_data(o, (size_t)num_feature_vectors) < 0)
     return 0;
   o->num_k = num_k;
 
@@ -1123,6 +1112,20 @@ static int knn_set_ga_population(PyObject* self, PyObject* v) {
   return 0;
 }
 
+static PyObject* knn_get_num_features(PyObject* self) {
+  KnnObject* o = (KnnObject*)self;
+  return Py_BuildValue("i", o->num_features);
+}
+
+static int knn_set_num_features(PyObject* self, PyObject* v) {
+  KnnObject* o = (KnnObject*)self;
+  if (!PyInt_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "knn: must be a floating-point number.");
+    return -1;
+  }
+  o->num_features = size_t(PyInt_AS_LONG(v));
+  return 0;
+}
 
 PyMethodDef knn_module_methods[] = {
   { NULL }

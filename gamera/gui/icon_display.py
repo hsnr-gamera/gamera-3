@@ -204,7 +204,7 @@ class CustomIcon:
   check = staticmethod(check)
 
   def double_click(self):
-    return "%s.display()" % self.name
+    return "%s.display()" % self.label
 
 class CIRGBImage(CustomIcon):
   def get_icon():

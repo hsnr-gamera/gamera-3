@@ -169,9 +169,7 @@ class Class(Arg):
    def __init__(self, name=None, klass=None, list_of=False):
       Arg.__init__(self, name)
       self.klass = klass
-      if type(list_of) != bool:
-         raise TypeError("'list_of' must be a bool")
-      self.list_of = list_of
+      self.list_of = bool(list_of)
 
    def rest_repr(self, name=False):
       if self.klass is None:
@@ -193,9 +191,7 @@ class ImageType(Arg):
       if not core is None:
          self.klass = core.ImageBase
       self.pixel_types = pixel_types
-      if type(list_of) != bool:
-         raise TypeError("'list_of' must be a bool")
-      self.list_of = list_of
+      self.list_of = bool(list_of)
 
    def rest_repr(self, name=False):
       result = '``Image`` [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
@@ -209,9 +205,7 @@ class Rect(Arg):
       Arg.__init__(self, name)
       if not core is None:
          self.klass = core.Rect
-      if type(list_of) != bool:
-         raise TypeError("'list_of' must be a bool")
-      self.list_of = list_of
+      self.list_of = bool(list_of)
       
 class Choice(Arg):
    def __init__(self, name=None, choices=[], default=None):
@@ -272,11 +266,8 @@ class Check(Arg):
       else:
          self.has_default = True
          self.default = default
-      if not type(self.default) == bool:
-         raise TypeError("'default' must be a bool")
-      if not type(enabled) == bool:
-         raise TypeError("'enabled' must be a bool")
-      self.enabled = enabled
+      self.default = bool(self.default)
+      self.enabled = bool(enabled)
 
    def rest_repr(self, name=False):
       result = '``bool``'

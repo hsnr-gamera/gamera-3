@@ -42,9 +42,9 @@ class _Classifier:
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
                             evaluate_function=None, max_parts_per_group=5):
+      glyphs = [x for x in glyphs if x.classification_state != 3]
       if len(glyphs) == 0:
          return [], []
-      glyphs = [x for x in glyphs if x.classification_state != 3]
       splits, removed = self.classify_list_automatic(glyphs)
       glyphs = [x for x in glyphs if not x.get_main_id().startswith('split')]
       if grouping_function is None:

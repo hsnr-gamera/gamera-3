@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-(_NO_GUI, _WX_GUI, _CURSES_GUI) = (0, 1, 2)
+(_NO_GUI, _WX_GUI, _CURSES_GUI) = tuple(range(3))
 
 try:
    import wxPython.wx   # wxPython
@@ -116,8 +116,10 @@ if _has_gui == _WX_GUI:
                                       wxPython.wx.false,
                                       "Helvetica")
             static_text.SetFont(font)
-            self.box.Add(static_text, 0, wxPython.wx.wxEXPAND|wxPython.wx.wxBOTTOM, 20)
-         self.box.Add(self.gs, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALIGN_RIGHT)
+            self.box.Add(static_text, 0,
+                         wxPython.wx.wxEXPAND|wxPython.wx.wxBOTTOM, 20)
+         self.box.Add(self.gs, 1,
+                      wxPython.wx.wxEXPAND|wxPython.wx.wxALIGN_RIGHT)
          self.box.Add(buttons, 0, wxPython.wx.wxALIGN_RIGHT)
          self.box.RecalcSizes()
          self.gs.RecalcSizes()

@@ -53,7 +53,7 @@ PyPlate defines the following directives:
 from __future__ import nested_scopes
 import sys, string, re, util, cStringIO
 
-re_directive = re.compile("\[\[(.*)\]\]")
+re_directive = re.compile("\[\[(.*?)\]\]")
 re_for_loop = re.compile("for (.*) in (.*)")
 re_if = re.compile("if (.*)")
 re_elif = re.compile("elif (.*)")
@@ -61,6 +61,8 @@ re_def = re.compile("def (.*?)\((.*)\)")
 re_call = re.compile("call (.*?)\((.*)\)")
 re_exec = re.compile("exec (.*)")
 re_comment = re.compile("#(.*)#")
+
+re_clean_whitespace = re.compile(r"\]\]\s+?")
 
 ############################################################
 # Template parser
@@ -88,7 +90,7 @@ class Template:
 
   def parse(self, file):
     self.file = file
-    self.line = self.file.read()
+    self.line = re_clean_whitespace.sub("]]", self.file.read())
     self.lineno = 0
     self.functions = {}
     self.tree = TopLevelTemplateNode(self)
@@ -367,7 +369,7 @@ if __name__ == '__main__':
   [[# This example does recursive function calls need to generate feature combinations #]]
   [[def switch(layer, args)]]
      switch(m[[layer]].id) {
-     [[for option in combinations[layer]]]
+     [[for option in combinations[layer] ]]
      [[exec current = option + '(m' + str(layer) + ')']]
      case [[option]]:
        [[if layer == layers - 1]]

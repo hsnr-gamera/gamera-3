@@ -21,7 +21,8 @@
 import inspect
 from gamera.gamera import *
 from gamera import paths, config, magic_import
-from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
+from gamera.gui import gamera_display, image_menu, \
+     icon_display, classifier_display, var_name
 
 # wxPython
 from wxPython.wx import *
@@ -133,7 +134,7 @@ class PyCrustGameraShell(shell.Shell):
       self.SetMarginType(1, 0)
       self.SetMarginWidth(1, 0)
       faces = shell.faces
-      options = config.get_options("shell_style_")
+      options = config.get_options_by_prefix("shell_style_")
       for face in ('times', 'mono', 'helv', 'other'):
          faces[face] = options['face']
       faces.update(options)
@@ -186,7 +187,7 @@ class History(wxStyledTextCtrl):
    def __init__(self, parent):
       wxStyledTextCtrl.__init__(self, parent, -1,
                                 wxDefaultPosition, wxDefaultSize)
-      style = "face:%(face)s,size:%(size)d" % config.get_options("shell_style_")
+      style = "face:%(face)s,size:%(size)d" % config.get_options_by_prefix("shell_style_")
       self.StyleSetSpec(wxSTC_STYLE_DEFAULT,
                         style)
       self.SetTabWidth(2)

@@ -20,7 +20,7 @@ import string, sys, os, urllib, imp
 
 options = {}
 
-def get_options(option=''):
+def get_options_by_prefix(option=''):
    result = {}
    for key, val in options.iteritems():
       if key.startswith(option):
@@ -33,7 +33,7 @@ def get_option(option):
    else:
       return None
 
-def add_option(option, value):
+def add_option(option, value=''):
    global options
    if value == '':
       value = 1

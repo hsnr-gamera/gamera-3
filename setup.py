@@ -105,8 +105,7 @@ extensions.extend(plugin_extensions)
 
 setup(name = "gamera", version="1.1",
       ext_modules = extensions,
-      packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
-                  'gamera.toolkits.omr'],
+      packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
       data_files=[('include/gamera', glob.glob("include/*.hpp")),
                   ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
                   ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),

@@ -53,7 +53,7 @@ def get_plugin_filenames(path):
       norm_plugins.append(os.path.normpath(os.path.abspath(x)))
    plugins = norm_plugins
    try:
-      path = os.path.normpath(os.path.abspath("gamera/plugins/__init__.py"))
+      path = os.path.normpath(os.path.abspath(path + "/__init__.py"))
       plugins.remove(path)
    except:
       pass

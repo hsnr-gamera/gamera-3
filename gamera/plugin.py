@@ -44,7 +44,7 @@ class PluginModule:
 class PluginFunction:
     return_type = None
     self_type = ImageType(("RGB", "GreyScale", "Grey16", "Float", "OneBit"))
-    args = []
+    args = Args([])
     image_types_must_match = 0
 
     def register(cls, category='Miscellaneous'):

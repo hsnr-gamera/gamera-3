@@ -104,9 +104,9 @@ def generate_plugin(plugin_filename):
         Image* return_value;
       [[end]]
 
-      if (PyArg_ParseTuple(args, \"[[pyarg_format]]\", &real_self,
+      if (PyArg_ParseTuple(args, \"[[pyarg_format]]\", &real_self
       [[for i in range(len(function.args.list))]]
-        [[if i != 0]],[[end]]
+        ,
         &[[function.args.list[i].name + '_arg']]
       [[end]]
       ) <= 0)
@@ -163,7 +163,8 @@ def generate_plugin(plugin_filename):
                 [[function.__class__.__name__]]
                 (
                 [[exec tmp_args = args + [current] ]]
-                [[exec arg_string = tmp_args[0] + ', ']]
+                [[exec arg_string = tmp_args[0] ]]
+                [[exec if len(function.args.list) > 0: arg_string += ', ']]
                 [[exec current_image = 1]]
                 [[for i in range(len(function.args.list))]]
                   [[if isinstance(function.args.list[i], ImageType)]]

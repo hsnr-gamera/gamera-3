@@ -18,28 +18,17 @@
 #
 
 from gamera.plugin import *
-  
-class _LogicalBase(PluginFunction):
-  self_type = ImageType(['OneBit'])
-  args = Args([ImageType(['OneBit'])])
 
-class and_image(_LogicalBase):
-  pass
-and_image = and_image()
+class to_string(PluginFunction):
+    self_type = ImageType(["OneBit", "GreyScale", "Grey16", "Float", "RGB"])
 
-class or_image(_LogicalBase):
-  pass
-or_image = or_image()
+to_string = to_string()
 
-class xor_image(_LogicalBase):
-  pass
-xor_image = xor_image()
-
-class LogicalModule(PluginModule):
-  category = "Logical"
-  cpp_headers = ["logical.hpp"]
-  functions = [and_image, or_image, xor_image]
-  author = "Michael Droettboom and Karl MacMillan"
-  url = "http://gamera.dkc.jhu.edu/"
-
-module = LogicalModule()
+class GuiSupportModule(PluginModule):
+    category = "Gui"
+    cpp_headers = ["gui_support.hpp"]
+    functions = [to_string]
+    author = "Michael Droettboom and Karl MacMillan"
+    url = "http://gamera.dkc.jhu.edu/"
+    
+module = GuiSupportModule()

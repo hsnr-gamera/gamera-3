@@ -15,7 +15,9 @@ generate.magic_import_setup()
 plugins = glob.glob("gamera/plugins/*.py")
 plugins.remove("gamera/plugins/__init__.py")
 
-plugins = ["gamera/plugins/logical.py"]
+plugins = ["gamera/plugins/gui_support.py",
+           "gamera/plugins/threshold.py",
+           "gamera/plugins/logical.py"]
 
 plugin_extensions = []
 for x in plugins:

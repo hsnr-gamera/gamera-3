@@ -1081,7 +1081,7 @@ class MultiImageDisplay(wxGrid):
          for row in range(rows - 1, -1, -1):
             for col in range(cols):
                self.SetCellRenderer(row, col, self.GetDefaultRenderer())
-               self.SetReadOnly(row, col, true)
+               self.SetReadOnly(row, col, True)
          width = self.set_labels()
          self.SetRowLabelSize(width + 20)
          self.SetColLabelSize(20)

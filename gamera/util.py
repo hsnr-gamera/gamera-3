@@ -98,7 +98,7 @@ class Set(UserList.UserList):
 _byte_steps = (('Gb', float(1 << 30), float(1 << 30) * 1.1),
                ('Mb', float(1 << 20), float(1 << 20) * 1.1),
                ('kb', float(1 << 10), float(1 << 10) * 1.1),
-               ('bytes', 0, -1))
+               ('bytes', 1, -1))
 def pretty_print_bytes(bytes):
   for step in _byte_steps:
     if bytes > step[2]:

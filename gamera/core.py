@@ -143,23 +143,16 @@ class ImageBase:
          dest[key] = val
 
    def methods_flat_category(self, category):
-      
-     methods = self._methods
-     start = methods
-     for subcategory in category.split('/'):
-       if start.has_key(subcategory):
-         start = start[subcategory]
-       else:
-         raise KeyError
-     return self._methods_flatten(start)
+      start = self.methods_for_menu()
+      return self._methods_flatten(start[category])
 
    def _methods_flatten(self, mat):
      list = []
-     for val in mat.values():
+     for key, val in mat.items():
        if type(val) == type({}):
          list.extend(self._methods_flatten(val))
        else:
-         list.append(val)
+         list.append((key,val))
      return list
 
    def load_image(filename, compression=DENSE):

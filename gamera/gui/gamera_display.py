@@ -980,11 +980,8 @@ class MultiImageWindow(wxPanel):
 
    def set_choices(self, prototype):
       members = prototype.members_for_menu()
-      methods = "Foo"
-      try:
-         methods = prototype.methods_flat_category("Features")
-      except:
-         pass
+      methods = prototype.methods_flat_category("Features")
+
       self.sort_choices = ["", "ncols", "nrows", "label", "id",
                            "classification_state", "page_offset_x()",
                            "page_offset_y()"]

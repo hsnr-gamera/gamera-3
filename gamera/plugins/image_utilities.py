@@ -26,6 +26,7 @@ import _image_utilities
 
 class image_copy(PluginFunction):
     """Copies an image, with all of its underlying data."""
+    category = "Utility/Copy"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Choice("storage format", ["DENSE", "RLE"])])
@@ -36,6 +37,7 @@ image_copy = image_copy()
 
 class rotate_copy(PluginFunction):
     """Copies and rotates an image"""
+    category = "Utility/Copy"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args(Float("angle"))
@@ -45,6 +47,7 @@ class resize_copy(PluginFunction):
     """Copies and resizes an image. In addition to size the type of
     interpolation can be specified to allow tradeoffs between speed
     and quality."""
+    category = "Utility/Copy"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Int("nrows"), Int("ncols"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])
@@ -55,6 +58,7 @@ class scale_copy(PluginFunction):
     """Copies and scales an image. In addition to size the type of
     interpolation can be specified to allow tradeoffs between speed
     and quality."""
+    category = "Utility/Copy"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args= Args([Real("scaling"),
                 Choice("Interpolation Type", ["None", "Linear", "Spline"])])

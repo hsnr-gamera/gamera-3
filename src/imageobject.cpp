@@ -416,12 +416,27 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
 
 CREATE_GET_FUNC(data)
 CREATE_GET_FUNC(features)
+CREATE_SET_FUNC(id_name)
 CREATE_GET_FUNC(id_name)
 CREATE_GET_FUNC(children_images)
 CREATE_GET_FUNC(classification_state)
-CREATE_GET_FUNC(scaling)
 CREATE_SET_FUNC(classification_state)
-CREATE_SET_FUNC(scaling)
+
+
+static PyObject* image_get_scaling(PyObject* self) {
+  RectObject* o = (RectObject*)self;
+  return Py_BuildValue("f", ((Image*)o->m_x)->scaling());
+}
+
+static int image_set_scaling(PyObject* self, PyObject* v) {
+  RectObject* o = (RectObject*)self;
+  if (!PyFloat_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    return -1;
+  }
+  ((Image*)o->m_x)->scaling(PyFloat_AS_DOUBLE(v));
+  return 0;
+}
 
 static PyObject* image_get_resolution(PyObject* self) {
   RectObject* o = (RectObject*)self;

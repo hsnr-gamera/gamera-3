@@ -149,7 +149,6 @@ struct ImageObject {
   PyObject* m_id_name; // a list of strings for the classified ids
   PyObject* m_children_images; // list of images
   PyObject* m_classification_state; // how (or whether) an image is classified
-  PyObject* m_scaling; // scaing value for the features
   PyObject* m_region_maps; // RegionMap object - see the object docs
   PyObject* m_region_map; // Current global region map
   PyObject* m_action_depth; // for limiting recursions for "actions"
@@ -226,8 +225,6 @@ inline PyObject* init_image_members(ImageObject* o) {
     return 0;
   // Classification state
   o->m_classification_state = Py_BuildValue("i", UNCLASSIFIED);
-  // Scaling
-  o->m_scaling = Py_BuildValue("i", 1);
   return (PyObject*)o;
 }
 

@@ -247,7 +247,6 @@ template = Template("""
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
   }
-
   """)
   
 def generate_plugin(plugin_filename, location, compiling_gamera,

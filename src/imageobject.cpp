@@ -28,6 +28,7 @@ extern "C" {
   static PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
   static void image_dealloc(PyObject* self);
+  static void subimage_dealloc(PyObject* self);
   // Get/set
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
@@ -49,22 +50,38 @@ static PyTypeObject SubImageType = {
   0,
 };
 
+bool is_ImageObject(PyObject* x) {
+  if (PyObject_TypeCheck(x, &ImageType))
+    return true;
+  else
+    return false;
+}
+
+bool is_SubImageObject(PyObject* x) {
+  if (PyObject_TypeCheck(x, &SubImageType))
+    return true;
+  else
+    return false;
+}
 
 
 static PyGetSetDef image_getset[] = {
   { "data", (getter)image_get_data, 0, "The underlying image data", 0 },
   { "features", (getter)image_get_features, 0, "The features of the image", 0 },
   { "id_name", (getter)image_get_id_name, 0,
-    "A list of strings representing the possible classifications of the image.", 0 },
+    "A list of strings representing the possible classifications of the image.",
+    0 },
   { "children_images", (getter)image_get_children_images, 0,
     "A list of images created from classifications that produce images.", 0 },
-  { "classification_state", (getter)image_get_classification_state, (setter)image_set_classification_state,
+  { "classification_state", (getter)image_get_classification_state, 
+    (setter)image_set_classification_state,
     "How (or whether) an image is classified", 0 },
-  { "scaling", (getter)image_get_scaling, (setter)image_set_scaling, "The scaling applied to the features", 0 },
+  { "scaling", (getter)image_get_scaling, (setter)image_set_scaling,
+    "The scaling applied to the features", 0 },
   { NULL }
 };
 
-static void init_image_members(ImageObject* o) {
+static PyObject* init_image_members(ImageObject* o) {
   /*
     Create the features array. This will load the array module
     (if required) and create an array object containing doubles.
@@ -98,11 +115,11 @@ static void init_image_members(ImageObject* o) {
   o->m_classification_state = Py_BuildValue("i", Python::UNCLASSIFIED);
   // Scaling
   o->m_scaling = Py_BuildValue("i", 1);
+  return (PyObject*)o;
 }
 
 static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds) {
-  if (PyTuple_Size(args) == 2)
   int nrows, ncols, pixel, format;
   if (PyArg_ParseTuple(args, "iiii", &nrows, &ncols, &pixel, &format) <= 0) {
     return 0;
@@ -172,16 +189,89 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
     PyErr_SetString(PyExc_TypeError, "Unkown Format!");
     return 0;
   }
-  init_image_members(o);
-  return (PyObject*)o;
+  return init_image_members(o);
 }
 
 PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  PyObject* image;
+  int nrows, ncols, off_x, off_y;
+  if (PyArg_ParseTuple(args, "Oiiii", &image, &off_y, &off_x, &nrows,
+		       &ncols) <= 0)
+    return 0;
+  if (!is_ImageObject(image)) {
+    PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
+    return 0;
+  }
 
+  ImageObject* o;
+  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  o->m_data = ((ImageObject*)image)->m_data;
+  Py_INCREF(o->m_data);
+  int pixel, format;
+  pixel = ((ImageDataObject*)o->m_data)->m_pixel_type;
+  format = ((ImageDataObject*)o->m_data)->m_storage_format;
+
+  if (format == Python::DENSE) {
+    if (pixel == Python::ONEBIT) {
+      ImageData<OneBitPixel>* data =
+	((ImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<ImageData<OneBitPixel> >(*data, off_y, off_x, nrows, ncols);
+    } else if (pixel == Python::GREYSCALE) {
+      ImageData<GreyScalePixel>* data =
+	((ImageData<GreyScalePixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<ImageData<GreyScalePixel> >(*data, off_y, off_x, nrows,
+						  ncols);
+    } else if (pixel == Python::GREY16) {
+      ImageData<Grey16Pixel>* data =
+	((ImageData<Grey16Pixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<ImageData<Grey16Pixel> >(*data, off_y, off_x, nrows, ncols);
+    } else if (pixel == Python::FLOAT) {
+      ImageData<FloatPixel>* data =
+	((ImageData<FloatPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<ImageData<FloatPixel> >(*data, off_y, off_x, nrows, ncols);
+    } else if (pixel == Python::RGB) {
+      ImageData<RGBPixel>* data =
+	((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+      return 0;
+    }
+  } else if (format == Python::RLE) {
+    if (pixel == Python::ONEBIT) {
+      RleImageData<OneBitPixel>* data =
+	((RleImageData<OneBitPixel>*)((ImageDataObject*)o->m_data)->m_x);
+      ((RectObject*)o)->m_x =
+	new ImageView<RleImageData<OneBitPixel> >(*data, off_y, off_x, nrows,
+						  ncols);
+    } else {
+      PyErr_SetString(PyExc_TypeError,
+		      "Pixel type must be Onebit for Rle data!");
+      return 0;
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+    return 0;
+  }
+  return init_image_members(o);
 }
 
 static void image_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
+  printf("hi %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
+  Py_DECREF(o->m_data);
+  delete ((RectObject*)self)->m_x;
+  self->ob_type->tp_free(self);
+}
+
+static void subimage_dealloc(PyObject* self) {
+  ImageObject* o = (ImageObject*)self;
+  printf("hi2 %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
   Py_DECREF(o->m_data);
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
@@ -216,7 +306,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_name = "gameracore.Image";
   ImageType.tp_basicsize = sizeof(ImageObject);
   ImageType.tp_dealloc = image_dealloc;
-  ImageType.tp_flags = Py_TPFLAGS_DEFAULT;// | Py_TPFLAGS_BASETYPE;
+  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   ImageType.tp_base = get_RectType();
   ImageType.tp_getset = image_getset;
   //ImageType.tp_methods = imagedata_methods;
@@ -230,7 +320,7 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.ob_type = &PyType_Type;
   SubImageType.tp_name = "gameracore.SubImage";
   SubImageType.tp_basicsize = sizeof(SubImageObject);
-  SubImageType.tp_dealloc = image_dealloc;
+  SubImageType.tp_dealloc = subimage_dealloc;
   SubImageType.tp_flags = Py_TPFLAGS_DEFAULT;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;

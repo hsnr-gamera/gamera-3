@@ -67,11 +67,15 @@ template = Template("""
   [[exec from plugin import *]]
   [[exec from util import get_pixel_type_name]]
 
+  [[# This should be included first in order to avoid libpng.h/setjmp.h problems. #]]
+  [[if module.__class__.__name__ == "PngSupportModule"]]
+    #include <png.h>
+  [[end]]
+
   #include \"gameramodule.hpp\"
   #include \"knnmodule.hpp\"
 
   [[# include the headers that the module needs #]]
-  [[# This should be included first in order to avoid libpng.h/setjmp.h problems. #]]
   [[for header in module.cpp_headers]]
     #include \"[[header]]\"
   [[end]]
@@ -163,7 +167,7 @@ template = Template("""
              &[[arg.pysymbol]]
            [[end]]
            ) <= 0)
-           return 0;\
+           return 0;
          [[end]]
       [[end]]
 

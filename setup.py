@@ -111,7 +111,8 @@ extensions = [Extension("gamera.gameracore",
                          "src/rgbpixelobject.cpp",
                          "src/imagedataobject.cpp",
                          "src/imageobject.cpp",
-                         "src/imageinfoobject.cpp"
+                         "src/imageinfoobject.cpp",
+                         "src/iteratorobject.cpp"
                          ],
                         include_dirs=["include"],
                         **gamera_setup.extras

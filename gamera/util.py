@@ -30,19 +30,19 @@ from gamera.backport import sets
 
 def is_sequence(obj):
    "Check if an object is a sequence."
-   return type(obj) in (ListType, TupleType)
+   return type(obj) in (list, tuple)
 
 def make_sequence(obj):
    "Make an object into a sequence if it isn't one."
-   if not type(obj) in (ListType, TupleType):
-      return [obj,]
+   if not is_sequence(obj):
+      return [obj]
    return obj
 
 def is_image_list(l):
    from gamera.core import ImageBase
-   if not is_sequence(l) or not isinstance(l[0], ImageBase):
+   if not is_sequence(l):
       return False
-   for image in l[1:]:
+   for image in l:
       if not isinstance(image, ImageBase):
          return False
    return True
@@ -53,7 +53,7 @@ def is_string_or_unicode(s):
 def is_homogeneous_image_list(l):
    "Determines if a list contains only images of the same pixel type"
    from gamera.core import ImageBase
-   if not is_sequence(l) or not isinstance(l[0], ImageBase):
+   if (not is_sequence(l)) or (not isinstance(l[0], ImageBase)):
       return False
    pixel_type = l[0].data.pixel_type
    for image in l[1:]:

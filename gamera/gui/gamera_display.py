@@ -1403,8 +1403,7 @@ class MultiImageWindow(wxPanel):
       self.display_choices = [
          "x.get_main_id()",
          "(x.offset_y, x.offset_x, x.nrows, x.ncols)",
-         "x.label",
-         "x.properties"]
+         "x.label", "x.properties"]
       self.display_text_combo.Clear()
       for choice in self.display_choices:
          self.display_text_combo.Append(choice)

@@ -62,7 +62,6 @@ class _Classifier:
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
           not glyph.classification_state in (core.MANUAL, core.HEURISTIC)):
-         glyph.generate_features(self.classifier.feature_functions)
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
          splits = self._do_splits(glyph)
@@ -77,11 +76,8 @@ class _Classifier:
       are for internal use only."""
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
-      progress.add_length(len(glyphs) * 2)
+      progress.add_length(len(glyphs))
       try:
-         for glyph in glyphs:
-            glyph.generate_features(self.classifier.feature_functions)
-            progress.step()
          if (recursion_level > 10) or len(self._database) == 0:
             return [], []
          added = []
@@ -93,8 +89,6 @@ class _Classifier:
                added.extend(self._do_splits(glyph))
                progress.step()
          if len(added):
-            for glyph in added:
-               glyph.generate_features(self.classifier.feature_functions)
             added_recurse, removed_recurse = self.classify_list_automatic(
                added, recursion_level+1)
             added.extend(added_recurse)
@@ -121,16 +115,6 @@ class _Classifier:
    def _do_splits_null(self, glyph):
       pass
 
-   def generate_features(self, glyphs):
-      """Generates features for all the given glyphs."""
-      progress = util.ProgressFactory("Generating features...", len(glyphs))
-      try:
-         for glyph in glyphs:
-            glyph.generate_features(self.classifier.feature_functions)
-            progress.step()
-      finally:
-         progress.kill()
-
    ########################################
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
@@ -154,7 +138,6 @@ class _Classifier:
 
    def _from_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
-      self.generate_features(database)
       self.set_glyphs(database)
       self.set_groups(xml.groups)
 
@@ -166,7 +149,6 @@ class _Classifier:
 
    def _merge_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
-      self.generate_features(database)
       self.merge_glyphs(database)
       self.merge_groups(xml.groups)
 
@@ -200,7 +182,6 @@ class NonInteractiveClassifier(_Classifier):
          self._do_splits = self._do_splits_impl
       else:
          self._do_splits = self._do_splits_null
-      self.generate_features(database)
       self.classifier.instantiate_from_images(database)
 
    ########################################
@@ -226,7 +207,6 @@ class NonInteractiveClassifier(_Classifier):
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
    def guess_glyph_automatic(self, glyph):
-      glyph.generate_features(self.classifier.feature_functions)
       return self.classifier.classify(glyph)
 
    def _classify_automatic_impl(self, glyph):
@@ -293,8 +273,6 @@ class InteractiveClassifier(_Classifier):
       strings, naming the feature functions to be used."""
       self.is_dirty = 1
       self.classifier.change_feature_set(features)
-      if len(self._database):
-         self.generate_features(self._database.keys())
       self.grouping_classifier.change_feature_set()
 
    ########################################
@@ -305,13 +283,12 @@ class InteractiveClassifier(_Classifier):
       for child in glyph.children_images:
          if self._database.has_key(child):
             del self._database[child]
-      return self.classifier.classify_with_images(self._database.iterkeys(), glyph)
+      return self.classifier.classify_with_images(self._database, glyph)
 
    def guess_glyph_automatic(self, glyph):
       if len(self._database):
-         glyph.generate_features(self.classifier.feature_functions)
          return self.classifier.classify_with_images(
-            self._database.iterkeys(), glyph)
+            self._database, glyph)
       else:
          return [(0.0, 'unknown')]
 
@@ -330,7 +307,6 @@ class InteractiveClassifier(_Classifier):
       else:
          removed = self.grouping_classifier.remove_groups_containing(glyph)
 
-      glyph.generate_features(self.classifier.feature_functions)
       for child in glyph.children_images:
          removed.append(child)
          if self._database.has_key(child):
@@ -360,7 +336,6 @@ class InteractiveClassifier(_Classifier):
          self.is_dirty = 1
          if not self._database.has_key(glyph):
             self._database[glyph] = None
-            glyph.generate_features(self.classifier.feature_functions)
          glyph.classify_manual([(0.0, id)])
          splits.extend(self._do_splits(glyph))
 

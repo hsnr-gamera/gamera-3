@@ -211,6 +211,7 @@ class ShellFrame(wxFrame):
       global shell
       wxFrame.__init__(
          self, parent, id, title, wxDefaultPosition,
+         # Win32 change
          [600, 550],
          style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       EVT_CLOSE(self, self.OnCloseWindow)

@@ -55,6 +55,10 @@ class GaWorker(Thread):
             for x in self.knn.ga_callbacks:
                 x(self.knn)
 
+# The kNN classifier stores it settings in a simple xml file -
+# this class uses the gamera_xml.LoadXML class to load that
+# file. After the file is loaded, kNN.load_settings extracts
+# the data from the class to set up kNN.
 class _KnnLoadXML(gamera.gamera_xml.LoadXML):
     def __init__(self):
         gamera.gamera_xml.LoadXML.__init__(self)
@@ -89,7 +93,8 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
 
     def _ths_distance_type(self, a):
         self.distance_type = \
-          _distance_type_to_number[self.try_type_convert(a, 'value', unicode, 'distance-type')]
+          _distance_type_to_number[self.try_type_convert(a, 'value',
+                                                         unicode, 'distance-type')]
 
     def _ths_ga_mutation(self, a):
         self.ga_mutation = self.try_type_convert(a, 'value', float, 'ga-mutation')
@@ -148,7 +153,19 @@ class kNN(gamera.knncore.kNN):
         self.num_features = features
 
     def classify_with_images(self, images, glyph):
-        return self._classify_with_images(images, glyph)
+        from gamera import util
+        glyph.generate_features(self.feature_functions)
+        progress = None
+        for x in images:
+            if progress == None and \
+               x.feature_functions != self.feature_functions:
+                progress = util.ProgressFactory("Generating Features . . .", len(images))
+            x.generate_features(self.feature_functions)
+            if progress:
+                progress.step()
+        if progress:
+            progress.kill()
+        return self._classify_with_images(iter(images), glyph)
       
     def instantiate_from_images(self, images):
         """Create a k-NN database from a list of images"""
@@ -297,16 +314,18 @@ class kNN(gamera.knncore.kNN):
                     an unknown feature function was found.")
             functions.append(func[0])
         functions.sort()
-        self.feature_functions = functions
+        self.change_feature_set(functions)
         # Create the weights array with the weights in the correct order
-        self.interactive_weights = array.array('d')
+        weights = array.array('d')
         for x in self.feature_functions:
             print self.feature_functions
             print x
             tmp = loader.weights[str(x[0])]
             print tmp
             print self.interactive_weights
-            self.interactive_weights.extend(tmp)
+            weights.extend(tmp)
+        self.set_weights(weights)
+            
         
 
         

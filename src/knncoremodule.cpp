@@ -55,8 +55,10 @@ extern "C" {
   static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
   static PyObject* knn_serialize(PyObject* self, PyObject* args);
   static PyObject* knn_unserialize(PyObject* self, PyObject* args);
-  static PyObject* knn_get_weights(PyObject* self);
-  static int knn_set_weights(PyObject* self, PyObject* v);
+  static PyObject* knn_get_weights(PyObject* self, PyObject* args);
+  static PyObject* knn_set_weights(PyObject* self, PyObject* args);
+  static PyObject* knn_get_num_features(PyObject* self);
+  static int knn_set_num_features(PyObject* self, PyObject* v);
   static PyObject* knn_ga_create(PyObject* self, PyObject* args);
   static PyObject* knn_ga_destroy(PyObject* self, PyObject* args);
   static PyObject* knn_ga_step(PyObject* self, PyObject* args);
@@ -66,8 +68,6 @@ extern "C" {
   static int knn_set_ga_crossover(PyObject* self, PyObject* v);
   static PyObject* knn_get_ga_population(PyObject* self);
   static int knn_set_ga_population(PyObject* self, PyObject* v);
-  static PyObject* knn_get_num_features(PyObject* self);
-  static int knn_set_num_features(PyObject* self, PyObject* v);
 
 }
 
@@ -110,13 +110,6 @@ struct KnnObject {
   double* feature_vectors;
   // The id_names for the feature vectors
   char** id_names;
-  /*
-    The weights are stored in a python array object for easy access
-    to and from python. To make things easier and faster for the 
-    C++ code the buffer pointer for the data is stored in the
-    weight_vector member below.
-  */
-  PyObject* weight_array;
   // The current weights applied to the distance calculation
   double* weight_vector;
   /*
@@ -153,6 +146,10 @@ PyMethodDef knn_methods[] = {
   { "_instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
   { "distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
+  { "set_weights", knn_set_weights, METH_VARARGS,
+    "Set the weights used for classification." },
+  { "get_weights", knn_get_weights, METH_VARARGS,
+    "Get the weights used for classification." },
   { "classify", knn_classify, METH_VARARGS,
     "" },
   { "leave_one_out", knn_leave_one_out, METH_VARARGS, "" },
@@ -169,8 +166,6 @@ PyGetSetDef knn_getset[] = {
     "The value of k used for classification.", 0 },
   { "distance_type", (getter)knn_get_distance_type, (setter)knn_set_distance_type,
     "The type of distance calculation used.", 0 },
-  { "weights", (getter)knn_get_weights, (setter)knn_set_weights,
-    "The current weights used for distance calculation", 0 },
   { "ga_mutation", (getter)knn_get_ga_mutation, (setter)knn_set_ga_mutation,
     "The mutation rate for GA optimization.", 0 },
   { "ga_crossover", (getter)knn_get_ga_crossover, (setter)knn_set_ga_crossover,
@@ -185,36 +180,6 @@ PyGetSetDef knn_getset[] = {
 // for type checking images - see initknn.
 static PyTypeObject* imagebase_type;
 static PyObject* array_init;
-
-int create_weights(KnnObject* o) {
-  PyObject* arglist = Py_BuildValue("(s)", "d");
-  PyObject* array = PyEval_CallObject(array_init, arglist);
-  if (array == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: Error creating array.");
-    return -1;
-  }
-  Py_DECREF(arglist);
-  PyObject* result;
-  for (size_t i = 0; i < o->num_features; ++i) {
-    result = PyObject_CallMethod(array, "append", "f", 1.0);
-    if (result == 0)
-      return -1;
-    Py_DECREF(result);
-  }
-  Py_DECREF(arglist);
-
-  int len;
-  if (!PyObject_CheckReadBuffer(array)) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
-    return -1;
-  }
-  if (PyObject_AsReadBuffer(array, (const void**)&o->weight_vector, &len) != 0) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
-    return -1;
-  }
-  o->weight_array = array;
-  return 0;
-}
 
 /*
   Create a new kNN object and initialize all of the data.
@@ -232,11 +197,6 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->weight_vector = 0;
   o->normalize = 0;
   o->normalized_unknown = 0;
-  /*
-    Initialize the weights.
-  */
-  if (create_weights(o) < 0)
-    return 0;
   /*
     Initialize the normalized unknown fv
   */
@@ -261,26 +221,23 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
 */
 static void knn_delete_feature_data(KnnObject* o) {
   if (o->feature_vectors != 0) {
-    delete o->feature_vectors;
+    delete[] o->feature_vectors;
     o->feature_vectors = 0;
   }
   if (o->id_names != 0) {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
       if (o->id_names[i] != 0)
-	delete o->id_names[i];
+	delete[] o->id_names[i];
     }
-    delete o->id_names;
+    delete[] o->id_names;
     o->id_names = 0;
   }
   if (o->normalize != 0) {
-    delete o->normalize;
+    delete[] o->normalize;
     o->normalize = 0;
   }
-  if (o->weight_array != 0) {
-    Py_DECREF(o->weight_array);
-  }
   if (o->normalized_unknown != 0) {
-    delete o->normalized_unknown;
+    delete[] o->normalized_unknown;
     o->normalized_unknown = 0;
   }
   o->num_feature_vectors = 0;
@@ -311,7 +268,7 @@ static int knn_create_feature_data(KnnObject* o, size_t num_feature_vectors) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
     return -1;
   }
-  return create_weights(o);
+  return 1;
 }
 
 // destructor for Python
@@ -455,7 +412,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
   }
-  delete tmp_fv;
+  delete[] tmp_fv;
   /*
     Apply the normalization
   */
@@ -585,7 +542,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  double* unknown_buf, *weights;
+  double* unknown_buf;
   int unknown_len;
   if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
@@ -593,22 +550,23 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
                        (This is most likely because features have not been generated.)");
       return 0;
   }
-  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
-    weights = new double[unknown_len];
-    std::fill(weights, weights + unknown_len, 1.0);
-  } else {
-    weights = o->weight_vector;
+
+  if (size_t(unknown_len) != o->num_features) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: the number of features does not match.");
+    return 0;
   }
-  
+
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
+
   PyObject* cur;
   while ((cur = PyIter_Next(iterator))) {
+
     if (!PyObject_TypeCheck(cur, imagebase_type)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
       return 0;
     }
     double distance;
-    if (compute_distance(o, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
+    if (compute_distance(o, cur, unknown_buf, &distance, o->weight_vector, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
 		      "knn: error in distance calculation \
                        (This is most likely because features have not been generated.)");
@@ -622,11 +580,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     knn.add(id_name, distance);
     Py_DECREF(cur);
   }
-
-  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
-    delete weights;
-  }
-
+  
   std::pair<char*, double> answer = knn.majority();
   PyObject* ans = PyTuple_New(2);
   PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
@@ -700,7 +654,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     Py_DECREF(cur);
   }
   if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
-    delete weights;
+    delete[] weights;
   }
   //Py_DECREF(distance_list);
   return distance_list;
@@ -957,7 +911,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
     return 0;
   }
   o->normalize->set_norm_vector(tmp_norm, tmp_norm + o->num_features);
-  delete tmp_norm;
+  delete[] tmp_norm;
   if (fread((void*)o->weight_vector, sizeof(double), o->num_features, file) != o->num_features) {
     PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
     return 0;
@@ -976,26 +930,49 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
-static PyObject* knn_get_weights(PyObject* self) {
+static PyObject* knn_get_weights(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
-  Py_INCREF(o->weight_array);
-  return o->weight_array;
+  PyObject* arglist = Py_BuildValue("(s)", "d");
+  PyObject* array = PyEval_CallObject(array_init, arglist);
+  if (array == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: Error creating array.");
+    return 0;
+  }
+  Py_DECREF(arglist);
+  PyObject* result;
+  for (size_t i = 0; i < o->num_features; ++i) {
+    result = PyObject_CallMethod(array, "append", "f", o->weight_vector[i]);
+    if (result == 0)
+      return 0;
+    Py_DECREF(result);
+  }
+  Py_DECREF(arglist);
+  return array;
 }
 
-static int knn_set_weights(PyObject* self, PyObject* array) {
+static PyObject* knn_set_weights(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
+  PyObject* array;
+  if (PyArg_ParseTuple(args, "O", &array) <= 0) {
+    return 0;
+  }
   int len;
+  double* weights;
   if (!PyObject_CheckReadBuffer(array)) {
     PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
-    return -1;
+    return 0;
   }
-  if ((PyObject_AsReadBuffer(array, (const void**)&o->weight_vector, &len) != 0)
-      || size_t(len) != o->num_features * sizeof(double)) {
+  if ((PyObject_AsReadBuffer(array, (const void**)&weights, &len) != 0)) {
     PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");
-    return -1;
+    return 0;
   }
-  Py_DECREF(o->weight_array);
-  o->weight_array = array;
+  if (size_t(len) != o->num_features * sizeof(double)) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: weight vector is not the correct size.");
+    return 0;
+  }
+  for (size_t i = 0; i < o->num_features; ++i) {
+    o->weight_vector[i] = weights[i];
+  }
   return 0;
 }
 
@@ -1120,10 +1097,14 @@ static PyObject* knn_get_num_features(PyObject* self) {
 static int knn_set_num_features(PyObject* self, PyObject* v) {
   KnnObject* o = (KnnObject*)self;
   if (!PyInt_Check(v)) {
-    PyErr_SetString(PyExc_TypeError, "knn: must be a floating-point number.");
+    PyErr_SetString(PyExc_TypeError, "knn: must be an integer.");
     return -1;
   }
   o->num_features = size_t(PyInt_AS_LONG(v));
+  if (o->weight_vector != 0)
+    delete[] o->weight_vector;
+  o->weight_vector = new double[o->num_features];
+  std::fill(o->weight_vector, o->weight_vector + o->num_features, 1.0);
   return 0;
 }
 

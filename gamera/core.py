@@ -65,7 +65,19 @@ def display_multi(list):
 
 # Used to cache the list of all features
 all_features = None
-   
+
+# Utility to generate features on a list of glyphs
+def generate_features_list(list, feature_functions=None):
+    import gamera.core
+    ff = gamera.core.Image.get_feature_functions(feature_functions)
+    progress = gamera.util.ProgressFactory("Generating features...", len(list))
+    try:
+        for glyph in list:
+            glyph.generate_features(ff)
+            progress.step()
+    finally:
+        progress.kill()
+
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
@@ -298,6 +310,12 @@ class ImageBase:
       if self.classification_state == UNCLASSIFIED:
          return 'UNCLASSIFIED'
       return self.id_name[0][1]
+
+   def get_confidence(self):
+      """Returns the confidence of main id"""
+      if self.classification_state == UNCLASSIFIED:
+         return -1.0
+      return self.id_name[0][0]
 
    def has_id_name(self, name):
       for confidence, id_name in self.id_name:

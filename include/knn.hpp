@@ -138,7 +138,7 @@ namespace Gamera {
 	std::fill(m_sum2_vector, m_sum2_vector + m_num_features, 0.0);
       }
       ~Normalize() {
-	delete m_norm_vector;
+	delete[] m_norm_vector;
       }
       template<class T>
       void add(T begin, const T end) {
@@ -165,8 +165,8 @@ namespace Gamera {
 	    stdev = 0.00001;
 	  m_norm_vector[i] = mean / stdev;
 	}
-	delete m_sum_vector;
-	delete m_sum2_vector;
+	delete[] m_sum_vector;
+	delete[] m_sum2_vector;
       }
       // in-place
       template<class T>
@@ -266,38 +266,49 @@ namespace Gamera {
 
       // Constructor
       kNearestNeighbors(size_t k = 1) : m_k(k) {
+	m_max_distance = 0;
       }
       // Reset the class to its initial state
       void reset() {
 	m_nn.clear();
+	m_max_distance = 0;
       }
       /*
 	Attempt to add a neighbor to the list of k closest
 	neighbors. The list of neighbors is always kept sorted
 	so that the largest distance is the last element.
       */
-      double add(const id_type id, double distance) {
+      void add(const id_type id, double distance) {
 	if (m_nn.size() < m_k) {
 	  m_nn.push_back(neighbor_type(id, distance));
 	  std::sort(m_nn.begin(), m_nn.end());
-	  return -1.0; // -1 means that we haven't found k neighbors yet
 	} else if (distance < m_nn.back().distance) {
 	  m_nn.back().distance = distance;
 	  m_nn.back().id = id;
 	  std::sort(m_nn.begin(), m_nn.end());
 	}
-	return m_nn.back().distance;
+	if (distance > m_max_distance)
+	  m_max_distance = distance;
       }
       /*
 	Find the id of the majority of the k nearest neighbors. This
 	includes tie-breaking if necessary.
       */
-      std::pair<id_type, double> majority() {
+      std::pair<id_type, double> majority(double max_dist = -1) {
+	double max_distance;
+	// used to avoid 0
+	double dither = .000001;
+	if (max_dist = -1)
+	  max_distance = m_max_distance;
+	else
+	  max_distance = max_dist;
+	
 	if (m_nn.size() == 0)
 	  throw std::range_error("majority called without enough valid neighbors.");
 	// short circuit for k == 1
 	if (m_nn.size() == 1) {
-	  return std::make_pair(m_nn[0].id, m_nn[0].distance);
+	  double confidence = 1.0 - ((m_nn[0].distance + dither) / (max_distance + dither));
+	  return std::make_pair(m_nn[0].id, confidence);
 	}
 	/*
 	  Create a histogram of the ids in the nearest neighbors. A map
@@ -326,8 +337,10 @@ namespace Gamera {
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
 	if (id_map.size() == 1) {
-	  return std::make_pair(id_map.begin()->first,
-				id_map.begin()->second.min_distance);
+	  double confidence = id_map.begin()->second.min_distance / (max_distance + dither);
+	  confidence = 1.0 - confidence;
+	  std::cout << "clear majority: " << confidence << std::endl;
+	  return std::make_pair(id_map.begin()->first, confidence);
 	} else {
 	  /*
 	    Find the id(s) with the maximum
@@ -347,9 +360,12 @@ namespace Gamera {
 	    If the vector only has 1 element there are no ties and
 	    we are done.
 	  */
-	  if (max.size() == 1)
-	    return std::make_pair(max[0]->first, max[0]->second.min_distance);
-	  else {
+	  if (max.size() == 1) {
+	    double confidence = .5 - ((max[0]->second.min_distance + dither) / max_distance);
+	    confidence += (double(max[0]->second.count) / m_k) / 2.0;
+	    std::cout << "unclear majority: " << confidence << std::endl;
+	    return std::make_pair(max[0]->first, confidence);
+	  } else {
 	    /*
 	      Tie-break by average distance
 	    */
@@ -366,8 +382,8 @@ namespace Gamera {
       }
     private:
       std::vector<neighbor_type> m_nn;
-      size_t m_additions; // counter for the number of neighbors added
       size_t m_k;
+      double m_max_distance;
     };
 
   } // namespace kNN

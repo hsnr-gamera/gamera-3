@@ -19,6 +19,7 @@
 #
 
 from gamera.plugin import *
+import sys
 import glob
 import _tiff_support
 
@@ -47,7 +48,10 @@ save_tiff = save_tiff()
 class TiffSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["tiff_support.hpp"]
-    cpp_sources = glob.glob("include/libtiff/*.c")
+    if sys.platform == 'win32':
+        cpp_sources = glob.glob("include/libtiff/*.c")
+    else:
+        extra_libraries = ["tiff"]
     cpp_namespaces = ["Gamera"]
     functions = [tiff_info, load_tiff, save_tiff]
     cpp_include_dirs = ["include/libtiff"]

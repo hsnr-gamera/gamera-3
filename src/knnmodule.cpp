@@ -22,6 +22,9 @@
 #include <algorithm>
 #include <string.h>
 #include <Python.h>
+#include <string>
+#include <vector>
+#include <functional>
 
 using namespace Gamera;
 using namespace Gamera::kNN;
@@ -53,7 +56,7 @@ struct KnnObject {
   size_t num_features;
   size_t num_feature_vectors;
   double* feature_vectors;
-  char** id_names;
+  std::vector<std::string>* id_names;
   size_t num_k;
   DistanceType distance_type;
 };
@@ -94,8 +97,6 @@ static void knn_delete_data(KnnObject* o) {
   if (o->feature_vectors != 0)
     delete o->feature_vectors;
   if (o->id_names != 0) {
-    for (size_t i = 0; i < o->num_feature_vectors; ++i)
-      delete o->id_names[i];
     delete o->id_names;
   }
   o->num_features = 0;
@@ -141,7 +142,7 @@ inline int image_get_fv(PyObject* image, double** buf, int* len) {
   get the id_name from an image. The image argument _must_ be n image -
   no type checking is performed.
 */
-inline int image_get_id_name(PyObject* image, char** id_name) {
+inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
   ImageObject* x = (ImageObject*)image;
   // PyList_Size shoule type check the argument
   if (PyList_Size(x->m_id_name) < 1) {
@@ -159,6 +160,7 @@ inline int image_get_id_name(PyObject* image, char** id_name) {
     PyErr_SetString(PyExc_TypeError, "knn: could not get string from id_name tuple.");
     return -1;
   }
+  *len = PyString_GET_SIZE(id);
   return 0;
 }
 
@@ -179,6 +181,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   }
   knn_delete_data(o);
   o->num_feature_vectors = images_size;
+  std::cout << o->num_feature_vectors << std::endl;
 
   PyObject* first_image = PyList_GET_ITEM(images, 0);
   if (!PyObject_TypeCheck(first_image, imagebase_type)) {
@@ -193,9 +196,11 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     return 0;
   }
   o->num_features = tmp_fv_len;
-  o->feature_vectors = new double[o->num_feature_vectors * o->num_features];
-  o->id_names = new char*[o->num_feature_vectors];
-  for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+  o->feature_vectors = new double[(o->num_feature_vectors + 1)* o->num_features];
+  o->id_names = new std::vector<std::string>;
+  double* current_features = o->feature_vectors;
+  for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
+    //std::cout << i << std::endl;
     PyObject* cur_image = PyList_GetItem(images, i);
     if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
       knn_delete_data(o);
@@ -208,16 +213,17 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
       return 0;      
     }
     for (size_t feature = 0; feature < o->num_features; ++feature) {
-      o->feature_vectors[i * o->num_features + feature] = tmp_fv[feature];
+      current_features[i] = tmp_fv[feature];
     }
     char* tmp_id_name;
-    if (image_get_id_name(cur_image, &tmp_id_name) < 0) {
+    int len;
+    if (image_get_id_name(cur_image, &tmp_id_name, &len) < 0) {
       knn_delete_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: could not get id name");
       return 0;
     }
-    o->id_names[i] = new char[strlen(tmp_id_name)];
-    strcpy(o->id_names[i], tmp_id_name);
+    std::string id_string(tmp_id_name, len);
+    o->id_names->push_back(id_string);
   }
   Py_INCREF(Py_None);
   return Py_None;
@@ -250,19 +256,22 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  kNearestNeighbors<std::string, std::less<std::string> > knn(3);
   double* current_known = o->feature_vectors;
   double* weights = new double[o->num_features];
   std::fill(weights, weights + o->num_features, 1.0);
+  for (size_t i = 0; i < o->num_features; ++i)
+    std::cout << fv[i] << " ";
+  std::cout << std::endl;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_known += o->num_features) {
     double distance = city_block_distance(current_known, current_known + o->num_features,
 					  fv, weights);
-    knn.add(o->id_names[i], distance);
+    knn.add((*o->id_names)[i], distance);
   }
-  std::pair<char*, double> answer = knn.majority();
+  std::pair<std::string, double> answer = knn.majority();
   PyObject* ans = PyTuple_New(2);
   PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer.second));
-  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first));
+  PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer.first.c_str()));
   PyObject* ans_list = PyList_New(1);
   PyList_SET_ITEM(ans_list, 0, ans);
   return ans_list;
@@ -337,8 +346,10 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     double distance;
     if (compute_distance(cur, unknown, weights, &distance) < 0)
       return 0;
+    
     char* id_name;
-    if (image_get_id_name(cur, &id_name) < 0)
+    int len;
+    if (image_get_id_name(cur, &id_name, &len) < 0)
       return 0;
     knn.add(id_name, distance);
   }

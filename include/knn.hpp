@@ -115,13 +115,9 @@ namespace Gamera {
       */
       class Neighbor {
       public:
-	Neighbor() : id() {
-	  /*
-	    we initialize distance to max so that there is no
-	    special case in kNearestNeighbors::add for when
-	    the vector is not full
-	  */
-	  distance = std::numeric_limits<double>::max();
+	Neighbor(IdType id_, double distance_) {
+	  id = id_;
+	  distance = distance_;
 	}
 	bool operator<(const Neighbor& other) const {
 	  return distance < other.distance;
@@ -151,23 +147,22 @@ namespace Gamera {
       typedef std::vector<neighbor_type> vec_type;
 
       // Constructor
-      kNearestNeighbors(size_t k = 1) : m_nn(k), m_k(k) {
-	m_additions = 0;
+      kNearestNeighbors(size_t k = 1) : m_k(k) {
       }
       // Reset the class to its initial state
       void reset() {
 	m_nn.clear();
-	m_nn.resize(m_k);
-	m_additions = 0;
       }
       /*
 	Attempt to add a neighbor to the list of k closest
 	neighbors. The list of neighbors is always kept sorted
 	so that the largest distance is the last element.
       */
-      void add(const id_type& id, double distance) {
-	m_additions++;
-	if (distance < m_nn.back().distance) {
+      void add(const id_type id, double distance) {
+	if (m_nn.size() < m_k) {
+	  m_nn.push_back(neighbor_type(id, distance));
+	  std::sort(m_nn.begin(), m_nn.end());
+	  } else if (distance < m_nn.back().distance) {
 	  m_nn.back().distance = distance;
 	  m_nn.back().id = id;
 	  std::sort(m_nn.begin(), m_nn.end());
@@ -178,14 +173,6 @@ namespace Gamera {
 	includes tie-breaking if necessary.
       */
       std::pair<id_type, double> majority() {
-	/*
-	  make certain that we have at least k valid
-	  entries in the list of neighbors. This is probably not
-	  a problem most of the time, but it is important to
-	  check.
-	*/
-	if (m_additions < m_nn.size())
-	  m_nn.resize(m_additions);
 	if (m_nn.size() == 0)
 	  throw std::range_error("majority called without enough valid neighbors.");
 	// short circuit for k == 1

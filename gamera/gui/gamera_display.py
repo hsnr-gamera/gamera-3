@@ -21,6 +21,7 @@ from wxPython.wx import *        # wxPython
 from wxPython.grid import * 
 from math import ceil, log       # Python standard library
 from sys import maxint
+import sys
 import string
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
@@ -39,10 +40,11 @@ wxInitAllImageHandlers()
 #
 # Image display is a scrolled window for displaying a single image
 
+
 class ImageDisplay(wxScrolledWindow):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
       wxScrolledWindow.__init__(self, parent, id, wxPoint(0, 0), size,
-                                wxSUNKEN_BORDER)
+                                wxSUNKEN_BORDER|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.SetBackgroundColour(wxWHITE)
       self.width = 0
       self.height = 0
@@ -226,30 +228,55 @@ class ImageDisplay(wxScrolledWindow):
       event.Skip()
       self.scale()
 
-   def OnPaint(self, event):
-      origin = self.GetViewStart()
-      if self.image:
-         update_regions = self.GetUpdateRegion()
-         rects = wxRegionIterator(update_regions)
-         # Paint only where wxWindows tells us to, this is faster
-         while rects.HaveRects():
-            ox = rects.GetX() / self.scaling
-            oy = rects.GetY() / self.scaling
-            x = (rects.GetX() + origin[0]) / self.scaling
-            y = (rects.GetY() + origin[1]) / self.scaling
-            if x > self.width or y > self.height:
-               pass
-            else:
-               # For some reason, the rectangles wxWindows gives are
-               # a bit too small, so we need to fudge their size
-               fudge = self.scaling / 2.0
-               w = max(min(int((rects.GetW() / self.scaling) + fudge),
-                           self.width - ox), 0)
-               h = max(min(int((rects.GetH() / self.scaling) + fudge),
-                           self.height - oy), 0)
-               self.PaintArea(x, y, w, h, check=0)
-            rects.Next()
-         self.draw_rubber()
+   # Painting images is slightly buggy in GTK, so we need to
+   # have two versions of this function.
+   if hasattr(sys, 'winver'):
+      def OnPaint(self, event):
+         origin = self.GetViewStart()
+         if self.image:
+            update_regions = self.GetUpdateRegion()
+            rects = wxRegionIterator(update_regions)
+            # Paint only where wxWindows tells us to, this is faster
+            while rects.HaveRects():
+               ox = rects.GetX() / self.scaling
+               oy = rects.GetY() / self.scaling
+               x = (rects.GetX() + origin[0]) / self.scaling
+               y = (rects.GetY() + origin[1]) / self.scaling
+               if x > self.width or y > self.height:
+                  pass
+               else:
+                  w = (max(min(int((rects.GetW() / self.scaling)),
+                               self.width - ox), 0))
+                  h = (max(min(int((rects.GetH() / self.scaling)),
+                               self.height - oy), 0))
+                  self.PaintArea(x, y, w, h, check=0)
+               rects.Next()
+            self.draw_rubber()
+   else:
+      def OnPaint(self, event):
+         origin = self.GetViewStart()
+         if self.image:
+            update_regions = self.GetUpdateRegion()
+            rects = wxRegionIterator(update_regions)
+            # Paint only where wxWindows tells us to, this is faster
+            while rects.HaveRects():
+               ox = rects.GetX() / self.scaling
+               oy = rects.GetY() / self.scaling
+               x = (rects.GetX() + origin[0]) / self.scaling
+               y = (rects.GetY() + origin[1]) / self.scaling
+               if x > self.width or y > self.height:
+                  pass
+               else:
+                  # For some reason, the rectangles wxWindows gives are
+                  # a bit too small, so we need to fudge their size
+                  fudge = self.scaling / 2.0
+                  w = (max(min(int((rects.GetW() / self.scaling) + fudge),
+                               self.width - ox), 0))
+                  h = (max(min(int((rects.GetH() / self.scaling) + fudge),
+                               self.height - oy), 0))
+                  self.PaintArea(x, y, w, h, check=0)
+               rects.Next()
+            self.draw_rubber()
 
    def PaintArea(self, x, y, w, h, check=1):
       dc = wxPaintDC(self)

@@ -26,7 +26,6 @@ plugins = ["gamera/plugins/tiff_support.py",
 
 plugin_extensions = []
 for x in plugins:
-    print x
     plugin_extensions.append(generate.generate_plugin(x))
 
 ########################################
@@ -88,7 +87,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
-x = setup(name = "gameracore", version="1.1",
+setup(name = "gameracore", version="1.1",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
                   'gamera.toolkits.omr']

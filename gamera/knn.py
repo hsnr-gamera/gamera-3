@@ -509,4 +509,4 @@ def glyphs_by_category(glyphs):
       if not klasses.has_key(id):
          klasses[id] = []
       klasses[id].append(x)
-   
+   return klasses

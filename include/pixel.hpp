@@ -45,7 +45,7 @@ using namespace vigra;
 
 namespace Gamera {
 
-  typedef float FloatPixel;
+  typedef double FloatPixel;
   typedef unsigned char GreyScalePixel;
   typedef unsigned int Grey16Pixel;
   typedef unsigned short OneBitPixel;

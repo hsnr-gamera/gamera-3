@@ -353,7 +353,7 @@ class WeightsPanel(wxScrolledWindow):
       self.bars = []
       for x in feature_functions:
          text = wxStaticText(self, -1, x)
-         sizer.Add(text, 0)
+         sizer.Add(text, 1)
          bar = wxGauge(self, -1, 100, style=wxGA_SMOOTH, size=(200, 10))
          bar.SetAutoLayout(true)
          sizer.Add(bar, 1, flag=wxGROW)

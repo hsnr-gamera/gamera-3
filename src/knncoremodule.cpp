@@ -715,7 +715,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   double* tmp_b = new double[len_a];
   FloatImageData* data = new FloatImageData(images_len, images_len);
   FloatImageView* mat = new FloatImageView(*data, 0, 0, images_len, images_len);
-  std::fill(mat->vec_begin(), mat->vec_end(), (float)0.0);
+  std::fill(mat->vec_begin(), mat->vec_end(), 0.0);
   // do the distance calculations
   for (int i = 0; i < images_len; ++i) { 
     cur_a = PyList_GetItem(images, i);
@@ -738,8 +738,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
 	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
 	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
-      mat->set(i, j, (float)distance);
-      mat->set(j, i, (float)distance);
+      mat->set(i, j, distance);
+      mat->set(j, i, distance);
     }
     PyObject_CallObject(progress, NULL);
   }
@@ -843,7 +843,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
 	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
-      list->set(0, index, (float)distance);
+      list->set(0, index, distance);
       index++;
     }
     // call the progress object

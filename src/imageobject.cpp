@@ -393,7 +393,7 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
       PyErr_SetString(PyExc_TypeError, "image_set for Float objects must be an float.");
       return 0;
     }
-    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, (float)PyFloat_AS_DOUBLE(value));
+    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, PyFloat_AS_DOUBLE(value));
   } else if (od->m_storage_format == RLE) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");

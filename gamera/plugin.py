@@ -21,8 +21,25 @@ from args import *
 import paths, gamera
 import unittest, new, os, os.path
 
-class PluginFunction:
+class PluginModule:
     category = "Miscellaneous"
+    cpp_sources = None
+    cpp_headers = None
+    cpp_defines = None
+    functions = []
+    version = "1.0"
+    author = ""
+    url = ""
+
+    def generate(cls):
+        for x in cls.functions:
+            print x.__class__.__name__, x.self_type.pixel_types
+
+    generate = classmethod(generate)
+
+
+
+class PluginFunction:
     return_type = None
     self_type = ImageType(("RGB", "GreyScale", "Grey16", "Float", "OneBit"))
     args = []
@@ -44,11 +61,6 @@ class PluginFunction:
         if isinstance(cls.self_type, ImageType):
             gamera.Image.add_plugin_method(cls, func)
     register = classmethod(register)
-
-    def compile(cls):
-        # Fill in compiling code here
-        pass
-    compile = classmethod(compile)
 
     def test(cls):
         # Testing function goes here

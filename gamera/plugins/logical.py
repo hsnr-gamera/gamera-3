@@ -20,9 +20,8 @@
 from gamera.plugin import *
 import _and_image, _or_image, _xor_image
 
+  
 class _LogicalBase(PluginFunction):
-  cpp_source = "logical.hpp"
-  category = "Logical"
   self_type = ImageType(['OneBit'])
   args = Args([ImageType(['OneBit'])])
 
@@ -38,4 +37,9 @@ class xor_image(_LogicalBase):
   pass
 xor_image = xor_image()
 
-plugins = [and_image, or_image, xor_image]
+class LogicalModule(PluginModule):
+  category = "Logical"
+  cpp_headers = ["logical.hpp"]
+  functions = [and_image, or_image, xor_image]
+
+module = LogicalModule()

@@ -359,7 +359,6 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 
 static void image_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
-  printf("hi %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
   Py_DECREF(o->m_data);
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
@@ -367,7 +366,6 @@ static void image_dealloc(PyObject* self) {
 
 static void subimage_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
-  printf("hi2 %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
   Py_DECREF(o->m_data);
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
@@ -375,7 +373,6 @@ static void subimage_dealloc(PyObject* self) {
 
 static void cc_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
-  printf("hi2 %s %i\n", self->ob_type->tp_name, o->m_data->ob_refcnt);
   Py_DECREF(o->m_data);
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
@@ -489,7 +486,7 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_name = "gameracore.SubImage";
   SubImageType.tp_basicsize = sizeof(SubImageObject);
   SubImageType.tp_dealloc = subimage_dealloc;
-  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT;
+  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
@@ -502,7 +499,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_name = "gameracore.CC";
   CCType.tp_basicsize = sizeof(CCObject);
   CCType.tp_dealloc = cc_dealloc;
-  CCType.tp_flags = Py_TPFLAGS_DEFAULT;
+  CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   CCType.tp_base = &ImageType;
   CCType.tp_new = cc_new;
   CCType.tp_getattro = PyObject_GenericGetAttr;

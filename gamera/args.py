@@ -175,6 +175,10 @@ class Args(_guiArgs):
       self.function = function
       self.title = title
 
+   def __repr__(self):
+      return "<" + self.__class__.__name__ + ">"
+   
+
    def get_args(self):
       results = []
       for control in self.controls:
@@ -213,6 +217,9 @@ class Args(_guiArgs):
 class Arg:
    default = 0
 
+   def __repr__(self):
+      return "<" + self.__class__.__name__ + ">"
+   
 # Integer
 if _has_gui == _WX_GUI:
    class _guiInt(wxPython.wx.wxSpinCtrl):

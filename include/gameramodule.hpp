@@ -29,8 +29,43 @@
   object, a type-checking function, and a factory to create an instance
   of the Python type from the corresponding C++ type. Only the Python
   instance struct is exported here - the type struct is not exported, but
-  is available via the object->tp_type field in the instance struct.
+  is available via the object->tp_type field in the instance struct and
+  through a function.
 */
+
+namespace Gamera {
+  namespace Python {
+    /*
+      Enumeration for all of the image types, pixel types, and storage
+      types.
+    */
+    enum PixelTypes {
+      ONEBIT,
+      GREYSCALE,
+      GREY16,
+      RGB,
+      FLOAT
+    };
+    
+    enum ImageTypes {
+      VIEW,
+      STATIC,
+      CC
+    };
+    
+    enum StorageTypes {
+      DENSE,
+      RLE
+    };
+
+    enum ClassificationStates {
+      UNCLASSIFIED,
+      AUTOMATIC,
+      HEURISTIC,
+      MANUAL
+    };
+  }
+}
 
 /*
   SIZE OBJECT
@@ -158,6 +193,20 @@ extern PyTypeObject* get_ImageType();
 bool is_ImageObject(PyObject* x);
 
 /*
+  Image type information and type checking utilities
+*/
+
+// get the storage format - no type checking is performed
+inline int get_storage_format(PyObject* image) {
+  return ((ImageDataObject*)((ImageObject*)image)->m_data)->m_storage_format;
+}
+
+// get the pixel type - no type checking is performed
+inline int get_pixel_type(PyObject* image) {
+  return ((ImageDataObject*)((ImageObject*)image)->m_data)->m_pixel_type;
+}
+
+/*
   SUB IMAGE OBJECT
 
   The SubImage object is here simply to allow type checking and to provide
@@ -199,39 +248,5 @@ struct ImageInfoObject {
 
 extern PyTypeObject* get_ImageInfoType();
 bool is_ImageInfoObject(PyObject* x);
-
-namespace Gamera {
-  namespace Python {
-    /*
-      Enumeration for all of the image types, pixel types, and storage
-      types.
-    */
-    enum PixelTypes {
-      ONEBIT,
-      GREYSCALE,
-      GREY16,
-      RGB,
-      FLOAT
-    };
-    
-    enum ImageTypes {
-      VIEW,
-      STATIC,
-      CC
-    };
-    
-    enum StorageTypes {
-      DENSE,
-      RLE
-    };
-
-    enum ClassificationStates {
-      UNCLASSIFIED,
-      AUTOMATIC,
-      HEURISTIC,
-      MANUAL
-    };
-  }
-}
 
 #endif

@@ -65,7 +65,7 @@ class ImageDisplay(wxScrolledWindow):
       self.highlights = []
       self.boxed_highlights = 0
       self._boxed_highlight = None
-      self._boxed_highlight_position = 32
+      self._boxed_highlight_position = 0
       self._boxed_highlight_timer = wxTimer(self, 100)
       EVT_TIMER(self, 100, self._OnBoxHighlight)
       # EVT_TIMER(self.GetParent(), 25000, self._boxed_highlight_timer)
@@ -138,13 +138,10 @@ class ImageDisplay(wxScrolledWindow):
       return -1
 
    def _OnBoxHighlight(self, event):
-      if self.boxed_highlights and len(self.highlights) == 1:
-         self._boxed_highlight_position %= 20
+      if len(self.highlights) == 1:
+         self._boxed_highlight_position &= 0x7  # mod 8
          highlight = self.highlights[0][0]
-         if self._boxed_highlight_position < 10:
-            i = 10 + (10 - self._boxed_highlight_position)
-         else:
-            i = self._boxed_highlight_position
+         i = (16 + abs(4 - self._boxed_highlight_position)) / self.scaling
          self.draw_rubber()
          self.rubber_origin_x = highlight.ul_x - i
          self.rubber_origin_y = highlight.ul_y - i
@@ -599,8 +596,7 @@ class ImageDisplay(wxScrolledWindow):
       self.Refresh(0, rect=wxRect(0, 0, size.x, size.y))
 
    def _OnLeftDown(self, event):
-      self.boxed_highlights = 0
-      self._boxed_highlight_timer.Stop()
+      self.clear_all_highlights()
       self.rubber_on = 1
       self.draw_rubber()
       origin = [x * self.scroll_amount for x in self.GetViewStart()]

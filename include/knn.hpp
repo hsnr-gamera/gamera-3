@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
+#include <cassert>
 
 namespace Gamera {
   namespace kNN {
@@ -86,6 +87,92 @@ namespace Gamera {
 	distance += *weight * ((*unknown - *known) * (*unknown - *known));
       return distance;
     }
+
+    /*
+      NORMALIZE
+      
+      Normalize is used to compute normalization of the feature vectors in a database
+      of known feature vectors and then to apply that normalization to feature
+      vectors. It only works with doubles.
+
+      Like the kNearestNeighbors class below, Normalize avoids knowing
+      anything about the data structures used for storing the feature
+      vectors. The add method is called for each feature vector,
+      compute_normalization is called, and then feature vectors can
+      be normalized by calling apply.
+    */
+    class Normalize {
+    public:
+      Normalize(size_t num_features) {
+	m_num_features = num_features;
+	m_num_feature_vectors = 0;
+	m_norm_vector = new double[m_num_features];
+	std::fill(m_norm_vector, m_norm_vector + m_num_features, 0.0);
+	m_sum_vector = new double[m_num_features];
+	std::fill(m_sum_vector, m_sum_vector + m_num_features, 0.0);
+	m_sum2_vector = new double[m_num_features];
+	std::fill(m_sum2_vector, m_sum2_vector + m_num_features, 0.0);
+      }
+      ~Normalize() {
+	delete m_norm_vector;
+      }
+      template<class T>
+      void add(T begin, const T end) {
+	assert(m_sum_vector != 0 && m_sum2_vector != 0);
+	if (size_t(end - begin) != m_num_features)
+	  throw std::range_error("Normalize: number features did not match.");
+	for (size_t i = 0; begin != end; ++begin, ++i) {
+	  m_sum_vector[i] += *begin;
+	  m_sum2_vector[i] += *begin * *begin;
+	}
+	++m_num_feature_vectors;
+      }
+      void compute_normalization() {
+	assert(m_sum_vector != 0 && m_sum2_vector != 0);
+	double mean, var, stdev, sum, sum2;
+	for (size_t i = 0; i < m_num_features; ++i) {
+	  sum = m_sum_vector[i];
+	  sum2 = m_sum2_vector[i];
+	  mean = sum / m_num_feature_vectors;
+	  var = (m_num_feature_vectors * sum2 - sum * sum)
+	    / (m_num_feature_vectors * (m_num_feature_vectors - 1));
+	  stdev = std::sqrt(var);
+	  if (stdev < 0.00001)
+	    stdev = 0.00001;
+	  m_norm_vector[i] = mean / stdev;
+	}
+	delete m_sum_vector;
+	delete m_sum2_vector;
+      }
+      // in-place
+      template<class T>
+      void apply(T begin, const T end) const {
+	assert(size_t(end - begin) == m_num_features);
+	double* cur = m_norm_vector;
+	for (; begin != end; ++begin, ++cur)
+	  *begin -= *cur;
+      }
+      // out-of-place
+      template<class T, class U>
+      void apply(T in_begin, const T end, U out_begin) const {
+	assert(size_t(end - in_begin) == m_num_features);
+	double* cur = m_norm_vector;
+	for (; in_begin != end; ++in_begin, ++cur, ++out_begin)
+	  *out_begin = *in_begin - *cur;
+      }
+      size_t num_features() const {
+	return m_num_features;
+      }
+      double* norm_vector() const {
+	return m_norm_vector;
+      }
+    private:
+      size_t m_num_features;
+      size_t m_num_feature_vectors;
+      double* m_norm_vector;
+      double* m_sum_vector;
+      double* m_sum2_vector;
+    };
 
     /*
       K NEAREST NEIGHBORS

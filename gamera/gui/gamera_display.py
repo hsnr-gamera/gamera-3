@@ -382,7 +382,7 @@ class ImageDisplay(wxScrolledWindow):
       if w < 1 or h < 1:
          return
 
-      subimage = SubImage(self.image, y, x, h, w)
+      subimage = self.image.subimage(y, x, h, w)
       image = None
       if scaling != 1.0:
          # For the high quality scalings a greyscale (or rgb) is required
@@ -735,38 +735,42 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
          # If the image is bigger than the cell, crop it. This used to be done
          # in wxPython, but it is more efficient to do it with Gamera SubImages
-
-         if (image.ncols * scaling >= rect.GetWidth() or
-             image.nrows * scaling >= rect.GetHeight()):
-##             height = rect.GetHeight() + 1
-##             width = rect.GetWidth() + 1
-##             # If we are dealing with a CC, we have to make a smaller CC withthe
-##             # same label.
-##             if isinstance(image, Cc):
-##                sub_image = Cc(image, image.label, image.offset_y, image.offset_x, height, width)
-##             # Otherwise just a SubImage will do.
-##             else:
-##                sub_image = SubImage(image, image.offset_y, image.offset_x, height, width)
-##             image = wxEmptyImage(width, height)
-##             s = sub_image.to_buffer(image.GetDataBuffer())
-            factor = min(float(rect.GetHeight()) / float(image.nrows),
-                         float(rect.GetWidth()) / float(image.ncols))
-            height = floor(image.height * factor)
-            width = floor(image.width * factor)
-            scaled_image = image.resize_copy(height, width, 1)
-            wx_image = wxEmptyImage(width, height)
-            s = scaled_image.to_buffer(wx_image.GetDataBuffer())
-         else:
-            if scaling != 1.0 and image.nrows > 1 and image.ncols > 1:
-               height = ceil(image.nrows * scaling)
-               width = ceil(image.ncols * scaling)
+         scaled_image = None
+         if scaling != 1.0:
+            # Things are complicated by the ability to provide a global scaling
+            # to all of the images in the grid. Here we handle the scaling and,
+            # if necessary, we also do the cropping.
+            height = ceil(image.nrows * scaling)
+            width = ceil(image.ncols * scaling)
+            if (height >= rect.GetHeight() or
+                width >= rect.GetWidth()):
+               # If the scaled version is going to still be too large to fit in
+               # the grid cell, we crop it first and then scale it. We could just
+               # scale the whole image and then crop that to the appropriate size,
+               # but that could be very expensive. Instead we figure out how big
+               # of a cropped image to create so that after scaling it is the
+               # appropriate size.
+               sub_height = min((rect.GetHeight() + 1) / scaling, image.nrows)
+               sub_width = min((rect.GetWidth() + 1) / scaling, image.ncols)
+               sub_image = image.subimage(image.offset_y, image.offset_x, sub_height, sub_width)
+               scaled_image = sub_image.resize_copy(ceil(sub_image.nrows * scaling),
+                                                    ceil(sub_image.ncols * scaling), 0)
+            else:
+               # This is the easy case - just scale the image.
                scaled_image = image.resize_copy(height, width, 0)
-               scaled_image.label = image.label
-               wx_image = wxEmptyImage(width, height)
+         else:
+            # If we don't scale the image we can simply crop if the image is too big to fit
+            # into the grid cell or otherwise do nothing.
+            if (image.nrows >= rect.GetHeight() or
+                image.ncols >= rect.GetWidth()):
+               height = min(image.nrows, rect.GetHeight() + 1)
+               width = min(image.ncols, rect.GetWidth() + 1)
+               scaled_image = image.subimage(image.offset_y, image.offset_x, height, width)
             else:
                scaled_image = image
-               wx_image = wxEmptyImage(image.ncols, image.nrows)
-            scaled_image.to_buffer(wx_image.GetDataBuffer())
+
+         wx_image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
+         scaled_image.to_buffer(wx_image.GetDataBuffer())
          bmp = wx_image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)

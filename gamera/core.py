@@ -268,7 +268,10 @@ class ImageBase:
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""
-      return SubImage(self, offset_y, offset_x, nrows, ncols)
+      if hasattr(self, "label"):
+         return Cc(self, self.label, offset_y, offset_x, nrows, ncols)
+      else:
+         return SubImage(self, offset_y, offset_x, nrows, ncols)
 
    def get_feature_functions(cls, features='all'):
       global all_features

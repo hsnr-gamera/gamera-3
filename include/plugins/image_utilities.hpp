@@ -30,6 +30,50 @@
 
 
 namespace Gamera {
+  
+  /*
+    This copies all of the misc attributes of an image (like
+    label for Ccs or scaling).
+  */
+  template<class T, class U>
+  void image_copy_attributes(const T& src, U& dest) {
+    dest.scaling(src.scaling());
+    dest.resolution(src.resolution());
+  }
+
+  /*
+    These are full specializations for ConnectedComponents. This
+    could be done with partial specialization, but that is broken
+    on so many compilers it is easier just to do it manually :/
+  */
+  template<>
+  void image_copy_attributes(const Cc& src, Cc& dest) {
+    dest.scaling(src.scaling());
+    dest.resolution(src.resolution());
+    dest.label(src.label());
+  }
+
+  template<>
+  void image_copy_attributes(const RleCc& src, Cc& dest) {
+    dest.scaling(src.scaling());
+    dest.resolution(src.resolution());
+    dest.label(src.label());
+  }
+
+  template<>
+  void image_copy_attributes(const Cc& src, RleCc& dest) {
+    dest.scaling(src.scaling());
+    dest.resolution(src.resolution());
+    dest.label(src.label());
+  }
+
+  template<>
+  void image_copy_attributes(const RleCc& src, RleCc& dest) {
+    dest.scaling(src.scaling());
+    dest.resolution(src.resolution());
+    dest.label(src.label());
+  }
+
 
   /*
     image_copy_fill
@@ -54,6 +98,7 @@ namespace Gamera {
       for (src_col = src_row.begin(), dest_col = dest_row.begin(); src_col != src_row.end();
 	   ++src_col, ++dest_col)
 	dest_acc.set(typename U::value_type(src_acc.get(src_col)), dest_col);
+    image_copy_attributes(src, dest);
   }
 
   /*
@@ -135,6 +180,7 @@ namespace Gamera {
 	out->set(int(new_row + 0.5), int(new_col + 0.5), typename fact::view_type::value_type(m.get(row, col)));
       }
     }
+    image_copy_attributes(m, *out);
     return out;
   }
 
@@ -158,6 +204,7 @@ namespace Gamera {
     } else {
       resizeImageSplineInterpolation(src_image_range(image), dest_image_range(*view));
     }
+    image_copy_attributes(image, *view);
     return view;
   }
 

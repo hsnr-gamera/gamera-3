@@ -96,7 +96,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"],
                         # FIXME
                         libraries=["stdc++"]),
-              Extension("gamera.knn", ["src/knnmodule.cpp"],
+              Extension("gamera.knncore", ["src/knncoremodule.cpp"],
                         include_dirs=["include"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 

@@ -17,17 +17,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+/*
+  This module implements the low-level parts of the kNN classifier object. This
+  implements the generic classifier interface for Gamera.
+*/
 #include "gameramodule.hpp"
 #include "knn.hpp"
 #include <algorithm>
 #include <string.h>
 #include <Python.h>
+#include <assert.h>
 
 using namespace Gamera;
 using namespace Gamera::kNN;
 
 extern "C" {
-  void initknn(void);
+  void initknncore(void);
   static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds);
   static void knn_dealloc(PyObject* self);
@@ -39,6 +44,7 @@ extern "C" {
   static int knn_set_num_k(PyObject* self, PyObject* v);
   static PyObject* knn_get_distance_type(PyObject* self);
   static int knn_set_distance_type(PyObject* self, PyObject* v);
+  static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
 }
 
 static PyTypeObject KnnType = {
@@ -46,21 +52,57 @@ static PyTypeObject KnnType = {
   0,
 };
 
+/*
+  This enum is for selecting between the various methods of
+  computing the distance between two floating-point feature
+  vectors.
+*/
 enum DistanceType {
   EUCLIDEAN,
   FAST_EUCLIDEAN,
   CITY_BLOCK
 };
 
+/*
+  The KnnObject holds all of the information needed by knn. Unlike
+  many of the parts of Gamera, there is a significant amount of
+  functionality implemented in this module rather than just a
+  wrapper around a C++ objects/code.
+*/
 struct KnnObject {
   PyObject_HEAD
+  // the number of features in each feature vector
   size_t num_features;
+  // the total number of feature vectors stored in the database
   size_t num_feature_vectors;
+  /*
+    The feature vectors. A flat array of doubles (of size num_features
+    * num_feature_vectors) is used to store the feature vectors for
+    performance reasons (the memory access will be faster than using
+    a multi-dimensional data structure). This does not complicate the
+    implementation because this array is a fixed size (it is only
+    used for non-interactive classification).
+  */
   double* feature_vectors;
+  // The id_names for the feature vectors
   char** id_names;
+  // The current weights applied to the distance calculation
   double* weight_vector;
-  double* normalization_vector;
+  /*
+    The normalization applied to the feature vectors prior to distance
+    calculation.
+  */
+  Normalize* normalize;
+  /*
+    Temporary storage for the normalized version of the unknown feature
+    vector. This is simply to avoid allocating memory for each call to
+    classify (and could potentially increase our cache hit rate, but who
+    really knows).
+  */
+  double* normalized_unknown;
+  // k - this is k-NN after all
   size_t num_k;
+  // the distance type currently being used.
   DistanceType distance_type;
 };
 
@@ -72,6 +114,7 @@ PyMethodDef knn_methods[] = {
     "" },
   { "classify", knn_classify, METH_VARARGS,
     "" },
+  { "leave_one_out", knn_leave_one_out, METH_VARARGS, "" },
   { NULL }
 };
 
@@ -88,6 +131,9 @@ PyGetSetDef knn_getset[] = {
 // for type checking images - see initknn.
 static PyTypeObject* imagebase_type;
 
+/*
+  Create a new kNN object and initialize all of the data.
+*/
 static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
 			 PyObject* kwds) {
   KnnObject* o;
@@ -99,10 +145,15 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->num_k = 1;
   o->distance_type = EUCLIDEAN;
   o->weight_vector = 0;
-  o->normalization_vector = 0;
+  o->normalize = 0;
+  o->normalized_unknown = 0;
   return (PyObject*)o;
 }
 
+/*
+  This is a convenience function that clears all of the dynamically
+  allocated data in the object and resets the size information.
+*/
 static void knn_delete_data(KnnObject* o) {
   if (o->feature_vectors != 0)
     delete o->feature_vectors;
@@ -111,18 +162,27 @@ static void knn_delete_data(KnnObject* o) {
       delete o->id_names[i];
     delete o->id_names;
   }
-  delete o->weight_vector;
-  delete o->normalization_vector;
+  if (o->weight_vector != 0)
+    delete o->weight_vector;
+  if (o->normalize != 0)
+    delete o->normalize;
+  if (o->normalized_unknown != 0)
+    delete o->normalized_unknown;
   o->num_features = 0;
   o->num_feature_vectors = 0;
 }
 
+// destructor for Python
 static void knn_dealloc(PyObject* self) {
   KnnObject* o = (KnnObject*)self;
   knn_delete_data(o);
   self->ob_type->tp_free(self);
 }
 
+/*
+  A string comparison functor used by the kNearestNeighbors
+  object.
+*/
 struct ltstr {
   bool operator()(const char* s1, const char* s2) const {
     return strcmp(s1, s2) < 0;
@@ -153,7 +213,7 @@ inline int image_get_fv(PyObject* image, double** buf, int* len) {
 
 
 /*
-  get the id_name from an image. The image argument _must_ be n image -
+  get the id_name from an image. The image argument _must_ be an image -
   no type checking is performed.
 */
 inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
@@ -178,40 +238,66 @@ inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
   return 0;
 }
 
+/*
+  Take a list of images from Python and instatiate the internal data structures
+  for knn - this is used for non-interactive classification using the classify
+  method. The major difference between interactive classification and non-interactive
+  classification (other than speed) is that the data is normalized for non-interactive
+  classification. The feature vectors are normalized in place ahead of time, so when
+  the classifier is serialized the data is saved normalized. This is appropriate because
+  non-interactive classifiers cannot have feature vectors added or delete by definition.
+*/
 static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   PyObject* images;
   KnnObject* o = (KnnObject*)self;
   if (PyArg_ParseTuple(args, "O", &images) <= 0) {
     return 0;
   }
+  /*
+    Unlike classify_with_images this method requires a list so that the
+    size can be known ahead of time. One of the advantages of the non-interactive
+    classifier is that the data structures can be more static, so knowing the
+    size ahead of time is _much_ easier.
+  */
   if (!PyList_Check(images)) {
     PyErr_SetString(PyExc_TypeError, "knn: images must be a list!");
     return 0;
   }
+
+  // delete all the data and initialize the object
+  knn_delete_data(o);
 
   int images_size = PyList_Size(images);
   if (images_size == 0) {
     PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
     return 0;
   }
-  knn_delete_data(o);
   o->num_feature_vectors = images_size;
 
+  /*
+    Determine the number of features by querying the first image
+    in the list.
+  */
   PyObject* first_image = PyList_GET_ITEM(images, 0);
   if (!PyObject_TypeCheck(first_image, imagebase_type)) {
     PyErr_SetString(PyExc_TypeError, "knn: expected an image");
     return 0;
   }
-
   double* tmp_fv;
   int tmp_fv_len;
   if (image_get_fv(first_image, &tmp_fv, &tmp_fv_len) < 0) {
     PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
     return 0;
   }
+  /*
+    Create all of the data
+  */
   o->num_features = tmp_fv_len;
   o->feature_vectors = new double[o->num_feature_vectors * o->num_features];
   o->id_names = new char*[o->num_feature_vectors];
+
+  // create the normalize object
+  o->normalize = new Normalize(o->num_features);
   /*
     Copy the id_names and the features to the internal data structures.
   */
@@ -231,6 +317,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     for (size_t feature = 0; feature < o->num_features; ++feature) {
       current_features[feature] = tmp_fv[feature];
     }
+    o->normalize->add(tmp_fv, tmp_fv + o->num_features);
     char* tmp_id_name;
     int len;
     if (image_get_id_name(cur_image, &tmp_id_name, &len) < 0) {
@@ -242,36 +329,29 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     strncpy(o->id_names[i], tmp_id_name, len + 1);
   }
   /*
-    Determine the normalization.
+    Apply the normalization
   */
+  o->normalize->compute_normalization();
   current_features = o->feature_vectors;
-  o->normalization_vector = new double[o->num_features];
-  for (size_t i = 0; i < o->num_features; ++i) {
-    double sum = 0.0;
-    double sum2 = 0.0;
-    double* current = o->feature_vectors;
-    for (size_t j = 0; j < o->num_feature_vectors; ++j, current += o->num_features) {
-      sum += current[i];
-      sum2 += current[i] * current[i];
-    }
-    double mean = sum / o->num_feature_vectors;
-    double var = (o->num_feature_vectors * sum2 - sum * sum)
-      / (o->num_feature_vectors * (o->num_feature_vectors - 1));
-    double stdev = sqrt(var);
-    if (stdev < 0.00001)
-      stdev = 0.00001;
-    o->normalization_vector[i] = mean / stdev;
-    std::cout << o->normalization_vector[i] << " ";
+  for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
+    o->normalize->apply(current_features, current_features + o->num_features);
   }
-  std::cout << std::endl;
   /*
     Initialize the weights.
   */
   o->weight_vector = new double[o->num_features];  
   Py_INCREF(Py_None);
+  /*
+    Initialize the normalized unknown fv
+  */
+  o->normalized_unknown = new double[o->num_features];
   return Py_None;
 }
 
+/*
+  non-interactive classification using the data created by
+  instantiate from images.
+*/
 static PyObject* knn_classify(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   if (o->feature_vectors == 0) {
@@ -299,6 +379,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     return 0;
   }
 
+  o->normalize->apply(fv, fv + o->num_features, o->normalized_unknown);
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
   double* current_known = o->feature_vectors;
   double* weights = new double[o->num_features];
@@ -307,13 +388,13 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     double distance;
     if (o->distance_type == EUCLIDEAN) {
       distance = euclidean_distance(current_known, current_known + o->num_features,
-				    fv, weights);
+				    o->normalized_unknown, weights);
     } else if (o->distance_type == FAST_EUCLIDEAN) {
       distance = fast_euclidean_distance(current_known, current_known + o->num_features,
-					 fv, weights);
+					 o->normalized_unknown, weights);
     } else {
       distance = city_block_distance(current_known, current_known + o->num_features,
-				     fv, weights);
+				     o->normalized_unknown, weights);
     }
 
     knn.add(o->id_names[i], distance);
@@ -446,17 +527,61 @@ static int knn_set_distance_type(PyObject* self, PyObject* v) {
   return 0;
 }
 
+static double leave_one_out(KnnObject* o) {
+  assert(o->feature_vectors != 0);
+  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  size_t total_correct = 0;
+  for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+    for (size_t j = 0; j < o->num_feature_vectors; ++j) {
+      if (i == j)
+	continue;
+      double distance;
+      if (o->distance_type == EUCLIDEAN) {
+	distance = euclidean_distance(&o->feature_vectors[i],
+				      &o->feature_vectors[i] + o->num_features,
+				      &o->feature_vectors[j],
+				      o->weight_vector);
+      } else if (o->distance_type == FAST_EUCLIDEAN) {
+	distance = fast_euclidean_distance(&o->feature_vectors[i],
+					   &o->feature_vectors[i] + o->num_features,
+					   &o->feature_vectors[j],
+					   o->weight_vector);
+      } else {
+	distance = city_block_distance(&o->feature_vectors[i],
+				       &o->feature_vectors[i] + o->num_features,
+				       &o->feature_vectors[j],
+				       o->weight_vector);
+      }
+      knn.add(o->id_names[j], distance);
+    }
+    std::pair<char*, double> answer = knn.majority();
+    knn.reset();
+    if (strcmp(answer.first, o->id_names[i]) == 0)
+      total_correct++;
+  }
+  return double(total_correct) / o->num_feature_vectors;
+}
+
+static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  if (o->feature_vectors == 0) {
+    PyErr_SetString(PyExc_RuntimeError,
+		    "knn: leave_one_out called before instantiate from images.");
+    return 0;
+  }
+  return Py_BuildValue("f", leave_one_out(o));
+}
 
 PyMethodDef knn_module_methods[] = {
   { NULL }
 };
 
-DL_EXPORT(void) initknn(void) {
-  PyObject* m = Py_InitModule("gamera.knn", knn_module_methods);
+DL_EXPORT(void) initknncore(void) {
+  PyObject* m = Py_InitModule("gamera.knncore", knn_module_methods);
   PyObject* d = PyModule_GetDict(m);
 
   KnnType.ob_type = &PyType_Type;
-  KnnType.tp_name = "gamera.knn.kNN";
+  KnnType.tp_name = "gamera.knncore.kNN";
   KnnType.tp_basicsize = sizeof(KnnObject);
   KnnType.tp_dealloc = knn_dealloc;
   KnnType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -475,6 +600,14 @@ DL_EXPORT(void) initknn(void) {
   PyDict_SetItemString(d, "FAST_EUCLIDEAN",
 		       Py_BuildValue("i", FAST_EUCLIDEAN));
 
+  /*
+    We need to type check the images passed in so we need
+    to have the image type around. By looking up the type
+    at module init time we can save some overhead in the
+    function calles. gamera.gameracore.Image is used because
+    it is the base type for _all_ of the image classes in
+    Gamera.
+  */
   PyObject* mod = PyImport_ImportModule("gamera.gameracore");
   if (mod == 0) {
     PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");

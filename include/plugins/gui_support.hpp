@@ -148,10 +148,12 @@ PyObject* to_string(T& m) {
   return str;
 }
 
+#if 1
 template<class T>
 void scaled_to_string(T& m, float scale, PyObject* py_buffer) {
   typedef ImageData<typename T::value_type> data_type;
   typedef ImageView<data_type> view_type;
+
 
   char *buffer;
   int buffer_len;
@@ -159,14 +161,53 @@ void scaled_to_string(T& m, float scale, PyObject* py_buffer) {
 
   size_t nrows = size_t(m.nrows() * scale);
   size_t ncols = size_t(m.ncols() * scale);
+
   data_type data(nrows, ncols);
   view_type view(data, 0, 0, nrows, ncols);
+
   resizeImageNoInterpolation(src_image_range(m), dest_image_range(view));
 
   to_string_impl<typename T::value_type> func;
   func(view, buffer);
 }
+#endif
+#if 0
+template<class T>
+PyObject* scaled_to_string(T& m, float scale) {
+  typedef ImageData<typename T::value_type> data_type;
+  typedef ImageView<data_type> view_type;
 
+  size_t nrows = size_t(m.nrows() * scale);
+  size_t ncols = size_t(m.ncols() * scale);
+  printf("%f, %d, %d\n", scale, nrows, ncols);
+  printf("view: %d, %d, %d, %d data: %d, %d, %d, %d\n", m.offset_y(), m.offset_x(), m.nrows(),
+	 m.ncols(), m.data()->page_offset_y(), m.data()->page_offset_x(),
+	 m.data()->nrows(), m.data()->ncols());
+  PyObject* str = PyString_FromString("this is stupid\n");
+  if (_PyString_Resize(&str, nrows * ncols * 3) != 0)
+    return 0;
+  char* buffer = PyString_AS_STRING(str);
+
+  data_type data(nrows, ncols);
+  view_type view(data, 0, 0, nrows, ncols);
+  printf("%d, %d\n", (m.lowerRight() - m.upperLeft()).y, (m.lowerRight() - m.upperLeft()).x);
+  printf("%d, %d\n", (view.lowerRight() - view.upperLeft()).y, (view.lowerRight() - view.upperLeft()).x);
+  printf("hi1\n");
+  resizeImageNoInterpolation(src_image_range(m), dest_image_range(view));
+//   typename T::value_type tmp;
+//   for (typename T::row_iterator i = m.row_begin(); i != m.row_end(); ++i)
+//     for (typename T::col_iterator j = i.begin(); j != i.end(); ++j)
+//       tmp = *j;
+
+  printf("hi2\n");
+
+  to_string_impl<typename T::value_type> func;
+  printf("hi3\n");
+  func(view, buffer);
+  printf("hi4\n");
+  return str;
+}
+#endif
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;

@@ -301,14 +301,16 @@ class ImageDisplay(wxScrolledWindow):
                           y + self.image.offset_y,
                           x + self.image.offset_x,
                           h + 1, w + 1)
+      print self.image.offset_y, self.image.offset_x
+      image = None
       if scaling == 1:
          image = wxEmptyImage(w + 1, h + 1)
          apply(self.to_string_function, (subimage, image.GetDataBuffer()))
       else:
          print scaling
          image = wxEmptyImage(w * scaling, h * scaling)
-         apply(self.scaled_to_string_function,
-               (subimage, scaling, image.GetDataBuffer()))
+         apply(self.scaled_to_string_function, (subimage, scaling, image.GetDataBuffer()))
+
       bmp = wxBitmapFromImage(image)
       # self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
       dc.DrawBitmap(bmp,

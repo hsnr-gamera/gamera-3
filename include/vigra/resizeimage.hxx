@@ -918,7 +918,7 @@ resizeImageNoInterpolation(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     
     int wnew = idend.x - id.x;
     int hnew = idend.y - id.y;
-    
+    printf("%d, %d, %d, %d\n", w, h, wnew, hnew);
     vigra_precondition((w > 1) && (h > 1),
                  "resizeImageNoInterpolation(): "
          "Source image to small.\n");
@@ -946,11 +946,13 @@ resizeImageNoInterpolation(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     }
     
     yt = tmp.upperLeft();
+
     
     for(y=0; y < hnew; ++y, ++yt.y, ++id.y)
     {
         typename DestIterator::row_iterator rd = id.rowIterator();
         typename TmpImageIterator::row_iterator rt = yt.rowIterator();
+
     
     resizeLineNoInterpolation(rt, rt + w, tmp.accessor(),  
                   rd, rd + wnew, da);

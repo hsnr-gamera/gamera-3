@@ -31,7 +31,7 @@ class scaled_to_string(PluginFunction):
     """Encodes the image at the given scaling into a 'string'
     required by wxImage. (i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args([Float("scaling"),Class("Buffer")])
+    args = Args([Float("scaling"), Class("buffer")])
 scaled_to_string = scaled_to_string()
 
 class to_buffer(PluginFunction):

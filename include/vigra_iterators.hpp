@@ -84,7 +84,8 @@ namespace Gamera {
       bool operator<(MoveY const & rhs) const {
 	return (offset_ < rhs.offset_); }
       int operator-(MoveY const & rhs) const {
-	return (offset_ - rhs.offset_) / width_; }
+	return (offset_ - rhs.offset_) / width_;
+      }
       MoveY(size_t width)
         : width_(width), offset_(0) {}
       MoveY(MoveY const & rhs)
@@ -142,9 +143,9 @@ namespace Gamera {
     typedef typename Image::pointer pointer;
     typedef Diff2D difference_type;
     typedef image_traverser_tag  iterator_category;
-    typedef I column_iterator;
+    typedef I row_iterator;
     typedef ImageViewDetail::RowIterator<Image,
-	    typename Image::data_type::iterator> row_iterator;
+	    typename Image::data_type::iterator> column_iterator;
 
     ImageIterator(Image* mat, I base, size_t offset)
       : ImageIteratorBase<value_type, I>(base, offset), m_mat(mat) { }
@@ -195,21 +196,21 @@ namespace Gamera {
     value_type operator()(int dx, int dy) const {
       return m_accessor(x.current_ + dx + (dy * width()));
     }
-    column_iterator operator[](int dy) const {
+    row_iterator operator[](int dy) const {
       return x.current_ + (dy * width());
     }
     row_iterator rowIterator() const
     {
-      return row_iterator(m_mat, x.current_);
+      return x.current_ + y.offset_;
     }
     column_iterator columnIterator() const { 
-      return x.current_;
+      return column_iterator(m_mat, x.current_ + y.offset_);
     }
     value_type get() const {
       return m_accessor(x.current_ + y.offset_);
     }
     void set(value_type v) {
-      m_accessor.set(x.current_ + y.offset_, v);
+      m_accessor.set(v, x.current_ + y.offset_);
     }
   private:
     ImageAccessor<value_type> m_accessor;
@@ -226,9 +227,9 @@ namespace Gamera {
     typedef typename Image::pointer pointer;
     typedef Diff2D difference_type;
     typedef image_traverser_tag  iterator_category;
-    typedef I column_iterator;
+    typedef I row_iterator;
     typedef ImageViewDetail::ConstRowIterator<Image,
-	    typename Image::data_type::const_iterator> row_iterator;
+	    typename Image::data_type::const_iterator> column_iterator;
 
     ConstImageIterator(Image* mat, I base, size_t offset)
       : ImageIteratorBase<value_type, I>(base, offset), m_mat(mat) {
@@ -280,15 +281,15 @@ namespace Gamera {
     value_type operator()(int dx, int dy) const {
       return m_accessor(x.current_ + dx + (dy * width()));
     }
-    column_iterator operator[](int dy) const {
+    row_iterator operator[](int dy) const {
       return x.current_ + dy * width();
     }
     row_iterator rowIterator() const
     {
-      return row_iterator(m_mat, x.current_);
+      return x.current_ + y.offset_;
     }
     column_iterator columnIterator() const { 
-      return x.current_;
+      return column_iterator(m_mat, x.current_ + y.offset_);
     }
     value_type get() const {
       return m_accessor(x.current_ + y.offset_);

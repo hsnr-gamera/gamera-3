@@ -298,8 +298,8 @@ if _has_gui == _WX_GUI:
 
       def OnChar(self, event):
          key = event.KeyCode()
-         if (key < WXPYTHON.WX.WXK_SPACE or
-             key == WXPYTHON.WX.WXK_DELETE or key > 255):
+         if (key < wxPython.wx.WXK_SPACE or
+             key == wxPython.wx.WXK_DELETE or key > 255):
             event.Skip()
             return
          if chr(key) in string.digits + "-.":

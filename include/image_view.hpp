@@ -262,14 +262,23 @@ namespace Gamera {
     // 2D iterators
     //
     typedef Gamera::ImageIterator<ImageView, typename T::iterator> Iterator;
-    Iterator upperLeft() { return Iterator(this, m_begin, m_image_data->stride()); }
-    Iterator lowerRight() { return Iterator(this, m_begin, m_image_data->stride())
-			      + Diff2D(ncols(), nrows()); }
+    Iterator upperLeft() {
+      return Iterator(this, m_image_data->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() - m_image_data->page_offset_x(), offset_y() - m_image_data->page_offset_y());
+    }
+    Iterator lowerRight() {
+      return Iterator(this, m_image_data->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() + ncols() - m_image_data->page_offset_x(),
+		 offset_y() + nrows() - m_image_data->page_offset_y());
+    }
     typedef Gamera::ConstImageIterator<const ImageView, typename T::const_iterator> ConstIterator;
-    ConstIterator upperLeft() const { return ConstIterator(this, m_const_begin,
-							   m_image_data->stride()); }
+    ConstIterator upperLeft() const {
+      return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
+	+ Diff2D(offset_x(), offset_y());
+    }
     ConstIterator lowerRight() const {
-      return ConstIterator(this, m_const_begin, m_image_data->stride()) + Diff2D(ncols(), nrows());
+      return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() + ncols(), offset_y() + nrows());
     }
 
     //

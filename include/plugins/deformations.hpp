@@ -500,11 +500,9 @@ namespace Gamera
 			srand(time(0));
 			randset = 1;
 		}
-		
-		size_t hoffset = 0, voffset = 0;
-		for(i = voffset; i<out->nrows(); i++) for(j = hoffset; j<out->ncols(); j++)
+		for(i = 0; i<out->nrows(); i++) for(j = 0; j<out->ncols(); j++)
 		{
-			pixelFormat px1 = m.get(i-voffset, m.ncols() - (j-hoffset)),
+			pixelFormat px1 = m.get(i,out->ncols() - j - 1),
 				    px2 = out->get(i,j);
 			if (a*rand()/RAND_MAX == 0) out->set(i,j,norm_weight_avg(px1,px2,0.5,0.5));
 		}

@@ -46,7 +46,7 @@ void doPurePython()
 	printf("Preparing pure Python modules & scripts.\n");
 	
 	getcwd(buff,2048);
-	chdir("..");
+	chdir("..\\..");
 	system("cd..");
 	system("rmdir /S /Q build");
 	system("python setup.py build_py build_scripts");
@@ -65,7 +65,7 @@ void doMinGW()
 		printf("Compiling extensions with MingW32 compiler.\n");
 
 		getcwd(buff,2048);
-		chdir("..");
+		chdir("..\\..");
 		system("rmdir /S /Q build");
 		system("python setup.py build_ext --compiler=mingw32");
 		system("mkdir .\\dist\\mingw\\Lib\\site-packages\\gamera\\");
@@ -76,8 +76,8 @@ void doMinGW()
 	outMM = fopen("Gamera2.MM","a");
 	fprintf(outMM,"\n\n;----------Feature to Add Extensions built with MingW32---------\n");
 	fprintf(outMM,"<$Feature \"mingw_ext\" Title=\"Gamera 2 Extensions (MingW32)\">\n");
-	fprintf(outMM,"<$Files \"..\\dist\\mingw\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
-	fprintf(outMM,"<$Files \"..\\mgwz.dll\" DestDir=\"[PY23LOC]\\Lib\\site-packages\\Gamera\\plugins\">\n");
+	fprintf(outMM,"<$Files \"..\\..\\dist\\mingw\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
+	fprintf(outMM,"<$Files \"..\\..\\mgwz.dll\" DestDir=\"[PY23LOC]\\Lib\\site-packages\\Gamera\\plugins\">\n");
 	fprintf(outMM,"<$/Feature>");
 	fclose(outMM);
 }
@@ -99,7 +99,7 @@ void doMSVC()
 	outMM = fopen("Gamera2.MM","a");
 	fprintf(outMM,"\n\n;----------Feature to Add Extensions built with MSVC---------\n");
 	fprintf(outMM,"<$Feature \"msvc_ext\" Title=\"Gamera 2 Extensions (MSVC)\">\n");
-	fprintf(outMM,"<$Files \"..\\dist\\msvc\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
+	fprintf(outMM,"<$Files \"..\\..\\dist\\msvc\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
 	fprintf(outMM,"<$/Feature>");
 	fclose(outMM);
 }
@@ -121,7 +121,7 @@ void doICL()
     }
 	outMM = fopen("Gamera2.MM","a");
 	fprintf(outMM,"<$Feature \"icl_ext\" Title=\"Gamera 2 Extensions (ICL)\">\n");
-	fprintf(outMM,"<$Files \"..\\dist\\icl\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
+	fprintf(outMM,"<$Files \"..\\..\\dist\\icl\\*\" SubDir=TREE DestDir=\"[PY23LOC]\">\n");
 	fprintf(outMM,"<$/Feature>\n");
 	fclose(outMM);
 }

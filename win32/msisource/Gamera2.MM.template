@@ -49,8 +49,4 @@
 	<$Files ".\Gamera.py" DestDir="[PROGMENU]">
 <$/Component>
 
-<$Files "..\dist\pure\*" SubDir=TREE DestDir="[PY23LOC]">
-
-;<$Files "..\include\*" SubDir=TREE DestDir="[GAMERAINC]">
-;<$Files "..\build\lib.win32-2.3\gamera\*" SubDir=TREE DestDir="[GAMERALIB]">
-;<$Files "..\build\scripts-2.3\*" DestDir="[GAMERASCR]">
+<$Files "..\..\dist\pure\*" SubDir=TREE DestDir="[PY23LOC]">

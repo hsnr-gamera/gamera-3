@@ -82,8 +82,7 @@ class ImageDisplay(wxScrolledWindow):
    # Sets the image being displayed
    # Returns the size of the image
    def set_image(self, image, view_function=None):
-      if view_function != None:
-         self.original_image = image
+      self.original_image = image
       self.image = image
       self.view_function = view_function
       return self.reload_image()
@@ -118,7 +117,7 @@ class ImageDisplay(wxScrolledWindow):
 
    # Highlights a CC in the display.  Multiple CCs
    # may be highlighted in turn
-   def highlight_ccs(self, ccs, color=-1):
+   def highlight_cc(self, ccs, color=-1):
       color = self.get_highlight_color(color)
       if not util.is_sequence(ccs):
          ccs = (ccs,)
@@ -129,23 +128,19 @@ class ImageDisplay(wxScrolledWindow):
             self.color += 1
          self.highlights.append((cc, use_color))
          self.PaintAreaRect(cc)
-   highlight_cc = highlight_ccs
 
    # Clears a CC in the display.  Multiple CCs
    # may be unhighlighted in turn
-   def clear_highlight_cc(self, ccs):
+   def unhighlight_cc(self, ccs):
       if not util.is_sequence(ccs):
          ccs = (ccs,)
       last_one = 0
       for cc in ccs:
          for i in range(last_one, len(self.highlights)):
-            if (self.highlights[i][0][0] == cc.offset_x and
-                self.highlights[i][0][1] == cc.offset_y):
+            if (self.highlights[i][0].ul_x == cc.ul_x and
+                self.highlights[i][0].ul_y == cc.ul_y):
                del self.highlights[i]
-               self.PaintArea(cc.page_offset_x(),
-                              cc.page_offset_y(),
-                              cc.ncols,
-                              cc.nrows)
+               self.PaintAreaRect(cc)
                last_one = i
                break
       
@@ -309,21 +304,21 @@ class ImageDisplay(wxScrolledWindow):
             # with the new scaled_to_string. KWM
             fudge = int(self.scaling) * 2
             w = (max(min(int((rects.GetW() / scaling) + fudge),
-                         self.image.width - ox), 0))
+                         self.image.ncols - ox), 0))
             h = (max(min(int((rects.GetH() / scaling) + fudge),
-                         self.image.height - oy), 0))
+                         self.image.nrows - oy), 0))
             # Quantize for scaling
             if scaling > 1:
                x = int(x / scaling) * scaling
                y = int(y / scaling) * scaling
                w = int(w / scaling) * scaling
                h = int(h / scaling) * scaling
-            self.PaintArea(x, y, w, h, check=0)
+            self.PaintArea(x + self.image.ul_x, y + self.image.ul_y, w + 1, h + 1, check=0)
          rects.Next()
       self.draw_rubber()
 
    def PaintAreaRect(self, rect):
-      self.PaintArea(rect.ul_x, rect.ul_y, rect.width, rect.height, 1)
+      self.PaintArea(rect.ul_x, rect.ul_y, rect.ncols, rect.nrows, 1)
 
    def PaintArea(self, x, y, w, h, check=1):
       dc = wxPaintDC(self)
@@ -333,60 +328,63 @@ class ImageDisplay(wxScrolledWindow):
       origin_scaled = [a / scaling for a in origin]
       size_scaled = [a / scaling for a in self.GetSizeTuple()]
 
+      if (y + h >= self.image.lr_y):
+         h = self.image.lr_y - y + 1
+      if (x + w >= self.image.lr_x):
+         w = self.image.lr_x - x + 1
+
       if check:
          if ((x + w < origin_scaled[0]) and
              (y + h < origin_scaled[1]) or
              (x > origin_scaled[0] + size_scaled[0] and
-              y > origin_scaled[1] + size_scaled[1]) or
-             (w <= 0 or h <= 0)):
+              y > origin_scaled[1] + size_scaled[1])):
             return
+      if w < 1 or h < 1:
+         return
 
-      if (y + h >= self.image.height):
-         h = self.image.height - y - 2
-      if (x + w >= self.image.width):
-         w = self.image.width - x - 2
-
-      subimage = SubImage(self.image,
-                          y + self.image.offset_y,
-                          x + self.image.offset_x,
-                          h + 1, w + 1)
+      subimage = SubImage(self.image, y, x, h, w)
       image = None
       if scaling != 1.0:
-         scaled_image = subimage.resize_copy((h + 1) * scaling, (w + 1) * scaling,
-                                             self.scaling_quality)
-         image = wxEmptyImage((w + 1) * scaling, (h + 1) * scaling)
+         scaled_image = subimage.resize_copy(
+            h * scaling, w * scaling,
+            self.scaling_quality)
+         image = wxEmptyImage(w * scaling, h * scaling)
       else:
          scaled_image = subimage
-         image = wxEmptyImage(w + 1, h + 1)
+         image = wxEmptyImage(w, h)
       scaled_image.to_buffer(image.GetDataBuffer())
 
       bmp = wxBitmapFromImage(image)
-      x = x * scaling - origin[0]
-      y = y * scaling - origin[1]
+      x = (x - self.image.ul_x) * scaling - origin[0]
+      y = (y - self.image.ul_y) * scaling - origin[1]
       dc.DrawBitmap(bmp, x, y, 0)
 
       if len(self.highlights):
          dc.SetTextBackground(wxBLACK)
          dc.SetBackgroundMode(wxTRANSPARENT)
-         dc.SetLogicalFunction(wxOR)
          for highlight, color in self.highlights:
             if subimage.intersects(highlight):
-               h = highlight.height
-               w = highlight.width
+               subhighlight = highlight.clip_image(subimage)
+               h = subhighlight.nrows
+               w = subhighlight.ncols
                if scaling != 1.0:
-                  scaled_highlight = highlight.resize_copy(
-                     (h + 1) * scaling, (w + 1) * scaling,
-                     self.scaling_quality)
-                  image = wxEmptyImage((w + 1) * scaling, (h + 1) * scaling)
+                  scaled_highlight = subhighlight.resize_copy(
+                     h * scaling, w * scaling, 0)
+                  image = wxEmptyImage(
+                     w * scaling, h * scaling)
                else:
-                  scaled_highlight = highlight
-                  image = wxEmptyImage(w + 1, h + 1)
+                  scaled_highlight = subhighlight
+                  image = wxEmptyImage(w, h)
                scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
+               dc.SetTextForeground(wxWHITE)
+               dc.SetLogicalFunction(wxAND_INVERT)
+               x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
+               y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
+               dc.DrawBitmap(bmp, x_cc, y_cc)
                dc.SetTextForeground(color)
-               dc.DrawBitmap(
-                  bmp, x + (highlight.ul_x - subimage.ul_x) * scaling,
-                  y + (highlight.ul_y - subimage.ul_y) * scaling, 0)
+               dc.SetLogicalFunction(wxOR)
+               dc.DrawBitmap(bmp, x_cc, y_cc)
          dc.SetBackgroundMode(wxSOLID)
          dc.SetLogicalFunction(wxCOPY)
             
@@ -525,7 +523,7 @@ class ImageDisplay(wxScrolledWindow):
    def MakeView(self):
       name = var_name.get("view", image_menu.shell.locals)
       if name:
-         image_menu.shell.locals['__image__'] = self.image
+         image_menu.shell.locals['__image__'] = self.original_image
          if (self.rubber_y2 == self.rubber_origin_y and
              self.rubber_x2 == self.rubber_origin_x):
             image_menu.shell.run(
@@ -535,8 +533,8 @@ class ImageDisplay(wxScrolledWindow):
             image_menu.shell.run(
                "%s = SubImage(__image__, %d, %d, %d, %d)" %
                (name,
-                self.rubber_origin_y + self.image.offset_y,
-                self.rubber_origin_x + self.image.offset_x,
+                self.rubber_origin_y + self.original_image.ul_y,
+                self.rubber_origin_x + self.original_image.ul_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
          del image_menu.shell.locals['__image__']
@@ -547,7 +545,7 @@ class ImageDisplay(wxScrolledWindow):
    def MakeCopy(self):
       name = var_name.get("copy", image_menu.shell.locals)
       if name:
-         image_menu.shell.locals['__image__'] = self.image
+         image_menu.shell.locals['__image__'] = self.original_image
          if (self.rubber_y2 == self.rubber_origin_y and
              self.rubber_x2 == self.rubber_origin_x):
             image_menu.shell.pushcode(
@@ -556,8 +554,8 @@ class ImageDisplay(wxScrolledWindow):
             image_menu.shell.run(
                "%s = SubImage(__image__, %d, %d, %d, %d).image_copy()" %
                (name,
-                self.rubber_origin_y + self.image.offset_y,
-                self.rubber_origin_x + self.image.offset_x,
+                self.rubber_origin_y + self.original_image.ul_y,
+                self.rubber_origin_x + self.original_image.ul_x,
                 self.rubber_y2 - self.rubber_origin_y + 1,
                 self.rubber_x2 - self.rubber_origin_x + 1))
          del image_menu.shell.locals['__image__']
@@ -637,8 +635,8 @@ class ImageWindow(wxPanel):
       self.id.highlight_cc(cc)
    highlight_ccs = highlight_cc
 
-   def clear_highlight_cc(self, cc):
-      self.id.clear_highlight_cc(cc)
+   def unhighlight_cc(self, cc):
+      self.id.unhighlight_cc(cc)
 
    def clear_all_highlights(self):
       self.id.clear_all_highlights()
@@ -732,13 +730,14 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             height = floor(image.height * factor)
             width = floor(image.width * factor)
             scaled_image = image.resize_copy(image.height * factor, image.width * factor, 0)
-            image = wxEmptyImage(width, height)
-            s = scaled_image.to_buffer(image.GetDataBuffer())
+            scaled_image.label = image.label
+            wx_image = wxEmptyImage(width, height)
+            s = scaled_image.to_buffer(wx_image.GetDataBuffer())
          else:
             orig_image = image
-            image = wxEmptyImage(image.ncols, image.nrows)
-            orig_image.to_buffer(image.GetDataBuffer())
-         bmp = image.ConvertToBitmap()
+            wx_image = wxEmptyImage(image.ncols, image.nrows)
+            orig_image.to_buffer(wx_image.GetDataBuffer())
+         bmp = wx_image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
          y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
@@ -1198,60 +1197,65 @@ class MultiImageWindow(wxPanel):
 # TOP-LEVEL FRAMES
 ##############################################################################
 
-class ImageFrameBase(wxFrame):
+class ImageFrameBase:
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
-      wxFrame.__init__(self, parent, id, title,
-                       wxDefaultPosition, (600, 400))
+      self._frame = wxFrame(parent, id, title,
+                           wxDefaultPosition, (600, 400))
       self.owner = owner
-      EVT_CLOSE(self, self.OnCloseWindow)
+      EVT_CLOSE(self._frame, self._OnCloseWindow)
 
    def set_image(self, image, view_function=None):
-      size = self.iw.set_image(image, view_function)
-      self.SetSize((max(200, min(600, size[0] + 30)),
-                    max(200, min(400, size[1] + 60))))
+      size = self._iw.set_image(image, view_function)
+      self._frame.SetSize((max(200, min(600, size[0] + 30)),
+                           max(200, min(400, size[1] + 60))))
 
    def close(self):
-      self.iw.Destroy()
-      self.Destroy()
+      self._iw.Destroy()
+      self._frame.Destroy()
 
    def refresh(self):
-      self.iw.refresh(1)
+      self._iw.refresh(1)
 
    def add_click_callback(self, cb):
-      self.iw.add_click_callback(cb)
+      self._iw.add_click_callback(cb)
 
    def remove_click_callback(self, cb):
-      self.iw.remove_click_callback(cb)
+      self._iw.remove_click_callback(cb)
 
-   def OnCloseWindow(self, event):
-      del self.iw
+   def _OnCloseWindow(self, event):
+      del self._iw
       if self.owner:
          self.owner.set_display(None)
       self.Destroy()
 
+   def Show(self, flag=1):
+      self._frame.Show(flag)
+   show = Show
+
 class ImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
-      self.iw = ImageWindow(self)
+      self._iw = ImageWindow(self._frame)
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconImageBitmap())
-      self.SetIcon(icon)
+      self._frame.SetIcon(icon)
 
    def __repr__(self):
       return "<ImageFrame Window>"
 
    def highlight_cc(self, cc):
-      self.iw.highlight_cc(cc)
+      self._iw.highlight_cc(cc)
    highlight_ccs = highlight_cc
 
-   def clear_highlight_cc(self, cc):
-      self.iw.clear_highlight_cc(cc)
+   def unhighlight_cc(self, cc):
+      self._iw.unhighlight_cc(cc)
+   unhighlight_ccs = unhighlight_cc
 
    def clear_all_highlights(self):
-      self.iw.clear_all_highlights()
+      self._iw.clear_all_highlights()
 
    def focus(self, rect):
-      self.iw.focus(rect)
+      self._iw.focus(rect)
 
    def wait(self):
       wxYield()
@@ -1261,16 +1265,16 @@ class ImageFrame(ImageFrameBase):
 class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
       ImageFrameBase.__init__(self, parent, id, title, owner)
-      self.iw = MultiImageWindow(self)
+      self._iw = MultiImageWindow(self._frame)
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconImageListBitmap())
-      self.SetIcon(icon)
+      self._frame.SetIcon(icon)
 
    def __repr__(self):
       return "<MultiImageFrame Window>"
 
    def set_image(self, image, view_function=None):
-      size = self.iw.set_image(image, view_function)
+      size = self._iw.set_image(image, view_function)
 
 
 ##############################################################################

@@ -174,7 +174,7 @@ class IconDisplay(wxListCtrl):
     self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
     self.currentIcon = self.find_icon(index)
     if self.currentIcon:
-      if isinstance(self.currentIcon.data, Image):
+      if isinstance(self.currentIcon.data, ImageBase):
         if event.ShiftDown():
           mode = image_menu.HELP_MODE
         else:

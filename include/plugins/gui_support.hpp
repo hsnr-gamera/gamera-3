@@ -169,38 +169,6 @@ void to_buffer(T& m, PyObject *py_buffer) {
 }
 
 template<class T>
-void highlight(T &m, PyObject *highlights) {
-  typename T::vec_iterator dst = m.vec_begin();
-
-  size_t list_size = PyList_GET_SIZE(highlights);
-  for (size_t i=0; i < list_size; ++i) {
-    std::cerr << "highlight\n";
-    PyObject *list_item = PyList_GET_ITEM(highlights, i);
-    Cc *cc = (Cc *)((RectObject*)PyTuple_GET_ITEM(list_item, 0))->m_x;
-    RGBPixel *color = ((RGBPixelObject*)PyTuple_GET_ITEM(list_item, 1))->m_x;
-    if (m.intersects(*cc)) {
-      std::cerr << "intersects\n";
-      std::cerr << m.ul_x() << " " << m.ul_y() << " " << m.lr_x() << " " << m.lr_y() << " " << cc->ul_x() << " " << cc->ul_y() << " " << cc->lr_x() << " " << cc->lr_y() << "\n";
-      for (size_t r = m.ul_y(); r <= m.lr_y(); r++) {
-	for (size_t c = m.ul_x(); c <= m.lr_x(); c++, dst++) {
-	  // Why is point reversed?
-	  if (cc->contains_point(Point(c, r))) {
-	    std::cerr << ",";
-	    // Why is get not page relative?
-	    if (is_black(cc->get(r - cc->ul_y(), c - cc->ul_x()))) {
-	      std::cerr << "." << int(color->red()) << " " << int(color->green()) << " " << int(color->blue());
-	      *dst = *color;
-	    }
-	  }
-	}
-      }
-    }
-  }
-}
-
-
-
-template<class T>
 Image *color_ccs(T& m) {
   typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
   RGBViewFactory fact;
@@ -225,6 +193,19 @@ Image *color_ccs(T& m) {
   }
   
   return image;
+}
+
+template<class T, class U>
+Image *clip_image(T& m, U& rect) {
+  if (m.intersects(rect)) {
+    size_t ul_y = MAX(m.ul_y(), rect.ul_y());
+    size_t ul_x = MAX(m.ul_x(), rect.ul_x());
+    size_t lr_y = MIN(m.lr_y(), rect.lr_y());
+    size_t lr_x = MIN(m.lr_x(), rect.lr_x());
+    return new T(m, ul_y, ul_x, lr_y - ul_y + 1, lr_x - ul_x + 1);
+  } else {
+    return new T(m, m.ul_y(), m.ul_x(), 1, 1);
+  };
 }
 
 }

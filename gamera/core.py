@@ -95,16 +95,16 @@ class ImageBase:
       if not func is None:
          func = new.instancemethod(func, None, gameracore.Image)
          setattr(cls, plug.__name__, func)
-         if not category is None:
-            for type in plug.self_type.pixel_types:
-               if not methods.has_key(type):
-                  methods[type] = {}
-               start = methods[type]
-               for subcategory in category.split('/'):
-                  if not start.has_key(subcategory):
-                     start[subcategory] = {}
-                  start = start[subcategory]
-               start[plug.__name__] = plug
+      if not category is None:
+        for type in plug.self_type.pixel_types:
+          if not methods.has_key(type):
+            methods[type] = {}
+          start = methods[type]
+          for subcategory in category.split('/'):
+            if not start.has_key(subcategory):
+              start[subcategory] = {}
+            start = start[subcategory]
+          start[plug.__name__] = plug
    add_plugin_method = classmethod(add_plugin_method)
 
    def pixel_type_name(self):
@@ -120,10 +120,10 @@ class ImageBase:
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
                         'ul_x', 'ul_y', 'resolution', 'nrows', 'ncols',
-                        'memory_size')
+                        'memory_size', 'label')
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""
-      return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
+      return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu if hasattr(self, x)]
 
    def methods_for_menu(self):
       """Returns a list of methods (in nested dictionaries by categories) for building user interfaces."""
@@ -307,15 +307,13 @@ class Cc(gameracore.Cc, ImageBase):
          return
       image = self.parent()
       if self._display:
-
          self._display.set_image(image)
       else:
          self.set_display(
             gui.ShowImage(image,
                           "Connected Component",
                           owner=self))
-      self._display.highlight_cc(self,
-                                 Image.to_buffer)
+      self._display.highlight_cc(self)
       self._display.focus(self)
       self.last_display = "context"
 
@@ -401,7 +399,7 @@ def init_gamera():
                               plugin.ImageType([ONEBIT]),
                               plugin.ImageType([ONEBIT], "cc"))
          ):
-         method.register()
+        method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)
       _gamera_initialised = 1
 

@@ -264,14 +264,12 @@ namespace Gamera {
     }
     // containment
     bool contains_x(coord_t v) const {
-      // if (v >= m_origin.x() && v <= lr_x())
       if (v >= ul_x() && v <= lr_x())
 	return true;
       else
 	return false;
     }
     bool contains_y(coord_t v) const {
-      // if (v >= m_origin.y() && v <= lr_y())
       if (v >= ul_y() && v <= lr_y())
 	return true;
       else
@@ -291,10 +289,10 @@ namespace Gamera {
     }
     // intersection
     bool intersects_x(const self& v) const {
-      return (v.ul_x() <= lr_x() && v.lr_x() >= ul_x());
+      return (v.ul_x() <= lr_x() && v.lr_x() > ul_x());
     }
     bool intersects_y(const self& v) const {
-      return (v.ul_y() <= lr_y() && v.lr_y() >= ul_y());
+      return (v.ul_y() <= lr_y() && v.lr_y() > ul_y());
     }
     bool intersects(const self& v) const {
       return (intersects_x(v) && intersects_y(v));

@@ -83,15 +83,12 @@ def import_directory(dir, gl, lo, debug = 1):
        failed = 0
      except Exception, e:
        failed = e
-     if not first:
-       display = ", "
-     else:
-       display = ""
-       first = 0
      if failed:
-       display += '[%s %s]' % (m, str(failed))
+       display = '[%s %s]' % (m, str(failed))
      else:
-       display += m
+       display = m
+     if m != modules[-1]:
+       display += ", "
      column += len(display)
      if debug:
        if column > 70:

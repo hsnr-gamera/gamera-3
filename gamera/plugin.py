@@ -160,7 +160,8 @@ def PluginFactory(name, func, category=None,
                   self_type=ImageType((RGB,
                                        GREYSCALE,
                                        GREY16,
-                                       ONEBIT)),
+                                       ONEBIT,
+                                       FLOAT)),
                   args=None):
     cls = new.classobj(name, (PluginFunction,), {})
     if not category is None:

@@ -157,10 +157,13 @@ class PyCrustGameraShell(shell.Shell):
       else:
          shell.Shell.OnKeyDown(self, event)
 
-   # Added so we can see progress as it proceeds
-   def write(self, source):
-      shell.Shell.write(self, source)
-      wxYield()
+   # The below existed to show progress in the shell window as output was
+   # printed.  However, this seems to be no longer necessary with wxPython
+   # 2.3.3.1, in fact, in can cause "recursive calls to wxYield" which is
+   # bad.
+##    def write(self, source):
+##       shell.Shell.write(self, source)
+##       # wxYield()
 
 ######################################################################
 

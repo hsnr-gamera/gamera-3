@@ -71,11 +71,31 @@ all 9 pixels."""
   self_type = ImageType([GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,)]
 
+class despeckle(PluginFunction):
+  """Removes connected components that are smaller than the given size.
+
+*size*
+  The maximum number of pixels in each connected component that
+  will be removed.
+
+This approach to finding connected components uses a pseudo-recursive
+descent, which gets around the hard limit of ~64k connected components
+per page in ``cc_analysis``.  Unfortunately, this approach is much
+slower as the connected components get large, so *size* should be
+kept relatively small.
+
+*size* == 1 is a special case and runs much faster, since it does not
+require recursion.
+  """
+  self_type = ImageType([ONEBIT])
+  args = Args([Int('cc_size', range=(1, 100))])
+  doc_examples = [(ONEBIT,)]
+
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Morphology"
-  functions = [erode_dilate, erode, dilate, rank, mean]
+  functions = [erode_dilate, erode, dilate, rank, mean, despeckle]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

@@ -26,8 +26,10 @@ Gamera requires that you install the following software FIRST:
 	usually	contain important bug and security fixes.
 
 **wxPython**
-	You must use version 2.4.x or greater.  2.3.x is no longer
-	supported.
+	**You must use wxPython version 2.4.x.**  2.3.x is no longer
+	supported, and 2.5.x, being an unstable branch, will not be
+	supported for some time to come.  You may have to dig a few
+	levels down on the wxPython website to find older versions.
 
 	wxPython tends to change dramatically with even minor version
 	increments (argh!).  I'm currently using 2.4.2.4, but I don't

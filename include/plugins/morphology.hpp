@@ -28,6 +28,7 @@
 #include <algorithm>
 #include "gamera.hpp"
 #include "neighbor.hpp"
+#include "image_utilities.hpp"
 
 using namespace std;
 
@@ -171,6 +172,75 @@ namespace Gamera {
     Mean<typename T::value_type> mean_op;
     neighbor9<T, Mean<typename T::value_type> >(m, mean_op);
   }
-  
+
+  template<class T>
+  class All {
+  public:
+    inline T operator() (typename vector<T>::iterator begin,
+			 typename vector<T>::iterator end);
+  };
+
+  template<class T>
+  inline T All<T>::operator() (typename vector<T>::iterator begin,
+			       typename vector<T>::iterator end) {
+    typename vector<T>::iterator middle = begin + 4;
+    for (; begin != end; ++begin)
+      if (begin != middle)
+	if (is_black(*begin))
+	  return *middle;
+    return pixel_traits<T>::white();
+  }
+
+  template<class T>
+  void despeckle_single_pixel(T &m) {
+    All<typename T::value_type> all_op;
+    neighbor9<T, All<typename T::value_type> >(m, all_op);
+  }
+
+  template<class T>
+  void despeckle(T &m, size_t size) {
+    if (m.nrows() < 3 || m.ncols() < 3)
+      return;
+    if (size == 1) {
+      despeckle_single_pixel(m);
+      return;
+    }
+    typedef typename T::value_type value_type;
+    ImageData<value_type> mat_data(m.nrows(), m.ncols());
+    ImageView<ImageData<value_type> > tmp(mat_data, 0, 0, m.nrows(), m.ncols());
+
+    typedef std::vector<Point> PixelStack;
+    PixelStack pixel_stack;
+    pixel_stack.reserve(size);
+    for (size_t r = 0; r < m.nrows(); ++r) {
+      for (size_t c = 0; c < m.ncols(); ++c) {
+	if (is_white(tmp.get(r, c)) && is_black(m.get(r, c))) {
+	  pixel_stack.clear();
+	  pixel_stack.push_back(Point(c, r));
+	  tmp.set(r, c, black(tmp));
+	  for (typename PixelStack::iterator i = pixel_stack.begin();
+	       i != pixel_stack.end() && pixel_stack.size() < size; ++i) {
+	    Point& center = (*i);
+	    for (size_t r2 = (center.y()>0) ? center.y() - 1 : 0; 
+		 r2 < std::min(center.y() + 2, m.nrows()); ++r2) {
+	      for (size_t c2 = (center.x()>0) ? center.x() - 1 : 0; 
+		   c2 < std::min(center.x() + 2, m.ncols()); ++c2) {
+		if (is_white(tmp.get(r2, c2)) && is_black(m.get(r2, c2))) {
+		  tmp.set(r2, c2, black(tmp));
+		  pixel_stack.push_back(Point(c2, r2));
+		}
+	      }
+	    }
+	  }
+	}
+	if (pixel_stack.size() < size) {
+	  for (typename PixelStack::iterator i = pixel_stack.begin();
+	       i != pixel_stack.end(); ++i) {
+	    m.set(i->y(), i->x(), white(m));
+	  }
+	}
+      }
+    }
+  }
 }
 #endif

@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -22,7 +23,7 @@ import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, gui_util, image_browser
+     icon_display, classifier_display, var_name, gui_util
 
 # wxPython
 from wxPython.wx import *
@@ -37,7 +38,10 @@ import sys, types, traceback, os, string, os.path
 
 # Set default options
 config.add_option_default("shell_style_face", "Arial")
-config.add_option_default("shell_style_size", 10)
+if sys.platform == 'win32':
+   config.add_option_default("shell_style_size", 10)
+else:
+   config.add_option_default("shell_style_size", 9)
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
 
@@ -327,8 +331,9 @@ class ShellFrame(wxFrame):
 
    def _OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)
-      self.shell.run("%s = InteractiveClassifier()" % name)
-      self.shell.run("%s.display()" % name)
+      if name:
+         self.shell.run("%s = InteractiveClassifier()" % name)
+         self.shell.run("%s.display()" % name)
 
    def _OnImportToolkit(self, event):
       self.shell.run("import %s\n" % self.import_toolkits[event.GetId()])

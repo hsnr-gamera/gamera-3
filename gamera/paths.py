@@ -1,4 +1,4 @@
-#
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -22,8 +22,8 @@ from __future__ import generators
 import os, sys, dircache, glob, imp  # Python standard library
 
 if 1:
-  def dummy():
-    pass
+   def dummy():
+      pass
 
 lib = os.path.dirname(os.path.realpath(dummy.func_code.co_filename))
 lib_gui = os.path.realpath(os.path.join(lib, "gui"))
@@ -57,17 +57,17 @@ def get_directory_of_modules(dir, base=''):
    mods = []
    suffixes = imp.get_suffixes()
    for i in suffixes:
-     if i[0] == '.py':
-       suffix = i
-       break
+      if i[0] == '.py':
+         suffix = i
+         break
    for m, name in zip(modules, names):
-     try:
-       module = imp.load_module(base + name, file(m, 'r'), m, suffix)
-       mods.append(module)
-     except Exception, e:
-       print e
+      try:
+         module = imp.load_module(base + name, file(m, 'r'), m, suffix)
+         mods.append(module)
+      except Exception, e:
+         print e
    return mods
-     
+
 def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
@@ -76,26 +76,26 @@ def import_directory(dir, gl, lo, debug = 1):
    column = 0
    first = 1
    for m in modules:
-     if m == '__init__':
-       continue
-     try:
-       module = __import__(m, gl, lo, [])
-       failed = 0
-     except Exception, e:
-       failed = e
-     if failed:
-       display = '[%s %s]' % (m, str(failed))
-     else:
-       display = m
-     if m != modules[-1]:
-       display += ", "
-     column += len(display)
-     if debug:
-       if column > 70:
-         sys.stdout.write("\n")
-         column = len(display)
-       sys.stdout.write(display)
-       sys.stdout.flush()
+      if m == '__init__':
+         continue
+      try:
+         module = __import__(m, gl, lo, [])
+         failed = 0
+      except Exception, e:
+         failed = e
+      if failed:
+         display = '[%s %s]' % (m, str(failed))
+      else:
+         display = m
+      if m != modules[-1]:
+         display += ", "
+      column += len(display)
+      if debug:
+         if column > 70:
+            sys.stdout.write("\n")
+            column = len(display)
+         sys.stdout.write(display)
+         sys.stdout.flush()
    if debug:
-     sys.stdout.write("\n")
+      sys.stdout.write("\n")
 

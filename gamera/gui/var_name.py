@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -22,35 +23,35 @@ import keyword, re
 
 variable_name = re.compile("^[A-Za-z_][A-Za-z0-9_]*$")
 def verify_variable_name(name):
-    if keyword.iskeyword(name):
-        return 0
-    if variable_name.match(name):
-        return 1
-    return 0
+   if keyword.iskeyword(name):
+      return 0
+   if variable_name.match(name):
+      return 1
+   return 0
 
 def get(default='untitled', dict={}):
-    number = 0
-    while 1:
-        name = '%s%d' % (default, number)
-        while dict.has_key(name):
-            number = number + 1
-            name = '%s%d' % (default, number)
-            if number > 1000:
-                number = 0
-                break
-        dlg = wxTextEntryDialog(
-            NULL,
-            'Please enter a variable name for the result',
-            'Select a variable name', name,
-            style=wxDIALOG_NO_PARENT)
-        button = dlg.ShowModal()
-        if button == wxID_OK:
-            result = dlg.GetValue()
-            dlg.Destroy()
-            if not verify_variable_name(result):
-                message("Invalid variable name: " + result)
-            else:
-                return result
-        else:
-            dlg.Destroy()
-            return ''
+   number = 0
+   while 1:
+      name = '%s%d' % (default, number)
+      while dict.has_key(name):
+         number = number + 1
+         name = '%s%d' % (default, number)
+         if number > 1000:
+            number = 0
+            break
+      dlg = wxTextEntryDialog(
+          NULL,
+          'Please enter a variable name for the result',
+          'Select a variable name', name,
+          style=wxOK|wxCANCEL|wxCENTRE)
+      button = dlg.ShowModal()
+      if button == wxID_OK:
+         result = dlg.GetValue()
+         dlg.Destroy()
+         if not verify_variable_name(result):
+            message("Invalid variable name: " + result)
+         else:
+            return result
+      else:
+         dlg.Destroy()
+         return None

@@ -221,42 +221,44 @@ namespace Gamera {
     return oss.str();
   }
 
-  char * next_number(char *s, size_t &number) {
-    number = 0;
+  void next_number(char* &s, size_t &number) {
+    // I would love to use istream::scan for this, but it's a GNU
+    // extension.  Pretty much everywhere we compile is GNU anyway,
+    // but... portability...  Plus, this is probably faster anyway,
+    // since it's more naive.
 
-    // Scan through whitespace
-    while (*s < '0' || *s > '9')
+    // Scan through whitespace (literally, non-numeric)
+    while (*s < '0' || *s > '9') {
+      if (*s == '\0')
+	std::invalid_argument("Image is too large for run-length data");
       ++s;
+    }
 
+    number = 0;
     // Read in number
     for (; *s >= '0' && *s <= '9'; ++s) {
       number *= 10;
       number += *s - '0';
     }
-    return s;
   }
 
   template<class T>
   void from_rle(T& image, const char *runs) {
-    // I would love to use istream::scan for this, but it's a GNU
-    // extension.  Pretty much everywhere we compile is GNU anyway,
-    // but...
-    
     // White first
 
     char *p = const_cast<char *>(runs);
-
+    // Outside the loop since we need to do a check at the end
     for (typename T::vec_iterator i = image.vec_begin();
 	 i != image.vec_end(); /* deliberately blank */) {
       // white
       size_t run;
-      p = next_number(p, run);
+      next_number(p, run);
       typename T::vec_iterator end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, white(image));
       i = end;
-      p = next_number(p, run);
+      next_number(p, run);
       end = i + run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");

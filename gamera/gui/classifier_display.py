@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -921,6 +922,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnCreateNoninteractiveCopy(self, event):
       name = var_name.get("classifier", image_menu.shell.locals)
+      if name is None: return
       try:
          result = self._classifier.noninteractive_copy()
          image_menu.shell.locals[name] = result

@@ -1,4 +1,4 @@
-#
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
 #
@@ -32,7 +32,6 @@ def get_color(number):
 
 # Displays a message box
 def message(message):
-   print message
    if "\n" in message:
       dlg = wxScrolledMessageDialog(
          None, message, "Message")

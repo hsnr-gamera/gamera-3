@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -159,13 +160,15 @@ if _has_gui == _WX_GUI:
          self.box.Add(buttons, 0, wxPython.wx.wxALIGN_RIGHT)
          self.box.RecalcSizes()
          if self.wizard:
-            bigbox.Add(self.box,
-                       1,
-                       wxPython.wx.wxEXPAND|wxPython.wx.wxALL|wxPython.wx.wxALIGN_TOP,
-                       15)
-            self.border.Add(bigbox, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 10)
+            bigbox.Add(
+               self.box, 1,
+               wxPython.wx.wxEXPAND|wxPython.wx.wxALL|wxPython.wx.wxALIGN_TOP,
+               15)
+            self.border.Add(
+               bigbox, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 10)
          else:
-            self.border.Add(self.box, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 15)
+            self.border.Add(
+               self.box, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 15)
          self.border.Fit(self.window)
          self.window.SetSizer(self.border)
          size = self.window.GetSize()
@@ -525,7 +528,8 @@ if _has_gui == _WX_GUI:
                                             str(self.default),
                                             size=wxPython.wx.wxSize(200, 20))
          browseID = wxPython.wx.wxNewId()
-         browse = wxPython.wx.wxButton(parent, browseID, "...", size=wxPython.wx.wxSize(20, 20))
+         browse = wxPython.wx.wxButton(
+            parent, browseID, "...", size=wxPython.wx.wxSize(20, 20))
          wxPython.wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
          self.control.Add(self.text, 1, wxPython.wx.wxEXPAND)
          self.control.Add(browse, 0)

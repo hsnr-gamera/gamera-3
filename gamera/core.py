@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -68,11 +69,9 @@ def display_multi(list):
 
 # Used to cache the list of all features
 all_features = None
-
 # Utility to generate features on a list of glyphs
 def generate_features_list(list, feature_functions=None):
-    import gamera.core
-    ff = gamera.core.Image.get_feature_functions(feature_functions)
+    ff = Image.get_feature_functions(feature_functions)
     progress = gamera.util.ProgressFactory("Generating features...", len(list))
     try:
         for glyph in list:
@@ -88,11 +87,7 @@ class ImageBase:
 
    class Properties(dict):
       def __getitem__(self, attr):
-         if dict.has_key(self, attr):
-            return dict.__getitem__(self, attr)
-         else:
-            return None
-      
+         return dict.get(self, attr, None)
       def __getattr__(self, attr):
          return self.__getitem__(attr)
       def __setattr__(self, attr, value):
@@ -161,13 +156,15 @@ class ImageBase:
                         'resolution', 'memory_size', 'label', 
                         'classification_state', 'properties')
    def members_for_menu(self):
-      """Returns a list of members (and their values) for convenient feedback for the user."""
+      """Returns a list of members (and their values) for convenient feedback
+      for the user."""
       return ["%s: %s" % (x, getattr(self, x))
               for x in self._members_for_menu
               if hasattr(self, x)]
 
    def methods_for_menu(self):
-      """Returns a list of methods (in nested dictionaries by categories) for building user interfaces."""
+      """Returns a list of methods (in nested dictionaries by categories) for
+      building user interfaces."""
       methods = {}
       for type in (ALL, self.data.pixel_type):
          if self._methods.has_key(type):
@@ -247,8 +244,7 @@ class ImageBase:
    # Displays the image in its own window, highlighting the given
    # subimage (or subimages)
    def display_cc(self, cc):
-      """display_cc(self, cc)
-      Displays the image in its own window, highlighting the given
+      """Displays the image in its own window, highlighting the given
       subimage (or list of subimages)."""
       gui = config.get_option("__gui")
       # If the last thing displayed was something other than a cc
@@ -446,50 +442,38 @@ def init_gamera():
       import plugin, gamera_xml
       # Create the default functions for the menu
       for method in (
-         plugin.PluginFactory("load_image", None, "File",
-                              plugin.ImageType([], "image"),
-                              plugin.ImageType([ALL]),
-                              (plugin.FileOpen("filename"),)),
-         plugin.PluginFactory("display", None, "Display",
-                              None,
-                              plugin.ImageType([ALL]),
-                              None),
-         plugin.PluginFactory("display_children", None, "Display",
-                              None,
-                              plugin.ImageType([ALL]),
-                              None),
-         plugin.PluginFactory("display_ccs", None, "Display",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              None),
-         plugin.PluginFactory("display_cc", None, "Display",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              plugin.ImageType([ONEBIT], "cc")),
-         plugin.PluginFactory("classify_manual", None, "Classification",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              plugin.String("id")),
-         plugin.PluginFactory("classify_heuristic", None, "Classification",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              plugin.String("id")),
-         plugin.PluginFactory("classify_automatic", None, "Classification",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              plugin.String("id")),
-         plugin.PluginFactory("unclassify", None, "Classification",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              None),
-         plugin.PluginFactory("to_xml", None, "XML",
-                              plugin.String('xml'),
-                              plugin.ImageType([ONEBIT]),
-                              None),
-         plugin.PluginFactory("to_xml_filename", None, "XML",
-                              None,
-                              plugin.ImageType([ONEBIT]),
-                              (plugin.FileSave("filename", extension=gamera_xml.extensions),))
+         plugin.PluginFactory(
+            "load_image", None, "File", plugin.ImageType([], "image"),
+            plugin.ImageType([ALL]), (plugin.FileOpen("filename"),)),
+         plugin.PluginFactory(
+            "display", None, "Display", None, plugin.ImageType([ALL]), None),
+         plugin.PluginFactory(
+            "display_children", None, "Display", None, plugin.ImageType([ALL]),
+            None),
+         plugin.PluginFactory(
+            "display_ccs", None, "Display", None, plugin.ImageType([ONEBIT]),
+            None),
+         plugin.PluginFactory(
+            "display_cc", None, "Display", None, plugin.ImageType([ONEBIT]),
+            plugin.ImageType([ONEBIT], "cc")),
+         plugin.PluginFactory(
+            "classify_manual", None, "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.String("id")),
+         plugin.PluginFactory(
+            "classify_heuristic", None, "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.String("id")),
+         plugin.PluginFactory(
+            "classify_automatic", None, "Classification", None,
+            plugin.ImageType([ONEBIT]), plugin.String("id")),
+         plugin.PluginFactory(
+            "unclassify", None, "Classification", None,
+            plugin.ImageType([ONEBIT]), None),
+         plugin.PluginFactory(
+            "to_xml", None, "XML", plugin.String('xml'),
+            plugin.ImageType([ONEBIT]), None),
+         plugin.PluginFactory(
+            "to_xml_filename", None, "XML", None, plugin.ImageType([ONEBIT]),
+            (plugin.FileSave("filename", extension=gamera_xml.extensions),))
          ):
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)

@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -272,27 +273,27 @@ class ImageDisplay(wxScrolledWindow):
    ########################################
    # SCALING
    #
-   def scale(self, scale=None):
-      scaling = self.scaling
-      if scale == scaling:
+   def scale(self, new_scale=None):
+      old_scale = self.scaling
+      if new_scale == old_scale:
          return
-      elif scale < scaling:
+      elif new_scale < old_scale:
          self.Clear()
-      if scale == None or scale <= 0:
-         scale = scaling
-      # What is this for? KWM
-      #scale = pow(2.0, floor(log(scale) / log(2.0)))
+      if new_scale == None or new_scale <= 0:
+         new_scale = old_scale
+      # Quantize scaling to powers of 2, since other scalings son't get sized
+      # accurately by the Vigra scaling functions
+      new_scale = pow(2.0, floor(log(new_scale) / log(2.0)))
       scroll_amount = self.scroll_amount
-      scaling = self.scaling
-      w = self.image.width * scale
-      h = self.image.height * scale
+      w = self.image.width * new_scale
+      h = self.image.height * new_scale
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       size = self.GetSize()
-      x = max(min(origin[0] * scale / scaling + 1,
-                  w - size.x) - 2, 0)
-      y = max(min(origin[1] * scale / scaling + 1,
-                  h - size.y) - 2, 0)
-      self.scaling = scale
+      # These weird looking functions ensure that the scrollbars don't
+      # jump around too much when zooming in/out
+      x = max(min(origin[0] * new_scale / old_scale + 1, w - size.x) - 2, 0)
+      y = max(min(origin[1] * new_scale / old_scale + 1, h - size.y) - 2, 0)
+      self.scaling = new_scale
 
       wxBeginBusyCursor()
       try:
@@ -334,9 +335,9 @@ class ImageDisplay(wxScrolledWindow):
          rubber_h = self.image.nrows
          x = y = x2 = y2 = 0
       scaling = min(float(size.x) / float(rubber_w),
-                    float(size.y) / float(rubber_h))
-      scaling = min(scaling, pow(2, -4))
-      scaling = max(scaling, pow(2, 4))
+                    float(size.y) / float(rubber_h)) * 0.9
+      scaling = max(scaling, pow(2, -4))
+      scaling = min(scaling, pow(2, 4))
       self.scale(scaling)
       self.focus_rect(x, y, x2, y2)
 
@@ -802,11 +803,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             if (height >= rect.GetHeight() or
                 width >= rect.GetWidth()):
                # If the scaled version is going to still be too large to fit in
-               # the grid cell, we crop it first and then scale it. We could just
-               # scale the whole image and then crop that to the appropriate size,
-               # but that could be very expensive. Instead we figure out how big
-               # of a cropped image to create so that after scaling it is the
-               # appropriate size.
+               # the grid cell, we crop it first and then scale it. We could
+               # just scale the whole image and then crop that to the
+               # appropriate size, but that could be very expensive. Instead we
+               # figure out how big of a cropped image to create so that after
+               # scaling it is the appropriate size.
                sub_height = min((rect.GetHeight() + 1) / scaling, image.nrows)
                sub_width = min((rect.GetWidth() + 1) / scaling, image.ncols)
                sub_image = image.subimage(
@@ -818,8 +819,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                # This is the easy case - just scale the image.
                scaled_image = image.resize_copy(height, width, 0)
          else:
-            # If we don't scale the image we can simply crop if the image is too big to fit
-            # into the grid cell or otherwise do nothing.
+            # If we don't scale the image we can simply crop if the image is too
+            # big to fit into the grid cell or otherwise do nothing.
             if (image.nrows >= rect.GetHeight() or
                 image.ncols >= rect.GetWidth()):
                height = min(image.nrows, rect.GetHeight() + 1)
@@ -837,10 +838,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
 
          if isSelected:
-            # This used to use dc.DrawBitmap, but the correct logical function (wxSRC_INVERT)
-            # didn't seem to get used under Windows. This works fine, however.
+            # This used to use dc.DrawBitmap, but the correct logical function
+            # (wxSRC_INVERT) didn't seem to get used under Windows.
             tmp_dc.SelectObject(bmp)
-            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxSRC_INVERT)
+            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0,
+                    wxSRC_INVERT)
          else:
             tmp_dc = wxMemoryDC()
             tmp_dc.SelectObject(bmp)
@@ -856,10 +858,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                # to set the Foreground and Background colors manually
                if isSelected:
                   dc.SetTextForeground(wxWHITE)
-                  dc.SetTextBackground(wxBLACK)
                else:
                   dc.SetTextForeground(wxBLACK)
-                  dc.SetTextBackground(wxWHITE)
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
          if isSelected:
@@ -876,10 +876,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             dc.SetBrush(wxWHITE_BRUSH)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
             dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
-            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
          else:
             dc.SetBrush(wxBrush(wxRED, wxFDIAGONAL_HATCH))
-            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+         dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       dc.SetLogicalFunction(wxCOPY)
 
    # The images should be a little padded within the cells
@@ -891,10 +890,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       else:
          image = None
       if image != None:
-         return wxSize(min(GRID_MAX_CELL_WIDTH,
-                           image.ncols * self.parent.scaling + GRID_PADDING),
-                       min(GRID_MAX_CELL_HEIGHT,
-                           image.nrows * self.parent.scaling + GRID_PADDING))
+         return wxSize(
+            min(GRID_MAX_CELL_WIDTH,
+                image.ncols * self.parent.scaling + GRID_PADDING),
+            min(GRID_MAX_CELL_HEIGHT,
+                image.nrows * self.parent.scaling + GRID_PADDING))
       return wxSize(50, 50)
 
    def Clone(self):
@@ -979,12 +979,14 @@ class MultiImageDisplay(wxGrid):
                if image_no < len(self.list):
                   image = self.list[image_no]
                   if not image is None:
-                     row_max = max(row_max,
-                                   min(GRID_MAX_CELL_WIDTH,
-                                       image.nrows * self.scaling + GRID_PADDING))
-                     col_max[col] = max(col_max[col],
-                                        min(GRID_MAX_CELL_HEIGHT,
-                                            image.ncols * self.scaling + GRID_PADDING))
+                     row_max = max(
+                        row_max,
+                        min(GRID_MAX_CELL_WIDTH,
+                            image.nrows * self.scaling + GRID_PADDING))
+                     col_max[col] = max(
+                        col_max[col],
+                        min(GRID_MAX_CELL_HEIGHT,
+                            image.ncols * self.scaling + GRID_PADDING))
                image_no -= 1
             self.SetRowSize(row, row_max)
             height += row_max
@@ -1333,18 +1335,16 @@ class MultiImageWindow(wxPanel):
          22, gamera_icons.getIconZoomOutBitmap(),
          "Zoom out", self.OnZoomOutClick)
       self.toolbar.AddSeparator()
-      # self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Display: "))
       self.display_text_combo = wxComboBox(self.toolbar, 50, choices=[],
-                                     size = wxSize(150, 20))
+                                     size = wxSize(200, 20))
       EVT_COMBOBOX(self.display_text_combo, 50, self.OnChangeDisplayText)
       self.toolbar.AddControl(self.display_text_combo)
       self.toolbar.AddSimpleTool(
          24, gamera_icons.getIconShowNameBitmap(),
          "Display classes on grid", self.OnDisplayClasses, 1)
       self.toolbar2 = toolbar.ToolBar(self, -1)
-      # self.toolbar2.AddControl(wxStaticText(self.toolbar2, -1, "Sort: "))
       self.sort_combo = wxComboBox(self.toolbar2, 100, choices=[],
-                                   size=wxSize(150, 20))
+                                   size=wxSize(200, 20))
       self.toolbar2.AddControl(self.sort_combo)
       self.toolbar2.AddSimpleTool(
          101, gamera_icons.getIconSortAscBitmap(),
@@ -1353,9 +1353,8 @@ class MultiImageWindow(wxPanel):
          102, gamera_icons.getIconSortDecBitmap(),
          "Sort Descending", self.OnSortDescending)
       self.toolbar2.AddSeparator()
-      # self.toolbar2.AddControl(wxStaticText(self.toolbar2, -1, "Select: "))
       self.select_combo = wxComboBox(self.toolbar2, 103, choices=[],
-                                     size=wxSize(150, 20))
+                                     size=wxSize(200, 20))
       self.toolbar2.AddControl(self.select_combo)
       self.toolbar2.AddSimpleTool(
          104, gamera_icons.getIconSelectBitmap(),
@@ -1394,7 +1393,8 @@ class MultiImageWindow(wxPanel):
       return MultiImageDisplay(self)
 
    def set_choices(self):
-      methods = [x[0] + "()" for x in ImageBase.methods_flat_category("Features", ONEBIT)]
+      methods = [x[0] + "()" for x in
+                 ImageBase.methods_flat_category("Features", ONEBIT)]
 
       self.display_choices = [
          "x.get_main_id()",
@@ -1737,7 +1737,8 @@ class ProjectionsDisplay(wxFrame):
       graph_vert(self.x_data, dc, HISTOGRAM_PAD, y,
                  HISTOGRAM_PAD + max(self.x_data), y + mat_height, border=0)
       graph_horiz(self.y_data, dc, x, y + mat_height + HISTOGRAM_PAD,
-                  x + mat_width, y + (mat_height + max(self.y_data)) + HISTOGRAM_PAD, border=0)
+                  x + mat_width,
+                  y + (mat_height + max(self.y_data)) + HISTOGRAM_PAD, border=0)
 
 class ProjectionDisplay(wxFrame):
    def __init__(self, data, title="Projection"):

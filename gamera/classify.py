@@ -24,8 +24,8 @@ import re
 """This file defines the Python part of classifiers.  These wrapper classes
 contain a reference to a core classifier class (unusally written in C++), and an
 optional GroupingClassifier.  They add functionality for XML loading/saving,
-splitting/grouping, and keeping track of a database of glyphs (in the Interactive
-case.)"""
+splitting/grouping, and keeping track of a database of glyphs (in the
+Interactive case.)"""
 
 class ClassifierError(Exception):
    pass
@@ -56,9 +56,10 @@ class _Classifier:
    # AUTOMATIC CLASSIFICATION
    def classify_glyph_automatic(self, glyph):
       """Classifies a glyph using the core classifier.  Sets the
-      classification_state and id_name of the glyph.  (If you don't want it set, use
-      guess_glyph_automatic.  Returns a pair of lists: glyphs to be added to the current
-      database, and glyphs to be removed from the current database. """
+      classification_state and id_name of the glyph.  (If you don't want it set,
+      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
+      to the current database, and glyphs to be removed from the current
+      database."""
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
@@ -71,13 +72,13 @@ class _Classifier:
 
    def classify_list_automatic(self, glyphs, recursion_level=0, progress=None):
       """Classifies a list of glyphs using the core classifier.  Sets the
-      classification_state and id_name of the glyph.  (If you don't want it set, use
-      guess_glyph_automatic.  Returns a pair of lists: glyphs to be added to the current
-      database, and glyphs to be removed from the current database. The keyword arguments
-      are for internal use only."""
+      classification_state and id_name of the glyph.  (If you don't want it set,
+      use guess_glyph_automatic.)  Returns a pair of lists: glyphs to be added
+      to the current database, and glyphs to be removed from the current
+      database. The keyword arguments are for internal use only."""
 
-      # There is a slightly convoluted handling of the progress bar here, since this
-      # function is called recursively on split glyphs
+      # There is a slightly convoluted handling of the progress bar here, since
+      # this function is called recursively on split glyphs
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
       if (recursion_level > 10) or len(self._database) == 0:
@@ -94,7 +95,8 @@ class _Classifier:
          for glyph in glyphs:
             if not removed.has_key(glyph):
                glyph.generate_features(feature_functions)
-               if glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC):
+               if (glyph.classification_state in
+                   (core.UNCLASSIFIED, core.AUTOMATIC)):
                   id = self._classify_automatic_impl(glyph)
                   glyph.classify_automatic(id)
                   added.extend(self._do_splits(glyph))
@@ -110,9 +112,9 @@ class _Classifier:
             progress.kill()
       return added, removed.keys()
 
-   # Since splitting glyphs is optional (when the classifier instance is created)
-   # we have two versions of this function, so that there need not be an 'if'
-   # statement everywhere.
+   # Since splitting glyphs is optional (when the classifier instance is
+   # created) we have two versions of this function, so that there need not
+   # be an 'if' statement everywhere.
    def _do_splits_impl(self, glyph):
       id = glyph.get_main_id()
       if (id.startswith('split')):
@@ -149,7 +151,8 @@ class _Classifier:
       self._from_xml(gamera_xml.LoadXML().parse_filename(filename))
 
    def _from_xml(self, xml):
-      database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
+      database = [x for x in xml.glyphs
+                  if x.classification_state != core.UNCLASSIFIED]
       self.set_glyphs(database)
       self.set_groups(xml.groups)
 
@@ -160,7 +163,8 @@ class _Classifier:
       self._merge_xml(gamera_xml.LoadXML().parse_filename(filename))
 
    def _merge_xml(self, xml):
-      database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
+      database = [x for x in xml.glyphs
+                  if x.classification_state != core.UNCLASSIFIED]
       self.merge_glyphs(database)
       self.merge_groups(xml.groups)
 
@@ -187,8 +191,8 @@ class _Classifier:
       return self.classifier.feature_functions
 
    def change_feature_set(self, features):
-      """Change the set of features used in the classifier.  features is a list of
-      strings, naming the feature functions to be used."""
+      """Change the set of features used in the classifier.  features is a list
+      of strings, naming the feature functions to be used."""
       self.is_dirty = 1
       self.classifier.change_feature_set(features)
       if len(self._database):
@@ -211,10 +215,13 @@ class NonInteractiveClassifier(_Classifier):
                 perform_splits=1, grouping_classifier=None):
       """classifier: the core classifier to use.  If None, defaults to kNN
       database: a list of database to initialize the classifier with.
-      features: a list of strings naming the features that will be used in the classifier.
-      perform_splits: (boolean) true if glyphs classified as split.* should be split.
-      grouping_classifier: an optional GroupingClassifier instance.  If None, groups
-                           will be remembered, but will not be automatically found."""
+      features: a list of strings naming the features that will be used in the
+                classifier.
+      perform_splits: (boolean) true if glyphs classified as split.* should be
+                      split.
+      grouping_classifier: an optional GroupingClassifier instance.  If None,
+                           groups will be remembered, but will not be
+                           automatically found."""
       if classifier is None:
          from gamera import knn
          classifier = knn.kNN()
@@ -225,7 +232,8 @@ class NonInteractiveClassifier(_Classifier):
          grouping_classifier = group.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
       if not util.is_sequence(database) or database == []:
-         raise ValueError("You can not initialize a NonInteractiveClassifier an empty database.")
+         raise ValueError(
+            "You can not initialize a NonInteractiveClassifier an empty database.")
       self._database = database
 
       if perform_splits:
@@ -275,10 +283,13 @@ class InteractiveClassifier(_Classifier):
                 perform_splits=1, grouping_classifier=None):
       """classifier: the core classifier to use.  If None, defaults to kNN
       database: a list of database to initialize the classifier with. (May be []).
-      features: a list of strings naming the features that will be used in the classifier.
-      perform_splits: (boolean) true if glyphs classified as split.* should be split.
-      grouping_classifier: an optional GroupingClassifier instance.  If None, groups
-                           will be remembered, but will not be automatically found."""
+      features: a list of strings naming the features that will be used in the
+                classifier.
+      perform_splits: (boolean) true if glyphs classified as split.* should be
+                      split.
+      grouping_classifier: an optional GroupingClassifier instance.  If None,
+                           groups will be remembered, but will not be
+                           automatically found."""
       if classifier == None:
          from gamera import knn
          classifier = knn.kNN()
@@ -331,7 +342,8 @@ class InteractiveClassifier(_Classifier):
    # AUTOMATIC CLASSIFICATION
    def _classify_automatic_impl(self, glyph):
       if len(self._database) == 0:
-         raise ClassifierError("Cannot classify using an empty production database.")
+         raise ClassifierError(
+            "Cannot classify using an empty production database.")
       for child in glyph.children_images:
          if self._database.has_key(child):
             del self._database[child]
@@ -348,8 +360,8 @@ class InteractiveClassifier(_Classifier):
    ########################################
    # MANUAL CLASSIFICATION
    def classify_glyph_manual(self, glyph, id):
-      """Classifies the given glyph using name id.  Returns a pair of lists: the glyphs
-      that should be added and removed to the current database."""
+      """Classifies the given glyph using name id.  Returns a pair of lists: the
+      glyphs that should be added and removed to the current database."""
       self.is_dirty = 1
 
       # Deal with grouping
@@ -433,7 +445,8 @@ class InteractiveClassifier(_Classifier):
             classifier, self.get_glyphs(),
             self.classifier.features, self.perform_splits,
             self.grouping_classifier.noninteractive_copy())
-      raise ClassifierError("Cannot create a noninteractive copy of an empty classifier.")
+      raise ClassifierError(
+         "Cannot create a noninteractive copy of an empty classifier.")
 
    def display(self, current_database=[],
                context_image=None, symbol_table=[]):

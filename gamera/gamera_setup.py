@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -33,40 +34,40 @@ sys.path.append("gamera")
 import generate
 
 def check_python_version():
-    """Make certain that the Python version that is running meets the minimum
-    requirements for Gamera. Currently the minimum is 2.2, but this function
-    will be updated as the requirements change."""
-    if float(string.join([str(x) for x in sys.version_info[0:3]], '')) < 221:
-        print "Gamera requires Python version 2.2.1 or later."
-        print "You are running the following Python version:"
-        print sys.version
-        sys.exit(1)
+   """Make certain that the Python version that is running meets the minimum
+   requirements for Gamera. Currently the minimum is 2.2, but this function
+   will be updated as the requirements change."""
+   if float(string.join([str(x) for x in sys.version_info[0:3]], '')) < 221:
+      print "Gamera requires Python version 2.2.1 or later."
+      print "You are running the following Python version:"
+      print sys.version
+      sys.exit(1)
 
 def get_plugin_filenames(path):
-    """Return all of the python plugin files in a specified path. This is not
-    the same as glob.glob('*.py') in that it removes __init__.py files and
-    normalizes the path in an os independent way."""
-    plugins = glob.glob(path + "/*.py")
-    norm_plugins = []
-    for x in plugins:
-        norm_plugins.append(os.path.normpath(os.path.abspath(x)))
-    plugins = norm_plugins
-    try:
-        path = os.path.normpath(os.path.abspath("gamera/plugins/__init__.py"))
-        plugins.remove(path)
-    except:
-        pass
-    return plugins
+   """Return all of the python plugin files in a specified path. This is not
+   the same as glob.glob('*.py') in that it removes __init__.py files and
+   normalizes the path in an os independent way."""
+   plugins = glob.glob(path + "/*.py")
+   norm_plugins = []
+   for x in plugins:
+      norm_plugins.append(os.path.normpath(os.path.abspath(x)))
+   plugins = norm_plugins
+   try:
+      path = os.path.normpath(os.path.abspath("gamera/plugins/__init__.py"))
+      plugins.remove(path)
+   except:
+      pass
+   return plugins
 
 def generate_plugins(plugins):
-    """Generate the necessary cpp wrappers from a list of python plugin
-    filenames. The regeneration only happens if it is necessary (either
-    the python file has changed or one of the files that it depends on
-    has changed). A distutiles extension class is created for each plugin
-    that needs to be compiled."""
-    plugin_extensions = []
-    for x in plugins:
-        extension = generate.generate_plugin(x)
-        if not extension is None:
-            plugin_extensions.append(extension)
-    return plugin_extensions
+   """Generate the necessary cpp wrappers from a list of python plugin
+   filenames. The regeneration only happens if it is necessary (either
+   the python file has changed or one of the files that it depends on
+   has changed). A distutiles extension class is created for each plugin
+   that needs to be compiled."""
+   plugin_extensions = []
+   for x in plugins:
+      extension = generate.generate_plugin(x)
+      if not extension is None:
+         plugin_extensions.append(extension)
+   return plugin_extensions

@@ -1,3 +1,4 @@
+# vi:set tabsize=3:
 #
 # Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
@@ -36,28 +37,28 @@ global plugins_to_ignore
 # the loading of C++ modules that may not exist yet during
 # the build process.
 def magic_import(name, globals_={}, locals_={}, fromlist=[]):
-  if fromlist != None and "core" in fromlist:
-    fromlist = list(fromlist)
-    fromlist.remove("core")
+   if fromlist != None and "core" in fromlist:
+      fromlist = list(fromlist)
+      fromlist.remove("core")
 
-  for x in plugins_to_ignore:
-    if name == x:
-      return None
+   for x in plugins_to_ignore:
+      if name == x:
+         return None
 
-  return std_import(name, globals_, locals_, fromlist)
-  
+   return std_import(name, globals_, locals_, fromlist)
+
 def magic_import_setup(ignore):
-  global plugins_to_ignore
-  global std_import
-  plugins_to_ignore = ignore
-  # Save the standard __import__ function so we can chain to it
-  std_import = __builtins__['__import__']
-  # Override the __import__ function with our new one
-  __builtins__['__import__'] = magic_import
+   global plugins_to_ignore
+   global std_import
+   plugins_to_ignore = ignore
+   # Save the standard __import__ function so we can chain to it
+   std_import = __builtins__['__import__']
+   # Override the __import__ function with our new one
+   __builtins__['__import__'] = magic_import
 
 def restore_import():
-  global std_import
-  __builtins__['__import__'] = std_import
+   global std_import
+   __builtins__['__import__'] = std_import
 
 template = Template("""
   [[exec import string]]
@@ -65,7 +66,7 @@ template = Template("""
   [[exec from enums import *]]
   [[exec from plugin import *]]
   [[exec from util import get_pixel_type_name]]
-  
+
   [[# Standard headers used in the plugins #]]
   #include <string>
   #include <stdexcept>
@@ -77,12 +78,12 @@ template = Template("""
   [[for header in module.cpp_headers]]
     #include \"[[header]]\"
   [[end]]
-  
+
   using namespace Gamera;
   [[for x in module.cpp_namespaces]]
     using namespace [[x]];
   [[end]]
-  
+
   [[# Generate the plugin path and module name from the filename. #]]
   [[# The module name for our purposes will be prefixed with an underscore #]]
   [[exec plug_path, filename = path.split(__file__)]]
@@ -200,8 +201,8 @@ template = Template("""
           &[[function.args.list[i].name + '_arg']]
         [[end]]
         ) <= 0)
-          return 0;\
-      [[end]]
+   return 0;\
+[[end]]
 
       [[# Type check the self argument #]]
       [[if not function.self_type is None]]

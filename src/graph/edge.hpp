@@ -31,15 +31,20 @@
 
 #define NUM_EDGE_DATA_ELEMENTS 4
 
-struct EdgeObject {
-  PyObject_HEAD
+struct Edge {
+  // PyObject_HEAD
   GraphObject* m_graph;
-  EdgeObject* m_other;
-  NodeObject* m_from_node;
-  NodeObject* m_to_node;
+  Edge* m_other;
+  Node* m_from_node;
+  Node* m_to_node;
   CostType m_cost;
   PyObject* m_label;
   Any m_edge_properties[NUM_EDGE_DATA_ELEMENTS];
+};
+
+struct EdgeObject {
+  PyObject_HEAD
+  Edge* m_x;
 };
 
 #define EP_VISITED(a) ((a)->m_edge_properties[0].Bool)
@@ -48,9 +53,14 @@ struct EdgeObject {
 #define EP_PATH(a) ((a)->m_node_properties[2].NodeObjectPtr)
 
 void init_EdgeType();
-PyObject* edge_new_simple(GraphObject* graph, NodeObject* from_node, 
-				 NodeObject* to_node, CostType cost = 1.0,
-				 PyObject* label = NULL);
+PyObject* edgeobject_new(GraphObject* graph, Node* from_node, 
+			 Node* to_node, CostType cost = 1.0,
+			 PyObject* label = NULL);
+PyObject* edgeobject_new(Edge* edge);
+Edge* edge_new(GraphObject* graph, Node* from_node, 
+	       Node* to_node, CostType cost = 1.0,
+	       PyObject* label = NULL);
+void edge_dealloc(Edge* so);
 bool is_EdgeObject(PyObject* self);
 
 #endif

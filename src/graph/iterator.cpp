@@ -54,7 +54,6 @@ PyObject* iterator_next(PyObject* self) {
     PyErr_SetString(PyExc_StopIteration, "");
     return 0;
   }
-  Py_INCREF(result);
   return result;
 }
 
@@ -75,78 +74,91 @@ void init_IteratorType() {
 // CONCRETE ITERATORS
 
 // struct BFSIterator : IteratorObject {
-  int BFSIterator::init(GraphObject* graph, NodeObject* root) {
-    m_node_queue = new NodeQueue();
-    m_node_queue->push(root);
-    NodeVector::iterator i = graph->m_nodes->begin();
-    for (; i != graph->m_nodes->end(); ++i)
-      NP_VISITED(*i) = false;
-    NP_VISITED(root) = true;
-    return 1;
+int BFSIterator::init(GraphObject* graph, Node* root) {
+  m_node_queue = new NodeQueue();
+  m_node_queue->push(root);
+  NodeVector::iterator i = graph->m_nodes->begin();
+  for (; i != graph->m_nodes->end(); ++i)
+    NP_VISITED(*i) = false;
+  NP_VISITED(root) = true;
+  return 1;
+}
+inline Node* BFSIterator::next_node(IteratorObject* self) {
+  BFSIterator* so = (BFSIterator*)self;
+  if (so->m_node_queue->empty()) {
+    return 0;
   }
-  PyObject* BFSIterator::next(IteratorObject* self) {
-    BFSIterator* so = (BFSIterator*)self;
-    if (so->m_node_queue->empty()) {
-	return 0;
+  Node* node = so->m_node_queue->front();
+  so->m_node_queue->pop();
+  for (EdgeList::iterator i = node->m_out_edges->begin();
+       i != node->m_out_edges->end(); ++i) {
+    Node* subnode = (*i)->m_to_node;
+    if (!NP_VISITED(subnode)) {
+      NP_VISITED(subnode) = true;
+      so->m_node_queue->push(subnode);
     }
-    NodeObject* node = so->m_node_queue->front();
-    so->m_node_queue->pop();
-    for (EdgeList::iterator i = node->m_out_edges->begin();
-	 i != node->m_out_edges->end(); ++i) {
-      NodeObject* subnode = (*i)->m_to_node;
-      if (!NP_VISITED(subnode)) {
-	NP_VISITED(subnode) = true;
-	so->m_node_queue->push(subnode);
-      }
-    }
-    return (PyObject*)node;
   }
+  return node;
+}
+PyObject* BFSIterator::next(IteratorObject* self) {
+  Node* node = BFSIterator::next_node(self);
+  if (node)
+    return nodeobject_new(node);
+  return 0;
+}
+
 
 // struct DFSIterator : IteratorObject {
-  int DFSIterator::init(GraphObject* graph, NodeObject* root) {
-    m_node_stack = new NodeStack();
-    m_node_stack->push(root);
-    NodeVector::iterator i = graph->m_nodes->begin();
-    for (; i != graph->m_nodes->end(); ++i)
-      NP_VISITED(*i) = false;
-    NP_VISITED(root) = true;
-    return 1;
+int DFSIterator::init(GraphObject* graph, Node* root) {
+  m_node_stack = new NodeStack();
+  m_node_stack->push(root);
+  NodeVector::iterator i = graph->m_nodes->begin();
+  for (; i != graph->m_nodes->end(); ++i)
+    NP_VISITED(*i) = false;
+  NP_VISITED(root) = true;
+  return 1;
+}
+inline Node* DFSIterator::next_node(IteratorObject* self) {
+  DFSIterator* so = (DFSIterator*)self;
+  if (so->m_node_stack->empty()) {
+    return 0;
   }
-  PyObject* DFSIterator::next(IteratorObject* self) {
-    DFSIterator* so = (DFSIterator*)self;
-    if (so->m_node_stack->empty()) {
-      return 0;
+  Node* node = so->m_node_stack->top();
+  so->m_node_stack->pop();
+  for (EdgeList::iterator i = node->m_out_edges->begin();
+       i != node->m_out_edges->end(); ++i) {
+    Node* subnode = (*i)->m_to_node;
+    if (!NP_VISITED(subnode)) {
+      NP_VISITED(subnode) = true;
+      so->m_node_stack->push(subnode);
     }
-    NodeObject* node = so->m_node_stack->top();
-    so->m_node_stack->pop();
-    for (EdgeList::iterator i = node->m_out_edges->begin();
-	 i != node->m_out_edges->end(); ++i) {
-      NodeObject* subnode = (*i)->m_to_node;
-      if (!NP_VISITED(subnode)) {
-	NP_VISITED(subnode) = true;
-	so->m_node_stack->push(subnode);
-      }
-    }
-    return (PyObject*)node;
   }
+  return node;
+}
+PyObject* DFSIterator::next(IteratorObject* self) {
+  Node* node = DFSIterator::next_node(self);
+  if (node)
+    return nodeobject_new(node);
+  return 0;
+}
 
 // struct EdgeIterator : IteratorObject {
-  int EdgeIterator::init(NodeVector::iterator begin, NodeVector::iterator end) {
-    m_it = begin;
-    m_end = end;
-    m_edge_it = (*begin)->m_out_edges->begin();
-    m_edge_end = (*begin)->m_out_edges->end();
-    return 1;
-  }
-  PyObject* EdgeIterator::next(IteratorObject* self) {
-    EdgeIterator* so = (EdgeIterator*)self;
-    while (so->m_edge_it == so->m_edge_end) {
-      so->m_it++;
-      if (so->m_it == so->m_end) {
-	return 0;
-      }
-      so->m_edge_it = (*(so->m_it))->m_out_edges->begin();
-      so->m_edge_end = (*(so->m_it))->m_out_edges->end();
+int AllEdgeIterator::init(NodeVector::iterator begin, NodeVector::iterator end) {
+  m_it = begin;
+  m_end = end;
+  m_edge_it = (*begin)->m_out_edges->begin();
+  m_edge_end = (*begin)->m_out_edges->end();
+  return 1;
+}
+PyObject* AllEdgeIterator::next(IteratorObject* self) {
+  AllEdgeIterator* so = (AllEdgeIterator*)self;
+  while (so->m_edge_it == so->m_edge_end) {
+    so->m_it++;
+    if (so->m_it == so->m_end) {
+      return 0;
     }
-    return (PyObject*)*((so->m_edge_it)++);
+    so->m_edge_it = (*(so->m_it))->m_out_edges->begin();
+    so->m_edge_end = (*(so->m_it))->m_out_edges->end();
   }
+  return edgeobject_new(*((so->m_edge_it)++));
+}

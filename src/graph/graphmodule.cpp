@@ -29,7 +29,7 @@ static PyObject* Factory(PyObject* self, PyObject* args) {
   if (PyArg_ParseTuple(args, "|O", &a) <= 0)
     return 0;
   if (a == NULL)
-    return (PyObject*)graph_new_simple(F);
+    return (PyObject*)graph_new(F);
   if (is_GraphObject(a))
     return (PyObject*)graph_copy((GraphObject*)a, F);
   PyErr_SetString(PyExc_TypeError, "Invalid argument type (must be Graph)");

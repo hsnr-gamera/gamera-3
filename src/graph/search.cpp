@@ -21,22 +21,20 @@
 
 PyObject* graph_BFS(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* root;
-  root = graph_find_node(so, pyobject);
+  Node* root = graph_find_node(so, pyobject);
   if (root == 0)
     return 0;
-  BFSIterator* iterator = iterator_new_simple<BFSIterator>();
+  BFSIterator* iterator = iterator_new<BFSIterator>();
   iterator->init(so, root);
   return (PyObject*)iterator;
 }
 
 PyObject* graph_DFS(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* root;
-  root = graph_find_node(so, pyobject);
+  Node* root = graph_find_node(so, pyobject);
   if (root == 0)
     return 0;
-  DFSIterator* iterator = iterator_new_simple<DFSIterator>();
+  DFSIterator* iterator = iterator_new<DFSIterator>();
   iterator->init(so, root);
   return (PyObject*)iterator;
 }

@@ -19,15 +19,13 @@
 #include "node.hpp"
 
 extern "C" {
-  static void node_dealloc(PyObject* self);
+  static void nodeobject_dealloc(PyObject* self);
   static PyObject* node___call__(PyObject* self, PyObject* args, PyObject* kwds);
   static PyObject* node_get_data(PyObject* self);
   static int node_set_data(PyObject* self, PyObject* data);
   static PyObject* node_get_out_edges(PyObject* self);
   static PyObject* node_get_in_edges(PyObject* self);
 }
-
-inline static bool node_check_alive(NodeObject* node);
 
 static PyTypeObject NodeType = {
   PyObject_HEAD_INIT(NULL)
@@ -50,23 +48,29 @@ PyGetSetDef node_getset[] = {
   { NULL }
 };
 
-inline bool node_check_alive(NodeObject* so) {
-  if (so->m_graph == NULL) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "The underlying graph of this node has been destroyed.");
-    return false;
-  }
-  return true;
-}
-
-PyObject* node_new_simple(GraphObject* graph, PyObject* data) {
-  NodeObject* so;
-  so = (NodeObject*)(NodeType.tp_alloc(&NodeType, 0));
+Node* node_new(GraphObject* graph, PyObject* data) {
+  Node* so = new Node();
   so->m_graph = graph;
   Py_INCREF(data);
   so->m_data = data;
   so->m_out_edges = new EdgeList();
   so->m_in_edges = new EdgeList();
+  return so;
+}
+
+PyObject* nodeobject_new(Node* node) {
+  NodeObject* so;
+  so = (NodeObject*)(NodeType.tp_alloc(&NodeType, 0));
+  so->m_x = node;
+  Py_INCREF(node->m_graph);
+  return (PyObject*)so;
+}
+
+PyObject* nodeobject_new(GraphObject* graph, PyObject* data) {
+  NodeObject* so;
+  so = (NodeObject*)(NodeType.tp_alloc(&NodeType, 0));
+  so->m_x = node_new(graph, data);
+  Py_INCREF(graph);
   return (PyObject*)so;
 }
 
@@ -74,21 +78,24 @@ bool is_NodeObject(PyObject* self) {
   return PyObject_TypeCheck(self, &NodeType);
 }
 
-void node_dealloc(PyObject* self) {
-  NodeObject* so = (NodeObject*)self;
-#if DEBUG
-  std::cerr << "node dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
-#endif
+void node_dealloc(Node* so) {
+  Py_DECREF((PyObject*)so->m_data);
   delete so->m_out_edges;
   delete so->m_in_edges;
-  Py_DECREF((PyObject*)so->m_data);
+  delete so;
+}
+
+void nodeobject_dealloc(PyObject* self) {
+  NodeObject* so = (NodeObject*)self;
+#ifdef DEBUG_DEALLOC
+  std::cerr << "node dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
+#endif
+  Py_DECREF((PyObject*)so->m_x->m_graph);
   self->ob_type->tp_free(self);
 }
 
 PyObject* node___repr__(PyObject* self) {
-  NodeObject* so = (NodeObject*)self;
-  if (!node_check_alive(so))
-    return 0;
+  Node* so = ((NodeObject*)self)->m_x;
   return PyString_FromFormat("<Node of %s>", 
 			     PyString_AsString(PyObject_Repr(so->m_data)));
 }
@@ -105,17 +112,13 @@ PyObject* node___call__(PyObject* self, PyObject* args, PyObject* kwds) {
 }  
 
 PyObject* node_get_data(PyObject* self) {
-  NodeObject* so = (NodeObject*)self;
-  if (!node_check_alive(so))
-    return 0;
+  Node* so = ((NodeObject*)self)->m_x;
   Py_INCREF(so->m_data);
   return so->m_data;
 }
 
 int node_set_data(PyObject* self, PyObject* data) {
-  NodeObject* so = (NodeObject*)self;
-  if (!node_check_alive(so))
-    return -1;
+  Node* so = ((NodeObject*)self)->m_x;
   Py_DECREF(so->m_data);
   so->m_data = data;
   Py_INCREF(so->m_data);
@@ -123,21 +126,17 @@ int node_set_data(PyObject* self, PyObject* data) {
 }
 
 PyObject* node_get_out_edges(PyObject* self) {
-  NodeObject* so = ((NodeObject*)self);
-  if (!node_check_alive(so))
-    return 0;
-  typedef BasicIterator<EdgeList> EdgeListIterator;
-  EdgeListIterator* iterator = iterator_new_simple<EdgeListIterator>();
+  Node* so = ((NodeObject*)self)->m_x;
+  typedef EdgeIterator<EdgeList> EdgeListIterator;
+  EdgeListIterator* iterator = iterator_new<EdgeListIterator>();
   iterator->init(so->m_out_edges->begin(), so->m_out_edges->end());
   return (PyObject*)iterator;
 }
 
 PyObject* node_get_in_edges(PyObject* self) {
-  NodeObject* so = ((NodeObject*)self);
-  if (!node_check_alive(so))
-    return 0;
-  typedef BasicIterator<EdgeList> EdgeListIterator;
-  EdgeListIterator* iterator = iterator_new_simple<EdgeListIterator>();
+  Node* so = ((NodeObject*)self)->m_x;
+  typedef EdgeIterator<EdgeList> EdgeListIterator;
+  EdgeListIterator* iterator = iterator_new<EdgeListIterator>();
   iterator->init(so->m_in_edges->begin(), so->m_in_edges->end());
   return (PyObject*)iterator;
 }
@@ -146,7 +145,7 @@ void init_NodeType() {
   NodeType.ob_type = &PyType_Type;
   NodeType.tp_name = "gamera.graph.Node";
   NodeType.tp_basicsize = sizeof(NodeObject);
-  NodeType.tp_dealloc = node_dealloc;
+  NodeType.tp_dealloc = nodeobject_dealloc;
   NodeType.tp_repr = node___repr__;
   NodeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   NodeType.tp_getattro = PyObject_GenericGetAttr;

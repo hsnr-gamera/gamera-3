@@ -19,7 +19,7 @@
 #include "edge.hpp"
 
 extern "C" {
-  static void edge_dealloc(PyObject* self);
+  static void edgeobject_dealloc(PyObject* self);
   static PyObject* edge___repr__(PyObject* self);
   static PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds);
   static PyObject* edge_get_from_node(PyObject* self);
@@ -30,7 +30,6 @@ extern "C" {
   static int edge_set_label(PyObject* self, PyObject* obj);
   static PyObject* edge_get_other(PyObject* self);
 }
-inline bool edge_check_alive(EdgeObject* edge);
 static PyTypeObject EdgeType = {
   PyObject_HEAD_INIT(NULL)
   0,
@@ -54,27 +53,34 @@ PyGetSetDef edge_getset[] = {
   { NULL }
 };
 
-inline bool edge_check_alive(EdgeObject* so) {
-  if (so->m_graph == NULL) {
-    PyErr_SetString(PyExc_RuntimeError, 
-		    "The underlying graph of this edge has been destroyed.");
-    return false;
-  }
-  return true;
-}
-
-PyObject* edge_new_simple(GraphObject* graph, NodeObject* from_node,
-				 NodeObject* to_node, CostType cost, PyObject* label) {
-  EdgeObject* so;
-  so = (EdgeObject*)EdgeType.tp_alloc(&EdgeType, 0);
+Edge* edge_new(GraphObject* graph, Node* from_node,
+	       Node* to_node, CostType cost, PyObject* label) {
+  Edge* so = new Edge();
   so->m_graph = graph;
   so->m_other = NULL;
-  so->m_from_node = (NodeObject*)from_node;
-  so->m_to_node = (NodeObject*)to_node;
+  so->m_from_node = from_node;
+  so->m_to_node = to_node;
   so->m_cost = cost;
   so->m_label = label;
   if (label != NULL)
     Py_INCREF(label);
+  return so;
+}
+
+PyObject* edgeobject_new(Edge* edge) {
+  EdgeObject* so;
+  so = (EdgeObject*)EdgeType.tp_alloc(&EdgeType, 0);
+  so->m_x = edge;
+  Py_INCREF(edge->m_graph);
+  return (PyObject*)so;
+}  
+
+PyObject* edgeobject_new(GraphObject* graph, Node* from_node,
+			 Node* to_node, CostType cost, PyObject* label) {
+  EdgeObject* so;
+  so = (EdgeObject*)EdgeType.tp_alloc(&EdgeType, 0);
+  so->m_x = edge_new(graph, from_node, to_node, cost, label);
+  Py_INCREF(graph);
   return (PyObject*)so;
 }  
 
@@ -82,25 +88,27 @@ bool is_EdgeObject(PyObject* self) {
   return PyObject_TypeCheck(self, &EdgeType);
 }
 
-void edge_dealloc(PyObject* self) {
-#if DEBUG
-  std::cerr << "edge dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
-#endif
-  EdgeObject* so = (EdgeObject*)self;
+void edge_dealloc(Edge* so) {
   if (so->m_label != NULL)
     Py_DECREF(so->m_label);
+  delete so;
+}
+
+void edgeobject_dealloc(PyObject* self) {
+#ifdef DEBUG_DEALLOC
+  std::cerr << "edgeobject dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
+#endif
+  EdgeObject* so = (EdgeObject*)self;
+  Py_DECREF(so->m_x->m_graph);
   self->ob_type->tp_free(self);
 }
 
-
 PyObject* edge___repr__(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
+  Edge* so = ((EdgeObject*)self)->m_x;
   PyObject* cost = PyFloat_FromDouble(so->m_cost);
   return PyString_FromFormat("<Edge from %s to %s (%s)>", 
-			     PyString_AsString(PyObject_Repr((PyObject*)so->m_from_node)),
-			     PyString_AsString(PyObject_Repr((PyObject*)so->m_to_node)),
+			     PyString_AsString(PyObject_Repr((PyObject*)so->m_from_node->m_data)),
+			     PyString_AsString(PyObject_Repr((PyObject*)so->m_to_node->m_data)),
 			     PyString_AsString(PyObject_Repr(cost)));
 }
 
@@ -116,25 +124,17 @@ PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds) {
 }  
 
 PyObject* edge_get_from_node(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
-  Py_INCREF((PyObject*)so->m_from_node);
-  return (PyObject*)so->m_from_node;
+  Edge* so = ((EdgeObject*)self)->m_x;
+  return nodeobject_new(so->m_from_node);
 }
 
 PyObject* edge_get_to_node(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
-  Py_INCREF((PyObject*)so->m_to_node);
-  return (PyObject*)so->m_to_node;
+  Edge* so = ((EdgeObject*)self)->m_x;
+  return nodeobject_new(so->m_to_node);
 }
 
 PyObject* edge_get_cost(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
+  Edge* so = ((EdgeObject*)self)->m_x;
   return PyFloat_FromDouble(so->m_cost);
 }
 
@@ -143,25 +143,19 @@ int edge_set_cost(PyObject* self, PyObject* cost) {
     PyErr_SetString(PyExc_TypeError, "edge: expected a float");
     return -1;
   }
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return -1;
+  Edge* so = ((EdgeObject*)self)->m_x;
   so->m_cost = PyFloat_AsDouble(cost);
   return 0;
 }
 
 PyObject* edge_get_label(PyObject* self) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return 0;
+  Edge* so = ((EdgeObject*)self)->m_x;
   Py_INCREF(so->m_label);
   return so->m_label;
 }
 
 int edge_set_label(PyObject* self, PyObject* data) {
-  EdgeObject* so = (EdgeObject*)self;
-  if (!edge_check_alive(so))
-    return -1;
+  Edge* so = ((EdgeObject*)self)->m_x;
   if (so->m_label != NULL)
     Py_DECREF(so->m_label);
   so->m_label = data;
@@ -181,7 +175,7 @@ void init_EdgeType() {
   EdgeType.ob_type = &PyType_Type;
   EdgeType.tp_name = "gamera.graph.Edge";
   EdgeType.tp_basicsize = sizeof(EdgeObject);
-  EdgeType.tp_dealloc = edge_dealloc;
+  EdgeType.tp_dealloc = edgeobject_dealloc;
   EdgeType.tp_repr = edge___repr__;
   EdgeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   EdgeType.tp_getattro = PyObject_GenericGetAttr;

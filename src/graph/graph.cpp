@@ -68,7 +68,7 @@ static PyTypeObject GraphType = {
   0,
 };
 
-GraphObject* graph_new_simple(size_t flags) {
+GraphObject* graph_new(size_t flags) {
   GraphObject* so;
   so = (GraphObject*)(GraphType.tp_alloc(&GraphType, 0));
   if (!(HAS_FLAG(flags, FLAG_BLOB))) {
@@ -83,7 +83,6 @@ GraphObject* graph_new_simple(size_t flags) {
   so->m_nodes = new NodeVector();
   so->m_nedges = 0;
   so->m_data_to_node = new DataToNodeMap();
-  // so->m_subgraph_roots = new NodeSet();
   return so;
 }
 
@@ -92,7 +91,7 @@ PyObject* graph_new(PyTypeObject* pytype, PyObject* args,
   long flags = FLAG_DEFAULT;
   if (PyArg_ParseTuple(args, "|i", &flags) <= 0)
     return 0;
-  return (PyObject*)graph_new_simple((size_t)flags);
+  return (PyObject*)graph_new((size_t)flags);
 }
 
 bool is_GraphObject(PyObject* self) {
@@ -100,19 +99,18 @@ bool is_GraphObject(PyObject* self) {
 }
 
 void graph_dealloc(PyObject* self) {
-#if DEBUG
+#ifdef DEBUG_DEALLOC
   std::cerr << "graph_dealloc\n";
 #endif
   GraphObject* so = (GraphObject*)self;
-
   // Decrease reference counts on node list
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
     for (EdgeList::iterator j = (*i)->m_out_edges->begin();
 	 j != (*i)->m_out_edges->end(); ++j)
-      Py_DECREF((PyObject*)*j);
+      edge_dealloc(*j);
       // (*j)->m_graph = NULL;
-    Py_DECREF((PyObject*)*i);
+    node_dealloc(*i);
   }
   delete so->m_nodes;
   delete so->m_data_to_node;
@@ -121,7 +119,7 @@ void graph_dealloc(PyObject* self) {
 }
 
 GraphObject* graph_copy(GraphObject* so, size_t flags) {
-  GraphObject* result = graph_new_simple(flags);
+  GraphObject* result = graph_new(flags);
   result->m_nodes->reserve(so->m_nodes->size());
 
   for (NodeVector::iterator i = so->m_nodes->begin();
@@ -147,9 +145,9 @@ PyObject* graph_copy(PyObject* self, PyObject* args) {
 
 PyObject* graph_add_node(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* node = graph_find_node(so, pyobject, false);
+  Node* node = graph_find_node(so, pyobject, false);
   if (node == 0) {
-    node = (NodeObject*)node_new_simple(so, pyobject);
+    node = (Node*)node_new(so, pyobject);
     graph_add_node(so, node);
     return PyInt_FromLong((long)1);
   }
@@ -164,7 +162,7 @@ PyObject* graph_add_nodes(PyObject* self, PyObject* pyobject) {
   }
   size_t list_size = PyList_Size(pyobject);
   bool result = false;
-  
+  so->m_nodes->reserve(so->m_nodes->size() + list_size);
   for (size_t i = 0; i < list_size; ++i)
     if (graph_add_node(so, PyList_GET_ITEM(pyobject, i)))
       result |= true;
@@ -173,7 +171,7 @@ PyObject* graph_add_nodes(PyObject* self, PyObject* pyobject) {
 
 PyObject* graph_remove_node_and_edges(PyObject* self, PyObject* a) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* node;
+  Node* node;
   // Find the node
   node = graph_find_node(so, a);
   if (node == 0)
@@ -183,7 +181,7 @@ PyObject* graph_remove_node_and_edges(PyObject* self, PyObject* a) {
 
 PyObject* graph_remove_node(PyObject* self, PyObject* a) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* node;
+  Node* node;
 
   // Find the node
   node = graph_find_node(so, a);
@@ -217,7 +215,7 @@ PyObject* graph_add_edges(PyObject* self, PyObject* args) {
     PyObject* label = NULL;
     if (PyArg_ParseTuple(tuple, "OO|dO", &from_node, &to_node, &cost, &label) <= 0)
       return 0;
-    graph_add_edge(so, (NodeObject*)from_node, (NodeObject*)to_node, cost, label);
+    graph_add_edge(so, from_node, to_node, cost, label);
   }
   Py_INCREF(Py_None);
   return Py_None;
@@ -232,8 +230,10 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
     return 0;
   if (b == NULL) {
     if (is_EdgeObject(a)) {
-      if (graph_has_edge(so, ((EdgeObject*)a)->m_from_node, ((EdgeObject*)a)->m_to_node))
-	return PyInt_FromLong((long)graph_remove_edge(so, (EdgeObject*)a));
+      if (graph_has_edge(so,
+			 ((EdgeObject*)a)->m_x->m_from_node,
+			 ((EdgeObject*)a)->m_x->m_to_node))
+	return PyInt_FromLong((long)graph_remove_edge(so, ((EdgeObject*)a)->m_x));
       else {
 	PyErr_SetString(PyExc_RuntimeError, "Given edge is not in the graph");
 	return 0;
@@ -241,10 +241,10 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
     }
   } else {
     if (is_NodeObject(a)) {
-      if (graph_has_node(so, (NodeObject*)a)) {
+      if (graph_has_node(so, ((NodeObject*)a)->m_x)) {
 	if (is_NodeObject(b)) {
-	  if (graph_has_node(so, (NodeObject*)b))
-	    result = graph_remove_edge(so, (NodeObject*)a, (NodeObject*)b);
+	  if (graph_has_node(so, ((NodeObject*)b)->m_x))
+	    result = graph_remove_edge(so, ((NodeObject*)a)->m_x, ((NodeObject*)b)->m_x);
 	  else {
 	    PyErr_SetString(PyExc_RuntimeError, "Given 'to' node is not in the graph");
 	    return 0;
@@ -258,7 +258,7 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
 	return 0;
       }
     } else { 
-      NodeObject *from_node, *to_node;
+      Node *from_node, *to_node;
       from_node = graph_find_node(so, a);
       if (from_node == 0)
 	return 0;
@@ -300,16 +300,18 @@ void graph_make_undirected(GraphObject* so) {
     
     EdgeList edges;
     for (NodeVector::iterator i = so->m_nodes->begin();
-	 i != so->m_nodes->end(); ++i)
+	 i != so->m_nodes->end(); ++i) {
       for (EdgeList::iterator j = (*i)->m_out_edges->begin();
 	   j != (*i)->m_out_edges->end(); ++j)
 	edges.push_back(*j);
+      (*i)->m_disj_set = 0;
+    }
 
     for (EdgeList::iterator i = edges.begin();
 	 i != edges.end(); ++i)
       if (!graph_has_edge(so, (*i)->m_to_node, (*i)->m_from_node))
 	graph_add_edge0(so, (*i)->m_to_node, (*i)->m_from_node,
-			(*i)->m_cost, (*i)->m_label, false);
+			(*i)->m_cost, (*i)->m_label);
   }
 }
 
@@ -361,7 +363,7 @@ void graph_make_acyclic(GraphObject* so) {
 	  NodeStack node_stack;
 	  node_stack.push(*i);
 	  while (!node_stack.empty()) {
-	    NodeObject* node = node_stack.top();
+	    Node* node = node_stack.top();
 	    node_stack.pop();
 	    NP_VISITED(node) = true;
 	    for (EdgeList::iterator k, j = node->m_out_edges->begin();
@@ -563,23 +565,21 @@ PyObject* graph_make_not_self_connected(PyObject* self, PyObject* args) {
 
 PyObject* graph_get_nodes(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  typedef BasicIterator<NodeVector> NodeVectorIterator;
-  NodeVectorIterator* iterator = iterator_new_simple<NodeVectorIterator>();
+  typedef NodeIterator<NodeVector> NodeVectorIterator;
+  NodeVectorIterator* iterator = iterator_new<NodeVectorIterator>();
   iterator->init(so->m_nodes->begin(), so->m_nodes->end());
   return (PyObject*)iterator;
 }
 
 PyObject* graph_get_node(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* node = graph_find_node(so, pyobject);
-  Py_INCREF((PyObject*)node);
-  return (PyObject*)node;
+  Node* node = graph_find_node(so, pyobject);
+  return nodeobject_new(node);
 }
 
 PyObject* graph_has_node(PyObject* self, PyObject* a) {
   GraphObject* so = (GraphObject*)self;
-  NodeObject* node;
-  node = graph_find_node(so, a, false);
+  Node* node = graph_find_node(so, a, false);
   if (node == 0)
     return PyInt_FromLong((long)0);
   return PyInt_FromLong((long)1);
@@ -592,7 +592,7 @@ PyObject* graph_get_nnodes(PyObject* self) {
 
 PyObject* graph_get_edges(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  EdgeIterator* iterator = iterator_new_simple<EdgeIterator>();
+  AllEdgeIterator* iterator = iterator_new<AllEdgeIterator>();
   iterator->init(so->m_nodes->begin(), so->m_nodes->end());
   return (PyObject*)iterator;
 }
@@ -603,19 +603,19 @@ PyObject* graph_has_edge(PyObject* self, PyObject* args) {
   if (PyArg_ParseTuple(args, "O|O", &a, &b) <= 0)
     return 0;
   if (is_EdgeObject(a) && b == NULL) {
-    EdgeObject *edge = (EdgeObject*)a;
+    Edge *edge = ((EdgeObject*)a)->m_x;
     return PyInt_FromLong((long)graph_has_edge(so, edge->m_from_node, edge->m_to_node));
   }
   if (is_NodeObject(a) && is_NodeObject(b)) {
-    NodeObject *from_node = (NodeObject*)a;
-    NodeObject *to_node = (NodeObject*)b;
+    Node *from_node = ((NodeObject*)a)->m_x;
+    Node *to_node = ((NodeObject*)b)->m_x;
     return PyInt_FromLong((long)graph_has_edge(so, from_node, to_node));
   }
   if (!is_NodeObject(b) && !is_NodeObject(b) && !is_EdgeObject(a) && !is_EdgeObject(b)) {
-    NodeObject *from_node = graph_find_node(so, a, false);
+    Node *from_node = graph_find_node(so, a, false);
     if (from_node == 0)
       return PyInt_FromLong(0);
-    NodeObject *to_node = graph_find_node(so, b, false);
+    Node *to_node = graph_find_node(so, b, false);
     if (to_node == 0)
       return PyInt_FromLong(0);
     return PyInt_FromLong((long)graph_has_edge(so, from_node, to_node));
@@ -646,7 +646,7 @@ struct SubGraphRootIterator : IteratorObject {
       if (so->m_it == so->m_end)
 	return 0;
     }
-    return (PyObject*)*((so->m_it)++);
+    return nodeobject_new(*((so->m_it)++));
   }
   NodeVector::iterator m_it, m_end;
 };
@@ -666,7 +666,7 @@ struct SubTreeRootIterator : IteratorObject {
       if (so->m_it == so->m_end)
 	return 0;
     }
-    return (PyObject*)*((so->m_it)++);
+    return nodeobject_new(*((so->m_it)++));
   }
   NodeVector::iterator m_it, m_end;
 };
@@ -675,28 +675,28 @@ PyObject* graph_get_subgraph_roots(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   
   if (HAS_FLAG(so->m_flags, FLAG_DIRECTED) || HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
-    SubGraphRootIterator* iterator = iterator_new_simple<SubGraphRootIterator>();
+    SubGraphRootIterator* iterator = iterator_new<SubGraphRootIterator>();
     iterator->init(so->m_nodes->begin(), so->m_nodes->end());
     return (PyObject*)iterator;
   } else {
-    SubTreeRootIterator* iterator = iterator_new_simple<SubTreeRootIterator>();
+    SubTreeRootIterator* iterator = iterator_new<SubTreeRootIterator>();
     iterator->init(so->m_nodes->begin(), so->m_nodes->end());
     return (PyObject*)iterator;
   }
 }
 
-size_t graph_size_of_subgraph(GraphObject* so, NodeObject* root) {
+size_t graph_size_of_subgraph(GraphObject* so, Node* root) {
   size_t count = 0;
-  DFSIterator* iterator = iterator_new_simple<DFSIterator>();
+  DFSIterator* iterator = iterator_new<DFSIterator>();
   iterator->init(so, root);
-  while (DFSIterator::next(iterator))
+  while (DFSIterator::next_node(iterator))
     ++count;
   return count;
 }
 
 PyObject* graph_size_of_subgraph(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* root;
+  Node* root;
   root = graph_find_node(so, pyobject);
   if (root == 0)
     return 0;

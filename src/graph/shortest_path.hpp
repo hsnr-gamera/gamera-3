@@ -28,7 +28,7 @@ extern "C" {
   PyObject* graph_djikstra_all_pairs_shortest_path(PyObject* self, PyObject* root);
   PyObject* graph_all_pairs_shortest_path(PyObject* so, PyObject* args);
 }
-NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root);
+NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root);
 
 #define SHORTEST_PATH_METHODS \
   { "djikstra_shortest_path", graph_djikstra_shortest_path, METH_O, \

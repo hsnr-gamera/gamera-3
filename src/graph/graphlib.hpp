@@ -19,6 +19,8 @@
 #ifndef mgd010103_graphlib_hpp
 #define mgd010103_graphlib_hpp
 
+#define DEBUG_DEALLOC
+
 #include <Python.h>
 #include <iostream>
 #include <set>
@@ -33,7 +35,9 @@
 //////////////////////////////////////////////////////////////////////////////
 // Forward references
 struct IteratorObject;
+struct Node;
 struct NodeObject;
+struct Edge;
 struct EdgeObject;
 struct GraphObject;
 
@@ -41,18 +45,18 @@ typedef double CostType; // Matches a Python 'float'
 
 //////////////////////////////////////////////////////////////////////////////
 // Various container types used throughout the algorithms
-typedef std::set<NodeObject*> NodeSet;
-typedef std::set<EdgeObject*> EdgeSet;
-typedef std::list<NodeObject*> NodeList;
-typedef std::list<EdgeObject*> EdgeList;
-typedef std::vector<NodeObject*> NodeVector;
-typedef std::vector<EdgeObject*> EdgeVector;
-typedef std::stack<NodeObject*> NodeStack;
-typedef std::stack<EdgeObject*> EdgeStack;
-typedef std::queue<NodeObject*> NodeQueue;
-typedef std::queue<EdgeObject*> EdgeQueue;
-typedef std::map<PyObject*, NodeObject*> DataToNodeMap;
-typedef std::map<NodeObject*, EdgeObject*> NodeToEdgeMap;
+typedef std::set<Node*> NodeSet;
+typedef std::set<Edge*> EdgeSet;
+typedef std::list<Node*> NodeList;
+typedef std::list<Edge*> EdgeList;
+typedef std::vector<Node*> NodeVector;
+typedef std::vector<Edge*> EdgeVector;
+typedef std::stack<Node*> NodeStack;
+typedef std::stack<Edge*> EdgeStack;
+typedef std::queue<Node*> NodeQueue;
+typedef std::queue<Edge*> EdgeQueue;
+typedef std::map<PyObject*, Node*> DataToNodeMap;
+typedef std::map<Node*, Edge*> NodeToEdgeMap;
 
 union Any {
   int Int;
@@ -62,7 +66,7 @@ union Any {
   float Float;
   double Double;
   CostType Cost;
-  NodeObject* NodeObjectPtr;
+  Node* NodePtr;
   void* VoidPtr;
   NodeSet* NodeSet_;
 };

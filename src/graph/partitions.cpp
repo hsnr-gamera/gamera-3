@@ -27,12 +27,12 @@
 typedef std::list<EdgeList> Cycles;
 
 struct PartitionIterator : IteratorObject {
-  int init(GraphObject* graph, NodeObject* root, bool ids, double m, double b);
+  int init(GraphObject* graph, Node* root, bool ids, double m, double b);
 private:
-  inline void find_subgraph(GraphObject* graph, NodeObject* root);
-  inline void find_cycles(NodeObject* root);
-  bool cycle(NodeObject* s, NodeObject* v, EdgeList& path);
-  inline void unmark(NodeObject* u);
+  inline void find_subgraph(GraphObject* graph, Node* root);
+  inline void find_cycles(Node* root);
+  bool cycle(Node* s, Node* v, EdgeList& path);
+  inline void unmark(Node* u);
 public:
   static PyObject* next(IteratorObject* self);
 private:
@@ -43,13 +43,13 @@ private:
   size_t m_allowable_ones;
   bool m_no_edges;
   bool m_ids;
-  NodeObject* m_root;
+  Node* m_root;
   NodeList* m_subgraph;
   EdgeList* m_edges;
   Cycles* m_cycles;
 };  
 
-int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
+int PartitionIterator::init(GraphObject* graph, Node* root, bool ids,
 			    double m, double b) {
   m_ids = ids;
   m_subgraph = new NodeList();
@@ -58,7 +58,7 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
   m_root = root;
 
   find_subgraph(graph, root);
-
+  
   // Special case: if we haven't found any edges, we don't
   // need to do cycle detection, so we skip it
   if (m_edges->empty()) {
@@ -68,7 +68,7 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
   }
 
   find_cycles(root);
-  
+
   size_t nedges = m_edges->size();
   m_npartitions = (size_t)pow(2, nedges);
   m_i = 0;
@@ -78,7 +78,7 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
   return 1; 
 }
 
-void PartitionIterator::find_subgraph(GraphObject* graph, NodeObject* root) {
+void PartitionIterator::find_subgraph(GraphObject* graph, Node* root) {
   for (NodeVector::iterator i = graph->m_nodes->begin();
        i != graph->m_nodes->end(); ++i) {
     NP_VISITED(*i) = false;
@@ -93,17 +93,18 @@ void PartitionIterator::find_subgraph(GraphObject* graph, NodeObject* root) {
   node_stack.push(root);
   NP_VISITED(root) = true;
   while (!node_stack.empty()) {
-    NodeObject* node;
+    Node* node;
     node = node_stack.top();
     node_stack.pop();
     m_subgraph->push_back(node);
     NP_NUMBER(node) = count++;
     for (EdgeList::iterator j = node->m_out_edges->begin();
 	 j != node->m_out_edges->end(); ++j) {
-      NodeObject* to_node = (*j)->m_to_node;
+      Node* to_node = (*j)->m_to_node;
       if (!EP_VISITED(*j)) {
 	EP_VISITED(*j) = true;
-	EP_VISITED((*j)->m_other) = true;
+	if ((*j)->m_other)
+	  EP_VISITED((*j)->m_other) = true;
 	m_edges->push_back(*j);
       }
       if (!NP_VISITED(to_node)) {
@@ -114,7 +115,7 @@ void PartitionIterator::find_subgraph(GraphObject* graph, NodeObject* root) {
   }
 }
 
-void PartitionIterator::find_cycles(NodeObject* root) {
+void PartitionIterator::find_cycles(Node* root) {
   for (NodeList::iterator j = m_subgraph->begin();
        j != m_subgraph->end(); ++j) {
     NP_B(*j) = new NodeSet();
@@ -132,9 +133,10 @@ void PartitionIterator::find_cycles(NodeObject* root) {
     for (EdgeList::iterator j = m_edges->begin();
 	 j != m_edges->end(); ++j) {
       EP_VISITED(*j) = false;
-      EP_VISITED((*j)->m_other) = false;
+      if ((*j)->m_other)
+	EP_VISITED((*j)->m_other) = false;
     }
-    NodeObject* s = *i;
+    Node* s = *i;
     cycle(s, s, path);
     NP_VISITED(s) = true;
   }
@@ -144,17 +146,18 @@ void PartitionIterator::find_cycles(NodeObject* root) {
     delete NP_B(*j);
 }
 
-bool PartitionIterator::cycle(NodeObject* s, NodeObject* v,
+bool PartitionIterator::cycle(Node* s, Node* v,
 			      EdgeList& path) {
   bool flag = false;
   NP_AVAIL(v) = false;
   for (EdgeList::iterator i = v->m_out_edges->begin();
        i != v->m_out_edges->end(); ++i) {
-    NodeObject* w = (*i)->m_to_node;
+    Node* w = (*i)->m_to_node;
     if (!NP_VISITED(w) && !EP_VISITED(*i)) {
       path.push_back(*i);
       EP_VISITED(*i) = true;
-      EP_VISITED((*i)->m_other) = true;
+      if ((*i)->m_other)
+	EP_VISITED((*i)->m_other) = true;
       if (w == s) {
 	if (path.size() > 2)
 	  m_cycles->push_back(path);
@@ -169,14 +172,14 @@ bool PartitionIterator::cycle(NodeObject* s, NodeObject* v,
   else 
     for (EdgeList::iterator i = v->m_out_edges->begin();
 	 i != v->m_out_edges->end(); ++i) {
-      NodeObject* w = (*i)->m_to_node;
+      Node* w = (*i)->m_to_node;
       if (!NP_VISITED(w))
 	NP_B(w)->insert(v);
     }
   return flag;
 }
 
-void PartitionIterator::unmark(NodeObject* u) {
+void PartitionIterator::unmark(Node* u) {
   NP_AVAIL(u) = true;
   for (NodeSet::iterator i = NP_B(u)->begin();
        i != NP_B(u)->end(); ++i) {
@@ -211,7 +214,7 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
   outer_node_stack.push(so->m_root);
   while (!outer_node_stack.empty()) {
     size_t id = 0;
-    NodeObject* root = outer_node_stack.top();
+    Node* root = outer_node_stack.top();
     outer_node_stack.pop();
     if (!NP_VISITED(root)) {
       PyObject* subresult = PyList_New(0);
@@ -254,11 +257,13 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
 	 i != so->m_edges->end(); ++i) {
       if (EP_PARTITION_COUNTER(*i)) {
 	EP_PARTITION_COUNTER(*i) = false;
-	EP_PARTITION_COUNTER((*i)->m_other) = false;
+	if ((*i)->m_other)
+	  EP_PARTITION_COUNTER((*i)->m_other) = false;
 	so->m_ones--;
       } else {
 	EP_PARTITION_COUNTER(*i) = true;
-	EP_PARTITION_COUNTER((*i)->m_other) = true;
+	if ((*i)->m_other)
+	  EP_PARTITION_COUNTER((*i)->m_other) = true;
 	so->m_ones++;
 	break;
       }
@@ -309,7 +314,7 @@ PyObject* PartitionIterator::next_no_edges(PartitionIterator* so) {
 
 PyObject* graph_partitions(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* root;
+  Node* root;
   int ids = 0;
   double m = 1, b = 0;
   if (PyArg_ParseTuple(args, "O|idd", &root, &ids, &m, &b) <= 0)
@@ -317,7 +322,7 @@ PyObject* graph_partitions(PyObject* self, PyObject* args) {
   root = graph_find_node(so, (PyObject*)root);
   if (root == NULL)
     return 0;
-  PartitionIterator* iterator = iterator_new_simple<PartitionIterator>();
+  PartitionIterator* iterator = iterator_new<PartitionIterator>();
   iterator->init(so, root, ids != 0, m, b);
   return (PyObject*)iterator;
 }

@@ -21,20 +21,20 @@
 
 struct djikstra_queue_comp_func
 {
-  bool operator()(NodeObject* const& a, NodeObject* const& b) const { 
+  bool operator()(Node* const& a, Node* const& b) const { 
     return NP_DISTANCE(a) > NP_DISTANCE(b);
   }
 };
 
-NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root) {
-  typedef std::priority_queue<NodeObject*, std::vector<NodeObject*>, djikstra_queue_comp_func> NodeQueue;
+NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root) {
+  typedef std::priority_queue<Node*, std::vector<Node*>, djikstra_queue_comp_func> NodeQueue;
   NodeList* main_node_list = new NodeList();
 
   if (HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
-    DFSIterator* iterator = iterator_new_simple<DFSIterator>();
+    DFSIterator* iterator = iterator_new<DFSIterator>();
     iterator->init(so, root);
-    NodeObject* node;
-    while ((node = (NodeObject*)DFSIterator::next(iterator))) {
+    Node* node;
+    while ((node = (Node*)DFSIterator::next_node(iterator))) {
       NP_KNOWN(node) = false;
       NP_DISTANCE(node) = std::numeric_limits<CostType>::max();
       NP_PATH(node) = NULL;
@@ -45,13 +45,13 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root) {
     node_queue.push(root);
 
     while(!node_queue.empty()) {
-      NodeObject* node = node_queue.top();
+      Node* node = node_queue.top();
       node_queue.pop();
       if (!NP_KNOWN(node)) {
 	NP_KNOWN(node) = true;
 	for (EdgeList::iterator i = node->m_out_edges->begin();
 	     i != node->m_out_edges->end(); ++i) {
-	  NodeObject* other_node = (*i)->m_to_node;
+	  Node* other_node = (*i)->m_to_node;
 	  if (!NP_KNOWN(other_node)) {
 	    if (NP_DISTANCE(node) + (*i)->m_cost < NP_DISTANCE(other_node)) {
 	      NP_DISTANCE(other_node) = NP_DISTANCE(node) + (*i)->m_cost;
@@ -63,10 +63,10 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root) {
       }
     }
   } else { // acyclic version
-    DFSIterator* iterator = iterator_new_simple<DFSIterator >();
+    DFSIterator* iterator = iterator_new<DFSIterator >();
     iterator->init(so, root);
-    NodeObject* node;
-    while ((node = (NodeObject*)DFSIterator::next(iterator))) {
+    Node* node;
+    while ((node = (Node*)DFSIterator::next_node(iterator))) {
       NP_DISTANCE(node) = std::numeric_limits<CostType>::max();
       NP_PATH(node) = NULL;
       main_node_list->push_back(node);
@@ -76,7 +76,7 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root) {
     NodeStack node_stack;
     node_stack.push(root);
     while (!node_stack.empty()) {
-      NodeObject* node = node_stack.top();
+      Node* node = node_stack.top();
       node_stack.pop();
       main_node_list->push_back(node);
       for (EdgeList::iterator i = node->m_out_edges->begin();
@@ -95,7 +95,7 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, NodeObject* root) {
 
 PyObject* graph_djikstra_shortest_path(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  NodeObject* root;
+  Node* root;
   root = graph_find_node(so, pyobject);
   if (root == 0)
     return 0;
@@ -104,11 +104,11 @@ PyObject* graph_djikstra_shortest_path(PyObject* self, PyObject* pyobject) {
   PyObject* result = PyDict_New();
   for (NodeList::iterator i = node_list->begin();
        i != node_list->end(); ++i) {
-    NodeObject* node = *i;
+    Node* node = *i;
     PyObject* tuple = PyTuple_New(2);
     PyTuple_SetItem(tuple, 0, PyFloat_FromDouble(NP_DISTANCE(node)));
     PyObject* path = PyList_New(0);
-    NodeObject* subnode = node;
+    Node* subnode = node;
     while (NP_PATH(subnode) != NULL) {
       PyList_Insert(path, 0, subnode->m_data);
       subnode = NP_PATH(subnode);
@@ -131,11 +131,11 @@ PyObject* graph_djikstra_all_pairs_shortest_path(PyObject* self, PyObject* pyobj
     PyObject* subresult = PyDict_New();
     for (NodeList::iterator j = node_list->begin();
 	 j != node_list->end(); ++j) {
-      NodeObject* node = *j;
+      Node* node = *j;
       PyObject* tuple = PyTuple_New(2);
       PyTuple_SetItem(tuple, 0, PyFloat_FromDouble(NP_DISTANCE(node)));
       PyObject* path = PyList_New(0);
-      NodeObject* subnode = node;
+      Node* subnode = node;
       while (NP_PATH(subnode) != NULL) {
 	PyList_Insert(path, 0, subnode->m_data);
 	subnode = NP_PATH(subnode);
@@ -175,7 +175,7 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
     }
   }
 
-  // Create a vector of set_id -> NodeObject*
+  // Create a vector of set_id -> Node*
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i) {
     distances[(*i)->m_set_id * size + (*i)->m_set_id] = 0;

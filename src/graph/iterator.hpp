@@ -59,10 +59,10 @@ struct IteratorObject {
 void init_IteratorType();
 PyTypeObject* get_IteratorType();
 template<class T>
-T* iterator_new_simple();
+T* iterator_new();
 
 template<class T>
-T* iterator_new_simple() {
+T* iterator_new() {
   IteratorObject* so;
   PyTypeObject* type = get_IteratorType();
   type->tp_basicsize = sizeof(T);
@@ -89,6 +89,39 @@ struct BasicIterator : IteratorObject {
   }
   typename T::iterator m_it, m_end;
 };
+
+template<class T>
+struct EdgeIterator : IteratorObject {
+  int init(typename T::iterator begin, typename T::iterator end) {
+    m_it = begin;
+    m_end = end;
+    return 1;
+  }
+  static PyObject* next(IteratorObject* self) {
+    BasicIterator<T>* so = (BasicIterator<T>*)self;
+    if (so->m_it == so->m_end)
+      return 0;
+    return edgeobject_new(*((so->m_it)++));
+  }
+  typename T::iterator m_it, m_end;
+};
+
+template<class T>
+struct NodeIterator : IteratorObject {
+  int init(typename T::iterator begin, typename T::iterator end) {
+    m_it = begin;
+    m_end = end;
+    return 1;
+  }
+  static PyObject* next(IteratorObject* self) {
+    BasicIterator<T>* so = (BasicIterator<T>*)self;
+    if (so->m_it == so->m_end)
+      return 0;
+    return nodeobject_new(*((so->m_it)++));
+  }
+  typename T::iterator m_it, m_end;
+};
+
 
 template<class T>
 struct MapValueIterator : IteratorObject {
@@ -123,22 +156,25 @@ struct MapKeyIterator : IteratorObject {
 };
 
 struct BFSIterator : IteratorObject {
-  int init(GraphObject* graph, NodeObject* root);
+  int init(GraphObject* graph, Node* root);
+  static Node* next_node(IteratorObject* self);
   static PyObject* next(IteratorObject* self);
   NodeQueue* m_node_queue;
 };
 
 struct DFSIterator : IteratorObject {
-  int init(GraphObject* graph, NodeObject* root);
+  int init(GraphObject* graph, Node* root);
+  static Node* next_node(IteratorObject* self);
   static PyObject* next(IteratorObject* self);
   NodeStack* m_node_stack;
 };
 
-struct EdgeIterator : IteratorObject {
+struct AllEdgeIterator : IteratorObject {
   int init(NodeVector::iterator begin, NodeVector::iterator end);
   static PyObject* next(IteratorObject* self);
   NodeVector::iterator m_it, m_end;
   EdgeList::iterator m_edge_it, m_edge_end;
 };
+
 
 #endif

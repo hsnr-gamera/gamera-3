@@ -31,8 +31,8 @@
 
 #define NUM_NODE_DATA_ELEMENTS 4
 
-struct NodeObject {
-  PyObject_HEAD
+struct Node {
+  //  PyObject_HEAD
   GraphObject* m_graph;
   PyObject* m_data;
   EdgeList* m_out_edges;
@@ -43,15 +43,23 @@ struct NodeObject {
   Any m_node_properties[NUM_NODE_DATA_ELEMENTS];
 };
 
+struct NodeObject {
+  PyObject_HEAD
+  Node* m_x;
+};
+
 #define NP_VISITED(a) ((a)->m_node_properties[0].Bool)
 #define NP_KNOWN(a) ((a)->m_node_properties[3].Bool)
 #define NP_DISTANCE(a) ((a)->m_node_properties[1].Cost)
 #define NP_NUMBER(a) ((a)->m_node_properties[1].SizeT)
-#define NP_PATH(a) ((a)->m_node_properties[2].NodeObjectPtr)
+#define NP_PATH(a) ((a)->m_node_properties[2].NodePtr)
 #define NP_SUBGRAPH_VISITED(a) ((a)->m_node_properties[3].Bool)
 
 void init_NodeType();
-PyObject* node_new_simple(GraphObject* graph, PyObject *data);
+PyObject* nodeobject_new(GraphObject* graph, PyObject *data);
+PyObject* nodeobject_new(Node* node);
+Node* node_new(GraphObject* graph, PyObject* data);
+void node_dealloc(Node* so);
 bool is_NodeObject(PyObject* self);
 
 #endif

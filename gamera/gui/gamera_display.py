@@ -50,7 +50,6 @@ class ImageDisplay(wxScrolledWindow):
       self.image = None
       self.highlighted = []
       self.tmpDC = wxMemoryDC()
-      self.tmpDC.SetPen(wxTRANSPARENT_PEN)
       self.color = 0
       self.menu = None
       self.rubber_on = 0
@@ -223,6 +222,7 @@ class ImageDisplay(wxScrolledWindow):
       size = self.GetSize()
       self.tmpDC.SelectObject(wxEmptyBitmap(
          size.GetWidth(), size.GetHeight()))
+      self.tmpDC.SetPen(wxTRANSPARENT_PEN)
       event.Skip()
       self.scale()
 
@@ -373,11 +373,11 @@ class ImageDisplay(wxScrolledWindow):
          self.rubber_y2 = min((event.GetY() + origin[1]) / self.scaling,
                               self.image.nrows - 1)
          self.draw_rubber()
-         try:
-            for i in self.click_callbacks:
+         for i in self.click_callbacks:
+            try:
                i(self.rubber_y2, self.rubber_x2)
-         except Exception, e:
-            print e
+            except Exception, e:
+               print e
          self.OnLeave(event)
 
    def draw_rubber(self):
@@ -1270,7 +1270,3 @@ class ProjectionDisplay(wxFrame):
       dc.DrawBitmap(bmp, x, y, 0)
       graph_horiz(self.data, dc, x, y + HISTOGRAM_PAD,
                   x + mat_width, y + HISTOGRAM_PAD, border=0)
-
-
-
-

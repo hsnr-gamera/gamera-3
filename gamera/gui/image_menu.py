@@ -187,7 +187,6 @@ class ImageMenu:
 
   def OnPopupFunction(self, event):
     sh = self.get_shell()
-    
     function = functions[event.GetId()]
     if images:
       if self.mode == HELP_MODE:

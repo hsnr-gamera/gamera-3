@@ -407,6 +407,8 @@ class PluginDocumentationGenerator:
 
 class ClassDocumentationGenerator:
    def __init__(self, docgen, classes):
+      if not len(classes):
+         return
       print "Generating class documentation"
       self.docgen = docgen
       self.class_names = []

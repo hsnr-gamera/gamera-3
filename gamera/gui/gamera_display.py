@@ -24,7 +24,7 @@ from wxPython.lib.stattext import wxGenStaticText as wxStaticText
 
 from math import sqrt, ceil, log, floor # Python standard library
 from sys import maxint
-import sys, string, time, weakref
+import sys, string, weakref
 
 from gamera.core import *             # Gamera specific
 from gamera.config import config
@@ -856,6 +856,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
+      dc.BeginDrawing()
+      dc.SetOptimization(True)
       view_start = grid.GetViewStart()
       view_units = grid.GetScrollPixelsPerUnit()
       view_size = grid.GetClientSize()
@@ -869,7 +871,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       scaling = self.parent.scaling
       cell_padding = grid.cell_padding
       image_list = self.parent.list
-      tmp_dc = wxMemoryDC()
 
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(image_list):
@@ -880,10 +881,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
       if not image is None:
          # Fill the background
-         try:
-            color = self._colors[classification_state]
-         except KeyError:
-            color = wxColor(200, 200, 200)
+         color = self._colors[classification_state]
          dc.SetPen(wxTRANSPARENT_PEN)
          if isSelected:
             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
@@ -929,14 +927,14 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
          width = scaled_image.ncols
          height = scaled_image.nrows
-         x = int(rect.x + (rect.width - width) / 2)
-         y = int(rect.y + (rect.height - height) / 2)
+         x = rect.x + (rect.width - width) / 2
+         y = rect.y + (rect.height - height) / 2
          wx_image = wxEmptyImage(width, height)
          scaled_image.to_buffer(wx_image.GetDataBuffer())
-         bmp = wxBitmapFromImage(wx_image)
+         bmp = wx_image.ConvertToBitmap()
 
          # Display centered within the cell
-
+         tmp_dc = wxMemoryDC()
          tmp_dc.SelectObject(bmp)
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function
@@ -961,9 +959,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
 
-##          if classification_state:
-##             draw_emblems()
-            
          if isSelected:
             dc.SetLogicalFunction(wxAND)
             dc.SetBrush(wxBrush(color, wxSOLID))
@@ -983,6 +978,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             dc.SetBrush(wxBrush(wxRED, wxFDIAGONAL_HATCH))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       dc.SetLogicalFunction(wxCOPY)
+      dc.EndDrawing()
 
    # The images should be a little padded within the cells
    # Also, there is a max size for every cell

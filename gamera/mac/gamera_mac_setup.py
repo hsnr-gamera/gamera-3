@@ -156,7 +156,7 @@ class bdist_osx(Command):
       # Make it read only
       output = run_command_at(self.dist_dir, "hdiutil", "convert", "-format", "UDRO", "-o", fullname+".osx.dmg", "temp.dmg")
       # Internet Enable it (why I can do this read only, but I can't do the background, I dunno)
-      output = run_command_at(self.dist_dir, "hdiutil internet-enable -yes", fullname+".osx.dmg")
+      output = run_command_at(self.dist_dir, "hdiutil internet-enable -no", fullname+".osx.dmg")
       # Delete the temporary image
       os.remove(join(self.dist_dir, "temp.dmg"))
       remove_tree(pkg_dir)

@@ -25,6 +25,8 @@ extern "C" {
   static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
   static void imagedata_dealloc(PyObject* self);
+  // get/set
+  
 }
 
 static PyTypeObject ImageDataType = {

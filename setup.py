@@ -20,48 +20,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-# This is a total hack to patch up an error in distutils.command.bdist_rpm
-import distutils.command.bdist_rpm
-def run(self):
-   try:
-      original_run(self)
-   except AssertionError, e:
-      if str(e).startswith("unexpected number of RPM files found"):
-         rpms = glob.glob(os.path.join(os.path.join(self.rpm_base, 'RPMS'),
-                                       "*/*.rpm"))
-         for rpm in rpms:
-            self.move_file(rpm, self.dist_dir)
-      else:
-         raise e
-original_run = distutils.command.bdist_rpm.bdist_rpm.run
-setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', run)
-
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
-
 import sys, os, glob
-
-# If gamera.generate is imported gamera.__init__.py will
-# also be imported, which won't work until the build is
-# finished. To get around this, the gamera directory is
-# added to the path and generate is imported directly
-sys.path.append("gamera")
-import generate, gamera_setup
-
-########################################
-# Check that the Python version is correct
-gamera_setup.check_python_version()
-
-########################################
-# Some platforms require extra compile and link arguments
-extras = {}
-if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-   extras['extra_compile_args'] = ["/GR"]#, "/Zi"]
-elif sys.platform == 'darwin':
-   extras['extra_link_args'] = ['-F/System/Library/Frameworks/']
-elif '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
-   extras['libraries'] = ["stdc++"] # Not for intel compiler
+from gamera import gamera_setup
 
 ##########################################
 # generate the command line startup scripts
@@ -118,7 +81,7 @@ graph_files = glob.glob("src/graph/*.cpp")
 plugin_extensions = []
 plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 plugin_extensions = gamera_setup.generate_plugins(
-   plugins, "gamera.plugins", 1, **extras)
+   plugins, "gamera.plugins", True)
 
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
@@ -134,14 +97,14 @@ extensions = [Extension("gamera.gameracore",
                          "src/imageinfoobject.cpp"
                          ],
                         include_dirs=["include"],
-                        **extras
+                        **gamera_setup.extras
                         ),
               Extension("gamera.knncore", ga_files,
                         include_dirs=["include", "src/ga", "src"],
-                        **extras),
+                        **gamera_setup.extras),
               Extension("gamera.graph", graph_files,
                         include_dirs=["include", "src", "src/graph"],
-                        **extras)]
+                        **gamera_setup.extras)]
 extensions.extend(plugin_extensions)
 
 description = ("This is the Gamera installer. " +
@@ -155,7 +118,8 @@ includes = [(os.path.join(include_path, a), glob.glob(os.path.join("include/", o
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx")]
             
-setup(name = "gamera", version=open("version", 'r').readlines()[0].strip(),
+setup(name = "gamera",
+      version=open("version", 'r').readlines()[0].strip(),
       url = "http://gamera.sourceforge.net/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "gamera-users@lists.sourceforge.net",

@@ -90,7 +90,7 @@ described in the matplotlib docs, using the object-oriented or
 The following example uses the ``pylab`` interface and is taken
 directly from the matplotlib example ``plot_demo.py``.  This code can
 either be entered directly into the Gamera console, or imported from a
-file.
+file.  This code assumes that either ``Numeric`` or ``numarray`` is installed.
 
 .. code:: Python
 

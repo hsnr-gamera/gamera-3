@@ -22,7 +22,7 @@ import _logical
   
 class LogicalCombine(PluginFunction):
   self_type = ImageType([ONEBIT])
-  args = Args([ImageType([ONEBIT], "mask"), Check("in_place", default=False)])
+  args = Args([ImageType([ONEBIT], "other"), Check("in_place", default=False)])
 
 class and_image(LogicalCombine):
   """Perform the AND operation on two images.
@@ -118,7 +118,6 @@ class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""
   category = "Combine/Logical"
   cpp_headers = ["logical.hpp"]
-  cpp_namespaces=["Gamera"]
   functions = [and_image, or_image, xor_image]
   author = "Michael Droettboom"
   url = "http://gamera.dkc.jhu.edu/"

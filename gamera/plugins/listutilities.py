@@ -44,7 +44,6 @@ Example usage::
 class ListUtilitiesModule(PluginModule):
     category = "List"
     cpp_headers=["listutilities.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [permute_list]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

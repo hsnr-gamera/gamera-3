@@ -1034,6 +1034,7 @@ class MultiImageDisplay(wxGrid):
       self.frame = parent
       self.updating = 0
       self.sort_function = ""
+      self.sort_order = 0
       self.display_attribute = ""
       self.display_names = 0
       self.created = 0
@@ -1243,14 +1244,30 @@ class MultiImageDisplay(wxGrid):
          orig_len = len(self.list)
          if function != None:
             self.sort_function = function
-         if self.sort_function == "":
+            self.sort_order = order
+
+         if self.sort_function == '':
             self.list = self.default_sort(self.list)
          else:
+            sort_string = self.sort_function
+            error_messages = {}
             self.list = self.GetAllItems()
-            self.list.sort(self.sort_function)
+            for image in self.list:
+               try:
+                  image.sort_cache = eval("x." + sort_string, {'x': image})
+               except Exception, e:
+                  error_messages[str(e)] = None
+                  image.sort_cache = None
+            if len(error_messages):
+               message = '\n\n'.join(error_messages.keys())
+               gui_util.message(message)
+               for item in self.list:
+                  del item.sort_cache
+               return
+            self.list.sort(util.fast_cmp)
             for item in self.list:
                del item.sort_cache
-         if order:
+         if self.sort_order:
             self.list.reverse()
          self.resize_grid()
          self.ClearSelection()
@@ -1616,38 +1633,10 @@ class MultiImageWindow(wxPanel):
 
    def _OnSortAscending(self, event, order=0):
       sort_string = string.strip(self.sort_combo.GetValue())
-      if sort_string == '':
-         self.id.sort_images('', order)
-         return
-      if sort_string.startswith('func'):
-         split = string.split(sort_string)
-         if len(split) >= 1:
-            final = string.join(split[1:])
-         else:
-            gui_util.message(
-               "The given sorting expressing contains a syntax error.")
-            return
-         try:
-            sort_func = eval(final, globals(), image_menu.shell.locals)
-         except Exception, e:
-            gui_util.message(str(e))
-            return
-      else:
-         error_messages = {}
-         try:
-            for image in self.id.GetAllItems():
-               image.sort_cache = eval("x." + sort_string, {'x': image})
-         except Exception, e:
-            error_messages[str(e)] = None
-            image.sort_cache = None
-         sort_func = util.fast_cmp
-         if len(error_messages):
-            message = '\n\n'.join(error_messages.keys())
-            gui_util.message(message)
       if sort_string not in self.sort_choices:
          self.sort_choices.append(sort_string)
          self.sort_combo.Append(sort_string)
-      self.id.sort_images(sort_func, order)
+      self.id.sort_images(sort_string, order)
 
    def _OnSortDescending(self, event):
       self._OnSortAscending(event, 1)

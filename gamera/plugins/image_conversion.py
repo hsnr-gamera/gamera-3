@@ -103,7 +103,6 @@ to_onebit = to_onebit
 class ImageConversionModule(PluginModule):
     category = "Conversion"
     cpp_headers=["image_conversion.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [to_rgb, to_greyscale, to_grey16, to_float,
                  to_onebit, to_onebit]
     author = "Michael Droettboom and Karl MacMillan"

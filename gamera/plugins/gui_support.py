@@ -55,7 +55,6 @@ class GuiSupportModule(PluginModule):
     infrastructure."""
     category = None
     cpp_headers = ["gui_support.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [to_string, to_buffer, color_ccs]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

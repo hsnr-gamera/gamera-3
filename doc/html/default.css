@@ -30,7 +30,8 @@ div.important, div.note, div.tip, div.warning, div.admonition {
   border: thin solid ;
   border-color: #ddddcc;
   background-color: #FFFFDD;
-  padding: 1em }
+  padding: 1em 
+}
 
 div.attention p.admonition-title, div.caution p.admonition-title,
 div.danger p.admonition-title, div.error p.admonition-title,
@@ -257,13 +258,19 @@ table.footnote {
   padding-left: 0.5ex }
 
 td, th {
-  padding: 1em ;
-  vertical-align: top }
+  padding: 0.75em ;
+  vertical-align: top 
+}
 
 th.docinfo-name, th.field-name {
   font-weight: bold ;
   text-align: left ;
-  white-space: nowrap }
+  white-space: nowrap 
+}
+
+td.field-body, th.field-name {
+  padding: 0.5em;
+}
 
 h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {
   font-size: 100% }

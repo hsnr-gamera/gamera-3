@@ -46,14 +46,31 @@ The pixels in an image can be one of the following types:
    .. warning:: Unfortunately, at this time ``FLOAT`` images can not be saved
       or loaded.
 
-   .. note:: When ``FLOAT`` images are displayed in the GUI, the output is automatically
-      "normalized" so that the total range in the image is equal to the
-      range of brightnesses your monitor can display.
+   .. note:: When ``FLOAT`` images are displayed in the GUI, the
+      output is automatically "normalized" so that the total range in
+      the image is equal to the range of brightnesses your monitor can
+      display.
 
 .. __: plugins.html#cc-analysis
 
-Storage types
-=============
+The pixel type of an image can be retrieved in two ways.
+
+.. code:: Python
+
+  image.pixel_type_name()
+
+returns a string which is one of ``RGB``, ``GreyScale``, ``Grey16``,
+``OneBit`` or ``Float``.
+
+.. code:: Python
+
+  image.data.pixel_type
+
+returns an integer which will be one of the constants ``RGB``,
+``GREYSCALE``, ``GREY16``, ``ONEBIT`` or ``FLOAT``. 
+
+Storage formats
+===============
 
 Gamera has two ways of storing the image data in memory behind the scenes:
 
@@ -70,5 +87,20 @@ Gamera has two ways of storing the image data in memory behind the scenes:
 
 .. warning:: At present, ``RLE`` is only available for ``ONEBIT`` images.
 
+The storage format of an image can be determined in two ways.
+
+.. code:: Python
+
+  image.storage_format_name()
+
+returns a string which is either ``Dense`` or ``RLE``.
+
+.. code:: Python
+
+  image.data.storage_format
+
+returns an integer corresponding to the constants ``DENSE`` and ``RLE``.
+
 .. note:: Any performance improvement should be justified only
    by profiling on real-world data
+

@@ -23,7 +23,8 @@ from gamera.core import *
 from gamera.config import config
 from gamera import paths, util
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, gui_util, image_browser, has_gui
+     icon_display, classifier_display, var_name, gui_util, \
+     image_browser, has_gui
 
 # wxPython
 from wxPython.wx import *
@@ -98,7 +99,8 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   def ShowClassifier(classifier=None, current_database=[], image=None, symbol_table=[]):
+   def ShowClassifier(classifier=None, current_database=[],
+                      image=None, symbol_table=[]):
       if classifier is None:
          from gamera import knn
          classifier = knn.kNNInteractive()
@@ -353,7 +355,8 @@ class ShellFrame(wxFrame):
             wxBeginBusyCursor()
             try:
                self.shell.run("from gamera import gamera_xml")
-               self.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' % (name, filename))
+               self.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' %
+                              (name, filename))
             finally:
                wxEndBusyCursor()
 
@@ -415,7 +418,8 @@ class CustomMenu:
                   menuID = wxNewId()
                   menu.Append(menuID, item)
                   EVT_MENU(main_win, menuID,
-                           getattr(self, "_On" + util.string2identifier(item)))
+                           getattr(self, "_On" +
+                                   util.string2identifier(item)))
 
 class StatusBar(wxStatusBar):
    def __init__(self, parent):

@@ -148,10 +148,7 @@ inline bool is_SizeObject(PyObject* x) {
   PyTypeObject* t = get_SizeType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_SizeObject(const Size& d) {
@@ -196,10 +193,7 @@ inline bool is_DimensionsObject(PyObject* x) {
   PyTypeObject* t = get_DimensionsType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_DimensionsObject(const Dimensions& d) {
@@ -244,10 +238,7 @@ inline bool is_PointObject(PyObject* x) {
   PyTypeObject* t = get_PointType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_PointObject(const Point& d) {
@@ -292,10 +283,7 @@ inline bool is_RectObject(PyObject* x) {
   PyTypeObject* t = get_RectType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_RectObject(const Rect& d) {
@@ -341,10 +329,7 @@ inline bool is_RGBPixelObject(PyObject* x) {
   PyTypeObject* t = get_RGBPixelType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_RGBPixelObject(const RGBPixel& d) {
@@ -390,10 +375,7 @@ inline bool is_RegionObject(PyObject* x) {
   PyTypeObject* t = get_RegionType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_RegionObject(const Region& d) {
@@ -439,10 +421,7 @@ inline bool is_RegionMapObject(PyObject* x) {
   PyTypeObject* t = get_RegionMapType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_RegionMapObject(const RegionMap& d) {
@@ -489,10 +468,7 @@ inline bool is_ImageDataObject(PyObject* x) {
   PyTypeObject* t = get_ImageDataType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_ImageDataObject(int nrows, int ncols,
@@ -588,10 +564,7 @@ inline bool is_ImageObject(PyObject* x) {
   PyTypeObject* t = get_ImageType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 /*
@@ -629,10 +602,7 @@ inline bool is_SubImageObject(PyObject* x) {
   PyTypeObject* t = get_SubImageType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 /*
@@ -670,10 +640,7 @@ inline bool is_CCObject(PyObject* x) {
   PyTypeObject* t = get_CCType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-    return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 /*
@@ -688,6 +655,12 @@ inline int get_storage_format(PyObject* image) {
 // get the pixel type - no type checking is performed
 inline int get_pixel_type(PyObject* image) {
   return ((ImageDataObject*)((ImageObject*)image)->m_data)->m_pixel_type;
+}
+
+inline const char* get_pixel_type_name(PyObject* image) {
+  int pixel_type = get_pixel_type(image);
+  const char* pixel_type_names[5] = {"OneBit", "GreyScale", "Grey16", "RGB", "Float"};
+  return pixel_type_names[pixel_type];
 }
 
 // get the combination of pixel and image type
@@ -785,7 +758,14 @@ inline PyObject* create_ImageObject(Image* image) {
   int pixel_type;
   int storage_type;
   bool cc = false;
-  if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
+  if (dynamic_cast<Cc*>(image) != 0) {
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::DENSE;
+    cc = true;
+  } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::DENSE;
+  } else if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
     pixel_type = Gamera::GREYSCALE;
     storage_type = Gamera::DENSE;
   } else if (dynamic_cast<Grey16ImageView*>(image) != 0) {
@@ -797,16 +777,9 @@ inline PyObject* create_ImageObject(Image* image) {
   } else if (dynamic_cast<RGBImageView*>(image) != 0) {
     pixel_type = Gamera::RGB;
     storage_type = Gamera::DENSE;
-  } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
-    pixel_type = Gamera::ONEBIT;
-    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::RLE;
-  } else if (dynamic_cast<Cc*>(image) != 0) {
-    pixel_type = Gamera::ONEBIT;
-    storage_type = Gamera::DENSE;
-    cc = true;
   } else if (dynamic_cast<RleCc*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::RLE;
@@ -881,10 +854,7 @@ inline bool is_ImageInfoObject(PyObject* x) {
   PyTypeObject* t = get_ImageInfoType();
   if (t == 0)
     return 0;
-  if (PyObject_TypeCheck(x, t))
-    return true;
-  else
-  return false;
+  return PyObject_TypeCheck(x, t);
 }
 
 inline PyObject* create_ImageInfoObject(ImageInfo* x) {

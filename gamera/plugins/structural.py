@@ -36,7 +36,6 @@ class polar_match(PluginFunction):
 
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]
-    cpp_namespace = ["Gamera"]
     category = "Relational"
     functions = [polar_distance, polar_match]
     author = "Michael Droettboom and Karl MacMillan"

@@ -68,7 +68,7 @@ static PyGetSetDef imagedata_getset[] = {
   { "bytes", (getter)imagedata_get_bytes, 0,
     "The size of the data in bytes", 0 },
   { "mbytes", (getter)imagedata_get_mbytes, 0,
-    "The size of the data in mbytes", 0 },
+    "The size of the data in megabytes", 0 },
   { "pixel_type", (getter)imagedata_get_pixel_type, 0,
     "The type of the pixel stored in the object", 0 },
   { "storage_format", (getter)imagedata_get_storage_format, 0,

@@ -373,8 +373,8 @@ class hessian_matrix_of_gaussian(PluginFunction):
 
 class sobel_edge_detection(PluginFunction):
     """Performs simple Sobel edge detection on the image."""
-    self_type = ImageType(ALL)
-    return_type = ImageType(ALL)
+    self_type = ImageType(CONVOLUTION_TYPES)
+    return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
     doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0)]
     def __call__(self, scale=1.0):
@@ -385,7 +385,6 @@ class sobel_edge_detection(PluginFunction):
 
 class ConvolutionModule(PluginModule):
     cpp_headers=["convolution.hpp"]
-    cpp_namespace=["Gamera"]
     category = "Convolution"
     functions = [convolve, convolve_xy, convolve_x, convolve_y,
                  GaussianKernel, GaussianDerivativeKernel,

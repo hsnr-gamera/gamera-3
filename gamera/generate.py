@@ -62,7 +62,6 @@ def restore_import():
    __builtins__['__import__'] = std_import
 
 template = Template("""
-  [[exec import string]]
   [[exec from os import path]]
   [[exec from enums import *]]
   [[exec from plugin import *]]
@@ -137,7 +136,9 @@ template = Template("""
       [[if function.return_type != None]]
         [[exec function.return_type.name = 'return']]
         [[exec function.return_type.convert_from_PyObject = True]]
-        [[function.return_type.declare()]]
+        [[if not function.feature_function]]
+          [[function.return_type.declare()]]
+        [[end]]
       [[end]]
       [[exec pyarg_format = '']]
       [[for arg in args]]
@@ -175,7 +176,7 @@ template = Template("""
            feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
            if (self_arg->features_len < offset + [[function.return_type.length]]) {
-             PyErr_SetString(PyExc_ValueError, \"Offset as given will cause data to be written outside of array.  Perhaps you neglected to create a feature array?\");
+             PyErr_Format(PyExc_ValueError, \"Offset as given (%d) will cause data to be written outside of array of length (%d).  Perhaps the feature array is not initialised?\", offset, self_arg->features_len);
              return 0;
            }
            feature_buffer = self_arg->features + offset;
@@ -199,7 +200,7 @@ template = Template("""
 
       [[if function.feature_function]]
          if (str != 0) {
-            [[# This is pretty expensive, but simple#]]
+            [[# This is pretty expensive, but simple #]]
             PyObject* array_init = get_ArrayInit();
             if (array_init == 0)
               return 0;
@@ -296,6 +297,7 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
     cpp_files.append(file)
   
   extra_libraries = plugin_module.module.extra_libraries
+  # This is to make up for a bug in distutils.
   if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
      if "stdc++" not in extra_libraries:
         extra_libraries.append("stdc++")

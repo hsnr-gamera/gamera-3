@@ -63,7 +63,6 @@ class ThinningModule(PluginModule):
     category = "Filter/Thinning"
     functions = [thin_zs, thin_hs, thin_lc]
     cpp_headers = ["thinning.hpp"]
-    cpp_namespaces = ["Gamera"]
     author = "Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)"
     url = "http://gamera.dkc.jhu.edu/"
 module = ThinningModule()

@@ -375,9 +375,9 @@ namespace Gamera {
 	       in_col != in_row.end(); ++in_col, ++out_col) {
 	    OneBitPixel tmp = in_acc.get(in_col);
 	    if (is_white(tmp))
-	      out_acc.set(FloatPixel(1), out_col);
+	      out_acc.set(FloatPixel(1.0), out_col);
 	    else
-	      out_acc.set(FloatPixel(0), out_col);	      
+	      out_acc.set(FloatPixel(0.0), out_col);	      
 	  }
 	}
 	return view;	

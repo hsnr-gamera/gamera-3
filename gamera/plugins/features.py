@@ -202,7 +202,6 @@ and storing the results in the image's ``features`` member variable (a Python ``
 class FeaturesModule(PluginModule):
     category = "Features"
     cpp_headers=["features.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [black_area, moments, nholes,
                  nholes_extended, volume, area,
                  aspect_ratio, compactness,

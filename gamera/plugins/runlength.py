@@ -208,7 +208,6 @@ To encode an RLE string, use to_rle_."""
 class RunLengthModule(PluginModule):
     category = "Runlength"
     cpp_headers=["runlength.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [most_frequent_black_horizontal_run,
                  most_frequent_white_horizontal_run,
                  most_frequent_black_vertical_run,

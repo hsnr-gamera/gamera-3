@@ -55,11 +55,11 @@ PyTypeObject* get_RGBPixelType() {
 
 static PyGetSetDef rgbpixel_getset[] = {
   { "red", (getter)rgbpixel_get_red, (setter)rgbpixel_set_red,
-    "the current red value", 0 },
+    "the current red value [0,255]", 0 },
   { "green", (getter)rgbpixel_get_green, (setter)rgbpixel_set_green,
-    "the current green value", 0 },
+    "the current green value [0, 255]", 0 },
   { "blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
-    "the current blue value", 0 },
+    "the current blue value [0, 255]", 0 },
   { "hue", (getter)rgbpixel_get_hue, 0,
     "the hue [0, 1.0]", 0 },
   { "saturation", (getter)rgbpixel_get_saturation, 0,
@@ -86,6 +86,18 @@ static PyObject* rgbpixel_new(PyTypeObject* pytype, PyObject* args,
   int red, green, blue;
   if (PyArg_ParseTuple(args, "iii", &red, &green, &blue) <= 0)
     return 0;
+  if (red < 0 || red > 255) {
+    PyErr_Format(PyExc_ValueError, "'red' value '%d' is out of range (0, 255)", red);
+    return 0;
+  }
+  if (green < 0 || green > 255) {
+    PyErr_Format(PyExc_ValueError, "'green' value '%d' is out of range (0, 255)", green);
+    return 0;
+  }
+  if (blue < 0 || blue > 255) {
+    PyErr_Format(PyExc_ValueError, "'blue' value '%d' is out of range (0, 255)", blue);
+    return 0;
+  }
   RGBPixelObject* so = (RGBPixelObject*)pytype->tp_alloc(pytype, 0);
   so->m_x = new RGBPixel(red, green, blue);
   return (PyObject*)so;
@@ -193,6 +205,10 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_getset = rgbpixel_getset;
   RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
+  RGBPixelType.tp_doc = "Represents a 24-bit RGBPixel value. " 
+    "The constructor can take either three integers, (*red*, *green*, *blue*), or a single value for all three colors, usually specified as a hex literal. "
+    "Example: RGBPixel(255, 0, 0) or RGBPixel(0xff0000)."
+    "Each color value is in the range 0-255 (8 bits).";
   PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);
 }

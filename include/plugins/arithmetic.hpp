@@ -25,6 +25,7 @@
 #include "gamera.hpp"
 
 template<class T, class FUNCTOR>
+inline 
 typename ImageFactory<T>::view_type* 
 arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
@@ -82,13 +83,16 @@ struct my_minus : public std::binary_function<T,T,T>
 {
   T operator()(const T& x, const T& y) const { 
     typedef typename NumericTraits<T>::Promote PROMOTE;
-    return std::minus<T>()(x, y); }
+    return std::minus<T>()(x, y); 
+  }
 };
 
 template<>
 struct my_minus<OneBitPixel> : public std::binary_function<OneBitPixel, OneBitPixel, OneBitPixel>
 {
   OneBitPixel operator()(const OneBitPixel& x, const OneBitPixel& y) const {
+    // Note the result is inverted, because the default accessor performs an invert.
+    // GAAAH!
     if (is_black(x) && !is_black(y))
       return pixel_traits<OneBitPixel>::white();
     else

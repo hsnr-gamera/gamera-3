@@ -68,7 +68,6 @@ class inkrub(PluginFunction):
 
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
-    cpp_namespace=["Gamera"]
     category = "Deformations"
     functions = [rotate,noise,inkrub,wave]
     author = "Albert Bzreckzo"

@@ -22,6 +22,7 @@ and computing histograms."""
 
 from gamera.plugin import *
 import _arithmetic
+import _logical
 
 ARITHMETIC_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
 
@@ -45,6 +46,8 @@ on either image to crop appropriately if necessary for your specific case.
    contents of the current image.
 """
     def __call__(self, other, in_place=False):
+       if self.data.pixel_type == ONEBIT:
+           return _logical.or_image(self, other, in_place)
        return _arithmetic.add_images(self, other, in_place)
     __call__ = staticmethod(__call__)
 
@@ -106,12 +109,13 @@ on either image to crop appropriately if necessary for your specific case.
    contents of the current image.
 """
     def __call__(self, other, in_place=False):
+       if self.data.pixel_type == ONEBIT:
+           return _logical.and_image(self, other, in_place)
        return _arithmetic.multiply_images(self, other, in_place)
     __call__ = staticmethod(__call__)
     
 class ArithmeticModule(PluginModule):
     cpp_headers=["arithmetic.hpp"]
-    cpp_namespace=["Gamera"]
     category = "Combine/Arithmetic"
     functions = [add_images, subtract_images, multiply_images, divide_images]
     author = "Michael Droettboom"

@@ -41,7 +41,7 @@ class _Classifier:
    ########################################
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
-                            evaluate_function=None, max_size=5):
+                            evaluate_function=None, max_parts_per_group=5):
       if len(glyphs) == 0:
          return [], []
       glyphs = [x for x in glyphs if x.classification_state != 3]
@@ -52,7 +52,8 @@ class _Classifier:
       G = self._pregroup(glyphs, grouping_function)
       if evaluate_function is None:
          evaluate_function = self._evaluate_subgroup
-      found_unions = self._find_group_unions(G, evaluate_function, max_size)
+      found_unions = self._find_group_unions(
+         G, evaluate_function, max_parts_per_group)
       return found_unions + splits, removed
 
    def _default_grouping_function(a, b):
@@ -78,10 +79,13 @@ class _Classifier:
          progress.kill()
       return G
 
+   unions = [] ###
    def _evaluate_subgroup(self, subgroup):
       import image_utilities
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
+         self.unions.append(union) ###
+         union.properties.root_number = self.root_number ###
          classification = self.guess_glyph_automatic(union)
          classification_name = classification[0][1]
          if (classification_name.startswith("_split") or
@@ -94,14 +98,16 @@ class _Classifier:
          return 0
       return classification[0]
 
-   def _find_group_unions(self, G, evaluate_function, max_size=5):
+   def _find_group_unions(self, G, evaluate_function, max_parts_per_group=5):
+      self.root_number = 0 ###
       import image_utilities
       progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
       try:
          found_unions = []
          for root in G.get_subgraph_roots():
+            self.root_number += 1 ###
             best_grouping = G.optimize_partitions(
-               root, evaluate_function, max_size)
+               root, evaluate_function, max_parts_per_group)
             for subgroup in best_grouping:
                if len(subgroup) > 1:
                   union = image_utilities.union_images(subgroup)

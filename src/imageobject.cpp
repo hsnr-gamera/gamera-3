@@ -38,7 +38,8 @@ extern "C" {
   static PyObject* image_getitem(PyObject* self, PyObject* args);
   static PyObject* image_setitem(PyObject* self, PyObject* args);
   static PyObject* image_len(PyObject* self, PyObject* args);
-  static PyObject* image_sort(PyObject* self, PyObject* args);
+  // Removed 07/28/04 MGD.  Can't figure out why this is useful.
+  // static PyObject* image_sort(PyObject* self, PyObject* args);
   // Get/set
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
@@ -110,12 +111,13 @@ static PyGetSetDef cc_getset[] = {
 };
 
 static PyMethodDef image_methods[] = {
-  { "get", image_get, METH_VARARGS },
-  { "set", image_set, METH_VARARGS },
+  { "get", image_get, METH_VARARGS, "get a pixel at the given (y, x) coordinate" },
+  { "set", image_set, METH_VARARGS, "set a pixel at the given (y, x) coordinate to the given value" },
   { "__getitem__", image_getitem, METH_VARARGS },
   { "__setitem__", image_setitem, METH_VARARGS },  
   { "__len__", image_len, METH_NOARGS },  
-  { "sort", image_sort, METH_NOARGS },  
+  // Removed 07/28/04 MGD.  Can't figure out why this is useful.
+  // { "sort", image_sort, METH_NOARGS },  
   { NULL }
 };
 
@@ -518,6 +520,10 @@ static PyObject* image_len(PyObject* self, PyObject* args) {
   return Py_BuildValue("i", (long)(image->nrows() * image->ncols()));
 }
 
+/*
+
+Removed 07/28/04 MGD.  Can't figure out why this is useful.
+
 static PyObject* image_sort(PyObject* self, PyObject* args) {
   Image* image = (Image*)((RectObject*)self)->m_x;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
@@ -546,6 +552,7 @@ static PyObject* image_sort(PyObject* self, PyObject* args) {
   Py_INCREF(Py_None);
   return Py_None;
 }
+*/
 
 #define CREATE_GET_FUNC(name) static PyObject* image_get_##name(PyObject* self) {\
   ImageObject* o = (ImageObject*)self; \

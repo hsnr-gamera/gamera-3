@@ -269,7 +269,6 @@ class shear_column(PluginFunction):
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
-    cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_save, image_copy, resize, scale,
                  histogram, union_images,

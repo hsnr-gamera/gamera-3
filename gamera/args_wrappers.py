@@ -88,7 +88,7 @@ class Int(WrapperArg):
    c_type = 'int'
 
    def to_python(self):
-      return '%(pysymbol)s = Py_BuildValue("i", %(symbol)s);' % self
+      return '%(pysymbol)s = PyInt_FromLong((long)%(symbol)s);' % self
 
 Choice = Check = Int
 
@@ -97,7 +97,7 @@ class Float(WrapperArg):
    c_type = 'double'
 
    def to_python(self):
-      return '%(pysymbol)s = Py_BuildValue("f", %(symbol)s);' % self
+      return '%(pysymbol)s = PyFloat_FromDouble((double)%(symbol)s);' % self
 
 class String(WrapperArg):
    arg_format = 's'
@@ -116,7 +116,7 @@ class ImageType(WrapperArg):
 
    def from_python(self):
       return """if (!is_ImageObject(%(pysymbol)s)) {
-          PyErr_SetString(PyExc_TypeError, "Object is not an image");
+          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not an image");
           return 0;
         }
         %(symbol)s = ((Image*)((RectObject*)%(pysymbol)s)->m_x);
@@ -145,7 +145,8 @@ class ImageType(WrapperArg):
 
          result += "break;\n"
       result += "default:\n"
-      result += 'PyErr_SetString(PyExc_TypeError, "Image types do not match function signature.");\nreturn 0;\n'
+      result += ('PyErr_Format(PyExc_TypeError, "The \'%s\' argument of \'%s\' can not have pixel type \'%%s\'.", get_pixel_type_name(%s));\nreturn 0;\n' %
+                 (self.name, function.__name__, self.pysymbol))
       result += "}\n"
       return result
 
@@ -167,7 +168,7 @@ class Rect(WrapperArg):
 
    def from_python(self):
       return """if (!is_RectObject(%(pysymbol)s)) {
-          PyErr_SetString(PyExc_TypeError, "Object is not a Rect");
+          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Rect");
           return 0;
         }
         %(symbol)s = (((RectObject*)%(pysymbol)s)->m_x);
@@ -183,7 +184,7 @@ class Region(WrapperArg):
    def from_python(self):
       return """
       if (!is_RegionObject(%(pysymbol)s)) {
-        PyErr_SetString(PyExc_TypeError, "Object is not a Region.");
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Region");
         return 0;
       }
       %(symbol)s = (Region*)((RectObect*)%(pysymbol)s)->m_x;""" % self
@@ -200,7 +201,7 @@ class RegionMap(WrapperArg):
    def from_python(self):
       return """
       if (!is_RegionMapObject(%(pysymbol)s)) {
-        PyErr_SetString(PyExc_TypeError, "Object is not a RegionMap.");
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a RegionMap.");
         return 0;
       }
       %(symbol)s = (RegionMap*)((RegionMapObect*)%(pysymbol)s)->m_x;""" % self
@@ -216,8 +217,10 @@ class ImageList(WrapperArg):
    convert_from_PyObject = True
    
    def from_python(self):
-      return """if (!PyList_Check(%(pysymbol)s)) {
-            PyErr_SetString(PyExc_TypeError, "Expected a list of images.");
+      return """
+          const char* type_error_%(name)s = "Argument '%(name)s' is not a list of images.";
+          if (!PyList_Check(%(pysymbol)s)) {
+            PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
             return 0;
           }
           int %(symbol)s_size = PyList_GET_SIZE(%(pysymbol)s);
@@ -225,7 +228,7 @@ class ImageList(WrapperArg):
           for (int i=0; i < %(symbol)s_size; ++i) {
             PyObject *element = PyList_GET_ITEM(%(pysymbol)s, i);
             if (!is_ImageObject(element)) {
-              PyErr_SetString(PyExc_TypeError, "Expected a list of images.");
+              PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
               return 0;
             }
             %(symbol)s[i] = ((Image*)((RectObject*)element)->m_x);

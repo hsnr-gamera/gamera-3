@@ -125,7 +125,6 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
 class EdgeDetect(PluginModule):
       category = "Edge"
       cpp_headers=["edgedetect.hpp"]
-      cpp_namespace=["Gamera"]
       functions = [difference_of_exponential_edge_image,
                    difference_of_exponential_crack_edge_image,
                    canny_edge_image]

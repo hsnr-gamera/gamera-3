@@ -885,7 +885,7 @@ class ClassifierFrame(ImageFrameBase):
           FileSave('Save glyphs to file:', '',
                    extension=gamera_xml.extensions)],
          name = 'Save by criteria...')
-      verified = 0
+      verified = False
       while not verified:
          results = dialog.show(self._frame)
          if results is None:
@@ -900,7 +900,7 @@ class ClassifierFrame(ImageFrameBase):
          if filename is None:
             gui_util.message("You must select a filename to save into.")
             continue
-         verified = 1
+         verified = True
 
       self._save_by_criteria_dialog = results
 
@@ -1259,7 +1259,8 @@ class SymbolTableEditorPanel(wxPanel):
       self.SetAutoLayout(True)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = wxNewId()
-      self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB)
+      self.text = wxTextCtrl(self, txID,
+                             style=wxTE_PROCESS_ENTER|wxTE_PROCESS_TAB)
       EVT_KEY_DOWN(self.text, self._OnKey)
       EVT_TEXT(self, txID, self._OnText)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER

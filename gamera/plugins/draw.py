@@ -84,7 +84,7 @@ The coordinates can be specified either by two floats or two Points:
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
     points = [randint(0, 100) for x in range(8)]
-    image.draw_bezier(*tuple(list(points) + [RGBPixel(255, 0, 0)]))
+    image.draw_bezier(*tuple(list(points) + [RGBPixel(255, 0, 0), 0.1]))
     image.draw_marker(points[0], points[1], 7, 0, RGBPixel(0, 0, 255))
     image.draw_marker(points[2], points[3], 7, 1, RGBPixel(0, 255, 0))
     image.draw_marker(points[4], points[5], 7, 1, RGBPixel(0, 255, 0))
@@ -336,7 +336,7 @@ The coordinates can be specified either by eight floats or four Points:
                                  c.y, c.x, d.y, d.x, value, accuracy)
       except KeyError, AttributeError:
         pass
-      raise ValueError("Arguments are incorrect.")
+    raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
   def __doc_example1__():
@@ -348,7 +348,8 @@ The coordinates can be specified either by eight floats or four Points:
                         randint(0, 100), randint(0, 100),
                         randint(0, 100), randint(0, 100),
                         randint(0, 100), randint(0, 100),
-                        RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
+                        RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)),
+                        0.1)
     return image
   doc_examples = [(__doc_example1__,)]
 
@@ -408,9 +409,15 @@ Self must be an RGB image (usually the original image.)
   self_type = ImageType([RGB])
   args = Args([ImageType([ONEBIT], "cc"), Pixel("color")])
 
+  def __doc_example1__(image):
+    ccs = image.cc_analysis()
+    rgb = image.to_rgb()
+    rgb.highlight(ccs[0], RGBPixel(255, 0, 128))
+    return rgb
+  doc_examples = [(__doc_example1__, ONEBIT)]
+
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]
-  cpp_namespaces = ["Gamera"]
   category = "Draw"
   functions = [draw_line, draw_bezier, draw_marker,
                draw_hollow_rect, draw_filled_rect, flood_fill,

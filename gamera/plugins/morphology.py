@@ -93,7 +93,6 @@ require recursion.
 
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
-  cpp_namespaces = ["Gamera"]
   category = "Morphology"
   functions = [erode_dilate, erode, dilate, rank, mean, despeckle]
   author = "Michael Droettboom and Karl MacMillan"

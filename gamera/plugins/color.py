@@ -120,8 +120,6 @@ kinds of data.
 class ColorModule(PluginModule):
     category = "Color"
     cpp_headers=["color.hpp"]
-    cpp_namespaces = ["Gamera"]
-
     functions = [hue, saturation, value, cyan, magenta, yellow,
                  cie_x, cie_y, cie_z, red, green, blue, false_color]
     author = "Michael Droettboom and Karl MacMillan"

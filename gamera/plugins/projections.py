@@ -273,7 +273,6 @@ Return Values:
 
 class ProjectionsModule(PluginModule):
     cpp_headers=["projections.hpp"]
-    cpp_namespace=["Gamera"]
     category = "Analysis"
     functions = [projection_rows, projection_cols, projections,
                  projection_skewed_rows, projection_skewed_cols,

@@ -27,7 +27,7 @@
 namespace Gamera {
 
 template<class T, class U, class FUNCTOR>
-typename ImageFactory<T>::view_type* 
+inline typename ImageFactory<T>::view_type* 
 logical_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::runtime_error("Images must be the same size.");
@@ -87,8 +87,7 @@ or_image(T& a, const U& b, bool in_place=true) {
   return logical_combine(a, b, std::logical_or<bool>(), in_place);
 };
 
-  // We make our own, since logical_xor is not in STL
-  
+// We make our own, since logical_xor is not in STL
 template <class _Tp>
 struct logical_xor : public std::binary_function<_Tp,_Tp,bool>
 {

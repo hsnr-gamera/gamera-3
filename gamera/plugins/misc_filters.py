@@ -30,7 +30,6 @@ class MiscFiltersModule(PluginModule):
     category = "Filter"
     functions = [outline]
     cpp_headers = ["misc_filters.hpp"]
-    cpp_namespaces = ["Gamera"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = MiscFiltersModule()

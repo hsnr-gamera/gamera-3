@@ -158,6 +158,8 @@ By categories
 
   - rotate_
 
+  - wave_
+
 - Displaying_
 
   - display_
@@ -460,7 +462,7 @@ value_, volume_, volume16regions_, volume64regions_
 
 **W**
 
-white_horizontal_run_histogram_, white_vertical_run_histogram_
+wave_, white_horizontal_run_histogram_, white_vertical_run_histogram_
 
 **X**
 
@@ -551,6 +553,7 @@ zernike_moments_
 .. _inkrub: deformations.html#inkrub
 .. _noise: deformations.html#noise
 .. _rotate: deformations.html#rotate
+.. _wave: deformations.html#wave
 .. _Displaying: displaying.html#displaying
 .. _display: displaying.html#display
 .. _display_ccs: displaying.html#display-ccs

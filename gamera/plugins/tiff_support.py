@@ -84,7 +84,6 @@ class TiffSupportModule(PluginModule):
 	extra_compile_args = ['-Dunix']
     else:
         extra_libraries = ["tiff"]
-    cpp_namespaces = ["Gamera"]
     functions = [tiff_info, load_tiff_class, save_tiff]
     cpp_include_dirs = ["src/libtiff"]
     author = "Michael Droettboom and Karl MacMillan"

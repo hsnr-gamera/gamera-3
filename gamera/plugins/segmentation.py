@@ -216,7 +216,6 @@ def filter_black_area_large(ccs, max_size):
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
-    cpp_namespaces = ["Gamera"]
     functions = [cc_analysis, cc_and_cluster, splitx, splity,
                  splitx_left, splitx_right, splity_top, splity_bottom,
                  splitx_max]

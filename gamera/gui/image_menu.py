@@ -87,6 +87,7 @@ class ImageMenu:
       self._method_id += 1
       menu.Append(self._method_id, "new copy")
       EVT_MENU(self.parent, self._method_id, self.OnCreateCopy)
+      self._method_id += 1
       menu.Append(self._method_id, "delete image")
       EVT_MENU(self.parent, self._method_id, self.OnDeleteImage)
       self._method_id += 1

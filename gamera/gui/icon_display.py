@@ -173,11 +173,13 @@ class IconDisplay(wxListCtrl):
     
    def OnKeyPress(self,event):
       keyID = event.GetKeyCode()
+      print keyID
       if(keyID == 127 or keyID == 8):
          if self.currentIcon:
             source = self.currentIcon.delete_key()
             if not source is None:
                self.shell.run(source)
+               self.currentIcon = None
 
 ######################################################################
 

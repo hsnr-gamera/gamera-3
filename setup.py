@@ -17,7 +17,9 @@ try:
 except:
     pass
 
-plugins = ["gamera/plugins/threshold.py","gamera/plugins/gui_support.py",
+plugins = ["gamera/plugins/tiff_support.py",
+           "gamera/plugins/threshold.py",
+           "gamera/plugins/gui_support.py",
            "gamera/plugins/logical.py"]
 
 plugin_extensions = []

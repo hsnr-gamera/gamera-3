@@ -19,6 +19,7 @@
 #
 
 from gamera.plugin import *
+import glob
 
 class tiff_info(PluginFunction):
     self_type = None
@@ -27,12 +28,22 @@ class tiff_info(PluginFunction):
     
 tiff_info = tiff_info()
 
+class load_tiff(PluginFunction):
+    self_type = None
+    args = Args([String("image_file_name"), Int("compression")])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    def __call__(self, filename, compression = 0):
+        return _tiff_support.load_tiff(filename, compression)
+load_tiff = load_tiff()
+
 class TiffSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["tiff_support.hpp"]
+    cpp_include_dirs = ["include/libtiff"]
+    library_dirs = ["include/libtiff"]
     functions = [tiff_info]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
-    extra_libraries = ["tiff"]
+    extra_libraries = ["tiff", "jpeg", "z"]
 
 module = TiffSupportModule()

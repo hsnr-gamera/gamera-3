@@ -74,182 +74,153 @@ ImageInfo* tiff_info(const char* filename) {
 }
 namespace {
 
-  template<class Pixel>
-  struct tiff_loader {
-
-  };
-
-  template<>
-  struct tiff_loader<OneBitPixel> {
-    template<class T>
-    void operator()(T& matrix, const std::string& filename) {
-      ImageInfo info;
-      tiff_info(info, filename);
-
-      // Make certain this is the right type of image
-      if (info.ncolors() != 1)
-	throw std::invalid_argument("Wrong number of colors for image");
-      if (info.depth() != 1)
-	throw std::invalid_argument("Wrong image depth");
-      // Make certain that the data is the correct size
-      matrix.data()->dimensions(info.nrows(), info.ncols());
-      // Make certain that the matrix is the correct size
-      matrix.dimensions(info.nrows(), info.ncols());
-
-      // open the image
-      TIFF* tif = TIFFOpen(filename.c_str(), "r");
-      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
-
-      // load the data
-      for (size_t i = 0; i < info.nrows(); i++) {
-	TIFFReadScanline(tif, buf, i);
-	char* data = (char *)buf;
-	std::bitset<8> bits;
-	int tmp;
-	for (size_t j = 0, k = 7, bit_index = 0; j < info.ncols(); j++, k--) {
-	  if (k == 7) {
-	    bits = data[bit_index];
-	    bit_index++;
-	  }
-	  if (bits[k])
-	    tmp = 1;
-	  else
-	    tmp = 0;
-	  matrix.set(i, j, tmp);
-	  if (k == 0)
-	    k = 8;
+  template<class T>
+  void tiff_load_onebit(T& matrix, ImageInfo& info, const char* filename) {
+    // open the image
+    TIFF* tif = TIFFOpen(filename, "r");
+    tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    
+    // load the data
+    for (size_t i = 0; i < info.nrows(); i++) {
+      TIFFReadScanline(tif, buf, i);
+      char* data = (char *)buf;
+      std::bitset<8> bits;
+      int tmp;
+      for (size_t j = 0, k = 7, bit_index = 0; j < info.ncols(); j++, k--) {
+	if (k == 7) {
+	  bits = data[bit_index];
+	  bit_index++;
 	}
+	if (bits[k])
+	  tmp = 1;
+	else
+	  tmp = 0;
+	matrix.set(i, j, tmp);
+	if (k == 0)
+	  k = 8;
       }
-      // do the cleanup
-      _TIFFfree(buf);
-      TIFFClose(tif);
     }
-  };
+    // do the cleanup
+    _TIFFfree(buf);
+    TIFFClose(tif);
+  }
 
-  template<>
-  struct tiff_loader<GreyScalePixel> {
-    template<class T>
-    void operator()(T& matrix, const std::string& filename) {
-      ImageInfo info;
-      tiff_info(info, filename);
-
-      // Make certain this is the right type of image
-      if (info.ncolors() != 1)
-	throw std::invalid_argument("Wrong number of colors for image");
-      if (info.depth() != 8)
-	throw std::invalid_argument("Wrong image depth");
-      // Make certain that the data is the correct size
-      matrix.data()->dimensions(info.nrows(), info.ncols());
-      // Make certain that the matrix is the correct size
-      matrix.dimensions(info.nrows(), info.ncols());
-
-      // open the image
-      TIFF* tif = TIFFOpen(filename.c_str(), "r");
-      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
-
-      typename T::row_iterator mi = matrix.row_begin();
-      typename T::col_iterator mj;
-      unsigned char* data;
-      for (size_t i = 0; i < info.nrows(); i++, mi++) {
-	mj = mi.begin();
-	TIFFReadScanline(tif, buf, i);
-	data = (unsigned char *)buf;
-	for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	  *mj = data[j];
-	}
+  template<class T>
+  void tiff_load_greyscale(T& matrix, ImageInfo& info, const char* filename) {
+    // open the image
+    TIFF* tif = TIFFOpen(filename, "r");
+    tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    
+    typename T::row_iterator mi = matrix.row_begin();
+    typename T::col_iterator mj;
+    unsigned char* data;
+    for (size_t i = 0; i < info.nrows(); i++, mi++) {
+      mj = mi.begin();
+      TIFFReadScanline(tif, buf, i);
+      data = (unsigned char *)buf;
+      for (size_t j = 0; j < info.ncols(); j++, mj++) {
+	*mj = data[j];
       }
-
-      // do the cleanup
-      _TIFFfree(buf);
-      TIFFClose(tif);
     }
-  };
+    
+    // do the cleanup
+    _TIFFfree(buf);
+    TIFFClose(tif);
+  }
 
-  template<>
-  struct tiff_loader<Grey16Pixel> {
-    template<class T>
-    void operator()(T& matrix, const std::string& filename) {
-      ImageInfo info;
-      tiff_info(info, filename);
-      
-      // Make certain this is the right type of image
-      if (info.ncolors() != 1)
-	throw std::invalid_argument("Wrong number of colors for image");
-      if (info.depth() != 16)
-	throw std::invalid_argument("Wrong image depth");
-      // Make certain that the data is the correct size
-      matrix.data()->dimensions(info.nrows(), info.ncols());
-      // Make certain that the matrix is the correct size
-      matrix.dimensions(info.nrows(), info.ncols());
-
-      // open the image
-      TIFF* tif = TIFFOpen(filename.c_str(), "r");
-      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
-
-      typename T::row_iterator mi = matrix.row_begin();
-      typename T::col_iterator mj;
-      unsigned short* data;
-      for (size_t i = 0; i < info.nrows(); i++, mi++) {
-	mj = mi.begin();
-	TIFFReadScanline(tif, buf, i);
-	data = (unsigned short *)buf;
-	for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	  *mj = data[j];
-	}
+  template<class T>
+  void tiff_load_grey16(T& matrix, ImageInfo& info, const char* filename) {
+    // open the image
+    TIFF* tif = TIFFOpen(filename, "r");
+    tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    
+    typename T::row_iterator mi = matrix.row_begin();
+    typename T::col_iterator mj;
+    unsigned short* data;
+    for (size_t i = 0; i < info.nrows(); i++, mi++) {
+      mj = mi.begin();
+      TIFFReadScanline(tif, buf, i);
+      data = (unsigned short *)buf;
+      for (size_t j = 0; j < info.ncols(); j++, mj++) {
+	*mj = data[j];
       }
-
-      // do the cleanup
-      _TIFFfree(buf);
-      TIFFClose(tif);
     }
-  };
+    
+    // do the cleanup
+    _TIFFfree(buf);
+    TIFFClose(tif);
+  }
 
-  template<>
-  struct tiff_loader<RGBPixel> {
-    template<class T>
-    void operator()(T& matrix, const std::string& filename) {
-      ImageInfo info;
-      tiff_info(info, filename);
-      
-      // Make certain this is the right type of image
-      if (info.ncolors() != 3)
-	throw std::invalid_argument("Wrong number of colors for image");
-      if (info.depth() != 8)
-	throw std::invalid_argument("Wrong image depth");
-      // Make certain that the data is the correct size
-      matrix.data()->dimensions(info.nrows(), info.ncols());
-      // Make certain that the matrix is the correct size
-      matrix.dimensions(info.nrows(), info.ncols());
-
-      // open the image
-      TIFF* tif = TIFFOpen(filename.c_str(), "r");
-      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
-      
-      typename T::row_iterator mi = matrix.row_begin();
-      typename T::col_iterator mj;
-      unsigned char* data;
-      for (size_t i = 0; i < info.nrows(); i++, mi++) {
-	mj = mi.begin();
-	TIFFReadScanline(tif, buf, i);
-	data = (unsigned char *)buf;
-	for (size_t j = 0; j < info.ncols() * 3; j += 3, mj++) {
-	  (*mj).red(data[j]);
-	  (*mj).green(data[j + 1]);
-	  (*mj).blue(data[j + 2]);
-	}
+  template<class T>
+  void tiff_load_rgb(T& matrix, ImageInfo& info, const char* filename) {
+    // open the image
+    TIFF* tif = TIFFOpen(filename, "r");
+    tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    
+    typename T::row_iterator mi = matrix.row_begin();
+    typename T::col_iterator mj;
+    unsigned char* data;
+    for (size_t i = 0; i < info.nrows(); i++, mi++) {
+      mj = mi.begin();
+      TIFFReadScanline(tif, buf, i);
+      data = (unsigned char *)buf;
+      for (size_t j = 0; j < info.ncols() * 3; j += 3, mj++) {
+	(*mj).red(data[j]);
+	(*mj).green(data[j + 1]);
+	(*mj).blue(data[j + 2]);
       }
-      // do the cleanup
-      _TIFFfree(buf);
-      TIFFClose(tif);
     }
-  };
-  
+    // do the cleanup
+    _TIFFfree(buf);
+    TIFFClose(tif);
+  }
 }
 
-Image* load_tiff(const char* filename) {
-  
-  tiff_loader<typename T::value_type> loader;
-  loader(matrix, filename);
+Image* load_tiff(const char* filename, int storage) {
+  ImageInfo* info = tiff_info(filename);
+  if (info->ncolors() == 3) {
+    TypeIdImageFactory<RGB, DENSE> fact;
+    TypeIdImageFactory<RGB, DENSE>::image_type* image =
+      fact.create(0, 0, info->nrows(), info->ncols());
+    tiff_load_rgb(*image, *info, filename);
+    return image;
+  } else if (info->ncolors() == 2) {
+    if (info->depth() == 1) {
+      if (storage == DENSE) {
+	TypeIdImageFactory<ONEBIT, DENSE> fact;
+	TypeIdImageFactory<ONEBIT, DENSE>::image_type*
+	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	tiff_load_onebit(*image, *info, filename);
+	return image;
+      } else {
+	TypeIdImageFactory<ONEBIT, RLE> fact;
+	TypeIdImageFactory<ONEBIT, RLE>::image_type*
+	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	tiff_load_onebit(*image, *info, filename);
+	return image;
+      }
+    } else if (info->depth() == 8) {
+	TypeIdImageFactory<GREYSCALE, DENSE> fact;
+	TypeIdImageFactory<GREYSCALE, DENSE>::image_type*
+	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	tiff_load_greyscale(*image, *info, filename);
+	return image;
+    } else if (info->depth() == 16) {
+	TypeIdImageFactory<GREY16, DENSE> fact;
+	TypeIdImageFactory<GREY16, DENSE>::image_type*
+	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	tiff_load_greyscale(*image, *info, filename);
+	return image;
+    } else {
+      PyErr_SetString(PyExc_RuntimeError, "Unable to load image of this type!");
+      return 0;
+    }
+  } else {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to load image of this type!");
+    return 0;
+  }
+
+  delete info;
 }
 
 

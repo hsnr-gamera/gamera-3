@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from args import *
+from gamera.args import *
 from gamera import paths
 import gamera.core
 import unittest, new, os, os.path, imp
@@ -36,7 +36,9 @@ class PluginModule:
     cpp_sources = []
     cpp_headers = []
     cpp_defines = []
+    cpp_include_dirs = []
     extra_libraries = []
+    library_dirs = []
     functions = []
     version = "1.0"
     author = ""

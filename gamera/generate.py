@@ -76,7 +76,6 @@ def generate_plugin(plugin_filename):
   [[end]]
   
   using namespace Gamera;
-  using namespace Gamera::Python;
   
   [[# Generate the plugin path and module name from the filename. #]]
   [[# The module name for our purposes will be prefixed with an underscore #]]
@@ -130,7 +129,6 @@ def generate_plugin(plugin_filename):
     [[# for each argument insert the appropriate conversion code into the string that will #]]
     [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
     [[for x in function.args.list]]
-      hello
       [[if isinstance(x, Int) or isinstance(x, Choice)]]
         int [[x.name + '_arg']];
         [[exec pyarg_format = pyarg_format + 'i']]
@@ -368,5 +366,7 @@ def generate_plugin(plugin_filename):
     cpp_files.append(plug_path + file)
   extra_libraries = ["stdc++"] + plugin_module.module.extra_libraries
   return Extension("gamera.plugins." + module_name, cpp_files,
-                   include_dirs=["include", plug_path, "include/plugins"],
+                   include_dirs=(["include", plug_path, "include/plugins"] +
+                                 plugin_module.module.cpp_include_dirs),
+                   library_dirs=plugin_module.module.library_dirs,
                    libraries=extra_libraries)

@@ -147,6 +147,40 @@ This feature is scale invariant.
     """
     pass
     
+class nrows_feature(Feature):
+    """Simply the number of rows. As this feature is *not* scale
+invariant, it is helpful for distinguishing similar symbols of different
+size.
+
+This feature is scale invariant.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |          |   X    |
+  +-------+----------+--------+
+"""
+    pass
+
+class ncols_feature(Feature):
+    """Simply the number of cols. As this feature is *not* scale
+invariant, it is helpful for distinguishing similar symbols of different
+size.
+
+This feature is scale invariant.
+
+  +---------------------------+
+  | **Invariant to:**         |  
+  +-------+----------+--------+
+  | scale | rotation | mirror | 
+  +-------+----------+--------+
+  |       |          |   X    |
+  +-------+----------+--------+
+"""
+    pass
+
 class compactness(Feature):
     """Loosely speaking, compactness is a volume to surface area ratio
 of the connected components.  Highly ornate connected components have
@@ -297,7 +331,7 @@ class FeaturesModule(PluginModule):
     cpp_headers=["features.hpp"]
     functions = [black_area, moments, nholes,
                  nholes_extended, volume, area,
-                 aspect_ratio, compactness,
+                 aspect_ratio, nrows_feature, ncols_feature, compactness,
                  volume16regions, volume64regions,
                  generate_features, zernike_moments,
                  skeleton_features, top_bottom]

@@ -235,6 +235,16 @@ namespace Gamera {
     *buf = feature_t(image.ncols()) / feature_t(image.nrows());
   }
 
+  template<class T>
+  void nrows_feature(const T& image, feature_t* buf) {
+    *buf = feature_t(image.nrows());
+  }
+
+  template<class T>
+  void ncols_feature(const T& image, feature_t* buf) {
+    *buf = feature_t(image.ncols());
+  }
+
   /*
     compactness
     

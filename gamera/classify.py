@@ -477,6 +477,7 @@ of strings, naming the feature functions to be used."""
             if glyph.nrows > 2 and glyph.ncols > 2:
                glyph.classify_heuristic('_group._part.' + sub)
                glyph.generate_features(feature_functions)
+               ### self.database[glyph] = None ### !!! Shouldn't be here.
          added, removed = self.classify_glyph_manual(union, sub)
          added.append(union)
          return added, removed

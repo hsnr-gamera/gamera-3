@@ -411,14 +411,14 @@ namespace Gamera {
     // move down or right
     if (distance > 0) {
       filler = *begin;
-      std::copy_backward(begin + distance, end - distance, end);
+      std::copy_backward(begin, end - distance, end);
       std::fill(begin, begin + distance, filler);
       // move up or left
-    } else {
+    } else if (distance < 0) {
       filler = *(end - 1);
       std::copy(begin - distance, end, begin);
       std::fill(end + distance, end, filler);
-    }
+    } // if distance == 0, do nothing
   }
 
   template<class T>
@@ -428,7 +428,7 @@ namespace Gamera {
     if (column >= mat.ncols())
       throw std::range_error("Column argument to shear_column out of range");
     simple_shear((mat.col_begin() + column).begin(),
-		 (mat.col_begin() + column).end(),distance);
+		 (mat.col_begin() + column).end(), distance);
   }
 
   template<class T>

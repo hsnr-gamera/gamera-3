@@ -24,7 +24,7 @@ try:
 except:
    _has_gui = _NO_GUI
 import sys, types, string   # Python standard library
-import util, paths    # Gamera specific
+import util, paths          # Gamera specific
 
 
 ######################################################################
@@ -225,6 +225,9 @@ class Arg:
 
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
+
+   def html_repr(self):
+      return self.__class__.__name__ + " <i>" + self.name + "</i>"
    
 # Integer
 if _has_gui == _WX_GUI:
@@ -247,6 +250,13 @@ class Int(_guiInt, Arg):
       self.name = name
       self.rng = range
       self.default = default
+
+   def html_repr(self):
+      result = "Int"
+      if self.rng != (-sys.maxint, sys.maxint):
+         result += str(self.rng)
+      result += " <i>" + self.name + "</i>"
+      return result
 
 # Real / Float
 if _has_gui == _WX_GUI:
@@ -323,6 +333,13 @@ class Real(_guiReal, Arg):
       self.name = name
       self.rng = range
       self.default = default
+
+   def html_repr(self):
+      result = "Float"
+      if self.rng != (-sys.maxint, sys.maxint):
+         result += str(self.rng)
+      result += " <i>" + self.name + "</i>"
+      return result
 
 Float = Real
 
@@ -412,6 +429,13 @@ class ImageType(_guiImage, Arg):
          pixel_types = (pixel_types,)
       self.pixel_types = pixel_types
       self.list_of = list_of
+
+   def html_repr(self):
+      return ('|'.join([util.get_pixel_type_name(x) + "Image"
+                        for x in self.pixel_types]) +
+              " <i>" +
+              self.name +
+              "</i>")
 
 # Choice
 if _has_gui == _WX_GUI:

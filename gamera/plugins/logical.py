@@ -24,18 +24,46 @@ class _LogicalBase(PluginFunction):
   args = Args([ImageType([ONEBIT], "mask")])
 
 class and_image(_LogicalBase):
-  pass
+  """Perform the AND operation on two images.
+
+  +---+---+---+
+  | \ | 0 | 1 |
+  +---+---+---+
+  | 0 | 0 | 0 |
+  +---+---+---+
+  | 1 | 0 | 1 |
+  +---+---+---+
+  """
 and_image = and_image()
 
 class or_image(_LogicalBase):
-  pass
+  """Perform the OR operation on two images.
+
+  +---+---+---+
+  | \ | 0 | 1 |
+  +---+---+---+
+  | 0 | 0 | 1 |
+  +---+---+---+
+  | 1 | 1 | 1 |
+  +---+---+---+
+  """
 or_image = or_image()
 
 class xor_image(_LogicalBase):
-  pass
+  """Perform the XOR operation on two images.
+
+  +---+---+---+
+  | \ | 0 | 1 |
+  +---+---+---+
+  | 0 | 0 | 1 |
+  +---+---+---+
+  | 1 | 1 | 0 |
+  +---+---+---+
+  """
 xor_image = xor_image()
 
 class LogicalModule(PluginModule):
+  """This module provides functions to perform basic logical (bitwise) operations on images."""
   category = "Logical"
   cpp_headers = ["logical.hpp"]
   functions = [and_image, or_image, xor_image]

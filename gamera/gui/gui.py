@@ -22,26 +22,25 @@ import inspect
 from gamera.core import *
 from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name
+     icon_display, classifier_display, var_name, help_server
 
 # wxPython
 from wxPython.wx import *
 # Handle multiple versions of wxPython
-from wxPython.__version__ import ver
 from wxPython.lib.PyCrust import shell
 from wxPython.stc import *
 from wxPython.lib.splashscreen import SplashScreen
-from wxPython.html import *
 
 # Python standard library
 # import interactive
-import sys, types, traceback, os, string, webbrowser
+import sys, types, traceback, os, string
 
 # Set default options
 config.add_option_default("shell_style_face", "Helvetica")
 config.add_option_default("shell_style_size", 12)
 config.add_option_default("shell_x", "5")
 config.add_option_default("shell_y", "5")
+config.add_option_default("help_server_port", 8888)
 
 main_win = None
 app = None
@@ -49,7 +48,6 @@ app = None
 ######################################################################
 
 class GameraGui:
-   browser = None
    def GetImageFilename():
       dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
       if dlg.ShowModal() == wxID_OK:
@@ -77,6 +75,7 @@ class GameraGui:
    ShowImages = staticmethod(ShowImages)
 
    def ShowHistogram(hist, mark=None):
+
       f = gamera_display.HistogramDisplay(hist, mark=mark)
       f.Show(1)
    ShowHistogram = staticmethod(ShowHistogram)
@@ -86,12 +85,15 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   help_window = None
-   def help(cls, object):
-      if cls.help_window is None:
-         cls.help_window = HelpWindow(main_win.shell.GetLocals(), globals(), main_win)
-      cls.help_window.help_on_object(object)
-   help = classmethod(help)
+##    help_window = None
+##    def help(cls, object=None):
+##       if cls.help_window is None:
+##          window = help_browser.HelpFrame(main_win, cls)
+##       if object is None:
+##          cls.help_window.load_page("")
+##       else:
+##          cls.help_window.set_page(pydoc.HTMLDoc().document(object))
+##    help = classmethod(help)
 
    def ShowClassifier(classifier, image, function):
       wxBeginBusyCursor()
@@ -392,45 +394,17 @@ class GameraSplash(wxSplashScreen):
       main_win.Show(true)
       evt.Skip()
 
-class HtmlRedirect(wxHtmlWindow):
-   def __init__(self, parent, locals_, globals_):
-      self._locals = locals_
-      self._globals = globals_
-      wxHtmlWindow.__init__(self, parent, -1)
-
-   def LoadPage(self, location):
-      if ':' not in location:
-         location = location.sub("#", ".")
-         self.help_on_object(
-            eval(location, self._locals, self._globals))
-      else:
-         wxHtmlWindow.LoadPage(self, location)
-
-   def help_on_object(self, object):
-      self.SetPage(pydoc.HTMLDoc().document(object))
-
-class HelpWindow:
-   frame = None
-
-   def __init__(cls, locals_, globals_, parent):
-      if cls.frame is None:
-         cls._locals = locals_
-         cls._globals = globals_
-         cls.frame = wxFrame(parent, 0, "Gamera Help", size=wxSize(300, 400))
-         cls.html = HtmlRedirect(cls.frame, locals_, globals_)
-      cls.frame.Show(1)
-      cls.html.Show(1)
-   __init__ = classmethod(__init__)
-
-   def help_on_object(cls, object):
-      cls.html.help_on_object(object)
-   help_on_object = classmethod(help_on_object)
+def help_server_callback(self):
+   print self.url
 
 def run():
    global app
    wxInitAllImageHandlers()
 
    class MyApp(wxApp):
+      def __init__(self, parent):
+         wxApp.__init__(self, parent)
+      
       # wxWindows calls this method to initialize the application
       def OnInit(self):
          self.SetAppName("Gamera")
@@ -441,7 +415,10 @@ def run():
       def RunScript(self, script):
          self.win.shell.run("import " + script)
 
-   app = MyApp(0)     # Create an instance of the application class
+      def OnExit(self):
+         pass
+
+   app = MyApp(0)
    
    script = config.get_option("script")
    if script != None:

@@ -22,6 +22,8 @@ from __future__ import generators
 import string, UserList, sys, re   ## Python standard
 from math import pow
 
+from gamera.enums import *
+
 # determine if an object is a sequence
 def is_sequence(obj):
   return type(obj) in (type([]), type(()))
@@ -117,3 +119,17 @@ if float(sys.version[0:3]) < 2.3:
   __builtins__['False'] = 0
 else:
   enumerate = __builtins__.enumerate
+
+_pixel_type_names = {ONEBIT:     "OneBit",
+                     GREYSCALE:  "GreyScale",
+                     GREY16:     "Grey16",
+                     RGB:        "RGB",
+                     FLOAT:      "Float"}
+def get_pixel_type_name(type_):
+    return _pixel_type_names[type_]
+
+def group_list(list, group_size):
+  groups = []
+  for i in range(0, len(list), group_size):
+    groups.append(list[i:min(i+group_size, len(list))])
+  return groups

@@ -23,14 +23,6 @@ import gamera.core
 import unittest, new, os, os.path, imp
 from enums import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 
-def get_pixel_type_name(type_):
-    _pixel_type_names = {ONEBIT:     "OneBit",
-                         GREYSCALE:  "GreyScale",
-                         GREY16:     "Grey16",
-                         RGB:        "RGB",
-                         FLOAT:      "Float"}
-    return _pixel_type_names[type_]
-
 class PluginModule:
     category = None
     cpp_sources = []
@@ -47,11 +39,6 @@ class PluginModule:
     def __init__(self):
         for function in self.functions:
             function.register(self.category)
-
-    def generate(cls):
-        for x in cls.functions:
-            print x.__class__.__name__, x.self_type.pixel_types
-    generate = classmethod(generate)
 
 class PluginFunction:
     return_type = None

@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+from __future__ import generators
 import os, sys, dircache, glob  # Python standard library
 
 if 1:
@@ -26,6 +27,7 @@ if 1:
 lib = os.path.dirname(os.path.realpath(dummy.func_code.co_filename))
 # Figure out if we are in the source directory or installed
 plugins = os.path.realpath(os.path.join(lib, "plugins"))
+doc = os.path.realpath(os.path.join(lib, "doc"))
 sys.path.append(plugins)
 plugins_src = ""
 toolkits = os.path.realpath(os.path.join(lib, "toolkits"))
@@ -47,6 +49,20 @@ def get_toolkit_names(dir):
          toolkits.append(toolkit[:-1])
    return toolkits
 
+def get_directory_of_modules(dir):
+   modules = glob.glob(os.path.join(dir, "*.py"))
+   modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
+   # TODO: Take out this hard coding
+   modules = ["logical", "gui_support", "threshold"]
+   mods = []
+   for m in modules:
+     try:
+       module = __import__(m, {}, {}, [])
+       mods.append(module)
+     except Exception, e:
+       pass
+   return mods
+     
 def import_directory(dir, gl, lo, debug = 1):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = map(lambda x: os.path.basename(x).split('.')[0], modules)

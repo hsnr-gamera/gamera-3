@@ -20,13 +20,19 @@
 from gamera.plugin import *
 
 class threshold(PluginFunction):
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
+    """Creates a binary image by splitting along a threshold value.
+Pixels that are greater than the given value become white;
+pixels less than the given value become black."""
+    self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Int("threshold")])
     return_type = ImageType([ONEBIT], "output")
     
 threshold = threshold()
 
 class ThresholdModule(PluginModule):
+    """This module provides functions that convert images between different
+    pixel types.
+    """
     category = "Filter"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold]

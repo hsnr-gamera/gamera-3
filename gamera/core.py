@@ -22,7 +22,7 @@ import sys, os, types, os.path, inspect, pydoc     # Python standard library
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
-from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
+# from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
 from enums import ALL
 # import the storage types
 from gameracore import DENSE, RLE
@@ -40,12 +40,12 @@ import paths, util, config, new  # Gamera-specific
 # Reference to the currently active gui
 config.add_option_default("__gui", None)
 
-def help(object):
-   gui = config.get_option("__gui")
-   if gui is None:
-      pydoc.help(object)
-   else:
-      gui.help(object)
+## def help(object=None):
+##    gui = config.get_option("__gui")
+##    if gui is None:
+##       pydoc.help(object)
+##    else:
+##       gui.help(object)
 
 ######################################################################
 
@@ -67,32 +67,15 @@ class ImageBase:
       if self._display:
          self._display.close()
 
-   _pixel_type_names = {ONEBIT:     "OneBit",
-                        GREYSCALE:  "GreyScale",
-                        GREY16:     "Grey16",
-                        RGB:        "RGB",
-                        FLOAT:      "Float"}
-   
-   def pixel_type_name(self):
-      return self._pixel_type_names[self.data.pixel_type]
-   pixel_type_name = property(pixel_type_name)
-
-   _storage_format_names = {DENSE:  "Dense",
-                            RLE:    "RLE"}
-   
-   def storage_format_name(self):
-      return self._storage_format_names[self.data.storage_format]
-   storage_format_name = property(storage_format_name)
-   
-   _members_for_menu = ('pixel_type_name',
-                        'storage_format_name',
-                        'ul_x', 'ul_y', 'nrows', 'ncols',
-                        'size')
-
    def add_plugin_method(cls, plug, func, category=None):
+      """Add a plugin method to all Image instances.
+*plug*: subclass of PluginFunction describing the function.
+*func*: raw function pointer.
+*category*: menu category that the method should be placed under.
+  Categories may be nested using '/' (i.e. "General/Specific")"""
       methods = cls._methods
       if not func is None:
-         func = new.instancemethod(func, None, ImageBase)
+         func = new.instancemethod(func, None, Image)
          setattr(cls, plug.__name__, func)
          if not category is None:
             for type in plug.self_type.pixel_types:
@@ -106,7 +89,24 @@ class ImageBase:
                start[plug.__name__] = plug
    add_plugin_method = classmethod(add_plugin_method)
 
+   def pixel_type_name(self):
+      return util.get_pixel_type_name(self.data.pixel_type)
+   pixel_type_name = property(pixel_type_name)
+
+   _storage_format_names = {DENSE:  "Dense",
+                            RLE:    "RLE"}
+   def storage_format_name(self):
+      return self._storage_format_names[self.data.storage_format]
+   storage_format_name = property(storage_format_name)
+   
+   _members_for_menu = ('pixel_type_name',
+                        'storage_format_name',
+                        'ul_x', 'ul_y', 'nrows', 'ncols',
+                        'memory_size')
+
    def members_for_menu(self):
+      """Returns a list of members (and their values) for convenient
+feedback for the user."""
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
 
    def methods_for_menu(self):
@@ -148,13 +148,9 @@ class ImageBase:
       return self.data.mbytes
    size_mbytes = property(size_mbytes)
 
-   def size(self):
+   def memory_size(self):
       return util.pretty_print_bytes(self.data.bytes)
-   size = property(size)
-
-   def load_image(filename=None):
-      return load_image(filename)
-   load_image = staticmethod(load_image)
+   memory_size = property(memory_size)
 
    def set_display(self, _display):
       self._display = _display
@@ -222,6 +218,7 @@ class ImageBase:
          display_multi(self.children_images)
 
    def classification_color(self):
+      """TODO: move me somewhere else (in /gui)"""
       if self.classification_state == UNCLASSIFIED:
          return None
       elif self.classification_state == AUTOMATIC:
@@ -259,6 +256,7 @@ class ImageBase:
       self.classification_state = CLASS_HEURISTIC
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
+      """Create a SubImage from this Image (or SubImage)."""
       return SubImage(self, offset_y, offset_x, nrows, ncols)
 
 ######################################################################

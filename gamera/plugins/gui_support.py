@@ -20,11 +20,15 @@
 from gamera.plugin import *
 
 class to_string(PluginFunction):
+    """Encodes the image into a 'string' required by wxImage.
+(i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     return_type = Class("image_as_string")
 to_string = to_string()
 
 class GuiSupportModule(PluginModule):
+    """This module provides various functions that support the GUI
+    infrastructure."""
     category = None
     cpp_headers = ["gui_support.hpp"]
     functions = [to_string]

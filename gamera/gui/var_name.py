@@ -17,17 +17,15 @@
 #
 
 from wxPython.wx import *
-import keyword
+import keyword, re
 
+variable_name = re.compile("^[A-Za-z_][A-Za-z0-9_]*$")
 def verify_variable_name(name):
     if keyword.iskeyword(name):
         return 0
-    for x in name.split('_'):
-        if not x.isalnum():
-            return 0
-    if len(name.split()) > 1:
-        return 0
-    return 1
+    if variable_name.match(name):
+        return 1
+    return 0
 
 def get(default='untitled', dict={}):
     number = 0

@@ -107,18 +107,24 @@ class Template:
   def parser_exception(self, s):
     raise ParserException(self.lineno, s)
 
-  def execute_file(self, filename, data):
+  def execute_file(self, filename, data={}):
+    data_copy = {}
+    data_copy.update(data)
     file = open(filename, 'w')
-    self.execute(file, data)
+    self.execute(file, data_copy)
     file.close()
 
-  def execute_string(self, data):
+  def execute_string(self, data={}):
+    data_copy = {}
+    data_copy.update(data)
     s = cStringIO.StringIO()
-    self.execute(s, data)
+    self.execute(s, data_copy)
     return s.getvalue()
 
-  def execute_stdout(self, data):
-    self.execute(sys.stdout, data)
+  def execute_stdout(self, data={}):
+    data_copy = {}
+    data_copy.update(data)
+    self.execute(sys.stdout, data_copy)
 
   def execute(self, stream=sys.stdout, data={}):
     self.tree.execute(stream, data)
@@ -181,7 +187,6 @@ class ForTemplateNode(TemplateNode):
       self.vars = []
       for v in self.vars_temp:
         self.vars.append(v.strip())
-      #print self.vars
       self.expression = match.group(2)
 
   def execute(self, stream, data):
@@ -189,10 +194,17 @@ class ForTemplateNode(TemplateNode):
     for var in self.vars:
       if data.has_key(var):
         remember_vars[var] = data[var]
+    x = eval(self.expression, globals(), data)
     for list in eval(self.expression, globals(), data):
       if util.is_sequence(list):
-        for index, value in util.enumerate(list):
-          data[self.vars[index]] = value
+        if len(self.vars) == 1:
+          data[self.vars[0]] = list
+        elif len(self.vars) == len(list):
+          for index, value in util.enumerate(list):
+            data[self.vars[index]] = value
+        else:
+          self.parent.parser_exception(
+            "Unable to unpack tuples in [[%s]]" % self.s)
       else:
         data[self.vars[0]] = list
       TemplateNode.execute(self, stream, data)
@@ -257,7 +269,6 @@ class FunctionTemplateNode(TemplateNode):
     self.vars = []
     for v in self.vars_temp:
       self.vars.append(v.strip())
-    #print self.vars
     self.parent.functions[self.function_name] = self
 
   def execute(self, stream, data):
@@ -290,7 +301,10 @@ class CommentTemplateNode(LeafTemplateNode):
 
 class ExpressionTemplateNode(LeafTemplateNode):
   def execute(self, stream, data):
-    stream.write(str(eval(self.s, globals(), data)))
+    try:
+      stream.write(str(eval(self.s, globals(), data)))
+    except Exception, e:
+      self.parent.parser_exception(self.s)
 
 class ExecTemplateNode(LeafTemplateNode):
   def __init__(self, parent, s):
@@ -302,7 +316,10 @@ class ExecTemplateNode(LeafTemplateNode):
     self.s = match.group(1)
 
   def execute(self, stream, data):
-    exec(self.s, globals(), data)
+    try:
+      exec(self.s, globals(), data)
+    except Exception, e:
+      self.parent.parser_exception(self.s)
     pass
     
 class CallTemplateNode(LeafTemplateNode):

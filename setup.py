@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 import sys, os, time, locale
 import glob
 
-# If gamera.generate is imported gamer.__init__.py will
+# If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is
 # finished. To get around this, the gamera directory is
 # added to the path and generate is imported directly
@@ -91,3 +91,9 @@ setup(name = "gameracore", version="1.1",
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
                   'gamera.toolkits.omr']
       )
+
+##########################################
+# generate the non-plugin help pages
+# This needs to be done last since it requires a built system
+import generate_help
+generate_help.generate_static()

@@ -26,6 +26,7 @@ from __future__ import generators
 import locale, sys, glob, cStringIO, inspect, getopt, os.path, shutil
 from stat import ST_MTIME
 from time import strftime, localtime
+import traceback
 try:
    locale.setlocale(locale.LC_ALL, '')
 except:
@@ -87,9 +88,14 @@ except ImportError, e:
 
 ######################################################################
 
+_underline_levels = "=-`:'"
+def underline(level, s, extra=0):
+   return _underline_levels[level] * (len(s) + extra)
+
 class DocumentationGenerator:
-   def __init__(self, root_path="."):
+   def __init__(self, root_path=".", classes=[]):
       self.set_paths(root_path)
+      self.classes = classes
 
    def set_paths(self, root):
       def check_path(path):
@@ -114,6 +120,7 @@ class DocumentationGenerator:
    def generate(self):
       self.copy_css(self.src_path, self.output_path)
       PluginDocumentationGenerator(self)
+      ClassDocumentationGenerator(self, self.classes)
       self.copy_images([self.src_images_path, self.icons_path],
                        self.output_images_path)
       self.generate_generic_pngs()
@@ -167,11 +174,17 @@ class DocumentationGenerator:
             lines = fd.readlines()
             lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
             fd = cStringIO.StringIO(''.join(lines))
-            publish_file(source=fd, destination_path=output_file,
-                         writer_name="html")
+            try:
+               publish_file(source=fd, destination_path=output_file, writer_name="html")
+            except KeyboardInterrupt, e:
+               raise e
+            except Exception, e:
+               traceback.print_exc()
+               print "Unable to convert '%s' to HTML: %s" % (filename, e)
+               if os.path.exists(output_file):
+                  os.remove(output_file)
 
 class PluginDocumentationGenerator:
-   levels = "=-`:'"
    def __init__(self, docgen):
       print "Generating plugin documentation"
 
@@ -236,7 +249,7 @@ class PluginDocumentationGenerator:
             if level == 0:
                 filename = key.lower()
                 s = open(os.path.join(self.docgen.src_path, filename + ".txt"), "w")
-            s.write("\n%s\n%s\n\n" % (key, self.levels[level] * len(key)))
+            s.write("\n%s\n%s\n\n" % (key, underline(level, key)))
             print "  " * (level + 1) + key
             self.recurse(val, level + 1, images, s)
          else:
@@ -287,7 +300,8 @@ class PluginDocumentationGenerator:
       
    def method_doc(self, func, level, images, s):
       s.write("``%s``\n" % func.__name__)
-      s.write(self.levels[level] * (len(func.__name__) + 4) + "\n\n")
+      s.write(underline(level, func.__name__, 4))
+      s.write("\n\n")
       if func.return_type != None:
          s.write(func.return_type.rest_repr() + " ")
       header = "**%s** (%s)\n" % (func.__name__, ', '.join(
@@ -391,6 +405,108 @@ class PluginDocumentationGenerator:
          image = _image_conversion.to_greyscale(image)
       _png_support.save_PNG(image, filename)
 
+class ClassDocumentationGenerator:
+   def __init__(self, docgen, classes):
+      print "Generating class documentation"
+      self.docgen = docgen
+      self.class_names = []
+      for cls in classes:
+         self.document_class(cls)
+      self.table_of_contents(classes)
+
+   def document_class(self, cls_desc):
+      if type(cls_desc) in (tuple, list):
+         cls = cls_desc[0]
+         members = cls_desc[1]
+         if type(members) in (str, unicode):
+            members = members.split()
+      else:
+         cls = cls_desc
+         members = dir(cls).sort(lambda x, y: cmp(x.lower(), y.lower()))
+
+      cls_name = cls.__name__
+      module_name = inspect.getmodule(cls).__name__
+      combined_name = "%s.%s" % (module_name, cls_name)
+      self.class_names.append((cls_name, combined_name))
+      print "  ", combined_name
+      s = open(os.path.join(self.docgen.src_path, combined_name + ".txt"), "w")
+      s.write("class ``%s``\n%s\n\n" % (combined_name, underline(0, combined_name, 10)))
+      s.write("``%s``\n%s\n\n" % (cls_name, underline(1, combined_name, 4)))
+      s.write(".. docstring:: %s %s\n   :no_title:\n\n" % (module_name, cls_name))
+      s.write(".. docstring:: %s %s %s\n\n" % (module_name, cls_name, " ".join(members)))
+
+   def table_of_contents(self, classes):
+      s = open(os.path.join(self.docgen.src_path, "classes.txt"), "w")
+      s.write("=======\nClasses\n=======\n\n")
+      s.write("Alphabetical\n-------------\n")
+      self.class_names.sort(lambda x, y: cmp(x.lower(), y.lower()))
+      letter = '~'
+      first = True
+      links = []
+      for name, combined_name in self.class_names:
+          if name[0].upper() != letter:
+              letter = name[0].upper()
+              s.write("\n\n**")
+              s.write(letter)
+              s.write("**\n\n")
+              first = True
+          if not first:
+              s.write(", ")
+          s.write("%s_ (%s)" % (name, combined_name))
+          first = False
+          links.append(".. _%s: %s.html" % (name, combined_name))
+      s.write("\n\n")
+      s.write("\n".join(links))
+      s.close()
+
+# For extracting docstrings
+def docstring(name, arguments, options, content, lineno,
+              content_offset, block_text, state, state_machine):
+   def import_helper(module_name, object_name):
+      mod = __import__(module_name)
+      components = module_name.split(".")[1:] + object_name.split(".")
+      for comp in components:
+         mod = getattr(mod, comp)
+      return mod
+
+   def do_docstring(obj, name):
+      doc_string = inspect.getdoc(obj)
+      if doc_string is None:
+         text = "[Not documented]\n\n"
+      else:
+         text = doc_string + "\n\n"
+      content = docutils.statemachine.string2lines(text, convert_whitespace=1)
+      if not options.has_key('no_title'):
+         title_text = "``%s``" % name
+         textnodes, messages = state.inline_text(title_text, lineno)
+         titles = [docutils.nodes.title(title_text, '', *textnodes)] + messages
+         node = docutils.nodes.section(text, *titles)
+         node['name'] = name
+         state_machine.document.note_implicit_target(node, node)
+      else:
+         node = docutils.nodes.paragraph(text)
+      content = docutils.statemachine.StringList(initlist=content, parent=node)
+      state.nested_parse(content, 0, node)
+      return node
+      
+   base_obj = import_helper(*arguments[:2])
+   if len(arguments) == 2:
+      name = arguments[1].split(".")[-1]
+      return [do_docstring(base_obj, name)]
+   nodes = []
+   for name in arguments[2:]:
+      try:
+         obj = getattr(base_obj, name)
+      except AttributeError:
+         print "Warning: '%s' could not be found in '%s'" % (name, base_obj.__name__)
+      else:
+         nodes.append(do_docstring(obj, name))
+   return nodes
+docstring.arguments = (2,256,0)
+docstring.options = { "no_title": docutils.parsers.rst.directives.flag }
+docstring.content = 0
+docutils.parsers.rst.directives.register_directive( 'docstring', docstring)
+
 def copy_images(path_obj):
    if not os.path.exists(path_obj.output_images_path):
       os.mkdir(path_obj.output_images_path)
@@ -423,7 +539,7 @@ def print_usage():
     print "   will be used.)"
     print 
    
-def gendoc():
+def gendoc(classes=[]):
    print_usage()
    opts, args = getopt.getopt(sys.argv[1:], "d:")
    root = '.'
@@ -431,10 +547,12 @@ def gendoc():
        if flag == "-d":
            root = value
    try:
-      docgen = DocumentationGenerator(root)
+      docgen = DocumentationGenerator(root, classes=classes)
    except Exception, e:
       print "Documentation generation failed with the following exception:"
       print e
    else:
-      docgen.generate()
-      
+      try:
+         docgen.generate()
+      except KeyboardInterrupt:
+         print "Documentation generation stopped by user."

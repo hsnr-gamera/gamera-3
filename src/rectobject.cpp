@@ -203,7 +203,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
       return 0;
     RectObject* so;
     so = (RectObject*)pytype->tp_alloc(pytype, 0);
-    so->m_x = new Rect((size_t)offset_x, (size_t)offset_y, (size_t)nrows, (size_t)ncols);
+    so->m_x = new Rect((size_t)offset_y, (size_t)offset_x, (size_t)nrows, (size_t)ncols);
     return (PyObject*)so;
   } else if (num_args == 2) {
     PyObject *a, *b;

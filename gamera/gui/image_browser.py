@@ -29,7 +29,7 @@ class FileList(wxGenericDirCtrl):
           self, parent, ID,
           filter="All files (*.*)|*.*|TIFF files (*.tiff,*.tif)|*.tiff,*.tif",
           style=wxDIRCTRL_SHOW_FILTERS)
-      self.SetDefaultPath(config.options.file.default_directory)
+      # self.SetDefaultPath(config.options.file.default_directory)
       EVT_TREE_ITEM_ACTIVATED(self.GetTreeCtrl(), -1, self.OnItemSelected)
       self.image_display = image_display
 

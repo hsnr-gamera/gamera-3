@@ -1001,6 +1001,7 @@ config.add_option(
 config.add_option(
    '', '--grid-ncols', default=8, type="int",
    help='[grid] Number of columns in the grid')
+
 class MultiImageDisplay(wxGrid):
    def __init__(self, parent = None, id = -1, size = wxDefaultSize):
       wxGrid.__init__(self, parent, id,

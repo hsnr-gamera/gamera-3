@@ -469,6 +469,7 @@ class InteractiveClassifier(_Classifier):
          union = image_utilities.union_images(glyphs)
          for glyph in glyphs:
             glyph.classify_heuristic('_group._part.' + sub)
+            self._database[glyph] = None
          added, removed = self.classify_glyph_manual(union, sub)
          added.append(union)
          return added, removed

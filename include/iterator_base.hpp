@@ -42,16 +42,16 @@ namespace Gamera {
   }
   
   template<class Image, class Iterator, class T>
-  class RowIteratorBase {
+  class RowIteratorBase
+    : public std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			   typename Image::difference_type, typename Image::pointer,
+			   typename Image::reference>
+  {
   public:
-    // Standard typedefs
-    typedef typename Image::value_type value_type;
-    typedef typename Image::reference reference;
-    typedef typename Image::pointer pointer;
-    typedef typename Image::difference_type difference_type;
-    typedef std::random_access_iterator_tag iterator_category;
-
     // Convenience typedefs
+    typedef std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			  typename Image::difference_type, typename Image::pointer,
+			  typename Image::reference> base_type;
     typedef Iterator self;
     
     // Constructor
@@ -113,7 +113,7 @@ namespace Gamera {
     bool operator>(const RowIteratorBase& other) const {
       return m_iterator > other.m_iterator;
     }
-    difference_type operator-(const RowIteratorBase& other) const {
+    typename base_type::difference_type operator-(const RowIteratorBase& other) const {
       return (m_iterator - other.m_iterator) / m_image->data()->stride();
     }
     
@@ -129,16 +129,16 @@ namespace Gamera {
   };
 
   template<class Image, class Iterator, class T>
-  class ColIteratorBase {
+  class ColIteratorBase
+    : public std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			   typename Image::difference_type, typename Image::pointer,
+			   typename Image::reference>
+  {
   public:
-    // Standard typedefs
-    typedef typename Image::value_type value_type;
-    typedef typename Image::reference reference;
-    typedef typename Image::pointer pointer;
-    typedef typename Image::difference_type difference_type;
-    typedef std::random_access_iterator_tag iterator_category;
-
     // Convenience typedefs
+    typedef std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			  typename Image::difference_type, typename Image::pointer,
+			  typename Image::reference> base_type;
     typedef Iterator self;
     
     // Constructor
@@ -200,7 +200,7 @@ namespace Gamera {
     bool operator>(const ColIteratorBase& other) const {
       return m_iterator > other.m_iterator;
     }
-    difference_type operator-(const ColIteratorBase& other) const {
+    typename base_type::difference_type operator-(const ColIteratorBase& other) const {
       return (m_iterator - other.m_iterator);
     }
 
@@ -223,14 +223,10 @@ namespace Gamera {
 			   typename Image::reference>
   {
   public:
-    // Standard typedefs
-    typedef typename Image::value_type value_type;
-    typedef typename Image::reference reference;
-    typedef typename Image::pointer pointer;
-    typedef typename Image::difference_type difference_type;
-    typedef std::random_access_iterator_tag iterator_category;
-    
     // Convenience typedefs
+    typedef std::iterator<std::random_access_iterator_tag, typename Image::value_type,
+			  typename Image::difference_type, typename Image::pointer,
+			  typename Image::reference> base_type;
     typedef Iterator self;
 			
     // Constructor
@@ -341,7 +337,7 @@ namespace Gamera {
     bool operator>(const VecIteratorBase& other) const {
       return m_coliterator > other.m_coliterator;
     }
-    difference_type operator-(const self& other) const {
+    typename base_type::difference_type operator-(const self& other) const {
       size_t nrows = m_rowiterator - other.m_rowiterator;
       // simple case - nrows = 0 so we can just compare the coliterators
       if (nrows == 0) {

@@ -25,6 +25,11 @@
 
 namespace Gamera {
 
+  #ifndef round
+  template<class T>
+  inline T round(T p){return T(floor(p + (T)0.5));}
+  #endif
+  
   /*
     Generic projection routine - x and y projections
     are acheived by passing in either row or col

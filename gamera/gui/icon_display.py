@@ -89,7 +89,8 @@ class IconDisplay(wxListCtrl):
       EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
       EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
       EVT_LIST_ITEM_RIGHT_CLICK(self, tID, self.OnRightClick)
-
+      EVT_CHAR(self, self.OnKeyPress)
+   
    def add_icon(self, label, data, icon):
       index = self.GetItemCount()
       data.index = index
@@ -169,6 +170,14 @@ class IconDisplay(wxListCtrl):
          source = self.currentIcon.double_click()
          if not source is None:
             self.shell.run(source)
+    
+   def OnKeyPress(self,event):
+      keyID = event.GetKeyCode()
+      if(keyID == 127 or keyID == 8):
+         if self.currentIcon:
+            source = self.currentIcon.delete_key()
+            if not source is None:
+               self.shell.run(source)
 
 ######################################################################
 
@@ -220,6 +229,9 @@ class CustomIcon:
         self.data, self.label,
         shell, extra_methods = self.extra_methods)
       self._shell = None
+
+   def delete_key(self):
+      return "del %s" % self.label
 
 class CIRGBImage(CustomIcon):
    def get_icon():

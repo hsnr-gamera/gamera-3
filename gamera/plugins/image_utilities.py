@@ -141,6 +141,68 @@ class fill_white(PluginFunction):
     category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 
+class fill(PluginFunction):
+    """Fills the entire image with value.
+
+*value*
+   A pixel value.  This value may be any value the pixel type can support.
+"""
+    category = "Draw"
+    self_type = ImageType(ALL)
+    args = Args([Pixel("value")])
+
+class pad_image(PluginFunction):
+    """Pads an image with any value.
+
+*top*
+   Padding on the top.
+
+*right*
+   Padding on the right.
+
+*bottom*
+   Padding on the bottom.
+
+*left*
+   Padding on the left.
+
+*value*
+   A pixel value.  This value may be any value the pixel type can support.
+
+"""
+    category = "Draw"
+    self_type = ImageType(ALL)
+    args = Args([Int("top"), Int("right"), Int("bottom"), Int("left"), Pixel("value")])
+    return_type = ImageType(ALL)
+    def __call__(self, top, right, bottom, left, value):
+    	return _image_utilities.pad_image(self, top, right, bottom, left, value)
+    __call__ = staticmethod(__call__)
+    doc_examples = [(RGB)]
+
+class pad_image_default(PluginFunction):
+    """Pads an image with the default value.
+
+*top*
+   Padding on the top.
+
+*right*
+   Padding on the right.
+
+*bottom*
+   Padding on the bottom.
+
+*left*
+   Padding on the left.
+"""
+    category = "Draw"
+    self_type = ImageType(ALL)
+    args = Args([Int("top"), Int("right"), Int("bottom"), Int("left")])
+    return_type = ImageType(ALL)
+    def __call__(self, top, right, bottom, left):
+    	return _image_utilities.pad_image_default(self, top, right, bottom, left)
+    __call__ = staticmethod(__call__)
+    doc_examples = [(RGB)]
+
 class invert(PluginFunction):
     """Inverts the image."""
     category = "Draw"
@@ -286,7 +348,8 @@ class UtilModule(PluginModule):
     category = "Utility"
     functions = [image_save, image_copy, resize, scale,
                  histogram, union_images,
-                 fill_white, invert, clip_image, mask,
+                 fill_white, fill, pad_image, pad_image_default,
+		 invert, clip_image, mask,
                  nested_list_to_image,
                  to_nested_list, shear_row, shear_column,
                  mirror_horizontal, mirror_vertical]

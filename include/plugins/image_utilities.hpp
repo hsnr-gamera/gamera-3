@@ -295,6 +295,62 @@ namespace Gamera {
     std::fill(image.vec_begin(), image.vec_end(), white(image));
   }
 
+  /*
+    Fill an image with any color
+  */
+  template <class T>
+  void fill(T& m, typename T::value_type color) {
+    typename T:: vec_iterator destcolor = m.vec_begin();
+    for(; destcolor != m.vec_end(); destcolor++)
+      *destcolor = color;
+  }
+
+  /*
+    Pad an image with the default value
+  */
+
+  template <class T>
+  typename ImageFactory<T>::view_type* pad_image_default(const T &src, size_t top, size_t right, size_t bottom, size_t left)
+  {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* dest_data = new data_type(src.nrows()+top+bottom, src.ncols()+right+left, src.offset_y(), src.offset_x());
+    view_type* dest_srcpart = new view_type(*dest_data, src.offset_y()+top, src.offset_x()+left, src.nrows(), src.ncols());
+    view_type* dest = new view_type(*dest_data);
+    
+    image_copy_fill(src, *dest_srcpart);
+
+    return(dest);
+  }
+
+
+  /*
+    Pad an image with any color
+  */
+
+  template <class T>
+  typename ImageFactory<T>::view_type* pad_image(const T &src, size_t top, size_t right, size_t bottom, size_t left, typename T::value_type value)
+  {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* dest_data = new data_type(src.nrows()+top+bottom, src.ncols()+right+left, src.offset_y(), src.offset_x());
+    view_type* top_pad = new view_type(*dest_data, src.offset_y(), src.offset_x()+left, top, src.ncols()+right);
+    view_type* right_pad = new view_type(*dest_data, src.offset_y()+top, src.offset_x()+src.ncols()+left, src.nrows()+bottom, right);
+    view_type* bottom_pad = new view_type(*dest_data, src.offset_y()+src.nrows()+top, src.offset_x(), bottom, src.ncols()+left);
+    view_type* left_pad = new view_type(*dest_data, src.offset_y(), src.offset_x(), src.nrows()+top, left);
+    view_type* dest_srcpart = new view_type(*dest_data, src.offset_y()+top, src.offset_x()+left, src.nrows(), src.ncols());
+    view_type* dest = new view_type(*dest_data);
+    
+    fill(*top_pad, value);
+    fill(*right_pad, value);
+    fill(*bottom_pad, value);
+    fill(*left_pad, value);
+    image_copy_fill(src, *dest_srcpart);
+
+    return(dest);
+  }
+
+
   template<class T>
   void invert(T& image) {
     ImageAccessor<typename T::value_type> acc;

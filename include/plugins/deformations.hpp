@@ -88,12 +88,14 @@ namespace Gamera
 		
 		//Angle is now within [-45..45]
 		//rotate by remaining arbitrary angle
-
-		out = rot45(m, out_data, out, hypot, bgcolor);
 		
-		image_copy_attributes(m, *out);
-		delete out_data;
-		return out;
+		typename fact::view_type* out2 = rot45(m, out_data, out, hypot, bgcolor);
+		if (out != out2) {
+		  delete out;
+		  delete out_data;
+		}
+		image_copy_attributes(m, *out2);
+		return out2;
 	}
 	
 	template<class T, class U, class V, class W>
@@ -365,7 +367,7 @@ namespace Gamera
 		
 		image_copy_attributes(m, *out);
 		
-		delete in_data, in;
+		delete in_data; delete in;
 		return out;
 	}
 	

@@ -33,11 +33,11 @@ PyTypeObject* get_IteratorType() {
 }
 
 void iterator_dealloc(PyObject* self) {
-  // IteratorObject* so = (IteratorObject*)self;
+  IteratorObject* so = (IteratorObject*)self;
 #ifdef DEBUG_DEALLOC
   std::cerr << "iterator dealloc\n";
 #endif
-  // (*(so->m_fp_dealloc))(so);
+  (*(so->m_fp_dealloc))(so);
   self->ob_type->tp_free(self);
 }
 

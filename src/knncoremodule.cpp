@@ -741,6 +741,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     if (progress)
       PyObject_CallObject(progress, NULL);
   }
+  delete[] tmp_a;
+  delete[] tmp_b;
   return create_ImageObject(mat);
  mat_error:
   // delete the image

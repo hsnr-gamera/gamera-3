@@ -202,6 +202,9 @@ struct BFSIterator : IteratorObject {
   int init(GraphObject* graph, Node* root);
   static Node* next_node(IteratorObject* self);
   static PyObject* next(IteratorObject* self);
+  static void dealloc(IteratorObject* self) { 
+    delete ((BFSIterator*)(self))->m_node_queue; 
+  };
   NodeQueue* m_node_queue;
 };
 
@@ -209,6 +212,9 @@ struct DFSIterator : IteratorObject {
   int init(GraphObject* graph, Node* root);
   static Node* next_node(IteratorObject* self);
   static PyObject* next(IteratorObject* self);
+  static void dealloc(IteratorObject* self) { 
+    delete ((DFSIterator*)(self))->m_node_stack; 
+  };
   NodeStack* m_node_stack;
 };
 

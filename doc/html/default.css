@@ -183,7 +183,7 @@ p.label {
 p.rubric {
   font-weight: bold ;
   font-size: larger ;
-  color: darkred ;
+  color: #880000 ;
   text-align: center }
 
 p.sidebar-title {
@@ -530,7 +530,7 @@ padding: 1em;
 .pl_error
 {
 	color: red;
-	font-style: bold;
+	font-weight: bold;
 }
 
 .pl_hash

@@ -389,8 +389,8 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
    def has_id_name(self, name):
       for confidence, id_name in self.id_name:
          if name == id_name:
-            return 1
-      return 0
+            return True
+      return False
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""

@@ -163,8 +163,10 @@ namespace Gamera {
 
     PyObject* projlist = PyList_New(n);  
     // move projections to return list
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++) {
       PyList_SET_ITEM(projlist, i, IntVector_to_python(proj[i]));
+      delete proj[i];
+    }
     return projlist;
   }
 
@@ -211,8 +213,10 @@ namespace Gamera {
 
     PyObject* projlist = PyList_New(n);  
     // move projections to return list
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++) {
       PyList_SET_ITEM(projlist, i, IntVector_to_python(proj[i]));
+      delete proj[i];
+    }
     return projlist;
   }
 }

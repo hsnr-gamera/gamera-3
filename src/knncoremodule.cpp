@@ -1464,8 +1464,8 @@ DL_EXPORT(void) initknncore(void) {
   KnnType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   KnnType.tp_new = knn_new;
   KnnType.tp_getattro = PyObject_GenericGetAttr;
-  KnnType.tp_alloc = PyType_GenericAlloc;
-  KnnType.tp_free = _PyObject_Del;
+  KnnType.tp_alloc = NULL; // PyType_GenericAlloc;
+  KnnType.tp_free = NULL; // _PyObject_Del;
   KnnType.tp_methods = knn_methods;
   KnnType.tp_getset = knn_getset;
   PyType_Ready(&KnnType);

@@ -143,9 +143,9 @@ void init_SizeType(PyObject* module_dict) {
   SizeType.tp_getset = size_getset;
   SizeType.tp_new = size_new;
   SizeType.tp_getattro = PyObject_GenericGetAttr;
-  SizeType.tp_alloc = PyType_GenericAlloc;
+  SizeType.tp_alloc = NULL; // PyType_GenericAlloc;
   SizeType.tp_richcompare = size_richcompare;
-  SizeType.tp_free = _PyObject_Del;
+  SizeType.tp_free = NULL; // _PyObject_Del;
   SizeType.tp_repr = size_repr;
   PyType_Ready(&SizeType);
   PyDict_SetItemString(module_dict, "Size", (PyObject*)&SizeType);

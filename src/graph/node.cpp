@@ -146,8 +146,8 @@ void init_NodeType() {
   NodeType.tp_repr = node___repr__;
   NodeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   NodeType.tp_getattro = PyObject_GenericGetAttr;
-  NodeType.tp_alloc = PyType_GenericAlloc;
-  NodeType.tp_free = _PyObject_Del;
+  NodeType.tp_alloc = NULL; // PyType_GenericAlloc;
+  NodeType.tp_free = NULL; // _PyObject_Del;
   NodeType.tp_methods = node_methods;
   NodeType.tp_getset = node_getset;
   NodeType.tp_call = node___call__;

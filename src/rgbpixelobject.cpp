@@ -187,10 +187,10 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   RGBPixelType.tp_new = rgbpixel_new;
   RGBPixelType.tp_getattro = PyObject_GenericGetAttr;
-  RGBPixelType.tp_alloc = PyType_GenericAlloc;
+  RGBPixelType.tp_alloc = NULL; // PyType_GenericAlloc;
   RGBPixelType.tp_richcompare = rgbpixel_richcompare;
   RGBPixelType.tp_getset = rgbpixel_getset;
-  RGBPixelType.tp_free = _PyObject_Del;
+  RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
   PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);

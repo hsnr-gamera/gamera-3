@@ -159,8 +159,8 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_methods = imagedata_methods;
   ImageDataType.tp_new = imagedata_new;
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
-  ImageDataType.tp_alloc = PyType_GenericAlloc;
-  ImageDataType.tp_free = _PyObject_Del;
+  ImageDataType.tp_alloc = NULL; // PyType_GenericAlloc;
+  ImageDataType.tp_free = NULL; // _PyObject_Del;
   PyType_Ready(&ImageDataType);
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants

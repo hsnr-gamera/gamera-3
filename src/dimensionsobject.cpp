@@ -142,10 +142,10 @@ void init_DimensionsType(PyObject* module_dict) {
   DimensionsType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   DimensionsType.tp_new = dimensions_new;
   DimensionsType.tp_getattro = PyObject_GenericGetAttr;
-  DimensionsType.tp_alloc = PyType_GenericAlloc;
+  DimensionsType.tp_alloc = NULL; // PyType_GenericAlloc;
   DimensionsType.tp_richcompare = dimensions_richcompare;
   DimensionsType.tp_getset = dimensions_getset;
-  DimensionsType.tp_free = _PyObject_Del;
+  DimensionsType.tp_free = NULL; // _PyObject_Del;
   DimensionsType.tp_repr = dimensions_repr;
   PyType_Ready(&DimensionsType);
   PyDict_SetItemString(module_dict, "Dimensions", (PyObject*)&DimensionsType);

@@ -121,9 +121,9 @@ void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   ImageInfoType.tp_new = imageinfo_new;
   ImageInfoType.tp_getattro = PyObject_GenericGetAttr;
-  ImageInfoType.tp_alloc = PyType_GenericAlloc;
+  ImageInfoType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageInfoType.tp_getset = imageinfo_getset;
-  ImageInfoType.tp_free = _PyObject_Del;
+  ImageInfoType.tp_free = NULL; // _PyObject_Del;
   PyType_Ready(&ImageInfoType);
   PyDict_SetItemString(module_dict, "ImageInfo", (PyObject*)&ImageInfoType);
 }

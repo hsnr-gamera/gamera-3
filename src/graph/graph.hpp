@@ -53,6 +53,7 @@ inline Node* graph_add_node(GraphObject* self, PyObject* pyobject);
 inline bool graph_remove_node_and_edges(GraphObject* so, Node* node);
 inline bool graph_remove_node(GraphObject* so, Node* node);
 inline size_t graph_disj_set_find_and_compress(GraphObject* so, size_t x);
+
 inline void graph_disj_set_union_by_height(GraphObject* so, size_t a, size_t b);
 inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
 			   Node* to_node, CostType cost = 1.0, 

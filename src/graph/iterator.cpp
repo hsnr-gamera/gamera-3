@@ -33,11 +33,11 @@ PyTypeObject* get_IteratorType() {
 }
 
 void iterator_dealloc(PyObject* self) {
-  IteratorObject* so = (IteratorObject*)self;
-#ifdef DEBUG
+  // IteratorObject* so = (IteratorObject*)self;
+#ifdef DEBUG_DEALLOC
   std::cerr << "iterator dealloc\n";
 #endif
-  (*(so->m_fp_dealloc))(so);
+  // (*(so->m_fp_dealloc))(so);
   self->ob_type->tp_free(self);
 }
 
@@ -63,8 +63,8 @@ void init_IteratorType() {
   IteratorType.tp_dealloc = iterator_dealloc;
   IteratorType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   IteratorType.tp_getattro = PyObject_GenericGetAttr;
-  IteratorType.tp_alloc = PyType_GenericAlloc;
-  IteratorType.tp_free = _PyObject_Del;
+  IteratorType.tp_alloc = NULL; // PyType_GenericAlloc;
+  IteratorType.tp_free = NULL; // _PyObject_Del;
   IteratorType.tp_iter = iterator_get_iter;
   IteratorType.tp_iternext = iterator_next;
   PyType_Ready(&IteratorType);

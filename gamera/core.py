@@ -127,9 +127,9 @@ class ImageBase:
       # have already been generated for this Image
       self.feature_functions = [[], 0]
 
-   def __del__(self):
-      if self._display:
-         self._display.close()
+##    def __del__(self):
+##       if self._display:
+##          self._display.close()
 
    def __getstate__(self):
       """Extremely basic pickling support for use in testing.
@@ -475,8 +475,8 @@ class Image(gameracore.Image, ImageBase):
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
 
-   def __del__(self):
-      ImageBase.__del__(self)
+##    def __del__(self):
+##       ImageBase.__del__(self)
 
    __getstate__ = ImageBase.__getstate__
 
@@ -488,8 +488,8 @@ class SubImage(gameracore.SubImage, ImageBase):
       gameracore.SubImage.__init__(self, image, int(offset_y), int(offset_x),
                                    int(nrows), int(ncols))
 
-   def __del__(self):
-      ImageBase.__del__(self)
+##    def __del__(self):
+##       ImageBase.__del__(self)
 
    __getstate__ = ImageBase.__getstate__
 
@@ -503,8 +503,8 @@ class Cc(gameracore.Cc, ImageBase):
                              nrows, ncols)
    __getstate__ = ImageBase.__getstate__
 
-   def __del__(self):
-      ImageBase.__del__(self)
+##    def __del__(self):
+##       ImageBase.__del__(self)
    
    # Displays this cc in context
    def display_context(self):

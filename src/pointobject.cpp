@@ -159,10 +159,10 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   PointType.tp_new = point_new;
   PointType.tp_getattro = PyObject_GenericGetAttr;
-  PointType.tp_alloc = PyType_GenericAlloc;
+  PointType.tp_alloc = NULL; // PyType_GenericAlloc;
   PointType.tp_richcompare = point_richcompare;
   PointType.tp_getset = point_getset;
-  PointType.tp_free = _PyObject_Del;
+  PointType.tp_free = NULL; // _PyObject_Del;
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
   PyType_Ready(&PointType);

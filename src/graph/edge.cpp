@@ -171,8 +171,8 @@ void init_EdgeType() {
   EdgeType.tp_repr = edge___repr__;
   EdgeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   EdgeType.tp_getattro = PyObject_GenericGetAttr;
-  EdgeType.tp_alloc = PyType_GenericAlloc;
-  EdgeType.tp_free = _PyObject_Del;
+  EdgeType.tp_alloc = NULL; // PyType_GenericAlloc;
+  EdgeType.tp_free = NULL; // _PyObject_Del;
   EdgeType.tp_call = edge___call__;
   EdgeType.tp_methods = edge_methods;
   EdgeType.tp_getset = edge_getset;

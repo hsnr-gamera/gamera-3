@@ -910,8 +910,8 @@ void init_GraphType(PyObject* d) {
   GraphType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   GraphType.tp_new = graph_new;
   GraphType.tp_getattro = PyObject_GenericGetAttr;
-  GraphType.tp_alloc = PyType_GenericAlloc;
-  GraphType.tp_free = _PyObject_Del;
+  GraphType.tp_alloc = NULL; // PyType_GenericAlloc;
+  GraphType.tp_free = NULL; // _PyObject_Del;
   GraphType.tp_methods = graph_methods;
   GraphType.tp_getset = graph_getset;
   GraphType.tp_weaklistoffset = 0;

@@ -121,8 +121,8 @@ void init_RegionMapType(PyObject* module_dict) {
   RegionMapType.tp_methods = regionmap_methods;
   RegionMapType.tp_new = regionmap_new;
   RegionMapType.tp_getattro = PyObject_GenericGetAttr;
-  RegionMapType.tp_alloc = PyType_GenericAlloc;
-  RegionMapType.tp_free = _PyObject_Del;
+  RegionMapType.tp_alloc = NULL; // PyType_GenericAlloc;
+  RegionMapType.tp_free = NULL; // _PyObject_Del;
   RegionMapType.tp_as_sequence = &RegionMapSequenceMethods;
   PyType_Ready(&RegionMapType);
   PyDict_SetItemString(module_dict, "RegionMap", (PyObject*)&RegionMapType);

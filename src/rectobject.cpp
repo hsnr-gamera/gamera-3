@@ -613,9 +613,9 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_getset = rect_getset;
   RectType.tp_new = rect_new;
   RectType.tp_getattro = PyObject_GenericGetAttr;
-  RectType.tp_alloc = PyType_GenericAlloc;
+  RectType.tp_alloc = NULL; // PyType_GenericAlloc;
   RectType.tp_richcompare = rect_richcompare;
-  RectType.tp_free = _PyObject_Del;
+  RectType.tp_free = NULL; // _PyObject_Del;
   RectType.tp_repr = rect_repr;
   PyType_Ready(&RectType);
   PyDict_SetItemString(module_dict, "Rect", (PyObject*)&RectType);

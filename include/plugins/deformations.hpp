@@ -366,7 +366,7 @@ namespace Gamera
 						(typename fact::view_type::value_type)m.get(i, j)
 						);
 			}
-		out = removeExcessBorder(out_data,out,background);
+//		out = removeExcessBorder(out_data,out,background);
 		image_copy_attributes(m, *out);
 		
 		return out;
@@ -393,14 +393,14 @@ namespace Gamera
 	inline double triangle(float per, int n)
 	{
 		size_t n1 = n%(size_t)per;
-		float quarter = per/4;
+		float quarter = per/4.0;
 		if(n1<(3*quarter) && n1>(quarter))
-			return 1 - 4*(n1-quarter)/per;
+			return 1.0 - 4.0*(n1-quarter)/per;
 		
 		if(n1<=quarter)
 			return (4*n1/per);
 
-		return -1+ 4*((n1-3*quarter)/per);
+		return -1.0+ 4.0*((n1-3*quarter)/per);
 	}
 
 	inline double sinc(float per, int n)

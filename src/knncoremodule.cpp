@@ -44,24 +44,31 @@ using namespace Gamera::kNN;
 
 extern "C" {
   DL_EXPORT(void) initknncore(void);
+  // Construction/destruction
   static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds);
   static void knn_dealloc(PyObject* self);
   static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args);
+  // classification
   static PyObject* knn_classify(PyObject* self, PyObject* args);
   static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
+  // distance
   static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
+  static PyObject* knn_distance_between_images(PyObject* self, PyObject* args);
+  // settings
   static PyObject* knn_get_num_k(PyObject* self);
   static int knn_set_num_k(PyObject* self, PyObject* v);
   static PyObject* knn_get_distance_type(PyObject* self);
   static int knn_set_distance_type(PyObject* self, PyObject* v);
   static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
-  static PyObject* knn_serialize(PyObject* self, PyObject* args);
-  static PyObject* knn_unserialize(PyObject* self, PyObject* args);
   static PyObject* knn_get_weights(PyObject* self, PyObject* args);
   static PyObject* knn_set_weights(PyObject* self, PyObject* args);
   static PyObject* knn_get_num_features(PyObject* self);
   static int knn_set_num_features(PyObject* self, PyObject* v);
+  // saving/loading
+  static PyObject* knn_serialize(PyObject* self, PyObject* args);
+  static PyObject* knn_unserialize(PyObject* self, PyObject* args);
+  // GA for optimization
   static PyObject* knn_ga_create(PyObject* self, PyObject* args);
   static PyObject* knn_ga_destroy(PyObject* self, PyObject* args);
   static PyObject* knn_ga_step(PyObject* self, PyObject* args);
@@ -135,8 +142,9 @@ PyMethodDef knn_methods[] = {
   { "classify_with_images", knn_classify_with_images, METH_VARARGS,
     "classify an unknown image using a list of images." },
   { "instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
-    "" },
+    "Use the list of images for non-interactive classification." },
   { "_distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
+  { "_distance_between_images", knn_distance_between_images, METH_VARARGS, "" },
   { "set_weights", knn_set_weights, METH_VARARGS,
     "Set the weights used for classification." },
   { "get_weights", knn_get_weights, METH_VARARGS,
@@ -352,6 +360,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
     PyObject* cur_image = PyList_GetItem(images, i);
+    
     if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
       knn_delete_feature_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
@@ -595,6 +604,221 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   return distance_list;
 }
 
+static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  PyObject* imagea, *imageb;
+  PyArg_ParseTuple(args, "OO", &imagea, &imageb);
+
+  if (!PyObject_TypeCheck(imagea, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
+    return 0;
+  }
+
+  if (!PyObject_TypeCheck(imageb, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: known must be an image");
+    return 0;
+  }
+
+  double distance;
+  compute_distance(o->distance_type, imagea, imageb, &distance, o->weight_vector,
+		   o->num_features);
+  return Py_BuildValue("f", distance);
+}
+#if 0
+PyObject* distance_matrix(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  PyObject* images;
+  if (PyArg_ParseTuple(args, "O", &images) <= 0)
+    return 0;
+  // images is a list of Gamera/Python ImageObjects
+  if (!PyList_Check(images)) {
+    PyErr_SetString(PyExc_TypeError, "Images must be a list.");
+    return 0;
+  }
+  int images_len = PyList_Size(images);
+  if (!(images_len > 1)) {
+    PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    return 0;
+  }
+  // create the list for the output
+  int list_len = ((images_len * images_len) - images_len) / 2;
+  PyObject* list = PyList_New(list_len);
+  size_t index = 0;
+  // create a default set of weights for the distance calculation.
+  double* buf_a, *buf_b;
+  int len_a, len_b;
+  PyObject* cur_a, *cur_b;
+  cur_a = PyList_GET_ITEM(images, 0);
+  if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+    return 0;
+  }
+  if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+    return 0;
+  double* weights = o->weight_vector;
+  if (len_a != o->num_features) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    return 0;
+  }
+
+  // create the normalization object
+  kNN::Normalize norm(len_a);
+  for (int i = 0; i < images_len; ++i) { 
+    cur_a = PyList_GetItem(images, i);
+    if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+      PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+      return 0;
+    }
+    if (cur_a == NULL) {
+      delete[] weights;
+      return 0;
+    }
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
+      delete[] weights;
+      return 0;
+    }
+    norm.add(buf_a, buf_a + len_a);
+  }
+  norm.compute_normalization();
+  double* tmp_a = new double[len_a];
+  double* tmp_b = new double[len_a];
+  FloatImageData* data = new FloatImageData(images.size(), images.size());
+  FloatImageView* mat = new FloatImageView(*data, 0, 0, images.size(), images.size());
+  std::fill(mat->vec_begin(), mat->vec_end(), 0.0);
+  // do the distance calculations
+  for (int i = 0; i < images_len; ++i) { 
+    cur_a = PyList_GetItem(images, i);
+    if (cur_a == NULL)
+      goto mat_error;
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+      goto mat_error;
+    norm.apply(buf_a, buf_a + len_a, tmp_a);
+    for (int j = i + 1; j < images_len; ++j) {
+
+  PyObject* image_list;
+  if (images.size() == 0)
+    throw std::out_of_range("list must be greater than 0.");
+
+  int features_len = images[0]->features_len;
+  if (features_len <= 0)
+    throw std::out_of_range("no features found.");
+
+    
+  for (size_t i = 0; i < images.size(); ++i) {
+    for (size_t j = 0; j < images.size(); ++j) {
+      if (images[j]->features_len != features_len)
+	throw std::out_of_range("feature vectors not the same size");
+      double distance = kNN::city_block_distance(images[i]->features,
+						 images[i]->features + features_len,
+						 images[j]->features, weights);
+      mat->set(i, j,(float)distance);
+    }
+  }
+  delete[] weights;
+  return mat;
+}
+
+  /*
+    unique_distances takes a list of images and returns all of the unique
+    pairs of distances between the images. In the Python version it returns
+    a list of tuples ( (image, image, distance) ).
+  */
+PyObject* unique_distances(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  PyObject* images;
+  if (PyArg_ParseTuple(args, "O", &images) <= 0)
+    return 0;
+  // images is a list of Gamera/Python ImageObjects
+  if (!PyList_Check(images)) {
+    PyErr_SetString(PyExc_TypeError, "Images must be a list.");
+    return 0;
+  }
+  int images_len = PyList_Size(images);
+  if (!(images_len > 1)) {
+    PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    return 0;
+  }
+  // create the list for the output
+  int list_len = ((images_len * images_len) - images_len) / 2;
+  PyObject* list = PyList_New(list_len);
+  size_t index = 0;
+  // create a default set of weights for the distance calculation.
+  double* buf_a, *buf_b;
+  int len_a, len_b;
+  PyObject* cur_a, *cur_b;
+  cur_a = PyList_GET_ITEM(images, 0);
+  if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+    return 0;
+  }
+  if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+    return 0;
+  double* weights = o->weight_vector;
+  if (len_a != o->num_features) {
+    PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    return 0;
+  }
+
+  // create the normalization object
+  kNN::Normalize norm(len_a);
+  for (int i = 0; i < images_len; ++i) { 
+    cur_a = PyList_GetItem(images, i);
+    if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+      PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+      return 0;
+    }
+    if (cur_a == NULL) {
+      delete[] weights;
+      return 0;
+    }
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
+      delete[] weights;
+      return 0;
+    }
+    norm.add(buf_a, buf_a + len_a);
+  }
+  norm.compute_normalization();
+  double* tmp_a = new double[len_a];
+  double* tmp_b = new double[len_a];
+  // do the distance calculations
+  for (int i = 0; i < images_len; ++i) { 
+    cur_a = PyList_GetItem(images, i);
+    if (cur_a == NULL)
+      goto uniq_error;
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+      goto uniq_error;
+    norm.apply(buf_a, buf_a + len_a, tmp_a);
+    for (int j = i + 1; j < images_len; ++j) {
+      cur_b = PyList_GetItem(images, j);
+      if (cur_b == NULL)
+	goto uniq_error;
+      if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
+	goto uniq_error;
+
+      if (len_a != len_b) {
+	PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
+	goto uniq_error;
+      }
+      norm.apply(buf_b, buf_b + len_b, tmp_b);
+      double distance;
+      compute_distance(CITY_BLOCK, tmp_a, len_a, tmp_b, &distance, weights);
+      PyList_SET_ITEM(list, index, Py_BuildValue("(dOO)", distance, cur_a, cur_b));
+      index++;
+    }
+  }
+
+  delete[] weights; delete[] tmp_a; delete[] tmp_b;
+  
+  if (PyList_Sort(list) < 0)
+    return 0;
+  return list;
+  // in case of error
+ uniq_error:
+  delete[] weights; delete[] tmp_a; delete[] tmp_b;
+  return 0;
+}
+
+#endif
 static PyObject* knn_get_num_k(PyObject* self) {
   return Py_BuildValue("i", ((KnnObject*)self)->num_k);
 }

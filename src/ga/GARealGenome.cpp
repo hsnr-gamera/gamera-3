@@ -164,7 +164,7 @@ GARealGaussianMutator(GAGenome& g, float pmut){
 	   child.alleleset(i).type() == GAAllele::DISCRETIZED)
 	  value = child.alleleset(i).allele();
 	else if(child.alleleset(i).type() == GAAllele::BOUNDED){
-	  value += GAUnitGaussian();
+	  value += (float)GAUnitGaussian();
 	  value = GAMax(child.alleleset(i).lower(), value);
 	  value = GAMin(child.alleleset(i).upper(), value);
 	}
@@ -181,7 +181,7 @@ GARealGaussianMutator(GAGenome& g, float pmut){
 	 child.alleleset(idx).type() == GAAllele::DISCRETIZED)
 	value = child.alleleset(idx).allele();
       else if(child.alleleset(idx).type() == GAAllele::BOUNDED){
-	value += GAUnitGaussian();
+	value += (float)GAUnitGaussian();
 	value = GAMax(child.alleleset(idx).lower(), value);
 	value = GAMin(child.alleleset(idx).upper(), value);
       }
@@ -213,8 +213,8 @@ GARealArithmeticCrossover(const GAGenome& p1, const GAGenome& p2,
 
     int len = GAMax(mom.length(), dad.length());
     for(int i=0; i<len; i++) {
-      sis.gene(i, 0.5 * (mom.gene(i) + dad.gene(i)));
-      bro.gene(i, 0.5 * (mom.gene(i) + dad.gene(i)));
+      sis.gene(i, (const float)(0.5 * (mom.gene(i) + dad.gene(i))));
+      bro.gene(i, (const float)(0.5 * (mom.gene(i) + dad.gene(i))));
     }
     n = 2;
   }
@@ -225,7 +225,7 @@ GARealArithmeticCrossover(const GAGenome& p1, const GAGenome& p2,
 
     int len = GAMax(mom.length(), dad.length());
     for(int i=0; i<len; i++) {
-      sis.gene(i, 0.5 * (mom.gene(i) + dad.gene(i)));
+      sis.gene(i, (const float)(0.5 * (mom.gene(i) + dad.gene(i))));
     }
     n = 1;
   }
@@ -258,8 +258,8 @@ GARealBlendCrossover(const GAGenome& p1, const GAGenome& p2,
 	dist = mom.gene(i) - dad.gene(i);
       else 
 	dist = dad.gene(i) - mom.gene(i);
-      float lo = (GAMin(mom.gene(i), dad.gene(i))) - 0.5*dist;
-      float hi = (GAMax(mom.gene(i), dad.gene(i))) + 0.5*dist;
+      float lo = (float)((GAMin(mom.gene(i), dad.gene(i))) - 0.5*dist);
+      float hi = (float)((GAMax(mom.gene(i), dad.gene(i))) + 0.5*dist);
       sis.gene(i, GARandomFloat(lo, hi));
       bro.gene(i, GARandomFloat(lo, hi));
     }
@@ -277,8 +277,8 @@ GARealBlendCrossover(const GAGenome& p1, const GAGenome& p2,
 	dist = mom.gene(i) - dad.gene(i);
       else 
 	dist = dad.gene(i) - mom.gene(i);
-      float lo = (GAMin(mom.gene(i), dad.gene(i))) - 0.5*dist;
-      float hi = (GAMax(mom.gene(i), dad.gene(i))) + 0.5*dist;
+      float lo = (float)((GAMin(mom.gene(i), dad.gene(i))) - 0.5*dist);
+      float hi = (float)((GAMax(mom.gene(i), dad.gene(i))) + 0.5*dist);
       sis.gene(i, GARandomFloat(lo, hi));
     }
     n = 1;

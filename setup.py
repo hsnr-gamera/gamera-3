@@ -23,7 +23,7 @@ plugin_extensions = []
 
 # we grab all of the plugins except __init__.py - of course
 # to exclude this we have to go throug all sorts of crap...
-if not '--help' in sys.argv and not '--help-commands' in sys.argv:
+if 'build' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 
    # Create the list of modules to ignore at import - because
@@ -108,9 +108,9 @@ extensions = [Extension("gamera.gameracore",
                         # FIXME
                         libraries=libs, extra_compile_args=extra_args
                         ),
-##               Extension("gamera.knncore", ga_files,
-##                         include_dirs=["include", "src/ga", "src"],
-##                         libraries=libs, extra_compile_args=extra_args),
+               Extension("gamera.knncore", ga_files,
+                         include_dirs=["include", "src/ga", "src"],
+                         libraries=libs, extra_compile_args=extra_args),
               Extension("gamera.graph", ["src/graphmodule.cpp"],
                         include_dirs=["include", "src"],
                         libraries=libs, extra_compile_args=extra_args)]
@@ -130,7 +130,7 @@ setup(name = "gamera", version="1.1",
 ##########################################
 # generate the non-plugin help pages
 # This needs to be done last since it requires a built system
-if not '--help' in sys.argv and not '--help-commands' in sys.argv:
+if 'build' in sys.argv:
    # This is where things just got built
    sys.path.append("build/lib.%s-%s/gamera" % (get_platform(), sys.version[0:3]))
    import generate_help

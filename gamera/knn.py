@@ -18,7 +18,7 @@
 #
 
 from threading import *
-import sys
+import sys, os
 from gamera import core, util, config
 from gamera.plugins import features
 import gamera.knncore, gamera.gamera_xml
@@ -130,6 +130,12 @@ class kNN(gamera.knncore.kNN):
    the Gamera interactive/non-interactive classifier interface."""
 
    def __init__(self, features=None):
+      """Constructor for knn object. Features is a list
+      of feature names to use for classification. If features
+      is none then the default settings will be loaded from a
+      file specified in the user config file. If there is no
+      settings file specified then all of the features will be
+      used."""
       gamera.knncore.kNN.__init__(self)
       self.ga_initial = 0.0
       self.ga_best = 0.0
@@ -143,7 +149,7 @@ class kNN(gamera.knncore.kNN):
          try:
             print settings
             self.load_settings(settings)
-         except:
+         except Exception, e:
             self.features = 'all'
             self.change_feature_set(self.features)
 
@@ -155,6 +161,9 @@ class kNN(gamera.knncore.kNN):
       self.num_features = features.get_features_length(self.features)
 
    def distance_from_images(self, images, glyph, max):
+      """Compute a list of distances between a list of images
+      and a singe images. Distances greater than the max distance
+      are not included in the output."""
       glyph.generate_features(self.feature_functions)
       progress = None
       for x in images:
@@ -167,6 +176,16 @@ class kNN(gamera.knncore.kNN):
       if progress:
          progress.kill()
       return self._distance_from_images(iter(images), glyph, max)
+
+   def distance_between_images(self, imagea, imageb):
+      """Compute the distance between two images using the settings
+      for the kNN object (distance_type, features, weights, etc). This
+      can be used when more control over the distance computations are
+      needed than with any of the other methods that work on multiple
+      images at once."""
+      imagea.generate_features(self.feature_functions)
+      imageb.generate_features(self.feature_functions)
+      return self._distance_between_images(imagea, imageb)
 
    def evaluate(self):
       """Evaluate the performance of the kNN classifier using

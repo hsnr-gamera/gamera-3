@@ -90,8 +90,28 @@ inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
 }
 
 /*
-  Compute the distance between a known and an unknown feature
-  vector with weights.
+  Compute the distance between two feature vectors.
+*/
+inline void compute_distance(DistanceType distance_type, const double* known_buf, int known_len,
+			     const double* unknown_buf, double* distance, const double* weights) {
+
+  if (distance_type == CITY_BLOCK) {
+    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
+				    weights);
+  } else if (distance_type == FAST_EUCLIDEAN) {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  } else {
+    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
+				   weights);
+  }
+}
+
+
+/*
+  Compute the distance between a known and an unknown image
+  with weights. This version takes an image and a buffer
+  for the unknown image.
 */
 inline int compute_distance(DistanceType distance_type, PyObject* known, double* unknown_buf,
 			    double* distance, double* weights, int unknown_len) {
@@ -106,32 +126,40 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, double*
     return -1;
   }
 
-  if (distance_type == CITY_BLOCK) {
-    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
-				    weights);
-  } else if (distance_type == FAST_EUCLIDEAN) {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
-  } else {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
-  }
+  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance, weights);
+
   return 0;
 }
 
-inline void compute_distance(DistanceType distance_type, const double* known_buf, int known_len,
-			     const double* unknown_buf, double* distance, const double* weights) {
+/*
+  Compute the distance between a known and an unknown image with weights. This version takes
+  an image and a buffer for the unknown image. Arguments must be images - no type checking
+  is performed.
+*/
+inline int compute_distance(DistanceType distance_type, PyObject* known, PyObject* unknown,
+			    double* distance, double* weights, int weights_len) {
+  double *known_buf, *unknown_buf;
+  int known_len, unknown_len;
 
-  if (distance_type == CITY_BLOCK) {
-    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
-				    weights);
-  } else if (distance_type == FAST_EUCLIDEAN) {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
-  } else {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
+  if (image_get_fv(known, &known_buf, &known_len) < 0)
+    return -1;
+
+  if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0)
+    return -1;
+
+  if (unknown_len != known_len) {
+    PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
+    return -1;
   }
+
+  if (unknown_len != weights_len) {
+    PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
+    return -1;
+  }
+  
+  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance, weights);
+
+  return 0;
 }
 
 #endif

@@ -93,7 +93,7 @@ members.  The whole plugin is described by a class that inherits from
       """Returns the ratio of black pixels to white pixels within the
       bounding box of the image."""
       self_type = ImageType([ONEBIT])
-      return_type = FloatVector("volume", 1)
+      return_type = Float("volume", 1)
       doc_examples = [(ONEBIT,)]
 
   class ExampleModule(PluginModule):
@@ -163,7 +163,7 @@ return type, Gamera assumes there is no return result:
 
 .. code:: Python
 
-      return_type = FloatVector("volume", 1)
+      return_type = Float("volume", 1)
 
 Obviously, this is a very simple plugin method with no arguments.  Some more
 involved examples are given below.  In the meantime, let's look at how

@@ -41,6 +41,8 @@ extern "C" {
   static PyObject* image_get_classification_state(PyObject* self);
   static PyObject* image_get_scaling(PyObject* self);
   static PyObject* image_get_resolution(PyObject* self);
+  static int image_set_features(PyObject* self, PyObject* v);
+  static int image_set_id_name(PyObject* self, PyObject* v);
   static int image_set_classification_state(PyObject* self, PyObject* v);
   static int image_set_scaling(PyObject* self, PyObject* v);
   static int image_set_resolution(PyObject* self, PyObject* v);
@@ -99,9 +101,10 @@ bool is_CCObject(PyObject* x) {
 
 static PyGetSetDef image_getset[] = {
   { "data", (getter)image_get_data, 0, "The underlying image data", 0 },
-  { "features", (getter)image_get_features, 0, "The features of the image", 0 },
-  { "id_name", (getter)image_get_id_name, 0,
-    "A list of strings representing the possible classifications of the image.",
+  { "features", (getter)image_get_features, (setter)image_set_features,
+    "The features of the image", 0 },
+  { "id_name", (getter)image_get_id_name, (setter)image_set_id_name,
+    "A list of strings representing the classifications of the image.",
     0 },
   { "children_images", (getter)image_get_children_images, 0,
     "A list of images created from classifications that produce images.", 0 },
@@ -416,6 +419,7 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
 
 CREATE_GET_FUNC(data)
 CREATE_GET_FUNC(features)
+CREATE_SET_FUNC(features)
 CREATE_SET_FUNC(id_name)
 CREATE_GET_FUNC(id_name)
 CREATE_GET_FUNC(children_images)

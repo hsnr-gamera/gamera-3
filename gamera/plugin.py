@@ -36,6 +36,7 @@ class PluginModule:
     cpp_sources = []
     cpp_headers = []
     cpp_defines = []
+    extra_libraries = []
     functions = []
     version = "1.0"
     author = ""

@@ -32,10 +32,11 @@
 #include <math.h>
 #include <time.h>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 
 using namespace vigra;
-using namespace std;
+//using namespace std;
 namespace Gamera
 {
 	template<class T, class U>
@@ -112,7 +113,7 @@ namespace Gamera
 		//------------------------------------------------------------------------------------
 		// Declarations/Initialization
 		//------------------------------------------------------------------------------------
-		using namespace std;
+		
 		
 		typedef typename ImageFactory<V>::view_type::value_type pixelFormat;
 		pixelFormat background = (pixelFormat)(bgcolor);
@@ -306,7 +307,7 @@ namespace Gamera
 	
 	template<class T>
 	Image* wave(T &m, int amplitude, float freq, int direction, int funcType, int offset) {
-		using namespace std;
+		
 		if(amplitude < 0)
 		{
 			//cerr<<"Could not make a wave with negative amplitude."<<endl<<
@@ -477,7 +478,7 @@ namespace Gamera
 	bool randset=0;
 	template<class T>
 	Image* inkrub(T &m, int a) {
-		using namespace std;
+		
 		
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
@@ -518,7 +519,7 @@ namespace Gamera
 	template<class T>
 	Image* ink_diffuse(T &m)
 	{
-		using namespace std;
+		
 		typedef ImageFactory<T> fact;
 		typedef typename fact::view_type::value_type pixelFormat;
 		pixelFormat background = (pixelFormat)m.get(0,0);

@@ -191,7 +191,10 @@ training set at runtime, both of these problems can be ameliorated.
 The following example loads a training set from an XML file, and then
 optimizes it until the user presses Ctrl+C.  At the end, the
 classifier is saved into a fast binary file format using
-``serialize``.
+``serialize``.  (If you don't want to use the commandline, there is
+also a `GUI interface to the GA optimizer available`__.)
+
+.. __: gui.html#classifier-optimization-biollante
 
 .. note:: 
    It is good practice to retain the XML

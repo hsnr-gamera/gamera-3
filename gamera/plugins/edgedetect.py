@@ -25,7 +25,7 @@ import _edgedetect
 ########################################
 # Edge detection methods
 
-class differenceOfExponentialEdgeImage(PluginFunction):
+class difference_of_exponential_edge_image(PluginFunction):
       """Detect and mark edges in an edge image using the Shen/Castan zero-crossing detector.
 
 Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
@@ -43,7 +43,7 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
       args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0), Int("min_edge_length", [0, 32000], default=0)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
 
-class differenceOfExponentialCrackEdgeImage(PluginFunction):
+class difference_of_exponential_crack_edge_image(PluginFunction):
       """Detect and mark edges in a crack edge image using the Shen/Castan zero-crossing detector.
 
 Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
@@ -67,7 +67,7 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
       args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0), Int("min_edge_length", [0, 32000], default=0), Check("close_gaps", default=0), Check("beautify", default=0)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
 
-class cannyEdgeImage(PluginFunction):
+class canny_edge_image(PluginFunction):
       """Detect and mark edges in an edge image using Canny's algorithm.
 
 Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
@@ -82,11 +82,13 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
       args = Args([Real("scale", [0, 1e300], default=0.8), Real("gradient_threshold", [0, 1e300], default=4.0)])
       return_type = ImageType([GREYSCALE, GREY16, FLOAT])
 
-class edgedetect(PluginModule):
+class EdgeDetect(PluginModule):
       category = "Edge"
       cpp_headers=["edgedetect.hpp"]
       cpp_namespace=["Gamera"]
-      functions = [differenceOfExponentialEdgeImage, differenceOfExponentialCrackEdgeImage, cannyEdgeImage]
+      functions = [difference_of_exponential_edge_image,
+                   difference_of_exponential_crack_edge_image,
+                   canny_edge_image]
       author = "L. C. Ninja"
       url = "http://gamera.dkc.jhu.edu"
-module = edgedetect()
+module = EdgeDetect()

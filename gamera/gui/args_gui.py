@@ -58,7 +58,7 @@ class Args:
          return self._create_page_impl(locals, parent, page)
 
    def _create_page_impl(self, locals, parent, page):
-      gs = wxFlexGridSizer(len(page), 2, 8, 8)
+      gs = wxFlexGridSizer(len(page), 2, 2, 2)
       for item in page:
          if item.name == None:
             item.name = "ERROR!  No name given!"

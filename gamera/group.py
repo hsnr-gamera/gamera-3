@@ -46,7 +46,7 @@ class GridIndex:
       if len(glyphs) == 0:
          raise ValueError(
              "GridIndex must be initialised with at least one glyph")
-      self.grid_rect = glyphs[0].union(glyphs)
+      self.grid_rect = glyphs[0].union_rects(glyphs)
       self.cell_width = int(max_width)
       self.cell_height = int(max_height)
       self.cell_ncols = int(self.grid_rect.width / self.cell_width) + 1

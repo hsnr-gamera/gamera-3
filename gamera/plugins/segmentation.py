@@ -91,6 +91,80 @@ class splity_bottom(splity_base):
     __call__ = staticmethod(__call__)
 splity_bottom = splity_bottom()
 
+# connected-component filters
+
+def filter_wide(ccs, max_width):
+    tmp = []
+    for x in ccs:
+        if x.ncols > max_width:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_narrow(ccs, min_width):
+    tmp = []
+    for x in ccs:
+        if x.ncols < min_width:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_tall(ccs, max_height):
+    tmp = []
+    for x in ccs:
+        if x.nrows > max_height:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_short(ccs, min_height):
+    tmp = []
+    for x in ccs:
+        if x.nrows < min_height:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_small(ccs, min_size):
+    tmp = []
+    for x in ccs:
+        if x.nrows < min_size or x.ncols < min_size:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_large(ccs, max_size):
+    tmp = []
+    for x in ccs:
+        if x.nrows > max_size or x.ncols > max_size:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_black_area_small(ccs, min_size):
+    tmp = []
+    for x in ccs:
+        if x.black_area()[0] < min_size:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
+def filter_black_area_large(ccs, max_size):
+    tmp = []
+    for x in ccs:
+        if x.black_area()[0] > max_size:
+            x.fill_white()
+        else:
+            tmp.append(x)
+    return tmp
+
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]

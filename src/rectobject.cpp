@@ -82,8 +82,8 @@ extern "C" {
   static PyObject* rect_intersects_x(PyObject* self, PyObject* args);
   static PyObject* rect_intersects_y(PyObject* self, PyObject* args);
   static PyObject* rect_intersects(PyObject* self, PyObject* args);
-  static PyObject* rect_union(PyObject* _, PyObject* rects);
-  static PyObject* rect_merge(PyObject* self, PyObject* args);
+  static PyObject* rect_union_rects(PyObject* _, PyObject* rects);
+  static PyObject* rect_union(PyObject* self, PyObject* args);
   static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op);
   static PyObject* rect_repr(PyObject* self);
 }
@@ -134,8 +134,8 @@ static PyMethodDef rect_methods[] = {
   // to rect_union, since this really should be a static method.  At this point, 
   // the calling convention will just have to look a bit funny from Python.
   // (i.e. rect_instance.union vs Rect.union)
-  {"union", rect_union, METH_O},
-  {"merge", rect_merge, METH_VARARGS},
+  {"union_rects", rect_union, METH_O},
+  {"union", rect_union, METH_VARARGS},
   {NULL, NULL}
 };
 
@@ -475,7 +475,7 @@ static PyObject* rect_intersects(PyObject* self, PyObject* args) {
   }
 }
 
-static PyObject* rect_union(PyObject* _ /* staticmethod */, PyObject* list) {
+static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* list) {
   if (!PyList_Check(list)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
     return 0;
@@ -496,7 +496,7 @@ static PyObject* rect_union(PyObject* _ /* staticmethod */, PyObject* list) {
   return (PyObject*)so;
 }
 
-static PyObject* rect_merge(PyObject* self, PyObject* args) {
+static PyObject* rect_union(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
   if (PyArg_ParseTuple(args, "O", &rect) <= 0)
@@ -505,7 +505,7 @@ static PyObject* rect_merge(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object!");
     return 0;
   }
-  x->merge(*((RectObject*)rect)->m_x);
+  x->union_rect(*((RectObject*)rect)->m_x);
   Py_INCREF(Py_None);
   return Py_None;
 }

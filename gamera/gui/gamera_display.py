@@ -268,7 +268,7 @@ class ImageDisplay(wxScrolledWindow):
       if len(glyphs) == 0:
          return
       # Get a combined rectangle of all images in the list
-      self.focus_rect(glyphs[0].union(glyphs))
+      self.focus_rect(glyphs[0].union_rects(glyphs))
 
    def focus_rect(self, rect):
       self.focus_points(rect.ul_x, rect.ul_y, rect.lr_x, rect.lr_y)

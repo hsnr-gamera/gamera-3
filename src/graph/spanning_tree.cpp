@@ -111,21 +111,22 @@ namespace {
 
 PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject* images,
 						       PyObject* uniq_dists) {
-  if (!PyList_Check(images)) {
-    PyErr_SetString(PyExc_TypeError, "images must be a list.");
+  PyObject* images_seq = PySequence_Fast(images, "images must be iteratable");
+  if (images_seq == NULL) 
     return 0;
-  }
   
   static PyTypeObject* imagebase = 0;
   if (imagebase == 0) {
     PyObject* mod = PyImport_ImportModule("gamera.gameracore");
     if (mod == 0) {
       PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
+      Py_DECREF(images_seq);
       return 0;
     }
     PyObject* dict = PyModule_GetDict(mod);
     if (dict == 0) {
       PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+      Py_DECREF(images_seq);
       return 0;
     }
     imagebase = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
@@ -134,11 +135,13 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
   if (!PyObject_TypeCheck(uniq_dists, imagebase)
       || get_pixel_type(uniq_dists) != Gamera::FLOAT) {
     PyErr_SetString(PyExc_TypeError, "uniq_dists must be a float image.");
+    Py_DECREF(images_seq);
     return 0;
   }
   FloatImageView* dists = (FloatImageView*)((RectObject*)uniq_dists)->m_x;
   if (dists->nrows() != dists->ncols()) {
     PyErr_SetString(PyExc_TypeError, "image must be symmetric.");
+    Py_DECREF(images_seq);
     return 0;
   }
   
@@ -159,12 +162,13 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
   std::sort(indexes.begin(), indexes.end(), DistsSorter(dists));
 
   // Add the nodes to the graph and build our map for later
-  int images_len = PyList_Size(images);
+  int images_len = PySequence_Fast_GET_SIZE(images_seq);
   std::vector<Node*> nodes(images_len);
   int i;
   for (i = 0; i < images_len; ++i) {
-    nodes[i] = graph_add_node(so, PyList_GET_ITEM(images, i));
+    nodes[i] = graph_add_node(so, PySequence_Fast_GET_ITEM(images_seq, i));
   }
+  Py_DECREF(images_seq);
   
   // create the mst using kruskal
   i = 0;

@@ -246,15 +246,14 @@ class ImageList(WrapperArg):
    
    def from_python(self):
       return """
-          const char* type_error_%(name)s = "Argument '%(name)s' must be a list of images.";
-          if (!PyList_Check(%(pysymbol)s)) {
-            PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
+          const char* type_error_%(name)s = "Argument '%(name)s' must be an iterable of images.";
+          PyObject* %(pysymbol)s_seq = PySequence_Fast(%(pysymbol)s, type_error_%(name)s);
+          if (%(pysymbol)s_seq)
             return 0;
-          }
-          int %(symbol)s_size = PyList_GET_SIZE(%(pysymbol)s);
+          int %(symbol)s_size = PySequence_Fast_GET_SIZE(%(pysymbol)s_seq);
           %(symbol)s.resize(%(symbol)s_size);
           for (int i=0; i < %(symbol)s_size; ++i) {
-            PyObject *element = PyList_GET_ITEM(%(pysymbol)s, i);
+            PyObject *element = PySequence_Fast_GET_ITEM(%(pysymbol)s_seq, i);
             if (!is_ImageObject(element)) {
               PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
               return 0;
@@ -262,7 +261,8 @@ class ImageList(WrapperArg):
             %(symbol)s[i] = std::pair<Image*, int>((Image*)(((RectObject*)element)->m_x), get_image_combination(element));
             image_get_fv(element, &%(symbol)s[i].first->features,
                          &%(symbol)s[i].first->features_len);
-          }""" % self
+          }
+          Py_DECREF(%(pysymbol)s_seq);""" % self
 
    def to_python(self):
       return """

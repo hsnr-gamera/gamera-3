@@ -555,21 +555,22 @@ static PyObject* rect_intersection (PyObject* self, PyObject* args) {
   return (PyObject*)so;
 }
 
-static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* list) {
-  if (!PyList_Check(list)) {
-    PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
+static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* l) {
+  PyObject* seq = PySequence_Fast(l, "First argument must be iterable of Rects");
+  if (seq == NULL) 
     return 0;
-  }
 
-  std::vector<Rect*> vec(PyList_GET_SIZE(list));
-  for (int i=0; i < PyList_GET_SIZE(list); ++i) {
-    PyObject* py_rect = PyList_GET_ITEM(list, i);
+  size_t num_rects = PySequence_Fast_GET_SIZE(seq);
+  std::vector<Rect*> vec(num_rects);
+  for (int i=0; i < num_rects; ++i) {
+    PyObject* py_rect = PySequence_Fast_GET_ITEM(seq, i);
     if (!is_RectObject(py_rect)) {
       PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
       return 0;
     }
     vec[i] = ((RectObject *)py_rect)->m_x;
   }
+  Py_DECREF(seq);
   PyTypeObject* pytype = get_RectType();
   RectObject* so = (RectObject*)pytype->tp_alloc(pytype, 0);
   so->m_x = Rect::union_rects(vec);

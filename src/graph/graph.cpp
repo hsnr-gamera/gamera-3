@@ -158,16 +158,16 @@ PyObject* graph_add_node(PyObject* self, PyObject* pyobject) {
 
 PyObject* graph_add_nodes(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
-  if (!PyList_Check(pyobject)) {
-    PyErr_SetString(PyExc_TypeError, "Argument must be a list of nodes");
+  PyObject* seq = PySequence_Fast(pyobject, "Argument must be an iterable of nodes");
+  if (seq == NULL)
     return 0;
-  }
-  size_t list_size = PyList_Size(pyobject);
+  size_t list_size = PySequence_Fast_GET_SIZE(seq);
   size_t result = 0;
   so->m_nodes->reserve(so->m_nodes->size() + list_size);
   for (size_t i = 0; i < list_size; ++i)
-    if (graph_add_node(so, PyList_GET_ITEM(pyobject, i)))
+    if (graph_add_node(so, PySequence_Fast_GET_ITEM(seq, i)))
       result++;
+  Py_DECREF(seq);
   return PyInt_FromLong((long)result);
 }
 
@@ -208,18 +208,22 @@ PyObject* graph_add_edges(PyObject* self, PyObject* args) {
   PyObject* a;
   if (PyArg_ParseTuple(args, "O", &a) <= 0)
     return 0;
-  if (!PyList_Check(a))
-    PyErr_SetString(PyExc_TypeError, "Input must be a list of edge tuples.");
-  size_t list_size = PyList_Size(a);
+  PyObject* seq = PySequence_Fast(a, "Input must be an iterable of edge tuples");
+  if (seq == NULL)
+    return 0;
+  size_t list_size = PySequence_Fast_GET_SIZE(seq);
   for (size_t i = 0; i < list_size; ++i) {
-    PyObject* tuple = PyList_GetItem(a, i);
+    PyObject* tuple = PySequence_Fast_GET_ITEM(seq, i);
     PyObject* from_node, *to_node;
     CostType cost = 1;
     PyObject* label = NULL;
-    if (PyArg_ParseTuple(tuple, "OO|dO", &from_node, &to_node, &cost, &label) <= 0)
+    if (PyArg_ParseTuple(tuple, "OO|dO", &from_node, &to_node, &cost, &label) <= 0) {
+      Py_DECREF(seq);
       return 0;
+    }
     graph_add_edge(so, from_node, to_node, cost, label);
   }
+  Py_DECREF(seq);
   Py_INCREF(Py_None);
   return Py_None;
 }

@@ -340,10 +340,9 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     classifier is that the data structures can be more static, so knowing the
     size ahead of time is _much_ easier.
   */
-  if (!PyList_Check(images)) {
-    PyErr_SetString(PyExc_TypeError, "knn: images must be a list!");
+  PyObject* images_seq = PySequence_Fast(images, "First argument must be iterable");
+  if (images_seq == NULL) 
     return 0;
-  }
 
   // delete all the feature data and initialize the object
   knn_delete_feature_data(o);
@@ -351,17 +350,20 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     delete o->normalize;
   o->normalize = new Normalize(o->num_features);
 
-  int images_size = PyList_Size(images);
+  int images_size = PySequence_Fast_GET_SIZE(images_seq);
   if (images_size == 0) {
     PyErr_SetString(PyExc_TypeError, "Initial database of a non-interactive kNN classifier must have at least one element.");
+    Py_DECREF(images_seq);
     return 0;
   }
 
   /*
     Create all of the data
   */
-  if (knn_create_feature_data(o, images_size) < 0)
+  if (knn_create_feature_data(o, images_size) < 0) {
+    Py_DECREF(images_seq);
     return 0;
+  }
   /*
     Copy the id_names and the features to the internal data structures.
   */
@@ -371,17 +373,17 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   std::map<char*, int, ltstr> id_name_histogram;
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
-    PyObject* cur_image = PyList_GetItem(images, i);
+    PyObject* cur_image = PySequence_Fast_GET_ITEM(images_seq, i);
     
     if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
       knn_delete_feature_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
-      return 0;
+      goto error;
     }
     if (size_t(tmp_fv_len) != o->num_features) {
       knn_delete_feature_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: feature vector lengths don't match");
-      return 0;      
+      goto error;
     }
     std::copy(tmp_fv, tmp_fv + o->num_features, current_features);
     o->normalize->add(tmp_fv, tmp_fv + o->num_features);
@@ -390,7 +392,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     if (image_get_id_name(cur_image, &tmp_id_name, &len) < 0) {
       knn_delete_feature_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: could not get id name");
-      return 0;
+      goto error;
     }
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
@@ -407,7 +409,13 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     o->normalize->apply(current_features, current_features + o->num_features);
     o->id_name_histogram[i] = id_name_histogram[o->id_names[i]];
   }
+
+  Py_DECREF(images_seq);
+  Py_INCREF(Py_None);
   return Py_None;
+ error:
+  Py_DECREF(images_seq);
+  return 0;
 }
 
 /*
@@ -659,13 +667,14 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   if (PyArg_ParseTuple(args, "O|Oi", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
-  if (!PyList_Check(images)) {
-    PyErr_SetString(PyExc_TypeError, "Images must be a list.");
+  PyObject* images_seq = PySequence_Fast(images, "First argument must be iterable.");
+  if (images_seq == NULL) 
     return 0;
-  }
-  int images_len = PyList_Size(images);
+
+  int images_len = PySequence_Fast_GET_SIZE(images_seq);
   if (!(images_len > 1)) {
     PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    Py_DECREF(images_seq);
     return 0;
   }
 
@@ -673,34 +682,43 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   double* buf_a, *buf_b;
   int len_a, len_b;
   PyObject* cur_a, *cur_b;
-  cur_a = PyList_GET_ITEM(images, 0);
+  cur_a = PySequence_Fast_GET_ITEM(images_seq, 0);
   if (!is_ImageObject(cur_a)) {
     PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+    Py_DECREF(images_seq);
     return 0;
   }
-  if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+  if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
+    Py_DECREF(images_seq);
     return 0;
+  }
   double* weights = o->weight_vector;
   if (len_a != (int)o->num_features) {
     PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    Py_DECREF(images_seq);
     return 0;
   }
 
   // create the normalization object
+  double* tmp_a = new double[len_a];
+  double* tmp_b = new double[len_a];
+  FloatImageData* data = new FloatImageData(images_len, images_len);
+  FloatImageView* mat = new FloatImageView(*data, 0, 0, images_len, images_len);
+
   kNN::Normalize norm(len_a);
   for (int i = 0; i < images_len; ++i) { 
-    cur_a = PyList_GET_ITEM(images, i);
-    if (cur_a == NULL)
-      return 0;
+    cur_a = PySequence_Fast_GET_ITEM(images_seq, i);
+    if (cur_a == NULL) 
+      goto mat_error;
     if (!is_ImageObject(cur_a)) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
-      return 0;
+      goto mat_error;
     }
-    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
-      return 0;
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) 
+      goto mat_error;
     if (len_a != (int)o->num_features) {
       PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
-      return 0;
+      goto mat_error;
     }
     if (normalize)
       norm.add(buf_a, buf_a + len_a);
@@ -708,14 +726,10 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   if (normalize)
     norm.compute_normalization();
 
-  double* tmp_a = new double[len_a];
-  double* tmp_b = new double[len_a];
-  FloatImageData* data = new FloatImageData(images_len, images_len);
-  FloatImageView* mat = new FloatImageView(*data, 0, 0, images_len, images_len);
   std::fill(mat->vec_begin(), mat->vec_end(), 0.0);
   // do the distance calculations
   for (int i = 0; i < images_len; ++i) { 
-    cur_a = PyList_GetItem(images, i);
+    cur_a = PySequence_Fast_GET_ITEM(images_seq, i);
     if (cur_a == NULL)
       goto mat_error;
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
@@ -723,7 +737,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     if (normalize)
       norm.apply(buf_a, buf_a + len_a, tmp_a);
     for (int j = i + 1; j < images_len; ++j) {
-      cur_b = PyList_GetItem(images, j);
+      cur_b = PySequence_Fast_GET_ITEM(images_seq, j);
       if (cur_b == NULL)
 	goto mat_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
@@ -743,8 +757,10 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   }
   delete[] tmp_a;
   delete[] tmp_b;
+  Py_DECREF(images_seq);
   return create_ImageObject(mat);
  mat_error:
+  Py_DECREF(images_seq);
   // delete the image
   delete mat; delete data;
   // delete the tmp buffers
@@ -764,13 +780,14 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   if (PyArg_ParseTuple(args, "OO|i", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
-  if (!PyList_Check(images)) {
-    PyErr_SetString(PyExc_TypeError, "Images must be a list.");
+  PyObject* images_seq = PySequence_Fast(images, "First argument must be iterable.");
+  if (images_seq == NULL) 
     return 0;
-  }
-  int images_len = PyList_Size(images);
+
+  int images_len = PySequence_Fast_GET_SIZE(images_seq);
   if (!(images_len > 1)) {
     PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    Py_DECREF(images_seq);
     return 0;
   }
   // create the 'vector' for the output
@@ -782,31 +799,41 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   double* buf_a, *buf_b;
   int len_a, len_b;
   PyObject* cur_a, *cur_b;
-  cur_a = PyList_GET_ITEM(images, 0);
+  cur_a = PySequence_Fast_GET_ITEM(images_seq, 0);
   if (!is_ImageObject(cur_a)) {
     PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+    Py_DECREF(images_seq);
     return 0;
   }
-  if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+  if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
+    Py_DECREF(images_seq);
     return 0;
+  }    
+
   double* weights = o->weight_vector;
   if (len_a != (int)o->num_features) {
     PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    Py_DECREF(images_seq);
     return 0;
   }
 
   // create the normalization object
   kNN::Normalize norm(len_a);
   for (int i = 0; i < images_len; ++i) { 
-    cur_a = PyList_GetItem(images, i);
+    cur_a = PySequence_Fast_GET_ITEM(images_seq, i);
     if (!is_ImageObject(cur_a)) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
+      Py_DECREF(images_seq);
       return 0;
     }
-    if (cur_a == NULL)
+    if (cur_a == NULL) {
+      Py_DECREF(images_seq);
       return 0;
-    if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
+    }
+    if (image_get_fv(cur_a, &buf_a, &len_a) < 0) {
+      Py_DECREF(images_seq);
       return 0;
+    }
     if (normalize)
       norm.add(buf_a, buf_a + len_a);
   }
@@ -817,7 +844,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   // do the distance calculations
   size_t index = 0;
   for (int i = 0; i < images_len; ++i) { 
-    cur_a = PyList_GetItem(images, i);
+    cur_a = PySequence_Fast_GET_ITEM(images_seq, i);
     if (cur_a == NULL)
       goto uniq_error;
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0)
@@ -825,7 +852,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
     if (normalize)
       norm.apply(buf_a, buf_a + len_a, tmp_a);
     for (int j = i + 1; j < images_len; ++j) {
-      cur_b = PyList_GetItem(images, j);
+      cur_b = PySequence_Fast_GET_ITEM(images_seq, j);
       if (cur_b == NULL)
 	goto uniq_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
@@ -988,22 +1015,24 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     return Py_BuildValue("(ii)", ans.first, ans.second);
   } else {
     // Get the list of indexes
-    if (!PyList_Check(indexes)) {
-      PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be a list");
+    PyObject* indexes_seq = PySequence_Fast(indexes, "Indexes must be an iterable list of indexes."); 
+    if (indexes_seq == NULL) 
       return 0;
-    }
-    int indexes_size = PyList_Size(indexes);
+
+    int indexes_size = PySequence_Fast_GET_SIZE(indexes_seq);
     // Make certain that there aren't too many indexes
     if (indexes_size > (int)o->num_features) {
       PyErr_SetString(PyExc_RuntimeError, "knn: index list too large for data");
+      Py_DECREF(indexes_seq);
       return 0;
     }
     // copy the indexes into a vector
     std::vector<long> idx(indexes_size);
     for (int i = 0; i < indexes_size; ++i) {
-      PyObject* tmp = PyList_GET_ITEM(indexes, i);
+      PyObject* tmp = PySequence_Fast_GET_ITEM(indexes_seq, i);
       if (!PyInt_Check(tmp)) {
 	PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be ints");
+	Py_DECREF(indexes_seq);
 	return 0;
       }
       idx[i] = PyInt_AS_LONG(tmp);
@@ -1012,6 +1041,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     for (size_t i = 0; i < idx.size(); ++i) {
       if (idx[i] > (long)(o->num_features - 1)) {
 	PyErr_SetString(PyExc_RuntimeError, "knn: index out of range in index list");
+	Py_DECREF(indexes_seq);
 	return 0;
       }
     }

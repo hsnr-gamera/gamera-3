@@ -510,42 +510,54 @@ namespace Gamera {
       ImageData<T>* data = NULL;
       ImageView<ImageData<T> >* image = NULL;
       
-      if (!PyList_Check(obj))
-	throw std::runtime_error("Must be a nested Python list of pixels.");
-      int nrows = PyList_GET_SIZE(obj);
-      if (nrows == 0)
+      PyObject* seq = PySequence_Fast(obj, "Argument must be a nested Python iterable of pixels.");
+      if (seq == NULL)
+	throw std::runtime_error("Argument must be a nested Python iterable of pixels.");
+      int nrows = PySequence_Fast_GET_SIZE(seq);
+      if (nrows == 0) {
+	Py_DECREF(seq);
 	throw std::runtime_error("Nested list must have at least one row.");
+      }
       int ncols = -1;
       
       for (size_t r = 0; r < (size_t)nrows; ++r) {
 	PyObject* row = PyList_GET_ITEM(obj, r);
-	if (!PyList_Check(row)) {
+	PyObject* row_seq = PySequence_Fast(row, "");
+	if (row_seq == NULL) {
 	  pixel_from_python<T>::convert(row);
-	  row = obj;
+	  row_seq = seq;
+	  Py_INCREF(row_seq);
 	  nrows = 1;
 	}
-	int this_ncols = PyList_GET_SIZE(row);
+	int this_ncols = PySequence_Fast_GET_SIZE(row_seq);
 	if (ncols == -1) {
 	  ncols = this_ncols;
-	  if (ncols == 0)
+	  if (ncols == 0) {
+	    Py_DECREF(seq);
+	    Py_DECREF(row_seq);
 	    throw std::runtime_error
 	      ("The rows must be at least one column wide.");
+	  }
 	  data = new ImageData<T>(nrows, ncols);
 	  image = new ImageView<ImageData<T> >(*data, 0, 0, nrows, ncols);
 	} else {
 	  if (ncols != this_ncols) {
 	    delete image;
 	    delete data;
+	    Py_DECREF(row_seq);
+	    Py_DECREF(seq);
 	    throw std::runtime_error
 	      ("Each row of the nested list must be the same length.");
 	  }
 	}
 	for (size_t c = 0; c < (size_t)ncols; ++c) {
-	  PyObject* item = PyList_GET_ITEM(row, c);
+	  PyObject* item = PySequence_Fast_GET_ITEM(row_seq, c);
 	  T px = pixel_from_python<T>::convert(item);
 	  image->set(r, c, px);
 	}
+	Py_DECREF(row_seq);
       }
+      Py_DECREF(seq);
       return image;
     }
   };
@@ -553,19 +565,28 @@ namespace Gamera {
   Image* nested_list_to_image(PyObject* obj, int pixel_type) {
     // If pixel_type == -1, attempt to do an auto-detect.
     if (pixel_type < 0) {
-      if (!PyList_Check(obj))
+      PyObject* seq = PySequence_Fast(obj, "Must be a nested Python iterable of pixels.");
+      if (seq == NULL)
 	throw std::runtime_error("Must be a nested Python list of pixels.");
-      if (PyList_GET_SIZE(obj) == 0)
+      if (PySequence_Fast_GET_SIZE(seq) == 0) {
+	Py_DECREF(seq);
 	throw std::runtime_error("Nested list must have at least one row.");
-      PyObject* row = PyList_GET_ITEM(obj, 0);
+      }
+      PyObject* row = PySequence_Fast_GET_ITEM(seq, 0);
       PyObject* pixel;
-      if (!PyList_Check(row)) {
+      PyObject* row_seq = PySequence_Fast(row, "");
+      if (row_seq == NULL) {
 	pixel = row;
       } else {
-	if (PyList_GET_SIZE(row) == 0)
+	if (PySequence_Fast_GET_SIZE(row_seq) == 0) {
+	  Py_DECREF(seq);
+	  Py_DECREF(row_seq);
 	  throw std::runtime_error("The rows must be at least one column wide.");
-	pixel = PyList_GET_ITEM(row, 0);
+	}
+	pixel = PySequence_Fast_GET_ITEM(row_seq, 0);
       }
+      Py_DECREF(seq);
+      Py_DECREF(row_seq);
       if (PyInt_Check(pixel))
 	pixel_type = GREYSCALE;
       else if (PyFloat_Check(pixel))

@@ -19,16 +19,26 @@
 
 from gamera.plugin import *
 
-class outline(PluginFunction):
+class thin_zs(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT])
-outline = outline()
+    return_type = ImageType([ONEBIT], "thinned")
+thin_zs = thin_zs()
 
-class MiscFiltersModule(PluginModule):
-    category = "Filter"
-    functions = [outline]
-    cpp_headers = ["misc_filters.hpp"]
+class thin_hs(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT], "thinned")
+thin_hs = thin_hs()
+
+class thin_lc(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT], "thinned")
+thin_lc = thin_lc()
+
+class ThinningModule(PluginModule):
+    category = "Filter/Thinning"
+    functions = [thin_zs, thin_hs, thin_lc]
+    cpp_headers = ["thinning.hpp"]
     cpp_namespaces = ["Gamera"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
-module = MiscFiltersModule()
+module = ThinningModule()

@@ -22,7 +22,9 @@
 #define kwm10242002_features
 
 #include "gamera.hpp"
-#include "misc_filters.hpp"
+#include "image_utilities.hpp"
+#include "morphology.hpp"
+#include "thinning.hpp"
 #include <cmath>
 #include <vector>
 
@@ -233,14 +235,22 @@ namespace Gamera {
   */
   template<class T>
   feature_t compactness(const T& image) {
+    // I've converted this to a more efficient method.  Rather than
+    // using (volume(outline) / volume(original)), I just use
+    // volume(dilated) - volume(original) / volume(original).  This
+    // prevents the unnecessary xor_image pixel-by-pixel operation from
+    // happening.  We still need to create a copy to dilate, however,
+    // since we don't want to touch the original.
     feature_t vol = volume(image);
     if (vol == 0)
-      return 32767;
-    typename ImageFactory<T>::view_type* ol = outline(image);
-    feature_t return_value = volume(*ol) / vol;
-    delete ol->data();
-    delete ol;
-    return return_value;
+      return std::numeric_limits<feature_t>::max();
+    typedef typename ImageFactory<T>::view_type* view_type;
+    view_type copy = simple_image_copy(image);
+    dilate(*copy);
+    feature_t result = (volume(*copy) - vol) / vol;
+    delete copy->data();
+    delete copy;
+    return result;
   }
 
   /*
@@ -297,5 +307,147 @@ namespace Gamera {
     return volumes;
   }
 
+  double zer_pol_R(int n, int m_in, double x, double y) {
+    int m = abs(m_in);
+    int sign;
+    double result = 0;
+    double distance = (x * x + y * y);
+      sign = 1;
+    int a = 1;
+    for (int i = 2; i <= n; ++i)
+      a *= i;
+    int b = 1;
+    int c = 1;
+    for (int i = 2; i <= (n + m) / 2; ++i)
+      c *= i;
+    int d = c;
+    int s = 0; // Outside the loop, since we need to access it at the end too.
+    for (; s < (n - m) / 2; ++s) {
+      result += sign * (a * 1.0 / (b * c * d)) * pow(distance, (n / 2.0) - s);
+      sign = -sign;
+      a /= (n - s);
+      b *= (s + 1);
+      c /= ((n + m) / 2 - s);
+      d /= ((n - m) / 2 - s);
+    }
+    result += sign * (a * 1.0 / (b * c * d)) * pow(distance, (n / 2.0) - s);
+    return result;
+  }
+
+  void zer_pol(int n, int m, double x, double y, double& real, double& imag) {
+    if ((x*x + y*y) > 1.0) {
+      real = 0.0;
+      imag = 0.0; 
+    } else {
+      double R = zer_pol_R(n, m, x, y);
+      double arg = m * atan2(y, x);
+      real = R * cos(arg);
+      imag = R * sin(arg);
+    }
+  }
+
+  template<class T>
+  FloatVector* zernike_moments(const T& image) {
+    // This is my own modification so that all pixels in the image become 
+    // involved in the calculation.  I "imagine" a zernike circle that encompasses the
+    // entire bounding box rectangle.  (Rather than an ellipse that fits
+    // inside the bounding box.)  This not only helps to better distinguish
+    // glyphs, it is slightly more efficient since it removes an 'if' in the
+    // inner loop.
+    size_t max_dimension = std::max(image.ncols(), image.nrows());
+    double x_0 = (image.ncols() + 1) / 2.0;
+    double y_0 = (image.nrows() + 1) / 2.0;
+    double scale = max_dimension / 2.0;
+    double x_dist, y_dist, real_tmp, imag_tmp;
+
+    int m = 1;
+
+    FloatVector* moments = new FloatVector(26);
+    for (size_t i = 0; i < 26; ++i)
+      (*moments)[i] = 0.0;
+
+    for (size_t y = 0; y < image.nrows(); ++y)
+      for (size_t x = 0; x < image.ncols(); ++x) {
+	y_dist = (y - y_0) / scale;
+	x_dist = (x - x_0) / scale;
+	if (is_black(image.get(y, x))) {
+	  for (size_t n = 1; n < 14; ++n) { 
+	    size_t idx = (n-1) * 2;
+	    zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
+	    (*moments)[idx] += real_tmp;
+	    (*moments)[idx + 1] += (-imag_tmp);
+	  }
+	}
+      }
+    
+    for (size_t n = 1; n < 14; ++n) {
+      size_t idx = (n-1) * 2;
+      double multiplier = (n + 1) / M_PI;
+      (*moments)[idx] *= multiplier;
+      (*moments)[idx + 1] *= multiplier;
+    }
+
+    return moments;
+  }
+
+  template<class T>
+  FloatVector* skeleton_features(const T& image) {
+    typedef typename ImageFactory<T>::view_type* view_type;
+    view_type skel = thin_lc(image);
+    bool p[8];
+    size_t T_joints = 0, X_joints = 0, bend_points = 0;
+    size_t end_points = 0, total_pixels = 0;
+    size_t center_x = 0, center_y = 0;
+    for (size_t y = 0; y < skel->nrows(); ++y)
+      for (size_t x = 0; x < skel->ncols(); ++x) {
+	if (is_black(skel->get(y, x))) {
+	  ++total_pixels;
+	  center_x += x;
+	  center_y += y;
+	  size_t N, S;
+	  thin_zs_get(y, x, *skel, p, N, S);
+	  if (N == 4) // T-joint
+	    ++X_joints;
+	  else if (N == 3) // X-joint
+	    ++T_joints;
+	  else if (N == 2) { // Possibly a bend point
+	    if (!((p[0] && p[4]) || // Crosswise pairs
+		  (p[1] && p[5]) ||
+		  (p[2] && p[6]) ||
+		  (p[3] && p[7]))) 
+	      ++bend_points;
+	  } else if (N == 1)
+	    ++end_points;
+	}
+      }
+    center_x /= total_pixels;
+    size_t x_axis_crossings = 0;
+    bool last_pixel = false;
+    for (size_t y = 0; y < skel->nrows(); ++y)
+      if (is_black(skel->get(y, center_x)) && !last_pixel) {
+	last_pixel = true;
+	++x_axis_crossings;
+      } else 
+	last_pixel = false;
+  
+    center_y /= total_pixels;
+    size_t y_axis_crossings = 0;
+    last_pixel = false;
+    for (size_t x = 0; x < skel->ncols(); ++x)
+      if (is_black(skel->get(center_y, x)) && !last_pixel) {
+	last_pixel = true;
+	++y_axis_crossings;
+      } else 
+	last_pixel = false;
+    
+    FloatVector* features = new FloatVector(6);
+    (*features)[0] = float(X_joints);
+    (*features)[1] = float(T_joints);
+    (*features)[2] = float(bend_points) / float(total_pixels);
+    (*features)[3] = float(end_points);
+    (*features)[4] = float(x_axis_crossings);
+    (*features)[5] = float(y_axis_crossings);
+    return features;
+  }
 }
 #endif

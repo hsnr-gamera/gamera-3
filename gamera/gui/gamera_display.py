@@ -102,10 +102,11 @@ class ImageDisplay(wxScrolledWindow):
 
    # Refreshes the image by recalling the to_string function
    def reload_image(self, *args):
-      if self.view_function != None:
+      if self.view_function != None and self.original_image != None:
          self.image = apply(self.view_function, (self.original_image,))
-      self.scale()
-      return (self.image.width, self.image.height)
+      if self.image != None:
+         self.scale()
+         return (self.image.width, self.image.height)
 
    def add_click_callback(self, cb):
       self.click_callbacks.append(cb)
@@ -212,6 +213,8 @@ class ImageDisplay(wxScrolledWindow):
       self.focus_rect(x1, y1, x2, y2)
 
    def focus_rect(self, x1, y1, x2, y2):
+      if self.image is None:
+         return
       scroll_amount = self.scroll_amount
       # Adjust for the scaling factor
       scaling = self.scaling
@@ -254,6 +257,8 @@ class ImageDisplay(wxScrolledWindow):
    # SCALING
    #
    def scale(self, new_scale=None):
+      if self.image is None:
+         return
       old_scale = self.scaling
       if new_scale == old_scale:
          return
@@ -309,6 +314,8 @@ class ImageDisplay(wxScrolledWindow):
          self.scale(self.scaling * 2.0)
 
    def ZoomView(self, *args):
+      if self.image is None:
+         return
       scroll_amount = self.scroll_amount
       # Zooms in as best it can on the current view
       x = min(self.rubber_origin_x, self.rubber_x2)
@@ -425,6 +432,13 @@ class ImageDisplay(wxScrolledWindow):
 
    def _OnPaint(self, event):
       if not self.image:
+         dc = wxPaintDC(self)
+         dc.SetPen(wxTRANSPARENT_PEN)
+         dc.SetBrush(wxWHITE_BRUSH)
+         size = self.GetSize()
+         dc.DrawRectangle(0, 0, size.x, size.y)
+         dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
+         dc.DrawRectangle(0, 0, size.x, size.y)
          return
       scaling = self.scaling
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -461,6 +475,8 @@ class ImageDisplay(wxScrolledWindow):
                      rect.nrows + self.scaling, 1)
 
    def PaintArea(self, x, y, w, h, check=1, dc=None):
+      if not self.image:
+         return
       redraw_rubber = 0
       if dc == None:
          dc = wxClientDC(self)
@@ -574,6 +590,8 @@ class ImageDisplay(wxScrolledWindow):
       self.Refresh(0, rect=wxRect(0, 0, size.x, size.y))
 
    def _OnLeftDown(self, event):
+      if not self.image:
+         return
       self.CaptureMouse()
       self.rubber_on = 1
       self.draw_rubber()
@@ -632,6 +650,8 @@ class ImageDisplay(wxScrolledWindow):
          self.OnRubber(event.ShiftDown() or event.ControlDown())
 
    def _OnMiddleDown(self, event):
+      if not self.image:
+         return
       wxSetCursor(wxStockCursor(wxCURSOR_BULLSEYE))
       self.dragging = 1
       self.dragging_x = event.GetX()
@@ -644,6 +664,8 @@ class ImageDisplay(wxScrolledWindow):
       self.dragging = 0
 
    def _OnRightDown(self, event):
+      if not self.image:
+         return
       from gamera.gui import image_menu
       menu = image_menu.ImageMenu(
          self, event.GetX(), event.GetY(),
@@ -1525,8 +1547,8 @@ class ImageFrameBase:
          self.owner = None
       EVT_CLOSE(self._frame, self._OnCloseWindow)
 
-   def set_image(self, image, view_function=None):
-      size = self._iw.id.set_image(image, view_function)
+   def set_image(self, image, view_function=None, weak=1):
+      size = self._iw.id.set_image(image, view_function, weak)
       self._frame.SetSize((max(200, min(600, size[0] + 30)),
                            max(200, min(400, size[1] + 60))))
 

@@ -71,6 +71,16 @@ class volume64regions(PluginFunction):
     return_type = FloatVector("volumes", 64)
 volume64regions = volume64regions()
 
+class zernike_moments(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = FloatVector("zernike_moments", 26)
+zernike_moments = zernike_moments()
+
+class skeleton_features(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = FloatVector("skeleton_features", 6)
+skeleton_features = skeleton_features()
+
 class generate_features(PluginFunction):
     category = "Utility"
     pure_python = 1
@@ -101,7 +111,8 @@ class FeaturesModule(PluginModule):
                  nholes_extended, volume, area,
                  aspect_ratio, compactness,
                  volume16regions, volume64regions,
-                 generate_features]
+                 generate_features, zernike_moments,
+                 skeleton_features]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = FeaturesModule()

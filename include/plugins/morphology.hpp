@@ -147,6 +147,30 @@ namespace Gamera {
     neighbor9<T, Rank<typename T::value_type> >(m, rank);
   }
 
+  template<class T>
+  class Mean {
+  public:
+    inline T operator() (typename vector<T>::iterator begin,
+			 typename vector<T>::iterator end);
+  };
+
+  template<class T>
+  inline T Mean<T>::operator() (typename vector<T>::iterator begin,
+				typename vector<T>::iterator end) {
+    long sum = 0;
+    size_t size = end - begin;
+    for (; begin != end; ++begin)
+      sum += size_t(*begin);
+    return T(sum / size);
+  }
+
+  template<class T>
+  void mean(T &m) {
+    if (m.nrows() < 3 || m.ncols() < 3)
+      return;
+    Mean<typename T::value_type> mean_op;
+    neighbor9<T, Mean<typename T::value_type> >(m, mean_op);
+  }
   
 }
 #endif

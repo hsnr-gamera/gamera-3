@@ -144,7 +144,7 @@ template = Template("""
       [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
       [[for x in function.args.list]]
         [[exec x.name = re.sub("\s", "_", x.name)]]
-        [[if isinstance(x, Int) or isinstance(x, Choice)]]
+        [[if isinstance(x, Int) or isinstance(x, Choice) or isinstance(x, Check)]]
           int [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
         [[elif isinstance(x, Float)]]

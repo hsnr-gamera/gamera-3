@@ -40,11 +40,15 @@ class rank(PluginFunction):
   args = Args([Int('rank', range=(1, 9))])
 rank = rank()
 
+class mean(PluginFunction):
+  self_type = ImageType([GREYSCALE, FLOAT])
+mean = mean()
+
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
   cpp_namespaces = ["Gamera"]
   category = "Morphology"
-  functions = [erode_dilate, erode, dilate, rank]
+  functions = [erode_dilate, erode, dilate, rank, mean]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

@@ -68,12 +68,6 @@ class ImageBrowserFrame(wxFrame):
                          wxDefaultPosition,(400, 500))
         self.splitter = wxSplitterWindow(self, -1)
         self.image = gamera_display.ImageWindow(self.splitter, -1)
-        # The ImageWindow is not a happy camper without an image
-        # so we make a small white image for it to play with and
-        # be happy about.
-        i = core.Image(0, 0, 10, 10, core.ONEBIT, core.DENSE)
-        i.fill_white()
-        self.image.id.set_image(i, weak=0)
         self.file = FileList(self.splitter, -1, self.image)
         self.splitter.SetMinimumPaneSize(20)
         self.splitter.SplitVertically(self.file, self.image)
@@ -87,7 +81,6 @@ class ImageBrowserFrame(wxFrame):
         EVT_MENU(self, id, self.OnOpen)
         menubar.Append(file, "&File")
         self.SetMenuBar(menubar)
-
 
     def OnOpen(self, e):
         dir = gui_util.directory_dialog(self, 0)

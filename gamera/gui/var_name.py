@@ -49,7 +49,8 @@ def get(default='untitled', dict={}):
          result = dlg.GetValue()
          dlg.Destroy()
          if not verify_variable_name(result):
-            message("Invalid variable name: " + result)
+            gui_util.message("Invalid variable name: " + result)
+            return None
          else:
             return result
       else:

@@ -61,7 +61,6 @@ class FileList(wxListCtrl, wxListCtrlAutoWidthMixin):
         self.SetColumnWidth(1, wxLIST_AUTOSIZE)
         self.SetColumnWidth(0, wxLIST_AUTOSIZE)
         
-
 class ImageBrowserFrame(wxFrame):
     def __init__(self):
         wxFrame.__init__(self, NULL, -1, "Image File Browser",
@@ -79,6 +78,7 @@ class ImageBrowserFrame(wxFrame):
         id = NewId()
         file.Append(id, "Open", "Open a directory of files")
         EVT_MENU(self, id, self.OnOpen)
+
         menubar.Append(file, "&File")
         self.SetMenuBar(menubar)
 

@@ -317,12 +317,6 @@ namespace Gamera {
 	return false;
     }
 
-#undef	MAX
-#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
-
-#undef	MIN
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-
     // union
     static Rect* union_rects(std::vector<Rect*> &rects) {
       size_t min_x, min_y, max_x, max_y;
@@ -332,10 +326,10 @@ namespace Gamera {
       for (std::vector<Rect*>::iterator i = rects.begin();
 	   i != rects.end(); ++i) {
 	Rect* rect = (*i);
-	min_x = MIN(min_x, rect->ul_x());
-	min_y = MIN(min_y, rect->ul_y());
-	max_x = MAX(max_x, rect->lr_x());
-	max_y = MAX(max_y, rect->lr_y());
+	min_x = std::min(min_x, rect->ul_x());
+	min_y = std::min(min_y, rect->ul_y());
+	max_x = std::max(max_x, rect->lr_x());
+	max_y = std::max(max_y, rect->lr_y());
       }
       return new Rect(Point(min_x, min_y), Point(max_x, max_y));
     }

@@ -72,7 +72,7 @@ all_features = None
 # Utility to generate features on a list of glyphs
 def generate_features_list(list, feature_functions=None):
     ff = Image.get_feature_functions(feature_functions)
-    progress = gamera.util.ProgressFactory("Generating features...", len(list))
+    progress = util.ProgressFactory("Generating features...", len(list))
     try:
         for glyph in list:
             glyph.generate_features(ff)

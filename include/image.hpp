@@ -33,16 +33,22 @@ namespace Gamera {
       : Rect(origin_y, origin_x, nrows, ncols) {
       m_resolution = 0;
       m_scaling = 1.0;
+      features = 0;
+      features_len = 0;
     }
     Image(const Point& upper_left, const Point& lower_right)
       : Rect(upper_left, lower_right) {
       m_resolution = 0;
       m_scaling = 1.0;
+      features = 0;
+      features_len = 0;
     }
     Image(const Point& upper_left, const Size& size)
       : Rect(upper_left, size) {
       m_resolution = 0;
       m_scaling = 1.0;
+      features = 0;
+      features_len = 0;
     }
     Image(const Point& upper_left, const Dimensions& dim)
       : Rect(upper_left, dim) {
@@ -52,6 +58,8 @@ namespace Gamera {
     Image(const Rect& rect) : Rect(rect) {
       m_resolution = 0;
       m_scaling = 1.0;
+      features = 0;
+      features_len = 0;
     }
     virtual ~Image() { }
     double resolution() const { return m_resolution; }
@@ -59,6 +67,9 @@ namespace Gamera {
     double scaling() const { return m_scaling; }
     void scaling(double v) { m_scaling = v; }
     virtual ImageDataBase* data() const = 0;
+  public:
+    double* features;
+    int features_len;
   protected:
     double m_resolution;
     double m_scaling;

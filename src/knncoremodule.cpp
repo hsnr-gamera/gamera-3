@@ -23,6 +23,7 @@
 */
 #include "gameramodule.hpp"
 #include "knn.hpp"
+#include "knnmodule.hpp"
 #include <algorithm>
 #include <string.h>
 #include <Python.h>
@@ -73,17 +74,6 @@ extern "C" {
 static PyTypeObject KnnType = {
   PyObject_HEAD_INIT(NULL)
   0,
-};
-
-/*
-  This enum is for selecting between the various methods of
-  computing the distance between two floating-point feature
-  vectors.
-*/
-enum DistanceType {
-  CITY_BLOCK,
-  EUCLIDEAN,
-  FAST_EUCLIDEAN
 };
 
 /*
@@ -305,55 +295,6 @@ struct ltstr {
 };
 
 /*
-  get the feature vector from an image. image argument _must_ an image - no
-  type checking is performed.
-*/
-inline int image_get_fv(PyObject* image, double** buf, int* len) {
-  ImageObject* x = (ImageObject*)image;
-
-  if (PyObject_CheckReadBuffer(x->m_features) < 0) {
-    return -1;
-  }
-
-  if (PyObject_AsReadBuffer(x->m_features, (const void**)buf, len) < 0) {
-    PyErr_SetString(PyExc_TypeError, "knn: Could not use image as read buffer.");
-    return -1;
-  }
-  if (*len == 0) {
-    return -1;
-  }
-  *len = *len / sizeof(double);
-  return 0;
-}
-
-
-/*
-  get the id_name from an image. The image argument _must_ be an image -
-  no type checking is performed.
-*/
-inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
-  ImageObject* x = (ImageObject*)image;
-  // PyList_Size shoule type check the argument
-  if (PyList_Size(x->m_id_name) < 1) {
-    PyErr_SetString(PyExc_TypeError, "knn: id_name not a list or list is empty.");
-    return -1;
-  }
-  PyObject* id_tuple = PyList_GET_ITEM(x->m_id_name, 0);
-  if (PyTuple_Size(id_tuple) != 2) {
-    PyErr_SetString(PyExc_TypeError, "knn: id_name is not a tuple or is the wrong size.");
-    return -1;
-  }
-  PyObject* id = PyTuple_GET_ITEM(id_tuple, 1);
-  *id_name = PyString_AsString(id);
-  if (*id_name == 0) {
-    PyErr_SetString(PyExc_TypeError, "knn: could not get string from id_name tuple.");
-    return -1;
-  }
-  *len = PyString_GET_SIZE(id);
-  return 0;
-}
-
-/*
   Take a list of images from Python and instatiate the internal data structures
   for knn - this is used for non-interactive classification using the classify
   method. The major difference between interactive classification and non-interactive
@@ -513,37 +454,6 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   return ans_list;
 }
 
-
-/*
-  Compute the distance between a known and an unknown feature
-  vector with weights.
-*/
-inline int compute_distance(KnnObject* o, PyObject* known, double* unknown_buf,
-			    double* distance, double* weights, int unknown_len) {
-  double* known_buf;
-  int known_len;
-
-  if (image_get_fv(known, &known_buf, &known_len) < 0)
-    return -1;
-
-  if (unknown_len != known_len) {
-    PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
-    return -1;
-  }
-
-  if (o->distance_type == CITY_BLOCK) {
-    *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
-				    weights);
-  } else if (o->distance_type == FAST_EUCLIDEAN) {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
-  } else {
-    *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
-  }
-  return 0;
-}
-
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   if (o->ga_running == true) {
@@ -594,7 +504,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     if (cross_validation_mode && (cur == unknown))
       continue;
     double distance;
-    if (compute_distance(o, cur, unknown_buf, &distance, o->weight_vector, unknown_len) < 0) {
+    if (compute_distance(o->distance_type, cur, unknown_buf, &distance, o->weight_vector, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
 		      "knn: error in distance calculation \
                        (This is most likely because features have not been generated.)");
@@ -630,13 +540,10 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   }
 
   PyObject* unknown, *iterator;
-  double maximum_distance;
+  double maximum_distance = std::numeric_limits<double>::max();
 
-  if (PyArg_ParseTuple(args, "OOd", &iterator, &unknown, &maximum_distance) <= 0) {
-    maximum_distance = std::numeric_limits<double>::max();
-    if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
-      return 0;
-    }
+  if (PyArg_ParseTuple(args, "OO|d", &iterator, &unknown, &maximum_distance) <= 0) {
+    return 0;
   }
 
   if (!PyIter_Check(iterator)) {
@@ -657,12 +564,9 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
                        (This is most likely because features have not been generated.)");
       return 0;
   }
-  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
-    weights = new double[unknown_len];
-    std::fill(weights, weights + unknown_len, 1.0);
-  } else {
-    weights = o->weight_vector;
-  }
+
+  weights = o->weight_vector;
+
   PyObject* cur;
   PyObject* distance_list = PyList_New(0);
   PyObject* tmp_val;
@@ -672,7 +576,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
       return 0;
     }
     double distance;
-    if (compute_distance(o, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
+    if (compute_distance(o->distance_type, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
 		      "knn: error in distance calculation \
                        (This is most likely because features have not been generated.)");
@@ -685,10 +589,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     Py_DECREF(tmp_val);
     Py_DECREF(cur);
   }
-  if (o->weight_vector == 0 || o->num_features != size_t(unknown_len)) {
-    delete[] weights;
-  }
-  //Py_DECREF(distance_list);
+
   return distance_list;
 }
 

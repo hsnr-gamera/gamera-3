@@ -351,7 +351,6 @@ static void image_dealloc(PyObject* self) {
 }
 
 static PyObject* image_get(PyObject* self, PyObject* args) {
-  printf("image ref count is %d\n\n", self->ob_refcnt);
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
   int row, col;

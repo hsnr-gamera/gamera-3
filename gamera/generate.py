@@ -73,6 +73,7 @@ template = Template("""
   #include \"Python.h\"
   #include <list>
   #include \"gameramodule.hpp\"
+  #include \"knnmodule.hpp\"
 
   [[# include the headers that the module needs #]]
   [[for header in module.cpp_headers]]
@@ -138,12 +139,13 @@ template = Template("""
       [[# be Null because this functions is not actually bound to an object #]]
       [[if not function.self_type is None]]
         PyObject* real_self;
+        Image* real_self_image;
       [[end]]
 
       [[# for each argument insert the appropriate conversion code into the string that will #]]
       [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
       [[for x in function.args.list]]
-        [[exec x.name = re.sub("\s", "_", x.name)]]
+        [[exec x.name = re.sub(\"\s\", \"_\", x.name)]]
         [[if isinstance(x, Int) or isinstance(x, Choice) or isinstance(x, Check)]]
           int [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'i']]
@@ -153,8 +155,12 @@ template = Template("""
         [[elif isinstance(x, String) or isinstance(x, FileSave) or isinstance(x, FileOpen)]]
           char* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 's']]
-        [[elif isinstance(x, ImageType) or isinstance(x, Class)]]
+        [[elif isinstance(x, Class)]]
           PyObject* [[x.name + '_arg']];
+          [[exec pyarg_format = pyarg_format + 'O']]
+        [[elif isinstance(x, ImageType)]]
+          PyObject* [[x.name + '_arg']];
+          Image* [[x.name + '_imagearg']];
           [[exec pyarg_format = pyarg_format + 'O']]
         [[elif isinstance(x, ImageList)]]
           PyObject* [[x.name + '_arg']];
@@ -210,6 +216,8 @@ template = Template("""
           PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
           return 0;
         }
+        real_self_image = ((Image*)((RectObject*)real_self)->m_x);
+        image_get_fv(real_self, &real_self_image->features, &real_self_image->features_len);
       [[end]]
 
       [[for arg in function.args.list]]
@@ -226,6 +234,8 @@ template = Template("""
               return 0;
             }
             [[arg.name + '_list_arg']][i] = ((Image*)((RectObject*)element)->m_x);
+            image_get_fv(element, &[[arg.name + '_list_arg']][i]->features,
+                         &[[arg.name + '_list_arg']][i]->features_len);
           }
           [[exec arg.name += '_list']]  
         [[end]]
@@ -249,7 +259,8 @@ template = Template("""
           [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
         [[end]]
         [[exec function.self_type.pixel_types = tmp]]
-        [[exec function.self_type.name = 'real_self']]
+        [[exec function.self_type.name = 'real_self_image']]
+        [[exec function.self_type.pyname = 'real_self']]
         [[exec images = [function.self_type] ]]
       [[else]]
         [[exec images = [] ]]
@@ -267,20 +278,24 @@ template = Template("""
             [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
           [[end]]
           [[exec orig_image_types.append(x.pixel_types[:])]]
-          [[exec x.name = x.name + '_arg']]
+          [[exec x.pyname = x.name + '_arg']]
+          [[exec x.name = x.name + '_imagearg']]
           [[exec x.pixel_types = tmp]]
           [[exec images.append(x)]]
-          if (!PyObject_TypeCheck([[x.name]], imagebase_type)) {
+          if (!PyObject_TypeCheck([[x.pyname]], imagebase_type)) {
             PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
             return 0;
           }
+          [[x.name]] = ((Image*)((RectObject*)[[x.pyname]])->m_x);
+          image_get_fv([[x.pyname]], &[[x.name]]->features,
+                       &[[x.name]]->features_len);
         [[end]]
       [[end]]
 
       [[def switch(layer, args)]]
-        switch(get_image_combination([[images[layer].name]], cc_type)) {
+        switch(get_image_combination([[images[layer].pyname]], cc_type)) {
           [[for type in images[layer].pixel_types]]
-            [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name + ')->m_x)']]
+            [[exec current = '*((' + type + '*)' + images[layer].name + ')']]
             case [[type.upper()]]:
               [[if layer == len(images) - 1]]
                 [[if not function.return_type is None]]

@@ -189,9 +189,7 @@ namespace {
 
 template<class T>
 PyObject* to_string(T& m) {
-  PyObject* str = PyString_FromString("");
-  if (_PyString_Resize(&str, m.nrows() * m.ncols() * 3) != 0)
-    return 0;
+  PyObject* str = PyString_FromStringAndSize(NULL, m.nrows() * m.ncols() * 3);
   char* buffer = PyString_AS_STRING(str);
   to_string_impl<typename T::value_type> func;
   func(m, buffer);

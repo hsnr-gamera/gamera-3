@@ -200,7 +200,7 @@ namespace Gamera {
     double start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       (*output)[i] = nholes_1d(m.col_begin() + size_t(start),
-			       m.col_begin() + size_t(start) + size_t(start));
+			       m.col_begin() + size_t(start) + size_t(quarter_cols));
       start += quarter_cols;
     }
     double quarter_rows = m.nrows() / 4.0;
@@ -208,7 +208,7 @@ namespace Gamera {
     for (size_t i = 0; i < 4; ++i) {
       (*output)[i + 4] = nholes_1d(m.row_begin() + size_t(start),
 				   m.row_begin() + size_t(start)
-				   + size_t(start));
+				   + size_t(quarter_rows));
       start += quarter_rows;
     }
     return output;

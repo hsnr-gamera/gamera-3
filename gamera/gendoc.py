@@ -335,6 +335,8 @@ class PluginDocumentationGenerator:
                   if isinstance(func.self_type, args.ImageType):
                       pixel_type = doc_example[0]
                       pixel_type_name = util.get_pixel_type_name(pixel_type)
+                      if pixel_type in (FLOAT, COMPLEX):
+                         pixel_type_name = "GreyScale"
                       src_image = images[pixel_type].image_copy()
                       arguments = [src_image] + list(doc_example[1:])
                       doc_example = doc_example[1:]
@@ -355,7 +357,7 @@ class PluginDocumentationGenerator:
              self.save_image(
                 result, 
                 os.path.join(self.docgen.output_images_path, result_filename + ".png"))
-              s.write(".. image:: images/%s.png\n\n" % (result_filename))
+             s.write(".. image:: images/%s.png\n\n" % (result_filename))
           elif (result is None and
                 isinstance(func.self_type, args.ImageType) and
                 src_image is not None):

@@ -38,6 +38,18 @@ class _Classifier:
    def get_name(self):
       return self.__class__.__name__
 
+   def is_dirty(self):
+      return self._database.is_dirty and len(self._database)
+   def _set_is_dirty(self, val):
+      self._database.is_dirty = val
+   is_dirty = property(is_dirty, _set_is_dirty)
+
+   def get_database(self):
+      return self._database
+   def set_database(self, other):
+      raise RuntimeError("You can't change the database.  This exception should never be raised.  Please report it to the authors.")
+   database = property(get_database, set_database)
+
    ########################################
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
@@ -131,10 +143,10 @@ class _Classifier:
       guess_glyph_automatic.)  Returns a pair of lists: glyphs to be
       added to the current database, and glyphs to be removed from the
       current database."""
-      if recursion_level > max_recursion or len(self._database) == 0:
+      if recursion_level > max_recursion or len(self.database) == 0:
          return [], []
       # Since we only have one glyph to classify, we can't do any grouping
-      if (len(self._database) and
+      if (len(self.database) and
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
          feature_functions = self.get_feature_functions()
          glyph.generate_features(feature_functions)
@@ -158,7 +170,7 @@ class _Classifier:
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...", len(glyphs))
       try:
-         if (recursion_level > max_recursion) or len(self._database) == 0:
+         if (recursion_level > max_recursion) or len(self.database) == 0:
             return [], []
          added = []
          removed = {}
@@ -303,8 +315,7 @@ features: a list of strings naming the features that will be used in the
           classifier.
 perform_splits: (boolean) true if glyphs classified as split.* should be
           split."""
-      self.is_dirty = False
-      self._database = database
+      self._database = util.CallbackList(database)
       self.features = features
       if type(database) == list:
          self.change_feature_set(features)
@@ -328,26 +339,27 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
    ########################################
    # BASIC DATABASE MANIPULATION FUNCTIONS
    def get_glyphs(self):
-      return self._database
+      return list(self.database)
       
    def set_glyphs(self, glyphs):
       # This operation can be quite expensive depending on core classifier
       self.generate_features(glyphs)
-      self._database = glyphs
-      self.instantiate_from_images(self._database)
+      self.database.clear()
+      self.database.extend(glyphs)
+      self.instantiate_from_images(self.database)
 
    def merge_glyphs(self, glyphs):
       # This operation can be quite expensive depending on core classifier
       self.generate_features(glyphs)
-      self._database.extend(glyphs)
-      self.instantiate_from_images(self._database)
+      self.database.extend(glyphs)
+      self.instantiate_from_images(self.database)
 
    def clear_glyphs(self):
-      self._database = []
+      self.database.clear()
 
    def load_settings(self, filename):
       _Classifier.load_settings(self, filename)
-      self.instantiate_from_images(self._database)      
+      self.instantiate_from_images(self.database)
 
    ########################################
    # AUTOMATIC CLASSIFICATION
@@ -362,9 +374,11 @@ perform_splits: (boolean) true if glyphs classified as split.* should be
    #########################################
    # Features
    def change_feature_set(self, features):
-      if type(self._database) == list and len(self._database):
-         self.feature_functions = self._database[0].get_feature_functions(features)
-         self.set_glyphs(self._database)
+      self.is_dirty = True
+      if len(self.database):
+         self.feature_functions = iter(self.database).next().get_feature_functions(features)
+         self.generate_features(self.database)
+         self.instantiate_from_images(self.database)
 
 class InteractiveClassifier(_Classifier):
    def __init__(self, database=[], features='all',
@@ -375,10 +389,7 @@ class InteractiveClassifier(_Classifier):
                 classifier.
       perform_splits: (boolean) true if glyphs classified as split.* should be
                       split."""
-      self.is_dirty = False
-      self.clear_glyphs()
-      for glyph in database:
-         self._database[glyph] = None
+      self._database = util.CallbackSet(database)
       self.features = features
       self.change_feature_set(features)
       if perform_splits:
@@ -392,50 +403,44 @@ class InteractiveClassifier(_Classifier):
       del self._database
 
    def is_interactive():
-      return 1
+      return True
    is_interactive = staticmethod(is_interactive)
 
    ########################################
    # BASIC DATABASE MANIPULATION FUNCTIONS
    def get_glyphs(self):
-      return self._database.keys()
+      return self.database
       
    def set_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
-      self.is_dirty = len(glyphs) > 0
       self.clear_glyphs()
       self.generate_features(glyphs)
-      for glyph in glyphs:
-         self._database[glyph] = None
+      self.database.extend(glyphs)
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
-      self.is_dirty = len(glyphs) > 0
       self.generate_features(glyphs)
-      for glyph in glyphs:
-         self.is_dirty = 1
-         self._database[glyph] = None
+      self.database.extend(glyphs)
 
    def clear_glyphs(self):
-      self.is_dirty = True
-      self._database = {}
+      self.database.clear()
 
    ########################################
    # AUTOMATIC CLASSIFICATION
    def _classify_automatic_impl(self, glyph):
-      if len(self._database) == 0:
+      if len(self.database) == 0:
          raise ClassifierError(
             "Cannot classify using an empty production database.")
       for child in glyph.children_images:
-         if self._database.has_key(child):
-            del self._database[child]
-      return self.classify_with_images(self._database, glyph)
+         if child in self.database:
+            self.database.remove(child)
+      return self.classify_with_images(self.database, glyph)
 
    def guess_glyph_automatic(self, glyph):
-      if len(self._database):
+      if len(self.database):
          glyph.generate_features(self.get_feature_functions())
          return self.classify_with_images(
-            self._database, glyph)
+            self.database, glyph)
       else:
          return [(0.0, 'unknown')]
 
@@ -443,9 +448,9 @@ class InteractiveClassifier(_Classifier):
       """Change the set of features used in the classifier.  features is a list
 of strings, naming the feature functions to be used."""
       self.is_dirty = True
-      if len(self._database):
-         self.feature_functions = self._database.keys()[0].get_feature_functions(features)
-         self.generate_features(self._database)
+      if len(self.database):
+         self.feature_functions = iter(self.database).next().get_feature_functions(features)
+         self.generate_features(self.database)
    
 
    ########################################
@@ -453,8 +458,6 @@ of strings, naming the feature functions to be used."""
    def classify_glyph_manual(self, glyph, id):
       """Classifies the given glyph using name id.  Returns a pair of lists: the
       glyphs that should be added and removed to the current database."""
-      self.is_dirty = True
-
       # Deal with grouping
       if id.startswith('_group'):
          raise ClassifierError(
@@ -464,11 +467,11 @@ of strings, naming the feature functions to be used."""
       removed = {}
       for child in glyph.children_images:
          removed[child] = None
-         if self._database.has_key(child):
-            del self._database[child]
+         if child in self.database:
+            self.database.remove(child)
       glyph.classify_manual([(1.0, id)])
       glyph.generate_features(self.get_feature_functions())
-      self._database[glyph] = None
+      self.database.append(glyph)
       return self._do_splits(self, glyph), removed.keys()
 
    def classify_list_manual(self, glyphs, id):
@@ -488,39 +491,36 @@ of strings, naming the feature functions to be used."""
          return added, removed
 
       added = []
-      removed = {}
+      removed = util.sets.Set()
       for glyph in glyphs:
          for child in glyph.children_images:
-            removed[child] = None
+            removed.add(child)
 
       feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          # Don't re-insert removed children glyphs
-         if not removed.has_key(glyph):
-            self.is_dirty = True
-            if not self._database.has_key(glyph):
+         if not glyph in removed:
+            if not glyph in self.database:
                glyph.generate_features(feature_functions)
-               self._database[glyph] = None
+               self.database.append(glyph)
             glyph.classify_manual([(1.0, id)])
             added.extend(self._do_splits(self, glyph))
-      return added, removed.keys()
+      return added, list(removed)
 
    def add_to_database(self, glyphs):
       glyphs = util.make_sequence(glyphs)
       feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          if (glyph.classification_state == core.MANUAL and
-             not self._database.has_key(glyph)):
-            self.is_dirty = True
+             not glyph in self.database):
             glyph.generate_features(feature_functions)
-            self._database[glyph] = None
+            self.database.add(glyph)
 
    def remove_from_database(self, glyphs):
       glyphs = util.make_sequence(glyphs)
       for glyph in glyphs:
-         if self._database.has_key(glyph):
-            self.is_dirty = True
-            del self._database[glyph]
+         if glyph in self.database:
+            self.database.remove(glyph)
 
    def display(self, current_database=[],
                context_image=None, symbol_table=[]):

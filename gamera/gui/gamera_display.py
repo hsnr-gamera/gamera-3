@@ -18,6 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+from __future__ import generators
+
 from wxPython.wx import *         # wxPython
 from wxPython.grid import *
 from wxPython.lib.stattext import wxGenStaticText as wxStaticText
@@ -870,7 +872,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
       scaling = self.parent.scaling
       cell_padding = grid.cell_padding
-      image_list = self.parent.list
+      image_list = self.parent.sorted_glyphs
 
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(image_list):
@@ -984,8 +986,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    # Also, there is a max size for every cell
    def GetBestSize(self, grid, attr, dc, row, col):
       bitmap_no = row * grid.cols + col
-      if bitmap_no < len(self.parent.list):
-         image = self.parent.list[bitmap_no]
+      if bitmap_no < len(self.parent.sorted_glyphs):
+         image = self.parent.sorted_glyphs[bitmap_no]
       else:
          image = None
       if not image is None:
@@ -1024,7 +1026,8 @@ class MultiImageDisplay(wxGrid):
                       style=wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
       self.GetGridWindow().SetWindowStyle(
          wxNO_FULL_REPAINT_ON_RESIZE|wxCLIP_CHILDREN)
-      self.list = []
+      self.glyphs = util.CallbackList()
+      self.sorted_glyphs = []
       self.rows = 1
       self.cols = config.get("grid_ncols")
       self.max_cell_width = config.get("grid_max_cell_width")
@@ -1032,7 +1035,7 @@ class MultiImageDisplay(wxGrid):
       self.max_label_length = config.get("grid_max_label_length")
       self.cell_padding = config.get("grid_cell_padding")
       self.frame = parent
-      self.updating = 0
+      self.updating = False
       self.sort_function = ""
       self.sort_order = 0
       self.display_attribute = ""
@@ -1057,6 +1060,12 @@ class MultiImageDisplay(wxGrid):
       self.renderer = MultiImageGridRenderer(self)
       self.SetDefaultRenderer(self.renderer)
 
+   def get_is_dirty(self):
+      return self.glyphs.is_dirty and len(self.glyphs)
+   def set_is_dirty(self, value):
+      self.glyphs.is_dirty = value
+   is_dirty = property(get_is_dirty, set_is_dirty)
+
    ########################################
    # BASIC UTILITY
    
@@ -1064,7 +1073,8 @@ class MultiImageDisplay(wxGrid):
       wxBeginBusyCursor()
       self.BeginBatch()
       try:
-         self.list = list
+         self.glyphs.clear()
+         self.glyphs.extend(list)
          self.do_updates = 0
          self.sort_images()
          self.frame.set_choices()
@@ -1097,7 +1107,7 @@ class MultiImageDisplay(wxGrid):
          start_row = self.GetGridCursorRow()
          start_col = self.GetGridCursorCol()
          orig_rows = self.rows
-         rows = int(max(ceil(float(len(self.list)) / float(self.cols)), 1))
+         rows = int(max(ceil(float(len(self.sorted_glyphs)) / float(self.cols)), 1))
          cols = self.cols
          if rows < orig_rows:
             self.DeleteRows(0, orig_rows - rows)
@@ -1125,12 +1135,13 @@ class MultiImageDisplay(wxGrid):
       wxBeginBusyCursor()
       self.BeginBatch()
       try:
+         self.glyphs.extend(list)
          # Remove trailing 'None's
-         for i in range(len(self.list) - 1, -1, -1):
-            if not self.list[i] is None:
+         for i in range(len(self.sorted_glyphs) - 1, -1, -1):
+            if not self.sorted_glyphs[i] is None:
                break
-         self.list = self.list[:i+1]
-         self.list.extend(list)
+         del self.sorted_glyphs[i+1:]
+         self.sorted_glyphs.extend(list)
          self.resize_grid(do_auto_size=1)
       finally:
          self.EndBatch()
@@ -1139,6 +1150,7 @@ class MultiImageDisplay(wxGrid):
    def remove_glyphs(self, list):
       for glyph in list:
          glyph.dead = 1
+         self.glyphs.remove(glyph)
 
    def append_and_remove_glyphs(self, add, remove):
       if len(add):
@@ -1236,23 +1248,19 @@ class MultiImageDisplay(wxGrid):
       self.BeginBatch()
       self.last_sort = None
       self.display_row_labels = not function
-      orig_len = len(self.list)
-      new_list = self.GetAllItems()
-      if len(new_list) != len(self.list):
-         self.list = new_list
       try:
-         orig_len = len(self.list)
+         orig_len = len(self.sorted_glyphs)
          if function != None:
             self.sort_function = function
             self.sort_order = order
 
          if self.sort_function == '':
-            self.list = self.default_sort(self.list)
+            self.sorted_glyphs = self.default_sort(self.glyphs)
          else:
             sort_string = self.sort_function
             error_messages = {}
-            self.list = self.GetAllItems()
-            for image in self.list:
+            # self.list = self.GetAllItems()
+            for image in self.glyphs:
                try:
                   image.sort_cache = eval("x." + sort_string, {'x': image})
                except Exception, e:
@@ -1261,11 +1269,11 @@ class MultiImageDisplay(wxGrid):
             if len(error_messages):
                message = '\n\n'.join(error_messages.keys())
                gui_util.message(message)
-               for item in self.list:
+               for item in self.glyphs:
                   del item.sort_cache
                return
             self.list.sort(util.fast_cmp)
-            for item in self.list:
+            for item in self.glyphs:
                del item.sort_cache
          if self.sort_order:
             self.list.reverse()
@@ -1284,7 +1292,7 @@ class MultiImageDisplay(wxGrid):
       dc = wxClientDC(self)
       for i in range(self.rows):
          try:
-            image = self.list[i * self.cols]
+            image = self.sorted_glyphs[i * self.cols]
          except IndexError:
             self.SetRowLabelValue(i, "")
          else:
@@ -1308,25 +1316,25 @@ class MultiImageDisplay(wxGrid):
    def select_images(self, function):
       wxBeginBusyCursor()
       self.BeginBatch()
+      self.updating = True
       try:
-         self.updating = 1
          self.ClearSelection()
-         for i in range(len(self.list)):
-            x = self.list[i]
+         for i in range(len(self.sorted_glyphs)):
+            x = self.sorted_glyphs[i]
             if x != None:
-             try:
-                result = function(x)
-             except Exception, err:
-                gui_util.message(str(err))
-                return
-             if result:
-                row = i / self.cols
-                col = i % self.cols
-                self.SelectBlock(
-                   row, col, row, col, True)
-         self.updating = 0
+               try:
+                  result = function(x)
+               except Exception, err:
+                  gui_util.message(str(err))
+                  return
+               if result:
+                  row = i / self.cols
+                  col = i % self.cols
+                  self.SelectBlock(
+                     row, col, row, col, True)
          # self.OnSelectImpl()
       finally:
+         self.updating = False
          self.EndBatch()
          wxEndBusyCursor()
 
@@ -1335,66 +1343,82 @@ class MultiImageDisplay(wxGrid):
 
    def get_image_no(self, row, col):
       no =  row * self.cols + col
-      if no >= len(self.list):
+      if no >= len(self.sorted_glyphs):
          return None
       else:
          return no
 
    def GetAllItems(self):
+      return self.glyphs
       return [x for x in self.list if not x is None and not hasattr(x, 'dead')]
 
-   def GetSelectedItems(self, row = None, col = None):
-      if row != None:
-         bitmap_no = self.get_image_no(row, col)
-         # if bitmap_no != None:
-         #   self.SetGridCursor(row, col)
-      image = []
+   def GetSelectedCoords(self, row=None, col=None):
       if self.IsSelection():
-         for row in range(self.rows):
-            for col in range(self.cols):
-               if self.IsInSelection(row, col):
-                  index = self.get_image_no(row, col)
-                  if index != None:
-                     item = self.list[index]
-                     if item != None:
-                        image.append(item)
-      elif row != None and bitmap_no != None:
-         image = [self.list[bitmap_no]]
-      return image
+         # This is really dumb.  wxGrid has three ways to select things,
+         # so we have to iterate through using all of them.
+         coords = []
+         for ul, lr in zip(self.GetSelectionBlockTopLeft(),
+                           self.GetSelectionBlockBottomRight()):
+            for r in range(ul[0], lr[0] + 1):
+               for c in range(ul[1], lr[1] + 1):
+                  yield (r, c)
+         for r, c in self.GetSelectedCells():
+            yield (r, c)
+         for r in self.GetSelectedRows():
+            for c in range(self.GetNumberCols()):
+               yield (r, c)
+         for c in self.GetSelectedCols():
+            for r in range(self.GetNumberRows()):
+               yield (r, c)
+      elif not row is None:
+         yield (row, col)
 
-   def RefreshSelected(self, row = None, col = None):
-      if row != None:
-         bitmap_no = self.get_image_no(row, col)
-         if bitmap_no != None:
-            self.SetGridCursor(row, col)
-      if self.IsSelection():
-         for row in range(self.rows):
-            for col in range(self.cols):
-               if self.IsInSelection(row, col):
-                  self.SetCellValue(row, col, "")
-      elif row != None:
-         self.SetCellValue(row, col, "")
+
+   def GetSelectedValidImages(self, row=None, col=None):
+      for r, c in self.GetSelectedCoords(row, col):
+         no =  r * self.cols + c
+         if no < len(self.sorted_glyphs):
+            image = self.sorted_glyphs[no]
+            if not image is None:
+               yield r, c, no, image
+      return
+
+   def GetSelectedIndices(self, row=None, col=None):
+      for r, c, index, image in self.GetSelectedValidImages(row, col):
+         yield index
+
+   def GetSelectedItems(self, row=None, col=None):
+      # This is not a generator for backward compatibility for callers
+      images = []
+      for r, c, index, image in self.GetSelectedValidImages(row, col):
+         images.append(image)
+      return images
+      
+   def RefreshSelected(self, row=None, col=None):
+      for r, c, index, image in self.GetSelectedValidImages(row, col):
+         self.SetCellValue(r, c, "")
 
    def SelectGlyphs(self, glyphs):
       matches = []
       for g in glyphs:
-         for i, g2 in enumerate(self.list):
+         for i, g2 in enumerate(self.sorted_glyphs):
             if g is g2:
                matches.append(i)
       if len(matches):
          self.BeginBatch()
          first = 0
-         self.updating = 1
+         self.updating = True
          last_index = matches[-1]
          for index in matches:
             row = index / self.cols
             col = index % self.cols
             if index is last_index:
-               self.updating = 0
+               self.updating = False
             self.SelectBlock(row, col, row, col, first)
             if first == 0:
                self.MakeCellVisible(row, col)
                first = 1
+         self.updating = False
          self.EndBatch()
 
 
@@ -1433,8 +1457,8 @@ class MultiImageDisplay(wxGrid):
 
    def _OnLeftDoubleClick(self, event):
       bitmap_no = self.get_image_no(event.GetRow(), event.GetCol())
-      if bitmap_no != None and self.list[bitmap_no] != None:
-         self.list[bitmap_no].display()
+      if bitmap_no != None and self.sorted_glyphs[bitmap_no] != None:
+         self.sorted_glyphs[bitmap_no].display()
 
    def get_label(self, glyph):
       if self.display_attribute == '':
@@ -1477,10 +1501,10 @@ class MultiImageDisplay(wxGrid):
       row = self.YToRow(event.GetY() + origin[1] * units[1])
       col = self.XToCol(event.GetX() + origin[0] * units[0])
       image_no = self.get_image_no(row, col)
-      if image_no == None or image_no >= len(self.list) or image_no < 0:
+      if image_no == None or image_no >= len(self.sorted_glyphs) or image_no < 0:
          image = None
       else:
-         image = self.list[image_no]
+         image = self.sorted_glyphs[image_no]
 
       if image == None:
          self.tooltip.Show(False)

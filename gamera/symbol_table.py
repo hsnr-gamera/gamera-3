@@ -19,39 +19,22 @@
 #
 
 import types, string, keyword
+from gamera import util
 
-class SymbolTable:
+class SymbolTable(util.CallbackObject):
    def __init__(self):
+      util.CallbackObject.__init__(self)
       self.symbols = {}
-      self.add_callbacks = []
-      self.remove_callbacks = []
       self.add("skip", 0)
 
    ########################################
    # CALLBACKS
 
-   def evt_add(self, callback):
-      self.add_callbacks.append(callback)
-      # Get the listener up-to-date
-      for symbol in self.symbols.keys():
-         self.alert_add(self.normalize_symbol(symbol)[1])
-
-   def evt_remove(self, callback):
-      self.remove_callbacks.append(callback)
-
-   def evt_del_add(self, callback):
-      self.add_callbacks.remove(callback)
-
-   def evt_del_remove(self, callback):
-      self.remove_callbacks.remove(callback)
-
-   def alert_add(self, symbol):
-      for l in self.listeners:
-         l(symbol)
-
-   def alert_remove(self, a):
-      for l in self.listeners:
-         l(a)
+   def add_callback(self, alert, callback):
+      util.CallbackObject.add_callback(self, alert, callback)
+      if alert == "add":
+         for symbol in self.symbols.keys():
+            callback(self.normalize_symbol(symbol)[1])
 
    ########################################
 
@@ -80,14 +63,14 @@ class SymbolTable:
       if self.symbols.has_key(symbol):
          return symbol
       self.symbols[symbol] = None
-      self.alert_add(tokens)
+      self.trigger_callback('add', tokens)
       return symbol
 
    def remove(self, symbol):
       symbol, tokens = self.normalize_symbol(symbol)
       if self.symbols.has_key(symbol):
          del self.symbols[symbol]
-         self.alert_remove(tokens)
+         self.trigger_callback('remove', tokens)
          return 1
       return 0
 

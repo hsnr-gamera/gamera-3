@@ -25,7 +25,8 @@ from types import *
 from math import pow
 from gamera.enums import *
 from gamera.gui import has_gui
-import config
+from gamera import config
+from gamera.backport import sets
 
 def is_sequence(obj):
    "Check if an object is a sequence."
@@ -333,95 +334,202 @@ def ProgressFactory(message, length=1):
    else:
       return ProgressText(message, length)
 
-class CallbackList(list):
-   def __init__(self, initlist=None):
-      list.__init__(self, initlist)
-      self.add_callbacks = []
-      self.remove_callbacks = []
+class CallbackObject:
+   def __init__(self):
+      self._callbacks = {}
+      self.is_dirty = False
    
-   def evt_add(self, callback):
-      if callback not in self.add_callbacks:
-         self.add_callbacks.append(callback)
+   def add_callback(self, alert, callback):
+      category = self._callbacks.setdefault(alert, [])
+      if callback not in category:
+         category.append(callback)
 
-   def evt_remove(self, callback):
-      if callback not in self.remove_callbacks:
-         self.remove_callbacks.append(callback)
+   def remove_callback(self, alert, callback):
+      category = self._callbacks.get(alert, [])
+      if callback in category:
+         category.remove(callback)
 
-   def evt_del_add(self, callback):
-      if callback in self.add_callbacks:
-         self.add_callbacks.remove(callback)
+   def trigger_callback(self, alert, *args):
+      category = self._callbacks.get(alert, [])
+      for callback in category:
+         callback(*args)
+      self.is_dirty = True
 
-   def evt_del_remove(self, callback):
-      if callback in self.remove_callbacks:
-         self.remove_callbacks.remove(callback)
+class CallbackList(list, CallbackObject):
+   def __init__(self, initlist=[]):
+      list.__init__(self, initlist)
+      CallbackObject.__init__(self)
 
-   def alert_add(self, item):
-      for callback in self.add_callbacks:
-         callback(item)
+   def add_callback(self, alert, callback):
+      CallbackObject.add_callback(self, alert, callback)
+      if alert == 'length_change':
+         callback(len(self))
+      elif alert == 'add':
+         callback(self)
+
+   def clear(self):
+      CallbackList.__delslice__(self, 0, len(self))
+
+   def __del__(self):
+      for i in self:
+         self.trigger_callback('remove', [i])
+      self.trigger_callback('length_change', len(self))
       
    def __setitem__(self, i, item):
-      if i < len(self):
-         self.alert_remove(self[i])
-         self.alert_add(item)
+      if abs(i) < len(self):
+         self.trigger_callback('remove', [self[i]])
+         self.trigger_callback('add', [item])
       list.__setitem__(self, i, item)
       
    def __delitem__(self, i):
-       pass
-##       del self.data[i]
-##     def __getslice__(self, i, j):
-##         i = max(i, 0); j = max(j, 0)
-##         return self.__class__(self.data[i:j])
-##     def __setslice__(self, i, j, other):
-##         i = max(i, 0); j = max(j, 0)
-##         if isinstance(other, UserList):
-##             self.data[i:j] = other.data
-##         elif isinstance(other, type(self.data)):
-##             self.data[i:j] = other
-##         else:
-##             self.data[i:j] = list(other)
-##     def __delslice__(self, i, j):
-##         i = max(i, 0); j = max(j, 0)
-##         del self.data[i:j]
-##     def __add__(self, other):
-##         if isinstance(other, UserList):
-##             return self.__class__(self.data + other.data)
-##         elif isinstance(other, type(self.data)):
-##             return self.__class__(self.data + other)
-##         else:
-##             return self.__class__(self.data + list(other))
-##     def __radd__(self, other):
-##         if isinstance(other, UserList):
-##             return self.__class__(other.data + self.data)
-##         elif isinstance(other, type(self.data)):
-##             return self.__class__(other + self.data)
-##         else:
-##             return self.__class__(list(other) + self.data)
-##     def __iadd__(self, other):
-##         if isinstance(other, UserList):
-##             self.data += other.data
-##         elif isinstance(other, type(self.data)):
-##             self.data += other
-##         else:
-##             self.data += list(other)
-##         return self
-##     def __mul__(self, n):
-##         return self.__class__(self.data*n)
-##     __rmul__ = __mul__
-##     def __imul__(self, n):
-##         self.data *= n
-##         return self
-##     def append(self, item): self.data.append(item)
-##     def insert(self, i, item): self.data.insert(i, item)
-##     def pop(self, i=-1): return self.data.pop(i)
-##     def remove(self, item): self.data.remove(item)
-##     def count(self, item): return self.data.count(item)
-##     def index(self, item, *args): return self.data.index(item, *args)
-##     def reverse(self): self.data.reverse()
-##     def sort(self, *args): self.data.sort(*args)
-##     def extend(self, other):
-##         if isinstance(other, UserList):
-##             self.data.extend(other.data)
-##         else:
-##             self.data.extend(other)
+      if abs(i) < len(self):
+         self.trigger_callback('remove', [self[i]])
+      list.__delitem__(self, i)
+      self.trigger_callback('length_change', len(self))
 
+   def __setslice__(self, i, j, other):
+      i = max(i, 0); j = max(j, 0)
+      if i < len(self) and j < len(self) + 1:
+         self.trigger_callback('remove', self[i:j])
+      self.trigger_callback('add', other)
+      list.__setslice__(self, i, j, other)
+
+   def __delslice__(self, i, j):
+      i = max(i, 0); j = max(j, 0)
+      if i < len(self) and j < len(self) + 1:
+         self.trigger_callback('remove', self[i:j])
+      list.__delslice__(self, i, j)
+      self.trigger_callback('length_change', len(self))
+
+   def __iadd__(self, other):
+      self.trigger_callback('add', other)
+      list.__iadd__(self, other)
+      self.trigger_callback('length_change', len(self))
+
+   def append(self, item):
+      self.trigger_callback('add', [item])
+      list.append(self, item)
+      self.trigger_callback('length_change', len(self))
+
+   def insert(self, i, item):
+      if abs(i) < len(self):
+         self.trigger_callback('add', [item])
+      list.insert(self, i, item)
+      self.trigger_callback('length_change', len(self))
+
+   def pop(self, i=-1):
+      if abs(i) < len(self):
+         item = list.pop(self, i)
+      self.trigger_callback('remove', [item])
+      self.trigger_callback('length_change', len(self))
+
+   def remove(self, item):
+      if item in self:
+         self.trigger_callback('remove', [item])
+      list.remove(self, item)
+      self.trigger_callback('length_change', len(self))
+
+   def extend(self, other):
+      self.trigger_callback('add', other)
+      list.extend(self, other)
+      self.trigger_callback('length_change', len(self))
+
+class CallbackSet(sets.Set, CallbackObject):
+   def __init__(self, initset=None):
+      sets.Set.__init__(self, initset)
+      CallbackObject.__init__(self)
+
+   def __del__(self):
+      self.trigger_callback('remove', self)
+      self.trigger_callback('length_change', len(self))
+
+   def add_callback(self, alert, callback):
+      CallbackObject.add_callback(self, alert, callback)
+      if alert == 'length_change':
+         callback(len(self))
+      elif alert == 'add':
+         callback(self)
+
+   def add(self, element):
+      alert = element not in self
+      sets.Set.add(self, element)
+      if alert:
+         self.trigger_callback('add', [element])
+         self.trigger_callback('length_change', len(self))
+   append = add
+
+   def remove(self, element):
+      alert = element in self
+      sets.Set.remove(self, element)
+      if alert:
+         self.trigger_callback('remove', [element])
+         self.trigger_callback('length_change', len(self))
+
+   def discard(self, element):
+      if element in self:
+         sets.Set.remove(self, element)
+         self.trigger_callback('remove', [element])
+         self.trigger_callback('length_change', len(self))
+
+   def pop(self):
+      result = sets.Set.pop(self)
+      self.trigger_callback('remove', [result])
+      self.trigger_callback('length_change', len(self))
    
+   def clear(self):
+      self.trigger_callback('remove', self)
+      sets.Set.clear(self)
+      self.trigger_callback('length_change', len(self))
+
+   def update(self, iterable):
+      def iter():
+         for i in iterable:
+            if i not in self:
+               yield i
+      self.trigger_callback('add', iter())
+      sets.Set.update(self, iterable)
+      self.trigger_callback('length_change', len(self))
+
+   def difference_update(self, iterable):
+      def iter():
+         for i in iterable:
+            if i in self:
+               yield i
+      self.trigger_callback('remove', iter())
+      sets.Set.difference_update(self, iterable)
+      self.trigger_callback('length_change', len(self))
+
+   def symmetric_difference_update(self, iterable):
+      def remove_iter():
+         for i in iterable:
+            if i in self:
+               yield i
+      def add_iter():
+         for i in iterable:
+            if not i in self:
+               yield i
+      self.trigger_callback('remove', remove_iter())
+      self.trigger_callback('add', add_iter())
+      self.Set.symmetric_difference_update(self, iterable)
+      self.trigger_callback('length_change', len(self))
+
+   def intersection_update(self, iterable):
+      def iter():
+         for i in self:
+            if not i in iterable:
+               yield i
+      self.trigger_callback('remove', iter())
+      self.Set.intersection_update(self, iterable)
+      self.trigger_callback('length_change', len(self))
+
+   def union_update(self, other):
+      self.update(other)
+
+   extend = update
+
+   def __setstate__(self, data):
+      self.trigger_callback('remove', self)
+      sets.Set(self, data)
+      self.trigger_callback('add', self)
+      self.trigger_callback('length_change', len(self))
+

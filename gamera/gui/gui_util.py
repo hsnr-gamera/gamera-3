@@ -61,7 +61,7 @@ def message(message):
    dlg.ShowModal()
    dlg.Destroy()
 
-def are_you_sure_dialog(parent, message):
+def are_you_sure_dialog(message, parent=None):
    dlg = wxMessageDialog(
       parent, message, "Are you sure?",
       wxYES_NO|wxNO_DEFAULT|wxICON_QUESTION)

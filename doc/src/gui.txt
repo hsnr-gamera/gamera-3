@@ -292,23 +292,28 @@ Concepts
 Before the parts of the classifier window are discussed, some general
 concepts should be understood.
 
-Databases
-'''''''''
+Glyph collections
+'''''''''''''''''
 
-In the classifier window, there are two sets of connected components
-(glyphs) involved: the current database and the production database:
+In the classifier window, there are two sets of glyphs (connected
+components) involved: one in the classifier and one in the editor:
 
-Current database
-  The set of glyphs on the currently displayed image.
+Classifier glyphs
+  The set of glyphs used by the classifier to make guesses about
+  unknown glyphs.  The classifier glyphs work "behind the scenes".  To
+  display the classifier glyphs in a read-only window, use the
+  *Classifier* -> *Display contents* menu item.
 
-Production database
-  Works "behind-the-scenes" by the classifier to classify future
-  connected components.  The production database can contain glyphs
-  from a number of images, or it may be a pre-pruned set of training
-  data.
+Editor glyphs
+  The set of glyphs displayed in the training editor grid, usually
+  taken from a single page image.
 
-When glyphs in the current database are classified by the user, they
-are copied into the production database
+When glyphs in the editor are classified by the user, they
+are copied into the classifier.  When glyphs are deleted or renamed in
+the editor, they are deleted or renamed in the classifier.
+
+The number of glyphs in the editor and the classifier is displayed in
+the status bar at the bottom of the window.
 
 Coloring
 ''''''''
@@ -411,17 +416,17 @@ the top or double-clicking on a class name in the tree.  The text box
 features auto-completion (similar to the Unix shell), so you can type
 a partial name and then press the <Tab> key to attempt to complete it.
 
-Connected component display
-'''''''''''''''''''''''''''
+Editor pane
+'''''''''''
 
-The connected component display behaves identically to the `multiple
-image display`_.
+The editor pane behaves identically to the `multiple
+image display`_, with additional functionality.
 
 When connected components are selected, they are highlighted in the
 original image display below.
 
-Connected components are colored based on their classification state.
-(See `coloring`_).
+The background of connected components are colored based on their
+classification state.  (See `coloring`_).
 
 There are some additional toolbar buttons:
 
@@ -474,13 +479,13 @@ File menu
 
 **Open all...**
   Opens a special directory of files containing an original image, and
-  the production and current databases.  This directory should be one
+  contents of the editor and the classifier.  This directory should be one
   created by **Save all...**
 
 **Save all...**
   Saves all of the data necessary to restore the classifier's state
   into a special directory.  This includes the original image and the
-  production and current databases.  This special directory can be
+  contents of the editor and the classifier.  This special directory can be
   reloaded using **Open all...**.
 
 The following options are used to save and load connected components in the
@@ -489,21 +494,20 @@ The following options are used to save and load connected components in the
 .. __: xml_format.html
 
 **Save by criteria...**
-  For *expert* users.  Provides a complex dialog box to save different
+  For *expert* users.  Provides a dialog box to save different
   sets of glyphs to a single XML file.
 
   .. image:: images/save_by_criteria.png
 
-**Production database**
-  The production database is the set of glyphs that affect the
-  currently active classifier.  This menu allows one to Open, Merge,
-  Save, Save As or Clear the production database.
+**Classifier glyphs**
+  This menu allows one to Open, Merge,
+  Save, Save As or Clear the glyphs in the classifier.  (See `glyph
+  collections`_).
 
-**Current database**
-  The current database is the set of glyphs visible in the connected
-  components display.  This menu allows one to Open, Merge, Save, Save
-  As the current database.  The selected
-  connected components only can also be saved.
+**Editor glyphs**
+  This menu allows one to Open, Merge, Save, Save
+  As the glyphs in the editor display.  (See `glyph
+  collections`_).
 
 **Symbol names**
   Import or export a set of symbol names.  Symbol names can be
@@ -518,7 +522,7 @@ Image menu
   algorithm on it to create connected components.  The segmentation
   algorithm can be selected from the drop-down list.  (If you're not
   sure which one to use, try ``cc_analysis``.)  The connected
-  components are loaded into the connected component display and the
+  components are loaded into the editor pane and the
   original image is loaded into the original image display.
 
 **Select and segment image...**
@@ -526,23 +530,24 @@ Image menu
   segmentation algorithm on it to create connected components.  The
   segmentation algorithm can be selected from the drop-down list.  (If
   you're not sure which one to use, try ``cc_analysis``.)  The
-  connected components are loaded into the connected component display
+  connected components are loaded into the editor pane
   and the original image is loaded into the original image display.
 
 **Select image...**
   Select an already-loaded image from the console and use it as the
   original image.  This image does not have to correspond to the
-  current database.
+  contents of the editor pane.
 
 **Save glyphs separately...**
   Saves each of the connected components into a separate image file in
   a given directory using one of the following sets of connected
   components:
 
-    - Production database
-    - Current database
-    - Selected glyphs
+    - Classifier glyphs... (the glyphs in the classifier)
+    - Editor glyphs... (the glyphs in the editor pane)
+    - Selected glyphs... (the selected glyphs in the editor pane)
 
+  See 'glyph collections'_.
 
 Classifier menu
 '''''''''''''''
@@ -551,18 +556,23 @@ Classifier menu
   Classifies the glyphs using the automatic classifier.  Glyphs that
   were classified manually are not reclassified (they must be
   unclassified first).
-
   
 **Group and guess all** / **Group and guess selected**
   Classifies the glyphs using the automatic classifier, while
   attempting to group nearby connected components to form glyphs that
-  are more similar to glyphs in the production database.  This process
+  are more similar to glyphs in the classifier.  This process
   can take considerably longer than one-by-one classification.
 
 **Confirm all** / **Confirm selected**
   Treats all automatically classified glyphs as if they were manually
-  classified and adds them to the production database.  Use this
-  function when you are sure all glyphs are correctly classified.
+  classified and adds them to the classifier.  Use this
+  function only when you are sure all glyphs are correctly classified.
+
+**Display contents**
+  Displays the glyphs in the classifier in a new window.  As of this
+  writing this display is read-only and not "live" (i.e. it will not
+  change when the contents of the classifier change).  This
+  shortcoming should be remedied in a future version of Gamera.
 
 **Change set of features**
   Change which features of the connected components are used for

@@ -304,6 +304,9 @@ namespace Gamera {
     static T black() {
       return 0;
     }
+    static T default() {
+      return white();
+    }
   };
 
   /*
@@ -439,6 +442,14 @@ namespace Gamera {
     return RGBPixel(std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max());
+  }
+
+  inline FloatPixel pixel_traits<FloatPixel>::default() {
+    return 0.0;
+  }
+
+  inline ComplexPixel pixel_traits<ComplexPixel>::default() {
+    return ComplexPixel(0.0, 0.0);
   }
 
   /*

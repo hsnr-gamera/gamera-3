@@ -34,15 +34,19 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       char* i = data;
-      typename Mat::const_vec_iterator vi = mat.vec_begin();
+      ImageAccessor<T> acc;
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
       T tmp;
-      for (; vi != mat.vec_end(); vi++) {
-	tmp = *vi;
-	if (tmp > 255)
-	  tmp = 255;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
+	  tmp = acc.get(col);
+	  if (tmp > 255)
+	    tmp = 255;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	}
       }
     }
   };
@@ -81,19 +85,22 @@ namespace {
   struct to_string_impl<Grey16Pixel> {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
-      typename Mat::const_vec_iterator vi = mat.vec_begin();
+      ImageAccessor<Grey16Pixel> acc;
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
       Grey16Pixel tmp;
       char* i = data;
-      for (; vi != mat.vec_end(); vi++) {
-	/*
-	  This should correctly map the 16 bit grey values onto
-	  the rgb color space. KWM
-	*/
-	tmp = *vi / 257;
-	//tmp = *vi;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
+	  /*
+	    This should correctly map the 16 bit grey values onto
+	    the rgb color space. KWM
+	  */
+	  tmp = acc.get(col) / 257;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	  *i = (char)tmp; i++;
+	}
       }
     }
   };
@@ -102,12 +109,16 @@ namespace {
   struct to_string_impl<RGBPixel> {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
-      typename Mat::const_vec_iterator vi = mat.vec_begin();
-      for (size_t i = 0; vi != mat.vec_end(); i += 3, vi++) {
-	RGBPixel tmp = *vi;
-	data[i] = (char)tmp.red();
-	data[i + 1] = (char)tmp.green();
-	data[i + 2] = (char)tmp.blue();
+      ImageAccessor<RGBPixel> acc;
+      typename Mat::const_row_iterator row = mat.row_begin();
+      typename Mat::const_col_iterator col;
+      for (size_t i = 0; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); i += 3, ++col) {
+	  RGBPixel tmp = acc.get(col);
+	  data[i] = (unsigned char)tmp.red();
+	  data[i + 1] = (unsigned char)tmp.green();
+	  data[i + 2] = (unsigned char)tmp.blue();
+	}
       }
     }
   };
@@ -148,20 +159,15 @@ PyObject* to_string(T& m) {
   return str;
 }
 
-#if 1
 template<class T>
-void scaled_to_string(T& m, float scale, PyObject* py_buffer) {
+void scaled_to_string(T& m, int nrows, int ncols, PyObject* py_buffer) {
   typedef ImageData<typename T::value_type> data_type;
   typedef ImageView<data_type> view_type;
-
 
   char *buffer;
   int buffer_len;
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
 
-  size_t nrows = size_t(m.nrows() * scale);
-  size_t ncols = size_t(m.ncols() * scale);
-
   data_type data(nrows, ncols);
   view_type view(data, 0, 0, nrows, ncols);
 
@@ -170,44 +176,7 @@ void scaled_to_string(T& m, float scale, PyObject* py_buffer) {
   to_string_impl<typename T::value_type> func;
   func(view, buffer);
 }
-#endif
-#if 0
-template<class T>
-PyObject* scaled_to_string(T& m, float scale) {
-  typedef ImageData<typename T::value_type> data_type;
-  typedef ImageView<data_type> view_type;
 
-  size_t nrows = size_t(m.nrows() * scale);
-  size_t ncols = size_t(m.ncols() * scale);
-  printf("%f, %d, %d\n", scale, nrows, ncols);
-  printf("view: %d, %d, %d, %d data: %d, %d, %d, %d\n", m.offset_y(), m.offset_x(), m.nrows(),
-	 m.ncols(), m.data()->page_offset_y(), m.data()->page_offset_x(),
-	 m.data()->nrows(), m.data()->ncols());
-  PyObject* str = PyString_FromString("this is stupid\n");
-  if (_PyString_Resize(&str, nrows * ncols * 3) != 0)
-    return 0;
-  char* buffer = PyString_AS_STRING(str);
-
-  data_type data(nrows, ncols);
-  view_type view(data, 0, 0, nrows, ncols);
-  printf("%d, %d\n", (m.lowerRight() - m.upperLeft()).y, (m.lowerRight() - m.upperLeft()).x);
-  printf("%d, %d\n", (view.lowerRight() - view.upperLeft()).y, (view.lowerRight() - view.upperLeft()).x);
-  printf("hi1\n");
-  resizeImageNoInterpolation(src_image_range(m), dest_image_range(view));
-//   typename T::value_type tmp;
-//   for (typename T::row_iterator i = m.row_begin(); i != m.row_end(); ++i)
-//     for (typename T::col_iterator j = i.begin(); j != i.end(); ++j)
-//       tmp = *j;
-
-  printf("hi2\n");
-
-  to_string_impl<typename T::value_type> func;
-  printf("hi3\n");
-  func(view, buffer);
-  printf("hi4\n");
-  return str;
-}
-#endif
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;

@@ -303,40 +303,41 @@ Image* load_tiff(const char* filename, int storage) {
   } else if (info->ncolors() == 1) {
     if (info->depth() == 1) {
       if (storage == DENSE) {
-	TypeIdImageFactory<ONEBIT, DENSE> fact;
-	TypeIdImageFactory<ONEBIT, DENSE>::image_type*
-	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
+	fact_type::image_type*
+	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
 	tiff_load_onebit(*image, *info, filename);
-	printf("hi");
 	return image;
       } else {
-	TypeIdImageFactory<ONEBIT, RLE> fact;
-	TypeIdImageFactory<ONEBIT, RLE>::image_type*
-	  image = fact.create(0, 0, info->nrows(), info->ncols());
+	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
+	fact_type::image_type*
+	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
 	tiff_load_onebit(*image, *info, filename);
 	return image;
       }
     } else if (info->depth() == 8) {
-	TypeIdImageFactory<GREYSCALE, DENSE> fact;
-	TypeIdImageFactory<GREYSCALE, DENSE>::image_type*
-	  image = fact.create(0, 0, info->nrows(), info->ncols());
-	tiff_load_greyscale(*image, *info, filename);
-	return image;
+      typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
+      fact_type::image_type*
+	image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      tiff_load_greyscale(*image, *info, filename);
+      return image;
     } else if (info->depth() == 16) {
-	TypeIdImageFactory<GREY16, DENSE> fact;
-	TypeIdImageFactory<GREY16, DENSE>::image_type*
-	  image = fact.create(0, 0, info->nrows(), info->ncols());
-	tiff_load_greyscale(*image, *info, filename);
-	return image;
+      typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
+      fact_type::image_type*
+	image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      tiff_load_greyscale(*image, *info, filename);
+      return image;
     } else {
-      PyErr_SetString(PyExc_RuntimeError, "Unable to load image of this type!");
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to load image of this type!");
       return 0;
     }
   } else {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to load image of this type!");
+    PyErr_SetString(PyExc_RuntimeError,
+		    "Unable to load image of this type!");
     return 0;
   }
-
+  
   delete info;
 }
 

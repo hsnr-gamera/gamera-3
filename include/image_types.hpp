@@ -155,8 +155,8 @@ namespace Gamera {
   struct TypeIdImageFactory<ONEBIT, DENSE> {
     typedef OneBitImageData data_type;
     typedef OneBitImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }
@@ -166,8 +166,8 @@ namespace Gamera {
   struct TypeIdImageFactory<ONEBIT, RLE> {
     typedef OneBitRleImageData data_type;
     typedef OneBitRleImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }
@@ -177,8 +177,8 @@ namespace Gamera {
   struct TypeIdImageFactory<GREYSCALE, DENSE> {
     typedef GreyScaleImageData data_type;
     typedef GreyScaleImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }
@@ -188,8 +188,8 @@ namespace Gamera {
   struct TypeIdImageFactory<GREY16, DENSE> {
     typedef Grey16ImageData data_type;
     typedef Grey16ImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }
@@ -199,8 +199,8 @@ namespace Gamera {
   struct TypeIdImageFactory<RGB, DENSE> {
     typedef RGBImageData data_type;
     typedef RGBImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }
@@ -210,8 +210,8 @@ namespace Gamera {
   struct TypeIdImageFactory<FLOAT, DENSE> {
     typedef FloatImageData data_type;
     typedef FloatImageView image_type;
-    image_type* create(size_t offset_y, size_t offset_x,
-		       size_t nrows, size_t ncols) {
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
       return new image_type(*data, offset_y, offset_x, nrows, ncols);
     }

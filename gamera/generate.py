@@ -172,6 +172,8 @@ template = Template("""
         PyObject* return_value = 0;
       [[elif isinstance(function.return_type, ImageInfo)]]
         ImageInfo* return_value = 0;
+      [[elif isinstance(function.return_type, FloatVector)]]
+        FloatVector* return_value = 0;
       [[end]]
 
       [[# Now that we have all of the arguments and variables for them we can parse #]]
@@ -312,8 +314,55 @@ template = Template("""
         return PyString_FromStringAndSize(return_value.c_str(), return_value.size() + 1);
       [[elif isinstance(function.return_type, ImageInfo)]]
         return create_ImageInfoObject(return_value);
-      [[else]]
-        return return_value;
+      [[elif isinstance(function.return_type, Int)]]
+        return Py_BuildValue(\"i\", return_value);
+      [[elif isinstance(function.return_type, Float)]]
+        return Py_BuildValue(\"f\", return_value);
+      [[elif isinstance(function.return_type, FloatVector)]]
+         [[# This is pretty expensive, but simple#]]
+         PyObject* array_func;
+         PyObject* array_module = PyImport_ImportModule(\"array\");
+         if (array_module == 0)
+           return 0;
+         PyObject* array_dict = PyModule_GetDict(array_module);
+         if (array_dict == 0)
+           return 0;
+         array_func = PyDict_GetItemString(array_dict, \"array\");
+         if (array_func == 0)
+           return 0;
+         PyObject* arglist = Py_BuildValue(\"(s)\", \"d\");
+         PyObject* array = PyEval_CallObject(array_func, arglist);
+         Py_DECREF(arglist);
+         [[# There isn't a way to create an array of a set size!?!?!#]]
+         [[# So we are going to append single items until it is the right #]]
+         [[# size - the alternative is to build an initilization list, but #]]
+         [[# this is probably more efficient. #]]
+         array_func = PyObject_GetAttrString(array, \"append\");
+         if (array_func == 0)
+           return 0;         
+         arglist = Py_BuildValue(\"(f)\", 0.0);
+         PyObject* result;
+         for (size_t i = 0; i < return_value->size(); ++i) {
+           result = PyEval_CallObject(array_func, arglist);
+           if (result == 0)
+             return 0;
+           Py_DECREF(result);
+         }
+         Py_DECREF(arglist);
+         double* buf;
+         int len;
+         if (PyObject_AsWriteBuffer(array, (void**)&buf, &len) < 0)
+           return 0;
+         if (len / sizeof(double) != return_value->size()) {
+           Py_DECREF(array);
+           PyErr_SetString(PyExc_RuntimeError, \"There was a problem creating the array\");
+           return 0;
+         }
+         for (size_t i = 0; i < return_value->size(); ++i) {
+           buf[i] = (*return_value)[i];
+         }
+         delete return_value;
+         return array;
       [[end]]
 
       [[if not function.self_type is None]]

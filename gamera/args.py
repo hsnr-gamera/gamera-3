@@ -582,6 +582,15 @@ class ImageInfo(_guiImageInfo, Arg):
    def __init__(self, name):
       self.name = name
 
+# FloatVector
+# These can only be used as return values
+class _guiFloatVector:
+   pass
+
+class FloatVector(_guiFloatVector, Arg):
+   def __init__(self, name):
+      self.name = name
+
 # Info
 if _has_gui == _WX_GUI:
    class _guiInfo(wxPython.wx.wxStaticText):

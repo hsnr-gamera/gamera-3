@@ -260,7 +260,9 @@ class ImageDisplay(wxScrolledWindow):
          # For some reason, the rectangles wxWindows gives are
          # a bit too small, so we need to fudge their size
          if not (x > self.image.width or y > self.image.height):
-            fudge = int(self.scaling / 2.0)
+            # this used to be int(self.scaling / 2) but this works
+            # with the new scaled_to_string. KWM
+            fudge = int(self.scaling) * 2
             w = (max(min(int((rects.GetW() / scaling) + fudge),
                          self.image.width - ox), 0))
             h = (max(min(int((rects.GetH() / scaling) + fudge),
@@ -296,78 +298,47 @@ class ImageDisplay(wxScrolledWindow):
       if (x + w >= self.image.width):
          w = self.image.width - x - 2
 
-      #self.tmpDC.SetUserScale(scaling, scaling)
       subimage = SubImage(self.image,
                           y + self.image.offset_y,
                           x + self.image.offset_x,
                           h + 1, w + 1)
-      print self.image.offset_y, self.image.offset_x
+
       image = None
       if scaling == 1:
          image = wxEmptyImage(w + 1, h + 1)
          apply(self.to_string_function, (subimage, image.GetDataBuffer()))
       else:
-         print scaling
          image = wxEmptyImage(w * scaling, h * scaling)
-         apply(self.scaled_to_string_function, (subimage, scaling, image.GetDataBuffer()))
+         apply(self.scaled_to_string_function,
+               (subimage, h * scaling, w * scaling, image.GetDataBuffer()))
 
       bmp = wxBitmapFromImage(image)
-      # self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
-      dc.DrawBitmap(bmp,
-                    x * scaling - origin[0],
-                    y * scaling - origin[1],
-                    0)
+      dc.DrawBitmap(bmp, x * scaling - origin[0], y * scaling - origin[1], 0)
 
       if len(self.highlighted):
          # Workaround, since wxPython's compositing is different
          # when scaling and not scaling.  Grr!!
          fudge = int(scaling / 2.0)
-         if scaling == 1:
-            self.tmpDC.SetTextBackground(wxBLACK)
-            self.tmpDC.SetBackgroundMode(wxTRANSPARENT)
-            self.tmpDC.SetLogicalFunction(wxOR)
-            for rect, bmp, color in self.highlighted:
-               if ((rect[0] <= x + w and
-                    rect[0] + rect[2] >= x) and
-                   (rect[1] <= y + h and
-                    rect[1] + rect[3] >= y)):
-                  if bmp != None:
-                     self.tmpDC.SetTextForeground(color)
-                     self.tmpDC.DrawBitmap(bmp,
-                                           rect[0] - x + fudge,
-                                           rect[1] - y + fudge, 0)
-                  else:
-                     self.tmpDC.SetBrush(wxBrush(color, wxSOLID))
-                     self.tmpDC.DrawRectangle(rect[0] - x + fudge,
-                                              rect[1] - y + fudge,
-                                              rect[2], rect[3])
-         else:
-            self.tmpDC.SetTextForeground(wxBLACK)
-            self.tmpDC.SetBackgroundMode(wxSOLID)
-            self.tmpDC.SetLogicalFunction(wxOR)
-            for rect, bmp, color in self.highlighted:
-               if ((rect[0] <= x + w and
-                    rect[0] + rect[2] >= x) and
-                   (rect[1] <= y + h and
-                    rect[1] + rect[3] >= y)):
-                  if bmp != None:
-                     self.tmpDC.SetTextBackground(color)
-                     self.tmpDC.DrawBitmap(bmp,
-                                           rect[0] - x + fudge,
-                                           rect[1] - y + fudge, 0)
-                  else:
-                     self.tmpDC.SetBrush(wxBrush(color, wxSOLID))
-                     self.tmpDC.DrawRectangle(rect[0] - x + fudge,
-                                              rect[1] - y + fudge,
-                                              rect[2], rect[3])
+         self.tmpDC.SetTextBackground(wxBLACK)
+         self.tmpDC.SetBackgroundMode(wxTRANSPARENT)
+         self.tmpDC.SetLogicalFunction(wxOR)
+         for rect, bmp, color in self.highlighted:
+            if ((rect[0] <= x + w and
+                 rect[0] + rect[2] >= x) and
+                (rect[1] <= y + h and
+                 rect[1] + rect[3] >= y)):
+               if bmp != None:
+                  self.tmpDC.SetTextForeground(color)
+                  self.tmpDC.DrawBitmap(bmp,
+                                        rect[0] - x + fudge,
+                                        rect[1] - y + fudge, 0)
+               else:
+                  self.tmpDC.SetBrush(wxBrush(color, wxSOLID))
+                  self.tmpDC.DrawRectangle(rect[0] - x + fudge,
+                                           rect[1] - y + fudge,
+                                              rect[2], rect[3])        
          self.tmpDC.SetBackgroundMode(wxSOLID)
          self.tmpDC.SetLogicalFunction(wxCOPY)
-
-##       self.tmpDC.SetUserScale(1, 1)
-##       dc.Blit(x * scaling - origin[0],
-##               y * scaling - origin[1],
-##               w * scaling, h * scaling,
-##               self.tmpDC, 0, 0)
 
 
    ############################################################

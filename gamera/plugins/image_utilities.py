@@ -18,6 +18,7 @@
 #
 
 from gamera.plugin import *
+import gamera.config
 import _image_utilities
 
 class image_copy(PluginFunction):
@@ -28,13 +29,44 @@ class image_copy(PluginFunction):
     def __call__(image, storage_format = 0):
         return _image_utilities.image_copy(image, storage_format)
     __call__ = staticmethod(__call__)
-
 image_copy = image_copy()
+
+class rotate_copy(PluginFunction):
+    """Copies and rotates an image"""
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args = Args(Float("angle"))
+rotate_copy = rotate_copy()
+
+class resize_copy(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args= Args([Int("nrows"), Int("ncols"),
+                Choice("Interpolation Type", ["None", "Linear", "Spline"])])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+resize_copy = resize_copy()
+
+class scale_copy(PluginFunction):
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args= Args([Real("scaling"),
+                Choice("Interpolation Type", ["None", "Linear", "Spline"])])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+scale_copy = scale_copy()
+
+class histogram(PluginFunction):
+    self_type = ImageType([GREYSCALE, GREY16])
+    return_type = FloatVector("histogram")
+    def __call__(image):
+        hist = _image_utilities.histogram(image)
+        gui = gamera.config.get_option("__gui")
+        gui.ShowHistogram(hist)
+        return hist
+    __call__ = staticmethod(__call__)
+histogram = histogram()
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
-    functions = [image_copy]
+    functions = [image_copy, rotate_copy, resize_copy, scale_copy, histogram]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

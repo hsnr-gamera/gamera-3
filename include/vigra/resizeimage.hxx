@@ -918,7 +918,7 @@ resizeImageNoInterpolation(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     
     int wnew = idend.x - id.x;
     int hnew = idend.y - id.y;
-    printf("%d, %d, %d, %d\n", w, h, wnew, hnew);
+
     vigra_precondition((w > 1) && (h > 1),
                  "resizeImageNoInterpolation(): "
          "Source image to small.\n");

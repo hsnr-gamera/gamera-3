@@ -151,7 +151,7 @@ namespace Gamera {
     //  FUNCTION ACCESS
     //
     value_type get(size_t row, size_t col) const {
-      value_type tmp = *(m_begin + (row * m_image_data->stride()) + col);
+      value_type tmp = *(m_const_begin + (row * m_image_data->stride()) + col);
       if (tmp == m_label)
 	return tmp;
       else
@@ -159,7 +159,7 @@ namespace Gamera {
     }
     void set(size_t row, size_t col, value_type value) {
       if (*(m_begin + (row * m_image_data->stride()) + col) == m_label)
-	*(m_begin + (row * m_image_data->stride()) + col) = value;
+	*(m_begin + (row * m_image_data->stride()) + col) = m_label;
 
     }
 
@@ -231,21 +231,24 @@ namespace Gamera {
     //
     typedef Gamera::ImageIterator<ConnectedComponent, typename T::iterator> Iterator;
     Iterator upperLeft() {
-      return Iterator(this, m_begin, m_image_data->stride());
+      return Iterator(this, m_image_data->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() - m_image_data->page_offset_x(), offset_y() - m_image_data->page_offset_y());
     }
     Iterator lowerRight() {
-      return Iterator(this, m_begin, m_image_data->stride())
-	+ Diff2D(ncols(), nrows());
+      return Iterator(this, m_image_data->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() + ncols() - m_image_data->page_offset_x(),
+		 offset_y() + nrows() - m_image_data->page_offset_y());
     }
 
     typedef Gamera::ConstImageIterator<const ConnectedComponent,
 				  typename T::const_iterator> ConstIterator;
     ConstIterator upperLeft() const {
-      return ConstIterator(this, m_const_begin,
-			   m_image_data->stride());
+      return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
+	+ Diff2D(offset_x(), offset_y());
     }
     ConstIterator lowerRight() const {
-      return ConstIterator(this, m_const_begin, m_image_data->stride()) + Diff2D(ncols(), nrows());
+      return ConstIterator(this, static_cast<const T*>(m_image_data)->begin(), m_image_data->stride())
+	+ Diff2D(offset_x() + ncols(), offset_y() + nrows());
     }
 
     //

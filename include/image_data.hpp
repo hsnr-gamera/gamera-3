@@ -132,8 +132,8 @@ namespace Gamera {
       Destructor
     */
     virtual ~ImageData() {
+      printf("free m_data");
       if (m_data != 0) {
-	std::cout << "freeing m_data" << std::endl;
 	delete[] m_data;
       }
     }

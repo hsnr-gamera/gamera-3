@@ -470,9 +470,9 @@ class ClassifierFrame(ImageFrameBase):
       menubar.Append(classifier_menu, "Classifier")
       self._frame.SetMenuBar(menubar)
 
-   def set_image(self, current_database, image=None):
+   def set_image(self, current_database, image=None, weak=1):
       self.set_multi_image(current_database)
-      self.set_single_image(image)
+      self.set_single_image(image, weak=weak)
 
    def set_multi_image(self, current_database):
       for glyph in current_database:
@@ -481,13 +481,15 @@ class ClassifierFrame(ImageFrameBase):
       self.multi_iw.id.set_image(current_database)
       self.is_dirty = 1
 
-   def set_single_image(self, image=None):
+   def set_single_image(self, image=None, weak=1):
       if image == None:
          if self.splitterh.IsSplit():
             self.splitterh.Unsplit()
             self.single_iw.Hide()
+            del self.single_iw.id.image
+            del self.single_iw.id.original_image
       else:
-         self.single_iw.id.set_image(image)
+         self.single_iw.id.set_image(image, weak=weak)
          if not self.splitterh.IsSplit():
             self.splitterh.SplitHorizontally(
                self.multi_iw, self.single_iw, self._frame.GetSize()[1] / 2)
@@ -605,7 +607,7 @@ class ClassifierFrame(ImageFrameBase):
       if image_ref.data.pixel_type != ONEBIT:
          image_ref = image_ref.otsu_threshold()
       ccs = getattr(image_ref, segmenters[segmenter])()
-      self.set_image(ccs, image)
+      self.set_image(ccs, image, weak=0)
       wxEndBusyCursor()
 
    def _OnSaveCurrentDatabaseAsImages(self, event):

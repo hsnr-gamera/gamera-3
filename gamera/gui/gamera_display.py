@@ -22,8 +22,7 @@ from wxPython.grid import *
 from wxPython.lib.stattext import wxGenStaticText as wxStaticText
 from math import ceil, log, floor # Python standard library
 from sys import maxint
-import sys, string, time
-import weakref
+import sys, string, time, weakref
 # This is a work around for a problem with compositing in wxPython
 # for wxGTK (wxBlack and wxWhite are reversed for the compositing).
 if sys.platform == 'win32':
@@ -62,8 +61,8 @@ class ImageDisplay(wxScrolledWindow):
       self.scaling_quality = 0
       self.view_function = None
       self.image = None
+      self.original_image = None
       self.highlights = []
-      self.tmpDC = wxMemoryDC()
       self.color = 0
       self.menu = None
       self.rubber_on = 0
@@ -90,9 +89,13 @@ class ImageDisplay(wxScrolledWindow):
 
    # Sets the image being displayed
    # Returns the size of the image
-   def set_image(self, image, view_function=None):
-      self.original_image = weakref.proxy(image)
-      self.image = weakref.proxy(image)
+   def set_image(self, image, view_function=None, weak=1):
+      if weak:
+         self.original_image = weakref.proxy(image)
+         self.image = weakref.proxy(image)
+      else:
+         self.original_image = image
+         self.image = image
       self.view_function = view_function
       return self.reload_image()
 
@@ -312,9 +315,6 @@ class ImageDisplay(wxScrolledWindow):
    def OnResize(self, event):
       size = self.GetSize()
       if size.x > 0 and size.y > 0:
-         self.tmpDC.SelectObject(wxEmptyBitmap(
-            size.GetWidth(), size.GetHeight()))
-         self.tmpDC.SetPen(wxTRANSPARENT_PEN)
          event.Skip()
          self.scale(self.scaling)
       else:

@@ -59,23 +59,23 @@ namespace Gamera {
     in the Vigra class.
   */
   template<class T>
-  class RGB : public RGBValue<T> {
+  class Rgb : public RGBValue<T> {
   public:
-    RGB(GreyScalePixel grey) : RGBValue<T>(grey) { }
-    RGB(Grey16Pixel grey) : RGBValue<T>(grey) { }
-    RGB(FloatPixel f) : RGBValue<T>((T)f) { }
-    RGB(OneBitPixel s) {
+    Rgb(GreyScalePixel grey) : RGBValue<T>(grey) { }
+    Rgb(Grey16Pixel grey) : RGBValue<T>(grey) { }
+    Rgb(FloatPixel f) : RGBValue<T>((T)f) { }
+    Rgb(OneBitPixel s) {
       if (s > 0) {
 	RGBValue<T>(1);
       } else {
 	RGBValue<T>(0);
       }
     }
-    RGB() : RGBValue<T>() { }
-    RGB(const RGB& other) : RGBValue<T>(other) { }
-    RGB(T red, T green, T blue) : RGBValue<T>(red, green, blue) { }
+    Rgb() : RGBValue<T>() { }
+    Rgb(const Rgb& other) : RGBValue<T>(other) { }
+    Rgb(T red, T green, T blue) : RGBValue<T>(red, green, blue) { }
     template<class I>
-    RGB(I i, const I end) : RGBValue<T>(i, end) { }
+    Rgb(I i, const I end) : RGBValue<T>(i, end) { }
     void red(T v) {
       setRed(v);
     }
@@ -111,7 +111,7 @@ namespace Gamera {
     }
   };
 
-  typedef RGB<GreyScalePixel> RGBPixel;
+  typedef Rgb<GreyScalePixel> RGBPixel;
   
   /*
     This is a test for black/white regardless of the pixel type.

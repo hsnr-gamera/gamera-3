@@ -14,12 +14,14 @@ import generate
 plugins = glob.glob("gamera/plugins/*.py")
 plugins.remove("gamera/plugins/__init__.py")
 
-plugins = ["gamera/plugins/gui_support.py",
+plugins = ["gamera/plugins/tiff_support.py",
+           "gamera/plugins/gui_support.py",
            "gamera/plugins/threshold.py",
            "gamera/plugins/logical.py"]
 
 plugin_extensions = []
 for x in plugins:
+    print x
     plugin_extensions.append(generate.generate_plugin(x))
 
 ########################################

@@ -33,50 +33,6 @@
   through a function.
 */
 
-namespace Gamera {
-  namespace Python {
-    /*
-      Enumeration for all of the image types, pixel types, and storage
-      types.
-    */
-    enum PixelTypes {
-      ONEBIT,
-      GREYSCALE,
-      GREY16,
-      RGB,
-      FLOAT
-    };
-    
-    enum StorageTypes {
-      DENSE,
-      RLE
-    };
-
-    /*
-      To make the wrapping code a little easier these are all of the
-      combinations of pixel and storage types. The order is so that
-      the non-compressed views correspond to the PixelTypes.
-    */
-    enum ImageCombinations {
-      ONEBITIMAGEVIEW,
-      GREYSCALEIMAGEVIEW,
-      GREY16IMAGEVIEW,
-      RGBIMAGEVIEW,
-      FLOATIMAGEVIEW,
-      ONEBITRLEIMAGEVIEW,
-      CC,
-      RLECC
-    };
-
-    enum ClassificationStates {
-      UNCLASSIFIED,
-      AUTOMATIC,
-      HEURISTIC,
-      MANUAL
-    };
-  }
-}
-
 /*
   SIZE OBJECT
 */
@@ -220,15 +176,15 @@ inline int get_pixel_type(PyObject* image) {
 inline int get_image_combination(PyObject* image, PyTypeObject* cc_type) {
   int storage = get_storage_format(image);
   if (PyObject_TypeCheck(image, cc_type)) {
-    if (storage == Gamera::Python::RLE)
-      return Gamera::Python::RLECC;
-    else if (storage == Gamera::Python::DENSE)
-      return Gamera::Python::CC;
+    if (storage == Gamera::RLE)
+      return Gamera::RLECC;
+    else if (storage == Gamera::DENSE)
+      return Gamera::CC;
     else
       return -1;
-  } else if (storage == Gamera::Python::RLE) {
-    return Gamera::Python::ONEBITRLEIMAGEVIEW;
-  } else if (storage == Gamera::Python::DENSE) {
+  } else if (storage == Gamera::RLE) {
+    return Gamera::ONEBITRLEIMAGEVIEW;
+  } else if (storage == Gamera::DENSE) {
     return get_pixel_type(image);
   } else {
     return -1;
@@ -269,7 +225,7 @@ inline PyObject* init_image_members(ImageObject* o) {
   if (o->m_children_images == 0)
     return 0;
   // Classification state
-  o->m_classification_state = Py_BuildValue("i", Python::UNCLASSIFIED);
+  o->m_classification_state = Py_BuildValue("i", UNCLASSIFIED);
   // Scaling
   o->m_scaling = Py_BuildValue("i", 1);
   return (PyObject*)o;
@@ -296,30 +252,30 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
   int storage_type;
   bool cc = false;
   if (dynamic_cast<GreyScaleImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::GREYSCALE;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::GREYSCALE;
+    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<Grey16ImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::GREY16;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::GREY16;
+    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<FloatImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::FLOAT;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::FLOAT;
+    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<RGBImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::RGB;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::RGB;
+    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::ONEBIT;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
-    pixel_type = Gamera::Python::ONEBIT;
-    storage_type = Gamera::Python::RLE;
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::RLE;
   } else if (dynamic_cast<Cc*>(image) != 0) {
-    pixel_type = Gamera::Python::ONEBIT;
-    storage_type = Gamera::Python::DENSE;
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::DENSE;
     cc = true;
   } else if (dynamic_cast<RleCc*>(image) != 0) {
-    pixel_type = Gamera::Python::ONEBIT;
-    storage_type = Gamera::Python::RLE;
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::RLE;
     cc = true;
   } else {
     PyErr_SetString(PyExc_TypeError, "Unknown type returned from plugin.");
@@ -385,4 +341,31 @@ struct ImageInfoObject {
 extern PyTypeObject* get_ImageInfoType();
 bool is_ImageInfoObject(PyObject* x);
 
+inline PyObject* create_ImageInfoObject(ImageInfo* x) {
+  /*
+    Unlike the image types (which are loaded at init time
+    for all of the modules) we are going to grab the ImageInfo
+    type here since it is only seldom going to be used. The
+    runtime overhead won't matter in this instance.
+  */
+  PyObject* mod = PyImport_ImportModule("gamera.core");
+  if (mod == 0) {
+    printf("Could not load gamera.py - falling back to gameracore\n");
+    mod = PyImport_ImportModule("gamera.gameracore");
+    if (mod == 0) {
+      PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
+      return 0;
+    }
+  }
+  PyObject* dict = PyModule_GetDict(mod);
+  if (dict == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+    return 0;
+  }
+  PyTypeObject* info_type = (PyTypeObject*)PyDict_GetItemString(dict, "ImageInfo");
+  ImageInfoObject* o;
+  o = (ImageInfoObject*)info_type->tp_alloc(info_type, 0);
+  o->m_x = x;
+  return (PyObject*)o;
+}
 #endif

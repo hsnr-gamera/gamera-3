@@ -28,7 +28,7 @@ from enums import ALL
 from gameracore import DENSE, RLE
 # import some of the basic types
 from gameracore import ImageData, Size, Dimensions, Point, \
-     Rect, Region, RegionMap
+     Rect, Region, RegionMap, ImageInfo
 # import gamera.gameracore for subclassing
 import gameracore
 

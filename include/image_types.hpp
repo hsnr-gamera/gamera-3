@@ -63,13 +63,133 @@ namespace Gamera {
   typedef std::list<RleCc*> RleConnectedComponents;
 
   /*
-    Factory for types.
+    Enumeration for all of the image types, pixel types, and storage
+    types.
+  */
+  enum PixelTypes {
+    ONEBIT,
+    GREYSCALE,
+    GREY16,
+    RGB,
+    FLOAT
+  };
+  
+  enum StorageTypes {
+    DENSE,
+    RLE
+  };
+  
+  /*
+    To make the wrapping code a little easier these are all of the
+    combinations of pixel and storage types. The order is so that
+    the non-compressed views correspond to the PixelTypes.
+  */
+  enum ImageCombinations {
+    ONEBITIMAGEVIEW,
+    GREYSCALEIMAGEVIEW,
+    GREY16IMAGEVIEW,
+    RGBIMAGEVIEW,
+    FLOATIMAGEVIEW,
+    ONEBITRLEIMAGEVIEW,
+    CC,
+    RLECC
+  };
+  
+  enum ClassificationStates {
+    UNCLASSIFIED,
+    AUTOMATIC,
+    HEURISTIC,
+    MANUAL
+  };
+
+  /*
+    Factory for types based on an existing image. This makes it easier
+    to make a new view from an existing type without worrying whether
+    it is a Cc, etc.
   */
   template<class T>
   struct image_factory {
     typedef ImageView<typename T::data_type> view_type;
     typedef ConnectedComponent<typename T::data_type> cc_type;
     typedef std::list<cc_type> ccs_type;
+  };
+
+
+  /*
+    TypeIdImageFactory
+
+    This factory type can be used to easily create new images using the
+    enums above.
+  */
+  template<int Pixel, int Storage>
+  struct TypeIdImageFactory {
+
+  };
+  
+  template<>
+  struct TypeIdImageFactory<ONEBIT, DENSE> {
+    typedef OneBitImageData data_type;
+    typedef OneBitImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+
+  template<>
+  struct TypeIdImageFactory<ONEBIT, RLE> {
+    typedef OneBitRleImageData data_type;
+    typedef OneBitRleImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+  
+  template<>
+  struct TypeIdImageFactory<GREYSCALE, DENSE> {
+    typedef GreyScaleImageData data_type;
+    typedef GreyScaleImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+
+  template<>
+  struct TypeIdImageFactory<GREY16, DENSE> {
+    typedef Grey16ImageData data_type;
+    typedef Grey16ImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+
+  template<>
+  struct TypeIdImageFactory<RGB, DENSE> {
+    typedef RBGImageData data_type;
+    typedef RGBImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+
+  template<>
+  struct TypeIdImageFactory<FLOAT, DENSE> {
+    typedef FloatImageData data_type;
+    typedef FloatImageView image_type;
+    image_type* create(size_t offset_y, size_t offset_x,
+		       size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
   };
 
 }

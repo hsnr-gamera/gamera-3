@@ -70,13 +70,6 @@ bool is_ImageInfoObject(PyObject* x) {
   else return false;
 }
 
-PyObject* create_ImageInfoObject(const ImageInfo& i) {
-  ImageInfoObject* o;
-  o = (ImageInfoObject*)ImageInfoType.tp_alloc(&ImageInfoType, 0);
-  o->m_x = new ImageInfo(i);
-  return (PyObject*)o;
-}
-
 static PyObject* imageinfo_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   ImageInfoObject* o;
   o = (ImageInfoObject*)pytype->tp_alloc(pytype, 0);

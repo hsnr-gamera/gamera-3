@@ -96,28 +96,28 @@ PyObject* create_ImageDataObject(int nrows, int ncols,
   o = (ImageDataObject*)ImageDataType.tp_alloc(&ImageDataType, 0);
   o->m_pixel_type = pixel_type;
   o->m_storage_format = storage_format;
-  if (storage_format == Python::DENSE) {
-    if (pixel_type == Python::ONEBIT)
+  if (storage_format == DENSE) {
+    if (pixel_type == ONEBIT)
       o->m_x = new ImageData<OneBitPixel>(nrows, ncols, page_offset_y,
 					  page_offset_x);
-    else if (pixel_type == Python::GREYSCALE)
+    else if (pixel_type == GREYSCALE)
       o->m_x = new ImageData<GreyScalePixel>(nrows, ncols, page_offset_y,
 					     page_offset_x);      
-    else if (pixel_type == Python::GREY16)
+    else if (pixel_type == GREY16)
       o->m_x = new ImageData<Grey16Pixel>(nrows, ncols, page_offset_y,
 					  page_offset_x);      
-    else if (pixel_type == Python::FLOAT)
+    else if (pixel_type == FLOAT)
       o->m_x = new ImageData<FloatPixel>(nrows, ncols, page_offset_y,
 					 page_offset_x);      
-    else if (pixel_type == Python::RGB)
+    else if (pixel_type == RGB)
       o->m_x = new ImageData<RGBPixel>(nrows, ncols, page_offset_y,
 				       page_offset_x);      
     else {
       PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
       return 0;
     }
-  } else if (storage_format == Python::RLE) {
-    if (pixel_type == Python::ONEBIT)
+  } else if (storage_format == RLE) {
+    if (pixel_type == ONEBIT)
       o->m_x = new RleImageData<OneBitPixel>(nrows, ncols, page_offset_y,
 					     page_offset_x);
     else {
@@ -211,19 +211,19 @@ void init_ImageDataType(PyObject* module_dict) {
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",
-		       Py_BuildValue("i", Python::FLOAT));
+		       Py_BuildValue("i", FLOAT));
   PyDict_SetItemString(module_dict, "ONEBIT",
-		       Py_BuildValue("i", Python::ONEBIT));
+		       Py_BuildValue("i", ONEBIT));
   PyDict_SetItemString(module_dict, "GREYSCALE",
-		       Py_BuildValue("i", Python::GREYSCALE));
+		       Py_BuildValue("i", GREYSCALE));
   PyDict_SetItemString(module_dict, "GREY16",
-		       Py_BuildValue("i", Python::GREY16));
+		       Py_BuildValue("i", GREY16));
   PyDict_SetItemString(module_dict, "RGB",
-		       Py_BuildValue("i", Python::RGB));
+		       Py_BuildValue("i", RGB));
   PyDict_SetItemString(module_dict, "DENSE",
-		       Py_BuildValue("i", Python::DENSE));
+		       Py_BuildValue("i", DENSE));
   PyDict_SetItemString(module_dict, "RLE",
-		       Py_BuildValue("i", Python::RLE));
+		       Py_BuildValue("i", RLE));
 }
 
 

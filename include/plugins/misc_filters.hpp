@@ -31,10 +31,7 @@ namespace Gamera {
   typename ImageFactory<T>::view_type* outline(const T& in) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* data = new data_type(in.size(), in.offset_y(), in.offset_x());
-    view_type* out = new view_type(*data, in);
-    image_copy_fill(in, *out);
-    dilate(*out);
+    view_type* out = erode_dilate(in, 1, 0, 0);
     xor_image(*out, in);
     return out;
   }

@@ -265,8 +265,8 @@ namespace Gamera {
       result = std::numeric_limits<feature_t>::max();
     else {
       typedef typename ImageFactory<T>::view_type* view_type;
-      view_type copy = simple_image_copy(image);
-      dilate(*copy);
+      view_type copy = erode_dilate(image, 1, 0, 0);
+      // dilate(*copy);
       result = (volume(*copy) - vol) / vol;
       delete copy->data();
       delete copy;

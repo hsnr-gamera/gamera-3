@@ -224,8 +224,7 @@ Original author:
 template<class T>
 Image* abutaleb_threshold(const T &m, int storage_format) {
   typedef typename ImageFactory<T>::view_type view_type;
-  view_type* average = simple_image_copy(m);
-  mean(*average);
+  view_type* average = mean(m);
   
   typedef FloatImageData histogram_data_type;
   typedef FloatImageView histogram_type;

@@ -240,6 +240,7 @@ class LoadXML:
       return self.parse_stream(stream)
 
    def parse_stream(self, stream):
+      t = time.clock()
       self._setup_handlers()
       self._parser = expat.ParserCreate()
       self._parser.StartElementHandler = self._start_element_handler
@@ -257,6 +258,7 @@ class LoadXML:
          self._parser.StartElementHandler = None
          self._parser.EndElementHandler = None
          del self._parser
+      print "Time:", time.clock() - t
       return self
    
    def add_start_element_handler(self, name, func):
@@ -297,7 +299,6 @@ class LoadXML:
    def _setup_handlers(self):
       self.symbol_table = SymbolTable()
       self.glyphs = []
-      self._glyph_no = 0
       self.add_start_element_handler('gamera-database', self._tag_start_gamera_database)
       self.add_end_element_handler('gamera-database', self._tag_end_gamera_database)
 
@@ -370,7 +371,7 @@ class LoadXML:
    def _tag_end_glyph(self):
       glyph = core.Image(self._ul_y, self._ul_x, self._nrows, self._ncols,
                          core.ONEBIT, core.DENSE)
-      glyph.from_rle(str(self._data.strip()))
+      glyph.from_rle(str(u''.join(self._data)))
       glyph.classification_state = self._classification_state
       self._id_name.sort()
       glyph.id_name = self._id_name
@@ -378,9 +379,8 @@ class LoadXML:
          glyph.properties[key] = val
       glyph.scaling = self._scaling
       self._append_glyph(glyph)
-      if not self._glyph_no & 0xf:
+      if not len(self.glyphs) & 0xf:
          self._update_progress()
-      self._glyph_no += 1
 
    def _tag_start_ids(self, a):
       self._classification_state = self.try_type_convert(
@@ -398,48 +398,60 @@ class LoadXML:
          a, 'scaling', float, 'features')
 
    def _tag_start_data(self, a):
-      self._data = u''
+      self._data = []
       self._parser.CharacterDataHandler = self.add_data
 
    def _tag_end_data(self):
       self._parser.CharacterDataHandler = None
 
    def add_data(self, data):
-      self._data += data
+      self._data.append(data)
 
    def _tag_start_property(self, a):
       self._property_name = self.try_type_convert(
          a, 'name', str, 'property')
       self._property_type = self.try_type_convert(
          a, 'type', str, 'property')
-      self._property_value = ''
+      self._property_value = []
       self._parser.CharacterDataHandler = self.add_property_value
 
    def _tag_end_property(self):
+      data = u''.join(self._property_value)
       if _saveable_types.has_key(self._property_type):
          self._properties[self._property_name] = \
-            _saveable_types[self._property_type](self._property_value)
+            _saveable_types[self._property_type](data)
       else:
-         self._properties[self._property_name] = self._data.encode()
+         self._properties[self._property_name] = data
       self._parser.CharacterDataHandler = None
 
    def add_property_value(self, data):
-      self._property_value += data
+      self._property_value.append(data)
 
 def glyphs_from_xml(filename):
-   """Return a list of glyphs from an xml file"""
+   """**glyphs_from_xml** (FileOpen *filename*)
+
+Return a list of glyphs from a Gamera XML file."""
    return LoadXML().parse_filename(filename).glyphs
 
 def glyphs_with_features_from_xml(filename, feature_functions = None):
-   """Return a list of glyphs with features from an xml file"""
+   """**glyphs_with_features_from_xml** (FileOpen *filename*, Features *feature_functions* = ``None``)
+
+Loads glyphs from a Gamera XML file, and then generates features
+for all of those glyphs.  The set of features can be specified with the
+*feature_functions* argument (which defaults to all features)."""
    from gamera.plugins import features
    glyphs = LoadXML().parse_filename(filename).glyphs
    features.generate_features_list(glyphs, feature_functions)
    return glyphs
 
 def glyphs_to_xml(filename, glyphs, with_features=True):
-   """Save a list of glyphs to an xml file"""
-   WriteXMLFile(glyphs, with_features=with_features).write_filename(filename)
+   """**glyphs_to_xml** (FileSave *filename*, *with_features* = ``True``)
+
+Saves the given list of glyphs to a Gamera XML file.
+
+*with_features*
+  When set to ``True``, features generated on the image are saved to the XML file.
+"""
 
 class StripTag:
    # This is a ridiculous implementation that probably deserves some
@@ -532,7 +544,10 @@ class StripTag:
       self._output.close()
 
 def strip_features(input_filename, output_filename):
-   """Strips the features from a Gamera XML file.
+   """**strip_features** (FileOpen *input_filename*, FileSave *output_filename*)
+
+Strips the features from a Gamera XML file.  Provided mainly to reduce filesizes for
+files created before saving features was an option.
 
 *input_filename*: The input Gamera XML filename
 *output_filename*: The output Gamera XML filename"""

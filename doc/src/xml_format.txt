@@ -24,7 +24,6 @@ automatically convert to Unicode.  (See the Python documentation for
 the ``codecs`` module).
 
 All XML files created directly from Gamera are encoded in UTF-8.
-There aren't any plans to change that.
 
 .. code:: XML
 
@@ -280,26 +279,4 @@ The code for saving and loading Gamera XML files is in
 
 Use the following functions to save and load Gamera XML files:
 
-``glyphs_from_xml``
-```````````````````
-
-*list_of_images* **glyphs_from_xml** (*filename*)
-
-Returns a list of glyphs from a Gamera XML file.
-
-``glyphs_with_features_from_xml``
-`````````````````````````````````
-
-*list_of_images* **glyphs_with_features_from_xml** (*filename*, *feature_functions*)
-
-Loads glyphs from a Gamera XML file and then generates features for
-them.  *feature_functions* can be a list of feature function names or
-``'all'`` to use all available feature functions.
-
-``glyphs_to_xml``
-`````````````````
-
-**glyphs_to_xml** (*filename*, *glyphs*)
-
-Saves a list of glyphs to a Gamera XML file.  Each glyph must be a
-ONEBIT Image instance.
+.. docstring:: gamera gamera_xml glyphs_from_xml glyphs_with_features_from_xml glyphs_to_xml strip_features

@@ -25,6 +25,9 @@
  * Gamera.  These include:
  *
  *  RGB - color pixels
+ *  Complex - complex number pixels are convenient for fourier image
+ *          (frequency domain) processing algorithms.  These values are
+ *          similar to float values, but there are two values for each pixel.
  *  Float - floating point pixels that are convenient for many image processing
  *          algorithms
  *  GreyScale - grey scale pixels that hold values from 0 - 255 (8bit)
@@ -40,6 +43,7 @@
 
 #include "gamera_limits.hpp"
 #include "vigra/rgbvalue.hxx"
+#include <complex>
 
 using namespace vigra;
 
@@ -82,6 +86,17 @@ namespace Gamera {
    */
   typedef unsigned short OneBitPixel;
 
+  /** 
+   * ComplexPixel
+   *
+   * The Gamera::ComplexPixel type represents a pixel with two values:
+   * real and imaginary.  These values are accessed by real() and imag()
+   * functions.  Most functions follow normal std::complex behavior.
+   * Other behavior will generally mimic the floating-point pixel type often
+   * by the same operation applied only to the real part of the pixel.
+   */
+  typedef std::complex<double> ComplexPixel;
+
   /**
    * RGB Pixels
    *
@@ -117,6 +132,13 @@ namespace Gamera {
      * set to the passed in Float (which is truncated first).
      */
     explicit Rgb(FloatPixel f) : RGBValue<T>((T)f) { }
+
+    /**
+     * Construct a RGB pixel from a Complex.  RGB are all
+     * set to the real part passed in Complex (which is truncated
+     * first).
+     */
+    explicit Rgb(ComplexPixel j) : RGBValue<T>((T)j.real()) { }
 
     /**
      * Construct a RGB Pixel from a OneBitPixel. Appropriate conversion
@@ -247,6 +269,14 @@ namespace Gamera {
       return FloatPixel(luminance());
     }
 
+    /// Conversion operator to a ComplexPixel
+    operator ComplexPixel() {
+      ComplexPixel temp;
+      temp.real = luminance();
+      temp.imag = 0;
+      return ComplexPixel(temp);
+    }
+
     /// Conversion operator to a GreyScalePixel
     operator GreyScalePixel() {
       return GreyScalePixel(luminance());
@@ -281,9 +311,10 @@ namespace Gamera {
    */
   template<class T>
   inline bool is_black(T value) {
-    T tmp = value;
+    /* T tmp = value;
     if (tmp) return true;
-    else return false;
+    else return false; */
+    return value;
   }
 
   /*
@@ -291,9 +322,10 @@ namespace Gamera {
    */
   template<class T>
   inline bool is_white(T value) {
-    T tmp = value;
+    /* T tmp = value;
     if (!tmp) return true;
-    else return false;
+    else return false; */
+    return !value;
   }
 
   /*
@@ -345,86 +377,54 @@ namespace Gamera {
   // Specializations for black/white
   template<>
   inline bool is_black<FloatPixel>(FloatPixel value) {
-    if (value > 0)
-      return false;
-    else
-      return true;
+    return value <= 0;
   }
 
   template<>
   inline bool is_black<GreyScalePixel>(GreyScalePixel value) {
-    if (value == 0)
-      return true;
-    else
-      return false;
+    return value == 0;
   }
 
   template<>
   inline bool is_black<Grey16Pixel>(Grey16Pixel value) {
-    if (value == 0)
-      return true;
-    else
-      return false;
+    return value == 0;
   }
 
   template<>
   inline bool is_black<RGBPixel>(RGBPixel value) {
-    if (value.green() == 0
-        && value.red() == 0
-        && value.blue() == 0)
-      return true;
-    else
-      return false;
+    return (value.green() == 0 && value.red() == 0 && value.blue() == 0);
   }
 
   template<>
   inline bool is_black<OneBitPixel>(OneBitPixel value) {
-    if (value > 0)
-      return true;
-    else
-      return false;
+    return value != 0;
   }
 
   template<>
   inline bool is_white<FloatPixel>(FloatPixel value) {
-    if (value == std::numeric_limits<GreyScalePixel>::max())
-      return true;
-    else
-      return false;
+    return (value == std::numeric_limits<GreyScalePixel>::max());
   }
 
   template<>
   inline bool is_white<GreyScalePixel>(GreyScalePixel value) {
-    if (value == std::numeric_limits<GreyScalePixel>::max())
-      return true;
-    else
-      return false;
+    return (value == std::numeric_limits<GreyScalePixel>::max());
   }
 
   template<>
   inline bool is_white<Grey16Pixel>(Grey16Pixel value) {
-    if (value == std::numeric_limits<Grey16Pixel>::max())
-      return true;
-    else
-      return false;
+    return (value == std::numeric_limits<Grey16Pixel>::max());
   }
 
   template<>
   inline bool is_white<RGBPixel>(RGBPixel value) {
-    if (value.red() == std::numeric_limits<GreyScalePixel>::max()
-        && value.green() == std::numeric_limits<GreyScalePixel>::max()
-        && value.blue() == std::numeric_limits<GreyScalePixel>::max())
-      return true;
-    else
-      return false;
+    return (value.red() == std::numeric_limits<GreyScalePixel>::max()
+	    && value.green() == std::numeric_limits<GreyScalePixel>::max()
+	    && value.blue() == std::numeric_limits<GreyScalePixel>::max());
   }
 
   template<>
   inline bool is_white<OneBitPixel>(OneBitPixel value) {
-    if (value == 0)
-      return true;
-    else
-      return false;
+    return value == 0;
   }
 
   /*
@@ -453,11 +453,17 @@ namespace Gamera {
     return 0.0;
   }
 
-  /* 
-  inline ComplexPixel pixel_traits<ComplexPixel>::default_value() {
+  inline ComplexPixel pixel_traits<ComplexPixel>::white() {
+    return ComplexPixel(std::numeric_limits<double>::max(), 0.0);
+  }
+
+  inline ComplexPixel pixel_traits<ComplexPixel>::black() {
     return ComplexPixel(0.0, 0.0);
   }
-  */
+
+  inline ComplexPixel pixel_traits<ComplexPixel>::default_value() {
+    return pixel_traits<ComplexPixel>::black();
+  }
 
   /*
    * Inversion of pixel values
@@ -467,6 +473,10 @@ namespace Gamera {
 
   inline FloatPixel invert(FloatPixel value) {
     // Hard to know what makes sense here... MGD
+    return -value;
+  }
+
+  inline ComplexPixel invert(ComplexPixel value) {
     return -value;
   }
 
@@ -499,6 +509,10 @@ namespace Gamera {
    */
   inline FloatPixel blend(FloatPixel original, FloatPixel add, double alpha) {
     return alpha * original + (1.0 - alpha) * add; 
+  }
+
+  inline ComplexPixel blend(ComplexPixel original, ComplexPixel add, double alpha) {
+    return alpha * original + (1.0 - alpha) * add;
   }
 
   inline GreyScalePixel blend(GreyScalePixel original, GreyScalePixel add, double alpha) {

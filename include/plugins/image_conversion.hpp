@@ -135,6 +135,33 @@ namespace Gamera {
       }      
     };
 
+    template<>
+    struct to_rgb_converter<ComplexPixel> {
+      RGBImageView* operator()(const ComplexImageView& image) {
+	ComplexPixel max = find_max(image.parent());
+	double scale;
+	if (max.real() > 0)
+	  scale = 255.0 / max.real();
+	else
+	  scale = 0.0;
+	RGBImageView* view = creator<RGBPixel>::image(image);
+	ComplexImageView::const_row_iterator in_row = image.row_begin();
+	ComplexImageView::const_col_iterator in_col;
+	RGBImageView::row_iterator out_row = view->row_begin();
+	RGBImageView::col_iterator out_col;
+	ComplexRealAccessor in_acc;
+	ImageAccessor<RGBPixel> out_acc;
+	for (; in_row != image.row_end(); ++in_row, ++out_row) {
+	  for (in_col = in_row.begin(), out_col = out_row.begin();
+	       in_col != in_row.end(); ++in_col, ++out_col) {
+	    GreyScalePixel tmp = GreyScalePixel(in_acc(in_col) * scale);
+	    out_acc.set(RGBPixel(tmp, tmp, tmp), out_col);
+	  }
+	}
+	return view;
+      }
+    };
+
     /*
       TO GREYSCALE
     */
@@ -207,6 +234,33 @@ namespace Gamera {
 	  for (in_col = in_row.begin(), out_col = out_row.begin();
 	       in_col != in_row.end(); ++in_col, ++out_col) {
 	    out_acc.set(in_acc(in_col).luminance(), out_col);
+	  }
+	}
+	return view;
+      }
+    };
+
+    template<>
+    struct to_greyscale_converter<ComplexPixel> {
+      GreyScaleImageView* operator()(const ComplexImageView& image) {
+	GreyScaleImageView* view = creator<GreyScalePixel>::image(image);
+	ComplexPixel max = find_max(image.parent());
+	double scale;
+	if (max.real() > 0)
+	  scale = 255.0 / max.real();
+	else
+	  scale = 0.0;
+
+	ComplexImageView::const_row_iterator in_row = image.row_begin();
+	ComplexImageView::const_col_iterator in_col;
+	GreyScaleImageView::row_iterator out_row = view->row_begin();
+	GreyScaleImageView::col_iterator out_col;
+	ComplexRealAccessor in_acc;
+	ImageAccessor<GreyScalePixel> out_acc;
+	for (; in_row != image.row_end(); ++in_row, ++out_row) {
+	  for (in_col = in_row.begin(), out_col = out_row.begin();
+	       in_col != in_row.end(); ++in_col, ++out_col) {
+	    out_acc.set(GreyScalePixel(in_acc(in_col) * scale), out_col);
 	  }
 	}
 	return view;
@@ -314,6 +368,34 @@ namespace Gamera {
       }
     };
 
+    template<>
+    struct to_grey16_converter<ComplexPixel> {
+      Grey16ImageView* operator()(const ComplexImageView& image) {
+	Grey16ImageView* view = creator<Grey16Pixel>::image(image);
+
+	ComplexPixel max = find_max(image.parent());
+	double scale;
+	if (max.real() > 0)
+	  scale = 255.0 / max.real();
+	else
+	  scale = 0.0;
+
+	ComplexImageView::const_row_iterator in_row = image.row_begin();
+	ComplexImageView::const_col_iterator in_col;
+	Grey16ImageView::row_iterator out_row = view->row_begin();
+	Grey16ImageView::col_iterator out_col;
+	ComplexRealAccessor in_acc;
+	ImageAccessor<Grey16Pixel> out_acc;
+	for (; in_row != image.row_end(); ++in_row, ++out_row) {
+	  for (in_col = in_row.begin(), out_col = out_row.begin();
+	       in_col != in_row.end(); ++in_col, ++out_col) {
+	    out_acc.set(Grey16Pixel(in_acc(in_col) * scale), out_col);
+	  }
+	}
+	return view;
+      }
+    };
+
     /*
       Float
     */
@@ -326,12 +408,13 @@ namespace Gamera {
 	typename T::const_col_iterator in_col;
 	typename FloatImageView::row_iterator out_row = view->row_begin();
 	typename FloatImageView::col_iterator out_col;
-	ImageAccessor<typename T::value_type> in_acc;
+	typedef typename choose_accessor<T>::real_accessor Accessor;
+	Accessor in_acc = Accessor(in_acc);
 	ImageAccessor<FloatPixel> out_acc;
 	for (; in_row != image.row_end(); ++in_row, ++out_row) {
 	  for (in_col = in_row.begin(), out_col = out_row.begin();
 	       in_col != in_row.end(); ++in_col, ++out_col) {
-	    out_acc.set(FloatPixel(in_acc.get(in_col)), out_col);
+	    out_acc.set(FloatPixel(in_acc(in_col)), out_col);
 	  }
 	}
 	return view;	
@@ -384,8 +467,62 @@ namespace Gamera {
       }
     };
 
+    /*
+      Complex
+    */
+    template<class Pixel>
+    struct to_complex_converter {
+      template<class T>
+      ComplexImageView* operator()(const T& image) {
+	ComplexImageView* view = creator<ComplexPixel>::image(image);
+	typename T::const_row_iterator in_row = image.row_begin();
+	typename T::const_col_iterator in_col;
+	typename ComplexImageView::row_iterator out_row = view->row_begin();
+	typename ComplexImageView::col_iterator out_col;
+	typedef typename choose_accessor<T>::real_accessor InAccessor;
+	InAccessor in_acc = choose_accessor<T>::make_real_accessor(image);
+	typedef typename choose_accessor<ComplexImageView>::real_accessor OutAccessor;
+	OutAccessor out_acc = choose_accessor<ComplexImageView>::make_real_accessor(*view);
+	for (; in_row != image.row_end(); ++in_row, ++out_row) {
+	  for (in_col = in_row.begin(), out_col = out_row.begin();
+	       in_col != in_row.end(); ++in_col, ++out_col) {
+	    out_acc.set(in_acc(in_col), out_col);
+	  }
+	}
+	return view;	
+      }
+    };
+    
+    template<>
+    struct to_complex_converter<OneBitPixel> {
+      template<class T>
+      ComplexImageView* operator()(const T& image) {
+	ComplexImageView* view = creator<ComplexPixel>::image(image);
+	
+	ComplexImageView::row_iterator out_row = view->row_begin();
+	ComplexImageView::col_iterator out_col;
+	typename T::const_row_iterator in_row = image.row_begin();
+	typename T::const_col_iterator in_col;
+	ImageAccessor<typename T::value_type> in_acc;
+	ImageAccessor<ComplexPixel> out_acc;
+	for (; in_row != image.row_end(); ++in_row, ++out_row) {
+	  for (in_col = in_row.begin(), out_col = out_row.begin();
+	       in_col != in_row.end(); ++in_col, ++out_col) {
+	    OneBitPixel tmp = in_acc.get(in_col);
+	    if (is_white(tmp)) {
+	      out_acc.set(ComplexPixel(1.0, 0.0), out_col);
+	    }
+	    else {
+	      out_acc.set(ComplexPixel(0.0, 0.0), out_col);	  
+	    }    
+	  }
+	}
+	return view;	
+      }
+    };
+    
   }
-
+  
   template<class T>
   RGBImageView* to_rgb(const T& image) {
     _image_conversion::to_rgb_converter<typename T::value_type> conv;
@@ -410,5 +547,53 @@ namespace Gamera {
     return conv(image);    
   }
 
-}
+  template<class T>
+  ComplexImageView* to_complex(const T& image) {
+    _image_conversion::to_complex_converter<typename T::value_type> conv;
+    return conv(image);    
+  }
+
+  template<class T>
+  FloatImageView* extract_real(const T& image) {
+    FloatImageData* data = new FloatImageData(image.size(), image.offset_y(),
+					      image.offset_x());
+    FloatImageView* view = new FloatImageView(*data, image);
+    typename T::const_row_iterator in_row = image.row_begin();
+    typename T::const_col_iterator in_col;
+    typename FloatImageView::row_iterator out_row = view->row_begin();
+    typename FloatImageView::col_iterator out_col;
+    typedef typename choose_accessor<T>::accessor Accessor;
+    Accessor in_acc = Accessor(in_acc);
+    ImageAccessor<FloatPixel> out_acc;
+    for (; in_row != image.row_end(); ++in_row, ++out_row) {
+      for (in_col = in_row.begin(), out_col = out_row.begin();
+	   in_col != in_row.end(); ++in_col, ++out_col) {
+	out_acc.set(FloatPixel(in_acc(in_col).real()), out_col);
+      }
+    }
+    return view;	
+  }
+
+  template<class T>
+  FloatImageView* extract_imaginary(const T& image) {
+    FloatImageData* data = new FloatImageData(image.size(), image.offset_y(),
+					 image.offset_x());
+    FloatImageView* view = new FloatImageView(*data, image);
+    typename T::const_row_iterator in_row = image.row_begin();
+    typename T::const_col_iterator in_col;
+    typename FloatImageView::row_iterator out_row = view->row_begin();
+    typename FloatImageView::col_iterator out_col;
+    typedef typename choose_accessor<T>::accessor Accessor;
+    Accessor in_acc = Accessor(in_acc);
+    ImageAccessor<FloatPixel> out_acc;
+    for (; in_row != image.row_end(); ++in_row, ++out_row) {
+      for (in_col = in_row.begin(), out_col = out_row.begin();
+	   in_col != in_row.end(); ++in_col, ++out_col) {
+	out_acc.set(FloatPixel(in_acc(in_col).imag()), out_col);
+      }
+    }
+    return view;	
+  }
+
+  }
 #endif

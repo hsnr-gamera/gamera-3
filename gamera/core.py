@@ -48,8 +48,8 @@ from types import *
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
 # import the pixel types
-from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT
-from enums import ALL, NONIMAGE, COMPLEX
+from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX
+from enums import ALL, NONIMAGE
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
@@ -250,6 +250,15 @@ See `storage formats`_ for more information."""
    _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
+      """**load_image** (FileOpen *filename*, Choice *storage_format* = ``DENSE``)
+
+Load an image from the given filename.  At present, TIFF and PNG files are
+supported.
+
+*storage_format*
+  The type of `storage format`__ to use for the resulting image.
+
+.. __: image_types.html#storage-formats"""
       return load_image(filename, compression)
    load_image = staticmethod(load_image)
 
@@ -272,11 +281,16 @@ process is not running, this method has no effect.
 .. __: gui.html
 
 .. image:: images/display.png"""
+      if self.data.pixel_type in (COMPLEX, FLOAT):
+         conversion = "to_greyscale"
+      else:
+         conversion = None
       if self._display:
-         self._display.set_image(self)
+         self._display.set_image(self, conversion)
       else:
          self.set_display(
-            has_gui.gui.ShowImage(self, self.name, owner=self))
+            has_gui.gui.ShowImage(self, self.name, conversion,
+                          owner=self))
       self.last_display = "normal"
       return self._display
 
@@ -726,7 +740,7 @@ if __name__ == "__main__":
    init_gamera()
 
 __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
-           "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL  DENSE RLE "
+           "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL DENSE RLE "
            "ImageData Size Dimensions Point Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel").split()

@@ -287,10 +287,12 @@ class ShellFrame(wxFrame):
       self.custom_menus = {}
       file_menu = gui_util.build_menu(
          self,
-         (("&Open...", self._OnFileOpen),
+         (("&Open image...", self._OnFileOpen),
           ("&Image browser...", self._OnImageBrowser),
           (None, None),
           ("Open &XML...", self._OnLoadXML),
+          (None, None),
+          ("&Save history...", self._OnSaveHistory),
           (None, None),
           ("&Biollante...", self._OnBiollante),
           (None, None),
@@ -360,6 +362,13 @@ class ShellFrame(wxFrame):
                               (name, filename))
             finally:
                wxEndBusyCursor()
+
+   def _OnSaveHistory(self, event):
+      filename = gui_util.save_file_dialog(self, "Python files (*.py)|*.py")
+      if filename:
+         fd = open(filename, "w")
+         fd.write(self.history.GetText())
+         fd.close()
 
    def _OnBiollante(self, event):
       from gamera.gui import gaoptimizer_display

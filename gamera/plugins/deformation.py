@@ -37,11 +37,11 @@ import _deformation
 class rotate(PluginFunction):
     """Rotates an image by skew method"""
     category = "Deformations"
-    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])    
-    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    self_type = ImageType(ALL)    
+    return_type = ImageType(ALL)
     args = Args([Float("Rotation angle"), Pixel("Background Color")])
     args.list[0].rng = (-180,180)
-    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255))]
+    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255)), (COMPLEX, 15.0, 0.0j)]
 
 class wave(PluginFunction):
     """Causes periodic disturbance of user-defined frequency, amplitude, and direction"""

@@ -244,24 +244,16 @@ table {
   margin-top: 0.5em ;
   margin-bottom: 0.5em ;
   background-color: #f7fffd;
-  border-color: #72ada8;
+  border: solid 1 #aaaaaa;
  }
 
 table.citation {
   border-left: solid thin gray ;
   padding-left: 0.5ex }
 
-table.docinfo {
-  margin: 2em 4em }
-
 table.footnote {
   border-left: solid thin black ;
   padding-left: 0.5ex }
-
-td, th {
-  padding: 0.75em ;
-  vertical-align: top 
-}
 
 th.docinfo-name, th.field-name {
   font-weight: bold ;
@@ -269,7 +261,7 @@ th.docinfo-name, th.field-name {
   white-space: nowrap 
 }
 
-td.field-body, th.field-name {
+td, th {
   padding: 0.5em;
   border: solid thin #aaaaaa;
 }

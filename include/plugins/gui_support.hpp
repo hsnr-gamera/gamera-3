@@ -47,9 +47,9 @@ namespace {
 	  tmp = acc.get(col);
 	  if (tmp > 255)
 	    tmp = 255;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
+	  *(i++) = (char)tmp;
+	  *(i++) = (char)tmp;
+	  *(i++) = (char)tmp;
 	}
       }
     }
@@ -73,9 +73,38 @@ namespace {
 	tmp = *vi * max;
 	if (tmp > 255)
 	  tmp = 255;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
-	*i = (char)tmp; i++;
+	*(i++) = (char)tmp;
+	*(i++) = (char)tmp;
+	*(i++) = (char)tmp;
+      }
+    }
+  };
+
+  template<>
+  struct to_string_impl<ComplexPixel> {
+    template<class Mat>
+    void operator()(const Mat& mat, char* data) {
+      char* i = data;
+
+      if ((mat.parent().nrows() <= 1) || mat.parent().ncols() <= 1)
+	throw std::range_error("Out of range!");
+      double scale;
+      ComplexPixel max = 0;
+      max = find_max(mat.parent());
+      if (max.real() > 0)
+	scale = 255.0 / max.real();
+      else 
+	scale = 0.0;
+
+      typename Mat::const_vec_iterator vi = mat.vec_begin();
+      double tmp;
+      for (; vi != mat.vec_end(); ++vi) {
+	tmp = (*vi).real() * scale;
+	if (tmp > 255.0)
+	  tmp = 255.0;
+	*i = (char)floor(tmp); i++;
+	*i = (char)floor(tmp); i++;
+	*i = (char)floor(tmp); i++;
       }
     }
   };
@@ -96,9 +125,9 @@ namespace {
 	    the rgb color space. KWM
 	  */
 	  tmp = char(acc.get(col));
-	  *i = tmp; i++;
-	  *i = tmp; i++;
-	  *i = tmp; i++;
+	  *(i++) = tmp;
+	  *(i++) = tmp;
+	  *(i++) = tmp;
 	}
       }
     }
@@ -111,12 +140,13 @@ namespace {
       ImageAccessor<RGBPixel> acc;
       typename Mat::const_row_iterator row = mat.row_begin();
       typename Mat::const_col_iterator col;
-      for (size_t i = 0; row != mat.row_end(); ++row) {
-	for (col = row.begin(); col != row.end(); i += 3, ++col) {
+      char* i = data;
+      for (; row != mat.row_end(); ++row) {
+	for (col = row.begin(); col != row.end(); ++col) {
 	  RGBPixel tmp = acc.get(col);
-	  data[i] = (unsigned char)tmp.red();
-	  data[i + 1] = (unsigned char)tmp.green();
-	  data[i + 2] = (unsigned char)tmp.blue();
+	  *(i++) = (unsigned char)tmp.red();
+	  *(i++) = (unsigned char)tmp.green();
+	  *(i++) = (unsigned char)tmp.blue();
 	}
       }
     }
@@ -130,17 +160,16 @@ namespace {
       typename Mat::const_row_iterator row = mat.row_begin();
       typename Mat::const_col_iterator col;
       ImageAccessor<OneBitPixel> acc;
-      OneBitPixel tmp;
+      unsigned char tmp;
       for (; row != mat.row_end(); ++row) {
 	for (col = row.begin(); col != row.end(); ++col) {
-	  tmp = acc(col);
-	  if (is_white(tmp))
-	    tmp = 255;
-	  else
-	    tmp = 0;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
+	  if (is_white(acc(col)))
+ 	    tmp = 255;
+ 	  else
+ 	    tmp = 0;
+	  *(i++) = tmp;
+	  *(i++) = tmp;
+	  *(i++) = tmp;
 	}
       }
     }
@@ -149,7 +178,7 @@ namespace {
 
 template<class T>
 PyObject* to_string(T& m) {
-  PyObject* str = PyString_FromString("this is stupid\n");
+  PyObject* str = PyString_FromString("");
   if (_PyString_Resize(&str, m.nrows() * m.ncols() * 3) != 0)
     return 0;
   char* buffer = PyString_AS_STRING(str);
@@ -184,9 +213,10 @@ Image *color_ccs(T& m) {
       dst->blue(255);
     } else {
       color = *src & 0x7;
-      dst->red(color_set[color][0]);
-      dst->green(color_set[color][1]);
-      dst->blue(color_set[color][2]);
+      const unsigned char* out_color = color_set[color];
+      dst->red(out_color[0]);
+      dst->green(out_color[1]);
+      dst->blue(out_color[2]);
     }
   }
   

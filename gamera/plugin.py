@@ -109,11 +109,7 @@ class PluginFunction:
 
 def PluginFactory(name, category=None,
                   return_type=None,
-                  self_type=ImageType((RGB,
-                                       GREYSCALE,
-                                       GREY16,
-                                       ONEBIT,
-                                       FLOAT)),
+                  self_type=ImageType(ALL),
                   args=None):
    from gamera import core
    cls = new.classobj(name, (PluginFunction,), {})

@@ -278,13 +278,30 @@ namespace Gamera {
   /*
     Find the maximum pixel value for an image
   */
+
+  // TODO: Test this
+
   template<class T>
   typename T::value_type find_max(const T& image) {
     if (image.nrows() <= 1 || image.ncols() <= 1)
       throw std::range_error("Image must have nrows and ncols > 0.");
-    typename T::const_vec_iterator max = std::max_element(image.vec_begin(),
-						    image.vec_end());
-    return *(max);
+    typename T::const_vec_iterator max = image.vec_begin();
+    typename T::value_type value = NumericTraits<typename T::value_type>::min();
+    for (; max != image.vec_end(); ++max)
+      _my_max(*max, value);
+    return value;
+  }
+  
+  template<class T>
+  void _my_max(const T& a, T& b) {
+    if (a > b)
+      b = a;
+  }
+
+  template<>
+  void _my_max(const ComplexPixel& a, ComplexPixel& b) {
+    if (a.real() > b.real())
+      b = a;
   }
 
   /*
@@ -573,7 +590,7 @@ namespace Gamera {
     for (size_t r = 0; r < m.nrows(); ++r) {
       PyObject* row = PyList_New(m.ncols());
       for (size_t c = 0; c < m.ncols(); ++c) {
-	PyObject* px = pixel_to_python<typename T::value_type>::convert(m.get(r, c));
+	PyObject* px = pixel_to_python(m.get(r, c));
 	PyList_SET_ITEM(row, c, px);
       }
       PyList_SET_ITEM(rows, r, row);
@@ -602,6 +619,6 @@ namespace Gamera {
       }
     }
   }
- 
+
 }
 #endif

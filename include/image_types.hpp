@@ -41,6 +41,7 @@ namespace Gamera {
   typedef ImageData<Grey16Pixel> Grey16ImageData;
   typedef ImageData<FloatPixel> FloatImageData;
   typedef ImageData<RGBPixel> RGBImageData;
+  typedef ImageData<ComplexPixel> ComplexImageData;
   typedef ImageData<OneBitPixel> OneBitImageData;
   typedef RleImageData<OneBitPixel> OneBitRleImageData;
 
@@ -51,6 +52,7 @@ namespace Gamera {
   typedef ImageView<Grey16ImageData> Grey16ImageView;
   typedef ImageView<FloatImageData> FloatImageView;
   typedef ImageView<RGBImageData> RGBImageView;
+  typedef ImageView<ComplexImageData> ComplexImageView;
   typedef ImageView<OneBitImageData> OneBitImageView;
   typedef ImageView<OneBitRleImageData> OneBitRleImageView;
 
@@ -71,7 +73,8 @@ namespace Gamera {
     GREYSCALE,
     GREY16,
     RGB,
-    FLOAT
+    FLOAT,
+    COMPLEX
   };
   
   enum StorageTypes {
@@ -90,6 +93,7 @@ namespace Gamera {
     GREY16IMAGEVIEW,
     RGBIMAGEVIEW,
     FLOATIMAGEVIEW,
+    COMPLEXIMAGEVIEW,
     ONEBITRLEIMAGEVIEW,
     CC,
     RLECC
@@ -186,6 +190,45 @@ namespace Gamera {
     }
   };
 
+  template<>
+  struct ImageFactory<ComplexImageView> {
+    // data types
+    typedef ComplexImageView::data_type data_type;
+    typedef ImageData<ComplexImageView::value_type> dense_data_type;
+    typedef ImageData<ComplexImageView::value_type> rle_data_type;
+    // view types
+    typedef ImageView<data_type> view_type;
+    typedef ImageView<dense_data_type> dense_view_type;
+    typedef ImageView<rle_data_type> rle_view_type;
+    // cc types
+    typedef ConnectedComponent<data_type> cc_type;
+    typedef ConnectedComponent<dense_data_type> dense_cc_type;
+    typedef ConnectedComponent<rle_data_type> rle_cc_type;
+    typedef std::list<cc_type*> ccs_type;
+    typedef std::list<dense_cc_type*> dense_ccs_type;
+    typedef std::list<rle_cc_type*> rle_ccs_type;
+    static view_type* new_view(const ComplexImageView& view) {
+      view_type* nview = new view_type(*((data_type*)view.data()),
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return nview;
+    }
+    static view_type* new_view(const ComplexImageView& view, size_t ul_y,
+			       size_t ul_x, size_t nrows, size_t ncols) {
+      view_type* nview = new view_type(*((data_type*)view.data()),
+				       ul_y, ul_x, nrows, ncols);
+      return nview;
+    }
+    static view_type* new_image(const ComplexImageView& view) {
+      data_type* data = new data_type(view.nrows(), view.ncols(),
+				      view.offset_y(), view.offset_x());
+      view_type* nview = new view_type(*data,
+				      view.offset_y(), view.offset_x(),
+				      view.nrows(), view.ncols());
+      return nview;
+    }
+  };
+
   /*
     TypeIdImageFactory
 
@@ -245,6 +288,18 @@ namespace Gamera {
   struct TypeIdImageFactory<RGB, DENSE> {
     typedef RGBImageData data_type;
     typedef RGBImageView image_type;
+    static image_type* create(size_t offset_y, size_t offset_x,
+			      size_t nrows, size_t ncols) {
+      data_type* data = new data_type(nrows, ncols, offset_y, offset_x);
+      return new image_type(*data, offset_y, offset_x, nrows, ncols);
+    }
+  };
+
+
+  template<>
+  struct TypeIdImageFactory<COMPLEX, DENSE> {
+    typedef ComplexImageData data_type;
+    typedef ComplexImageView image_type;
     static image_type* create(size_t offset_y, size_t offset_x,
 			      size_t nrows, size_t ncols) {
       data_type* data = new data_type(nrows, ncols, offset_y, offset_x);

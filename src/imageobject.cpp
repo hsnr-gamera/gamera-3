@@ -175,6 +175,12 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+      } else if (pixel == Gamera::COMPLEX) {
+	o->m_data = create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	ImageData<ComplexPixel>* data =
+	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else {
 	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
 	return 0;
@@ -249,6 +255,11 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 	  ((ImageData<RGBPixel>*)((ImageDataObject*)o->m_data)->m_x);
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
+      } else if (pixel == Gamera::COMPLEX) {
+	ImageData<ComplexPixel>* data =
+	  ((ImageData<ComplexPixel>*)((ImageDataObject*)o->m_data)->m_x);
+	((RectObject*)o)->m_x =
+	  new ImageView<ImageData<ComplexPixel> >(*data, off_y, off_x, nrows, ncols);
       } else {
 	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
 	return 0;
@@ -393,7 +404,11 @@ static PyObject* image_get(PyObject* self, int row, int col) {
     case Gamera::ONEBIT:
       return PyInt_FromLong(((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
       break;
-    default:
+    case Gamera::COMPLEX: {
+      ComplexPixel temp = ((ComplexImageView*)o->m_x)->get((size_t)row, (size_t)col);
+      return PyComplex_FromDoubles(temp.real(), temp.imag());
+      break;
+    } default:
       return 0;
     }
   }
@@ -404,51 +419,58 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
   if (is_CCObject(self)) {
     if (!PyInt_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for CC objects must be an int.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for CC objects must be an int.");
       return 0;
     }
     ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
     if (!PyFloat_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for Float objects must be an float.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for Float objects must be a float.");
       return 0;
     }
     ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, PyFloat_AS_DOUBLE(value));
   } else if (od->m_storage_format == RLE) {
     if (!PyInt_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an int.");
       return 0;
     }
     ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col,
 				       (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == RGB) {
     if (!is_RGBPixelObject((PyObject*)value)) {
-      PyErr_SetString(PyExc_TypeError, "Value is not an RGBPixel!");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an RGBPixel");
       return 0;
     }
     RGBPixelObject* v = (RGBPixelObject*)value;
     ((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *v->m_x);
   } else if (od->m_pixel_type == GREYSCALE) {
     if (!PyInt_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for GreyScale objects must be an int.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for GreyScale objects must be an int.");
       return 0;
     }
     ((GreyScaleImageView*)o->m_x)->set((size_t)row, (size_t)col,
 				       (GreyScalePixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == GREY16) {
     if (!PyInt_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for Grey16 objects must be an int.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for Grey16 objects must be an int.");
       return 0;
     }
     ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col,
 				    (Grey16Pixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == ONEBIT) {
     if (!PyInt_Check(value)) {
-      PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an int.");
       return 0;
     }
     ((OneBitImageView*)o->m_x)->set((size_t)row, (size_t)col,
 				    (OneBitPixel)PyInt_AS_LONG(value));
+  } else if (od->m_pixel_type == Gamera::COMPLEX) {
+    if (!PyComplex_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "Pixel value for Complex objects must be a complex number.");
+      return 0;
+    }
+    ComplexPixel temp(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
+    ((ComplexImageView*)o->m_x)->set((size_t)row, (size_t)col, temp);
   }
   Py_INCREF(Py_None);
   return Py_None;
@@ -517,40 +539,6 @@ static PyObject* image_len(PyObject* self, PyObject* args) {
   Image* image = (Image*)((RectObject*)self)->m_x;
   return Py_BuildValue("i", (long)(image->nrows() * image->ncols()));
 }
-
-/*
-
-Removed 07/28/04 MGD.  Can't figure out why this is useful.
-
-static PyObject* image_sort(PyObject* self, PyObject* args) {
-  Image* image = (Image*)((RectObject*)self)->m_x;
-  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
-  if (is_CCObject(self)) {
-    Cc* im = (Cc*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  } else if (od->m_pixel_type == Gamera::FLOAT) {
-    FloatImageView* im = (FloatImageView*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  } else if (od->m_storage_format == RLE) {
-    OneBitRleImageView* im = (OneBitRleImageView*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  } else if (od->m_pixel_type == RGB) {
-    PyErr_SetString(PyExc_TypeError, "RGB pixels cannot be sorted");
-    return 0;
-  } else if (od->m_pixel_type == GREYSCALE) {
-    GreyScaleImageView* im = (GreyScaleImageView*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  } else if (od->m_pixel_type == GREY16) {
-    Grey16ImageView* im = (Grey16ImageView*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  } else { // ONEBIT
-    OneBitImageView* im = (OneBitImageView*)image;
-    std::sort(im->vec_begin(), im->vec_end());
-  }
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-*/
 
 #define CREATE_GET_FUNC(name) static PyObject* image_get_##name(PyObject* self) {\
   ImageObject* o = (ImageObject*)self; \

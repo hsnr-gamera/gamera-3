@@ -325,7 +325,7 @@ class mirror_horizontal(PluginFunction):
     doc_examples = [(RGB,)]
 
 class mirror_vertical(PluginFunction):
-    """Flips the image across the horizontal (*x*) axis."""
+    """Flips the image across the vertical (*y*) axis."""
     category = "Utility"
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]

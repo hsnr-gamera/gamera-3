@@ -336,24 +336,31 @@ namespace Gamera {
     return oss.str();
   }
 
-  inline size_t next_number(char* &s) {
+  inline long next_number(char* &s) {
     // I would love to use istream::scan for this, but it's a GNU
     // extension.  Plus, this is probably faster anyway,
     // since it's more naive.
 
     // Scan through whitespace (literally, non-numeric)
-    while (*s < '0' || *s > '9') {
-      if (*s == '\0')
-	throw std::invalid_argument("Image is too large for run-length data");
-      ++s;
+    while (true) {
+      if ((*s >= 9 && *s <= 13) || *s == 32)
+	++s;
+      else { 
+	if (*s >= '0' && *s <= '9')
+	  break;
+	if (*s == '\0')
+	  return -1;
+	throw std::invalid_argument("Invalid character in runlength string.");
+      }
     }
 
-    size_t number = 0;
+    long number = 0;
     // Read in number
     for (; *s >= '0' && *s <= '9'; ++s) {
       number *= 10;
       number += *s - '0';
     }
+    
     return number;
   }
 
@@ -366,16 +373,20 @@ namespace Gamera {
     for (typename T::vec_iterator i = image.vec_begin();
 	 i != image.vec_end(); /* deliberately blank */) {
       // white
-      size_t run;
+      long run;
       run = next_number(p);
-      typename T::vec_iterator end = i + run;
+      if (run < 0)
+	throw std::invalid_argument("Image is too large for run-length data");
+      typename T::vec_iterator end = i + (size_t)run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, white(image));
       i = end;
       // black
       run = next_number(p);
-      end = i + run;
+      if (run < 0)
+	throw std::invalid_argument("Image is too large for run-length data");
+      end = i + (size_t)run;
       if (end > image.vec_end())
 	throw std::invalid_argument("Image is too small for run-length data");
       std::fill(i, end, black(image));

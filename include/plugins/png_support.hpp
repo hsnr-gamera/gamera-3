@@ -262,6 +262,31 @@ struct PNG_saver<FloatPixel> {
 };
 
 template<>
+struct PNG_saver<ComplexPixel> {
+  template<class T>
+  void operator()(T& image, png_structp png_ptr) {
+    ComplexPixel temp = find_max(image.parent());
+    FloatPixel max;
+    if (temp.real() > 0)
+      max = 255.0 / temp.real();
+    else 
+      max = 0;
+
+    png_bytep row = new png_byte[image.ncols()];
+    typename T::row_iterator r = image.row_begin();
+    for (; r != image.row_end(); ++r) {
+      png_bytep from = row;
+      typename T::col_iterator c = r.begin();
+      for (; c != r.end(); ++c, ++from) {
+	*from = (png_byte)((*c).real() * max);
+      }
+      png_write_row(png_ptr, row);
+    }
+    delete[] row;
+  }
+};
+
+template<>
 struct PNG_saver<Grey16Pixel> {
   template<class T>
   void operator()(T& image, png_structp png_ptr) {
@@ -309,6 +334,8 @@ void save_PNG(T& image, const char* filename) {
    if (image.depth() == 32)
      bit_depth = 16;
    else if (image.depth() == 64)
+     bit_depth = 8;
+   else if (image.depth() == 128)
      bit_depth = 8;
    else
      bit_depth = image.depth();

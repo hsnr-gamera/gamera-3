@@ -78,14 +78,22 @@ class ExtendedMultiImageDisplay(MultiImageDisplay):
       self.toplevel.get_other_multi(self).SafeClearSelection()
       ids = {}
       if not self.updating:
+         self.updating = True
          images = self.GetSelectedItems()
          for x in images:
-            ids[x.get_main_id()] = None
-         ids = ids.keys()
+            id = x.get_main_id()
+            if not ids.has_key(id):
+               ids[id] = 1
+            else:
+               ids[id] += 1
+         ids = [(val, key) for (key, val) in ids.items()]
          ids.sort()
+         ids.reverse()
+         ids = [x[1] for x in ids]
          self.toplevel.set_number_of_glyphs_selected_status(len(images))
          self.toplevel.set_glyph_ids_status(ids)
          self._OnSelectImplDisplayCcs(images, force)
+         self.updating = False
       if len(ids) == 1:
          self.toplevel.set_label_display(ids[0])
       else:
@@ -409,11 +417,13 @@ class ClassifierImageDisplay(ImageDisplay):
       self.toplevel = toplevel
       ImageDisplay.__init__(self, parent)
       self.SetToolTipString("Click or drag to select connected components.")
+      self.add_callback("rubber", self._OnRubber)
 
-   def _OnRubber(self, shift):
-      self.toplevel.find_glyphs_in_rect(
-         self.rubber_origin_x, self.rubber_origin_y,
-         self.rubber_x2, self.rubber_y2, shift)
+   def __del__(self):
+      self.remove_callback("rubber", self._OnRubber)
+
+   def _OnRubber(self, y1, x1, y2, x2, shift, ctrl):
+      self.toplevel.find_glyphs_in_rect(int(x1), int(y1), int(x2), int(y2), shift or ctrl)
 
 class ClassifierImageWindow(ImageWindow):
    def __init__(self, toplevel, parent = None, id = -1):
@@ -794,7 +804,6 @@ class ClassifierFrame(ImageFrameBase):
    def set_glyph_ids_status(self, ids):
       self._frame.GetStatusBar().SetStatusText(
          ", ".join(ids), self.status_bar_mapping['selected_ids'])
-
 
    ########################################
    # AUTO-MOVE
@@ -1652,10 +1661,12 @@ class SymbolTableEditorPanel(wxPanel):
    # CALLBACKS
 
    def _OnEnter(self, evt):
+      wxBeginBusyCursor()
       find = self.text.GetValue()
       normalized_symbol = self._symbol_table.add(find)
       if normalized_symbol != '':
          self.toplevel.classify_manual(normalized_symbol)
+      wxEndBusyCursor()
 
    def _OnKey(self, evt):
       find = self.text.GetValue()

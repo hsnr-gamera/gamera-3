@@ -19,7 +19,7 @@
 
 
 from gamera.plugin import * 
-import re
+import re, string
 
 
 def build_id_regex(s):
@@ -63,8 +63,7 @@ regex_cache = {}
 dummy_regex = re.compile('')
 type_dummy_regex = type(dummy_regex)
 class match_id_name(PluginFunction):
-    r"""
-    Returns true if the image's ``id_name`` matches the given regular expression.
+    r"""Returns true if the image's ``id_name`` matches the given regular expression.
 
 *regex*
     A special-purpose regular expression as defined below.
@@ -116,6 +115,29 @@ Regular expression    Description
                 return 1
         return 0
     __call__ = staticmethod(__call__)
+
+_valid = string.letters + string.digits + "_"
+def id_name_to_identifier(symbol):
+    while len(symbol) and symbol[0] == '.':
+        symbol = symbol[1:]
+    if symbol == '':
+        return '____'
+    def translate(c):
+        if not c in _valid:
+            return "_"
+        return c
+    symbol = ''.join([translate(x) for x in symbol])
+    symbol = symbol.lower()
+    if symbol[0] in string.digits or keyword.iskeyword(symbol):
+        symbol = '_' + symbol + '_'
+    # Split by '.' delimiters
+    orig_tokens = symbol.strip().split('.')
+    tokens = []
+    for token in orig_tokens:
+        if token.strip() != '':
+            tokens.append(token.strip())
+    symbol = '_'.join(tokens)
+    return symbol
 
 class IdNameMatchingModule(PluginModule):
     category = "Classification"

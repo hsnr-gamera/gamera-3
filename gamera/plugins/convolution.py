@@ -25,7 +25,7 @@ from gamera.plugins import image_utilities
 import _arithmetic
 import _convolution
 
-CONVOLUTION_TYPES = [GREYSCALE, GREY16, FLOAT, RGB]
+CONVOLUTION_TYPES = [GREYSCALE, GREY16, FLOAT, RGB, COMPLEX]
 
 # Note: The convolution exposed here does not allow for the case where the
 # logical center of the kernel is different from the physical center.
@@ -268,7 +268,7 @@ class gaussian_smoothing(PluginFunction):
     args = Args([Float("standard_deviation", default=1.0)])
     return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
-    doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0)]
+    doc_examples = [(GREYSCALE, 1.0), (RGB, 3.0), (COMPLEX, 1.0)]
     def __call__(self, std_dev=1.0):
         return self.convolve_xy(
             _convolution.GaussianKernel(std_dev),
@@ -304,7 +304,7 @@ Returns a tuple of (*x_gradient*, *y_gradient*).
     args = Args([Float("scale", default=0.5)])
     return_type = ImageList("gradients")
     pure_python = True
-    doc_examples = [(GREYSCALE, 1.0), (RGB, 1.0)]
+    doc_examples = [(GREYSCALE, 1.0), (RGB, 1.0), (COMPLEX, 1.0)]
     def __call__(self, scale=1.0):
         smooth = _convolution.GaussianKernel(scale)
         grad = _convolution.GaussianDerivativeKernel(scale, 1)

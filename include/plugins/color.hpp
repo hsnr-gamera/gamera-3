@@ -125,6 +125,8 @@ namespace Gamera {
   };
   extract_plane<RGBImageView, FloatImageView, CIE_Z> cie_z;
 
+  // TODO: Find a cool way to false color Complex images.
+
   RGBImageView* false_color(const FloatImageView& image) {
     RGBImageView* view = _image_conversion::creator<RGBPixel>::image(image);
     FloatPixel max = 0;
@@ -141,20 +143,23 @@ namespace Gamera {
     for (; in != image.vec_end(); ++in, ++out) {
       double h = (in_acc.get(in) / max) * 4.0;
       size_t i = (size_t)h;
-      GreyScalePixel f = (GreyScalePixel)((h - (double)i) * 255.0);
-      GreyScalePixel q = 255 - f;
+      GreyScalePixel f, q;
       // v == 255, p == 0
       switch (i) {
       case 0:
+	f = (GreyScalePixel)((h - (double)i) * 255.0);
 	out_acc.set(RGBPixel(255, f, 0), out);
 	break;
       case 1:
+	q = 255 - (GreyScalePixel)((h - (double)i) * 255.0);
 	out_acc.set(RGBPixel(q, 255, 0), out);
 	break;
       case 2:
+	f = (GreyScalePixel)((h - (double)i) * 255.0);
 	out_acc.set(RGBPixel(0, 255, f), out);
 	break;
       case 3:
+	q = 255 - (GreyScalePixel)((h - (double)i) * 255.0);
 	out_acc.set(RGBPixel(0, q, 255), out);
 	break;
       case 4: // The end (should only represent a single value)
@@ -171,7 +176,7 @@ namespace Gamera {
     RGBImageView::vec_iterator out = view->vec_begin();
     ImageAccessor<GreyScalePixel> in_acc;
     ImageAccessor<RGBPixel> out_acc;
-    
+
     // Build a table mapping greyscale values to false color RGBPixels
     RGBPixel table[256];
     size_t i = 0, j = 0;
@@ -193,7 +198,7 @@ namespace Gamera {
 
     // Create RGB based on table
     for (; in != image.vec_end(); ++in, ++out)
-      out_acc.set(table[in_acc.get(in)], out); 
+      out_acc.set(table[in_acc.get(in)], out);
       
     return view;	
   }

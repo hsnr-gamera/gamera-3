@@ -161,11 +161,14 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
   ImageDataType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageDataType.tp_free = NULL; // _PyObject_Del;
+  ImageDataType.tp_doc = "Manages the underlying data of Image views.";
   PyType_Ready(&ImageDataType);
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",
 		       Py_BuildValue("i", Gamera::FLOAT));
+  PyDict_SetItemString(module_dict, "COMPLEX",
+		       Py_BuildValue("i", Gamera::COMPLEX));
   PyDict_SetItemString(module_dict, "ONEBIT",
 		       Py_BuildValue("i", ONEBIT));
   PyDict_SetItemString(module_dict, "GREYSCALE",

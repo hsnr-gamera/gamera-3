@@ -65,11 +65,13 @@ class WrapperArg:
          return "%s(%s, feature_buffer);" % (function.__name__, ", ".join(output_args))
       else:
          if function.return_type != None:
-            result = function.return_type.symbol + " = "
+            lhs = function.return_type.symbol + " = "
          else:
-            result = ""
-         result += "%s(%s);\n" % (function.__name__, ", ".join(output_args))
-         return result
+            lhs = ""
+         rhs = "%s(%s)" % (function.__name__, ", ".join(output_args))
+         if function.return_type.__class__.__name__ == "Pixel":
+            rhs = "pixel_to_python(%s)" % rhs
+         return "%s%s;\n" % (lhs, rhs)
 
    def call(self, function, args, output_args, limit_choices=None):
       if len(args):
@@ -99,6 +101,17 @@ class Float(WrapperArg):
    def to_python(self):
       return '%(pysymbol)s = PyFloat_FromDouble((double)%(symbol)s);' % self
 
+class Complex(WrapperArg):
+   arg_format = 'D'
+   c_type = 'Py_complex'
+
+   def to_python(self):
+      return '''%(pysymbol)s = PyComplex_FromDoubles(%(symbol)s.real(), %(symbol)s.imag());''' % self
+
+   def from_python(self):
+      return '''Py_complex %(pysymbol)s_temp = PyComplex_AsCComplex(%(pysymbol)s);
+      %(symbol)s = ComplexPixel(%(pysymbol)s_temp.real, %(pysymbol)s_temp.imag);'''
+
 class String(WrapperArg):
    arg_format = 's'
    c_type = 'char*'
@@ -116,7 +129,7 @@ class ImageType(WrapperArg):
 
    def from_python(self):
       return """if (!is_ImageObject(%(pysymbol)s)) {
-          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not an image");
+          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be an image");
           return 0;
         }
         %(symbol)s = ((Image*)((RectObject*)%(pysymbol)s)->m_x);
@@ -144,8 +157,15 @@ class ImageType(WrapperArg):
                result += args[0].call(function, args[1:], new_output_args, limit_choices)
          result += "break;\n"
       result += "default:\n"
-      result += ('PyErr_Format(PyExc_TypeError, "The \'%s\' argument of \'%s\' can not have pixel type \'%%s\'.", get_pixel_type_name(%s));\nreturn 0;\n' %
-                 (self.name, function.__name__, self.pysymbol))
+      acceptable_types = [util.get_pixel_type_name(x).upper() for x in self.pixel_types]
+      if len(acceptable_types) >= 2:
+         acceptable_types[-1] = "and " + acceptable_types[-1]
+      acceptable_types = ", ".join(acceptable_types)
+      result += ('PyErr_Format(PyExc_TypeError,'
+                 '"The \'%s\' argument of \'%s\' can not have pixel type \'%%s\'. '
+                 'Acceptable values are %s."'
+                 ', get_pixel_type_name(%s));\nreturn 0;\n' %
+                 (self.name, function.__name__, acceptable_types, self.pysymbol))
       result += "}\n"
       return result
 
@@ -171,7 +191,7 @@ class Rect(WrapperArg):
    def from_python(self):
       return """
       if (!is_RectObject(%(pysymbol)s)) {
-        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Rect");
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be a Rect");
         return 0;
       }
       %(symbol)s = (((RectObject*)%(pysymbol)s)->m_x);
@@ -187,7 +207,7 @@ class Region(WrapperArg):
    def from_python(self):
       return """
       if (!is_RegionObject(%(pysymbol)s)) {
-        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a Region");
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be a Region");
         return 0;
       }
       %(symbol)s = (Region*)((RectObect*)%(pysymbol)s)->m_x;""" % self
@@ -204,7 +224,7 @@ class RegionMap(WrapperArg):
    def from_python(self):
       return """
       if (!is_RegionMapObject(%(pysymbol)s)) {
-        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' is not a RegionMap.");
+        PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be a RegionMap.");
         return 0;
       }
       %(symbol)s = (RegionMap*)((RegionMapObect*)%(pysymbol)s)->m_x;""" % self
@@ -221,7 +241,7 @@ class ImageList(WrapperArg):
    
    def from_python(self):
       return """
-          const char* type_error_%(name)s = "Argument '%(name)s' is not a list of images.";
+          const char* type_error_%(name)s = "Argument '%(name)s' must be a list of images.";
           if (!PyList_Check(%(pysymbol)s)) {
             PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
             return 0;
@@ -241,12 +261,7 @@ class ImageList(WrapperArg):
 
    def to_python(self):
       return """
-      %(pysymbol)s = PyList_New(%(symbol)s->size());
-      std::list<Image*>::iterator it = %(symbol)s->begin();
-      for (size_t i = 0; i < %(symbol)s->size(); ++i, ++it) {
-        PyObject *item = create_ImageObject(*it);
-        PyList_SetItem(%(pysymbol)s, i, item);
-      }
+      %(pysymbol)s = ImageList_to_python(%(symbol)s);
       delete %(symbol)s;
       """ % self
 
@@ -292,6 +307,23 @@ class FloatVector(WrapperArg):
    def to_python(self):
       return """
       %(pysymbol)s = FloatVector_to_python(%(symbol)s);
+      delete %(symbol)s;
+      """ % self
+
+class ComplexVector(WrapperArg):
+   arg_format = 'O'
+   convert_from_PyObject = True
+   c_type = 'ComplexVector*'
+   delete_cpp = True
+
+   def from_python(self):
+      return """
+      %(symbol)s = ComplexVector_from_python(%(pysymbol)s);
+      """ % self
+
+   def to_python(self):
+      return """
+      %(pysymbol)s = ComplexVector_to_python(%(symbol)s);
       delete %(symbol)s;
       """ % self
 

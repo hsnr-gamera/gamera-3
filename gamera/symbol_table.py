@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import types, string, keyword
+import string, keyword
 from gamera import util
 
 class SymbolTable(util.CallbackObject):
@@ -44,12 +44,7 @@ class SymbolTable(util.CallbackObject):
          symbol = symbol[1:]
       if symbol == '':
          return '', []
-      for i in ' !@#$%^&()*-=+~`|\{}[];:"\',<>?/':
-         symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
-      if symbol[0] in string.digits or keyword.iskeyword(symbol):
-         symbol = '_' + symbol + '_'
-      # Split by '.' delimiters
       orig_tokens = symbol.strip().split('.')
       tokens = []
       for token in orig_tokens:
@@ -105,3 +100,4 @@ class SymbolTable(util.CallbackObject):
 
    def exists(self, symbol):
       return self.symbols.has_key(symbol)
+

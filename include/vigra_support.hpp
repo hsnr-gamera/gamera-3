@@ -236,6 +236,74 @@ namespace Gamera {
 // 		    NumericTraits<V>::fromPromote(value.blue()));
 //     }
   };
+
+  class ComplexRealAccessor
+  {
+  public:
+    
+    /// The accessor's value type.
+    typedef double value_type;
+    
+    /// Read real part at iterator position.
+    template <class Iterator>
+    value_type operator()(Iterator const & i) const {
+      return (*i).real();
+    }
+    
+    /// Read real part at offset from iterator position.
+    template <class Iterator, class Difference>
+    value_type operator()(Iterator const & i, Difference d) const {
+      return (*(i+d)).real();
+    }
+    
+    /// Write real part at iterator position.
+    template <class Iterator>
+    void set(value_type const & v, Iterator const & i) const {
+      (*i) = v;
+    }
+    
+    /// Write real part at offset from iterator position.
+    template <class Iterator, class Difference>
+    void set(value_type const & v, Iterator const & i, Difference d) const {
+      (*(i+d)) = v;
+    }
+  };
+
+  class RGBRealAccessor {
+  public:
+
+        /// The accessor's value type.
+    typedef double value_type;
+
+        /// Read real part at iterator position.
+    template <class Iterator>
+    value_type operator()(Iterator const & i) const {
+      return (*i).luminance();
+    }
+    
+        /// Read real part at offset from iterator position.
+    template <class Iterator, class Difference>
+    value_type operator()(Iterator const & i, Difference d) const {
+      return (*(i+d)).luminance();
+    }
+    
+        /// Write real part at iterator position.
+    template <class Iterator>
+    void set(value_type const & v, Iterator const & i) const {
+      (*i).setRed(v);
+      (*i).setGreen(v);
+      (*i).setBlue(v);
+    }
+
+        /// Write real part at offset from iterator position.
+    template <class Iterator, class Difference>
+    void set(value_type const & v, Iterator const & i, Difference d) const {
+      (*(i+d)).setRed(v);
+      (*(i+d)).setGreen(v);
+      (*(i+d)).setBlue(v);
+    }
+  };
+  
   /*
     The CCAccessor provides filtering of pixels based on an image label. This serves the
     same purpose as the CCProxy in connected_component_iterators.hpp.
@@ -452,6 +520,10 @@ namespace Gamera {
     static raw_accessor make_raw_accessor(const T& mat) {
       return raw_accessor();
     }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const T& mat) {
+      return real_accessor();
+    }
     typedef BilinearInterpolatingAccessor<raw_accessor, typename T::value_type> interp_accessor;
     static interp_accessor make_interp_accessor(const T& mat) {
       return interp_accessor(make_raw_accessor(mat));
@@ -468,8 +540,32 @@ namespace Gamera {
     static raw_accessor make_raw_accessor(const RGBImageView& mat) {
       return raw_accessor();
     }
+    typedef RGBRealAccessor real_accessor;
+    static real_accessor make_real_accessor(const RGBImageView& mat) {
+      return real_accessor();
+    }
     typedef BilinearInterpolatingAccessor<raw_accessor, RGBPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const RGBImageView& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
+  };
+
+  template<>
+  struct choose_accessor<ComplexImageView> {
+    typedef Accessor<ComplexPixel> accessor;
+    static accessor make_accessor(const ComplexImageView& mat) {
+      return accessor();
+    }
+    typedef Accessor<ComplexImageView::value_type> raw_accessor;
+    static raw_accessor make_raw_accessor(const ComplexImageView& mat) {
+      return raw_accessor();
+    }
+    typedef ComplexRealAccessor real_accessor;
+    static real_accessor make_real_accessor(const ComplexImageView& mat) {
+      return real_accessor();
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, ComplexImageView::value_type> interp_accessor;
+    static interp_accessor make_interp_accessor(const ComplexImageView& mat) {
       return interp_accessor(make_raw_accessor(mat));
     }
   };
@@ -483,6 +579,10 @@ namespace Gamera {
     typedef RawOneBitAccessor raw_accessor;
     static raw_accessor make_raw_accessor(const OneBitImageView& mat) {
       return raw_accessor();
+    }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const OneBitImageView& mat) {
+      return real_accessor();
     }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const OneBitImageView& mat) {
@@ -500,6 +600,10 @@ namespace Gamera {
     static raw_accessor make_raw_accessor(const OneBitRleImageView& mat) {
       return raw_accessor();
     }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const OneBitRleImageView& mat) {
+      return real_accessor();
+    }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const OneBitRleImageView& mat) {
       return interp_accessor(make_raw_accessor(mat));
@@ -515,6 +619,10 @@ namespace Gamera {
     typedef RawOneBitAccessor raw_accessor;
     static raw_accessor make_raw_accessor(const StaticImage<OneBitPixel>& mat) {
       return raw_accessor();
+    }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const StaticImage<OneBitPixel>& mat) {
+      return real_accessor();
     }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const StaticImage<OneBitPixel>& mat) {
@@ -532,6 +640,10 @@ namespace Gamera {
     static raw_accessor make_raw_accessor(const Cc& mat) {
       return raw_accessor(mat.label());
     }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const Cc& mat) {
+      return real_accessor(mat.label());
+    }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const Cc& mat) {
       return interp_accessor(make_raw_accessor(mat));
@@ -547,6 +659,10 @@ namespace Gamera {
     typedef RawCCAccessor raw_accessor;
     static raw_accessor make_raw_accessor(const RleCc& mat) {
       return raw_accessor(mat.label());
+    }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const RleCc& mat) {
+      return real_accessor(mat.label());
     }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const RleCc& mat) {
@@ -583,15 +699,14 @@ namespace Gamera {
   dest_image_range(Mat& img) {
     return triple<typename Mat::Iterator, typename Mat::Iterator,
       typename choose_accessor<Mat>::accessor> (img.upperLeft(), img.lowerRight(),
-						choose_accessor<Mat>::make_accessor(img));
+				       choose_accessor<Mat>::make_accessor(img));
   }
 
   template<class Mat>
   inline std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>
   dest_image(Mat& img) {
-    return std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>
-      (img.upperLeft(),
-       choose_accessor<Mat>::make_accessor(img));
+    return std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>(img.upperLeft(),
+	       choose_accessor<Mat>::make_accessor(img));
   }
 }
 
@@ -657,12 +772,40 @@ namespace vigra {
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;
   };
-  
+ 
   template<>
   struct PromoteTraits<double, RGBPixel>
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;
   };
+
+template<>
+struct NumericTraits<ComplexPixel> {
+  typedef ComplexPixel Type;
+  typedef ComplexPixel Promote;
+  typedef ComplexPixel RealPromote;
+  typedef VigraFalseType isIntegral;
+  typedef VigraFalseType isScalar;
+  typedef VigraFalseType isOrdered;
+  
+  static ComplexPixel zero() {
+    return ComplexPixel(0.0, 0.0);
+  }
+  static ComplexPixel one() {
+    return ComplexPixel(1.0, 0.0);
+  }
+  static ComplexPixel nonZero() { return one(); }
+  
+  static ComplexPixel epsilon() { return ComplexPixel(LDBL_EPSILON, LDBL_EPSILON); }  
+  
+  static ComplexPixel max() { return ComplexPixel(DBL_MAX, DBL_MAX); };
+  static ComplexPixel min() { return ComplexPixel(-DBL_MAX, -DBL_MAX); };
+  
+  static const Promote & toPromote(const Type & v) { return v; }
+  static const RealPromote & toRealPromote(const Type & v) { return v; }
+  static const Type & fromPromote(const Promote & v) { return v; }
+  static const Type & fromRealPromote(const RealPromote & v) { return v; }
+};
 }
 #endif
 

@@ -186,7 +186,7 @@ features from them.
      </glyph>
      ...
     </glyphs>
-   </gamera_database> 
+   </gamera-database> 
 
 Output of data that is specific to a particular type of document,
 i.e. post-structural interpretation, is deliberately left open-ended,

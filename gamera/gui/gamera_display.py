@@ -28,7 +28,7 @@ from math import sqrt, ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, weakref
 
-from gamera.core import *             # Gamera specific
+from gamera.core import *          # Gamera specific
 from gamera.config import config
 from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui
@@ -47,8 +47,9 @@ wxInitAllImageHandlers()
 #
 # Image display is a scrolled window for displaying a single image
 
-class ImageDisplay(wxScrolledWindow):
+class ImageDisplay(wxScrolledWindow, util.CallbackObject):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
+      util.CallbackObject.__init__(self)
       wxScrolledWindow.__init__(
          self, parent, id, wxPoint(0, 0), size,
          wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
@@ -71,7 +72,6 @@ class ImageDisplay(wxScrolledWindow):
       self.rubber_origin_y = 0
       self.rubber_x2 = 0
       self.rubber_y2 = 0
-      self.click_callbacks = []
       self.current_color = 0
       self.dragging = 0
       self.scroll_amount = 32
@@ -108,16 +108,10 @@ class ImageDisplay(wxScrolledWindow):
    # Refreshes the image by recalling the to_string function
    def reload_image(self, *args):
       if self.view_function != None and self.original_image != None:
-         self.image = getattr(self.image, self.view_function)()
+         self.image = getattr(self.original_image, self.view_function)()
       if self.image != None:
          self.scale()
          return (self.image.width, self.image.height)
-
-   def add_click_callback(self, cb):
-      self.click_callbacks.append(cb)
-
-   def remove_click_callback(self, cb):
-      self.click_callbacks.remove(cb)
 
    ########################################
    # BOXES
@@ -438,10 +432,6 @@ class ImageDisplay(wxScrolledWindow):
       dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
       dc.SetLogicalFunction(wxCOPY)
 
-   def _OnRubber(self, shift):
-      #deliberately empty -- this is a callback to be overridden by subclasses
-      pass
-
    ########################################
    # UTILITY
    #
@@ -709,8 +699,7 @@ class ImageDisplay(wxScrolledWindow):
                                       self.image.ncols - 1), 0))
          self.rubber_y2 = int(max(min((event.GetY() + origin[1]) / self.scaling,
                                       self.image.nrows - 1), 0))
-         for callback in self.click_callbacks:
-            callback(self.rubber_y2, self.rubber_x2)
+         self.trigger_callback("click", self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
          self.draw_rubber()
          if self.rubber_origin_x > self.rubber_x2:
             self.rubber_origin_x, self.rubber_x2 = \
@@ -719,7 +708,7 @@ class ImageDisplay(wxScrolledWindow):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
          self.rubber_on = 0
-         self._OnRubber(event.ShiftDown() or event.ControlDown())
+         self.trigger_callback("rubber", self.rubber_origin_y, self.rubber_origin_x, self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
 
    def _OnMiddleDown(self, event):
       if not self.image:
@@ -746,15 +735,15 @@ class ImageDisplay(wxScrolledWindow):
          self.reload_image()
 
    def _OnMotion(self, event):
+      scaling = self.scaling
+      image = self.image
+      origin = [x * self.scroll_amount for x in self.GetViewStart()]
+      x2 = int(max(min((event.GetX() + origin[0]) / scaling, image.ncols - 1), 0))
+      y2 = int(max(min((event.GetY() + origin[1]) / scaling, image.nrows - 1), 0))
       if self.rubber_on:
          self.draw_rubber()
-         origin = [x * self.scroll_amount for x in self.GetViewStart()]
-         self.rubber_x2 = int(
-            max(min((event.GetX() + origin[0]) / self.scaling,
-                    self.image.ncols - 1), 0))
-         self.rubber_y2 = int(
-            max(min((event.GetY() + origin[1]) / self.scaling,
-                    self.image.nrows - 1), 0))
+         self.rubber_x2 = x2
+         self.rubber_y2 = y2
          self.draw_rubber()
       if self.dragging:
          self.Scroll(
@@ -762,6 +751,7 @@ class ImageDisplay(wxScrolledWindow):
             self.scroll_amount,
             (self.dragging_origin_y - (event.GetY() - self.dragging_y)) /
             self.scroll_amount)
+      self.trigger_callback("move", y2, x2)
 
    def _OnLeave(self, event):
       if not self.HasCapture() and self.rubber_on:
@@ -772,7 +762,7 @@ class ImageDisplay(wxScrolledWindow):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
          self.rubber_on = 0
-         self._OnRubber(event.ShiftDown() or event.ControlDown())
+         self.trigger_callback("rubber", self.rubber_origin_y, self.rubber_origin_x, self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
       if self.dragging:
          self.dragging = 0
          
@@ -846,6 +836,8 @@ class ImageWindow(wxPanel):
 ##############################################################################
 
 class MultiImageGridRenderer(wxPyGridCellRenderer):
+   label_font = wxFont(6, wxSWISS, wxNORMAL, wxNORMAL)
+
    def __init__(self, parent):
       wxPyGridCellRenderer.__init__(self)
       self.parent = parent
@@ -857,8 +849,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
-      dc.BeginDrawing()
-      dc.SetOptimization(True)
       view_start = grid.GetViewStart()
       view_units = grid.GetScrollPixelsPerUnit()
       view_size = grid.GetClientSize()
@@ -878,6 +868,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          image = image_list[bitmap_no]
       else:
          image = None
+
+      dc.BeginDrawing()
+      dc.SetOptimization(True)
 
       if not image is None:
          classification_state = image.classification_state
@@ -909,12 +902,21 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                sub_width = min(int((rect.width + 1) / scaling), image.ncols)
                sub_image = image.subimage(
                   image.offset_y, image.offset_x, sub_height, sub_width)
-               scaled_image = sub_image.resize(
-                  int(ceil(sub_height * scaling)),
-                  int(ceil(sub_width * scaling)), 0)
+               if scaling < 1.0:
+                  scaled_image = sub_image.to_greyscale().resize(
+                     int(ceil(sub_height * scaling)),
+                     int(ceil(sub_width * scaling)), 1)
+               else:
+                  scaled_image = sub_image.resize(
+                     int(ceil(sub_height * scaling)),
+                     int(ceil(sub_width * scaling)), 0)
             else:
                # This is the easy case - just scale the image.
-               scaled_image = image.resize(height, width, 0)
+               if scaling < 1.0:
+                  scaled_image = image.to_greyscale().resize(
+                     height, width, 1)
+               else:
+                  scaled_image = image.resize(height, width, 0)
          else:
             # If we don't scale the image we can simply crop if the image is too
             # big to fit into the grid cell or otherwise do nothing.
@@ -950,7 +952,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                dc.SetBackgroundMode(wxTRANSPARENT)
                # The default font is too big under windows - this should
                # probably be a configurable option . . .
-               dc.SetFont(wxFont(6, wxSWISS, wxNORMAL, wxNORMAL))
+               dc.SetFont(self.label_font)
                # the the logical function is ignored for Windows, so we have
                # to set the Foreground and Background colors manually
                if isSelected:
@@ -1175,11 +1177,21 @@ class MultiImageDisplay(wxGrid):
       
    def scale(self, scaling):
       if self.scaling != scaling:
+         original_scaling = self.scaling
          self.scaling = scaling
+         view_start = self.GetViewStart()
+         units = self.GetScrollPixelsPerUnit()
+         original_col = self.XToCol(view_start[0] * units[0])
+         if original_col < 0:
+            original_col = self.GetNumberCols() - 1
+         original_row = self.YToRow(view_start[1] * units[1])
+         if original_row < 0:
+            original_row = self.GetNumberRows() - 1
          self.AutoSize()
-         self.MakeCellVisible(
-            self.GetGridCursorRow(), self.GetGridCursorCol())
-
+         rect = self.CellToRect(original_row, original_col)
+         if rect.x != -1 and rect.y != -1:
+            self.Scroll(int(rect.x / units[0]), int(rect.y / units[1]))
+         
    def get_glyphs(self):
       return list(self.glyphs)
 
@@ -1457,8 +1469,6 @@ class MultiImageDisplay(wxGrid):
       pass
 
    def _OnSelect(self, event):
-##       image_no = self.get_image_no(event.GetRow(), event.GetCol())
-##       if image_no != None:
       event.Skip()
       self._OnSelectImpl()
 
@@ -1491,13 +1501,19 @@ class MultiImageDisplay(wxGrid):
 
    def reduce_label_length(self, dc, width, label):
       extent = dc.GetTextExtent(label)
-      while extent[0] > width:
-         if len(label) < 5:
-            label = '...'
-            break
-         label = "..." + label[5:]
-         extent = dc.GetTextExtent(label)
-      return label
+      if extent[0] > width:
+         for i in range(1, len(label)):
+            new_label = "..." + label[-i:]
+            extent = dc.GetTextExtent(new_label)
+            if extent[0] > width:
+               if i == 1:
+                  new_label = "..."
+               else:
+                  new_label = "..." + label[-(i-1):]
+               break
+         return new_label
+      else:
+         return label
 
    if wxPlatform == '__WXMAC__':
       _tooltip_extra = 32
@@ -1752,6 +1768,15 @@ class ImageFrameBase:
          self.owner = None
       EVT_CLOSE(self._frame, self._OnCloseWindow)
 
+   def add_callback(self, *args):
+      self._iw.id.add_callback(*args)
+
+   def remove_callback(self, *args):
+      self._iw.id.remove_callback(*args)
+
+   def trigger_callback(self, *args):
+      self._iw.id.trigger_callback(*args)
+
    def set_image(self, image, view_function=None, weak=1):
       size = self._iw.id.set_image(image, view_function, weak)
       self._frame.SetSize((max(200, min(600, size[0] + 30)),
@@ -1763,12 +1788,6 @@ class ImageFrameBase:
 
    def refresh(self):
       self._iw.id.refresh(0)
-
-   def add_click_callback(self, cb):
-      self._iw.id.add_click_callback(cb)
-
-   def remove_click_callback(self, cb):
-      self._iw.id.remove_click_callback(cb)
 
    def _OnCloseWindow(self, event):
       del self._iw
@@ -1788,6 +1807,10 @@ class ImageFrame(ImageFrameBase):
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconImageBitmap())
       self._frame.SetIcon(icon)
+      self._frame.CreateStatusBar(2)
+      self._status_bar = self._frame.GetStatusBar()
+      self.add_callback("move", self._OnMove)
+      self.add_callback("rubber", self._OnRubber)
 
    def __repr__(self):
       return "<ImageFrame Window>"
@@ -1819,6 +1842,18 @@ class ImageFrame(ImageFrameBase):
    def focus_glyphs(self, glyphs):
       self._iw.id.focus_glyphs(glyphs)
 
+   def _OnMove(self, y, x):
+      self._status_bar.SetStatusText(
+         "(%d, %d): %s" % (x, y, self._iw.id.original_image.get(y, x)), 0)
+
+   def _OnRubber(self, y1, x1, y2, x2, shift, ctrl):
+      if y1 == y2 and x1 == x2:
+         self._status_bar.SetStatusText(
+            "(%d, %d): %s" % (x1, y1, self._iw.id.original_image.get(y2, x2)), 1)
+      else:
+         self._status_bar.SetStatusText(
+            "(%d, %d) to (%d, %d) / (%d w, %d h) %s" %
+            (x1, y1, x2, y2, abs(x1-x2), abs(y1-y2), self._iw.id.original_image.get(y2, x2)), 1)
 
 class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):

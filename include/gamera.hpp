@@ -104,6 +104,14 @@ namespace Gamera {
   typedef std::vector<int> SignedIntVector;
 
   /**
+   * ComplexVector
+   *
+   * The Gamera::ComplexVector type is used to pass arrays
+   * of the complex type.
+   */
+  typedef std::vector<ComplexPixel> ComplexVector;
+
+  /**
    * Region
    *
    * The Gamera::Region type is used to associate a rectangular

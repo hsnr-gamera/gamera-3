@@ -28,6 +28,7 @@ class WrapperArg:
    arg_format = 'O'
    convert_from_PyObject = False
    multiple = False
+   delete_cpp = False
 
    def __getitem__(self, attr):
       return getattr(self, attr)
@@ -71,6 +72,12 @@ class WrapperArg:
          return args[0].call(function, args[1:], output_args + [self.symbol])
       else:
          return self._do_call(function, output_args + [self.symbol])
+
+   def delete(self):
+      if self.delete_cpp:
+         return "delete %(symbol)s;" % self
+      else:
+         return ""
       
 class Int(WrapperArg):
    arg_format = 'i'
@@ -221,39 +228,37 @@ class Class(WrapperArg):
 
 class IntVector(WrapperArg):
    arg_format = 'O'
+   convert_from_PyObject = True
    c_type = 'IntVector*'
-   convert_from_PyObject = True;
+   delete_cpp = True
+
+   def from_python(self):
+      return """
+      %(symbol)s = IntVector_from_python(%(pysymbol)s);
+      """ % self
 
    def to_python(self):
       return """
-      PyObject* array_init = get_ArrayInit();
-      if (array_init == 0)
-        return 0;
-      PyObject* str = PyString_FromStringAndSize(
-        (char*)(&((*%(symbol)s)[0])),
-        %(symbol)s->size() * sizeof(int));
-      %(pysymbol)s = PyObject_CallFunction(
-        array_init, "sO", "i", str);
-      Py_DECREF(str);
-      delete %(symbol)s;""" % self
+      %(pysymbol)s = IntVector_to_python(%(symbol)s);
+      delete %(symbol)s;
+      """ % self
 
 class FloatVector(WrapperArg):
    arg_format = 'O'
+   convert_from_PyObject = True
    c_type = 'FloatVector*'
-   convert_from_PyObject = True;
-   
+   delete_cpp = True
+
+   def from_python(self):
+      return """
+      %(symbol)s = FloatVector_from_python(%(pysymbol)s);
+      """ % self
+
    def to_python(self):
       return """
-      PyObject* array_init = get_ArrayInit();
-      if (array_init == 0)
-        return 0;
-      PyObject* str = PyString_FromStringAndSize(
-        (char*)(&((*%(symbol)s)[0])),
-        %(symbol)s->size() * sizeof(double));
-      %(pysymbol)s = PyObject_CallFunction(
-        array_init, "sO", "d", str);
-      Py_DECREF(str);
-      delete %(symbol)s;""" % self
+      %(pysymbol)s = FloatVector_to_python(%(symbol)s);
+      delete %(symbol)s;
+      """ % self
 
 class ImageInfo(WrapperArg):
    arg_format = "O";

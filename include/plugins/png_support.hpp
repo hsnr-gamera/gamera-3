@@ -141,7 +141,7 @@ void load_PNG_onebit(T& image, png_structp& png_ptr) {
 	c.set(pixel_traits<OneBitPixel>::white());
     }
   }
-  delete row;
+  delete[] row;
 }
 
 Image* load_PNG(const char* filename, int storage) {
@@ -232,7 +232,7 @@ struct PNG_saver<OneBitPixel> {
       }
       png_write_row(png_ptr, row);
     }
-    delete row;
+    delete[] row;
   }
 };
 
@@ -257,7 +257,7 @@ struct PNG_saver<FloatPixel> {
       }
       png_write_row(png_ptr, row);
     }
-    delete row;
+    delete[] row;
   }
 };
 
@@ -274,7 +274,7 @@ struct PNG_saver<Grey16Pixel> {
 	*from = (unsigned short)(*c && 0xffff);
       png_write_row(png_ptr, row);
     }
-    delete row;
+    delete[] row;
   }
 };
 

@@ -899,4 +899,55 @@ inline PyObject* create_ImageInfoObject(ImageInfo* x) {
   o->m_x = x;
   return (PyObject*)o;
 }
+
+#ifndef GAMERACORE_INTERNAL
+inline PyObject* FloatVector_to_python(FloatVector* cpp) {
+  PyObject* array_init = get_ArrayInit();
+  if (array_init == 0)
+    return 0;
+  PyObject* str = PyString_FromStringAndSize((char*)(&((*cpp)[0])),
+        cpp->size() * sizeof(double));
+  PyObject* py = PyObject_CallFunction(array_init, "sO", "d", str);
+  Py_DECREF(str);
+  return py;
+}
+
+inline PyObject* IntVector_to_python(IntVector* cpp) {
+  PyObject* array_init = get_ArrayInit();
+  if (array_init == 0)
+    return 0;
+  PyObject* str = PyString_FromStringAndSize((char*)(&((*cpp)[0])),
+        cpp->size() * sizeof(int));
+  PyObject* py = PyObject_CallFunction(array_init, "sO", "i", str);
+  Py_DECREF(str);
+  return py;
+}
+
+inline FloatVector* FloatVector_from_python(PyObject* py) {
+  int size = PyObject_Size(py);
+  if (size < 0) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument is not a sequence.\n");
+      return 0;
+  }
+  FloatVector* cpp = new FloatVector(size);
+  for (int i = 0; i < size; ++i)
+    (*cpp)[i] = (double)PyFloat_AsDouble(PyObject_GetItem(py, PyInt_FromLong(i)));
+  return cpp;
+}
+
+inline IntVector* IntVector_from_python(PyObject* py) {
+  int size = PyObject_Size(py);
+  if (size < 0) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument is not a sequence.\n");
+      return 0;
+  }
+  IntVector* cpp = new IntVector(size);
+  for (int i = 0; i < size; ++i)
+    (*cpp)[i] = (int)PyInt_AsLong(PyObject_GetItem(py, PyInt_FromLong(i)));
+  return cpp;
+}
+#endif
+
 #endif

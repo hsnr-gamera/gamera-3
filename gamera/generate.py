@@ -201,13 +201,18 @@ template = Template("""
          } else {
            Py_INCREF(Py_None);
            return Py_None;
-         }  
-      [[elif function.return_type == None]]
-        Py_INCREF(Py_None);
-        return Py_None;
+         }
       [[else]]
-        [[function.return_type.to_python()]]
-        return return_pyarg;
+        [[for arg in function.args]]
+          [[arg.delete()]]
+        [[end]]  
+        [[if function.return_type == None]]
+          Py_INCREF(Py_None);
+          return Py_None;
+        [[else]]
+          [[function.return_type.to_python()]]
+          return return_pyarg;
+        [[end]]  
       [[end]]
       }
     [[end]]

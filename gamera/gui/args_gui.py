@@ -512,5 +512,4 @@ class Info:
    get = get_string
 
 from gamera import args
-print locals()["Args"]
 args.mixin(locals(), "GUI")

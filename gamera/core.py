@@ -73,8 +73,11 @@ def load_image(filename, compression = DENSE):
    from gamera.plugins import tiff_support, png_support
    try:
       image = tiff_support.load_tiff(filename, compression)
-   except:
-      image = png_support.load_PNG(filename, compression)
+   except RuntimeError:
+      try:
+         image = png_support.load_PNG(filename, compression)
+      except RuntimeError, AttributeError:
+         raise RuntimeError("%s in not a TIFF or PNG file." % filename)
    image.name = filename
    return image
 

@@ -92,7 +92,7 @@ if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
 
 extra_args = []
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-   extra_args = ["/GR", "/Zi"]
+   extra_args = ["/GR"]#, "/Zi"]
    
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",

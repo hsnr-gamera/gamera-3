@@ -69,6 +69,7 @@ class ImageDisplay(wxScrolledWindow):
       self._boxed_highlight_position = 0
       self._boxed_highlight_timer = wxTimer(self, 100)
       EVT_TIMER(self, 100, self._OnBoxHighlight)
+      self.boxes = []
       self.rubber_on = 0
       self.rubber_origin_x = 0
       self.rubber_origin_y = 0
@@ -121,6 +122,43 @@ class ImageDisplay(wxScrolledWindow):
 
    def remove_click_callback(self, cb):
       self.click_callbacks.remove(cb)
+
+   ########################################
+   # BOXES
+
+   def add_box(self, y, x, h, w):
+      self.boxes.append(Rect(y, x, h, w))
+      self.RefreshAll()
+
+   def clear_all_boxes(self):
+      self.boxes = []
+      self.RefreshAll()
+
+   def draw_box(self, box, dc=None):
+      if dc == None:
+         dc = wxClientDC(self)
+      scaling = self.scaling
+      origin = [x * self.scroll_amount for x in self.GetViewStart()]
+
+      x, y, x2, y2 = tuple([int(a * scaling) for a in (box.ul_x, box.ul_y,
+                                                       box.lr_x + 1, box.lr_y + 1)])
+      x -= origin[0]
+      y -= origin[1]
+      x2 -= origin[0]
+      y2 -= origin[1]
+      w = x2 - x
+      h = y2 - y
+
+      dc.SetLogicalFunction(wxCOPY)
+      pen = wxPen(wxColor(0, 0, 255), 2, wxSOLID)
+      dc.SetPen(pen)
+      dc.SetBrush(wxTRANSPARENT_BRUSH)      
+      dc.DrawRectangle(x, y, w, h)
+
+   def draw_boxes(self, dc=None):
+      for b in self.boxes:
+         self.draw_box(b, dc)
+
 
    ########################################
    # HIGHLIGHTED CCs
@@ -491,6 +529,7 @@ class ImageDisplay(wxScrolledWindow):
                            w, h, check=0, dc=dc)
          rects.Next()
       self.draw_rubber(dc)
+      self.draw_boxes(dc)
       dc.EndDrawing()
 
    def PaintAreaRect(self, rect):
@@ -1742,6 +1781,12 @@ class ImageFrame(ImageFrameBase):
 
    def highlight_rectangle(self, y, x, h, w, c, t):
       self._iw.id.highlight_rectangle(y, x, h, w, c, t)
+
+   def add_box(self, y, x, h, w):
+      self._iw.id.add_box(y, x, h, w)
+
+   def clear_all_boxes(self):
+      self._iw.id.clear_all_boxes()
 
    def highlight_cc(self, cc):
       self._iw.id.highlight_cc(cc)

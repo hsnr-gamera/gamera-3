@@ -135,7 +135,7 @@ static PyMethodDef rect_methods[] = {
   // the calling convention will just have to look a bit funny from Python.
   // (i.e. rect_instance.union vs Rect.union)
   {"union", rect_union, METH_O},
-  {"merge", rect_union, METH_VARARGS},
+  {"merge", rect_merge, METH_VARARGS},
   {NULL, NULL}
 };
 
@@ -188,6 +188,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
       RectObject* so;
       so = (RectObject*)pytype->tp_alloc(pytype, 0);
       so->m_x = new Rect(*((RectObject*)other)->m_x);
+      return (PyObject*)so;
     } else {
       PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
       return 0;
@@ -196,6 +197,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
     RectObject* so;
     so = (RectObject*)pytype->tp_alloc(pytype, 0);
     so->m_x = new Rect();
+    return (PyObject*)so;
   } else {
     PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
     return 0;

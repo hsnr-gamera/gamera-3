@@ -560,7 +560,7 @@ static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* l) {
   if (seq == NULL) 
     return 0;
 
-  size_t num_rects = PySequence_Fast_GET_SIZE(seq);
+  int num_rects = PySequence_Fast_GET_SIZE(seq);
   std::vector<Rect*> vec(num_rects);
   for (int i=0; i < num_rects; ++i) {
     PyObject* py_rect = PySequence_Fast_GET_ITEM(seq, i);

@@ -138,7 +138,13 @@ if sys.platform == 'darwin':
    packages.append("gamera.mac")
 elif sys.platform == 'win32':
    packages.append("win32")
-
+   if '--compiler=icl' in sys.argv:
+       from distutils import ccompiler
+       from win32.iclcompiler import ICLCompiler
+       ccompiler.compiler_class['icl'] = ('win32.iclcompiler',
+                                          'ICLCompiler',
+                                          'Intel Compiler Library for Windows')
+       ccompiler.new_compiler = ICLCompiler.ret_icl
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",
       version=gamera_version,

@@ -74,51 +74,49 @@ class GameraGui:
       return img
    ShowImage = staticmethod(ShowImage)
 
-   def ShowImages(self, list, function):
+   def ShowImages(list, function):
       wxBeginBusyCursor()
       img = gamera_display.MultiImageFrame(title = "Multiple Images")
       img.set_image(list, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
+   ShowImages = staticmethod(ShowImages)
 
-   def ShowHistogram(self, hist, mark=None):
+   def ShowHistogram(hist, mark=None):
       f = gamera_display.HistogramDisplay(hist, mark=mark)
       f.Show(1)
+   ShowHistogram = staticmethod(ShowHistogram)
 
-   def ShowProjections(self, x_data, y_data, image):
+   def ShowProjections(x_data, y_data, image):
       f = gamera_display.ProjectionsDisplay(x_data, y_data, image)
       f.Show(1)
+   ShowProjections = staticmethod(ShowProjections)
 
-   def DisplayHTML(self, file):
-      if self.browser == None:
-         self.browser = webbrowser.get()
+   def DisplayHTML(cls, file):
+      if cls.browser == None:
+         cls.browser = webbrowser.get()
       print "Showing HTML: ", file
-      self.browser.open("file:" + file)
+      cls.browser.open("file:" + file)
+   DisplayHTML = classmethod(DisplayHTML)
 
-   def Message(self, message):
-      message(message)
-
-   def ShowClassifier(self, classifier, image, function):
+   def ShowClassifier(classifier, image, function):
       wxBeginBusyCursor()
       img = classifier_display.ClassifierFrame(classifier)
       img.set_image(classifier.current_database, image, function)
       img.Show(1)
       wxEndBusyCursor()
       return img
+   ShowClassifier = staticmethod(ShowClassifier)
 
-   def ShowSymbolTableEditor(self, symbol_table=None):
-      ed = classifier_display.SymbolTableEditorFrame(symbol_table)
-      ed.Show(1)
-      return ed
-
-   def UpdateIcons(self):
+   def UpdateIcons():
       global main_win
       main_win.icon_display.update_icons()
+   UpdateIcons = staticmethod(UpdateIcons)
 
-   def TopLevel(self):
+   def TopLevel():
       return main_win
-      
+   TopLevel = staticmethod(TopLevel)
 
 ######################################################################
 
@@ -253,12 +251,12 @@ class ShellFrame(wxFrame):
       self.shell.SetFocus()
 
       self.splitter.SetMinimumPaneSize(20)
-      self.splitter.SplitVertically(self.icon_display, self.shell, 80)
+      self.splitter.SplitVertically(self.icon_display, self.shell, 120)
 
       self.hsplitter.SetMinimumPaneSize(20)
       self.hsplitter.SplitHorizontally(self.splitter, self.history, 380)
       self.hsplitter.SetSashPosition(380)
-      self.splitter.SetSashPosition(80)
+      self.splitter.SetSashPosition(120)
 
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)
@@ -389,7 +387,7 @@ class GameraSplash(wxSplashScreen):
       from gamera.gui import gamera_icons
       wxSplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
                               wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
-                              4000, None, -1,
+                              1000, None, -1,
                               style = (wxSIMPLE_BORDER|
                                        wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP))
       EVT_CLOSE(self, self.OnClose)

@@ -189,7 +189,10 @@ class PluginTest(unittest.TestCase):
 
 def PluginFactory(name, func, category=None,
                   return_type=None,
-                  self_type=ImageType(("RGB", "GreyScale", "Grey16", "OneBit")),
+                  self_type=ImageType((gamera.core.RGB,
+                                       gamera.core.GREYSCALE,
+                                       gamera.core.GREY16,
+                                       gamera.core.ONEBIT)),
                   args=None):
     cls = new.classobj(name, (PluginFunction,), {})
     if not category is None:

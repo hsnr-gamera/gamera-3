@@ -87,7 +87,8 @@ class ImageBase:
    
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
-                        'ul_x', 'ul_y', 'nrows', 'ncols')
+                        'ul_x', 'ul_y', 'nrows', 'ncols',
+                        'size')
    def members_for_menu(self):
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
 
@@ -126,6 +127,14 @@ class ImageBase:
          list.append(val)
      return list
 
+   def size_mbytes(self):
+      return self.data.mbytes
+   size_mbytes = property(size_mbytes)
+
+   def size(self):
+      return util.pretty_print_bytes(self.data.bytes)
+   size = property(size)
+
    def load_image(filename=None):
       return load_image(filename)
    load_image = staticmethod(load_image)
@@ -135,9 +144,6 @@ class ImageBase:
 
    def set_resolution(self, v):
       self.m.resolution(v)
-
-   def size_mbytes(self):
-      return self.m_data.mbytes()
 
    # Displays the image in its own window
    def display(self):

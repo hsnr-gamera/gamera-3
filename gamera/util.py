@@ -91,6 +91,15 @@ class Set(UserList.UserList):
     def extend(self, other):
       for item in other:
         self.append(item)
+
+_byte_steps = (('Gb', 1024 * 1024 * 1024, 1024 * 1024 * 1024 * 1.1),
+               ('Mb', 1024 * 1024, 1024 * 1024 * 1.1),
+               ('kb', 1024, 1024 * 1.1),
+               ('b', 0, 1))
+def pretty_print_bytes(bytes):
+  for step in _byte_steps:
+    if bytes > step[2]:
+      return "%.2f %s" % (bytes / step[1], step[0])
         
 # This is a back port of Python 2.3's enumerate function.
 # This will make our loops look a lot cleaner

@@ -62,7 +62,7 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
 
 class IconDisplay(wxListCtrl):
   def __init__(self, parent):
-    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), wxLC_ICON|wxLC_ALIGN_TOP)
+    wxListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), wxLC_LIST|wxLC_SINGLE_SEL)
     self.data = {}
     self.locals = {}
     self.currentIcon = None
@@ -80,7 +80,7 @@ class IconDisplay(wxListCtrl):
     self.classes = []
     for klass in builtin_icon_types:
       self.add_class(klass)
-    self.SetImageList(self.il, wxIMAGE_LIST_NORMAL)
+    self.SetImageList(self.il, wxIMAGE_LIST_SMALL)
     
   def add_class(self, icon_description):
     add_it = 1
@@ -99,21 +99,17 @@ class IconDisplay(wxListCtrl):
     EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
     EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
 
-    EVT_RIGHT_DOWN(self, self.OnRightDown)
     # for wxMSW
     EVT_COMMAND_RIGHT_CLICK(self, tID, self.OnRightClick)
     # for wxGTK
     EVT_RIGHT_UP(self, self.OnRightClick)
-    EVT_LEFT_DOWN(self, self.OnLeftDown)
-    EVT_LEFT_UP(self, self.OnLeftUp)
+    EVT_RIGHT_DOWN(self, self.OnRightDown)
 
   def add_icon(self, label, data, icon):
     index = self.GetItemCount()
     data.index = index
     self.data[label] = data
-    item = self.InsertImageStringItem(index, label, icon)
-    self.GetItem(index).SetAlign(wxLIST_FORMAT_CENTRE)
-    self.GetItem(index).SetBackgroundColour(wxBLUE)
+    self.InsertImageStringItem(index, label, icon)
     
   def refresh_icon(self, key, data, icon):
     if data.type != self.data[key].type:
@@ -175,8 +171,12 @@ class IconDisplay(wxListCtrl):
     event.Skip()
 
   def OnRightClick(self, event):
-    self.currentIcon = self.find_icon(self.HitTest(
-      wxPoint(event.GetX(), event.GetY()))[0])
+    index = self.HitTest(
+      wxPoint(event.GetX(), event.GetY()))[0]
+    for i in range(self.GetItemCount()):
+      self.SetItemState(i, 0, wxLIST_STATE_SELECTED)
+    self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
+    self.currentIcon = self.find_icon(index)
     if self.currentIcon:
       if isinstance(self.currentIcon.data, Image):
         if event.ShiftDown():
@@ -197,39 +197,6 @@ class IconDisplay(wxListCtrl):
       else:
         source = "display_multi(" + self.currentIconName + ")"
       self.shell.run(source)
-
-  def OnLeftDown(self, event):
-    self.SetCursor(wxStockCursor(wxCURSOR_BULLSEYE))
-    self.drag = self.find_icon(self.HitTest(
-      wxPoint(event.GetX(), event.GetY()))[0])
-    event.Skip()
-
-  def OnLeftUp(self, event):
-    self.SetCursor(wxSTANDARD_CURSOR)
-    target = self.find_icon(self.HitTest(
-      wxPoint(event.GetX(), event.GetY()))[0])
-    if target == None or self.drag == None:
-      return
-    if target == self.drag:
-      event.Skip()
-    source = self.drag.data
-    target = target.data
-    if (isinstance(target, Image)
-        and not isinstance(target, SubImage)
-        and not isinstance(target, Cc)):
-      if (isinstance(source, Cc) or
-          isinstance(source, SubImage) or
-          (util.is_sequence(source) and
-           len(source) > 0 and
-          (isinstance(source[0], Cc) or
-           isinstance(source[0], SubImage)))):
-        target.display_cc(source)
-        self.update_icons()
-    elif (util.is_sequence(target) and
-          util.is_sequence(source)):
-      target = target + source
-      self.update_icons()
-
 
 # Standard icons for core Gamera
  

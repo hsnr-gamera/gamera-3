@@ -1007,8 +1007,10 @@ class MultiImageDisplay(wxGrid):
          orig_rows = self.rows
          rows = int(max(ceil(float(len(self.list)) / float(GRID_NCOLS)), 1))
          cols = GRID_NCOLS
-         self.DeleteRows(0, self.rows)
-         self.AppendRows(rows)
+         if rows < orig_rows:
+            self.DeleteRows(0, orig_rows - rows)
+         elif rows > orig_rows:
+            self.AppendRows(rows - orig_rows)
          self.rows = rows
          self.cols = cols
          row_size = 1
@@ -1048,7 +1050,7 @@ class MultiImageDisplay(wxGrid):
          self.append_glyphs(add)
       if len(remove):
          self.remove_glyphs(remove)
-      self.ForceRefresh()
+      #self.ForceRefresh()
       
    def scale(self, scaling):
       if self.scaling != scaling:

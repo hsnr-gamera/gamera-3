@@ -18,6 +18,7 @@
 #
 
 from sys import platform
+import os.path
 from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
@@ -77,7 +78,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
       # Find the next glyph of the right type
       found = -1
-      list = self.GetAllItems()
+      list = self.list
       for i in range(image_no + 1, len(list)):
          image = list[i]
          if (image != None and
@@ -91,7 +92,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          self.SetGridCursor(row, col)
          self.SelectBlock(row, col, row, col, 0)
          self.MakeCellVisible(min(row + 1, self.rows), col)
-         if image.classification_state == UNCLASSIFIED:
+         if image.classification_state != MANUAL:
             id = self.toplevel.guess_glyph(image)
          else:
             id = image.id_name
@@ -136,6 +137,8 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             new_matches = ([x for x in matches if x not in selected] +
                            [x for x in selected if x not in matches])
             matches = new_matches
+         if not len(matches):
+            return
          first = 0
          self.updating = 1
          last_index = matches[-1]
@@ -405,7 +408,6 @@ class ClassifierFrame(ImageFrameBase):
       # Add 'splits' to symbol table
       for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
          self._symbol_table.add("split." + split[0])
-      self._symbol_table.add("group.skip")
       self._symbol_table.add("group.part")
       # Add classifier database's symbols to the symbol table
       for glyph in self._classifier.get_glyphs():
@@ -415,6 +417,8 @@ class ClassifierFrame(ImageFrameBase):
       self.is_dirty = 0
       self.production_database_filename = None
       self.current_database_filename = None
+      self.state_directory = None
+      self._save_state_dialog = [1] * 10
       self.auto_move = []
       self.image = None
       self.menu = None
@@ -457,14 +461,19 @@ class ClassifierFrame(ImageFrameBase):
       self.create_menus()
 
    def create_menus(self):
+      file_menu = gui_util.build_menu(
+         self._frame,
+         (("&Open all...", self._OnOpenAll),
+          ("&Save all...", self._OnSaveAll)))
       image_menu = gui_util.build_menu(
          self._frame,
          (("&Open and segment image...", self._OnOpenAndSegmentImage),
           ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
           (None, None),
-          ("Save &production database as separate images...", self._OnSaveProductionDatabaseAsImages),
-          ("Save &current database as separate images...", self._OnSaveCurrentDatabaseAsImages),
-          ("Save se&lected glyphs as separate images...", self._OnSaveSelectedAsImages)
+          ("&Save glyphs separately",
+           (("&Production database...", self._OnSaveProductionDatabaseAsImages),
+            ("&Current database...", self._OnSaveCurrentDatabaseAsImages),
+            ("&Selected glyphs...", self._OnSaveSelectedAsImages)))
           ))
       xml_menu = gui_util.build_menu(
          self._frame,
@@ -516,6 +525,7 @@ class ClassifierFrame(ImageFrameBase):
           ("Open rule module", self._OnOpenRuleModule)))
          
       menubar = wxMenuBar()
+      menubar.Append(file_menu, "&File")
       menubar.Append(image_menu, "&Image")
       menubar.Append(xml_menu, "&XML")
       menubar.Append(classifier_menu, "&Classifier")
@@ -558,8 +568,8 @@ class ClassifierFrame(ImageFrameBase):
       for glyph in self.multi_iw.id.GetAllItems():
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
-      for id, group in self._classifier.grouping_classifier.get_groups():
-         self._symbol_table.add(id)
+      for group in self._classifier.grouping_classifier.get_groups():
+         self._symbol_table.add('group.' + group.id)
 
    def add_to_database(self, glyphs):
       self._classifier.add_to_database(glyphs)
@@ -606,8 +616,7 @@ class ClassifierFrame(ImageFrameBase):
             finally:
                self.multi_iw.id.EndBatch()
                wxEndBusyCursor()
-         else:
-            self.multi_iw.id.RefreshSelected()
+         self.multi_iw.id.RefreshSelected()
          if not self.do_auto_move():
             self.set_label_display([(0.0, id)])
 
@@ -642,6 +651,70 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # FILE MENU
 
+   def _OnOpenAll(self, event):
+      dialog = Args(
+         [Check('', 'Classifier settings', self._save_state_dialog[0]),
+          Check('', 'Current database', self._save_state_dialog[1]),
+          Check('', 'Production database', self._save_state_dialog[2]),
+          Check('', 'Symbol table', self._save_state_dialog[3]),
+          Check('', 'Source image', self._save_state_dialog[4]),
+          Directory('Save directory')], name="Save classifier window")
+      results = dialog.show(self._frame)
+      if results == None:
+         return
+      self._save_state_dialog = results
+      settings, current, production, symbols, source, directory = results
+      if directory == None:
+         gui_util.message("You must provide a directory to load.")
+         return
+      if settings:
+         self._OpenClassifierSettings(os.path.join(directory, "classifier_settings.xml"))
+      if current:
+         self._OpenCurrentDatabase(os.path.join(directory, "current_database.xml"))
+      if production:
+         self._OpenProductionDatabase(os.path.join(directory, "production_database.xml"))
+      if symbols:
+         self._ImportSymbolTable(os.path.join(directory, "symbol_table.xml"))
+      if source:
+         try:
+            self.set_single_image(load_image(os.path.join(directory, "source_image.tiff")))
+         except Exception, e:
+            gui_util.message("Loading image: " + str(e))
+
+   def _OnSaveAll(self, event):
+      dialog = Args(
+         [Check('', 'Classifier settings', self._save_state_dialog[0]),
+          Check('', 'Current database', self._save_state_dialog[1]),
+          Check('', 'Production database', self._save_state_dialog[2]),
+          Check('', 'Symbol table', self._save_state_dialog[3]),
+          Check('', 'Source image', self._save_state_dialog[4], enabled=self.splitterhr.IsSplit()),
+          Directory('Save directory')], name="Save classifier window")
+      results = dialog.show(self._frame)
+      if results == None:
+         return
+      self._save_state_dialog = results
+      settings, current, production, symbols, source, directory = results
+      if directory == None:
+         gui_util.message("You must provide a directory to load.")
+         return
+      if settings:
+         self._SaveClassifierSettings(os.path.join(directory, "classifier_settings.xml"))
+      if current:
+         self._SaveCurrentDatabase(os.path.join(directory, "current_database.xml"))
+      if production:
+         self._SaveProductionDatabase(os.path.join(directory, "production_database.xml"))
+      if symbols:
+         self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
+      if source and self.splitterhr.IsSplit():
+         try:
+            self.single_iw.id.image.save_image(os.path.join(directory, "source_image.tiff"))
+         except Exception, e:
+            gui_util.message("Saving image: " + str(e))
+
+
+   ########################################
+   # IMAGE MENU
+
    def _OnOpenAndSegmentImage(self, event):
       segmenters = [x[0] for x in
                     ImageBase.methods_flat_category("Segmentation", ONEBIT)]
@@ -651,8 +724,8 @@ class ClassifierFrame(ImageFrameBase):
          [FileOpen("Image file", "", "*.*"),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
          name="Open and segment image...")
-      filename = "r'None'"
-      while filename == "r'None'":
+      filename = None
+      while filename is None:
          results = dialog.show(self._frame)
          if results is None:
             return
@@ -665,8 +738,11 @@ class ClassifierFrame(ImageFrameBase):
       try:
          image = load_image(filename)
          self._segment_image(image, segmenters[segmenter])
-      finally:
+      except Exception, e:
+         gui_util.message(str(e))
          wxEndBusyCursor()
+         return
+      wxEndBusyCursor()
 
    def _OnSelectAndSegmentImage(self, event):
       segmenters = [x[0] for x in
@@ -681,7 +757,14 @@ class ClassifierFrame(ImageFrameBase):
       if results is None:
          return
       image, segmenter = results
-      self._segment_image(image, segmenters[segmenter])
+      wxBeginBusyCursor()
+      try:
+         self._segment_image(image, segmenters[segmenter])
+      except Exception, e:
+         gui_util.message(str(e))
+         wxEndBusyCursor()
+         return
+      wxEndBusyCursor()
       
    def _segment_image(self, image, segmenter):
       image_ref = image
@@ -817,18 +900,24 @@ class ClassifierFrame(ImageFrameBase):
    def _OnClassifierSettingsOpen(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
-         try:
-            self._classifier.load_settings(filename)
-         except Exception, e:
-            gui_util.message(str(e))
+         self._OpenClassifierSettings(filename)
+         
+   def _OpenClassifierSettings(self, filename):
+      try:
+         self._classifier.load_settings(filename)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Openging classifier settings: " + str(e))
 
    def _OnClassifierSettingsSave(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
-         try:
-            self._classifier.save_settings(filename)
-         except Exception, e:
-            gui_util.message(str(e))
+         self._SaveClassifierSettings(filename)
+
+   def _SaveClassifierSettings(self, filename):
+      try:
+         self._classifier.save_settings(filename)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Saving classifier settings: " + str(e))
 
    def _OnCreateNoninteractiveCopy(self, event):
       name = var_name.get("classifier", image_menu.shell.locals)
@@ -891,18 +980,21 @@ class ClassifierFrame(ImageFrameBase):
          symbol_table=self._symbol_table).write_filename(
          filename)
       except gamera_xml.XMLError, e:
-         gui_util.message(str(e))
+         gui_util.message("Saving by criteria: " + str(e))
          
    def _OnOpenProductionDatabase(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self.production_database_filename = filename
-         try:
-            self._classifier.from_xml_filename(filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
-            return
-         self.update_symbol_table()
+         self._OpenProductionDatabase(filename)
+
+   def _OpenProductionDatabase(self, filename):
+      try:
+         self._classifier.from_xml_filename(filename)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Opening production database: " + str(e))
+         return
+      self.update_symbol_table()
 
    def _OnMergeProductionDatabase(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
@@ -910,7 +1002,7 @@ class ClassifierFrame(ImageFrameBase):
          try:
             self._classifier.merge_from_xml_filename(filename)
          except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
+            gui_util.message("Merging production database: " + str(e))
             return
          self.update_symbol_table()
 
@@ -918,16 +1010,19 @@ class ClassifierFrame(ImageFrameBase):
       if self.production_database_filename == None:
          self._OnSaveProductionDatabaseAs(event)
       else:
-         try:
-            self._classifier.to_xml_filename(self.production_database_filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
+         self._SaveProductionDatabase(self.production_database_filename)
 
    def _OnSaveProductionDatabaseAs(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self.production_database_filename = filename
          self._OnSaveProductionDatabase(event)
+
+   def _SaveProductionDatabase(self, filename):
+      try:
+         self._classifier.to_xml_filename(filename)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Saving production database: " + str(e))
 
    def _OnClearProductionDatabase(self, event):
       if self._classifier.is_dirty:
@@ -940,12 +1035,16 @@ class ClassifierFrame(ImageFrameBase):
    def _OnOpenCurrentDatabase(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
-         try:
-            glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
-         except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
-            return
-         self.set_multi_image(glyphs)
+         self.current_database_filename = filename
+         self._OpenCurrentDatabase(filename)
+
+   def _OpenCurrentDatabase(self, filename):
+      try:
+         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
+      except gamera_xml.XMLError, e:
+         gui_util.message("Opening current database: " + str(e))
+         return
+      self.set_multi_image(glyphs)
 
    def _OnMergeCurrentDatabase(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
@@ -953,7 +1052,7 @@ class ClassifierFrame(ImageFrameBase):
          try:
             glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
          except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
+            gui_util.message("Merging current database" + str(e))
             return
          self.multi_iw.id.append_glyphs(glyphs)
 
@@ -961,21 +1060,7 @@ class ClassifierFrame(ImageFrameBase):
       if self.current_database_filename == None:
          self._OnSaveCurrentDatabaseAs(event)
       else:
-         glyphs = self.multi_iw.id.GetAllItems()
-         progress = util.ProgressFactory("Generating features...", len(glyphs))
-         try:
-            for glyph in glyphs:
-               glyph.generate_features(self._classifier.get_feature_functions())
-               progress.step()
-         finally:
-            progress.kill()
-         try:
-            gamera_xml.WriteXMLFile(
-               glyphs=glyphs,
-               symbol_table=self._symbol_table).write_filename(
-               self.current_database_filename)
-         except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
+         self._SaveCurrentDatabase(self.current_database_filename)
 
    def _OnSaveCurrentDatabaseAs(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
@@ -983,52 +1068,64 @@ class ClassifierFrame(ImageFrameBase):
          self.current_database_filename = filename
          self._OnSaveCurrentDatabase(event)
 
+   def _SaveCurrentDatabase(self, filename):
+      glyphs = self.multi_iw.id.GetAllItems()
+      self._classifier.generate_features(glyphs)
+      try:
+         gamera_xml.WriteXMLFile(
+            glyphs=glyphs,
+            symbol_table=self._symbol_table).write_filename(
+            filename)
+      except gamera_xml.XMLError, e:
+         gui_util.message("Saving current database: " + str(e))
+
    def _OnSaveSelectedGlyphsAs(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          glyphs = self.multi_iw.id.GetSelectedItems()
-         progress = util.ProgressFactory("Generating features...", len(glyphs))
-         try:
-            for glyph in glyphs:
-               glyph.generate_features(self._classifier.get_feature_functions())
-               progress.step()
-         finally:
-            progress.kill()
+         self._classifier.generate_features(glyphs)
          try:
             gamera_xml.WriteXMLFile(
                glyphs=glyphs,
                symbol_table=self._symbol_table).write_filename(
                filename)
          except gamera_xml.XMLError, e:
-            gui_util.message(str(e))
+            gui_util.message("Saving selected glyphs: " + str(e))
          
    def _OnImportSymbolTable(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
+         self._ImportSymbolTable(filename)
+
+   def _ImportSymbolTable(self, filename):
+      wxBeginBusyCursor()
+      try:
          try:
-            try:
-               symbol_table = gamera_xml.LoadXML(
-                  parts=['symbol_table']).parse_filename(filename).symbol_table
-            except gamera_xml.XMLError, e:
-               gui_util.message(str(e))
-            for symbol in symbol_table.symbols.keys():
-               self._symbol_table.add(symbol)
-         finally:
-            wxEndBusyCursor()
+            symbol_table = gamera_xml.LoadXML(
+               parts=['symbol_table']).parse_filename(filename).symbol_table
+         except gamera_xml.XMLError, e:
+            gui_util.message("Importing symbol table: " + str(e))
+            return 
+         for symbol in symbol_table.symbols.keys():
+            self._symbol_table.add(symbol)
+      finally:
+         wxEndBusyCursor()
 
    def _OnExportSymbolTable(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
-         wxBeginBusyCursor()
+         self._ExportSymbolTable(filename)
+
+   def _ExportSymbolTable(self, filename):
+      wxBeginBusyCursor()
+      try:
          try:
-            try:
-               gamera_xml.WriteXMLFile(
-                  symbol_table=self._symbol_table).write_filename(filename)
-            except gamera_xml.XMLError, e:
-               gui_util.message(str(e))
-         finally:
-            wxEndBusyCursor()
+            gamera_xml.WriteXMLFile(
+               symbol_table=self._symbol_table).write_filename(filename)
+         except gamera_xml.XMLError, e:
+            gui_util.message("Exporting symbol table: " + str(e))
+      finally:
+         wxEndBusyCursor()
 
    ########################################
    # RULES MENU

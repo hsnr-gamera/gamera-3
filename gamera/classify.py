@@ -131,11 +131,13 @@ class _Classifier:
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
    def to_xml(self, stream):
+      self.is_dirty = 0
       return gamera_xml.WriteXML(
          glyphs=self.get_glyphs(),
          groups=self.get_groups()).write_stream(stream)
 
    def to_xml_filename(self, filename):
+      self.is_dirty = 0
       return gamera_xml.WriteXMLFile(
          glyphs=self.get_glyphs(),
          groups=self.get_groups()).write_filename(filename)
@@ -176,8 +178,8 @@ class _Classifier:
    def supports_settings_dialog(self):
       return self.classifier.supports_settings_dialog()
 
-   def settings_dialog(self):
-      self.classifier.settings_dialog()
+   def settings_dialog(self, parent):
+      self.classifier.settings_dialog(parent)
       
    ##############################################
    # Features
@@ -337,6 +339,7 @@ class InteractiveClassifier(_Classifier):
 
    def guess_glyph_automatic(self, glyph):
       if len(self._database):
+         glyph.generate_features(self.get_feature_functions())
          return self.classifier.classify_with_images(
             self._database, glyph)
       else:
@@ -360,7 +363,7 @@ class InteractiveClassifier(_Classifier):
          removed.append(child)
          if self._database.has_key(child):
             del self._database[child]
-      glyph.classify_manual([(0.0, id)])
+      glyph.classify_manual([(1.0, id)])
       glyph.generate_features(self.get_feature_functions())
       self._database[glyph] = None
       return self._do_splits(glyph), removed
@@ -388,7 +391,7 @@ class InteractiveClassifier(_Classifier):
             if not self._database.has_key(glyph):
                glyph.generate_features(feature_functions)
                self._database[glyph] = None
-            glyph.classify_manual([(0.0, id)])
+            glyph.classify_manual([(1.0, id)])
             added.extend(self._do_splits(glyph))
 
       return added, removed.keys()

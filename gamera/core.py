@@ -278,7 +278,7 @@ class ImageBase:
 
    def classify_manual(self, id_name):
       if type(id_name) == StringType:
-         id_name = [(0.0, id_name)]
+         id_name = [(1.0, id_name)]
       elif type(id_name) == ListType:
          id_name.sort()
       else:
@@ -298,7 +298,7 @@ class ImageBase:
 
    def classify_heuristic(self, id_name):
       if type(id_name) == StringType:
-         id_name = [(0.0, id_name)]
+         id_name = [(0.5, id_name)]
       elif type(id_name) == ListType:
          id_name.sort()
       else:
@@ -463,6 +463,22 @@ def init_gamera():
                               None,
                               plugin.ImageType([ONEBIT]),
                               plugin.ImageType([ONEBIT], "cc")),
+         plugin.PluginFactory("classify_manual", None, "Classification",
+                              None,
+                              plugin.ImageType([ONEBIT]),
+                              plugin.String("id")),
+         plugin.PluginFactory("classify_heuristic", None, "Classification",
+                              None,
+                              plugin.ImageType([ONEBIT]),
+                              plugin.String("id")),
+         plugin.PluginFactory("classify_automatic", None, "Classification",
+                              None,
+                              plugin.ImageType([ONEBIT]),
+                              plugin.String("id")),
+         plugin.PluginFactory("unclassify", None, "Classification",
+                              None,
+                              plugin.ImageType([ONEBIT]),
+                              None),
          plugin.PluginFactory("to_xml", None, "XML",
                               plugin.String('xml'),
                               plugin.ImageType([ONEBIT]),

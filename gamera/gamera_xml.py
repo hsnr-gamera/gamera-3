@@ -233,13 +233,19 @@ class LoadXML:
             (tagname, key, dictionary[key]))
       
    def parse_filename(self, filename):
-      self._stream_length = os.stat(filename).st_size
+      try:
+         self._stream_length = os.stat(filename).st_size
+      except OSError, e:
+         raise XMLError(str(e))
       try:
          fd = gzip.open(filename, 'r')
          return self.parse_stream(fd)
       except IOError:
-         fd = open(filename, 'r')
-         return self.parse_stream(fd)
+         try:
+            fd = open(filename, 'r')
+            return self.parse_stream(fd)
+         except Exception, e:
+            raise XMLError(str(e))
 
    def parse_string(self, s):
       self._stream_length = len(s)

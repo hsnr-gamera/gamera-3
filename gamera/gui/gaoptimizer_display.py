@@ -131,7 +131,7 @@ class OptimizerFrame(wxFrame):
 
     def open_cb(self, evt):
         import sys
-        dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxOPEN)
+        dlg = gui_util.open_file_dialog(self, "*.*", wxOPEN)
         if dlg.ShowModal() == wxID_OK:
             self.filename = dlg.GetPath()
             dlg.Destroy()

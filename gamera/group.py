@@ -109,12 +109,8 @@ class GridIndexWithKeys(GridIndex):
         row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
         col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         cell_index = row * self.cell_ncols + col
-        if not self.grid[cell_index].has_key(key):
-            self.grid[cell_index][key] = []
-        self.grid[cell_index][key].append(glyph)
-        if not self.flat.has_key(key):
-            self.flat[key] = []
-        self.flat[key].append(glyph)
+        self.grid[cell_index].setdefault(key, []).append(glyph)
+        self.flat.setdefault(key, []).append(glyph)
 
     def get_cell_by_key(self, row, col, key):
         if row < 0 or row >= self.cell_nrows:
@@ -197,14 +193,14 @@ class GroupingClassifier:
         """Clears the currently stored groups and replaces them with the given
         list of groups."""
         self.clear_groups()
-        for id, group in groups:
-            self.classify_group_manual(group, id)
+        for group in groups:
+            self.classify_group_manual(group.glyphs, group.id)
 
     def merge_groups(self, groups):
         """Adds the given list of groups to the currently stored set of groups."""
         self.classify_groups_manual(groups)
-        for id, group in groups:
-            self.classify_group_manual(group, id)
+        for group in groups:
+            self.classify_group_manual(group.glyphs, group.id)
 
     def clear_groups(self):
         """Clears all currently stored groups."""

@@ -24,9 +24,9 @@ try:
    _has_gui = _WX_GUI
 except:
    _has_gui = _NO_GUI
-import sys, string   # Python standard library
+import sys, string, os.path   # Python standard library
 from types import *
-import util, paths          # Gamera specific
+import util, paths            # Gamera specific
 
 
 ######################################################################
@@ -35,27 +35,59 @@ import util, paths          # Gamera specific
 
 if _has_gui == _WX_GUI:
    class _guiArgs:
-      def _create_controls(self, locals):
-         # Controls
-         self.gs = wxPython.wx.wxFlexGridSizer(len(self.list), 2, 8, 8)
+      def _create_controls(self, locals, parent):
          self.controls = []
-         for item in self.list:
-            self.gs.Add(wxPython.wx.wxStaticText(self.window, -1, item.name),
-                        0,
-                        (wxPython.wx.wxEXPAND|
-                         wxPython.wx.wxALIGN_CENTER_VERTICAL|
-                         wxPython.wx.wxALIGN_LEFT))
-            control = item.get_control(self.window, locals)
+         # Controls
+         if util.is_sequence(self.list[0]):
+            notebook = wxPython.wx.wxNotebook(parent, -1)
+            for page in self.list:
+               panel = wxPython.wx.wxPanel(notebook, -1)
+               gs = self._create_page(locals, panel, page[1:])
+               panel.SetSizer(gs)
+               gs.RecalcSizes()
+               notebook.AddPage(panel, page[0])
+            return notebook
+         else:
+            return self._create_page(locals, parent, self.list)
+
+      def _create_page(self, locals, parent, page):
+         if len(page) > 15:
+            sw = wxPython.wx.wxScrolledWindow(
+               parent, style=wxPython.wx.wxSIMPLE_BORDER,
+               size=(450, 400))
+            sw.EnableScrolling(0, 1)
+            sw.SetScrollRate(0, 20)
+            gs = self._create_page_impl(locals, sw, page)
+            sw.SetSizer(gs)
+            gs.SetVirtualSizeHints(sw)
+            gs.RecalcSizes()
+            return sw
+         else:
+            return self._create_page_impl(locals, parent, page)
+         
+      def _create_page_impl(self, locals, parent, page):
+         gs = wxPython.wx.wxFlexGridSizer(len(page), 2, 8, 8)
+         for item in page:
+            gs.Add(wxPython.wx.wxStaticText(parent, -1, item.name),
+                   0,
+                   (wxPython.wx.wxTOP|wxPython.wx.wxLEFT|wxPython.wx.wxRIGHT|
+                    wxPython.wx.wxEXPAND|
+                    wxPython.wx.wxALIGN_CENTER_VERTICAL|
+                    wxPython.wx.wxALIGN_LEFT), 10)
+            control = item.get_control(parent, locals)
             self.controls.append(control)
-            self.gs.Add(control.control,
-                        0,
-                        (wxPython.wx.wxEXPAND|
-                         wxPython.wx.wxALIGN_CENTER_VERTICAL|
-                         wxPython.wx.wxALIGN_RIGHT))
+            gs.Add(control.control,
+                   0,
+                   (wxPython.wx.wxTOP|wxPython.wx.wxLEFT|wxPython.wx.wxRIGHT|
+                    wxPython.wx.wxEXPAND|
+                    wxPython.wx.wxALIGN_CENTER_VERTICAL|
+                    wxPython.wx.wxALIGN_RIGHT), 10)
          # Add some empties at the bottom for padding
-         for i in range(2):
-            self.gs.Add(wxPython.wx.wxPanel(self.window, -1))
-         self.gs.AddGrowableCol(1)
+##          for i in range(2):
+##             gs.Add(wxPython.wx.wxPanel(parent, -1))
+         gs.AddGrowableCol(1)
+         gs.RecalcSizes()
+         return gs
 
       def _create_buttons(self):
          # Buttons
@@ -103,7 +135,7 @@ if _has_gui == _WX_GUI:
             bigbox.Add(bitmap, 0, wxPython.wx.wxALIGN_TOP)
          self.box = wxPython.wx.wxBoxSizer(wxPython.wx.wxVERTICAL)
          self.border = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
-         self._create_controls(locals)
+         self.gs = self._create_controls(locals, self.window)
          if self.wizard:
             buttons = self._create_wizard_buttons()
          else:
@@ -122,9 +154,10 @@ if _has_gui == _WX_GUI:
                          wxPython.wx.wxEXPAND|wxPython.wx.wxBOTTOM, 20)
          self.box.Add(self.gs, 1,
                       wxPython.wx.wxEXPAND|wxPython.wx.wxALIGN_RIGHT)
+         self.box.Add(wxPython.wx.wxPanel(self.window, -1, size=(20,20)), 0,
+                      wxPython.wx.wxALIGN_RIGHT)
          self.box.Add(buttons, 0, wxPython.wx.wxALIGN_RIGHT)
          self.box.RecalcSizes()
-         self.gs.RecalcSizes()
          if self.wizard:
             bigbox.Add(self.box,
                        1,
@@ -168,14 +201,10 @@ else:
          raise Exception("No GUI environment available.  Cannot display dialog.")
 
 class Args(_guiArgs):
-   # list is a list of "Args"
+   # list is a list of "Arg s"
    def __init__(self, list=[], name="Arguments", function=None, title=None):
       if not util.is_sequence(list):
          list = [list]
-      for l in list:
-         if not isinstance(l, Arg):
-            self.valid = 0
-            return
       self.valid = 1
       self.list = list
       self.name = name
@@ -222,10 +251,11 @@ class Arg:
 if _has_gui == _WX_GUI:
    class _guiInt:
       def get_control(self, parent, locals=None):
-         self.control = wxPython.wx.wxSpinCtrl(parent, -1,
-                                               value=str(self.default),
-                                               min=self.rng[0], max=self.rng[1],
-                                               initial=self.default)
+         self.control = wxPython.wx.wxSpinCtrl(
+            parent, -1,
+            value=str(self.default),
+            min=self.rng[0], max=self.rng[1],
+            initial=self.default)
          return self
 
       def get(self):
@@ -533,6 +563,26 @@ if _has_gui == _WX_GUI:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
 
+      def get(self):
+         while 1:
+            text = self.text.GetValue()
+            if not os.path.exists(os.path.abspath(text)):
+               gui_util.message("File '%s' does not exist." % text)
+               self.OnBrowse(None)
+            else:
+               break
+         return _Filename.get(self)
+
+      def get_string(self):
+         while 1:
+            text = self.text.GetValue()
+            if not os.path.exists(os.path.abspath(text)):
+               gui_util.message("File '%s' does not exist." % text)
+               self.OnBrowse(None)
+            else:
+               break
+         return _Filename.get_string(self)
+
    class FileSave(_Filename):
       def OnBrowse(self, event):
          from gui import gui_util
@@ -540,19 +590,43 @@ if _has_gui == _WX_GUI:
          if filename:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
-else:
-   class FileOpen(_Filename):
+
+   class Directory(_Filename):
+      def OnBrowse(self, event):
+         from gui import gui_util
+         filename = gui_util.directory_dialog(self.text)
+         if filename:
+            self.text.SetValue(filename)
+         self.text.GetParent().Raise()
+
       def get(self):
          while 1:
             text = self.text.GetValue()
             if not os.path.exists(os.path.abspath(text)):
-               gui_util.message("File 'text' does not exist.")
+               gui_util.message("File '%s' does not exist." % text)
                self.OnBrowse(None)
             else:
                break
          return _Filename.get(self)
+
+      def get_string(self):
+         while 1:
+            text = self.text.GetValue()
+            if not os.path.exists(os.path.abspath(text)):
+               gui_util.message("File '%s' does not exist." % text)
+               self.OnBrowse(None)
+            else:
+               break
+         return _Filename.get_string(self)
+
+else:
+   class FileOpen(_Filename):
+      pass
    
    class FileSave(_Filename):
+      pass
+
+   class Directory(_Filename):
       pass
 
 # Radio Buttons
@@ -581,6 +655,7 @@ if _has_gui == _WX_GUI:
    class _guiCheck:
       def get_control(self, parent, locals=None):
          self.control = wxPython.wx.wxCheckBox(parent, -1, self.check_box)
+         self.control.Enable(self.enabled)
          self.control.SetValue(self.default)
          return self
 
@@ -594,10 +669,11 @@ else:
       pass
       
 class Check(_guiCheck, Arg):
-   def __init__(self, name, check_box, default=0):
+   def __init__(self, name, check_box, default=0, enabled=1):
       self.name = name
       self.check_box = check_box
       self.default = default
+      self.enabled = enabled
 
 # ImageInfo
 

@@ -122,9 +122,7 @@ class Set(list):
 
 class SetDictionary(dict):
   def __getitem__(self, key):
-    if not dict.has_key(self, key):
-      dict.__setitem__(self, key, Set())
-    return dict.__getitem__(self, key)
+    return dict.setdefault(self, key, Set())
 
 _byte_steps = (('Gb', float(1 << 30), float(1 << 30) * 1.1),
                ('Mb', float(1 << 20), float(1 << 20) * 1.1),

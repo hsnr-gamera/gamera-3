@@ -1,0 +1,26 @@
+;----------------------------------------------------------------------------
+;
+;    MODULE NAME:   DENNIS.MMH
+;
+;        $Author$
+;      $Revision$
+;          $Date$
+;       $Logfile:   ./Gamera.mmh.pvcs  $
+;      COPYRIGHT:   
+;
+; Used by Albert Brzeczko to customise "DEPT.MMH" and "COMPANY.MMH".
+;----------------------------------------------------------------------------
+
+
+;--- Set up some options specific to my requirements ------------------------
+#define? DEPT_SUPPORT_WEB_URL          http://gamera.sourceforge.net
+#define? DEPT_NAME                     Digital Knowledge Center
+#define? DEPT_NAME_SHORT               DKC
+#define? COMPANY_CONTACT_NAME          Michael Droettboom
+#define? COMPANY_CONTACT_NAME_PHONE    
+#define? DEFAULT_FILE_WANT_FILEHASH    Y
+#define? COMPANY_PRODUCT_ICON          
+#define? COMPANY_PRODUCT_NAME_PREFIX_D                        ;;Developer friendy - sorts up front in ARP (in development mode)
+
+;--- Include MAKEMSI support ------------------------------------------------
+#include "DKC.MMH"

@@ -1,0 +1,837 @@
+;----------------------------------------------------------------------------
+;
+;    MODULE NAME:   COMPANY.MMH
+;
+;        $Author$
+;      $Revision$
+;          $Date$
+;       $Logfile:   ./DKCCompany.mmh.pvcs  $
+;      COPYRIGHT:   
+;
+;----------------------------------------------------------------------------
+
+
+;----------------------------------------------------------------------------
+;--- Define Version number of this install support --------------------------
+;----------------------------------------------------------------------------
+#ifdef COMPANY_VERSION
+   ;--- Die, already included -----------------------------------------------
+   #error ^You have already included "<?InputComponent>"^
+#endif
+#define  COMPANY_VERSION   04.057
+
+
+;----------------------------------------------------------------------------
+;--- Create our own namespace -----------------------------------------------
+;----------------------------------------------------------------------------
+#NextId
+#NextId LOCK "DKCCOMPANY.MMH"
+
+
+;----------------------------------------------------------------------------
+;--- Does this actually look like Dennis' Development box? ------------------
+;----------------------------------------------------------------------------
+#if ['<??*PRJ_INST_PATH?>' <> '']
+   ;--- My company.mmh etc NOT JUST A SAMPLE! -------------------------------
+   #define IsMyBox
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Define some company Information ----------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_NAME Digital Knowledge Center
+
+;----------------------------------------------------------------------------
+;--- License Options --------------------------------------------------------
+;----------------------------------------------------------------------------
+;###[ListedInDoco-LookForLicenceFileOptions]###
+#define? COMPANY_LICENCE_SPELLING_C_OR_S  s           ;;Spelling - Licence OR License?
+#define? COMPANY_LOOK_FOR_LICENCE_FILE    Y           ;;Y/N
+#define? COMPANY_LICENCE_EXTN             .licen<$COMPANY_LICENCE_SPELLING_C_OR_S>e.rtf
+#define? COMPANY_LICENCE_NAME             <?InputFile $$FilePart:w><$COMPANY_LICENCE_EXTN>
+;###[ListedInDoco-LookForLicenceFileOptions]###
+#define? UISAMPLE_LICENCE_SPELLING_C_OR_S <$COMPANY_LICENCE_SPELLING_C_OR_S>
+
+;----------------------------------------------------------------------------
+;--- Modify product info keywords for .VER  file ----------------------------
+;----------------------------------------------------------------------------
+#ifndef VER_PRODINFO_VALID_KEYWORD_LIST_EXTRA
+   ;--- Extra "prodinfo" KeyWords -------------------------------------------
+   #define? COMPANY_PRODINFO_VALID_KEYWORD_LIST_EXTRA
+   #( ""
+       #define VER_PRODINFO_VALID_KEYWORD_LIST_EXTRA
+       ,UpgradeCodes  ;;A list of EXTRA upgrade codes
+       ,MsiName       ;;Short name of MSI (no extension)
+       ,Licence       ;;If not supplied then disabled, if starts with "@" then file name follows.
+
+       ;--- If supplied must begin with a comma -----------------------------
+       <$COMPANY_PRODINFO_VALID_KEYWORD_LIST_EXTRA>
+   #)
+
+   ;--- Define any "prodinfo" default values --------------------------------
+   #define? ProdInfo.Default.UpgradeCodes
+   #define? ProdInfo.Default.Licence
+   #define? ProdInfo.Default.MsiName        <$ProdInfo.ProductName><$ProductVersion>
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Add Supported platform details to HTML report's summary ----------------
+;----------------------------------------------------------------------------
+#define? COMPANY_HTMLSUMM_AFTER_SUPPORTED_PLATFORMS
+#define? HTMLSUMM_SUPPORTED_PLATFORMS_TT  \
+         <$HTMLRPT_TT 'This lists platforms we support this product on.'>
+#(  ''
+   #define? HTMLSUMM_AFTER_BUILT_AT
+   <TR<$HTMLSUMM_SUPPORTED_PLATFORMS_TT>>
+       <TD align="center">
+           Supported<BR>Platforms
+       </TD>
+           <TD>
+           <$PLATFORM_MsiSupportedWhereHtml>
+           </TD>
+   </TR>
+   <$COMPANY_HTMLSUMM_AFTER_SUPPORTED_PLATFORMS>
+#)
+
+
+;----------------------------------------------------------------------------
+;--- Change way MSI comments  are used --------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PACKAGED_BY Packaged by <$DEPT_NAME> (<$COMPANY_NAME> - <$DEPT_ADDRESS>).
+#( ''
+   ;--- This can be long but need CRLF for XP bug workaround ----------------
+   #define? COMPANY_PROPERTY_ARPCOMMENTS
+   <$ProdInfo.Productname> (<$ProductVersion>)<$CRLF>
+   was created <?CompileTime>.<$CRLF><$CRLF>
+   <$ProdInfo.Description><$CRLF>
+   <$COMPANY_PACKAGED_BY><$CRLF><$CRLF>
+   <$PLATFORM_MsiSupportedWhere>
+#)
+
+
+;----------------------------------------------------------------------------
+;--- Load MAKEMSI support ---------------------------------------------------
+;----------------------------------------------------------------------------
+#define HTMLRPT_NO_EMPTY_REPORTS       ;;No reports for "null" entries!
+#NextId PUSH
+   #include "MakeMsi.MMH"
+#NextId POP
+
+
+;--- Define platforms -------------------------------------------------------
+#define? COMPANY_DEFINE_DEPARTMENTS_PLATFORMS
+<$COMPANY_DEFINE_DEPARTMENTS_PLATFORMS>    ;;Define them
+<$PlatformProcessing>                      ;;Thats all of them!
+
+
+;----------------------------------------------------------------------------
+;--- Start the Package (use template) ---------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_MSI_TEMPLATE_FILENAME <??*MAKEMSI_DIR>UISAMPLE.msi  ;;Contents of "MAKEMSI_DIR" ends with a slash!
+#(
+   ;--- Allow user to use another method for getting template data ----------
+   #define? COMPANY_GET_TEMPLATE_AND_OPEN_MSI
+   <$Msi "<$ProdInfo.MsiName>.msi" Template="<$COMPANY_MSI_TEMPLATE_FILENAME>">
+#)
+<$COMPANY_GET_TEMPLATE_AND_OPEN_MSI>
+
+
+;----------------------------------------------------------------------------
+;--- Add to error table (do early in case or build errors!) -----------------
+;----------------------------------------------------------------------------
+<$Table "Error">
+   ;--- Useful VBS Custome Action messages ----------------------------------
+   <$Row Error="1720"   Message=^CUSTOM ACTION "[2]" FAILED. Script ERROR [3], [4]: [5] LINE [6], COLUMN [7], [8]^>
+   <$Row Error="2740"   Message=^CUSTOM ACTION "[2]" FAILED. Script ERROR [3], [4]: [5] LINE [6], COLUMN [7], [8]^>
+
+   ;--- Readable CA=EXE error messages --------------------------------------
+   <$Row Error="1721" Message=^CUSTOM ACTION "[2]" FAILED (could not start it). LOCATION: [3], COMMAND: [4]^ >
+   <$Row Error="1722" Message=^CUSTOM ACTION "[2]" FAILED (unexpected return code). LOCATION: [3], COMMAND: [4]^ >
+
+   ;--- Useful when you try to install MSI in system account! ---------------
+   <$Row Error="2103" Message=^Could not resolve path for shell folder "[2]". If the MSI is being executed under the SYSTEM account then remember that you must have ALLUSERS=1.^ >
+<$/Table>
+
+
+;----------------------------------------------------------------------------
+;--- UISAMPLE.MSI contains an invalid "Billboard" table ---------------------
+;----------------------------------------------------------------------------
+<$Table "Billboard">
+   <$TableDelete>
+<$/Table>
+
+
+;----------------------------------------------------------------------------
+;--- Set up some MAKEMSI tables (move eventually?) --------------------------
+;----------------------------------------------------------------------------
+<$TableCreate "<$MAKEMSI_TABLENAME_CABS>">
+<$TableCreate "<$MAKEMSI_TABLENAME_FILESOURCE>">
+<$Table "_Validation">
+#(
+   <$Row
+            Table="<$MAKEMSI_TABLENAME_CABS>"
+           Column="Name"
+         Nullable="N"
+         Category="Identifier"
+      Description='Referred to by Media Table (column "Cabinet").'
+   >
+#)
+#(
+   <$Row
+            Table="<$MAKEMSI_TABLENAME_CABS>"
+           Column="Data"
+         Nullable="N"
+         Category="Binary"
+      Description="Hold the CAB file."
+   >
+#)
+#(
+   <$Row
+            Table="<$MAKEMSI_TABLENAME_FILESOURCE>"
+           Column="File_"
+         Nullable="N"
+         KeyTable="File"
+        KeyColumn="1"
+         Category="Identifier"
+      Description="Foreign key into the File table."
+   >
+#)
+#(
+   <$Row
+            Table="<$MAKEMSI_TABLENAME_FILESOURCE>"
+           Column="SourceFile"
+         Nullable="N"
+         Category="Text"
+      Description="Full name of source file."
+   >
+#)
+<$/Table>
+#ifndef FILE_DISABLE_MD5_GENERATION_ALTOGETHER
+   <$TableCreate "MsiFileHash">
+   <$Table "_Validation">
+   #(
+       <$Row
+               Table="MsiFileHash"
+               Column="File_"
+           Nullable="N"
+           KeyTable="File"
+           KeyColumn="1"
+           Category="Identifier"
+       Description="Foreign key into the File table."
+       >
+   #)
+   #(
+       <$Row
+               Table="MsiFileHash"
+               Column="Options"
+           Nullable="N"
+           Category="Integer"
+           MinValue="0"
+           MaxValue="0"
+       Description="Reserved option (must be 0)."
+       >
+   #)
+   #(
+       #Define HashRow
+       <$Row
+               Table="MsiFileHash"
+               Column="HashPart{$#1}"
+           Nullable="N"
+           Category="DoubleInteger"
+       Description="MD5 part {$#1}/4."
+       >
+   #)
+   <$HashRow "1">
+   <$HashRow "2">
+   <$HashRow "3">
+   <$HashRow "4">
+   <$/Table>
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Set up the "COMPLETE" feature ------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_WANT_COMPLETE_FEATURE  Y
+#if ['<$COMPANY_WANT_COMPLETE_FEATURE>' = 'Y']
+   ;--- User did not disable complete feature -------------------------------
+   #define? COMPANY_COMPLETE_FEATURE_TITLE       Complete
+   #define? COMPANY_COMPLETE_FEATURE_DESCRIPTION The Complete feature
+   #define? COMPANY_COMPLETE_FEATURE_DIRECTORY                           ;;Must be a "Directory" key (or blank)!
+   #define? COMPANY_COMPLETE_FEATURE_DISPLAY                         1   ;;Expanded by default
+   #define? COMPANY_COMPLETE_FEATURE_DIRECTORY_AS_PRIMARY_FOLDER Y
+   #define? COMPANY_COMPLETE_FEATURE_INSTALL_ON_DEMAND           N
+   #if ['<$COMPANY_COMPLETE_FEATURE_INSTALL_ON_DEMAND>' = 'N']
+       #define? COMPANY_COMPLETE_FEATURE_ATTRIBUTES  UIDisallowAbsent
+   #elseif
+       #define? COMPANY_COMPLETE_FEATURE_ATTRIBUTES  UIDisallowAbsent FavorSource FavorAdvertise
+   #endif
+   #ifndef  COMPANY_COMPLETE_FEATURE        ;;Name of complete feature
+        ;--- Event log messages (if "advertised") may show this but LITTLE other detail (make meaningful!) ---
+        #define  @@MaxCharsInFeatureName  32   ;;See "Feature" table definition!
+        #DefineRexx '' nopack
+            ;--- Build ID that would identify product in Event log ----------
+            @@T = 'Complete.<$ProductVersion>.<$ProdInfo.ProductName>';
+
+            ;--- Make sure it only contains valid chars for an ID -----------
+            <$Rexx2FixMsiId IDVAR="@@T">
+
+            ;--- Make sure not longer than "Feature" table can handle -------
+            if  length(@@T) > <$@@MaxCharsInFeatureName> then
+                @@T = left(@@T, <$@@MaxCharsInFeatureName>);
+
+            ;--- Store it ---------------------------------------------------
+            Call MacroSet 'COMPANY_COMPLETE_FEATURE', @@T
+        #DefineRexx
+   #endif
+   #(
+      <$Feature "<$COMPANY_COMPLETE_FEATURE>"
+               Directory_="<$COMPANY_COMPLETE_FEATURE_DIRECTORY>"
+                    Title="<$COMPANY_COMPLETE_FEATURE_TITLE>"
+              Description="<$COMPANY_COMPLETE_FEATURE_DESCRIPTION>"
+               Attributes="<$COMPANY_COMPLETE_FEATURE_ATTRIBUTES>"
+                  Display="<$COMPANY_COMPLETE_FEATURE_DISPLAY>"
+      >
+   #)
+
+   ;--- Do we know the "complete" directory (yet)? --------------------------
+   #if  ['<$COMPANY_COMPLETE_FEATURE_DIRECTORY>' <> '']
+        ;--- We do but do we allow its use as install location? -------------
+        #if  ['<$COMPANY_COMPLETE_FEATURE_DIRECTORY_AS_PRIMARY_FOLDER>' = 'Y']
+            <$PrimaryFolder Key="<$COMPANY_COMPLETE_FEATURE_DIRECTORY>">
+        #endif
+   #endif
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Create standard directories --------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_DEFINE_STANDARD_DIRECTORIES Y
+#if ['<$COMPANY_DEFINE_STANDARD_DIRECTORIES>' = 'Y']
+    ;--- Define a macro to create the definitions while allowing user to individually disable them ---
+    #(
+        ;--- A "private" macro only used below ------------------------------
+        #define @@StdDir
+
+        ;--- Set a default value and check if definition allowed ------------
+        #define? COMPANY_DEFINE_STANDARD_DIRECTORY_{$Key}     Y
+        #if ['<$COMPANY_DEFINE_STANDARD_DIRECTORY_{$Key}>' = 'Y']
+            ;--- We are allowed to create it --------------------------------
+            <$Directory Key="{$Key}"  Parent="{$Parent}" Dir="{{$Dir}}">
+        #endif
+    #)
+
+    ;--- User wants or is allowing these definitions ------------------------
+    <$@@StdDir Key="TARGETDIR"           Parent=""                   Dir="SourceDir">
+    <$@@StdDir Key="LocalAppDataFolder"  Parent="TARGETDIR"          Dir=".:APPLIC~1|Application Data">
+    <$@@StdDir Key="CommonAppDataFolder" Parent="TARGETDIR"          Dir=".:APPLIC~1|Application Data">
+    <$@@StdDir Key="ProgramFilesFolder"  Parent="TARGETDIR"          Dir=".:ProgramF|Program Files">
+    <$@@StdDir Key="WindowsFolder"       Parent="TARGETDIR"          Dir=".:Windows">
+    <$@@StdDir Key="CommonFilesFolder"   Parent="ProgramFilesFolder" Dir=".:CommonFi|Common Files">
+    <$@@StdDir Key="StartupFolder"       Parent="ProgramMenuFolder"  Dir=".:Startup">
+    <$@@StdDir Key="AdminToolsFolder"    Parent="WindowsFolder"      Dir=".:ADMINT~1|Admin Tools">
+    <$@@StdDir Key="TemplateFolder"      Parent="WindowsFolder"      Dir=".:ShellNew">
+    <$@@StdDir Key="System16Folder"      Parent="WindowsFolder"      Dir=".:System">
+    <$@@StdDir Key="SystemFolder"        Parent="WindowsFolder"      Dir=".:System32">
+    <$@@StdDir Key="TempFolder"          Parent="WindowsFolder"      Dir=".:Temp">
+
+    ;--- Profiles related folders -------------------------------------------
+    #define? COMPANY_DEFINE_PROFILE_RELATED_DIRECTORIES Y
+    #if ['<$COMPANY_DEFINE_PROFILE_RELATED_DIRECTORIES>' = 'Y']
+        <$@@StdDir Key="ProfilesFolder"      Parent="WindowsFolder"      Dir=".:Profiles">
+        <$@@StdDir Key="StartMenuFolder"     Parent="ProfilesFolder"     Dir=".:StartMen|Start Menu">
+        <$@@StdDir Key="ProgramMenuFolder"   Parent="StartMenuFolder"    Dir=".:Programs">
+        <$@@StdDir Key="AppDataFolder"       Parent="ProfilesFolder"     Dir=".:Applicat|Application Data">
+        <$@@StdDir Key="DesktopFolder"       Parent="ProfilesFolder"     Dir=".:Desktop">
+        <$@@StdDir Key="FavoritesFolder"     Parent="ProfilesFolder"     Dir=".:Favorite|Favorites">
+        <$@@StdDir Key="NetHoodFolder"       Parent="ProfilesFolder"     Dir=".:NetHood">
+        <$@@StdDir Key="PersonalFolder"      Parent="ProfilesFolder"     Dir=".:Personal">
+        <$@@StdDir Key="PrintHoodFolder"     Parent="ProfilesFolder"     Dir=".:PrintHoo|PrintHood">
+        <$@@StdDir Key="RecentFolder"        Parent="ProfilesFolder"     Dir=".:Recent">
+        <$@@StdDir Key="SendToFolder"        Parent="ProfilesFolder"     Dir=".:SendTo">
+    #endif
+
+    ;--- Other folders ------------------------------------------------------
+    #define? COMPANY_DEFINE_OTHER_DIRECTORIES Y
+    #if ['<$COMPANY_DEFINE_OTHER_DIRECTORIES>' = 'Y']
+        <$@@StdDir Key="MyPicturesFolder"    Parent="TARGETDIR"          Dir=".:MYPICT~1|My Pictures">
+        <$@@StdDir Key="FontsFolder"         Parent="WindowsFolder"      Dir=".:Fonts">
+    #endif
+#endif
+
+
+;[SetUpgradeGuid]
+;----------------------------------------------------------------------------
+;--- Set MSI guids ----------------------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_UPGRADE_CODE_QUALIFIER              ;;Allow user scheme for having "sets" of upgrade codes
+#if ['<$COMPANY_UPGRADE_CODE_QUALIFIER>' = '']
+    ;--- Not part of a set (or at least using standard name) ----------------
+    #define @@UPGRADE_CODE_NAME UpgradeCode
+#elseif
+    ;--- Upgrade code name qualified by name of a "set" ---------------------
+    #option PUSH DefineMacroReplace=YES
+    #define @@UPGRADE_CODE_NAME UpgradeCode.<$COMPANY_UPGRADE_CODE_QUALIFIER>
+    #option POP
+
+    ;--- Cludge so it can easily be referred to -----------------------------
+    #define VBSRET.GUID.UpgradeCode <$VBSRET.GUID.[@@UPGRADE_CODE_NAME]>
+#endif
+#define UpgradeCodeValue <$VBSRET.GUID.UpgradeCode>          ;;Info returned from VBSCRIPT pass1
+#( '<?NewLine>'
+   #define? COMPANY_SET_PROPERTY_UPGRADECODE
+   dim UpgradeCode                                    ;;Need a VBSCRIPT variable
+   <$Guid '<$@@UPGRADE_CODE_NAME>' VB="UpgradeCode">  ;;Want same GUID every time!
+   <$Property "UpgradeCode"   *Value="UpgradeCode">   ;;Use GUID "calculated" above
+#)
+#( '<?NewLine>'
+   #define? COMPANY_SET_PROPERTY_PRODUCTCODE
+   <$Property "ProductCode"   *Value='GuidMake("ProductCode")'> ;;Random GUID
+#)
+#( '<?NewLine>'
+   #define? COMPANY_SET_PROPERTY_PACKAGECODE
+   <$Summary  "PackageCode"   *Value='GuidMake("PackageCode")'> ;;Random GUID
+#)
+<$COMPANY_SET_PROPERTY_UPGRADECODE>       ;;User can override above macros to change behaviour...
+<$COMPANY_SET_PROPERTY_PRODUCTCODE>
+<$COMPANY_SET_PROPERTY_PACKAGECODE>
+;[SetUpgradeGuid]
+
+
+;----------------------------------------------------------------------------
+;--- By default make PER MACHINE --------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_ALLUSERS_CREATE_PROPERTY      Y    ;;Y/N
+#if ['<$COMPANY_ALLUSERS_CREATE_PROPERTY>' <> 'N']
+    #define? COMPANY_ALLUSERS_PROPERTY         1    ;;1=Per Machine
+    <$Property "ALLUSERS"  Value="<$COMPANY_ALLUSERS_PROPERTY>">
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Default to overwriting (file from package ALWAYS correct) --------------
+;----------------------------------------------------------------------------
+#define? COMPANY_REINSTALLMODE      amus      ;;Normal MSI default is "omus"
+#if    ['<$COMPANY_REINSTALLMODE>' <> '']
+   <$Property "REINSTALLMODE"   Value=^<$COMPANY_REINSTALLMODE>^>
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Set Product name (allow overriding of default) -------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PRODUCT_NAME_PREFIX_P    ;;None for production
+#define? COMPANY_PRODUCT_NAME_PREFIX_D    ;;!!! etc = Developer friendy - sorts up front in ARP
+#define? COMPANY_PRODUCT_NAME_PREFIX   <$COMPANY_PRODUCT_NAME_PREFIX_[MMMODE]>
+#define? COMPANY_PROPERTY_PRODUCTNAME  <$COMPANY_PRODUCT_NAME_PREFIX><$ProdInfo.ProductName>
+<$Property "ProductName"  Value="<$COMPANY_PROPERTY_PRODUCTNAME>">
+
+
+;----------------------------------------------------------------------------
+;--- Basic MSI summary items ------------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_SUMMARY_TEMPLATE Intel;1033
+#define? COMPANY_SUMMARY_SCHEMA   110              ;;Minimum v1.1 Installer
+#define? COMPANY_SUMMARY_TITLE    <$COMPANY_PRODUCT_NAME_PREFIX><$ProdInfo.ProductName>
+#define? COMPANY_SUMMARY_SUBJECT  <$ProductVersion> (created <?CompileTime>)
+#define? COMPANY_SUMMARY_COMMENTS <$ProdInfo.Description>
+<$Summary "TEMPLATE"      Value="<$COMPANY_SUMMARY_TEMPLATE>">
+<$Summary "MsiSchema"     Value="<$COMPANY_SUMMARY_SCHEMA>">
+<$Summary "TITLE"         VALUE="<$COMPANY_SUMMARY_TITLE>">
+<$Summary "Subject"       VALUE="<$COMPANY_SUMMARY_SUBJECT>">
+<$Summary "COMMENTS"      VALUE="<$COMPANY_SUMMARY_COMMENTS>">
+<$Summary "SourceType"    Value="2">               ;;Source is compressed
+<$Summary "CREATE_DTM"    VALUE="now()">
+<$Summary "EDITTIME"      VALUE="now()">
+<$Summary "LASTSAVE_DTM" *VALUE="Empty">   ;;Don't want
+<$Summary "LASTPRINTED"  *VALUE=^Empty^>   ;;Don't want
+
+
+
+;----------------------------------------------------------------------------
+;--- Set AUTHOR related (allow overriding of default) -----------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PROPERTY_MANUFACTURER  <$DEPT_MSI_MANUFACTURER>
+#define? COMPANY_SUMMARY_AUTHOR         <$DEPT_MSI_AUTHOR> - using MAKEMSI
+#define? COMPANY_SUMMARY_LASTAUTHOR     <$DEPT_MSI_AUTHOR>
+<$Property "Manufacturer"   Value="<$COMPANY_PROPERTY_MANUFACTURER>">
+<$Summary  "AUTHOR"         VALUE="<$COMPANY_SUMMARY_AUTHOR>">
+<$Summary  "LastAuthor"     VALUE="<$COMPANY_SUMMARY_LASTAUTHOR>">
+
+
+;----------------------------------------------------------------------------
+;--- Set CONTACT details (allow overriding of default) ----------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_CONTACT_NAME
+#define? COMPANY_CONTACT_NAME_PHONE
+#if ['<$COMPANY_CONTACT_NAME>' <> '']
+   <$Property "ARPCONTACT" VALUE=^<$COMPANY_CONTACT_NAME>^>
+   #if ['<$COMPANY_CONTACT_NAME_PHONE>' <> '']
+       <$Property "ARPHELPTELEPHONE" VALUE=^<$COMPANY_CONTACT_NAME_PHONE>^>
+   #endif
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Other overrideable items -----------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PROPERTY_ARPHELPLINK  <$DEPT_SUPPORT_WEB_URL>
+#if ['<$COMPANY_PROPERTY_ARPHELPLINK>' <> '']
+    <$Property "ARPHELPLINK" Value="<$COMPANY_PROPERTY_ARPHELPLINK>">
+#endif
+
+;----------------------------------------------------------------------------
+;--- Set properties ---------------------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PROPERTY_ARPCOMMENTS <$COMPANY_SUMMARY_COMMENTS>
+<$Property "ProductVersion" Value="<$ProductVersion>">
+<$Property "ARPCOMMENTS"    VALUE="<$COMPANY_PROPERTY_ARPCOMMENTS>">
+
+
+
+;----------------------------------------------------------------------------
+;--- Upgrade (REPLACE) and MSI we have upgrade codes for! -------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_AUTO_UNINSTALL_VIA_UPGRADE_TABLE  Y
+#if ['<$COMPANY_AUTO_UNINSTALL_VIA_UPGRADE_TABLE>' = 'Y']
+   ;[UseUpgradeCode]
+   ;--- Look for older/newer versions of the same package (group) -----------
+   #define  @@PROPERTY_NAME_REMOVE_EXTRA_PRODUCT_CODES  UNINSTALLEXTRA
+   #define? COMPANY_UPGRADE_ATTRIBUTES                  256+512+1024
+   #define? COMPANY_UPGRADE_REMOVE                      ALL
+   <$Table "Upgrade">
+       ;--- Start List of properties to add to "SecureCustomProperties" property ---
+       #define  @@SECURE_CUST_PROP UNINSTALLTHIS
+
+       ;--- Handle THIS MSIs upgrade code -----------------------------------
+       #(
+           <$Row
+                 *UpgradeCode=^UpgradeCode^    ;;Value in the VB variable used above
+                   Attributes="<$COMPANY_UPGRADE_ATTRIBUTES>"
+                       Remove="<$COMPANY_UPGRADE_REMOVE>"
+               ActionProperty="<$@@SECURE_CUST_PROP>"
+           >
+       #)
+
+       ;--- Any EXTRA upgrade codes to be handled? --------------------------
+       #if ['<$ProdInfo.UpgradeCodes>' <> '']
+           #RexxVar @@UcCnt = 0
+           #{  SET ^@@Uc={ }<$ProdInfo.UpgradeCodes>^
+               ;--- What is the name of the property? -----------------------
+               #RexxVar @@UcCnt         + 1
+               #Rexxvar @@PropertyName  = '<$@@PROPERTY_NAME_REMOVE_EXTRA_PRODUCT_CODES><??@@UcCnt>'
+
+               ;--- Add to list of properties being used/handled ------------
+               #option PUSH DefineMacroReplace=YES
+                   #define+ @@SECURE_CUST_PROP <$@@SECURE_CUST_PROP>;<??@@PropertyName>
+               #option POP
+
+               ;--- Add upgrade table row -----------------------------------
+               #(
+                   <$Row
+                          UpgradeCode=^<??SET_@@Uc>^   ;;Literal GUID values
+                           Attributes="<$COMPANY_UPGRADE_ATTRIBUTES>"
+                               Remove="<$COMPANY_UPGRADE_REMOVE>"
+                       ActionProperty="<??@@PropertyName>"
+                   >
+               #)
+           #}
+       #endif
+   <$/Table>
+
+   ;--- Need to include in "SecureCustomProperties" -------------------------
+   <$PropertyList "SecureCustomProperties" Value=^<$@@SECURE_CUST_PROP>^> ;;Property does not exist yet
+
+   ;--- Install MSI AFTER complete uninstallation of older ------------------
+   <$Table "InstallExecuteSequence">
+       ;--- Between "InstallValidate" and "InstallInitialize" actions -------
+       <$Row Action="RemoveExistingProducts" Sequence="1451">
+   <$/Table>
+   ;[UseUpgradeCode]
+#endif
+
+
+
+
+;----------------------------------------------------------------------------
+;--- Set up end of package --------------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_ONEXIT_HOOK_STILL_IN_COMPLETE_FEATURE
+#define? COMPANY_VBSCRIPT_FUNCTIONS
+#( ''
+   #define COMPANY_ONEXIT
+
+   ;--- A HOOK --------------------------------------------------------------
+   <$COMPANY_ONEXIT_HOOK_STILL_IN_COMPLETE_FEATURE>
+
+   ;--- Add generated DOCO to the MSI ---------------------------------------
+   <$COMPANY_ADD_GENERATED_DOCO>
+
+   ;--- Now finished with the "COMPLETE" feature ----------------------------
+   #if ['<$COMPANY_WANT_COMPLETE_FEATURE>' = 'Y']
+       ;--- User did not disable complete feature ---------------------------
+       <$/Feature>
+   #endif
+
+   ;--- End the package -----------------------------------------------------
+   <$/Msi>
+
+   ;--- Include any user defined VBSCRIPT functions -------------------------
+   <$COMPANY_VBSCRIPT_FUNCTIONS>
+#)
+#OnExit #69 <$COMPANY_ONEXIT>
+
+
+
+;----------------------------------------------------------------------------
+;--- We wish to add the generated documentation to the MSI ------------------
+;----------------------------------------------------------------------------
+#if ['<$ONEXIT_GENERATE_HTML>' = 'N']
+    #define? COMPANY_ADD_GENERATED_DOCO
+#elseif
+    #define? COMPANY_DOCO_BASE_DIR            c:\Program Files\
+    #define? COMPANY_DOCO_ADD2_BASE_DIR       MAKEMSI Package Documentation\
+    #define? COMPANY_DOCO_RELATIVE_DIR        <$COMPANY_NAME>\<$DEPT_NAME>
+    #define? COMPANY_HTMLRPT_DOCO_INSTALL_DIR <$COMPANY_DOCO_BASE_DIR><$COMPANY_DOCO_ADD2_BASE_DIR><$COMPANY_DOCO_RELATIVE_DIR>
+    #define? COMPANY_HTMLRPT_NAME_LONG        <$MSI_HTMLNAME $$FilePart:NAME>   ;;Alternative = "<$ProdInfo.ProductName>(<$ProductVersion>).htm"
+    #define? COMPANY_HTMLRPT_NAME_8.3         MSIRPT.HTM
+    #define? COMPANY_HTMLRPT_FEATURE          <$COMPANY_COMPLETE_FEATURE>
+    #(
+       #define? COMPANY_ADD_GENERATED_DOCO
+
+       ;--- Add later in case directory not yet known ---------------------------
+       <$Component "<$FILE_HTMLRPT_ROWKEY>" Create="Y" Directory_="<$COMPANY_HTMLRPT_DOCO_INSTALL_DIR>" Feature=^<$COMPANY_HTMLRPT_FEATURE>^>
+           ;--- Add the generated doco ----------------------------------------------
+           #(
+               ;--- Note that the doco has not yet actually been generated! ---------
+               <$File
+                   RowKey="<$FILE_HTMLRPT_ROWKEY>"    ;;Marks as special case
+                   Source="<$MSI_HTMLNAME>"
+               Destination="<$COMPANY_HTMLRPT_NAME_LONG>"
+                   KeyPath="Y"
+                       8.3="<$COMPANY_HTMLRPT_NAME_8.3>"                ;;Must supply one! - May change VBS to fix up...
+                       HASH="N"
+                   Language="<$DEFAULT_FILE_LANG_WHEN_GETLANGUAGE_FAILS>"
+                   Version=""
+                      DOCO="N"               ;;too late for that!
+               >
+           #)
+       <$/Component>
+       #ifndef COMPANY_DONT_UPDATE_ARPREADME
+           ;--- Update "Support Information" (readme) info --------------------------
+           <$PropertyCa "ARPREADME"  VALUE=^file:///[!<$FILE_HTMLRPT_ROWKEY>]^ Seq="1001">
+       #endif
+    #)
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Set the Product ICON ---------------------------------------------------
+;----------------------------------------------------------------------------
+#define? COMPANY_PRODUCT_ICON     MmDefaultProductIcon.ico  ;;Add-Remove or WI bug causes first icon in Icon table to be picked up if none set!
+#if ['<$COMPANY_PRODUCT_ICON>' <> '']
+    <$Icon '<$COMPANY_PRODUCT_ICON>' Product="Y">
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Make sure we record details about this header --------------------------
+;----------------------------------------------------------------------------
+<$StampSourceDetailsIntoProperty Version="<$COMPANY_VERSION>">
+
+
+;----------------------------------------------------------------------------
+;--- Record some details in standard properties -----------------------------
+;----------------------------------------------------------------------------
+#define?  COMPANY_PROPERTY_BUILDTIME       <$MAKEMSI_PROPERTY_PREFIX>BuildTime
+#define?  COMPANY_PROPERTY_COMPUTERNAME    <$MAKEMSI_PROPERTY_PREFIX>BuildComputer
+#define?  COMPANY_PROPERTY_PROCESSINGMODE  <$MAKEMSI_PROPERTY_PREFIX>ProcessingMode
+#define?  COMPANY_PROPERTY_SUPPORTED_ON    <$MAKEMSI_PROPERTY_PREFIX>SupportedPlatforms
+#DefineRexx ''
+   ;--- Get computer name ---------------------------------------------------
+   @@ComputerName = GetEnv("COMPUTERNAME")
+   if  @@ComputerName = '' then
+       @@ComputerName = '?';
+#DefineRexx
+<$Property "<$COMPANY_PROPERTY_COMPUTERNAME>"   VALUE=^<??@@ComputerName>^>
+<$Property "<$COMPANY_PROPERTY_BUILDTIME>"      VALUE=^<?CompileTime>^>
+<$Property "<$COMPANY_PROPERTY_PROCESSINGMODE>" VALUE=^<$MMMODE_DESCRIPTION>^>
+<$Property "<$COMPANY_PROPERTY_SUPPORTED_ON>"   VALUE=^<$PLATFORM_MsiSupportedWhere>^>
+
+
+
+;----------------------------------------------------------------------------
+;--- Fix up the Licence agreement -------------------------------------------
+;----------------------------------------------------------------------------
+#if  ['<$COMPANY_LOOK_FOR_LICENCE_FILE>' <> 'N']
+    ;--- Look for a licence file --------------------------------------------
+    #DefineRexx ''
+       ;--- Look for a ".licence" file --------------------------------------
+       @@LicenceFile     = '<$COMPANY_LICENCE_NAME>';
+       call Info 'Have licence?: ' || FilePart('n', @@LicenceFile);
+       @@LicenceFileFull = FileQueryExists(@@LicenceFile);
+       if  @@LicenceFileFull <> '' then
+       do
+           ;--- We found a ".licence" file ----------------------------------
+           if  MacroGet('ProdInfo.Licence') <> '' then
+               call Warning "LIC00", "Local Licence file is overriding the one specified in the version file"
+
+           ;--- Set "ProdInfo.Licence" --------------------------------------
+           call MacroSet 'ProdInfo.Licence', @@LicenceFileFull, 'Y';
+       end;
+    #DefineRexx
+#endif
+#DefineRexx ''
+   ;--- Display the licence we will use (if any) ----------------------------
+   if  MacroGet('ProdInfo.Licence') = '' then
+        @@Using = "NONE"
+   else
+        @@Using = MacroGet('ProdInfo.Licence');
+   call Info 'Using licence: ' || @@Using;
+#DefineRexx
+#if ['<$ProdInfo.Licence $$IsBlank>' = 'N']
+   ;--- We have a licence (in a file) ---------------------------------------
+   #DefineRexx ''
+       ;--- Make sure the licence file exists -------------------------------
+       @@Licence = MacroGet('ProdInfo.Licence');
+       @@LicenceFile = FindFile(@@Licence)
+       if  @@LicenceFile = '' then
+           Error('We could not find the licence file "' || @@Licence || '"');
+
+       ;--- Read the information --------------------------------------------
+       call FileClose @@LicenceFile, 'N';
+       @@Text = charin(@@LicenceFile,1, 999999);
+       call FileClose @@LicenceFile;
+
+       ;--- Create a VB string (without the outer quotes) -------------------
+       @@Text = ReplaceString(@@Text, '"',   '""');
+       @@Text = ReplaceString(@@Text, '00'x, ' ');   ;;God knows why the trailing null exists...
+       @@Text = ReplaceString(@@Text, '0D'x, '" & vbCR & "');
+       @@Text = ReplaceString(@@Text, '0A'x, '" & vbLF & "');
+   #DefineRexx
+   <$Table "Control">
+       #(
+           <$Row @Where="Dialog_='LicenseAgreementDlg' and Control='AgreementText'" @OK="? = 1"
+               *Text=~"<??@@Text>"~
+           >
+       #)
+   <$/Table>
+#endif
+
+
+
+;----------------------------------------------------------------------------
+;--- Handle 'LicenseAgreementDlg' and 'UserRegistrationDlg' show/hide -------
+;----------------------------------------------------------------------------
+;--- [TIPS.DH-Example-DialogRemoval] ----------------------------------------
+;--- Want user registration dialog? -----------------------------------------
+#define? COMPANY_WANT_USER_REGISTRATION_DIALOG  N
+#if ['<$COMPANY_WANT_USER_REGISTRATION_DIALOG>' = 'Y']
+   ;--- User wants a registration dialog ------------------------------------
+   <$Property "ShowUserRegistrationDlg" VALUE="1">
+#else
+   ;--- Don't want one ------------------------------------------------------
+   <$Property "ShowUserRegistrationDlg" VALUE="0">
+#endif
+
+;--- Want the licence Dialog? -----------------------------------------------
+#if ['<$ProdInfo.Licence $$IsBlank>' = 'Y']
+   ;--- No Licence info available -------------------------------------------
+   <$Property "ShowLicenceDlg" VALUE="0">
+#elseif
+   ;--- We have a licence agreement -----------------------------------------
+   <$Property "ShowLicenceDlg" VALUE="1">
+#endif
+
+;--- Make properties control 'LicenseAgreementDlg' and 'UserRegistrationDlg' display ---
+<$Table "ControlEvent">
+    ;--- Take care of the "Next" button from the "WelcomeDlg" ---------------
+    #(
+       ;--- Welcome -> Licence (already exists, just make optional) ---------
+        <$Row
+              @Where="`Dialog_` = 'WelcomeDlg' and `Control_` = 'Next' and `Event`='NewDialog' and `Argument` = 'LicenseAgreementDlg' and `Condition` = '1'"
+                 @OK=^? = 1^
+           Condition="ShowLicenceDlg = 1"      ;;Make optional via property
+        >
+    #)
+    #(
+       ;--- Welcome -> User Registration ------------------------------------
+        <$Row
+              Dialog_='WelcomeDlg'
+             Control_= 'Next'
+                Event='NewDialog'
+             Argument="UserRegistrationDlg"
+            Condition="ShowLicenceDlg = 0 AND ShowUserRegistrationDlg = 1"
+        >
+    #)
+    #(
+       ;--- Welcome -> Setup Type -------------------------------------------
+        <$Row
+              Dialog_='WelcomeDlg'
+             Control_= 'Next'
+                Event='NewDialog'
+             Argument="SetupTypeDlg"
+            Condition="ShowLicenceDlg = 0 AND ShowUserRegistrationDlg = 0"
+        >
+    #)
+
+    ;--- Take care of the "Back" button from the "UserRegistrationDlg" ------
+    #(
+        ;--- User Registration -> Licence (exists, just add condition) ------
+        <$Row
+              @Where="`Dialog_` = 'UserRegistrationDlg' and `Control_` = 'Back' and `Event`='NewDialog' and `Argument` = 'LicenseAgreementDlg' and `Condition` = '1'"
+                 @OK=^? = 1^
+           Condition="ShowLicenceDlg = 1"      ;;Make optional via property
+        >
+    #)
+    #(
+        ;--- User Registration -> Welcome -----------------------------------
+        <$Row
+             Dialog_='UserRegistrationDlg'
+            Control_='Back'
+               Event='NewDialog'
+            Argument="WelcomeDlg"
+           Condition="ShowLicenceDlg = 0"
+        >
+    #)
+
+    ;--- Take care of the "Back" button from the "SetupTypeDlg" -------------
+    #(
+        ;--- Setup -> Licence (exists, just change condition) ---------------
+        <$Row
+              @Where="`Dialog_` = 'SetupTypeDlg' and `Control_` = 'Back' and `Event`='NewDialog' and `Argument` = 'LicenseAgreementDlg' and `Condition` = 'ShowUserRegistrationDlg <> 1'"
+                 @OK=^? = 1^
+           Condition="ShowUserRegistrationDlg = 0 AND ShowLicenceDlg = 1"
+        >
+    #)
+    #(
+        ;--- Setup -> Welcome -----------------------------------------------
+        <$Row
+             Dialog_='SetupTypeDlg'
+            Control_='Back'
+               Event='NewDialog'
+            Argument="WelcomeDlg"
+           Condition="ShowUserRegistrationDlg = 0 AND ShowLicenceDlg = 0"
+        >
+    #)
+<$/Table>
+;--- [TIPS.DH-Example-DialogRemoval] ----------------------------------------
+
+
+
+#NextId UNLOCK "DKCCOMPANY.MMH"
+
+;--- Include "UISAMPLE" related changes -------------------------------------
+#include "GameraUI.MMH"
+
+
+
+
+
+
+
+
+

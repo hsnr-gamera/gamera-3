@@ -1,0 +1,27 @@
+;----------------------------------------------------------------------------
+;
+;    MODULE NAME:   Gamera2.VER
+;
+;        $Author$
+;      $Revision$
+;          $Date$
+;       $Logfile:   ./Gamera2.ver.pvcs  $
+;      COPYRIGHT:   (C)opyright Dennis Bareis, Australia, 2003
+;                   All rights reserved.
+;
+;    DESCRIPTION:   Simple sample/test MSI.
+;
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; ProductName = Gamera 2
+; DESCRIPTION = This is the installer for Gamera 2
+; Licence     = License.txt
+; Installed   = WINDOWS_ALL
+; MsiName     = Gamera2
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+;############################################################################
+VERSION : 2.15.02
+DATE    : 04 Mar 2004
+CHANGES : First MSI Release

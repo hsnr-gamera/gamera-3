@@ -1,0 +1,113 @@
+;----------------------------------------------------------------------------
+;
+;    MODULE NAME:   DKC.MMH
+;
+;        $Author$
+;      $Revision$
+;          $Date$
+;       $Logfile:   ./DEPT.mmh.pvcs  $
+;      COPYRIGHT:   (C)opyright Dennis Bareis, Australia, 2003
+;                   All rights reserved.
+;
+; Note that this header is one of the few intended to be "replaced".
+; It has however been written so physical altering or deleting of this
+; file should not be required.
+;
+; There are many options, some are:
+;
+;       1. Ignore this file altogether, create your own front end with
+;          different filenames so as not to clash.
+;
+;       2. Modify this file BUT if you do so you should move it to a
+;          different directory so as not be be deleted ALONG WITH YOUR
+;          CHANGES on a MAKEMSI uninstall!
+;
+;       3. Create a new header that overrides some things but still includes
+;          this one.
+;
+; Let me know of any issues.
+;----------------------------------------------------------------------------
+
+;----------------------------------------------------------------------------
+;--- Define Version number of this install support --------------------------
+;----------------------------------------------------------------------------
+#ifdef   DEPT_VERSION
+   ;--- Die, already included -----------------------------------------------
+   #error ^You have already included "<?InputComponent>"^
+#endif
+#define  DEPT_VERSION   03.171
+
+;----------------------------------------------------------------------------
+;--- Define some Department details -----------------------------------------
+;----------------------------------------------------------------------------
+#define? DEPT_SUPPORT_WEB_URL       http://dkc.jhu.edu
+#define? DEPT_NAME_SHORT            DKC
+#define? DEPT_NAME                  Digital Knowledge Center
+#define? DEPT_ADDRESS               MSE Library, Johns Hopkins University
+#define? DEPT_MSI_MANUFACTURER      <$DEPT_NAME>
+#define? DEPT_MSI_AUTHOR            <$DEPT_NAME>
+#define? COMPANY_CONTACT_NAME       Michael Droettboom
+#define? COMPANY_CONTACT_NAME_PHONE 
+#define? COMPANY_DOCO_RELATIVE_DIR  Johns Hopkins University
+#define? COMPANY_PACKAGED_BY        Packaged by <$DEPT_NAME> (<$DEPT_ADDRESS>).
+
+;--- Stop HTML Generation ---
+#define ONEXIT_DONT_GENERATE_HTML
+
+;----------------------------------------------------------------------------
+;--- Define the types of boxes your department/company supports -------------
+;----------------------------------------------------------------------------
+#ifndef COMPANY_DEFINE_DEPARTMENTS_PLATFORMS
+   #(
+       #define COMPANY_DEFINE_DEPARTMENTS_PLATFORMS  ;;COMPANY.MMH expands...
+
+       ;--- WIN2000 ---------------------------------------------------------
+       #define  PD_WIN2000  Windows\2000
+       <$Platform "WINDOWS_2000_SERVER" DESC=^Windows 2000 Server^ PLATDIR="<$PD_WIN2000>\Servers">
+       <$Platform "WINDOWS_2000_PRO"    DESC=^Windows 2000 PRO^    PLATDIR="<$PD_WIN2000>\PRO">
+       #(
+           <$Platform "WINDOWS_2000"    DESC=^Windows 2000 (Server/PRO)^
+                       Contains="WINDOWS_2000_SERVER WINDOWS_2000_PRO"
+           >
+       #)
+
+       ;--- WINXP -----------------------------------------------------------
+       #define  PD_WINXP  Windows\XP
+       <$Platform "WINDOWS_XP_SERVER" DESC=^Windows XP Server^ PLATDIR="<$PD_WINXP>\Servers">
+       <$Platform "WINDOWS_XP_PRO"    DESC=^Windows XP PRO^    PLATDIR="<$PD_WINXP>\PRO">
+       #(
+           <$Platform "WINDOWS_XP"    DESC=^Windows XP (Server/PRO)^
+                       Contains="WINDOWS_XP_SERVER WINDOWS_XP_PRO"
+           >
+       #)
+
+       ;--- WIN?? (Others + internal platform names etc) --------------------
+       ;...
+
+       ;--- Now create a group for all WINDOWS (group can contain groups) ---
+       #(
+           <$Platform "WINDOWS_ALL" DESC=^Any Windows workstations or servers^
+                       Contains="WINDOWS_2000 WINDOWS_XP"
+           >
+       #)
+   #)
+#endif
+
+
+;----------------------------------------------------------------------------
+;--- Load MAKEMSI support ---------------------------------------------------
+;----------------------------------------------------------------------------
+#NextId PUSH
+   #include "DKCCompany.MMH"
+#NextId POP
+
+;----------------------------------------------------------------------------
+;--- Make sure we record details about this header --------------------------
+;----------------------------------------------------------------------------
+<$StampSourceDetailsIntoProperty Version="<$DEPT_VERSION>">
+
+;----------------------------------------------------------------------------
+;--- Start "location" status information (if allowed) -----------------------
+;----------------------------------------------------------------------------
+<$LocationVerboseOn>
+

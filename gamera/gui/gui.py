@@ -311,7 +311,7 @@ class ShellFrame(wxFrame):
       toolkits_menu = wxMenu()
       for toolkit in toolkits:
          toolkitID = wxNewId()
-         toolkit_menu = wxMenu(style=wxMENU_TEAROFF)
+         toolkit_menu = wxMenu()#style=wxMENU_TEAROFF)
          toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
                              "Import %s toolkit" % toolkit)
          EVT_MENU(self, toolkitID, self._OnImportToolkit)
@@ -429,9 +429,10 @@ class CustomMenu:
                   menu.Break()
                else:
                   menuID = wxNewId()
-                  EVT_MENU(menu, menuID, getattr(self, "_On" + util.string2identifier(item)))
+                  print menuID
                   menu.Append(menuID, item)
-
+                  EVT_MENU(main_win, menuID,
+                           getattr(self, "_On" + util.string2identifier(item)))
 CustomIcon = icon_display.CustomIcon
 
 class GameraSplash(wxSplashScreen):

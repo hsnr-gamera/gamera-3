@@ -69,6 +69,7 @@ if _has_gui == _WX_GUI:
       def _create_page_impl(self, locals, parent, page):
          gs = wxPython.wx.wxFlexGridSizer(len(page), 2, 8, 8)
          for item in page:
+            print item.name, item
             gs.Add(wxPython.wx.wxStaticText(parent, -1, item.name),
                    0,
                    (wxPython.wx.wxTOP|wxPython.wx.wxLEFT|wxPython.wx.wxRIGHT|
@@ -136,7 +137,9 @@ if _has_gui == _WX_GUI:
             bigbox.Add(bitmap, 0, wxPython.wx.wxALIGN_TOP)
          self.box = wxPython.wx.wxBoxSizer(wxPython.wx.wxVERTICAL)
          self.border = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)
+         self.window.SetSizer(self.border)
          self.gs = self._create_controls(locals, self.window)
+         self.gs.RecalcSizes()
          if self.wizard:
             buttons = self._create_wizard_buttons()
          else:
@@ -158,19 +161,22 @@ if _has_gui == _WX_GUI:
          self.box.Add(wxPython.wx.wxPanel(self.window, -1, size=(20,20)), 0,
                       wxPython.wx.wxALIGN_RIGHT)
          self.box.Add(buttons, 0, wxPython.wx.wxALIGN_RIGHT)
-         self.box.RecalcSizes()
          if self.wizard:
             bigbox.Add(
                self.box, 1,
                wxPython.wx.wxEXPAND|wxPython.wx.wxALL|wxPython.wx.wxALIGN_TOP,
                15)
+            bigbox.RecalcSizes()
             self.border.Add(
                bigbox, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 10)
          else:
             self.border.Add(
                self.box, 1, wxPython.wx.wxEXPAND|wxPython.wx.wxALL, 15)
+         self.border.RecalcSizes()
+         self.box.RecalcSizes()
+         self.gs.RecalcSizes()
+         self.border.Layout()
          self.border.Fit(self.window)
-         self.window.SetSizer(self.border)
          size = self.window.GetSize()
          self.window.SetSize((max(400, size[0]), max(200, size[1])))
          self.window.Centre()

@@ -107,6 +107,7 @@ def generate_plugin(plugin_filename):
   [[# is for type checking the arguments and creating the return types. See the init #]]
   [[# function for more details. #]]
   static PyTypeObject* imagebase_type;
+  static PyObject* pybase_init;
   static PyTypeObject* image_type;
   static PyTypeObject* subimage_type;
   static PyTypeObject* cc_type;
@@ -296,7 +297,7 @@ def generate_plugin(plugin_filename):
       Py_INCREF(Py_None);
       return Py_None;
     [[elif isinstance(function.return_type, ImageType)]]
-      return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type);
+      return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type, pybase_init);
     [[elif isinstance(function.return_type, String)]]
       return PyString_FromStringAndSize(return_value.c_str(), return_value.size() + 1);
     [[elif isinstance(function.return_type, ImageInfo)]]
@@ -321,18 +322,15 @@ def generate_plugin(plugin_filename):
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
     PyObject* mod = PyImport_ImportModule(\"gamera.core\");
     if (mod == 0) {
-      printf(\"Could not load gamera.py - falling back to gameracore\\n\");
-      mod = PyImport_ImportModule(\"gamera.gameracore\");
-      if (mod == 0) {
-        PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\\n\");
-        return;
-      }
+      printf(\"Could not load gamera.py\\n\");
+      return;
     }
     PyObject* dict = PyModule_GetDict(mod);
     if (dict == 0) {
       PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\\n\");
       return;
     }
+    pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, \"ImageBase\"), \"__init__\");
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, \"SubImage\");
     cc_type = (PyTypeObject*)PyDict_GetItemString(dict, \"CC\");
@@ -343,6 +341,10 @@ def generate_plugin(plugin_filename):
       return;
     }
     dict = PyModule_GetDict(mod);
+    if (dict == 0) {
+      PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\\n\");
+      return;
+    }
     imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
   }
 

@@ -49,6 +49,10 @@ def help(object):
 
 ######################################################################
 
+def load_image(filename, compression = DENSE):
+   import tiff_support
+   return tiff_support.load_tiff(filename, compression)
+
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
    # to __methods__
@@ -68,12 +72,14 @@ class ImageBase:
                         GREY16:     "Grey16",
                         RGB:        "RGB",
                         FLOAT:      "Float"}
+   
    def pixel_type_name(self):
       return self._pixel_type_names[self.data.pixel_type]
    pixel_type_name = property(pixel_type_name)
 
    _storage_format_names = {DENSE:  "Dense",
                             RLE:    "RLE"}
+   
    def storage_format_name(self):
       return self._storage_format_names[self.data.storage_format]
    storage_format_name = property(storage_format_name)

@@ -247,7 +247,8 @@ inline PyObject* init_image_members(ImageObject* o) {
 inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
 				    PyTypeObject* subimage_type,
 				    PyTypeObject* cc_type,
-				    PyTypeObject* image_data) {
+				    PyTypeObject* image_data,
+				    PyObject* pybase_init) {
   int pixel_type;
   int storage_type;
   bool cc = false;
@@ -286,15 +287,23 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
   d->m_storage_format = storage_type;
   d->m_x = image->data();
   ImageObject* i;
-  if (cc)
+  if (cc) {
     i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);
-  else if (image->nrows() < image->data()->nrows()
-	   || image->ncols() < image->data()->ncols())
+  } else if (image->nrows() < image->data()->nrows()
+	     || image->ncols() < image->data()->ncols()) {
     i = (ImageObject*)subimage_type->tp_alloc(subimage_type, 0);
-  else
+  } else {
     i = (ImageObject*)image_type->tp_alloc(image_type, 0);
+  }
   i->m_data = (PyObject*)d;
   ((RectObject*)i)->m_x = image;
+  PyObject* args = Py_BuildValue("(O)", (PyObject*)i);
+  PyObject* result = PyEval_CallObject(pybase_init, args);
+  Py_DECREF(args);
+  if (result == 0)
+    return 0;
+  Py_DECREF(result);
+    
   return init_image_members(i);
 }
 

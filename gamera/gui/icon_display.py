@@ -46,8 +46,7 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
   def OnDropFiles(self, x, y, filenames):
     for filename in filenames:
       name = var_name.get("image", self.display.shell.locals)
-      self.display.shell.run(name + '_' + str(i) +
-                             " = load_image('" + filename + "')")
+      self.display.shell.run(name + " = load_image('" + filename + "')")
 
 
 ######################################################################

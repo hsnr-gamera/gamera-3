@@ -22,6 +22,6 @@
 
 
 ;############################################################################
-VERSION : 2.15.02
-DATE    : 04 Mar 2004
-CHANGES : First MSI Release
+VERSION : 2.20.01
+DATE    : 14 Jul 2004
+CHANGES : MSI Release for Gamera 2.2.0pre

@@ -10,6 +10,6 @@ A: This is most likely due to some recent Linux distributions
 which isn't really working in wxPython 2.3.3.  Hopefully this error
 will be corrected when wxWindows fully supports GTK+-2.0 and all of
 its wonderful Unicode support.  Until then, you can get around it by
-setting your LANG environment variable to something simple, such as:
+stripping off the UTF-8 on your LANG environment variable, such as:
 
 > export LANG=en_US

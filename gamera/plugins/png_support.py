@@ -45,7 +45,18 @@ PNG_info_class = PNG_info
 PNG_info = PNG_info()
 
 class load_PNG(PluginFunction):
-   """Loads a PNG format image file."""
+   """Loads a PNG format image file.
+
+*image_file_name*
+  A PNG image filename
+
+*storage_format* (optional)
+  specifies the compression type for the result:
+
+  DENSE (0)
+    no compression
+  RLE (1)
+    run-length encoding compression"""
    self_type = None
    args = Args([FileOpen("image_file_name", "", "*.png"),
                 Choice("storage format", ["DENSE", "RLE"])])

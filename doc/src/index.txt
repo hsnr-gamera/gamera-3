@@ -8,7 +8,7 @@ Introduction
 ============
 
 This is the Gamera documentation.  Please note that it is still a work
-in progress and has many holes in it.  If you'd like any holes fill
+in progress and has many holes in it.  If you'd like any holes filled
 in, please contact Michael Droettboom at ``mdboom at jhu dot edu``.
 
 This documentation consists of some HOW TO documentation and some
@@ -81,6 +81,12 @@ Reference
 
 Acknowledgements
 ================
+
+Many thanks to Teal Anderson for finding numerous typos among the
+hideous jargon of these documents.
+
+Some of the material presented here is based on documentation or
+papers by Karl MacMillan and Ichiro Fujinaga.
 
 Gamera is funded through the National
 Science Foundation's Digital Library Initiative 2 (Award \#9817430),

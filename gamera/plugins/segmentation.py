@@ -26,7 +26,7 @@ This algorithm assumes 8-connected components, meaning any two pixels are
 considered "connected" if they are adjacent in any direction, including
 diagonally.
 
-The original image will have all of it's pixels "labeled" with a number
+The original image will have all of its pixels "labeled" with a number
 representing each connected component.  This is so the connected components
 can share data with their source image and makes things much more efficient.
 
@@ -55,6 +55,7 @@ TODO: We need some more detailed documentation here."""
         cc = image.cc_analysis()
         return cluster.cluster(cc, ratio, distance)
     __call__ = staticmethod(__call__)
+    doc_examples = [(ONEBIT,)]
 
 class splitx(PluginFunction):
     """Splits an image vertically.

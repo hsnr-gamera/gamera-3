@@ -295,7 +295,7 @@ want an automatic classifier to reclassify."""
 to MANUAL.  Use this method when an end user has classified this glyph.
 
 *id_name*
-  Can come in a two of forms:
+  Can come in one of two forms:
 
     **string**
        image is classified using the given ``.``-delimited class name.
@@ -320,7 +320,7 @@ to MANUAL.  Use this method when an end user has classified this glyph.
 to AUTOMATIC.  Use this method when an automatic classifier has classified this glyph.
 
 *id_name*
-  Can come in a two of forms:
+  Can come in one of two forms:
 
     **string**
        image is classified using the given ``.``-delimited class name.
@@ -345,7 +345,7 @@ to AUTOMATIC.  Use this method when an automatic classifier has classified this 
 to AUTOMATIC.  Use this method when a heuristic process has classified this glyph.
 
 *id_name*
-  Can come in a two of forms:
+  Can come in one of two forms:
 
     **string**
        image is classified using the given ``.``-delimited class name.

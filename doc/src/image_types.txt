@@ -50,7 +50,7 @@ The pixels in an image can be one of the following types:
       "normalized" so that the total range in the image is equal to the
       range of brightnesses your monitor can display.
 
-.. __: plugins.html#cc_analysis
+.. __: plugins.html#cc-analysis
 
 Storage types
 =============

@@ -57,7 +57,7 @@ The Gamera source tree looks something like this:
 |          | files.)                                                        |
 |          +---------------+------------------------------------------------+
 |          | ga/	   | GALib_: Matthew's Genetic Algorithm Library    |
-|          |               | Used to optimise the kNN classifier.           |
+|          |               | Used to optimize the kNN classifier.           |
 |          +---------------+------------------------------------------------+
 |          | graph/	   | A graph library.  API should be considered     |
 |          |               | unstable.                                      |
@@ -69,7 +69,7 @@ The Gamera source tree looks something like this:
 |          |               | OS-X.                                          |
 +----------+---------------+------------------------------------------------+
 
-.. _building and installing Gamera: build_and_install.html
+.. _building and installing Gamera: install.html
 .. _docutils: http://docutils.sf.net/
 .. _Writing Gamera Plugins: writing_plugins.html
 .. _VIGRA Computer Vision Library: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/

@@ -279,7 +279,7 @@ argument is fixed.
 IntVector
 ---------
 
-**IngVector** (string *name*, int *length* = ``-1``)
+**IntVector** (string *name*, int *length* = ``-1``)
 
 A vector of integer values.  On the Python side this is an
 ``array('i')`` object.  On the C++ side, this is a
@@ -333,7 +333,10 @@ TODO: But that's for another day... ;)
 Info
 ----
 
-X
+**Info** (string *name*)
+
+This class is just for displaying information in a dialog box.  It
+does not affect in any way the passing of arguments to a plugin.
 
 Radio
 -----

@@ -127,11 +127,11 @@ The ``features`` element contains a set of ``feature`` elements, one
 for each feature function.
 
 .. note:: When Gamera XML files are loaded into Gamera, the features
-   information is discarded and regenerated.  This is to the
+   information is discarded and regenerated.  This is so the
    classifier has complete control over what features are used and how
    they are used.  The feature values are dumped to the XML file only
-   for the benefit of third-party applications that may wish to used
-   the features without calling to the Gamera runtime system.
+   for the benefit of third-party applications that may wish to use
+   the features without using Gamera code itself.
 
 The ``features`` element has one attribute, ``scaling``, which is used
 to define how the features should be scaled (if at all).

@@ -214,7 +214,7 @@ used to access and process the underlying pixel data of an image.
    given are *not* relative to the offsets of the view or the
    underlying data.  In other words ``.get(0,0)`` will always return
    the pixel in the upper-left hand corner of the view.  This makes it
-   easier for algorithms what work on the pixels of a view to ignore
+   easier for algorithms that work on the pixels of a view to ignore
    the complexity of the "shared" data model.
 
 Different interfaces
@@ -592,7 +592,7 @@ available in Gamera.  They are all defined in ``include/pixel.hpp``.
 	standard hardware conventions: larger values are higher
 	intensity.
         There are also many utility methods
-	for converting the RGB pixel into other kinds
+	for converting the RGB pixel into other kinds of
 	values.  See ``include/pixel.hpp`` for more information.
 	``Rgb`` instances are small enough (3 bytes) that you can safely pass
 	them by value without performance concerns.
@@ -719,5 +719,5 @@ pixels is not fixed.):
 Connected components
 ====================
 
-X
+TODO: Not yet written.
 

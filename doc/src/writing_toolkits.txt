@@ -113,7 +113,7 @@ remove the example menu items that are included in the skeleton.
 Plugins
 '''''''
 
-Writing plugins is described in detail here__.  The Python metadata
+`Writing plugins`__ is described in detail.  The Python metadata
 files for a toolkit go in ``gamera/toolkits/my_toolkit/plugins/``, and
 the C++ source code goes in ``include/plugins/``.
 

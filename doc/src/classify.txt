@@ -6,7 +6,7 @@ Introduction
 ------------
 
 For manual training of a classifier, you will generally want to use
-the classifier GUI described elsewhere__.  This document describes the
+the `interactive classifier GUI`__.  This document describes the
 programming API that is used by scripts that make use of a classifier.
 
 .. __: gui.html#interactive-classifier-window
@@ -36,7 +36,7 @@ Noninteractive classifier
   Noninteractive classifiers generally take a complete database of
   training data and then create a highly optimised data structure for
   classification.  Because building that data structure can take a
-  considerable amount of time, new training examples can not be added
+  considerable amount of time, new training examples cannot be added
   on the fly.
 
 Types of classifiers
@@ -64,7 +64,7 @@ Classifying images without a classifier
 When a glyph is classified, either by a manual classification or an
 automatic classifier, its classification is stored in the member variable
 ``id_name``.  This variable is actually a list of possible
-classifications, so that I classifier can return a number of different
+classifications, so that a classifier can return a number of different
 possibilities with different confidences.  Each classification entry
 is a tuple of the form (float *confidence*, string *name*).  The
 confidence value is in the range 0.0 - 1.0, where 1.0 is most confident.
@@ -108,7 +108,8 @@ Methods
 
 Images have a number of methods for managing their classification
 state.  Use of these methods is highly recommended over changing the
-``id_name`` variable directly.  These methods are documented here__.
+``id_name`` variable directly.  These methods are documented is the
+`classification section of the plugin documenation`__.
 
 .. __: plugins.html#classification
 
@@ -116,7 +117,7 @@ The classifier interface
 ------------------------
 
 This section describes each method of the classifier interface.
-They are divided into three categories:
+They are divided into two categories:
 
 Core
   Methods available to all classifiers
@@ -166,7 +167,7 @@ Creates a new classifier instance.
 	  splitting algorithm and then continue to recursively
 	  classify its parts.
 
-	  The splitting algorithms are documented `here`__.
+	  The `splitting algorithms`__ are documented in the plugin documentation.
 
 .. __: plugins.html#segmentation
 
@@ -242,9 +243,9 @@ a list of glyphs with all the splitting updates already made.
 id_name **guess_glyph_automatic** (Image *glyph*)
 
 Classifies the given *glyph* without setting its classification.  The
-return value is of the form described here__.
+return value is of the form of `id_name`__.
 
-.. __: #id_name
+.. __: #id-name
 
 Grouping
 ````````
@@ -259,7 +260,8 @@ database.  Needless to say, this approach is much slower than the
 "one-connected-component-at-a-time" approach, but can produce
 considerably better results on certain images.  
 
-The algorithm is described in more detail here__.
+The algorithm is described in more detail in our paper on `correcting
+broken characters`__ (PDF).
 
 .. __: http://dkc.jhu.edu/gamera/papers/droettboom_broken_characters.pdf
 
@@ -506,7 +508,7 @@ training usually takes place.
 *k* Nearest Neighbor classifier
 -------------------------------
 
-The $k$ Nearest Neighbor classifier is a concrete example of the
+The *k* Nearest Neighbor classifier is a concrete example of the
 classifier API.  It adds some methods of its own.
 
 All ``kNN`` classes

@@ -42,7 +42,7 @@ The elements of the returned ``FloatVector`` are:
 3. second order moment on *y* axis
 4. first order moment on both axes
 
-The rest of these I'm not so sure about anymore.  I'll document this soon...
+The rest of these I'm not so sure about anymore.
 
 These features are scale invariant.
 """

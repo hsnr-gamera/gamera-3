@@ -44,7 +44,6 @@ import re
 
 def build_id_regex(s):
     regex, s = _build_id_regex_parens(s)
-    print regex
     return re.compile(regex, re.IGNORECASE)
 
 def _build_id_regex_parens(s):

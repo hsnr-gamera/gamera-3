@@ -154,7 +154,7 @@ class ImageDisplay(wxScrolledWindow):
    def highlight_cc(self, ccs, color=-1):
       color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
-      refresh_at_once = len(ccs) > 10 or len(highlights) > 10
+      refresh_at_once = len(ccs) > 10 or len(self.highlights) > 10
       use_color = color
       old_highlights = self.highlights[:]
       self.highlights = []
@@ -593,7 +593,6 @@ class ImageDisplay(wxScrolledWindow):
       self.Refresh(0, rect=wxRect(0, 0, size.x, size.y))
 
    def _OnLeftDown(self, event):
-      print "_OnLeftDown"
       self.CaptureMouse()
       self.clear_all_highlights()
       self.rubber_on = 1
@@ -1043,6 +1042,15 @@ class MultiImageDisplay(wxGrid):
          self.EndBatch()
          wxEndBusyCursor()
 
+   def remove_glyphs(self, list):
+      for glyph in list:
+         glyph.dead = 1
+
+   def append_and_remove_glyphs(self, add, remove):
+      self.append_glyphs(add)
+      self.remove_glyphs(remove)
+      self.ForceRefresh()
+      
    def scale(self, scaling):
       if self.scaling != scaling:
          self.scaling = scaling
@@ -1176,7 +1184,30 @@ class MultiImageDisplay(wxGrid):
                   self.SetCellValue(row, col, "")
       elif row != None:
          self.SetCellValue(row, col, "")
-   
+
+   def SelectGlyphs(self, glyphs):
+      matches = []
+      for glyph in glyphs:
+         try:
+            matches.append(self.list.index(glyph))
+         except:
+            pass
+      if len(matches):
+         self.BeginBatch()
+         first = 0
+         self.updating = 1
+         last_index = matches[-1]
+         for index in matches:
+            row = index / GRID_NCOLS
+            col = index % GRID_NCOLS
+            if index is last_index:
+               self.updating = 0
+            self.SelectBlock(row, col, row, col, first)
+            if first == 0:
+               self.MakeCellVisible(row, col)
+               first = 1
+         self.EndBatch()
+
 
    ########################################
    # CALLBACKS

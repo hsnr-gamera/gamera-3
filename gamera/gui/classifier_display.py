@@ -23,7 +23,8 @@ from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
 from gamera import gamera_xml, classify, classifier_stats, util
-from gamera.gui import image_menu, var_name, toolbar, gui_util
+from gamera.gui import image_menu, var_name, toolbar, gui_util, \
+     rule_engine_runner
 from gamera.gui.gamera_display import *
 
 ###############################################################################
@@ -441,18 +442,27 @@ class ClassifierFrame(ImageFrameBase):
          self._frame, -1,
          style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
          wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
-      self.splitterh = wxSplitterWindow(
+      self.splitterhr = wxSplitterWindow(
          self.splitterv, -1,
          style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
          wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
-      self.single_iw = ClassifierImageWindow(self, self.splitterh)
-      self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
-      self.splitterh.SetMinimumPaneSize(3)
-      self.splitterh.SplitHorizontally(self.multi_iw, self.single_iw, 300)
+      self.splitterhl = wxSplitterWindow(
+         self.splitterv, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
+         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
+      self.single_iw = ClassifierImageWindow(self, self.splitterhr)
+      self.multi_iw = ClassifierMultiImageWindow(self, self.splitterhr)
+      self.splitterhr.SetMinimumPaneSize(3)
+      self.splitterhr.SplitHorizontally(self.multi_iw, self.single_iw, 300)
       self.symbol_editor = SymbolTableEditorPanel(
-         self._symbol_table, self, self.splitterv)
+         self._symbol_table, self, self.splitterhl)
+      self.rule_engine_runner = rule_engine_runner.RuleEngineRunnerPanel(
+         self, self.splitterhl)
+      self.splitterhl.SetMinimumPaneSize(3)
+      self.splitterhl.SplitHorizontally(self.symbol_editor, self.rule_engine_runner, 300)
+      self.splitterhl.Unsplit()
       self.splitterv.SetMinimumPaneSize(3)
-      self.splitterv.SplitVertically(self.symbol_editor, self.splitterh, 160)
+      self.splitterv.SplitVertically(self.splitterhl, self.splitterhr, 160)
       self.create_menus()
 
    def create_menus(self):
@@ -503,11 +513,17 @@ class ClassifierFrame(ImageFrameBase):
           ("Change classifier &properties...", self._OnClassifierProperties),
           (None, None),
           ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)))
+      rules_menu = gui_util.build_menu(
+         self._frame,
+         (("Show rule testing panel", self._OnShowRuleTestingPanel),
+          (None, None),
+          ("Open rule module", self._OnOpenRuleModule)))
          
       menubar = wxMenuBar()
       menubar.Append(image_menu, "&Image")
       menubar.Append(xml_menu, "&XML")
       menubar.Append(classifier_menu, "&Classifier")
+      menubar.Append(rules_menu, "&Rules")
       self._frame.SetMenuBar(menubar)
 
    def set_image(self, current_database, image=None, weak=1):
@@ -527,24 +543,25 @@ class ClassifierFrame(ImageFrameBase):
 
    def set_single_image(self, image=None, weak=1):
       if image == None:
-         if self.splitterh.IsSplit():
-            self.splitterh.Unsplit()
+         if self.splitterhr.IsSplit():
+            self.splitterhr.Unsplit()
             self.single_iw.Hide()
             del self.single_iw.id.image
             del self.single_iw.id.original_image
       else:
          self.single_iw.id.set_image(image, weak=weak)
-         if not self.splitterh.IsSplit():
-            self.splitterh.SplitHorizontally(
+         if not self.splitterhr.IsSplit():
+            self.splitterhr.SplitHorizontally(
                self.multi_iw, self.single_iw, self._frame.GetSize()[1] / 2)
             self.single_iw.Show()
          
    def append_glyphs(self, list):
-      self.multi_iw.id.append_glyphs(list)
-      for glyph in list:
-         for id in glyph.id_name:
-            self._symbol_table.add(id[1])
-      self.is_dirty = 1
+      if len(list):
+         self.multi_iw.id.append_glyphs(list)
+         for glyph in list:
+            for id in glyph.id_name:
+               self._symbol_table.add(id[1])
+         self.is_dirty = 1
 
    def delete_selected(self):
       self.multi_iw.id.delete_selected()
@@ -564,7 +581,7 @@ class ClassifierFrame(ImageFrameBase):
    # DISPLAY
 
    def display_cc(self, cc):
-      if self.splitterh.IsSplit():
+      if self.splitterhr.IsSplit():
          self.single_iw.id.highlight_cc(cc)
          self.single_iw.id.focus(cc)
 
@@ -596,11 +613,8 @@ class ClassifierFrame(ImageFrameBase):
             self.multi_iw.id.BeginBatch()
             try:
                if len(added):
-                  self.append_glyphs(added)
-               for glyph in removed:
-                  glyph.dead = 1
+                  self.append_and_remove_glyphs(added, removed)
             finally:
-               self.multi_iw.id.ForceRefresh()
                self.multi_iw.id.EndBatch()
                wxEndBusyCursor()
          else:
@@ -758,11 +772,7 @@ class ClassifierFrame(ImageFrameBase):
       self.multi_iw.id.BeginBatch()
       try:
          if len(added) or len(removed):
-            if len(added):
-               self.append_glyphs(added)
-            for glyph in removed:
-               glyph.dead = 1
-            self.multi_iw.id.ForceRefresh()
+            self.append_and_remove_glyphs(added, removed)
          else:
             self.multi_iw.id.RefreshSelected()
          self.multi_iw.id.sort_images()
@@ -1014,6 +1024,27 @@ class ClassifierFrame(ImageFrameBase):
             wxEndBusyCursor()
 
    ########################################
+   # RULES MENU
+
+   def _OnShowRuleTestingPanel(self, event):
+      if self.splitterhl.IsSplit():
+         self.splitterhl.Unsplit()
+         self.rule_engine_runner.Hide()
+      else:
+         self.splitterhl.SplitHorizontally(
+            self.symbol_editor, self.rule_engine_runner, self._frame.GetSize()[1] / 2)
+         self.rule_engine_runner.Show()
+
+   def _OnOpenRuleModule(self, event):
+      filename = gui_util.open_file_dialog("*.py")
+      if not filename is None:
+         self.rule_engine_runner.open_module(filename)
+      if not self.splitterhl.IsSplit():
+         self.splitterhl.SplitHorizontally(
+            self.symbol_editor, self.rule_engine_runner, self._frame.GetSize()[1] / 2)
+         self.rule_engine_runner.Show()
+
+   ########################################
    # CALLBACKS
 
    def _OnCloseWindow(self, event):
@@ -1025,7 +1056,8 @@ class ClassifierFrame(ImageFrameBase):
       self._classifier.set_display(None)
       self.multi_iw.Destroy()
       self.single_iw.Destroy()
-      self.splitterh.Destroy()
+      self.splitterhr.Destroy()
+      self.splitterhl.Destroy()
       self.splitterv.Destroy()
       self._frame.Destroy()
       del self._frame
@@ -1043,7 +1075,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.toplevel = toplevel
       self.editing = 0
       wxTreeCtrl.__init__(self, parent, id, pos, size,
-                          style|wxNO_FULL_REPAINT_ON_RESIZE)
+                          style=style|wxNO_FULL_REPAINT_ON_RESIZE)
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")

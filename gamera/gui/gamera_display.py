@@ -191,8 +191,7 @@ class ImageDisplay(wxScrolledWindow):
 
    # Adjust the scrollbars so a group of highlighted subimages are visible
    def focus(self, glyphs):
-      if not util.is_sequence(glyphs):
-         glyphs = (glyphs,)
+      glyphs = util.make_sequence(glyphs)
       x1 = y1 = maxint
       x2 = y2 = 0
       # Get a combined rectangle of all images in the list
@@ -260,12 +259,15 @@ class ImageDisplay(wxScrolledWindow):
       y = max(min(origin[1] * scale / scaling + 1,
                   h - size.y) - 2, 0)
       self.scaling = scale
-      
-      self.SetScrollbars(scroll_amount, scroll_amount,
-                         floor(w / scroll_amount),
-                         floor(h / scroll_amount),
-                         floor((x / scroll_amount) + 0.5),
-                         floor((y / scroll_amount) + 0.5))
+
+      if self.highlights == []:
+         self.SetScrollbars(scroll_amount, scroll_amount,
+                            floor(w / scroll_amount),
+                            floor(h / scroll_amount),
+                            floor((x / scroll_amount) + 0.5),
+                            floor((y / scroll_amount) + 0.5))
+      else:
+         self.focus([x[0] for x in self.highlights])
       self.RefreshAll()
       wxEndBusyCursor()
 
@@ -420,12 +422,6 @@ class ImageDisplay(wxScrolledWindow):
                          self.image.ncols - ox), 0))
             h = (max(min(int((rects.GetH() / scaling) + fudge),
                          self.image.nrows - oy), 0))
-            # Quantize for scaling
-            if scaling > 1:
-               x = int(int(x / scaling) * scaling)
-               y = int(int(y / scaling) * scaling)
-               w = int(int(w / scaling) * scaling)
-               h = int(int(h / scaling) * scaling)
             self.PaintArea(x + self.image.ul_x, y + self.image.ul_y,
                            w, h, check=0, dc=dc)
          rects.Next()
@@ -445,6 +441,13 @@ class ImageDisplay(wxScrolledWindow):
       origin = [a * self.scroll_amount for a in self.GetViewStart()]
       origin_scaled = [a / scaling for a in origin]
       size_scaled = [a / scaling for a in self.GetSizeTuple()]
+
+      # Quantize for scaling
+      if scaling > 1:
+         x = int(int(x / scaling) * scaling)
+         y = int(int(y / scaling) * scaling)
+         w = int(int(w / scaling) * scaling)
+         h = int(int(h / scaling) * scaling)
 
       if (y + h >= self.image.lr_y):
          h = self.image.lr_y - y + 1
@@ -478,9 +481,11 @@ class ImageDisplay(wxScrolledWindow):
          # that could use too much memory.
          if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
             subimage = subimage.to_greyscale()
-         subimage = subimage.scale_copy(scaling, self.scaling_quality)
-      image = wxEmptyImage(subimage.ncols, subimage.nrows)
-      subimage.to_buffer(image.GetDataBuffer())
+         scaled_image = subimage.scale_copy(scaling, self.scaling_quality)
+      else:
+         scaled_image = subimage
+      image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
+      scaled_image.to_buffer(image.GetDataBuffer())
 
       bmp = wxBitmapFromImage(image)
       x = (x - self.image.ul_x) * scaling - origin[0]
@@ -500,14 +505,17 @@ class ImageDisplay(wxScrolledWindow):
                   # nothingness, don't draw it.
                   if float(h) * scaling <= 1 or float(w) * scaling <= 1:
                      continue
-                  subhighlight = subhighlight.scale_copy(scaling, 0)
-               image = wxEmptyImage(subhighlight.ncols, subhighlight.nrows)
-               subhighlight.to_buffer(image.GetDataBuffer())
+                  scaled_highlight = subhighlight.scale_copy(scaling, 0)
+               else:
+                  scaled_highlight = subhighlight
+               image = wxEmptyImage(scaled_highlight.ncols, scaled_highlight.nrows)
+               scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
-               dc.SetTextForeground(real_black)
-               dc.SetLogicalFunction(wxAND_INVERT)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
+               print x, y, subhighlight.ul_x, subhighlight.ul_y, subimage.ul_x, subimage.ul_y
+               dc.SetTextForeground(real_black)
+               dc.SetLogicalFunction(wxAND_INVERT)
                dc.DrawBitmap(bmp, x_cc, y_cc)
                dc.SetTextForeground(color)
                dc.SetLogicalFunction(wxOR)

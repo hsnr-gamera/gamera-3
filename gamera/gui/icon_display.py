@@ -158,14 +158,7 @@ class IconDisplay(wxListCtrl):
     self.SetItemState(index, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
     currentIcon = self.find_icon(index)
     if currentIcon:
-      if event.ShiftDown():
-        mode = image_menu.HELP_MODE
-      else:
-        mode = image_menu.EXECUTE_MODE
-        menu = image_menu.ImageMenu(
-          self, event.GetX(), event.GetY(),
-          currentIcon.data, currentIcon.label,
-          self.shell, mode)
+      currentIcon.right_click(self, event, self.shell)
     event.Skip()
 
   def OnDoubleClick(self, event):
@@ -193,6 +186,12 @@ class CustomIcon:
 
   def double_click(self):
     return "%s.display()" % self.label
+
+  def right_click(self, parent, event, shell):
+    image_menu.ImageMenu(
+      parent, event.GetX(), event.GetY(),
+      self.data, self.label,
+      shell)
 
 class CIRGBImage(CustomIcon):
   def get_icon():
@@ -319,6 +318,9 @@ class CIInteractiveClassifier(CustomIcon):
     return isinstance(data, classify.InteractiveClassifier)
   check = staticmethod(check)
 
+  def right_click(self, *args):
+    pass
+
 class CINonInteractiveClassifier(CustomIcon):
   def get_icon():
     return wxIconFromBitmap(gamera_icons.getIconNoninterClassifyBitmap())
@@ -329,6 +331,9 @@ class CINonInteractiveClassifier(CustomIcon):
   check = staticmethod(check)
 
   def double_click(self):
+    pass
+
+  def right_click(self, *args):
     pass
 
 builtin_icon_types = (CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,

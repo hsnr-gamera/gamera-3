@@ -208,14 +208,14 @@ class ImageMenu:
       source += '.'.join((self.image_name, func_call))
       sh.run(source)
     else:
-      progress = util.ProgressFactory('Processing images...')
       if result_name != '':
         sh.run('%s = []' % result_name)
-      for i in xrange(len(self.images)):
-        source = '%s[%d].%s' % (self.image_name, i, func_call)
-        if result_name != '':
-          source = '%s.append(%s)' % (result_name, source)
-        sh.run(source)
-        progress.update(i, len(self.images))
-      progress.update(1, 1)
-                       
+      wxBeginBusyCursor()
+      sh.run('for _ in %s:' % self.image_name)
+      source = '_.%s' % (func_call)
+      if result_name != '':
+        source = '%s.append(%s)' % (result_name, source)
+      sh.run('\t' + source)
+      sh.run('\n')
+      del sh.locals['_'] 
+      wxEndBusyCursor()

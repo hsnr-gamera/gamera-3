@@ -21,7 +21,7 @@
 
 #define NP_VISITED2(a) ((a)->m_node_properties[2].Bool)
 
-// This should always be a 64-bit unsigned
+// This should always be at least a 64-bit unsigned
 // If compiling on a platform with a larger available native integer length,
 // you might want to use that instead
 #ifdef _MSC_VER
@@ -94,7 +94,7 @@ inline void graph_optimize_partitions_number_parts(Node* root, NodeVector& subgr
   }
 }
 
-inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t max_size,
+inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t max_parts_per_group,
 						     const size_t subgraph_size,
 						     NodeList& node_stack, Bitfield bits,
 						     const PyObject* eval_func, Parts& parts) {
@@ -103,7 +103,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
   bits |= (Bitfield)1 << node_number;
 
   // Get the score for this part by building a Python list and
-  // passing it to Python
+  // passing it to the (Python) evaluation function
   PyObject* result = PyList_New(node_stack.size());
   size_t j = 0;
   for (NodeList::iterator i = node_stack.begin();
@@ -126,17 +126,18 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
     else
       eval = -1.0;
   }
+  // Py_DECREF(evalobject);
 
   parts.push_back(Part(bits, eval));
 
-  if ((node_stack.size() < max_size) && 
+  if ((node_stack.size() < max_parts_per_group) && 
       (NP_NUMBER(node) != subgraph_size - 1)) {
     for (EdgeList::iterator i = node->m_edges.begin();
 	 i != node->m_edges.end(); ++i) {
       Node* to_node = (*i)->traverse(node);
       if (NP_NUMBER(to_node) > node_number)
 	graph_optimize_partitions_evaluate_parts
-	  (to_node, max_size, subgraph_size, node_stack, bits, eval_func, parts);
+	  (to_node, max_parts_per_group, subgraph_size, node_stack, bits, eval_func, parts);
     }
   }
 
@@ -152,21 +153,31 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
       if (!(root.bits & parts[j].bits))
 	break;
     root.begin = j;
-    Bitfield temp = root.bits << 1;
+    // Find the position of the left-most set bit
+    Bitfield temp = root.bits;
+    size_t b = 0;
+    while (temp) {
+      temp >>= 1;
+      ++b;
+    }
+    // Create a mask of all bits set starting with the left-most set bit
+    temp = (1 << (b + 1)) - 1;
     size_t k = j;
     for (; k < parts.size(); ++k)
       if (!(temp & parts[k].bits))
 	break;
     root.end = k;
   }
+
 }
 
 inline void graph_optimize_partitions_find_solution(
   Parts &parts, const size_t begin, const size_t end, 
   Solution& best_solution, double &best_mean, Solution& partial_solution, 
-  double partial_mean, const Bitfield bits, const Bitfield all_bits) {
+  double partial_sum, const Bitfield bits, const Bitfield all_bits) {
+
   if (bits == all_bits) {
-    partial_mean /= partial_solution.size();
+    double partial_mean = partial_sum / partial_solution.size();
     if (partial_mean > best_mean) {
       best_mean = partial_mean;
       best_solution = partial_solution; // Copy
@@ -175,11 +186,12 @@ inline void graph_optimize_partitions_find_solution(
 
   for (size_t i = begin; i < end; ++i) {
     const Part& root = parts[i];
-    if (!(root.bits & bits)) { // If this part "fits into" the current part(s)
+    if (!(root.bits & bits)) { // If this part "fits into" the current parts
       partial_solution.push_back(root.bits);
       graph_optimize_partitions_find_solution
-	(parts, root.begin, root.end, best_solution, best_mean,
-	 partial_solution, partial_mean + root.score,
+	(parts, std::max(begin, root.begin), std::max(end, root.end), 
+	 best_solution, best_mean,
+	 partial_solution, partial_sum + root.score,
 	 bits | root.bits, all_bits);
       partial_solution.pop_back();
     }
@@ -187,7 +199,7 @@ inline void graph_optimize_partitions_find_solution(
 }
 
 PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
-				    const PyObject* eval_func, const size_t max_size) {
+				    const PyObject* eval_func, const size_t max_parts_per_group) {
 
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
@@ -200,7 +212,7 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   // We can't do the grouping if there's more than 64 nodes,
   // so just return them all.  Also, if there's only one node,
   // just trivially return it to save time.
-  if (size > BITFIELD_SIZE || size == 1) {
+  if (size > BITFIELD_SIZE - 2 || size == 1) {
     // Now, build a Python list of the solution
     PyObject* result = PyList_New(subgraph.size());
     for (size_t i = 0; i < subgraph.size(); ++i) {
@@ -219,12 +231,12 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
   // That gives us an idea of the number of nodes in the graph,
   // now go through and find the parts
   Parts parts;
-  parts.reserve(size * max_size);
+  parts.reserve(size * max_parts_per_group);
   for (NodeVector::iterator i = subgraph.begin();
        i != subgraph.end(); ++i) {
     NodeList node_stack;
     Bitfield bits = 0;
-    graph_optimize_partitions_evaluate_parts(*i, max_size, size,
+    graph_optimize_partitions_evaluate_parts(*i, max_parts_per_group, size,
 					     node_stack, bits, eval_func, parts);
   }
 
@@ -275,13 +287,13 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
 PyObject* graph_optimize_partitions(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   PyObject* a, *eval_func;
-  int max_size = 32;
-  if (PyArg_ParseTuple(args, "OO|i", &a, &eval_func, &max_size) <= 0)
+  int max_parts_per_group = 5;
+  if (PyArg_ParseTuple(args, "OO|i", &a, &eval_func, &max_parts_per_group) <= 0)
     return 0;
   Node* root = graph_find_node(so, (PyObject*)a);
   if (root == NULL)
     return 0;
-  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_size);
+  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_parts_per_group);
   return result;
 }
 

@@ -127,21 +127,20 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       char* i = data;
-      typename Mat::const_row_iterator row = mat.row_begin();
-      typename Mat::const_col_iterator col;
+      typename Mat::const_vec_iterator it = mat.vec_begin();
       ImageAccessor<OneBitPixel> acc;
       OneBitPixel tmp;
-      for (; row != mat.row_end(); ++row) {
-	for (col = row.begin(); col != row.end(); ++col) {
-	  tmp = acc(col);
-	  if (is_white(tmp))
-	    tmp = 255;
-	  else if (is_black(tmp))
-	    tmp = 0;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	  *i = (char)tmp; i++;
-	}
+      unsigned char val;
+      for (; it != mat.vec_end(); ++it) {
+	tmp = acc(it);
+	if (is_white(tmp))
+	  tmp = 255;
+	else
+	  tmp = 0;
+	val = (unsigned char)tmp;
+	*i = val; i++;
+	*i = val; i++;
+	*i = val; i++;
       }
     }
   };

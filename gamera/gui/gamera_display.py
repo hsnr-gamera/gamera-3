@@ -849,55 +849,66 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       wxPyGridCellRenderer.__init__(self)
       self.parent = parent
 
+      self.times = 0
+      self.n_times = 0
+
    _colors = {UNCLASSIFIED: wxColor(255,255,255),
               AUTOMATIC:    wxColor(198,145,145),
               HEURISTIC:    wxColor(240,230,140),
               MANUAL:       wxColor(180,238,180)}
 
-   
-
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
-      def draw_emblems():
-         if isSelected:
-            dc.SetBrush(wxBrush(wxWHITE, wxSOLID))
-         else:
-            dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
-         if classification_state == AUTOMATIC:
-            emblem_size = cell_padding / 3
-            x0 = rect.x
-            x2 = rect.x + rect.width - emblem_size
-            y0 = rect.y
-            y2 = rect.y + rect.height - emblem_size
-            dc.DrawRectangle(x0, y0, emblem_size, emblem_size)
-            dc.DrawRectangle(x0, y2, emblem_size, emblem_size)
-            dc.DrawRectangle(x2, y0, emblem_size, emblem_size)
-            dc.DrawRectangle(x2, y2, emblem_size, emblem_size)
-         elif classification_state == HEURISTIC:
-            emblem_size = cell_padding / 3
-            x0 = rect.x
-            x1 = rect.x + emblem_size
-            x3 = rect.x + rect.width
-            x2 = x3 - emblem_size
-            y0 = rect.y
-            y1 = rect.y + emblem_size
-            y3 = rect.y + rect.height
-            y2 = y3 - emblem_size
-            dc.DrawPolygon([wxPoint(x0, y0), wxPoint(x1, y0), wxPoint(x0, y1)])
-            dc.DrawPolygon([wxPoint(x3, y0), wxPoint(x2, y0), wxPoint(x3, y1)])
-            dc.DrawPolygon([wxPoint(x0, y3), wxPoint(x1, y3), wxPoint(x0, y2)])
-            dc.DrawPolygon([wxPoint(x3, y3), wxPoint(x2, y3), wxPoint(x3, y2)])
-         elif classification_state == MANUAL:
-            quarter_cell = cell_padding / 4
-            radius = int(quarter_cell * 0.75)
-            x0 = rect.x + quarter_cell
-            x1 = rect.x + rect.width - quarter_cell
-            y0 = rect.y + quarter_cell
-            y1 = rect.y + rect.height - quarter_cell
-            dc.DrawCircle(x0, y0, radius)
-            dc.DrawCircle(x1, y0, radius)
-            dc.DrawCircle(x0, y1, radius)
-            dc.DrawCircle(x1, y1, radius)
+##       def draw_emblems():
+##          if isSelected:
+##             dc.SetBrush(wxBrush(wxWHITE, wxSOLID))
+##          else:
+##             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
+##          if classification_state == AUTOMATIC:
+##             emblem_size = cell_padding / 3
+##             x0 = rect.x
+##             x2 = rect.x + rect.width - emblem_size
+##             y0 = rect.y
+##             y2 = rect.y + rect.height - emblem_size
+##             dc.DrawRectangle(x0, y0, emblem_size, emblem_size)
+##             dc.DrawRectangle(x0, y2, emblem_size, emblem_size)
+##             dc.DrawRectangle(x2, y0, emblem_size, emblem_size)
+##             dc.DrawRectangle(x2, y2, emblem_size, emblem_size)
+##          elif classification_state == HEURISTIC:
+##             emblem_size = cell_padding / 3
+##             x0 = rect.x
+##             x1 = rect.x + emblem_size
+##             x3 = rect.x + rect.width
+##             x2 = x3 - emblem_size
+##             y0 = rect.y
+##             y1 = rect.y + emblem_size
+##             y3 = rect.y + rect.height
+##             y2 = y3 - emblem_size
+##             dc.DrawPolygon([wxPoint(x0, y0), wxPoint(x1, y0), wxPoint(x0, y1)])
+##             dc.DrawPolygon([wxPoint(x3, y0), wxPoint(x2, y0), wxPoint(x3, y1)])
+##             dc.DrawPolygon([wxPoint(x0, y3), wxPoint(x1, y3), wxPoint(x0, y2)])
+##             dc.DrawPolygon([wxPoint(x3, y3), wxPoint(x2, y3), wxPoint(x3, y2)])
+##          elif classification_state == MANUAL:
+##             quarter_cell = cell_padding / 4
+##             radius = int(quarter_cell * 0.75)
+##             x0 = rect.x + quarter_cell
+##             x1 = rect.x + rect.width - quarter_cell
+##             y0 = rect.y + quarter_cell
+##             y1 = rect.y + rect.height - quarter_cell
+##             dc.DrawCircle(x0, y0, radius)
+##             dc.DrawCircle(x1, y0, radius)
+##             dc.DrawCircle(x0, y1, radius)
+##             dc.DrawCircle(x1, y1, radius)
+
+      view_start = grid.GetViewStart()
+      view_units = grid.GetScrollPixelsPerUnit()
+      view_size = grid.GetClientSize()
+      if not rect.Intersects(wxRect(
+         view_start[0] * view_units[0],
+         view_start[1] * view_units[1],
+         view_size[0],
+         view_size[1])):
+         return
 
       scaling = self.parent.scaling
       cell_padding = grid.cell_padding
@@ -912,8 +923,10 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
       if not image is None:
          # Fill the background
-         color = self._colors.get(
-            classification_state, wxColor(200,200,200))
+         try:
+            color = self._colors[classification_state]
+         except:
+            color = wxColor(200, 200, 200)
          dc.SetPen(wxTRANSPARENT_PEN)
          if isSelected:
             dc.SetBrush(wxBrush(wxBLACK, wxSOLID))
@@ -927,8 +940,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             # Things are complicated by the ability to provide a global scaling
             # to all of the images in the grid. Here we handle the scaling and,
             # if necessary, we also do the cropping.
-            height = ceil(image.nrows * scaling)
-            width = ceil(image.ncols * scaling)
+            height = int(ceil(image.nrows * scaling))
+            width = int(ceil(image.ncols * scaling))
             if (height >= rect.height or width >= rect.width):
                # If the scaled version is going to still be too large to fit in
                # the grid cell, we crop it first and then scale it. We could
@@ -957,22 +970,26 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             else:
                scaled_image = image
 
-         wx_image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
+         width = scaled_image.ncols
+         height = scaled_image.nrows
+         x = int(rect.x + (rect.width - width) / 2)
+         y = int(rect.y + (rect.height - height) / 2)
+         wx_image = wxEmptyImage(width, height)
          scaled_image.to_buffer(wx_image.GetDataBuffer())
-         bmp = wx_image.ConvertToBitmap()
+         bmp = wxBitmapFromImage(wx_image)
+         wx_image.Destroy()
+         del scaled_image
+         del wx_image
          # Display centered within the cell
-         x = int(rect.x + (rect.width / 2) - (bmp.GetWidth() / 2))
-         y = int(rect.y + (rect.height / 2) - (bmp.GetHeight() / 2))
 
          tmp_dc = wxMemoryDC()
          tmp_dc.SelectObject(bmp)
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function
             # (wxSRC_INVERT) didn't seem to get used under Windows.
-            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0,
-                    wxSRC_INVERT)
+            dc.Blit(x, y, width, height, tmp_dc, 0, 0, wxSRC_INVERT)
          else:
-            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxAND)
+            dc.Blit(x, y, width, height, tmp_dc, 0, 0, wxAND)
 
          if self.parent.display_names:
             label = self.parent.get_label(image)
@@ -1019,17 +1036,16 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(self.parent.list):
          image = self.parent.list[bitmap_no]
-      else:
-         image = None
-      if image != None:
          return wxSize(
             min(grid.max_cell_width,
                 int(image.ncols * grid.scaling + grid.cell_padding)),
             min(grid.max_cell_height,
                 int(image.nrows * grid.scaling + grid.cell_padding)))
-      return wxSize(25, 25)
+      else:
+         return wxSize(25, 25)
 
    def Clone(self):
+      print "Clone"
       return MultiImageGridRenderer(self.parent)
 
 # Grid constants

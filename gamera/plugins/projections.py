@@ -123,12 +123,11 @@ this method to small angles.
     __call__ = staticmethod(__call__)
     doc_examples = [(ONEBIT, 15)]
 
-class skew_angle_projections(PluginFunction):
-    """Estimates the skew angle of a document with the aid of skewed
+class rotation_angle_projections(PluginFunction):
+    """Estimates the rotation angle of a document with the aid of skewed
 projections (see Ha, Bunke: 'Image Processing Methods for Document Image
 Analysis' in 'Handbook of Character Recognition and Document Image Analysis'
-edited by Bunke and Wang, World Scientific 1997). The returned angle can
-be used as input for rotateShear_ to remove the image skew.
+edited by Bunke and Wang, World Scientific 1997).
 
 This method works for a wide range of documents (text, music, forms), but
 can become slow for large images. This particular implementation can be
@@ -146,15 +145,23 @@ Arguments:
   error bound for the skew angle estimate;
   default value is zero
 
-When *accuracy* is set to zero, a default value of *sqrt(atan(1/image.ncols))*
-is used, which corresponds to a rotation of one pixel in the rightmost
-column (the square root stems from the golden section maximum search method,
-see Press et al.: 'Numerical Recipes', Cambridge University Press 1989).
+When *accuracy* is set to zero, a default value of *180\*0.5/(image.ncols\*pi)*
+is used, which is only a heuristic formula for little changes in the projection
+profile.
+
+Return Values:
+
+*rotation angle*:
+  The rotation angle necessary to deskew the image.
+  Can be used directly as input to rotateShear_
+
+*accuracy*:
+  Accuracy of the returned angle.
 """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     args = Args([Float("minangle", default=-2.5), Float("maxangle", default=2.5), Float("accuracy", default=0)])
-    return_type = Float("skew_angle")
+    return_type = FloatVector("rotation angle", "accuracy")
     author = "Christoph Dalitz"
     pure_python = 1
 
@@ -169,7 +176,7 @@ see Press et al.: 'Numerical Recipes', Cambridge University Press 1989).
 
         # some arguments checking
         if (accuracy == 0):
-            accuracy = math.atan(1.0/self.ncols)**0.5
+            accuracy = 180 * 0.5 / (self.ncols * math.pi)
         if (maxangle <= minangle):
             raise RuntimeError("maxangle %f must be greater than minangle %f\n" \
                                % (maxangle, minangle))
@@ -226,6 +233,8 @@ see Press et al.: 'Numerical Recipes', Cambridge University Press 1989).
 
         #
         # fine tuning with golden section search
+		# see Press at al: "Numerical Recipes",
+		# Cambridge University Press (1986)
         #
         golden = 0.38197  # (3 - sqrt(2)) / 2
         x = 500   # dummy value for recognition of first iteration
@@ -255,7 +264,7 @@ see Press et al.: 'Numerical Recipes', Cambridge University Press 1989).
                 else:
                     c = b; fc = fb;
                     b = x; fb = fx;
-        return b
+        return [b, accuracy]
 
     __call__ = staticmethod(__call__)
 
@@ -266,7 +275,8 @@ class ProjectionsModule(PluginModule):
     category = "Analysis"
     functions = [projection_rows, projection_cols, projections,
                  projection_skewed_rows, projection_skewed_cols,
-                 skew_angle_projections]
+                 rotation_angle_projections]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = ProjectionsModule()
+

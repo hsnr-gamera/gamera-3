@@ -14,6 +14,7 @@ from distutils.dir_util import create_tree, remove_tree
 from distutils.errors import *
 from distutils.sysconfig import get_python_version
 from distutils import log
+import datetime
 
 class bdist_msi (Command):
 
@@ -43,10 +44,11 @@ class bdist_msi (Command):
                     ('install-script=', None,
                      "basename of installation script to be run after"
                      "installation or before deinstallation"),
+                    ('nightly','n',"create output file with nightly build name format"),
                    ]
 
     boolean_options = ['keep-temp', 'no-target-compile', 'no-target-optimize',
-                       'skip-build']
+                       'skip-build','nightly']
 
     def initialize_options (self):
         self.bdist_dir = None
@@ -59,6 +61,7 @@ class bdist_msi (Command):
         self.title = None
         self.skip_build = 0
         self.install_script = None
+        self.nightly = 0
 
     # initialize_options()
 
@@ -77,7 +80,7 @@ class bdist_msi (Command):
             self.target_version = short_version
 
         self.set_undefined_options('bdist', ('dist_dir', 'dist_dir'))
-
+        
         if self.install_script:
             for script in self.distribution.scripts:
                 if self.install_script == os.path.basename(script):
@@ -163,7 +166,7 @@ class bdist_msi (Command):
         lines.append("target_optimize=%d" % (not self.no_target_optimize))
         if self.target_version:
             lines.append("target_version=%s" % self.target_version)
-
+        lines.append("nightly=%d" % (self.nightly))
         title = self.title or self.distribution.get_fullname()
         lines.append("title=%s" % repr(title)[1:-1])
         import time
@@ -181,8 +184,18 @@ class bdist_msi (Command):
         self.mkpath(self.dist_dir)
 
         cfgdata = self.get_inidata()
-        
-        if self.target_version:
+        if self.nightly:
+            d = datetime.date.today()
+            if d.month < 10:
+                monthstring = '0' + str(d.month)
+            else:
+                monthstring = str(d.month)
+            if d.day < 10:
+                daystring = '0' + str(d.day)
+            else:
+                daystring = str(d.day)
+            installer_name = "%s-%s%s%s.win32-py%s" % ("gamera-2-nightly", d.year, monthstring, daystring, self.target_version)
+        elif self.target_version:
             # if we create an installer for a specific python version,
             # it's better to include this in the name
             installer_name = "%s.win32-py%s" % (fullname, self.target_version)
@@ -263,12 +276,11 @@ class bdist_msi (Command):
 
 <$Files "%s" SubDir=TREE DestDir="[PY23LOC]">
 
-""" % string.join(["..\\",self.bdist_dir,"\\*"],'')
+""" % string.join(["..",self.bdist_dir,"*"],'\\')
         file.write(contents)
         
         ver_name = self.dist_dir + "/Gamera2.ver"
         file = open(ver_name, "wb")
-        import datetime
         curr_date = datetime.date.today()
         contents = """
 ;----------------------------------------------------------------------------

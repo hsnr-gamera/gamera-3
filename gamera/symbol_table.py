@@ -103,10 +103,13 @@ class SymbolTable:
                   break
             if found_last != -1:
                found_last = targets[found_last]
+               found_it = 0
                for i in range(len(symbol), min(len(found), len(found_last))):
                   if found[i] != found_last[i]:
+                     found_it = 1
                      break
-               found = found[:i]
+               if found_it:
+                  found = found[:i]
          return found
       return symbol
 

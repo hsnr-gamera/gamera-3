@@ -37,7 +37,7 @@ void init_RGBPixelType(PyObject* module_dict);
 void init_ImageDataType(PyObject* module_dict);
 void init_ImageType(PyObject* module_dict);
 void init_ImageInfoType(PyObject* module_dict);
-
+void init_ListUtilities(PyObject* module_dict);
 
 extern "C" {
   DL_EXPORT(void) initgameracore(void);

@@ -26,7 +26,11 @@ INSTALLING FROM SOURCE
 Standard Build and Install
 
 As described in section, building and installing a module
-distribution using the Distutils is usually one simple command:
+distribution using the Distutils is usually just:
+
+python setup.py build
+
+then (as root or admin)
 
 python setup.py install
 
@@ -47,7 +51,11 @@ normal thing to do is:
 
 tar zvxf gamera-2.0.tar.gz
 cd gamera-2.0
-python setup.py install
+python setup.py build
+
+then (as root)
+
+pytthon setup.py install
 
 WINDOWS
 

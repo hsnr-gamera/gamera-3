@@ -338,6 +338,7 @@ class ImageBase:
          functions = all_features
          return functions
       features = util.make_sequence(features)
+      features.sort()
       all_strings = 1
       for feature in features:
          if not type(feature) == StringType:

@@ -81,13 +81,13 @@ class _Classifier:
       # this function is called recursively on split glyphs
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
-      if (recursion_level > 10) or len(self._database) == 0:
-         return [], []
-      progress.add_length(len(glyphs))
-      added = []
-      removed = {}
-      feature_functions = self.get_feature_functions()
       try:
+         if (recursion_level > 10) or len(self._database) == 0:
+            return [], []
+         progress.add_length(len(glyphs))
+         added = []
+         removed = {}
+         feature_functions = self.get_feature_functions()
          for glyph in glyphs:
             if glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC):
                for child in glyph.children_images:
@@ -232,16 +232,24 @@ class NonInteractiveClassifier(_Classifier):
          from gamera import group
          grouping_classifier = group.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
-      if not util.is_sequence(database) or database == []:
-         raise ValueError(
-            "You can not initialize a NonInteractiveClassifier an empty database.")
-      self._database = database
+##       if not util.is_sequence(database) or database == []:
+##          raise ValueError(
+##             "You can not initialize a NonInteractiveClassifier an empty database.")
+      if database != []:
+         self._database = database
+         self.change_feature_set(features)
+         self.classifier.instantiate_from_images(database)
+      else:
+         self._database = [0]
 
       if perform_splits:
          self._do_splits = self._do_splits_impl
       else:
          self._do_splits = self._do_splits_null
-      self.classifier.instantiate_from_images(database)
+
+   def is_interactive():
+      return 0
+   is_interactive = staticmethod(is_interactive)
 
    ########################################
    # BASIC DATABASE MANIPULATION FUNCTIONS
@@ -272,6 +280,7 @@ class NonInteractiveClassifier(_Classifier):
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
    def guess_glyph_automatic(self, glyph):
+      glyph.generate_features(self.get_feature_functions())
       return self.classifier.classify(glyph)
 
    def _classify_automatic_impl(self, glyph):
@@ -294,24 +303,32 @@ class InteractiveClassifier(_Classifier):
       if classifier == None:
          from gamera import knn
          classifier = knn.kNN()
+      if not classifier.supports_interactive():
+         raise ClassifierError(
+            "InteractiveClassifier must be initialised with a" +
+            "classifier that supports interaction.")                   
       self.classifier = classifier
 
       if grouping_classifier is None:
-         from gamera import polargrouping
-         grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
+         from gamera import genericgrouping
+         grouping_classifier = genericgrouping.GenericGroupingClassifier([], self)
          
       grouping_classifier.set_parent_classifier(self)
       self.grouping_classifier = grouping_classifier
       self.is_dirty = 0
-      self._database = {}
-      for key in database:
-         self._database[key] = None
+      self.clear_glyphs()
+      for glyph in database:
+         self._database[glyph] = None
       self.change_feature_set(features)
       if perform_splits:
          self._do_splits = self._do_splits_impl
       else:
          self._do_splits = self._do_splits_null
       self._display = None
+
+   def is_interactive():
+      return 1
+   is_interactive = staticmethod(is_interactive)
 
    ########################################
    # BASIC DATABASE MANIPULATION FUNCTIONS

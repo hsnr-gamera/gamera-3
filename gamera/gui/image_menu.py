@@ -158,9 +158,9 @@ class ImageMenu:
             sh.locals[name] = []
             for image in self.images:
                if isinstance(image, weakref.ProxyTypes):
-                  sh.locals[name] = image.image_copy()
+                  sh.locals[name].append(image.image_copy())
                else:
-                  sh.locals[name] = image
+                  sh.locals[name].append(image)
          sh.Update()
       sh.update()
 

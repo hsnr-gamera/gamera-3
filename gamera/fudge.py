@@ -29,17 +29,17 @@ FUDGE_AMOUNT_2 = 6
 from gamera.core import Rect
 
 # This is a factory function that looks like a constructor
-def Fudge(o):
+def Fudge(o, amount = FUDGE_AMOUNT):
    # For rectangles, just return a new rectangle that is slightly larger
    if isinstance(o, Rect):
-      return Rect(o.ul_y - FUDGE_AMOUNT, o.ul_x - FUDGE_AMOUNT,
-                  o.nrows + FUDGE_AMOUNT_2, o.ncols + FUDGE_AMOUNT_2)
+      return Rect(o.ul_y - amount, o.ul_x - amount,
+                  o.nrows + amount * 2, o.ncols + amount * 2)
 
    # For integers, return one of our "fudge number proxies"
    elif isinstance(o, int):
-      return FudgeInt(o)
+      return FudgeInt(o, amount)
    elif isinstance(o, float):
-      return FudgeFloat(o)
+      return FudgeFloat(o, amount)
 F = Fudge
 
 class FudgeNumber(object):
@@ -57,13 +57,13 @@ class FudgeNumber(object):
       return self.above >= other
 
 class FudgeInt(FudgeNumber, int):
-   def __init__(self, value):
+   def __init__(self, value, amount=FUDGE_AMOUNT):
       int.__init__(self, value)
-      self.below = int(value - FUDGE_AMOUNT)
-      self.above = int(value + FUDGE_AMOUNT)
+      self.below = int(value - amount)
+      self.above = int(value + amount)
 
 class FudgeFloat(FudgeNumber, float):
    def __init__(self, value):
       int.__init__(self, value)
-      self.below = float(value - FUDGE_AMOUNT)
-      self.above = float(value + FUDGE_AMOUNT)
+      self.below = float(value - amount)
+      self.above = float(value + amount)

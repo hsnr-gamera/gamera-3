@@ -92,6 +92,33 @@ def constains_instance(gl, klass):
          return 1
    return 0  
 
+def combine_unique_elements(list1, list2=[]):
+   """Given two lists, returns a list of all unique items in both."""
+   result = {}
+   for item in list1:
+      result[item] = None
+   for item in list2:
+      result[item] = None
+   return result.keys()
+
+def sublists(list):
+   l = len(list) - 1
+   m = int(pow(2, l - 1))
+   for x in range(len(list)):
+      for i in range(m):
+         set = []
+         k = 1
+         last_part = []
+         set.append(last_part)
+         for j in range(l):
+            last_part.append(list[j])
+            if i & k:
+               last_part = []
+               set.append(last_part)
+            k *= 2
+         yield set
+      list = [list[-1]] + list[0:-1]
+         
 def string2identifier(str):
    """Defines how illegal variable names are converted to legal ones."""
    # TODO: Not very robust.

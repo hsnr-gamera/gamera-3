@@ -99,6 +99,24 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          self.toplevel.set_label_display(id)
          self.toplevel.display_label_at_cell(row, col, id[0][1])
 
+   def move_back(self):
+      row = self.GetGridCursorRow()
+      col = self.GetGridCursorCol()
+      image_no = row * GRID_NCOLS + col
+      image_no = max(0, image_no - 1)
+      row = image_no / GRID_NCOLS
+      col = image_no % GRID_NCOLS
+      self.SetGridCursor(row, col)
+      self.SelectBlock(row, col, row, col, 0)
+      self.MakeCellVisible(min(row + 1, self.rows), col)
+      image = self.list[image_no]
+      if image.classification_state != MANUAL:
+         id = self.toplevel.guess_glyph(image)
+      else:
+         id = image.id_name
+      self.toplevel.set_label_display(id)
+      self.toplevel.display_label_at_cell(row, col, id[0][1])
+
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL
 
@@ -158,108 +176,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       self.EndBatch()
 
    ########################################
-   # SORTING
-
-   def sort_by_name_func(self, a, b):
-      if a.id_name == [] and b.id_name == []:
-         r = 0
-      elif a.id_name == []:
-         r = 1
-      elif b.id_name == []:
-         r = -1
-      else:
-         r = cmp(a.get_main_id(), b.get_main_id())
-      if r == 0:
-         r = cmp(b.classification_state, a.classification_state)
-         if r == 0 and a.classification_state != UNCLASSIFIED:
-            r = cmp(b.id_name[0][0], a.id_name[0][0])
-      return r
-
-   def split_classified_from_unclassified(self, list):
-      # Find split between classified and unclassified
-      for i in range(len(list)):
-         if list[i].classification_state == UNCLASSIFIED:
-            break
-      return list[:i], list[i:]
-
-   def insert_for_line_breaks(self, list):
-      # Make sure each new label begins in a new row
-      column = 0
-      prev_id = -1
-      new_list = []
-      for image in list:
-         main_id = image.get_main_id()
-         if main_id != prev_id and column != 0:
-            new_list.extend([None] * (GRID_NCOLS - column))
-            column = 0
-         new_list.append(image)
-         column += 1
-         column %= GRID_NCOLS
-         prev_id = main_id
-      return new_list
-
-   def default_sort(self, list):
-      # If we've done no classification, use the default sort from
-      # MultiImageDisplay
-      self.last_sort = "default"
-      clean = 1
-      for item in list:
-         if item.classification_state != UNCLASSIFIED:
-            clean = 0
-            break
-      if clean:
-         new_list = MultiImageDisplay.default_sort(self, list)
-      else:
-         # mark that we want to display row labels
-         self.display_row_labels = 1
-         # Sort by label
-         list.sort(self.sort_by_name_func)
-         # Find split between classified and unclassified
-         classified, unclassified = self.split_classified_from_unclassified(list)
-         # Sort the unclassified by size
-         unclassified = MultiImageDisplay.default_sort(self, unclassified)
-         # Merge back together
-         list = classified + unclassified
-         # Make sure each new label begins in a new row
-         new_list = self.insert_for_line_breaks(list)
-      return new_list
-
-   def sort_images(self, function=None, order=0):
-      self.last_sort = None
-      self.display_row_labels = not function
-      orig_len = len(self.list)
-      new_list = self.GetAllItems()
-      if len(new_list) != len(self.list):
-         self.list = new_list
-      MultiImageDisplay.sort_images(self, function, order)
-
-   def set_labels(self):
-      if self.last_sort != "default":
-         MultiImageDisplay.set_labels(self)
-      self.BeginBatch()
-      max_label = 1
-      for i in range(self.cols):
-         self.SetColLabelValue(i, "")
-      dc = wxClientDC(self)
-      for i in range(self.rows):
-         try:
-            image = self.list[i * GRID_NCOLS]
-         except IndexError:
-            self.SetRowLabelValue(i, "")
-         else:
-            if image == None or image.classification_state == UNCLASSIFIED:
-               self.SetRowLabelValue(i, "")
-            elif self.display_row_labels:
-               label = self.get_label(image)
-               label = self.reduce_label_length(
-                  dc, GRID_MAX_LABEL_LENGTH * 0.6, label)
-               max_label = max(dc.GetTextExtent(label)[0], max_label)
-               self.SetRowLabelValue(i, label)
-            else:
-               max_label = max(dc.GetTextExtent("<>")[0], max_label)
-               self.SetRowLabelValue(i, "<>")
-      self.EndBatch()
-      return min(max_label, GRID_MAX_LABEL_LENGTH)
+   # DELETION
 
    def delete_selected(self):
       self._delete_selected(self.GetSelectedItems(), 0)
@@ -283,7 +200,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    # CALLBACKS
 
    # Display selected items in the context display
-   def OnSelectImpl(self):
+   def _OnSelectImpl(self):
       if not self.updating:
          images = self.GetSelectedItems()
          if images != self._last_selection:
@@ -305,11 +222,13 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    def _OnSelect(self, event):
       event.Skip()
-      self.OnSelectImpl()
+      self._OnSelectImpl()
 
    def _OnKey(self, event):
       if event.KeyCode() == WXK_F12:
          self.toplevel.do_auto_move()
+      elif event.KeyCode() == WXK_F11:
+         self.toplevel.move_back()
       event.Skip()
 
 class ClassifierMultiImageWindow(MultiImageWindow):
@@ -359,7 +278,7 @@ class ClassifierImageDisplay(ImageDisplay):
       self.toplevel = toplevel
       ImageDisplay.__init__(self, parent)
 
-   def OnRubber(self, shift):
+   def _OnRubber(self, shift):
       self.toplevel.find_glyphs_in_rect(
          self.rubber_origin_x, self.rubber_origin_y,
          self.rubber_x2, self.rubber_y2, shift)
@@ -469,6 +388,7 @@ class ClassifierFrame(ImageFrameBase):
          self._frame,
          (("&Open and segment image...", self._OnOpenAndSegmentImage),
           ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
+          ("Se&lect image...", self._OnSelectImage),
           (None, None),
           ("&Save glyphs separately",
            (("&Production database...", self._OnSaveProductionDatabaseAsImages),
@@ -583,7 +503,7 @@ class ClassifierFrame(ImageFrameBase):
    def display_cc(self, cc):
       if self.splitterhr.IsSplit():
          self.single_iw.id.highlight_cc(cc)
-         self.single_iw.id.focus(cc)
+         self.single_iw.id.focus_glyphs(cc)
 
    def find_glyphs_in_rect(self, x1, y1, x2, y2, shift):
       self.multi_iw.id.find_glyphs_in_rect(x1, y1, x2, y2, shift)
@@ -626,6 +546,9 @@ class ClassifierFrame(ImageFrameBase):
    def do_auto_move(self):
       self.multi_iw.id.do_auto_move(self.auto_move)
       return self.auto_move != []
+
+   def move_back(self):
+      self.multi_iw.id.move_back()
 
    def set_label_display(self, ids):
       if ids != []:
@@ -765,6 +688,16 @@ class ClassifierFrame(ImageFrameBase):
          wxEndBusyCursor()
          return
       wxEndBusyCursor()
+
+   def _OnSelectImage(self, event):
+      dialog = Args(
+         [Class("Image", core.ImageBase)],
+         name="Select image...")
+      results = dialog.show(self._frame, image_menu.shell.locals)
+      if results is None:
+         return
+      (image,) = results
+      self.set_single_image(image, weak=0)
       
    def _segment_image(self, image, segmenter):
       image_ref = image
@@ -830,13 +763,9 @@ class ClassifierFrame(ImageFrameBase):
          added2, removed2 = self._classifier.classify_list_automatic(list + added1)
       except ClassifierError, e:
          gui_util.message(str(e))
-      added = {}
-      for glyph in added1 + added2:
-         added[glyph] = None
-      removed = {}
-      for glyph in removed1 + removed2:
-         removed[glyph] = None
-      self._AdjustAfterGuess(added.keys(), removed.keys())
+      self._AdjustAfterGuess(
+         util.combine_unique_elements(added1, added2),
+         util.combine_unique_elements(removed1, removed2))
 
    def _AdjustAfterGuess(self, added, removed):
       wxBeginBusyCursor()
@@ -906,7 +835,7 @@ class ClassifierFrame(ImageFrameBase):
       try:
          self._classifier.load_settings(filename)
       except gamera_xml.XMLError, e:
-         gui_util.message("Openging classifier settings: " + str(e))
+         gui_util.message("Opening classifier settings: " + str(e))
 
    def _OnClassifierSettingsSave(self, event):
       filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
@@ -946,30 +875,29 @@ class ClassifierFrame(ImageFrameBase):
           FileSave('Save glyphs to file', '',
                    extension=gamera_xml.extensions)],
          name = 'Save by criteria...')
-      results = dialog.show(self._frame)
-      if results is None:
-         return
-      skip, proddb, currdb, skip, un, auto, heur, man, filename = results
+      verified = 0
+      while not verified:
+         results = dialog.show(self._frame)
+         if results is None:
+            return
+         skip, proddb, currdb, skip, un, auto, heur, man, filename = results
+         if ((proddb == 0 and currdb == 0) or
+             (un == 0 and auto == 0 and heur == 0 and man == 0)):
+            gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
+            continue
+         if filename is None:
+            gui_util.message("You must select a filename to save into.")
+            continue
+         verified = 1
+
       self._save_by_criteria_dialog = results
-      if ((proddb == 0 and currdb == 0) or
-          (un == 0 and auto == 0 and heur == 0 and man == 0)):
-         gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
-         self._OnSaveByCriteria(event)
-         return
-      if filename is None:
-         gui_util.message("You must select a filename to save into.")
-         self._OnSaveByCriteria(event)
-         return
-      # We build a dictionary here, since we don't want to save the
-      # same glyph twice (it might be in both current and production databases)
-      glyphs = {}
+
+      glyphs = []
       if proddb:
-         for glyph in self._classifier.get_glyphs():
-            glyphs[glyph] = None
+         glyphs = util.combine_unique_elements(glyphs, self._classifier.get_glyphs())
       if currdb:
-         for glyph in self.multi_iw.id.GetAllItems():
-            glyphs[glyph] = None
-      # One big-ass filtering function
+         elements = util.combine_unique_elements(glyphs, self.multi_iw.id.GetAllItems())
+      # One big-ass filtering list comprehension
       glyphs = [x for x in glyphs.iterkeys()
                 if ((x != None and not hasattr(x, 'dead')) and
                     ((x.classification_state == UNCLASSIFIED and un) or
@@ -978,9 +906,9 @@ class ClassifierFrame(ImageFrameBase):
                      (x.classification_state == MANUAL and man)))]
       try:
          gamera_xml.WriteXMLFile(
-         glyphs=glyphs,
-         symbol_table=self._symbol_table).write_filename(
-         filename)
+            glyphs=glyphs,
+            symbol_table=self._symbol_table).write_filename(
+               filename)
       except gamera_xml.XMLError, e:
          gui_util.message("Saving by criteria: " + str(e))
          
@@ -1132,7 +1060,7 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # RULES MENU
 
-   def _OnShowRuleTestingPanel(self, event):
+   def _OnShowRuleTestingPanel(self, event, show=1):
       if self.splitterhl.IsSplit():
          self.splitterhl.Unsplit()
          self.rule_engine_runner.Hide()
@@ -1145,6 +1073,7 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(self._frame, "*.py")
       if not filename is None:
          self.rule_engine_runner.open_module(filename)
+      
       if not self.splitterhl.IsSplit():
          self.splitterhl.SplitHorizontally(
             self.symbol_editor, self.rule_engine_runner, self._frame.GetSize()[1] / 2)
@@ -1359,6 +1288,8 @@ class SymbolTableEditorPanel(wxPanel):
          return
       elif evt.KeyCode() == WXK_F12:
          self.toplevel.do_auto_move()
+      elif evt.KeyCode() == WXK_F11:
+         self.toplevel.move_back()
       else:
          evt.Skip()
 

@@ -20,6 +20,7 @@
 from wxPython.wx import *        # wxPython
 from wxPython.lib.dialogs import wxScrolledMessageDialog
 from os import path
+from types import *
 from gamera import util
 
 colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
@@ -36,8 +37,8 @@ def get_color(number):
       if len(number) == 3:
          return wxColor(*tuple(number))
       else:
-         number = -1
-   if number < 0:
+         number = None
+   if type(number) != IntType:
       number = color_number
       color_number += 1
    return colors[number & 0x7] # mod 8

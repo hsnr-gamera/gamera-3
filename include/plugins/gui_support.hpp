@@ -60,17 +60,23 @@ namespace {
     template<class Mat>
     void operator()(const Mat& mat, char* data) {
       char* i = data;
-      FloatPixel max = 0;
-      max = find_max(mat.parent());
-      if (max > 0)
-	max = 255.0 / max;
-      else 
-	max = 0;
 
       typename Mat::const_vec_iterator vi = mat.vec_begin();
+      FloatPixel max = *vi;
+      FloatPixel min = *vi;
+      for (; vi != mat.vec_end(); ++vi) {
+	if (*vi > max)
+	  max = *vi;
+	if (*vi < min)
+	  min = *vi;
+      }
+
+      FloatPixel scale = 255.0 / (max - min);
+
+      vi = mat.vec_begin();
       FloatPixel tmp;
       for (; vi != mat.vec_end(); vi++) {
-	tmp = *vi * max;
+	tmp = (*vi + min) * scale;
 	if (tmp > 255)
 	  tmp = 255;
 	*(i++) = (char)tmp;
@@ -88,18 +94,23 @@ namespace {
 
       if ((mat.parent().nrows() <= 1) || mat.parent().ncols() <= 1)
 	throw std::range_error("Out of range!");
-      double scale;
-      ComplexPixel max = 0;
-      max = find_max(mat.parent());
-      if (max.real() > 0)
-	scale = 255.0 / max.real();
-      else 
-	scale = 0.0;
 
       typename Mat::const_vec_iterator vi = mat.vec_begin();
+      double max = (*vi).real();
+      double min = (*vi).real();
+      for (; vi != mat.vec_end(); ++vi) {
+	if ((*vi).real() > max)
+	  max = (*vi).real();
+	if ((*vi).real() < min)
+	  min = (*vi).real();
+      }
+
+      double scale = 255.0 / (max - min);
+
+      vi = mat.vec_begin();
       double tmp;
       for (; vi != mat.vec_end(); ++vi) {
-	tmp = (*vi).real() * scale;
+	tmp = ((*vi).real() - min) * scale;
 	if (tmp > 255.0)
 	  tmp = 255.0;
 	*i = (char)floor(tmp); i++;

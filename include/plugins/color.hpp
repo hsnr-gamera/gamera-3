@@ -129,8 +129,18 @@ namespace Gamera {
 
   RGBImageView* false_color(const FloatImageView& image) {
     RGBImageView* view = _image_conversion::creator<RGBPixel>::image(image);
-    FloatPixel max = 0;
-    max = find_max(image.parent());
+
+    FloatImageView::const_vec_iterator vi = image.vec_begin();
+    FloatPixel max = *vi;
+    FloatPixel min = *vi;
+    for (; vi != image.vec_end(); ++vi) {
+      if (*vi > max)
+	max = *vi;
+      if (*vi < min)
+	min = *vi;
+    }
+    
+    FloatPixel scale = (max - min);
 
     // We don't use a table (as with 8-bit greyscale) because we can get
     // much greater color "depth" this way (The table method only uses
@@ -141,7 +151,7 @@ namespace Gamera {
     ImageAccessor<FloatPixel> in_acc;
     ImageAccessor<RGBPixel> out_acc;
     for (; in != image.vec_end(); ++in, ++out) {
-      double h = (in_acc.get(in) / max) * 4.0;
+      double h = ((in_acc.get(in) - min) / scale) * 4.0;
       size_t i = (size_t)h;
       GreyScalePixel f, q;
       // v == 255, p == 0

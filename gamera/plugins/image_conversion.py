@@ -31,7 +31,7 @@ Note, converting an image to one of the same type performs a copy operation.
     def __call__(self):
         if self.data.pixel_type == RGB:
             return self.image_copy()
-        _image_conversion.to_rgb(self)
+        return _image_conversion.to_rgb(self)
     __call__ = staticmethod(__call__)
 
 class to_greyscale(PluginFunction):
@@ -46,7 +46,7 @@ Note, converting an image to one of the same type performs a copy operation.
     def __call__(self):
         if self.data.pixel_type == GREYSCALE:
             return self.image_copy()
-        _image_conversion.to_greyscale(self)
+        return _image_conversion.to_greyscale(self)
     __call__ = staticmethod(__call__)
 
 class to_grey16(PluginFunction):
@@ -60,7 +60,7 @@ Note, converting an image to one of the same type performs a copy operation.
     def __call__(self):
         if self.data.pixel_type == GREY16:
             return self.image_copy()
-        _image_conversion.to_grey16(self)
+        return _image_conversion.to_grey16(self)
     __call__ = staticmethod(__call__)
 
 class to_float(PluginFunction):
@@ -74,7 +74,7 @@ Note, converting an image to one of the same type performs a copy operation.
     def __call__(self):
         if self.data.pixel_type == FLOAT:
             return self.image_copy()
-        _image_conversion.to_float(self)
+        return _image_conversion.to_float(self)
     __call__ = staticmethod(__call__)
 
 class to_onebit(PluginFunction):

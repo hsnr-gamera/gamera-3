@@ -17,8 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from plugin import *
-import outline, _volume, gamera
+from gamera.plugin import *
+import line, _volume, gamera
 import sys
 
 class _FeatureBase(PluginFunction):
@@ -37,6 +37,8 @@ class aspect_ratio(_FeatureBase):
 aspect_ratio = aspect_ratio()
 
 class compactness(_FeatureBase):
+  self_type = ImageType(["OneBit"])
+
   def __call__(self):
     o = self.outline()
     volume = self.volume()
@@ -52,18 +54,19 @@ class height(_FeatureBase):
 height = height()
 
 class moments(_FeatureBase):
-  pass
+  self_type = ImageType(["OneBit"])
 moments = moments()
 
 class nholes(_FeatureBase):
-  pass
+  self_type = ImageType(["OneBit"])
 nholes = nholes()
 
 class volume(_FeatureBase):
-  pass
+  self_type = ImageType(["OneBit"])
 volume = volume()
 
 class volume4regions(_FeatureBase):
+  self_type = ImageType(["OneBit"])
   def __call__(self):
     half_rows = (self.nrows() - 1) / 2
     half_cols = (self.ncols() - 1) / 2

@@ -17,8 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from plugin import *
-import _save_tiff
+from gamera.plugin import *
+import _save_tiff, _save_impex
 
 class _File(PluginFunction):
   cpp_source = "file.hpp"
@@ -58,4 +58,12 @@ class save_image(_File):
       self.save_tiff(self.name)
 save_image = save_image()
 
-plugins = [save_image, save_tiff, save_impex]
+class tiff_info(_File):
+  self_type = String("filename")
+  def __call__(filename):
+    info = ImageInfo()
+    _tiff_info.tiff_info(info, filename)
+    return info
+    
+
+plugins = [save_image, save_tiff, save_impex, tiff_info]

@@ -18,27 +18,20 @@
 #
 
 from gamera.plugin import *
-import _erode_dilate
+import morphology, logical
 
-class _Morphology(PluginFunction):
-  cpp_source = "morphology.hpp"
-  category = "Morphology"
+class _LineBase(PluginFunction):
+  cpp_source = "feature.hpp"
+  category = "Filter/Line"
   self_type = ImageType(["OneBit"])
+  return_type = ImageType(["OneBit"])
 
-class erode(_Morphology):
-  def __call__(image):
-    _erode_dilate.erode_dilate(image.m, 1, 1, 0)
-erode = erode()
+class outline(_LineBase):
+  def __call__(self):
+       new_matrix = self.matrix_copy()
+       new_matrix.dilate()
+       new_matrix.xor_image(self.m)
+       return new_matrix
+outline = outline()
 
-class dilate(_Morphology):
-  def __call__(image):
-    _erode_dilate.erode_dilate(image.m, 1, 0, 0)
-dilate = dilate()
-
-class erode_dilate(_Morphology):
-  args = Args([Int('number of times', range=(0, 10), default=1), \
-               Choice('direction', ['dilate', 'erode']), \
-               Choice('window shape', ['rectangular', 'octagonal'])])
-erode_dilate = erode_dilate()
-
-plugins = [erode, dilate, erode_dilate]
+plugins = [outline]

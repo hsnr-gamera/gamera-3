@@ -1030,6 +1030,50 @@ inline PyTypeObject* get_IteratorType() {
   return t;
 }
 
+/* PROGRESS BAR TYPE */
+class ProgressBar {
+public:
+  inline ProgressBar(char* message) {
+    PyObject* dict = get_module_dict("gamera.util"); 
+    PyObject* progress_factory = PyDict_GetItemString(dict, "ProgressFactory");
+    m_progress_bar = PyObject_CallFunction(progress_factory, "s", message);
+  }
+  inline ProgressBar() : m_progress_bar(NULL) {}
+  inline ProgressBar(int x) {
+    m_progress_bar = NULL;
+  }
+  inline ProgressBar(const ProgressBar& other) {
+    m_progress_bar = other.m_progress_bar;
+    if (m_progress_bar)
+      Py_INCREF(m_progress_bar);
+  }
+  inline ~ProgressBar() {
+    if (m_progress_bar)
+      Py_DECREF(m_progress_bar);
+  }
+  inline void add_length(int l) {
+    if (m_progress_bar)
+      PyObject_CallMethod(m_progress_bar, "add_length", "i", l);
+  }
+  inline void set_length(int l) {
+    if (m_progress_bar)
+      PyObject_CallMethod(m_progress_bar, "set_length", "i", l);
+  }
+  inline void step() {
+    if (m_progress_bar)
+      PyObject_CallMethod(m_progress_bar, "step", NULL);
+  }
+  inline void update(int num, int den) {
+    if (m_progress_bar)
+      PyObject_CallMethod(m_progress_bar, "update", "ii", num, den);
+  }
+  inline void kill() {
+    if (m_progress_bar)
+      PyObject_CallMethod(m_progress_bar, "kill", NULL);
+  }
+  PyObject* m_progress_bar;
+};
+
 // Converting pixel types to/from Python
 
 inline PyObject* pixel_to_python(OneBitPixel px) {

@@ -197,7 +197,7 @@ template = Template("""
             [[if function.return_type != None]]
               [[function.return_type.symbol]] =
             [[end]]  
-            [[function.__name__]]();
+            [[function.__name__]]([[if function.progress_bar]]ProgressBar("[[function.progress_bar]]")[[else]][[end]]);
           [[end]]
         } catch (std::exception& e) {
           PyErr_SetString(PyExc_RuntimeError, e.what());

@@ -28,7 +28,6 @@
 #include <map>
 #include <stdexcept>
 #include "gamera.hpp"
-// this will safely include <limit> on platforms with broken libraries
 #include "gamera_limits.hpp"
 #include "features.hpp"
 #include "image_utilities.hpp"
@@ -94,7 +93,7 @@ namespace {
 namespace Gamera {
 
   template<class T>
-  ImageList* cc_analysis(T& image) {
+  ImageList* cc_analysis(T& image, ProgressBar progress_bar = ProgressBar()) {
     equiv_table eq;
     // get the max value that can be held in the matrix
     typename T::value_type max_value = 
@@ -107,6 +106,7 @@ namespace Gamera {
     typename T::Iterator row, col, lr, ul, above;
     lr = image.lowerRight();
     ul = image.upperLeft();
+    progress_bar.set_length(image.nrows() * 2);
     for (row = image.upperLeft(); row.y != lr.y; ++row.y) {
       for (col = row; col.x != lr.x; ++col.x) {
 	/*
@@ -170,6 +170,7 @@ namespace Gamera {
 	  }
 	}
       }
+      progress_bar.step();
     }
   
     /*
@@ -254,6 +255,7 @@ namespace Gamera {
 	  }
 	}
       }
+      progress_bar.step();
     }
 	
     // create ConnectedComponents
@@ -268,6 +270,8 @@ namespace Gamera {
 	delete rects[i];
       }
     }
+
+    progress_bar.kill();
     return ccs;
   }
 

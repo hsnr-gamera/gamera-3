@@ -69,6 +69,7 @@ class PluginFunction:
    doc_examples = []
    category = None
    pure_python = False
+   progress_bar = ""
    author = None
    add_to_image = True
 

@@ -93,15 +93,14 @@ class FileDialog(wxFileDialog):
       cls = self.__class__
       if cls.last_directory is None:
          cls.last_directory = config.get("default_dir")
-      flags = self._flags
       if multiple:
          flags |= wxMULTIPLE
-         self._multiple = 1
+         self._multiple = True
       else:
-         self._multiple = 0
+         self._multiple = False
       wxFileDialog.__init__(
          self, parent, "Choose a file",
-         cls.last_directory, "", extensions, flags)
+         cls.last_directory, "", extensions, self._flags)
       self.extensions = extensions
 
    def show(self):
@@ -166,6 +165,9 @@ class ProgressBox:
 
    def add_length(self, l):
       self._den += l
+
+   def set_length(self, l):
+      self._den = l
 
    def step(self):
       self._num += 1

@@ -64,6 +64,8 @@ class WrapperArg:
       return ""
 
    def _do_call(self, function, output_args):
+      if function.progress_bar:
+         output_args.append('ProgressBar("%s")' % function.progress_bar);
       if function.feature_function:
          return "%s(%s, feature_buffer);" % (function.__name__, ", ".join(output_args))
       else:

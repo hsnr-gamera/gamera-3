@@ -293,6 +293,9 @@ class ProgressText:
    def add_length(self, l):
       self._den += l
 
+   def set_length(self, l):
+      self._den = l
+
    def step(self):
       self._num += 1
       self.update(self._num, self._den)
@@ -311,8 +314,8 @@ class ProgressText:
             self._last_amount = progress
             left = self.width - progress
             sys.stdout.write("|")
-            sys.stdout.write("#" * progress)
-            sys.stdout.write("=" * left)
+            sys.stdout.write("=" * progress)
+            sys.stdout.write("-" * left)
             sys.stdout.write("|\r")
             sys.stdout.flush()
          if num >= den:
@@ -320,11 +323,16 @@ class ProgressText:
             sys.stdout.write("\n")
             sys.stdout.flush()
 
+config.config.add_option(
+   "-p", "--progress-bars", default=False,
+   help="[console] Display textual progress bars on stdout")
 def ProgressFactory(message, length=1):
    if has_gui.gui != None:
       return has_gui.gui.ProgressBox(message, length)
-   else:
+   elif config.config.get("progress_bars"):
       return ProgressText(message, length)
+   else:
+      return ProgressNothing(message, length)
 
 class CallbackObject:
    def __init__(self):

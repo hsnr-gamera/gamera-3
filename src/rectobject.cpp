@@ -227,7 +227,7 @@ static void rect_dealloc(PyObject* self) {
 */
 #define CREATE_GET_FUNC(name) static PyObject* rect_get_##name(PyObject* self) {\
   Rect* x = ((RectObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_GET_POINT_FUNC(name) static PyObject* rect_get_##name(PyObject* self) {\

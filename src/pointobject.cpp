@@ -77,7 +77,7 @@ static void point_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* point_get_##name(PyObject* self) {\
   Point* x = ((PointObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int point_set_##name(PyObject* self, PyObject* value) {\

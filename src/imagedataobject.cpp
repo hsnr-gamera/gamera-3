@@ -104,7 +104,7 @@ static void imagedata_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* imagedata_get_##name(PyObject* self) {\
   ImageDataBase* x = ((ImageDataObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int imagedata_set_##name(PyObject* self, PyObject* value) {\

@@ -111,12 +111,12 @@ static void rgbpixel_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* rgbpixel_get_##name(PyObject* self) {\
   RGBPixel* x = ((RGBPixelObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_FLOAT_GET_FUNC(name) static PyObject* rgbpixel_get_##name(PyObject* self) {\
   RGBPixel* x = ((RGBPixelObject*)self)->m_x; \
-  return Py_BuildValue("f", (double)x->name()); \
+  return PyFloat_FromDouble((int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int rgbpixel_set_##name(PyObject* self, PyObject* value) {\
@@ -205,8 +205,8 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_free = NULL; // _PyObject_Del;
   RGBPixelType.tp_repr = rgbpixel_repr;
   RGBPixelType.tp_doc = "Represents a 24-bit RGBPixel value. " 
-    "The constructor takes three integers, (*red*, *green*, *blue*) "
-    "Example: RGBPixel(255, 0, 0)."
+    "The constructor takes three integers, (*red*, *green*, *blue*). "
+    "Example: RGBPixel(255, 0, 0). "
     "Each color value is in the range 0-255 (8 bits).";
   PyType_Ready(&RGBPixelType);
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);

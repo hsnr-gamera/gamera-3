@@ -188,7 +188,7 @@ class IconDisplay(wxListCtrl):
 # Standard icons for core Gamera
 
 class CustomIcon:
-   is_custom_icon_description = 1
+   is_custom_icon_description = True
 
    extra_methods = {}
    def __init__(self, label_, data_, index_):

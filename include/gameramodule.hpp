@@ -500,11 +500,8 @@ inline PyObject* create_ImageDataObject(int nrows, int ncols,
     else if (pixel_type == RGB)
       o->m_x = new ImageData<RGBPixel>(nrows, ncols, page_offset_y,
 				       page_offset_x);      
-    else if (pixel_type == Gamera::COMPLEX)
-      o->m_x = new ImageData<ComplexPixel>(nrows, ncols, page_offset_y,
-				       page_offset_x);   
     else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
+      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
       return 0;
     }
   } else if (storage_format == RLE) {
@@ -517,7 +514,7 @@ inline PyObject* create_ImageDataObject(int nrows, int ncols,
       return 0;
     }
   } else {
-    PyErr_SetString(PyExc_TypeError, "Unknown Format!");
+    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
     return 0;
   }
   o->m_x->m_user_data = (void*)o;
@@ -782,9 +779,6 @@ inline PyObject* create_ImageObject(Image* image) {
   } else if (dynamic_cast<RGBImageView*>(image) != 0) {
     pixel_type = Gamera::RGB;
     storage_type = Gamera::DENSE;
-  } else if (dynamic_cast<ComplexImageView*>(image) != 0) {
-    pixel_type = Gamera::COMPLEX;
-    storage_type = Gamera::DENSE;
   } else if (dynamic_cast<OneBitRleImageView*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::RLE;
@@ -887,16 +881,6 @@ inline PyObject* FloatVector_to_python(FloatVector* cpp) {
   return py;
 }
 
-inline PyObject* ComplexVector_to_python(ComplexVector* cpp) {
-  PyObject* py = PyList_New(cpp->size());
-  for (size_t i = 0; i < cpp->size(); ++i) {
-    PyObject* complex = PyComplex_FromCComplex((*cpp)[i]);
-    Py_INCREF(complex);
-    PyList_SetItem(py, i, complex);
-  }
-  return py;
-}
-
 inline PyObject* IntVector_to_python(IntVector* cpp) {
   PyObject* array_init = get_ArrayInit();
   if (array_init == 0)
@@ -930,21 +914,6 @@ inline FloatVector* FloatVector_from_python(PyObject* py) {
     (*cpp)[i] = (double)PyFloat_AsDouble(PyObject_GetItem(py, PyInt_FromLong(i)));
   return cpp;
 }
-
-
-inline ComplexVector* ComplexVector_from_python(PyObject* py) {
-  int size = PyObject_Size(py);
-  if (size < 0) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument is not a sequence.\n");
-      return 0;
-  }
-  ComplexVector* cpp = new ComplexVector(size);
-  for (int i = 0; i < size; ++i)
-    (*cpp)[i] = (Py_complex)PyComplex_AsCComplex(PyObject_GetItem(py, PyInt_FromLong(i)));
-  return cpp;
-}
-
 
 inline IntVector* IntVector_from_python(PyObject* py) {
   int size = PyObject_Size(py);
@@ -1002,10 +971,6 @@ inline PyObject* pixel_to_python<FloatPixel>::convert(FloatPixel px) {
   return PyFloat_FromDouble(px);
 }
 
-inline PyObject* pixel_to_python<ComplexPixel>::convert(ComplexPixel px) {
-  return PyComplex_FromCComplex(px);
-}
-
 template<class T>
 struct pixel_from_python {
   inline static T convert(PyObject* obj);
@@ -1015,12 +980,8 @@ template<class T>
 inline T pixel_from_python<T>::convert(PyObject* obj) {
   if (!PyFloat_Check(obj)) {
     if (!PyInt_Check(obj)) {
-      if (!is_RGBPixelObject(obj)) {
-	if(PyComplex_Check(obj)) {
-	  return (T)PyComplex_RealAsDouble(obj);
-	}
+      if (!is_RGBPixelObject(obj))
 	throw std::runtime_error("Pixel value is not valid");
-      }
       return T(*(((RGBPixelObject*)obj)->m_x));
     }
     return (T)PyInt_AsLong(obj);
@@ -1031,40 +992,14 @@ inline T pixel_from_python<T>::convert(PyObject* obj) {
 inline RGBPixel pixel_from_python<RGBPixel>::convert(PyObject* obj) {
   if (!is_RGBPixelObject(obj)) {
     if (!PyFloat_Check(obj)) {
-      if (!PyInt_Check(obj)) {
-	if (PyComplex_Check(obj)) {
-	  return RGBPixel(PyComplex_AsCComplex(obj));
-	}
+      if (!PyInt_Check(obj))
 	throw std::runtime_error("Pixel value is not an RGBPixel");
-      }
       return RGBPixel((GreyScalePixel)PyInt_AsLong(obj));
     }
     return RGBPixel(PyFloat_AsDouble(obj));
   }
   return RGBPixel(*(((RGBPixelObject*)obj)->m_x));
- }
-
-
-inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
-  Py_complex temp = {0, 0};
-  if (!PyComplex_Check(obj)) {
-    if (!is_RGBPixelObject(obj)) {
-      if (!PyFloat_Check(obj)) {
-	if (!PyInt_Check(obj)) {
-	  throw std::runtime_error("Pixel value is not a ComplexPixel");
-	}
-	temp.real = (double)PyInt_AsLong(obj);
-        return temp;
-      }
-      temp.real = PyFloat_AsDouble(obj);
-      return temp;
-    }
-    temp.real = ((RGBPixelObject*)obj)->m_x->luminance();
-    return temp;
-  }
-  return PyComplex_AsCComplex(obj);
 }
-
 
 #endif
 

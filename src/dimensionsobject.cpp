@@ -70,7 +70,7 @@ static void dimensions_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* dimensions_get_##name(PyObject* self) {\
   Dimensions* x = ((DimensionsObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int dimensions_set_##name(PyObject* self, PyObject* value) {\

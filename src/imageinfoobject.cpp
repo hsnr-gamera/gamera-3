@@ -80,7 +80,7 @@ static void imageinfo_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* imageinfo_get_##name(PyObject* self) {\
   ImageInfo* x = ((ImageInfoObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return PyInt_FromLong((int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int imageinfo_set_##name(PyObject* self, PyObject* value) {\

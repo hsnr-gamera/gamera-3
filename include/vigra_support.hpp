@@ -583,14 +583,15 @@ namespace Gamera {
   dest_image_range(Mat& img) {
     return triple<typename Mat::Iterator, typename Mat::Iterator,
       typename choose_accessor<Mat>::accessor> (img.upperLeft(), img.lowerRight(),
-				       choose_accessor<Mat>::make_accessor(img));
+						choose_accessor<Mat>::make_accessor(img));
   }
 
   template<class Mat>
   inline std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>
   dest_image(Mat& img) {
-    return std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>(img.upperLeft(),
-	       choose_accessor<Mat>::make_accessor(img));
+    return std::pair<typename Mat::Iterator, typename choose_accessor<Mat>::accessor>
+      (img.upperLeft(),
+       choose_accessor<Mat>::make_accessor(img));
   }
 }
 

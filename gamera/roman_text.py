@@ -492,9 +492,9 @@ def name_lookup_unicode(id_name):
     name = id_name.replace(".", " ")
     name = name.upper()
     try:
-        return unicodedata.lookup(id_name)
+        return unicodedata.lookup(name)
     except KeyError:
-        print "ERROR: Name not found:", id_name
+        print "ERROR: Name not found:", name
         return ""
     
 def make_string(lines, name_lookup_func=name_lookup_unicode):

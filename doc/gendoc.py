@@ -32,12 +32,11 @@ except:
 
 try:
    from docutils.core import publish_file
+   import docutils.parsers.rst
 except ImportError, e:
    print "'docutils' 0.3 or later must be installed to generate the documentation."
    print "It can be downloaded at http://docutils.sf.net"
    sys.exit(1)
-
-import docutils.parsers.rst
 
 try:
    import SilverCity
@@ -63,21 +62,19 @@ def code_block(name, arguments, options, content, lineno,
   html = '<div class="code-block">\n%s\n</div>\n' % io.getvalue()
   raw = docutils.nodes.raw('',html, format = 'html')
   return [raw]
-
 code_block.arguments = (1,0,0)
 code_block.options = {'language' : docutils.parsers.rst.directives.unchanged }
 code_block.content = 1
   
-# Simply importing this module will make the directive available.
 docutils.parsers.rst.directives.register_directive( 'code', code_block )
 
 try:
    from gamera import core, args, paths, util
+   from gamera.enums import *
 except ImportError, e:
    print "Cannot load gameracore."
    print "Gamera must be built before you can regenerate the documentation."
    sys.exit(1)
-from gamera.enums import *
 
 doc_path = "./"
 doc_src_path = "./src/"
@@ -229,7 +226,6 @@ def gendoc():
    ui("Generating and copying images\n")
    generate_generic_pngs()
    copy_images("html/images/")
-   copy_images("latex/images/")
    ui("Generating HTML\n")
    output_path = doc_path + "html/"
    for name, fd, mtime in get_rest_docs():
@@ -243,3 +239,4 @@ def gendoc():
       
 if __name__ == "__main__":
    gendoc()
+   

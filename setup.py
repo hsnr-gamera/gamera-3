@@ -40,7 +40,7 @@ from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
 
-import sys, os, time, locale, string, glob
+import sys, os, glob
 
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is

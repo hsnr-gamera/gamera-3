@@ -23,7 +23,7 @@
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
-import sys, os, time, locale, string
+import sys, os, time
 import glob
 
 # If gamera.generate is imported gamera.__init__.py will
@@ -37,7 +37,7 @@ def check_python_version():
    """Make certain that the Python version that is running meets the minimum
    requirements for Gamera. Currently the minimum is 2.2, but this function
    will be updated as the requirements change."""
-   if float(string.join([str(x) for x in sys.version_info[0:3]], '')) < 221:
+   if float(''.join([str(x) for x in sys.version_info[0:3]])) < 221:
       print "Gamera requires Python version 2.2.1 or later."
       print "You are running the following Python version:"
       print sys.version

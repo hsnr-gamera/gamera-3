@@ -1,11 +1,17 @@
 recursive-include misc *
-recursive-include mac *
-recursive-include doc *.png *.txt *.css *.py *.html
+recursive-include mac *.py
+recursive-include mac/gamera.pkg *.*
+recursive-include mac/wxPython.pkg *.*
+recursive-include doc gendoc.py
+recursive-include doc/src *.txt *.png
+recursive-include doc/html *.css
 recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff
 recursive-include src *.cpp *.c *.h makefile.* *.hpp
 recursive-include include *.hpp *.hxx
-include INSTALL LICENSE ACKNOWLEDGEMENTS setup.cfg gamera_post_install.py
+include INSTALL LICENSE ACKNOWLEDGEMENTS MANIFEST.in setup.cfg gamera_post_install.py
+
+
 
 
 

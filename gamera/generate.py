@@ -219,7 +219,7 @@ template = Template("""
 
   """)
   
-def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_args=[], extra_link_args=[]):
+def generate_plugin(plugin_filename, location, compiling_gamera, extra_compile_args=[], extra_link_args=[], libraries=[]):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")

@@ -529,48 +529,48 @@ class Cc(gameracore.Cc, ImageBase):
 _gamera_initialised = False
 def _init_gamera():
    global _gamera_initialised
-   if not _gamera_initialised:
-      import plugin, gamera_xml
-      config.parse_options()
-      # Create the default functions for the menupl
-      for method in (
-         plugin.PluginFactory(
-            "load_image", "File", plugin.ImageType(ALL, "image"),
-            plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
-         plugin.PluginFactory(
-            "display", "Displaying", None, plugin.ImageType(ALL), None),
-         plugin.PluginFactory(
-            "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
-            None),
-         plugin.PluginFactory(
-            "display_false_color", "Displaying", None,
-            plugin.ImageType([GREYSCALE, FLOAT]),
-            None),
-         plugin.PluginFactory(
-            "classify_manual", "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
-         plugin.PluginFactory(
-            "classify_heuristic", "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
-         plugin.PluginFactory(
-            "classify_automatic", "Classification", None,
-            plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
-         plugin.PluginFactory(
-            "unclassify", "Classification", None,
-            plugin.ImageType([ONEBIT]), None),
-         plugin.PluginFactory(
-            "to_xml", "XML", plugin.String('xml'),
-            plugin.ImageType([ONEBIT]), None),
-         plugin.PluginFactory(
-            "to_xml_filename", "XML", None, plugin.ImageType([ONEBIT]),
-            plugin.Args([
-         plugin.FileSave("filename", extension=gamera_xml.extensions)]))
-         ):
-         method.register()
-      paths.import_directory(paths.plugins, globals(), locals(), 1)
-      import sys
-      sys.path.append(".")
-      _gamera_initialised = True
+   if _gamera_initialised:
+      return
+   import plugin, gamera_xml, sys
+   config.parse_options()
+   # Create the default functions for the menupl
+   for method in (
+      plugin.PluginFactory(
+         "load_image", "File", plugin.ImageType(ALL, "image"),
+         plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
+      plugin.PluginFactory(
+         "display", "Displaying", None, plugin.ImageType(ALL), None),
+      plugin.PluginFactory(
+         "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
+         None),
+      plugin.PluginFactory(
+         "display_false_color", "Displaying", None,
+         plugin.ImageType([GREYSCALE, FLOAT]),
+         None),
+      plugin.PluginFactory(
+         "classify_manual", "Classification", None,
+         plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
+      plugin.PluginFactory(
+         "classify_heuristic", "Classification", None,
+         plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
+      plugin.PluginFactory(
+         "classify_automatic", "Classification", None,
+         plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
+      plugin.PluginFactory(
+         "unclassify", "Classification", None,
+         plugin.ImageType([ONEBIT]), None),
+      plugin.PluginFactory(
+         "to_xml", "XML", plugin.String('xml'),
+         plugin.ImageType([ONEBIT]), None),
+      plugin.PluginFactory(
+         "to_xml_filename", "XML", None, plugin.ImageType([ONEBIT]),
+         plugin.Args([
+      plugin.FileSave("filename", extension=gamera_xml.extensions)]))
+      ):
+      method.register()
+   paths.import_directory(paths.plugins, globals(), locals(), 1)
+   sys.path.append(".")
+   _gamera_initialised = True
 
 import sys
 if sys.platform == 'win32':

@@ -82,7 +82,6 @@ also be a lower-case *d*, its ``id_name`` variable might be:
 How a glyph was classified is managed by the ``classification_state``
 member variable.  It can be one of the following values:
 
-
   +----------+--------------+-----------------------------------------------------+
   | Color    | Constant     | Description                                         |
   +==========+==============+=====================================================+

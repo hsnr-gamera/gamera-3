@@ -23,16 +23,16 @@ if 1:
   def dummy():
     pass
 
-lib = os.path.dirname(os.path.abspath(dummy.func_code.co_filename))
+lib = os.path.dirname(os.path.realpath(dummy.func_code.co_filename))
 # Figure out if we are in the source directory or installed
-plugins = os.path.realpath(os.path.join(lib, "/plugins"))
+plugins = os.path.realpath(os.path.join(lib, "plugins"))
+print lib, plugins
 sys.path.append(plugins)
 plugins_src = ""
-toolkits = os.path.realpath(os.path.join(lib, "/toolkits"))
-doc = os.path.realpath(os.path.join(lib, "/doc"))
-test = os.path.realpath(os.path.join(lib, "/test"))
-test_results = os.path.realpath(os.path.join(lib, "/test/results"))
-
+toolkits = os.path.realpath(os.path.join(lib, "toolkits"))
+doc = os.path.realpath(os.path.join(lib, "doc"))
+test = os.path.realpath(os.path.join(lib, "test"))
+test_results = os.path.realpath(os.path.join(lib, "test/results"))
 
 def get_toolkit_names(dir):
    toolkits = []

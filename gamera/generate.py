@@ -3,6 +3,7 @@ from os import path
 import os
 import sys
 from distutils.core import Extension
+from gamera import paths
 
 # magic_import and magic_import_setup
 #

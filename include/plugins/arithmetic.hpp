@@ -89,7 +89,7 @@ template<>
 struct my_minus<OneBitPixel> : public std::binary_function<OneBitPixel, OneBitPixel, OneBitPixel>
 {
   OneBitPixel operator()(const OneBitPixel& x, const OneBitPixel& y) const {
-    if ((is_black(x) ^ is_black(y)) && (!is_black(y)))
+    if (is_black(x) && !is_black(y))
       return pixel_traits<OneBitPixel>::white();
     else
       return pixel_traits<OneBitPixel>::black();

@@ -438,6 +438,7 @@ namespace vigra {
   */
   using namespace Gamera;
 
+  template<>
   struct NumericTraits<RGBPixel>
   {
     typedef RGBPixel Type;
@@ -482,11 +483,14 @@ namespace vigra {
     typedef RGBValue<typename PromoteTraits<typename RGBPixel::value_type, T2>::Promote> Promote;
   };
 #endif
+  
+  template<>
   struct PromoteTraits<RGBPixel, double>
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;
   };
   
+  template<>
   struct PromoteTraits<double, RGBPixel>
   {
     typedef RGBValue<NumericTraits<RGBPixel::value_type>::RealPromote> Promote;

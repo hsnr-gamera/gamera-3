@@ -24,6 +24,7 @@ import sys
 import os
 import glob
 from distutils.sysconfig import get_python_lib, get_python_inc, PREFIX
+from distutils.command import install_data
 
 # Fix RPM building
 #
@@ -43,14 +44,25 @@ def rpm_run(self):
 original_rpm_run = distutils.command.bdist_rpm.bdist_rpm.run
 setattr(distutils.command.bdist_rpm.bdist_rpm, 'run', rpm_run)
 
+class smart_install_data(install_data.install_data):
+   def run(self):
+      install_cmd = self.get_finalized_command("install")
+      install_dir = getattr(install_cmd, "install_lib")
+      output = []
+      for path, files in self.data_files:
+         if path.startswith("gamera"):
+            path = os.path.join(install_dir, path)
+         output.append((path, files))
+      self.data_files = output
+      return install_data.install_data.run(self)
+
+cmdclass = {'install_data': smart_install_data}
 if sys.platform == "darwin":
    from gamera.mac import gamera_mac_setup
-   cmdclass = {'bdist_osx': gamera_mac_setup.bdist_osx}
+   cmdclass['bdist_osx'] = gamera_mac_setup.bdist_osx
 ## elif sys.platform == "win32":
 ##    from win32 import bdist_msi
 ##    cmdclass = {'bdist_msi': bdist_msi.bdist_msi}
-else:
-   cmdclass = {}
 
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is

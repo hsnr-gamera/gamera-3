@@ -69,8 +69,8 @@ class IconDisplay(wxListCtrl):
     self.classes = []
     for klass in builtin_icon_types:
       self.add_class(klass)
-    self.SetImageList(self.il, wxIMAGE_LIST_SMALL)
-    
+    self.AssignImageList(self.il, wxIMAGE_LIST_SMALL)
+
   def add_class(self, icon_description):
     add_it = 1
     for klass in self.classes:

@@ -94,7 +94,6 @@ class ImageBase:
 
    def __del__(self):
       if self._display:
-         print "closing display"
          self._display.close()
 
    def __getstate__(self):

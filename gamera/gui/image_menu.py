@@ -69,8 +69,8 @@ class ImageMenu:
       self.parent.Disconnect(i)
     menu.Destroy()
 
-  def __del__(self):
-    print 'ImageMenu deleted'
+##   def __del__(self):
+##     print 'ImageMenu deleted'
 
   # Given a list of variables and methods, put it all together
   def create_menu(self, members, methods, type, type_name, extra_methods):

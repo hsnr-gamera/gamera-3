@@ -433,20 +433,15 @@ class ClassifierFrame(ImageFrameBase):
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(3)
       self._frame.SetSize((800, 600))
-      if sys.platform == 'win32':
-         self.splitterv = wxSplitterWindow(
-            self._frame, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-         self.splitterh = wxSplitterWindow(
-            self.splitterv, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-      else:
-         self.splitterv = wxSplitterWindow(
-            self._frame, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
-         self.splitterh = wxSplitterWindow(
-            self.splitterv, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      # Win32 change
+      self.splitterv = wxSplitterWindow(
+         self._frame, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
+         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
+      self.splitterh = wxSplitterWindow(
+         self.splitterv, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
+         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
       self.single_iw = ClassifierImageWindow(self, self.splitterh)
       self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
       self.splitterh.SetMinimumPaneSize(3)
@@ -581,10 +576,7 @@ class ClassifierFrame(ImageFrameBase):
    def classify_manual(self, id):
       # if type(id) == types.StringType
       # Win32 change
-      for i in id:
-         print ord(i)
       id = id.encode('utf8')
-      print id
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
          self.multi_iw.id.GetGridCursorCol())
@@ -998,9 +990,15 @@ class ClassifierFrame(ImageFrameBase):
       if self._classifier.is_dirty:
          if not gui_util.are_you_sure_dialog(
             "Are you sure you want to quit without saving?"):
+            event.Veto()
             return
       self._classifier.set_display(None)
+      self.multi_iw.Destroy()
+      self.single_iw.Destroy()
+      self.splitterh.Destroy()
+      self.splitterv.Destroy()
       self._frame.Destroy()
+      del self._frame
 
    def refresh(self):
       self.single_iw.id.refresh(1)
@@ -1021,13 +1019,15 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
       # WIN32 change
-      EVT_TREE_ITEM_EXPANDING(self, id, self.OnItemExpanded)
-      EVT_TREE_ITEM_COLLAPSING(self, id, self.OnItemCollapsed)
-##       EVT_TREE_ITEM_EXPANDING(self, id, self.OnItemExpanded)
-##       EVT_TREE_ITEM_COLLAPSING(self, id, self.OnItemCollapsed)
-      EVT_KEY_DOWN(self, self.OnKey)
-      EVT_LEFT_DOWN(self, self.OnLeftDown)
-      EVT_LEFT_DCLICK(self, self.OnLeftDoubleClick)
+      EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
+      EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
+##       EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
+##       EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
+      EVT_KEY_DOWN(self, self._OnKey)
+      EVT_LEFT_DOWN(self, self._OnLeftDown)
+##      EVT_TREE_SEL_CHANGING(self, id, self._OnSelectChanging)
+##       EVT_LEFT_DCLICK(self, self._OnLeftDoubleClick)
+      EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.Expand(self.root)
       self.toplevel._symbol_table.add_listener(self)
 
@@ -1048,7 +1048,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
    def set_label_display(self, symbol):
       self.toplevel.text.SetValue(symbol)
       self.toplevel.text.SetSelection(0, len(symbol))
-      self.toplevel.OnText(None)
+      self.toplevel._OnText(None)
       self.toplevel.text.SetFocus()
 
    def symbol_table_callback(self, symbol):
@@ -1065,7 +1065,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
                self.Expand(item)
                break
 
-   def OnItemExpanded(self, event):
+   def _OnItemExpanded(self, event):
       parent = event.GetItem()
       parent_path = self.GetPyData(parent)
       items = self.toplevel._symbol_table.get_category_contents_list(parent_path)
@@ -1080,31 +1080,38 @@ class SymbolTreeCtrl(wxTreeCtrl):
          if is_parent:
             self.SetItemHasChildren(item, TRUE)
 
-   def OnItemCollapsed(self, event):
+   def _OnItemCollapsed(self, event):
       self.CollapseAndReset(event.GetItem())
 
-   def OnKey(self, evt):
+   def _OnKey(self, evt):
       if evt.KeyCode() == WXK_DELETE:
          self.toplevel._symbol_table.remove(self.GetPyData(self.GetSelection()))
       else:
          evt.Skip()
 
-   def OnLeftDoubleClick(self, event):
+   def _OnActivated(self, event):
+      # Win32 change
+      id = self.GetPyData(event.GetItem())
+      if id != None:
+         self.toplevel.toplevel.classify_manual(id)
+
+   def _OnLeftDoubleClick(self, event):
       pt = event.GetPosition()
       item, flags = self.HitTest(pt)
       if flags == 4:
          return
       id = self.GetPyData(item)
-      if id != None and type(id) == types.IntType:
+      if id != None:
          self.toplevel.toplevel.classify_manual(id)
+      event.Skip()
 
-   def OnLeftDown(self, event):
+   def _OnLeftDown(self, event):
       pt = event.GetPosition()
       item, flags = self.HitTest(pt)
       if flags == 4:
          return
       data = self.GetPyData(item)
-      if data != None and type(id) == types.IntType:
+      if data != None:
          self.toplevel.text.SetValue(data)
          self.toplevel.text.SetInsertionPointEnd()
       event.Skip()
@@ -1121,10 +1128,10 @@ class SymbolTableEditorPanel(wxPanel):
       txID = NewId()
       # Win32 change
       self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER)
-      EVT_KEY_DOWN(self.text, self.OnKey)
-      EVT_TEXT(self, txID, self.OnText)
+      EVT_KEY_DOWN(self.text, self._OnKey)
+      EVT_TEXT(self, txID, self._OnText)
       # Win32 change
-      EVT_TEXT_ENTER(self, txID, self.OnEnter)
+      EVT_TEXT_ENTER(self, txID, self._OnEnter)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
@@ -1137,12 +1144,11 @@ class SymbolTableEditorPanel(wxPanel):
    ########################################
    # CALLBACKS
 
-   def OnEnter(self, evt):
+   def _OnEnter(self, evt):
       normalized_symbol = self._symbol_table.add(find)
       self.toplevel.classify_manual(normalized_symbol)
 
-   def OnKey(self, evt):
-      print "OnKey", evt.KeyCode()
+   def _OnKey(self, evt):
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
          find = self._symbol_table.autocomplete(find)
@@ -1189,7 +1195,7 @@ class SymbolTableEditorPanel(wxPanel):
       else:
          evt.Skip()
 
-   def OnText(self, evt):
+   def _OnText(self, evt):
       symbol, tokens = self._symbol_table.normalize_symbol(
          self.text.GetValue())
       parent = item = self.tree.root

@@ -34,8 +34,9 @@ class ToolBar(wxPanel):
         self.controls = []
         self.layout_update_controls = []
         self.sizer = wxBoxSizer(wxHORIZONTAL)
-        wxPanel.__init__(self, parent, id,
-                         style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+        wxPanel.__init__(
+            self, parent, id,
+            style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
         if hideable:
             self.close_button = wxBitmapButton(
                 self, 1000,
@@ -108,6 +109,7 @@ class ToolBar(wxPanel):
         self.SetSize(wxSize(self.GetSize().x, 12))
         self.Layout()
         self.GetParent().Layout()
+        self.GetParent().Refresh()
 
     def OnShowToolbar(self, event):
         self.close_button.Show()
@@ -117,4 +119,4 @@ class ToolBar(wxPanel):
         self.sizer.SetSizeHints(self)
         self.Layout()
         self.GetParent().Layout()
-    
+        self.GetParent().Refresh()

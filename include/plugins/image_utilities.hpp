@@ -257,8 +257,12 @@ namespace Gamera {
   template<class T>
   Image* scale_copy(T& image, double scaling, int resize_quality) {
     std::cout.flush();
-    return resize_copy(image, size_t(image.nrows() * scaling),
-		       size_t(image.ncols() * scaling), resize_quality);
+    // nrows, ncols are cast to a double so that the multiplication happens
+    // exactly as it does in Python
+    return resize_copy(image, 
+		       size_t(ceil(double(image.nrows()) * scaling)),
+		       size_t(ceil(double(image.ncols()) * scaling)), 
+		       resize_quality);
   }
 
 

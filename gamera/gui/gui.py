@@ -214,20 +214,14 @@ class ShellFrame(wxFrame):
       self.menu = self.make_menu()
       self.SetMenuBar(self.menu)
 
-      if sys.platform == 'win32':
-         self.hsplitter = wxSplitterWindow(
-            self, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-         self.splitter = wxSplitterWindow(
-            self.hsplitter, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-      else:
-         self.hsplitter = wxSplitterWindow(
-            self, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
-         self.splitter = wxSplitterWindow(
-            self.hsplitter, -1,
-            style=wxSP_FULLSASH|wxSP_3DSASH|wxSP_LIVE_UPDATE)
+      self.hsplitter = wxSplitterWindow(
+         self, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
+         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
+      self.splitter = wxSplitterWindow(
+         self.hsplitter, -1,
+         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
+         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
 
       self.icon_display = icon_display.IconDisplay(self.splitter)
       self.icon_display
@@ -323,7 +317,6 @@ class ShellFrame(wxFrame):
 
    def OnClassifier(self, event):
       name = var_name.get("classifier", self.shell.locals)
-      gui_util.message("Eventually, you will be able to select a different kind of classifier here.")
       self.shell.run("%s = InteractiveClassifier()" % name)
       self.shell.run("%s.display()" % name)
 
@@ -334,6 +327,10 @@ class ShellFrame(wxFrame):
       self.shell.run("reload(%s)\n" % self.reload_toolkits[event.GetId()])
 
    def OnCloseWindow(self, event):
+      for window in self.GetChildren():
+         if isinstance(window, wxFrame):
+            if not window.Close():
+               return
       self.Destroy()
       app.ExitMainLoop()
 
@@ -378,9 +375,11 @@ class GameraSplash(wxSplashScreen):
    def OnClose(self, evt):
       global main_win
       main_win = ShellFrame(NULL, -1, "Gamera")
+      app.SetTopWindow(main_win)
       main_win.Show(true)
       evt.Skip()
 
+app = None
 def run():
    global app
    wxInitAllImageHandlers()
@@ -388,19 +387,21 @@ def run():
    class MyApp(wxApp):
       def __init__(self, parent):
          wxApp.__init__(self, parent)
-      
+         self.SetExitOnFrameDelete(1)
+
       # wxWindows calls this method to initialize the application
       def OnInit(self):
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()
+         del self.splash
          return true
 
       def RunScript(self, script):
          self.win.shell.run("import " + script)
 
       def OnExit(self):
-         pass
+         print "OnExit"
 
    app = MyApp(0)
    

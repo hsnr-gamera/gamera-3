@@ -54,7 +54,7 @@ class ImageDisplay(wxScrolledWindow):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
       wxScrolledWindow.__init__(
          self, parent, id, wxPoint(0, 0), size,
-         wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE|wxSIMPLE_BORDER)
+         wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.SetBackgroundColour(wxWHITE)
 
       self.scaling = 1.0
@@ -64,6 +64,12 @@ class ImageDisplay(wxScrolledWindow):
       self.original_image = None
       self.highlights = []
       self.boxed_highlights = 0
+      self._boxed_highlight = None
+      self._boxed_highlight_position = 32
+      self._boxed_highlight_timer = wxTimer(self, 100)
+      EVT_TIMER(self, 100, self._OnBoxHighlight)
+      # EVT_TIMER(self.GetParent(), 25000, self._boxed_highlight_timer)
+
       self.color = 0
       self.rubber_on = 0
       self.rubber_origin_x = 0
@@ -131,16 +137,21 @@ class ImageDisplay(wxScrolledWindow):
          return gui_util.get_color(color)
       return -1
 
-   def _box_highlight(self, highlight):
-      for i in range(32, 8, -2):
+   def _OnBoxHighlight(self, event):
+      if self.boxed_highlights and len(self.highlights) == 1:
+         self._boxed_highlight_position %= 20
+         highlight = self.highlights[0][0]
+         if self._boxed_highlight_position < 10:
+            i = 10 + (10 - self._boxed_highlight_position)
+         else:
+            i = self._boxed_highlight_position
          self.draw_rubber()
          self.rubber_origin_x = highlight.ul_x - i
          self.rubber_origin_y = highlight.ul_y - i
          self.rubber_x2 = highlight.lr_x + i
          self.rubber_y2 = highlight.lr_y + i
+         self._boxed_highlight_position -= 1
          self.draw_rubber()
-         wxUsleep(20)
-         wxYield()
 
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=-1):
@@ -169,8 +180,6 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc[0])
       if refresh_at_once:
          self.RefreshAll()
-      if len(self.highlights) == 1 and self.boxed_highlights:
-         self._box_highlight(self.highlights[0][0])
    highlight_ccs = highlight_cc
 
    # Adds a list of ccs to be highlighted in the display
@@ -189,8 +198,6 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc)
       if refresh_at_once:
          self.RefreshAll()
-      if len(self.highlights) == 1 and self.boxed_highlights:
-         self._box_highlight(self.highlights[0][0])
          
    add_highlight_ccs = add_highlight_cc
 
@@ -208,8 +215,6 @@ class ImageDisplay(wxScrolledWindow):
                break
       if refresh_at_once:
          self.RefreshAll()
-      if len(self.highlights) == 1 and self.boxed_highlights:
-         self._box_highlight(self.highlights[0][0])
 
    unhighlight_ccs = unhighlight_cc
       
@@ -268,6 +273,12 @@ class ImageDisplay(wxScrolledWindow):
 
    def BoxAroundHighlights(self, event):
       self.boxed_highlights = event.GetIsDown()
+      if self.boxed_highlights:
+         if not self._boxed_highlight_timer.IsRunning():
+            self._boxed_highlight_timer.Start(100)
+      else:
+         if self._boxed_highlight_timer.IsRunning():
+            self._boxed_highlight_timer.Stop()
       self.RefreshAll()
 
    ########################################
@@ -481,7 +492,8 @@ class ImageDisplay(wxScrolledWindow):
          dc = wxClientDC(self)
          self.draw_rubber(dc)
          redraw_rubber = 1
-      dc.SetLogicalFunction(wxCOPY)
+      tmpdc = wxMemoryDC()
+
       scaling = self.scaling
       origin = [a * self.scroll_amount for a in self.GetViewStart()]
       origin_scaled = [a / scaling for a in origin]
@@ -526,20 +538,24 @@ class ImageDisplay(wxScrolledWindow):
          # that could use too much memory.
          if self.scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
             subimage = subimage.to_greyscale()
-         scaled_image = subimage.scale_copy(scaling, self.scaling_quality)
+         scaled_image = subimage.resize_copy(ceil(subimage.nrows * scaling),
+                                             ceil(subimage.ncols * scaling),
+                                             self.scaling_quality)
       else:
          scaled_image = subimage
       image = wxEmptyImage(scaled_image.ncols, scaled_image.nrows)
       scaled_image.to_buffer(image.GetDataBuffer())
-
       bmp = wxBitmapFromImage(image)
       x = (x - self.image.ul_x) * scaling - origin[0]
       y = (y - self.image.ul_y) * scaling - origin[1]
-      dc.DrawBitmap(bmp, x, y, 0)
+
+      tmpdc.SelectObject(bmp)
+      dc.Blit(x, y, scaled_image.ncols, scaled_image.nrows,
+              tmpdc, 0, 0, wxCOPY, true)
 
       if len(self.highlights):
-         dc.SetTextBackground(real_white)
-         dc.SetBackgroundMode(wxTRANSPARENT)
+         # dc.SetTextBackground(real_white)
+         # dc.SetBackgroundMode(wxTRANSPARENT)
          for highlight, color in self.highlights:
             if subimage.intersects(highlight):
                subhighlight = highlight.clip_image(subimage)
@@ -550,29 +566,31 @@ class ImageDisplay(wxScrolledWindow):
                   # nothingness, don't draw it.
                   if float(h) * scaling <= 1 or float(w) * scaling <= 1:
                      continue
-                  scaled_highlight = subhighlight.scale_copy(scaling, 0)
+                  scaled_highlight = subhighlight.resize_copy(
+                     ceil(subhighlight.nrows * scaling),
+                     ceil(subhighlight.ncols * scaling),
+                     self.scaling_quality)
                else:
                   scaled_highlight = subhighlight
-               image = wxEmptyImage(scaled_highlight.ncols, scaled_highlight.nrows)
+               image = wxEmptyImage(
+                  scaled_highlight.ncols, scaled_highlight.nrows)
                scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
                # Win32 change
-               tmpdc = wxMemoryDC()
                tmpdc.SelectObject(bmp)
-               
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling
-               dc.SetTextForeground(real_black)
-               dc.SetLogicalFunction(wxAND_INVERT)
-               dc.DrawBitmap(bmp, x_cc, y_cc)
-               dc.SetTextForeground(color)
+               dc.Blit(x_cc, y_cc,
+                       scaled_highlight.ncols, scaled_highlight.nrows,
+                       tmpdc, 0, 0, wxAND, true)
                # Win32 change
-               dc.SetLogicalFunction(wxOR)
-               dc.Blit(x_cc, y_cc, bmp.GetWidth(), bmp.GetHeight(),
-                       tmpdc, 0, 0, wxOR)
-               # dc.DrawBitmap(bmp, x_cc, y_cc)
-         dc.SetBackgroundMode(wxSOLID)
-         dc.SetLogicalFunction(wxCOPY)
+               tmpdc.SetLogicalFunction(wxAND_REVERSE)
+               tmpdc.SetPen(wxTRANSPARENT_PEN)
+               tmpdc.SetBrush(wxBrush(color, wxSOLID))
+               tmpdc.DrawRectangle(0,0,bmp.GetWidth(), bmp.GetHeight())
+               dc.Blit(x_cc, y_cc,
+                       scaled_highlight.ncols, scaled_highlight.nrows,
+                       tmpdc, 0, 0, wxOR, true)
       if redraw_rubber:
          self.draw_rubber(dc)
             
@@ -581,6 +599,8 @@ class ImageDisplay(wxScrolledWindow):
       self.Refresh(0, rect=wxRect(0, 0, size.x, size.y))
 
    def _OnLeftDown(self, event):
+      self.boxed_highlights = 0
+      self._boxed_highlight_timer.Stop()
       self.rubber_on = 1
       self.draw_rubber()
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -769,6 +789,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
       scaling = self.parent.scaling
+      tmp_dc = wxMemoryDC()
       
       bitmap_no = row * GRID_NCOLS + col
       if bitmap_no < len(self.parent.list):
@@ -776,7 +797,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       else:
          image = None
       if image != None:
-         dc.SetBackgroundMode(wxSOLID)
          # Fill the background
          color = self.get_color(image)
          dc.SetPen(wxTRANSPARENT_PEN)
@@ -804,9 +824,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                # appropriate size.
                sub_height = min((rect.GetHeight() + 1) / scaling, image.nrows)
                sub_width = min((rect.GetWidth() + 1) / scaling, image.ncols)
-               sub_image = image.subimage(image.offset_y, image.offset_x, sub_height, sub_width)
-               scaled_image = sub_image.resize_copy(ceil(sub_image.nrows * scaling),
-                                                    ceil(sub_image.ncols * scaling), 0)
+               sub_image = image.subimage(
+                  image.offset_y, image.offset_x, sub_height, sub_width)
+               scaled_image = sub_image.resize_copy(
+                  ceil(sub_image.nrows * scaling),
+                  ceil(sub_image.ncols * scaling), 0)
             else:
                # This is the easy case - just scale the image.
                scaled_image = image.resize_copy(height, width, 0)
@@ -817,7 +839,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                 image.ncols >= rect.GetWidth()):
                height = min(image.nrows, rect.GetHeight() + 1)
                width = min(image.ncols, rect.GetWidth() + 1)
-               scaled_image = image.subimage(image.offset_y, image.offset_x, height, width)
+               scaled_image = image.subimage(
+                  image.offset_y, image.offset_x, height, width)
             else:
                scaled_image = image
 
@@ -827,25 +850,19 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
          y = rect.y + (rect.height / 2) - (bmp.GetHeight() / 2)
+
          if isSelected:
             # This used to use dc.DrawBitmap, but the correct logical function (wxSRC_INVERT)
             # didn't seem to get used under Windows. This works fine, however.
-            tmp_dc = wxMemoryDC()
             tmp_dc.SelectObject(bmp)
             dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxSRC_INVERT)
-            del tmp_dc
          else:
-            dc.SetLogicalFunction(wxAND)
-            dc.DrawBitmap(bmp, x, y, 0)
-         if isSelected:
-            dc.SetLogicalFunction(wxAND)
-            dc.SetBrush(wxBrush(color, wxSOLID))
-            dc.SetPen(wxTRANSPARENT_PEN)
-            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+            tmp_dc = wxMemoryDC()
+            tmp_dc.SelectObject(bmp)
+            dc.Blit(x, y, bmp.GetWidth(), bmp.GetHeight(), tmp_dc, 0, 0, wxAND)
          if self.parent.display_names:
             label = self.parent.get_label(image)
             if label != '':
-               dc.SetLogicalFunction(wxCOPY)
                dc.SetBackgroundMode(wxTRANSPARENT)
                # The default font is too big under windows - this should
                # probably be a configurable option . . .
@@ -860,6 +877,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
                   dc.SetTextBackground(wxWHITE)
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
+         if isSelected:
+            dc.SetLogicalFunction(wxAND)
+            dc.SetBrush(wxBrush(color, wxSOLID))
+            dc.SetPen(wxTRANSPARENT_PEN)
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       if image is None or hasattr(image, 'dead'):
          # If there's no image in this cell, draw a hatch pattern
          dc.SetLogicalFunction(wxCOPY)
@@ -868,8 +890,11 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          if image is None:
             dc.SetBrush(wxWHITE_BRUSH)
             dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-         dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
-         dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+            dc.SetBrush(wxBrush(wxBLUE, wxFDIAGONAL_HATCH))
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
+         else:
+            dc.SetBrush(wxBrush(wxRED, wxFDIAGONAL_HATCH))
+            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
       dc.SetLogicalFunction(wxCOPY)
 
    # The images should be a little padded within the cells
@@ -888,7 +913,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       return wxSize(50, 50)
 
    def Clone(self):
-      print "Clone"
       return MultiImageGridRenderer(self.parent)
 
 # Grid constants
@@ -1148,7 +1172,8 @@ class MultiImageDisplay(wxGrid):
                      item = self.list[index]
                      if item != None:
                         image.append(item)
-      elif row != None:
+      elif row != None and bitmap_no != None:
+         print "bitmap_no", bitmap_no
          image = [self.list[bitmap_no]]
       return image
 
@@ -1486,7 +1511,7 @@ class MultiImageWindow(wxPanel):
 
 class ImageFrameBase:
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
-      self._frame = wxFrame(parent, id, title,
+      self._frame = wxFrame(config.get_option('__gui').TopLevel(), id, title,
                             wxDefaultPosition, (600, 400),
                             # Win32 change
                             style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|
@@ -1521,7 +1546,6 @@ class ImageFrameBase:
          self.owner.set_display(None)
       self._frame.Destroy()
       del self._frame
-      print "hi"
 
    def Show(self, flag=1):
       self._frame.Show(flag)

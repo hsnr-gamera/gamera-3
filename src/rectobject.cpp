@@ -18,6 +18,7 @@
  */
 
 #include "gameramodule.hpp"
+#include <exception>
 
 using namespace Gamera;
 
@@ -209,7 +210,12 @@ static void rect_dealloc(PyObject* self) {
     return -1; \
   } \
   Rect* x = ((RectObject*)self)->m_x; \
-  x->name((size_t)PyInt_AS_LONG(value)); \
+  try { \
+    x->name((size_t)PyInt_AS_LONG(value)); \
+  } catch(std::exception& e) { \
+    PyErr_SetString(PyExc_TypeError, e.what()); \
+    return -1; \
+  } \
   return 0; \
 }
 
@@ -219,7 +225,12 @@ static void rect_dealloc(PyObject* self) {
     return -1; \
   } \
   Rect* x = ((RectObject*)self)->m_x; \
-  x->name(*((PointObject*)value)->m_x); \
+  try { \
+    x->name(*((PointObject*)value)->m_x); \
+  } catch(std::exception& e) { \
+    PyErr_SetString(PyExc_TypeError, e.what()); \
+    return -1; \
+  } \
   return 0; \
 }
 

@@ -384,7 +384,7 @@ static PyObject* image_get(PyObject* self, PyObject* args) {
     return Py_BuildValue("i", ((GreyScaleImageView*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_pixel_type == Python::GREY16) {
     return Py_BuildValue("i", ((Grey16ImageView*)o->m_x)->get((size_t)row, (size_t)col));
-  } else if (od->m_pixel_type == Python::ONEBIT) {
+  } else { // ONEBIT
     return Py_BuildValue("i", ((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
   }
 }

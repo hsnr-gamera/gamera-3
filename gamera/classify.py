@@ -205,7 +205,6 @@ class SymbolTable:
       name, tokens = self.normalize_symbol(name)
       return self.all_names[name]
 
-
 class Classifier:
    def __init__(self, glyphs=[], production_database=None,
                 current_database=None, symbol_table=None, parent_image=None,

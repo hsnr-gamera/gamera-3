@@ -55,19 +55,19 @@ class GameraGui:
          return filename
    GetImageFilename = staticmethod(GetImageFilename)
 
-   def ShowImage(image, title, function, owner=None):
+   def ShowImage(image, title, function, scaling_function, owner=None):
       wxBeginBusyCursor()
       img = gamera_display.ImageFrame(title = title, owner=owner)
-      img.set_image(image, function)
+      img.set_image(image, function, scaling_function)
       img.Show(1)
       wxEndBusyCursor()
       return img
    ShowImage = staticmethod(ShowImage)
 
-   def ShowImages(list, function):
+   def ShowImages(list, function, scaling_function):
       wxBeginBusyCursor()
       img = gamera_display.MultiImageFrame(title = "Multiple Images")
-      img.set_image(list, function)
+      img.set_image(list, function, scaling_function)
       img.Show(1)
       wxEndBusyCursor()
       return img

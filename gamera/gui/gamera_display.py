@@ -80,9 +80,10 @@ class ImageDisplay(wxScrolledWindow):
 
    # Sets the image being displayed
    # Returns the size of the image
-   def set_image(self, image, function):
+   def set_image(self, image, function, scaling_function):
       self.image = image
       self.to_string_function = function
+      self.scaled_to_string_function = scaling_function
       return self.reload_image()
 
    # Refreshes the image by recalling the to_string function
@@ -285,16 +286,24 @@ class ImageDisplay(wxScrolledWindow):
               y > origin_scaled[1] + size_scaled[1]) or
              (w == 0 or h == 0)):
             return
-      self.tmpDC.SetUserScale(scaling, scaling)
       if (y + h >= self.height):
          h = self.image.nrows - y - 2
       if (x + w >= self.width):
          w = self.image.ncols - x - 2
-      subimage = SubImage(self.image, y, x, h + 1, w + 1)
+
+      # self.tmpDC.SetUserScale(scaling, scaling)
+      subimage = SubImage(self.image,
+                          y + self.image.offset_y,
+                          x + self.image.offset_x,
+                          h + 1, w + 1)
       image = wxEmptyImage(w + 1, h + 1)
-      apply(self.to_string_function, (subimage, image.GetDataBuffer()))
+      if scaling == 1:
+         apply(self.to_string_function, (subimage, image.GetDataBuffer()))
+      else:
+         print scaling
+         apply(self.scaled_to_string_function, (subimage, scaling, image.GetDataBuffer()))
       bmp = wxBitmapFromImage(image)
-      self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
+      # self.tmpDC.DrawBitmap(bmp, 0, 0, 0)
 
       if len(self.highlighted):
          # Workaround, since wxPython's compositing is different
@@ -341,11 +350,13 @@ class ImageDisplay(wxScrolledWindow):
          self.tmpDC.SetBackgroundMode(wxSOLID)
          self.tmpDC.SetLogicalFunction(wxCOPY)
 
-      self.tmpDC.SetUserScale(1, 1)
-      dc.Blit(x * scaling - origin[0],
-              y * scaling - origin[1],
-              w * scaling, h * scaling,
-              self.tmpDC, 0, 0)
+      #self.tmpDC.SetUserScale(1, 1)
+##       dc.Blit(x * scaling - origin[0],
+##               y * scaling - origin[1],
+##               w * scaling, h * scaling,
+##               self.tmpDC, 0, 0)
+      dc.DrawBitmap(bmp, x * scaling - origin[0],
+                    y * scaling - origin[1], 0)
 
 
    ############################################################
@@ -570,8 +581,8 @@ class ImageWindow(wxPanel):
    def refresh(self):
       self.id.Refresh(0)
 
-   def set_image(self, image, function):
-      return self.id.set_image(image, function)
+   def set_image(self, image, function, scaling_function):
+      return self.id.set_image(image, function, scaling_function)
 
    def highlight_rectangle(self, y, x, h, w, color=-1, text=''):
       self.id.highlight_rectangle(y, x, h, w, color, text)
@@ -733,7 +744,7 @@ class MultiImageDisplay(wxGrid):
 
    ########################################
    # Sets a new list of images.  Can be performed multiple times
-   def set_image(self, list, function):
+   def set_image(self, list, function, scaling_function):
       wxBeginBusyCursor()
       self.BeginBatch()
       self.list = list
@@ -1079,8 +1090,8 @@ class ImageFrameBase(wxFrame):
       self.owner = owner
       EVT_CLOSE(self, self.OnCloseWindow)
 
-   def set_image(self, image, function):
-      size = self.iw.set_image(image, function)
+   def set_image(self, image, function, scaling_function):
+      size = self.iw.set_image(image, function, scaling_function)
       self.SetSize((max(200, min(600, size[0] + 30)),
                     max(200, min(400, size[1] + 60))))
 
@@ -1145,8 +1156,8 @@ class MultiImageFrame(ImageFrameBase):
    def __repr__(self):
       return "<MultiImageFrame Window>"
 
-   def set_image(self, image, function):
-      size = self.iw.set_image(image, function)
+   def set_image(self, image, function, scaling_function):
+      size = self.iw.set_image(image, function, scaling_function)
 
 
 ##############################################################################

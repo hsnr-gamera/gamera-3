@@ -162,11 +162,11 @@ class ImageBase:
       gui = config.get_option("__gui")
       if gui:
          if self._display:
-            self._display.set_image(self, ImageBase.to_buffer)
+            self._display.set_image(self, ImageBase.to_buffer, ImageBase.scaled_to_string)
          else:
             self.set_display(
                gui.ShowImage(self, self.name,
-                             ImageBase.to_buffer, owner=self))
+                             ImageBase.to_buffer, ImageBase.scaled_to_string, owner=self))
       self.last_display = "normal"
       return self._display
 

@@ -31,16 +31,19 @@ class scaled_to_string(PluginFunction):
     """Encodes the image at the given scaling into a 'string'
     required by wxImage. (i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args([Float("scaling"),Class("wxImage")])
+    args = Args([Float("scaling"),Class("Buffer")])
 scaled_to_string = scaled_to_string()
 
 class to_buffer(PluginFunction):
     """Encodes the image into a 'string' required by wxImage.
 (i.e. 8-bit RGB triplets)."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-    args = Args(Class("wxImage"))
+    args = Args(Class("Buffer"))
 to_buffer = to_buffer()
 
+# By default, the wxPython-devel RPM puts stuff here, but this
+# should be done better
+wxpython_prefix = "/usr/lib/wxPython/"
 class GuiSupportModule(PluginModule):
     """This module provides various functions that support the GUI
     infrastructure."""

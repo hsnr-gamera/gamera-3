@@ -179,15 +179,15 @@ class IconDisplay(wxListCtrl):
         else:
           mode = image_menu.EXECUTE_MODE
           menu = image_menu.ImageMenu(self, self.x, self.y,
-                                        self.currentIcon.data,
-                                        self.currentIcon.label,
-                                        self.shell, mode)
+                                      self.currentIcon.data,
+                                      self.currentIcon.label,
+                                      self.shell, mode)
           menu.PopupMenu()
     event.Skip()
 
   def OnDoubleClick(self, event):
     if self.currentIcon:
-      if isinstance(self.currentIcon.data, Image):
+      if isinstance(self.currentIcon.data, ImageBase):
         source = (self.currentIconName + ".display()")
       else:
         source = "display_multi(" + self.currentIconName + ")"

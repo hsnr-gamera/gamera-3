@@ -1,4 +1,6 @@
-recursive-include gamera/doc *.gif *.txt
+recursive-include gamera/doc *.gif *.txt *.html *.dtd
+recursive-include gamera/doc/classes
+recursive-include gamera/doc/plugins
 recursive-include gamera/pixmaps *.png *.py
 recursive-include src *.cpp *.c *.h makefile.* *.hpp
 recursive-include include *.hpp *.hxx

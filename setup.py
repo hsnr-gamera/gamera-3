@@ -25,8 +25,8 @@ plugin_extensions = []
 # to exclude this we have to go throug all sorts of crap...
 if 'build' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
-
-   plugin_extensions = gamera_setup.generate_plugins(plugins, "gamera.plugins", 1)
+   plugin_extensions = gamera_setup.generate_plugins(
+      plugins, "gamera.plugins", 1)
 
 
    ########################################
@@ -119,6 +119,7 @@ setup(name = "gamera", version="2.0",
 # This needs to be done last since it requires a built system
 if 'build' in sys.argv:
    # This is where things just got built
-   sys.path.append("build/lib.%s-%s/gamera" % (get_platform(), sys.version[0:3]))
+   sys.path.append("build/lib.%s-%s/gamera" %
+                   (get_platform(), sys.version[0:3]))
    import generate_help
    generate_help.generate_help()

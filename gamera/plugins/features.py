@@ -26,17 +26,17 @@ black_area = black_area()
 
 class moments(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("moments")
+    return_type = FloatVector("moments", 9)
 moments = moments()
 
 class nholes(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("nholes")
+    return_type = FloatVector("nholes", 2)
 nholes = nholes()
 
 class nholes_extended(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("nholes")
+    return_type = FloatVector("nholes", 8)
 nholes_extended = nholes_extended()
 
 class volume(PluginFunction):
@@ -61,12 +61,12 @@ compactness = compactness()
 
 class volume16regions(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("volumes")
+    return_type = FloatVector("volumes", 16)
 volume16regions = volume16regions()
 
 class volume64regions(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = FloatVector("volumes")
+    return_type = FloatVector("volumes", 64)
 volume64regions = volume64regions()
 
 class FeaturesModule(PluginModule):

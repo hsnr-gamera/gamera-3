@@ -217,6 +217,7 @@ class Args(_guiArgs):
 
 class Arg:
    default = 0
+   length = 1
 
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
@@ -588,8 +589,9 @@ class _guiFloatVector:
    pass
 
 class FloatVector(_guiFloatVector, Arg):
-   def __init__(self, name):
+   def __init__(self, name, length=-1):
       self.name = name
+      self.length = length
 
 # IntVector
 # These can only be used as return values
@@ -597,8 +599,9 @@ class _guiIntVector:
    pass
 
 class IntVector(_guiIntVector, Arg):
-   def __init__(self, name):
+   def __init__(self, name, length=-1):
       self.name = name
+      self.length = length
 
 # ImageList
 # These can only be used as return values

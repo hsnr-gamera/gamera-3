@@ -17,7 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import sys, os, types, os.path, inspect, new, cStringIO # Python standard library
+# Python standard library
+import sys, os, types, os.path, inspect, new, cStringIO, types, array
 
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
@@ -57,6 +58,9 @@ def display_multi(list):
       if not util.is_sequence(list):
          list = [list]
       gui.ShowImages(list)
+
+# Used to cache the list of all features
+all_features = None
    
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
@@ -74,6 +78,9 @@ class ImageBase:
       self._display = None
       self.last_display = None
       self.properties = self.Properties()
+      # Keep a list of tuples of (feature_name, feature_function) that
+      # have already been generated for this Image
+      self.feature_functions = []
 
    def __del__(self):
       if self._display:
@@ -161,7 +168,7 @@ class ImageBase:
        if type(val) == type({}):
          list.extend(self._methods_flatten(val))
        else:
-         list.append((key,val))
+         list.append((key, val))
      return list
 
    def load_image(filename, compression=DENSE):
@@ -234,48 +241,64 @@ class ImageBase:
       if hasattr(self, 'children_images') and self.children_images != []:
          display_multi(self.children_images)
 
-   def classification_color(self):
-      """TODO: move me somewhere else (in /gui)"""
-      if self.classification_state == UNCLASSIFIED:
-         return None
-      elif self.classification_state == AUTOMATIC:
-         return (198,145,145)
-      elif self.classification_state == HEURISTIC:
-         return (240,230,140)
-      elif self.classification_state == MANUAL:
-         return (180,238,180)
-
-   def classify_manual(self, id_name, confidence=1.0):
-      if id_name[-1] == ".":
-         id_name = id_name[:-1]
-      if not util.is_sequence(id_name):
-         self.id_name = [(id_name, confidence)]
-      else:
-         self.id_name = list(id_name)
+   def classify_manual(self, id_name):
+      id_name.sort()
+      self.id_name = id_name
       self.classification_state = MANUAL
 
-   def classify_automatic(self, id_name, confidence=1.0):
-      if id_name[-1] == ".":
-         id_name = id_name[:-1]
-      if not util.is_sequence(id_name):
-         self.id_name = [(id_name, confidence)]
-      else:
-         self.id_name = list(id_name)
+   def classify_automatic(self, id_name):
+      id_name.sort()
+      self.id_name = id_name
       self.classification_state = AUTOMATIC
 
-   def classify_heuristic(self, id_name, confidence=1.0):
-      if id_name[-1] == ".":
-         id_name = id_name[:-1]
-      if not util.is_sequence(id_name):
-         self.id_name = [(id_name, confidence)]
-      else:
-         self.id_name = list(id_name)
+   def classify_heuristic(self, id_name):
+      id_name.sort()
+      self.id_name = id_name
       self.classification_state = HEURISTIC
+
+   def get_main_id(self):
+      return self.id_name[0][1]
 
    def subimage(self, offset_y, offset_x, nrows, ncols):
       """Create a SubImage from this Image (or SubImage)."""
       return SubImage(self, offset_y, offset_x, nrows, ncols)
 
+   def get_feature_functions(self, features='all'):
+      global all_features
+      if features == 'all':
+         if all_features is None:
+            all_features = self.methods_flat_category('Features')
+         functions = all_features
+      else:
+         if not util.is_sequence(features):
+            features = [features]
+         functions = []
+         for feature in features:
+            if type(feature) == type(''):
+               functions.append(getattr(self, feature))
+            elif inspect.ismethod(feature):
+               functions.append(feature)
+            else:
+               raise ValueError("'%s' is not a valid way to specify a feature."
+                                % feature)
+      functions.sort()
+      return functions
+
+   def generate_features(self, features=None):
+      if features is None:
+         features = self.get_feature_functions()
+      if self.feature_functions == features:
+         print "skipping generation"
+         return
+      self.feature_functions = features
+      self.features = array.array('d')
+      for i in range(len(features)):
+         result = apply(features[i][1].__call__, (self,))
+         if type(result) in (types.IntType, types.FloatType):
+            self.features.append(result)
+         else:
+            self.features.extend(result)
+         
    def to_xml(self, stream=None):
       import database
       return database.WriteXMLGlyphs([self]).write_stream(stream)

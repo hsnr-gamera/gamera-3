@@ -18,195 +18,146 @@
 #
 
 import core # grab all of the standard gamera modules
-import string, sys, random, os, os.path
+import sys, os, os.path
 import util, paths, database
 import array
 import knn
 from gamera import config
+from gamera.core import *
 
-class SymbolTable:
-   def __init__(self):
-      self.categories = {}
-      self.all_ids = {}
-      self.all_names = {}
-      self.listeners = []
-      self.rename_listeners = []
-      self.add("skip", 0)
+class _Classifier:
+   def _do_action(self, glyph):
+      if glyph.get_main_id().startswith('action'):
+         splits = getattr(glyph, glyph.get_main_id()[8:])()
+         glyph.children_images = splits
+         return splits
+      return []
 
-   def add_listener(self, listener):
-      assert hasattr(listener, 'symbol_table_callback')
-      self.listeners.append(listener)
+class NonInteractiveClassifier(_Classifier):
+   def __init__(self, classifier, database=[], features='all', perform_actions=1):
+      self.classifier = classifier
+      self.features = features
+      self.feature_functions = None
+      if database == []:
+         raise ValueError("You must initialize a NonInteractiveClassifier with a non-zero length database.")
+      self.feature_functions = \
+         database.iterkeys().next().get_feature_functions(
+         self.features)
+      self.determine_feature_functions()
+      for glyph in database:
+         glyph.generate_features(self.feature_functions)
+      self.classifier.instantiate_from_images(database)
+      self.perform_actions = perform_actions
 
-   def remove_listener(self, listener):
-      self.listeners.remove(listener)
+   def classify_glyph_automatic(self, glyph):
+      if (not glyph.classification_state in (MANUAL, HEURISTIC)):
+         glyph.generate_features(self.feature_functions)
+         id = self.classifier.classify(glyph)
+         glyph.classify_automatic(id)
+         return self._do_action(glyph)
+      return []
 
-   def alert_listeners(self, symbol):
-      for l in self.listeners:
-         if hasattr(l, 'symbol_table_callback'):
-            l.symbol_table_callback(symbol)
+   def classify_list_automatic(self, glyphs, recursion_level=0):
+      if recursion_level > 10:
+         return []
+      splits = []
+      for glyph in glyphs:
+         if (not glyph.classification_state in (MANUAL, HEURISTIC)):
+            glyph.generate_features(self.feature_functions)
+            id = self.classifier.classify(glyph)
+            glyph.classify_automatic(id)
+            splits.extend(self._do_action(glyph))
+      if len(splits):
+         splits.extend(self.classify_list_automatic(splits, recursion_level+1))
+      return splits
 
-   def add_rename_listener(self, listener):
-      assert hasattr(listener, 'symbol_table_rename_callback')
-      self.rename_listeners.append(listener)
+class InteractiveClassifier(_Classifier):
+   def __init__(self, classifier, database=[], features='all', perform_actions=1):
+      self.classifier = classifier
+      self.database = {}
+      for key in database:
+         self.database[key] = None
+      self.features = features
+      self.feature_functions = None
+      self.determine_feature_functions()
+      for glyph in database:
+         glyph.generate_features(self.feature_functions)
+      self.perform_actions = perform_actions
 
-   def remove_rename_listener(self, listener):
-      self.rename_listeners.remove(listener)
+   def determine_feature_functions(self):
+      if self.feature_functions is None:
+         if len(self.database):
+            self.feature_functions = \
+               self.database.iterkeys().next().get_feature_functions(self.features)
 
-   def alert_rename_listeners(self, a, b):
-      for l in self.rename_listeners:
-         if hasattr(l, 'symbol_table_rename_callback'):
-            l.symbol_table_rename_callback(a, b)
-
-   def normalize_symbol(self, symbol):
-      assert type(symbol) == type('')
-      if symbol == '':
-         return '', []
-      # Split by '.' delimiters
-      tokens = string.split(string.strip(symbol), '.')
-      # Remove internal whitespace
-      tokens = map(lambda x: string.join(string.split(x), '_'), tokens)
-      symbol = string.join(tokens, '.')
-      if symbol[-1] == ".":
-         symbol = symbol[:-1]
-      return symbol, tokens
-
-   def get_new_id(self):
-      id = random.randrange(sys.maxint)
-      while self.all_ids.has_key(id):
-         id = random.randrange(sys.maxint)
-      return id
-
-   def add(self, symbol, id = -1):
-      symbol, tokens = self.normalize_symbol(symbol)
-      if self.all_names.has_key(symbol):
-         return self.all_names[symbol]
-      id = self.add_to_tree(symbol, tokens, id)
-      return id
-
-   def add_if_not_exists(self, symbol, id = -1):
-      symbol, tokens = self.normalize_symbol(symbol)
-      if self.all_names.has_key(symbol):
-         return self.get_id_by_name(symbol)
+   def guess_glyph(self, glyph):
+      if len(self.database):
+         self.determine_feature_functions()
+         glyph.generate_features(self.feature_functions)
+         return self.classifier.classify_with_images(
+            self.database.iterkeys(), glyph)
       else:
-         return self.add(symbol, id)
+         return [(0.0, 'unknown')]
 
-   # When we add to the tree, the alert listeners need to be
-   # informed of the stem of the symbol up to where we start adding
-   # new braches
-   def add_to_tree(self, symbol, tokens, id=-1, do_alert=1):
-      category = self.categories
-      alert = []
-      add_to_alert = 1
-      for i in range(len(tokens)):
-         token = tokens[i]
-         if not category.has_key(token):
-            category[token] = { }
-            if token != tokens[-1] or id == -1:
-               new_id = self.get_new_id()
-            else:
-               new_id = id
-            name = string.join(tokens[0:i+1], ".")
-            self.all_ids[new_id] = name
-            self.all_names[name] = new_id
-         category = category[token]
-         if category == {}:
-            add_to_alert = 0
-         if add_to_alert:
-            alert.append(token)
-      if do_alert:
-         self.alert_listeners(string.join(alert, '.'))
-      return self.all_names[symbol]
-
-   def remove(self, symbol):
-      symbol, tokens = self.normalize_symbol(symbol)
-      if symbol == '':
-         self.categories = {}
-         self.all_names = {}
-         self.all_ids = {}
-         self.alert_listeners('')
-         return
-      old_category = None
-      category = self.categories
-      for token in tokens:
-         old_category = category
-         category = category[token]
-      removed = []
-      for subcat in category.keys():
-         removed.extend(self.remove(symbol + "." + subcat))
-      removed.append(self.all_ids[symbol])
-      del old_category[tokens[-1]]
-      try:
-         id = self.all_names[symbol]
-         del self.all_ids[id]
-         del self.all_names[symbol]
-      except:
-         pass
-      self.alert_listeners(string.join(tokens[:-1], '.'))
-      return removed
-
-   def rename(self, a, b):
-      a, x = self.normalize_symbol(a)
-      b, x = self.normalize_symbol(b)
-      for key, value in self.all_names.items():
-         if key.startswith(a):
-            del self.all_names[key]
-            self.all_names[b + key[len(a):]] = value
-      self.all_ids = {}
-      self.categories = {}
-      for key, value in self.all_names.items():
-         self.all_ids[value] = key
-      for key, value in self.all_names.items():
-         symbol, tokens = self.normalize_symbol(key)
-         self.add_to_tree(symbol, tokens, do_alert=0)
-      self.alert_rename_listeners(a, b)
-      self.alert_listeners(symbol)
-
-   def autocomplete(self, symbol):
-      symbol, tokens = self.normalize_symbol(symbol)
-      try:
-         category = self.get_category_contents(string.join(tokens[:-1], "."))
-      except:
-         return symbol
-      find = tokens[-1]
-      num_found = 0
-      for x in category.keys():
-         if x.startswith(find):
-            found = x
-            num_found = num_found + 1
-         if num_found >= 2:
-            break
-      if num_found == 1:
-         result = string.join(tokens[:-1] + [found], ".")
-         if category[found] != {}:
-            result = result + "."
-         return result
+   def classify_glyph_manual(self, glyph, id):
+      self.determine_feature_functions()
+      if self.database.has_key(glyph):
+         del self.database[glyph]
       else:
-         return symbol
+         glyph.generate_features(self.feature_functions)
+      for child in glyph.children_images:
+         if self.database.has_key(child):
+            del self.database[child]
+      glyph.classify_manual([(1.0, id)])
+      self.database[glyph] = None
 
-   def get_category_contents(self, symbol):
-      symbol, tokens = self.normalize_symbol(symbol)
-      category = self.categories
-      for token in tokens:
-         category = category[token]
-      return category
+   def classify_list_manual(self, glyphs, id, recursion_level=0):
+      if recursion_level > 10:
+         return []
+      self.determine_feature_functions()
+      feature_functions = self.feature_functions
+      splits = []
+      for glyph in glyphs:
+         if self.database.has_key(glyph):
+            del self.database[glyph]
+         else:
+            glyph.generate_features(feature_functions)
+         for child in glyph.children_images:
+            if self.database.has_key(child):
+               del self.database[child] 
+         glyph.classify_manual([(1.0, id)])
+         splits.extend(self._do_action(glyph))
+         self.database[glyph] = None
+      if len(splits):
+         splits.extend(self.classify_list_manual(splits), recursion_level+1)
+      return splits
 
-   def get_category_contents_list(self, symbol):
-      category = self.get_category_contents(symbol)
-      result = []
-      for key, val in category.items():
-         result.append((key, (val != {})))
-      result.sort()
-      return result
+   def classify_glyph_automatic(self, glyph):
+      if not glyph.classification_state in (MANUAL, HEURISTIC):
+         glyph.generate_features(self.feature_functions)
+         id = self.classifier.classify_with_images(self.database.iterkeys(), glyph)
+         glyph.classify_automatic(id)
+         return self._do_action(glyph)
+      return []
 
-   def get_name_by_id(self, id):
-      return self.all_ids[id]
+   def classify_list_automatic(self, glyphs, recursion_level=0):
+      if recursion_level > 10:
+         return []
+      splits = []
+      for glyph in glyphs:
+         if not glyph.classification_state in (MANUAL, HEURISTIC):
+            glyph.generate_features(self.feature_functions)
+            id = self.classifier.classify_with_images(self.database.iterkeys(), glyph)
+            glyph.classify_automatic(id)
+            splits.extend(self._do_action(glyph))
+      if len(splits):
+         splits.extend(self.classify_list_automatic(splits, recursion_level+1))
+      return splits
 
-   def exists(self, symbol):
-      return self.all_names.has_key(symbol)
+   def display(self, current_database, image=None):
+      gui = config.get_option("__gui")
+      display = gui.ShowClassifier(self, current_database, image)
 
-   def get_id_by_name(self, name):
-      name, tokens = self.normalize_symbol(name)
-      return self.all_names[name]
 
 class Classifier:
    def __init__(self, glyphs=[], production_database=None,
@@ -219,6 +170,8 @@ class Classifier:
       self.production_database_filename = production_database
       self.current_database_filename = current_database
       self.symbol_table = SymbolTable()
+
+
 
       #####################################################
       # These will either be set to defaults later or set by

@@ -28,7 +28,7 @@ if sys.platform == 'win32':
    real_black = wxBLACK
 else:
    real_white = wxBLACK
-   real_wxblack = wxWHITE
+   real_black = wxWHITE
 from gamera.core import *             # Gamera specific
 from gamera.gameracore import RGBPixel
 from gamera import paths, util
@@ -121,19 +121,46 @@ class ImageDisplay(wxScrolledWindow):
          color = gui_util.get_color(color)
       return color
 
-   # Highlights a CC in the display.  Multiple CCs
-   # may be highlighted in turn
+   # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=-1):
       color = self.get_highlight_color(color)
       if not util.is_sequence(ccs):
          ccs = (ccs,)
       use_color = color
+      old_highlights = self.highlights[:]
+      self.highlights = []
       for cc in ccs:
+         found_it = 0
          if color == -1:
-            use_color = gui_util.get_color(self.color)
-            self.color += 1
+            for old_cc, use_color in old_highlights:
+               if old_cc == cc:
+                  found_it = 1
+                  break
+            if not found_it:
+               use_color = gui_util.get_color(self.color)
+               self.color += 1
          self.highlights.append((cc, use_color))
-         self.PaintAreaRect(cc)
+         if not found_it:
+            self.PaintAreaRect(cc)
+      for cc in old_highlights:
+         if cc not in self.highlights:
+            self.PaintAreaRect(cc[0])
+   highlight_ccs = highlight_cc
+
+   # Adds a list of ccs to be highlighted in the display
+   def add_highlight_cc(self, ccs, color=-1):
+      color = self.get_highlight_color(color)
+      if not util.is_sequence(ccs):
+         ccs = (ccs,)
+      use_color = color
+      for cc in ccs:
+         if cc not in self.highlights:
+            if color == -1:
+               use_color = gui_util.get_color(self.color)
+               self.color += 1
+            self.highlights.append((cc, use_color))
+            self.PaintAreaRect(cc)
+   add_highlight_ccs = add_highlight_cc
 
    # Clears a CC in the display.  Multiple CCs
    # may be unhighlighted in turn
@@ -149,6 +176,7 @@ class ImageDisplay(wxScrolledWindow):
                self.PaintAreaRect(cc)
                last_one = i
                break
+   unhighlight_ccs = unhighlight_cc
       
    # Clears all of the highlighted CCs in the display   
    def clear_all_highlights(self):
@@ -631,31 +659,6 @@ class ImageWindow(wxPanel):
    def get_display(self):
       return ImageDisplay(self)
       
-   def close(self):
-      self.Destroy()
-
-   def add_click_callback(self, cb):
-      self.id.add_click_callback(cb)
-
-   def remove_click_callback(self, cb):
-      self.id.remove_click_callback(cb)
-
-   def refresh(self):
-      self.id.Refresh(0)
-
-   def set_image(self, image, view_function=None):
-      return self.id.set_image(image, view_function)
-
-   def highlight_cc(self, cc):
-      self.id.highlight_cc(cc)
-   highlight_ccs = highlight_cc
-
-   def unhighlight_cc(self, cc):
-      self.id.unhighlight_cc(cc)
-
-   def clear_all_highlights(self):
-      self.id.clear_all_highlights()
-
 
    ########################################
    # CALLBACKS
@@ -684,9 +687,6 @@ class ImageWindow(wxPanel):
    def OnMakeCopyClick(self, event):
       self.id.MakeCopy()
 
-   def focus(self, rect):
-      self.id.focus(rect)
-
 
 ##############################################################################
 # MULTIPLE IMAGE DISPLAY IN A GRID
@@ -697,14 +697,13 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       wxPyGridCellRenderer.__init__(self)
       self.parent = parent
 
+   _colors = {UNCLASSIFIED: wxColor(255,255,255),
+              AUTOMATIC:    wxColor(198,145,145),
+              HEURISTIC:    wxColor(240,230,140),
+              MANUAL:       wxColor(180,238,180)}
    def get_color(self, image):
-      if hasattr(image, 'classification_color'):
-         color = image.classification_color()
-      if color == None:
-         color = (255,255,255)
-      color = wxColor(red = color[0], green = color[1],
-                      blue = color[2])
-      return color
+      return self._colors.get(
+         image.classification_state, wxColor(200,200,200))
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
@@ -716,7 +715,7 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
          image = self.parent.list[bitmap_no]
       else:
          image = None
-      if image != None:
+      if image != None and not hasattr(image, 'dead'):
          dc.SetBackgroundMode(wxSOLID)
          # Fill the background
          color = self.get_color(image)
@@ -1064,12 +1063,14 @@ class MultiImageDisplay(wxGrid):
          image = None
       else:
          image = self.list[image_no]
+
       if image == None or image.classification_state == UNCLASSIFIED:
          self.tooltip.Show(false)
+         last_image_no = None
       else:
+         self.tooltip.Show(1)
          if self.last_image_no != image_no:
             label = str(image.id_name)
-            self.tooltip.Show()
             self.tooltip.SetLabel(label)
             self.tooltip.SetDimensions(-1,-1,-1,-1,wxSIZE_AUTO)
             self.last_image_no = image_no
@@ -1157,9 +1158,6 @@ class MultiImageWindow(wxPanel):
    def get_display(self):
       return MultiImageDisplay(self)
 
-   def set_image(self, image, view_function=None):
-      return self.id.set_image(image, view_function)
-
    def set_choices(self, prototype):
       members = prototype.members_for_menu()
       methods = prototype.methods_flat_category("Features")
@@ -1182,9 +1180,6 @@ class MultiImageWindow(wxPanel):
 
    def close(self):
       self.Destroy()
-
-   def refresh(self):
-      self.id.ForceRefresh()
 
    ########################################
    # CALLBACKS
@@ -1272,7 +1267,7 @@ class ImageFrameBase:
       EVT_CLOSE(self._frame, self._OnCloseWindow)
 
    def set_image(self, image, view_function=None):
-      size = self._iw.set_image(image, view_function)
+      size = self._iw.id.set_image(image, view_function)
       self._frame.SetSize((max(200, min(600, size[0] + 30)),
                            max(200, min(400, size[1] + 60))))
 
@@ -1281,13 +1276,13 @@ class ImageFrameBase:
       self._frame.Destroy()
 
    def refresh(self):
-      self._iw.refresh(1)
+      self._iw.id.refresh(0)
 
    def add_click_callback(self, cb):
-      self._iw.add_click_callback(cb)
+      self._iw.id.add_click_callback(cb)
 
    def remove_click_callback(self, cb):
-      self._iw.remove_click_callback(cb)
+      self._iw.id.remove_click_callback(cb)
 
    def _OnCloseWindow(self, event):
       del self._iw
@@ -1311,23 +1306,19 @@ class ImageFrame(ImageFrameBase):
       return "<ImageFrame Window>"
 
    def highlight_cc(self, cc):
-      self._iw.highlight_cc(cc)
+      self._iw.id.highlight_cc(cc)
    highlight_ccs = highlight_cc
 
    def unhighlight_cc(self, cc):
-      self._iw.unhighlight_cc(cc)
+      self._iw.id.unhighlight_cc(cc)
    unhighlight_ccs = unhighlight_cc
 
    def clear_all_highlights(self):
-      self._iw.clear_all_highlights()
+      self._iw.id.clear_all_highlights()
 
    def focus(self, rect):
-      self._iw.focus(rect)
+      self._iw.id.focus(rect)
 
-   def wait(self):
-      wxYield()
-      wxMessageDialog(self, "Continue", style=wxOK).ShowModal()
-      
 
 class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):
@@ -1341,7 +1332,7 @@ class MultiImageFrame(ImageFrameBase):
       return "<MultiImageFrame Window>"
 
    def set_image(self, image, view_function=None):
-      size = self._iw.set_image(image, view_function)
+      size = self._iw.id.set_image(image, view_function)
 
 
 ##############################################################################

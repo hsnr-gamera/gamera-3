@@ -22,13 +22,12 @@ from gamera.core import *
 from gamera.args import *
 from gamera.gui import gaoptimizer_display, image_menu, var_name
 from gamera.gui.gamera_display import *
+from gamera import symbol_table
 import string
 
 ###############################################################################
 # CLASSIFIER DISPLAY
 ###############################################################################
-
-symbol_table = None
 
 class ClassifierMultiImageDisplay(MultiImageDisplay):
    def __init__(self, toplevel, parent):
@@ -37,8 +36,9 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       self.last_image_no = None
       EVT_GRID_RANGE_SELECT(self, self.OnSelect)
       self.last_sort = None
-      # This is to turn off the display of row labels if a) we have done some classification
-      # and b) we have done a sort other than the default. KWM
+      # This is to turn off the display of row labels if a)
+      # we have done some classification and b) we have done a
+      # sort other than the default. KWM
       self.display_row_labels = 0
 
    ########################################
@@ -68,7 +68,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             self.SelectBlock(row, col, row, col, 0)
             self.MakeCellVisible(row, col)
             if not self.list[i].manually_classified():
-               id = self.toplevel.classifier.guess_classify_glyph(self.list[i])
+               id = self.toplevel.classify_glyph(self.list[i])
                self.toplevel.set_label_display([id])
                self.toplevel.display_label_at_cell(row, col, id)
             return
@@ -94,15 +94,6 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL
 
-   def display_label_at_cell(self, row, col, label):
-      rect = self.CellToRect(row, col)
-      origin = self.GetViewStart()
-      units = self.GetScrollPixelsPerUnit()
-      self.tooltip.Move(wxPoint(rect.GetLeft() - origin[0] * units[0],
-                                rect.GetBottom() - origin[1] * units[1] + 3))
-      self.tooltip.Show(1)
-      self.tooltip.SetLabel(label)
-
    def find_glyphs_in_rect(self, x1, y1, x2, y2):
       self.BeginBatch()
       matches = []
@@ -112,15 +103,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             g = self.list[i]
             if g != None and g.contains_point(point):
                   if (g.get(y1 - g.page_offset_y(), x1 - g.page_offset_x()) != 0):
-                     matches = [i]
-                     break
+                     matches.append(g)
       else:
          matches = []
          r = Rect(y1, x1, y2 - y1 + 1, x2 - x1 + 1)
          for i in range(len(self.list)):
             g = self.list[i]
             if g != None:
-               if r.contains_rect(g.m):
+               if r.intersects(g):
                   matches.append(i)
                   
       if matches != []:
@@ -136,10 +126,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                self.MakeCellVisible(row, col)
                first = 1
       else:
-         for image in self.toplevel.last_cc_displayed:
-            self.toplevel.single_iw.clear_highlight_cc(image)
-         self.toplevel.single_iw.focus(self.toplevel.last_cc_displayed)
-         self.toplevel.last_cc_displayed = []
+         self.toplevel.single_iw.id.clear_all_highlights(image)
          self.ClearSelection()
       self.EndBatch()
 
@@ -191,7 +178,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       self.last_sort = "default"
       clean = 1
       for item in list:
-         if not item.unclassified():
+         if item.classification_state != UNCLASSIFIED:
             clean = 0
             break
       if clean:
@@ -212,22 +199,17 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       return new_list
 
    def sort_images(self, function=None, order=0):
-      # Remove any "None"s in the list
       self.last_sort = None
       if function:
          # Turn off the row labels
          self.display_row_labels = 0
       else:
          self.display_row_labels = 1
-      global symbol_table
-      symbol_table = self.toplevel.classifier.symbol_table
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_len = len(self.list)
-      new_list = []
-      for item in self.list:
-         if item != None:
-            new_list.append(item)
+      # Remove "None"s from the list
+      new_list = [x for x in self.list if x != None and not hasattr(x, 'dead')]
       if len(new_list) != len(self.list):
          self.list = new_list
       MultiImageDisplay.sort_images(self, function, order)
@@ -249,7 +231,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          except IndexError:
             self.SetRowLabelValue(i, "")
          else:
-            if image == None or image.unclassified():
+            if image == None or image.classification_state == UNCLASSIFIED:
                self.SetRowLabelValue(i, "")
             elif self.display_row_labels:
                label = image.id_name[0]
@@ -266,12 +248,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    # Display selected items in the context display
    def OnSelectImpl(self):
       if not self.updating:
-         image = self.GetSelectedItems()
-         if image != []:
-            symbol_table = self.toplevel.classifier.symbol_table
-            id = image[0].id_name
+         images = self.GetSelectedItems()
+         if images != []:
+            id = images[0].id_name
             all_same = 1
-            for x in image:
+            for x in images:
                if x.id_name != id:
                   all_same = 0
                   break
@@ -279,38 +260,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                self.toplevel.set_label_display(id)
             else:
                self.toplevel.set_label_display([])
-            self.toplevel.display_cc(image)
+            self.toplevel.display_cc(images)
 
    def OnSelect(self, event):
       event.Skip()
       self.OnSelectImpl()
-
-   # Display the label in the status bar.
-   # Too bad wxPython makes this so hideously complicated
-   def OnMotion(self, event):
-      origin = self.GetViewStart()
-      units = self.GetScrollPixelsPerUnit()
-      row = self.YToRow(event.GetY() + origin[1] * units[1])
-      col = self.XToCol(event.GetX() + origin[0] * units[0])
-      image_no = self.get_image_no(row, col)
-      if image_no == None or image_no >= len(self.list) or image_no < 0:
-         image = None
-      else:
-         image = self.list[image_no]
-      if image == None or image.unclassified():
-         self.tooltip.Show(false)
-      else:
-         id = image.id_name
-         self.tooltip.Show(true)
-         self.tooltip.Move(wxPoint(event.GetX() + 14, event.GetY() + 14))
-         if self.last_image_no != image_no:
-            self.tooltip.SetLabel(id[0])
-      self.last_image_no = image_no
-      event.Skip()
-
-   def OnLeave(self, event):
-      self.tooltip.Show(false)
-      event.Skip()
 
 class ClassifierMultiImageWindow(MultiImageWindow):
    def __init__(self, toplevel, parent = None, id = -1, size = wxDefaultSize):
@@ -318,18 +272,18 @@ class ClassifierMultiImageWindow(MultiImageWindow):
       MultiImageWindow.__init__(self, parent, id, size)
       self.toolbar.AddSeparator()
       from gamera.gui import gamera_icons
-      self.toolbar.AddTool(20, gamera_icons.getIconNextUnclassBitmap(), isToggle=TRUE,
-                           shortHelpString = "Automatically move to next unclassified glyph.")
-      self.toolbar.AddTool(21, gamera_icons.getIconNextAutoclassBitmap(), isToggle=TRUE,
-                           shortHelpString =
-                           "Automatically move to next automatically classified glyph.")
-      self.toolbar.AddTool(22, gamera_icons.getIconNextHeurclassBitmap(), isToggle=TRUE,
-                           shortHelpString =
-                           "Automatically move to next heuristically classified glyph.")
-      self.toolbar.AddTool(23, gamera_icons.getIconNextManclassBitmap(), isToggle=TRUE,
-                           shortHelpString =
-                           "Automatically move to next manually classified glyph.")
-      EVT_TOOL_RANGE(self, 20, 23, self.OnAutoMove)
+##       self.toolbar.AddTool(20, gamera_icons.getIconNextUnclassBitmap(), isToggle=TRUE,
+##                            shortHelpString = "Automatically move to next unclassified glyph.")
+##       self.toolbar.AddTool(21, gamera_icons.getIconNextAutoclassBitmap(), isToggle=TRUE,
+##                            shortHelpString =
+##                            "Automatically move to next automatically classified glyph.")
+##       self.toolbar.AddTool(22, gamera_icons.getIconNextHeurclassBitmap(), isToggle=TRUE,
+##                            shortHelpString =
+##                            "Automatically move to next heuristically classified glyph.")
+##       self.toolbar.AddTool(23, gamera_icons.getIconNextManclassBitmap(), isToggle=TRUE,
+##                            shortHelpString =
+##                            "Automatically move to next manually classified glyph.")
+##       EVT_TOOL_RANGE(self, 20, 23, self.OnAutoMove)
 
    def get_display(self):
       return ClassifierMultiImageDisplay(self.toplevel, self)
@@ -366,7 +320,7 @@ class ClassifierImageWindow(ImageWindow):
 
    def OnChooseImage(self, event):
       from args import Args, Class
-      dlg = Args([Class("Image for context display", "core.Image")])
+      dlg = Args([Class("Image for context display", "core.ImageBase")])
       function = dlg.show(self, image_menu.shell.locals, "")
       if function != None:
          function = function[1:-1]
@@ -376,107 +330,45 @@ class ClassifierImageWindow(ImageWindow):
    def get_display(self):
       return ClassifierImageDisplay(self.toplevel, self)
 
-GA_TIMER_ID = 400
 class ClassifierFrame(ImageFrameBase):
    def __init__(self, classifier, parent = None, id = -1, title = "Classifier",
                 owner=None):
-      global toplevel
+      self.classifier = classifier
+      self.auto_move = []
       toplevel = self
       self.image = None
       self.menu = None
       ImageFrameBase.__init__(self, parent, id, title, owner)
-      self.SetSize((800, 600))
-      self.classifier = classifier
-      self.last_id = []
-      self.last_cc_displayed = []
-      self.auto_move = []
-      self.splitterv = wxSplitterWindow(self, -1)
+      self._frame.SetSize((800, 600))
+      self.splitterv = wxSplitterWindow(self._frame, -1)
       self.splitterh = wxSplitterWindow(self.splitterv, -1)
       self.single_iw = ClassifierImageWindow(self, self.splitterh)
       self.multi_iw = ClassifierMultiImageWindow(self, self.splitterh)
       self.splitterh.SetMinimumPaneSize(5)
       self.splitterh.SplitHorizontally(self.multi_iw, self.single_iw, 300)
-      self.symbol_editor = SymbolTableEditorPanel(classifier.symbol_table,
+      self.symbol_editor = SymbolTableEditorPanel(symbol_table.SymbolTable(),
                                                   self, self.splitterv)
       self.splitterv.SetMinimumPaneSize(5)
       self.splitterv.SplitVertically(self.symbol_editor, self.splitterh, 160)
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
-      self.SetIcon(icon)
-      EVT_SIZE(self, self.OnSizeImpl)
+      self._frame.SetIcon(icon)
+      # EVT_SIZE(self, self.OnSizeImpl)
       
-      # GA optimizer
-      self.ga_running = 0
-      self.ga = gaoptimizer_display.OptimizerFrame(self, -1, "GA Optimization Settings")
-      self.ga.set_classifier(self.classifier)
-      self.ga_timer = wxTimer(self, GA_TIMER_ID)
-      self.best_weights = None
-      self.best_weights_score = 0
-      EVT_TIMER(self, GA_TIMER_ID, self.update_from_ga)
+      self._frame.CreateStatusBar(3)
 
-      self.CreateStatusBar(3)
-      self.check_optimizer = wxCheckBox(self.GetStatusBar(), 500, "Optimize Database")
-      EVT_CHECKBOX(self, 500, self.OnCheckOptimizer)
-
-      id = NewId()
-      self.check_optimizer_settings = wxButton(self.GetStatusBar(), id, "Optimization Settings")
-      EVT_BUTTON(self, id, self.OnCheckOptimizerSettings)
-
-      self.meter = wxGauge(self.GetStatusBar(), -1, 100, size=(100, 20))
-      self.meter_text = wxTextCtrl(self.GetStatusBar(), -1, "", style=wxTE_READONLY)
-      self.SetStatusBarPositions()
-
-   def OnCheckOptimizerSettings(self, e):
-      self.ga.Show(1)
-
-   def OnCheckOptimizer(self, event):
-      wxBeginBusyCursor()
-      self.ga_timer.Stop()
-      self.ga.stop()
-      if self.check_optimizer.GetValue():
-         self.ga.start()
-         self.ga_running = 1
-         self.ga_timer.Start(1000)
-         self.ga.ga.lock.acquire()
-         self.meter.SetValue(int(self.ga.ga.best_score))
-         self.ga.ga.lock.release()
-      else:
-         self.meter.SetValue(0)
-      wxEndBusyCursor()
-
-   #######################################
-   ## Status Bar
-
-   def SetStatusBarPositions(self):
-      # Settings
-      rect = self.GetStatusBar().GetFieldRect(0)
-      self.check_optimizer_settings.SetPosition(wxPoint(rect.x + 2, rect.y))
-      # Status
-      rect = self.GetStatusBar().GetFieldRect(1)
-      self.check_optimizer.SetPosition(wxPoint(rect.x + 2, rect.y))
-      # Meter Text
-      rect = self.GetStatusBar().GetFieldRect(2)
-      self.meter_text.SetPosition(wxPoint(rect.x + 2, rect.y))
-      # Meter
-      self.meter.SetDimensions(rect.x + self.meter_text.GetSizeTuple()[0] + 2, rect.y,
-                               rect.width - self.meter_text.GetSizeTuple()[0], 20)
-      
-
-   def OnSizeImpl(self, event):
-      self.SetStatusBarPositions()
-      event.Skip()
-
-   def set_image(self, ccs, image=None, function=None):
-      self.to_string_function = function
-      self.ccs = ccs
-      self.multi_iw.set_image(ccs, function)
-      if image != None:
-         self.image = image
-         if self.image == None:
-            self.splitterh.SetSashPosition(10000)
-            self.image = Image(300, 200)
-            self.to_string_function = Image.to_string
-         self.single_iw.set_image(self.image, self.to_string_function)
+   def set_image(self, current_database, image=None):
+      self.current_database = {}
+      for glyph in current_database:
+         self.current_database[glyph] = None
+      self.multi_iw.id.set_image(current_database)
+      if image == None:
+         image = self.image
+      self.image = image
+      if self.image == None:
+         self.splitterh.SetSashPosition(10000)
+         self.image = Image(0, 0, 300, 200, ONEBIT, DENSE)
+      self.single_iw.id.set_image(self.image)
 
    def append_glyphs(self, list):
       self.multi_iw.id.append_glyphs(list)
@@ -486,14 +378,8 @@ class ClassifierFrame(ImageFrameBase):
 
    def display_cc(self, cc):
       if self.image != None:
-         for image in self.last_cc_displayed:
-            if image not in cc:
-               self.single_iw.clear_highlight_cc(image)
-         for image in cc:
-            if image not in self.last_cc_displayed:
-               self.single_iw.highlight_cc(image, Image.to_string)
-         self.single_iw.focus(cc)
-         self.last_cc_displayed = cc
+         self.single_iw.id.highlight_cc(cc)
+         self.single_iw.id.focus(cc)
 
    def find_glyphs_in_rect(self, x1, y1, x2, y2):
       self.multi_iw.find_glyphs_in_rect(x1, y1, x2, y2)
@@ -501,20 +387,16 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # CLASSIFICATION FUNCTIONS
 
-   def guess(self):
+   def guess_all(self):
       wxBeginBusyCursor()
-      self.classifier.auto_classify_all()
+      self.classifier.classify_list_automatic(self.current_database.keys())
       self.multi_iw.id.sort_images(None)
       wxEndBusyCursor()
 
-   def guess_list(self, list):
-      for x in list:
-         self.classifier.auto_classify_glyph(x)
-
    def confirm_all(self):
       for x in self.classifier.current_database:
-         if x.automatically_classified():
-            self.classifier.manual_classify_glyph(x, x.id_name)
+         if x.classification_state == AUTOMATIC:
+            self.classifier.classify_glyph_manual(x, x.get_main_id())
       self.multi_iw.id.ForceRefresh()
    
    def manual_classify(self, id):
@@ -524,45 +406,24 @@ class ClassifierFrame(ImageFrameBase):
          self.multi_iw.id.GetGridCursorCol())
       if selection != []:
          self.multi_iw.id.BeginBatch()
-         self.manual_classify_list(selection, id)
+         removed_some = 0
+         for glyph in selection:
+            for child in glyph.children_images:
+               if self.current_database.has_key(child):
+                  child.dead = 1
+                  del self.current_database[child]
+                  removed_some = 1
+         splits = self.classifier.classify_list_manual(selection, id)
+         if len(splits):
+            for split in splits:
+               self.current_database[split] = None
+            self.append_glyphs(splits)
+         if removed_some or len(splits):
+            self.multi_iw.id.refresh()
          if not self.do_auto_move():
-            self.set_label_display([id])
+            self.set_label_display([(1.0, id)])
          self.multi_iw.id.EndBatch()
          wxEndBusyCursor()
-
-   # To avoid multiple refreshes of the grid, this batches manually
-   # classifying the list and refreshes the grid at the end.
-   def manual_classify_list(self, list, id):
-      removed = 0
-      did_splits = 0
-      for item in list:
-         if isinstance(item, core.Image):
-            a, b = self.classifier.manual_classify_glyph(
-               item, id, update_display=0)
-         did_splits = did_splits + a
-         removed = removed or b
-      if removed:
-         self.set_image(self.classifier.current_database)
-      elif did_splits:
-         self.append_glyphs(self.classifier.current_database[-did_splits:])
-
-   ####################################################
-   # GA
-   def update_from_ga(self, event):
-      if self.ga_running:
-         self.ga.ga.lock.acquire()
-         weights = self.ga.ga.get_weights()
-         if weights != None:
-            current_score = self.ga.ga.best_score
-            # We only want to replace our wieghts if the current score is better than
-            # the overall best. This stays across restarting the GA
-            if current_score > self.best_weights_score or self.best_weights == None:
-               self.best_weights = self.ga.ga.get_weights()
-               self.best_weights_score = current_score
-               self.classifier.knn_database.set_weights(self.best_weights)
-         self.ga.ga.lock.release()
-         self.meter.SetValue(int(self.best_weights_score))
-         self.meter_text.SetValue(str(self.best_weights_score) + '%')
 
    ########################################
    # AUTO-MOVE
@@ -576,12 +437,15 @@ class ClassifierFrame(ImageFrameBase):
 
    def set_label_display(self, ids):
       if ids != []:
-         self.symbol_editor.tree.set_label_display(ids[0])
+         self.symbol_editor.tree.set_label_display(ids[0][1])
       else:
          self.symbol_editor.tree.set_label_display("")
 
    def display_label_at_cell(self, row, col, label):
       self.multi_iw.id.display_label_at_cell(row, col, label)
+
+   ########################################
+   # FILE MENU
 
    def file_menu(self):
       self.menu = wxMenu()
@@ -744,7 +608,7 @@ class ClassifierFrame(ImageFrameBase):
       self.Destroy()
 
    def refresh(self):
-      self.single_iw.refresh(1)
+      self.single_iw.id.refresh(1)
 
 
 ##############################################################################
@@ -908,7 +772,7 @@ class SymbolTableEditorPanel(wxPanel):
       self.toplevel.file_menu_destroy()
 
    def OnGuessClick(self, event):
-      self.toplevel.guess()
+      self.toplevel.guess_all()
 
    def OnConfirmClick(self, event):
       self.toplevel.confirm_all()
@@ -920,7 +784,7 @@ class SymbolTableEditorPanel(wxPanel):
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
-         self.symbol_table.add_if_not_exists(find)
+         self.symbol_table.add(find)
          self.toplevel.manual_classify(find)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():
          current = self.text.GetInsertionPoint()

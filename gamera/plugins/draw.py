@@ -32,7 +32,7 @@ Coordinates are relative to the offset of the image.  Therefore, if the image
 offset is (5, 5), a marker at (5, 5) will be in the upper left hand corner
 of the image.
 
-The coordinates can be specified either by two floats or two Points:
+The coordinates can be specified either by two floats or one Points:
 
   *y1*:
     Starting *y* coordinate.
@@ -42,7 +42,7 @@ The coordinates can be specified either by two floats or two Points:
 **or**
 
   *a*:
-    The start ``Point``.
+    The ``Point`` of the marker.
 
 *size*
   The size of the marker (number of pixels)
@@ -163,23 +163,11 @@ Coordinates are relative to the offset of the image.  Therefore, if the image
 offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
 of the image.
 
-The coordinates can be specified either by four integers or two Points:
+The coordinates can be specified either by four integers, two Points, or one Rect:
 
-  *y1*:
-    Starting *y* coordinate.
-  *x1*:
-    Starting *x* coordinate.
-  *y2*:
-    Ending *y* coordinate.
-  *x2*:
-    Ending *x* coordinate.
-
-**or**
-
-  *a*:
-    The start ``Point``.
-  *b*:
-    The end ``Point``.
+  **draw_hollow_rect** (*y1*, *x1*, *y2*, *x2*)
+  **draw_hollow_rect** (Point(*x1*, *y1*), Point(*x2*, *y2))
+  **draw_hollow_rect** (Rect *rect*)
 
 *value*:
   The pixel value to set for the lines.
@@ -197,6 +185,13 @@ The coordinates can be specified either by four integers or two Points:
         b = args[1]
         value = args[2]
         return _draw.draw_hollow_rect(self, a.y, a.x, b.y, b.x, value)
+      except KeyError, AttributeError:
+        pass
+    else len(args) == 2:
+      try:
+        a = args[0]
+        value = args[1]
+        return _draw.draw_hollow_rect(self, a.ul_y, a.ul_x, a.lr_y, a.lr_x, value)
       except KeyError, AttributeError:
         pass
     raise ValueError("Arguments are incorrect.")
@@ -220,23 +215,11 @@ Coordinates are relative to the offset of the image.  Therefore, if the image
 offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
 of the image.
 
-The coordinates can be specified either by four integers or two Points:
+The coordinates can be specified either by four integers, two Points, or one Rect:
 
-  *y1*:
-    Starting *y* coordinate.
-  *x1*:
-    Starting *x* coordinate.
-  *y2*:
-    Ending *y* coordinate.
-  *x2*:
-    Ending *x* coordinate.
-
-**or**
-
-  *a*:
-    The start ``Point``.
-  *b*:
-    The end ``Point``.
+  **draw_filled_rect** (*y1*, *x1*, *y2*, *x2*)
+  **draw_filled_rect** (Point(*x1*, *y1*), Point(*x2*, *y2))
+  **draw_filled_rect** (Rect *rect*)
 
 *value*:
   The pixel value to set for the rectangle.
@@ -254,6 +237,13 @@ The coordinates can be specified either by four integers or two Points:
         b = args[1]
         value = args[2]
         return _draw.draw_filled_rect(self, a.y, a.x, b.y, b.x, value)
+      except KeyError, AttributeError:
+        pass
+    else len(args) == 2:
+      try:
+        a = args[0]
+        value = args[1]
+        return _draw.draw_hollow_rect(self, a.ul_y, a.ul_x, a.lr_y, a.lr_x, value)
       except KeyError, AttributeError:
         pass
     raise ValueError("Arguments are incorrect.")
@@ -368,8 +358,6 @@ The coordinates can be specified either by two integers or one Point:
 
   *a*:
     The start ``Point``.
-  *b*:
-    The end ``Point``.
 
 *color*:
   The pixel value to set for the rectangle.

@@ -45,6 +45,7 @@ extern "C" {
   static PyObject* knn_get_distance_type(PyObject* self);
   static int knn_set_distance_type(PyObject* self, PyObject* v);
   static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
+  static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
 }
 
 static PyTypeObject KnnType = {
@@ -115,6 +116,7 @@ PyMethodDef knn_methods[] = {
   { "classify", knn_classify, METH_VARARGS,
     "" },
   { "leave_one_out", knn_leave_one_out, METH_VARARGS, "" },
+  { "distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { NULL }
 };
 
@@ -484,6 +486,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     if (image_get_id_name(cur, &id_name, &len) < 0)
       return 0;
     knn.add(id_name, distance);
+    Py_DECREF(cur);
   }
   delete weights;
 
@@ -570,6 +573,54 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     return 0;
   }
   return Py_BuildValue("f", leave_one_out(o));
+}
+
+static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+    PyObject* unknown, *iterator;
+  if (PyArg_ParseTuple(args, "OO", &iterator, &unknown) <= 0) {
+    return 0;
+  }
+
+  if (!PyIter_Check(iterator)) {
+    PyErr_SetString(PyExc_TypeError, "Known features must be iterable.");
+    return 0;
+  }
+
+  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+    PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
+    return 0;
+  }
+  
+  /*
+    create an empty weight vector.
+  */
+  double* weights;
+  int len;
+  if (image_get_fv(unknown, &weights, &len) < 0)
+    return 0;
+  weights = new double[len];
+  std::fill(weights, weights + len, 1.0);
+
+  PyObject* cur;
+  PyObject* distance_list = PyList_New(0);
+  PyObject* tmp_val;
+  while ((cur = PyIter_Next(iterator))) {
+    if (!PyObject_TypeCheck(cur, imagebase_type)) {
+      PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
+    }
+    double distance;
+    if (compute_distance(o, cur, unknown, weights, &distance) < 0)
+      return 0;
+    tmp_val = Py_BuildValue("(fO)", distance, cur);
+    if (PyList_Append(distance_list, tmp_val) < 0)
+      return 0;
+    Py_DECREF(tmp_val);
+    Py_DECREF(cur);
+  }
+  //Py_DECREF(iterator);
+  delete weights;
+  return distance_list;
 }
 
 PyMethodDef knn_module_methods[] = {

@@ -110,8 +110,14 @@ namespace Gamera {
     bool operator<(const RowIteratorBase& other) const {
       return m_iterator < other.m_iterator;
     }
+    bool operator<=(const RowIteratorBase& other) const {
+      return m_iterator <= other.m_iterator;
+    }
     bool operator>(const RowIteratorBase& other) const {
       return m_iterator > other.m_iterator;
+    }
+    bool operator>=(const RowIteratorBase& other) const {
+      return m_iterator >= other.m_iterator;
     }
     typename base_type::difference_type operator-(const RowIteratorBase& other) const {
       return (m_iterator - other.m_iterator) / m_image->data()->stride();
@@ -197,8 +203,14 @@ namespace Gamera {
     bool operator<(const ColIteratorBase& other) const {
       return m_iterator < other.m_iterator;
     }
+    bool operator<=(const ColIteratorBase& other) const {
+      return m_iterator <= other.m_iterator;
+    }
     bool operator>(const ColIteratorBase& other) const {
       return m_iterator > other.m_iterator;
+    }
+    bool operator>=(const ColIteratorBase& other) const {
+      return m_iterator >= other.m_iterator;
     }
     typename base_type::difference_type operator-(const ColIteratorBase& other) const {
       return (m_iterator - other.m_iterator);
@@ -334,8 +346,14 @@ namespace Gamera {
     bool operator<(const VecIteratorBase& other) const {
       return m_coliterator < other.m_coliterator;
     }
+    bool operator<=(const VecIteratorBase& other) const {
+      return m_coliterator <= other.m_coliterator;
+    }
     bool operator>(const VecIteratorBase& other) const {
       return m_coliterator > other.m_coliterator;
+    }
+    bool operator>=(const VecIteratorBase& other) const {
+      return m_coliterator >= other.m_coliterator;
     }
     typename base_type::difference_type operator-(const self& other) const {
       size_t nrows = m_rowiterator - other.m_rowiterator;

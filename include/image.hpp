@@ -93,7 +93,7 @@ namespace Gamera {
     ImageBase(const Point& upper_left, const Dimensions& dim)
       : Image(upper_left, dim) { }
     ImageBase(const Rect& rect) : Image(rect) { }
-    virtual ~ImageBase() { std::cerr << "ImageBase::~ImageBase "; }
+    virtual ~ImageBase() { }
     size_t depth() const { return sizeof(T) * 8; }
     size_t ncolors() const { return 1; }
   };

@@ -141,7 +141,6 @@ namespace Gamera {
       if (m_data != 0) {
 	delete[] m_data;
       }
-      std::cerr << "deleted data";
     }
     
     virtual size_t bytes() const { return m_size * sizeof(T); }

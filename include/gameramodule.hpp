@@ -1031,12 +1031,19 @@ inline PyTypeObject* get_IteratorType() {
 }
 
 /* PROGRESS BAR TYPE */
+
 class ProgressBar {
 public:
   inline ProgressBar(char* message) {
     PyObject* dict = get_module_dict("gamera.util"); 
+    if (!dict)
+      throw std::runtime_error("Couldn't get gamera.util module");
     PyObject* progress_factory = PyDict_GetItemString(dict, "ProgressFactory");
+    if (!progress_factory)
+      throw std::runtime_error("Couldn't get ProgressFactory function");
     m_progress_bar = PyObject_CallFunction(progress_factory, "s", message);
+    if (!m_progress_bar)
+      throw std::runtime_error("Error getting progress bar");
   }
   inline ProgressBar() : m_progress_bar(NULL) {}
   inline ProgressBar(int x) {
@@ -1052,25 +1059,41 @@ public:
       Py_DECREF(m_progress_bar);
   }
   inline void add_length(int l) {
-    if (m_progress_bar)
-      PyObject_CallMethod(m_progress_bar, "add_length", "i", l);
+    if (m_progress_bar) {
+      PyObject* result = PyObject_CallMethod(m_progress_bar, "add_length", "i", l);
+      if (!result)
+	throw std::runtime_error("Error calling add_length on ProgressBar instance");
+    }
   }
   inline void set_length(int l) {
-    if (m_progress_bar)
-      PyObject_CallMethod(m_progress_bar, "set_length", "i", l);
+    if (m_progress_bar) {
+      PyObject* result = PyObject_CallMethod(m_progress_bar, "set_length", "i", l);
+      if (!result)
+	throw std::runtime_error("Error calling set_length on ProgressBar instance");
+    }
   }
   inline void step() {
-    if (m_progress_bar)
-      PyObject_CallMethod(m_progress_bar, "step", NULL);
+    if (m_progress_bar) {
+      PyObject* result = PyObject_CallMethod(m_progress_bar, "step", NULL);
+      if (!result)
+	throw std::runtime_error("Error calling step on ProgressBar instance");
+    }
   }
   inline void update(int num, int den) {
-    if (m_progress_bar)
-      PyObject_CallMethod(m_progress_bar, "update", "ii", num, den);
+    if (m_progress_bar) {
+      PyObject* result = PyObject_CallMethod(m_progress_bar, "update", "ii", num, den);
+      if (!result)
+	throw std::runtime_error("Error calling update on ProgressBar instance");
+    }
   }
   inline void kill() {
-    if (m_progress_bar)
-      PyObject_CallMethod(m_progress_bar, "kill", NULL);
+    if (m_progress_bar) {
+      PyObject* result = PyObject_CallMethod(m_progress_bar, "kill", NULL);
+      if (!result)
+	throw std::runtime_error("Error calling kill on ProgressBar instance");
+    }
   }
+protected:
   PyObject* m_progress_bar;
 };
 

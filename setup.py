@@ -19,13 +19,26 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
-
+import sys,os,glob,datetime
 # We do this first, so that when gamera.__init__ loads gamera.__version__,
 # it is in fact the new and updated version
 gamera_version = open("version", 'r').readlines()[0].strip()
+i = 0
+for argument in sys.argv:
+   i = i + 1
+   if argument=="--dated_version":
+      d = datetime.date.today()
+      monthstring = str(d.month)
+      daystring = str(d.day)
+      if d.month < 10:
+         monthstring = '0' + monthstring
+      if d.day < 10:
+         daystring = '0' + daystring
+      gamera_version = "gamera-2-nightly-%s%s%s" % (d.year, monthstring, daystring)
+      sys.argv.remove(argument)
+      break
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
-
-import sys, os, glob
+print gamera_version
 from distutils.core import setup, Extension
 from gamera import gamera_setup
 

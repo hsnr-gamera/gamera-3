@@ -18,6 +18,7 @@
 #
 
 import gzip, os, os.path, cStringIO
+from weakref import proxy
 from xml.parsers import expat
 
 import core, util, config
@@ -214,16 +215,15 @@ class WriteXMLFile(WriteXML):
 
 class LoadXML:
    def __init__(self, parts = ['symbol_table', 'glyphs', 'groups']):
-      self._parser = expat.ParserCreate()
-      self._parser.StartElementHandler = self._start_element_handler
-      self._parser.EndElementHandler = self._end_element_handler
       self._start_elements = {}
       self._end_elements = {}
       self._start_elements_global = []
       self._end_elements_global = []
       self._stream_length = 0
       self._parts = parts
-      self._setup_handlers()
+
+   def __del__(self):
+      print "LoadXML destroyed."
 
    def try_type_convert(self, dictionary, key, typename, tagname):
       try:
@@ -252,12 +252,27 @@ class LoadXML:
       return self.parse_stream(stream)
 
    def parse_stream(self, stream):
+      self._start_elements = {}
+      self._end_elements = {}
+      self._start_elements_global = []
+      self._end_elements_global = []
+      self._setup_handlers()
+      self._parser = expat.ParserCreate()
+      self._parser.StartElementHandler = self._start_element_handler
+      self._parser.EndElementHandler = self._end_element_handler
       self._stream = stream
       self._progress = util.ProgressFactory("Loading XML...")
       try:
          self._parser.ParseFile(stream)
       finally:
          self._progress.kill()
+         self._start_elements = {}
+         self._end_elements = {}
+         self._start_elements_global = []
+         self._end_elements_global = []
+         self._parser.StartElementHandler = None
+         self._parser.EndElementHandler = None
+         del self._parser
       return self
    
    def add_start_element_handler(self, name, func):
@@ -346,6 +361,7 @@ class LoadXML:
       self.add_end_element_handler('property', self._the_property)
 
    def _the_glyphs(self):
+      self._append_glyph = None
       self.remove_start_element_handler('glyph')
       self.remove_end_element_handler('glyph')
       self.remove_start_element_handler('features')
@@ -416,6 +432,7 @@ class LoadXML:
             saveable_types[self._property_type](self._property_value)
       else:
          self._properties[self._property_name] = self._data.encode()
+      self._parser.CharacterDataHandler = None
 
    def add_property_value(self, data):
       self._property_value += data
@@ -440,6 +457,7 @@ class LoadXML:
       self.add_end_element_handler('property', self._the_property)
 
    def _the_groups(self):
+      self._append_glyph = None
       self.remove_start_element_handler('group')
       self.remove_end_element_handler('group')
       self.remove_start_element_handler('glyph')

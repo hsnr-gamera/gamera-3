@@ -42,12 +42,6 @@ efficiency.
 from gamera.plugin import * 
 import re
 
-# Builds Python regular expression strings out of the more limited
-# class-name matching syntax.  Allows for expressions such as:
-#  (upper.x)|(lower.y)   # match either upper.x or lower.y
-#  upper.*               # match anything in the 'upper' category
-#  upper.a|b|c           # matches upper.a, upper.b or upper.c
-
 def build_id_regex(s):
     regex, s = _build_id_regex_parens(s)
     print regex

@@ -99,6 +99,9 @@ rule_engine = RuleEngine([rule_function0, rule_function1])
 # Run the rules on the given list of glyphs
 added, removed = rule_engine.perform_rules(glyphs)
 
+An optional argument, grid_size, specifies the size of the indexing grid cells.  This will affect how
+far apart symbols 
+
 TODO: There may be at some point some kind of Meta-RuleEngine for performing sets of rules in sequence
 or parallel or whatever...
 """
@@ -106,7 +109,6 @@ or parallel or whatever...
 def example_rule(a="dot", b="letter*"):
   if (Fudge(a.lr_y) == b.lr_y and
       a.ul_x > b.lr_x and a.ul_x - b.lr_x < 20):
-    print "example_rule", a, b
     a.classify_heuristic('punctuation.period')
   return [], []
 
@@ -140,11 +142,12 @@ class RuleEngine:
     for a in result[1]:
       removed[a] = None
 
-  def perform_rules(self, glyphs, recurse=0, _recursion_level=0):
+  def perform_rules(self, glyphs, grid_size=100, recurse=0, _recursion_level=0):
     if _recursion_level > 10:
       return [], []
-    
-    grid_index = group.GridIndexAndDict(glyphs, 100, 100)
+
+    length = 0
+    grid_index = group.GridIndexAndDict(glyphs, grid_size, grid_size)
     found_regexs = {}
     for regex_string, compiled in self.regexs.items():
       for glyph in glyphs:
@@ -152,23 +155,30 @@ class RuleEngine:
           grid_index.add_glyph_by_key(glyph, regex_string)
           found_regexs[regex_string] = None
 
-    added = {}
-    removed = {}
-    for regex in found_regexs.iterkeys():
-      for rule in self.rules_by_regex[regex]:
-        glyph_specs = rule.func_defaults
-        for glyph in grid_index.get_glyphs_by_key(regex):
-          if len(glyph_specs) == 1:
-            self._deal_with_result(rule(glyph), added, removed)
-          elif len(glyph_specs) == 2:
-            for glyph2 in grid_index.get_glyphs_around_glyph_by_key(glyph, current_regex):
-              self._deal_with_result(rule(glyph, glyph2), added, removed)
-          else:
-            seed = [list(grid_index.get_glyphs_around_glyph_by_key(glyph, x)) for x in glyph_specs[1:]]
-            for combination in util.combinations(seed):
-              self._deal_with_result(rule(glyph, *combination), added, removed)
-
+    progress = util.ProgressFactory("Performing rules...", 10)
+    i = 0
+    try:
+      added = {}
+      removed = {}
+      for regex in found_regexs.iterkeys():
+        for rule in self.rules_by_regex[regex]:
+          glyph_specs = rule.func_defaults
+          for glyph in grid_index.get_glyphs_by_key(regex):
+            if len(glyph_specs) == 1:
+              self._deal_with_result(rule(glyph), added, removed)
+            elif len(glyph_specs) == 2:
+              for glyph2 in grid_index.get_glyphs_around_glyph_by_key(glyph, glyph_specs[1]):
+                self._deal_with_result(rule(glyph, glyph2), added, removed)
+            else:
+              seed = [list(grid_index.get_glyphs_around_glyph_by_key(glyph, x)) for x in glyph_specs[1:]]
+              for combination in util.combinations(seed):
+                self._deal_with_result(rule(glyph, *combination), added, removed)
+            progress.update(i % 100, 100)
+            i += 1
+    finally:
+      progress.kill()
+          
     if recurse and len(added):
-      self._deal_with_result(self.perform_rules(added.keys(), 1, _recursion_level + 1)
+      self._deal_with_result(self.perform_rules(added.keys(), 1, _recursion_level + 1))
 
     return added.keys(), removed.keys()

@@ -32,7 +32,6 @@
 #define NUM_EDGE_DATA_ELEMENTS 4
 
 struct Edge {
-  // PyObject_HEAD
   GraphObject* m_graph;
   Edge* m_other;
   Node* m_from_node;

@@ -38,7 +38,7 @@ struct Node {
   EdgeList* m_out_edges;
   EdgeList* m_in_edges;
   bool m_is_subgraph_root;
-  unsigned int m_set_id;
+  size_t m_set_id;
   long m_disj_set;
   Any m_node_properties[NUM_NODE_DATA_ELEMENTS];
 };

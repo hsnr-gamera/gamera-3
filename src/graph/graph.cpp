@@ -161,11 +161,11 @@ PyObject* graph_add_nodes(PyObject* self, PyObject* pyobject) {
     return 0;
   }
   size_t list_size = PyList_Size(pyobject);
-  bool result = false;
+  size_t result = 0;
   so->m_nodes->reserve(so->m_nodes->size() + list_size);
   for (size_t i = 0; i < list_size; ++i)
     if (graph_add_node(so, PyList_GET_ITEM(pyobject, i)))
-      result |= true;
+      result++;
   return PyInt_FromLong((long)result);
 }
 
@@ -233,7 +233,8 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
       if (graph_has_edge(so,
 			 ((EdgeObject*)a)->m_x->m_from_node,
 			 ((EdgeObject*)a)->m_x->m_to_node))
-	return PyInt_FromLong((long)graph_remove_edge(so, ((EdgeObject*)a)->m_x));
+	return PyInt_FromLong((long)graph_remove_edge
+			      (so, ((EdgeObject*)a)->m_x));
       else {
 	PyErr_SetString(PyExc_RuntimeError, "Given edge is not in the graph");
 	return 0;
@@ -604,12 +605,14 @@ PyObject* graph_has_edge(PyObject* self, PyObject* args) {
     return 0;
   if (is_EdgeObject(a) && b == NULL) {
     Edge *edge = ((EdgeObject*)a)->m_x;
-    return PyInt_FromLong((long)graph_has_edge(so, edge->m_from_node, edge->m_to_node));
+    return PyInt_FromLong
+      ((long)graph_has_edge(so, edge->m_from_node, edge->m_to_node));
   }
   if (is_NodeObject(a) && is_NodeObject(b)) {
     Node *from_node = ((NodeObject*)a)->m_x;
     Node *to_node = ((NodeObject*)b)->m_x;
-    return PyInt_FromLong((long)graph_has_edge(so, from_node, to_node));
+    return PyInt_FromLong
+      ((long)graph_has_edge(so, from_node, to_node));
   }
   if (!is_NodeObject(b) && !is_NodeObject(b) && !is_EdgeObject(a) && !is_EdgeObject(b)) {
     Node *from_node = graph_find_node(so, a, false);
@@ -618,7 +621,8 @@ PyObject* graph_has_edge(PyObject* self, PyObject* args) {
     Node *to_node = graph_find_node(so, b, false);
     if (to_node == 0)
       return PyInt_FromLong(0);
-    return PyInt_FromLong((long)graph_has_edge(so, from_node, to_node));
+    return PyInt_FromLong
+      ((long)graph_has_edge(so, from_node, to_node));
   }    
   PyErr_SetString(PyExc_TypeError, "Invalid argument types");
   return 0;

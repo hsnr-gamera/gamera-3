@@ -130,11 +130,13 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
 
   // Adjust the disjoint set
   // Fix all the pointers in the nodes themselves
-  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) || !(HAS_FLAG(so->m_flags, FLAG_CYCLIC))) {
+  if (!HAS_FLAG(so->m_flags, FLAG_DIRECTED) ||
+      !(HAS_FLAG(so->m_flags, FLAG_CYCLIC))) {
     // LongVector* vec = (so->m_disj_set);
     size_t set_id = node->m_set_id;
     // Adjust all m_set_id's
-    for (NodeVector::iterator i = so->m_nodes->begin(); i != so->m_nodes->end(); ++i) {
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i) {
       if ((*i)->m_set_id > set_id)
 	(*i)->m_set_id--;
       if ((*i)->m_disj_set > (long)set_id)

@@ -47,7 +47,7 @@ ImageInfo* tiff_info(const char* filename) {
   TIFF* tif = 0;
   tif = TIFFOpen(filename, "r");
   if (tif == 0) {
-    throw std::invalid_argument("Failed to open image");
+    throw std::invalid_argument("Failed to open image header");
   }
 
   /*

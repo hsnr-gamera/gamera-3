@@ -667,20 +667,25 @@ class ClassifierFrame(ImageFrameBase):
             self.single_iw.Show()
 
    def unsplit_editors(self, display):
+      wxBeginBusyCursor()
       self.splitterhr1.Unsplit(display)
       display.Show(False)
       for id in (self.multi_iw, self.class_iw):
          id.set_close_button(False)
+      wxEndBusyCursor()
 
    def split_editors(self):
+      wxBeginBusyCursor()
       self.splitterhr1.SplitHorizontally(
          self.class_iw, self.multi_iw,
          self.splitterhr1.GetSize()[1] / 2)
       self.class_iw.Show(True)
+      self.class_iw.id.sort_images()
       self.multi_iw.Show(True)
       for id in (self.multi_iw, self.class_iw):
          id.set_close_button(True)
-         
+      wxEndBusyCursor()
+      
    def update_symbol_table(self):
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:

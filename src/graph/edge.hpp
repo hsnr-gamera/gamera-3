@@ -36,7 +36,9 @@ struct Edge {
        Node* to_node, CostType cost = 1.0, PyObject* label = NULL);
   inline ~Edge() {
     if (m_label != NULL)
-      Py_DECREF(m_label);
+      if (m_label->ob_refcnt)
+	Py_DECREF(m_label);
+    m_graph = NULL;
   }
   inline Node* traverse(Node* from_node) {
     //if (HAS_FLAG(m_graph->m_flags, FLAG_DIRECTED))

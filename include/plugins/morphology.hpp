@@ -220,7 +220,7 @@ namespace Gamera {
 	  bool bail = false;
 	  tmp.set(r, c, 1);
 	  for (typename PixelStack::iterator i = pixel_stack.begin();
-	       i != pixel_stack.end() && pixel_stack.size() < size; ++i) {
+	       (i != pixel_stack.end()) && (pixel_stack.size() < size); ++i) {
 	    Point& center = (*i);
 	    for (size_t r2 = (center.y()>0) ? center.y() - 1 : 0; 
 		 r2 < std::min(center.y() + 2, m.nrows()); ++r2) {

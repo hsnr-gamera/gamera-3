@@ -30,6 +30,8 @@ extern "C" {
   static PyObject* cc_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
   static void image_dealloc(PyObject* self);
+  static int image_traverse(PyObject* self, visitproc visit, void* arg);
+  static int image_clear(PyObject* self);
   // methods
   static PyObject* image_get(PyObject* self, PyObject* args);
   static PyObject* image_set(PyObject* self, PyObject* args);
@@ -329,24 +331,46 @@ static void image_dealloc(PyObject* self) {
   //std::cerr << "id";
   ImageObject* o = (ImageObject*)self;
 
-  // Added in an attempt to fix a leak.
-  //std::cerr << o->m_data->ob_refcnt << " " << o->m_features->ob_refcnt << " " << o->m_id_name->ob_refcnt << " " <<
-  //  o->m_children_images->ob_refcnt << " " << o->m_classification_state->ob_refcnt << "\n";
-  Py_DECREF(o->m_data);
-  Py_DECREF(o->m_features);
-  Py_DECREF(o->m_id_name);
-  Py_DECREF(o->m_children_images);
-  Py_DECREF(o->m_classification_state);
-
   if (o->m_weakreflist != NULL) {
     //printf("dealing with weak refs\n");
     PyObject_ClearWeakRefs(self);
   }
+
+  // Added in an attempt to fix a leak.
+  //std::cerr << o->m_data->ob_refcnt << " " << o->m_features->ob_refcnt << " " << o->m_id_name->ob_refcnt << " " <<
+  //  o->m_children_images->ob_refcnt << " " << o->m_classification_state->ob_refcnt << "\n";
+  image_clear(self);
+  
+  Py_DECREF(o->m_data);
+  Py_DECREF(o->m_features);
+  Py_DECREF(o->m_classification_state);
+
   delete ((RectObject*)self)->m_x;
 
   // PyObject_Del(self);
   self->ob_type->tp_free(self);
   //free(self);
+}
+
+static int image_traverse(PyObject* self, visitproc visit, void *arg) {
+  ImageObject* o = (ImageObject*)self;
+  if (o->m_id_name)
+    if (visit(o->m_id_name, arg) < 0)
+      return -1;
+  if (o->m_children_images)
+    if (visit(o->m_children_images, arg) < 0)
+      return -1;
+  return 0;
+}
+
+static int image_clear(PyObject* self) {
+  ImageObject* o = (ImageObject*)self;
+  Py_XDECREF(o->m_id_name);
+  o->m_id_name = NULL;
+  Py_XDECREF(o->m_children_images);
+  o->m_children_images = NULL;
+
+  return 0;
 }
 
 static PyObject* image_get(PyObject* self, int row, int col) {
@@ -599,15 +623,17 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_name = "gameracore.Image";
   ImageType.tp_basicsize = sizeof(ImageObject);
   ImageType.tp_dealloc = image_dealloc;
-  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS;
+  ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   ImageType.tp_base = get_RectType();
   ImageType.tp_getset = image_getset;
   ImageType.tp_methods = image_methods;
   ImageType.tp_new = image_new;
   ImageType.tp_getattro = PyObject_GenericGetAttr;
-  ImageType.tp_alloc = PyType_GenericAlloc;
+  ImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageType.tp_free = NULL; //_PyObject_Del;
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
+  ImageType.tp_traverse = image_traverse;
+  ImageType.tp_clear = image_clear;
   PyType_Ready(&ImageType);
   PyDict_SetItemString(module_dict, "Image", (PyObject*)&ImageType);
 
@@ -615,11 +641,11 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_name = "gameracore.SubImage";
   SubImageType.tp_basicsize = sizeof(SubImageObject);
   SubImageType.tp_dealloc = image_dealloc;
-  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
-  SubImageType.tp_alloc = PyType_GenericAlloc;
+  SubImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   SubImageType.tp_free = NULL; // _PyObject_Del;
   PyType_Ready(&SubImageType);
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
@@ -628,7 +654,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_name = "gameracore.Cc";
   CCType.tp_basicsize = sizeof(CCObject);
   CCType.tp_dealloc = image_dealloc;
-  CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
+  CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   CCType.tp_base = &ImageType;
   CCType.tp_new = cc_new;
   CCType.tp_getset = cc_getset;

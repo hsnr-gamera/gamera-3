@@ -176,5 +176,6 @@ void init_EdgeType() {
   EdgeType.tp_call = edge___call__;
   EdgeType.tp_methods = edge_methods;
   EdgeType.tp_getset = edge_getset;
+  EdgeType.tp_weaklistoffset = 0;
   PyType_Ready(&EdgeType);
 }

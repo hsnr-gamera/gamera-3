@@ -79,9 +79,9 @@ bool is_NodeObject(PyObject* self) {
 void nodeobject_dealloc(PyObject* self) {
   NodeObject* so = (NodeObject*)self;
 #ifdef DEBUG_DEALLOC
-  // std::cerr << "node dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
+  std::cerr << "node dealloc " << PyString_AsString(PyObject_Repr(self)) << std::endl;
 #endif
-  Py_DECREF((PyObject*)(so->m_graph));
+  Py_DECREF(so->m_graph);
   self->ob_type->tp_free(self);
 }
 
@@ -110,7 +110,8 @@ PyObject* node_get_data(PyObject* self) {
 
 int node_set_data(PyObject* self, PyObject* data) {
   Node* so = ((NodeObject*)self)->m_x;
-  Py_DECREF(so->m_data);
+  if (so->m_data != NULL)
+    Py_DECREF(so->m_data);
   so->m_data = data;
   Py_INCREF(so->m_data);
   return 0;
@@ -150,5 +151,6 @@ void init_NodeType() {
   NodeType.tp_methods = node_methods;
   NodeType.tp_getset = node_getset;
   NodeType.tp_call = node___call__;
+  NodeType.tp_weaklistoffset = 0;
   PyType_Ready(&NodeType);
 }

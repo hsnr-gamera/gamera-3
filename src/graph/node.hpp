@@ -34,7 +34,9 @@
 struct Node {
   Node(GraphObject* graph, PyObject* data);
   inline ~Node() {
-    Py_DECREF(m_data);
+    if (m_data->ob_refcnt)
+      Py_DECREF(m_data);
+    m_graph = NULL;
   }
   GraphObject* m_graph;    // graph object this node is a part of
   PyObject* m_data;        // data stored at this node

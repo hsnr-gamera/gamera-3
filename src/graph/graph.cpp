@@ -103,18 +103,22 @@ void graph_dealloc(PyObject* self) {
   std::cerr << "graph_dealloc\n";
 #endif
   GraphObject* so = (GraphObject*)self;
-  for (NodeVector::iterator i = so->m_nodes->begin();
-       i != so->m_nodes->end(); ++i) {
-    delete (*i);
-  }
-  for (EdgeVector::iterator i = so->m_edges->begin();
-       i != so->m_edges->end(); ++i) {
-    delete (*i);
-  }
-  delete so->m_nodes;
-  delete so->m_edges;
-  delete so->m_data_to_node;
+  NodeVector* nodes = so->m_nodes;
+  EdgeVector* edges = so->m_edges;
+  DataToNodeMap* data_to_node = so->m_data_to_node;
   self->ob_type->tp_free(self);
+
+  for (NodeVector::iterator i = nodes->begin();
+       i != nodes->end(); ++i) {
+    delete (*i);
+  }
+  for (EdgeVector::iterator i = edges->begin();
+       i != edges->end(); ++i) {
+    delete (*i);
+  }
+  delete nodes;
+  delete edges;
+  delete data_to_node;
 }
 
 GraphObject* graph_copy(GraphObject* so, size_t flags) {
@@ -910,6 +914,7 @@ void init_GraphType(PyObject* d) {
   GraphType.tp_free = _PyObject_Del;
   GraphType.tp_methods = graph_methods;
   GraphType.tp_getset = graph_getset;
+  GraphType.tp_weaklistoffset = 0;
   PyType_Ready(&GraphType);
   PyDict_SetItemString(d, "Graph", (PyObject*)&GraphType);
 }

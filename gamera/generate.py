@@ -63,6 +63,7 @@ def generate_plugin(plugin_filename):
   [[exec from os import path]]
   [[exec from enums import *]]
   [[exec from plugin import *]]
+  [[exec from util import get_pixel_type_name]]
   
   [[# Standard headers used in the plugins #]]
   #include <string>

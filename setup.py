@@ -116,10 +116,12 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include", "src/ga", "src"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
-setup(name = "gameracore", version="1.1",
+setup(name = "Gamera", version="1.1",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
-                  'gamera.toolkits.omr']
+                  'gamera.toolkits.omr'],
+      data_files=[('include/gamera', glob.glob("include/*.hpp")),
+                  ('include/gamera/plugins', glob.glob("include/plugins/*.hpp"))]
       )
 
 ##########################################

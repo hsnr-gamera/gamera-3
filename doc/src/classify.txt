@@ -18,8 +18,8 @@ of features generated from it.  These features (collectively called a
 "feature vector") are then used inside a classifier which, using a
 database of training data, identifies the glyph.
 
-Interactive vs. Noniteractive classifiers
-'''''''''''''''''''''''''''''''''''''''''
+Interactive vs. Noninteractive classifiers
+''''''''''''''''''''''''''''''''''''''''''
 
 All classifiers in Gamera support the same core Classifier API (interface), so
 they are interchangeable.  There is an important

@@ -17,7 +17,6 @@
  */
 #ifndef _kwm12032001_deformations
 #define _kwn12032001_deformations
-#define FILT_WIDTH 9
 #define PI 3.141592653589793238462643382795
 #include "gamera.hpp"
 #include "gamera_limits.hpp"

@@ -234,7 +234,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             if image == None or image.classification_state == UNCLASSIFIED:
                self.SetRowLabelValue(i, "")
             elif self.display_row_labels:
-               label = self.get_label(image.id_name)
+               label = self.get_label(image)
                label = self.reduce_label_length(
                   dc, GRID_MAX_LABEL_LENGTH * 0.6, label)
                max_label = max(dc.GetTextExtent(label)[0], max_label)
@@ -754,7 +754,7 @@ class ClassifierFrame(ImageFrameBase):
          wxEndBusyCursor()
 
    def _OnSaveProductionDatabaseAs(self, event):
-      filename = save_file_dialog(gamera_xml.extensions)
+      filename = gui_util.save_file_dialog(gamera_xml.extensions)
       if filename:
          self.production_database_filename = filename
          self._OnSaveProductionDatabase(event)

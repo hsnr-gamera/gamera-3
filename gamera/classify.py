@@ -31,33 +31,40 @@ class _Classifier:
          return splits
       return []
 
+   def generate_features(self, glyphs):
+      progress = util.ProgressFactory("Generating features...")
+      for i, glyph in util.enumerate(glyphs):
+         glyph.generate_features(self.feature_functions)
+         progress.update(i, len(glyphs))
+      progress.update(1,1)
+
    def to_xml(self, stream):
       import gamera_xml
-      return gamera_xml.WriteXML(glyphs=self.database).write_stream(stream)
+      return gamera_xml.WriteXML(glyphs=self.get_glyphs()).write_stream(stream)
 
    def to_xml_filename(self, filename):
       import gamera_xml
-      return gamera_xml.WriteXMLFile(glyphs=self.database).write_filename(filename)
+      return gamera_xml.WriteXMLFile(glyphs=self.get_glyphs()).write_filename(filename)
 
    def from_xml(self, stream):
-      self.database = gamera_xml.LoadXMLGlyphs().parse_stream(stream)
-      for glyph in self.database:
-         glyph.generate_features(self.feature_functions)
+      database = gamera_xml.LoadXMLGlyphs().parse_stream(stream)
+      self.generate_features(database)
+      self.set_glyphs(database)
 
    def from_xml_filename(self, filename):
-      self.database = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
-      for glyph in self.database:
-         glyph.generate_features(self.feature_functions)
+      database = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+      self.generate_features(database)
+      self.set_glyphs(database)
 
    def merge_from_xml(self, stream):
-      self.database.extend(gamera_xml.LoadXMLGlyphs().parse_stream(stream))
-      for glyph in self.database:
-         glyph.generate_features(self.feature_functions)
+      database = gamera_xml.LoadXMLGlyphs().parse_stream(stream)
+      self.generate_features(database)
+      self.merge_glyphs(database)
 
    def merge_from_xml_filename(self, filename):
-      self.database.extend(gamera_xml.LoadXMLGlyphs().parse_filename(filename))
-      for glyph in self.database:
-         glyph.generate_features(self.feature_functions)
+      database = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+      self.generate_features(database)
+      self.merge_glyphs(database)
 
 class NonInteractiveClassifier(_Classifier):
    def __init__(self, classifier=None, database=[], features='all', perform_actions=1):
@@ -75,6 +82,17 @@ class NonInteractiveClassifier(_Classifier):
          glyph.generate_features(self.feature_functions)
       self.classifier.instantiate_from_images(database)
 
+   def get_glyphs(self):
+      return self.database
+      
+   def set_glyphs(self, glyphs):
+      self.database = glyphs
+      self.classifier.instantiate_from_images(self.database)
+
+   def merge_glyphs(self, glyphs):
+      self.database.extend(glyphs)
+      self.classifier.instantiate_from_images(self.database)
+      
    def classify_glyph_automatic(self, glyph):
       if (not glyph.classification_state in (core.MANUAL, core.HEURISTIC)):
          glyph.generate_features(self.feature_functions)
@@ -97,22 +115,6 @@ class NonInteractiveClassifier(_Classifier):
          splits.extend(self.classify_list_automatic(splits, recursion_level+1))
       return splits
 
-   def from_xml(self, stream):
-      _Classifier.from_xml(self, stream)
-      self.classifier.instantiate_from_images(self.database)
-
-   def from_xml_filename(self, filename):
-      _Classifier.from_xml_filename(self, filename)
-      self.classifier.instantiate_from_images(self.database)
-
-   def merge_from_xml(self, stream):
-      _Classifier.merge_from_xml(self, stream)
-      self.classifier.instantiate_from_images(self.database)
-
-   def merge_from_xml_filename(self, filename):
-      _Classifier.merge_from_xml(self, filename)
-      self.classifier.instantiate_from_images(self.database)
-
 class InteractiveClassifier(_Classifier):
    def __init__(self, classifier=None, database=[], features='all', perform_actions=1):
       if classifier == None:
@@ -125,6 +127,18 @@ class InteractiveClassifier(_Classifier):
          self.database[key] = None
       self.change_feature_set(features)
       self.perform_actions = perform_actions
+
+   def get_glyphs(self):
+      return self.database.keys()
+      
+   def set_glyphs(self, glyphs):
+      self.database = {}
+      for glyph in glyphs:
+         self.database[glyph] = None
+
+   def merge_glyphs(self, glyphs):
+      for glyph in glyphs:
+         self.database[glyph] = None
 
    def change_feature_set(self, features):
       self.features = features

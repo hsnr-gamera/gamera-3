@@ -28,6 +28,11 @@ from gamera import config
 def is_sequence(obj):
   return type(obj) in (type([]), type(()))
 
+def make_sequence(obj):
+  if not type(obj) in (type([]), type(())):
+    return (obj,)
+  return obj
+
 # replaces the prefix a with b
 def replace_prefix(s, a, b):
   return b + s[len(a):]

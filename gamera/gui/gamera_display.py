@@ -50,13 +50,13 @@ config.add_option_default("display_scroll_amount", 32)
 #
 # Image display is a scrolled window for displaying a single image
 
-
 class ImageDisplay(wxScrolledWindow):
    def __init__(self, parent, id = -1, size = wxDefaultSize):
       wxScrolledWindow.__init__(
          self, parent, id, wxPoint(0, 0), size,
          wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE|wxSIMPLE_BORDER)
       self.SetBackgroundColour(wxWHITE)
+
       self.scaling = 1.0
       self.scaling_quality = 0
       self.view_function = None
@@ -64,7 +64,6 @@ class ImageDisplay(wxScrolledWindow):
       self.original_image = None
       self.highlights = []
       self.color = 0
-      self.menu = None
       self.rubber_on = 0
       self.rubber_origin_x = 0
       self.rubber_origin_y = 0
@@ -73,16 +72,19 @@ class ImageDisplay(wxScrolledWindow):
       self.click_callbacks = []
       self.current_color = 0
       self.dragging = 0
-      self.scroll_rate = 10
       self.scroll_amount = config.get_option("display_scroll_amount")
-      EVT_PAINT(self, self.OnPaint)
-      EVT_SIZE(self, self.OnResize)
-      EVT_LEFT_DOWN(self, self.OnLeftDown)
-      EVT_LEFT_UP(self, self.OnLeftUp)
-      EVT_MIDDLE_DOWN(self, self.OnMiddleDown)
-      EVT_MIDDLE_UP(self, self.OnMiddleUp)
-      EVT_MOTION(self, self.OnMotion)
-      EVT_LEAVE_WINDOW(self, self.OnLeave)
+      self.block_w = 8
+      self.block_h = 8
+
+      EVT_PAINT(self, self._OnPaint)
+      EVT_SIZE(self, self._OnResize)
+      EVT_LEFT_DOWN(self, self._OnLeftDown)
+      EVT_LEFT_UP(self, self._OnLeftUp)
+      EVT_MIDDLE_DOWN(self, self._OnMiddleDown)
+      EVT_MIDDLE_UP(self, self._OnMiddleUp)
+      EVT_RIGHT_DOWN(self, self._OnRightDown)
+      EVT_MOTION(self, self._OnMotion)
+      EVT_LEAVE_WINDOW(self, self._OnLeave)
 
    ########################################
    # THE MAIN IMAGE
@@ -100,7 +102,7 @@ class ImageDisplay(wxScrolledWindow):
       return self.reload_image()
 
    # Refreshes the image by recalling the to_string function
-   def reload_image(self):
+   def reload_image(self, *args):
       if self.view_function != None:
          self.image = apply(self.view_function, (self.original_image,))
       self.scale()
@@ -115,23 +117,22 @@ class ImageDisplay(wxScrolledWindow):
    ########################################
    # HIGHLIGHTED CCs
 
-   def get_highlight_color(self, color):
+   def _get_highlight_color(self, color):
       if util.is_sequence(color):
          if len(color) == 3:
-            color = wxColor(color[0], color[1], color[2])
+            return wxColor(*color)
          else:
-            color = -1
+            return -1
       elif isinstance(color, wxColor):
-         pass
+         return color
       elif type(color) == type(0) and color >= 0:
-         color = gui_util.get_color(color)
-      return color
+         return gui_util.get_color(color)
+      return -1
 
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=-1):
-      color = self.get_highlight_color(color)
-      if not util.is_sequence(ccs):
-         ccs = (ccs,)
+      color = self._get_highlight_color(color)
+      ccs = util.make_sequence(ccs)
       use_color = color
       old_highlights = self.highlights[:]
       self.highlights = []
@@ -155,9 +156,8 @@ class ImageDisplay(wxScrolledWindow):
 
    # Adds a list of ccs to be highlighted in the display
    def add_highlight_cc(self, ccs, color=-1):
-      color = self.get_highlight_color(color)
-      if not util.is_sequence(ccs):
-         ccs = (ccs,)
+      color = self._get_highlight_color(color)
+      ccs = util.make_sequence(ccs)
       use_color = color
       for cc in ccs:
          if cc not in self.highlights:
@@ -171,13 +171,11 @@ class ImageDisplay(wxScrolledWindow):
    # Clears a CC in the display.  Multiple CCs
    # may be unhighlighted in turn
    def unhighlight_cc(self, ccs):
-      if not util.is_sequence(ccs):
-         ccs = (ccs,)
+      ccs = util.make_sequence(ccs)
       last_one = 0
       for cc in ccs:
          for i in range(last_one, len(self.highlights)):
-            if (self.highlights[i][0].ul_x == cc.ul_x and
-                self.highlights[i][0].ul_y == cc.ul_y):
+            if (self.highlights[i][0] == cc):
                del self.highlights[i]
                self.PaintAreaRect(cc)
                last_one = i
@@ -192,13 +190,13 @@ class ImageDisplay(wxScrolledWindow):
          self.PaintAreaRect(highlight[0])
 
    # Adjust the scrollbars so a group of highlighted subimages are visible
-   def focus(self, subimages):
-      if not util.is_sequence(subimages):
-         subimages = (subimages,)
+   def focus(self, glyphs):
+      if not util.is_sequence(glyphs):
+         glyphs = (glyphs,)
       x1 = y1 = maxint
       x2 = y2 = 0
       # Get a combined rectangle of all images in the list
-      for image in subimages:
+      for image in glyphs:
          x1 = min(image.ul_x, x1)
          y1 = min(image.ul_y, y1)
          x2 = max(image.lr_x, x2)
@@ -209,10 +207,7 @@ class ImageDisplay(wxScrolledWindow):
       scroll_amount = self.scroll_amount
       # Adjust for the scaling factor
       scaling = self.scaling
-      x1 = x1 * scaling
-      y1 = y1 * scaling
-      x2 = x2 * scaling
-      y2 = y2 * scaling
+      x1, y1, x2, y2 = tuple([x * scaling for x in (x1, y1, x2, y2)])
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       maxwidth = self.image.width * self.scaling
       maxheight = self.image.height * self.scaling
@@ -233,7 +228,7 @@ class ImageDisplay(wxScrolledWindow):
          need_to_scroll = 1
       else:
          set_y = origin[1]
-      if need_to_scroll: # or self.scaling > 1: TODO: check if we don't need this
+      if need_to_scroll:
          self.SetScrollbars(scroll_amount, scroll_amount,
                             floor(maxwidth / scroll_amount),
                             floor(maxheight / scroll_amount),
@@ -274,21 +269,18 @@ class ImageDisplay(wxScrolledWindow):
       self.RefreshAll()
       wxEndBusyCursor()
 
-   ########################################
-   # CALLBACKS
-   #
-   def ZoomOut(self):
+   def ZoomOut(self, *args):
       if self.scaling > pow(2, -8):
          self.scale(self.scaling * 0.5)
 
-   def ZoomNorm(self):
+   def ZoomNorm(self, *args):
       self.scale(1.0)
 
-   def ZoomIn(self):
+   def ZoomIn(self, *args):
       if self.scaling < pow(2, 8):
          self.scale(self.scaling * 2.0)
 
-   def ZoomView(self):
+   def ZoomView(self, *args):
       scroll_amount = self.scroll_amount
       # Zooms in as best it can on the current view
       x = min(self.rubber_origin_x, self.rubber_x2)
@@ -311,8 +303,91 @@ class ImageDisplay(wxScrolledWindow):
       self.scaling_quality = type
       if self.scaling != 1.0:
          self.RefreshAll()
-      
-   def OnResize(self, event):
+
+   ########################################
+   # RUBBER BAND
+   #
+   def draw_rubber(self, dc=None):
+      if dc == None:
+         dc = wxClientDC(self)
+      scaling = self.scaling
+      origin = [x * self.scroll_amount for x in self.GetViewStart()]
+      x = min(self.rubber_origin_x, self.rubber_x2)
+      y = min(self.rubber_origin_y, self.rubber_y2)
+      x2 = max(self.rubber_origin_x, self.rubber_x2)
+      y2 = max(self.rubber_origin_y, self.rubber_y2)
+      x, y, x2, y2 = tuple([a * scaling for a in (x, y, x2, y2)])
+      x -= origin[0]
+      y -= origin[1]
+      x2 -= origin[0]
+      y2 -= origin[1]
+      w = x2 - x
+      h = y2 - y
+      dc.SetLogicalFunction(wxXOR)
+      pen = wxGREY_PEN
+      pen.SetStyle(wxSHORT_DASH)
+      dc.SetPen(pen)
+      dc.SetBrush(wxTRANSPARENT_BRUSH)
+      dc.DrawRectangle(x, y, w, h)
+      dc.SetPen(wxTRANSPARENT_PEN)
+      brush = wxBLUE_BRUSH
+      brush.SetColour(wxColor(167, 105, 39))
+      dc.SetBrush(brush)
+      self.block_w = block_w = min(w / 2, 8)
+      self.block_h = block_h = min(h / 2, 8)
+      dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
+      dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
+      dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
+      dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
+      dc.SetLogicalFunction(wxCOPY)
+
+   def OnRubber(self):
+      #deliberately empty -- this is a callback to be overridden by subclasses
+      pass
+
+   ########################################
+   # UTILITY
+   #
+   def MakeView(self, *args):
+      name = var_name.get("view", image_menu.shell.locals)
+      if name:
+         if (self.rubber_y2 == self.rubber_origin_y and
+             self.rubber_x2 == self.rubber_origin_x):
+            subimage = self.original_image.subimage(
+               0, 0,
+               self.original_image.nrows, self.original_image.ncols)
+         else:
+            subimage = self.original_image.subimage(
+               self.rubber_origin_y + self.original_image.ul_y,
+               self.rubber_origin_x + self.original_image.ul_x,
+               self.rubber_y2 - self.rubber_origin_y + 1,
+               self.rubber_x2 - self.rubber_origin_x + 1)
+         image_menu.shell.locals[name] = subimage
+         # changed from adding a blank line - this is not ideal,
+         # but it seems better than image_menu.shell.pushcode(""). KWM
+         image_menu.shell.update()
+
+   def MakeCopy(self, *args):
+      name = var_name.get("copy", image_menu.shell.locals)
+      if name:
+         if (self.rubber_y2 == self.rubber_origin_y and
+             self.rubber_x2 == self.rubber_origin_x):
+            copy = self.original_image.image_copy()
+         else:
+            copy = self.original_image.subimage(
+               self.rubber_origin_y + self.original_image.ul_y,
+               self.rubber_origin_x + self.original_image.ul_x,
+               self.rubber_y2 - self.rubber_origin_y + 1,
+               self.rubber_x2 - self.rubber_origin_x + 1).image_copy()
+         image_menu.shell.locals[name] = copy
+         # changed from adding a blank line - this is not ideal,
+         # but it seems better than image_menu.shell.pushcode(""). KWM
+         image_menu.shell_frame.icon_display.update_icons()
+
+   ########################################
+   # CALLBACKS
+   #
+   def _OnResize(self, event):
       size = self.GetSize()
       if size.x > 0 and size.y > 0:
          event.Skip()
@@ -320,7 +395,7 @@ class ImageDisplay(wxScrolledWindow):
       else:
          event.Skip()
 
-   def OnPaint(self, event):
+   def _OnPaint(self, event):
       if not self.image:
          return
       scaling = self.scaling
@@ -446,9 +521,7 @@ class ImageDisplay(wxScrolledWindow):
       size = self.GetSize()
       self.Refresh(0, rect=wxRect(0, 0, size.x, size.y))
 
-   ############################################################
-   # RUBBER BAND
-   def OnLeftDown(self, event):
+   def _OnLeftDown(self, event):
       self.rubber_on = 1
       self.draw_rubber()
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -484,7 +557,7 @@ class ImageDisplay(wxScrolledWindow):
       self.rubber_origin_x = self.rubber_x2 = int(x)
       self.rubber_origin_y = self.rubber_y2 = int(y)
 
-   def OnLeftUp(self, event):
+   def _OnLeftUp(self, event):
       if self.rubber_on:
          self.draw_rubber()
          origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -498,52 +571,26 @@ class ImageDisplay(wxScrolledWindow):
                i(self.rubber_y2, self.rubber_x2)
             except Exception, e:
                print e
-         self.OnLeave(event)
+         self._OnLeave(event)
 
-   def draw_rubber(self, dc=None):
-      if dc == None:
-         dc = wxClientDC(self)
-      scaling = self.scaling
-      origin = [x * self.scroll_amount for x in self.GetViewStart()]
-      x = min(self.rubber_origin_x, self.rubber_x2)
-      y = min(self.rubber_origin_y, self.rubber_y2)
-      x2 = max(self.rubber_origin_x, self.rubber_x2)
-      y2 = max(self.rubber_origin_y, self.rubber_y2)
-      x = x * scaling - origin[0]
-      y = y * scaling - origin[1]
-      x2 = x2 * scaling - origin[0]
-      y2 = y2 * scaling - origin[1]
-      w = x2 - x
-      h = y2 - y
-      dc.SetLogicalFunction(wxXOR)
-      pen = wxGREY_PEN
-      pen.SetStyle(wxSHORT_DASH)
-      dc.SetPen(pen)
-      dc.SetBrush(wxTRANSPARENT_BRUSH)
-      dc.DrawRectangle(x, y, w, h)
-      dc.SetPen(wxTRANSPARENT_PEN)
-      brush = wxBLUE_BRUSH
-      brush.SetColour(wxColor(167, 105, 39))
-      dc.SetBrush(brush)
-      self.block_w = block_w = min(w / 2, 8)
-      self.block_h = block_h = min(h / 2, 8)
-      dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
-      dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
-      dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
-      dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
-      dc.SetLogicalFunction(wxCOPY)
-
-   def OnMiddleDown(self, event):
+   def _OnMiddleDown(self, event):
       self.dragging = 1
       self.dragging_x = event.GetX()
       self.dragging_y = event.GetY()
       self.dragging_origin_x, self.dragging_origin_y = \
          [x * self.scroll_amount for x in self.GetViewStart()]
 
-   def OnMiddleUp(self, event):
+   def _OnMiddleUp(self, event):
       self.dragging = 0
 
-   def OnMotion(self, event):
+   def _OnRightDown(self, event):
+      from gamera.gui import image_menu
+      image_menu.ImageMenu(
+         self, event.GetX(), event.GetY(),
+         self.image)
+      self.reload_image()
+
+   def _OnMotion(self, event):
       if self.rubber_on:
          self.draw_rubber()
          origin = [x * self.scroll_amount for x in self.GetViewStart()]
@@ -560,7 +607,7 @@ class ImageDisplay(wxScrolledWindow):
             (self.dragging_origin_y - (event.GetY() - self.dragging_y)) /
             self.scroll_amount)
 
-   def OnLeave(self, event):
+   def _OnLeave(self, event):
       if self.rubber_on:
          if self.rubber_origin_x > self.rubber_x2:
             self.rubber_origin_x, self.rubber_x2 = \
@@ -573,83 +620,37 @@ class ImageDisplay(wxScrolledWindow):
       if self.dragging:
          self.dragging = 0
 
-   def OnRubber(self):
-      #deliberately empty -- this is a callback to be overridden by subclasses
-      pass
-
-   def MakeView(self):
-      name = var_name.get("view", image_menu.shell.locals)
-      if name:
-         image_menu.shell.locals['__image__'] = self.original_image
-         if (self.rubber_y2 == self.rubber_origin_y and
-             self.rubber_x2 == self.rubber_origin_x):
-            image_menu.shell.run(
-               "%s = SubImage(__image__, 0, 0, %d, %d)" %
-               (name, self.image.nrows, self.image.ncols))
-         else:
-            image_menu.shell.run(
-               "%s = SubImage(__image__, %d, %d, %d, %d)" %
-               (name,
-                self.rubber_origin_y + self.original_image.ul_y,
-                self.rubber_origin_x + self.original_image.ul_x,
-                self.rubber_y2 - self.rubber_origin_y + 1,
-                self.rubber_x2 - self.rubber_origin_x + 1))
-         del image_menu.shell.locals['__image__']
-         # changed from adding a blank line - this is not ideal,
-         # but it seems better than image_menu.shell.pushcode(""). KWM
-         image_menu.shell_frame.icon_display.update_icons()
-
-   def MakeCopy(self):
-      name = var_name.get("copy", image_menu.shell.locals)
-      if name:
-         image_menu.shell.locals['__image__'] = self.original_image
-         if (self.rubber_y2 == self.rubber_origin_y and
-             self.rubber_x2 == self.rubber_origin_x):
-            image_menu.shell.pushcode(
-               "%s = __image__.image_copy()" % name)
-         else:
-            image_menu.shell.run(
-               "%s = SubImage(__image__, %d, %d, %d, %d).image_copy()" %
-               (name,
-                self.rubber_origin_y + self.original_image.ul_y,
-                self.rubber_origin_x + self.original_image.ul_x,
-                self.rubber_y2 - self.rubber_origin_y + 1,
-                self.rubber_x2 - self.rubber_origin_x + 1))
-         del image_menu.shell.locals['__image__']
-         # changed from adding a blank line - this is not ideal,
-         # but it seems better than image_menu.shell.pushcode(""). KWM
-         image_menu.shell_frame.icon_display.update_icons()
-
          
 class ImageWindow(wxPanel):
    def __init__(self, parent = None, id = -1):
       wxPanel.__init__(self, parent, id)
+      self.id = self.get_display()
       self.SetAutoLayout(true)
       self.toolbar = toolbar.ToolBar(self, -1)
       from gamera.gui import gamera_icons
       self.toolbar.AddSimpleTool(10, gamera_icons.getIconRefreshBitmap(),
-                                 "Refresh", self.OnRefreshClick)
+                                 "Refresh", self.id.reload_image)
       self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(20, gamera_icons.getIconZoomInBitmap(),
-                                 "Zoom in", self.OnZoomInClick)
+                                 "Zoom in", self.id.ZoomIn)
       self.toolbar.AddSimpleTool(21, gamera_icons.getIconZoomNormBitmap(),
-                                 "Zoom 100%", self.OnZoomNormClick)
+                                 "Zoom 100%", self.id.ZoomNorm)
       self.toolbar.AddSimpleTool(22, gamera_icons.getIconZoomOutBitmap(),
-                                 "Zoom out", self.OnZoomOutClick)
+                                 "Zoom out", self.id.ZoomOut)
       self.toolbar.AddSimpleTool(23, gamera_icons.getIconZoomViewBitmap(),
-                                 "Zoom in on selected region", self.OnZoomViewClick)
+                                 "Zoom in on selected region", self.id.ZoomView)
       self.toolbar.AddControl(wxStaticText(self.toolbar, -1, "Quality: "))
       self.zoom_slider = wxComboBox(
          self.toolbar, 24, choices=['low','medium','high'], style=wxCB_READONLY)
-      EVT_COMBOBOX(self, 24, self.OnZoomTypeChange)
+      EVT_COMBOBOX(self, 24, self._OnZoomTypeChange)
       self.toolbar.AddControl(self.zoom_slider)
 
       self.toolbar.AddSeparator()
 
       self.toolbar.AddSimpleTool(31, gamera_icons.getIconMakeViewBitmap(),
-                                 "Make new view", self.OnMakeViewClick)
+                                 "Make new view", self.id.MakeView)
       self.toolbar.AddSimpleTool(32, gamera_icons.getIconImageCopyBitmap(),
-                                 "Make new copy", self.OnMakeCopyClick)
+                                 "Make new copy", self.id.MakeCopy)
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.left.SameAs(self, wxLeft, 0)
@@ -657,7 +658,6 @@ class ImageWindow(wxPanel):
       lc.height.AsIs()
       self.toolbar.SetAutoLayout(true)
       self.toolbar.SetConstraints(lc)
-      self.id = self.get_display()
       lc = wxLayoutConstraints()
       lc.top.Below(self.toolbar, 0)
       lc.left.SameAs(self, wxLeft, 0)
@@ -669,34 +669,12 @@ class ImageWindow(wxPanel):
 
    def get_display(self):
       return ImageDisplay(self)
-      
 
    ########################################
    # CALLBACKS
-   def OnRefreshClick(self, event):
-      self.id.reload_image()
-
-   def OnZoomInClick(self, event):
-      self.id.ZoomIn()
-
-   def OnZoomNormClick(self, event):
-      self.id.ZoomNorm()
-
-   def OnZoomOutClick(self, event):
-      self.id.ZoomOut()
-
-   def OnZoomViewClick(self, event):
-      self.id.ZoomView()
-
-   def OnZoomTypeChange(self, event):
+   def _OnZoomTypeChange(self, event):
       self.id.SetZoomType(
          self.zoom_slider.GetSelection())
-
-   def OnMakeViewClick(self, event):
-      self.id.MakeView()
-
-   def OnMakeCopyClick(self, event):
-      self.id.MakeCopy()
 
 
 ##############################################################################
@@ -873,6 +851,7 @@ class MultiImageDisplay(wxGrid):
          self.created = 1
       self.EnableEditing(0)
       self.resize_grid()
+      self.GetGridWindow().Refresh()
       self.ClearSelection()
       x = self.GetSize()
       self.do_updates = 1
@@ -886,7 +865,7 @@ class MultiImageDisplay(wxGrid):
       wxBeginBusyCursor()
       self.BeginBatch()
       orig_rows = self.rows
-      rows = max((len(self.list) - 1) / GRID_NCOLS + 1, 1)
+      rows = max(ceil((len(self.list) - 2) / GRID_NCOLS), 1)
       cols = GRID_NCOLS
       if self.rows < rows:
          self.AppendRows(rows - self.rows)
@@ -910,6 +889,7 @@ class MultiImageDisplay(wxGrid):
          self.AutoSizeRow(self.rows - 1)
       elif do_auto_size:
          self.AutoSize()
+      self.GetParent().Layout()
       # self.SetSize(self.GetSize())
       # self.ForceRefresh()
       self.EndBatch()

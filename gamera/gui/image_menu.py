@@ -48,9 +48,11 @@ class ImageMenu:
     self.mode = mode
     self.parent = parent
     if not util.is_sequence(images_):
-      self.images = [weakref.proxy(images_)]
+      # self.images = [weakref.proxy(images_)]
+      self.images = [images_]
     else:
-      self.images = [weakref.proxy(x) for x in images_]
+      # self.images = [weakref.proxy(x) for x in images_]
+      self.images = images_
     self.image_name = name_
 
     members = self.images[0].members_for_menu()
@@ -166,10 +168,12 @@ class ImageMenu:
         result_name = self.get_result_name(function, sh.locals)
         # If there is no image name, we have to run the code locally (i.e.
         # not in the shell)
+        wxBeginBusyCursor()
         if self.image_name is None:
           self._run_locally(sh, result_name, func_call)
         else:
           self._run_in_shell(sh, result_name, func_call)
+        wxEndBusyCursor()
     sh.update()
 
   def _run_locally(self, sh, result_name, func_call):

@@ -52,7 +52,7 @@ class SymbolTable:
             l.symbol_table_rename_callback(a, b)
 
    def normalize_symbol(self, symbol):
-      assert type(symbol) == types.StringType
+      # assert type(symbol) == types.StringType
       if symbol == '':
          return '', []
       for i in '!@#$%^&*()-=+':

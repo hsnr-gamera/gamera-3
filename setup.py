@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
@@ -103,7 +103,7 @@ extensions = [Extension("gamera.gameracore",
                         libraries=libs, extra_compile_args=extra_args)]
 extensions.extend(plugin_extensions)
 
-setup(name = "gamera", version="1.1",
+setup(name = "gamera", version="2.0",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits'],
       data_files=[('include/gamera', glob.glob("include/*.hpp")),

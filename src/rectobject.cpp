@@ -118,6 +118,10 @@ static PyMethodDef rect_methods[] = {
   {NULL, NULL}
 };
 
+extern PyTypeObject* get_RectType() {
+  return &RectType;
+}
+
 bool is_RectObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &RectType))
     return true;
@@ -418,14 +422,14 @@ static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* rect_repr(PyObject* self) {
   Rect* x = ((RectObject*)self)->m_x;
-  return PyString_FromFormat("<gamera.Rect offset_y: %i offset_x: %i nrows: %i ncols: %i>",
+  return PyString_FromFormat("<gameracore.Rect offset_y: %i offset_x: %i nrows: %i ncols: %i>",
 			     x->offset_y(), x->offset_x(), x->nrows(),
 			     x->ncols());
 }
 
 void init_RectType(PyObject* module_dict) {
   RectType.ob_type = &PyType_Type;
-  RectType.tp_name = "gamera.Rect";
+  RectType.tp_name = "gameracore.Rect";
   RectType.tp_basicsize = sizeof(RectObject);
   RectType.tp_dealloc = rect_dealloc;
   RectType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

@@ -50,17 +50,26 @@ static PyTypeObject ImageDataType = {
 };
 
 static PyGetSetDef imagedata_getset[] = {
-  { "nrows", (getter)imagedata_get_nrows, (setter)imagedata_set_nrows, "The number of rows", 0 },
-  { "ncols", (getter)imagedata_get_ncols, (setter)imagedata_set_ncols, "The number of columns", 0 },
-  { "page_offset_x", (getter)imagedata_get_page_offset_x, (setter)imagedata_set_page_offset_x,
+  { "nrows", (getter)imagedata_get_nrows, (setter)imagedata_set_nrows,
+    "The number of rows", 0 },
+  { "ncols", (getter)imagedata_get_ncols, (setter)imagedata_set_ncols,
+    "The number of columns", 0 },
+  { "page_offset_x", (getter)imagedata_get_page_offset_x,
+    (setter)imagedata_set_page_offset_x,
     "The x offset in the page for the data", 0 },
-  { "page_offset_y", (getter)imagedata_get_page_offset_y, (setter)imagedata_set_page_offset_y,
+  { "page_offset_y", (getter)imagedata_get_page_offset_y,
+    (setter)imagedata_set_page_offset_y,
     "The y offset in the page for the data", 0 },
-  { "stride", (getter)imagedata_get_stride, 0, "The length of the data stride", 0 },
-  { "bytes", (getter)imagedata_get_bytes, 0, "The size of the data in bytes", 0 },
-  { "mbytes", (getter)imagedata_get_mbytes, 0, "The size of the data in mbytes", 0 },
-  { "pixel_type", (getter)imagedata_get_pixel_type, 0, "The type of the pixel stored in the object", 0 },
-  { "storage_format", (getter)imagedata_get_storage_format, 0, "The format of the storage", 0 },
+  { "stride", (getter)imagedata_get_stride, 0,
+    "The length of the data stride", 0 },
+  { "bytes", (getter)imagedata_get_bytes, 0,
+    "The size of the data in bytes", 0 },
+  { "mbytes", (getter)imagedata_get_mbytes, 0,
+    "The size of the data in mbytes", 0 },
+  { "pixel_type", (getter)imagedata_get_pixel_type, 0,
+    "The type of the pixel stored in the object", 0 },
+  { "storage_format", (getter)imagedata_get_storage_format, 0,
+    "The format of the storage", 0 },
   { NULL }
 };
 
@@ -76,33 +85,37 @@ bool is_ImageDataObject(PyObject* x) {
     return false;
 }
 
-static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
-			       PyObject* kwds) {
-  int nrows, ncols, format, pixel;
-  if (PyArg_ParseTuple(args, "iiii", &nrows, &ncols, &pixel, &format) <= 0)
-    return 0;
+PyObject* create_ImageDataObject(int nrows, int ncols,
+				 int page_offset_y, int page_offset_x,
+				 int pixel_type, int storage_format) {
   ImageDataObject* o;
-  o = (ImageDataObject*)pytype->tp_alloc(pytype, 0);
-  o->m_pixel_type = pixel;
-  o->m_storage_format = format;
-  if (format == Python::DENSE) {
-    if (pixel == Python::ONEBIT)
-      o->m_x = new ImageData<OneBitPixel>(nrows, ncols);
-    else if (pixel == Python::GREYSCALE)
-      o->m_x = new ImageData<GreyScalePixel>(nrows, ncols);      
-    else if (pixel == Python::GREY16)
-      o->m_x = new ImageData<Grey16Pixel>(nrows, ncols);      
-    else if (pixel == Python::FLOAT)
-      o->m_x = new ImageData<FloatPixel>(nrows, ncols);      
-    else if (pixel == Python::RGB)
-      o->m_x = new ImageData<RGBPixel>(nrows, ncols);      
+  o = (ImageDataObject*)ImageDataType.tp_alloc(&ImageDataType, 0);
+  o->m_pixel_type = pixel_type;
+  o->m_storage_format = storage_format;
+  if (storage_format == Python::DENSE) {
+    if (pixel_type == Python::ONEBIT)
+      o->m_x = new ImageData<OneBitPixel>(nrows, ncols, page_offset_y,
+					  page_offset_x);
+    else if (pixel_type == Python::GREYSCALE)
+      o->m_x = new ImageData<GreyScalePixel>(nrows, ncols, page_offset_y,
+					     page_offset_x);      
+    else if (pixel_type == Python::GREY16)
+      o->m_x = new ImageData<Grey16Pixel>(nrows, ncols, page_offset_y,
+					  page_offset_x);      
+    else if (pixel_type == Python::FLOAT)
+      o->m_x = new ImageData<FloatPixel>(nrows, ncols, page_offset_y,
+					 page_offset_x);      
+    else if (pixel_type == Python::RGB)
+      o->m_x = new ImageData<RGBPixel>(nrows, ncols, page_offset_y,
+				       page_offset_x);      
     else {
       PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
       return 0;
     }
-  } else if (format == Python::RLE) {
-    if (pixel == Python::ONEBIT)
-      o->m_x = new RleImageData<OneBitPixel>(nrows, ncols);
+  } else if (storage_format == Python::RLE) {
+    if (pixel_type == Python::ONEBIT)
+      o->m_x = new RleImageData<OneBitPixel>(nrows, ncols, page_offset_y,
+					     page_offset_x);
     else {
       PyErr_SetString(PyExc_TypeError,
 		      "Pixel type must be Onebit for Rle data!");
@@ -114,8 +127,20 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
   }
   return (PyObject*)o;
 }
+
+static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
+			       PyObject* kwds) {
+  int nrows, ncols, page_offset_y, page_offset_x, format, pixel;
+  if (PyArg_ParseTuple(args, "iiiiii", &nrows, &ncols, &page_offset_y,
+		       &page_offset_x, &pixel, &format) <= 0)
+    return 0;
+  
+  return create_ImageDataObject(nrows, ncols, page_offset_y, page_offset_x,
+				pixel, format);
+}
  
 static void imagedata_dealloc(PyObject* self) {
+  printf("freeing image data\n");
   ImageDataObject* x = (ImageDataObject*)self;
   delete x->m_x;
   self->ob_type->tp_free(self);
@@ -170,8 +195,8 @@ static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
 
 void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.ob_type = &PyType_Type;
-  ImageDataType.tp_name = "gamera.ImageData";
-  ImageDataType.tp_basicsize = sizeof(RectObject);
+  ImageDataType.tp_name = "gameracore.ImageData";
+  ImageDataType.tp_basicsize = sizeof(ImageDataObject);
   ImageDataType.tp_dealloc = imagedata_dealloc;
   ImageDataType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   ImageDataType.tp_getset = imagedata_getset;
@@ -182,13 +207,20 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_free = _PyObject_Del;
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
-  PyDict_SetItemString(module_dict, "FLOAT", Py_BuildValue("i", Python::FLOAT));
-  PyDict_SetItemString(module_dict, "ONEBIT", Py_BuildValue("i", Python::ONEBIT));
-  PyDict_SetItemString(module_dict, "GREYSCALE", Py_BuildValue("i", Python::GREYSCALE));
-  PyDict_SetItemString(module_dict, "GREY16", Py_BuildValue("i", Python::GREY16));
-  PyDict_SetItemString(module_dict, "RGB", Py_BuildValue("i", Python::RGB));
-  PyDict_SetItemString(module_dict, "DENSE", Py_BuildValue("i", Python::DENSE));
-  PyDict_SetItemString(module_dict, "RLE", Py_BuildValue("i", Python::RLE));
+  PyDict_SetItemString(module_dict, "FLOAT",
+		       Py_BuildValue("i", Python::FLOAT));
+  PyDict_SetItemString(module_dict, "ONEBIT",
+		       Py_BuildValue("i", Python::ONEBIT));
+  PyDict_SetItemString(module_dict, "GREYSCALE",
+		       Py_BuildValue("i", Python::GREYSCALE));
+  PyDict_SetItemString(module_dict, "GREY16",
+		       Py_BuildValue("i", Python::GREY16));
+  PyDict_SetItemString(module_dict, "RGB",
+		       Py_BuildValue("i", Python::RGB));
+  PyDict_SetItemString(module_dict, "DENSE",
+		       Py_BuildValue("i", Python::DENSE));
+  PyDict_SetItemString(module_dict, "RLE",
+		       Py_BuildValue("i", Python::RLE));
 }
 
 

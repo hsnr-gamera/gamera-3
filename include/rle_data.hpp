@@ -710,16 +710,13 @@ namespace Gamera {
       return num_runs * (run_size + run_ptr_size + run_ptr_size);
     }
     virtual double mbytes() const { return bytes() / 1048576.0; }
-    virtual void nrows(size_t nrows) {
-      resize(nrows * m_stride);
-    }
-    virtual void ncols(size_t ncols) {
-      m_stride = ncols;
-      resize((ImageDataBase::m_size / m_stride) * m_stride);
-    }
     virtual void dimensions(size_t rows, size_t cols) {
       m_stride = cols;
       resize(rows * cols);
+    }
+  protected:
+    virtual void do_resize(size_t size) {
+      resize(size);
     }
   };
 }

@@ -26,6 +26,7 @@ void init_PointType(PyObject* module_dict);
 void init_DimensionsType(PyObject* module_dict);
 void init_RectType(PyObject* module_dict);
 void init_ImageDataType(PyObject* module_dict);
+void init_ImageType(PyObject* module_dict);
 
 
 extern "C" {
@@ -45,4 +46,5 @@ initgameracore(void) {
   init_DimensionsType(d);
   init_RectType(d);
   init_ImageDataType(d);
+  init_ImageType(d);
 }

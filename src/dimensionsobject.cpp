@@ -46,6 +46,10 @@ static PyGetSetDef dimensions_getset[] = {
   { NULL }
 };
 
+PyTypeObject* get_DimensionsType() {
+  return &DimensionsType;
+}
+
 bool is_DimensionsObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &DimensionsType))
     return true;
@@ -139,13 +143,13 @@ static PyObject* dimensions_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* dimensions_repr(PyObject* self) {
   Dimensions* x = ((DimensionsObject*)self)->m_x;
-  return PyString_FromFormat("<gamera.Dimensions nrows: %i ncols: %i>",
+  return PyString_FromFormat("<gameracore.Dimensions nrows: %i ncols: %i>",
 			     x->nrows(), x->ncols());
 }
 
 void init_DimensionsType(PyObject* module_dict) {
   DimensionsType.ob_type = &PyType_Type;
-  DimensionsType.tp_name = "gamera.Dimensions";
+  DimensionsType.tp_name = "gameracore.Dimensions";
   DimensionsType.tp_basicsize = sizeof(DimensionsObject);
   DimensionsType.tp_dealloc = dimensions_dealloc;
   DimensionsType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

@@ -46,6 +46,10 @@ static PyGetSetDef size_getset[] = {
   { NULL }
 };
 
+PyTypeObject* get_SizeType() {
+  return &SizeType;
+}
+
 bool is_SizeObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &SizeType))
     return true;
@@ -139,13 +143,13 @@ static PyObject* size_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* size_repr(PyObject* self) {
   Size* x = ((SizeObject*)self)->m_x;
-  return PyString_FromFormat("<gamera.Size width: %i height: %i>",
+  return PyString_FromFormat("<gameracore.Size width: %i height: %i>",
 			     x->width(), x->height());
 }
 
 void init_SizeType(PyObject* module_dict) {
   SizeType.ob_type = &PyType_Type;
-  SizeType.tp_name = "gamera.Size";
+  SizeType.tp_name = "gameracore.Size";
   SizeType.tp_basicsize = sizeof(SizeObject);
   SizeType.tp_dealloc = size_dealloc;
   SizeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

@@ -53,6 +53,10 @@ static PyMethodDef point_methods[] = {
 };
 
 
+PyTypeObject* get_PointType() {
+  return &PointType;
+}
+
 bool is_PointObject(PyObject* x) {
   if (PyObject_TypeCheck(x, &PointType))
     return true;
@@ -156,13 +160,13 @@ static PyObject* point_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* point_repr(PyObject* self) {
   Point* x = ((PointObject*)self)->m_x;
-  return PyString_FromFormat("<gamera.Point x: %i y: %i>",
+  return PyString_FromFormat("<gameracore.Point x: %i y: %i>",
 			     x->x(), x->y());
 }
 
 void init_PointType(PyObject* module_dict) {
   PointType.ob_type = &PyType_Type;
-  PointType.tp_name = "gamera.Point";
+  PointType.tp_name = "gameracore.Point";
   PointType.tp_basicsize = sizeof(PointObject);
   PointType.tp_dealloc = point_dealloc;
   PointType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

@@ -31,6 +31,7 @@
 
 #include <cstddef>
 #include <cmath>
+#include <iostream>
 
 namespace Gamera {
 
@@ -76,10 +77,19 @@ namespace Gamera {
     */
     void page_offset_x(size_t x) { m_page_offset_x = x; }
     void page_offset_y(size_t y) { m_page_offset_y = y; }
-    virtual void nrows(size_t nrows) = 0;
-    virtual void ncols(size_t ncols) = 0;
+    virtual void nrows(size_t nrows) {
+      do_resize(nrows * m_stride);
+    }
+    virtual void ncols(size_t ncols) {
+      m_stride = ncols;
+      do_resize((m_size / m_stride) * m_stride);
+    }
     virtual void dimensions(size_t rows, size_t cols) = 0;
+
+    // virtual void nrows(size_t nrows) = 0;
+    // virtual void ncols(size_t ncols) = 0;
   protected:
+    virtual void do_resize(size_t size) = 0;
     size_t m_size;
     size_t m_stride;
     size_t m_page_offset_x;
@@ -126,6 +136,7 @@ namespace Gamera {
     */
     virtual ~ImageData() {
       if (m_data != 0) {
+	std::cout << "freeing m_data" << std::endl;
 	delete[] m_data;
       }
     }
@@ -133,15 +144,7 @@ namespace Gamera {
     virtual size_t bytes() const { return m_size * sizeof(T); }
     virtual double mbytes() const { return (m_size * sizeof(T)) / 1048576.0; }
     virtual void dimensions(size_t rows, size_t cols) {
-      m_stride = cols; resize(rows * cols); }
-
-    virtual void nrows(size_t nrows) {
-      resize(nrows * m_stride);
-    }
-    virtual void ncols(size_t ncols) {
-      m_stride = ncols;
-      resize((m_size / m_stride) * m_stride);
-    }
+      m_stride = cols; do_resize(rows * cols); }
 
 
     /*
@@ -156,12 +159,8 @@ namespace Gamera {
       Operators
     */
     T& operator[](size_t n) { return m_data[n]; }
-  private:
-    void create_data() {
-      if (m_size > 0)
-	m_data = new T[m_size];
-    }
-    void resize(size_t size) {
+  protected:
+    virtual void do_resize(size_t size) {
       if (size > 0) {
 	size_t smallest = std::min(m_size, size);
 	m_size = size;
@@ -177,6 +176,11 @@ namespace Gamera {
 	m_data = 0;
 	m_size = 0;
       }
+    }
+  private:
+    void create_data() {
+      if (m_size > 0)
+	m_data = new T[m_size];
     }
 
     T* m_data;

@@ -77,12 +77,30 @@ add_images(T& a, const T& b, bool in_place=true) {
   return arithmetic_combine(a, b, std::plus<PROMOTE>(), in_place);
 }
 
+template <class T>
+struct my_minus : public std::binary_function<T,T,T>
+{
+  T operator()(const T& x, const T& y) const { 
+    typedef typename NumericTraits<T>::Promote PROMOTE;
+    return std::minus<T>()(x, y); }
+};
+
+template<>
+struct my_minus<OneBitPixel> : public std::binary_function<OneBitPixel, OneBitPixel, OneBitPixel>
+{
+  OneBitPixel operator()(const OneBitPixel& x, const OneBitPixel& y) const {
+    if ((is_black(x) ^ is_black(y)) && (!is_black(y)))
+      return pixel_traits<OneBitPixel>::white();
+    else
+      return pixel_traits<OneBitPixel>::black();
+  }
+};
+
 template<class T>
 typename ImageFactory<T>::view_type* 
 subtract_images(T& a, const T& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
-  typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
-  return arithmetic_combine(a, b, std::minus<PROMOTE>(), in_place);
+  return arithmetic_combine(a, b, my_minus<TVALUE>(), in_place);
 }
 
 template<class T>

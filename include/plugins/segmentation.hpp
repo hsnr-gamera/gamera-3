@@ -106,8 +106,9 @@ namespace Gamera {
     typename T::Iterator row, col, lr, ul, above;
     lr = image.lowerRight();
     ul = image.upperLeft();
-    progress_bar.set_length(image.nrows() * 2);
-    for (row = image.upperLeft(); row.y != lr.y; ++row.y) {
+    progress_bar.set_length(image.nrows() / 40);
+    size_t i0 = 0;
+    for (row = image.upperLeft(); row.y != lr.y; ++row.y, ++i0) {
       for (col = row; col.x != lr.x; ++col.x) {
 	/*
 	  If this image has been labeled once already, it is necessary to start
@@ -170,7 +171,8 @@ namespace Gamera {
 	  }
 	}
       }
-      progress_bar.step();
+      if ((i0 % 20) == 0)
+	progress_bar.step();
     }
   
     /*
@@ -255,7 +257,8 @@ namespace Gamera {
 	  }
 	}
       }
-      progress_bar.step();
+      if ((i % 20) == 0)
+	progress_bar.step();
     }
 	
     // create ConnectedComponents

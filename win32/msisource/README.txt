@@ -67,7 +67,8 @@ createmsi /c msvc		Same as the first example
 createmsi /i icl		Uses the existing ICL build products to build a single-featured MSI
 
 This process takes about 2 minutes when compiling with MSOC on a Pentium M 1.6 GHz machine.  Afterwards, you will find the
-installer in the root Gamera directory (by default, the parent directory of the one containing this readme), named Gamera2.msi.
+installer in the source tree's win32 directory (by default, the parent directory of the one containing this readme), named
+Gamera2.msi.
 
 Known Issues
 ------------

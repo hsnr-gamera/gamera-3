@@ -27,7 +27,6 @@ except:
 # them.
 ignore = ["core", "gamera.core", "gameracore"]
 for x in plugins:
-    print x
     plug_path, filename = os.path.split(x)
     module_name = "_" + filename.split('.')[0]
     ignore.append(module_name)

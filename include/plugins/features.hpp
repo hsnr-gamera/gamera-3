@@ -216,6 +216,7 @@ namespace Gamera {
 
   template<class T>
   feature_t area(const T& image) {
+    std::cout << image.nrows() << " " << image.ncols() << " " << image.scaling() << std::endl;
     return feature_t(image.nrows() * image.ncols()) / image.scaling();
   }
 
@@ -234,7 +235,7 @@ namespace Gamera {
   feature_t compactness(const T& image) {
     feature_t vol = volume(image);
     if (vol == 0)
-      vol = .0001;
+      return 32767;
     typename ImageFactory<T>::view_type* ol = outline(image);
     feature_t return_value = volume(*ol) / vol * image.scaling();
     delete ol->data();

@@ -210,7 +210,7 @@ inline PyObject* init_image_members(ImageObject* o) {
     if (array_func == 0)
       return 0;
   }
-  PyObject* arglist = Py_BuildValue("(s[d])", "d", 1.0);
+  PyObject* arglist = Py_BuildValue("(s)", "d");
   o->m_features = PyEval_CallObject(array_func, arglist);
   Py_DECREF(arglist);
   if (o->m_features == 0)

@@ -174,6 +174,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "knn: images must be a list!");
     return 0;
   }
+
   int images_size = PyList_Size(images);
   if (images_size == 0) {
     PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
@@ -196,11 +197,10 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     return 0;
   }
   o->num_features = tmp_fv_len;
-  o->feature_vectors = new double[(o->num_feature_vectors + 1)* o->num_features];
+  o->feature_vectors = new double[o->num_feature_vectors * o->num_features];
   o->id_names = new std::vector<std::string>;
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
-    //std::cout << i << std::endl;
     PyObject* cur_image = PyList_GetItem(images, i);
     if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
       knn_delete_data(o);
@@ -213,7 +213,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
       return 0;      
     }
     for (size_t feature = 0; feature < o->num_features; ++feature) {
-      current_features[i] = tmp_fv[feature];
+      current_features[feature] = tmp_fv[feature];
     }
     char* tmp_id_name;
     int len;
@@ -298,7 +298,7 @@ inline int compute_distance(PyObject* known, PyObject* unknown, double* weights,
     return -1;
   }
 
-  *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
+  *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
 				  weights);
   return 0;
 }
@@ -309,15 +309,9 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  if (!PyList_Check(known)) {
-    PyErr_SetString(PyExc_TypeError, "Known features must be a list!");
-    return 0;
-  }
-  printf("supports iter %\n", PyIter_Check(known));
-
-  int known_size = PyList_Size(known);
-  if (known_size == 0) {
-    PyErr_SetString(PyExc_TypeError, "List must be greater than 0.");
+  PyObject* iterator = PyObject_GetIter(known);
+  if (iterator == NULL) {
+    PyErr_SetString(PyExc_TypeError, "Known features must be iterable.");
     return 0;
   }
 
@@ -325,8 +319,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
-    
-
+  
   /*
     create an empty weight vector.
   */
@@ -338,9 +331,8 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   std::fill(weights, weights + len, 1.0);
 
   kNearestNeighbors<char*, ltstr> knn(1);
-  for (int i = 0; i < known_size; ++i) {
-    PyObject* cur = PyList_GET_ITEM(known, i);
-    
+  PyObject* cur;
+  while ((cur = PyIter_Next(iterator))) {
     if (!PyObject_TypeCheck(cur, imagebase_type)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
     }

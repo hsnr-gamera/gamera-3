@@ -37,17 +37,17 @@ namespace Gamera {
     Image(const Point& upper_left, const Point& lower_right)
       : Rect(upper_left, lower_right) {
       m_resolution = 0;
-      m_scaling = 1;
+      m_scaling = 1.0;
     }
     Image(const Point& upper_left, const Size& size)
       : Rect(upper_left, size) {
       m_resolution = 0;
-      m_scaling = 1;
+      m_scaling = 1.0;
     }
     Image(const Point& upper_left, const Dimensions& dim)
       : Rect(upper_left, dim) {
       m_resolution = 0;
-      m_scaling = 1;
+      m_scaling = 1.0;
     }
     Image(const Rect& rect) : Rect(rect) { }
     virtual ~Image() { }

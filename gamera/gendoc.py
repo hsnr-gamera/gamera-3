@@ -198,7 +198,10 @@ class PluginDocumentationGenerator:
          if i == FLOAT:
             images[i] = image.to_float()
          elif i == COMPLEX:
-            images[i] = image.to_complex()
+            try:
+               images[i] = image.to_complex()
+            except:
+               pass
       return images
    get_generic_images = staticmethod(get_generic_images)
 
@@ -383,7 +386,7 @@ class PluginDocumentationGenerator:
       s.write("\n\n")
 
    def save_image(self, image, filename):
-      if image.pixel_type in (COMPLEX, FLOAT):
+      if image.data.pixel_type in (COMPLEX, FLOAT):
          image = image.to_greyscale()
       _png_support.save_PNG(image, filename)
 

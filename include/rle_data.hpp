@@ -711,11 +711,11 @@ namespace Gamera {
     }
     virtual double mbytes() const { return bytes() / 1048576.0; }
     virtual void nrows(size_t nrows) {
-      resize(nrows * ncols());
+      resize(nrows * m_stride);
     }
     virtual void ncols(size_t ncols) {
       m_stride = ncols;
-      resize(nrows() * m_stride);
+      resize((ImageDataBase::m_size / m_stride) * m_stride);
     }
     virtual void dimensions(size_t rows, size_t cols) {
       m_stride = cols;

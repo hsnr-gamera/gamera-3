@@ -182,26 +182,18 @@ static void rect_dealloc(PyObject* self) {
   ints or points. See below for the special cases.
 */
 #define CREATE_GET_FUNC(name) static PyObject* rect_get_##name(PyObject* self) {\
-  if (!is_RectObject(self)) { \
-    PyErr_SetString(PyExc_TypeError, "Object is not a Rect object!"); \
-    return 0; \
-  } \
   Rect* x = ((RectObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
 #define CREATE_GET_POINT_FUNC(name) static PyObject* rect_get_##name(PyObject* self) {\
-  if (!is_RectObject(self)) { \
-    PyErr_SetString(PyExc_TypeError, "Object is not a Rect object!"); \
-    return 0; \
-  } \
   Rect* x = ((RectObject*)self)->m_x; \
   return create_PointObject(x->name()); \
 }
 
 
 #define CREATE_SET_FUNC(name) static int rect_set_##name(PyObject* self, PyObject* value) {\
-  if (!is_RectObject(self) || !PyInt_Check(value)) { \
+  if (!PyInt_Check(value)) { \
     PyErr_SetString(PyExc_TypeError, "Type Error!"); \
     return -1; \
   } \
@@ -211,7 +203,7 @@ static void rect_dealloc(PyObject* self) {
 }
 
 #define CREATE_SET_POINT_FUNC(name) static int rect_set_##name(PyObject* self, PyObject* value) {\
-  if (!is_RectObject(self) || !is_PointObject(value)) { \
+  if (!is_PointObject(value)) { \
     PyErr_SetString(PyExc_TypeError, "Type Error!"); \
     return -1; \
   } \
@@ -264,28 +256,16 @@ CREATE_SET_FUNC(offset_y)
   Special case get/set methods
 */
 static PyObject* rect_get_size(PyObject* self) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Object is not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   return create_SizeObject(x->size());
 }
 
 static PyObject* rect_get_dimensions(PyObject* self) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Object is not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   return create_DimensionsObject(x->dimensions());
 }
 
 static int rect_set_size(PyObject* self, PyObject* value) {
-  if (!is_RectObject(self) || !is_SizeObject(value)) {
-    PyErr_SetString(PyExc_TypeError, "Type Error!");
-    return -1;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   Size* size = ((SizeObject*)value)->m_x;
   x->size(*size);
@@ -293,7 +273,7 @@ static int rect_set_size(PyObject* self, PyObject* value) {
 }
 
 static int rect_set_dimensions(PyObject* self, PyObject* value) {
-  if (!is_RectObject(self) || !is_DimensionsObject(value)) {
+  if (!is_DimensionsObject(value)) {
     PyErr_SetString(PyExc_TypeError, "Type Error!");
     return -1;
   }
@@ -307,10 +287,6 @@ static int rect_set_dimensions(PyObject* self, PyObject* value) {
   Standard methods
 */
 static PyObject* rect_set(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self is not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   int offset_x, offset_y, nrows, ncols;
   if (PyArg_ParseTuple(args, "iiii", &offset_x, &offset_y, &nrows, &ncols) <= 0) {
@@ -322,10 +298,6 @@ static PyObject* rect_set(PyObject* self, PyObject* args) {
 }
 
 static PyObject* rect_move(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self is not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   int xv, y;
   if (PyArg_ParseTuple(args, "ii", &xv, &y) <= 0) {
@@ -337,10 +309,6 @@ static PyObject* rect_move(PyObject* self, PyObject* args) {
 }
 
 static PyObject* rect_contains_x(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   int xv;
   if (PyArg_ParseTuple(args, "i", &xv) <= 0)
@@ -355,10 +323,6 @@ static PyObject* rect_contains_x(PyObject* self, PyObject* args) {
 }
 
 static PyObject* rect_contains_y(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   int y;
   if (PyArg_ParseTuple(args, "i", &y) <= 0)
@@ -373,10 +337,6 @@ static PyObject* rect_contains_y(PyObject* self, PyObject* args) {
 }
 
 static PyObject* rect_contains_point(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* point;
   if (PyArg_ParseTuple(args, "O", &point) <= 0)
@@ -395,10 +355,6 @@ static PyObject* rect_contains_point(PyObject* self, PyObject* args) {
 }
 
 static PyObject* rect_contains_rect(PyObject* self, PyObject* args) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
   if (PyArg_ParseTuple(args, "O", &rect) <= 0)
@@ -461,10 +417,6 @@ static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {
 }
 
 static PyObject* rect_repr(PyObject* self) {
-  if (!is_RectObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Rect object!");
-    return 0;
-  }
   Rect* x = ((RectObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Rect offset_y: %i offset_x: %i nrows: %i ncols: %i>",
 			     x->offset_y(), x->offset_x(), x->nrows(),

@@ -66,6 +66,13 @@ bool is_RectObject(PyObject* x);
 struct ImageDataObject {
   PyObject_HEAD
   ImageDataBase* m_x;
+  int m_pixel_type;
+  int m_storage_format;
+};
+
+struct ImageObject {
+  PyObject_HEAD
+  
 };
   
 namespace Gamera {

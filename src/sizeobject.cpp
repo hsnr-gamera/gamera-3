@@ -72,28 +72,17 @@ static PyObject* size_new(PyTypeObject* pytype, PyObject* args,
 }
 
 static void size_dealloc(PyObject* self) {
-  if (!is_SizeObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "self not a Size object");
-  }
   SizeObject* x = (SizeObject*)self;
   delete x->m_x;
   self->ob_type->tp_free(self);
 }
 
 #define CREATE_GET_FUNC(name) static PyObject* size_get_##name(PyObject* self) {\
-  if (!is_SizeObject(self)) { \
-    PyErr_SetString(PyExc_TypeError, "Object is not a Size object!"); \
-    return 0; \
-  } \
   Size* x = ((SizeObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int size_set_##name(PyObject* self, PyObject* value) {\
-  if (!is_SizeObject(self) || !PyInt_Check(value)) { \
-    PyErr_SetString(PyExc_TypeError, "Type Error!"); \
-    return -1; \
-  } \
   Size* x = ((SizeObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
   return 0; \
@@ -149,10 +138,6 @@ static PyObject* size_richcompare(PyObject* a, PyObject* b, int op) {
 }
 
 static PyObject* size_repr(PyObject* self) {
-  if (!is_SizeObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Size object!");
-    return 0;
-  }
   Size* x = ((SizeObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Size width: %i height: %i>",
 			     x->width(), x->height());

@@ -49,7 +49,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { "move", point_move, METH_VARARGS },
-  {NULL}
+  { NULL }
 };
 
 
@@ -79,28 +79,17 @@ static PyObject* point_new(PyTypeObject* pytype, PyObject* args,
 }
 
 static void point_dealloc(PyObject* self) {
-  if (!is_PointObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "self not a Point object");
-  }
   PointObject* x = (PointObject*)self;
   delete x->m_x;
   self->ob_type->tp_free(self);
 }
 
 #define CREATE_GET_FUNC(name) static PyObject* point_get_##name(PyObject* self) {\
-  if (!is_PointObject(self)) { \
-    PyErr_SetString(PyExc_TypeError, "Object is not a Point object!"); \
-    return 0; \
-  } \
   Point* x = ((PointObject*)self)->m_x; \
   return Py_BuildValue("i", (int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int point_set_##name(PyObject* self, PyObject* value) {\
-  if (!is_PointObject(self) || !PyInt_Check(value)) { \
-    PyErr_SetString(PyExc_TypeError, "Type Error!"); \
-    return -1; \
-  } \
   Point* x = ((PointObject*)self)->m_x; \
   x->name((size_t)PyInt_AS_LONG(value)); \
   return 0; \
@@ -112,10 +101,6 @@ CREATE_SET_FUNC(x)
 CREATE_SET_FUNC(y)
 
 static PyObject* point_move(PyObject* self, PyObject* args) {
-  if (!is_PointObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self is not a Point!");
-    return 0;
-  }
   Point* x = ((PointObject*)self)->m_x;
   int xv, y;
   if (PyArg_ParseTuple(args, "ii", &xv, &y) <= 0)
@@ -170,10 +155,6 @@ static PyObject* point_richcompare(PyObject* a, PyObject* b, int op) {
 }
 
 static PyObject* point_repr(PyObject* self) {
-  if (!is_PointObject(self)) {
-    PyErr_SetString(PyExc_TypeError, "Self if not a Point object!");
-    return 0;
-  }
   Point* x = ((PointObject*)self)->m_x;
   return PyString_FromFormat("<gamera.Point x: %i y: %i>",
 			     x->x(), x->y());

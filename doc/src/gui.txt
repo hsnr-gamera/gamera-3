@@ -206,6 +206,10 @@ The image display toolbar has the following buttons:
   | |NewCopy|       | Create a new copy of the currently selected area of the image|
   |                 | (or the entire image if there is no selection.)		   |
   +-----------------+--------------------------------------------------------------+
+  | |Save|          | Saves the image to a file.                                   |
+  +-----------------+--------------------------------------------------------------+
+  | |Print|         | Prints the image.                                            |
+  +-----------------+--------------------------------------------------------------+
 
 .. |Refresh| image:: images/icon_refresh.png
 .. |ZoomIn| image:: images/icon_zoom_in.png
@@ -214,6 +218,15 @@ The image display toolbar has the following buttons:
 .. |ZoomHighlight| image:: images/icon_zoom_view.png
 .. |NewReference| image:: images/icon_make_view.png
 .. |NewCopy| image:: images/icon_image_copy.png
+.. |Save| image:: images/icon_save.png
+.. |Print| image:: images/icon_printer.png
+
+.. note:: 
+  On Linux and OS-X, the Print command works by printing to a
+  PostScript file and then sends the result to ``lpr``.  Because of
+  this, it can not properly detect the resolution of the printer.
+  Therefore, a reasonable default of 720dpi is used.  Future versions
+  of wxPython may handle this better.
 
 Multiple image display
 ----------------------

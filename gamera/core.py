@@ -90,6 +90,19 @@ supported.
    image.name = filename
    return image
 
+def save_image(image, filename):
+   """**save_image** (Image(ALL) *image*, String *filename*)
+
+Saves an image to a file.  The file type is automatically
+determined from the extension.
+"""
+   if filename.lower().endswith("png"):
+      from gamera.plugins import _png_support
+      _png_support.save_PNG(image, filename)
+   else:
+      from gamera.plugins import _tiff_support
+      _tiff_support.save_tiff(image, filename)
+
 def nested_list_to_image(l, t=-1):
    from gamera.plugins import image_utilities
    return image_utilities.nested_list_to_image(l, t)
@@ -250,9 +263,7 @@ See `storage formats`_ for more information."""
    _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
-      """**load_image** (FileOpen *filename*, Choice *storage_format* = ``DENSE``)
-
-Load an image from the given filename.  At present, TIFF and PNG files are
+      """Load an image from the given filename.  At present, TIFF and PNG files are
 supported.
 
 *storage_format*
@@ -261,6 +272,11 @@ supported.
 .. __: image_types.html#storage-formats"""
       return load_image(filename, compression)
    load_image = staticmethod(load_image)
+
+   def save_image(self, filename):
+      """Saves an image to a file.  The file type is automatically
+determined from the extension."""
+      return save_image(self, filename)
 
    def memory_size(self):
       """Int **memory_size** ()
@@ -612,6 +628,9 @@ def _init_gamera():
          "load_image", "File", plugin.ImageType(ALL, "image"),
          plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
       plugin.PluginFactory(
+         "save_image", "File", None,
+         plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
+      plugin.PluginFactory(
          "display", "Displaying", None, plugin.ImageType(ALL), None),
       plugin.PluginFactory(
          "display_ccs", "Displaying", None, plugin.ImageType([ONEBIT]),
@@ -685,4 +704,5 @@ __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL DENSE RLE "
            "ImageData Size Dimensions Point Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
-           "display_multi ImageBase nested_list_to_image RGBPixel").split()
+           "display_multi ImageBase nested_list_to_image RGBPixel "
+           "save_image").split()

@@ -257,6 +257,7 @@ class ShellFrame(wxFrame):
       image_menu.set_shell(self.shell)
       image_menu.set_shell_frame(self)
       self.shell.push("from gamera.gui import gui")
+      self.shell.push("from gamera.gui.matplotlib_support import *")
       self.shell.push("from gamera.core import *")
       self.shell.push("init_gamera()")
 

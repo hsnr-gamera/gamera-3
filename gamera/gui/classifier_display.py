@@ -1174,11 +1174,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
          root = item
          if token != tokens[-1]:
             self.SetItemHasChildren(root)
-            expand_list.append(root)
-      self.SelectItem(root)
-      for item in expand_list:
-         if not self.IsExpanded(item):
-            self.Expand(item)
 
    def symbol_table_remove_callback(self, tokens):
       root = self.root

@@ -95,12 +95,18 @@ class SymbolTable:
       if found_i != -1:
          found = targets[found_i]
          if found_i < len(targets) - 1:
-            found_next = targets[found_i + 1]
-            print found, found_next
-            if (found_next.startswith(symbol) and 
-                not found_next.startswith(found)):
-               for i in range(len(symbol), len(found)):
-                  if found[i] != found_next[i]:
+            found_last = -1
+            for i in range(found_i + 1, len(targets)):
+               if targets[i].startswith(symbol):
+                  found_last = i
+               else:
+                  break
+            if found_last != -1:
+               found_last = targets[found_last]
+               print found, found_last
+               for i in range(len(symbol), min(len(found), len(found_last))):
+                  print i,
+                  if found[i] != found_last[i]:
                      break
                found = found[:i]
          return found

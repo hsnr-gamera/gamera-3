@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001 - 2002
+ * Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,32 +18,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef kwm12032001_threshold
-#define kwm12032001_threshold
+#ifndef kwm12032001_utility
+#define kwm12032001_utility
 
 #include "gamera.hpp"
-
 using namespace Gamera;
 
 template<class T>
-Image* threshold(const T &m, int threshold) {
-  typename T::data_type* data = new typename T::data_type(m.size(), m.ul_y(), m.ul_x());
-  typedef typename T::value_type PIXEL;
-  typedef typename ImageFactory<T>::view_type O;
-  O* out = new O(*data, m);
-
-  typename T::const_vec_iterator i = m.vec_begin();
-  typename T::const_vec_iterator end = m.vec_end();
-  typename O::vec_iterator j = out->vec_begin();
-  
-  for (; i != end; i++, j++)
-    if (*i > PIXEL(threshold))
-      *j = white(*out);
-    else
-      *j = black(*out);
-  return out;
+Image* image_copy(const T &a, int storage_format) {
+  if (storage_format == DENSE) {
+  typename T::const_vec_iterator ait = a.vec_begin();
+  typename V::vec_iterator bit = b.vec_begin();
+  for (; ait != a.vec_end(); ++ait, ++bit)
+    *bit = typename V::value_type(*ait);
 }
 
 #endif
-
-

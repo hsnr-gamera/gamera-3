@@ -108,10 +108,22 @@ namespace Gamera {
     it is a Cc, etc.
   */
   template<class T>
-  struct image_factory {
-    typedef ImageView<typename T::data_type> view_type;
-    typedef ConnectedComponent<typename T::data_type> cc_type;
-    typedef std::list<cc_type> ccs_type;
+  struct ImageFactory {
+    // data types
+    typedef typename T::data_type data_type;
+    typedef ImageData<typename T::value_type> dense_data_type;
+    typedef RleImageData<typename T::value_type> rle_data_type;
+    // view types
+    typedef ImageView<data_type> view_type;
+    typedef ImageView<dense_data_type> dense_view_type;
+    dense_view_type* create_dense_view_and_data(T& other) {
+      
+    }
+    typedef ImageView<rle_data_type> rle_view_type;
+    // cc types
+    typedef ConnectedComponent<data_type> cc_type;
+    typedef ConnectedComponent<dense_data_type> dense_cc_type;
+    typedef ConnectedComponent<rle_data_type> rle_cc_type;
   };
 
 

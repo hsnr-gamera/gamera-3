@@ -33,6 +33,8 @@ using namespace Gamera;
 // forward declarations
 ImageInfo* tiff_info(const char* filename);
 Image* load_tiff(const char* filename, int compressed);
+template<class T>
+void save_tiff(const T& matrix, const char* filename);
 
 /*
   Get information about tiff images

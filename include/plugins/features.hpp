@@ -111,7 +111,7 @@ namespace Gamera {
   }
 
   template<class T>
-  FloatVector* moments(T &m, feature_t* buf) {
+  void moments(T &m, feature_t* buf) {
     size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
       m01 = 0, m02 = 0, m30 = 0, m03 = 0;
     size_t m00 = (unsigned int)(m.nrows() * m.ncols());

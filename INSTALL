@@ -5,15 +5,25 @@ Building and installing Gamera
 Gamera requires that you install the following software FIRST:
 
 **Python**
-	Gamera is known to run on Python 2.2 and 2.3, though 2.3 is
-	not as thouroughly tested.  Make sure you have the latest
-	service release of either of these versions, since those
-	contain important bug and security fixes.
+	For Linux (and other Unices):
+	    Python 2.2 and 2.3 are supported.
 
-	You will need to have the headers (but not the complete
-	source) to build Gamera from source code.  Some Linux
-	distributions, such as SuSE and RedHat, include these as a
-	separate package (eg. ``python-dev``).
+	    You will need to have the headers (but not the complete
+   	    source) to build Gamera from source code.  Some Linux
+	    distributions, such as SuSE and RedHat, include these as a
+ 	    separate package (eg. ``python-dev``).
+
+	For Microsoft Windows:
+	    Only Python 2.3 is supported, since it has a much better
+	    installer.
+	
+	For Mac OS-X:
+	    Only Python 2.3 is supported, and only on OS-X 10.3 with
+	    X11 installed.
+
+	Make sure you have the latest
+	service release, since those
+	usually	contain important bug and security fixes.
 
 **wxPython**
 	You must use version 2.4.x or greater.  2.3.x is no longer
@@ -54,7 +64,44 @@ Cygwin/Mingw32
 ``````````````
 
 Use the installer from http://www.cygwin.com/ to install Cygwin,
-including a g++ and the MingW32 libraries.
+including a g++ and the MingW32 libraries.  Compiling Gamera against
+the Cygwin DLL is theoretically possible, but not supported.  However,
+you can compile Gamera using Mingw32, which means there will be no
+non-standard Windows runtime dependancies.
+
+Python
+``````
+
+You have two options here
+
+Use the Cygwin version Python that is distributed with Cygwin:
+   This is the easiest approach, since it behaves most like a Unix
+   system.  Skip to the next section for further instructions.
+
+Use the MSVC-built Python from python.org:
+   The advantage of this approach is that you can build an installer
+   that will work with the "canonical" distribution of Python.
+   However, you'll have to do a few preparation steps first.
+
+   Go to the Python/libs directory::
+	
+	cd [PATH_TO_PYTHON]/libs
+
+   Find your ``pythonXX.dll`` file, where ``XX`` is the version of
+   Python you have installed.  This is normally in
+   ``C:\WINDOWS\system32\`` or ``C:\winnt\system32\``.
+
+   Make a ``.def`` file from your ``pythonXX.dll``.  (You will need to
+   install ``pexports.exe`` from the Cygwin installer)::
+
+  	pexports 'C:\WINDOWS\system32\pythonXX.dll' > pythonXX.def
+
+   Then create a static library (``libpythonXX.a``)::
+
+	dlltool --dllname pythonXX.dll --def
+                pythonXX.def --output-lib libpythonXX.a
+	
+   Now you should be ready to continue below.
 
 Standard Build and Install
 ``````````````````````````
@@ -63,12 +110,33 @@ Gamera is built using the Python-standard Distutils system.  Open a
 Cygwin command prompt and type::
 
   python setup.py build --compiler=mingw32
+
+If you receive the following error (only exhibited under Python 2.3),
+distutils is having trouble traversing the Cygwin-based symlink from
+``/bin/cc.exe`` to ``/bin/gcc.exe``.  The hacky solution to this
+(until this bugfix in distutils is fixed) is to delete the symlink and
+make a real copy (at the expense of a little disk space)::
+
+  rm /bin/cc.exe
+  cp /bin/gcc.exe /bin/cc.exe
+
+If you just want to install Gamera without the ability to uninstall::
+
   python setup.py install
+
+If you'd like a real Windows installer, including uninstallation
+support::
+
+  python setup.py build --compiler=mingw32 bdist_wininst
+  dist/gamera-X.X.X-win32.exe
 
 Running
 ```````
 
-Run the ``gamera_gui.py`` script located at the root of the source
+If you chose to build the installer, double-click on the Gamera icon
+on your desktop to run Gamera.
+
+Otherwise, run the ``gamera_gui.py`` script located at the root of the source
 tree::
 
   python gamera_gui.py

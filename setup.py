@@ -50,50 +50,39 @@ sys.path.append("gamera")
 import generate, gamera_setup
 
 ########################################
-# Check that this is at least Python 2.2
+# Check that the Python version is correct
 gamera_setup.check_python_version()
 
 ########################################
 # Some platforms require extra compile and link arguments
-extra_compile_args = []
-extra_link_args = []
-libraries = []
+extras = {}
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-   extra_compile_args = ["/GR"]#, "/Zi"]
+   extras['extra_compile_args'] = ["/GR"]#, "/Zi"]
 elif sys.platform == 'darwin':
-   extra_link_args = ['-F/System/Library/Frameworks/']
+   extras['extra_link_args'] = ['-F/System/Library/Frameworks/']
 elif '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
-   libraries = ["stdc++"] # Not for intel compiler
-extras = {'extra_compile_args': extra_compile_args,
-          'extra_link_args': extra_link_args,
-          'libraries': libraries}
+   extras['libraries'] = ["stdc++"] # Not for intel compiler
 
 ##########################################
 # generate the command line startup scripts
 command_line_utils = (
    ('gamera_gui', 'gamera_gui.py',
-    """#!%(executable)s\n"""
-    """%(header)s\n"""
-    """import gamera_post_install\n"""
-    """print "Loading GAMERA..."\n"""
-    """from gamera.gui import gui\n"""
-    """gui.run()"""),
+    """#!%(executable)s
+%(header)s
+print "Loading GAMERA..."
+try:
+   from gamera.gui import gui
+   gui.run()
+except:
+   import traceback
+   print "Gamera made a fatal error:"
+   print
+   traceback.print_exc()
+   print
+   print "Press <ENTER> to exit."
+   x = raw_input()
+   sys.exit(1)"""), )
    
-   ('gamera_cl', 'gamera_cl.py',
-    """#!/usr/bin/env sh\n"""
-    """%(header)s\n"""
-    """import gamera_post_install\n"""
-    """print "Loading GAMERA..."\n"""
-    """%(executable)s -i -c "from gamera.core import *; init_gamera()"\n"""
-    ),
-   
-   ('gamera_test', 'gamera_test.py',
-    """#!%(executable)s\n"""
-    """import gamera_post_install"""
-    """from gamera import testing\n"""
-    """testing.main()"""
-    )
-   )
 if sys.platform == 'win32':
    command_line_filename_at = 1
    scripts_directory_name = "Scripts"
@@ -101,7 +90,7 @@ else:
    command_line_filename_at = 0
    scripts_directory_name = "bin/"
 
-scripts = [x[command_line_filename_at] for x in command_line_utils] + ["gamera_post_install.py"]
+scripts = [x[command_line_filename_at] for x in command_line_utils] + ['gamera_post_install.py']
 
 info = {'executable': sys.executable,
         'header'    :
@@ -155,25 +144,19 @@ extensions = [Extension("gamera.gameracore",
                         **extras)]
 extensions.extend(plugin_extensions)
 
-if sys.platform == "win32":
-   description = ("""This is the Gamera installer.\n""" + 
-   """Please make sure you have Python 2.2 (or later) and wxPython 2.4.0 \n""" +
-   """(or later) installed before proceeding with the installation.  After\n""" +
-   """the installer completes, run the 'gamera_post_install' script in\n""" +
-   """'Scripts' directory of your Python installation.""")
-else:
-   description = ("This is the Gamera installer." +
-                  "Please ensure that Python 2.2 (or later) and wxPython 2.4.0" +
-                  "(or later) are installed before proceeding.")
+description = ("This is the Gamera installer. " +
+               "Please ensure that Python and wxPython 2.4.0 " +
+               "(or later) are installed before proceeding.")
 
 lib_path = os.path.join(get_python_lib(), 'gamera')
 
-setup(name = "gamera", version="2.1.4",
+setup(name = "gamera", version=open("version", 'r').readlines()[0].strip(),
       url = "http://dkc.jhu.edu/gamera/",
       author = "Michael Droettboom and Karl MacMillan",
-      author_email = "mdboom@jhu.edu; karlmac@jhu.edu",
+      author_email = "gamera-users@lists.sourceforge.net",
       ext_modules = extensions,
       description = description,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins'],
+      scripts = scripts,
       data_files=[(os.path.join(lib_path, "test"), glob.glob("gamera/test/*.tiff"))]
       )

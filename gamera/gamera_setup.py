@@ -33,12 +33,16 @@ import glob
 sys.path.append("gamera")
 import generate
 
+required_versions = {'posix': 222,
+                     'win32': 231,
+                     'darwin': 231}
 def check_python_version():
    """Make certain that the Python version that is running meets the minimum
-   requirements for Gamera. Currently the minimum is 2.2, but this function
-   will be updated as the requirements change."""
-   if float(''.join([str(x) for x in sys.version_info[0:3]])) < 221:
-      print "Gamera requires Python version 2.2.1 or later."
+   requirements for Gamera."""
+   version = float(''.join([str(x) for x in sys.version_info[0:3]]))
+   required_version = required_versions[sys.platform]
+   if version < required_version:
+      print "Gamera requires Python version %s or later." % '.'.join(list(str(required_version)))
       print "You are running the following Python version:"
       print sys.version
       sys.exit(1)

@@ -34,7 +34,8 @@ for argument in sys.argv:
          monthstring = '0' + monthstring
       if d.day < 10:
          daystring = '0' + daystring
-      gamera_version = "gamera-2-nightly-%s%s%s" % (d.year, monthstring, daystring)
+      gamera_version = "2_nightly_%s%s%s" % (d.year, monthstring, 
+daystring)
       sys.argv.remove(argument)
       break
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)

@@ -1,6 +1,6 @@
 #
-#
-# Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
+#                          and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -385,7 +385,7 @@ class ClassifierImageWindow(ImageWindow):
 
    def OnChooseImage(self, event):
       from args import Args, Class
-      dlg = Args([Class("Image for context display", "gamera.Image")])
+      dlg = Args([Class("Image for context display", "core.Image")])
       function = dlg.show(self, image_menu.shell.locals, "")
       if function != None:
          function = function[1:-1]
@@ -555,7 +555,7 @@ class ClassifierFrame(ImageFrameBase):
       removed = 0
       did_splits = 0
       for item in list:
-         if isinstance(item, gamera.Image):
+         if isinstance(item, core.Image):
             a, b = self.classifier.manual_classify_glyph(
                item, id, update_display=0)
          did_splits = did_splits + a

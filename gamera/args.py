@@ -1,5 +1,6 @@
 #
-# Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
+#                          and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -482,16 +483,16 @@ if _has_gui == _WX_GUI:
          browseID = wxPython.wx.wxNewId()
          browse = wxPython.wx.wxButton(parent, browseID, "...", size=wxPython.wx.wxSize(20, 20))
          wxPython.wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
-         self.Add(self.text, 1, wxPython.wx.wxEXPAND)
-         self.Add(browse, 0)
+         self.control.Add(self.text, 1, wxPython.wx.wxEXPAND)
+         self.control.Add(browse, 0)
          return self
 
       def get(self):
-         text = self.control.text.GetValue()
+         text = self.text.GetValue()
          if text == "":
             return "None"
          else:
-            return "'" + self.control.text.GetValue() + "'"
+            return "'" + self.text.GetValue() + "'"
 else:
    class _guiFilename:
       pass

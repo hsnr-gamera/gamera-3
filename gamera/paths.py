@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
+#                          and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,13 +19,14 @@
 #
 
 from __future__ import generators
-import os, sys, dircache, glob  # Python standard library
+import os, sys, dircache, glob, imp  # Python standard library
 
 if 1:
   def dummy():
     pass
 
 lib = os.path.dirname(os.path.realpath(dummy.func_code.co_filename))
+lib_gui = os.path.realpath(os.path.join(lib, "gui"))
 # Figure out if we are in the source directory or installed
 plugins = os.path.realpath(os.path.join(lib, "plugins"))
 doc = os.path.realpath(os.path.join(lib, "doc"))
@@ -49,18 +51,21 @@ def get_toolkit_names(dir):
          toolkits.append(toolkit[:-1])
    return toolkits
 
-def get_directory_of_modules(dir):
+def get_directory_of_modules(dir, base=''):
    modules = glob.glob(os.path.join(dir, "*.py"))
-   modules = map(lambda x: os.path.basename(x).split('.')[0], modules)
+   names = map(lambda x: os.path.basename(x).split('.')[0], modules)
    mods = []
-   for m in modules:
-     if m == '__init__':
-       continue
+   suffixes = imp.get_suffixes()
+   for i in suffixes:
+     if i[0] == '.py':
+       suffix = i
+       break
+   for m, name in zip(modules, names):
      try:
-       module = __import__(m, {}, {}, [])
+       module = imp.load_module(base + name, file(m, 'r'), m, suffix)
        mods.append(module)
      except Exception, e:
-       pass
+       print e
    return mods
      
 def import_directory(dir, gl, lo, debug = 1):

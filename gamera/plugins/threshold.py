@@ -26,6 +26,7 @@ pixels less than the given value become black."""
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Int("threshold")])
     return_type = ImageType([ONEBIT], "output")
+    testable = 1
     
 threshold = threshold()
 

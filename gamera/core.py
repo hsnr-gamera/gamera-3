@@ -1,6 +1,6 @@
 #
-#
-# Copyright (C) 2001 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001, 2002 Ichiro Fujinaga, Michael Droettboom,
+#                          and Karl MacMillan
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import sys, os, types, os.path, inspect, pydoc     # Python standard library
+import sys, os, types, os.path, inspect, new     # Python standard library
 
 # import the classification states
 from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
@@ -33,19 +33,12 @@ from gameracore import ImageData, Size, Dimensions, Point, \
 import gameracore
 
 #import classify
-import paths, util, config, new  # Gamera-specific
+import paths, util, config  # Gamera-specific
 
 ######################################################################
 
 # Reference to the currently active gui
 config.add_option_default("__gui", None)
-
-## def help(object=None):
-##    gui = config.get_option("__gui")
-##    if gui is None:
-##       pydoc.help(object)
-##    else:
-##       gui.help(object)
 
 ######################################################################
 
@@ -68,6 +61,16 @@ class ImageBase:
    def __del__(self):
       if self._display:
          self._display.close()
+
+   def __getstate__(self):
+      """Extremely basic pickling support for using in testing.
+      Note that there is no unpickling support."""
+      import zlib
+      dict = {}
+      for key in self._members_for_menu:
+         dict[key] = getattr(self, key)
+      dict['data'] = zlib.compress(self.to_string())
+      return dict
 
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
@@ -106,7 +109,6 @@ class ImageBase:
                         'storage_format_name',
                         'ul_x', 'ul_y', 'nrows', 'ncols',
                         'memory_size')
-
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
@@ -148,8 +150,8 @@ class ImageBase:
          list.append(val)
      return list
 
-   def load_image(filename=None):
-      return load_image(filename)
+   def load_image(filename, compression=DENSE):
+      return load_image(filename, compression)
    load_image = staticmethod(load_image)
 
    def memory_size(self):
@@ -268,6 +270,7 @@ class Image(gameracore.Image, ImageBase):
       ImageBase.__init__(self)
       gameracore.Image.__init__(self, page_offset_y, page_offset_x,
                                 nrows, ncols, pixel_format, storage_type)
+   __getstate__ = ImageBase.__getstate__
 
 
 ######################################################################
@@ -277,6 +280,7 @@ class SubImage(gameracore.SubImage, ImageBase):
       ImageBase.__init__(self)
       gameracore.SubImage.__init__(self, image, offset_y, offset_x,
                                    nrows, ncols)
+   __getstate__ = ImageBase.__getstate__
 
 
 ######################################################################
@@ -286,6 +290,7 @@ class Cc(gameracore.Cc, ImageBase):
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, image, label, offset_y, offset_x,
                              nrows, ncols)
+   __getstate__ = ImageBase.__getstate__
    
    # Displays this cc in context
    def display_context(self):
@@ -393,3 +398,4 @@ def init_gamera():
          method.register()
       paths.import_directory(paths.plugins, globals(), locals(), 1)
       _gamera_initialised = 1
+

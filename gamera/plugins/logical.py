@@ -34,6 +34,7 @@ class and_image(_LogicalBase):
   | 1 | 0 | 1 |
   +---+---+---+
   """
+  testable = 1
 and_image = and_image()
 
 class or_image(_LogicalBase):
@@ -47,6 +48,7 @@ class or_image(_LogicalBase):
   | 1 | 1 | 1 |
   +---+---+---+
   """
+  testable = 1
 or_image = or_image()
 
 class xor_image(_LogicalBase):
@@ -60,6 +62,7 @@ class xor_image(_LogicalBase):
   | 1 | 1 | 0 |
   +---+---+---+
   """
+  testable = 1
 xor_image = xor_image()
 
 class LogicalModule(PluginModule):

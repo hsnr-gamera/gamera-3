@@ -90,6 +90,7 @@ namespace {
 	  the rgb color space. KWM
 	*/
 	tmp = *vi / 257;
+	//tmp = *vi;
 	*i = (char)tmp; i++;
 	*i = (char)tmp; i++;
 	*i = (char)tmp; i++;

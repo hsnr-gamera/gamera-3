@@ -29,7 +29,8 @@ tiff_info = tiff_info()
 
 class load_tiff(PluginFunction):
     self_type = None
-    args = Args([String("image_file_name"), Int("compression")])
+    args = Args([FileOpen("image_file_name", "", "*.tiff;*.tif"),
+                 Choice("storage format", ["DENSE", "RLE"])])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     def __call__(filename, compression = 0):
         return _tiff_support.load_tiff(filename, compression)

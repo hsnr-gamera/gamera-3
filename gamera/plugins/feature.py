@@ -86,5 +86,11 @@ class width(_FeatureBase):
     return self.ncols()
 width = width()
 
-plugins = [area, aspect_ratio, compactness, height,
-           moments, nholes, volume, volume4regions]
+class FeatureModule(PluginModule):
+  cpp_headers = ["feature.hpp"]
+  category = "Features"
+  functions = [area, aspect_ratio, compactness, volume, height, moments, nholes, volume4regions]
+  author = "Michael Droettboom and Karl MacMillan"
+  url = "http://gamera.dkc.jhu.edu/"
+
+module = FeatureModule()

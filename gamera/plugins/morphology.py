@@ -24,7 +24,7 @@ class erode(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   pure_python = 1
   def __call__(image):
-    _erode_dilate.erode_dilate(image.m, 1, 1, 0)
+    _morphology.erode_dilate(image.m, 1, 1, 0)
   __call__ = staticmethod(__call__)
 erode = erode()
 
@@ -32,7 +32,7 @@ class dilate(PluginFunction):
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   pure_python = 1
   def __call__(image):
-    _erode_dilate.erode_dilate(image.m, 1, 0, 0)
+    _morphology.erode_dilate(image.m, 1, 0, 0)
   __call__ = staticmethod(__call__)
 dilate = dilate()
 

@@ -21,6 +21,7 @@ from gamera.plugin import *
 import _image_utilities
 
 class image_copy(PluginFunction):
+    """Copies an image, with all of its underlying data."""
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Choice("storage format", ["DENSE", "RLE"])])

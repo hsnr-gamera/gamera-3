@@ -457,7 +457,7 @@ There are a number of ways to create a subimage:
 
 Changes to subimages will affect all other subimages viewing the same data."""
       if hasattr(self, "label"):
-         return Cc(self, *args, **kwargs)
+         return Cc(self, self.label, *args, **kwargs)
       else:
          return SubImage(self, *args, **kwargs)
 

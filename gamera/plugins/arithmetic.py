@@ -51,6 +51,13 @@ on either image to crop appropriately if necessary for your specific case.
        return _arithmetic.add_images(self, other, in_place)
     __call__ = staticmethod(__call__)
 
+    def __doc_example1__(images):
+        rgb = images[RGB]
+        greyscale = images[GREYSCALE]
+        clipped = rgb.clip_image(greyscale)
+        return [clipped, greyscale, clipped.add_images(greyscale.to_rgb(), False)]
+    doc_examples = [__doc_example1__]
+
 class subtract_images(ArithmeticCombine):
     """Adds the pixels of another image from the current image.
 
@@ -71,6 +78,13 @@ on either image to crop appropriately if necessary for your specific case.
     def __call__(self, other, in_place=False):
        return _arithmetic.subtract_images(self, other, in_place)
     __call__ = staticmethod(__call__)
+
+    def __doc_example1__(images):
+        rgb = images[RGB]
+        greyscale = images[GREYSCALE]
+        clipped = rgb.clip_image(greyscale)
+        return [clipped, greyscale, clipped.subtract_images(greyscale.to_rgb(), False)]
+    doc_examples = [__doc_example1__]
 
 class divide_images(ArithmeticCombine):
     """Divides the pixels of the current image by the pixels of
@@ -113,7 +127,7 @@ on either image to crop appropriately if necessary for your specific case.
            return _logical.and_image(self, other, in_place)
        return _arithmetic.multiply_images(self, other, in_place)
     __call__ = staticmethod(__call__)
-    
+
 class ArithmeticModule(PluginModule):
     cpp_headers=["arithmetic.hpp"]
     category = "Combine/Arithmetic"

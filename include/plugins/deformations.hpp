@@ -505,12 +505,13 @@ namespace Gamera
 		}
 		
 		size_t hoffset = 0, voffset = 0;
-		for(i = voffset; i<out->nrows(); i++) for(j = hoffset; j<out->ncols(); j++)
-		{
-			pixelFormat px1 = m.get(i-voffset, m.ncols() - (j-hoffset)),
-				    px2 = out->get(i,j);
-			if(a*rand()/RAND_MAX == 0) out->set(i,j,norm_weight_avg(px1,px2,0.5,0.5));
-		}
+		for(i = voffset; i<out->nrows(); i++) 
+		  for(j = hoffset; j<out->ncols(); j++)
+		    {
+		      pixelFormat px = m.get(i-voffset, m.ncols() - (j-hoffset));
+		      if ((a*rand()/RAND_MAX == 0)) 
+			out->set(i,j,px);
+		    }
 
 		image_copy_attributes(m, *out);
 

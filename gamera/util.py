@@ -40,11 +40,11 @@ def make_sequence(obj):
 def is_image_list(l):
    from gamera.core import ImageBase
    if not is_sequence(l) or not isinstance(l[0], ImageBase):
-      return 0
+      return False
    for image in l[1:]:
-      if not isinstance(l, ImageBase):
-         return 0
-   return 1
+      if not isinstance(image, ImageBase):
+         return False
+   return True
 
 def is_string_or_unicode(s):
    return type(s) in (StringType, UnicodeType)

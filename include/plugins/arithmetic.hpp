@@ -24,10 +24,10 @@
 #include <functional>
 #include "gamera.hpp"
 
-template<class T, class FUNCTOR>
+template<class T, class U, class FUNCTOR>
 inline 
 typename ImageFactory<T>::view_type* 
-arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
+arithmetic_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::runtime_error("Images must be the same size.");
   
@@ -36,7 +36,7 @@ arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
 
   if (in_place) {
     typename T::vec_iterator ia = a.vec_begin();
-    typename T::const_vec_iterator ib = b.vec_begin();
+    typename U::const_vec_iterator ib = b.vec_begin();
     typename choose_accessor<T>::accessor ad = choose_accessor<T>::make_accessor(a);
     for (; ia != a.vec_end(); ++ia, ++ib) {
       ad.set(NumericTraits<TVALUE>::fromPromote
@@ -53,7 +53,7 @@ arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
 					    a.offset_x());
     VIEW* dest = new VIEW(*dest_data, a);
     typename T::vec_iterator ia = a.vec_begin();
-    typename T::const_vec_iterator ib = b.vec_begin();
+    typename U::const_vec_iterator ib = b.vec_begin();
     typename VIEW::vec_iterator id = dest->vec_begin();
     typename choose_accessor<VIEW>::accessor ad = choose_accessor<VIEW>::make_accessor(*dest);
 
@@ -70,9 +70,9 @@ arithmetic_combine(T& a, const T& b, const FUNCTOR& functor, bool in_place) {
   }
 }
 
-template<class T>
+template<class T, class U>
 typename ImageFactory<T>::view_type* 
-add_images(T& a, const T& b, bool in_place=true) {
+add_images(T& a, const U& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::plus<PROMOTE>(), in_place);
@@ -100,24 +100,24 @@ struct my_minus<OneBitPixel> : public std::binary_function<OneBitPixel, OneBitPi
   }
 };
 
-template<class T>
+template<class T, class U>
 typename ImageFactory<T>::view_type* 
-subtract_images(T& a, const T& b, bool in_place=true) {
+subtract_images(T& a, const U& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   return arithmetic_combine(a, b, my_minus<TVALUE>(), in_place);
 }
 
-template<class T>
+template<class T, class U>
 typename ImageFactory<T>::view_type* 
-multiply_images(T& a, const T& b, bool in_place=true) {
+multiply_images(T& a, const U& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::multiplies<PROMOTE>(), in_place);
 }
 
-template<class T>
+template<class T, class U>
 typename ImageFactory<T>::view_type* 
-divide_images(T& a, const T& b, bool in_place=true) {
+divide_images(T& a, const U& b, bool in_place=true) {
   typedef typename T::value_type TVALUE;
   typedef typename NumericTraits<TVALUE>::Promote PROMOTE;
   return arithmetic_combine(a, b, std::divides<PROMOTE>(), in_place);

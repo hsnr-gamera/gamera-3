@@ -506,23 +506,35 @@ script::
 In addition to text, image examples can be generated on-the-fly and
 included in the documentation using
 the ``doc_examples`` member.  The ``doc_examples`` member is a list of
-tuples of the form::
+tuples or functions:
 
-  [function] [pixel_type] [arguments, ...]
+- If the element is a tuple, it is a list of arguments that will be
+  passed into the plugin method to create an example.  Where image
+  arguments are expected, image type identifiers can be used, which
+  will load a standard image from disk and use it.  For example::
 
-If *function* is a reference to a Python function, that function will
-be called to generate the example.  The result of the function will be
-included as an image in the docs.  If *function* is omitted, the
-plugin function itself will be used to generate the example.  (This is
-the common case.)
+    (ONEBIT, 52, 32)
 
-If the ``PluginFunction`` operates on images (i.e. ``self_type`` ==
-``ImageType``), a pixel type value must be provided.  This will load a
-standard test image of the specified type and pass it in as the
-``self`` argument to the example function.
+  will use the standard OneBit image and the arguments of ``52, 32``.
 
-*arguments* specifies any additional arguments that should be passed
-into the example-generating function.
+- If the element is a function, that function will be called to create
+  the example.  The function will be passed one argument, ``images``,
+  which is a dictionary of the standard Gamera example images.  Any
+  images or values returned will be included in the documentation.  For
+  example:
+
+.. code:: Python
+
+    def __doc_example1__(images):
+        rgb = images[RGB]
+        greyscale = images[GREYSCALE]
+        clipped = rgb.clip_image(greyscale)
+        return [clipped, greyscale, clipped.add_images(greyscale.to_rgb(), False)]
+    doc_examples = [__doc_example1__]
+
+  loads the standard RGB and GreyScale images, clips them
+  appropriately, adds them together, and then returns them all for
+  inclusion in the documentation.
 
 Examples
 ````````
@@ -543,7 +555,7 @@ not load a standard image.
 
 .. code:: Python
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -554,7 +566,7 @@ not load a standard image.
                         randint(0, 100), randint(0, 100),
                         RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 .. _draw_bezier: draw.html#draw-bezier
 

@@ -79,7 +79,7 @@ The coordinates can be specified either by two floats or two Points:
     raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -90,7 +90,7 @@ The coordinates can be specified either by two floats or two Points:
     image.draw_marker(points[4], points[5], 7, 1, RGBPixel(0, 255, 0))
     image.draw_marker(points[6], points[7], 7, 0, RGBPixel(0, 0, 255))
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 class draw_line(PluginFunction):
   """Draws a straight line between two points.
@@ -145,7 +145,7 @@ code and can been seen in compiled executable.
     raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -154,7 +154,7 @@ code and can been seen in compiled executable.
                       randint(0, 100), randint(0, 100),
                       RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 class draw_hollow_rect(PluginFunction):
   """Draws a hollow rectangle.
@@ -202,7 +202,7 @@ The coordinates can be specified either by four integers or two Points:
     raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -211,7 +211,7 @@ The coordinates can be specified either by four integers or two Points:
                              randint(0, 100), randint(0, 100),
                              RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 class draw_filled_rect(PluginFunction):
   """Draws a filled rectangle.
@@ -259,7 +259,7 @@ The coordinates can be specified either by four integers or two Points:
     raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -268,7 +268,7 @@ The coordinates can be specified either by four integers or two Points:
                              randint(0, 100), randint(0, 100),
                              RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 class draw_bezier(PluginFunction):
   """Draws a cubic bezier curve
@@ -339,7 +339,7 @@ The coordinates can be specified either by eight floats or four Points:
     raise ValueError("Arguments are incorrect.")
   __call__ = staticmethod(__call__)
 
-  def __doc_example1__():
+  def __doc_example1__(images):
     from random import randint
     from gamera.core import Image
     image = Image(0, 0, 100, 100, RGB, DENSE)
@@ -351,7 +351,7 @@ The coordinates can be specified either by eight floats or four Points:
                         RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)),
                         0.1)
     return image
-  doc_examples = [(__doc_example1__,)]
+  doc_examples = [__doc_example1__]
 
 class flood_fill(PluginFunction):
   """Flood fills from the given point using the given color.  This is similar
@@ -409,12 +409,13 @@ Self must be an RGB image (usually the original image.)
   self_type = ImageType([RGB])
   args = Args([ImageType([ONEBIT], "cc"), Pixel("color")])
 
-  def __doc_example1__(image):
+  def __doc_example1__(images):
+    image = images[ONEBIT]
     ccs = image.cc_analysis()
     rgb = image.to_rgb()
     rgb.highlight(ccs[0], RGBPixel(255, 0, 128))
     return rgb
-  doc_examples = [(__doc_example1__, ONEBIT)]
+  doc_examples = [__doc_example1__]
 
 class DrawModule(PluginModule):
   cpp_headers = ["draw.hpp"]

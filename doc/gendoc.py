@@ -92,7 +92,7 @@ def get_rest_docs():
       root, ext = os.path.splitext(filename)
       yield root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
 
-def method_doc(func, level, s):
+def method_doc(func, level, images, s):
    s.write("``%s``\n" % func.__name__)
    s.write(levels[level] * (len(func.__name__) + 4) + "\n\n")
    if func.return_type != None:
@@ -130,54 +130,44 @@ def method_doc(func, level, s):
       s.write("\n.. warning:: No documentation written.\n\n")
    else:
       s.write("\n\n%s\n" % func.__doc__)
-   method_example(func, level, s)
+   method_example(func, level, images, s)
 
-def method_example(func, level, s):
+def method_example(func, level, images, s):
    if len(func.doc_examples):
       s.write("\n----------\n\n")
    for i, doc_example in enumerate(func.doc_examples):
-       if inspect.isroutine(doc_example[0]):
-           routine = doc_example[0]
-           doc_example = doc_example[1:]
+       if inspect.isroutine(doc_example):
+           result = doc_example(images)
+           src_image = None
+           pixel_type = None
+           s.write("**Example %d:** %s\n\n" % (i + 1, func.__name__))
        else:
-           routine = None
-       if len(doc_example):
-           if isinstance(func.self_type, args.ImageType):
-               pixel_type = doc_example[0]
-               pixel_type_name = util.get_pixel_type_name(pixel_type)
-               src_image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
-               arguments = doc_example[1:]
+           if len(doc_example):
+               if isinstance(func.self_type, args.ImageType):
+                   pixel_type = doc_example[0]
+                   pixel_type_name = util.get_pixel_type_name(pixel_type)
+                   src_image = images[pixel_type].image_copy()
+                   arguments = [src_image] + list(doc_example[1:])
+                   doc_example = doc_example[1:]
+               else:
+                   pixel_type = None
+                   arguments = doc_example
            else:
                pixel_type = None
-               src_image = None
-               arguments = doc_example
-       else:
-           pixel_type = None
-           src_image = None
-           arguments = []
-       if routine is None:
-           if src_image is None:
-               result = func.__call__(*tuple(arguments))
-           else:
-               result = func.__call__(*tuple([src_image] + list(arguments)))
+               arguments = []
+           result = func.__call__(*tuple(arguments))
            s.write("**Example %d:** %s(%s)\n\n" %
-                   (i + 1, func.__name__, ", ".join([str(x) for x in arguments])))
-       else:
-           if src_image is None:
-               result = routine(*tuple(arguments))
-           else:
-               result = routine(*tuple([src_image] + list(arguments)))
-           s.write("**Example %d:** %s\n\n" % (i + 1, func.__name__))
+                   (i + 1, func.__name__, ", ".join([str(x) for x in doc_example])))
        if not pixel_type is None:
            s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
        result_filename = "%s_plugin_%02d" % (func.__name__, i)
        if isinstance(result, core.ImageBase):
            result.save_PNG(doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
-       elif result is None and isinstance(func.self_type, args.ImageType):
+       elif result is None and isinstance(func.self_type, args.ImageType) and src_image is not None:
            src_image.save_PNG(doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
-       elif isinstance(func.return_type, args.ImageList):
+       elif util.is_image_list(result):
            subst = "\n\n"
            for j, part in enumerate(result):
                result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
@@ -192,7 +182,7 @@ def method_example(func, level, s):
            
 levels = "=-`:'"
 def generate_plugin_docs():
-   def recurse(methods, level, s=None):
+   def recurse(methods, level, images, s=None):
       methods_list = methods.items()
       methods_list.sort()
       for key, val in methods_list:
@@ -202,9 +192,9 @@ def generate_plugin_docs():
                 s = open(os.path.join(doc_src_path, filename + ".txt"), "w")
             s.write("\n%s\n%s\n\n" % (key, levels[level] * len(key)))
             ui("  " * (level + 1) + key + "\n")
-            recurse(val, level + 1, s)
+            recurse(val, level + 1, images, s)
          else:
-            method_doc(val, level, s)
+            method_doc(val, level, images, s)
 
    def table_of_contents(methods):
       def toc_recurse(s, methods, level, links, index, filename=None):
@@ -268,6 +258,12 @@ def generate_plugin_docs():
          flat[key] = val
 
    ui("Generating plugin documentation ======\n")
+
+   images = {}
+   for i in [ONEBIT, RGB, GREYSCALE, GREY16]:
+       pixel_type_name = util.get_pixel_type_name(i)
+       images[i] = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
+   
    methods = core.ImageBase.methods
    flat_methods = {}
    flat_list = {}
@@ -278,7 +274,7 @@ def generate_plugin_docs():
    flat_list.sort(lambda x,y: cmp(x.lower(), y.lower()))
 
    by_category = []
-   recurse(flat_methods, 0)
+   recurse(flat_methods, 0, images)
    table_of_contents(flat_methods)
 
 def generate_generic_pngs():

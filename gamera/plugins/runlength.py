@@ -222,7 +222,8 @@ class RunLengthModule(PluginModule):
                  white_vertical_run_histogram,
                  filter_narrow_runs, filter_short_runs,
                  filter_tall_runs,filter_wide_runs,
-                 to_rle, from_rle]
+                 to_rle,
+                 from_rle]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -22,6 +22,12 @@ deformations to images."""
 
 from gamera.plugin import *
 try:
+  from gamera.core import RGBPixel
+except:
+  def RGBPixel(*args):
+    pass
+
+try:
     from gamera.core import *
 except:
     pass
@@ -35,6 +41,7 @@ class rotate(PluginFunction):
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Float("Rotation angle"), Pixel("Background Color")])
     args.list[0].rng = (-180,180)
+    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255))]
 
 class wave(PluginFunction):
     """Causes periodic disturbance of user-defined frequency, amplitude, and direction"""
@@ -47,6 +54,10 @@ class wave(PluginFunction):
                  Choice('Waveform type',['Sinusoid','Square','Sawtooth','Triangle','Sinc']),\
                  Int('Waveform Offset')\
                 ])
+    def __call__(self, amplitude, period, direction, waveform_type=0, offset=0):
+        return _deformation.wave(self, amplitude, period, direction, waveform_type, offset)
+    __call__ = staticmethod(__call__)
+    doc_examples = [(RGB, 5, 10, 0, 0, 0), (RGB, 10, 5, 1, 2, 0)]
 
 class noise(PluginFunction):
     """Causes random shifting of pixels within a user specified range, in a user-specified direction"""
@@ -57,6 +68,7 @@ class noise(PluginFunction):
                  Choice('Direction',['Horizontal','Vertical']),\
                 ])
     args.list[0].rng = (0,500)
+    doc_examples = [(RGB, 10, 0)]
 
 class inkrub(PluginFunction):
     """Simulates rubbing off of ink from another page"""
@@ -65,6 +77,7 @@ class inkrub(PluginFunction):
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args(Int("Transcription Probability 1 in"))
     args.list[0].rng = (0,500)
+    doc_examples = [(GREYSCALE, 50)]
 
 class ink_diffuse(PluginFunction):
     """Simulates water-driven diffusion of ink in paper"""

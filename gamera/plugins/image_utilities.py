@@ -55,15 +55,15 @@ class image_save(PluginFunction):
         if format == 0 or format.upper() == "TIFF":
             try:
                 from gamera.plugins import tiff_support
-                image.save_tiff(name)
-            except:
-                print "Image could not be saved because TIFF Support is not functioning properly."
+            except ImportError:
+                raise ImportError("Could not load TIFF support.")
+            image.save_tiff(name)
         elif format == 1 or format.upper() == "PNG":
             try:
                 from gamera.plugins import png_support
-                image.save_PNG(name)
-            except:
-                print "Image could not be saved because PNG support is not functioning properly."
+            except ImportError:
+                raise ImportError("Could not load PNG support.")
+            image.save_PNG(name)
     __call__ = staticmethod(__call__)
 
 class resize(PluginFunction):
@@ -121,11 +121,11 @@ If the GUI is being used, the histogram is displayed.
     category = "Analysis"
     self_type = ImageType([GREYSCALE, GREY16])
     return_type = FloatVector()
+    doc_examples = [(GREYSCALE,)]
     def __call__(image):
         hist = _image_utilities.histogram(image)
-        gui = has_gui.gui
-        if gui:
-            gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
+        if has_gui.has_gui == has_gui.WX_GUI:
+            has_gui.gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
         return hist
     __call__ = staticmethod(__call__)
 
@@ -251,6 +251,7 @@ class shear_row(PluginFunction):
     category = "Shearing"
     self_type = ImageType(ALL)
     args = Args([Int('row'), Int('distance')])
+    doc_examples = [(ONEBIT, 50, 10)]
 
 class shear_column(PluginFunction):
     """Shears a given column by a given amount.
@@ -266,6 +267,7 @@ class shear_column(PluginFunction):
     category = "Shearing"
     self_type = ImageType(ALL)
     args = Args([Int('column'), Int('distance')])
+    doc_examples = [(ONEBIT, 50, 10)]
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]

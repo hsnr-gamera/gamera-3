@@ -114,6 +114,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
 						     NodeVector& node_stack,
 						     Bitfield bits,
 						     const PyObject* eval_func, Parts& parts) {
+  
   size_t node_number = NP_NUMBER(node);
   node_stack.push_back(node);
   bits |= (Bitfield)1 << node_number;
@@ -157,7 +158,7 @@ inline void graph_optimize_partitions_evaluate_parts(Node* node, const size_t ma
 	   node_stack, bits, eval_func, parts);
     }
   }
-
+  
   node_stack.pop_back();
   return;
 }
@@ -259,9 +260,6 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       
       // That gives us an idea of the number of nodes in the graph,
       // now go through and find the parts
-
-      // This over-commits memory to the maximum amount possible,
-      // but these objects are relatively small, so who cares?
 
       parts.reserve(size * max_parts_per_group);
       NodeVector node_stack;

@@ -22,6 +22,7 @@ import _logical
   
 class LogicalCombine(PluginFunction):
   self_type = ImageType([ONEBIT])
+  return_type = ImageType([ONEBIT])
   args = Args([ImageType([ONEBIT], "other"), Check("in_place", default=False)])
 
 class and_image(LogicalCombine):
@@ -39,6 +40,12 @@ See or_image_ for some usage examples.
   def __call__(self, other, in_place=False):
     return _logical.and_image(self, other, in_place)
   __call__ = staticmethod(__call__)
+
+  def __doc_example1__(images):
+    onebit = images[ONEBIT].subimage(0, 0, 68, 70)
+    greyscale = images[GREYSCALE].to_onebit().subimage(0, 0, 68, 70)
+    return [onebit, greyscale, onebit.and_image(greyscale, False)]
+  doc_examples = [__doc_example1__]
 
 class or_image(LogicalCombine):
   """Perform the OR operation on two images.
@@ -98,6 +105,12 @@ Removing a connected component from its original image.
     return _logical.or_image(self, other, in_place)
   __call__ = staticmethod(__call__)
 
+  def __doc_example1__(images):
+    onebit = images[ONEBIT].subimage(0, 0, 68, 70)
+    greyscale = images[GREYSCALE].to_onebit().subimage(0, 0, 68, 70)
+    return [onebit, greyscale, onebit.or_image(greyscale, False)]
+  doc_examples = [__doc_example1__]
+
 class xor_image(LogicalCombine):
   """Perform the XOR operation on two images.
 
@@ -113,6 +126,12 @@ See or_image_ for some usage examples.
   def __call__(self, other, in_place=False):
     return _logical.xor_image(self, other, in_place)
   __call__ = staticmethod(__call__)
+
+  def __doc_example1__(images):
+    onebit = images[ONEBIT].subimage(0, 0, 68, 70)
+    greyscale = images[GREYSCALE].to_onebit().subimage(0, 0, 68, 70)
+    return [onebit, greyscale, onebit.xor_image(greyscale, False)]
+  doc_examples = [__doc_example1__]
 
 class LogicalModule(PluginModule):
   """This module provides methods to perform basic logical (bitwise) operations on images."""

@@ -270,6 +270,7 @@ th.docinfo-name, th.field-name {
 
 td.field-body, th.field-name {
   padding: 0.5em;
+  border: solid thin #aaaaaa;
 }
 
 h1 tt, h2 tt, h3 tt, h4 tt, h5 tt, h6 tt {

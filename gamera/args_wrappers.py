@@ -128,21 +128,20 @@ class ImageType(WrapperArg):
 
    def call(self, function, args, output_args, limit_choices=None):
       if function.image_types_must_match and limit_choices is not None:
-         choices = limit_choices
+         choices = self._get_choices_for_pixel_type(limit_choices)
       else:
          choices = self._get_choices()
       result = "switch(get_image_combination(%(pysymbol)s)) {\n" % self
-      for choice in choices:
+      for choice, pixel_type in choices:
          result += "case %s:\n" % choice.upper()
          new_output_args = output_args + ["*((%s*)%s)" % (choice, self.symbol)]
          if len(args) == 0:
             result += self._do_call(function, new_output_args)
          else:
             if limit_choices is None:
-               result += args[0].call(function, args[1:], new_output_args, [choice])
+               result += args[0].call(function, args[1:], new_output_args, pixel_type)
             else:
                result += args[0].call(function, args[1:], new_output_args, limit_choices)
-
          result += "break;\n"
       result += "default:\n"
       result += ('PyErr_Format(PyExc_TypeError, "The \'%s\' argument of \'%s\' can not have pixel type \'%%s\'.", get_pixel_type_name(%s));\nreturn 0;\n' %
@@ -158,9 +157,10 @@ class ImageType(WrapperArg):
 
    def _get_choices_for_pixel_type(self, pixel_type):
       if pixel_type == ONEBIT:
-         return ["OneBitImageView", "OneBitRleImageView", "RleCc", "Cc"]
+         result = ["OneBitImageView", "OneBitRleImageView", "RleCc", "Cc"]
       else:
-         return [util.get_pixel_type_name(pixel_type) + "ImageView"]
+         result = [util.get_pixel_type_name(pixel_type) + "ImageView"]
+      return [(x, pixel_type) for x in result]
 
 class Rect(WrapperArg):
    c_type = 'Rect*'
@@ -299,8 +299,8 @@ class Pixel(WrapperArg):
    def call(self, function, args, output_args, limit_choices=None):
       if limit_choices is None:
          raise RuntimeError("You can not create a plugin that takes a Pixel argument that does not have a self type")
-      pixel_type = limit_choices[0]
-      new_output_args = output_args + ["pixel_from_python<%s::value_type>::convert(%s)" % (pixel_type, self.pysymbol)]
+      pixel_type = limit_choices
+      new_output_args = output_args + ["pixel_from_python<%sPixel>::convert(%s)" % (util.get_pixel_type_name(pixel_type), self.pysymbol)]
       if len(args) == 0:
          return self._do_call(function, new_output_args)
       else:

@@ -359,6 +359,7 @@ namespace Gamera {
     };
   }
 
+  /*
   template<class T, class U>
   double corelation(const T& a, const U& b, size_t yo, size_t xo) {
     size_t ul_y = std::max(a.ul_y(), yo);
@@ -375,6 +376,7 @@ namespace Gamera {
 	  result -= 0.5;
     return result;
   }
+  */
 
   template<class T, class U>
   typename ImageFactory<T>::view_type* mask(const T& a, U &b) {
@@ -397,7 +399,8 @@ namespace Gamera {
     typename U::vec_iterator it_b;
     typename T::vec_iterator it_dest;
 
-    for (it_a = a_view.vec_begin(), end = a_view.vec_end(), it_b = b.vec_begin(), it_dest = dest->vec_begin();
+    for (it_a = a_view.vec_begin(), end = a_view.vec_end(), 
+	   it_b = b.vec_begin(), it_dest = dest->vec_begin();
 	 it_a != end; ++it_a, ++it_b, ++it_dest) {
       if (is_black(b_accessor.get(it_b)))
 	a_accessor.set(a_accessor.get(it_a), it_dest);

@@ -758,6 +758,7 @@ inline PyObject* create_ImageObject(Image* image) {
   int pixel_type;
   int storage_type;
   bool cc = false;
+
   if (dynamic_cast<Cc*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::DENSE;

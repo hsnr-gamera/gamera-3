@@ -176,7 +176,7 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
       } else {
-	PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
 	return 0;
       }
     } else if (format == RLE) {
@@ -192,7 +192,7 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	return 0;
       }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
       return 0;
     }
   } catch (std::exception& e) {
@@ -250,7 +250,7 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 	((RectObject*)o)->m_x =
 	  new ImageView<ImageData<RGBPixel> >(*data, off_y, off_x, nrows, ncols);
       } else {
-	PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
 	return 0;
       }
     } else if (format == RLE) {
@@ -266,7 +266,7 @@ PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 	return 0;
       }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
       return 0;
     }
   } catch (std::exception& e) {
@@ -317,7 +317,7 @@ PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
 							   off_y, off_x, nrows,
 							   ncols);
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
       return 0;
     }
   } catch (std::exception& e) {

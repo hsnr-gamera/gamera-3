@@ -125,6 +125,7 @@ template = Template("""
       [[# this holds the self argument - note that the self passed into the function will #]]
       [[# be Null because this functions is not actually bound to an object #]]
 
+      PyErr_Clear();
       [[if function.self_type == None]]
         [[exec args = function.args.list]]
       [[else]]
@@ -222,8 +223,11 @@ template = Template("""
         [[else]]
           [[if isinstance(function.return_type, (ImageType, Class))]]
             if ([[function.return_type.symbol]] == NULL) {
-              Py_INCREF(Py_None);
-              return Py_None;
+              if (PyErr_Occurred() == NULL) {
+                Py_INCREF(Py_None);
+                return Py_None;
+               } else
+                return NULL;
             } else {  
               [[function.return_type.to_python()]]
               return return_pyarg;

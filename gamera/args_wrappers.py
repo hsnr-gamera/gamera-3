@@ -231,7 +231,7 @@ class ImageList(WrapperArg):
               PyErr_SetString(PyExc_TypeError, type_error_%(name)s);
               return 0;
             }
-            %(symbol)s[i] = ((Image*)((RectObject*)element)->m_x);
+            %(symbol)s[i] = (Image*)(((RectObject*)element)->m_x);
             image_get_fv(element, &%(symbol)s[i]->features,
                          &%(symbol)s[i]->features_len);
           }""" % self

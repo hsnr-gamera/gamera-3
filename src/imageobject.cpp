@@ -407,12 +407,12 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
     ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
   } else if (od->m_pixel_type == Python::RGB) {
     RGBPixelObject* value;
-    PyArg_ParseTuple(args, "iio", &row, &col, &value);
+    PyArg_ParseTuple(args, "iiO", &row, &col, &value);
     if (!is_RGBPixelObject((PyObject*)value)) {
       PyErr_SetString(PyExc_TypeError, "Value is not an RGBPixel!");
       return 0;
     }
-    //((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *value->m_x);
+    ((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *value->m_x);
   } else if (od->m_pixel_type == Python::GREYSCALE) {
     int value;
     PyArg_ParseTuple(args, "iii", &row, &col, &value);

@@ -68,7 +68,7 @@ static PyGetSetDef rgbpixel_getset[] = {
 static PyObject* rgbpixel_new(PyTypeObject* pytype, PyObject* args,
 			     PyObject* kwds) {
   int red, green, blue;
-  if (PyArg_ParseTuple(args, "iii", &red, &green, &blue <= 0))
+  if (PyArg_ParseTuple(args, "iii", &red, &green, &blue) <= 0)
     return 0;
   RGBPixelObject* so = (RGBPixelObject*)pytype->tp_alloc(pytype, 0);
   so->m_x = new RGBPixel(red, green, blue);
@@ -99,6 +99,56 @@ CREATE_SET_FUNC(red)
 CREATE_SET_FUNC(green)
 CREATE_SET_FUNC(blue)
 
+static PyObject* rgbpixel_richcompare(PyObject* a, PyObject* b, int op) {
+  if (!is_RGBPixelObject(a) || !is_RGBPixelObject(b)) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+
+  RGBPixel& ap = *((RGBPixelObject*)a)->m_x;
+  RGBPixel& bp = *((RGBPixelObject*)b)->m_x;
+
+  /*
+    Only equality and inequality make sense.
+  */
+  bool cmp;
+  switch (op) {
+  case Py_LT:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  case Py_LE:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  case Py_EQ:
+    cmp = ap == bp;
+    break;
+  case Py_NE:
+    cmp = ap != bp;
+    break;
+  case Py_GT:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  case Py_GE:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  default:
+    return 0; // cannot happen
+  }
+  if (cmp) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* rgbpixel_repr(PyObject* self) {
+  RGBPixel* x = ((RGBPixelObject*)self)->m_x;
+  return PyString_FromFormat("<gameracore.RGBPixel red: %i green: %i blue: %i>",
+			     x->red(), x->green(), x->blue());
+}
+
 void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.ob_type = &PyType_Type;
   RGBPixelType.tp_name = "gameracore.RGBPixel";
@@ -108,11 +158,10 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_new = rgbpixel_new;
   RGBPixelType.tp_getattro = PyObject_GenericGetAttr;
   RGBPixelType.tp_alloc = PyType_GenericAlloc;
-  //RGBPixelType.tp_richcompare = point_richcompare;
+  RGBPixelType.tp_richcompare = rgbpixel_richcompare;
   RGBPixelType.tp_getset = rgbpixel_getset;
   RGBPixelType.tp_free = _PyObject_Del;
-  //RGBPixelType.tp_methods = point_methods;
-  ///RGBPixelType.tp_repr = point_repr;
+  RGBPixelType.tp_repr = rgbpixel_repr;
   PyDict_SetItemString(module_dict, "RGBPixel", (PyObject*)&RGBPixelType);
 
 }

@@ -50,7 +50,7 @@ namespace Gamera {
     }
 
     template<class Iterator>
-    void set(const value_type& v, Iterator I) const {
+    void set(const value_type& v, Iterator i) const {
       i.set(v);
     }
     void set(const value_type& v, value_type* i) const {

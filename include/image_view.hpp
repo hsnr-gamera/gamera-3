@@ -213,7 +213,7 @@ namespace Gamera {
       return m_accessor(m_const_begin + (row * m_image_data->stride()) + col);
     }
     void set(size_t row, size_t col, value_type value) {
-      m_accessor.set(m_begin + (row * m_image_data->stride()) + col, value);
+      m_accessor.set(value, m_begin + (row * m_image_data->stride()) + col);
     }
 
     //

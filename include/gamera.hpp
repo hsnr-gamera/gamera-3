@@ -62,8 +62,8 @@ namespace Gamera {
   /*
     RegionMap
   */
-  typedef Region<double, size_t> FloatRegion;
-  typedef RegionMap<double, size_t> FloatRegionMap;
+  typedef RegionTemplate<double> Region;
+  typedef RegionMapTemplate<double> RegionMap;
 
   /*
     Colors

@@ -47,34 +47,30 @@
 
 namespace Gamera {
 
-  template<class V, class T = size_t>
-  class Region : public Rect {
+  template<class V>
+  class RegionTemplate : public Rect {
   public:
     typedef std::map<std::string, V> map_type;
-    Region(T origin_y = 0, T origin_x = 0, T nrows = 1, T ncols = 1) :
+    RegionTemplate(size_t origin_y = 0, size_t origin_x = 0,
+		   size_t nrows = 1, size_t ncols = 1) :
       Rect(origin_y, origin_x, nrows, ncols) { }
-    Region(const Point& ul, const Point& lr) :
+    RegionTemplate(const Point& ul, const Point& lr) :
       Rect(ul, lr) { }
-    Region(const Rect& r) :
+    RegionTemplate(const Rect& r) :
       Rect(r) { }
-    Region(const Point& ul, const Size& size)
+    RegionTemplate(const Point& ul, const Size& size)
       : Rect(ul, size) {}
-    Region(const Point& ul, const Dimensions& dim)
+    RegionTemplate(const Point& ul, const Dimensions& dim)
       : Rect(ul, dim) {}
-    V value(const std::string& key) {
+    V get(const std::string& key) {
       typename map_type::iterator i = m_value_map.find(key);
       if (i != m_value_map.end())
 	return i->second;
       else
 	throw std::invalid_argument("Key does not exist");
     }
-    void value(const std::string& key, V x) {
+    void add(const std::string& key, V x) {
       m_value_map[key] = x;
-    }
-    void dump() {
-      typename map_type::iterator i = m_value_map.begin();
-      for (; i != m_value_map.end(); ++i)
-	std::cout << i->first << " " << i->second << std::endl;
     }
   private:
     map_type m_value_map;
@@ -120,15 +116,15 @@ namespace Gamera {
     }
   }
 
-  template<class T, class Coord = size_t>
-  class RegionMap : public std::list<Region<T, Coord> > {
+  template<class T>
+  class RegionMapTemplate : public std::list<RegionTemplate<T> > {
   public:
-    typedef RegionMap self;
-    typedef Region<T, Coord> region_type;
+    typedef RegionMapTemplate self;
+    typedef RegionTemplate<T> region_type;
     typedef Rect rect_t;
-    RegionMap() : std::list<Region<T, Coord> >() { }
-    RegionMap(size_t n) : std::list<Region<T, Coord> >(n) { }
-    virtual ~RegionMap() { }
+    RegionMapTemplate() : std::list<RegionTemplate<T> >() { }
+    RegionMapTemplate(size_t n) : std::list<RegionTemplate<T> >(n) { }
+    virtual ~RegionMapTemplate() { }
     void add_region(const region_type& x) {
       push_back(x);
     }

@@ -128,7 +128,7 @@ namespace Gamera {
       return m_accessor(m_iterator);
     }
     void set(const value_type& v) {
-      m_accessor.set(m_iterator, v);
+      m_accessor.set(v, m_iterator);
     }
   public:
     Image* m_image;
@@ -226,7 +226,7 @@ namespace Gamera {
       return m_accessor(m_iterator);
     }
     void set(const value_type& v) {
-      m_accessor.set(m_iterator, v);
+      m_accessor.set(v, m_iterator);
     }
   public:
     T m_iterator;
@@ -372,7 +372,7 @@ namespace Gamera {
       return m_accessor(m_iterator);
     }
     void set(const value_type& v) {
-      m_accessor.set(m_iterator, v);
+      m_accessor.set(v, m_iterator);
     }
   public:
     Row m_rowiterator;

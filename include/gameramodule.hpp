@@ -94,6 +94,18 @@ bool is_RGBPixelObject(PyObject* x);
 extern PyObject* create_RGBPixelObject(const RGBPixel& p);
 
 /*
+  REGION OBJECT
+*/
+
+struct RegionObject {
+  RectObject m_parent; // we inheric from Rect
+};
+
+extern PyTypeObject* get_RegionType();
+bool is_RegionObject(PyObject* x);
+extern PyObject* create_RegionObject(const Region& r);
+
+/*
   IMAGE DATA OBJECT
 */
 struct ImageDataObject {

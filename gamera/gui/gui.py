@@ -27,7 +27,12 @@ from gamera.gui import gamera_display, image_menu, \
 # wxPython
 from wxPython.wx import *
 # Handle multiple versions of wxPython
-from wxPython.lib.PyCrust import shell
+from wxPython.__version__ import wxVERSION_STRING
+if wxVERSION_STRING.startswith('2.4.0'):
+   from wxPython.lib.PyCrust import shell
+else:
+   from wx import py
+   shell = py.shell
 from wxPython.stc import *
 from wxPython.lib.splashscreen import SplashScreen
 
@@ -124,7 +129,6 @@ class GameraGui:
 
 class PyCrustGameraShell(shell.Shell):
    def __init__(self, main_win, parent, id, message):
-
       # Win32 change
       # WIN32TODO: This needs to be tested
       # if wxPython was compiled with Unicode
@@ -141,13 +145,6 @@ class PyCrustGameraShell(shell.Shell):
       self.main_win = main_win
       self.SetMarginType(1, 0)
       self.SetMarginWidth(1, 0)
-      faces = shell.faces
-      style_face = config.options.shell.face
-      for face in ('times', 'mono', 'helv', 'other'):
-         faces[face] = style_face
-      faces['lnsize'] = int(config.options.shell.size) - 2
-      faces['size'] = int(config.options.shell.size)
-      self.setStyles(faces)
 
    def addHistory(self, command):
       if self.history_win:

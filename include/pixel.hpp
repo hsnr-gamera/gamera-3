@@ -304,7 +304,7 @@ namespace Gamera {
     static T black() {
       return 0;
     }
-    static T default() {
+    static T default_value() {
       return white();
     }
   };
@@ -444,13 +444,15 @@ namespace Gamera {
 		    std::numeric_limits<GreyScalePixel>::max());
   }
 
-  inline FloatPixel pixel_traits<FloatPixel>::default() {
+  inline FloatPixel pixel_traits<FloatPixel>::default_value() {
     return 0.0;
   }
 
-  inline ComplexPixel pixel_traits<ComplexPixel>::default() {
+  /* 
+  inline ComplexPixel pixel_traits<ComplexPixel>::default_value() {
     return ComplexPixel(0.0, 0.0);
   }
+  */
 
   /*
    * Inversion of pixel values

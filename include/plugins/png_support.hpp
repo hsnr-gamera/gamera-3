@@ -152,8 +152,8 @@ Image* load_PNG(const char* filename, int storage) {
   int bit_depth, color_type;
   PNG_info_specific(filename, fp, png_ptr, info_ptr, end_info, width, height, bit_depth, color_type);
 
-  if (color_type & PNG_COLOR_MASK_ALPHA)
-    png_set_strip_alpha(png_ptr);
+  // if (color_type & PNG_COLOR_MASK_ALPHA)
+  png_set_strip_alpha(png_ptr);
 
   if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_PALETTE ||
       color_type == PNG_COLOR_TYPE_RGB_ALPHA) {

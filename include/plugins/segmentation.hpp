@@ -93,7 +93,7 @@ namespace {
 namespace Gamera {
 
   template<class T>
-  ImageList* cc_analysis(T& image, ProgressBar progress_bar = ProgressBar()) {
+  ImageList* cc_analysis(T& image) {
     equiv_table eq;
     // get the max value that can be held in the matrix
     typename T::value_type max_value = 
@@ -106,7 +106,7 @@ namespace Gamera {
     typename T::Iterator row, col, lr, ul, above;
     lr = image.lowerRight();
     ul = image.upperLeft();
-    progress_bar.set_length(image.nrows() / 40);
+    // progress_bar.set_length(image.nrows() / 40);
     size_t i0 = 0;
     for (row = image.upperLeft(); row.y != lr.y; ++row.y, ++i0) {
       for (col = row; col.x != lr.x; ++col.x) {
@@ -171,8 +171,8 @@ namespace Gamera {
 	  }
 	}
       }
-      if ((i0 % 20) == 0)
-	progress_bar.step();
+      // if ((i0 % 20) == 0)
+	// progress_bar.step();
     }
   
     /*
@@ -257,8 +257,8 @@ namespace Gamera {
 	  }
 	}
       }
-      if ((i % 20) == 0)
-	progress_bar.step();
+      // if ((i % 20) == 0)
+      // progress_bar.step();
     }
 	
     // create ConnectedComponents

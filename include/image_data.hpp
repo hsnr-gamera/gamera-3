@@ -40,6 +40,8 @@ namespace Gamera {
   public:
     ImageDataBase(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0) {
+      if (nrows < 1 || ncols < 1)
+	throw std::range_error("nrows and ncols must be >= 1.");
       m_size = nrows * ncols;
       m_stride = ncols;
       m_page_offset_x = page_offset_x;
@@ -56,6 +58,8 @@ namespace Gamera {
     }
     ImageDataBase(const Dimensions& dim, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0) {
+      if (dim.nrows() < 1 || dim.ncols() < 1)
+	throw std::range_error("nrows and ncols must be >= 1.");
       m_size = dim.nrows() * dim.ncols();
       m_stride = dim.ncols();
       m_page_offset_x = page_offset_x;

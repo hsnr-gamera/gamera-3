@@ -426,17 +426,18 @@ class ClassifierFrame(ImageFrameBase):
          classifier_settings.append(("&Open...", self._OnClassifierSettingsOpen))
       if hasattr(self._classifier, "save_settings"):
          classifier_settings.append(("&Save...", self._OnClassifierSettingsSave))
-      classifier_menu_spec = 
-         [("Guess all", self._OnGuessAll),
-          ("&Guess selected", self._OnGuessSelected),
-          (None, None),
-          ("Group and guess all", self._OnGroupAndGuessAll),
-          ("Group &and guess selected", self._OnGroupAndGuessSelected),
-          (None, None),
-          ("Confirm all", self._OnConfirmAll),
-          ("&Confirm selected", self._OnConfirmSelected),
-          (None, None),
-          ("Change set of &features...", self._OnChangeSetOfFeatures)]
+      classifier_menu_spec = [("Guess all", self._OnGuessAll),
+                              ("&Guess selected", self._OnGuessSelected),
+                              (None, None),
+                              ("Group and guess all", self._OnGroupAndGuessAll),
+                              ("Group &and guess selected",
+                               self._OnGroupAndGuessSelected),
+                              (None, None),
+                              ("Confirm all", self._OnConfirmAll),
+                              ("&Confirm selected", self._OnConfirmSelected),
+                              (None, None),
+                              ("Change set of &features...",
+                               self._OnChangeSetOfFeatures)]
       if classifier_settings != []:
          classifier_menu_spec.extend([
             (None, None),

@@ -31,8 +31,8 @@ inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x
   x2 -= image.ul_x();
   y1 = std::min(y1, image.nrows());
   y2 = std::min(y2, image.nrows());
-  x1 = std::min(x1, image.nrows());
-  x2 = std::min(x2, image.nrows());
+  x1 = std::min(x1, image.ncols());
+  x2 = std::min(x2, image.ncols());
 }
 
 /* 

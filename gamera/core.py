@@ -629,7 +629,7 @@ def _init_gamera():
          plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
       plugin.PluginFactory(
          "save_image", "File", None,
-         plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
+         plugin.ImageType(ALL), plugin.Args([plugin.FileSave("filename")])),
       plugin.PluginFactory(
          "display", "Displaying", None, plugin.ImageType(ALL), None),
       plugin.PluginFactory(

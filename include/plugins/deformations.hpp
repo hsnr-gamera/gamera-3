@@ -31,7 +31,7 @@
 #include <algorithm>
 #include <iostream>
 
-bool randset=0;
+bool randset=false;
 
 /*
  * Rotate at an arbitrary angle.

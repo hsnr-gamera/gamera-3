@@ -20,7 +20,7 @@
 # Gamera specific
 import inspect
 from gamera.core import *
-from gamera import paths, config, magic_import
+from gamera import paths, config
 from gamera.gui import gamera_display, image_menu, icon_display, classifier_display, var_name
 
 # wxPython
@@ -281,7 +281,7 @@ class ShellFrame(wxFrame):
       EVT_MENU(self, classifyID, self.OnProcess)
       menubar.Append(menu, "&Classifier")
       self.toolkit_menu = wxMenu()
-      toolkits = magic_import.get_toolkit_names(paths.toolkits)
+      toolkits = paths.get_toolkit_names(paths.toolkits)
       self.import_toolkits = {}
       self.reload_toolkits = {}
       self.toolkit_menus = {}

@@ -67,7 +67,6 @@ class ImageBase:
                   start[subcategory] = {}
                start = start[subcategory]
             start[plug.__name__] = plug
-
    add_plugin_method = classmethod(add_plugin_method)
 
    _pixel_type_names = {ONEBIT:     "OneBit",
@@ -75,27 +74,23 @@ class ImageBase:
                         GREY16:     "Grey16",
                         RGB:        "RGB",
                         FLOAT:      "Float"}
-   def _get_pixel_type_name(self):
+   def pixel_type_name(self):
       return self._pixel_type_names[self.data.pixel_type]
-   pixel_type_name = property(_get_pixel_type_name)
+   pixel_type_name = property(pixel_type_name)
 
    _storage_format_names = {DENSE:  "Dense",
                             RLE:    "RLE"}
-   def _get_storage_format_name(self):
+   def storage_format_name(self):
       return self._storage_format_names[self.data.storage_format]
-   storage_format_name = property(_get_storage_format_name)
+   storage_format_name = property(storage_format_name)
    
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
                         'ul_x', 'ul_y', 'nrows', 'ncols')
-   def members(self):
+   def members_for_menu(self):
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
 
-   # Find all the methods of the instance
-   # This is not done by examining the instance, but instead by
-   # examining its methods members.  This is so things can be sorted by
-   # categories, and have gui argument resolution etc.
-   def methods(self):
+   def methods_for_menu(self):
       methods = {}
       for type in ("All", self.pixel_type_name):
          if self._methods.has_key(type):
@@ -130,20 +125,15 @@ class ImageBase:
          list.append(val)
      return list
 
-   def load_image(self, filename=None):
-      self = load_image(filename)
+   def load_image(filename=None):
+      return load_image(filename)
+   load_image = staticmethod(load_image)
 
    def set_display(self, _display):
       self._display = _display
 
    def set_resolution(self, v):
       self.m.resolution(v)
-
-   def parent(self):
-      pass
-
-   def image(self):
-      pass
 
    def size_mbytes(self):
       return self.m_data.mbytes()
@@ -202,27 +192,15 @@ class ImageBase:
       if hasattr(self, 'children_images') and self.children_images != []:
          display_multi(self.children_images)
 
-   def color(self):
-      if self.classification_state == CLASS_UNCLASSIFIED:
+   def classification_color(self):
+      if self.classification_state == UNCLASSIFIED:
          return None
-      elif self.classification_state == CLASS_AUTOMATIC:
+      elif self.classification_state == AUTOMATIC:
          return (198,145,145)
-      elif self.classification_state == CLASS_HEURISTIC:
+      elif self.classification_state == HEURISTIC:
          return (240,230,140)
-      elif self.classification_state == CLASS_MANUAL:
+      elif self.classification_state == MANUAL:
          return (180,238,180)
-
-   def unclassified(self):
-      return self.classification_state == CLASS_UNCLASSIFIED
-
-   def automatically_classified(self):
-      return self.classification_state == CLASS_AUTOMATIC
-
-   def manually_classified(self):
-      return self.classification_state == CLASS_MANUAL
-
-   def heuristically_classified(self):
-      return self.classification_state == CLASS_HEURISTIC
 
    def set_id_name_manual(self, id_name):
       if id_name[-1] == ".":
@@ -250,7 +228,6 @@ class ImageBase:
       else:
          self.id_name = list(id_name)
       self.classification_state = CLASS_HEURISTIC
-
       
 class Image(ImageBase, gameracore.Image):
 
@@ -355,16 +332,30 @@ _gamera_initialised = 0
 def init_gamera():
    global _gamera_initialised
    if not _gamera_initialised:
-      import magic_import
       import plugin
       # Create the default functions for the menu
-      for method in [
-         plugin.PluginFactory("load_image", None, "File", plugin.ImageType([], "image"), plugin.ImageType(["All"]), (plugin.FileOpen("filename"))),
-         plugin.PluginFactory("display", None, "Display", None, plugin.ImageType(["All"]), None),
-         plugin.PluginFactory("display_children", None, "Display", None, plugin.ImageType(["All"]), None),
-         plugin.PluginFactory("display_ccs", None, "Display", None, plugin.ImageType(["OneBit"]), None),
-         plugin.PluginFactory("display_cc", None, "Display", None, plugin.ImageType(["OneBit"]), plugin.ImageType(["OneBit"], "cc"))
-         ]:
+      for method in (
+         plugin.PluginFactory("load_image", None, "File",
+                              plugin.ImageType([], "image"),
+                              plugin.ImageType(["All"]),
+                              (plugin.FileOpen("filename"))),
+         plugin.PluginFactory("display", None, "Display",
+                              None,
+                              plugin.ImageType(["All"]),
+                              None),
+         plugin.PluginFactory("display_children", None, "Display",
+                              None,
+                              plugin.ImageType(["All"]),
+                              None),
+         plugin.PluginFactory("display_ccs", None, "Display",
+                              None,
+                              plugin.ImageType(["OneBit"]),
+                              None),
+         plugin.PluginFactory("display_cc", None, "Display",
+                              None,
+                              plugin.ImageType(["OneBit"]),
+                              plugin.ImageType(["OneBit"], "cc"))
+         ):
          method.register()
-      magic_import.import_directory(paths.plugins, globals(), locals(), 1)
-      gamera_initialised = 1
+      paths.import_directory(paths.plugins, globals(), locals(), 1)
+      _gamera_initialised = 1

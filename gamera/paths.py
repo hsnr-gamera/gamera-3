@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import os, sys  # Python standard library
+import os, sys, dircache, glob  # Python standard library
 
 if 1:
   def dummy():
@@ -25,20 +25,54 @@ if 1:
 
 lib = os.path.dirname(os.path.abspath(dummy.func_code.co_filename))
 # Figure out if we are in the source directory or installed
-if os.path.exists(lib + "/../plugins"):
-  plugins = os.path.abspath(lib + "/../plugins")
-  plugins_src = os.path.abspath(lib + "/../src/gamera/plugins")
-  toolkits = os.path.abspath(lib + "/../toolkits")
-  sys.path.extend([lib, plugins])
-  pixmaps = os.path.abspath(lib + "/../pixmaps") + "/"
-  doc = os.path.abspath(lib + "/../doc") + "/"
-  test = os.path.abspath(lib + "/../test")
-  test_results = os.path.abspath(lib + "/../test/results")
-else:
-  plugins = os.path.abspath(lib + "/plugins")
-  plugins_src = ""
-  toolkits = os.path.abspath(lib + "/toolkits")
-  sys.path.extend([lib, plugins])
-  doc = os.path.abspath(lib + "/doc") + "/"
-  test = os.path.abspath(lib + "/../test")
-  test_results = os.path.abspath(lib + "/../test/results")
+plugins = os.path.realpath(os.path.join(lib, "/plugins"))
+sys.path.append(plugins)
+plugins_src = ""
+toolkits = os.path.realpath(os.path.join(lib, "/toolkits"))
+doc = os.path.realpath(os.path.join(lib, "/doc"))
+test = os.path.realpath(os.path.join(lib, "/test"))
+test_results = os.path.realpath(os.path.join(lib, "/test/results"))
+
+
+def get_toolkit_names(dir):
+   toolkits = []
+   listing = dircache.listdir(dir)
+   dircache.annotate(dir, listing)
+   for toolkit in listing:
+      if toolkit.endswith(".py"):
+         toolkits.append(toolkit[:-3])
+      elif toolkit.endswith("module.so"):
+         toolkits.append(toolkit[:-9])
+      elif (toolkit.endswith("/") and
+            "__init__.py" in dircache.listdir(os.path.join(dir, toolkit))):
+         toolkits.append(toolkit[:-1])
+   return toolkits
+
+def import_directory(dir, gl, lo, debug = 1):
+   modules = glob.glob(os.path.join(dir, "*.py"))
+   modules = map(lambda x: os.path.basename(x)[0:-3], modules)
+   # TODO: Take out this hard coding
+   modules = ["morphology", "feature", "map", "logical", "display", "file", "utility", "line"]
+   # modules = ["morphology"]
+   if debug:
+      sys.stdout.write("Loading plugins: ----------------------------------------\n")
+   column = 0
+   first = 1
+   for m in modules:
+      module = __import__(m, gl, lo, [])
+      if not first:
+         display = ", "
+      else:
+         display = ""
+         first = 0
+      display += m
+      column = column + len(display)
+      if debug:
+         if column > 70:
+            sys.stdout.write("\n")
+            column = len(display)
+         sys.stdout.write(display)
+         sys.stdout.flush()
+   if debug:
+      sys.stdout.write("\n")
+

@@ -18,7 +18,7 @@
 
 from wxPython.wx import *   # wxPython
 import keyword              # Python standard library
-from gamera.core import *        # Gamera-specific
+from gamera.core import *   # Gamera-specific
 from gamera import util
 from gamera.gui import var_name
 from gamera.args import *
@@ -72,8 +72,8 @@ class ImageMenu:
     else:
       images = images_
       images_name = name_
-    self.variables = images[0].members()
-    self.methods = images[0].methods()
+    self.variables = images[0].members_for_menu()
+    self.methods = images[0].methods_for_menu()
 
   # Given a list of variables and methods, put it all together
   def create_menu(self, variables, methods, type):

@@ -147,15 +147,20 @@ struct FloodFill {
       s.pop();
       if (image.get(p) == interior) {
 	for (right = p.x();
-	     image.get(p.y(), right) == interior && right < image.ncols();
-	     ++right)
+	     right < image.ncols();
+	     ++right) {
+	  if (image.get(p.y(), right) != interior)
+	    break;
 	  image.set(p.y(), (size_t)right, color);
+	}
 	--right;
 
 	long int l = p.x() - 1;
-	for (;
-	     image.get(p.y(), l) == interior && l >= 0; --l)
+	for (; l >= 0; --l) {
+	  if (image.get(p.y(), l) != interior)
+	    break;
 	  image.set(p.y(), l, color);
+	}
 	left = (size_t)l + 1;
 
 	if (left != right) {

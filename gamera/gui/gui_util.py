@@ -111,6 +111,9 @@ class ProgressBox:
 
    def step(self):
       self._num += 1
+      # Note that trying to cut back on the number of calls
+      # here is futile.  The testing overhead is greater than
+      # the call.
       self.update(self._num, self._den)
 
    def update(self, num, den):
@@ -122,4 +125,4 @@ class ProgressBox:
             self.progress_box.Destroy()
 
    def kill(self):
-      self.update(1,1)
+      self.update(1, 1)

@@ -135,6 +135,7 @@ class ImageDisplay(wxScrolledWindow):
    def highlight_cc(self, ccs, color=-1):
       color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
+      refresh_at_once = len(ccs) > 10
       use_color = color
       old_highlights = self.highlights[:]
       self.highlights = []
@@ -149,17 +150,21 @@ class ImageDisplay(wxScrolledWindow):
                use_color = gui_util.get_color(self.color)
                self.color += 1
          self.highlights.append((cc, use_color))
-         if not found_it:
+         if not found_it and not refresh_at_once:
             self.PaintAreaRect(cc)
-      for cc in old_highlights:
-         if cc not in self.highlights:
-            self.PaintAreaRect(cc[0])
+      if not refresh_at_once:
+         for cc in old_highlights:
+            if cc not in self.highlights:
+               self.PaintAreaRect(cc[0])
+      if refresh_at_once:
+         self.RefreshAll()
    highlight_ccs = highlight_cc
 
    # Adds a list of ccs to be highlighted in the display
    def add_highlight_cc(self, ccs, color=-1):
       color = self._get_highlight_color(color)
       ccs = util.make_sequence(ccs)
+      refresh_at_once = len(ccs) > 10
       use_color = color
       for cc in ccs:
          if cc not in self.highlights:
@@ -167,27 +172,38 @@ class ImageDisplay(wxScrolledWindow):
                use_color = gui_util.get_color(self.color)
                self.color += 1
             self.highlights.append((cc, use_color))
-            self.PaintAreaRect(cc)
+            if not refresh_at_once:
+               self.PaintAreaRect(cc)
+      if refresh_at_once:
+         self.RefreshAll()
    add_highlight_ccs = add_highlight_cc
 
    # Clears a CC in the display.  Multiple CCs
    # may be unhighlighted in turn
    def unhighlight_cc(self, ccs):
       ccs = util.make_sequence(ccs)
+      refresh_at_once = len(ccs) > 10
       for cc in ccs:
          for i in range(0, len(self.highlights)):
             if (self.highlights[i][0] == cc):
                del self.highlights[i]
-               self.PaintAreaRect(cc)
+               if not refresh_at_once:
+                  self.PaintAreaRect(cc)
                break
+      if refresh_at_once:
+         self.RefreshAll()
    unhighlight_ccs = unhighlight_cc
       
    # Clears all of the highlighted CCs in the display   
    def clear_all_highlights(self):
       old_highlights = self.highlights[:]
+      refresh_at_once = len(old_highlights) > 10
       self.highlights = []
-      for highlight in old_highlights:
-         self.PaintAreaRect(highlight[0])
+      if not refresh_at_once:
+         for highlight in old_highlights:
+            self.PaintAreaRect(highlight[0])
+      else:
+         self.RefreshAll()
 
    # Adjust the scrollbars so a group of highlighted subimages are visible
    def focus(self, glyphs):
@@ -950,6 +966,7 @@ class MultiImageDisplay(wxGrid):
          self.SetSize(wxSize(-1, height))
       finally:
          self.EndBatch()
+         self.GetGridWindow().Layout()
          self.GetGridWindow().GetParent().Layout()
          wxEndBusyCursor()
 
@@ -1080,7 +1097,7 @@ class MultiImageDisplay(wxGrid):
                    i / GRID_NCOLS, i % GRID_NCOLS, true)
          self.updating = 0
          self.OnSelectImpl()
-      except:
+      finally:
          self.EndBatch()
          wxEndBusyCursor()
 

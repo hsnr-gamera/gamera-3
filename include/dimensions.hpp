@@ -20,6 +20,8 @@
 #ifndef kwm11162001_dimensions_hpp
 #define kwm11162001_dimensions_hpp
 
+#include <vector>
+
 namespace Gamera {
 
   typedef size_t coord_t;
@@ -300,6 +302,8 @@ namespace Gamera {
     bool intersects(const self& v) const {
       return (intersects_x(v) && intersects_y(v));
     }
+
+    // Equality
     bool operator==(const Rect& other) const {
       if (m_origin == other.m_origin && m_lr == other.m_lr)
 	return true;
@@ -312,12 +316,34 @@ namespace Gamera {
       else
 	return false;
     }
+
+#undef	MAX
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+
+#undef	MIN
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+
+    // union
+    static Rect* union_rects(std::vector<Rect*> &rects) {
+      size_t min_x, min_y, max_x, max_y;
+      min_x = min_y = std::numeric_limits<size_t>::max();
+      max_x = max_y = 0;
+
+      for (std::vector<Rect*>::iterator i = rects.begin();
+	   i != rects.end(); ++i) {
+	Rect* rect = (*i);
+	min_x = MIN(min_x, rect->ul_x());
+	min_y = MIN(min_y, rect->ul_y());
+	max_x = MAX(max_x, rect->lr_x());
+	max_y = MAX(max_y, rect->lr_y());
+      }
+      return new Rect(Point(min_x, min_y), Point(max_x, max_y));
+    }
   protected:
     virtual void dimensions_change() { }
   private:
     Point m_origin, m_lr;
   };
-
 };
 
 #endif

@@ -18,6 +18,7 @@
 #
 
 from __future__ import generators
+from gamera import util
 import sys, re
 
 # GROUPING IN GENERAL:
@@ -40,21 +41,14 @@ class GridIndex:
         it does not actually store them...  That must be done by calling
         GridIndex.add_glyph.  max_width and max_height are the maximum size
         (in pixels) of each cell."""
-        min_x = min_y = sys.maxint
-        max_x = max_y = 0
-        for glyph in glyphs:
-            max_x = max(max_x, glyph.lr_x)
-            max_y = max(max_y, glyph.lr_y)
-            min_x = min(min_x, glyph.ul_x)
-            min_y = min(min_y, glyph.ul_y)
-        cell_width = self.cell_width = int(max_width)
-        cell_height = self.cell_height = int(max_height)
-        grid_ncols = self.grid_ncols = max_x - min_x
-        grid_nrows = self.grid_nrows = max_y - min_y
-        cell_ncols = self.cell_ncols = int(grid_ncols / max_width) + 1
-        cell_nrows = self.cell_nrows = int(grid_nrows / max_height) + 1
-        grid_offset_x = self.grid_offset_x = min_x
-        grid_offset_y = self.grid_offset_y = min_y
+        glyphs = util.make_sequence(glyphs)
+        if len(glyphs) == 0:
+            raise ValueError("GridIndex must be initialised with at least one glyph")
+        self.grid_rect = glyphs[0].union(glyphs)
+        self.cell_width = int(max_width)
+        self.cell_height = int(max_height)
+        self.cell_ncols = int(self.grid_rect.width / self.cell_width) + 1
+        self.cell_nrows = int(self.grid_rect.height / self.cell_height) + 1
         self._create_cells()
 
     def _create_cells(self):
@@ -63,10 +57,10 @@ class GridIndex:
             self.grid.append([])
 
     def add_glyph(self, glyph):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
-        if row < 0 or row >= self.cell_nrows or col < 0 or col >= self.cell_ncols:
+        if not self.grid_rect.contains_point(glyph.center):
             raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         self.grid[row * self.cell_ncols + col].append(glyph)
 
     def get_cell(self, row, col):
@@ -77,13 +71,17 @@ class GridIndex:
         return self.grid[row * self.cell_ncols + col]
 
     def get_cell_at_glyph(self, glyph):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
+        if not self.grid_rect.contains_point(glyph.center):
+            raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         return self.get_cell(row, col)
 
     def get_glyphs_around_glyph(self, glyph):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
+        if not self.grid_rect.contains_point(glyph.center):
+            raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         for r, c in self.search_order:
             ri = r + row
             ci = c + col
@@ -95,10 +93,10 @@ class GridIndex:
                     (-1,0), (0,-1), (1,0), (0,1),   # +
                     (-1,-1), (-1,1), (1,-1), (1,1)) # x
 
-class GridIndexAndDict(GridIndex):
+class GridIndexWithKeys(GridIndex):
     """Extends the basic GridIndex class to allow glyphs to also be stored and
     retreived by an arbitrary key."""
-    
+
     def _create_cells(self):
         self.flat = {}
         self.grid = []
@@ -106,10 +104,10 @@ class GridIndexAndDict(GridIndex):
             self.grid.append({})
 
     def add_glyph_by_key(self, glyph, key):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
-        if row < 0 or row >= self.cell_nrows or col < 0 or col >= self.cell_ncols:
+        if not self.grid_rect.contains_point(glyph.center):
             raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         cell_index = row * self.cell_ncols + col
         if not self.grid[cell_index].has_key(key):
             self.grid[cell_index][key] = []
@@ -125,26 +123,32 @@ class GridIndexAndDict(GridIndex):
             return []
         return self.grid[row * self.cell_ncols + col].get(key, [])
 
-    def get_cell_at_glyph_by_key(self, row, col, key):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
+    def get_cell_at_glyph_by_key(self, glyph, key):
+        if not self.grid_rect.contains_point(glyph.center):
+            raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         return self.grid[row * self.cell_ncols + col].get(key, [])
 
     def get_glyphs_around_glyph(self, glyph):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
+        if not self.grid_rect.contains_point(glyph.center):
+            raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         for r, c in self.search_order:
             ri = r + row
             ci = c + col
             if ri < 0 or ri >= self.cell_nrows or ci < 0 or ci >= self.cell_ncols:
                 continue
-            for mapping in self.grid[ri * self.cell_ncols + ci]:
-                for glyph in mapping.itervalues():
+            for mapping in self.grid[ri * self.cell_ncols + ci].itervalues():
+                for glyph in mapping:
                     yield glyph
 
     def get_glyphs_around_glyph_by_key(self, glyph, key):
-        row = int((glyph.center_y - self.grid_offset_y) / self.cell_height)
-        col = int((glyph.center_x - self.grid_offset_x) / self.cell_width)
+        if not self.grid_rect.contains_point(glyph.center):
+            raise ValueError("glyph is not within the bounding box of the initial set of images")
+        row = int((glyph.center_y - self.grid_rect.ul_y) / self.cell_height)
+        col = int((glyph.center_x - self.grid_rect.ul_x) / self.cell_width)
         for r, c in self.search_order:
             ri = r + row
             ci = c + col

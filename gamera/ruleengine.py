@@ -56,11 +56,12 @@ Rule functions take the basic form:
    language for symbol names defined in id_name_matching.py.  This syntax is pretty limited compared to
    standard Python regular expression syntax, but is much more convenient for the task. (For example,
    'upper.*' would be 'upper\.[^.]*' as a standard Python regular expression, and nobody wants to
-   write like that ;)
+   write code like that ;)
    
      Informal syntax definition:
        A|B                   # matches A or B
        A.B|C                 # matches A.B or A.C
+       (A.B)|C               # matches A.B or C
        *                     # multiple-character wildcard
        ?                     # single character wildcard
        ()                    # grouping can be performed with parentheses
@@ -142,22 +143,25 @@ class RuleEngine:
     for a in result[1]:
       removed[a] = None
 
-  def perform_rules(self, glyphs, grid_size=100, recurse=0, _recursion_level=0):
+  def perform_rules(self, glyphs, grid_size=100, recurse=0, progress=None, _recursion_level=0):
     if _recursion_level > 10:
       return [], []
+    elif _recursion_level == 0:
+      progress = util.ProgressFactory("Performing rules...")
 
-    length = 0
-    grid_index = group.GridIndexAndDict(glyphs, grid_size, grid_size)
-    found_regexs = {}
-    for regex_string, compiled in self.regexs.items():
-      for glyph in glyphs:
-        if glyph.match_id_name(compiled):
-          grid_index.add_glyph_by_key(glyph, regex_string)
-          found_regexs[regex_string] = None
-
-    progress = util.ProgressFactory("Performing rules...", 10)
-    i = 0
     try:
+      grid_index = group.GridIndexWithKeys(glyphs, grid_size, grid_size)
+      found_regexs = {}
+      for regex_string, compiled in self.regexs.items():
+        for glyph in glyphs:
+          if glyph.match_id_name(compiled):
+            grid_index.add_glyph_by_key(glyph, regex_string)
+            found_regexs[regex_string] = None
+
+      # This loop is only so the progress bar can do something useful.
+      for regex in found_regexs.iterkeys():
+        progress.add_length(len(self.rules_by_regex[regex]) * len(grid_index.get_glyphs_by_key(regex)))
+        
       added = {}
       removed = {}
       for regex in found_regexs.iterkeys():
@@ -173,12 +177,12 @@ class RuleEngine:
               seed = [list(grid_index.get_glyphs_around_glyph_by_key(glyph, x)) for x in glyph_specs[1:]]
               for combination in util.combinations(seed):
                 self._deal_with_result(rule(glyph, *combination), added, removed)
-            progress.update(i % 100, 100)
-            i += 1
+            progress.step()
     finally:
-      progress.kill()
+      if _recursion_level == 0:
+        progress.kill()
           
     if recurse and len(added):
-      self._deal_with_result(self.perform_rules(added.keys(), 1, _recursion_level + 1))
+      self._deal_with_result(self.perform_rules(added.keys(), 1, progress, _recursion_level + 1))
 
     return added.keys(), removed.keys()

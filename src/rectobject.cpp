@@ -81,7 +81,7 @@ extern "C" {
   static PyObject* rect_intersects_x(PyObject* self, PyObject* args);
   static PyObject* rect_intersects_y(PyObject* self, PyObject* args);
   static PyObject* rect_intersects(PyObject* self, PyObject* args);
-
+  static PyObject* rect_union(PyObject* _, PyObject* rects);
   static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op);
   static PyObject* rect_repr(PyObject* self);
 }
@@ -128,6 +128,11 @@ static PyMethodDef rect_methods[] = {
   {"intersects_y", rect_intersects_y, METH_VARARGS},
   {"intersects", rect_intersects, METH_VARARGS},
   {"move", rect_move, METH_VARARGS},
+  // TODO: If and when we move to Python 2.3, we should add the METH_STATIC flag
+  // to rect_union, since this really should be a static method.  At this point, 
+  // the calling convention will just have to look a bit funny from Python.
+  // (i.e. rect_instance.union vs Rect.union)
+  {"union", rect_union, METH_O},
   {NULL, NULL}
 };
 
@@ -461,6 +466,27 @@ static PyObject* rect_intersects(PyObject* self, PyObject* args) {
     Py_INCREF(Py_False);
     return Py_False;
   }
+}
+
+static PyObject* rect_union(PyObject* _ /* staticmethod */, PyObject* list) {
+  if (!PyList_Check(list)) {
+    PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
+    return 0;
+  }
+
+  std::vector<Rect*> vec(PyList_GET_SIZE(list));
+  for (int i=0; i < PyList_GET_SIZE(list); ++i) {
+    PyObject* py_rect = PyList_GET_ITEM(list, i);
+    if (!is_RectObject(py_rect)) {
+      PyErr_SetString(PyExc_TypeError, "Argument must be a list of Rects");
+      return 0;
+    }
+    vec[i] = ((RectObject *)py_rect)->m_x;
+  }
+  PyTypeObject* pytype = get_RectType();
+  RectObject* so = (RectObject*)pytype->tp_alloc(pytype, 0);
+  so->m_x = Rect::union_rects(vec);
+  return (PyObject*)so;
 }
 
 static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {

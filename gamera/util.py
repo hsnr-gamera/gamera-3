@@ -182,22 +182,25 @@ def permute_list(alist, level=0):
       break
 
 def combinations(seed):
-  length = len(seed)
-  count = [0] * len(seed)
   lengths = [len(x) for x in seed]
   if 0 in lengths:
     return
+  length = len(seed)
+  count = [0] * len(seed)
+  copy = [x[0] for x in seed]
   while 1:
-    yield [x[y] for x, y in zip(seed, count)]
+    yield copy
     i = 0
     while 1:
       count[i] += 1
       if count[i] == lengths[i]:
         count[i] = 0
+        copy[i] = seed[i][0]
         i += 1
         if i == length:
           return
       else:
+        copy[i] = seed[i][count[i]]
         break
   
 def word_wrap(stream, l, indent=0, width=78):

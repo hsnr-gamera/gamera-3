@@ -23,6 +23,12 @@ from wxPython.lib.stattext import wxGenStaticText as wxStaticText
 from math import ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, time
+if sys.platform == 'win32':
+   real_white = wxWHITE
+   real_black = wxBLACK
+else:
+   real_white = wxBLACK
+   real_wxblack = wxWHITE
 from gamera.core import *             # Gamera specific
 from gamera.gameracore import RGBPixel
 from gamera import paths, util
@@ -370,7 +376,7 @@ class ImageDisplay(wxScrolledWindow):
       dc.DrawBitmap(bmp, x, y, 0)
 
       if len(self.highlights):
-         dc.SetTextBackground(wxBLACK)
+         dc.SetTextBackground(real_white)
          dc.SetBackgroundMode(wxTRANSPARENT)
          for highlight, color in self.highlights:
             if subimage.intersects(highlight):
@@ -387,7 +393,7 @@ class ImageDisplay(wxScrolledWindow):
                   image = wxEmptyImage(w, h)
                scaled_highlight.to_buffer(image.GetDataBuffer())
                bmp = wxBitmapFromImage(image, 1)
-               dc.SetTextForeground(wxWHITE)
+               dc.SetTextForeground(real_black)
                dc.SetLogicalFunction(wxAND_INVERT)
                x_cc = x + (subhighlight.ul_x - subimage.ul_x) * scaling
                y_cc = y + (subhighlight.ul_y - subimage.ul_y) * scaling

@@ -21,12 +21,12 @@
 #ifndef kwm10222002_tiff_support
 #define kwm10222002_tiff_support
 
-#include <tiffio.h>
 #include <string>
 #include <exception>
 #include <stdexcept>
 #include <bitset>
 #include "gamera.hpp"
+#include <tiffio.h>
 
 namespace Gamera {
 
@@ -293,6 +293,7 @@ namespace {
 }
 
 Image* load_tiff(const char* filename, int storage) {
+  printf("%s", filename);
   ImageInfo* info = tiff_info(filename);
   if (info->ncolors() == 3) {
     TypeIdImageFactory<RGB, DENSE> fact;
@@ -332,13 +333,11 @@ Image* load_tiff(const char* filename, int storage) {
       tiff_load_greyscale(*image, *info, filename);
       return image;
     } else {
-      PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to load image of this type!");
+      throw std::runtime_error("Unable to load image of this type!");
       return 0;
     }
   } else {
-    PyErr_SetString(PyExc_RuntimeError,
-		    "Unable to load image of this type!");
+    throw std::runtime_error("Unable to load image of this type!");
     return 0;
   }
   

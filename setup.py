@@ -15,7 +15,7 @@ import generate
 # generate the plugins
 plugins = glob.glob("gamera/plugins/*.py")
 try:
-    plugins.remove("gamera/plugins/__init__.py")
+    plugins.remove("gamera/plugins\__init__.py")
 except:
     pass
 

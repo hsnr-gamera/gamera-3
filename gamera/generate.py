@@ -69,9 +69,9 @@ template = Template("""
   [[# Standard headers used in the plugins #]]
   #include <string>
   #include <stdexcept>
+  #include \"Python.h\"
   #include <list>
   #include \"gameramodule.hpp\"
-  #include \"Python.h\"
 
   [[# include the headers that the module needs #]]
   [[for header in module.cpp_headers]]
@@ -487,7 +487,7 @@ def generate_plugin(plugin_filename):
   # make the a distutils extension class for this plugin
   cpp_files = [cpp_filename]
   for file in plugin_module.module.cpp_sources:
-    cpp_files.append(plug_path + file)
+    cpp_files.append(file)
   extra_libraries = ["stdc++"] + plugin_module.module.extra_libraries
   return Extension("gamera.plugins._" + module_name, cpp_files,
                    include_dirs=include_dirs,

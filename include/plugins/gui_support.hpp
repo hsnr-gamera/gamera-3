@@ -172,7 +172,7 @@ Image *color_ccs(T& m) {
     fact.create(0, 0, m.nrows(), m.ncols());
 
   typename T::vec_iterator src = m.vec_begin();
-  typename RGBViewFactory::image_type::vec_iterator dst = image->vec_begin();
+  typename RGBImageView::vec_iterator dst = image->vec_begin();
 
   for (; src != m.vec_end(); ++src, ++dst) {
     size_t color;

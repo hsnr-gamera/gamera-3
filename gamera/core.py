@@ -56,7 +56,7 @@ def display_multi(list):
       # If it's not a list, we'll get errors, so make it one
       if not util.is_sequence(list):
          list = [list]
-      gui.ShowImages(list, ImageBase.to_string, ImageBase.scaled_to_string)
+      gui.ShowImages(list, ImageBase.to_buffer, ImageBase.scaled_to_string)
    
 class ImageBase:
    # Stores the categorized set of methods.  Bears no relationship
@@ -119,7 +119,7 @@ class ImageBase:
    
    _members_for_menu = ('pixel_type_name',
                         'storage_format_name',
-                        'ul_x', 'ul_y', 'nrows', 'ncols',
+                        'ul_x', 'ul_y', 'resolution', 'nrows', 'ncols',
                         'memory_size')
    def members_for_menu(self):
       """Returns a list of members (and their values) for convenient feedback for the user."""

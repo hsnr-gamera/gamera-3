@@ -649,20 +649,18 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             height = min(rect.GetHeight() + 1, image.nrows)
             width = min(rect.GetWidth() + 1, image.ncols)
             # If we are dealing with a CC, we have to make a smaller CC withthe
-            # same label. This is unfortunately a two step process.
+            # same label.
             if isinstance(image, Cc):
-               tmp_image = SubImage(image, image.offset_y, image.offset_x, height, width)
-               sub_image = Cc(tmp_image, image.label())
+               sub_image = Cc(image, image.label, image.offset_y, image.offset_x, height, width)
             # Otherwise just a SubImage will do.
             else:
                sub_image = SubImage(image, image.offset_y, image.offset_x, height, width)
-            image = wxEmptyImage(width - 1, height - 1)
-            s = sub_image.to_string()
-            image.SetData(s)
+            image = wxEmptyImage(width, height)
+            s = sub_image.to_buffer(image.GetDataBuffer())
          else:
-            s = image.to_string()
+            orig_image = image
             image = wxEmptyImage(image.ncols, image.nrows)
-            image.SetData(s)
+            orig_image.to_buffer(image.GetDataBuffer())
          bmp = image.ConvertToBitmap()
          # Display centered within the cell
          x = rect.x + (rect.width / 2) - (bmp.GetWidth() / 2)
@@ -987,7 +985,7 @@ class MultiImageWindow(wxPanel):
          methods = prototype.methods_flat_category("Features")
       except:
          pass
-      self.sort_choices = ["", "ncols", "nrows", "label()", "id",
+      self.sort_choices = ["", "ncols", "nrows", "label", "id",
                            "classification_state", "page_offset_x()",
                            "page_offset_y()"]
       for method in methods:

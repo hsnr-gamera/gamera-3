@@ -306,12 +306,14 @@ Image* load_tiff(const char* filename, int storage) {
 	typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
 	fact_type::image_type*
 	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
+	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	return image;
       } else {
 	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
 	fact_type::image_type*
 	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
+	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	return image;
       }
@@ -319,12 +321,14 @@ Image* load_tiff(const char* filename, int storage) {
       typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
       fact_type::image_type*
 	image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      image->resolution(info->x_resolution());
       tiff_load_greyscale(*image, *info, filename);
       return image;
     } else if (info->depth() == 16) {
       typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
       fact_type::image_type*
 	image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      image->resolution(info->x_resolution());
       tiff_load_greyscale(*image, *info, filename);
       return image;
     } else {

@@ -43,6 +43,7 @@ namespace Gamera {
       m_stride = ncols;
       m_page_offset_x = page_offset_x;
       m_page_offset_y = page_offset_y;
+      m_user_data = 0;
     }
     ImageDataBase(const Size& size, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0) {
@@ -50,6 +51,7 @@ namespace Gamera {
       m_stride = size.width() + 1;
       m_page_offset_x = page_offset_x;
       m_page_offset_y = page_offset_y;
+      m_user_data = 0;
     }
     ImageDataBase(const Dimensions& dim, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0) {
@@ -57,6 +59,7 @@ namespace Gamera {
       m_stride = dim.ncols();
       m_page_offset_x = page_offset_x;
       m_page_offset_y = page_offset_y;
+      m_user_data = 0;
     }
     virtual ~ImageDataBase() { }
 
@@ -85,6 +88,8 @@ namespace Gamera {
       do_resize((m_size / m_stride) * m_stride);
     }
     virtual void dimensions(size_t rows, size_t cols) = 0;
+  public:
+    void* m_user_data;
   protected:
     virtual void do_resize(size_t size) = 0;
     size_t m_size;
@@ -132,7 +137,7 @@ namespace Gamera {
       Destructor
     */
     virtual ~ImageData() {
-      printf("free m_data");
+      std::cerr << "freeing data" << std::endl;
       if (m_data != 0) {
 	delete[] m_data;
       }

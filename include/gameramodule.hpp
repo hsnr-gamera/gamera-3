@@ -282,10 +282,17 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
     PyErr_SetString(PyExc_TypeError, "Unknown type returned from plugin.");
     return 0;
   }
-  ImageDataObject* d = (ImageDataObject*)image_data->tp_alloc(image_data, 0);
-  d->m_pixel_type = pixel_type;
-  d->m_storage_format = storage_type;
-  d->m_x = image->data();
+  ImageDataObject* d;
+  if (image->data()->m_user_data == 0) {
+    d = (ImageDataObject*)image_data->tp_alloc(image_data, 0);
+    d->m_pixel_type = pixel_type;
+    d->m_storage_format = storage_type;
+    d->m_x = image->data();
+    image->data()->m_user_data = (void*)d;
+  } else {
+    d = (ImageDataObject*)image->data()->m_user_data;
+    Py_INCREF(d);
+  }
   ImageObject* i;
   if (cc) {
     i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);

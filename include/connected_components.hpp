@@ -188,6 +188,10 @@ namespace Gamera {
       return m_label;
     }
 
+    void label(value_type label) {
+      m_label = label;
+    }
+
     //
     // Iterators
     //

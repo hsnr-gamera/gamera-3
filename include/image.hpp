@@ -30,20 +30,28 @@ namespace Gamera {
   public:
     Image(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1,
 	      size_t ncols = 1)
-      : Rect(origin_y, origin_x, nrows, ncols) { }
+      : Rect(origin_y, origin_x, nrows, ncols) {
+      m_resolution = 0;
+    }
     Image(const Point& upper_left, const Point& lower_right)
-      : Rect(upper_left, lower_right) { }
+      : Rect(upper_left, lower_right) {
+      m_resolution = 0;
+    }
     Image(const Point& upper_left, const Size& size)
-      : Rect(upper_left, size) { }
+      : Rect(upper_left, size) {
+      m_resolution = 0;
+    }
     Image(const Point& upper_left, const Dimensions& dim)
-      : Rect(upper_left, dim) { }
+      : Rect(upper_left, dim) {
+      m_resolution = 0;
+    }
     Image(const Rect& rect) : Rect(rect) { }
     virtual ~Image() { }
-    float resolution() const { return m_resolution; }
-    void resolution(float r) { m_resolution = r; }
+    double resolution() const { return m_resolution; }
+    void resolution(double r) { m_resolution = r; }
     virtual ImageDataBase* data() const = 0;
   protected:
-    float m_resolution;
+    double m_resolution;
   };
 
   /*

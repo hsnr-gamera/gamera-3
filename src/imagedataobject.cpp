@@ -129,6 +129,7 @@ PyObject* create_ImageDataObject(int nrows, int ncols,
     PyErr_SetString(PyExc_TypeError, "Unkown Format!");
     return 0;
   }
+  o->m_x->m_user_data = (void*)o;
   return (PyObject*)o;
 }
 

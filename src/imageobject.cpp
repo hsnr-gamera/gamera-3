@@ -30,8 +30,6 @@ extern "C" {
   static PyObject* cc_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
   static void image_dealloc(PyObject* self);
-  static void subimage_dealloc(PyObject* self);
-  static void cc_dealloc(PyObject* self);
   // methods
   static PyObject* image_get(PyObject* self, PyObject* args);
   static PyObject* image_set(PyObject* self, PyObject* args);
@@ -42,8 +40,12 @@ extern "C" {
   static PyObject* image_get_children_images(PyObject* self);
   static PyObject* image_get_classification_state(PyObject* self);
   static PyObject* image_get_scaling(PyObject* self);
+  static PyObject* image_get_resolution(PyObject* self);
   static int image_set_classification_state(PyObject* self, PyObject* v);
   static int image_set_scaling(PyObject* self, PyObject* v);
+  static int image_set_resolution(PyObject* self, PyObject* v);
+  static PyObject* cc_get_label(PyObject* self);
+  static int cc_set_label(PyObject* self, PyObject* v);
 }
 
 static PyTypeObject ImageType = {
@@ -108,6 +110,13 @@ static PyGetSetDef image_getset[] = {
     "How (or whether) an image is classified", 0 },
   { "scaling", (getter)image_get_scaling, (setter)image_set_scaling,
     "The scaling applied to the features", 0 },
+  { "resolution", (getter)image_get_resolution, (setter)image_set_resolution,
+    "The resolution of the image", 0 },
+  { NULL }
+};
+
+static PyGetSetDef cc_getset[] = {
+  { "label", (getter)cc_get_label, (setter)cc_set_label, "The label for the Cc", 0},
   { NULL }
 };
 
@@ -327,20 +336,6 @@ static void image_dealloc(PyObject* self) {
   self->ob_type->tp_free(self);
 }
 
-static void subimage_dealloc(PyObject* self) {
-  ImageObject* o = (ImageObject*)self;
-  Py_DECREF(o->m_data);
-  delete ((RectObject*)self)->m_x;
-  self->ob_type->tp_free(self);
-}
-
-static void cc_dealloc(PyObject* self) {
-  ImageObject* o = (ImageObject*)self;
-  Py_DECREF(o->m_data);
-  delete ((RectObject*)self)->m_x;
-  self->ob_type->tp_free(self);
-}
-
 static PyObject* image_get(PyObject* self, PyObject* args) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
@@ -428,6 +423,36 @@ CREATE_GET_FUNC(scaling)
 CREATE_SET_FUNC(classification_state)
 CREATE_SET_FUNC(scaling)
 
+static PyObject* image_get_resolution(PyObject* self) {
+  RectObject* o = (RectObject*)self;
+  return Py_BuildValue("f", ((Image*)o->m_x)->resolution());
+}
+
+static int image_set_resolution(PyObject* self, PyObject* v) {
+  RectObject* o = (RectObject*)self;
+  if (!PyFloat_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    return -1;
+  }
+  ((Image*)o->m_x)->resolution(PyFloat_AS_DOUBLE(v));
+  return 0;
+}
+
+static PyObject* cc_get_label(PyObject* self) {
+  RectObject* o = (RectObject*)self;
+  return Py_BuildValue("i", ((Cc*)o->m_x)->label());
+}
+
+static int cc_set_label(PyObject* self, PyObject* v) {
+  RectObject* o = (RectObject*)self;
+  if (!PyInt_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    return -1;
+  }
+  ((Cc*)o->m_x)->label(PyInt_AS_LONG(v));
+  return 0;
+}
+
 
 void init_ImageType(PyObject* module_dict) {
   ImageType.ob_type = &PyType_Type;
@@ -448,7 +473,7 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.ob_type = &PyType_Type;
   SubImageType.tp_name = "gameracore.SubImage";
   SubImageType.tp_basicsize = sizeof(SubImageObject);
-  SubImageType.tp_dealloc = subimage_dealloc;
+  SubImageType.tp_dealloc = image_dealloc;
   SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;
@@ -461,10 +486,11 @@ void init_ImageType(PyObject* module_dict) {
   CCType.ob_type = &PyType_Type;
   CCType.tp_name = "gameracore.Cc";
   CCType.tp_basicsize = sizeof(CCObject);
-  CCType.tp_dealloc = cc_dealloc;
+  CCType.tp_dealloc = image_dealloc;
   CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
   CCType.tp_base = &ImageType;
   CCType.tp_new = cc_new;
+  CCType.tp_getset = cc_getset;
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = PyType_GenericAlloc;
   CCType.tp_free = _PyObject_Del;

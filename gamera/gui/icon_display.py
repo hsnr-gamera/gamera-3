@@ -170,17 +170,19 @@ class IconDisplay(wxListCtrl):
          source = self.currentIcon.double_click()
          if not source is None:
             self.shell.run(source)
-    
+   
    def OnKeyPress(self,event):
       keyID = event.GetKeyCode()
-      print keyID
-      if(keyID == 127 or keyID == 8):
-         if self.currentIcon:
+      if self.currentIcon:
+         if(keyID == 127 or keyID == 8):
             source = self.currentIcon.delete_key()
-            if not source is None:
-               self.shell.run(source)
-               self.currentIcon = None
-
+            self.currentIcon = None
+         elif(keyID==19):
+            source = self.currentIcon.control_s()
+         else: return
+         if not source is None:
+            self.shell.run(source)
+   
 ######################################################################
 
 # Standard icons for core Gamera
@@ -234,6 +236,13 @@ class CustomIcon:
 
    def delete_key(self):
       return "del %s" % self.label
+
+   def control_s(self):
+      from gamera.plugins import image_utilities
+      call = image_utilities.image_save.args.show()
+      if call is None: return None
+      
+      return self.label + ".image_save(r\'" + call[0] + "\'," + str(call[1]) + ")"
 
 class CIRGBImage(CustomIcon):
    def get_icon():
@@ -370,6 +379,8 @@ class CIImageList(CustomIcon):
    def double_click(self):
       return 'display_multi(%s)' % self.label
 
+   def control_s(self): pass
+
 class CIInteractiveClassifier(CustomIcon):
    def get_icon():
       return wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
@@ -381,6 +392,8 @@ class CIInteractiveClassifier(CustomIcon):
 
    def right_click(self, *args):
       pass
+
+   def control_s(self): pass
 
 class CINonInteractiveClassifier(CustomIcon):
    def get_icon():
@@ -396,6 +409,8 @@ class CINonInteractiveClassifier(CustomIcon):
 
    def right_click(self, *args):
       pass
+
+   def control_s(self): pass
 
 builtin_icon_types = (
   CICC, CIRGBImage, CIGreyScaleImage, CIGrey16Image,

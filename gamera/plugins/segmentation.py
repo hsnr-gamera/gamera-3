@@ -25,19 +25,19 @@ cc_analysis = cc_analysis()
 
 class splitx(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageList("ccs")
-    pure_python = 1
-
-    def __call__(image):
-        return [image.subimage(image.ul_y, image.ul_x, image.nrows, image.ncols / 2),
-                image.subimage(image.ul_y, image.ul_x + image.ncols / 2, image.nrows, image.ncols / 2)]
+    return_type = ImageList("splits")
 splitx = splitx()
+
+class splity(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("splits")
+splity = splity()
 
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis, splitx]
+    functions = [cc_analysis, splitx, splity]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

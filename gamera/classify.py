@@ -118,7 +118,7 @@ class _Classifier:
       if (id.startswith('split')):
          parts = id.split('.')
          if (len(parts) != 2 or not hasattr(glyph, parts[1])):
-            raise ClassifierError("'%s' is not a known or valid split function.")
+            raise ClassifierError("'%s' is not a known or valid split function." % parts[1])
          splits = getattr(glyph, id[6:]).__call__(glyph)
          glyph.children_images = splits
          return splits

@@ -75,7 +75,7 @@ class histogram(PluginFunction):
         hist = _image_utilities.histogram(image)
         gui = gamera.config.get_option("__gui")
         if gui:
-            gui.ShowHistogram(hist)
+            gui.ShowHistogram(hist, mark=image.otsu_find_threshold())
         return hist
     __call__ = staticmethod(__call__)
 histogram = histogram()
@@ -109,8 +109,9 @@ class projections(PluginFunction):
         cols = _image_utilities.projections_cols(image)
         gui = gamera.config.get_option("__gui")
         if gui:
-            gui.ShowProjections(cols, rows, image)
+            gui.ShowProjections(rows, cols, image)
         return (rows, cols)
+    __call__ = staticmethod(__call__)
 projections = projections()
 
 class UtilModule(PluginModule):

@@ -1108,7 +1108,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
    # CALLBACKS
 
    def OnCompareItems(self, item1, item2):
-      print "hi"
       t1 = self.GetItemText(item1)
       t2 = self.GetItemText(item2)
       if t1 < t2: return -1
@@ -1217,7 +1216,6 @@ class SymbolTableEditorPanel(wxPanel):
    def _OnEnter(self, evt):
       find = self.text.GetValue()
       normalized_symbol = self._symbol_table.add(find)
-      print str(normalized_symbol)
       if normalized_symbol != '':
          self.toplevel.classify_manual(normalized_symbol)
 

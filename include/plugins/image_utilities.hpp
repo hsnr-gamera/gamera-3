@@ -114,9 +114,9 @@ namespace Gamera {
     typename ImageFactory<T>::data_type* dest_data =
       new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
     typename ImageFactory<T>::view_type* dest =
-      new typename ImageFactory<T>::view_type(*data, src);
+      new typename ImageFactory<T>::view_type(*dest_data, src);
     image_copy_fill(src, *dest);
-    return dest;
+    return *dest;
   }
 
   
@@ -353,6 +353,5 @@ namespace Gamera {
     }
     return projections;
   }
-
 }
 #endif

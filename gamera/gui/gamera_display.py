@@ -20,17 +20,9 @@
 from wxPython.wx import *         # wxPython
 from wxPython.grid import *
 from wxPython.lib.stattext import wxGenStaticText as wxStaticText
-from math import ceil, log, floor # Python standard library
+from math import sin, sqrt, ceil, log, floor, pi # Python standard library
 from sys import maxint
 import sys, string, time, weakref
-# This is a work around for a problem with compositing in wxPython
-# for wxGTK (wxBlack and wxWhite are reversed for the compositing).
-if sys.platform == 'win32':
-   real_white = wxWHITE
-   real_black = wxBLACK
-else:
-   real_white = wxBLACK
-   real_black = wxWHITE
 from gamera.core import *             # Gamera specific
 from gamera import paths, util
 from gamera.gui import image_menu, var_name, gui_util, toolbar
@@ -1002,6 +994,7 @@ class MultiImageDisplay(wxGrid):
       finally:
          self.EndBatch()
          self.GetGridWindow().SetVirtualSize(self.GetSize())
+         self.GetGridWindow().Layout()
          self.GetGridWindow().GetParent().Layout()
          wxEndBusyCursor()
 
@@ -1012,7 +1005,7 @@ class MultiImageDisplay(wxGrid):
       self.BeginBatch()
       try:
          orig_rows = self.rows
-         rows = int(max(ceil(float(len(self.list) - 1) / float(GRID_NCOLS)), 1))
+         rows = int(max(ceil(float(len(self.list)) / float(GRID_NCOLS)), 1))
          cols = GRID_NCOLS
          self.DeleteRows(0, self.rows)
          self.AppendRows(rows)
@@ -1041,7 +1034,7 @@ class MultiImageDisplay(wxGrid):
                break
          self.list = self.list[:i+1]
          self.list.extend(list)
-         self.resize_grid(do_auto_size=0)
+         self.resize_grid(do_auto_size=1)
       finally:
          self.EndBatch()
          wxEndBusyCursor()
@@ -1169,7 +1162,6 @@ class MultiImageDisplay(wxGrid):
                      if item != None:
                         image.append(item)
       elif row != None and bitmap_no != None:
-         print "bitmap_no", bitmap_no
          image = [self.list[bitmap_no]]
       return image
 
@@ -1618,6 +1610,7 @@ class MultiImageFrame(ImageFrameBase):
 def graph_horiz(data, dc, x1, y1, x2, y2, mark=None, border=1):
    scale_x = float(x2 - x1) / float(len(data))
    scale_y = (y2 - y1) / max(data)
+   m = log(max(data))
    dc.SetPen(wxTRANSPARENT_PEN)
    light_blue = wxColor(128, 128, 255)
    for i in range(len(data)):
@@ -1685,13 +1678,18 @@ def clear_dc(dc):
    dc.SetPen(wxTRANSPARENT_PEN)
    dc.DrawRectangle(0, 0, width, height)
 
-HISTOGRAM_PAD = 30
+HISTOGRAM_PAD = 10
 class HistogramDisplay(wxFrame):
    def __init__(self, data=None, mark=None, parent=None,
                 title="Histogram"):
       wxFrame.__init__(self, parent, -1, title,
                        style=wxRESIZE_BORDER|wxCAPTION)
-      self.data = data
+      m = max(data)
+      new_data = []
+      for datum in data:
+         if datum != 0:
+            new_data.append(sqrt(datum))
+      self.data = new_data
       self.mark = mark
       EVT_PAINT(self, self.OnPaint)
 
@@ -1709,10 +1707,11 @@ class HistogramDisplay(wxFrame):
 
 class ProjectionsDisplay(wxFrame):
    def __init__(self, x_data=None, y_data=None, image=None, parent=None, title="Projections"):
+      size = (image.ncols + max(x_data) + (HISTOGRAM_PAD * 3),
+              image.nrows + max(y_data) + (HISTOGRAM_PAD * 3))
       wxFrame.__init__(self, parent, -1, title,
                        style=wxCAPTION,
-                       size=((image.ncols * 2) + (HISTOGRAM_PAD * 3),
-                             (image.nrows * 2) + (HISTOGRAM_PAD * 3)))
+                       size=size)
       self.x_data = x_data
       self.y_data = y_data
       self.image = image
@@ -1726,16 +1725,16 @@ class ProjectionsDisplay(wxFrame):
       mat_width = self.image.ncols
       mat_height = self.image.nrows
       image = wxEmptyImage(self.image.ncols, self.image.nrows)
-      self.image.to_string(image.GetDataBuffer())
+      self.image.to_buffer(image.GetDataBuffer())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell
-      x = (dc_width / 2) + (HISTOGRAM_PAD / 2)
+      x = HISTOGRAM_PAD * 2 + max(self.x_data)
       y = HISTOGRAM_PAD
       dc.DrawBitmap(bmp, x, y, 0)
-      graph_vert(self.x_data, dc, x - HISTOGRAM_PAD - mat_width, y,
-                 x - HISTOGRAM_PAD, y + mat_height, border=0)
+      graph_vert(self.x_data, dc, HISTOGRAM_PAD, y,
+                 HISTOGRAM_PAD + max(self.x_data), y + mat_height, border=0)
       graph_horiz(self.y_data, dc, x, y + mat_height + HISTOGRAM_PAD,
-                  x + mat_width, y + (mat_height * 2) + HISTOGRAM_PAD, border=0)
+                  x + mat_width, y + (mat_height + max(self.y_data)) + HISTOGRAM_PAD, border=0)
 
 class ProjectionDisplay(wxFrame):
    def __init__(self, data, title="Projection"):

@@ -30,6 +30,7 @@
 // this will safely include <limit> on platforms with broken libraries
 #include "gamera_limits.hpp"
 #include "features.hpp"
+#include "image_utilities.hpp"
 
 /*
   Connected-component analysis (8-connected)
@@ -377,6 +378,58 @@ namespace Gamera {
 	}
       }	
     }
+  }
+
+  size_t find_split_point(IntVector *projections) {
+    double minimum = std::numeric_limits<size_t>::max();
+    double middle = double(projections->size()) / 2.0;
+    IntVector::iterator proj_it = projections->begin();
+    size_t minimum_index = 0;
+    for (size_t i=0; proj_it != projections->end(); ++i, ++proj_it) {
+      double distance_from_middle = abs(middle - i);
+      double score = sqrt((*proj_it)*(*proj_it) + distance_from_middle*distance_from_middle);
+      if (score < minimum) {
+	minimum = score;
+	minimum_index = i;
+      }
+    }
+    return minimum_index;
+  }    
+
+  template<class T>
+  std::list<Image*>* splitx(T& image) {
+    size_t split_point = find_split_point(projections_cols(image));
+    std::list<Image*>* splits = new std::list<Image*>();
+    std::list<Image*>* ccs;
+    std::list<Image*>::iterator ccs_it;
+    typename ImageFactory<T>::view_type view;
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(), image.nrows(), split_point));
+    ccs = cc_analysis(view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x() + split_point, image.nrows(), image.ncols() - split_point));
+    ccs = cc_analysis(view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    return splits;
+  }
+
+  template<class T>
+  std::list<Image*>* splity(T& image) {
+    size_t split_point = find_split_point(projections_rows(image));
+    std::list<Image*>* splits = new std::list<Image*>();
+    std::list<Image*>* ccs;
+    std::list<Image*>::iterator ccs_it;
+    typename ImageFactory<T>::view_type view;
+    view = simple_image_copy(T(image, image.ul_y(), image.ul_x(), split_point, image.ncols()));
+    ccs = cc_analysis(view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    view = simple_image_copy(T(image, image.ul_y() + split_point, image.ul_x(), image.nrows() - split_point, image.ncols()));
+    ccs = cc_analysis(view);
+    for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it)
+      splits->push_back(*ccs_it);
+    return splits;
   }
 
 }

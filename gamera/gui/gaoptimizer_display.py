@@ -174,13 +174,10 @@ class OptimizerFrame(wxFrame):
          self.save_as_cb(evt)
 
    def save_as_cb(self, evt):
-      dlg = wxFileDialog(None, "Choose a file", ".", "", "*.*", wxSAVE)
-      if dlg.ShowModal() == wxID_OK:
-         self.settings_filename = dlg.GetPath()
-         dlg.Destroy()
-         wxBeginBusyCursor()
-         self.classifier.save_settings(self.settings_filename)
-         wxEndBusyCursor()
+      self.settings_filename = gui_util.save_file_dialog(self)
+      wxBeginBusyCursor()
+      self.classifier.save_settings(self.settings_filename)
+      wxEndBusyCursor()
 
    def start_cb(self, evt):
       self.start()

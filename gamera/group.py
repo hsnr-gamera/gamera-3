@@ -210,7 +210,6 @@ class GroupingClassifier:
 
    def merge_groups(self, groups):
       """Adds the given list of groups to the currently stored set of groups."""
-      self.classify_groups_manual(groups)
       for group in groups:
          self.classify_group_manual(group.glyphs, group.id)
 

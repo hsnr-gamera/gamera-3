@@ -41,7 +41,7 @@ load_tiff = load_tiff()
 
 class save_tiff(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
-    args = Args([FileOpen("image_file_name", "image.tiff", "*.tiff;*.tif")])
+    args = Args([FileSave("image_file_name", "image.tiff", "*.tiff;*.tif")])
     return_type = None
 save_tiff = save_tiff()
 

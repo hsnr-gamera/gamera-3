@@ -28,7 +28,7 @@ pixels less than the given value become black."""
     return_type = ImageType([ONEBIT], "output")
     testable = 1
     def __call__(image, threshold, storage_format = 0):
-        _threshold.threshold(image, threshold, storage_format)
+        return _threshold.threshold(image, threshold, storage_format)
     __call__ = staticmethod(__call__)
     
 threshold = threshold()

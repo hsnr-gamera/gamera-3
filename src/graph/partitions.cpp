@@ -28,10 +28,15 @@ typedef std::list<EdgeList> Cycles;
 
 struct PartitionIterator : IteratorObject {
   int init(GraphObject* graph, NodeObject* root, bool ids, double m, double b);
+private:
+  inline void find_subgraph(GraphObject* graph, NodeObject* root);
+  inline void find_cycles(NodeObject* root);
+  bool cycle(NodeObject* s, NodeObject* v, EdgeList& path);
+  inline void unmark(NodeObject* u);
+public:
   static PyObject* next(IteratorObject* self);
-  static bool cycle(NodeObject* s, NodeObject* v, EdgeList& path, Cycles* cycles);
-  static void unmark(NodeObject* u);
-
+private:
+  inline static PyObject* next_no_edges(PartitionIterator* so);
   size_t m_npartitions;
   size_t m_i;
   size_t m_ones;
@@ -51,8 +56,29 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
   m_edges = new EdgeList();
   m_cycles = new Cycles();
   m_root = root;
-  size_t count = 0;
+
+  find_subgraph(graph, root);
+
+  // Special case: if we haven't found any edges, we don't
+  // need to do cycle detection, so we skip it
+  if (m_edges->empty()) {
+    m_no_edges = true;
+    m_i = m_npartitions = 0;
+    return 1;
+  }
+
+  find_cycles(root);
   
+  size_t nedges = m_edges->size();
+  m_npartitions = (size_t)pow(2, nedges);
+  m_i = 0;
+  m_ones = 0;
+  m_allowable_ones = size_t(double(nedges) * m + b);
+  std::cerr << nedges << " " << m_allowable_ones << " " << m_cycles->size() << "\n";
+  return 1; 
+}
+
+void PartitionIterator::find_subgraph(GraphObject* graph, NodeObject* root) {
   for (NodeVector::iterator i = graph->m_nodes->begin();
        i != graph->m_nodes->end(); ++i) {
     NP_VISITED(*i) = false;
@@ -61,7 +87,8 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
       EP_VISITED(*j) = false;
     }
   }
-  
+
+  size_t count = 0;
   NodeStack node_stack;
   node_stack.push(root);
   NP_VISITED(root) = true;
@@ -85,20 +112,15 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
       }
     }
   }
+}
 
-  // Add a case here if there are no edges
-  if (m_edges->empty()) {
-    m_no_edges = true;
-    m_i = m_npartitions = 0;
-    return 1;
-  }
-
-  // Find cycles
+void PartitionIterator::find_cycles(NodeObject* root) {
   for (NodeList::iterator j = m_subgraph->begin();
        j != m_subgraph->end(); ++j) {
     NP_B(*j) = new NodeSet();
     NP_VISITED(*j) = false;
   }
+
   EdgeList path;
   for (NodeList::iterator i = m_subgraph->begin();
        i != m_subgraph->end(); ++i) {
@@ -113,24 +135,17 @@ int PartitionIterator::init(GraphObject* graph, NodeObject* root, bool ids,
       EP_VISITED((*j)->m_other) = false;
     }
     NodeObject* s = *i;
-    cycle(s, s, path, m_cycles);
+    cycle(s, s, path);
     NP_VISITED(s) = true;
   }
+
   for (NodeList::iterator j = m_subgraph->begin();
        j != m_subgraph->end(); ++j)
     delete NP_B(*j);
-  
-  size_t nedges = m_edges->size();
-  m_npartitions = (size_t)pow(2, nedges);
-  m_i = 0;
-  m_ones = 0;
-  m_allowable_ones = size_t(double(nedges) * m + b);
-  std::cerr << nedges << " " << m_allowable_ones << " " << m_cycles->size() << "\n";
-  return 1; 
 }
 
 bool PartitionIterator::cycle(NodeObject* s, NodeObject* v,
-			      EdgeList& path, Cycles* cycles) {
+			      EdgeList& path) {
   bool flag = false;
   NP_AVAIL(v) = false;
   for (EdgeList::iterator i = v->m_out_edges->begin();
@@ -142,10 +157,10 @@ bool PartitionIterator::cycle(NodeObject* s, NodeObject* v,
       EP_VISITED((*i)->m_other) = true;
       if (w == s) {
 	if (path.size() > 2)
-	  cycles->push_back(path);
+	  m_cycles->push_back(path);
 	flag = true;
       } else if NP_AVAIL(w)
-	flag |= cycle(s, w, path, cycles);
+	flag |= cycle(s, w, path);
       path.pop_back();
     }
   }
@@ -171,28 +186,12 @@ void PartitionIterator::unmark(NodeObject* u) {
   NP_B(u)->clear();
 }
 
-
 PyObject* PartitionIterator::next(IteratorObject* self) {
   PartitionIterator* so = (PartitionIterator*)self;
 
   // Short-circuit case here for no edges
-  if (so->m_no_edges) {
-    PyObject* result = PyList_New(0);
-    PyObject* subresult = PyList_New(0);
-    PyList_Append(subresult, so->m_root->m_data);
-    if (so->m_ids) {
-      PyObject* tuple = PyTuple_New(2);
-      PyTuple_SetItem(tuple, 0, PyInt_FromLong(1));
-      PyTuple_SetItem(tuple, 1, subresult);
-      PyList_Append(result, tuple);
-      Py_DECREF(tuple);
-    } else {
-      PyList_Append(result, subresult);
-      Py_DECREF(subresult);
-    }
-    so->m_no_edges = false;
-    return result;
-  }
+  if (so->m_no_edges)
+    return next_no_edges(so);
 
   if (so->m_i >= so->m_npartitions) {
     // Cleanup
@@ -286,6 +285,25 @@ PyObject* PartitionIterator::next(IteratorObject* self) {
 	break;
     }
   }
+
+  return result;
+}
+
+PyObject* PartitionIterator::next_no_edges(PartitionIterator* so) {
+  PyObject* result = PyList_New(0);
+  PyObject* subresult = PyList_New(0);
+  PyList_Append(subresult, so->m_root->m_data);
+  if (so->m_ids) {
+    PyObject* tuple = PyTuple_New(2);
+    PyTuple_SetItem(tuple, 0, PyInt_FromLong(1));
+    PyTuple_SetItem(tuple, 1, subresult);
+    PyList_Append(result, tuple);
+    Py_DECREF(tuple);
+  } else {
+    PyList_Append(result, subresult);
+    Py_DECREF(subresult);
+  }
+  so->m_no_edges = false;
   return result;
 }
 

@@ -674,7 +674,7 @@ struct SubTreeRootIterator : IteratorObject {
 PyObject* graph_get_subgraph_roots(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   
-  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
+  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED) || HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
     SubGraphRootIterator* iterator = iterator_new_simple<SubGraphRootIterator>();
     iterator->init(so->m_nodes->begin(), so->m_nodes->end());
     return (PyObject*)iterator;

@@ -568,6 +568,7 @@ if _has_gui == _WX_GUI:
          self.text.GetParent().Raise()
 
       def get(self):
+         from gui import gui_util
          while 1:
             text = self.text.GetValue()
             if not os.path.exists(os.path.abspath(text)):
@@ -578,6 +579,7 @@ if _has_gui == _WX_GUI:
          return _Filename.get(self)
 
       def get_string(self):
+         from gui import gui_util
          while 1:
             text = self.text.GetValue()
             if not os.path.exists(os.path.abspath(text)):
@@ -604,6 +606,7 @@ if _has_gui == _WX_GUI:
          self.text.GetParent().Raise()
 
       def get(self):
+         from gui import gui_util
          while 1:
             text = self.text.GetValue()
             if not os.path.exists(os.path.abspath(text)):
@@ -614,6 +617,7 @@ if _has_gui == _WX_GUI:
          return _Filename.get(self)
 
       def get_string(self):
+         from gui import gui_util
          while 1:
             text = self.text.GetValue()
             if not os.path.exists(os.path.abspath(text)):

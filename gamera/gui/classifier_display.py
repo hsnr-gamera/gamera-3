@@ -219,7 +219,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             else:
                self.toplevel.set_label_display([])
             self.toplevel.display_cc(images)
-      self.toplevel._frame.GetStatusBar().SetStatusText("%s selected glyphs" % len(images), 0)
+      if len(images) == 1:
+         text = "1 selected glyph"
+      else:
+         text = "%s selected glyphs" % len(images)
+      self.toplevel._frame.GetStatusBar().SetStatusText(text, 0)
 
    def _OnSelect(self, event):
       event.Skip()

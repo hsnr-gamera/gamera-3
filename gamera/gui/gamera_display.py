@@ -986,6 +986,9 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
       bitmap_no = row * grid.cols + col
       if bitmap_no < len(self.parent.list):
          image = self.parent.list[bitmap_no]
+      else:
+         image = None
+      if not image is None:
          return wxSize(
             min(grid.max_cell_width,
                 int(image.ncols * grid.scaling + grid.cell_padding)),

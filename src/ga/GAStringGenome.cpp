@@ -43,10 +43,11 @@ GA1DArrayGenome<char>(sa.size(), f, u){
   crossover(DEFAULT_STRING_CROSSOVER);
 }
 
+#if(MSC_VER>1310)
 GA1DArrayAlleleGenome<char>::~GA1DArrayAlleleGenome(){
   delete [] aset;
 }
-
+#endif
 
 #ifndef NO_STREAMS
 // The read specialization takes in each character whether it is whitespace or

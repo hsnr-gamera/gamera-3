@@ -42,7 +42,7 @@ from wxPython.lib.splashscreen import SplashScreen
 
 # Python standard library
 # import interactive
-import sys, types, traceback, os, string, os.path
+import sys, traceback, os, string, os.path, imp
 
 # Set default options
 config.add_option(
@@ -280,8 +280,22 @@ class ShellFrame(wxFrame):
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconBitmap())
       self.SetIcon(icon)
-      self.Move(wxPoint(int(30),
-                        int(30)))
+      self.Move(wxPoint(int(30), int(30)))
+
+      wxYield()
+
+   def import_command_line_modules(self):
+      for file in config.get_free_args():
+         try:
+            name = os.path.basename(file)[:-3]
+            module = imp.load_source(name, file)
+            self.shell.locals[name] = module
+            self.shell.push(name)
+            imported = True
+         except Exception, e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            gui_util.message("Error importing file '%s':\n%s" %
+                             (file, "".join(traceback.format_exception_only(exc_type, exc_value))))
 
    def make_menu(self):
       self.custom_menus = {}
@@ -450,6 +464,7 @@ def _show_shell():
    global main_win
    main_win = ShellFrame(NULL, -1, "Gamera")
    main_win.Show(True)
+   main_win.import_command_line_modules()
 
 app = None
 def run(startup=_show_shell):

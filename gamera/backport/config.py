@@ -74,6 +74,11 @@ class ConfigOptionParser(OptionParser):
    def reparse_args(self):
       self._cache = None
       return self.parse_args()
+
+   def get_free_args(self):
+      if self._cache is None:
+         self.parse_args()
+      return self._cache[1]
       
 __all__ = """
 make_option ConfigOptionParser

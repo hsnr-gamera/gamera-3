@@ -27,6 +27,8 @@
 #include "connected_components.hpp"
 #include "Python.h"
 
+#include <algorithm>
+
 namespace Gamera {
 
 namespace {
@@ -194,10 +196,10 @@ Image *color_ccs(T& m) {
 template<class T, class U>
 Image *clip_image(T& m, U& rect) {
   if (m.intersects(rect)) {
-    size_t ul_y = MAX(m.ul_y(), rect.ul_y());
-    size_t ul_x = MAX(m.ul_x(), rect.ul_x());
-    size_t lr_y = MIN(m.lr_y(), rect.lr_y());
-    size_t lr_x = MIN(m.lr_x(), rect.lr_x());
+    size_t ul_y = std::max(m.ul_y(), rect.ul_y());
+    size_t ul_x = std::max(m.ul_x(), rect.ul_x());
+    size_t lr_y = std::min(m.lr_y(), rect.lr_y());
+    size_t lr_x = std::min(m.lr_x(), rect.lr_x());
     return new T(m, ul_y, ul_x, lr_y - ul_y + 1, lr_x - ul_x + 1);
   } else {
     return new T(m, m.ul_y(), m.ul_x(), 1, 1);

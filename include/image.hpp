@@ -78,7 +78,7 @@ namespace Gamera {
   /*
     ImageBase
 
-    This is the base class for all matrices.
+    This is the base class for all images.
   */
   template<class T>
   class ImageBase : public Image {

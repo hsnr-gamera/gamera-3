@@ -86,28 +86,28 @@ class union_images(PluginFunction):
     return_type = ImageType([ONEBIT])
 union_images = union_images() 
 
-class projections_rows(PluginFunction):
+class projection_rows(PluginFunction):
     """Compute the projections of an image.  The computes the
     number of pixels in each row."""
     self_type = ImageType([ONEBIT])
     return_type = IntVector("rows")
-projections_rows = projections_rows()
+projection_rows = projection_rows()
 
-class projections_cols(PluginFunction):
+class projection_cols(PluginFunction):
     """Compute the projections of an image.  The computes the
     number of pixels in each row."""
     self_type = ImageType([ONEBIT])
     return_type = IntVector("cols")
-projections_cols = projections_cols()
+projection_cols = projection_cols()
 
 class projections(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = Class("projections")
     pure_python = 1
     def __call__(image):
-        rows = _image_utilities.projections_rows(image)
-        cols = _image_utilities.projections_cols(image)
-        gui = gamera.config.get_option("__gui")
+        rows = _image_utilities.projection_rows(image)
+        cols = _image_utilities.projection_cols(image)
+        gui = gamera.config.options.__.gui
         if gui:
             gui.ShowProjections(rows, cols, image)
         return (rows, cols)
@@ -123,11 +123,11 @@ class invert(PluginFunction):
 invert = invert()
 
 class UtilModule(PluginModule):
-    cpp_headers=["image_utilities.hpp"]
+    cpp_headers=["image_utilities.hpp", "projections.hpp"]
     cpp_namespace=["Gamera"]
     category = "Utility"
     functions = [image_copy, rotate_copy, resize_copy, scale_copy,
-                 histogram, union_images, projections_rows, projections_cols,
+                 histogram, union_images, projection_rows, projection_cols,
                  projections, fill_white, invert]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

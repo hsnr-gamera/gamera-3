@@ -165,10 +165,10 @@ namespace Gamera {
     for (std::vector<Image*>::iterator i = list_of_images.begin();
 	 i != list_of_images.end(); ++i) {
       Image* image = (*i);
-      min_x = MIN(min_x, image->ul_x());
-      min_y = MIN(min_y, image->ul_y());
-      max_x = MAX(max_x, image->lr_x());
-      max_y = MAX(max_y, image->lr_y());
+      min_x = std::min(min_x, image->ul_x());
+      min_y = std::min(min_y, image->ul_y());
+      max_x = std::max(max_x, image->lr_x());
+      max_y = std::max(max_y, image->lr_y());
     }
 
     size_t ncols = max_x - min_x + 1;
@@ -322,38 +322,6 @@ namespace Gamera {
     return max;
   }
 
-  template<class T>
-  IntVector* projections_rows(const T& image) {
-    IntVector* projections = new IntVector(image.nrows());
-    typename T::const_row_iterator row = image.row_begin();
-    typename T::const_col_iterator col;
-   
-    IntVector::iterator proj_it = projections->begin();
-    for (; row != image.row_end(); ++row, ++proj_it) {
-      *proj_it = 0;
-      for (col = row.begin(); col != row.end(); ++col)
-	if (is_black(*col))
-	  *proj_it += 1;
-    }
-    return projections;
-  }
-
-  template<class T>
-  IntVector* projections_cols(const T& image) {
-    IntVector* projections = new IntVector(image.ncols());
-    typename T::const_col_iterator col = image.col_begin();
-    typename T::const_row_iterator row;
-   
-    IntVector::iterator proj_it = projections->begin();
-    for (; col != image.col_end(); ++col, ++proj_it) {
-      *proj_it = 0;
-      for (row = col.begin(); row != col.end(); ++row)
-	if (is_black(*row))
-	  *proj_it += 1;
-    }
-    return projections;
-  }
-
   /*
     Fill an image with white.
   */
@@ -391,6 +359,49 @@ namespace Gamera {
   void invert(T& image) {
     invert_specialized<typename T::value_type> invert_special;
     invert_special(image);
+  }
+
+  /*
+    Shearing
+  */
+
+  template<class T>
+  inline void simple_shear(T begin, const T end, int distance) {
+    // short-circuit
+    if (distance == 0)
+      return;
+    typename T::value_type filler;
+    // move down or right
+    if (distance > 0) {
+      filler = *begin;
+      std::copy_backward(begin + distance, end - distance, end);
+      std::fill(begin, begin + distance, filler);
+      // move up or left
+    } else {
+      filler = *(end - 1);
+      std::copy(begin - distance, end, begin);
+      std::fill(end + distance, end, filler);
+    }
+  }
+
+  template<class T>
+  void shear_column(T& mat, size_t column, int distance) {
+    if (size_t(std::abs(distance)) >= mat.nrows())
+      throw std::range_error("Tried to shear column too far");
+    if (column >= mat.ncols())
+      throw std::range_error("Column argument to shear_column out of range");
+    simple_shear((mat.col_begin() + column).begin(),
+		 (mat.col_begin() + column).end(),distance);
+  }
+
+  template<class T>
+  void shear_row(T& mat, size_t row, int distance) {
+    if (size_t(std::abs(distance)) >= mat.ncols())
+      throw std::range_error("Tried to shear column too far");
+    if (row >= mat.nrows())
+      throw std::range_error("Column argument to shear_column out of range");
+    simple_shear((mat.row_begin() + row).begin(),
+		 (mat.row_begin() + row).end(), distance);
   }
 }
 #endif

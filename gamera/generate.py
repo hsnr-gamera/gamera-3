@@ -25,6 +25,7 @@ import sys
 import re
 from distutils.core import Extension
 from distutils.dep_util import newer
+from distutils import sysconfig
 from gamera import paths
 
 global std_import
@@ -115,16 +116,6 @@ template = Template("""
     { NULL }
   };
 
-  [[# These hold the types for the various image types defined in gameracore - this #]]
-  [[# is for type checking the arguments and creating the return types. See the init #]]
-  [[# function for more details. #]]
-  static PyTypeObject* imagebase_type;
-  static PyObject* pybase_init;
-  static PyTypeObject* image_type;
-  static PyTypeObject* subimage_type;
-  static PyTypeObject* cc_type;
-  static PyTypeObject* data_type;
-
   [[# Each module can declare several functions so we loop through and generate wrapping #]]
   [[# code for each function #]]
   [[for function in module.functions]]
@@ -158,6 +149,14 @@ template = Template("""
         [[elif isinstance(x, Class)]]
           PyObject* [[x.name + '_arg']];
           [[exec pyarg_format = pyarg_format + 'O']]
+        [[elif isinstance(x, Region)]]
+          PyObject* [[x.name + '_arg']];
+          Region* [[x.name + '_regionarg']];
+          [[exec pyarg_format = pyarg_format + 'O']]
+        [[elif isinstance(x, RegionMap)]]
+          PyObject* [[x.name + '_arg']];
+          RegionMap* [[x.name + '_regionmaparg']];
+          [[exec pyarg_format = pyarg_format + 'O']]
         [[elif isinstance(x, ImageType)]]
           PyObject* [[x.name + '_arg']];
           Image* [[x.name + '_imagearg']];
@@ -185,6 +184,10 @@ template = Template("""
         Image* return_value = 0;
       [[elif isinstance(function.return_type, Class)]]
         PyObject* return_value = 0;
+      [[elif isinstance(function.return_type, Region)]]
+        Region* return_value = 0;
+      [[elif isinstance(function.return_type, RegionMap)]]
+        RegionMap* return_value = 0;
       [[elif isinstance(function.return_type, ImageInfo)]]
         ImageInfo* return_value = 0;
       [[elif isinstance(function.return_type, FloatVector)]]
@@ -207,12 +210,12 @@ template = Template("""
           &[[function.args.list[i].name + '_arg']]
         [[end]]
         ) <= 0)
-   return 0;\
-[[end]]
+        return 0;\
+      [[end]]
 
       [[# Type check the self argument #]]
       [[if not function.self_type is None]]
-        if (!PyObject_TypeCheck(real_self, imagebase_type)) {
+        if (!is_ImageObject(real_self)) {
           PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
           return 0;
         }
@@ -229,7 +232,7 @@ template = Template("""
           [[arg.name + '_list_arg']].resize(PyList_GET_SIZE([[arg.name + '_arg']]));
           for (int i=0; i < PyList_GET_SIZE([[arg.name + '_arg']]); ++i) {
             PyObject *element = PyList_GET_ITEM([[arg.name + '_arg']], i);
-            if (!PyObject_TypeCheck(element, imagebase_type)) {
+            if (!is_ImageObject(element)) {
               PyErr_SetString(PyExc_TypeError, \"Expected a list of images.\");
               return 0;
             }
@@ -282,7 +285,7 @@ template = Template("""
           [[exec x.name = x.name + '_imagearg']]
           [[exec x.pixel_types = tmp]]
           [[exec images.append(x)]]
-          if (!PyObject_TypeCheck([[x.pyname]], imagebase_type)) {
+          if (!is_ImageObject([[x.pyname]])) {
             PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
             return 0;
           }
@@ -292,8 +295,29 @@ template = Template("""
         [[end]]
       [[end]]
 
+      [[# Extract the other arguments #]]
+      [[for x in function.args.list]]
+        [[if isinstance(x, RegionMap)]]
+          [[x.pyname = x.name + '_arg']]
+          [[x.name = x.name + '_regionmaparg']]
+          if (!is_RegionMapObject([[x.pyname]])) {
+            PyErr_SetString(PyExc_TypeError, \"Object is not a RegionMap.\");
+            return 0;
+          }
+          [[x.name]] = (RegionMap*)((RegionMapObect*)[[x.pyname]])->m_x;
+        [[elif isinstance(x, Region)]]
+          [[x.pyname = x.name + '_arg']]
+          [[x.name = x.name + '_regionarg']]
+          if (!is_RegionObject([[x.pyname]])) {
+            PyErr_SetString(PyExc_TypeError, \"Object is not a Region.\");
+            return 0;
+          }
+          [[x.name]] = (Region*)((RectObect*)[[x.pyname]])->m_x;
+        [[end]]
+      [[end]]
+
       [[def switch(layer, args)]]
-        switch(get_image_combination([[images[layer].pyname]], cc_type)) {
+        switch(get_image_combination([[images[layer].pyname]])) {
           [[for type in images[layer].pixel_types]]
             [[exec current = '*((' + type + '*)' + images[layer].name + ')']]
             case [[type.upper()]]:
@@ -312,6 +336,7 @@ template = Template("""
                     [[exec arg_string += tmp_args[current_image] ]]
                     [[exec current_image += 1]]
                   [[else]]
+
                     [[exec arg_string += function.args.list[i].name + '_arg']]
                   [[end]]
                   [[if i < len(function.args.list) - 1]]
@@ -353,12 +378,13 @@ template = Template("""
       } catch (std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return 0;
+
       }
       [[if function.return_type == None]]
         Py_INCREF(Py_None);
         return Py_None;
       [[elif isinstance(function.return_type, ImageType)]]
-        return create_ImageObject(return_value, image_type, subimage_type, cc_type, data_type, pybase_init);
+        return create_ImageObject(return_value);
       [[elif isinstance(function.return_type, String)]]
         return PyString_FromStringAndSize(return_value.data(), return_value.size() [[# + 1 doesn't seem to be needed MGD #]]);
       [[elif isinstance(function.return_type, ImageInfo)]]
@@ -367,6 +393,14 @@ template = Template("""
         return Py_BuildValue(\"i\", return_value);
       [[elif isinstance(function.return_type, Float)]]
         return Py_BuildValue(\"f\", return_value);
+      [[elif isinstance(function.return_type, Region)]]
+        PyObject* result = create_RegionObject(*return_value);
+        delete return_value;
+        return result;
+      [[elif isinstance(function.return_type, RegionMap)]]
+        PyObject* result = create_RegionMapObject(*return_value);
+        delete return_value;
+        return result;
       [[elif isinstance(function.return_type, FloatVector) or isinstance(function.return_type, IntVector)]]
          [[# This is pretty expensive, but simple#]]
          PyObject* array_func;
@@ -434,7 +468,7 @@ template = Template("""
         std::list<Image*>::iterator it = return_value->begin();
         for (size_t i = 0; i < return_value->size(); ++i, ++it) {
           PyList_SET_ITEM(list, i,
-            create_ImageObject(*it, image_type, subimage_type, cc_type, data_type, pybase_init));
+            create_ImageObject(*it));
         }
         delete return_value;
         return list;
@@ -457,43 +491,17 @@ template = Template("""
 
   DL_EXPORT(void) init[[module_name]](void) {
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
-    PyObject* mod = PyImport_ImportModule(\"gamera.core\");
-    if (mod == 0) {
-      printf(\"Could not load gamera.py\\n\");
-      return;
-    }
-    PyObject* dict = PyModule_GetDict(mod);
-    if (dict == 0) {
-      PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\\n\");
-      return;
-    }
-    pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, \"ImageBase\"), \"__init__\");
-    image_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
-    subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, \"SubImage\");
-    cc_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Cc\");
-    data_type = (PyTypeObject*)PyDict_GetItemString(dict, \"ImageData\");
-    mod = PyImport_ImportModule(\"gamera.gameracore\");
-    if (mod == 0) {
-      PyErr_SetString(PyExc_RuntimeError, \"Unable to load gameracore.\\n\");
-      return;
-    }
-    dict = PyModule_GetDict(mod);
-    if (dict == 0) {
-      PyErr_SetString(PyExc_RuntimeError, \"Unable to get module dictionary\\n\");
-      return;
-    }
-    imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, \"Image\");
   }
 
   """)
   
-def generate_plugin(plugin_filename):
+def generate_plugin(plugin_filename, location, compiling_gamera):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")
 
   regenerate = 0
-  if newer(plugin_filename, cpp_filename):
+  if newer(plugin_filename, cpp_filename) or '-f' in sys.argv:
     regenerate = 1
 
   sys.path.append(plug_path)
@@ -507,6 +515,8 @@ def generate_plugin(plugin_filename):
   # we compiled
   include_dirs = (["include", plug_path, "include/plugins"] +
                   plugin_module.module.cpp_include_dirs)
+  if not compiling_gamera:
+     include_dirs.append(sysconfig.get_python_inc() + "\gamera")
   if not regenerate:
     for header in plugin_module.module.cpp_headers:
       found_header = 0
@@ -540,7 +550,7 @@ def generate_plugin(plugin_filename):
   if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
      compile_args = ["/GR", "/Zi", "/Yd"]
      #compile_args = ["/GR"]
-  return Extension("gamera.plugins._" + module_name, cpp_files,
+  return Extension(location + "._" + module_name, cpp_files,
                    include_dirs=include_dirs,
                    library_dirs=plugin_module.module.library_dirs,
                    libraries=extra_libraries,

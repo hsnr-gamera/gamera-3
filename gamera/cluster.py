@@ -11,11 +11,11 @@ def get_lengths(node, depth, lengths, cur_depth=0, path = {}):
       lengths.append(edge.cost)
       get_lengths(edge.traverse(node), depth, lengths, cur_depth + 1, path)
 
-def label(graph, node, label):
+def label(graph, node, label_start, label):
    for node in graph.DFS(node):
-      node().classify_automatic("cluster." + str(label))
+      node().classify_automatic(label_start + str(label))
 			
-def make_subtrees_stddev(graph, ratio, distance):
+def make_subtrees_stddev(graph, ratio, distance, relabel=1, lab="cluster."):
    import stats
    cur_label = 0
    remove = []
@@ -36,36 +36,51 @@ def make_subtrees_stddev(graph, ratio, distance):
          remove.append(edge)
    for edge in remove:
       graph.remove_edge(edge)
-   cur_label = 0
-   for node in graph.get_nodes():
-      node().classify_manual("")
-   for node in graph.get_nodes():
-      if node().get_main_id() == "":
-         label(graph, node, cur_label)
-         cur_label += 1
+   if relabel:
+      cur_label = 0
+      for node in graph.get_nodes():
+         node().classify_manual("")
+      for node in graph.get_nodes():
+         if node().get_main_id() == "":
+            label(graph, node, lab, cur_label)
+            cur_label += 1
    nodes = []
    for node in graph.get_nodes():
       nodes.append(node())
    return nodes
 	
 
-def make_spanning_tree(glyphs):
-   #glyphs = gamera_xml.glyphs_from_xml("C:\Documents and Settings\Karl MacMillan\Desktop\small.xml")
-   k = knn.kNN()
-   print "Getting distances"
+def make_spanning_tree(glyphs, k=None):
+   if k is None:
+      k = knn.kNN()
    uniq_dists = k.distance_matrix(glyphs)
-   print "adding edges"
    g = graph.Undirected()
-   #for x in uniq_dists:
-   #   g.add_edge(x[1], x[2], x[0])
-   #del uniq_dists
-   print "creating spanning tree"
    g.create_minimum_spanning_tree(glyphs, uniq_dists)
    return g
 
-def cluster(glyphs, ratio=1.0, distance=2):
-   g = make_spanning_tree(glyphs)
-   return make_subtrees_stddev(g, ratio, distance)
+def cluster(glyphs, ratio=1.0, distance=2, label="cluster.", k=None):
+   g = make_spanning_tree(glyphs, k)
+   return make_subtrees_stddev(g, ratio, distance, lab=label)
+
+def cluster2(glyphs):
+   ko = knn.kNN()
+   gc = knn.glyphs_by_category(cluster(glyphs, k=ko))
+   small = []
+   large = []
+   for x in gc.itervalues():
+      if len(x) < 10:
+         small.extend(x)
+      else:
+         large.append(x)
+   print len(small)
+   output = cluster(small, 1, 1, label="cluster_small.", k=ko)
+   cur_label = 0
+   for x in large:
+      l = x[0].get_main_id() + ".cluster_large" + str(cur_label) + "."
+      cur_label += 1
+      c = cluster(x, .6, 4, label=l, k=ko)
+      output.extend(c)
+   return output
 
 def do_tests(filename):
    from gamera import gamera_xml

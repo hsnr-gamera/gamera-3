@@ -85,7 +85,7 @@ class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis, splitx, splity, splitx_left, splitx_right,
+    functions = [cc_analysis, cc_and_cluster, splitx, splity, splitx_left, splitx_right,
                  splity_top, splity_bottom]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

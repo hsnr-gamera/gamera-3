@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -42,19 +43,6 @@ static PyMethodDef regionmap_methods[] = {
 
 PyTypeObject* get_RegionMapType() {
   return &RegionMapType;
-}
-
-bool is_RegionMapType(PyObject* x) {
-  if (PyObject_TypeCheck(x, &RegionMapType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_RegionMapObject(const RegionMap& r) {
-  RegionMapObject* so = (RegionMapObject*) RegionMapType.tp_alloc(&RegionMapType, 0);
-  so->m_x = new RegionMap(r);
-  return (PyObject*)so;
 }
 
 static PyObject* regionmap_new(PyTypeObject* pytype, PyObject* args,

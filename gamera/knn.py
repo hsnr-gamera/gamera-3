@@ -160,6 +160,18 @@ class _kNNBase(gamera.knncore.kNN):
       self.num_features = features.get_features_length(self.features)
       classify.InteractiveClassifier.change_feature_set(self, f)
 
+##   def classify_with_images(self, database, glyph, cross_validation_mode=0):
+##      import confidence
+##      ans = gamera.knncore.kNN.classify_with_images(self, database, glyph,
+##                                                    cross_validation_mode, 1)
+##      gs = confidence.get_graph_stats(database, self)
+##      tmp = []
+##      for x in ans:
+##         conf = 1 - (x[0] / gs[x[1]])
+##         print conf, x[0]
+##         tmp.append((conf, x[1]))
+##      return tmp
+
    def distance_from_images(self, images, glyph, max=None):
       """Compute a list of distances between a list of images
       and a singe images. Distances greater than the max distance
@@ -193,6 +205,7 @@ class _kNNBase(gamera.knncore.kNN):
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances . . .", l)
       m = self._distance_matrix(images, progress.step, normalize)
+      #m = self._distance_matrix(images)
       progress.kill()
       return m
 
@@ -207,6 +220,7 @@ class _kNNBase(gamera.knncore.kNN):
       l = len(images)
       progress = util.ProgressFactory("Generating unique distances . . .", l)
       dists = self._unique_distances(images, progress.step, normalize)
+      #dists = self._unique_distances(images)
       progress.kill()
       return dists
 

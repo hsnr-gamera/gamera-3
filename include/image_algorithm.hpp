@@ -58,26 +58,6 @@ namespace Gamera {
     std::cout << "]" << std::endl;
   }
 
-  // Shear a single column or row
-  template<class T>
-  inline void simple_shear(T begin, const T end, int distance) {
-    // short-circuit
-    if (distance == 0)
-      return;
-    typename T::value_type filler;
-    // move down or right
-    if (distance > 0) {
-      filler = *begin;
-      std::copy_backward(begin + distance, end - distance, end);
-      std::fill(begin, begin + distance, filler);
-      // move up or left
-    } else {
-      filler = *(end - 1);
-      std::copy(begin - distance, end, begin);
-      std::fill(end + distance, end, filler);
-    }
-  }
-
   // filter based on run-length
   template<class Iter>
   inline void filter_long_run(Iter i, const Iter end,

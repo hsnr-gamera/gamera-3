@@ -183,13 +183,6 @@ PyGetSetDef knn_getset[] = {
   { NULL }
 };
 
-// for type checking images - see initknn.
-static PyTypeObject* imagebase_type;
-static PyTypeObject* image_type;
-static PyTypeObject* subimage_type;
-static PyTypeObject* cc_type;
-static PyTypeObject* data_type;
-static PyObject* pybase_init;
 static PyObject* array_init;
 
 /*
@@ -437,7 +430,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+  if (!is_ImageObject(unknown)) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
@@ -474,14 +467,15 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
 
     knn.add(o->id_names[i], distance);
   }
-  std::vector<std::pair<char*, double> >& answer = knn.majority();
-  PyObject* ans_list = PyList_New(answer.size());
-  for (size_t i = 0; i < answer.size(); ++i) {
-    // PyList_SET_ITEM steal references so this code only looks
+  knn.majority();
+  knn.calculate_simple_confidences();
+  PyObject* ans_list = PyList_New(knn.answer.size());
+  for (size_t i = 0; i < knn.answer.size(); ++i) {
+    // PyList_SET_ITEM steals references so this code only looks
     // like it leaks. KWM
     PyObject* ans = PyTuple_New(2);
-    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer[i].second));
-    PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer[i].first));
+    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(knn.answer[i].second));
+    PyTuple_SET_ITEM(ans, 1, PyString_FromString(knn.answer[i].first));
     PyList_SET_ITEM(ans_list, i, ans);
   }
   return ans_list;
@@ -495,7 +489,8 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   }
   PyObject* unknown, *iterator, *container;
   int cross_validation_mode = 0;
-  if (PyArg_ParseTuple(args, "OO|i", &container, &unknown, &cross_validation_mode) <= 0) {
+  int do_confidence = 1;
+  if (PyArg_ParseTuple(args, "OO|ii", &container, &unknown, &cross_validation_mode, &do_confidence) <= 0) {
     return 0;
   }
 
@@ -506,7 +501,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+  if (!is_ImageObject(unknown)) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
@@ -530,7 +525,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   PyObject* cur;
   while ((cur = PyIter_Next(iterator))) {
 
-    if (!PyObject_TypeCheck(cur, imagebase_type)) {
+    if (!is_ImageObject(cur)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
       return 0;
     }
@@ -552,14 +547,16 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     Py_DECREF(cur);
   }
 
-  std::vector<std::pair<char*, double> >& answer = knn.majority();
-  PyObject* ans_list = PyList_New(answer.size());
-  for (size_t i = 0; i < answer.size(); ++i) {
+  knn.majority();
+  if (do_confidence)
+    knn.calculate_simple_confidences();
+  PyObject* ans_list = PyList_New(knn.answer.size());
+  for (size_t i = 0; i < knn.answer.size(); ++i) {
     // PyList_SET_ITEM steal references so this code only looks
     // like it leaks. KWM
     PyObject* ans = PyTuple_New(2);
-    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(answer[i].second));
-    PyTuple_SET_ITEM(ans, 1, PyString_FromString(answer[i].first));
+    PyTuple_SET_ITEM(ans, 0, PyFloat_FromDouble(knn.answer[i].second));
+    PyTuple_SET_ITEM(ans, 1, PyString_FromString(knn.answer[i].first));
     PyList_SET_ITEM(ans_list, i, ans);
   }
   return ans_list;
@@ -584,7 +581,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  if (!PyObject_TypeCheck(unknown, imagebase_type)) {
+  if (!is_ImageObject(unknown)) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
@@ -604,7 +601,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   PyObject* distance_list = PyList_New(0);
   PyObject* tmp_val;
   while ((cur = PyIter_Next(iterator))) {
-    if (!PyObject_TypeCheck(cur, imagebase_type)) {
+    if (!is_ImageObject(cur)) {
       PyErr_SetString(PyExc_TypeError, "knn: non-image in known list");
       return 0;
     }
@@ -631,12 +628,12 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
   PyObject* imagea, *imageb;
   PyArg_ParseTuple(args, "OO", &imagea, &imageb);
 
-  if (!PyObject_TypeCheck(imagea, imagebase_type)) {
+  if (!is_ImageObject(imagea)) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
     return 0;
   }
 
-  if (!PyObject_TypeCheck(imageb, imagebase_type)) {
+  if (!is_ImageObject(imageb)) {
     PyErr_SetString(PyExc_TypeError, "knn: known must be an image");
     return 0;
   }
@@ -657,9 +654,9 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
 PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
-  PyObject* progress;
+  PyObject* progress = 0;
   long normalize = 1;
-  if (PyArg_ParseTuple(args, "OO|i", &images, &progress, &normalize) <= 0)
+  if (PyArg_ParseTuple(args, "O|Oi", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   if (!PyList_Check(images)) {
@@ -677,7 +674,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   int len_a, len_b;
   PyObject* cur_a, *cur_b;
   cur_a = PyList_GET_ITEM(images, 0);
-  if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+  if (!is_ImageObject(cur_a)) {
     PyErr_SetString(PyExc_TypeError, "knn: expected an image");
     return 0;
   }
@@ -695,7 +692,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     cur_a = PyList_GET_ITEM(images, i);
     if (cur_a == NULL)
       return 0;
-    if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+    if (!is_ImageObject(cur_a)) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
       return 0;
     }
@@ -741,10 +738,10 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
       mat->set(i, j, distance);
       mat->set(j, i, distance);
     }
-    PyObject_CallObject(progress, NULL);
+    if (progress)
+      PyObject_CallObject(progress, NULL);
   }
-  return create_ImageObject(mat, image_type, subimage_type, cc_type,
-			    data_type, pybase_init);
+  return create_ImageObject(mat);
  mat_error:
   // delete the image
   delete mat; delete data;
@@ -784,7 +781,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   int len_a, len_b;
   PyObject* cur_a, *cur_b;
   cur_a = PyList_GET_ITEM(images, 0);
-  if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+  if (!is_ImageObject(cur_a)) {
     PyErr_SetString(PyExc_TypeError, "knn: expected an image");
     return 0;
   }
@@ -800,7 +797,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   kNN::Normalize norm(len_a);
   for (int i = 0; i < images_len; ++i) { 
     cur_a = PyList_GetItem(images, i);
-    if (!PyObject_TypeCheck(cur_a, imagebase_type)) {
+    if (!is_ImageObject(cur_a)) {
       PyErr_SetString(PyExc_TypeError, "knn: expected an image");
       return 0;
     }
@@ -851,8 +848,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   }
 
   delete[] tmp_a; delete[] tmp_b;
-  return create_ImageObject(list, image_type, subimage_type, cc_type,
-			    data_type, pybase_init);
+  return create_ImageObject(list);
   // in case of error
  uniq_error:
   delete[] tmp_a; delete[] tmp_b;
@@ -924,11 +920,11 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
 	}
 	knn.add(o->id_names[j], distance);
       }
-      std::vector<std::pair<char*, double> >& answer = knn.majority();
-      knn.reset();
-      if (strcmp(answer[0].first, o->id_names[i]) == 0) {
+      knn.majority();
+      if (strcmp(knn.answer[0].first, o->id_names[i]) == 0) {
 	total_correct++;
       }
+      knn.reset();
       total_queries++;
       if (total_queries - total_correct > stop_threshold)
 	return std::make_pair(total_correct, total_queries);
@@ -956,11 +952,11 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
 	
 	knn.add(o->id_names[j], distance);
       }
-      std::vector<std::pair<char*, double> >& answer = knn.majority();
-      knn.reset();
-      if (strcmp(answer[0].first, o->id_names[i]) == 0) {
+      knn.majority();
+      if (strcmp(knn.answer[0].first, o->id_names[i]) == 0) {
 	total_correct++;
       }
+      knn.reset();
       total_queries++;
       if (total_queries - total_correct > stop_threshold)
 	return std::make_pair(total_correct, total_queries);
@@ -1477,49 +1473,8 @@ DL_EXPORT(void) initknncore(void) {
   PyDict_SetItemString(d, "FAST_EUCLIDEAN",
 		       Py_BuildValue("i", FAST_EUCLIDEAN));
 
-  /*
-    We need to type check the images passed in so we need
-    to have the image type around. By looking up the type
-    at module init time we can save some overhead in the
-    function calles. gamera.gameracore.Image is used because
-    it is the base type for _all_ of the image classes in
-    Gamera.
-  */
-  PyObject* mod = PyImport_ImportModule("gamera.core");
-  if (mod == 0) {
-    printf("Could not load gamera.py\n");
-    return;
-  }
-  PyObject* dict = PyModule_GetDict(mod);
-  if (dict == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
-    return;
-  }
-  pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, "ImageBase"), "__init__");
-  image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
-  subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
-  cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
-  data_type = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
-  mod = PyImport_ImportModule("gamera.gameracore");
-  if (mod == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
-    return;
-  }
-  dict = PyModule_GetDict(mod);
-  if (dict == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
-    return;
-  }
-  imagebase_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
-
-  PyObject* array_module = PyImport_ImportModule("array");
-  if (array_module == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to get array module\n");
-    return;
-  }
-  PyObject* array_dict = PyModule_GetDict(array_module);
+  PyObject* array_dict = get_module_dict("array");
   if (array_dict == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to get array module dict\n");
     return;
   }
   array_init = PyDict_GetItemString(array_dict, "array");

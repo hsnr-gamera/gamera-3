@@ -31,6 +31,7 @@
 #include "gamera_limits.hpp"
 #include "features.hpp"
 #include "image_utilities.hpp"
+#include "projections.hpp"
 
 /*
   Connected-component analysis (8-connected)
@@ -268,6 +269,13 @@ namespace Gamera {
     return ccs;
   }
 
+  template<class T>
+  inline void delete_connected_components(T* ccs) {
+    for (typename T::iterator i = ccs->begin(); i != ccs->end(); ++i)
+      delete *i;
+    delete ccs;
+  }
+
   namespace ccs {
     /*
       Connected-component filters for use with C++ - there are equivalent
@@ -279,8 +287,8 @@ namespace Gamera {
     void filter_wide(T& ccs, size_t max_width) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->ncols() > max_width) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->ncols() > max_width) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -292,8 +300,8 @@ namespace Gamera {
     void filter_narrow(T& ccs, size_t min_width) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->ncols() < min_width) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->ncols() < min_width) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -305,8 +313,8 @@ namespace Gamera {
     void filter_tall(T& ccs, size_t max_height) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->nrows() > max_height) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->nrows() > max_height) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -318,8 +326,8 @@ namespace Gamera {
     void filter_short(T& ccs, size_t min_height) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->nrows() < min_height) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->nrows() < min_height) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -331,8 +339,8 @@ namespace Gamera {
     void filter_large(T& ccs, size_t max_size) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->nrows() > max_size && i->ncols() > max_size) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->nrows() > max_size && (*i)->ncols() > max_size) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -344,8 +352,8 @@ namespace Gamera {
     void filter_small(T& ccs, size_t min_size) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (i->nrows() < min_size && i->ncols() < min_size) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if ((*i)->nrows() < min_size && (*i)->ncols() < min_size) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -354,11 +362,11 @@ namespace Gamera {
     }
 
     template<class T>
-    void filter_black_area_large(T& ccs, size_t max_area) {
+    void filter_black_area_large(T& ccs, int max_area) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
 	if (black_area(*i) > max_area) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -367,11 +375,11 @@ namespace Gamera {
     }
 
     template<class T>
-    void filter_black_area_small(T& ccs, size_t min_area) {
+    void filter_black_area_small(T& ccs, int min_area) {
       typename T::iterator i;
       for (i = ccs.begin(); i != ccs.end();) {
-	if (black_area(*i) < min_area) {
-	  std::fill(i->vec_begin(), i->vec_end(), 0);
+	if (black_area(**i) < min_area) {
+	  std::fill((*i)->vec_begin(), (*i)->vec_end(), 0);
 	  ccs.erase(i++);
 	} else {
 	  ++i;
@@ -393,12 +401,13 @@ namespace Gamera {
 	minimum_index = i;
       }
     }
+    delete projections;
     return minimum_index;
   }
 
   template<class T>
   std::list<Image*>* splitx(T& image, double& center) {
-    size_t split_point = find_split_point(projections_cols(image), center);
+    size_t split_point = find_split_point(projection_cols(image), center);
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;
@@ -416,7 +425,7 @@ namespace Gamera {
 
   template<class T>
   std::list<Image*>* splity(T& image, double& center) {
-    size_t split_point = find_split_point(projections_rows(image), center);
+    size_t split_point = find_split_point(projection_rows(image), center);
     std::list<Image*>* splits = new std::list<Image*>();
     std::list<Image*>* ccs;
     std::list<Image*>::iterator ccs_it;

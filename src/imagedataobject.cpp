@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -82,59 +83,6 @@ static PyMethodDef imagedata_methods[] = {
 
 PyTypeObject* get_ImageDataType() {
   return &ImageDataType;
-}
-
-bool is_ImageDataObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &ImageDataType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_ImageDataObject(int nrows, int ncols,
-				 int page_offset_y, int page_offset_x,
-				 int pixel_type, int storage_format) {
-  ImageDataObject* o;
-  o = (ImageDataObject*)ImageDataType.tp_alloc(&ImageDataType, 0);
-  o->m_pixel_type = pixel_type;
-  o->m_storage_format = storage_format;
-  if (storage_format == DENSE) {
-    if (pixel_type == ONEBIT)
-      o->m_x = new ImageData<OneBitPixel>(nrows, ncols, page_offset_y,
-					  page_offset_x);
-    else if (pixel_type == GREYSCALE)
-      o->m_x = new ImageData<GreyScalePixel>(nrows, ncols, page_offset_y,
-					     page_offset_x);      
-    else if (pixel_type == GREY16)
-      o->m_x = new ImageData<Grey16Pixel>(nrows, ncols, page_offset_y,
-					  page_offset_x);      
-    // We have to explicity declare which FLOAT we want here, since there
-    // is a name clash on Mingw32 with a typedef in windef.h
-    else if (pixel_type == Gamera::FLOAT)
-      o->m_x = new ImageData<FloatPixel>(nrows, ncols, page_offset_y,
-					 page_offset_x);      
-    else if (pixel_type == RGB)
-      o->m_x = new ImageData<RGBPixel>(nrows, ncols, page_offset_y,
-				       page_offset_x);      
-    else {
-      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
-      return 0;
-    }
-  } else if (storage_format == RLE) {
-    if (pixel_type == ONEBIT)
-      o->m_x = new RleImageData<OneBitPixel>(nrows, ncols, page_offset_y,
-					     page_offset_x);
-    else {
-      PyErr_SetString(PyExc_TypeError,
-		      "Pixel type must be Onebit for Rle data!");
-      return 0;
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
-    return 0;
-  }
-  o->m_x->m_user_data = (void*)o;
-  return (PyObject*)o;
 }
 
 static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,

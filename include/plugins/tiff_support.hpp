@@ -198,23 +198,27 @@ namespace {
       unsigned long* data = (unsigned long *)buf;
       typename T::const_vec_iterator it = matrix.vec_begin();
       for (size_t i = 0; i < matrix.nrows(); i++) {
-	size_t bit_index = 0, k = 32;
-	for (size_t j = 0; j < matrix.ncols(); j++, k--, it++) {
-	  if (is_black(*it))
-	    bits[k - 1] = 1;
-	  else
-	    bits[k - 1] = 0;
-	  if (k == 0) {
+	size_t bit_index = 0;
+	int k = 31;
+	for (size_t j = 0; j < matrix.ncols(); k--) {
+	  if (k < 0) {
 	    data[bit_index] = bits.to_ulong();
             #if defined(__i386__) || defined(_MSC_VER)
 	    byte_swap32((unsigned char *)&data[bit_index]);
             #endif
 	    bit_index++;
 	    k = 32;
+	    continue;
 	  }
+	  if (is_black(*it))
+	    bits[k] = 1;
+	  else
+	    bits[k] = 0;
+	  j++;
+	  it++;
 	}
 	// The last 32 pixels need to be saved, even if they are not full
-	if (k != 32) {
+	if (k != 31) {
 	  data[bit_index] = bits.to_ulong();
           #if defined(__i386__) || defined(_MSC_VER)
 	  byte_swap32((unsigned char *)&data[bit_index]);
@@ -296,9 +300,9 @@ Image* load_tiff(const char* filename, int storage) {
   printf("%s", filename);
   ImageInfo* info = tiff_info(filename);
   if (info->ncolors() == 3) {
-    TypeIdImageFactory<RGB, DENSE> fact;
-    TypeIdImageFactory<RGB, DENSE>::image_type* image =
-      fact.create(0, 0, info->nrows(), info->ncols());
+    typedef TypeIdImageFactory<RGB, DENSE> fact;
+    fact::image_type* image =
+      fact::create(0, 0, info->nrows(), info->ncols());
     tiff_load_rgb(*image, *info, filename);
     return image;
   } else if (info->ncolors() == 1) {

@@ -343,22 +343,16 @@ namespace Gamera {
 	Find the id of the majority of the k nearest neighbors. This
 	includes tie-breaking if necessary.
       */
-      std::vector<std::pair<id_type, double> >& majority(double max_dist = -1) {
-	m_answer.clear();
-	double max_distance;
-	if (max_dist = -1)
-	  max_distance = m_max_distance;
-	else
-	  max_distance = max_dist;
+      void majority() {
+	answer.clear();
 	
 	if (m_nn.size() == 0)
 	  throw std::range_error("majority called without enough valid neighbors.");
 	// short circuit for k == 1
 	if (m_nn.size() == 1) {
-	  double confidence = get_confidence(m_nn[0].distance, max_distance);
-	  m_answer.resize(1);
-	  m_answer[0] = std::make_pair(m_nn[0].id, confidence);
-	  return m_answer;
+	  answer.resize(1);
+	  answer[0] = std::make_pair(m_nn[0].id, m_nn[0].distance);
+	  return;
 	}
 	/*
 	  Create a histogram of the ids in the nearest neighbors. A map
@@ -387,10 +381,9 @@ namespace Gamera {
 	  is a clear winner, but if not, we need do some sort of tie breaking.
 	*/
 	if (id_map.size() == 1) {
-	  double confidence = get_confidence(id_map.begin()->second.min_distance, max_distance);
-	  m_answer.resize(1);
-	  m_answer[0] = std::make_pair(id_map.begin()->first, confidence);
-	  return m_answer;
+	  answer.resize(1);
+	  answer[0] = std::make_pair(id_map.begin()->first, id_map.begin()->second.min_distance);
+	  return;
 	} else {
 	  /*
 	    Find the id(s) with the maximum
@@ -412,21 +405,18 @@ namespace Gamera {
 	  */
 	  if (max.size() == 1) {
 	    // put the winner in the result vector
-	    m_answer.resize(id_map.size());
-	    double confidence = get_confidence(max[0]->second.min_distance, max_distance);
-	    //confidence += (double(max[0]->second.count) / m_k) / 2.0;
-	    m_answer[0] = std::make_pair(max[0]->first, confidence);
+	    answer.resize(id_map.size());
+	    answer[0] = std::make_pair(max[0]->first, max[0]->second.min_distance);
 	    // remove the winner from the id_map
 	    id_map.erase(max[0]);
 	    // add the rest to the answer vector
 	    size_t ans = 1;
 	    for (typename map_type::iterator i = id_map.begin();
 		 i != id_map.end(); ++i) {
-	      confidence = get_confidence(i->second.min_distance, max_distance);
-	      m_answer[ans] = std::make_pair(i->first, confidence);
+	      answer[ans] = std::make_pair(i->first, i->second.min_distance);
 	      ++ans;
 	    }
-	    return m_answer;
+	    return;
 	  } else {
 	    /*
 	      Tie-break by average distance
@@ -437,24 +427,26 @@ namespace Gamera {
 		  < min_dist->second.total_distance)
 		min_dist = max[i];
 	    }
-	    m_answer.resize(1);
-	    double confidence = get_confidence(min_dist->second.min_distance, max_distance);
-	    m_answer[0] = std::make_pair(min_dist->first, confidence);
-	    return m_answer;
+	    answer.resize(1);
+	    answer[0] = std::make_pair(min_dist->first, min_dist->second.min_distance);
 	  }
 	}
       }
-    private:
-      double get_confidence(double dist, double max_dist) {
-	static double dither = std::numeric_limits<double>::min();
-	return std::pow(1.0 - (dist / (max_dist + dither)), 10);
-	//return dist;
+      void calculate_simple_confidences() {
+	for (size_t i = 0; i < answer.size(); ++i)
+	  answer[i].second = get_confidence(answer[i].second);
       }
+    private:
+      double get_confidence(double dist) {
+	static double dither = std::numeric_limits<double>::min();
+	return std::pow(1.0 - (dist / (m_max_distance + dither)), 10);
+      }
+    public:
+      std::vector<std::pair<id_type, double> > answer;
     private:
       std::vector<neighbor_type> m_nn;
       size_t m_k;
       double m_max_distance;
-      std::vector<std::pair<id_type, double> > m_answer;
     };
 
   } // namespace kNN

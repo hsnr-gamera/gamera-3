@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 #include "pixel.hpp"
 
@@ -64,13 +65,6 @@ PyTypeObject* get_ImageType() {
   return &ImageType;
 }
 
-bool is_ImageObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &ImageType))
-    return true;
-  else
-    return false;
-}
-
 static PyTypeObject SubImageType = {
   PyObject_HEAD_INIT(NULL)
   0,
@@ -78,13 +72,6 @@ static PyTypeObject SubImageType = {
 
 PyTypeObject* get_SubImageType() {
   return &SubImageType;
-}
-
-bool is_SubImageObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &SubImageType))
-    return true;
-  else
-    return false;
 }
 
 static PyTypeObject CCType = {
@@ -95,14 +82,6 @@ static PyTypeObject CCType = {
 PyTypeObject* get_CCType() {
   return &CCType;
 }
-
-bool is_CCObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &CCType))
-    return true;
-  else
-    return false;
-}
-
 
 static PyGetSetDef image_getset[] = {
   { "data", (getter)image_get_data, 0, "The underlying image data", 0 },

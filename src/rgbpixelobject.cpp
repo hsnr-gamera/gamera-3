@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -50,19 +51,6 @@ static PyTypeObject RGBPixelType = {
 
 PyTypeObject* get_RGBPixelType() {
   return &RGBPixelType;
-}
-
-bool is_RGBPixelObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &RGBPixelType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_RGBPixelObject(const RGBPixel& p) {
-  RGBPixelObject* o = (RGBPixelObject*)RGBPixelType.tp_alloc(&RGBPixelType, 0);
-  o->m_x = new RGBPixel(p);
-  return (PyObject*)o;
 }
 
 static PyGetSetDef rgbpixel_getset[] = {

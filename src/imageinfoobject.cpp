@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -62,12 +63,6 @@ static PyGetSetDef imageinfo_getset[] = {
 
 PyTypeObject* get_ImageInfoType() {
   return &ImageInfoType;
-}
-
-bool is_ImageInfoObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &ImageInfoType))
-    return true;
-  else return false;
 }
 
 static PyObject* imageinfo_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {

@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -55,20 +56,6 @@ static PyMethodDef point_methods[] = {
 
 PyTypeObject* get_PointType() {
   return &PointType;
-}
-
-bool is_PointObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &PointType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_PointObject(const Point& p) {
-  PointObject* so;
-  so = (PointObject*)PointType.tp_alloc(&PointType, 0);
-  so->m_x = new Point(p);
-  return (PyObject*)so;
 }
 
 static PyObject* point_new(PyTypeObject* pytype, PyObject* args,

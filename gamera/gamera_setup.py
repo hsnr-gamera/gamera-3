@@ -59,15 +59,33 @@ def get_plugin_filenames(path):
       pass
    return plugins
 
-def generate_plugins(plugins):
+def generate_plugins(plugins, location, compiling_gamera=0):
    """Generate the necessary cpp wrappers from a list of python plugin
    filenames. The regeneration only happens if it is necessary (either
    the python file has changed or one of the files that it depends on
    has changed). A distutiles extension class is created for each plugin
    that needs to be compiled."""
+
+   # Create the list of modules to ignore at import - because
+   # we are in the middle of the build process a lot of C++
+   # plugins don't yet exist. By preventing the import of
+   # the core of gamera and all of the plugins we allow the
+   # plugins to be imported for the build process to examine
+   # them. Some of this is unnecessary for external plugins,
+   # but it shouldn't hurt.
+   ignore = ["core", "gamera.core", "gameracore"]
+   for x in plugins:
+      plug_path, filename = os.path.split(x)
+      module_name = "_" + filename.split('.')[0]
+      ignore.append(module_name)
+   generate.magic_import_setup(ignore)
+   
    plugin_extensions = []
    for x in plugins:
-      extension = generate.generate_plugin(x)
+      extension = generate.generate_plugin(x, location, compiling_gamera)
       if not extension is None:
          plugin_extensions.append(extension)
+   
+   generate.restore_import()
+
    return plugin_extensions

@@ -31,7 +31,48 @@
   instance struct is exported here - the type struct is not exported, but
   is available via the object->tp_type field in the instance struct and
   through a function.
+
+  Some of the functions here come in 2 versions - one is located in the
+  CPP files for each of the types and is available within the gameracore
+  module (i.e. in the CPP files that are linked into gameracore). The other
+  is inlined so that it is available to all of the gamera plugins. The inline
+  versions are less efficient because they have to lookup the types at
+  runtime.
 */
+
+/*
+  Utilities
+*/
+
+/*
+  Get the dictionary for a module by name. This does all of the error
+  handling for you to get the dictionary for a module. Returns the module
+  on success of NULL on failure with the error set.
+*/
+inline PyObject* get_module_dict(char* module_name) {
+  PyObject* mod = PyImport_ImportModule(module_name);
+  if (mod == 0)
+    return PyErr_Format(PyExc_RuntimeError, "Unable to load %s.\n", module_name);
+  PyObject* dict = PyModule_GetDict(mod);
+  if (dict == 0)
+    return PyErr_Format(PyExc_RuntimeError,
+			"Unable to get dict for module %s.\n", module_name);
+  return dict;
+}
+
+/*
+  Get the dictionary for gameracore. This uses get_module_dict above, but caches
+  the result for faster lookups in subsequent calls.
+*/
+inline PyObject* get_gameracore_dict() {
+  static PyObject* dict = 0;
+  if (dict == 0) {
+    dict = get_module_dict("gamera.gameracore");
+    if (dict == 0)
+      return 0;
+  }
+  return dict;
+}
 
 /*
   SIZE OBJECT
@@ -41,9 +82,45 @@ struct SizeObject {
   Size* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_SizeType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Size");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Size type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_SizeType();
-extern bool is_SizeObject(PyObject* x);
-extern PyObject* create_SizeObject(const Size& d);
+#endif
+
+inline bool is_SizeObject(PyObject* x) {
+  PyTypeObject* t = get_SizeType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_SizeObject(const Size& d) {
+  PyTypeObject* t = get_SizeType();
+  if (t == 0)
+    return 0;
+  SizeObject* so;
+  so = (SizeObject*)t->tp_alloc(t, 0);
+  so->m_x = new Size(d);
+  return (PyObject*)so;
+}
 
 /*
   DIMENSIONS OBJECT
@@ -53,9 +130,45 @@ struct DimensionsObject {
   Dimensions* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_DimensionsType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Dimensions");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Dimensions type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_DimensionsType();
-extern bool is_DimensionsObject(PyObject* x);
-extern PyObject* create_DimensionsObject(const Dimensions& d);
+#endif
+
+inline bool is_DimensionsObject(PyObject* x) {
+  PyTypeObject* t = get_DimensionsType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_DimensionsObject(const Dimensions& d) {
+  PyTypeObject* t = get_DimensionsType();
+  if (t == 0)
+    return 0;
+  DimensionsObject* so;
+  so = (DimensionsObject*)t->tp_alloc(t, 0);
+  so->m_x = new Dimensions(d);
+  return (PyObject*)so;
+}
 
 /*
   POINT OBJECT
@@ -65,9 +178,45 @@ struct PointObject {
   Point* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_PointType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Point");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Point type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_PointType();
-extern bool is_PointObject(PyObject* x);
-extern PyObject* create_PointObject(const Point& p);
+#endif
+
+inline bool is_PointObject(PyObject* x) {
+  PyTypeObject* t = get_PointType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_PointObject(const Point& d) {
+  PyTypeObject* t = get_PointType();
+  if (t == 0)
+    return 0;
+  PointObject* so;
+  so = (PointObject*)t->tp_alloc(t, 0);
+  so->m_x = new Point(d);
+  return (PyObject*)so;
+}
 
 /*
   RECT OBJECT
@@ -77,9 +226,45 @@ struct RectObject {
   Rect* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_RectType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Rect");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Rect type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_RectType();
-bool is_RectObject(PyObject* x);
-extern PyObject* create_RectObject(const Rect& r);
+#endif
+
+inline bool is_RectObject(PyObject* x) {
+  PyTypeObject* t = get_RectType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_RectObject(const Rect& d) {
+  PyTypeObject* t = get_RectType();
+  if (t == 0)
+    return 0;
+  RectObject* so;
+  so = (RectObject*)t->tp_alloc(t, 0);
+  so->m_x = new Rect(d);
+  return (PyObject*)so;
+}
 
 /*
   RGB Pixel OBJECT
@@ -90,9 +275,45 @@ struct RGBPixelObject {
   RGBPixel* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_RGBPixelType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "RGBPixel");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get RGBPixel type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_RGBPixelType();
-bool is_RGBPixelObject(PyObject* x);
-extern PyObject* create_RGBPixelObject(const RGBPixel& p);
+#endif
+
+inline bool is_RGBPixelObject(PyObject* x) {
+  PyTypeObject* t = get_RGBPixelType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_RGBPixelObject(const RGBPixel& d) {
+  PyTypeObject* t = get_RGBPixelType();
+  if (t == 0)
+    return 0;
+  RGBPixelObject* so;
+  so = (RGBPixelObject*)t->tp_alloc(t, 0);
+  so->m_x = new RGBPixel(d);
+  return (PyObject*)so;
+}
 
 /*
   REGION OBJECT
@@ -103,9 +324,45 @@ struct RegionObject {
   RectObject m_parent; // we inheric from Rect
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_RegionType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Region");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Region type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_RegionType();
-bool is_RegionObject(PyObject* x);
-extern PyObject* create_RegionObject(const Region& r);
+#endif
+
+inline bool is_RegionObject(PyObject* x) {
+  PyTypeObject* t = get_RegionType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_RegionObject(const Region& d) {
+  PyTypeObject* t = get_RegionType();
+  if (t == 0)
+    return 0;
+  RegionObject* so;
+  so = (RegionObject*)t->tp_alloc(t, 0);
+  ((RectObject*)so)->m_x = new Region(d);
+  return (PyObject*)so;
+}
 
 /*
   REGION MAP OBJECT
@@ -116,9 +373,45 @@ struct RegionMapObject {
   RegionMap* m_x;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_RegionMapType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "RegionMap");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get RegionMap type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_RegionMapType();
-bool is_RegionMapObject(PyObject* x);
-extern PyObject* create_RegionMapObject(const Region& r);
+#endif
+
+inline bool is_RegionMapObject(PyObject* x) {
+  PyTypeObject* t = get_RegionMapType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_RegionMapObject(const RegionMap& d) {
+  PyTypeObject* t = get_RegionMapType();
+  if (t == 0)
+    return 0;
+  RegionMapObject* so;
+  so = (RegionMapObject*)t->tp_alloc(t, 0);
+  so->m_x = new RegionMap(d);
+  return (PyObject*)so;
+}
 
 /*
   IMAGE DATA OBJECT
@@ -130,11 +423,85 @@ struct ImageDataObject {
   int m_storage_format;
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_ImageDataType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get ImageData type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_ImageDataType();
-bool is_ImageDataObject(PyObject* x);
-extern PyObject* create_ImageDataObject(int nrows, int ncols,
+#endif
+
+inline bool is_ImageDataObject(PyObject* x) {
+  PyTypeObject* t = get_ImageDataType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+inline PyObject* create_ImageDataObject(int nrows, int ncols,
 					int page_offset_y, int page_offset_x,
-					int pixel_type, int storage_format);
+					int pixel_type, int storage_format) {
+
+  ImageDataObject* o;
+  PyTypeObject* id_type = get_ImageDataType();
+  if (id_type == 0)
+    return 0;
+  o = (ImageDataObject*)id_type->tp_alloc(id_type, 0);
+  o->m_pixel_type = pixel_type;
+  o->m_storage_format = storage_format;
+  if (storage_format == DENSE) {
+    if (pixel_type == ONEBIT)
+      o->m_x = new ImageData<OneBitPixel>(nrows, ncols, page_offset_y,
+					  page_offset_x);
+    else if (pixel_type == GREYSCALE)
+      o->m_x = new ImageData<GreyScalePixel>(nrows, ncols, page_offset_y,
+					     page_offset_x);      
+    else if (pixel_type == GREY16)
+      o->m_x = new ImageData<Grey16Pixel>(nrows, ncols, page_offset_y,
+					  page_offset_x);      
+    // We have to explicity declare which FLOAT we want here, since there
+    // is a name clash on Mingw32 with a typedef in windef.h
+    else if (pixel_type == Gamera::FLOAT)
+      o->m_x = new ImageData<FloatPixel>(nrows, ncols, page_offset_y,
+					 page_offset_x);      
+    else if (pixel_type == RGB)
+      o->m_x = new ImageData<RGBPixel>(nrows, ncols, page_offset_y,
+				       page_offset_x);      
+    else {
+      PyErr_SetString(PyExc_TypeError, "Unkown Pixel type!");
+      return 0;
+    }
+  } else if (storage_format == RLE) {
+    if (pixel_type == ONEBIT)
+      o->m_x = new RleImageData<OneBitPixel>(nrows, ncols, page_offset_y,
+					     page_offset_x);
+    else {
+      PyErr_SetString(PyExc_TypeError,
+		      "Pixel type must be Onebit for Rle data!");
+      return 0;
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "Unkown Format!");
+    return 0;
+  }
+  o->m_x->m_user_data = (void*)o;
+  return (PyObject*)o;
+}
 
 /*
   IMAGE OBJECT
@@ -155,8 +522,117 @@ struct ImageObject {
   PyObject* m_weakreflist; // for Python weak references
 };
 
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_ImageType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get Image type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
 extern PyTypeObject* get_ImageType();
-bool is_ImageObject(PyObject* x);
+#endif
+
+inline bool is_ImageObject(PyObject* x) {
+  PyTypeObject* t = get_ImageType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+/*
+  SUB IMAGE OBJECT
+
+  The SubImage object is here simply to allow type checking and to provide
+  a natural form of constructor overloading - otherwise it is identical
+  to the ImageObject.
+*/
+struct SubImageObject {
+  ImageObject m_parent;
+};
+
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_SubImageType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get SubImage type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
+extern PyTypeObject* get_SubImageType();
+#endif
+
+inline bool is_SubImageObject(PyObject* x) {
+  PyTypeObject* t = get_SubImageType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
+
+/*
+  CC TYPE
+
+  ConnectedComponents are a special case of image - a separate class is
+  used for clarity and type checking. Like the SubImageObject it is almost
+  identical to an ImageObject.
+*/
+struct CCObject {
+  ImageObject m_parent;
+};
+
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_CCType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get CC type for gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
+#else
+extern PyTypeObject* get_CCType();
+#endif
+
+inline bool is_CCObject(PyObject* x) {
+  PyTypeObject* t = get_CCType();
+  if (t == 0)
+    return 0;
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+    return false;
+}
 
 /*
   Image type information and type checking utilities
@@ -173,9 +649,9 @@ inline int get_pixel_type(PyObject* image) {
 }
 
 // get the combination of pixel and image type
-inline int get_image_combination(PyObject* image, PyTypeObject* cc_type) {
+inline int get_image_combination(PyObject* image) {
   int storage = get_storage_format(image);
-  if (PyObject_TypeCheck(image, cc_type)) {
+  if (is_CCObject(image)) {
     if (storage == Gamera::RLE)
       return Gamera::RLECC;
     else if (storage == Gamera::DENSE)
@@ -242,11 +718,24 @@ inline PyObject* init_image_members(ImageObject* o) {
   time).
 */
 
-inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
-				    PyTypeObject* subimage_type,
-				    PyTypeObject* cc_type,
-				    PyTypeObject* image_data,
-				    PyObject* pybase_init) {
+inline PyObject* create_ImageObject(Image* image) {
+  static bool initialized = false;
+  static PyTypeObject *image_type, *subimage_type, *cc_type,
+    *image_data;
+  static PyObject* pybase_init;
+  if (!initialized) {
+    PyObject* dict = get_module_dict("gamera.core");
+    if (dict == 0)
+      return 0;
+    pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, "ImageBase"),
+					 "__init__");
+    image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
+    subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
+    cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
+    image_data = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
+    initialized = true;
+  }
+  
   int pixel_type;
   int storage_type;
   bool cc = false;
@@ -313,35 +802,6 @@ inline PyObject* create_ImageObject(Image* image, PyTypeObject* image_type,
 }
 
 /*
-  SUB IMAGE OBJECT
-
-  The SubImage object is here simply to allow type checking and to provide
-  a natural form of constructor overloading - otherwise it is identical
-  to the ImageObject.
-*/
-struct SubImageObject {
-  ImageObject m_parent;
-};
-
-extern PyTypeObject* get_SubImageType();
-bool is_SubImageObject(PyObject* x);
-
-/*
-  CC TYPE
-
-  ConnectedComponents are a special case of image - a separate class is
-  used for clarity and type checking. Like the SubImageObject it is almost
-  identical to an ImageObject.
-*/
-struct CCObject {
-  ImageObject m_parent;
-};
-
-extern PyTypeObject* get_CCType();
-bool is_CCObject(PyObject* x);
-
-
-/*
   IMAGEINFO TYPE
 
   Holds information about an image - primarily used for opening images.
@@ -352,31 +812,40 @@ struct ImageInfoObject {
   ImageInfo* m_x;
 };
 
-extern PyTypeObject* get_ImageInfoType();
-bool is_ImageInfoObject(PyObject* x);
-
-inline PyObject* create_ImageInfoObject(ImageInfo* x) {
-  /*
-    Unlike the image types (which are loaded at init time
-    for all of the modules) we are going to grab the ImageInfo
-    type here since it is only seldom going to be used. The
-    runtime overhead won't matter in this instance.
-  */
-  PyObject* mod = PyImport_ImportModule("gamera.core");
-  if (mod == 0) {
-    printf("Could not load gamera.py - falling back to gameracore\n");
-    mod = PyImport_ImportModule("gamera.gameracore");
-    if (mod == 0) {
-      PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
+#ifndef GAMERACORE_INTERNAL
+inline PyTypeObject* get_ImageInfoType() {
+static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "ImageInfo");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+		      "Unable to get ImageInfo type for gamera.gameracore.\n");
       return 0;
     }
   }
-  PyObject* dict = PyModule_GetDict(mod);
-  if (dict == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+  return t;
+}
+#else
+extern PyTypeObject* get_ImageInfoType();
+#endif
+
+inline bool is_ImageInfoObject(PyObject* x) {
+  PyTypeObject* t = get_ImageInfoType();
+  if (t == 0)
     return 0;
-  }
-  PyTypeObject* info_type = (PyTypeObject*)PyDict_GetItemString(dict, "ImageInfo");
+  if (PyObject_TypeCheck(x, t))
+    return true;
+  else
+  return false;
+}
+
+inline PyObject* create_ImageInfoObject(ImageInfo* x) {
+  PyTypeObject* info_type = get_ImageInfoType();
+  if (info_type == 0)
+    return 0;
   ImageInfoObject* o;
   o = (ImageInfoObject*)info_type->tp_alloc(info_type, 0);
   o->m_x = x;

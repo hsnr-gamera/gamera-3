@@ -683,6 +683,24 @@ class Check(_guiCheck, Arg):
       self.default = default
       self.enabled = enabled
 
+# RegionMap
+
+class _guiRegion:
+   pass
+
+class Region(_guiRegion, Arg):
+   def __init__(self, name):
+      self.name = name
+
+# RegionMap
+
+class _guiRegionMap:
+   pass
+
+class RegionMap(_guiRegionMap, Arg):
+   def __init__(self, name):
+      self.name = name
+
 # ImageInfo
 
 class _guiImageInfo:

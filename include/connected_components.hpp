@@ -28,6 +28,7 @@
 
 #include <stdexcept>
 #include <exception>
+#include <list>
 
 /*
   ConnectedComponent
@@ -340,7 +341,6 @@ namespace Gamera {
     // The label for this connected-component
     value_type m_label;
   };
-
 }
 
 #endif

@@ -121,6 +121,9 @@ namespace Gamera {
     typedef ConnectedComponent<data_type> cc_type;
     typedef ConnectedComponent<dense_data_type> dense_cc_type;
     typedef ConnectedComponent<rle_data_type> rle_cc_type;
+    typedef std::list<cc_type*> ccs_type;
+    typedef std::list<dense_cc_type*> dense_ccs_type;
+    typedef std::list<rle_cc_type*> rle_ccs_type;
   };
 
   template<>
@@ -137,6 +140,9 @@ namespace Gamera {
     typedef ConnectedComponent<data_type> cc_type;
     typedef ConnectedComponent<dense_data_type> dense_cc_type;
     typedef ConnectedComponent<rle_data_type> rle_cc_type;
+    typedef std::list<cc_type*> ccs_type;
+    typedef std::list<dense_cc_type*> dense_ccs_type;
+    typedef std::list<rle_cc_type*> rle_ccs_type;
   };
 
 

@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 #include <exception>
 
@@ -138,20 +139,6 @@ static PyMethodDef rect_methods[] = {
 
 extern PyTypeObject* get_RectType() {
   return &RectType;
-}
-
-bool is_RectObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &RectType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_RectObject(const Rect& r) {
-  RectObject* ro;
-  ro = (RectObject*)RectType.tp_alloc(&RectType, 0);
-  ro->m_x = new Rect(r);
-  return (PyObject*)ro;
 }
 
 static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,

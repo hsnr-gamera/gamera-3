@@ -26,22 +26,7 @@ plugin_extensions = []
 if 'build' in sys.argv:
    plugins = gamera_setup.get_plugin_filenames('gamera/plugins/')
 
-   # Create the list of modules to ignore at import - because
-   # we are in the middle of the build process a lot of C++
-   # plugins don't yet exist. By preventing the import of
-   # the core of gamera and all of the plugins we allow the
-   # plugins to be imported for the build process to examine
-   # them.
-   ignore = ["core", "gamera.core", "gameracore"]
-   for x in plugins:
-      plug_path, filename = os.path.split(x)
-      module_name = "_" + filename.split('.')[0]
-      ignore.append(module_name)
-   generate.magic_import_setup(ignore)
-
-   plugin_extensions = gamera_setup.generate_plugins(plugins)
-
-   generate.restore_import()
+   plugin_extensions = gamera_setup.generate_plugins(plugins, "gamera.plugins", 1)
 
 
    ########################################
@@ -124,6 +109,7 @@ setup(name = "gamera", version="1.1",
                   'gamera.toolkits.omr'],
       data_files=[('include/gamera', glob.glob("include/*.hpp")),
                   ('include/gamera/plugins', glob.glob("include/plugins/*.hpp")),
+                  ('include/gamera/vigra', glob.glob("include/vigra/*.hxx")),
                   ('gamera/doc', glob.glob("gamera/doc/*.html")),
                   ('gamera/doc/classes', glob.glob("gamera/doc/classes/*.html")),
                   ('gamera/doc/plugins', glob.glob("gamera/doc/plugins/*.html"))]

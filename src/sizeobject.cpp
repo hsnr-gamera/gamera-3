@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 
 using namespace Gamera;
@@ -48,20 +49,6 @@ static PyGetSetDef size_getset[] = {
 
 PyTypeObject* get_SizeType() {
   return &SizeType;
-}
-
-bool is_SizeObject(PyObject* x) {
-  if (PyObject_TypeCheck(x, &SizeType))
-    return true;
-  else
-    return false;
-}
-
-PyObject* create_SizeObject(const Size& p) {
-  SizeObject* so;
-  so = (SizeObject*)SizeType.tp_alloc(&SizeType, 0);
-  so->m_x = new Size(p);
-  return (PyObject*)so;
 }
 
 static PyObject* size_new(PyTypeObject* pytype, PyObject* args,

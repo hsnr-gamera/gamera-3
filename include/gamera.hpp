@@ -79,20 +79,6 @@ namespace Gamera {
     {0xbc, 0x88, 0x2d}, // Orange
     {0x6e, 0x00, 0xc7}  // Purple
   };
-
-  /* Useful macros copied from glib */
-
-#undef	MAX
-#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
-
-#undef	MIN
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-
-#undef	ABS
-#define ABS(a)	   (((a) < 0) ? -(a) : (a))
-
-#undef	CLAMP
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 }
 
 #endif

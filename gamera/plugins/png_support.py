@@ -19,37 +19,40 @@
 
 from gamera.plugin import *
 
-class save_png(PluginFunction):
-   """Saves the image to a PNG format file.
+class PNG_info(PluginFunction):
+    """Returns an ``ImageInfo`` object describing a PNG file.
 
-.. warning: This is a hacky implementation.
-   This currently only supports saving to 24-bit RGB and requires that
-   wxPython is installed.  There should be a native ``libpng`` version
-   written someday, but in the meantime this provides everything I
-   need to generate the documentation."""
+*image_file_name*
+  A PNG image filename"""
+    self_type = None
+    args = Args([String("image_file_name")])
+    return_type = ImageInfo("PNG_info")
+PNG_info_class = PNG_info
+PNG_info = PNG_info()
+
+class load_PNG(PluginFunction):
+   """Loads a PNG format image file."""
+   self_type = None
+   args = Args([FileOpen("image_file_name", "", "*.tiff;*.tif"),
+                Choice("storage format", ["DENSE", "RLE"])])
+   return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+   def __call__(filename, compression = 0):
+      from gamera.plugins import _png_support
+      return _png_support.load_PNG(filename, compression)
+   __call__ = staticmethod(__call__)
+load_PNG_class = load_PNG
+load_PNG = load_PNG()
+
+class save_PNG(PluginFunction):
+   """Saves the image to a PNG format file."""
    self_type = ImageType(ALL)
    args = Args([FileSave("image_file_name", "image.png", "*.png")])
-   pure_python = True
-   inited_image_handlers = False
-   def __call__(self, filename):
-      try:
-         import wxPython.wx
-      except ImportError, e:
-         raise Exception("Cannot save as PNG, since you do not have wxPython installed. " +
-                         "Soon, we should have native PNG support and we son't have this silly " +
-                         "requirement.")
-      if not save_png.inited_image_handlers:
-         wxPython.wx.wxInitAllImageHandlers()
-         save_png.inited_image_handlers = True
-      image = wxPython.wx.wxEmptyImage(self.ncols, self.nrows)
-      self.to_buffer(image.GetDataBuffer())
-      image.SaveFile(filename, wxPython.wx.wxBITMAP_TYPE_PNG)
-   __call__ = staticmethod(__call__)
 
 class PngSupportModule(PluginModule):
     category = "File"
-    functions = [save_png]
-    pure_python = 1
+    cpp_headers = ["png_support.hpp"]
+    extra_libraries = ["png"]
+    functions = [save_PNG, PNG_info_class, load_PNG_class]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = PngSupportModule()

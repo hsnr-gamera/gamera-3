@@ -144,16 +144,16 @@ def method_example(s, func, level):
          result = func.__call__(*doc_example)
       result_filename = "%s_plugin_%02d" % (func.__name__, i)
       if isinstance(result, core.ImageBase):
-         result.save_png(doc_images_path + result_filename + ".png")
+         result.save_PNG(doc_images_path + result_filename + ".png")
          s.write(".. image:: images/%s.png\n\n" % (result_filename))
       elif result is None:
-         image.save_png(doc_images_path + result_filename + ".png")
+         image.save_PNG(doc_images_path + result_filename + ".png")
          s.write(".. image:: images/%s.png\n\n" % (result_filename))
       elif isinstance(func.return_type, args.ImageList):
          subst = "\n\n"
          for j, part in enumerate(result):
             result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
-            part.save_png(doc_images_path + result_filename + ".png")
+            part.save_PNG(doc_images_path + result_filename + ".png")
             s.write("|%s| " % result_filename)
             subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
          s.write(subst)
@@ -212,7 +212,8 @@ def generate_generic_pngs():
       if pixel_type != FLOAT:
          pixel_type_name = util.get_pixel_type_name(pixel_type)
          image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
-         image.save_png("%s%s_generic.png" % (doc_images_path, pixel_type_name))
+         print image.pixel_type_name
+         image.save_PNG("%s%s_generic.png" % (doc_images_path, pixel_type_name))
 
 def copy_images(output_path):
    if not os.path.exists(output_path):

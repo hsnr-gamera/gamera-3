@@ -346,8 +346,8 @@ Image* load_tiff(const char* filename, int storage) {
       return 0;
     }
   } else {
-    throw std::runtime_error("Unable to load image of this type!");
     delete info;
+    throw std::runtime_error("Unable to load image of this type!");
     return 0;
   }
   delete info;

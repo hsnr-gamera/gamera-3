@@ -69,8 +69,7 @@ namespace Gamera {
   /**
    * Grey16Pixel
    *
-   * The Gamera::Grey16Pixel type is for 16bit greyscale images. For Grey16
-   * images 0 is considerd black and 255 is considered white.
+   * The Gamera::Grey16Pixel type is for 16bit greyscale images.
    */
   typedef unsigned int Grey16Pixel;
 

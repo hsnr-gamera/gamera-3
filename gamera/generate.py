@@ -145,19 +145,20 @@ template = Template("""
 
       [[# Now that we have all of the arguments and variables for them we can parse #]]
       [[# the argument tuple. #]]
-      [[if pyarg_format != '']]
-        if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
-        [[for arg in args]]
-          ,
-          &[[arg.pysymbol]]
-        [[end]]
-        ) <= 0)
-        return 0;\
-      [[end]]
       [[if function.feature_function]]
          int offset = -1;
          if (PyArg_ParseTuple(args, \"O|i\",&[[function.self_type.pysymbol]], &offset) <= 0)
            return 0;
+      [[else]]
+         [[if pyarg_format != '']]
+           if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
+           [[for arg in args]]
+             ,
+             &[[arg.pysymbol]]
+           [[end]]
+           ) <= 0)
+           return 0;\
+         [[end]]
       [[end]]
 
       [[for arg in args]]

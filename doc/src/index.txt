@@ -47,6 +47,6 @@ Documentation License`__.
 
 .. __: gui.html
 
-_ `Gamera XML format`__: The XML files that Gamera uses to store training data.
+- `Gamera XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html

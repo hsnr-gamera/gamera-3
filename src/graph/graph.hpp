@@ -286,7 +286,7 @@ inline bool graph_add_edge(GraphObject* so, PyObject* from_pyobject,
   Node* from_node, *to_node;
   from_node = graph_add_node(so, from_pyobject);
   to_node = graph_add_node(so, to_pyobject);
-  return graph_add_edge(so, from_node, to_node, cost);
+  return graph_add_edge(so, from_node, to_node, cost) != NULL;
 }
 
 // WARNING: This is an internal function that assumes the edge already exists

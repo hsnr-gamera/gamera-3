@@ -448,6 +448,7 @@ namespace Gamera {
       double get_confidence(double dist, double max_dist) {
 	static double dither = std::numeric_limits<double>::min();
 	return std::pow(1.0 - (dist / (max_dist + dither)), 10);
+	//return dist;
       }
     private:
       std::vector<neighbor_type> m_nn;

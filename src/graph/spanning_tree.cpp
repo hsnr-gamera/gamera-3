@@ -18,6 +18,10 @@
  */
 
 #include "spanning_tree.hpp"
+#include "gameramodule.hpp"
+#include "gamera.hpp"
+
+using namespace Gamera;
 
 GraphObject* graph_create_spanning_tree(GraphObject* so, Node* root) {
   GraphObject* tree = graph_new(FLAG_DAG);
@@ -94,41 +98,81 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
   return tree;
 }
 
+namespace {
+  struct DistsSorter {
+    DistsSorter(FloatImageView* image) { m_image = image; }
+    bool operator()(const std::pair<size_t, size_t>& a,
+		    const std::pair<size_t, size_t>& b) {
+      return m_image->get(a.first, a.second) < m_image->get(b.first, b.second);
+    }
+    FloatImageView* m_image;
+  };
+}
 
 PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject* images,
-																		 PyObject* uniq_dists) {
-  if (!PyList_Check(uniq_dists) || !PyList_Check(images)) {
-	 PyErr_SetString(PyExc_TypeError, "uniq_dists and images must be a list.");
-	 return 0;
+						       PyObject* uniq_dists) {
+  if (!PyList_Check(images)) {
+    PyErr_SetString(PyExc_TypeError, "images must be a list.");
+    return 0;
+  }
+  
+  static PyTypeObject* imagebase = 0;
+  if (imagebase == 0) {
+    PyObject* mod = PyImport_ImportModule("gamera.gameracore");
+    if (mod == 0) {
+      PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
+      return 0;
+    }
+    PyObject* dict = PyModule_GetDict(mod);
+    if (dict == 0) {
+      PyErr_SetString(PyExc_RuntimeError, "Unable to get module dictionary\n");
+      return 0;
+    }
+    imagebase = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
+  }
+  // get the matrix
+  if (!PyObject_TypeCheck(uniq_dists, imagebase)
+      || get_pixel_type(uniq_dists) != FLOAT) {
+    PyErr_SetString(PyExc_TypeError, "uniq_dists must be a float image.");
+    return 0;
+  }
+  FloatImageView* dists = (FloatImageView*)((RectObject*)uniq_dists)->m_x;
+  if (dists->nrows() != dists->ncols()) {
+    PyErr_SetString(PyExc_TypeError, "image must be symmetric.");
+    return 0;
   }
   
   // get the graph ready
   graph_remove_all_edges(so);
   graph_make_acyclic(so);
   
+  // make the list for sorting
+  typedef std::vector<std::pair<size_t, size_t> > index_vec_type;
+  index_vec_type indexes(((dists->nrows() * dists->nrows()) - dists->nrows()) / 2);
+  size_t row, col, index = 0;
+  for (row = 0; row < dists->nrows(); ++row) {
+    for (col = row + 1; col < dists->nrows(); ++col) {
+      indexes[index].first = row;
+      indexes[index++].second = col;
+    }
+  }
+  std::sort(indexes.begin(), indexes.end(), DistsSorter(dists));
+
   // Add the nodes to the graph and build our map for later
   int images_len = PyList_Size(images);
+  std::vector<Node*> nodes(images_len);
   int i;
+  for (i = 0; i < images_len; ++i) {
+    nodes[i] = graph_add_node(so, PyList_GET_ITEM(images, i));
+  }
   
   // create the mst using kruskal
   i = 0;
-  int uniq_dists_len = PyList_Size(uniq_dists);
-  while (i < uniq_dists_len && (int(so->m_edges->size()) < (images_len - 1))) {
-	 PyObject* cur_tuple = PyList_GET_ITEM(uniq_dists, i);
-	 if (!PyTuple_Check(cur_tuple) || (PyTuple_GET_SIZE(cur_tuple) != 3)) {
-		PyErr_SetString(PyExc_TypeError, "list didn't contain an appropriate tuple.");
-		return 0;
-	 }
-	 PyObject* cur = PyTuple_GET_ITEM(cur_tuple, 0);
-	 if (!PyFloat_Check(cur)) {
-		PyErr_SetString(PyExc_TypeError, "First item in tuple must be a float.");
-		return 0;
-	 }
-	 PyObject* a = PyTuple_GET_ITEM(cur_tuple, 1);
-	 PyObject* b = PyTuple_GET_ITEM(cur_tuple, 2);
-	 assert(a != b);
-	 graph_add_edge(so, a, b, PyFloat_AS_DOUBLE(cur));
-	 ++i;
+  while (i < int(indexes.size()) && (int(so->m_edges->size()) < (images_len - 1))) {
+    size_t row = indexes[i].first;
+    size_t col = indexes[i].second;
+    graph_add_edge(so, nodes[row], nodes[col], dists->get(row, col));
+    ++i;
   }
   Py_INCREF(Py_None);
   return Py_None;

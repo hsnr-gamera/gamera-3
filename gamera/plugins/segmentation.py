@@ -23,6 +23,18 @@ class cc_analysis(PluginFunction):
     return_type = ImageList("ccs")
 cc_analysis = cc_analysis()
 
+class cc_and_cluster(PluginFunction):
+    pure_python = 1
+    self_type = ImageType([ONEBIT])
+    args = Args([Float('ratio', default = 1.0), Int('distance', default=2)])
+    return_type = ImageList("ccs")
+    def __call__(image, ratio = 1.0, distance = 2):
+        from gamera import cluster
+        cc = image.cc_analysis()
+        return cluster.cluster(cc, ratio, distance)
+    __call__ = staticmethod(__call__)
+cc_and_cluster = cc_and_cluster()
+
 class splitx(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = ImageList("splits")
@@ -41,7 +53,8 @@ class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis, splitx, splity, tracing_segmentation]
+    functions = [cc_analysis, cc_and_cluster,
+                 splitx, splity, tracing_segmentation]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

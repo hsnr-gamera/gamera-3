@@ -187,7 +187,11 @@ class kNN(gamera.knncore.kNN):
       are normalized before performing the distance calculations."""
       from gamera.plugins import features
       features.generate_features_list(images, self.feature_functions)
-      return self._distance_matrix(images)
+      l = len(images)
+      progress = util.ProgressFactory("Generating unique distances . . .", l)
+      m = self._distance_matrix(images, progress.step)
+      progress.kill()
+      return m
 
    def unique_distances(self, images):
       """Return a list of the unique pairs of images in the passed in list
@@ -206,7 +210,8 @@ class kNN(gamera.knncore.kNN):
       """Evaluate the performance of the kNN classifier using
       leave-one-out cross-validation. The return value is a
       floating-point number between 0.0 and 1.0"""
-      return self.leave_one_out()
+      ans = self.leave_one_out()
+      return float(ans[0]) / float(ans[1])
 
    def supports_interactive(self):
       """Flag indicating that this classifier supports interactive
@@ -388,10 +393,18 @@ def simple_feature_selector(glyphs):
    answers = []
    c.change_feature_set(all_features)
    c.set_glyphs(glyphs)
-   answers.append((c.evaluate(), all_features))
+   ans = c.classifier.leave_one_out()
+   stop_threshold = ans[1] - ans[0]
+   print stop_threshold
+   answer = (float(ans[0]) / float(ans[1]), all_features)
    for x in all_features:
       print x
-      answers.append((c.classifier.leave_one_out(feature_indexes[x]), x))
+      ans = c.classifier.leave_one_out(feature_indexes[x], stop_threshold)
+      num_wrong = ans[1] - ans[0]
+      print num_wrong, ans[1], ans[0]
+      if num_wrong < stop_threshold:
+         stop_threshold = num_wrong
+         answer = (float(ans[0]) / float(ans[1]), x)
 	# Now do the remaining combinations using the CombGen object for each
 	# size subset of all of the features.
    for i in range(2, len(all_features) - 1):
@@ -400,9 +413,13 @@ def simple_feature_selector(glyphs):
          indexes = []
          for y in x:
             indexes.extend(feature_indexes[y])
-         answers.append((c.classifier.leave_one_out(indexes), x))
-   answers.sort().reverse()
-   return answers
+         ans = c.classifier.leave_one_out(indexes, stop_threshold)
+         num_wrong = ans[1] - ans[0]
+         print num_wrong, ans[1], ans[0]
+         if num_wrong < stop_threshold:
+            stop_threshold = num_wrong
+            answer = (float(ans[0]) / float(ans[1]), x)
+   return answer
    
 
 class CombGen:

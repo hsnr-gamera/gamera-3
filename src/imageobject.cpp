@@ -33,6 +33,8 @@ extern "C" {
   // methods
   static PyObject* image_get(PyObject* self, PyObject* args);
   static PyObject* image_set(PyObject* self, PyObject* args);
+  static PyObject* image_getitem(PyObject* self, PyObject* args);
+  static PyObject* image_setitem(PyObject* self, PyObject* args);
   // Get/set
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
@@ -128,6 +130,8 @@ static PyGetSetDef cc_getset[] = {
 static PyMethodDef image_methods[] = {
   { "get", image_get, METH_VARARGS },
   { "set", image_set, METH_VARARGS },
+  { "__getitem__", image_getitem, METH_VARARGS },
+  { "__setitem__", image_setitem, METH_VARARGS },  
   { NULL }
 };
 
@@ -343,18 +347,17 @@ static void image_dealloc(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
   Py_DECREF(o->m_data);
   if (o->m_weakreflist != NULL) {
-    printf("dealing with weak refs\n");
+    //printf("dealing with weak refs\n");
     PyObject_ClearWeakRefs(self);
   }
+  //std::cerr << "deleting image\n" << std::endl;
   delete ((RectObject*)self)->m_x;
   self->ob_type->tp_free(self);
 }
 
-static PyObject* image_get(PyObject* self, PyObject* args) {
+static PyObject* image_get(PyObject* self, int row, int col) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
-  int row, col;
-  PyArg_ParseTuple(args, "ii", &row, &col);
   if (is_CCObject(self)) {
     return Py_BuildValue("i", ((Cc*)o->m_x)->get((size_t)row, (size_t)col));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
@@ -372,47 +375,115 @@ static PyObject* image_get(PyObject* self, PyObject* args) {
   }
 }
 
-static PyObject* image_set(PyObject* self, PyObject* args) {
+static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
-  int row, col;
   if (is_CCObject(self)) {
-    int value;
-    PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for CC objects must be an int.");
+      return 0;
+    }
+    ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
-    double value;
-    PyArg_ParseTuple(args, "iid", &row, &col, &value);
-    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, (float)value);
+    if (!PyFloat_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for Float objects must be an float.");
+      return 0;
+    }
+    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, (float)PyFloat_AS_DOUBLE(value));
   } else if (od->m_storage_format == RLE) {
-    int value;
-    PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");
+      return 0;
+    }
+    ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col,
+				       (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == RGB) {
-    RGBPixelObject* value;
-    PyArg_ParseTuple(args, "iiO", &row, &col, &value);
     if (!is_RGBPixelObject((PyObject*)value)) {
       PyErr_SetString(PyExc_TypeError, "Value is not an RGBPixel!");
       return 0;
     }
-    ((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *value->m_x);
+    RGBPixelObject* v = (RGBPixelObject*)value;
+    ((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *v->m_x);
   } else if (od->m_pixel_type == GREYSCALE) {
-    int value;
-    PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((GreyScaleImageView*)o->m_x)->set((size_t)row, (size_t)col, (GreyScalePixel)value);
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for GreyScale objects must be an int.");
+      return 0;
+    }
+    ((GreyScaleImageView*)o->m_x)->set((size_t)row, (size_t)col,
+				       (GreyScalePixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == GREY16) {
-    int value;
-    PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col, (Grey16Pixel)value);
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for Grey16 objects must be an int.");
+      return 0;
+    }
+    ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col,
+				    (Grey16Pixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == ONEBIT) {
-    int value;
-    PyArg_ParseTuple(args, "iii", &row, &col, &value);
-    ((OneBitImageView*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)value);
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "image_set for OneBit objects must be an int.");
+      return 0;
+    }
+    ((OneBitImageView*)o->m_x)->set((size_t)row, (size_t)col,
+				    (OneBitPixel)PyInt_AS_LONG(value));
   }
   Py_INCREF(Py_None);
   return Py_None;
 }
 
+static PyObject* image_get(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  int row, col;
+  PyArg_ParseTuple(args, "ii", &row, &col);
+  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
+    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+    return 0;
+  }
+  return image_get(self, row, col);
+}
+
+static PyObject* image_set(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  int row, col;
+  PyObject* value;
+  if (PyArg_ParseTuple(args, "iiO", &row, &col, &value) <= 0)
+    return 0;
+  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
+    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+    return 0;
+  }
+  return image_set(self, row, col, value);
+}
+
+static PyObject* image_getitem(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  int index;
+  if (PyArg_ParseTuple(args, "i", &index) <= 0)
+    return 0;
+  int row, col;
+  row = int(index / image->ncols());
+  col = index - (row * image->ncols());
+  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
+    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+    return 0;
+  }
+  return image_get(self, row, col);
+}
+
+static PyObject* image_setitem(PyObject* self, PyObject* args) {
+  Image* image = (Image*)((RectObject*)self)->m_x;
+  int index;
+  PyObject* value;
+  if (PyArg_ParseTuple(args, "iO", &index, &value) <= 0)
+    return 0;
+  int row, col;
+  row = int(index / image->ncols());
+  col = index - (row * image->ncols());
+  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
+    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
+    return 0;
+  }
+  return image_set(self, row, col, value);
+}
 
 #define CREATE_GET_FUNC(name) static PyObject* image_get_##name(PyObject* self) {\
   ImageObject* o = (ImageObject*)self; \

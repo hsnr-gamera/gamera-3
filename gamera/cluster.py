@@ -13,9 +13,9 @@ def get_lengths(node, depth, lengths, cur_depth=0, path = {}):
 
 def label(graph, node, label):
    for node in graph.DFS(node):
-      node().classify_automatic(str(label))
+      node().classify_automatic("cluster." + str(label))
 			
-def make_subtrees_stddev(graph, ratio):
+def make_subtrees_stddev(graph, ratio, distance):
    import stats
    cur_label = 0
    remove = []
@@ -24,7 +24,7 @@ def make_subtrees_stddev(graph, ratio):
       lengths = []
       path = { }
       #print node().get_main_id(), edge.cost
-      get_lengths(edge.to_node, 3, lengths, 0, path)
+      get_lengths(edge.from_node, distance, lengths, 0, path)
       lengths.remove(edge.cost)
       #print lengths
       if not (len(lengths) > 1):
@@ -32,6 +32,7 @@ def make_subtrees_stddev(graph, ratio):
       mean = stats.mean(lengths)
       stdev2 = stats.samplestdev([mean, edge.cost])
       if stdev2 > ratio:
+         #graph.remove_edge(edge)
          remove.append(edge)
    for edge in remove:
       graph.remove_edge(edge)
@@ -52,7 +53,7 @@ def make_spanning_tree(glyphs):
    #glyphs = gamera_xml.glyphs_from_xml("C:\Documents and Settings\Karl MacMillan\Desktop\small.xml")
    k = knn.kNN()
    print "Getting distances"
-   uniq_dists = k.unique_distances(glyphs)
+   uniq_dists = k.distance_matrix(glyphs)
    print "adding edges"
    g = graph.Undirected()
    #for x in uniq_dists:
@@ -61,6 +62,10 @@ def make_spanning_tree(glyphs):
    print "creating spanning tree"
    g.create_minimum_spanning_tree(glyphs, uniq_dists)
    return g
+
+def cluster(glyphs, ratio=1.0, distance=2):
+   g = make_spanning_tree(glyphs)
+   return make_subtrees_stddev(g, ratio, distance)
 
 def do_tests(filename):
    from gamera import gamera_xml
@@ -105,6 +110,16 @@ def graphvis_output(G, filename):
    fd.close()
 
 
+def analysis(glyphs):
+   by_id = {}
+   for x in glyphs:
+      id = x.get_main_id()
+      if not by_id.has_key(id):
+         by_id[id] = []
+      by_id[id].append(x)
+   num_features = len(x.features)
 
-
+   for x in by_id:
+      for i in range(len(x)):
+         sum_vec
    

@@ -125,6 +125,9 @@ namespace Gamera {
     data_type* thin_data = new data_type(in.size(), in.offset_y(), in.offset_x());
     view_type* thin_view = new view_type(*thin_data);
     image_copy_fill(in, *thin_view);
+    if (in.nrows() == 1 || in.ncols() == 1) {
+      return thin_view;
+    }
     data_type* flag_data = new data_type(in.size(), in.offset_y(), in.offset_x());
     view_type* flag_view = new view_type(*flag_data);
     
@@ -255,6 +258,8 @@ namespace Gamera {
     data_type* thin_data = new data_type(in.size(), in.offset_y(), in.offset_x());
     view_type* thin_view = new view_type(*thin_data);
     image_copy_fill(in, *thin_view);
+    if (in.nrows() == 1 || in.ncols() == 1)
+      return thin_view;
     data_type* H_M_data = new data_type(in.size(), in.offset_y(), in.offset_x());
     view_type* H_M_view = new view_type(*H_M_data);
     bool not_finished = true;
@@ -306,6 +311,10 @@ static bool thin_lc_look_up[16][16]=
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
     view_type* thin_view = thin_zs(in);
+    if (in.nrows() == 1 || in.ncols() == 1) {
+      image_copy_fill(in, *thin_view);
+      return thin_view;
+    }
     for (size_t y = 0; y < thin_view->nrows(); ++y)
       for (size_t x = 0; x < thin_view->ncols(); ++x) {
 	if (is_black(thin_view->get(y, x))) {

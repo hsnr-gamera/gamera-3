@@ -392,7 +392,7 @@ namespace Gamera {
 
   template<class T>
   FloatVector* skeleton_features(const T& image) {
-    if (image.nrows() == 1 && image.ncols() == 1) {
+    if (image.nrows() == 1 || image.ncols() == 1) {
       FloatVector* features = new FloatVector(6, 0.0);
       std::fill(features->begin() + 3, features->end(), 1.0);
       return features;

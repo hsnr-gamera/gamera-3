@@ -26,6 +26,7 @@
 #include "knnmodule.hpp"
 #include <algorithm>
 #include <vector>
+#include <map>
 #include <string.h>
 #include <Python.h>
 #include <assert.h>
@@ -112,6 +113,8 @@ struct KnnObject {
   char** id_names;
   // The current weights applied to the distance calculation
   double* weight_vector;
+  // a histogram of the id_names for use in leave-one-out
+  int* id_name_histogram;
   /*
     The normalization applied to the feature vectors prior to distance
     calculation.
@@ -206,6 +209,10 @@ static void knn_delete_feature_data(KnnObject* o) {
     delete[] o->id_names;
     o->id_names = 0;
   }
+  if (o->id_name_histogram != 0) {
+    delete[] o->id_name_histogram;
+    o->id_name_histogram = 0;
+  }
   o->num_feature_vectors = 0;
 }
 
@@ -244,6 +251,7 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->num_feature_vectors = 0;
   o->feature_vectors = 0;
   o->id_names = 0;
+  o->id_name_histogram = 0;
   o->weight_vector = 0;
   o->normalize = 0;
   o->normalized_unknown = 0;
@@ -283,6 +291,7 @@ static int knn_create_feature_data(KnnObject* o, size_t num_feature_vectors) {
     o->id_names = new char*[o->num_feature_vectors];
     for (size_t i = 0; i < o->num_feature_vectors; ++i)
       o->id_names[i] = 0;
+    o->id_name_histogram = new int[o->num_feature_vectors];
   } catch (std::exception e) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
     return -1;
@@ -366,6 +375,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   double* tmp_fv;
   int tmp_fv_len;
 
+  std::map<char*, int, ltstr> id_name_histogram;
   double* current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
     PyObject* cur_image = PyList_GetItem(images, i);
@@ -391,15 +401,18 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     }
     o->id_names[i] = new char[len + 1];
     strncpy(o->id_names[i], tmp_id_name, len + 1);
+    id_name_histogram[o->id_names[i]]++;
   }
 
   /*
-    Apply the normalization
+    Apply the normalization and store the histogram data for fast access in
+    leave-one-out.
   */
   o->normalize->compute_normalization();
   current_features = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, current_features += o->num_features) {
     o->normalize->apply(current_features, current_features + o->num_features);
+    o->id_name_histogram[i] = id_name_histogram[o->id_names[i]];
   }
   return Py_None;
 }
@@ -644,7 +657,8 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
 PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* images;
-  if (PyArg_ParseTuple(args, "O", &images) <= 0)
+  PyObject* progress;
+  if (PyArg_ParseTuple(args, "OO", &images, &progress) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   if (!PyList_Check(images)) {
@@ -719,6 +733,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
       mat->set(i, j, (float)distance);
       mat->set(j, i, (float)distance);
     }
+    PyObject_CallObject(progress, NULL);
   }
   return create_ImageObject(mat, image_type, subimage_type, cc_type,
 			    data_type, pybase_init);
@@ -750,7 +765,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
     return 0;
   }
-  // create the list for the output
+  // create the 'vector' for the output
   int list_len = ((images_len * images_len) - images_len) / 2;
   PyObject* list = PyList_New(list_len);
   size_t index = 0;
@@ -799,22 +814,22 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PyList_GetItem(images, j);
       if (cur_b == NULL)
-		  goto uniq_error;
+	goto uniq_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
-		  goto uniq_error;
+	goto uniq_error;
 		
       if (len_a != len_b) {
-		  PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
-		  goto uniq_error;
+	PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
+	goto uniq_error;
       }
       norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
       compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
-      PyList_SET_ITEM(list, index, Py_BuildValue("(dOO)", distance, cur_a, cur_b));
+      PyList_SET_ITEM(list, index, Py_BuildValue("(dii)", distance, i, j));
       index++;
     }
-	 // call the progress object
-	 PyObject_CallObject(progress, NULL);
+    // call the progress object
+    PyObject_CallObject(progress, NULL);
   }
 
   delete[] tmp_a; delete[] tmp_b;
@@ -854,8 +869,9 @@ static int knn_set_distance_type(PyObject* self, PyObject* v) {
   return 0;
 }
 
-static double leave_one_out(KnnObject* o, double* weight_vector = 0,
-			    std::vector<long>* indexes = 0) {
+static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
+					double* weight_vector = 0,
+					std::vector<long>* indexes = 0) {
   double* weights = weight_vector;
   if (weights == 0)
     weights = o->weight_vector;
@@ -863,9 +879,12 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0,
   assert(o->feature_vectors != 0);
   kNearestNeighbors<char*, ltstr> knn(o->num_k);
 
-  size_t total_correct = 0;
+  int total_correct = 0;
+  int total_queries = 0;
   if (indexes == 0) {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+      if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2))
+	continue;
       double* current_known = o->feature_vectors;
       double* unknown = &o->feature_vectors[i * o->num_features];
       for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
@@ -882,7 +901,6 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0,
 	  distance = euclidean_distance(current_known, current_known + o->num_features,
 					unknown, weights);
 	}
-	
 	knn.add(o->id_names[j], distance);
       }
       std::vector<std::pair<char*, double> >& answer = knn.majority();
@@ -890,9 +908,14 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0,
       if (strcmp(answer[0].first, o->id_names[i]) == 0) {
 	total_correct++;
       }
+      total_queries++;
+      if (total_queries - total_correct > stop_threshold)
+	return std::make_pair(total_correct, total_queries);
     }
   } else {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
+      if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2))
+	continue;
       double* current_known = o->feature_vectors;
       double* unknown = &o->feature_vectors[i * o->num_features];
       for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
@@ -917,9 +940,12 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0,
       if (strcmp(answer[0].first, o->id_names[i]) == 0) {
 	total_correct++;
       }
+      total_queries++;
+      if (total_queries - total_correct > stop_threshold)
+	return std::make_pair(total_correct, total_queries);
     }
   }
-  return double(total_correct) / o->num_feature_vectors;
+  return std::make_pair(total_correct, total_queries);
 }
 
 /*
@@ -928,7 +954,8 @@ static double leave_one_out(KnnObject* o, double* weight_vector = 0,
 static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* indexes = 0;
-  if (PyArg_ParseTuple(args, "|O", &indexes) <= 0)
+  int stop_threshold = std::numeric_limits<int>::max();
+  if (PyArg_ParseTuple(args, "|Oi", &indexes, &stop_threshold) <= 0)
     return 0;
   if (o->feature_vectors == 0) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -937,7 +964,8 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   }
   if (indexes == 0) {
     // If we don't have a list of indexes, just do the leave_one_out
-    return Py_BuildValue("f", leave_one_out(o));
+    std::pair<int, int> ans = leave_one_out(o, std::numeric_limits<int>::max());
+    return Py_BuildValue("(ii)", ans.first, ans.second);
   } else {
     // Get the list of indexes
     if (!PyList_Check(indexes)) {
@@ -968,7 +996,8 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
       }
     }
     // do the leave-one-out
-    return Py_BuildValue("f", leave_one_out(o, 0, &idx));    
+    std::pair<int, int> ans = leave_one_out(o, stop_threshold, o->weight_vector, &idx);
+    return Py_BuildValue("(ii)", ans.first, ans.second);    
   }
 }
 
@@ -1273,9 +1302,9 @@ float Fitness(GAGenome & g) {
   GA1DArrayGenome<double> & genome = (GA1DArrayGenome<double> &)g;
   KnnObject* knn = (KnnObject*)genome.userData();
 
-  double result = leave_one_out(knn, genome());
+  std::pair<int,int> ans = leave_one_out(knn, std::numeric_limits<int>::max(), genome());
 
-  return (float)result;
+  return (float)ans.first / ans.second;
 }
 
 void Initializer(GAGenome& genome) {
@@ -1435,7 +1464,7 @@ DL_EXPORT(void) initknncore(void) {
     it is the base type for _all_ of the image classes in
     Gamera.
   */
-    PyObject* mod = PyImport_ImportModule("gamera.core");
+  PyObject* mod = PyImport_ImportModule("gamera.core");
   if (mod == 0) {
     printf("Could not load gamera.py\n");
     return;

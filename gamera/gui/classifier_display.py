@@ -331,8 +331,8 @@ class ClassifierFrame(ImageFrameBase):
             "symbol_table must be a SymbolTable instance or a list of strings.")
       # Add 'splits' to symbol table
       for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
-         self._symbol_table.add("split." + split[0])
-      self._symbol_table.add("group.part")
+         self._symbol_table.add("_split." + split[0])
+      self._symbol_table.add("_group")
       # Add classifier database's symbols to the symbol table
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
@@ -494,7 +494,7 @@ class ClassifierFrame(ImageFrameBase):
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
       for group in self._classifier.grouping_classifier.get_groups():
-         self._symbol_table.add('group.' + group.id)
+         self._symbol_table.add('_group.' + group.id)
 
    def add_to_database(self, glyphs):
       self._classifier.add_to_database(glyphs)
@@ -1122,20 +1122,23 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
-      if platform == 'win32':
-         EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
-         EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
-      else:
-         EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
-         EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
+##       if platform == 'win32':
+##          EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
+##          EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
+##       else:
+##          EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
+##          EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
       EVT_KEY_DOWN(self, self._OnKey)
       EVT_LEFT_DOWN(self, self._OnLeftDown)
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
-      self.Expand(self.root)
       self.toplevel._symbol_table.add_listener(self)
+      self.toplevel._symbol_table.add_remove_listener(self)
+      self.Expand(self.root)
+      self.SelectItem(self.root)
 
    def __del__(self):
       self._symbol_table.remove_listener(self)
+      self._symbol_table.remove_remove_listener(self)
 
    ########################################
    # CALLBACKS
@@ -1153,37 +1156,57 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.toplevel._OnText(None)
       self.toplevel.text.SetFocus()
 
-   def symbol_table_callback(self, symbol):
-      if symbol == '':
-         self.CollapseAndReset(self.root)
-         self.Expand(self.root)
-         return
-      item = self.GetFirstVisibleItem()
-      while item.IsOk():
-         item = self.GetNextVisible(item)
-         if item.IsOk() and self.GetPyData(item) == symbol:
-            if self.IsExpanded(item):
-               self.CollapseAndReset(item)
-               self.Expand(item)
+   def symbol_table_callback(self, tokens):
+      root = self.root
+      expand_list = []
+      for i in range(len(tokens)):
+         token = tokens[i]
+         found = 0
+         cookie = 0
+         item, cookie = self.GetFirstChild(root, cookie)
+         while item.IsOk():
+            text = self.GetItemText(item)
+            if text == token:
+               found = 1
                break
+            item, cookie = self.GetNextChild(item, cookie)
+         if not found:
+            item = self.AppendItem(root, token)
+            self.SetPyData(item, '.'.join(tokens[0:i+1]))
+            self.SortChildren(root)
+            if token.startswith('_'):
+               self.SetItemBold(item)
+         root = item
+         if token != tokens[-1]:
+            self.SetItemHasChildren(root)
+            expand_list.append(root)
+      self.SelectItem(root)
+      for item in expand_list:
+         if not self.IsExpanded(item):
+            self.Expand(item)
 
-   def _OnItemExpanded(self, event):
-      parent = event.GetItem()
-      parent_path = self.GetPyData(parent)
-      items = self.toplevel._symbol_table.get_category_contents_list(parent_path)
-      for name, is_parent in items:
-         item = self.AppendItem(parent, name)
-         new_path = '.'.join((parent_path, name))
-         if new_path[0] == ".":
-            new_path = new_path[1:]
-         self.SetPyData(item, new_path)
-         if new_path.startswith("split") or new_path.startswith("group"):
-            self.SetItemBackgroundColour(item, wxColor(0xcc, 0xcc, 0xff))
-         if is_parent:
-            self.SetItemHasChildren(item, TRUE)
-
-   def _OnItemCollapsed(self, event):
-      self.CollapseAndReset(event.GetItem())
+   def symbol_table_remove_callback(self, tokens):
+      root = self.root
+      expand_list = []
+      for i in range(len(tokens)):
+         token = tokens[i]
+         found = 0
+         cookie = 0
+         item, cookie = self.GetFirstChild(root, cookie)
+         while item.IsOk():
+            text = self.GetItemText(item)
+            if text == token:
+               found = 1
+               break
+            elif text > token:
+               found = 0
+               break
+            item, cookie = self.GetNextChild(item, cookie)
+         if not found:
+            break
+         root = item
+      if found:
+         self.Delete(item)
 
    def _OnKey(self, evt):
       if evt.KeyCode() == WXK_DELETE:
@@ -1192,19 +1215,9 @@ class SymbolTreeCtrl(wxTreeCtrl):
          evt.Skip()
 
    def _OnActivated(self, event):
-      id = self.GetPyData(event.GetItem())
-      if id != None:
-         self.toplevel.toplevel.classify_manual(id)
-
-   def _OnLeftDoubleClick(self, event):
-      pt = event.GetPosition()
-      item, flags = self.HitTest(pt)
-      if flags == 4:
-         return
-      id = self.GetPyData(item)
-      if id != None:
-         self.toplevel.toplevel.classify_manual(id)
-      event.Skip()
+      symbol = self.GetPyData(event.GetItem())
+      if symbol != None:
+         self.toplevel.toplevel.classify_manual(symbol)
 
    def _OnLeftDown(self, event):
       pt = event.GetPosition()
@@ -1303,38 +1316,32 @@ class SymbolTableEditorPanel(wxPanel):
    def _OnText(self, evt):
       symbol, tokens = self._symbol_table.normalize_symbol(
          self.text.GetValue())
-      parent = item = self.tree.root
+      root = self.tree.root
+      expand_list = []
+      found = 0
       cookie = 0
-      self.tree.UnselectAll()
-      self.tree.SelectItem(parent)
-      found = 1
-      for token in tokens:
-         if not found:
-            break
-         if self.tree.ItemHasChildren(item):
-            parent = item
-         else:
-            break
-         found = 0
-         for i in range(self.tree.GetChildrenCount(parent)):
-            if i == 0:
-               item, cookie = self.tree.GetFirstChild(parent, cookie)
-            else:
-               item, cookie = self.tree.GetNextChild(parent, cookie)
-            if not item.IsOk():
-               return
-            s = self.tree.GetPyData(item)
-            last = s.split(".")[-1]
-            if s != '' and last.startswith(token):
-               if not self.tree.IsExpanded(item) and token != tokens[-1]:
-                  self.tree.Expand(item)
+      for i in range(len(tokens)):
+         token = tokens[i]
+         item, cookie = self.tree.GetFirstChild(root, cookie)
+         while item.IsOk():
+            text = self.tree.GetItemText(item)
+            if text == token:
                found = 1
                break
-      self.tree.UnselectAll()
-      if item.IsOk():
+            elif text > token:
+               found = 0
+               break
+            item, cookie = self.tree.GetNextChild(item, cookie)
+         if not found:
+            break
+         elif token != tokens[-1] and not self.tree.IsExpanded(item):
+            self.tree.Expand(item)
+         root = item
+      if found:
          self.tree.SelectItem(item)
          self.tree.ScrollTo(item)
-         self.tree.Refresh()
+      else:
+         self.tree.UnselectAll()
+         
       if not evt is None:
          evt.Skip()
-

@@ -22,15 +22,18 @@ import types, string, keyword
 
 class SymbolTable:
    def __init__(self):
-      self.categories = {}
       self.symbols = {}
       self.listeners = []
       self.rename_listeners = []
+      self.remove_listeners = []
       self.add("skip", 0)
 
    def add_listener(self, listener):
       assert hasattr(listener, 'symbol_table_callback')
       self.listeners.append(listener)
+      # Get the listener up-to-date
+      for symbol in self.symbols.keys():
+         self.alert_listeners(self.normalize_symbol(symbol)[1])
 
    def remove_listener(self, listener):
       self.listeners.remove(listener)
@@ -52,6 +55,18 @@ class SymbolTable:
          if hasattr(l, 'symbol_table_rename_callback'):
             l.symbol_table_rename_callback(a, b)
 
+   def add_remove_listener(self, listener):
+      assert hasattr(listener, 'symbol_table_remove_callback')
+      self.remove_listeners.append(listener)
+
+   def remove_remove_listener(self, listener):
+      self.remove_listeners.remove(listener)
+
+   def alert_remove_listeners(self, a):
+      for l in self.remove_listeners:
+         if hasattr(l, 'symbol_table_remove_callback'):
+            l.symbol_table_remove_callback(a)
+
    def normalize_symbol(self, symbol):
       # assert type(symbol) == types.StringType
       while len(symbol) and symbol[0] == '.':
@@ -62,7 +77,7 @@ class SymbolTable:
          symbol = symbol.replace(i, '_')
       symbol = symbol.lower()
       if symbol[0] in string.digits or keyword.iskeyword(symbol):
-         symbol = '_' + symbol
+         symbol = '_' + symbol + '_'
       # Split by '.' delimiters
       orig_tokens = symbol.strip().split('.')
       tokens = []
@@ -76,53 +91,17 @@ class SymbolTable:
       symbol, tokens = self.normalize_symbol(symbol)
       if self.symbols.has_key(symbol):
          return symbol
-      self.add_to_tree(symbol, tokens, id)
+      self.symbols[symbol] = None
+      self.alert_listeners(tokens)
       return symbol
-
-   # When we add to the tree, the alert listeners need to be
-   # informed of the stem of the symbol up to where we start adding
-   # new braches
-   def add_to_tree(self, symbol, tokens, id=-1, do_alert=1):
-      category = self.categories
-      alert = []
-      add_to_alert = 1
-      for i in range(len(tokens)):
-         token = tokens[i]
-         if not category.has_key(token):
-            category[token] = { }
-            name = ".".join(tokens[0:i+1])
-            self.symbols[name] = None
-         category = category[token]
-         if category == {}:
-            add_to_alert = 0
-         if add_to_alert:
-            alert.append(token)
-      if do_alert:
-         self.alert_listeners(".".join(alert))
 
    def remove(self, symbol):
       symbol, tokens = self.normalize_symbol(symbol)
-      if symbol == '':
-         self.categories = {}
-         self.symbols = {}
-         self.alert_listeners('')
-         return
-      old_category = None
-      category = self.categories
-      for token in tokens:
-         old_category = category
-         category = category[token]
-      removed = []
-      for subcat in category.keys():
-         removed.extend(self.remove(symbol + "." + subcat))
-      removed.append(symbol)
-      del old_category[tokens[-1]]
-      try:
+      if self.symbols.has_key(symbol):
          del self.symbols[symbol]
-      except:
-         pass
-      self.alert_listeners('.'.join(tokens[:-1]))
-      return removed
+         self.alert_remove_listeners(tokens)
+         return 1
+      return 0
 
    def rename(self, a, b):
       a, x = self.normalize_symbol(a)
@@ -131,49 +110,29 @@ class SymbolTable:
          if key.startswith(a):
             del self.symbols[key]
             self.symbols[b + key[len(a):]] = None
-      self.categories = {}
-      for key in self.symbols.keys():
-         symbol, tokens = self.normalize_symbol(key)
-         self.add_to_tree(symbol, tokens, do_alert=0)
       self.alert_rename_listeners(a, b)
-      self.alert_listeners(symbol)
 
    def autocomplete(self, symbol):
-      symbol, tokens = self.normalize_symbol(symbol)
-      try:
-         category = self.get_category_contents('.'.join(tokens[:-1]))
-      except:
-         return symbol
-      find = tokens[-1]
-      num_found = 0
-      for x in category.keys():
-         if x.startswith(find):
-            found = x
-            num_found = num_found + 1
-         if num_found >= 2:
+      targets = self.symbols.keys()
+      targets.sort()
+      found_i = -1
+      for i in range(len(targets)):
+         if targets[i].startswith(symbol):
+            found_i = i
             break
-      if num_found == 1:
-         result = ".".join(tokens[:-1] + [found])
-         if category[found] != {}:
-            result = result + "."
-         return result
-      else:
-         return symbol
-
-   def get_category_contents(self, symbol):
-      symbol, tokens = self.normalize_symbol(symbol)
-      category = self.categories
-      for token in tokens:
-         category = category[token]
-      return category
-
-   def get_category_contents_list(self, symbol):
-      category = self.get_category_contents(symbol)
-      result = []
-      for key, val in category.items():
-         result.append((key, (val != {})))
-      result.sort()
-      return result
+      if found_i != -1:
+         found = targets[found_i]
+         if found_i < len(targets) - 1:
+            found_next = targets[found_i + 1]
+            print found, found_next
+            if found_next.startswith(symbol):
+               if not found_next.startswith(found):
+                  for i in range(len(symbol), len(found)):
+                     if found[i] != found_next[i]:
+                        break
+                  found = found[:i]
+         return found
+      return symbol
 
    def exists(self, symbol):
       return self.symbols.has_key(symbol)

@@ -118,11 +118,11 @@ class _Classifier:
    # be an 'if' statement everywhere.
    def _do_splits_impl(self, glyph):
       id = glyph.get_main_id()
-      if (id.startswith('split')):
+      if (id.startswith('_split.')):
          parts = id.split('.')
          if (len(parts) != 2 or not hasattr(glyph, parts[1])):
             raise ClassifierError("'%s' is not a known or valid split function." % parts[1])
-         splits = getattr(glyph, id[6:]).__call__(glyph)
+         splits = getattr(glyph, id[7:]).__call__(glyph)
          glyph.children_images = splits
          return splits
       return []
@@ -316,7 +316,7 @@ class NonInteractiveClassifier(_Classifier):
       self.classifier.load_settings(filename)
 
 class InteractiveClassifier(_Classifier):
-   _group_regex = re.compile('group\..*')
+   _group_regex = re.compile('_group\..*')
    
    def __init__(self, classifier=None, database=[], features='all',
                 perform_splits=1, grouping_classifier=None):
@@ -412,8 +412,8 @@ class InteractiveClassifier(_Classifier):
       self.is_dirty = 1
 
       # Deal with grouping
-      if id.startswith('group'):
-         added, removed = self.grouping_classifier.classify_group_manual([glyph], id[6:])
+      if id.startswith('_group'):
+         added, removed = self.grouping_classifier.classify_group_manual([glyph], id[7:])
          return added, removed
       else:
          removed = self.grouping_classifier.remove_groups_containing(glyph)

@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 from distutils.util import get_platform
 from distutils.sysconfig import get_python_lib
-import sys, os, time, locale, os.path
+import sys, os, time, locale, string
 import glob
 
 # If gamera.generate is imported gamera.__init__.py will
@@ -51,8 +51,8 @@ generate.restore_import()
 
 ########################################
 # Check that this is at least Python 2.2
-if float(''.join([str(x) for x in sys.version_info[0:3]])) < 220:
-    print "Gamera requires Python version 2.2 or greater."
+if float(string.join([str(x) for x in sys.version_info[0:3]], '')) < 221:
+    print "Gamera requires Python version 2.2.1 or later."
     print "You are running the following Python version:"
     print sys.version
     sys.exit(1)
@@ -70,7 +70,12 @@ command_line_utils = {
     'gamera_cl':
     """#!/usr/bin/env sh\n"""
     """%(header)s\n"""
-    """%(executable)s -i -c "from gamera.gamera import *; init_gamera()"\n"""
+    """%(executable)s -i -c "from gamera.core import *; init_gamera()"\n""",
+
+    'gamera_test':
+    """#!%(executable)s\n"""
+    """from gamera import testing\n"""
+    """testing.main()"""
     }
 
 #if os.name == 'posix':

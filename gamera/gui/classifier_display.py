@@ -17,12 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import types, sys
+from sys import platform
 from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, classify, classifier_stats, util
+from gamera import gamera_xml, classifier_stats, util
+from gamera.classify import InteractiveClassifier, ClassifierError
 from gamera.gui import image_menu, var_name, toolbar, gui_util, \
      rule_engine_runner
 from gamera.gui.gamera_display import *
@@ -266,9 +267,13 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          if (setting == 0 and hasattr(glyph, 'dead')) or setting == -1:
             if hasattr(glyph, 'dead'):
                del glyph.__dict__['dead']
+            if glyph.classification_state == MANUAL:
+               self.toplevel.add_to_database(glyph)
             self._delete_selected(glyph.children_images, -1)
          elif (setting == 0 and not hasattr(glyph, 'dead')) or setting == 1:
             glyph.dead = 1
+            if glyph.classification_state == MANUAL:
+               self.toplevel.remove_from_database(glyph)
             self._delete_selected(glyph.children_images, 1)
 
    ########################################
@@ -315,31 +320,22 @@ class ClassifierMultiImageWindow(MultiImageWindow):
          "Delete selected glyphs",
          self._OnDelete)
       self.toolbar.AddSeparator()
-      self.auto_move_buttons = []
-      self.auto_move_buttons.append(
-         self.toolbar.AddSimpleTool(
+      self.toolbar.AddSimpleTool(
          200, gamera_icons.getIconNextUnclassBitmap(),
-         "Move to next unclassified glyph after each classification.",
+         "Auto-move to next UNCLASSIFIED glyph",
          self._OnAutoMoveButton, 1)
-         )
-      self.auto_move_buttons.append(
-         self.toolbar.AddSimpleTool(
+      self.toolbar.AddSimpleTool(
          201, gamera_icons.getIconNextAutoclassBitmap(),
-         "Move to next auto-classified glyph after each classification.",
+         "Auto-move to next AUTOMATIC glyph",
          self._OnAutoMoveButton, 1)
-         )
-      self.auto_move_buttons.append(
       self.toolbar.AddSimpleTool(
          202, gamera_icons.getIconNextHeurclassBitmap(),
-         "Move to next heuristically classified glyph after each classification.",
+         "Auto-move to next HEURISTIC glyph",
          self._OnAutoMoveButton, 1)
-      )
-      self.auto_move_buttons.append(
       self.toolbar.AddSimpleTool(
          203, gamera_icons.getIconNextManclassBitmap(),
-         "Move to next manually classified glyph after each classification.",
+         "Auto-move to next MANUAL glyph",
          self._OnAutoMoveButton, 1)
-      )
       
    def get_display(self):
       return ClassifierMultiImageDisplay(self.toplevel, self)
@@ -352,7 +348,8 @@ class ClassifierMultiImageWindow(MultiImageWindow):
          self.toplevel.auto_move.remove(id)
 
    def _OnDelete(self, event):
-      self.toplevel.delete_selected()
+      self.toplevel.multi_iw.id.delete_selected()
+      self.toplevel.is_dirty = 1
 
 class ClassifierImageDisplay(ImageDisplay):
    def __init__(self, toplevel, parent):
@@ -393,22 +390,17 @@ class ClassifierFrame(ImageFrameBase):
    def __init__(self, classifier, symbol_table=[],
                 parent = None, id = -1, title = "Classifier",
                 owner=None):
-      if not isinstance(classifier, classify.InteractiveClassifier):
+      if not isinstance(classifier, InteractiveClassifier):
          raise ValueError(
             "classifier must be instance of type InteractiveClassifier.")
       self._classifier = classifier
 
       if isinstance(symbol_table, SymbolTable):
          self._symbol_table = symbol_table
-      elif util.is_sequence(symbol_table):
+      elif util.is_string_or_unicode_list(symbol_table):
          self._symbol_table = SymbolTable()
          for symbol in symbol_table:
-            if type(symbol) == types.StringType:
-               self._symbol_table.add(symbol)
-            else:
-               raise ValueError(
-                  "symbol_table must be a SymbolTable instance or a list of strings.")
-
+            self._symbol_table.add(symbol)
       else:
          raise ValueError(
             "symbol_table must be a SymbolTable instance or a list of strings.")
@@ -495,6 +487,11 @@ class ClassifierFrame(ImageFrameBase):
           ("&Symbol names",
            (("&Import...", self._OnImportSymbolTable),
             ("&Export...", self._OnExportSymbolTable)))))
+      if self._classifier.supports_settings_dialog():
+         classifier_settings = [("&Edit...", self._OnClassifierSettingsEdit)]
+      classifier_settings.extend([
+         ("&Open...", self._OnClassifierSettingsOpen),
+         ("&Save...", self._OnClassifierSettingsSave)])
       classifier_menu = gui_util.build_menu(
          self._frame,
          (("Guess all", self._OnGuessAll),
@@ -511,7 +508,7 @@ class ClassifierFrame(ImageFrameBase):
           (None, None),
           ("Change set of &features...", self._OnChangeSetOfFeatures),
           (None, None),
-          ("Change classifier &properties...", self._OnClassifierProperties),
+          ("Classifier &settings", classifier_settings),
           (None, None),
           ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)))
       rules_menu = gui_util.build_menu(
@@ -556,18 +553,6 @@ class ClassifierFrame(ImageFrameBase):
                self.multi_iw, self.single_iw, self._frame.GetSize()[1] / 2)
             self.single_iw.Show()
          
-   def append_glyphs(self, list):
-      if len(list):
-         self.multi_iw.id.append_glyphs(list)
-         for glyph in list:
-            for id in glyph.id_name:
-               self._symbol_table.add(id[1])
-         self.is_dirty = 1
-
-   def delete_selected(self):
-      self.multi_iw.id.delete_selected()
-      self.is_dirty = 1
-
    def update_symbol_table(self):
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
@@ -577,6 +562,12 @@ class ClassifierFrame(ImageFrameBase):
             self._symbol_table.add(id[1])
       for id, group in self._classifier.grouping_classifier.get_groups():
          self._symbol_table.add(id)
+
+   def add_to_database(self, glyphs):
+      self._classifier.add_to_database(glyphs)
+
+   def remove_from_database(self, glyphs):
+      self._classifier.remove_from_database(glyphs)
 
    ########################################
    # DISPLAY
@@ -594,7 +585,7 @@ class ClassifierFrame(ImageFrameBase):
    def guess_glyph(self, glyph):
       try:
          return self._classifier.guess_glyph_automatic(glyph)
-      except classify.ClassifierError:
+      except ClassifierError:
          return [(0.0, 'unknown')]
 
    def classify_manual(self, id):
@@ -606,15 +597,14 @@ class ClassifierFrame(ImageFrameBase):
       if selection != []:
          try:
             added, removed = self._classifier.classify_list_manual(selection, id)
-         except classify.ClassifierError, e:
+         except ClassifierError, e:
             gui_util.message(str(e))
             return
          if len(added) or len(removed):
             wxBeginBusyCursor()
             self.multi_iw.id.BeginBatch()
             try:
-               if len(added):
-                  self.multi_iw.id.append_and_remove_glyphs(added, removed)
+               self.multi_iw.id.append_and_remove_glyphs(added, removed)
             finally:
                self.multi_iw.id.EndBatch()
                wxEndBusyCursor()
@@ -731,7 +721,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnGuess(self, list):
       try:
          added, removed = self._classifier.classify_list_automatic(list)
-      except classify.ClassifierError, e:
+      except ClassifierError, e:
          gui_util.message(str(e))
       self._AdjustAfterGuess(added, removed)
 
@@ -744,7 +734,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnGroup(self, list):
       try:
          added, removed = self._classifier.group_list_automatic(list)
-      except classify.ClassifierError, e:
+      except ClassifierError, e:
          gui_util.message(str(e))
       self._AdjustAfterGuess(added, removed)
 
@@ -758,7 +748,7 @@ class ClassifierFrame(ImageFrameBase):
       try:
          added1, removed1 = self._classifier.group_list_automatic(list)
          added2, removed2 = self._classifier.classify_list_automatic(list + added1)
-      except classify.ClassifierError, e:
+      except ClassifierError, e:
          gui_util.message(str(e))
       added = {}
       for glyph in added1 + added2:
@@ -796,7 +786,7 @@ class ClassifierFrame(ImageFrameBase):
                 x.classification_state == AUTOMATIC):
                try:
                   self._classifier.classify_glyph_manual(x, x.get_main_id())
-               except classify.ClassifierError, e:
+               except ClassifierError, e:
                   gui_util.message(str(e))
                   return
       finally:
@@ -821,11 +811,27 @@ class ClassifierFrame(ImageFrameBase):
       selected_features = [name for check, name in zip(result, all_features) if check]
       self._classifier.change_feature_set(selected_features)
 
-   def _OnClassifierProperties(self, event):
+   def _OnClassifierSettingsEdit(self, event):
       if self._classifier.supports_settings_dialog():
          self._classifier.settings_dialog()
       else:
          gui_util.message("This classifier doesn't have a settings dialog.")
+
+   def _OnClassifierSettingsOpen(self, event):
+      filename = gui_util.open_file_dialog(gamera_xml.extensions)
+      if not filename is None:
+         try:
+            self._classifier.load_settings(filename)
+         except Exception, e:
+            gui_util.message(str(e))
+
+   def _OnClassifierSettingsSave(self, event):
+      filename = gui_util.save_file_dialog(gamera_xml.extensions)
+      if not filename is None:
+         try:
+            self._classifier.save_settings(filename)
+         except Exception, e:
+            gui_util.message(str(e))
 
    def _OnCreateNoninteractiveCopy(self, event):
       name = var_name.get("classifier", image_menu.shell.locals)
@@ -833,7 +839,7 @@ class ClassifierFrame(ImageFrameBase):
          result = self._classifier.noninteractive_copy()
          image_menu.shell.locals[name] = result
          image_menu.shell.update()
-      except classify.ClassifierError, e:
+      except ClassifierError, e:
          gui_util.message(str(e))
          
    ########################################
@@ -1083,7 +1089,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
-      if sys.platform == 'win32':
+      if platform == 'win32':
          EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
          EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
       else:
@@ -1194,7 +1200,7 @@ class SymbolTableEditorPanel(wxPanel):
       EVT_TEXT(self, txID, self._OnText)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
-      if sys.platform == 'win32':
+      if platform == 'win32':
          EVT_TEXT_ENTER(self, txID, self._OnEnter)
          EVT_TEXT_TAB(self, txID, self._OnTab)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)

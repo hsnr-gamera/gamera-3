@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from inspect import isfunction
+from inspect import isfunction, ismodule
 from os import path
 from wxPython.wx import *
 from gamera import ruleengine
@@ -50,15 +50,18 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       engine = ruleengine.RuleEngine([data])
     elif isinstance(data, ruleengine.RuleEngine):
       engine = data
-    else:
-      # TODO: Do some module-level thing here
-      return
+    elif ismodule(data):
+      engine = ruleengine.RuleEngine(
+        [val for val in module.__dict__.values()
+         if isinstance(val, ruleengine.RuleEngine)])
+    added = {}
+    removed = {}
     try:
       added, removed = engine.perform_rules(multi_display.GetAllItems())
     except ruleengine.RuleEngineError, e:
       gui_util.message(str(e))
       return
-    if added == [] and removed == []:
+    if len(added) == 0 and len(removed) == 0:
       gui_util.message("No rules matched the data set.")
     multi_display.ClearSelection()
     multi_display.append_and_remove_glyphs(added, removed)
@@ -91,16 +94,14 @@ class RuleEngineRunnerTree(wxTreeCtrl):
       self.add_module(module)
 
   def _OnSelectAdded(self, event):
-    multi_display = self.toplevel.multi_iw.id
-    multi_display.SelectGlyphs(self.added)
+    self.toplevel.multi_iw.id.SelectGlyphs(self.added)
 
   def _OnSelectRemoved(self, event):
-    multi_display = self.toplevel.multi_iw.id
-    multi_display.SelectGlyphs(self.removed)
+    self.toplevel.multi_iw.id.SelectGlyphs(self.removed)
 
   def add_module(self, module):
     self.modules.append(module)
-    module_node = self.AppendItem(self.root, module.__name__)
+    module_node = self.AppendItem(self.root, path.split(module.__file__)[1])
     self.SetPyData(module_node, module)
     for key, val in module.__dict__.items():
       self.SetItemHasChildren(module_node, TRUE)
@@ -128,9 +129,9 @@ class RuleEngineRunnerPanel(wxPanel):
     self.toolbar.AddSimpleTool(11, gamera_icons.getIconRefreshBitmap(),
                                "Reload code", self.tree._OnReloadCode)
     self.toolbar.AddSeparator()
-    self.toolbar.AddSimpleTool(12, gamera_icons.getIconSelectBitmap(),
+    self.toolbar.AddSimpleTool(12, gamera_icons.getIconSelectAddedBitmap(),
                                "Select added glyphs", self.tree._OnSelectAdded)
-    self.toolbar.AddSimpleTool(13, gamera_icons.getIconSelectBitmap(),
+    self.toolbar.AddSimpleTool(13, gamera_icons.getIconSelectRemovedBitmap(),
                                "Select removed glyphs", self.tree._OnSelectRemoved)
 
     lc = wxLayoutConstraints()

@@ -20,15 +20,24 @@ from gamera.plugin import *
 
 class cc_analysis(PluginFunction):
     self_type = ImageType([ONEBIT])
-    return_type = ImageList("cc")
+    return_type = ImageList("ccs")
 cc_analysis = cc_analysis()
 
+class splitx(PluginFunction):
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("ccs")
+    pure_python = 1
+
+    def __call__(image):
+        return [image.subimage(image.ul_y, image.ul_x, image.nrows, image.ncols / 2),
+                image.subimage(image.ul_y, image.ul_x + image.ncols / 2, image.nrows, image.ncols / 2)]
+splitx = splitx()
 
 class SegmentationModule(PluginModule):
     category = "Segmentation"
     cpp_headers=["segmentation.hpp"]
     cpp_namespaces = ["Gamera"]
-    functions = [cc_analysis]
+    functions = [cc_analysis, splitx]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 

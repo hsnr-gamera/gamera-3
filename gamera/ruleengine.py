@@ -17,7 +17,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import traceback, sys
+import traceback
+from sys import exc_info
+from inspect import isfunction
 from gamera import group, util
 from fudge import Fudge
 
@@ -142,7 +144,11 @@ class RuleEngine:
     self._regexs = {}
     self._rules_by_regex = {}
     for rule in rules + self._class_rules:
-      self.add_rule(rule)
+      if isfunction(rule):
+        self.add_rule(rule)
+      elif isinstance(rule, RuleEngine):
+        for r in rule.rules:
+          self.add_rule(r)
     self._reapply = reapply
 
   def add_rule(self, rule):
@@ -167,7 +173,7 @@ class RuleEngine:
       current_stack = traceback.extract_stack()
       result = rule(*glyphs)
     except Exception, e:
-      lines = traceback.format_exception(*sys.exc_info())
+      lines = traceback.format_exception(*exc_info())
       del lines[1]
       self._exceptions[''.join(lines)] = None 
       return 0
@@ -233,7 +239,7 @@ class RuleEngine:
         self.perform_rules(added.keys(), 1, progress, _recursion_level + 1))
 
     if len(self._exceptions):
-      s = ("One or more of the rule functions caused an exception.\n(Each exception listed only once:)\n\n" +
+      s = ("One or more of the rule functions caused an exception.\n(Each exception listed only once):\n\n" +
            "\n".join(self._exceptions.keys()))
       raise RuleEngineError(s)
 

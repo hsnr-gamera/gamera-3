@@ -61,11 +61,12 @@ class _Classifier:
       database, and glyphs to be removed from the current database. """
       # Since we only have one glyph to classify, we can't do any grouping
       if (len(self._database) and
-          not glyph.classification_state in (core.MANUAL, core.HEURISTIC)):
+          glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
+         removed = glyph.children_images
          id = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
          splits = self._do_splits(glyph)
-         return splits, []
+         return splits, removed
       return [], []
 
    def classify_list_automatic(self, glyphs, recursion_level=0, progress=None):
@@ -74,32 +75,40 @@ class _Classifier:
       guess_glyph_automatic.  Returns a pair of lists: glyphs to be added to the current
       database, and glyphs to be removed from the current database. The keyword arguments
       are for internal use only."""
+
+      # There is a slightly convoluted handling of the progress bar here, since this
+      # function is called recursively on split glyphs
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...")
-      progress.add_length(len(glyphs) * 2)
+      if (recursion_level > 10) or len(self._database) == 0:
+         return [], []
+      progress.add_length(len(glyphs))
+      added = []
+      removed = {}
+      feature_functions = self.get_feature_functions()
       try:
          for glyph in glyphs:
-            glyph.generate_features(self.classifier.feature_functions)
-            progress.step()
-         if (recursion_level > 10) or len(self._database) == 0:
-            return [], []
-         added = []
-         removed = []
-         for glyph in glyphs:
             if glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC):
-               id = self._classify_automatic_impl(glyph)
-               glyph.classify_automatic(id)
-               added.extend(self._do_splits(glyph))
-               progress.step()
+               for child in glyph.children_images:
+                  removed[child] = None
+         for glyph in glyphs:
+            if not removed.has_key(glyph):
+               glyph.generate_features(feature_functions)
+               if glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC):
+                  id = self._classify_automatic_impl(glyph)
+                  glyph.classify_automatic(id)
+                  added.extend(self._do_splits(glyph))
+            progress.step()
          if len(added):
             added_recurse, removed_recurse = self.classify_list_automatic(
-               added, recursion_level+1)
+               added, recursion_level+1, progress)
             added.extend(added_recurse)
-            removed.extend(removed_recurse)
+            for glyph in removed_recurse:
+               removed[glyph] = None
       finally:
          if recursion_level == 0:
             progress.kill()
-      return added, removed
+      return added, removed.keys()
 
    # Since splitting glyphs is optional (when the classifier instance is created)
    # we have two versions of this function, so that there need not be an 'if'
@@ -116,19 +125,17 @@ class _Classifier:
       return []
 
    def _do_splits_null(self, glyph):
-      pass
+      return []
 
    ########################################
    # XML
    # Note that unclassified glyphs in the XML file are ignored.
    def to_xml(self, stream):
-      import gamera_xml
       return gamera_xml.WriteXML(
          glyphs=self.get_glyphs(),
          groups=self.get_groups()).write_stream(stream)
 
    def to_xml_filename(self, filename):
-      import gamera_xml
       return gamera_xml.WriteXMLFile(
          glyphs=self.get_glyphs(),
          groups=self.get_groups()).write_filename(filename)
@@ -141,7 +148,6 @@ class _Classifier:
 
    def _from_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
-      self.generate_features(database)
       self.set_glyphs(database)
       self.set_groups(xml.groups)
 
@@ -153,7 +159,6 @@ class _Classifier:
 
    def _merge_xml(self, xml):
       database = [x for x in xml.glyphs if x.classification_state != core.UNCLASSIFIED]
-      self.generate_features(database)
       self.merge_glyphs(database)
       self.merge_groups(xml.groups)
 
@@ -178,13 +183,23 @@ class _Classifier:
    # Features
    def get_feature_functions(self):
       return self.classifier.feature_functions
+
+   def change_feature_set(self, features):
+      """Change the set of features used in the classifier.  features is a list of
+      strings, naming the feature functions to be used."""
+      self.is_dirty = 1
+      self.classifier.change_feature_set(features)
+      if len(self._database):
+         self.generate_features(self._database)
+      self.grouping_classifier.change_feature_set()
    
    def generate_features(self, glyphs):
       """Generates features for all the given glyphs."""
       progress = util.ProgressFactory("Generating features...", len(glyphs))
+      feature_functions = self.get_feature_functions()
       try:
          for glyph in glyphs:
-            glyph.generate_features(self.classifier.feature_functions)
+            glyph.generate_features(feature_functions)
             progress.step()
       finally:
          progress.kill()   
@@ -198,7 +213,6 @@ class NonInteractiveClassifier(_Classifier):
       perform_splits: (boolean) true if glyphs classified as split.* should be split.
       grouping_classifier: an optional GroupingClassifier instance.  If None, groups
                            will be remembered, but will not be automatically found."""
-      
       if classifier is None:
          from gamera import knn
          classifier = knn.kNN()
@@ -225,11 +239,13 @@ class NonInteractiveClassifier(_Classifier):
       
    def set_glyphs(self, glyphs):
       # This operation can be quite expensive depending on core classifier
+      self.generate_features(glyphs)
       self._database = glyphs
       self.classifier.instantiate_from_images(self._database)
 
    def merge_glyphs(self, glyphs):
       # This operation can be quite expensive depending on core classifier
+      self.generate_features(glyphs)
       self._database.extend(glyphs)
       self.classifier.instantiate_from_images(self._database)
 
@@ -292,13 +308,14 @@ class InteractiveClassifier(_Classifier):
       glyphs = util.make_sequence(glyphs)
       self.is_dirty = len(glyphs) > 0
       self.clear_glyphs()
+      self.generate_features(glyphs)
       for glyph in glyphs:
          self._database[glyph] = None
-      self.classifier.generate_features(self._database)
 
    def merge_glyphs(self, glyphs):
       glyphs = util.make_sequence(glyphs)
       self.is_dirty = len(glyphs) > 0
+      self.generate_features(glyphs)
       for glyph in glyphs:
          self.is_dirty = 1
          self._database[glyph] = None
@@ -307,15 +324,6 @@ class InteractiveClassifier(_Classifier):
       self.is_dirty = 1
       self._database = {}
       self.grouping_classifier.clear_groups()
-
-   def change_feature_set(self, features):
-      """Change the set of features used in the classifier.  features is a list of
-      strings, naming the feature functions to be used."""
-      self.is_dirty = 1
-      self.classifier.change_feature_set(features)
-      if len(self._database):
-         self.generate_features(self._database)
-      self.grouping_classifier.change_feature_set()
 
    ########################################
    # AUTOMATIC CLASSIFICATION
@@ -340,7 +348,6 @@ class InteractiveClassifier(_Classifier):
       """Classifies the given glyph using name id.  Returns a pair of lists: the glyphs
       that should be added and removed to the current database."""
       self.is_dirty = 1
-      removed = []
 
       # Deal with grouping
       if id.startswith('group'):
@@ -354,15 +361,17 @@ class InteractiveClassifier(_Classifier):
          if self._database.has_key(child):
             del self._database[child]
       glyph.classify_manual([(0.0, id)])
+      glyph.generate_features(self.get_feature_functions())
       self._database[glyph] = None
       return self._do_splits(glyph), removed
 
    def classify_list_manual(self, glyphs, id):
-      splits = []
-      removed = {}
       if self.grouping_classifier and id.startswith('group'):
          added, removed = self.grouping_classifier.classify_group_manual(glyphs, id[6:])
          return added, removed
+
+      added = []
+      removed = {}
 
       for glyph in glyphs:
          for child in glyph.children_images:
@@ -371,24 +380,35 @@ class InteractiveClassifier(_Classifier):
          for g in group_removed:
             removed[g] = None
 
+      feature_functions = self.get_feature_functions()
       for glyph in glyphs:
          # Don't re-insert removed children glyphs
-         if removed.has_key(glyph):
-            continue
-         self.is_dirty = 1
-         if not self._database.has_key(glyph):
-            self._database[glyph] = None
-         glyph.classify_manual([(0.0, id)])
-         splits.extend(self._do_splits(glyph))
+         if not removed.has_key(glyph):
+            self.is_dirty = 1
+            if not self._database.has_key(glyph):
+               glyph.generate_features(feature_functions)
+               self._database[glyph] = None
+            glyph.classify_manual([(0.0, id)])
+            added.extend(self._do_splits(glyph))
 
-      return splits, removed.keys()
+      return added, removed.keys()
 
    def add_to_database(self, glyphs):
       glyphs = util.make_sequence(glyphs)
+      feature_functions = self.get_feature_functions()
       for glyph in glyphs:
-         if glyph.classification_state == MANUAL:
+         if (glyph.classification_state == core.MANUAL and
+             not self._database.has_key(glyph)):
             self.is_dirty = 1
-            self._database.append(glyph)
+            glyph.generate_features(feature_functions)
+            self._database[glyph] = None
+
+   def remove_from_database(self, glyphs):
+      glyphs = util.make_sequence(glyphs)
+      for glyph in glyphs:
+         if self._database.has_key(glyph):
+            self.is_dirty = 1
+            del self._database[glyph]
 
    def rename_ids(self, old, new):
       for glyph in self._database.iterkeys():

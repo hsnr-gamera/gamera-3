@@ -204,7 +204,7 @@ class WriteXMLFile(WriteXML):
       self.stream = stream
       encoding = config.get_option('encoding')
       self.stream.write('<?xml version="1.0" encoding="%s"?>\n' % encoding)
-      self.stream.write('<gamera-database>\n')
+      self.stream.write('<gamera-database version="2.0">\n')
       self._write_core(stream, indent=1)
       self.stream.write('</gamera-database>\n')
 

@@ -68,7 +68,6 @@ class ImageDisplay(wxScrolledWindow):
       self._boxed_highlight_position = 0
       self._boxed_highlight_timer = wxTimer(self, 100)
       EVT_TIMER(self, 100, self._OnBoxHighlight)
-      # EVT_TIMER(self.GetParent(), 25000, self._boxed_highlight_timer)
 
       self.color = 0
       self.rubber_on = 0
@@ -1052,8 +1051,10 @@ class MultiImageDisplay(wxGrid):
          glyph.dead = 1
 
    def append_and_remove_glyphs(self, add, remove):
-      self.append_glyphs(add)
-      self.remove_glyphs(remove)
+      if len(add):
+         self.append_glyphs(add)
+      if len(remove):
+         self.remove_glyphs(remove)
       self.ForceRefresh()
       
    def scale(self, scaling):
@@ -1098,15 +1099,9 @@ class MultiImageDisplay(wxGrid):
                del item.sort_cache
          if order:
             self.list.reverse()
-         if self.do_updates:
-            if orig_len != len(self.list):
-               self.resize_grid()
-            else:
-               width = self.set_labels()
-               self.SetRowLabelSize(width + 20)
-               self.AutoSize()
-            self.ClearSelection()
-            self.MakeCellVisible(0, 0)
+         self.resize_grid()
+         self.ClearSelection()
+         self.MakeCellVisible(0, 0)
       finally:
          self.EndBatch()
          wxEndBusyCursor()
@@ -1233,8 +1228,8 @@ class MultiImageDisplay(wxGrid):
       pass
 
    def OnSelect(self, event):
-      bitmap_no = self.get_image_no(event.GetRow(), event.GetCol())
-      if bitmap_no != None:
+      image_no = self.get_image_no(event.GetRow(), event.GetCol())
+      if image_no != None:
          event.Skip()
          self.OnSelectImpl()
 

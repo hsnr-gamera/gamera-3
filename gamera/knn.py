@@ -121,7 +121,6 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
                 continue
             tmp.append(float(x))
         self.weights[self._weight_name] = tmp
-        
 
     def _add_weights(self, data):
         self._data += data
@@ -224,13 +223,12 @@ class kNN(gamera.knncore.kNN):
     def settings_dialog(self):
         """Display a settings dialog for k-NN settings"""
         from gamera import args
-        from wxPython.wx import NULL
         dlg = args.Args([args.Int('k', range=(0, 100), default=self.num_k),
                          args.Choice('Distance Function',
                                      ['City Block', 'Euclidean', 'Fast Euclidean'],
                                      default = self.distance_type)
                          ], name="kNN settings")
-        results = dlg.show(NULL)
+        results = dlg.show(None)
         if results is None:
             return
         self.num_k, self.distance_type = results
@@ -244,10 +242,10 @@ class kNN(gamera.knncore.kNN):
         file = open(filename, "w")
         indent = 0
         word_wrap(file, '<?xml version="1.0" encoding="utf-8"?>', indent)
-        word_wrap(file, '<gamera-knn-database version="1.0">', indent)
+        word_wrap(file, '<gamera-knn-settings version="1.0">', indent)
         indent += 1
         word_wrap(file, '<num-k value="%s"/>' % self.num_k, indent)
-        word_wrap(file,'<distance-type value="%s"/>' % _distance_type_to_name[self.distance_type],
+        word_wrap(file, '<distance-type value="%s"/>' % _distance_type_to_name[self.distance_type],
                   indent)
         word_wrap(file, '<ga-mutation value="%s"/>' % self.ga_mutation, indent)
         word_wrap(file, '<ga-crossover value="%s"/>' % self.ga_crossover, indent)
@@ -276,8 +274,6 @@ class kNN(gamera.knncore.kNN):
         weights they are loading. Loading the weights can potentially change the
         feature functions of which the classifier is aware."""
         from gamera import core
-        from gamera import config
-        from gamera.gui.gui_util import message
         
         loader = _KnnLoadXML()
         loader.parse_filename(filename)
@@ -297,13 +293,8 @@ class kNN(gamera.knncore.kNN):
             try:
                 func = core.ImageBase.get_feature_functions(str(key))
             except Exception, e:
-                if config.get_option("__gui"):
-                    message("While loading the weights an unknown " +
-                            "feature function was found. The feature name was: " + key)
-                    return
-                else:
-                    raise LookupError("While loading the weights \
-                    an unknown feature function was found.")
+                raise AttributeError("While loading the weights " +
+                "an unknown feature function was found.  The feature name was: " + key)
             functions.append(func[0])
         functions.sort()
         self.change_feature_set(functions)

@@ -1532,6 +1532,10 @@ class ImageFrameBase:
          self.owner = None
       EVT_CLOSE(self._frame, self._OnCloseWindow)
 
+   def OnActivate(self, event):
+      config.get_option('__gui').SetTopLevel(self._frame)
+      print "OnActivate"
+      
    def set_image(self, image, view_function=None):
       size = self._iw.id.set_image(image, view_function)
       self._frame.SetSize((max(200, min(600, size[0] + 30)),

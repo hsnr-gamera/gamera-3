@@ -34,17 +34,20 @@ def get_color(number):
 def message(message):
    print message
    if "\n" in message:
-      dlg = wxScrolledMessageDialog(None, message, "Message",
-                                    style=wxDIALOG_NO_PARENT)
+      dlg = wxScrolledMessageDialog(
+         None, message, "Message",
+         style=wxDIALOG_NO_PARENT)
    else:
-      dlg = wxMessageDialog(None, message, "Message",
-                            wxOK|wxICON_INFORMATION|wxDIALOG_NO_PARENT)
+      dlg = wxMessageDialog(
+         None, message, "Message",
+         wxOK|wxICON_INFORMATION|wxDIALOG_NO_PARENT)
    dlg.ShowModal()
    dlg.Destroy()
 
 def are_you_sure_dialog(parent, message):
-   dlg = wxMessageDialog(parent, message, "Are you sure?",
-                         wxYES_NO|wxNO_DEFAULT|wxICON_QUESTION|wxDIALOG_NO_PARENT)
+   dlg = wxMessageDialog(
+      parent, message, "Are you sure?",
+      wxYES_NO|wxNO_DEFAULT|wxICON_QUESTION|wxDIALOG_NO_PARENT)
    result = dlg.ShowModal()
    dlg.Destroy()
    return result == wxID_YES

@@ -32,8 +32,12 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so);
 
 #define SPANNING_TREE_METHODS \
   { "create_spanning_tree", graph_create_spanning_tree, METH_O, \
-    "Returns a new graph with a spanning tree of all nodes reachable from the given node" }, \
+    "**create_spanning_tree** (*value* or *node*)\n\n" \
+    "Returns a new graph which is a (probably non-optimal) spanning tree of all nodes reachable from the given node." }, \
   { "create_minimum_spanning_tree", graph_create_minimum_spanning_tree, METH_VARARGS, \
-    "Creates a minimum spanning tree (in place)" }, \
+    "**create_minimum_spanning_tree** ()\n\n" \
+    "Creates a minimum spanning tree of the entire graph in place using Kruskal's algorithm.\n" \
+    "A minimum spanning tree connects all nodes using the minimum total edge cost.\n" \
+  }, \
 
 #endif

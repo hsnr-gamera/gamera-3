@@ -490,6 +490,7 @@ void graph_make_tree(GraphObject* so) {
 
 void graph_make_blob(GraphObject* so) {
   SET_FLAG(so->m_flags, FLAG_BLOB);
+  SET_FLAG(so->m_flags, FLAG_CYCLIC);
 }
 
 PyObject* graph_make_tree(PyObject* self, PyObject* args) {
@@ -572,13 +573,7 @@ void graph_make_singly_connected(GraphObject* so, bool maximum_cost) {
 
 PyObject* graph_make_multi_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
-  int multi_connected = 1, maximum = 1;
-  if (PyArg_ParseTuple(args, "|ii", &multi_connected, &maximum) <= 0)
-    return 0;
-  if (multi_connected)
-    graph_make_multi_connected(so);
-  else
-    graph_make_singly_connected(so, maximum != 0);
+  graph_make_multi_connected(so);
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -654,6 +649,10 @@ PyObject* graph_get_nodes(PyObject* self, PyObject* args) {
 PyObject* graph_get_node(PyObject* self, PyObject* pyobject) {
   GraphObject* so = ((GraphObject*)self);
   Node* node = graph_find_node(so, pyobject);
+  if (node == 0) {
+    PyErr_SetString(PyExc_ValueError, "There is no node associated with the given value.");
+    return 0;
+  }
   return nodeobject_new(node);
 }
 
@@ -808,83 +807,203 @@ PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
 
 PyMethodDef graph_methods[] = {
   { "copy", graph_copy, METH_VARARGS,
-    "Copy a graph (optionally specifying new flags for the new graph)\n" \
+    "**copy** (*flags* = ``FREE``)\n\n" \
+    "Copies a graph (optionally specifying new flags for the new graph).\n\n" \
     "In some cases, copying the graph to a new graph type may be faster\n" \
-    "than using one of the in-place conversion functions." },
+    "than using one of the in-place conversion functions.\n\n" \
+    "See `Graph constructor`_ for a definition of *flags*.\n\n"
+  },
   { "add_node", graph_add_node, METH_O,
-    "Add a node to the graph.\n" \
-    "The node is by default not connected to anything." },
+    "**add_node** (*value*)\n\n" \
+    "Add a node identified by the given *value*. " \
+    "The newly-created node has no edges.\n\n" \
+    "Returns 1 if a new node was created.\n" \
+    "Returns 0 if a node already exists with the associated *value*.\n\n" \
+    "**Complexity**: Nodes are added in constant time, except when requiring a reallocation of the node vector.\n\n"
+  },
   { "add_nodes", graph_add_nodes, METH_O,
-    "Add each node in a (Python) list of nodes to the graph." },
+    "**add_nodes** (*list_of_values*)\n\n" \
+    "Add nodes identified by each value in a list. " \
+    "The newly-created nodes have no edges.\n\n" \
+    "Returns the number of new nodes that were created.\n\n" \
+    "**Complexity**: `add_nodes` is moderately faster than multiple calls to add_node_.\n" \
+    "Nodes are added in constant time, except when requiring a reallocation of the node vector.\n\n"
+  },
   { "remove_node_and_edges", graph_remove_node_and_edges, METH_O,
-    "Remove a node from the graph, removing all associated edges" },
+    "**remove_node_and_edges** (*value*)\n\n" \
+    "Remove the node identifed by *value* from the graph, and remove all edges pointing inward or outward from that node.\n\n" \
+    "For instance, given the graph::\n\n" \
+    "  a -> b -> c\n\n" \
+    "``.remove_node_and_edges('b')`` will result in::\n\n" \
+    "  a         c\n\n" \
+    "**Complexity**: Removing a node takes *O* (*n* + *e*) where *n* is the number of nodes in the graph and *e* is the number of edges attached to the given node.\n\n"
+  },
   { "remove_node", graph_remove_node, METH_O,
-    "Remove a node from the graph, stitching together the broken edges." },
+    "**remove_node** (*value*)\n\n" \
+    "Remove a node identified by *value* from the graph, stitching together the broken edges.\n\n" \
+    "For instance, given the graph::\n\n" \
+    "  a -> b -> c\n\n" \
+    "``.remove_node('b')`` will result in::\n\n" \
+    "  a -> c\n\n" \
+    "**Complexity**: Removing a node takes *O* (*n* + *e*) where *n* is the number of nodes in the graph and *e* is the number of edges attached to the given node.\n\n"
+  },
   { "add_edge", graph_add_edge, METH_VARARGS,
-    "Add an edge between two objects in the graph" },
+    "**add_edge** (*from_value*, *to_value*, *cost* = 1.0, *label* = None)\n\n" \
+    "Add an edge between the two nodes identified by *from_value* and *to_value*.\n\n" \
+    "The return value is the number of edges created.  If the edge violates any of the restrictions specified\n" \
+    "by the flags to the graph's constructor, the edge will not be created.\n\n"
+    "If the graph is ``DIRECTED``, the edge goes from *from_value* to *to_value*.\n\n" \
+    "If a node representing one of the values is not present, a nodes will be implicitly created.\n\n" \
+    "Optionally, a *cost* and *label* can be associated with the edge.  These values are used by some\n" \
+    "higher-level graph algorithms such as create_minimum_spanning_tree_.\n\n" \
+    "**Complexity**: Edges are added in constant time, except when requiring a reallocation of the edge vector, or when ``CYCLIC`` is ``False``.\n\n"
+  },
   { "add_edges", graph_add_edges, METH_VARARGS,
-    "Add edges from a list of tuples of the form:\n" \
-    "   (from_node, to_node, [cost,] [label])." },
+    "**add_edges** (*list_of_tuples*)\n\n" \
+    "Add edges specified by a list of tuples of the form:\n\n" \
+    "   (*from_value*, *to_value*, [*cost*[, *label*]]).\n\n" \
+    "The members of this tuple correspond to the arguments to add_edge_.\n\n" \
+    "The return value is the number of edges created.  If an edge violates any of the restrictions specified\n" \
+    "by the flags to the graph's constructor, that edge will not be created.\n\n" \
+    "If a node representing any of the values are not present, a node will be implicitly created.\n\n" \
+    "**Complexity:** ``add_edges`` is moderately faster than multiple calls to add_edge_.\n" \
+    "Edges are added in constant time, except when requiring a reallocation of the edge vector, or when ``CYCLIC`` is ``False``.\n\n"
+  },
   { "remove_edge", graph_remove_edge, METH_VARARGS,
-    "Remove an edge between two objects on the graph" },
+    "**remove_edge** (*from_value*, *to_value*)\n\n" \
+    "Remove an edge between two nodes identified by *from_value* and *to_value*.\n\n" \
+    "If the edge does not exist in the graph, a ``RuntimeError`` exception is raised.\n\n" \
+    "When the graph is ``DIRECTED``, only the edge going from *from_value* to *to_value* is removed.\n\n" \
+    "If the graph is ``MULTI_CONNECTED``, **all** edges from *from_value* to *to_value* are removed.\n\n" \
+    "**Complexity**: Edges can be removed in *O*(*e*) time where *e* is the number of edges in the graph.\n\n"
+  },
   { "remove_all_edges", graph_remove_all_edges, METH_NOARGS,
-    "Remove all the edges in the graph" },
+    "**remove_all_edges** ()\n\n" \
+    "Remove all the edges in the graph, leaving all nodes as islands.\n\n" \
+    "**Complexity**: ``remove_all_edges`` takes *O*(*n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph." 
+  },
   { "is_directed", graph_is_directed, METH_NOARGS,
-    "Is the graph defined as being directed?" },
+    "**is_directed** ()\n\n" \
+    "Return ``True`` if the graph is defined as directed." 
+  },
   { "is_undirected", graph_is_undirected, METH_NOARGS,
-    "Is the graph defined as being undirected?" },
+    "**is_undirected** ()\n\n" \
+    "Return ``True`` if the graph is defined as undirected." 
+  },
   { "make_directed", graph_make_directed, METH_VARARGS,
-    "Make the graph a directed one" },
+    "**make_directed** ()\n\n" \
+    "If the graph is undirected, converts it into an undirected graph by adding a complementary edge for\n" \
+    "each existing edge."
+  },
   { "make_undirected", graph_make_undirected, METH_NOARGS,
-    "Make the graph an undirected one" },
+    "**make_undirected** ()\n\n" \
+    "If the graph is directed, converts it into an undirected graph.  Each edge in the existing graph\n" \
+    "will become a non-directional edge in the resulting graph." 
+  },
   { "is_cyclic", graph_is_cyclic, METH_NOARGS,
-    "Is the graph defined as being cyclic?" },
+    "**is_cyclic** ()\n\n" \
+    "Returns ``True`` if the graph is defined as cyclic.  Note that this is ``True`` even if the graph does\n" \
+    "not currently have any cycles."
+  },
   { "is_acyclic", graph_is_acyclic, METH_NOARGS,
-    "Is the graph defined as being acyclic?" },
+    "**is_acyclic** ()\n\n" \
+    "Returns ``True`` is the graph is defined as acyclic."
+  },
   { "make_cyclic", graph_make_cyclic, METH_VARARGS,
-    "Allow the graph to include cycles" },
+    "**make_cyclic** ()\n\n" \
+    "Allow the graph to include cycles from this point on.  This does nothing except set the ``CYCLIC`` flag." 
+  },
   { "make_acyclic", graph_make_acyclic, METH_NOARGS,
-    "Remove cycles and further disallow cycles" },
+    "**make_acyclic** ()\n\n" \
+    "Remove any cycles (using a depth-first search technique) and disallow cycles from this point on.\n\n" \
+    "This may not be the most appropriate cycle-removing technique for all applications.\n\n" \
+    "See create_spanning_tree_ for other ways to do this.\n\n"
+  },
   { "is_tree", graph_is_tree, METH_NOARGS,
-    "Is the graph defined as being a tree?" },
+    "**is_tree** ()\n\n" \
+    "Returns ``True`` if the graph is defined as being a tree." },
   { "is_blob", graph_is_blob, METH_NOARGS,
-    "Is the graph defined as being a blob (i.e. not a tree)?" },
+    "**is_blob** ()\n\n" \
+    "Returns ``True`` if the graph is defined as being a blob (the opposite of a tree).  Note that this will return ``True``\n" \
+    "even if the graph currently conforms to the restrictions of a tree."},
   { "make_tree", graph_make_tree, METH_NOARGS,
-    "Turn the graph into a tree" },
+    "**make_tree** ()\n\n" \
+    "Turns the graph into a tree by calling make_acyclic_ followed by make_undirected_.  Sets the ``BLOB`` flag to ``False``.\n\n" \
+    "This approach may not be reasonable for all applications.  For other ways to convert blobs to trees, see `spanning trees`_.\n\n"
+  },
   { "make_blob", graph_make_blob, METH_NOARGS,
-    "Make the graph into a blob (i.e. not a tree)" },
+    "**make_blob** ()\n\n" \
+    "Make the graph into a blob (the opposite of a tree).  This does nothing except set the ``BLOB`` flag.\n" },
   { "is_multi_connected", graph_is_multi_connected, METH_NOARGS,
-    "Is the graph defined as being multi-connected " \
-    "(i.e. multiple edges between the same pair of nodes)?" },
+    "**is_multi_connected** ()\n\n" \
+    "Returns ``True`` if the graph is defined as being multi-connected (i.e. multiple edges between a single pair of nodes).\n" \
+    "Note that this returns ``True`` even if there are no multi-connections in the graph."
+  },
   { "is_singly_connected", graph_is_singly_connected, METH_NOARGS,
-    "Is the graph defined as being singly-connected " \
-    "(i.e. at most one edge between each pair of nodes)?" },
-  { "make_multi_connected", graph_make_multi_connected, METH_VARARGS,
-    "Allow the graph to be multi-conncted" },
+    "**is_singly_connected** ()\n\n" \
+    "Returns ``True`` if the graph is defined as being singly-connected (i.e. at most one edge between a single pair of nodes).\n" \
+    "Note that this will return ``False`` if the graph is defined as multi-connected, even if it contains no multi-connections.\n\n" 
+  },
+  { "make_multi_connected", graph_make_multi_connected, METH_NOARGS,
+    "**make_multi_connected** ()\n\n" \
+    "Allow the graph to be multi-connected from this point on.  This does nothing except set the ``MULTI_CONNECTED`` flag." 
+  },
   { "make_singly_connected", graph_make_singly_connected, METH_VARARGS,
-    "Remove multi-connections and make singly-connected" },
+    "**make_singly_connected** ()\n\n" \
+    "For each pair of nodes, leave only one remaining edge in either direction.\n" \
+    "Restrict the graph to being singly-connected from this point on." 
+  },
   { "is_self_connected", graph_is_self_connected, METH_NOARGS,
-    "Is the graph defined as being self-connected (i.e. nodes can point to themselves)?" },
+    "**is_self_connected** ()\n\n" \
+    "Returns ``True`` if the graph is defined as self-connected (having edges that point from one node to that same node.)\n" \
+    "Note that this returns ``True`` even if the graph does not have any self-connections.\n"
+  },
   { "make_self_connected", graph_make_self_connected, METH_VARARGS,
-    "Allow the graph to be self-conncted" },
+    "**make_self_connected** ()\n\n" \
+    "Allow the graph to be self-conncted from this point on.  This does nothing except set the ``SELF_CONNECTED`` flag.\n"
+  },
   { "make_not_self_connected", graph_make_not_self_connected, METH_NOARGS,
-    "Remove self-connections and make the graph not self-connected" },
+    "**make_not_self_connected** ()\n\n" \
+    "Remove all self-connections and restrict the graph to have no self-connections from this point on." 
+  },
   { "get_node", graph_get_node, METH_O,
-    "An iterator over all nodes in the graph" },
+    "**get_node** (*value*)\n\n" \
+    "Returns the ``Node`` object identified by the given *value*.\n\n"
+    "Raises a ``RuntimeError`` exception if there is no node associated with the given *value*.\n\n"
+  },
   { "get_nodes", graph_get_nodes, METH_NOARGS,
-    "An iterator over all nodes in the graph" },
+    "**get_nodes** ()\n\n" \
+    "Returns a lazy iterator over all nodes in the graph.  The ordering of the nodes is undefined.\n" \
+  },
   { "get_subgraph_roots", graph_get_subgraph_roots, METH_NOARGS,
-    "An iterator over the root node of each subgraph" },
+    "**get_subgraph_roots** ()\n\n" \
+    "Returns a lazy iterator over each of the subgraph roots.  Performing a breadth-first or depth-first search\n" \
+    "from each of this notes will visit every node in the graph.\n\n"
+  },
   { "has_node", graph_has_node, METH_O,
-    "Returns true if graph has the given node" },
+    "**has_node** (*value*)\n\n" \
+    "Returns ``True`` if graph has a node identified by *value*.\n\n" 
+  },
   { "get_edges", graph_get_edges, METH_NOARGS,
-    "An iterator over all edges in the graph" },
+    "**get_edges** ()\n\n" \
+    "Returns an iterator over all edges in the graph.  The ordering of the edges is undefined.\n\n" 
+  },
   { "has_edge", graph_has_edge, METH_VARARGS,
-    "Returns true if graph has the given edge" },
+    "**has_edge** (*from_value*, *to_value*)\n\n" \
+    "  *or*\n\n**has_edge** (*from_node*, *to_node*)\n\n" \
+    "  *or*\n\n**has_edge** (*edge*)\n\n" \
+    "Returns ``True`` if graph contains the given edge.  The edge can be specified as either a pair of values identifying nodes,\n" \
+    "a pair of ``Node`` objects, or a single ``Edge`` object."
+  },
   { "size_of_subgraph", graph_size_of_subgraph, METH_O,
-    "Returns the size of the subgraph rooted at the given node" },
+    "**size_of_subgraph** (*value*)\n\n  *or*\n\n**size_of_subgraph** (*node*)\n\n" \
+    "Returns the size of the subgraph rooted at the given node.  In other words, this returns the\n" \
+    "number of nodes reachable from the given node."
+  },
   { "is_fully_connected", graph_is_fully_connected, METH_NOARGS,
-    "True if there is only one subgraph in the graph" },
+    "**is_fully_connected** ()\n\n" \
+    "Returns ``True`` if there is only one subgraph in the graph." 
+  },
   SEARCH_METHODS
   SHORTEST_PATH_METHODS
   SPANNING_TREE_METHODS
@@ -915,6 +1034,38 @@ void init_GraphType(PyObject* d) {
   GraphType.tp_methods = graph_methods;
   GraphType.tp_getset = graph_getset;
   GraphType.tp_weaklistoffset = 0;
+  GraphType.tp_doc = "**Graph** (*flags* = ``FREE``)\n\n" \
+    "Construct a new graph.\n\n" \
+    "The *flags* are used to set certain restrictions on the graph.  When adding an edge\n" \
+    "violates one of these restrictions, the edge is not added and ``None`` is returned.  Note\n" \
+    "that exceptions are not raised.  The graph type may be changed at any time after creation\n" \
+    "using methods such as make_directed_ or make_undirected_, but conversion may take some time.\n\n" \
+    "The *flags* may be any combination of the following values (use bitwise-or to combine flags). The values\n" \
+    "of these flags are defined in the ``graph`` module.  By default, all flags are ``True``:\n\n" \
+    "  - ``DIRECTED``:\n\n" \
+    "       When ``True``, the graph will have directed edges.  Nodes will only\n" \
+    "       traverse to other nodes in the direction of the edge.  (Implementation detail: When\n" \
+    "       ``False``, each edge will be represented by two edges, one pointing in each direction.\n\n" \
+    "  - ``CYCLIC``:\n\n" \
+    "       When ``True``, the graph may contain cycles.  When ``False``, edges are\n" \
+    "       added to the graph only when they do not create cycles.  (When ``False``, ``MULTI_CONNECTED``" \
+    "       and ``SELF_CONNECTED`` are set to ``False``.)\n\n" \
+    "  - ``BLOB``:\n\n" \
+    "       A \"blob\" is defined as the opposite of a tree.  (When ``False``, ``DIRECTED``\n" \
+    "       and ``CYCLIC`` will be set to ``False``).\n\n" \
+    "  - ``MULTI_CONNECTED``:\n\n"
+    "       When ``True``, the graph may contain multiple edges between a single\n" \
+    "       pair of nodes.\n\n" \
+    "  - ``SELF_CONNECTED``:\n\n"
+    "       When ``True``, the graph may contain edges that start and end at the\n" \
+    "       same node.\n\n" \
+    "In addition to these raw flags, there are some convenience values for common combinations of these\n" \
+    "flags.\n\n" \
+    "  - ``FREE``: Equivalent to all flags being set.  There are no restrictions on the graph morphology.\n\n" \
+    "  - ``TREE``: Tree structure (no flags set).\n\n" \
+    "  - ``DAG``: Directed, acyclic graph.\n\n" \
+    "  - ``UNDIRECTED``: Undirected, cyclic graph.\n\n";
+
   PyType_Ready(&GraphType);
   PyDict_SetItemString(d, "Graph", (PyObject*)&GraphType);
 }

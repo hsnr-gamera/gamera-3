@@ -29,6 +29,19 @@ extern "C" {
 
 #define PARTITIONS_METHODS \
   { "optimize_partitions", graph_optimize_partitions, METH_VARARGS, \
-    "Find an optimal way to break up the subgraph" }, \
+    "**optimize_partitions** (*root_node*, *fittness_func*, *max_parts_per_group* = 5, *max_subgraph_size* = 16)\n\n" \
+    "A partition is defined as a way to divide a subgraph into groups.  This algorithm finds an optimal\n" \
+    "partition according to the given fitness function.\n\n" \
+    "  *root_node*\n" \
+    "    The root node of the subgraph to be optimized.\n\n" \
+    "  *fitness_func*\n" \
+    "    A user-provided Python function, that given a partition as a nested list of groups, where each value is a node\n" \
+    "    identifier, returns a floating-point score.  Higher values indicate greater fitness.\n\n" \
+    "  *max_parts_per_group*\n" \
+    "    Limits the number of nodes that will be placed into a single group.\n\n" \
+    "  *max_subgraph_size*\n" \
+    "    If the subgraph rooted at *root_node* has more than *max_subgraph_size* nodes, the partitions will not be\n" \
+    "    optimized.\n\n" \
+ }, \
 
 #endif

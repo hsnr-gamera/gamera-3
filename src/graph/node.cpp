@@ -45,13 +45,13 @@ PyMethodDef node_methods[] = {
 
 PyGetSetDef node_getset[] = {
   { "data", (getter)node_get_data, (setter)node_set_data,
-    "Data stored in the node (get/set)", 0 },
+    "The value the identified with this node. (get/set)", 0 },
   { "edges", (getter)node_get_out_edges, 0,
-    "Edges pointing out from node (get)", 0 },
+    "An iterator over edges pointing out from node (get)", 0 },
   { "nodes", (getter)node_get_nodes, 0,
-    "Nodes that can be reached directly from this nodes (get)", 0 },
+    "An iterator over nodes that can be reached directly (through a single edge) from this node (get)", 0 },
   { "nedges", (getter)node_get_nedges, 0,
-    "The number of edges going out of this node (get)", 0 },
+    "The number of edges pointing out of this node (get)", 0 },
   { NULL }
 };
 

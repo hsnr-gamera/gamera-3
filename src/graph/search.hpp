@@ -30,8 +30,10 @@ extern "C" {
 
 #define SEARCH_METHODS \
   { "BFS", graph_BFS, METH_O, \
-    "An iterator over all the nodes in breadth-first order" }, \
+    "**BFS** (*value* or *node*)\n\n" \
+    "A lazy iterator that returns the nodes in breadth-first order starting from the given *value* or *node*." }, \
   { "DFS", graph_DFS, METH_O, \
-    "An iterator over all the nodes in depth-first order" },
+    "**DFS** (*value* or *node*)\n\n" \
+    "A lazy iterator that returns the nodes in depth-first order starting from the given *value* or *node*." }, \
 
 #endif

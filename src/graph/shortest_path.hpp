@@ -32,12 +32,40 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root);
 
 #define SHORTEST_PATH_METHODS \
   { "djikstra_shortest_path", graph_djikstra_shortest_path, METH_O, \
-    "The shortest paths from the given root" }, \
+    "**djikstra_shortest_path** (*value* or *node*)\n\n" \
+    "Calculates the shortest path from the given node to all other reachable nodes using Djikstra's algorithm.\n\n" \
+    "The return value is a dictionary of paths.  The keys are destination node identifiers and the values are tuples of the form\n\n" \
+    "  (*distance*, *nodes*)\n\n" \
+    "where distance is the distance traveled from the given node to the destination node and\n" \
+    "*nodes* is a list of node identifiers in the shortest path to reach the destination node.\n\n" \
+    "This algorithm will use the *cost* values associated with each edge if they are given.\n\n" \
+  }, \
   { "shortest_path", graph_djikstra_shortest_path, METH_O, \
-    "The shortest path from the given root" }, \
+    "**shortest_path** (*value* or *node*)\n\n" \
+    "An alias for djikstra_shortest_path_.\n\n" }, \
   { "djikstra_all_pairs_shortest_path", graph_djikstra_all_pairs_shortest_path, METH_NOARGS, \
-    "The shortest paths between all nodes (using Djikstra algorithm N times)" }, \
+    "**djikstra_all_pairs_shortest_path** ()\n\n" \
+    "Calculates the shortest paths between all pairs of nodes in the graph by calling djikstra_shortest_path_ multiple times.\n\n" \
+    "The return value is a dictionary where the keys are source node identifiers and the values are dictionaries of paths keyed by destination\n" \
+    "node identifiers (of the same form as djikstra_shortest_path_).  " \
+    "The values of the internal dictionaries are tuples of the form\n\n" \
+    "  (*distance*, *nodes*)\n\n" \
+    "where distance is the distance traveled from the given node to the destination node and\n" \
+    "*nodes* is a list of node identifiers in the shortest path to reach the destination node.\n\n" \
+    "This algorithm will use the *cost* values associated with each edge if they are given.\n\n" \
+  }, \
   { "all_pairs_shortest_path", graph_all_pairs_shortest_path, METH_NOARGS, \
-    "The shortest paths between all nodes (using tight inner loops)" },
+    "**all_pairs_shortest_path** ()\n\n" \
+    "Calculates the shortest paths between all pairs of nodes in the graph using a tight-inner loop that is\n\n" \
+    "generally faster than djikstra_all_pairs_shortest_path_ when the graph is reasonably large.\n\n" \
+    "The return value is of the same form as djikstra_all_pairs_shortest_path_.\n" \
+    "It is a dictionary where the keys are source node identifiers and the values are dictionaries of paths keyed by destination\n" \
+    "node identifiers (of the same form as djikstra_shortest_path_).  " \
+    "The values of the internal dictionaries are tuples of the form\n\n" \
+    "  (*distance*, *nodes*)\n\n" \
+    "where distance is the distance traveled from the given node to the destination node and\n" \
+    "*nodes* is a list of node identifiers in the shortest path to reach the destination node.\n\n" \
+    "This algorithm will use the *cost* values associated with each edge if they are given.\n\n" \
+    }, \
 
 #endif

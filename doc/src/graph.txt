@@ -1,0 +1,358 @@
+====================
+Gamera graph library
+====================
+
+Introduction
+------------
+
+Gamera provides a rudimentary framework for dealing with graph
+structures.  While this is a clearly Python-centric library, Many of
+the algorithms are written in C++ so are generally faster than a pure
+Python approach.
+
+This chapter assumes a basic understanding of graph theory and graph
+algorithms.   While this document describes the API, it
+does not describe in detail how the algorithms work.  (Hopefully this
+can be added in a future release of this documentation.)
+
+Examples
+--------
+
+Most operations on graphs in the Gamera graph library are methods on
+``Graph`` objects.
+
+Each node is identified by an arbitrary Python value.  **Importantly,
+the same value may not be assigned to more than one node within the
+same graph**.  Whenever a node is needed as an argument, either the
+node object or the node's value may be passed in.  In most cases, it
+is more convenient to refer to nodes by their associated values rather
+than keeping track of their associated ``Node`` objects.
+
+The following example code covers basic usage.  For more detailed
+descriptions of the properties and methods, see the Reference_ section.
+
+Let's look at some simple code to create the following trivially small
+graph structure:
+
+  .. image:: images/graph_example.png
+
+.. code:: Python
+
+  >>> from gamera import graph
+  >>> from gamera import graph_util
+  >>>
+  >>> g = graph.Graph()
+  >>>
+  >>> g.add_edge('a', 'b')
+  1
+  >>> g.add_edge('a', 'c')
+  1
+  >>> g.add_edge('a', 'd')
+  1
+  >>> g.add_edge('b', 'd')
+  1
+  >>> g.add_edge('c', 'e')
+  1
+  >>> g.add_edge('f', 'g')
+  1
+  >>> g.add_edge('f', 'g')
+  1
+  >>> g.add_edge('e', 'e')
+  1
+  >>>
+
+``add_edge`` creates nodes that don't already exist, so ``add_node``
+is not necessary to create this graph.
+
+The number of nodes and edges can be queried:
+
+.. code:: Python
+
+  >>> g.nnodes # Number of nodes
+  7
+  >>> g.nedges # Number of edges
+  8
+
+Now, the graph can be traversed, using either a breadth-first search
+(BFS) or depth-first search (DFS).  Each search algorithm takes a node
+as a starting point:
+
+.. code:: Python
+
+  >>> # node is a Node instance.  Call node() to get its value
+  >>> for node in g.BFS('a'):
+  ...    print node(),
+  ...
+  a b c d e
+  >>> for node in g.DFS('a'):
+  ...    print node(),
+  ...
+  a d c e b
+  >>> # No other nodes reachable from 'e'
+  >>> for node in g.BFS('e'):
+  ...    print node(),
+  ...
+  e
+  >>> for node in g.BFS('f'):
+  ...    print node(),
+  ...
+  f g
+
+Note that the search algorithms, like many other things in the Gamera
+graph library, return lazy iterators, so the results are determined on
+demand.  Importantly, this means you can not get the length of the
+result until it has been entirely evaluated.
+
+.. code:: Python
+
+  >>> g.BFS('a')
+  <gamera.graph.Iterator object at 0xf6fa54d0>
+  >>> len(g.BFS('a'))
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in ?
+  TypeError: len() of unsized object
+  >>> list(g.BFS('a'))
+  [<Node of 'a'>, <Node of 'b'>, <Node of 'c'>, <Node of 'd'>, <Node of 'e'>]
+  >>> [node() for node in g.BFS('a')]
+  ['a', 'b', 'c', 'd', 'e']
+  >>>
+
+Note that this graph is composed of two distinct subgraphs.  There are
+ways to determine the number of subgraphs and iterate over the roots
+of those subgraphs.  For instance, to do a breadth-first search of all
+subgraphs:
+
+.. code:: Python
+
+  >>> g.nsubgraphs
+  2
+  >>> for root in g.get_subgraph_roots():
+  ...    for node in g.BFS(root):
+  ...       print node.data,
+  ...    print
+  ...
+  a b c d e
+  f g
+
+The graph can be restricted based on a number of different
+properties by passing flags to the constructor.  These properties
+include directedness, cyclicalness, multi-connectedness and
+self-connectedness.  (See `Graph constructor`_).
+
+For instance, let's attempt to make a *tree*, which is a graph that
+is undirected and contains no cycles, using the same graph structure:
+
+.. code:: Python
+
+  >>> g = graph.Graph(graph.TREE)
+  >>> g.add_edge('a', 'b')
+  1
+  >>> g.add_edge('a', 'c')
+  1
+  >>> g.add_edge('a', 'd')
+  1
+  >>> g.add_edge('b', 'd')
+  0
+  >>> g.add_edge('c', 'e')
+  1
+  >>> g.add_edge('f', 'g')
+  1
+  >>> g.add_edge('f', 'g')
+  0
+  >>> g.add_edge('e', 'e')
+  0
+
+Note that some edges were not created, since they would have
+violated the restrictions of a tree.  This is
+indicated by the return value of ``add_edge``.  In this case, our
+graph now looks like this:
+
+.. image:: images/graph_example2.png
+
+The reference section below provides a complete list of the algorithms
+and methods on graph objects.
+
+Reference
+---------
+
+``Graph`` objects
+'''''''''''''''''
+
+Each graph is represented by instances of the ``Graph`` class.  All
+modifications to the graph structure, including adding and removing nodes and
+edges, is performed through this class.
+
+Basic methods
+`````````````
+
+``Graph`` Constructor
+"""""""""""""""""""""
+
+.. docstring:: gamera.graph Graph 
+
+Methods for Nodes
+"""""""""""""""""
+
+.. docstring:: gamera.graph Graph add_node add_nodes get_node get_nodes has_node remove_node remove_node_and_edges
+
+Methods for Edges
+"""""""""""""""""
+
+.. docstring:: gamera.graph Graph add_edge add_edges get_edges has_edge remove_edge remove_all_edges
+
+Directedness
+""""""""""""
+
+.. docstring:: gamera.graph Graph is_directed is_undirected make_directed make_undirected
+
+Cyclicalness
+""""""""""""
+.. docstring:: gamera.graph Graph is_cyclic is_acyclic make_cyclic make_acyclic
+
+Blob vs. Tree
+"""""""""""""
+
+.. docstring:: gamera.graph Graph is_tree is_blob make_tree make_blob
+
+Multi-connectedness
+"""""""""""""""""""
+
+.. docstring:: gamera.graph Graph is_multi_connected is_singly_connected make_multi_connected make_singly_connected
+
+Self-connectedness
+""""""""""""""""""
+
+.. docstring:: gamera.graph Graph is_self_connected make_self_connected make_not_self_connected
+
+Subgraphs
+"""""""""
+
+Here, a "subgraph" is defined as a connected group of nodes.  A graph
+contains multiple subgraphs when the graph does not have a single root
+node from which all other nodes can be reached.
+
+.. docstring:: gamera.graph Graph get_subgraph_roots size_of_subgraph is_fully_connected
+
+Utility
+"""""""
+
+.. docstring:: gamera.graph Graph copy
+
+Properties
+``````````
+
+- *nnodes*: 
+    The number of nodes in the graph.
+
+- *nedges*: 
+    The number of edges in the graph.
+
+- *nsubgraphs*: 
+    The number of subgraphs.
+
+
+High-level algorithms
+`````````````````````
+
+Search
+""""""
+
+.. docstring:: gamera.graph Graph BFS DFS
+
+Shortest path
+"""""""""""""
+
+.. docstring:: gamera.graph Graph djikstra_shortest_path shortest_path djikstra_all_pairs_shortest_path all_pairs_shortest_path
+
+Spanning trees
+""""""""""""""
+
+.. docstring:: gamera.graph Graph create_spanning_tree create_minimum_spanning_tree
+
+Partitions
+""""""""""
+
+.. docstring:: gamera.graph Graph optimize_partitions
+
+Node objects
+''''''''''''
+
+Nodes contain a reference to an arbitrary Python value.  Importantly,
+the value is used to identify the node, so the same value may not be
+assigned to more than one node.  In many cases, it is much more convenient to refer
+to nodes by their associated values rather than keeping track of
+their associated ``Node`` objects.
+
+Properties
+``````````
+
+- *data*: 
+    The value that identifies this node.  (This value can also
+    be obtained by "calling" the node as in ``node()``).
+
+- *edges*: 
+    A lazy iterator over the edges pointing out from the node.
+
+- *nodes*: 
+    A lazy iterator over the nodes that can be reached directly
+    (through a single edge) from this node.
+
+- *nedges*:
+    The number of edges going out from this node.
+
+Edge objects
+''''''''''''
+
+Methods
+```````
+
+traverse
+""""""""
+
+**traverse** (*node*)
+
+Returns the node on the other end of the edge.  (Useful only for
+undirected graphs).
+
+Properties
+``````````
+
+- *from_node*:
+    The starting node of this edge.
+
+- *to_node*:
+    The ending node of this edge.
+
+- *cost*:
+    The cost associated with traversing this edge (used by algorithms
+    such as create_minimum_spanning_tree_).
+
+- *label*:
+    The label associated with this edge.
+
+Utilities
+'''''''''
+
+The following functions are available in the ``graph_util`` module.
+
+.. docstring:: gamera.graph_util graphviz_output
+
+
+Implementation details
+----------------------
+
+There are many ways to represent graphs in memory for different
+applications.  Unfortunately, this library only uses one, which may
+not be suitable for all applications.  It is as follows:
+
+  - The graph object contains arrays of all nodes and edges.
+    Therefore, random access to nodes and edges is constant time (*O*(1)).
+    Deleting nodes and edges is in linear time (*O*(*n*)).
+    
+  - The graph contains a hash table from node data to nodes, so given a
+    particular piece of data associated with a node, the node can be
+    looked up in *O*(*n* ln *n*) time.
+
+  - Each node contains an array of coincident edges.  If the graph is
+    directed, this includes edges going in and out from the node.
+

@@ -46,6 +46,7 @@ static PyTypeObject EdgeType = {
 
 PyMethodDef edge_methods[] = {
   { "traverse", edge_traverse, METH_O,
+    "**traverse** (*node*)\n\n"
     "Get the 'other' node in an edge." },
   { NULL }
 };
@@ -54,11 +55,11 @@ PyGetSetDef edge_getset[] = {
   { "from_node", (getter)edge_get_from_node, 0,
     "Node this edge starts from (get)", 0 },
   { "to_node", (getter)edge_get_to_node, 0,
-    "Node this edge points to (get)", 0 },
+    "Node this edge goes to (get)", 0 },
   { "cost", (getter)edge_get_cost, (setter)edge_set_cost,
-    "Cost of traversing this node (get/set)", 0 },
+    "The cost of traversing this node (get/set) (float value)", 0 },
   { "label", (getter)edge_get_label, (setter)edge_set_label,
-    "An arbitrary label attached to the edge (get/set)", 0 },
+    "An arbitrary label value attached to the edge (get/set)", 0 },
   { NULL }
 };
 
@@ -152,8 +153,13 @@ int edge_set_cost(PyObject* self, PyObject* cost) {
 
 PyObject* edge_get_label(PyObject* self) {
   Edge* so = ((EdgeObject*)self)->m_x;
-  Py_INCREF(so->m_label);
-  return so->m_label;
+  if (so->m_label) {
+    Py_INCREF(so->m_label);
+    return so->m_label;
+  } else {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
 }
 
 int edge_set_label(PyObject* self, PyObject* data) {

@@ -63,13 +63,15 @@ class ImageBase:
          self._display.close()
 
    def __getstate__(self):
-      """Extremely basic pickling support for using in testing.
+      """Extremely basic pickling support for use in testing.
       Note that there is no unpickling support."""
-      import zlib
+      import zlib, binascii
       dict = {}
       for key in self._members_for_menu:
          dict[key] = getattr(self, key)
-      dict['data'] = zlib.compress(self.to_string())
+      dict['encoded_data'] = binascii.b2a_base64(
+         zlib.compress(
+         self.to_string()))
       return dict
 
    def add_plugin_method(cls, plug, func, category=None):

@@ -59,7 +59,6 @@ def restore_import():
   global std_import
   __builtins__['__import__'] = std_import
 
-
 template = Template("""
   [[exec import string]]
   [[exec from os import path]]

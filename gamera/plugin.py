@@ -170,5 +170,5 @@ def PluginFactory(name, func, category=None,
     cls.__call__ = func
     return cls
 
-def get_config_options(command, arg):
-    return os.popen(command + " " + arg).read()
+def get_config_options(command):
+    return os.popen(command).read()

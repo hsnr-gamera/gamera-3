@@ -160,7 +160,7 @@ class ImageMenu:
 
   def get_function_call(self, sh, function):
     # determine if the function requires an argument gui
-    if function.args in ('', None, (), []):
+    if function.args.list in ('', None, (), []):
       # if not, we can just use empty parentheses
       return function.__name__ + "()"
     # else, display the argument gui and use what is returns

@@ -2,7 +2,7 @@
 Gamera documentation
 ====================
 
-:Author: Michael Droettboom
+:Editor: Michael Droettboom
 
 Introduction
 ============
@@ -25,13 +25,18 @@ Overview
 
 .. __: overview.html
 
-How-To
+How To
 ======
 
 - `Building and installing Gamera`__: The basics to get you started
   with running Gamera.
 
 .. __: install.html
+
+- `Getting started writing Gamera scripts`__: How to start writing a
+  Gamera-based application.
+
+.. __: script.html
 
 - `Writing Gamera plugins`__: Learn how to write new image methods.
 

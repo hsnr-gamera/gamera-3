@@ -1,0 +1,7 @@
+This directory contains a number of very basic examples for Gamera
+usage.  Please see the Gamera scripting introduction
+(http://dkc.jhu.edu/gamera/html/script.html) in the documentation for
+more information.
+
+Unlike the rest of Gamera, these scripts are provided in the public
+domain.

@@ -68,6 +68,10 @@ The Gamera source tree looks something like this:
 |          |               | compiling convenience on MS-Windows and Mac    |
 |          |               | OS-X.                                          |
 +----------+---------------+------------------------------------------------+
+| examples/| Basic Gamera scripts to be used as starting points for end-user|
+|          | applications.  See the `script-writing documentation`_ for more|
+|          | information                                                    |
++----------+---------------+------------------------------------------------+
 
 .. _building and installing Gamera: install.html
 .. _docutils: http://docutils.sf.net/
@@ -75,3 +79,4 @@ The Gamera source tree looks something like this:
 .. _VIGRA Computer Vision Library: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
 .. _GALib: http://lancet.mit.edu/ga/
 .. _libtiff: http://www.libtiff.org/
+.. _script-writing documentation: script.html

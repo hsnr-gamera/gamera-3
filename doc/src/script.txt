@@ -6,17 +6,30 @@ Overview
 --------
 
 While the GUI is great for experimentation, the ultimate goal of any
-Gamera application is usually scriptability, or the ability to run in
+Gamera application is usually an automated application, or script.
+This provides, among other things, the ability to run unattended in
 batch mode.  
 
-Gamera scripts are merely Python scripts that use
-Gamera objects and call Gamera functions.  The standard Python library
-has lots of ways to glue Gamera inside of other applications using
-Unix scripting, web services and other types of remote procedure
-calls.
+Gamera scripts are merely Python scripts (modules) that use Gamera
+objects and call Gamera functions.  The Python language, being a
+feature-rich general purpose language, provides a number of ways to
+structure your application.  The high-level structure of your
+application will largely depend on its size and complexity and your
+own programming preferences and style, and is out of the scope of this
+document.  Obtaining some level of familiarity with Python through the
+`Python Tutorial`_ or any of the numerous `Python books`__ available is
+recommended.
 
-A script skeleton
------------------
+.. _Python Tutorial: http://docs.python.org/tut/tut.html
+.. __: http://www.python.org/cgi-bin/moinmoin/PythonBooks
+
+The examples below demonstrate how to start creating Gamera-based
+applications.  The source code of these examples are available in the
+examples directory of the Gamera distribution.  
+Each example builds on the previous one.
+
+Hello, world!
+-------------
 
 To use Gamera in a Python script, you simply need to import the
 ``gamera.core`` module and then initialize it:
@@ -26,10 +39,153 @@ To use Gamera in a Python script, you simply need to import the
    from gamera.core import *
    init_gamera()
 
-From there, you can use Gamera's functions and methods:
+After that, you can use Gamera's functions and methods.  The following
+code loads a given file specified on the command line, converts it to
+a one-bit (binary) image, and then saves the result to "output.png".
 
 .. code:: Python
 
-   image = load_image(filename)
-   onebit = image.otsu_threshold()
+   import sys
+
+   # Import the Gamera core and initialise it
+   from gamera.core import *
+   init_gamera()
+
+   # Load filename specified on the command line.
+   # load_image is a Gamera function to load a TIFF or PNG file.
+   # sys.argv is the Pythonic way to access commandline arguments.
+   # (A better way to deal with commandline arguments in Python
+   # is the optparse module, but that's too much detail for this
+   # example...)
+   image = load_image(sys.argv[-1])
+
+   # The variable 'image' now is a reference to the image
+
+   # Convert the image to onebit using the default Otsu method
+   onebit = image.to_onebit()
+
+   # Save the result to a PNG file
+   onebit.save_PNG("output.png")
+
+That's about as simple as it gets with Gamera, but clearly only about
+as useful as the ubiquitous "Hello, World!" you see in programming texts.
+
+Using the GUI from your scripts
+-------------------------------
+
+For interactive use, it may be desirable to have the results of a
+script displayed in a window, rather than saved to a file.  (If you 
+do not wish to do this, you can safely skip this section.)
+
+Using the GUI for a script is convenient, though slightly tricky for
+two reasons:
+
+1. Any code that displays images or otherwise interacts with the GUI
+   must run inside the GUI thread.  The simplest way to do this is to
+   do all work inside of a function, and then pass this function
+   as an argument to ``gui.run()``.  This will have the GUI start the
+   application once it has been initialised.
+
+2. One must be careful about the lifetime of image objects.  Since Python
+   uses reference counting for memory management, whenever there are
+   no longer any references pointing to an image object, it is
+   automatically deleted.  Whenever an
+   image object is deleted, the window is destroyed as well.  So to
+   keep windows open for viewing after processing is
+   finished, there needs to be at least one reference remaining.  The
+   simplest way to do this is to assign the image to a global variable.
+
+The following is the same as the previous example, except rather than
+saving the result to disk, it is displayed in a Gamera display window.
+
+.. code:: Python
+
+   import sys
+
+   def my_application():
+      # Make the image variable a global variable
+      # IF YOU DON'T DO THIS, THE WINDOW WILL DISAPPEAR!
+      global image
+
+      # Load the image
+      image = load_image(sys.argv[-1])
+
+      # Display the image in a window
+      image.display()	       
+
+   # Import the Gamera core and initialise it
+   from gamera.core import *
+   init_gamera()
+
+   # Import the Gamera GUI and start it   
+   from gamera.gui import gui
+   gui.run(my_application)
+
+   # The GUI thread will automatically stop when all windows have
+   # been closed.
+   print "Goodbye!"
+
+Using the classifier
+--------------------
+
+One of Gamera's core features is the classifier, which allows
+individual images to be classified based on some training.  The
+classifier is described in detail in `the classifier documentation`__.
+
+.. __: classify.html
+
+The following is an example that loads an image and classifies its
+connected components based on a given training set.  Some training
+data for what is expected in the image is required in order for this
+example to work correctly.
+
+.. code:: Python
+   
+   import sys
+
+   def my_application():
+      global ccs
+
+      # Load the image, and convert it to onebit
+      image = load_image(sys.argv[-1])
+      onebit = image.to_onebit()
+
+      # Get the connected components from the image
+      ccs = onebit.cc_analysis()
+
+      # Classify the cc's
+      classifier.classify_list_automatic(ccs)
+
+      # Display the ccs to show their classification
+      display_multi(ccs)
+
+   # Import the Gamera core and initialise it
+   from gamera.core import *
+   init_gamera()
+
+   # Import the classifier module
+   import knn
+   # Create a new classifier
+   classifier = knn.kNNInteractive()
+   # Load some training data
+   classifier.from_xml_filename("training.xml")
+
+   # Import the Gamera GUI and start it   
+   from gamera.gui import gui
+   gui.run(my_application)
+
+Where to go from here
+---------------------
+
+Obviously, there's a lot more to Gamera that isn't covered in this
+document.  Where you go from here is largely dependant on the
+particular document domain.  Most of the work in many Gamera
+applications involves analysing the positional information, symbolic
+classification and features of the connected components to recognize
+structure and semantics of the image.
+
+A good example of how to put these things together is in
+``roman_text.py``, which puts simple left-to-right, top-to-bottom
+printed text into its reading order.
+
 

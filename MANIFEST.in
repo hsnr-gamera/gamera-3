@@ -8,6 +8,7 @@ recursive-include doc/html *.css
 recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff
 recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO
+recursive-include examples *.py README *.tiff *.xml
 recursive-include include *.hpp *.hxx
 include INSTALL LICENSE ACKNOWLEDGEMENTS MANIFEST.in setup.cfg gamera_post_install.py version
 

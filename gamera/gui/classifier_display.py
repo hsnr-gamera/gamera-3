@@ -661,7 +661,7 @@ class ClassifierFrame(ImageFrameBase):
       
       wxBeginBusyCursor()
       try:
-         image = load_image(filename[1:-1])
+         image = load_image(filename[2:-1])
          image_ref = image
          if image_ref.data.pixel_type == RGB:
             image_ref = image_ref.to_greyscale()
@@ -793,7 +793,10 @@ class ClassifierFrame(ImageFrameBase):
       self._classifier.change_feature_set(selected_features)
 
    def _OnClassifierProperties(self, event):
-      gui_util.message("This will open up a classifier-specific dialog box...")
+      if self._classifier.classifier.supports_settings_dialog():
+         self._classifier.classifier.settings_dialog()
+      else:
+         gui_util.message("This classifier doesn't have a settings dialog.")
 
    def _OnCreateNoninteractiveCopy(self, event):
       name = var_name.get("classifier", image_menu.shell.locals)

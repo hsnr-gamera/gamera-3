@@ -62,6 +62,8 @@ static PyGetSetDef imagedata_getset[] = {
     "The y offset in the page for the data", 0 },
   { "stride", (getter)imagedata_get_stride, 0,
     "The length of the data stride", 0 },
+  { "size", (getter)imagedata_get_size, 0,
+    "The size of the image data", 0 },
   { "bytes", (getter)imagedata_get_bytes, 0,
     "The size of the data in bytes", 0 },
   { "mbytes", (getter)imagedata_get_mbytes, 0,

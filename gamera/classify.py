@@ -186,8 +186,6 @@ class NonInteractiveClassifier(_Classifier):
          classifier = knn.kNN()
       self.classifier = classifier
       if grouping_classifier is None:
-##          from gamera import polargrouping
-##          grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
          from gamera import group
          grouping_classifier = group.GroupingClassifier([], self)
       self.grouping_classifier = grouping_classifier
@@ -251,8 +249,6 @@ class InteractiveClassifier(_Classifier):
       if grouping_classifier is None:
          from gamera import polargrouping
          grouping_classifier = polargrouping.PolarGroupingClassifier([], self)
-##          from gamera import group
-##          grouping_classifier = group.GroupingClassifier([])
       grouping_classifier.set_parent_classifier(self)
       self.grouping_classifier = grouping_classifier
       self.is_dirty = 0

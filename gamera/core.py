@@ -61,7 +61,7 @@ def display_multi(list):
       # If it's not a list, we'll get errors, so make it one
       if not util.is_sequence(list):
          list = [list]
-      gui.ShowImages(list)
+      return gui.ShowImages(list)
 
 # Used to cache the list of all features
 all_features = None

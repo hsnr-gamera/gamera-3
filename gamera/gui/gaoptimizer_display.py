@@ -332,12 +332,9 @@ class WeightsPanel(wxScrolledWindow):
             sizer.Add(bar, flag=wxEXPAND | wxADJUST_MINSIZE)
             self.bars.append(bar)
         sizer.Layout()
-        #sizer.SetAutoLayout(0)
-        sizer.FitInside(self)
-        sizer.SetVirtualSizeHints(self)
         self.SetSizer(sizer)
-        print sizer.GetMinSize()
-        print sizer.GetSize()
+        width, height = sizer.GetMinSize()
+        self.SetScrollbars(10, 10, width / 10, height / 10)
 
     def update_cb(self):
         weights = self.classifier.weights

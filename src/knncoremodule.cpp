@@ -148,7 +148,7 @@ struct KnnObject {
 PyMethodDef knn_methods[] = {
   { "classify_with_images", knn_classify_with_images, METH_VARARGS,
     "classify an unknown image using a list of images." },
-  { "instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
+  { "_instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     "" },
   { "distance_from_images", knn_distance_from_images, METH_VARARGS, "" },
   { "classify", knn_classify, METH_VARARGS,

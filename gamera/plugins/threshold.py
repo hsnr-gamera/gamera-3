@@ -17,12 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from gamera.plugin import *
-import _threshold
+from plugin import *
 
 class threshold(PluginFunction):
-    self_type = ImageType(["Grey", "Grey16", "Float"])
-    args = Args(["Int"])
+    self_type = ImageType(["OneBit", "GreyScale", "Grey16", "Float"])
+    args = Args([Int("threshold")])
+    return_type = ImageType(["OneBit"], "output")
+    
     
 threshold = threshold()
 
@@ -30,5 +31,7 @@ class ThresholdModule(PluginModule):
     category = "Filter"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold]
+    author = "Karl MacMillan"
+    url = "http://gamera.dkc.jhu.edu/"
 
 module = ThresholdModule()

@@ -7,7 +7,7 @@ import gamera.generate
 # generate the plugins
 plugins = glob.glob("gamera/plugins/*.py")
 plugins.remove("gamera/plugins/__init__.py")
-
+print plugins
 plugin_extensions = []
 for x in plugins:
     plugin_extensions.append(gamera.generate.generate_plugin(x))

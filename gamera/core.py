@@ -265,6 +265,8 @@ class ImageBase:
       self.classification_state = HEURISTIC
 
    def get_main_id(self):
+      if self.classification_state == UNCLASSIFIED:
+         return 'UNCLASSIFIED'
       return self.id_name[0][1]
 
    def subimage(self, offset_y, offset_x, nrows, ncols):

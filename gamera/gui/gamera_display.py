@@ -715,7 +715,6 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
-      global stuff
       scaling = self.parent.scaling
       
       bitmap_no = row * GRID_NCOLS + col
@@ -742,8 +741,8 @@ class MultiImageGridRenderer(wxPyGridCellRenderer):
             # if necessary, we also do the cropping.
             height = ceil(image.nrows * scaling)
             width = ceil(image.ncols * scaling)
-            if (height >= rect.GetHeight() or
-                width >= rect.GetWidth()):
+            if (height >= rect.GetHeight() - GRID_PADDING_2 or
+                width >= rect.GetWidth() - GRID_PADDING_2):
                # If the scaled version is going to still be too large to fit in
                # the grid cell, we crop it first and then scale it. We could just
                # scale the whole image and then crop that to the appropriate size,
@@ -828,6 +827,7 @@ GRID_MAX_CELL_WIDTH = 200
 GRID_MAX_CELL_HEIGHT = 200
 GRID_MAX_LABEL_LENGTH = 200
 GRID_PADDING = 8
+GRID_PADDING_2 = 16
 GRID_NCOLS = 8
 class MultiImageDisplay(wxGrid):
    def __init__(self, parent = None, id = -1, size = wxDefaultSize):

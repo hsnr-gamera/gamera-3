@@ -513,27 +513,17 @@ class _Filename(_guiFilename, Arg):
 if _has_gui == _WX_GUI:
    class FileOpen(_Filename):
       def OnBrowse(self, event):
-         dlg = wxPython.wx.wxFileDialog(None,
-                                        "Choose a file",
-                                        ".", "",
-                                        self.extension,
-                                        wxPython.wx.wxOPEN)
-         if dlg.ShowModal() == wxPython.wx.wxID_OK:
-            filename = dlg.GetPath()
-            dlg.Destroy()
+         from gui import gui_util
+         filename = gui_util.open_file_dialog(self.extension)
+         if filename:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
 
    class FileSave(_Filename):
       def OnBrowse(self, event):
-         dlg = wxPython.wx.wxFileDialog(None,
-                                        "Choose a file",
-                                        ".", "",
-                                        self.extension,
-                                        wxPython.wx.wxSAVE)
-         if dlg.ShowModal() == wxPython.wx.wxID_OK:
-            filename = dlg.GetPath()
-            dlg.Destroy()
+         from gui import gui_util
+         filename = gui_util.save_file_dialog(self.extension)
+         if filename:
             self.text.SetValue(filename)
          self.text.GetParent().Raise()
 else:

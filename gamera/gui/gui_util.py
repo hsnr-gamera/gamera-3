@@ -66,6 +66,20 @@ def open_file_dialog(extensions):
       return filename
    return None
 
+def directory_dialog(create=1):
+   global last_directory
+   if create:
+      style = wxDD_NEW_DIR_BUTTON
+   else:
+      style = 0
+   dlg = wxDirDialog(None, "Choose a directory", last_directory, style)
+   if dlg.ShowModal() == wxID_OK:
+      filename = dlg.GetPath()
+      dlg.Destroy()
+      last_directory = filename
+      return filename
+   return None
+
 def save_file_dialog(extensions):
    global last_directory
    dlg = wxFileDialog(None, "Choose a file", last_directory, "", extensions, wxSAVE)

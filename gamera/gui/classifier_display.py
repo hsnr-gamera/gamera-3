@@ -22,7 +22,7 @@ from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, classify
+from gamera import gamera_xml, classify, classifier_stats
 from gamera.gui import image_menu, var_name, toolbar, gui_util
 from gamera.gui.gamera_display import *
 
@@ -429,7 +429,11 @@ class ClassifierFrame(ImageFrameBase):
    def create_menus(self):
       image_menu = gui_util.build_menu(
          self._frame,
-         (("Open and segment image...", self._OnOpenAndSegmentImage),))
+         (("Open and segment image...", self._OnOpenAndSegmentImage),
+          (None, None),
+          ("Save current database as separate images...", self._OnSaveCurrentDatabaseAsImages),
+          ("Save selected glyphs as separate images...", self._OnSaveSelectedAsImages),
+          ("Save production database as separate images...", self._OnSaveProductionDatabaseAsImages)))
       xml_menu = gui_util.build_menu(
          self._frame,
          (("Save by criteria...", self._OnPowerSave),
@@ -603,6 +607,20 @@ class ClassifierFrame(ImageFrameBase):
       ccs = getattr(image_ref, segmenters[segmenter])()
       self.set_image(ccs, image)
       wxEndBusyCursor()
+
+   def _OnSaveCurrentDatabaseAsImages(self, event):
+      self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
+
+   def _OnSaveSelectedAsImages(self, event):
+      self._OnSaveAsImages(self.multi_iw.id.GetSelectedItems())
+
+   def _OnSaveProductionDatabaseAsImages(self, event):
+      self._OnSaveAsImages(self._classifier.database.iterkeys())
+
+   def _OnSaveAsImages(self, list):
+      filename = gui_util.directory_dialog()
+      if filename:
+         classifier_stats.GlyphStats(list).write(filename)
 
    ########################################
    # CLASSIFIER MENU

@@ -17,6 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import types
+
 class SymbolTable:
    def __init__(self):
       self.categories = {}
@@ -50,9 +52,12 @@ class SymbolTable:
             l.symbol_table_rename_callback(a, b)
 
    def normalize_symbol(self, symbol):
-      assert type(symbol) == type('')
+      assert type(symbol) == types.StringType
       if symbol == '':
          return '', []
+      for i in '!@#$%^&*()-=+':
+         symbol.replace(i, '_')
+      symbol = symbol.lower()
       # Split by '.' delimiters
       tokens = symbol.strip().split('.')
       # Remove internal whitespace

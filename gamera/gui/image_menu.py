@@ -55,7 +55,7 @@ def set_shell_frame(sf):
 class ImageMenu:
   def __init__(self, parent, x, y, images_, name_, shell_=None,
                mode=EXECUTE_MODE):
-    global images, images_name
+    # global images, images_name
     self.shell = shell_
     self.x = x
     self.y = y
@@ -63,11 +63,11 @@ class ImageMenu:
     self.mode = mode
     self.parent = parent
     if not util.is_sequence(images_):
-      images = [images_]
-      images_name = [name_]
+      self.images = [images_]
+      self.images_name = [name_]
     else:
-      images = images_
-      images_name = name_
+      self.images = images_
+      self.images_name = name_
     self.variables = images[0].members_for_menu()
     self.methods = images[0].methods_for_menu()
 
@@ -117,16 +117,16 @@ class ImageMenu:
   def PopupMenu(self):
     menu = self.create_menu(self.variables,
                             self.methods,
-                            images[0].data.pixel_type,
-                            images[0].pixel_type_name)
+                            self.images[0].data.pixel_type,
+                            self.images[0].pixel_type_name)
     self.parent.PopupMenu(menu, wxPoint(self.x, self.y))
     menu.Destroy()
 
   def GetMenu(self):
     return self.create_menu(self.variables,
                             self.methods,
-                            images[0].data.pixel_type,
-                            images[0].pixel_type_name)
+                            self.images[0].data.pixel_type,
+                            self.images[0].pixel_type_name)
 
   def get_shell(self):
     if self.shell:
@@ -138,12 +138,12 @@ class ImageMenu:
     sh = self.get_shell()
     name = var_name.get("ref", sh.locals)
     if name:
-      if len(images) == 1:
-        sh.locals[name] = images[0]
+      if len(self.images) == 1:
+        sh.locals[name] = self.images[0]
       else:
         sh.locals[name] = []
         for i in range(len(images)):
-          sh.locals[name].append(images[i])
+          sh.locals[name].append(self.images[i])
       sh.Update()
     sh.update()
 
@@ -151,12 +151,12 @@ class ImageMenu:
     sh = self.get_shell()
     name = var_name.get("copy", sh.locals)
     if name:
-      if len(images) == 1:
-        sh.locals[name] = images[0].image_copy()
+      if len(self.images) == 1:
+        sh.locals[name] = self.images[0].image_copy()
       else:
         sh.locals[name] = []
-        for i in range(len(images)):
-          sh.locals[name].append(images[i].image_copy())
+        for i in range(len(self.images)):
+          sh.locals[name].append(self.images[i].image_copy())
       sh.Update()
     sh.update()
 
@@ -178,20 +178,20 @@ class ImageMenu:
   def get_image_name(self, images_name, i):
     # If the image exists at the top-level in the shell's
     # namespace, we can use that to refer to it
-    if util.is_sequence(images_name):
+    if util.is_sequence(self.images_name):
       # If it is a single image
-      return images_name[i]
-    elif type(images_name) == type('') and images_name != '':
+      return self.images_name[i]
+    elif type(self.images_name) == type('') and self.images_name != '':
       # If is is a list of images
-      return images_name + "[" + str(i) + "]"
+      return self.images_name + "[" + str(i) + "]"
     # The image does not exist at the top-level of the shell's
     # namespace
-    return images_name
+    return self.images_name
 
   def OnPopupFunction(self, event):
     sh = self.get_shell()
     function = functions[event.GetId()]
-    if images:
+    if self.images:
       if self.mode == HELP_MODE:
         sh.run("help('" + function.__name__ + "')")
       elif self.mode == EXECUTE_MODE:
@@ -201,18 +201,18 @@ class ImageMenu:
         result_name = self.get_result_name(function, sh.locals)
         # if we're going to return multiple results, prepare the
         # variable as a list
-        if len(images) > 1 and result_name != '':
+        if len(self.images) > 1 and result_name != '':
           sh.locals[result_name] = []
         # Now let's run some code and get results
         for i in range(len(images)):
           image = images[i]
-          image_name = self.get_image_name(images_name, i)
+          image_name = self.get_image_name(self.images_name, i)
           # If the image name is a string, we can call the function
           # directly in the shell
           if type(image_name) == type(''):
             source = image_name + "." + func_call
             if result_name != '':
-              if len(images) > 1:
+              if len(self.images) > 1:
                 source = result_name + ".append(" + source + ")"
               else:
                 source = result_name + " = " + source
@@ -222,7 +222,7 @@ class ImageMenu:
           else:
             source = "images_name[" + str(i) + "]." + func_call
             if result_name != '':
-              if len(images) > 1:
+              if len(self.images) > 1:
                 sh.locals[result_name].append(eval(source))
               else:
                 sh.locals[result_name] = eval(source)

@@ -120,6 +120,12 @@ class Set(list):
       for item in other:
         self.append(item)
 
+class SetDictionary(dict):
+  def __getitem__(self, key):
+    if not dict.has_key(self, key):
+      dict.__setitem__(self, key, Set())
+    return dict.__getitem__(self, key)
+
 _byte_steps = (('Gb', float(1 << 30), float(1 << 30) * 1.1),
                ('Mb', float(1 << 20), float(1 << 20) * 1.1),
                ('kb', float(1 << 10), float(1 << 10) * 1.1),

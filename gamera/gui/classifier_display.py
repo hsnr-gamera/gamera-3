@@ -22,7 +22,7 @@ from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, classify, classifier_stats
+from gamera import gamera_xml, classify, classifier_stats, util
 from gamera.gui import image_menu, var_name, toolbar, gui_util
 from gamera.gui.gamera_display import *
 
@@ -93,7 +93,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          else:
             id = image.id_name
          self.toplevel.set_label_display(id)
-         self.toplevel.display_label_at_cell(row, col, id)
+         self.toplevel.display_label_at_cell(row, col, id[0][1])
 
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL
@@ -138,7 +138,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
             col = index % GRID_NCOLS
             if index is last_index:
                self.updating = 0
-            self.SelectBlock(row, col, row, col, first or shift)
+            self.SelectBlock(row, col, row, col, first)
             if first == 0:
                self.MakeCellVisible(row, col)
                first = 1
@@ -153,16 +153,18 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
 
    def sort_by_name_func(self, a, b):
       if a.id_name == [] and b.id_name == []:
-         id_name_cmp = 0
+         r = 0
       elif a.id_name == []:
-         id_name_cmp = 1
+         r = 1
       elif b.id_name == []:
-         id_name_cmp = -1
+         r = -1
       else:
-         id_name_cmp = cmp(a.get_main_id(), b.get_main_id())
-      if id_name_cmp == 0:
-         id_name_cmp = cmp(b.classification_state, a.classification_state)
-      return id_name_cmp
+         r = cmp(a.get_main_id(), b.get_main_id())
+      if r == 0:
+         r = cmp(b.classification_state, a.classification_state)
+         if r == 0 and a.classification_state != UNCLASSIFIED:
+            r = cmp(a.id_name[0][0], b.id_name[0][0])
+      return r
 
    def split_classified_from_unclassified(self, list):
       # Find split between classified and unclassified
@@ -185,7 +187,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          column += 1
          column %= GRID_NCOLS
          prev_id = main_id
-      for i in range(column, GRID_NCOLS):
+      for i in range(column, GRID_NCOLS + column):
          new_list.append(None)
       return new_list
 
@@ -218,17 +220,11 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
    def sort_images(self, function=None, order=0):
       self.last_sort = None
       self.display_row_labels = not function
-      wxBeginBusyCursor()
-      self.BeginBatch()
       orig_len = len(self.list)
       new_list = self.GetAllItems()
       if len(new_list) != len(self.list):
          self.list = new_list
       MultiImageDisplay.sort_images(self, function, order)
-      if orig_len != len(self.list):
-         self.resize_grid()
-      self.EndBatch()
-      wxEndBusyCursor()
 
    def set_labels(self):
       if self.last_sort != "default":
@@ -399,11 +395,11 @@ class ClassifierFrame(ImageFrameBase):
       else:
          raise ValueError(
             "symbol_table must be a SymbolTable instance or a list of strings.")
-      # Add 'actions' to symbol table
-      for action in ImageBase.methods_flat_category("Action", ONEBIT):
-         self._symbol_table.add("action." + action[0])
+      # Add 'splits' to symbol table
+      for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
+         self._symbol_table.add("split." + split[0])
       # Add classifier database's symbols to the symbol table
-      for glyph in self._classifier.database.iterkeys():
+      for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
 
@@ -415,7 +411,9 @@ class ClassifierFrame(ImageFrameBase):
       self.menu = None
       self.default_segmenter = -1
 
-      ImageFrameBase.__init__(self, parent, id, title, owner)
+      ImageFrameBase.__init__(
+         self, parent, id,
+         self._classifier.get_name() + " Classifier", owner)
       from gamera.gui import gamera_icons
       icon = wxIconFromBitmap(gamera_icons.getIconClassifyBitmap())
       self._frame.SetIcon(icon)
@@ -520,12 +518,14 @@ class ClassifierFrame(ImageFrameBase):
       self.is_dirty = 1
 
    def update_symbol_table(self):
-      for glyph in self._classifier.database.iterkeys():
+      for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
       for glyph in self.multi_iw.id.GetAllItems():
          for id in glyph.id_name:
             self._symbol_table.add(id[1])
+      for id, group in self._classifier.grouping_classifier.get_groups():
+         self._symbol_table.add(id)
 
    ########################################
    # DISPLAY
@@ -541,31 +541,36 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # CLASSIFICATION FUNCTIONS
    def guess_glyph(self, glyph):
-      return self._classifier.guess_glyph(glyph)
+      try:
+         return self._classifier.guess_glyph(glyph)
+      except classify.ClassifierError:
+         return [(0.0, 'unknown')]
 
    def classify_manual(self, id):
       assert type(id) == types.StringType
-      wxBeginBusyCursor()
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
          self.multi_iw.id.GetGridCursorCol())
       if selection != []:
-         self.multi_iw.id.BeginBatch()
-         removed_some = 0
-         for glyph in selection:
-            for child in glyph.children_images:
-               child.dead = 1
-               removed_some = 1
-         splits = self._classifier.classify_list_manual(selection, id)
-         if len(splits):
-            self.append_glyphs(splits)
-         if removed_some or len(splits):
+         try:
+            added, removed = self._classifier.classify_list_manual(selection, id)
+         except classify.ClassifierError, e:
+            gui_util.message(str(e))
+            return
+         if len(added) or len(removed):
+            wxBeginBusyCursor()
+            self.multi_iw.id.BeginBatch()
+            if len(added):
+               self.append_glyphs(added)
+            for glyph in removed:
+               glyph.dead = 1
             self.multi_iw.id.Refresh()
+            self.multi_iw.id.EndBatch()
+            wxEndBusyCursor()
+         else:
+            self.multi_iw.id.RefreshSelected()
          if not self.do_auto_move():
-            self.set_label_display([(1.0, id)])
-         self.multi_iw.id.EndBatch()
-         wxEndBusyCursor()
-
+            self.set_label_display([(0.0, id)])
 
    ########################################
    # AUTO-MOVE
@@ -630,7 +635,7 @@ class ClassifierFrame(ImageFrameBase):
       self._OnSaveAsImages(self.multi_iw.id.GetSelectedItems())
 
    def _OnSaveProductionDatabaseAsImages(self, event):
-      self._OnSaveAsImages(self._classifier.database.keys())
+      self._OnSaveAsImages(self._classifier.get_glyphs())
 
    def _OnSaveAsImages(self, list):
       filename = gui_util.directory_dialog()
@@ -642,14 +647,18 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGuessAll(self, event):
       self._OnGuess(self.multi_iw.id.GetAllItems())
-      self.multi_iw.id.sort_images(None)
 
    def _OnGuessSelected(self, event):
       self._OnGuess(self.multi_iw.id.GetSelectedItems())
 
    def _OnGuess(self, list):
       wxBeginBusyCursor()
-      self._classifier.classify_list_automatic(list)
+      try:
+         added = self._classifier.classify_list_automatic(list)
+      except classify.ClassifierError, e:
+         gui_util.message(str(e))
+      self.multi_iw.id.append_glyphs(added)
+      self.multi_iw.id.sort_images()
       wxEndBusyCursor()
 
    def _OnConfirmAll(self, event):
@@ -663,7 +672,13 @@ class ClassifierFrame(ImageFrameBase):
       for x in list:
          if (x is not None and not hasattr(x, 'dead') and
              x.classification_state == AUTOMATIC):
-            self._classifier.classify_glyph_manual(x, x.get_main_id())
+            try:
+               self._classifier.classify_glyph_manual(x, x.get_main_id())
+            except classify.ClassifierError, e:
+               gui_util.message(str(e))
+               self.multi_iw.id.ForceRefresh()
+               wxEndBusyCursor()
+               return
       self.multi_iw.id.ForceRefresh()
       wxEndBusyCursor()
       
@@ -715,13 +730,13 @@ class ClassifierFrame(ImageFrameBase):
       skip, proddb, currdb, skip, un, auto, heur, man, filename = results
       if ((proddb == 0 and currdb == 0) or
           (un == 0 and auto == 0 and heur == 0 and man == 0)):
-         gui_util.message("You selected nothing to save!")
+         gui_util.message("You didn't select anything to save!\n(You must check at least one box per category.)")
          return
       if filename == 'None':
          gui_util.message("You must select a filename to save into.")
          return
       # We build a dictionary here, since we don't want to save the
-      # same glyph twice
+      # same glyph twice (it might be in both current and production databases)
       glyphs = {}
       if proddb:
          for glyph in self._classifier.database:
@@ -729,7 +744,7 @@ class ClassifierFrame(ImageFrameBase):
       if currdb:
          for glyph in self.multi_iw.id.GetAllItems():
             glyphs[glyph] = None
-      # One bigass filtering function
+      # One big-ass filtering function
       glyphs = [x for x in glyphs.iterkeys()
                 if ((x != None and not hasattr(x, 'dead')) and
                     ((x.classification_state == UNCLASSIFIED and un) or
@@ -784,7 +799,7 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
          self.set_multi_image(glyphs)
          wxEndBusyCursor()
 
@@ -792,7 +807,7 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         glyphs = gamera_xml.LoadXMLGlyphs().parse_filename(filename)
+         glyphs = gamera_xml.LoadXML().parse_filename(filename).glyphs
          self.append_glyphs(glyphs)
          wxEndBusyCursor()
 
@@ -839,7 +854,8 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         symbol_table = gamera_xml.LoadXMLSymbolTable().parse_filename(filename)
+         symbol_table = gamera_xml.LoadXML(
+            parts=['symbol_table']).parse_filename(filename).symbol_table
          for symbol in symbol_table.symbols.keys():
             self._symbol_table.add(symbol)
          wxEndBusyCursor()
@@ -848,7 +864,8 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.save_file_dialog(gamera_xml.extensions)
       if filename:
          wxBeginBusyCursor()
-         gamera_xml.WriteXMLFile(symbol_table=self._symbol_table).write_filename(filename)
+         gamera_xml.WriteXMLFile(
+            symbol_table=self._symbol_table).write_filename(filename)
          wxEndBusyCursor()
 
    ########################################
@@ -932,7 +949,7 @@ class SymbolTreeCtrl(wxTreeCtrl):
          if new_path[0] == ".":
             new_path = new_path[1:]
          self.SetPyData(item, new_path)
-         if new_path.startswith("action"):
+         if new_path.startswith("split"):
             self.SetItemBackgroundColour(item, wxColor(0xcc, 0xcc, 0xff))
          if is_parent:
             self.SetItemHasChildren(item, TRUE)
@@ -990,14 +1007,12 @@ class SymbolTableEditorPanel(wxPanel):
    # CALLBACKS
 
    def OnKey(self, evt):
-      print evt.KeyCode()
       find = self.text.GetValue()
       if evt.KeyCode() == WXK_TAB:
          find = self._symbol_table.autocomplete(find)
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
       elif evt.KeyCode() == WXK_RETURN:
-         print "got and enter"
          self._symbol_table.add(find)
          self.toplevel.classify_manual(find)
       elif evt.KeyCode() == WXK_LEFT and evt.AltDown():

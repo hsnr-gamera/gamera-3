@@ -74,7 +74,7 @@ class ImageBase:
 
    class Properties(dict):
       def __getitem__(self, attr):
-         if dict.__hasitem__(self, attr):
+         if dict.has_key(self, attr):
             return dict.__getitem__(self, attr)
          else:
             return None
@@ -332,7 +332,11 @@ class ImageBase:
          
    def to_xml(self, stream=None):
       import gamera_xml
-      return gamera_xml.WriteXML(glyphs=[self]).write_stream(stream)
+      return gamera_xml.WriteXML(glyphs=self).write_stream(stream)
+
+   def to_xml_filename(self, filename):
+      import gamera_xml
+      return gamera_xml.WriteXML(glyphs=self).write_filename(filename)
 
    def set_property(self, name, value):
       self.property[name] = value
@@ -417,7 +421,11 @@ def init_gamera():
                               plugin.ImageType([ONEBIT], "cc")),
          plugin.PluginFactory("to_xml", None, "XML",
                               plugin.String('xml'),
-                              plugin.ImageType([ALL]),
+                              plugin.ImageType([ONEBIT]),
+                              None),
+         plugin.PluginFactory("to_xml_filename", None, "XML",
+                              None,
+                              plugin.ImageType([ONEBIT]),
                               None)
          ):
          method.register()

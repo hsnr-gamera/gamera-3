@@ -18,9 +18,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import string, os.path
+import os.path
 from wxPython.wx import *                    # wxPython
-from gamera.core import *                         # Gamera specific
+from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify
 from gamera.gui import image_menu, var_name, gamera_icons
 
@@ -36,12 +36,12 @@ class IconDisplayDropTarget(wxFileDropTarget, wxPyDropTarget):
   def OnDropFiles(self, x, y, filenames):
     for filename in filenames:
       filename = os.path.normpath(os.path.abspath(filename))
-      name = var_name.get("image", self.display.shell.locals)
-      splits = string.split(filename, ".")
-      if len(splits) > 1 and (splits[-1] == "xml" or splits[-1] == "xmlgz"):
-        self.display.shell.run("import gamera.gamera_xml")
-        self.display.shell.run(name + " = gamera.gamera_xml.glyphs_from_xml('" + filename + "')")
+      if filename.endswith('.xml') or filename.endswith('.xml.gz'):
+        name = var_name.get("glyphs", self.display.shell.locals)
+        self.display.shell.run("from gamera import gamera_xml")
+        self.display.shell.run(name + " = gamera_xml.glyphs_from_xml('" + filename + "')")
       else:
+        name = var_name.get("image", self.display.shell.locals)
         self.display.shell.run(name + " = load_image('" + filename + "')")
 
 

@@ -192,7 +192,7 @@ namespace Gamera {
       }
       template<class T>
       void set_norm_vector(T begin, const T end) {
-	assert(size_t(end - begin) == m_num_features);
+	assert(size_t(end - in_begin) == m_num_features);
 	double* cur = m_norm_vector;
 	for (; begin != end; ++begin, ++cur)
 	  *cur = *begin;	

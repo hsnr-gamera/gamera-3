@@ -306,7 +306,7 @@ class _Vector(Class):
       if type(length) != int:
          raise TypeError("'length' must be an int")
       self.length = length
-      if self.default is None:
+      if default is None:
          self.default = []
          self.has_default = False
       else:

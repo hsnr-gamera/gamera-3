@@ -86,9 +86,12 @@ class GameraGui:
       f.Show(1)
    ShowProjections = staticmethod(ShowProjections)
 
-   def help(object):
-      HelpWindow(main_win, pydoc.HTMLDoc().document(object))
-   help = staticmethod(help)
+   help_window = None
+   def help(cls, object):
+      if cls.help_window is None:
+         cls.help_window = HelpWindow(main_win.shell.GetLocals(), globals(), main_win)
+      cls.help_window.set_content(object)
+   help = classmethod(help)
 
    def ShowClassifier(classifier, image, function):
       wxBeginBusyCursor()
@@ -389,17 +392,34 @@ class GameraSplash(wxSplashScreen):
       main_win.Show(true)
       evt.Skip()
 
+class HtmlRedirect(wxHtmlWindow):
+   def __init__(self, parent, locals_, globals_):
+      self._locals = locals_
+      self._globals = globals_
+      wxHtmlWindow.__init__(self, parent, -1)
+
+   def LoadPage(self, location):
+      if ':' not in location:
+         location = location.sub("#", ".")
+         self.SetPage(pydoc.help.HTMLDoc().document(
+            eval(location, self._locals, self._globals)))
+      else:
+         wxHtmlWindow.LoadPage(self, location)
+
 class HelpWindow:
    frame = None
-   def __init__(cls, parent, content):
+
+   def __init__(cls, locals_, globals_, parent, content):
       if cls.frame is None:
+         cls._locals = locals_
+         cls._globals = globals_
          cls.frame = wxFrame(parent, 0, "Gamera Help", size=wxSize(300, 400))
-         cls.html = wxHtmlWindow(cls.frame, -1)
+         cls.html = HtmlRedirect(cls.frame, locals_, globals_)
       cls.frame.Show(1)
       cls.html.Show(1)
       cls.html.SetPage(content)
-
    __init__ = classmethod(__init__)
+
 
 def run():
    global app

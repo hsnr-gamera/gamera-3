@@ -145,14 +145,6 @@ class ImageBase:
          self.to_string())
       return dict
 
-   def __getattr__(self, attr):
-      # This is a hack to help people who may have forgetten to init_gamera
-      init_gamera()
-      if hasattr(self, attr):
-         return getattr(self, attr)
-      else:
-         raise AttributeError("'Image' object has no attribute '%s'." % attr)
-
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
       plug -- subclass of PluginFunction describing the function.
@@ -541,9 +533,12 @@ class Cc(gameracore.Cc, ImageBase):
 # this is a convenience function for using in a console
 _gamera_initialised = False
 def _init_gamera():
+   import traceback
+   traceback.print_stack()
    global _gamera_initialised
    if _gamera_initialised:
       return
+   _gamera_initialised = True
    import plugin, gamera_xml, sys
    # Create the default functions for the menupl
    for method in (
@@ -582,7 +577,6 @@ def _init_gamera():
       method.register()
    paths.import_directory(paths.plugins, globals(), locals(), 1)
    sys.path.append(".")
-   _gamera_initialised = True
 
 import sys
 if sys.platform == 'win32':

@@ -809,6 +809,7 @@ inline PyObject* create_ImageObject(Image* image) {
     d = (ImageDataObject*)image->data()->m_user_data;
     Py_INCREF(d);
   }
+
   ImageObject* i;
   if (cc) {
     i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);
@@ -924,7 +925,7 @@ inline PyObject* PointVector_to_python(PointVector* cpp) {
   PyObject* py = PyList_New(cpp->size());
   for (size_t i = 0; i < cpp->size(); ++i) {
     PyObject* point = create_PointObject(Point((*cpp)[i]));
-    Py_INCREF(point);
+    Py_INCREF(point); // leak?
     PyList_SetItem(py, i, point);
   }
   return py;

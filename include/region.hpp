@@ -121,6 +121,9 @@ namespace Gamera {
   template<class T>
   class RegionMapTemplate : public std::list<RegionTemplate<T> > {
   public:
+    using std::list<RegionTemplate<T> >::begin;
+    using std::list<RegionTemplate<T> >::end;
+
     typedef RegionMapTemplate self;
     typedef RegionTemplate<T> region_type;
     typedef Rect rect_t;

@@ -35,7 +35,11 @@ that for common instantiations (float, char).
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA1DArrayGenome : public GAArray<T>, public GAGenome {
+ protected:
+  using GAArray<T>::sz;
+  using GAArray<T>::a;
 public:
+
   GADeclareIdentity();
 
   static int SwapMutator(GAGenome&, float);
@@ -65,7 +69,7 @@ public:
   GA1DArrayGenome<T>& operator=(const T array []) // no err checks!
     {for(unsigned int i=0; i<sz; i++) gene(i, *(array+i)); return *this;}
   virtual ~GA1DArrayGenome();
-  virtual GAGenome *clone(GAGenome::CloneMethod flag=CONTENTS) const;
+  virtual GAGenome *clone(GAGenome::CloneMethod flag=GAGenome::CONTENTS) const;
   virtual void copy(const GAGenome &);
 
 #ifndef NO_STREAMS
@@ -131,7 +135,16 @@ bigger length.
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA1DArrayAlleleGenome : public GA1DArrayGenome<T> {
+ protected:
+  using GA1DArrayGenome<T>::nx;
+  using GA1DArrayGenome<T>::a;
+
 public:
+  using GA1DArrayGenome<T>::ElementComparator;
+  using GA1DArrayGenome<T>::OnePointCrossover;
+  using GA1DArrayGenome<T>::comparator;
+  using GA1DArrayGenome<T>::crossover;
+
   GADeclareIdentity();
 
   static void UniformInitializer(GAGenome&);
@@ -152,7 +165,7 @@ public:
   GA1DArrayAlleleGenome<T>& operator=(const T array []) // no err checks!
     {GA1DArrayGenome<T>::operator=(array); return *this;}
   virtual ~GA1DArrayAlleleGenome();
-  virtual GAGenome *clone(GAGenome::CloneMethod flag=CONTENTS) const;
+  virtual GAGenome *clone(GAGenome::CloneMethod flag=GAGenome::CONTENTS) const;
   virtual void copy(const GAGenome &);
 
 #ifndef NO_STREAMS

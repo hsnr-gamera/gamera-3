@@ -32,7 +32,14 @@ namespace Gamera {
 
   template<class T>
   class StaticImage : public ImageView<ImageData<T> > {
+  protected:
+    using ImageView<ImageData<T> >::calculate_iterators;
+    using ImageView<ImageData<T> >::range_check;
+
   public:
+    using ImageView<ImageData<T> >::nrows;
+    using ImageView<ImageData<T> >::ncols;
+
     typedef Rect rect_type;
     typedef Size size_type;
     typedef Point point_type;

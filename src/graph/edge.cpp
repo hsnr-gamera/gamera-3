@@ -17,6 +17,7 @@
  */
 
 #include "edge.hpp"
+#include "iterator.hpp"
 
 Edge::Edge(GraphObject* graph, Node* from_node,
 	   Node* to_node, CostType cost, PyObject* label) :

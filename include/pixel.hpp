@@ -94,7 +94,12 @@ namespace Gamera {
    */
   template<class T>
   class Rgb : public RGBValue<T> {
+  protected:
+    using RGBValue<T>::data_;
+    
   public:
+    using RGBValue<T>::luminance;
+
     /**
      * Construct a RGB pixel from a GreyScalePixel. RGB are all
      * set to the passed in GreyScalePixel.

@@ -22,6 +22,10 @@
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA3DArrayGenome : public GAArray<T>, public GAGenome {
+protected:
+  using GAArray<T>::a;
+  using GAArray<T>::sz;
+
 public:
   GADeclareIdentity();
 
@@ -49,7 +53,7 @@ public:
     return *this;
   }
   virtual ~GA3DArrayGenome();
-  virtual GAGenome * clone(GAGenome::CloneMethod flag=CONTENTS) const;
+  virtual GAGenome * clone(GAGenome::CloneMethod flag=GAGenome::CONTENTS) const;
   virtual void copy(const GAGenome & chrom);
 
 #ifndef NO_STREAMS
@@ -115,7 +119,19 @@ protected:
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA3DArrayAlleleGenome : public GA3DArrayGenome<T> {
+ protected:
+  using GA3DArrayGenome<T>::nx;
+  using GA3DArrayGenome<T>::ny;
+  using GA3DArrayGenome<T>::nz;
+  using GA3DArrayGenome<T>::a;
+  using GA3DArrayGenome<T>::sz;
+
 public:
+  using GA3DArrayGenome<T>::ElementComparator;
+  using GA3DArrayGenome<T>::OnePointCrossover;
+  using GA3DArrayGenome<T>::comparator;
+  using GA3DArrayGenome<T>::crossover;
+
   GADeclareIdentity();
 
   static void UniformInitializer(GAGenome&);
@@ -136,7 +152,7 @@ public:
   GA3DArrayAlleleGenome<T>& operator=(const T array [])
     {GA3DArrayGenome<T>::operator=(array); return *this;}
   virtual ~GA3DArrayAlleleGenome();
-  virtual GAGenome * clone(GAGenome::CloneMethod flag=CONTENTS) const;
+  virtual GAGenome * clone(GAGenome::CloneMethod flag=GAGenome::CONTENTS) const;
   virtual void copy(const GAGenome &);
 
 #ifndef NO_STREAMS

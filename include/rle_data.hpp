@@ -402,6 +402,11 @@ namespace Gamera {
     template<class V>
     class RleVectorIterator : public RleVectorIteratorBase<V, RleVectorIterator<V>,
 							   typename V::list_type::iterator> {
+      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_i;
+      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_vec;
+      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_chunk;
+      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_pos;
+
     public:
       typedef RLEProxy<V> proxy_type;
       typedef proxy_type reference;
@@ -427,6 +432,11 @@ namespace Gamera {
     class ConstRleVectorIterator
       : public RleVectorIteratorBase<V, ConstRleVectorIterator<V>,
 				     typename V::list_type::const_iterator> {
+      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_i;
+      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_vec;
+      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_chunk;
+      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_pos;
+
     public:
       typedef void reference;
       typedef typename V::value_type* pointer;
@@ -676,6 +686,7 @@ namespace Gamera {
   class RleImageData : public RleDataDetail::RleVector<T>,
 		       public ImageDataBase {
   public:
+    using RleDataDetail::RleVector<T>::resize;
     typedef T value_type;
     typedef typename RleDataDetail::RleVector<T>::reference reference;
     typedef typename RleDataDetail::RleVector<T>::pointer pointer;
@@ -711,8 +722,8 @@ namespace Gamera {
       size_t run_size = sizeof(RleDataDetail::Run<T>);
       size_t run_ptr_size = sizeof(RleDataDetail::Run<T>*);
       size_t num_runs = 0;
-      for (size_t i = 0; i < m_data.size(); ++i)
-	num_runs += m_data[i].size();
+      for (size_t i = 0; i < this->m_data.size(); ++i)
+	num_runs += this->m_data[i].size();
       return num_runs * (run_size + run_ptr_size + run_ptr_size);
     }
     virtual double mbytes() const { return bytes() / 1048576.0; }

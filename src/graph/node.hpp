@@ -27,7 +27,6 @@
 #define mgd010103_node_hpp
 
 #include "graphlib.hpp"
-#include "iterator.hpp"
 
 #define NUM_NODE_DATA_ELEMENTS 4
 

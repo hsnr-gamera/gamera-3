@@ -46,6 +46,11 @@ namespace Gamera {
   class ConnectedComponent
     : public ImageBase<typename T::value_type> {
   public:
+    using ImageBase<typename T::value_type>::ncols;
+    using ImageBase<typename T::value_type>::nrows;
+    using ImageBase<typename T::value_type>::offset_x;
+    using ImageBase<typename T::value_type>::offset_y;
+
     // standard STL typedefs
     typedef typename T::value_type value_type;
     typedef typename T::pointer pointer;

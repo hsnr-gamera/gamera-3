@@ -21,7 +21,12 @@
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA2DArrayGenome : public GAArray<T>, public GAGenome {
+ protected:
+  using GAArray<T>::a;
+  using GAArray<T>::sz;
 public:
+  using GAArray<T>::move;
+
   GADeclareIdentity();
 
   static int SwapMutator(GAGenome&, float);
@@ -100,7 +105,19 @@ protected:
 ---------------------------------------------------------------------------- */
 template <class T>
 class GA2DArrayAlleleGenome : public GA2DArrayGenome<T> {
+ protected:
+  using GA2DArrayGenome<T>::nx;
+  using GA2DArrayGenome<T>::ny;
+  using GA2DArrayGenome<T>::a;
+  using GA2DArrayGenome<T>::sz;
+
 public:
+  using GA2DArrayGenome<T>::ElementComparator;
+  using GA2DArrayGenome<T>::OnePointCrossover;
+  using GA2DArrayGenome<T>::comparator;
+  using GA2DArrayGenome<T>::crossover;
+  
+
   GADeclareIdentity();
 
   static void UniformInitializer(GAGenome&);
@@ -121,7 +138,7 @@ public:
   GA2DArrayAlleleGenome<T>& operator=(const T array [])
     { GA2DArrayGenome<T>::operator=(array); return *this; }
   virtual ~GA2DArrayAlleleGenome();
-  virtual GAGenome * clone(GAGenome::CloneMethod flag=CONTENTS) const;
+  virtual GAGenome * clone(GAGenome::CloneMethod flag=GAGenome::CONTENTS) const;
   virtual void copy(const GAGenome &);
 
 #ifndef NO_STREAMS

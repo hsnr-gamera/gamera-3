@@ -14,14 +14,18 @@
 #include <ga/GAList.h>
 #include <ga/GAGenome.h>
 
-
 /* ----------------------------------------------------------------------------
 ListGenome
 -------------------------------------------------------------------------------
 ---------------------------------------------------------------------------- */
 template <class T>
 class GAListGenome : public GAList<T>, public GAGenome {
+ protected:
+  using GAList<T>::hd;
+
 public:
+  using GAList<T>::size;
+
   GADeclareIdentity();
 
   static int DestructiveMutator(GAGenome &, float);

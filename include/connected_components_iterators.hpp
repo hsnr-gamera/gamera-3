@@ -76,6 +76,9 @@ namespace Gamera {
     template<class Image, class T>
     class RowIterator : public RowIteratorBase<Image, RowIterator<Image, T>, T> {
     public:
+      using RowIteratorBase<Image, RowIterator<Image, T>, T>::m_iterator;
+      using RowIteratorBase<Image, RowIterator<Image, T>, T>::m_image;
+
       // Typedefs for rows
       typedef ColIterator<Image, T> iterator;
       typedef typename Image::value_type value_type;
@@ -119,6 +122,9 @@ namespace Gamera {
     template<class Image, class T>
     class ColIterator : public ColIteratorBase<Image, ColIterator<Image, T>, T> {
     public:
+      using ColIteratorBase<Image, ColIterator<Image, T>, T>::m_iterator;
+      using ColIteratorBase<Image, ColIterator<Image, T>, T>::m_image;
+
       // Typedefs for Cols
       typedef RowIterator<Image, T> iterator;
       typedef typename Image::value_type value_type;
@@ -165,6 +171,9 @@ namespace Gamera {
     template<class Image, class T>
     class ConstRowIterator : public RowIteratorBase<Image, ConstRowIterator<Image, T>, T> {
     public:
+      using RowIteratorBase<Image, ConstRowIterator<Image, T>, T>::m_iterator;
+      using RowIteratorBase<Image, ConstRowIterator<Image, T>, T>::m_image;
+
       // Typedefs for rows
       typedef ConstColIterator<Image, T> iterator;
 
@@ -203,6 +212,9 @@ namespace Gamera {
     template<class Image, class T>
     class ConstColIterator : public ColIteratorBase<Image, ConstColIterator<Image, T>, T> {
     public:
+      using ColIteratorBase<Image, ConstColIterator<Image, T>, T>::m_iterator;
+      using ColIteratorBase<Image, ConstColIterator<Image, T>, T>::m_image;
+
       // Typedefs for Cols
       typedef ConstRowIterator<Image, T> iterator;
 
@@ -243,6 +255,8 @@ namespace Gamera {
     class VecIterator : public VecIteratorBase<Image, Row, Col,
 					       VecIterator<Image, Row, Col> > {
     public:
+      using VecIteratorBase<Image, Row, Col, VecIterator<Image, Row, Col> >::m_coliterator;
+
       typedef VecIterator self;
       typedef VecIteratorBase<Image, Row, Col, self> base;
       typedef typename Image::value_type value_type;
@@ -277,6 +291,8 @@ namespace Gamera {
     class ConstVecIterator : public VecIteratorBase<Image, Row, Col,
 						    ConstVecIterator<Image, Row, Col> > {
     public:
+      using VecIteratorBase<Image, Row, Col, ConstVecIterator<Image, Row, Col> >::m_coliterator;
+
       typedef ConstVecIterator self;
       typedef VecIteratorBase<Image, Row, Col, self> base;
       typedef typename Image::value_type value_type;

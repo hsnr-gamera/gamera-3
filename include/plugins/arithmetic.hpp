@@ -40,8 +40,8 @@ arithmetic_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
     typename choose_accessor<T>::accessor ad = choose_accessor<T>::make_accessor(a);
     for (; ia != a.vec_end(); ++ia, ++ib) {
       ad.set(NumericTraits<TVALUE>::fromPromote
-	     (functor(NumericTraits<TVALUE>::Promote(*ia),
-		      NumericTraits<TVALUE>::Promote(*ib))),
+	     (functor(typename NumericTraits<TVALUE>::Promote(*ia),
+		      typename NumericTraits<TVALUE>::Promote(*ib))),
 	     ia);
     }
 
@@ -62,8 +62,8 @@ arithmetic_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
 
     for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
       ad.set(NumericTraits<TVALUE>::fromPromote
-	     (functor(NumericTraits<TVALUE>::Promote(*ia),
-		      NumericTraits<TVALUE>::Promote(*ib))),
+	     (functor(typename NumericTraits<TVALUE>::Promote(*ia),
+		      typename NumericTraits<TVALUE>::Promote(*ib))),
 	     id);
     }
     return dest;

@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ga/garandom.h>
 #include <ga/GAListGenome.h>
 #include <ga/GAMask.h>
 

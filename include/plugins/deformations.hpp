@@ -386,6 +386,70 @@ inline void borderfunc(T& p0, T& p1, T& oldPixel, T origPixel, double& weight, T
   p0 = norm_weight_avg(bgcolor, origPixel, weight, 1.0-weight);
 }
 
+inline double sin2(float per, int n)
+{
+  if(per==0) return 1;
+  return sin(2.0*M_PI*(double)n/per);
+}
+
+inline double square(float per, int n)
+{
+  size_t n1 = n%(int)floor(per+0.5);
+  
+  if(n1<(per/2)) return -1;
+  
+  return 1;
+}
+
+inline double sawtooth(float per, int n)
+{
+  return 1.0 - 2*(double)abs((n%(size_t)per)-per)/per;
+}
+
+inline double triangle(float per, int n)
+{
+  size_t n1 = n%(size_t)per;
+  float quarter = per/4.0;
+  if(n1<(3*quarter) && n1>(quarter))
+    return 1.0 - 4.0*(n1-quarter)/per;
+  
+  if(n1<=quarter)
+    return (4*n1/per);
+  
+  return -1.0+ 4.0*((n1-3*quarter)/per);
+}
+
+inline double sinc(float per, int n)
+{
+  if(n==0) return 1.0;
+  return sin2(per,n)*per/(2*M_PI*n);
+}
+
+inline double noisefunc(void)
+{
+  return -1.0 + (2.0 * rand()/(RAND_MAX+1.0));
+}
+
+inline size_t expDim(size_t amp)
+{
+  return amp;
+}
+
+inline size_t noExpDim(size_t)
+{
+  return 0;
+}
+
+inline size_t doShift(size_t amplitude, double amt)
+{
+  return (size_t)(((1+amplitude)/2)*(1-amt));
+}
+
+inline size_t noShift(size_t, double)
+{
+  return 0;
+}
+
 template<class T>
 typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float freq, int direction, int funcType, int offset)
 {
@@ -474,68 +538,6 @@ typename ImageFactory<T>::view_type* wave(const T &src, int amplitude, float fre
   return new_view;
 }
 
-inline double sin2(float per, int n)
-{
-  if(per==0) return 1;
-  return sin(2.0*M_PI*(double)n/per);
-}
-
-inline double square(float per, int n)
-{
-  size_t n1 = n%(int)floor(per+0.5);
-  
-  if(n1<(per/2)) return -1;
-  
-  return 1;
-}
-
-inline double sawtooth(float per, int n)
-{
-  return 1.0 - 2*(double)abs((n%(size_t)per)-per)/per;
-}
-
-inline double triangle(float per, int n)
-{
-  size_t n1 = n%(size_t)per;
-  float quarter = per/4.0;
-  if(n1<(3*quarter) && n1>(quarter))
-    return 1.0 - 4.0*(n1-quarter)/per;
-  
-  if(n1<=quarter)
-    return (4*n1/per);
-  
-  return -1.0+ 4.0*((n1-3*quarter)/per);
-}
-
-inline double sinc(float per, int n)
-{
-  if(n==0) return 1.0;
-  return sin2(per,n)*per/(2*M_PI*n);
-}
-
-inline double noisefunc(void)
-{
-  return -1.0 + (2.0 * rand()/(RAND_MAX+1.0));
-}
-
-inline size_t expDim(size_t amp)
-{
-  return amp;
-}
-inline size_t noExpDim(size_t)
-{
-  return 0;
-}
-
-inline size_t doShift(size_t amplitude, double amt)
-{
-  return (size_t)(((1+amplitude)/2)*(1-amt));
-}
-
-inline size_t noShift(size_t, double)
-{
-  return 0;
-}
 
 template<class T>
 typename ImageFactory<T>::view_type* noise(const T &src, int amplitude, int direction)
@@ -651,6 +653,12 @@ typename ImageFactory<T>::view_type* inkrub(const T &src, int a) {
   return new_view;
 }
 
+inline double dist(double i0, double j0, double i1, double j1)
+{
+  double quadI = pow(i1-i0,2.0), quadJ = pow(j1-j0,2.0);
+  return sqrt(quadI + quadJ);
+}	
+
 template<class T>
 typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double dropoff)
 {
@@ -746,12 +754,6 @@ typename ImageFactory<T>::view_type* ink_diffuse(const T &src, int type, double 
   image_copy_attributes(src, *new_view);
   return new_view;
 }
-
-inline double dist(double i0, double j0, double i1, double j1)
-{
-  double quadI = pow(i1-i0,2.0), quadJ = pow(j1-j0,2.0);
-  return sqrt(quadI + quadJ);
-}	
 
 inline RGBPixel norm_weight_avg(RGBPixel& pix1, RGBPixel& pix2, double w1=1.0, double w2=1.0)
 {

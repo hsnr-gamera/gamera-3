@@ -27,7 +27,6 @@
 #define mgd010103_edge_hpp
 
 #include "graphlib.hpp"
-#include "iterator.hpp"
 
 #define NUM_EDGE_DATA_ELEMENTS 4
 

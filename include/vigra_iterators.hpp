@@ -149,6 +149,10 @@ namespace Gamera {
   template <class Image, class I>
   class ImageIterator : public ImageIteratorBase<typename Image::value_type, I> {
   public:
+    using ImageIteratorBase<typename Image::value_type, I>::x;
+    using ImageIteratorBase<typename Image::value_type, I>::y;
+    using ImageIteratorBase<typename Image::value_type, I>::width;
+
     typedef typename Image::value_type value_type;
     typedef value_type PixelType;
     typedef typename Image::reference reference;
@@ -233,6 +237,10 @@ namespace Gamera {
   template <class Image, class I>
   class ConstImageIterator : public ImageIteratorBase<typename Image::value_type, I> {
   public:
+    using ImageIteratorBase<typename Image::value_type, I>::x;
+    using ImageIteratorBase<typename Image::value_type, I>::y;
+    using ImageIteratorBase<typename Image::value_type, I>::width;
+
     typedef typename Image::value_type value_type;
     typedef value_type PixelType;
     typedef typename Image::reference reference;

@@ -17,6 +17,7 @@
  */
 
 #include "node.hpp"
+#include "iterator.hpp"
 
 Node::Node(GraphObject* graph, PyObject* data) : 
   m_graph(graph), m_data(data) {

@@ -89,6 +89,7 @@ float ran3();
 
 #endif
 
+
 inline int GARandomInt(){ return _GA_RND() > 0.5 ? 1 : 0; }
 inline int GARandomInt(int low, int high){ 
   float val=STA_CAST(float,high)-STA_CAST(float,low)+(float)1; 

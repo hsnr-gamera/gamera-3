@@ -82,7 +82,7 @@ int BFSIterator::init(GraphObject* graph, Node* root) {
   NP_VISITED(root) = true;
   return 1;
 }
-inline Node* BFSIterator::next_node(IteratorObject* self) {
+Node* BFSIterator::next_node(IteratorObject* self) {
   BFSIterator* so = (BFSIterator*)self;
   if (so->m_node_queue->empty()) {
     return 0;
@@ -117,7 +117,7 @@ int DFSIterator::init(GraphObject* graph, Node* root) {
   NP_VISITED(root) = true;
   return 1;
 }
-inline Node* DFSIterator::next_node(IteratorObject* self) {
+Node* DFSIterator::next_node(IteratorObject* self) {
   DFSIterator* so = (DFSIterator*)self;
   if (so->m_node_stack->empty()) {
     return 0;

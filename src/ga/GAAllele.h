@@ -143,7 +143,7 @@ public:
 #if defined(THINK_C) || __powerc
   friend operator==(const GAAlleleSet<T> &, const GAAlleleSet<T> &);
   friend operator!=(const GAAlleleSet<T> &, const GAAlleleSet<T> &);
-#elif defined(__GNUG__)
+#elif defined(__GNUG__) && __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ <= 3)
   friend int operator==<T>(const GAAlleleSet<T> &, const GAAlleleSet<T> &);
   friend int operator!=<T>(const GAAlleleSet<T> &, const GAAlleleSet<T> &);
 #else

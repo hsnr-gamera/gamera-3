@@ -413,6 +413,14 @@ template <class T>
 class Polynomial
 : public PolynomialView<T>
 {
+  protected:
+    using PolynomialView<T>::epsilon_;
+  public:
+    using PolynomialView<T>::begin;
+    using PolynomialView<T>::end;
+    using PolynomialView<T>::order;
+    using PolynomialView<T>::epsilon;
+  private:
     typedef PolynomialView<T> BaseType;
   public:
     typedef typename BaseType::Real    Real;
@@ -544,6 +552,14 @@ template <unsigned int MAXORDER, class T>
 class StaticPolynomial
 : public PolynomialView<T>
 {
+  protected:
+    using PolynomialView<T>::epsilon_;
+  public:
+    using PolynomialView<T>::begin;
+    using PolynomialView<T>::end;
+    using PolynomialView<T>::order;
+    using PolynomialView<T>::epsilon;
+  private:
     typedef PolynomialView<T> BaseType;
     
   public:

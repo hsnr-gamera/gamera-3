@@ -466,7 +466,7 @@ class TinyVectorBase
     const_pointer data() const { return data_; }
 
 
-  protected:
+  public:
     DATA data_;
 };
 

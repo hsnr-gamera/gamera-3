@@ -14,7 +14,6 @@
 #include <ga/GATree.h>
 #include <ga/GAGenome.h>
 
-
 /* ----------------------------------------------------------------------------
 TreeGenome
 -------------------------------------------------------------------------------
@@ -24,6 +23,9 @@ will grow until you run out of memory.
 ---------------------------------------------------------------------------- */
 template <class T>
 class GATreeGenome : public GATree<T>, public GAGenome {
+protected:
+  using GATree<T>::rt;
+
 public:
   GADeclareIdentity();
 

@@ -113,7 +113,13 @@ class GameraGui:
 class PyCrustGameraShell(shell.Shell):
    def __init__(self, main_win, parent, id, message):
       shell.Shell.__init__(self, parent, id, introText=message)
-      self.SetCodePage(wxSTC_CP_UTF8)
+      # Win32 change
+      # WIN32TODO: This needs to be tested
+      # if wxPython was compiled with Unicode
+      if hasattr(wxLocale, 'GetSystemEncoding'): 
+         self.SetCodePage(wxSTC_CP_UTF8)
+      else:
+         self.SetCodePage(1)
       self.history_win = None
       self.update = None
       self.locals = self.interp.locals
@@ -205,7 +211,6 @@ class ShellFrame(wxFrame):
       global shell
       wxFrame.__init__(
          self, parent, id, title, wxDefaultPosition,
-         # Win32 change
          [600, 550],
          style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       EVT_CLOSE(self, self.OnCloseWindow)

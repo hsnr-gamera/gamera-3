@@ -92,11 +92,8 @@ if _has_gui == _WX_GUI:
 
       # generates the dialog box
       def setup(self, parent, locals, wizard=0):
-         # Win32 change
          self.window = wxPython.wx.wxDialog(parent, -1, self.name,
                                             style=wxPython.wx.wxCAPTION)
-##          self.window = wxPython.wx.wxDialog(parent, -1, self.name,
-##                                             style=wxPython.wx.wxRESIZE_BORDER)
          self.window.SetAutoLayout(wxPython.wx.true)
          if wizard:
             bigbox = wxPython.wx.wxBoxSizer(wxPython.wx.wxHORIZONTAL)

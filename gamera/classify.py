@@ -298,6 +298,8 @@ class InteractiveClassifier(_Classifier):
    ########################################
    # AUTOMATIC CLASSIFICATION
    def _classify_automatic_impl(self, glyph):
+      if len(self._database) == 0:
+         raise ClassifierError("Cannot classify using an empty production database.")
       for child in glyph.children_images:
          if self._database.has_key(child):
             del self._database[child]
@@ -389,7 +391,7 @@ class InteractiveClassifier(_Classifier):
             classifier, self.get_glyphs(),
             self.classifier.features, self.perform_splits,
             self.grouping_classifier.noninteractive_copy())
-      return None
+      raise ClassifierError("Cannot create a noninteractive copy of an empty classifier.")
 
    def display(self, current_database=[],
                context_image=None, symbol_table=[]):

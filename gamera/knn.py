@@ -148,14 +148,14 @@ class kNN(gamera.knncore.kNN):
         self.num_features = features
 
     def classify_with_images(self, images, glyph):
-        self._classify_with_images(images, glyph)
+        return self._classify_with_images(images, glyph)
       
     def instantiate_from_images(self, images):
         """Create a k-NN database from a list of images"""
         assert(len(images) > 0)
         for x in images:
             x.generate_features(self.feature_functions)
-        self._instantiate_from_images(images)
+        return self._instantiate_from_images(images)
 
     def evaluate(self):
         """Evaluate the performance of the kNN classifier using
@@ -220,10 +220,11 @@ class kNN(gamera.knncore.kNN):
                          args.Choice('Distance Function',
                                      ['City Block', 'Euclidean', 'Fast Euclidean'],
                                      default = self.distance_type)
-                         ])
-        k,distance = dlg.show(NULL)
-        self.num_k = k
-        self.distance_type = distance
+                         ], title="kNN settings")
+        results = dlg.show(NULL)
+        if results is None:
+            return
+        self.num_k, self.distance_type = results
 
     def save_settings(self, filename):
         """Save the k-NN settings to filename. This settings file (which is xml)

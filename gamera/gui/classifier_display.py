@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-import types
+import types, sys
 from wxPython.wx import *
 from gamera.core import *
 from gamera.args import *
@@ -36,13 +36,13 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
       MultiImageDisplay.__init__(self, parent)
       self.last_image_no = None
       self._last_selection = []
-      EVT_GRID_RANGE_SELECT(self, self.OnSelect)
+      EVT_GRID_RANGE_SELECT(self, self._OnSelect)
       self.last_sort = None
       # This is to turn off the display of row labels if a)
       # we have done some classification and b) we have done a
       # sort other than the default. KWM
       self.display_row_labels = 0
-      EVT_KEY_DOWN(self, self.OnKey)
+      EVT_KEY_DOWN(self, self._OnKey)
 
    ########################################
    # AUTO-MOVE
@@ -88,7 +88,7 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
          col = found % GRID_NCOLS
          self.SetGridCursor(row, col)
          self.SelectBlock(row, col, row, col, 0)
-         self.MakeCellVisible(min(row + 1, self.rows - 1), col)
+         self.MakeCellVisible(min(row + 1, self.rows), col)
          if image.classification_state == UNCLASSIFIED:
             id = self.toplevel.guess_glyph(image)
          else:
@@ -294,14 +294,14 @@ class ClassifierMultiImageDisplay(MultiImageDisplay):
                self.toplevel.set_label_display([])
             self.toplevel.display_cc(images)
 
-   def OnSelect(self, event):
+   def _OnSelect(self, event):
       event.Skip()
       self.OnSelectImpl()
 
-   def OnKey(self, event):
+   def _OnKey(self, event):
       if event.KeyCode() == WXK_F12:
          self.toplevel.do_auto_move()
-         
+      event.Skip()
 
 class ClassifierMultiImageWindow(MultiImageWindow):
    def __init__(self, toplevel, parent = None, id = -1, size = wxDefaultSize):
@@ -367,15 +367,19 @@ class ClassifierImageWindow(ImageWindow):
    def __init__(self, toplevel, parent = None, id = -1):
       self.toplevel = toplevel
       ImageWindow.__init__(self, parent, id)
-      self.toolbar.AddSeparator()
       from gamera.gui import gamera_icons
+      self.toolbar.AddSeparator()
+      self.toolbar.AddSimpleTool(
+         25, gamera_icons.getIconMarkHighlightsBitmap(),
+         "Box around highlights", self.id._OnBoxHighlightsToggle, 1)
+      self.toolbar.AddSeparator()
       self.toolbar.AddSimpleTool(
          40, gamera_icons.getIconChooseImageBitmap(),
-         "Choose new image", self.OnChooseImage)
+         "Choose new image", self._OnChooseImage)
 
-   def OnChooseImage(self, event):
+   def _OnChooseImage(self, event):
       dlg = Args([Class("Image for context display", core.ImageBase)])
-      function = dlg.show(self, image_menu.shell.locals, "")
+      function = dlg.show(self, image_menu.shell.locals, title="Choose image")
       if function != None:
          function = function[1:-1]
          image = image_menu.shell.locals[function]
@@ -433,7 +437,6 @@ class ClassifierFrame(ImageFrameBase):
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(3)
       self._frame.SetSize((800, 600))
-      # Win32 change
       self.splitterv = wxSplitterWindow(
          self._frame, -1,
          style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
@@ -455,53 +458,56 @@ class ClassifierFrame(ImageFrameBase):
    def create_menus(self):
       image_menu = gui_util.build_menu(
          self._frame,
-         (("Open and segment image...", self._OnOpenAndSegmentImage),
+         (("&Open and segment image...", self._OnOpenAndSegmentImage),
+          ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
           (None, None),
-          ("Save current database as separate images...", self._OnSaveCurrentDatabaseAsImages),
-          ("Save selected glyphs as separate images...", self._OnSaveSelectedAsImages),
-          ("Save production database as separate images...", self._OnSaveProductionDatabaseAsImages)))
+          ("Save &production database as separate images...", self._OnSaveProductionDatabaseAsImages),
+          ("Save &current database as separate images...", self._OnSaveCurrentDatabaseAsImages),
+          ("Save se&lected glyphs as separate images...", self._OnSaveSelectedAsImages)
+          ))
       xml_menu = gui_util.build_menu(
          self._frame,
-         (("Save by criteria...", self._OnSaveByCriteria),
+         (("Save &by criteria...", self._OnSaveByCriteria),
           (None, None),
-          ("Open production database...", self._OnOpenProductionDatabase),
-          ("Merge into production database...", self._OnMergeProductionDatabase),
-          ("Save production database", self._OnSaveProductionDatabase),
-          ("Save production database as...", self._OnSaveProductionDatabaseAs),
-          ("Clear production database...", self._OnClearProductionDatabase),
-          (None, None),
-          ("Open current database...", self._OnOpenCurrentDatabase),
-          ("Merge into current database...", self._OnMergeCurrentDatabase),
-          ("Save current database", self._OnSaveCurrentDatabase),
-          ("Save current database as...", self._OnSaveCurrentDatabaseAs),
-          ("Save selected glyphs as...", self._OnSaveSelectedGlyphsAs),
-          (None, None),
-          ("Import symbol names...", self._OnImportSymbolTable),
-          ("Export symbol names...", self._OnExportSymbolTable)))
+          ("&Production database", 
+           (("&Open...", self._OnOpenProductionDatabase),
+            ("&Merge...", self._OnMergeProductionDatabase),
+            ("&Save", self._OnSaveProductionDatabase),
+            ("Save &as...", self._OnSaveProductionDatabaseAs),
+            ("&Clear...", self._OnClearProductionDatabase))),
+          ("&Current database",
+           (("&Open...", self._OnOpenCurrentDatabase),
+            ("&Merge...", self._OnMergeCurrentDatabase),
+            ("&Save", self._OnSaveCurrentDatabase),
+            ("Save &as...", self._OnSaveCurrentDatabaseAs),
+            ("Save se&lection as...", self._OnSaveSelectedGlyphsAs))),
+          ("&Symbol names",
+           (("&Import...", self._OnImportSymbolTable),
+            ("&Export...", self._OnExportSymbolTable)))))
       classifier_menu = gui_util.build_menu(
          self._frame,
          (("Guess all", self._OnGuessAll),
-          ("Guess selected", self._OnGuessSelected),
+          ("&Guess selected", self._OnGuessSelected),
           (None, None),
           ("Group all", self._OnGroupAll),
-          ("Group selected", self._OnGroupSelected),
+          ("G&roup selected", self._OnGroupSelected),
           (None, None),
           ("Group and guess all", self._OnGroupAndGuessAll),
-          ("Group and guess selected", self._OnGroupAndGuessSelected),
+          ("Group &and guess selected", self._OnGroupAndGuessSelected),
           (None, None),
           ("Confirm all", self._OnConfirmAll),
-          ("Confirm selected", self._OnConfirmSelected),
+          ("&Confirm selected", self._OnConfirmSelected),
           (None, None),
-          ("Change set of features...", self._OnChangeSetOfFeatures),
+          ("Change set of &features...", self._OnChangeSetOfFeatures),
           (None, None),
-          ("Change classifier properties...", self._OnClassifierProperties),
+          ("Change classifier &properties...", self._OnClassifierProperties),
           (None, None),
-          ("Create noninteractive copy...", self._OnCreateNoninteractiveCopy)))
+          ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)))
          
       menubar = wxMenuBar()
-      menubar.Append(image_menu, "Image")
-      menubar.Append(xml_menu, "XML")
-      menubar.Append(classifier_menu, "Classifier")
+      menubar.Append(image_menu, "&Image")
+      menubar.Append(xml_menu, "&XML")
+      menubar.Append(classifier_menu, "&Classifier")
       self._frame.SetMenuBar(menubar)
 
    def set_image(self, current_database, image=None, weak=1):
@@ -569,13 +575,12 @@ class ClassifierFrame(ImageFrameBase):
    # CLASSIFICATION FUNCTIONS
    def guess_glyph(self, glyph):
       try:
-         return self._classifier.guess_glyph(glyph)
+         return self._classifier.guess_glyph_automatic(glyph)
       except classify.ClassifierError:
          return [(0.0, 'unknown')]
 
    def classify_manual(self, id):
       # if type(id) == types.StringType
-      # Win32 change
       id = id.encode('utf8')
       selection = self.multi_iw.id.GetSelectedItems(
          self.multi_iw.id.GetGridCursorRow(),
@@ -635,34 +640,55 @@ class ClassifierFrame(ImageFrameBase):
    # FILE MENU
 
    def _OnOpenAndSegmentImage(self, event):
-      segmenters = [x[0] for x in ImageBase.methods_flat_category("Segmentation", ONEBIT)]
+      segmenters = [x[0] for x in
+                    ImageBase.methods_flat_category("Segmentation", ONEBIT)]
       if self.default_segmenter == -1:
          self.default_segmenter = segmenters.index("cc_analysis")
       dialog = Args(
          [FileOpen("Image file", "", "*.*"),
-          Choice("Segmentation algorithm", segmenters, self.default_segmenter)])
-      filename = "'None'"
-      while filename == "'None'":
+          Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
+         title = "Open and segment image...")
+      filename = "r'None'"
+      while filename == "r'None'":
          results = dialog.show(self._frame)
          if results is None:
             return
          filename, segmenter = results
          self.default_segmenter = segmenter
-         if filename == "'None'":
+         if filename == "r'None'":
             gui_util.message("You must provide a filename to load.")
       
       wxBeginBusyCursor()
       try:
          image = load_image(filename[1:-1])
-         image_ref = image
-         if image_ref.data.pixel_type == RGB:
-            image_ref = image_ref.to_greyscale()
-         if image_ref.data.pixel_type != ONEBIT:
-            image_ref = image_ref.otsu_threshold()
-         ccs = getattr(image_ref, segmenters[segmenter])()
-         self.set_image(ccs, image, weak=0)
+         self._segment_image(image, segmenters[segmenter])
       finally:
          wxEndBusyCursor()
+
+   def _OnSelectAndSegmentImage(self, event):
+      segmenters = [x[0] for x in
+                    ImageBase.methods_flat_category("Segmentation", ONEBIT)]
+      if self.default_segmenter == -1:
+         self.default_segmenter = segmenters.index("cc_analysis")
+      dialog = Args(
+         [Class("Image", core.ImageBase),
+          Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
+         title = "Select and segment image...")
+      results = dialog.show(self._frame, image_menu.shell.locals)
+      if results is None:
+         return
+      image_name, segmenter = results
+      image = image_menu.shell.locals[image_name]
+      self._segment_image(image, segmenters[segmenter])
+      
+   def _segment_image(self, image, segmenter):
+      image_ref = image
+      if image_ref.data.pixel_type == RGB:
+         image_ref = image_ref.to_greyscale()
+      if image_ref.data.pixel_type != ONEBIT:
+         image_ref = image_ref.otsu_threshold()
+      ccs = getattr(image_ref, segmenter)()
+      self.set_image(ccs, image, weak=0)
 
    def _OnSaveCurrentDatabaseAsImages(self, event):
       self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
@@ -792,9 +818,13 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnCreateNoninteractiveCopy(self, event):
       name = var_name.get("classifier", image_menu.shell.locals)
-      image_menu.shell.locals[name] = self._classifier.noninteractive_copy()
-      image_menu.shell.update()
-      
+      try:
+         result = self._classifier.noninteractive_copy()
+         image_menu.shell.locals[name] = result
+         image_menu.shell.update()
+      except classify.ClassifierError, e:
+         gui_util.message(str(e))
+         
    ########################################
    # XML MENU
 
@@ -842,7 +872,7 @@ class ClassifierFrame(ImageFrameBase):
          gamera_xml.WriteXMLFile(
          glyphs=glyphs,
          symbol_table=self._symbol_table).write_filename(
-         filename[1:-1])
+         filename[2:-1])
       except gamera_xml.XMLError, e:
          gui_util.message(str(e))
          
@@ -1013,20 +1043,18 @@ class SymbolTreeCtrl(wxTreeCtrl):
       self.toplevel = toplevel
       self.editing = 0
       wxTreeCtrl.__init__(self, parent, id, pos, size,
-                          # Win32 change
                           style|wxNO_FULL_REPAINT_ON_RESIZE)
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, TRUE)
       self.SetPyData(self.root, "")
-      # WIN32 change
-      EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
-      EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
-##       EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
-##       EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
+      if sys.platform == 'win32':
+         EVT_TREE_ITEM_EXPANDING(self, id, self._OnItemExpanded)
+         EVT_TREE_ITEM_COLLAPSING(self, id, self._OnItemCollapsed)
+      else:
+         EVT_TREE_ITEM_EXPANDED(self, id, self._OnItemExpanded)
+         EVT_TREE_ITEM_COLLAPSED(self, id, self._OnItemCollapsed)
       EVT_KEY_DOWN(self, self._OnKey)
       EVT_LEFT_DOWN(self, self._OnLeftDown)
-##      EVT_TREE_SEL_CHANGING(self, id, self._OnSelectChanging)
-##       EVT_LEFT_DCLICK(self, self._OnLeftDoubleClick)
       EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.Expand(self.root)
       self.toplevel._symbol_table.add_listener(self)
@@ -1090,7 +1118,6 @@ class SymbolTreeCtrl(wxTreeCtrl):
          evt.Skip()
 
    def _OnActivated(self, event):
-      # Win32 change
       id = self.GetPyData(event.GetItem())
       if id != None:
          self.toplevel.toplevel.classify_manual(id)
@@ -1118,20 +1145,21 @@ class SymbolTreeCtrl(wxTreeCtrl):
 
 class SymbolTableEditorPanel(wxPanel):
    def __init__(self, symbol_table, toplevel, parent = None, id = -1):
-      wxPanel.__init__(self, parent, id,
-                       # Win32 change
-                       style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+      wxPanel.__init__(
+         self, parent, id,
+         style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
       self.toplevel = toplevel
       self._symbol_table = symbol_table
       self.SetAutoLayout(true)
       self.box = wxBoxSizer(wxVERTICAL)
       txID = NewId()
-      # Win32 change
       self.text = wxTextCtrl(self, txID, style=wxTE_PROCESS_ENTER)
       EVT_KEY_DOWN(self.text, self._OnKey)
       EVT_TEXT(self, txID, self._OnText)
-      # Win32 change
-      EVT_TEXT_ENTER(self, txID, self._OnEnter)
+      # On win32, the enter key is only caught by the EVT_TEXT_ENTER
+      # On GTK, the enter key is sent directly to EVT_KEY_DOWN
+      if sys.platform == 'win32':
+         EVT_TEXT_ENTER(self, txID, self._OnEnter)
       self.box.Add(self.text, 0, wxEXPAND|wxBOTTOM, 5)
       tID = NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wxDefaultPosition,
@@ -1230,6 +1258,8 @@ class SymbolTableEditorPanel(wxPanel):
          self.tree.SelectItem(item)
          self.tree.ScrollTo(item)
          self.tree.Refresh()
+      if not evt is None:
+         evt.Skip()
 
 # TODO: Add dialog to select kind of classifier
 

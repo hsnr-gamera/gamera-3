@@ -64,8 +64,7 @@ class IconDisplay(wxListCtrl):
     self.dt = IconDisplayDropTarget(self)
     self.dt.display = self
     self.SetDropTarget(self.dt)
-    # Win32 change
-    self.il = wxImageList(34, 34)
+    self.il = wxImageList(32, 32)
     self.classes = []
     for klass in builtin_icon_types:
       self.add_class(klass)

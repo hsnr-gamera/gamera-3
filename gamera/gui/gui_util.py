@@ -19,6 +19,7 @@
 
 from wxPython.wx import *        # wxPython
 from os import path
+from gamera import util
 
 colors = (wxColor(0xbc, 0x2d, 0x2d), wxColor(0xb4, 0x2d, 0xbc),
           wxColor(0x2d, 0x34, 0xbc), wxColor(0x2d, 0xbc, 0x2d),
@@ -47,12 +48,15 @@ def build_menu(parent, menu_spec):
    global menu_item_id
    menu = wxMenu()
    for name, func in menu_spec:
-      if name == None:
+      if util.is_sequence(func):
+         menu_item_id += 1
+         menu.AppendMenu(menu_item_id, name, build_menu(parent, func))
+      elif name == None:
          menu.AppendSeparator()
       else:
+         menu_item_id += 1
          menu.Append(menu_item_id, name)
          EVT_MENU(parent, menu_item_id, func)
-      menu_item_id += 1
    return menu
 
 last_directory = '.'

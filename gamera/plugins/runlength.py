@@ -275,19 +275,46 @@ class RunIterator(PluginFunction):
     return_type = Class("iterator")
 
 class iterate_black_horizontal_runs(RunIterator):
-    "Returns as iterator over the black horizontal runs in the image."
+    """Returns nested iterators over the black horizontal runs in the image.
+
+Each run is returned as a Rect object.
+
+For example, to iterate over all runs:
+
+.. code:: Python
+
+  for row in image.iterate_black_horizontal_runs():
+     # All the runs in each row
+     for run in row:
+         print run
+"""
     pass
 
 class iterate_black_vertical_runs(RunIterator):
-    "Returns as iterator over the black vertical runs in the image."
+    """Returns nested iterators over the black vertical runs in the image.
+
+Each run is returned as a Rect object.
+
+See iterate_black_horizontal_runs_ for a usage example.
+"""
     pass
 
 class iterate_white_horizontal_runs(RunIterator):
-    "Returns as iterator over the white horizontal runs in the image."
+    """Returns nested iterators over the white horizontal runs in the image.
+
+Each run is returned as a Rect object.
+
+See iterate_black_horizontal_runs_ for a usage example.
+"""
     pass
 
 class iterate_white_vertical_runs(RunIterator):
-    "Returns as iterator over the white vertical runs in the image."
+    """Returns nested iterators over the white vertical runs in the image.
+
+Each run is returned as a Rect object.
+
+See iterate_black_horizontal_runs_ for a usage example.
+"""
     pass
 
 class RunLengthModule(PluginModule):

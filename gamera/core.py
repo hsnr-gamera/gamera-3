@@ -69,10 +69,11 @@ class ImageBase:
 
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
-*plug*: subclass of PluginFunction describing the function.
-*func*: raw function pointer.
-*category*: menu category that the method should be placed under.
-  Categories may be nested using '/' (i.e. "General/Specific")"""
+      plug -- subclass of PluginFunction describing the function.
+      func -- raw function pointer.
+      category -- menu category that the method should be placed under.
+        Categories may be nested using '/' (i.e. "General/Specific")
+      """
       methods = cls._methods
       if not func is None:
          func = new.instancemethod(func, None, gameracore.Image)
@@ -105,11 +106,11 @@ class ImageBase:
                         'memory_size')
 
    def members_for_menu(self):
-      """Returns a list of members (and their values) for convenient
-feedback for the user."""
+      """Returns a list of members (and their values) for convenient feedback for the user."""
       return ["%s: %s" % (x, getattr(self, x)) for x in self._members_for_menu]
 
    def methods_for_menu(self):
+      """Returns a list of methods (in nested dictionaries by categories) for building user interfaces."""
       methods = {}
       for type in (ALL, self.data.pixel_type):
          if self._methods.has_key(type):
@@ -126,6 +127,7 @@ feedback for the user."""
          dest[key] = val
 
    def methods_flat_category(self, category):
+      
      methods = self.methods()
      start = methods
      for subcategory in category.split('/'):

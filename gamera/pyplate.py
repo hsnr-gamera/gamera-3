@@ -104,7 +104,9 @@ class Template:
     self.lineno = self.lineno + self.line[:chars].count("\n")
     self.line = self.line[chars:]
 
-  def parser_exception(self, s):
+  def parser_exception(self, s, e=None):
+    if e != None:
+      print e.__class__.__name__ + ": " + str(e)
     raise ParserException(self.lineno, s)
 
   def execute_file(self, filename, data={}):
@@ -112,6 +114,7 @@ class Template:
     data_copy.update(data)
     file = open(filename, 'w')
     self.execute(file, data_copy)
+    file.write("\n\n")
     file.close()
 
   def execute_string(self, data={}):
@@ -119,12 +122,14 @@ class Template:
     data_copy.update(data)
     s = cStringIO.StringIO()
     self.execute(s, data_copy)
+    s.write("\n")
     return s.getvalue()
 
   def execute_stdout(self, data={}):
     data_copy = {}
     data_copy.update(data)
     self.execute(sys.stdout, data_copy)
+    sys.stdout.write("\n")
 
   def execute(self, stream=sys.stdout, data={}):
     self.tree.execute(stream, data)
@@ -194,8 +199,11 @@ class ForTemplateNode(TemplateNode):
     for var in self.vars:
       if data.has_key(var):
         remember_vars[var] = data[var]
-    x = eval(self.expression, globals(), data)
-    for list in eval(self.expression, globals(), data):
+    try:
+      x = eval(self.expression, globals(), data)
+    except Exception, e:
+      self.parent.parser_exception(self.expression, e)
+    for list in x:
       if util.is_sequence(list):
         if len(self.vars) == 1:
           data[self.vars[0]] = list
@@ -238,7 +246,11 @@ class IfTemplateNode(TemplateNode):
         "[[%s]] does not have a matching [[end]]" % self.s)
 
   def execute(self, stream, data):
-    if eval(self.expression, globals(), data):
+    try:
+      x = eval(self.expression, globals(), data)
+    except Exception, e:
+      self.parent.parser_exception(self.expression, e)
+    if x:
       TemplateNode.execute(self, stream, data)
     elif self.else_node != None:
       self.else_node.execute(stream, data)
@@ -304,7 +316,7 @@ class ExpressionTemplateNode(LeafTemplateNode):
     try:
       stream.write(str(eval(self.s, globals(), data)))
     except Exception, e:
-      self.parent.parser_exception(self.s)
+      self.parent.parser_exception(self.s, e)
 
 class ExecTemplateNode(LeafTemplateNode):
   def __init__(self, parent, s):
@@ -319,8 +331,7 @@ class ExecTemplateNode(LeafTemplateNode):
     try:
       exec(self.s, globals(), data)
     except Exception, e:
-      self.parent.parser_exception(self.s)
-    pass
+      self.parent.parser_exception(self.s, e)
     
 class CallTemplateNode(LeafTemplateNode):
   def __init__(self, parent, s):
@@ -333,8 +344,12 @@ class CallTemplateNode(LeafTemplateNode):
     self.vars = "(" + match.group(2).strip() + ",)"
   
   def execute(self, stream, data):
+    try:
+      x = eval(self.vars, globals(), data)
+    except Exception, e:
+      self.parent.parser_exception(self.vars, e)
     self.parent.functions[self.function_name].call(
-      eval(self.vars, globals(), data), stream, data)
+      x, stream, data)
 
 
 ############################################################

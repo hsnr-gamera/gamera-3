@@ -1,4 +1,6 @@
 from distutils.core import setup, Extension
+from distutils.util import get_platform
+from distutils.sysconfig import get_python_lib
 import sys, os, time, locale
 import glob
 
@@ -86,7 +88,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"], libraries=["stdc++"])]
 extensions.extend(plugin_extensions)
 
-setup(name = "gameracore", version="1.1",
+x = setup(name = "gameracore", version="1.1",
       ext_modules = extensions,
       packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
                   'gamera.toolkits.omr']
@@ -95,5 +97,8 @@ setup(name = "gameracore", version="1.1",
 ##########################################
 # generate the non-plugin help pages
 # This needs to be done last since it requires a built system
-import generate_help
-generate_help.generate_static()
+if 'build' in sys.argv:
+    # This is where things just got built
+    sys.path.append("build/lib.%s-%s/gamera" % (get_platform(), sys.version[0:3]))
+    import generate_help
+    generate_help.generate_help()

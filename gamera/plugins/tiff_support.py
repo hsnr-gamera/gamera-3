@@ -25,7 +25,6 @@ class tiff_info(PluginFunction):
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("tiff_info")
-    
 tiff_info = tiff_info()
 
 class load_tiff(PluginFunction):

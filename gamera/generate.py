@@ -21,6 +21,7 @@ from os import path
 import os
 import sys
 from distutils.core import Extension
+from distutils.dep_util import newer
 from gamera import paths
 
 global std_import
@@ -57,8 +58,7 @@ def restore_import():
   __builtins__['__import__'] = std_import
 
 
-def generate_plugin(plugin_filename):
-  template = Template("""
+template = Template("""
   [[exec import string]]
   [[exec from os import path]]
   [[exec from enums import *]]
@@ -206,8 +206,8 @@ def generate_plugin(plugin_filename):
         [[end]]
         [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
       [[end]]
-      [[exec function.self_type.pixel_types = tmp]]
-      [[exec function.self_type.name = 'real_self']]
+      [[exec function.self_type.pixel_types_ = tmp]]
+      [[exec function.self_type.name_ = 'real_self']]
       [[exec images = [function.self_type] ]]
     [[else]]
       [[exec images = [] ]]
@@ -225,10 +225,10 @@ def generate_plugin(plugin_filename):
           [[exec tmp.append(get_pixel_type_name(type) + 'ImageView')]]
         [[end]]
         [[exec orig_image_types.append(x.pixel_types[:])]]
-        [[exec x.name = x.name + '_arg']]
-        [[exec x.pixel_types = tmp]]
+        [[exec x.name_ = x.name + '_arg']]
+        [[exec x.pixel_types_ = tmp]]
         [[exec images.append(x)]]
-        if (!PyObject_TypeCheck([[x.name]], imagebase_type)) {
+        if (!PyObject_TypeCheck([[x.name_]], imagebase_type)) {
           PyErr_SetString(PyExc_TypeError, \"Object is not an image as expected!\");
           return 0;
         }
@@ -236,9 +236,9 @@ def generate_plugin(plugin_filename):
     [[end]]
 
     [[def switch(layer, args)]]
-      switch(get_image_combination([[images[layer].name]], cc_type)) {
-        [[for type in images[layer].pixel_types]]
-          [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name + ')->m_x)']]
+      switch(get_image_combination([[images[layer].name_]], cc_type)) {
+        [[for type in images[layer].pixel_types_]]
+          [[exec current = '*((' + type + '*)((RectObject*)' + images[layer].name_ + ')->m_x)']]
           case [[type.upper()]]:
             [[if layer == len(images) - 1]]
               [[if not function.return_type is None]]
@@ -351,24 +351,43 @@ def generate_plugin(plugin_filename):
 
   """)
   
-
+def generate_plugin(plugin_filename):
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
+  cpp_filename = path.join(plug_path, module_name + ".cpp")
+
+  regenerate = 0
+  if newer(plugin_filename, cpp_filename):
+    regenerate = 1
+
   sys.path.append(plug_path)
   ignore = ["_" + module_name] + ["core", "gamera.core", "gameracore"]
   magic_import_setup(ignore)
 
   #import plugin
   plugin_module = __import__(module_name)
-  module_name = "_" + module_name
-  cpp_filename = path.join(plug_path, module_name + ".cpp")
-  output_file = open(cpp_filename, "w")
-  output_file = open(cpp_filename, "aw")
 
-  template.execute(output_file, plugin_module.__dict__)
+  # see if any of the header files have changed since last time
+  # we compiled
+  include_dirs = (["include", plug_path, "include/plugins"] +
+                  plugin_module.module.cpp_include_dirs)
+  if not regenerate:
+    for header in plugin_module.module.cpp_headers:
+      found_header = 0
+      for include_dir in include_dirs:
+        header_filename = path.join(include_dir, header)
+        if path.exists(header_filename):
+          found_header = 1
+          if newer(header_filename, cpp_filename):
+            regenerate = 1
+            break
+          break
+      if regenerate:
+        break
+
+  if regenerate:
+    template.execute_file(cpp_filename, plugin_module.__dict__)
   # add newline to make gcc shut-up about no newline at end of file!
-  output_file.write('\n')
-  output_file.close()
   restore_import()
 
   # make the a distutils extension class for this plugin
@@ -376,8 +395,7 @@ def generate_plugin(plugin_filename):
   for file in plugin_module.module.cpp_sources:
     cpp_files.append(plug_path + file)
   extra_libraries = ["stdc++"] + plugin_module.module.extra_libraries
-  return Extension("gamera.plugins." + module_name, cpp_files,
-                   include_dirs=(["include", plug_path, "include/plugins"] +
-                                 plugin_module.module.cpp_include_dirs),
+  return Extension("gamera.plugins._" + module_name, cpp_files,
+                   include_dirs=include_dirs,
                    library_dirs=plugin_module.module.library_dirs,
                    libraries=extra_libraries)

@@ -1,0 +1,7 @@
+recursive-include gamera/doc *.gif *.txt
+recursive-include gamera/pixmaps *.png *.py
+recursive-include src *.cpp
+recursive-include include *.hpp
+include TODO INSTALL KNOWN_BUGS
+
+

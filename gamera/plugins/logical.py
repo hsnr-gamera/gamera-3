@@ -63,7 +63,7 @@ class xor_image(_LogicalBase):
 xor_image = xor_image()
 
 class LogicalModule(PluginModule):
-  """This module provides functions to perform basic logical (bitwise) operations on images."""
+  """This module provides methods to perform basic logical (bitwise) operations on images."""
   category = "Logical"
   cpp_headers = ["logical.hpp"]
   functions = [and_image, or_image, xor_image]

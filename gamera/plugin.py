@@ -46,7 +46,7 @@ class PluginFunction:
     args = Args([])
     image_types_must_match = 0
 
-    def register(cls, category=None):
+    def register(cls, category=None, add_to_image=1):
         if hasattr(cls, 'category'):
             category = cls.category
         if not hasattr(cls, "__call__"):
@@ -63,7 +63,7 @@ class PluginFunction:
         else:
             func = cls.__call__
         cls.__call__ = staticmethod(func)
-        if isinstance(cls.self_type, ImageType):
+        if add_to_image and isinstance(cls.self_type, ImageType):
             gamera.core.ImageBase.add_plugin_method(cls, func, category)
     register = classmethod(register)
 

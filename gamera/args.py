@@ -220,8 +220,11 @@ class Arg:
    def __repr__(self):
       return "<" + self.__class__.__name__ + ">"
 
-   def html_repr(self):
-      return self.__class__.__name__ + " <i>" + self.name + "</i>"
+   def html_repr(self, name=1):
+      result = self.__class__.__name__
+      if name:
+         result += " <i>" + self.name + "</i>"
+      return result
    
 # Integer
 if _has_gui == _WX_GUI:
@@ -245,11 +248,12 @@ class Int(_guiInt, Arg):
       self.rng = range
       self.default = default
 
-   def html_repr(self):
+   def html_repr(self, name=1):
       result = "Int"
       if self.rng != (-sys.maxint, sys.maxint):
          result += str(self.rng)
-      result += " <i>" + self.name + "</i>"
+      if name:
+         result += " <i>" + self.name + "</i>"
       return result
 
 # Real / Float
@@ -328,11 +332,12 @@ class Real(_guiReal, Arg):
       self.rng = range
       self.default = default
 
-   def html_repr(self):
+   def html_repr(self, name=1):
       result = "Float"
       if self.rng != (-sys.maxint, sys.maxint):
          result += str(self.rng)
-      result += " <i>" + self.name + "</i>"
+      if name:
+         result += " <i>" + self.name + "</i>"
       return result
 
 Float = Real
@@ -424,12 +429,12 @@ class ImageType(_guiImage, Arg):
       self.pixel_types = pixel_types
       self.list_of = list_of
 
-   def html_repr(self):
-      return ('|'.join([util.get_pixel_type_name(x) + "Image"
-                        for x in self.pixel_types]) +
-              " <i>" +
-              self.name +
-              "</i>")
+   def html_repr(self, name=1):
+      result = ('|'.join([util.get_pixel_type_name(x) + "Image"
+                        for x in self.pixel_types]))
+      if name:
+         result += " <i>" + self.name + "</i>"
+      return result
 
 # Choice
 if _has_gui == _WX_GUI:

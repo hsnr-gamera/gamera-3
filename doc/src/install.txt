@@ -26,10 +26,13 @@ Gamera requires that you install the following software FIRST:
 	usually	contain important bug and security fixes.
 
 **wxPython**
-	**You must use wxPython version 2.4.x.**  2.3.x is no longer
+	**You must use wxPython version 2.4.x.** 2.3.x is no longer
 	supported, and 2.5.x, being an unstable branch, will not be
-	supported for some time to come.  You may have to dig a few
-	levels down on the wxPython website to find older versions.
+	supported for some time to come.  The stable branch is a
+	little hidden on the wxPython website.  It can be downloaded
+	here__.
+
+.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
 	wxPython tends to change dramatically with even minor version
 	increments (argh!).  I'm currently using 2.4.2.4, but I don't
@@ -37,10 +40,6 @@ Gamera requires that you install the following software FIRST:
 	if you're having GUI-related problems, I would recommend
 	downloading that **exact** version before submitting a bug report.
 
-	The stable branch is a little hidden on the wxPython website.
-	It can be downloaded here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
 Microsoft Windows
 =================

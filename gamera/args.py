@@ -69,7 +69,6 @@ if _has_gui == _WX_GUI:
       def _create_page_impl(self, locals, parent, page):
          gs = wxPython.wx.wxFlexGridSizer(len(page), 2, 8, 8)
          for item in page:
-            print item.name, item
             gs.Add(wxPython.wx.wxStaticText(parent, -1, item.name),
                    0,
                    (wxPython.wx.wxTOP|wxPython.wx.wxLEFT|wxPython.wx.wxRIGHT|

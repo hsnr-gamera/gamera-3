@@ -429,7 +429,6 @@ class CustomMenu:
                   menu.Break()
                else:
                   menuID = wxNewId()
-                  print menuID
                   menu.Append(menuID, item)
                   EVT_MENU(main_win, menuID,
                            getattr(self, "_On" + util.string2identifier(item)))

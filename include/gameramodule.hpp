@@ -95,6 +95,23 @@ struct ImageObject {
   PyObject* m_action_depth; // for limiting recursions for "actions"
 };
 
+/*
+  The SubImage object is here simply to allow type checking and to provide
+  a natural form of constructor overloading - otherwise it is identical
+  to the ImageObject.
+*/
+struct SubImageObject {
+  ImageObject m_parent;
+};
+
+/*
+  ConnectedComponents are a special case of image - a separate class is
+  used for clarity and type checking. Like the SubImageObject it is almost
+  identical to an ImageObject.
+*/
+struct CC {
+  ImageObject m_parent;
+};
   
 namespace Gamera {
   namespace Python {

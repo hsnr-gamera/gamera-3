@@ -70,8 +70,10 @@ class PluginFunction:
    category = None
    pure_python = False
    author = None
+   add_to_image = True
 
-   def register(cls, add_to_image=1):
+   def register(cls, add_to_image=True):
+      add_to_image = add_to_image and cls.add_to_image
       if cls.return_type != None:
          if cls.return_type.name == None:
             cls.return_type = copy.copy(cls.return_type)

@@ -21,7 +21,7 @@
 #
 
 from __future__ import generators
-import locale, sys, glob, os.path, cStringIO, inspect
+import locale, sys, glob, os.path, cStringIO, inspect, getopt
 from stat import ST_MTIME
 from types import DictType
 from time import strftime, localtime
@@ -76,23 +76,18 @@ except ImportError, e:
    print "Gamera must be built before you can regenerate the documentation."
    sys.exit(1)
 
-doc_path = "./"
-doc_src_path = "./src/"
-doc_images_path = "./images/"
-doc_src_images_path = "./src/images/"
-icons_path = "../gamera/pixmaps/"
 
 def ui(s):
    sys.stdout.write(s)
    sys.stdout.flush()
 
-def get_rest_docs():
-   for file in glob.glob(doc_src_path + "*.txt"):
+def get_rest_docs(path_obj):
+   for file in glob.glob(path_obj.doc_src_path + "*.txt"):
       path, filename = os.path.split(file)
       root, ext = os.path.splitext(filename)
       yield file, root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
 
-def method_doc(func, level, images, s):
+def method_doc(path_obj, func, level, images, s):
    s.write("``%s``\n" % func.__name__)
    s.write(levels[level] * (len(func.__name__) + 4) + "\n\n")
    if func.return_type != None:
@@ -130,9 +125,9 @@ def method_doc(func, level, images, s):
       s.write("\n.. warning:: No documentation written.\n\n")
    else:
       s.write("\n\n%s\n" % func.__doc__)
-   method_example(func, level, images, s)
+   method_example(path_obj, func, level, images, s)
 
-def method_example(func, level, images, s):
+def method_example(path_obj, func, level, images, s):
    if len(func.doc_examples):
       s.write("\n----------\n\n")
    for i, doc_example in enumerate(func.doc_examples):
@@ -142,7 +137,6 @@ def method_example(func, level, images, s):
            pixel_type = None
            s.write("**Example %d:** %s\n\n" % (i + 1, func.__name__))
        else:
-           print func.__name__, doc_example
            if len(doc_example):
                if isinstance(func.self_type, args.ImageType):
                    pixel_type = doc_example[0]
@@ -163,16 +157,16 @@ def method_example(func, level, images, s):
            s.write(".. image:: images/%s_generic.png\n\n" % pixel_type_name)
        result_filename = "%s_plugin_%02d" % (func.__name__, i)
        if isinstance(result, core.ImageBase):
-           result.save_PNG(doc_images_path + result_filename + ".png")
+           result.save_PNG(path_obj.doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
        elif result is None and isinstance(func.self_type, args.ImageType) and src_image is not None:
-           src_image.save_PNG(doc_images_path + result_filename + ".png")
+           src_image.save_PNG(path_obj.doc_images_path + result_filename + ".png")
            s.write(".. image:: images/%s.png\n\n" % (result_filename))
        elif util.is_image_list(result):
            subst = "\n\n"
            for j, part in enumerate(result):
                result_filename = "%s_plugin_%02d_%02d" % (func.__name__, i, j)
-               part.save_PNG(doc_images_path + result_filename + ".png")
+               part.save_PNG(path_obj.doc_images_path + result_filename + ".png")
                s.write("|%s| " % result_filename)
                subst += ".. |%s| image:: images/%s.png\n" % (result_filename, result_filename)
            s.write(subst)
@@ -182,7 +176,7 @@ def method_example(func, level, images, s):
    s.write("\n\n")
            
 levels = "=-`:'"
-def generate_plugin_docs():
+def generate_plugin_docs(path_obj):
    def recurse(methods, level, images, s=None):
       methods_list = methods.items()
       methods_list.sort()
@@ -190,12 +184,12 @@ def generate_plugin_docs():
          if type(val) == DictType:
             if level == 0:
                 filename = key.lower()
-                s = open(os.path.join(doc_src_path, filename + ".txt"), "w")
+                s = open(os.path.join(path_obj.doc_src_path, filename + ".txt"), "w")
             s.write("\n%s\n%s\n\n" % (key, levels[level] * len(key)))
             ui("  " * (level + 1) + key + "\n")
             recurse(val, level + 1, images, s)
          else:
-            method_doc(val, level, images, s)
+            method_doc(path_obj, val, level, images, s)
 
    def table_of_contents(methods):
       def toc_recurse(s, methods, level, links, index, filename=None):
@@ -216,7 +210,7 @@ def generate_plugin_docs():
              else:
                  index.append(key)
 
-      s = open(os.path.join(doc_src_path, "plugins.txt"), "w")
+      s = open(os.path.join(path_obj.doc_src_path, "plugins.txt"), "w")
       s.write("=======\n")
       s.write("Plugins\n")
       s.write("=======\n")
@@ -278,36 +272,57 @@ def generate_plugin_docs():
    recurse(flat_methods, 0, images)
    table_of_contents(flat_methods)
 
-def generate_generic_pngs():
+def generate_generic_pngs(path_obj):
    for pixel_type in ALL:
       if pixel_type != FLOAT:
          pixel_type_name = util.get_pixel_type_name(pixel_type)
          image = core.load_image(os.path.join(paths.test, pixel_type_name + "_generic.tiff"))
          print image.pixel_type_name
-         image.save_PNG("%s%s_generic.png" % (doc_images_path, pixel_type_name))
+         image.save_PNG(os.path.join(path_obj.output_images_path, "%s_generic.png" % (pixel_type_name)))
 
-def copy_images(output_path):
-   if not os.path.exists(output_path):
-      os.mkdir(output_path)
-   for path in (doc_images_path, doc_src_images_path, icons_path):
+def copy_images(path_obj):
+   if not os.path.exists(path_obj.output_images_path):
+      os.mkdir(path_obj.output_images_path)
+   for path in (path_obj.doc_images_path,
+                path_obj.doc_src_images_path,
+                path_obj.icons_path):
       for file in glob.glob(path + "*.png"):
          path, filename = os.path.split(file)
-         open(output_path + filename, "wb").write(open(file, "rb").read())
+         open(os.path.join(path_obj.output_images_path, filename), "wb").write(
+             open(file, "rb").read())
 
+class Paths:
+    def __init__(self, root="."):
+        join = os.path.join
+        self.doc_path = root
+        self.doc_src_path = join(root, "src/")
+        self.doc_images_path = join(root, "images/")
+        self.doc_src_images_path = join(self.doc_src_path, "images/")
+        self.icons_path = join(root, "../gamera/pixmaps/")
+        self.output_path = join(self.doc_path, "html/")
+        self.output_images_path = join(self.output_path, "images/")
+   
 def gendoc():
-   generate_plugin_docs()
+   opts, args = getopt.getopt(sys.argv[1:], "d:")
+   root = '.'
+   for flag, value in opts:
+       if flag == "-d":
+           root = value
+   path_obj = Paths(root)
+   generate_plugin_docs(path_obj)
    ui("Generating and copying images\n")
-   generate_generic_pngs()
-   copy_images("html/images/")
+   copy_images(path_obj)
+   generate_generic_pngs(path_obj)
    ui("Generating HTML\n")
-   output_path = doc_path + "html/"
-   for filename, rootname, fd, mtime in get_rest_docs():
-      output_file = os.path.join(output_path, rootname + ".html")
-      if os.stat(filename)[ST_MTIME] > os.stat(output_file)[ST_MTIME]:
+   for filename, rootname, fd, mtime in get_rest_docs(path_obj):
+      output_file = os.path.join(path_obj.output_path, rootname + ".html")
+      if (not os.path.exists(output_file) or
+          os.stat(filename)[ST_MTIME] > os.stat(output_file)[ST_MTIME]):
           ui("  Generating " + rootname + "\n")
           lines = fd.readlines()
           lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
           fd = cStringIO.StringIO(''.join(lines))
-          publish_file(source=fd, destination_path=output_file, writer_name="html")
+          publish_file(source=fd, destination_path=output_file,
+                       writer_name="html")
    ui("\n")
       

@@ -174,34 +174,20 @@ class pad_image(PluginFunction):
     self_type = ImageType(ALL)
     args = Args([Int("top"), Int("right"), Int("bottom"), Int("left"), Pixel("value")])
     return_type = ImageType(ALL)
-    def __call__(self, top, right, bottom, left, value):
+    def __call__(self, top, right, bottom, left, value=None):
+        if value is None:
+            return _image_utilities.pad_image_default(self, top, right, bottom, left)
     	return _image_utilities.pad_image(self, top, right, bottom, left, value)
     __call__ = staticmethod(__call__)
-    doc_examples = [(RGB,)]
+    doc_examples = [(RGB, 5, 5, 5, 5)]
 
 class pad_image_default(PluginFunction):
-    """Pads an image with the default value.
-
-*top*
-   Padding on the top.
-
-*right*
-   Padding on the right.
-
-*bottom*
-   Padding on the bottom.
-
-*left*
-   Padding on the left.
-"""
+    # This is only for plugin generation, it will not be added to the image type
+    add_to_image = False
     category = "Draw"
     self_type = ImageType(ALL)
     args = Args([Int("top"), Int("right"), Int("bottom"), Int("left")])
     return_type = ImageType(ALL)
-    def __call__(self, top, right, bottom, left):
-    	return _image_utilities.pad_image_default(self, top, right, bottom, left)
-    __call__ = staticmethod(__call__)
-    doc_examples = [(RGB)]
 
 class invert(PluginFunction):
     """Inverts the image."""

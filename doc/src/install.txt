@@ -1,0 +1,155 @@
+==============================
+Building and installing Gamera
+==============================
+
+Gamera requires that you install the following software FIRST:
+
+**Python**
+	Gamera is known to run on Python 2.2 and 2.3, though 2.3 is
+	not as thouroughly tested.  Make sure you have the latest
+	service release of either of these versions.
+
+	You will need to have the headers (but not the complete
+	source) to build Gamera from source code.  All standard Python
+	installations include these.
+
+**wxPython**
+	You must use version 2.4.x or greater.  2.3.x is no longer
+	supported.
+
+	wxPython tends to change dramatically with even minor version
+	increments (argh!).  I'm currently using 2.4.2.4, but I don't
+	have the resources to support all different minor versions, so
+	if you're having GUI-related problems, I would recommend
+	downloading that **exact** version before submitting a bug report.
+
+
+Microsoft Windows
+=================
+
+Installing using the Windows installer
+--------------------------------------
+
+If you got the Windows installer, simply run it to
+install Gamera.  Unfortunately, we're having trouble getting the
+startup script (``gamera_gui.py``) to be installed by the installer, so 
+you'll have to install that yourself.  Do a ``Search...``
+for it after installing Gamera.  You can place it anywhere,
+(such as the Desktop) and simply double-click it to start Gamera.
+
+.. note:: Windows is not our primary development environment, and the
+   Windows installer tends to lag a version or two behind and may not
+   be as thoroughly tested.  Anyone want to become the official
+   Windows builder/tester?
+
+Installing from source
+----------------------
+
+Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset.
+Support for Microsoft Visual Studio is coming.
+
+Cygwin/Mingw32
+``````````````
+
+Use the installer from http://www.cygwin.com/ to install Cygwin,
+including a g++ and the MingW32 libraries.
+
+Standard Build and Install
+``````````````````````````
+
+Gamera is built using the Python-standard Distutils system.  Open a
+Cygwin command prompt and type::
+
+  python setup.py build --compiler=mingw32
+  python setup.py install
+
+Running
+```````
+
+Run the ``gamera_gui.py`` script located at the root of the source
+tree::
+
+  python gamera_gui.py
+
+This file can be copied anywhere (such as the Desktop or the
+Start Menu) and double-clicked to run Gamera.
+
+Linux (and other \*nix)
+=======================
+
+Install binary packages for Python and wxPython (see correct versions
+at top of this document.)  libtiff 3.5.x will also need to be installed.
+
+Standard Build and Install
+--------------------------
+
+Gamera is built using the Python-standard Distutils system.  Open a
+Cygwin command prompt and type::
+
+  python setup.py build
+  sudo python setup.py install
+
+Running
+-------
+
+Run the ``gamera_gui.py`` script located at the root of the source
+tree.  This file can be copied anywhere (such as the Desktop)
+and double-clicked to run Gamera.
+
+
+Mac OS-X
+========
+
+OS-X support can be considered working but preliminary at this point.
+Gamera will only run on Panther (10.3).  We do not plan to support
+earlier versions.  You will need to install the GNU development tools, X11,
+and Python 2.3.
+
+Prerequisites
+-------------
+
+wxPython comes in two flavors for OS-X: a native Carbon-based one that
+follows the look-and-feel of OS-X, and a version built on top of
+Gtk+/X11.  The native Carbon version is currently too incomplete to be
+usable for Gamera.  Unfortunately, there are no installer packages
+available for the Gtk+/X11 version on the wxPython website.  You have
+two options:
+
+1. Install fink and then build the package wxPython-Py23, which is
+   currently in the unstable branch, (and its dependencies) from
+   source.  You will then need to use the fink version of Python (not
+   the one that Apple provides) to carry out the instructions below.
+
+2. Use the unofficial wxPython/Gtk/X11 installer on the Gamera website (coming
+   soon).  It is not clear whether this installer will work for all
+   Panther installations.
+
+Standard Build and Install
+--------------------------
+
+Gamera is built using the Python-standard Distutils system.  
+
+Make sure you're using the "right" Python.  If you compiled wxPython
+yourself, you will need to use the fink Python.  If you used the
+unofficial wxPython/Gtk/X11 installer, you need to use the Python
+included with OS-X 10.3.  In a terminal, type::
+
+  whereis python
+
+If this is under ``/sw/fink``, your default Python is the fink
+Python.  If not, you're default Python is probably the OS-X default.
+
+To build Gamera, open a X11 terminal and type::
+
+  python setup.py build
+
+and then to install (you'll need to have admin priviledges)::
+ 
+  sudo python setup.py install
+
+Running
+-------
+
+Run the ``gamera_gui.py`` script located at the root of the source
+tree.  This file can be copied anywhere (such as the Desktop)
+and double-clicked to run Gamera.

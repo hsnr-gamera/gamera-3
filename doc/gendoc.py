@@ -22,7 +22,9 @@
 
 from __future__ import generators
 import locale, sys, glob, os.path, cStringIO, inspect
+from stat import ST_MTIME
 from types import DictType
+from time import strftime, localtime
 try:
     locale.setlocale(locale.LC_ALL, '')
 except:
@@ -34,6 +36,40 @@ except ImportError, e:
    print "'docutils' 0.3 or later must be installed to generate the documentation."
    print "It can be downloaded at http://docutils.sf.net"
    sys.exit(1)
+
+import docutils.parsers.rst
+
+try:
+   import SilverCity
+except ImportError, e:
+   print "'SilverCity' 0.9 or later must be installed to generate the documentation."
+   print "It can be downloaded at http://silvercity.sf.net"
+   sys.exit(1)
+
+# SilverCity support
+def code_block(name, arguments, options, content, lineno,
+             content_offset, block_text, state, state_machine ):
+  language = arguments[0]
+  try:
+    module = getattr(SilverCity, language)
+    generator = getattr(module, language+"HTMLGenerator")
+  except AttributeError:
+    error = state_machine.reporter.error( "No SilverCity lexer found "
+      "for language '%s'." % language, 
+      docutils.nodes.literal_block(block_text, block_text), line=lineno )
+    return [error]
+  io = cStringIO.StringIO()
+  generator().generate_html( io, '\n'.join(content) )
+  html = '<div class="code-block">\n%s\n</div>\n' % io.getvalue()
+  raw = docutils.nodes.raw('',html, format = 'html')
+  return [raw]
+
+code_block.arguments = (1,0,0)
+code_block.options = {'language' : docutils.parsers.rst.directives.unchanged }
+code_block.content = 1
+  
+# Simply importing this module will make the directive available.
+docutils.parsers.rst.directives.register_directive( 'code', code_block )
 
 try:
    from gamera import core, args, paths, util
@@ -47,6 +83,7 @@ doc_path = "./"
 doc_src_path = "./src/"
 doc_images_path = "./images/"
 doc_src_images_path = "./src/images/"
+icons_path = "../gamera/pixmaps/"
 
 def ui(s):
    sys.stdout.write(s)
@@ -56,7 +93,7 @@ def get_rest_docs():
    for file in glob.glob(doc_src_path + "*.txt"):
       path, filename = os.path.split(file)
       root, ext = os.path.splitext(filename)
-      yield root, open(file, 'r')
+      yield root, open(file, 'r'), strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME]))
 
 def method_doc(s, func, level):
    s.write("``%s``\n" % func.__name__)
@@ -140,9 +177,10 @@ def generate_plugin_docs():
    def methods_flatten(dest, source, flat):
       for key, val in source.items():
        if type(val) == DictType:
-         if not dest.has_key(key):
-           dest[key] = {}
-         methods_flatten(dest[key], val, flat)
+         if key != "Test":
+            if not dest.has_key(key):
+               dest[key] = {}
+            methods_flatten(dest[key], val, flat)
        else:
          dest[key] = val
          flat[key] = val
@@ -179,7 +217,7 @@ def generate_generic_pngs():
 def copy_images(output_path):
    if not os.path.exists(output_path):
       os.mkdir(output_path)
-   for path in (doc_images_path, doc_src_images_path):
+   for path in (doc_images_path, doc_src_images_path, icons_path):
       for file in glob.glob(path + "*.png"):
          path, filename = os.path.split(file)
          open(output_path + filename, "wb").write(open(file, "rb").read())
@@ -193,10 +231,10 @@ def gendoc():
    copy_images("latex/images/")
    ui("Generating HTML\n")
    output_path = doc_path + "html/"
-   for name, fd in get_rest_docs():
+   for name, fd, mtime in get_rest_docs():
       ui("  Generating " + name + "\n")
       lines = fd.readlines()
-      lines = lines[:3] + ["\n", ".. contents::\n", "\n"] + lines[3:]
+      lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
       fd = cStringIO.StringIO(''.join(lines))
       publish_file(source=fd, destination_path=os.path.join(output_path, name + ".html"),
                    writer_name="html")

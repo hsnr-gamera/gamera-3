@@ -1,0 +1,197 @@
+==============
+The Gamera GUI
+==============
+
+Starting the GUI
+----------------
+
+There is a ``gamera_gui`` script installed somewhere on your system
+(platform-specific, see `Building and Installing Gamera`__).  Run it
+to start the Gamera GUI. 
+
+.. __: install.html
+
+.. note:: It is possible to run Gamera image processing without the
+   GUI, saving the memory and runtime overhead.
+
+The console
+-----------
+
+.. image:: images/console.png
+
+The main Gamera console window is divided into three parts: the Python
+console, the icon display and the history.
+
+Python console
+``````````````
+
+On the right is a standard Python console.  You can type code
+here and it is run interactively.  Most operations that you perform
+using the mouse in the GUI will generate code that is entered in the
+interpreter here.  This code and be copied-and-pasted into your
+favorite programmer's editor to build Gamera image processing scripts.
+
+The Python console features auto-completion.  For example, load an
+image and store it in the variable name ``image``.  Type ``image.`` in
+the console, and a window will appear showing all of the (many)
+members and methods of the image.
+
+.. image:: images/autocompletion.png
+
+Icon display
+````````````
+
+On the left, all active image objects (at the top level of the
+Python interpreter) are displayed as icons.  When you load images,
+they are displayed here.
+
+The icon indicates the pixel type of the image.  See `Image types`__
+for more information on the different image types in Gamera.  
+
+A magnifying glass appears over the icon if the image is a subimage of
+another image.  It acts as a warning that any changes made to this
+image will affect another.
+
+.. __: image_types.html
+
+The icons are as follows:
+
+  +------------------+---------------------+-----------------------+
+  | Image            | SubImage            | Description           |  
+  +==================+=====================+=======================+
+  | |RGBImage|       | |RGBSubImage|       | RGB (24-bit color)    |
+  +------------------+---------------------+-----------------------+
+  | |GREYSCALEImage| | |GREYSCALESubImage| | GreyScale (8-bit)     |  
+  +------------------+---------------------+-----------------------+
+  | |GREY16Image|    | |GREY16SubImage|    | Grey16 (16-bit)       |
+  +------------------+---------------------+-----------------------+
+  | |FLOATImage|     | |FLOATSubImage|     | Floating-point image  |
+  +------------------+---------------------+-----------------------+
+  | |ONEBITImage|    | |ONEBITSubImage|    | One-bit (binary)      |
+  +------------------+---------------------+-----------------------+
+
+.. |RGBImage| image:: images/icon_image_rgb.png
+.. |GREYSCALEImage| image:: images/icon_image_grey.png
+.. |GREY16Image| image:: images/icon_image_grey16.png
+.. |FLOATImage| image:: images/icon_image_float.png
+.. |ONEBITImage| image:: images/icon_image_binary.png
+.. |RGBSubImage| image:: images/icon_subimage_rgb.png
+.. |GREYSCALESubImage| image:: images/icon_subimage_grey.png
+.. |GREY16SubImage| image:: images/icon_subimage_grey16.png
+.. |FLOATSubImage| image:: images/icon_subimage_float.png
+.. |ONEBITSubImage| image:: images/icon_subimage_binary.png
+
+There are other things that can appear in the icon display as well:
+
+  +------------------+------------------------------------------+
+  | |ImageList|      | A list of images                         |
+  +------------------+------------------------------------------+
+  | |Cc|             | A connected component                    |
+  +------------------+------------------------------------------+
+  | |Classifier|     | A classifier object                      |
+  +------------------+------------------------------------------+
+  | |NonClassifier|  | A non-interactive classifier object      |
+  +------------------+------------------------------------------+
+
+.. |ImageList| image:: images/icon_image_list.png
+.. |Cc| image:: images/icon_cc.png
+.. |Classifier| image:: images/icon_classify.png
+.. |NonClassifier| image:: images/icon_noninter_classify.png
+
+Context menu
+''''''''''''
+
+Right-clicking on any of these icons brings up a context menu to
+perform operations on an image.
+
+.. image:: images/right_click_menu.png
+
+At the top of the menu, the pixel type is displayeimage_api.htmld.
+
+The next two items are for creating new references and copies of the
+image.  You will be prompted for a variable name for the result.
+
+The **Info** submenu displays basic information about the image.
+
+The rest of the context menu contains plugin methods, sorted by category.  The
+plugin methods are documented here__.
+Many of the plugin methods require arguments.  In that case, a dialog
+will be displayed.  For example the dialog for ``erode_dilate`` is:
+
+.. image:: images/erode_dilate_dialog.png
+
+After entering the arguments for a plugin function, code is generated
+to perform the operation and automatically run in the console:
+
+.. code:: Python
+
+   >>>image.erode_dilate(5, 0, 1)
+
+.. __: plugins.html
+
+History
+```````
+
+At the bottom of the console window is a history which displays all of
+the code that has been entered in the Python console.  Code can be
+copied and pasted from here to build Gamera scripts.
+
+The image display
+-----------------
+
+Double-clicking on the image icon will display the image in its own window.
+
+.. image:: images/display.png
+
+Rectangular regions of the image can be selected by clicking and
+dragging a bounding box on the image itself.  The selection can be modified by dragging the
+drag boxes in the corners of the selection.
+
+Right-clicking on the image brings up the same `context menu`_ as in the `icon display`_.
+
+The image display toolbar has the following buttons:
+
+  +-----------------+--------------------------------------------------------------+
+  | |Refresh|       | Force a refresh of the display, in case any change has       |
+  |                 | occurred to the image.                                       |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomIn|        | Zoom in.                                                     |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomNorm|      | Actual size.                                                 |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomIn|        | Zoom out.                                                    |
+  +-----------------+--------------------------------------------------------------+
+  | |ZoomHighlight| | Zoom so that the highlighted region is fit to the window     |
+  |                 | as closely as possible.                                      |
+  +-----------------+--------------------------------------------------------------+
+  | Zoom quality    | low quality						   |
+  |                 |    no interpolation                                          |
+  |                 | medium quality                                               |
+  |                 |    linear interpolation                                      |
+  |                 | high quality                                                 |
+  |                 |    spline interpolation                                      |
+  +-----------------+--------------------------------------------------------------+
+  | |NewReference|  | Create a new subimage from the currently selected area (or   |
+  |                 | the entire image if there is no selection.)                  |
+  +-----------------+--------------------------------------------------------------+
+  | |NewCopy|       | Create a new copy of the currently selected area of the image|
+  |                 | (or the entire image if there is no selection.)		   |
+  +-----------------+--------------------------------------------------------------+
+
+.. |Refresh| image:: images/icon_refresh.png
+.. |ZoomIn| image:: images/icon_zoom_in.png
+.. |ZoomNorm| image:: images/icon_zoom_norm.png
+.. |ZoomOut| image:: images/icon_zoom_out.png
+.. |ZoomHighlight| image:: images/icon_zoom_view.png
+.. |NewReference| image:: images/icon_make_view.png
+.. |NewCopy| image:: images/icon_image_copy.png
+
+The multiple image display
+--------------------------
+
+.. image:: images/multi_display.png
+
+The classification environment
+------------------------------
+
+.. image:: images/classifier_window.png

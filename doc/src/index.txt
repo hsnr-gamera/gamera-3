@@ -8,11 +8,20 @@ Gamera documentation
 Introduction
 ============
 
-This is the Gamera documentation.  It is under the GNU FDL__.
+This is the Gamera documentation.  It is under the GNU `Free
+Documentation License`__.
 
 .. __: fdl.html
 
 .. warning:: Work in progress.
+
+- `Building and installing Gamera`__: The basics to get you started.
+
+.. __: install.html
+
+  - `Directory heirarchy`__: Where the files are.
+
+.. __: directory_heirarchy.html
 
 - `Writing Gamera plugins`__: Learn how to write new image methods.
 
@@ -34,3 +43,6 @@ This is the Gamera documentation.  It is under the GNU FDL__.
 
 .. __: plugins.html
 
+- `The Gamera GUI`__: How to use the integrated GUI.
+
+.. __: gui.html

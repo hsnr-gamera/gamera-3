@@ -35,8 +35,10 @@ div.abstract p.topic-title {
 
 div.attention, div.caution, div.danger, div.error, div.hint,
 div.important, div.note, div.tip, div.warning, div.admonition {
-  margin: 1em ;
-  border: thin outset ;
+  margin-left: 2em;
+  margin-right: 2em;
+  border: thin solid ;
+  border-color: #ddddcc;
   background-color: #FFFFDD;
   padding: 1em }
 
@@ -142,10 +144,8 @@ hr {
   width: 75% }
 
 img {
-  border-style: solid;
-  border-color: #72ada8;
-  border-width: 1px;
-  padding: 6px;
+  border-style: none;
+  margin: 2px;
 }
 
 ol.simple, ul.simple {
@@ -210,6 +210,7 @@ pre.line-block {
 
 pre.literal-block, pre.doctest-block {
   margin-left: 2em ;
+  margin-right: 2em;
   background-color: #eeeedd;
   padding: 1em;
   border-color: #e0e0d0;
@@ -272,3 +273,483 @@ tt {
 
 ul.auto-toc {
   list-style-type: none }
+
+div.code-block{
+margin-left: 2em;
+margin-right: 2em;
+background-color: #eeeedd;
+font-family: "Andale Mono", "Bitstream Vera Sans Mono", monospace;
+border-color: #e0e0d0;
+border-style: solid;
+border-width: 1px;
+font-size: 10pt;
+padding: 1em;
+}
+
+
+/* The following is for SilverCity syntax highlighting */
+
+
+.code_default
+{
+    FONT-FAMILY: "Andale Mono", "Bitstream Vera Sans Mono", monospace;
+    FONT-SIZE: 10pt;
+}
+
+.c_character
+{
+	color: olive;
+}
+
+.c_comment
+{
+	color: green;
+	font-style: italic;
+}
+
+.c_commentdoc
+{
+	color: green;
+	font-style: italic;
+}
+
+.c_commentdockeyword
+{
+	color: navy;
+	font-weight: bold;
+}
+
+.c_commentdockeyworderror
+{
+	color: red;
+	font-weight: bold;
+}
+
+.c_commentline
+{
+	color: green;
+	font-style: italic;
+}
+
+.c_commentlinedoc
+{
+	color: green;
+	font-style: italic;
+}
+
+.c_default
+{
+}
+
+.c_identifier
+{
+	color: black;
+}
+
+.c_number
+{
+    color: #009999;
+}
+
+.c_operator
+{
+	color: black;
+}
+
+.c_preprocessor
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.c_regex
+{
+	color: olive;
+}
+
+.c_string
+{
+	color: olive;
+}
+
+.c_stringeol
+{
+	color: olive;
+}
+
+.c_uuid
+{
+	color: olive;
+}
+
+.c_verbatim
+{
+	color: olive;
+}
+
+.c_word
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.c_word2
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.h_asp
+{
+    color: #ffff00;
+}
+
+.h_aspat
+{
+    color: #ffdf00;
+}
+
+.h_attribute
+{
+    color: #008080;
+}
+
+.h_attributeunknown
+{
+    color: #ff0000;
+}
+
+.h_cdata
+{
+    color: #ffdf00;
+}
+
+.h_comment
+{
+    color: #808000;
+}
+
+.h_default
+{
+}
+
+.h_doublestring
+{
+	color: olive;
+}
+
+.h_entity
+{
+    color: #800080;
+}
+
+.h_number
+{
+    color: #009999;
+}
+
+.h_other
+{
+    color: #800080;
+}
+
+.h_script
+{
+    color: #000080;
+}
+
+.h_singlestring
+{
+	color: olive;
+}
+
+.h_tag
+{
+    color: #000080;
+}
+
+.h_tagend
+{
+    color: #000080;
+}
+
+.h_tagunknown
+{
+    color: #ff0000;
+}
+
+.h_xmlend
+{
+    color: #0000ff;
+}
+
+.h_xmlstart
+{
+    color: #0000ff;
+}
+
+.pl_array
+{
+	color: black;
+}
+
+.pl_backticks
+{
+	color: olive;
+}
+
+.pl_character
+{
+	color: olive;
+}
+
+.pl_commentline
+{
+	color: green;
+	font-style: italic;
+}
+
+.pl_datasection
+{
+	color: olive;
+}
+
+.pl_default
+{
+}
+
+.pl_error
+{
+	color: red;
+	font-style: bold;
+}
+
+.pl_hash
+{
+	color: black;
+}
+
+.pl_here_delim
+{
+	color: olive;
+}
+
+.pl_here_q
+{
+	color: olive;
+}
+
+.pl_here_qq
+{
+	color: olive;
+}
+
+.pl_here_qx
+{
+	color: olive;
+}
+
+.pl_identifier
+{
+	color: black;
+}
+
+.pl_longquote
+{
+	color: olive;
+}
+
+.pl_number
+{
+    color: #009999;
+}
+
+.pl_operator
+{
+	color: black;
+}
+
+.pl_pod
+{
+	color: black;
+	font-style: italic;
+}
+
+.pl_preprocessor
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.pl_punctuation
+{
+	color: black;
+}
+
+.pl_regex
+{
+	color: olive;
+}
+
+.pl_regsubst
+{
+	color: olive;
+}
+
+.pl_scalar
+{
+	color: black;
+}
+
+.pl_string
+{
+	color: olive;
+}
+
+.pl_string_q
+{
+	color: olive;
+}
+
+.pl_string_qq
+{
+	color: olive;
+}
+
+.pl_string_qr
+{
+	color: olive;
+}
+
+.pl_string_qw
+{
+	color: olive;
+}
+
+.pl_string_qx
+{
+	color: olive;
+}
+
+.pl_symboltable
+{
+	color: black;
+}
+
+.pl_word
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.p_character
+{
+	color: olive;
+}
+
+.p_classname
+{
+	color: blue;
+	background-color: #d8d8c9;
+}
+
+.p_commentblock
+{
+	color: gray;
+	font-style: italic;
+}
+
+.p_commentline
+{
+	color: green;
+	font-style: italic;
+}
+
+.p_default
+{
+}
+
+.p_defname
+{
+    color: #009999;
+	background-color: #d8d8c9;
+}
+
+.p_identifier
+{
+	color: black;
+}
+
+.p_number
+{
+    color: #009999;
+}
+
+.p_operator
+{
+	color: black;
+}
+
+.p_string
+{
+	color: olive;
+}
+
+.p_stringeol
+{
+	color: olive;
+}
+
+.p_triple
+{
+	color: olive;
+}
+
+.p_tripledouble
+{
+	color: olive;
+}
+
+.p_word
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.yaml_comment
+{
+    color: #008800;
+	font-style: italic;
+}
+
+.yaml_default
+{
+}
+
+.yaml_document
+{
+    color: #808080;
+	font-style: italic;
+}
+
+.yaml_identifier
+{
+	color: navy;
+	background-color: #d8d8c9;
+}
+
+.yaml_keyword
+{
+    color: #880088;
+}
+
+.yaml_number
+{
+    color: #880000;
+}
+
+.yaml_reference
+{
+    color: #008888;
+}
+

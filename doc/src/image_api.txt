@@ -21,16 +21,22 @@ also allows the processing of a portion of an image as if it were an entire
 image.
 
 For example, to create a new image, the programmer must first create
-the data::
+the data:
+
+.. code:: CPP
 
    OneBitImageData image_data(50, 50, 0, 0);
 
-Then you can create a view on all of the data::
+Then you can create a view on all of the data:
+
+.. code:: CPP
 
    OneBitImageView image_view(image_data);
 
 Later, if you want to view only a subset of the data, you can use a
-different overloaded version of the view constructor::
+different overloaded version of the view constructor:
+
+.. code:: CPP
 
    OneBitImageView subimage_view(image_data, 25, 25, 10, 10);
 
@@ -50,12 +56,16 @@ it.
 Another common mistake is to deallocate all views on some data,
 forgetting to deallocate the data itself.  Since there is no reference
 counting, deallocation of all views does not automatically trigger
-deallocation of the underlying data.  For example::
+deallocation of the underlying data.  For example:
+
+.. code:: CPP
 
    OneBitImageData image_data = new OneBitImageData(50, 50, 0, 0);
    OneBitImageView image_view = new OneBitImageView(*image_data);
    
-   ...
+...
+
+.. code:: CPP
 
    delete image_view->data(); // Don't forget to delete the data
    delete image_view;
@@ -79,7 +89,9 @@ interface and are completely interchangeable, but will exhibit
 different algorithmic complexities.
 
 There are some typedefs in ``image_types.hpp`` to make creating
-different kinds of image data objects more convenient::
+different kinds of image data objects more convenient:
+
+.. code:: CPP
 
   /*
     Image Data
@@ -91,7 +103,9 @@ different kinds of image data objects more convenient::
   typedef ImageData<OneBitPixel> OneBitImageData;
   typedef RleImageData<OneBitPixel> OneBitRleImageData;
 
-There are a few different constructors available for data objects::
+There are a few different constructors available for data objects:
+
+.. code:: CPP
 
     ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
 	      size_t page_offset_x = 0);
@@ -126,7 +140,9 @@ of ``ImageView<T>`` for connected components,
 ``include/connected_components.hpp``.  `Connected components`_ are
 discussed below.
 
-As with the data objects, there are some typedefs for convenience::
+As with the data objects, there are some typedefs for convenience:
+
+.. code:: CPP
 
   /*
     ImageView
@@ -144,7 +160,9 @@ As with the data objects, there are some typedefs for convenience::
   typedef ConnectedComponent<OneBitImageData> Cc;
   typedef ConnectedComponent<OneBitRleImageData> RleCc;
 
-There are a number of different ways to construct image views::
+There are a number of different ways to construct image views:
+
+.. code:: CPP
 
   // Creates a view covering all of the data
   ImageView(T& image_data);
@@ -165,7 +183,9 @@ sizes and dimensions defined in ``gamera/dimensions.hpp``.
 
 Coordinates for any given bounding boxes are relative
 to the ``page_offset_x`` and ``page_offset_y`` of the underlying
-data.  Therefore::
+data.  Therefore:
+
+.. code:: CPP
 
    // Create data with an size of (64, 64) and an offset of (32, 32);
    OneBitImageData image_data(64, 64, 32, 32);
@@ -173,6 +193,9 @@ data.  Therefore::
    OneBitImageView image_view(image_data, 32, 32, 64, 64);
    // This raises an exception, since it's out of range for the data
    OneBitImageView image_view(image_data, 0, 0, 64, 64);
+
+You can get the type of the pixels referenced by an ``ImageView``
+using the expression ``typename T::value_type``.
 
 Creating images based on other images
 -------------------------------------
@@ -212,7 +235,9 @@ an image.  There are two public methods of ``ImageView``:
 **set** changes the pixel at the given row and column to the given
 value.
 
-An example using ``get`` / ``set`` over an entire image::
+An example using ``get`` / ``set`` over an entire image:
+
+.. code:: CPP
 
   template<class T>
   typename ImageFactory<T>::view_type* test_get_set(const T& image) {
@@ -235,7 +260,9 @@ C-style 2-dimensional array
 ```````````````````````````
 
 An alternative is to use the notation of C-style 2-dimensional
-arrays::
+arrays:
+
+.. code:: CPP
 
    value = image[row][col];
    image[row][col] = value;
@@ -244,7 +271,9 @@ This interface is provided as a convenience to support the large body
 of legacy code written in this style.  Keep in mind, it is not really
 a 2-diminsional array underneath -- this view is "faked."
 
-An example using the C-style 2-dimensional array interface::
+An example using the C-style 2-dimensional array interface:
+
+.. code:: CPP
 
   template<class T>
   typename ImageFactory<T>::view_type* test_c_2d(const T& image) {
@@ -265,38 +294,59 @@ An example using the C-style 2-dimensional array interface::
 Iterators
 `````````
 
-The disadvantage of the ``get`` / ``set`` and C-style 2-dimensional
-array interface is that they require a multiply/add per pixel to
-determine the actual memory location of the pixel.  The concept of
-iterators, popularized in the C++ Standard Template Library (STL),
-don't have this shortcoming, since moving from one pixel to the next
-becomes pointer addition under the hood.
+Iterators provide a lot of readability and convenience
+advantages over the other approaches.
 
 Gamera has three kinds of iterators:
 
-1. ``vec_iterator``: a one-dimensional iterator that iterates from the
+1. Vector iterator: a one-dimensional iterator that iterates from the
    upper left hand corner, left-to-right, top-to-bottom.
-2. ``row_iterator``: Iterates along rows (left-to_right).  Incrementing the iterator
-   moves one row down.  Calling ``begin()`` on a ``row_iterator``,
-   returns a ``col_iterator`` that iterates across the current row.
-3. ``col_iterator``: Iterates along columns (top-to-bottom).
-   Incrementing the iterator moves one column to the right.  Calling
-   ``begin()`` on a ``col_iterator`` returns a ``row_iterator`` that
-   iterates down the current column.
+2. Row/column iterators: Iterates along either rows or columns.  Incrementing the iterator
+   moves one row down or one column to the right.  Calling ``begin()`` on a ``row_iterator``,
+   returns a ``col_iterator`` and vice versa.
+3. Two-dimensional iterators: Provide a free form of movement of the
+   iterator in any direction.
 
-These iterators follow standard STL conventions, which are beyond the
-scope of this document.
+The first two kinds of iterators follow the conventions of the C++ STL
+enough that they can be used with STL algorithms.  All iterators are
+available in ``const`` and non-``const`` versions.  ``const``
+iterators can not change the underlying data.  If you have an image
+passed into your function as a ``const ImageView<T> &``, you will not
+be able to change the pixels in the image, and thus will only be able
+to get ``const`` iterators from it.
 
 Note that you can call ``row_number( )`` or ``col_number( )`` on any
 iterator to obtain the current row and column position of the iterator.
 
-``vec_iterator``
-''''''''''''''''
+All Gamera iterators can get/set their values in two ways, both of
+which boiling down to exactly the same machine code, and therefore
+having the same efficiency:
 
-``vec_iterators`` can be convenient when the operation works one pixel
+1. The standard "C pointer-like" way:
+
+.. code:: CPP
+
+   // i is any iterator type
+   value = *i;
+   *i = value;
+
+2. Using ``get`` and ``set`` methods:
+   
+.. code:: CPP
+
+   // i is any iterator type
+   value = i.get();
+   i.set(value);
+
+Vector iterator
+'''''''''''''''
+
+Vector iterators (``ImageView<T>::vec_iterator``) can be convenient when the operation works one pixel
 at a time and does not need to be aware of any spatial relationships.
 
-An example using ``vec_iterators``::
+An example using ``vec_iterators``:
+
+.. code:: CPP
 
   template<class T>
   typename ImageFactory<T>::view_type* test_vec_iterator(const T& image) {
@@ -309,20 +359,35 @@ An example using ``vec_iterators``::
     typename view_type::vec_iterator j = new_view->vec_begin();
 
     for ( ; i != image.vec_end(); ++i, ++j) {
-      *j = *i / 2;
+      *j = *i / 2;  // or  j.set(i.get() / 2);
     }
 
     return new_view;
   }
 
-``row_iterator`` and ``col_iterator``
-'''''''''''''''''''''''''''''''''''''
+Since the Gamera image iterators follow the STL iterator interface,
+they can be used with builtin STL algorithms.  For instance, to fill
+an entire image with white using the STL ``std::fill`` algorithm:
+
+.. code:: CPP
+
+  #include <algorithm> 
+
+  template<class T>
+  void fill_white(T& image) {
+    std::fill(image.vec_begin(), image.vec_end(), white(image));
+  }
+
+Row/column iterators
+''''''''''''''''''''
 
 Sometimes it is necessary to have nested loops, one for rows and one
 for columns.
 
-The following is an example using ``row_iterators`` and
-``col_iterators``::
+The following is an example using row iterators (``ImageView<T>::row_iterators``) and
+column interators (``ImageView<T>::col_iterators``):
+
+.. code:: CPP
 
   template<class T>
   typename ImageFactory<T>::view_type* test_row_col_iterator(const T& image) {
@@ -345,9 +410,11 @@ The following is an example using ``row_iterators`` and
     return new_view;
   }
 
-The fun thing about ``row_`` and ``col_iterators`` is that they are
+The fun thing about row and column iterators is that they are
 interchangable.  If you wish to iterate through the image in column
-major order instead, you could write::
+major order instead, you could write:
+
+.. code:: CPP
 
   template<class T>
   typename ImageFactory<T>::view_type* test_col_row_iterator(const T& image) {
@@ -373,6 +440,106 @@ major order instead, you could write::
 Of course, that really should be templatized on the iterator type.
 For an example of this, see ``include/plugins/projections.hpp``.
 
+Two-dimensional iterators
+'''''''''''''''''''''''''
+
+Unlike the other kinds of iterators, two-dimensional iterators are a
+long way from C++ STL convention.  The idea of these iterators was
+borrowed from the VIGRA_ library.  More documentation is available
+there, but I've provided a short summary below.
+
+.. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
+
+You can obtain a two-dimensional iterator from an image using of
+the following methods:
+
+.. code:: CPP
+
+    Iterator upperLeft();
+    Iterator lowerRight();
+
+Once you have a two-dimensional iterator, you can move it using the
+following:
+
+.. code:: CPP
+
+   typename T::Iterator i;
+   
+   ++i.x; // move right
+   --i.x; // move left
+   ++i.y; // move down
+   --i.y; // move up
+
+You can see that this gives more freedom and expressivity than the
+other iterators.
+
+When you assign one two-dimensional iterator to another, it is copied,
+so there are no persistent connections between them.
+
+.. code:: CPP
+   
+   typename T::Iterator center, below;
+   
+   ...
+
+   below = center;
+   ++below.y;	// 'below' points to the pixel below 'center'
+   ++center.x;  // 'center' moved.  'below' did not.
+
+You can also perform arithmetic on these iterators on the fly:
+
+.. code:: CPP
+
+   typename T::Iterator center, below;
+   
+   ...
+
+   below = center.y + 1; // 'center' is not moved
+
+If you need to move in two dimensions at once, you can either add or subtract
+a ``Diff2D`` object from the iterator, or use the ``operator()``
+method.
+
+.. code:: CPP
+
+   typename T::Iterator i, relative;
+   
+   ...
+
+   relative = i + Diff2D(1, 1)   // down and to the right
+   relative = i[Diff2D(1, 1)]    // equivalent to above
+   relative = i + Diff2D(-1, -1) // up and to the left
+
+   relative = i - Diff2D(1, 1)   // up and to the left
+   relative = i - Diff2D(-1, -1) // down and to the right
+
+   relative = i(1, 1)            // down and to the right
+   relative = i(-1, -1)	         // up and to the left
+
+You can also use the two-dimensional iterators exactly like a `vector
+iterator`_.  Incrementing them directly will move through the image
+left-to-right, top-to-bottom:
+
+.. code:: CPP
+
+  template<class T>
+  typename ImageFactory<T>::view_type* test_2d_iterator(const T& image) {
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    view_type* new_view = new view_type(*new_data);
+
+    typename T::Iterator i = image.upperLeft();
+    typename view_type::Iterator j = new_view->upperLeft();
+    for ( ; i != image.lowerRight(); ++i, ++j)
+      j.set(i.get());
+
+    return new_view;
+  }
+
+For an example of how two-dimensional iterators can be used in a more
+real-world situation, see the ``cc_analysis`` method in ``include/plugins/segmentation.py``.
+
 Speed tests
 ```````````
 
@@ -387,14 +554,15 @@ salt.
 .. image:: images/pixel_access_runtimes.png
 
 The performance of the 1-dimensional
-iterator is perhaps surprising, since it appears to be the simplest code.  Unfortunately,
-there is a lot of book-keeping that needs to go on behind the scenes
-with the 1-dimensional iterators to make them compatible with
-different storage formats and code from the VIGRA toolkit.  (See
-``gamera/iterators.hpp`` for details).  Hopefully
-this can be resolved in a future release.
+iterator is perhaps surprising, since it appears to be the simplest
+code.  In fact, however, ``vec_iterators`` are implemented under the
+hood as two-dimensional iterators, to be compatible with VIGRA_
+algorithms and make ``row_number()`` and ``col_number()`` work.  This
+introduces some overhead.
 
-The 2-dimensional iterators in row major order (rows in the outer loop) is
+.. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
+
+The row/column iterators in row major order (rows in the outer loop) is
 the clear winner.  Since the underlying data is stored row major order,
 accessing it in column major order is a major performance hit, in part
 due to the extra pointer arithmetic and in part due to worse cache performance.
@@ -405,7 +573,7 @@ due to the extra pointer arithmetic and in part due to worse cache performance.
 Making generic programming work
 ===============================
 
-Everything discussed so far has been completely polymorphic: they
+Everything discussed so far has been completely polymorphic: these techniques
 should work identically on all types of images.  However, where the
 images vary is in the pixel types themselves.  Careful programming
 can keep your algorithms generic against all pixel types, but when
@@ -414,10 +582,7 @@ that is no longer possible, it is also possible to specialize
 type.)
 
 First, let's cover some more details of the various pixel types
-available in Gamera.  They are all defined in ``include/pixel.hpp``
-and more information is available there.  It is also possible to
-change the definitions of the pixel types there and then doing a full
-recompile.
+available in Gamera.  They are all defined in ``include/pixel.hpp``.
 
 ``RGB``
 	RGB pixels are represented by instances of the ``Rgb`` class.
@@ -433,16 +598,16 @@ recompile.
 	them by value without performance concerns.
 
 ``GREYSCALE``
-	GreyScale pixels are 8-bit ``unsigned char`` s in the range 0
+	GreyScale pixels are 8-bit ``unsigned char`` values in the range 0
 	- 255.  These also
 	follow the hardware convention that larger values are higher
 	intensity (white).
 
 ``FLOAT``
-	Float pixels are 32-bit floating-point ``float`` s.  This
+	Float pixels are 32-bit floating-point ``float`` values.  They
 	follows the hardware convention that larger values are higher
 	intensity (white).  Unlike the integral pixel types, there is
-	no set range for the values (which can even be negative.)  For
+	no set range for the values (they can even be negative).  For
 	this reason, the Gamera display will always find the lowest
 	and highest values and then normalize the display to match the
 	dynamic range of the display hardware.  Floating point images
@@ -450,7 +615,7 @@ recompile.
 	results of the convolution of two images.
 
 ``ONEBIT``
-	OneBit pixels are 16-bit ``unsigned char`` s.  Perhaps
+	OneBit pixels are 16-bit ``unsigned char`` values.  Perhaps
 	confusingly, a value of 0 is white (which is usually
 	``background`` in most document images) and *all other values*
 	are black.  The extra bits of range are used when a connected
@@ -461,17 +626,98 @@ recompile.
 	taken when writing algorithms that accept OneBit images and
 	other images.
 
-``white``, ``black``, ``is_white``, and ``is_black``
-----------------------------------------------------
+Black and white
+---------------
 
-X
+Convenience functions are provided to get and test values for white
+and black pixels that work on all pixel types.
 
-Accessors
-=========
+.. code:: CPP
 
-X
+  T pixel_traits<T>::white();
+  T pixel_traits<T>::black();
+
+Return the values for white and black, respectively, for the given
+pixel type ``T``.  Often, it is more convenient to get the pixel value
+from the ``ImageView`` type, and not the pixel type.  Therefore, the
+functions
+
+.. code:: CPP
+
+  T::value_type white(T& image_type);
+  T::value_type black(T& image_type);
+
+are also provided.
+
+You can also test whether a pixel is white or black using:
+
+.. code:: CPP
+
+  bool is_white(T pixel_value);
+  bool is_black(T pixel_value);
+
+Writing a specialized function
+------------------------------
+
+As specified in `Writing Gamera Plugins`__, each plugin function
+should be templatized to accept multiple image types.  Sometimes,
+though, a single code base will not work for all images types, or
+there are performance gains to be had by writing for a particular
+image type.
+
+.. __: writing_plugins.html
+
+The wrinkle that makes this less than straightforward is that you
+often want to specialize on the **pixel type**, not the **image
+type**.  For instance, there are multiple **image types** where the
+**pixel type** is ``ONEBIT`` (OneBitImageView, Cc, OneBitRleImageView
+etc.).  Therefore, you will normally want to have a helper function
+which is templatized on the pixel type, which is called from the main
+function.  See for example, the ``invert`` plugin method, which needs
+to do something different for FLOAT images (since the range of FLOAT
+pixels is not fixed.):
+
+.. code:: CPP
+
+  /* Invert an image */
+
+  // This is the generic version
+  template<class Pixel>
+  struct invert_specialized {
+    template<class T>
+    void operator()(T& image) {
+      ImageAccessor<typename T::value_type> acc;
+      typename T::vec_iterator in = image.vec_begin();
+      for (; in != image.vec_end(); ++in)
+	acc.set(invert(acc(in)), in);
+    }
+  };
+
+  // This is specialied for FLOAT pixels
+  template<>
+  struct invert_specialized<FloatPixel> {
+    template<class T>
+    void operator()(T& image) {
+      FloatPixel max = 0;
+      max = find_max(image.parent());
+      ImageAccessor<FloatPixel> acc;
+      typename T::vec_iterator in = image.vec_begin();
+      for (; in != image.vec_end(); ++in)
+	acc.set(max - acc(in), in);
+    }
+  };
+
+  // This is the top level function that calls the correct
+  // specialization
+  template<class T>
+  void invert(T& image) {
+    invert_specialized<typename T::value_type> invert_special;
+    invert_special(image);
+  }
+
 
 Connected components
 ====================
 
 X
+

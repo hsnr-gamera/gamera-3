@@ -232,7 +232,6 @@ Image *color_ccs(T& m) {
   return image;
 }
 
-
 }
 
 #endif

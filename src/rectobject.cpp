@@ -145,7 +145,7 @@ static PyGetSetDef rect_getset[] = {
   {"center_x", (getter)rect_get_center_x, NULL,
    "(int property)\n\nThe x-location at the exact center of the rectangle in the logical coordinate space."},
   {"center_y", (getter)rect_get_center_y, NULL,
-   "(int property)\b\bThe y-location at the exact center of the rectangle in the logical coordinate space."},
+   "(int property)\n\nThe y-location at the exact center of the rectangle in the logical coordinate space."},
   { NULL }
 };
 

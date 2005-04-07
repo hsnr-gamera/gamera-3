@@ -383,13 +383,13 @@ namespace Gamera {
 #ifndef GAMERA_NO_PYTHON
 
   template<class T>
-  std::string to_rle(T& image) {
+  std::string to_rle(const T& image) {
     // White first
     std::ostringstream oss;
 
-    for (typename T::vec_iterator i = image.vec_begin();
+    for (typename T::const_vec_iterator i = image.vec_begin();
 	 i != image.vec_end(); /* deliberately blank */) {
-      typename T::vec_iterator start;
+      typename T::const_vec_iterator start;
       start = i;
       white_run_end(i, image.vec_end());
       oss << int(i - start) << " ";

@@ -276,6 +276,11 @@ Add the local Python scripts directory to your path::
 Now you should be able to run the ``gamera_gui`` script from the
 command line.
 
+If you wish to build toolkits you will also need to include the Gamera
+include directories::
+
+  export CFLAGS=~/python/include/python2.3/gamera/
+
 Running
 -------
 

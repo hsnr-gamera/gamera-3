@@ -548,7 +548,6 @@ class Image(gameracore.Image, ImageBase):
    def __del__(self):
       if self._display:
          self._display.close()
-   __getstate__ = ImageBase.__getstate__
 
 ######################################################################
 
@@ -562,7 +561,6 @@ class SubImage(gameracore.SubImage, ImageBase):
       if self._display:
          self._display.close()
 
-   __getstate__ = ImageBase.__getstate__
 
 ######################################################################
 
@@ -571,8 +569,6 @@ class Cc(gameracore.Cc, ImageBase):
       ImageBase.__init__(self)
       gameracore.Cc.__init__(self, *args, **kwargs)
    __init__.__doc__ = gameracore.Cc.__doc__
-
-   __getstate__ = ImageBase.__getstate__
 
    def __del__(self):
       if self._display:

@@ -240,7 +240,7 @@ page."""
       if recursion_level == 0:
          progress = util.ProgressFactory("Classifying glyphs...", len(glyphs))
       try:
-         if (recursion_level > max_recursion) or len(self.database) == 0:
+         if (recursion_level > max_recursion):
             return [], []
          added = []
          removed = {}

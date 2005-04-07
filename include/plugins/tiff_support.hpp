@@ -311,14 +311,7 @@ namespace {
 
 Image* load_tiff(const char* filename, int storage) {
   ImageInfo* info = tiff_info(filename);
-  if (info->ncolors() == 3) {
-    typedef TypeIdImageFactory<RGB, DENSE> fact;
-    fact::image_type* image =
-      fact::create(0, 0, info->nrows(), info->ncols());
-    tiff_load_rgb(*image, *info, filename);
-    delete info;
-    return image;
-  } else if (info->ncolors() == 1) {
+  if (info->ncolors() == 1) {
     if (info->depth() == 1) {
       if (storage == DENSE) {
 	typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
@@ -337,33 +330,39 @@ Image* load_tiff(const char* filename, int storage) {
 	delete info;
 	return image;
       }
-    } else if (info->depth() == 8) {
-      typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
-      fact_type::image_type*
-	image = fact_type::create(0, 0, info->nrows(), info->ncols());
-      image->resolution(info->x_resolution());
-      tiff_load_greyscale(*image, *info, filename);
-      delete info;
-      return image;
-    } else if (info->depth() == 16) {
-      typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
-      fact_type::image_type*
-	image = fact_type::create(0, 0, info->nrows(), info->ncols());
-      image->resolution(info->x_resolution());
-      tiff_load_greyscale(*image, *info, filename);
-      delete info;
-      return image;
-    } else {
-      throw std::runtime_error("Unable to load image of this type!");
-      delete info;
-      return 0;
     }
-  } else {
+  }
+  if (storage == RLE) {
     delete info;
-    throw std::runtime_error("Unable to load image of this type!");
-    return 0;
+    throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+  }
+  if (info->ncolors() == 3) {
+    typedef TypeIdImageFactory<RGB, DENSE> fact;
+    fact::image_type* image =
+      fact::create(0, 0, info->nrows(), info->ncols());
+    tiff_load_rgb(*image, *info, filename);
+    delete info;
+    return image;
+  } else if (info->depth() == 8) {
+    typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
+    fact_type::image_type*
+      image = fact_type::create(0, 0, info->nrows(), info->ncols());
+    image->resolution(info->x_resolution());
+    tiff_load_greyscale(*image, *info, filename);
+    delete info;
+    return image;
+  } else if (info->depth() == 16) {
+    typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
+    fact_type::image_type*
+      image = fact_type::create(0, 0, info->nrows(), info->ncols());
+    image->resolution(info->x_resolution());
+    tiff_load_greyscale(*image, *info, filename);
+    delete info;
+    return image;
   }
   delete info;
+  throw std::runtime_error("Unable to load image of this type!");
+  return 0;
 }
 
 template<class T>

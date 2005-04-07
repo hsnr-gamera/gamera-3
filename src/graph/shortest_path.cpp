@@ -62,6 +62,7 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root) {
 	}
       }
     }
+    Py_DECREF(iterator);
   } else { // acyclic version
     DFSIterator* iterator = iterator_new<DFSIterator >();
     iterator->init(so, root);
@@ -89,6 +90,7 @@ NodeList* graph_djikstra_shortest_path(GraphObject* so, Node* root) {
 	}
       }
     }
+    Py_DECREF(iterator);
   }
 
   return main_node_list;
@@ -119,6 +121,7 @@ PyObject* graph_djikstra_shortest_path(PyObject* self, PyObject* pyobject) {
     Py_DECREF(tuple);
   }
 
+  delete node_list;
   return result;
 }
 
@@ -147,6 +150,7 @@ PyObject* graph_djikstra_all_pairs_shortest_path(PyObject* self, PyObject* pyobj
     }
     PyDict_SetItem(result, (*i)->m_data, subresult);
     Py_DECREF(subresult);
+    delete node_list;
   }
 
   return result;
@@ -196,7 +200,6 @@ PyObject* graph_all_pairs_shortest_path(PyObject* self, PyObject* args) {
       }
     }
   }
-
 
   PyObject* result = PyDict_New();
   for (NodeVector::iterator i = so->m_nodes->begin();

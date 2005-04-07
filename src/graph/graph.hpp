@@ -188,20 +188,23 @@ inline bool graph_remove_node(GraphObject* so, Node* node) {
 	for (EdgeList::iterator k = node->m_edges.begin();
 	     k != node->m_edges.end(); ++k) {
 	  if ((*k)->m_from_node == node) {
-	    MemoEdge edge(*i, (*k)->m_to_node, (*j)->m_cost + (*k)->m_cost);
-	    edges.push_back(edge);
+	    if (*i != node && (*k)->m_to_node != node) {
+	      MemoEdge edge(*i, (*k)->m_to_node, (*j)->m_cost + (*k)->m_cost);
+	      edges.push_back(edge);
+	    }
 	  }
 	}
 
-  
   // Remove node and original edges
   if (graph_remove_node_and_edges(so, node)) {
     // We reconnect the edges that used to go through node.
     // This is done *after* removing the node and the edges because
     // it's moderately faster (there's no extraneous edges around during
     // graph_remove_node_and_edges).
-    for (MemoEdgeList::iterator i = edges.begin(); i != edges.end(); ++i) 
-      graph_add_edge(so, (*i).from_node, (*i).to_node, (*i).cost);
+    for (MemoEdgeList::iterator i = edges.begin(); i != edges.end(); ++i) {
+      if (!graph_has_edge(so, (*i).from_node, (*i).to_node))
+	graph_add_edge(so, (*i).from_node, (*i).to_node, (*i).cost);
+    }
     
     return true;
   } else {

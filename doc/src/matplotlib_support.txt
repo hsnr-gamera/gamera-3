@@ -112,3 +112,36 @@ file.  This code assumes that either ``Numeric`` or ``numarray`` is installed.
   show()
   
 .. image:: images/matplotlib_example4.png
+
+Using Gamera images as a 2D data source
+---------------------------------------
+
+matplotlib can be used to plot 2D images, and it is fairly easy to use
+Gamera images as a source.  Simply convert the Gamera image to a
+Numeric or numarray array, and then pass that array to matplotlib's
+``imshow`` function.  This functionality is fairly slow, so do not try
+this on large images.
+
+For example, if you have Numeric Python installed:
+
+.. code:: Python
+
+  >>> arr = image.to_numeric()
+
+Or, if you have numarray installed:
+
+.. code:: Python
+
+  >>> arr = image.to_numarray()
+
+Then pass that array to ``imshow``:
+
+.. code:: Python
+
+  >>> from pylab import *
+  >>> imshow(arr) # Show image
+  >>> hot()       # Choose hot colormap
+  >>> colorbar()  # Show colorbar
+  >>> show()      # update
+
+.. image:: images/matplotlib_example5.png

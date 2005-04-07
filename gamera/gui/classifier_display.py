@@ -146,24 +146,24 @@ class ExtendedMultiImageWindow(MultiImageWindow):
       if wxPlatform == '__WXMSW__':
          font.SetPointSize(10)
       else:
-         font.SetPointSize(14)
+         pass
       self.titlebar.SetFont(font)
-      self.titlebar_button = wxButton(self, -1, "+", size=(16, 16))
+      self.titlebar_button = wxButton(self, -1, "+")
       EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
       self._split_button_mode = False
       
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.left.SameAs(self, wxLeft, 0)
-      lc.right.SameAs(self, wxRight, 0)
+      lc.right.SameAs(self.titlebar_button, wxLeft, 0)
       lc.height.AsIs()
       self.titlebar.SetAutoLayout(True)
       self.titlebar.SetConstraints(lc)
       lc = wxLayoutConstraints()
       lc.top.SameAs(self, wxTop, 0)
       lc.right.SameAs(self, wxRight, 0)
-      lc.height.AsIs()
-      lc.width.AsIs()
+      lc.height.SameAs(self.titlebar, wxHeight, 0)
+      lc.width.SameAs(self.titlebar, wxHeight, 0)
       self.titlebar_button.SetAutoLayout(True)
       self.titlebar_button.SetConstraints(lc)
       lc = wxLayoutConstraints()
@@ -1054,7 +1054,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnClearClassifierCollection(self, event):
       if self._classifier.is_dirty:
-         if gui_util.are_you_sure_dialog(self._frame,
+         if gui_util.are_you_sure_dialog(
             "Are you sure you want to clear all glyphs in the classifier?"):
             self._classifier.clear_glyphs()
       else:
@@ -1524,8 +1524,7 @@ class ClassifierFrame(ImageFrameBase):
    def _OnCloseWindow(self, event):
       if self.is_dirty:
          if not gui_util.are_you_sure_dialog(
-            "Are you sure you want to quit without saving?",
-            self._frame):
+            "Are you sure you want to quit without saving?"):
             event.Veto()
             return
       self._classifier.set_display(None)

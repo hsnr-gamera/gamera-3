@@ -19,6 +19,7 @@
 #
 
 import gzip, os, os.path, cStringIO
+import warnings
 from weakref import proxy
 from xml.parsers import expat
 
@@ -215,7 +216,7 @@ class LoadXML:
          return typename(dictionary[key])
       except KeyError:
          raise XMLError(
-            "XML ValueError: <%s> tag does not have a required element '%s'." %
+            "XML ValueError: <%s> tag does not have a required attribute '%s'." %
             (tagname, key))
       except TypeError:
          raise XMLError(
@@ -367,11 +368,14 @@ class LoadXML:
       self._scaling = 1.0
       self._id_name = []
       self._properties = {}
+      self._data = None
+      self._classification_state = core.UNCLASSIFIED
 
    def _tag_end_glyph(self):
       glyph = core.Image(self._ul_y, self._ul_x, self._nrows, self._ncols,
                          core.ONEBIT, core.DENSE)
-      glyph.from_rle(str(u''.join(self._data)))
+      if not self._data is None:
+         glyph.from_rle(str(u''.join(self._data)))
       glyph.classification_state = self._classification_state
       self._id_name.sort()
       glyph.id_name = self._id_name
@@ -427,11 +431,15 @@ class LoadXML:
    def add_property_value(self, data):
       self._property_value.append(data)
 
-def glyphs_from_xml(filename):
-   """**glyphs_from_xml** (FileOpen *filename*)
+def glyphs_from_xml(filename, feature_functions = None):
+   """**glyphs_from_xml** (FileOpen *filename*, Features *feature_functions* = ``None``)
 
 Return a list of glyphs from a Gamera XML file."""
-   return LoadXML().parse_filename(filename).glyphs
+   glyphs = LoadXML().parse_filename(filename).glyphs
+   if not feature_functions is None:
+      from gamera.plugins import features
+      features.generate_features_list(glyphs, feature_functions)
+   return glyphs
 
 def glyphs_with_features_from_xml(filename, feature_functions = None):
    """**glyphs_with_features_from_xml** (FileOpen *filename*, Features *feature_functions* = ``None``)
@@ -439,10 +447,10 @@ def glyphs_with_features_from_xml(filename, feature_functions = None):
 Loads glyphs from a Gamera XML file, and then generates features
 for all of those glyphs.  The set of features can be specified with the
 *feature_functions* argument (which defaults to all features)."""
-   from gamera.plugins import features
-   glyphs = LoadXML().parse_filename(filename).glyphs
-   features.generate_features_list(glyphs, feature_functions)
-   return glyphs
+   warnings.warn("Use glyphs_from_xml with a feature descriptor instead of glyphs_with_features_from_xml.", DeprecationWarning)
+   if feature_functions == None:
+      feature_functions = 'all'
+   return glyphs_from_xml(filename, feature_functions)
 
 def glyphs_to_xml(filename, glyphs, with_features=True):
    """**glyphs_to_xml** (FileSave *filename*, *with_features* = ``True``)

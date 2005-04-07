@@ -23,10 +23,12 @@
   Authors
   -------
   Karl MacMillan <karlmac@peabody.jhu.edu>
+  Michael Droettboom <mdboom@jhu.edu>
 
   History
   -------
   Started 5/15/2002 KWM
+  Virtually rewritten 4/1/2005 MGD
 */
 
 #include "image_data.hpp"
@@ -52,50 +54,92 @@ namespace Gamera {
       acceptable for images that compress well (i.e. have few transitions from
       white to black), but will perform _very_ poorly as the number of transitions
       increases. Random-access is provided to this data, but this requires searching
-      all the way through the list of runs for every singe acess (except in the case
-      of the iterators).
+      all the way through the list of runs for every single access.  The iterators
+      have certain tricks to make this faster, but performance will be much better
+      for reading than writing.
 
       Encoding Scheme
       ---------------
 
-      This implementation only stores 'black' - i.e. non-zero pixels. The run class
-      below holds the beginning and end position of the run. This was done to make
-      the code a little easier to understand - it works out to the same amount of space
-      as storing the lengths of black and white.
+      The old implementation stored only 'black' - i.e. non-zero
+      pixels.  This seemed to not work at all, but the original
+      author, Karl, no longer works on Gamera so it is hard to say
+      whether this never fully worked or some other change in Gamera
+      broke this code.  The CVS history seems to point to the former.
 
-      In order to reduce the amount of time needed to find a particular run (which
-      is prohibitive when the list of runs is very long) we store an array of lists
-      of runs. Each list stores a range of coordinates determined by the static variable
-      RLE_CHUNK. This means that we will sometimes break runs when they could be
-      encoded as single run, but it makes the performance more even. To find the
-      list that stores a particular position, simply divide by RLE_CHUNK - i.e.
+      The new implementation stores a run for each value, storing only
+      the run's end.  Pixels "off the end" of a list of runs are
+      assumed to be zero.  This keeps the memory consumption for large
+      white areas of the image to a minimum.  This change helps keep
+      the iterators in sync with the data.  In the old scheme, when an
+      iterator was in a white area, it was impossible to tell what the
+      next black area would be without rescanning the entire chunk.
+      The first fix tried was to store an iterator to the next run,
+      and then do a containment test when returning the pixel value.
+      In profiling, this overhead seemed too heavy.  Now, the iterator
+      is always inside some run, regardless of color (or at the end of
+      a run chunk where the pixel is assumed to be white).
 
-      list_of_runs = array_of_lists[pos / RLE_CHUNK]
-    
-      Once you have the appropriate list, it is still necessary to scan through
-      to find the particular run (or lack of run if the pixel is white). All we
-      have done by using this array is to limit the length of the list that needs
-      to be scanned by RLE_CHUNK / 2.
+      This makes it easy to move to the next/previous run, except if
+      the run list is changed out from under us.  This will make the
+      iterator's pointer to the current run invalid.  The RleVector
+      object (which manages the runs) has a value m_dirty which
+      increments every time the structure of the run lists changes
+      (but not merely the pixel values).  The iterators on the run
+      data check their own internal copy of m_dirty against
+      RleVector's everytime a pixel access needs to be made.  If
+      different, a full search of the run list is performed to find
+      the correct current run, and then the iterator's copy of m_dirty
+      is updated.  If the same, the iterator's pointer to the current
+      run is valid.  m_dirty is an integer value and not a flag
+      because multiple iterators may by working on the same data at
+      the same time.  This makes the semaphore work for all of them
+      and not just the first one to access the data after an
+      underlying change.
+
+      In order to reduce the amount of time needed to find a
+      particular run (which is prohibitive when the list of runs is
+      very long) we store an array of lists of runs. Each list stores
+      a range of coordinates determined by the static variable
+      RLE_CHUNK. This means that we will sometimes break runs when
+      they could be encoded as single run, but it makes the
+      performance more even. To find the list that stores a particular
+      position, simply divide by RLE_CHUNK - i.e.
+
+        list_of_runs = array_of_lists[pos / RLE_CHUNK]
+   
+      Once you have the appropriate list, it is still necessary to
+      scan through to find the particular run (or lack of run if the
+      pixel is white). All we have done by using this array is to
+      limit the length of the list that needs to be scanned by
+      RLE_CHUNK.
+
+      
 
       SPACE REDUCTION
       ---------------
 
-      A further optimization for space has been added to take advantage of the fact
-      that the positions stored in the run can be stored as an offest from the first
-      possible position in a given list of runs (which I call a 'chunk'). If the positions
-      stored in the runs are relative to the current chunk, we only need a type large enough
-      to hold RLE_CHUNK positions. Setting RLE_CHUNK to 256 allows us to use an unsigned char
-      for the positions in the run. If these relative positions weren't used we would have
-      to allow the positions to be very large (probably at least size_t). The drawback to this
-      space reduction is that we now have to deal with two sets of positions (global and
+      A further optimization for space has been added to take
+      advantage of the fact that the positions stored in the run can
+      be stored as an offest from the first possible position in a
+      given list of runs (which I call a 'chunk'). If the positions
+      stored in the runs are relative to the current chunk, we only
+      need a type large enough to hold RLE_CHUNK positions. Setting
+      RLE_CHUNK to 256 allows us to use an unsigned char for the
+      positions in the run. If these relative positions weren't used
+      we would have to allow the positions to be very large (probably
+      at least size_t). The drawback to this space reduction is that
+      we now have to convert between two sets of positions (global and
       relative).
     */
 
     /*
       see note above - this must be smaller than the largest number that the
-      type of end in the Run class can hold
+      type of end in the Run class can hold.  This must be a power of 2
     */
     static const size_t RLE_CHUNK = 256;
+    static const size_t RLE_CHUNK_1 = 255;   // RLE_CHUNK - 1
+    static const size_t RLE_CHUNK_BITS = 8;  // log2(RLE_CHUNK)
 
     /*
       Again, see note above - this should be selected with reference to
@@ -128,24 +172,9 @@ namespace Gamera {
     class Run {
     public:
       typedef T value_type;
-      Run(runsize_t s, runsize_t e, T v)
-	: start(s), end(e), value(v) {
+      Run(runsize_t e, T v)
+	: end(e), value(v) {
       }
-      // determine intersection with a point
-      bool contains(runsize_t pos) const {
-	if (pos >= start && pos <= end) {
-	  return true;
-	} else {
-	  return false;
-	}
-      }
-      // the length of the run
-      size_t length() const {
-	return end - start + 1;
-      }
-      // beginning of the run
-      runsize_t start;
-      // end of the run
       runsize_t end;
       // The value of the run (for connected-component
       // labeling).
@@ -157,16 +186,15 @@ namespace Gamera {
       positions in the runs.
     */
     inline runsize_t get_rel_pos(size_t global_pos) {
-      size_t chunk = global_pos / RLE_CHUNK;
-      return runsize_t(global_pos - (RLE_CHUNK * chunk));
+      return global_pos & RLE_CHUNK_1;
     }
 
     inline size_t get_global_pos(runsize_t rel_pos, size_t chunk) {
-      return size_t(rel_pos) + (chunk * RLE_CHUNK);
+      return size_t(rel_pos) + (chunk << RLE_CHUNK_BITS);
     }
 
     inline size_t get_chunk(size_t pos) {
-      return pos / RLE_CHUNK;
+      return pos >> RLE_CHUNK_BITS;
     }
 
     /*
@@ -199,11 +227,13 @@ namespace Gamera {
 	m_vec = vec;
 	m_pos = pos;
 	m_iterator = 0;
+	m_dirty = vec->m_dirty;
       }
       RLEProxy(T* vec, size_t pos, const iterator* it) {
 	m_vec = vec;
 	m_pos = pos;
 	m_iterator = it;
+	m_dirty = vec->m_dirty;
       }
       // this is for RleVector[] - so, so, stupid, but oh well
       RLEProxy(T* vec, size_t pos, iterator i) {
@@ -211,18 +241,19 @@ namespace Gamera {
 	m_pos = pos;
 	m_i = i;
 	m_iterator = &m_i;
+	m_dirty = vec->m_dirty;
       }
       void operator=(value_type v) {
-	if (m_iterator != 0)
-	  m_vec->insert_in_run(m_pos, v, *m_iterator);
-	else
+	if (m_dirty == m_vec->m_dirty && m_iterator != 0)
+ 	  m_vec->set(m_pos, v, *m_iterator);
+ 	else
 	  m_vec->set(m_pos, v);
       }
       operator value_type() const {
-	if (m_iterator != 0) {
+	if (m_dirty == m_vec->m_dirty && m_iterator != 0) {
 	  return (*m_iterator)->value;
 	} else {
-	  return 0;
+	  return m_vec->get(m_pos);
 	}
       }
     private:
@@ -230,6 +261,7 @@ namespace Gamera {
       size_t m_pos;
       const iterator* m_iterator;
       iterator m_i;
+      size_t m_dirty;
     };
   
     /*
@@ -246,7 +278,7 @@ namespace Gamera {
     template<class I>
     I find_run_in_list(I i, I end, runsize_t rel_pos) {
       for (; i != end; ++i) {
-	if (i->contains(rel_pos))
+	if (i->end >= rel_pos)
 	  return i;
       }
       return i;
@@ -258,12 +290,12 @@ namespace Gamera {
       typedef typename V::value_type value_type;
       typedef int difference_type;
       typedef std::random_access_iterator_tag iterator_tag;
-    
+      
       typedef Iterator self;
       typedef ListIterator iterator;
     
-      RleVectorIteratorBase() { }
-      RleVectorIteratorBase(V* vec, size_t pos) {
+      RleVectorIteratorBase() : m_dirty(0) { }
+      RleVectorIteratorBase(V* vec, size_t pos) : m_dirty(0) {
 	m_vec = vec;
 	m_pos = pos;
 	// find the current iterator (if there is one)
@@ -275,11 +307,11 @@ namespace Gamera {
       self& operator++() {
 	m_pos++;
 	if (!check_chunk()) {
-	  if (m_i != m_vec->m_data[m_chunk].end()) {
-	    if (get_rel_pos(m_pos) > m_i->end) {
-	      ++m_i;
-	    }
-	  }
+ 	  if (m_i != m_vec->m_data[m_chunk].end()) {
+ 	    if (get_rel_pos(m_pos) > m_i->end) {
+ 	      ++m_i;
+ 	    }
+ 	  }
 	}
 	return (self&)*this;
       }
@@ -295,14 +327,12 @@ namespace Gamera {
       self& operator--() {
 	m_pos--;
 	if (!check_chunk()) {
-	  if (m_i != m_vec->m_data[m_chunk].end()) {
-	    if (get_rel_pos(m_pos) < m_i->start) {
-	      if (m_i != m_vec->m_data[m_chunk].begin())
-		--m_i;
-	      else
-		m_i = m_vec->m_data[m_chunk].end();
+	  if (m_i != m_vec->m_data[m_chunk].begin()) {
+	    iterator prev_i = prev(m_i);
+	    if (get_rel_pos(m_pos) <= prev_i->end) {
+	      m_i = prev_i;
 	    }
-	  }
+	  } 
 	}
 	return (self&)*this;
       }
@@ -329,6 +359,7 @@ namespace Gamera {
 	tmp.m_pos = m_pos;
 	tmp.m_chunk = m_chunk;
 	tmp.m_i = m_i;
+	tmp.m_dirty = m_dirty;
 	tmp += n;
 	return tmp;
       }
@@ -345,7 +376,7 @@ namespace Gamera {
 	tmp.m_vec = m_vec;
 	tmp.m_pos = m_pos;
 	tmp.m_chunk = m_chunk;
-	tmp.m_i = m_i;
+	tmp.m_dirty = m_dirty;
 	tmp -= n;
 	return tmp;
       }
@@ -371,23 +402,40 @@ namespace Gamera {
 	return m_pos - other.m_pos;
       }
       value_type get() const {
-	if (m_i != m_vec->m_data[m_chunk].end())
-	  return m_i->value;
-	else
-	  return 0;
+	// Unfortunately, for const-correctness reasons, I can't change
+	// m_i or m_dirty here, so multiple calls to the get without moving
+	// the iterator when the data is dirty will result in a search through
+	// the run list chunk each time.
+	iterator i;
+	if (m_dirty != m_vec->m_dirty)
+	  i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
+			       m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	else 
+	  i = m_i;
+	if (i != m_vec->m_data[m_chunk].end())
+	  return i->value;
+	return 0;
       }
-      void set(const value_type& v) const {
-	if (m_i != m_vec->m_data[m_chunk].end())
-	  m_vec->insert_in_run(m_pos, v, m_i);
-	else
-	  m_vec->set(m_pos, v);
+      void set(const value_type& v) {
+	if (m_dirty != m_vec->m_dirty) {
+	  m_i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
+				 m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	  m_dirty = m_vec->m_dirty;
+	}
+	m_vec->set(m_pos, v, m_i);
       }
     protected:
       bool check_chunk() {
-	if (m_chunk != get_chunk(m_pos)) {
-	  m_chunk = get_chunk(m_pos);
-	  m_i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
-				 m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	if (m_dirty != m_vec->m_dirty || m_chunk != get_chunk(m_pos)) {
+	  if (m_pos >= m_vec->m_size) {
+	    m_chunk = m_vec->m_data.size() - 1;
+	    m_i = m_vec->m_data[m_chunk].end();
+	  } else {
+	    m_chunk = get_chunk(m_pos);
+	    m_i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
+				   m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	  }
+	  m_dirty = m_vec->m_dirty;
 	  return true;
 	} else {
 	  return false;
@@ -397,35 +445,44 @@ namespace Gamera {
       size_t m_pos;
       size_t m_chunk;
       iterator m_i;
+      size_t m_dirty;
     };
 
     template<class V>
     class RleVectorIterator : public RleVectorIteratorBase<V, RleVectorIterator<V>,
 							   typename V::list_type::iterator> {
 	public:
-      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_i;
-      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_vec;
-      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_chunk;
-      using RleVectorIteratorBase<V, RleVectorIterator<V>, typename V::list_type::iterator>::m_pos;
+      typedef RleVectorIterator self;
+      typedef RleVectorIteratorBase<V, self, typename V::list_type::iterator> base;
+
+      using base::m_i;
+      using base::m_vec;
+      using base::m_chunk;
+      using base::m_pos;
+      using base::m_dirty;
 
       typedef RLEProxy<V> proxy_type;
       typedef proxy_type reference;
       typedef proxy_type pointer;
     
-      typedef RleVectorIterator self;
-      typedef RleVectorIteratorBase<V, self, typename V::list_type::iterator> base;
-    
-      RleVectorIterator() { }
+      RleVectorIterator() : base() { }
       RleVectorIterator(V* vec, size_t pos) : base(vec, pos) { }
 
       proxy_type operator*() const {
-	if (m_i != m_vec->m_data[m_chunk].end()) {
-	  return proxy_type(m_vec, m_pos, &m_i);
-	} else {
-	  return proxy_type(m_vec, m_pos);
-	}
+	// Unfortunately, for const-correctness reasons, I can't change
+	// m_i or m_dirty here, so multiple calls to the get without moving
+	// the iterator when the data is dirty will result in a search through
+	// the run list chunk each time.
+	typename base::iterator i;
+	if (m_dirty != m_vec->m_dirty)
+	  i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
+			       m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	else 
+	  i = m_i;
+	if (i != m_vec->m_data[m_chunk].end())
+	  return proxy_type(m_vec, m_pos, &i);
+	return proxy_type(m_vec, m_pos);
       }
-
     };
 
     template<class V>
@@ -433,25 +490,36 @@ namespace Gamera {
       : public RleVectorIteratorBase<V, ConstRleVectorIterator<V>,
 				     typename V::list_type::const_iterator> {
 	public:
-      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_i;
-      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_vec;
-      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_chunk;
-      using RleVectorIteratorBase<V, ConstRleVectorIterator<V>, typename V::list_type::const_iterator>::m_pos;
+      typedef ConstRleVectorIterator self;
+      typedef RleVectorIteratorBase<V, self, typename V::list_type::const_iterator> base;
+
+      using base::m_i;
+      using base::m_vec;
+      using base::m_chunk;
+      using base::m_pos;
+      using base::m_dirty;
 
       typedef void reference;
       typedef typename V::value_type* pointer;
-
-      typedef ConstRleVectorIterator self;
-      typedef RleVectorIteratorBase<V, self, typename V::list_type::const_iterator> base;
 
       ConstRleVectorIterator() { }
       ConstRleVectorIterator(V* vec, size_t pos) : base(vec, pos) { }
 
       typename V::value_type operator*() const {
-	if (m_i != m_vec->m_data[m_chunk].end())
-	  return m_i->value;
-	else
-	  return 0;
+	// Unfortunately, for const-correctness reasons, I can't change
+	// m_i or m_dirty here, so multiple calls to the get without moving
+	// the iterator when the data is dirty will result in a search through
+	// the run list chunk each time.
+	typename base::iterator i;
+	if (m_dirty != m_vec->m_dirty)
+	  i = find_run_in_list(m_vec->m_data[m_chunk].begin(),
+			       m_vec->m_data[m_chunk].end(), get_rel_pos(m_pos));
+	else 
+	  i = m_i;
+	if (i != m_vec->m_data[m_chunk].end()) {
+	  return i->value;
+	}
+	return 0;
       }
 
     };
@@ -480,10 +548,10 @@ namespace Gamera {
       typedef RleVectorIterator<self> iterator;
       typedef ConstRleVectorIterator<const self> const_iterator;
 
-      RleVector(size_t size = 0) : m_size(size), m_data(size / RLE_CHUNK + 1) { }
+      RleVector(size_t size = 0) : m_size(size), m_data((size >> RLE_CHUNK_BITS) + 1), m_dirty(0) { }
       void resize(size_t size) {
 	m_size = size;
-	m_data.resize(m_size / RLE_CHUNK + 1);
+	m_data.resize((m_size >> RLE_CHUNK_BITS) + 1);
       }
       size_t size() const { return m_size; }
 
@@ -492,73 +560,83 @@ namespace Gamera {
       */
       value_type get(size_t pos) const {
 	assert(pos < m_size);
-	size_t chunk = pos / RLE_CHUNK;
-	runsize_t rel_pos = runsize_t(pos - (RLE_CHUNK * chunk));
-	if (m_data[chunk].empty())
-	  return 0;
+	size_t chunk = get_chunk(pos);
+	runsize_t rel_pos = get_rel_pos(pos);
+	// seems redundant and probably just slows things down, so removed
+// 	if (m_data[chunk].empty())
+// 	  return 0;
 
 	typename list_type::const_iterator i;
 	for (i = m_data[chunk].begin(); i != m_data[chunk].end(); ++i) {
-	  if (i->contains(rel_pos)) {
+	  if (i->end >= rel_pos)
 	    return i->value;
-	  }
-	  if (i->end > rel_pos)
-	    return 0;
 	}
 	return 0;
       }
+
       reference operator[](size_t pos) {
 	size_t chunk = get_chunk(pos);
 	typename list_type::iterator i = find_run_in_list(m_data[chunk].begin(),
 							  m_data[chunk].end(),
 							  get_rel_pos(pos));
-	if (i != m_data[chunk].end())
+	if (i != m_data[chunk].end()) {
 	  return proxy_type(this, pos, i);
-	else
-	  return proxy_type(this, pos);
+	}
+	return proxy_type(this, pos);
       }
+
       /*
 	Set the value at the specified position. This will
 	create, split, or merge runs as necessary.
       */
       void set(size_t pos, value_type v) {
-	assert(pos < m_size);
-	if (v == 0)
-	  return;
+	size_t chunk = get_chunk(pos);
+	if (m_data[chunk].empty())
+	  set(pos, v, m_data[chunk].end());
+	else {
+	  typename list_type::iterator i = find_run_in_list
+	    (m_data[chunk].begin(),
+	     m_data[chunk].end(), get_rel_pos(pos));
+	  set(pos, v, i);
+	}
+      }
 
-	size_t chunk = pos / RLE_CHUNK;
-	runsize_t rel_pos = runsize_t(pos - (RLE_CHUNK * chunk));
+      void set(size_t pos, value_type v, typename list_type::iterator i) {
+	assert(pos < m_size);
+	size_t chunk = get_chunk(pos);
+	runsize_t rel_pos = get_rel_pos(pos);
 	/*
 	  If the list is empty our job is easy - just insert
 	  a run.
 	*/
 	if (m_data[chunk].empty()) {
+	  //// Empty run list, create new run(s) 
 	  if (v != 0) {
-	    m_data[chunk].push_back(run_type(rel_pos, rel_pos, v));
+	    if (rel_pos > 0)
+	      m_data[chunk].push_back(run_type(rel_pos - 1, 0));
+	    m_data[chunk].push_back(run_type(rel_pos, v));
+	    m_dirty++;
 	  }
 	} else {
-	  typename list_type::iterator i;
-	  /*
-	    If the list is not empty we need to loop through
-	    and find out if the position is in the middle or
-	    touching another run.
-	  */
-	  typename list_type::iterator end = m_data[chunk].end();
-	  for (i = m_data[chunk].begin(); i != end; ++i) {
-	    if (i->contains(rel_pos)) {
-	      insert_in_run(pos, v, i);
-	      return;
-	    } 
-	    if (i->start > pos) {
-	      m_data[chunk].insert(i, run_type(rel_pos, rel_pos, v));
-	      merge_runs(prev(i), chunk);
-	      return;
+	  if (i != m_data[chunk].end())
+	    insert_in_run(pos, v, i);
+	  else if (v != 0) {
+	    //// At end of run list -- append new runs
+	    typename list_type::iterator last = prev(m_data[chunk].end());
+	    if (rel_pos - last->end > 1) {
+	      m_data[chunk].push_back(run_type(rel_pos - 1, 0));
+	    } else {
+	      if (last->value == v) {
+		last->end++;
+		return;
+	      } 
 	    }
+	    m_data[chunk].push_back(run_type(rel_pos, v));
+	    m_dirty++;
 	  }
-	  m_data[chunk].push_back(run_type(rel_pos, rel_pos, v));
-	  merge_runs(prev(m_data[chunk].end()), chunk);
 	}
       }
+
       /*
 	Iterator access
       */
@@ -583,37 +661,77 @@ namespace Gamera {
 	typename list_type::iterator i;
 	size_t total = 0;
 	for (size_t j = 0; j < m_data.size(); j++) {
+	  std::cout << "address: " << &(m_data[j]);
 	  for (i = m_data[j].begin(); i != m_data[j].end(); ++i) {
-	    std::cout << "start: " << i->start << " end: " << i->end
+	    std::cout << " end: " << int(i->end)
 		      << " value: " << i->value << std::endl << std::endl;
 	    total++;
 	  }
-	  std::cout << "object contained " << total << " runs." << std::endl;
 	}
+	std::cout << "object contained " << total << " runs." << std::endl;
       }
       /*
 	This method is used to insert another run into the middle of
 	an existing run. It handles resizing or splitting the run as
 	necessary and will merge the inserted run as necessary.
       */
-      void insert_in_run(size_t pos, value_type v, typename list_type::iterator i) {
+      inline void insert_in_run(size_t pos, value_type v, typename list_type::iterator i) {
 	if (i->value != v) {
-	  size_t chunk = pos / RLE_CHUNK;
-	  runsize_t rel_pos = runsize_t(pos - (RLE_CHUNK * chunk));
-	  if (i->length() == 1) {
-	    i->value = v;
-	    merge_runs(i, chunk);
+	  size_t chunk = get_chunk(pos);
+	  runsize_t rel_pos = get_rel_pos(pos);
+	  if (i != m_data[chunk].begin()) {
+	    typename list_type::iterator prev_i = prev(i);
+	    if (i->end - prev_i->end == 1) {
+	      //// run of length 1
+	      i->value = v;
+	      merge_runs(i, chunk);
+	      return;
+	    }
+	    if (prev_i->end + 1 == rel_pos) {
+	      //// at beginning of run
+	      // we do this value check here to avoid a creation/deletion for 
+	      // the merge
+	      if (prev_i->value == v)
+		prev_i->end++; 
+	      else 
+		m_data[chunk].insert(i, run_type(rel_pos, v));
+	      ++m_dirty;
+	      return;
+	    }
 	  } else {
-	    if (i->start == pos) {
-	      i->start++;
-	      m_data[chunk].insert(i, run_type(rel_pos, rel_pos, v));
-	      merge_runs_before(prev(i), chunk);
-	    } else if (i->end == pos) {
-	      i->end--;
-	      m_data[chunk].insert(next(i), run_type(rel_pos, rel_pos, v));
-	      merge_runs_after(next(i), chunk);
+	    if (i->end == 0) {
+	      //// first run of length 1
+	      i->value = v;
+	      merge_runs_after(i, chunk);
+	      return;
+	    } else if (rel_pos == 0) {
+	      //// at beginning of first run
+	      m_data[chunk].insert(i, run_type(0, v));
+	      ++m_dirty;
+	      return;
 	    }
 	  }
+	    
+	  ++m_dirty;
+	  if (i->end == rel_pos) {
+	    //// at end of run
+	    i->end--;
+	    // we do this value check here to avoid a creation/deletion for 
+	    // the merge
+	    typename list_type::iterator next_i = next(i);
+	    if (next_i != m_data[chunk].end())
+	      if (next_i->value == v)
+		return;
+	    m_data[chunk].insert(next_i, run_type(rel_pos, v));
+	    return;
+	  } 
+	  
+	  //// in middle of run
+	  runsize_t old_end = i->end;
+	  i->end = rel_pos - 1;
+	  typename list_type::iterator next_i = next(i);
+	  m_data[chunk].insert(next_i, run_type(rel_pos, v));
+	  m_data[chunk].insert(next_i, run_type(old_end, i->value));
 	}
       }
       /*
@@ -625,57 +743,54 @@ namespace Gamera {
 	if (i != m_data[chunk].begin()) {
 	  typename list_type::iterator p = prev(i);
 	  if (p->value == i->value) {
-	    if (p->end == i->start || (p->end + 1) == i->start) {
-	      p->end = i->end;
-	      m_data[chunk].erase(i);
-	      i = p;
-	    }
+	    p->end = i->end;
+	    m_data[chunk].erase(i);
+	    i = p;
+	    m_dirty++;
 	  }
 	}
-	if (next(i) != m_data[chunk].end()) {
-	  typename list_type::iterator n = next(i);
+	typename list_type::iterator n = next(i);
+	if (n != m_data[chunk].end()) {
 	  if (n->value == i->value) {
-	    if (n->start == i->end || n->start == (i->end + 1)) {
-	      i->end = n->end;
-	      m_data[chunk].erase(n);
-	    }
+	    i->end = n->end;
+	    m_data[chunk].erase(n);
+	    m_dirty++;
 	  }
 	}
       }
-      /*
-	These two methods do the same thing as merge_runs above, but
-	in two separate steps. This allows other layers that know that
-	there is no possibility of needing to merge in one particular
-	direction to avoid the extra checking.
-      */
-      void merge_runs_before(typename list_type::iterator i, size_t chunk){
+//       /*
+// 	These two methods do the same thing as merge_runs above, but
+// 	in two separate steps. This allows other layers that know that
+// 	there is no possibility of needing to merge in one particular
+// 	direction to avoid the extra checking.
+//       */
+      void merge_runs_before(typename list_type::iterator i, size_t chunk) {
 	if (i != m_data[chunk].begin()) {
 	  typename list_type::iterator p = prev(i);
 	  if (p->value == i->value) {
-	    if (p->end == i->start || (p->end + 1) == i->start) {
-	      p->end = i->end;
-	      m_data[chunk].erase(i);
-	    }
+	    p->end = i->end;
+	    m_data[chunk].erase(i);
+	    m_dirty++;
 	  }
 	}
       }
       /*
-	see above.
+ 	see above.
       */
-      void merge_runs_after(typename list_type::iterator i, size_t chunk){
-	if (next(i) != m_data[chunk].end()) {
-	  typename list_type::iterator n = next(i);
+      void merge_runs_after(typename list_type::iterator i, size_t chunk) {
+	typename list_type::iterator n = next(i);
+	if (n != m_data[chunk].end()) {
 	  if (n->value == i->value) {
-	    if (n->start == i->end || n->start == (i->end + 1)) {
-	      i->end = n->end;
-	      m_data[chunk].erase(n);
-	    }
+	    i->end = n->end;
+	    m_data[chunk].erase(n);
+	    m_dirty++;
 	  }
 	}
       }
     public:
       size_t m_size;
       std::vector<list_type> m_data;
+      size_t m_dirty;
     };
   } // namespace RleDataDetail
   /*
@@ -694,9 +809,9 @@ namespace Gamera {
     typedef typename RleDataDetail::RleVector<T>::const_iterator const_iterator;
 
     RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-		  size_t page_offset_x = 0) : RleDataDetail::RleVector<T>(nrows * ncols),
-					      ImageDataBase(nrows, ncols, page_offset_y,
-							    page_offset_x) {
+		 size_t page_offset_x = 0) : RleDataDetail::RleVector<T>(nrows * ncols),
+					     ImageDataBase(nrows, ncols, page_offset_y,
+							   page_offset_x) {
     }
     RleImageData(const Size& size, size_t page_offset_y = 0,
 		  size_t page_offset_x = 0)

@@ -47,7 +47,7 @@ _members_for_menu = ('pixel_type_name',
                      'classification_state', 'properties')
 def members_for_menu(self):
    return ["%s: %s" % (x, getattr(self, x))
-           for x in self._members_for_menu
+           for x in _members_for_menu
            if hasattr(self, x)]
 
 def methods_for_menu(self):

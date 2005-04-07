@@ -86,7 +86,7 @@ supported.
       try:
          image = _png_support.load_PNG(filename, compression)
       except RuntimeError, AttributeError:
-         raise RuntimeError("%s is not a TIFF or PNG file." % filename)
+         raise IOError("%s is not a TIFF or PNG file." % filename)
    image.name = filename
    return image
 
@@ -117,8 +117,14 @@ object gives information such as the type (color, greyscale, onebit),
 the bit-depth, resolution, size, etc.
 
 .. __: gamera.core.ImageInfo.html"""
-   import tiff_support
-   return tiff_support.tiff_info(filename)
+   import tiff_support, png_support
+   try:
+      return tiff_support.tiff_info(filename)
+   except RuntimeError:
+      try:
+         return png_support.PNG_info(filename)
+      except RuntimeError:
+         raise IOError("File is not a PNG or TIFF file")
 
 def display_multi(list):
    """**display_multi** (ImageList *list*)
@@ -165,16 +171,6 @@ class ImageBase:
    def __del__(self):
       if self._display:
          self._display.close()
-
-   def __getstate__(self):
-      """Extremely basic pickling support for use in testing.
-      Note that there is no unpickling support."""
-      dict = {}
-      for key in self._members_for_menu:
-         dict[key] = getattr(self, key)
-      dict['encoded_data'] = util.encode_binary(
-         self.to_string())
-      return dict
 
    def add_plugin_method(cls, plug, func, category=None):
       """Add a plugin method to all Image instances.
@@ -230,19 +226,6 @@ values in ``Image.data.storage_format`` is more efficient.
 See `storage formats`_ for more information."""
       return self._storage_format_names[self.data.storage_format]
    storage_format_name = property(storage_format_name, doc=storage_format_name.__doc__)
-   
-   _members_for_menu = ('pixel_type_name',
-                        'storage_format_name',
-                        'ul_x', 'ul_y', 'nrows', 'ncols',
-                        'resolution', 'memory_size', 'label', 
-                        'classification_state', 'properties')
-   def members_for_menu(self):
-      return ["%s: %s" % (x, getattr(self, x))
-              for x in self._members_for_menu
-              if hasattr(self, x)]
-
-   def methods_for_menu(self):
-      return self.methods[self.data.pixel_type]
 
    def methods_flat_category(cls, category, pixel_type=None):
       methods = cls.methods[pixel_type]

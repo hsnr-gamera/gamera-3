@@ -309,7 +309,7 @@ void graph_make_directed(GraphObject* so) {
 	   k != (*i)->m_edges.end();) {
 	j = k++;
 	if ((*j)->m_from_node != *i)
-	  (*i)->m_edges.remove(*j);
+	  (*i)->m_edges.erase(j);
       }
     }
 
@@ -413,14 +413,16 @@ void graph_make_acyclic(GraphObject* so) {
   if (HAS_FLAG(so->m_flags, FLAG_CYCLIC)) {
     graph_make_not_self_connected(so);
     graph_make_singly_connected(so);
+    NodeStack node_stack;
     if (so->m_edges->size()) {
       for (NodeVector::iterator i = so->m_nodes->begin();
-	   i != so->m_nodes->end(); ++i)
+	   i != so->m_nodes->end(); ++i) 
 	NP_VISITED(*i) = false;
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i) {
 	if (!NP_VISITED(*i)) {
-	  NodeStack node_stack;
+	  if (node_stack.size())
+	    throw std::runtime_error("Error in graph_make_acyclic.  This error should never be raised.  Please report it to the author.");
 	  node_stack.push(*i);
 	  while (!node_stack.empty()) {
 	    Node* node = node_stack.top();
@@ -536,37 +538,34 @@ void graph_make_multi_connected(GraphObject* so) {
 void graph_make_singly_connected(GraphObject* so, bool maximum_cost) {
   if (HAS_FLAG(so->m_flags, FLAG_MULTI_CONNECTED)) {
     if (so->m_edges->size()) {
+      NodeToEdgeMap node_map;
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i) {
-	NodeToEdgeMap node_map;
+	node_map.clear();
+	for (EdgeList::iterator j = (*i)->m_edges.begin();
+	     j != (*i)->m_edges.end(); j++) {
+	  NodeToEdgeMap::iterator l = node_map.find((*j)->m_to_node);
+	  if (l == node_map.end())
+	    node_map[(*j)->m_to_node] = *j;
+	  else {
+	    if (maximum_cost) {
+	      if ((*l).second->m_cost < (*j)->m_cost)
+		node_map[(*j)->m_to_node] = *j;
+	    } else {
+	      if ((*l).second->m_cost > (*j)->m_cost)
+		node_map[(*j)->m_to_node] = *j;
+	    }
+	  }
+	}
+
 	for (EdgeList::iterator j, j0 = (*i)->m_edges.begin();
 	     j0 != (*i)->m_edges.end(); ) {
 	  j = j0++;
 	  NodeToEdgeMap::iterator l = node_map.find((*j)->m_to_node);
-	  if (l == node_map.end())
-	    node_map[(*j)->m_to_node] = *j;
-	  for (EdgeList::iterator k, k0 = j;
-	       k0 != (*i)->m_edges.end();) {
-	    k = k0++;
-	    if (*j == *k)
-	      continue;
-	    if ((*j)->m_to_node == (*k)->m_to_node) {
-	      if (maximum_cost) {
-		if (node_map[(*j)->m_to_node]->m_cost > (*k)->m_cost)
-		  graph_remove_edge(so, *k);
-		else {
-		  graph_remove_edge(so, node_map[(*j)->m_to_node]);
-		  node_map[(*j)->m_to_node] = *k;
-		}
-	      } else {
-		if (node_map[(*j)->m_to_node]->m_cost < (*k)->m_cost)
-		  graph_remove_edge(so, *k);
-		else {
-		  graph_remove_edge(so, node_map[(*j)->m_to_node]);
-		  node_map[(*j)->m_to_node] = *k;
-		}
-	      }
-	    }
+	  if (l == node_map.end()) {
+	    throw std::runtime_error("Error in graph_make_singly_connected.  This error should never be raised, please report it to the author.");
+	  } else if ((*l).second != *j) {
+	    graph_remove_edge(so, *j);
 	  }
 	}
       }
@@ -610,13 +609,14 @@ void graph_make_not_self_connected(GraphObject* so) {
     if (so->m_edges->size()) {
       EdgeList removals;
       for (NodeVector::iterator i = so->m_nodes->begin();
-	   i != so->m_nodes->end(); ++i)
+	   i != so->m_nodes->end(); ++i) {
 	for (EdgeList::iterator j, j0 = (*i)->m_edges.begin();
 	     j0 != (*i)->m_edges.end();) {
 	  j = j0++;
 	  if ((*j)->traverse(*i) == (*i))
 	    graph_remove_edge(so, *j);
 	}
+      }
     }
     UNSET_FLAG(so->m_flags, FLAG_SELF_CONNECTED);
   }
@@ -804,9 +804,20 @@ PyObject* graph_get_nsubgraphs(PyObject* self, PyObject* _) {
 }
 
 PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
-  //  GraphObject* so = (GraphObject*)self;
-  //  bool result = false;
-  return PyInt_FromLong((long)1);
+  GraphObject* so = ((GraphObject*)self);
+  size_t count = 0; 
+  if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i)
+      if ((*i)->m_is_subgraph_root)
+	++count;
+  } else {
+    for (NodeVector::iterator i = so->m_nodes->begin();
+	 i != so->m_nodes->end(); ++i)
+      if ((*i)->m_disj_set <= 0)
+	++count;
+  }    
+  return PyInt_FromLong((long)count <= 1);
 }
 
 PyMethodDef graph_methods[] = {
@@ -884,7 +895,7 @@ PyMethodDef graph_methods[] = {
   { "remove_all_edges", graph_remove_all_edges, METH_NOARGS,
     "**remove_all_edges** ()\n\n" \
     "Remove all the edges in the graph, leaving all nodes as islands.\n\n" \
-    "**Complexity**: ``remove_all_edges`` takes *O*(*n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph." 
+    "**Complexity**: ``remove_all_edges`` takes *O* ( *n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph." 
   },
   { "is_directed", graph_is_directed, METH_NOARGS,
     "**is_directed** ()\n\n" \
@@ -973,7 +984,7 @@ PyMethodDef graph_methods[] = {
   { "get_node", graph_get_node, METH_O,
     "**get_node** (*value*)\n\n" \
     "Returns the ``Node`` object identified by the given *value*.\n\n"
-    "Raises a ``RuntimeError`` exception if there is no node associated with the given *value*.\n\n"
+    "Raises a ``ValueError`` exception if there is no node associated with the given *value*.\n\n"
   },
   { "get_nodes", graph_get_nodes, METH_NOARGS,
     "**get_nodes** ()\n\n" \
@@ -1067,7 +1078,7 @@ void init_GraphType(PyObject* d) {
     "flags.\n\n" \
     "  - ``FREE``: Equivalent to all flags being set.  There are no restrictions on the graph morphology.\n\n" \
     "  - ``TREE``: Tree structure (no flags set).\n\n" \
-    "  - ``DAG``: Directed, acyclic graph.\n\n" \
+    "  - ``FLAG_DAG``: Directed, acyclic graph.\n\n" \
     "  - ``UNDIRECTED``: Undirected, cyclic graph.\n\n";
 
   PyType_Ready(&GraphType);

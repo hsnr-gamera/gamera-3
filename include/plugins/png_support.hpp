@@ -111,7 +111,7 @@ ImageInfo* PNG_info(char* filename) {
   else if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     info->m_ncolors = 1;
 
-  PNG_close(fp, png_ptr, info_ptr, end_info);
+  // PNG_close(fp, png_ptr, info_ptr, end_info);
   return info;
 }
 
@@ -156,6 +156,10 @@ Image* load_PNG(const char* filename, int storage) {
 
   if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_PALETTE ||
       color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+    if (storage == RLE) {
+      PNG_close(fp, png_ptr, info_ptr, end_info);
+      throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+    }
     if (color_type == PNG_COLOR_TYPE_PALETTE)
       png_set_palette_to_rgb(png_ptr);
     typedef TypeIdImageFactory<RGB, DENSE> fact;
@@ -183,6 +187,10 @@ Image* load_PNG(const char* filename, int storage) {
 	return image;
       }	
     } else if (bit_depth <= 8) {
+      if (storage == RLE) {
+	PNG_close(fp, png_ptr, info_ptr, end_info);
+	throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+      }
       if (bit_depth < 8)
 	png_set_gray_1_2_4_to_8(png_ptr);
       typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
@@ -192,6 +200,10 @@ Image* load_PNG(const char* filename, int storage) {
       PNG_close(fp, png_ptr, info_ptr, end_info);
       return image;
     } else if (bit_depth == 16) {
+      if (storage == RLE) {
+	PNG_close(fp, png_ptr, info_ptr, end_info);
+	throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+      }
       typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
       fact_type::image_type*
 	image = fact_type::create(0, 0, height, width);
@@ -201,7 +213,7 @@ Image* load_PNG(const char* filename, int storage) {
     }
   }
   PNG_close(fp, png_ptr, info_ptr, end_info);
-  throw std::runtime_error("PNG file in an unsupported type");
+  throw std::runtime_error("PNG file is an unsupported type");
 }
 
 template<class P>

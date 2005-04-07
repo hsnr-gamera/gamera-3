@@ -343,59 +343,66 @@ class PluginDocumentationGenerator:
          s.write("\n\n%s\n" % func.__doc__)
       self.method_example(func, level, images, s)
 
+   def run_example(self, func, images):
+      results = []
+      for doc_example in func.doc_examples:
+         src_image = None
+         pixel_type = None
+         arguments = None
+         display_arguments = None
+         if inspect.isroutine(doc_example):
+            result = doc_example(images)
+         else:
+            if len(doc_example):
+               if isinstance(func.self_type, args.ImageType):
+                  pixel_type = doc_example[0]
+                  src_image = images[pixel_type].image_copy()
+                  arguments = [src_image] + list(doc_example[1:])
+                  display_arguments = doc_example[1:]
+               else:
+                  display_arguments = arguments = doc_example
+            else:
+               display_arguments = arguments = []
+            result = func.__call__(*tuple(arguments))
+         results.append((result, src_image, pixel_type, display_arguments))
+      return results
+
    def method_example(self, func, level, images, s):
-      if len(func.doc_examples):
+      results = self.run_example(func, images)
+      if len(results):
          s.write("\n----------\n\n")
-      for i, doc_example in enumerate(func.doc_examples):
-          if inspect.isroutine(doc_example):
-              result = doc_example(images)
-              src_image = None
-              pixel_type = None
-              s.write("**Example %d:** %s\n\n" % (i + 1, func.__name__))
-          else:
-              if len(doc_example):
-                  if isinstance(func.self_type, args.ImageType):
-                      pixel_type = doc_example[0]
-                      pixel_type_name = util.get_pixel_type_name(pixel_type)
-                      if pixel_type in (FLOAT, COMPLEX):
-                         pixel_type_name = "GreyScale"
-                      src_image = images[pixel_type].image_copy()
-                      arguments = [src_image] + list(doc_example[1:])
-                      doc_example = doc_example[1:]
-                  else:
-                      pixel_type = None
-                      arguments = doc_example
-              else:
-                  pixel_type = None
-                  arguments = []
-              result = func.__call__(*tuple(arguments))
-              s.write("**Example %d:** %s(%s)\n\n" %
-                      (i + 1, func.__name__,
-                       ", ".join([str(x) for x in doc_example])))
-          if not pixel_type is None:
-             self.write_image(s, "%s_generic" % pixel_type_name)
-          result_filename = "%s_plugin_%02d" % (func.__name__, i)
-          if isinstance(result, core.ImageBase):
-             self.save_image(result, result_filename)
-             self.write_image(s, result_filename)
-          elif (result is None and
-                isinstance(func.self_type, args.ImageType) and
-                src_image is not None):
-             self.save_image(src_image, result_filename)
-             self.write_image(s, result_filename)
-          elif util.is_image_list(result):
-             result_filenames = []
-             for j, part in enumerate(result):
-                result_filename = ("%s_plugin_%02d_%02d" %
-                                   (func.__name__, i, j))
-                self.save_image(part, result_filename)
-                s.write("|%s| " % result_filename)
-                result_filenames.append(result_filename)
-             s.write("\n\n")
-             for result_filename in result_filenames:
-                self.write_image(s, result_filename, "|%s|" % result_filename)
-          else:
-              s.write("*result* = " + repr(result) + "\n\n")
+      for i, (result, src_image, pixel_type, arguments) in enumerate(results):
+         s.write("**Example %d:** %s" % (i + 1, func.__name__))
+         if not arguments is None:
+            s.write("(%s)" % ", ".join([str(x) for x in arguments]))
+         s.write("\n\n")
+         if not pixel_type is None:
+            pixel_type_name = util.get_pixel_type_name(pixel_type)
+            if pixel_type in (FLOAT, COMPLEX):
+               pixel_type_name = "GreyScale"
+            self.write_image(s, "%s_generic" % pixel_type_name)
+         result_filename = "%s_plugin_%02d" % (func.__name__, i)
+         if isinstance(result, core.ImageBase):
+            self.save_image(result, result_filename)
+            self.write_image(s, result_filename)
+         elif (result is None and
+               isinstance(func.self_type, args.ImageType) and
+               src_image is not None):
+            self.save_image(src_image, result_filename)
+            self.write_image(s, result_filename)
+         elif util.is_image_list(result):
+            result_filenames = []
+            for j, part in enumerate(result):
+               result_filename = ("%s_plugin_%02d_%02d" %
+                                  (func.__name__, i, j))
+               self.save_image(part, result_filename)
+               s.write("|%s| " % result_filename)
+               result_filenames.append(result_filename)
+            s.write("\n\n")
+            for result_filename in result_filenames:
+               self.write_image(s, result_filename, "|%s|" % result_filename)
+         else:
+            s.write("*result* = " + repr(result) + "\n\n")
       s.write("\n\n")
 
    def save_image(self, image, filename):

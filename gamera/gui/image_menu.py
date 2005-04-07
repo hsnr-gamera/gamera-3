@@ -39,6 +39,20 @@ def set_shell_frame(sf):
 
 ######################################################################
 
+   
+_members_for_menu = ('pixel_type_name',
+                     'storage_format_name',
+                     'ul_x', 'ul_y', 'nrows', 'ncols',
+                     'resolution', 'memory_size', 'label', 
+                     'classification_state', 'properties')
+def members_for_menu(self):
+   return ["%s: %s" % (x, getattr(self, x))
+           for x in self._members_for_menu
+           if hasattr(self, x)]
+
+def methods_for_menu(self):
+   return self.methods[self.data.pixel_type]
+
 class ImageMenu:
    _base_method_id = 10003
 
@@ -57,8 +71,8 @@ class ImageMenu:
       self.image_name = name_
 
       self._method_id = 10000
-      members = self.images[0].members_for_menu()
-      methods = self.images[0].methods_for_menu()
+      members = members_for_menu(self.images[0])
+      methods = methods_for_menu(self.images[0])
       menu = self.create_menu(
         members, methods,
         self.images[0].data.pixel_type,

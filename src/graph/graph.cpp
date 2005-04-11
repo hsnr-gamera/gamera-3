@@ -774,6 +774,7 @@ size_t graph_size_of_subgraph(GraphObject* so, Node* root) {
   iterator->init(so, root);
   while (DFSIterator::next_node(iterator))
     ++count;
+  Py_DECREF(iterator);
   return count;
 }
 

@@ -294,6 +294,7 @@ inline Edge* graph_add_edge(GraphObject* so, Node* from_node,
 	    found_cycle = true;
 	    break;
 	  }
+	Py_DECREF(iterator);
       }
       if (!HAS_FLAG(so->m_flags, FLAG_CYCLIC) && found_cycle)
 	return NULL;
@@ -375,6 +376,7 @@ inline bool graph_remove_edge(GraphObject* so, Edge* edge) {
 	break;
       }
     }
+    Py_DECREF(iterator);
   }
 
   from_node->m_edges.remove(edge);

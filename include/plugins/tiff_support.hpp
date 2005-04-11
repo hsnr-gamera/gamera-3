@@ -43,12 +43,14 @@ void save_tiff(const T& matrix, const char* filename);
   ImageInfo object.  See image_info.hpp for more information.
 */
 ImageInfo* tiff_info(const char* filename) {
-  ImageInfo* info = new ImageInfo();
   TIFF* tif = 0;
   tif = TIFFOpen(filename, "r");
   if (tif == 0) {
     throw std::invalid_argument("Failed to open image header");
   }
+  // Create this later so it isn't leaked if filename does
+  // not exist or is not a TIFF file.
+  ImageInfo* info = new ImageInfo();
 
   /*
     The tiff library seems very sensitive to type yet provides only a

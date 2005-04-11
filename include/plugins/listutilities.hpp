@@ -69,11 +69,10 @@ PyObject* all_subsets(PyObject* a_input, int k) {
   PyObject* result = PyList_New(0);
   std::vector<int> indices(k);
   bool start = true;
-  int m, m2;
+  int m2 = 0;
+  int m = k;
   do {
     if (start) {
-      m2 = 0;
-      m = k;
       start = false;
     } else {
       if (m2 < n - m)

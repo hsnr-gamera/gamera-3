@@ -472,7 +472,7 @@ namespace Gamera {
   template<class T>
   ImageList* splitx(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
-    typename ImageFactory<T>::view_type* view;
+    typename ImageFactory<T>::view_type* view = 0;
     ImageList* ccs = NULL;
     ImageList::iterator ccs_it;
     size_t last_split, new_split;
@@ -523,7 +523,7 @@ namespace Gamera {
   template<class T>
   ImageList* splitx_max(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
-    typename ImageFactory<T>::view_type* view;
+    typename ImageFactory<T>::view_type* view = 0;
     ImageList* ccs = NULL;
     ImageList::iterator ccs_it;
     size_t last_split, new_split;
@@ -574,7 +574,7 @@ namespace Gamera {
   template<class T>
   ImageList* splity(T& image, FloatVector* center) {
     ImageList* splits = new ImageList();
-    typename ImageFactory<T>::view_type* view;
+    typename ImageFactory<T>::view_type* view = 0;
     ImageList* ccs = NULL;
     ImageList::iterator ccs_it;
     size_t last_split, new_split;

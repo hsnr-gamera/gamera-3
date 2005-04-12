@@ -39,7 +39,7 @@ try:
    from matplotlib import backend_bases
    from matplotlib.figure import Figure
    from matplotlib._pylab_helpers import Gcf
-   from wxPython.wx import *
+   import wx
    from gamera.gui import toolbar, gui_util, gamera_icons
 except ImportError:
    print >>stderr, "WARNING: matplotlib could not be imported.  Gamera will still"
@@ -85,15 +85,17 @@ else:
          
       def save(self, evt):
          filename = gui_util.save_file_dialog(self, self.canvas._get_imagesave_wildcards())
-         self.canvas.print_figure(filename)
+         if filename is not None:
+            self.canvas.print_figure(filename)
 
       def print_plot(self, evt):
          printout = backend_wx.PrintoutWx(self.canvas)
-         dialog_data = wxPrintDialogData()
-         dialog_data.EnableHelp(False)
-         dialog_data.EnablePageNumbers(False)
-         dialog_data.EnableSelection(False)
-         printer = wxPrinter(dialog_data)
+         dialog_data = wx.PrintDialogData()
+         if wx.VERSION < (2, 5):
+            dialog_data.EnableHelp(False)
+            dialog_data.EnablePageNumbers(False)
+            dialog_data.EnableSelection(False)
+         printer = wx.Printer(dialog_data)
          printer.Print(self, printout, True)
 
       def zoom(self, evt):
@@ -116,7 +118,7 @@ else:
       # imported
 
       def set_cursor(self, cursor):
-         cursor = wxStockCursor(cursord[cursor])
+         cursor = wx.StockCursor(cursord[cursor])
          self.canvas.SetCursor( cursor )
 
       def release(self, event):
@@ -133,10 +135,10 @@ else:
       def draw_rubberband(self, event, x0, y0, x1, y1):
          'adapted from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/189744'
          canvas = self.canvas
-         dc = wxClientDC(canvas)
+         dc = wx.ClientDC(canvas)
          
          # Set logical function to XOR for rubberbanding
-         dc.SetLogicalFunction(wxXOR)
+         dc.SetLogicalFunction(wx.XOR)
          
          # Set dc brush and pen
          # Here I set brush and pen to white and grey respectively
@@ -146,8 +148,8 @@ else:
          # dont do any filling of the dc. It is set just for 
          # the sake of completion.
          
-         wbrush = wxBrush(wxColour(255,255,255), wxTRANSPARENT)
-         wpen = wxPen(wxColour(200, 200, 200), 1, wxSOLID)
+         wbrush = wx.Brush(wx.Colour(255,255,255), wx.TRANSPARENT)
+         wpen = wx.Pen(wx.Colour(200, 200, 200), 1, wx.SOLID)
          dc.SetBrush(wbrush)
          dc.SetPen(wpen)
          
@@ -177,22 +179,22 @@ else:
       def set_message(self, s):
          if self.statbar is not None: self.statbar.set_function(s)
 
-   class GameraPlotDropTarget(wxPyDropTarget):
+   class GameraPlotDropTarget(wx.PyDropTarget):
       def __init__(self, figure):
-         wxPyDropTarget.__init__(self)
-         self.df = wxCustomDataFormat("Vector")
-         self.data = wxCustomDataObject(self.df)
+         wx.PyDropTarget.__init__(self)
+         self.df = wx.CustomDataFormat("Vector")
+         self.data = wx.CustomDataObject(self.df)
          self.SetDataObject(self.data)
          self.figure = figure
 
       def OnEnter(self, *args):
-         return wxDragCopy
+         return wx.DragCopy
       
       def OnDrop(self, *args):
          return True
       
       def OnDragOver(self, *args):
-         return wxDragCopy
+         return wx.DragCopy
    
       def OnData(self, x, y, d):
          if self.GetData():
@@ -200,11 +202,10 @@ else:
             self.figure.axes[0].plot(data)
          return d
 
-   class GameraPlotFrame(wxFrame):
+   class GameraPlotFrame(wx.Frame):
       def __init__(self, num, figure):
          self.num = num
-         wxFrame.__init__(self, None, -1, 'matplotlib Plot', size=(550, 350))
-         self.SetBackgroundColour(wxNamedColor("WHITE"))
+         wx.Frame.__init__(self, None, -1, 'matplotlib Plot', size=(550, 350))
          self.figure = figure
          self.canvas = FigureCanvas(self, -1, self.figure)
          self.canvas.SetDropTarget(GameraPlotDropTarget(self.figure))
@@ -212,24 +213,12 @@ else:
          self.SetStatusBar(statbar)
          self.toolbar = GameraPlotToolbar(self, self.canvas)
          self.toolbar.set_status_bar(statbar)
-         self.SetAutoLayout(True)
-         lc = wxLayoutConstraints()
-         lc.top.SameAs(self, wxTop, 0)
-         lc.left.SameAs(self, wxLeft, 0)
-         lc.right.SameAs(self, wxRight, 0)
-         lc.height.AsIs()
-         self.toolbar.SetAutoLayout(True)
-         self.toolbar.SetConstraints(lc)
-         lc = wxLayoutConstraints()
-         lc.top.Below(self.toolbar, 0)
-         lc.left.SameAs(self, wxLeft, 0)
-         lc.height.AsIs()
-         lc.width.AsIs()
-         self.canvas.SetAutoLayout(True)
-         self.canvas.SetConstraints(lc)
-         self.Layout()
-         self.Fit()
 
+         box = wx.BoxSizer(wx.VERTICAL)
+         box.Add(self.toolbar, 0, wx.EXPAND)
+         box.Add(self.canvas, 1, wx.EXPAND)
+         self.SetSizer(box)
+         self.Fit()
          self.figmgr = GameraFigureManager(self.canvas, num, self)
 
       def GetToolBar(self):

@@ -785,6 +785,7 @@ training usually takes place.
             self, current_database, context_image, symbol_table)
       else:
          self._display.Show(1)
+      return self._display
 
    def set_display(self, display):
       self._display = display

@@ -20,7 +20,6 @@
 
 from wxPython.wx import *   # wxPython
 import weakref              # Python standard library
-from types import *
 from gamera.core import *   # Gamera-specific
 from gamera import util
 from gamera.gui import var_name, gui_util
@@ -131,7 +130,7 @@ class ImageMenu:
       items = methods.items()
       items.sort()
       for key, val in items:
-         if type(val) == types.DictType:
+         if type(val) == dict:
             item = self.create_methods(val, wxMenu())
             menu.AppendMenu(self._method_id, key, item)
             self._method_id += 1
@@ -146,7 +145,7 @@ class ImageMenu:
       items = methods.items()
       items.sort()
       for key, val in items:
-         if type(val) == types.DictType:
+         if type(val) == dict:
             item = self.create_extra_methods(val, wxMenu())
             menu.AppendMenu(self._method_id, key, item)
             self._method_id += 1

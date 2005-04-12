@@ -46,7 +46,10 @@ from array import array
 from types import *
 
 # import the classification states
-from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
+try:
+   from gameracore import UNCLASSIFIED, AUTOMATIC, HEURISTIC, MANUAL
+except ImportError:
+   raise ImportError("Couldn't import the core of Gamera.  Are you trying to start the GUI from the root of the Gamera source tree?  This confuses the Python module loading mechanism.")
 # import the pixel types
 from gameracore import ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX
 from enums import ALL, NONIMAGE

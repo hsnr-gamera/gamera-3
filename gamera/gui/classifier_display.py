@@ -20,6 +20,7 @@
 
 import os.path
 from wxPython.wx import *
+from wxPython.grid import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
@@ -1131,8 +1132,8 @@ class ClassifierFrame(ImageFrameBase):
    def _SavePageCollection(self, filename, glyphs=None, with_features=True):
       if glyphs is None:
          glyphs = self.multi_iw.id.GetAllItems()
-      for glyph in glyphs:
-         self._classifier.generate_features(glyph)
+      if with_features:
+         self._classifier.generate_features_on_glyphs(glyphs)
       try:
          gamera_xml.WriteXMLFile(
             glyphs=glyphs,
@@ -1151,8 +1152,7 @@ class ClassifierFrame(ImageFrameBase):
           "Are you sure you want to save?") % len(glyphs)):
          filename = gui_util.save_file_dialog(self._frame, gamera_xml.extensions)
          if filename:
-            for glyph in glyphs:
-               self._classifier.generate_features(glyph)
+            self._classifier.generate_features_on_glyphs(glyphs)
             try:
                gamera_xml.WriteXMLFile(
                   glyphs=glyphs,
@@ -1306,7 +1306,8 @@ class ClassifierFrame(ImageFrameBase):
          added, removed = self._classifier.classify_list_automatic(list)
       except ClassifierError, e:
          gui_util.message(str(e))
-      self._AdjustAfterGuess(added, removed)
+      else:
+         self._AdjustAfterGuess(added, removed)
 
    def _OnGroupAndGuessAll(self, event):
       self._OnGroupAndGuess(self.multi_iw.id.GetAllItems())

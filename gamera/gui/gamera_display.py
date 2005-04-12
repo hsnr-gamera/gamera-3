@@ -2065,7 +2065,7 @@ class ProjectionDisplay(wxFrame):
 
 from wxPython.printfw import wxPostScriptDC_SetResolution, wxPostScriptDC_GetResolution
 if wxPostScriptDC_GetResolution() < 150:
-   wxPostScriptDC_SetResolution(720)
+   wxPostScriptDC_SetResolution(600)
 
 class GameraPrintout(wxPrintout):
    def __init__(self, image, margin = 1.0):

@@ -284,7 +284,8 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
   o->m_weakreflist = NULL;
   o->m_data = (PyObject*)py_data;
   ((RectObject*)o)->m_x = image;
-  return init_image_members(o);
+  PyObject* o2 = init_image_members(o);
+  return o2;
 }
 
 static bool _sub_image_new(PyObject* py_src, int offset_y, int offset_x, int nrows, int ncols, 
@@ -556,26 +557,32 @@ static void image_dealloc(PyObject* self) {
   delete ((RectObject*)self)->m_x;
 
   self->ob_type->tp_free(self);
-  //free(self);
 }
 
 static int image_traverse(PyObject* self, visitproc visit, void *arg) {
   ImageObject* o = (ImageObject*)self;
-  if (o->m_id_name)
-    if (visit(o->m_id_name, arg) < 0)
-      return -1;
-  if (o->m_children_images)
-    if (visit(o->m_children_images, arg) < 0)
-      return -1;
+  if (o->m_id_name) {
+    int err = visit(o->m_id_name, arg);
+    if (err)
+      return err;
+  }
+  if (o->m_children_images) {
+    int err = visit(o->m_children_images, arg);
+    if (err)
+      return err;
+  }
   return 0;
 }
 
 static int image_clear(PyObject* self) {
   ImageObject* o = (ImageObject*)self;
-  Py_XDECREF(o->m_id_name);
+  PyObject* tmp = o->m_id_name;
   o->m_id_name = NULL;
-  Py_XDECREF(o->m_children_images);
+  Py_XDECREF(tmp);
+
+  tmp = o->m_children_images;
   o->m_children_images = NULL;
+  Py_XDECREF(tmp);
 
   return 0;
 }
@@ -966,7 +973,7 @@ static PyObject* cc_richcompare(PyObject* a, PyObject* b, int op) {
 void init_ImageType(PyObject* module_dict) {
   ImageType.ob_type = &PyType_Type;
   ImageType.tp_name = "gameracore.Image";
-  ImageType.tp_basicsize = sizeof(ImageObject);
+  ImageType.tp_basicsize = sizeof(ImageObject) + PyGC_HEAD_SIZE;
   ImageType.tp_dealloc = image_dealloc;
   ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -987,7 +994,7 @@ void init_ImageType(PyObject* module_dict) {
 
   SubImageType.ob_type = &PyType_Type;
   SubImageType.tp_name = "gameracore.SubImage";
-  SubImageType.tp_basicsize = sizeof(SubImageObject);
+  SubImageType.tp_basicsize = sizeof(SubImageObject) + PyGC_HEAD_SIZE;
   SubImageType.tp_dealloc = image_dealloc;
   SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -1002,7 +1009,7 @@ void init_ImageType(PyObject* module_dict) {
 
   CCType.ob_type = &PyType_Type;
   CCType.tp_name = "gameracore.Cc";
-  CCType.tp_basicsize = sizeof(CCObject);
+  CCType.tp_basicsize = sizeof(CCObject) + PyGC_HEAD_SIZE;
   CCType.tp_dealloc = image_dealloc;
   CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | 
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -1010,7 +1017,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_new = cc_new;
   CCType.tp_getset = cc_getset;
   CCType.tp_getattro = PyObject_GenericGetAttr;
-  CCType.tp_alloc = PyType_GenericAlloc;
+  CCType.tp_alloc = NULL;
   CCType.tp_richcompare = cc_richcompare;
   CCType.tp_free = NULL; //_PyObject_Del;
   CCType.tp_doc = "Creates a connected component representing part of a OneBit image. It is rare to create one of these objects directly: most often you will just use cc_analysis to create connected components.\n\nThere are a number of ways to create a Cc:\n\n  - **Cc** (Image *image*, Int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Point *lower_right*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Size *size*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **Cc** (Image *image*, Int *label*, Rect *rectangle*)\n\n*label*\n  The pixel value used to represent this Cc.";

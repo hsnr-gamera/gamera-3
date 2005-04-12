@@ -699,9 +699,9 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_getset = rect_getset;
   RectType.tp_new = rect_new;
   RectType.tp_getattro = PyObject_GenericGetAttr;
-  RectType.tp_alloc = NULL; // PyType_GenericAlloc;
+  RectType.tp_alloc = NULL;
   RectType.tp_richcompare = rect_richcompare;
-  RectType.tp_free = NULL; // _PyObject_Del;
+  RectType.tp_free = NULL;
   RectType.tp_repr = rect_repr;
   RectType.tp_hash = rect_hash;
   RectType.tp_doc = "The ``Rect`` class manages bounding boxes, and has a number of operations on those bounding boxes.\n\nThere are multiple ways to create a Rect:\n\n  - **Rect** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Rect** (Point *upper_left*, Point *lower_right*)\n\n  - **Rect** (Point *upper_left*, Size *size*)\n\n  - **Rect** (Point *upper_left*, Dimensions *dimensions*)\n";

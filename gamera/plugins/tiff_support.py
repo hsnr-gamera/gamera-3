@@ -52,6 +52,7 @@ class load_tiff(PluginFunction):
     def __call__(filename, compression = 0):
         return _tiff_support.load_tiff(filename, compression)
     __call__ = staticmethod(__call__)
+    exts = ["tiff", "tif"]
 load_tiff_class = load_tiff
 load_tiff = load_tiff()
 
@@ -64,6 +65,7 @@ class save_tiff(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     args = Args([FileSave("image_file_name", "image.tiff", "*.tiff;*.tif")])
     return_type = None
+    exts = ["tiff", "tif"]
 
 class TiffSupportModule(PluginModule):
     category = "File"

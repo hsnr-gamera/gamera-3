@@ -27,6 +27,7 @@ from gamera.args import *
 from gamera.core import *
 from gamera.knn import *
 from gamera.classify import *
+from gamera import plugin
 from gamera import gamera_xml
 import time, math
 
@@ -248,7 +249,7 @@ class OptimizerFrame(wxFrame):
       self.weights_panel.new_classifier(self.classifier)
 
    def features_dialog(self, existing_features=None):
-      all_features = [x[0] for x in ImageBase.methods_flat_category("Features", ONEBIT)]
+      all_features = [x[0] for x in plugin.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
       if existing_features == None:
          existing_features = all_features[:]

@@ -61,12 +61,13 @@ class load_PNG(PluginFunction):
       from gamera.plugins import _png_support
       return _png_support.load_PNG(filename, compression)
    __call__ = staticmethod(__call__)
-   loads_extensions = ['png']
+   exts = ['png']
 
 class save_PNG(PluginFunction):
    """Saves the image to a PNG format file."""
    self_type = ImageType(ALL)
    args = Args([FileSave("image_file_name", "image.png", "*.png")])
+   exts = ['png']
 
 class PngSupportModule(PluginModule):
     import sys

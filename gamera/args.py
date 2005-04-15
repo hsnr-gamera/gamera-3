@@ -19,6 +19,7 @@
 #
 
 from gamera.gui import has_gui
+from new import instancemethod
 import sys, os.path   # Python standard library
 from types import *
 import util, paths            # Gamera specific
@@ -77,6 +78,9 @@ class Arg:
          if self.has_default:
             result += " = %s" % str(self.default)
       return result
+
+   def register(self, plug, func):
+      pass
    
 class Int(Arg):
    def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
@@ -208,6 +212,11 @@ class ImageType(Arg):
          result += " *%s*" % self.name
       return result
 
+   def register(self, plug, func):
+      from gamera import core
+      func = instancemethod(func, None, core.gameracore.Image)
+      setattr(core.ImageBase, plug.__name__, func)
+
 class Rect(Arg):
    def __init__(self, name=None, list_of=False):
       import core
@@ -275,8 +284,8 @@ class _Filename(Arg):
       if not util.is_string_or_unicode(default):
          raise TypeError("'default' must be a string")
       self.default = default
-      if not util.is_string_or_unicode(extension):
-         raise TypeError("'extension' must be a string")
+##       if not util.is_string_or_unicode(extension):
+##          raise TypeError("'extension' must be a string")
       self.extension = extension
 
 class FileOpen(_Filename):
@@ -329,6 +338,17 @@ class RegionMap(Class):
 class ImageInfo(Class):
    def __init__(self, name=None):
       Class.__init__(self, name, None)
+
+class Point(Arg):
+   def __init__(self, name=None, default=None):
+      Arg.__init__(self, name)
+      from gamera.core import Point
+      if default is None:
+         self.has_default = False
+         self.default = Point(0, 0)
+      else:
+         self.has_default = True
+         self.default = default
 
 class _Vector(Class):
    def __init__(self, name=None, default=None, length=-1):
@@ -403,11 +423,11 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector ChoiceString'.split()
+__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector ChoiceString Point'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):
-   for cls_name in __all__:
+   for cls_name in __all__ + ["Arg"]:
       cls = ___mixin_locals[cls_name]
       if module.has_key(cls_name):
          cls.__bases__ = tuple([module[cls_name]] + list(cls.__bases__))

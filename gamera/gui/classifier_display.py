@@ -1,4 +1,4 @@
-# vi:set tabsize=3:
+ # vi:set tabsize=3:
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
@@ -24,7 +24,7 @@ from wxPython.grid import *
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, util
+from gamera import gamera_xml, util, plugin
 from gamera.classify import InteractiveClassifier, ClassifierError, BoundingBoxGroupingFunction, ShapedGroupingFunction
 from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner
 from gamera.gui.gamera_display import *
@@ -475,7 +475,7 @@ class ClassifierFrame(ImageFrameBase):
          raise ValueError(
             "symbol_table must be a SymbolTable instance or a list of strings.")
       # Add 'splits' to symbol table
-      for split in ImageBase.methods_flat_category("Segmentation", ONEBIT):
+      for split in plugin.methods_flat_category("Segmentation", ONEBIT):
          self._symbol_table.add("_split." + split[0])
       self._symbol_table.add("_group")
       self._symbol_table.add("_group._part")
@@ -1204,11 +1204,11 @@ class ClassifierFrame(ImageFrameBase):
          if not gui_util.are_you_sure_dialog("Page glyphs have not been saved.  Are you sure you wish to proceed?"):
             return
       segmenters = [x[0] for x in
-                    ImageBase.methods_flat_category("Segmentation", ONEBIT)]
+                    plugin.methods_flat_category("Segmentation", ONEBIT)]
       if self.default_segmenter == -1:
          self.default_segmenter = segmenters.index("cc_analysis")
       dialog = Args(
-         [FileOpen("Image file", "", "*.*"),
+         [FileOpen("Image file", "", util.get_file_extensions("load")),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
          name="Open and segment image...")
       filename = None
@@ -1237,7 +1237,7 @@ class ClassifierFrame(ImageFrameBase):
          if not gui_util.are_you_sure_dialog("Page glyphs have not been saved.  Are you sure you wish to proceed?"):
             return
       segmenters = [x[0] for x in
-                    ImageBase.methods_flat_category("Segmentation", ONEBIT)]
+                    plugin.methods_flat_category("Segmentation", ONEBIT)]
       if self.default_segmenter == -1:
          self.default_segmenter = segmenters.index("cc_analysis")
       dialog = Args(
@@ -1405,7 +1405,7 @@ class ClassifierFrame(ImageFrameBase):
       
    def _OnChangeSetOfFeatures(self, event):
       all_features = [x[0] for x in
-                      ImageBase.methods_flat_category("Features", ONEBIT)]
+                      plugin.methods_flat_category("Features", ONEBIT)]
       all_features.sort()
       existing_features = [x[0] for x in
                            ImageBase.get_feature_functions()[0]]

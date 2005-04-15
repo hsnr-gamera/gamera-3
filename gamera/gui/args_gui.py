@@ -25,6 +25,7 @@ import string
 from gamera import util, enums
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
+import sys
 
 class ArgInvalidException(Exception):
    pass
@@ -707,6 +708,33 @@ class PointVector:
       from gamera import core
       self.klass = core.Point
       return Class.determine_choices(self, locals)
+
+class Point:
+   def get_control(self, parent, locals=None):
+      self.control = wxBoxSizer(wxHORIZONTAL)
+      self.control.Add(wxStaticText(parent, -1, "x:"))
+      self.control_x = wxSpinCtrl(
+         parent, -1, value=str(self.default.x),
+         min=-sys.maxint, max=sys.maxint,
+         initial=self.default.x)
+      self.control_x.SetValidator(_IntValidator(name=self.name))
+      self.control.Add(self.control_x, 1, wxEXPAND | wxLEFT | wxRIGHT, 5)
+      self.control.Add(wxStaticText(parent, -1, "y:"))
+      self.control_x = wxSpinCtrl(
+         parent, -1, value=str(self.default.y),
+         min=-sys.maxint, max=sys.maxint,
+         initial=self.default.y)
+      self.control_x.SetValidator(_IntValidator(name=self.name))
+      self.control.Add(self.control_y, 1, wxEXPAND | wxLEFT | wxRIGHT, 5)
+      return self
+
+   def get(self):
+      from gamera.core import Point
+      return Point(int(self.control_x.GetValue()),
+                   int(self.control_y.GetValue()))
+   
+   def get_string(self):
+      return str(self.get())
 
 from gamera import args
 args.mixin(locals(), "GUI")

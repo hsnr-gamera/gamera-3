@@ -350,7 +350,8 @@ class ShellFrame(wxFrame):
       self.icon_display.add_class(icon_description)
 
    def _OnFileOpen(self, event):
-      filename = gui_util.open_file_dialog(self, '*.*')
+      filename = gui_util.open_file_dialog(
+         self, util.get_file_extensions("load"))
       if filename:
          name = var_name.get("image", self.shell.locals)
          if name:

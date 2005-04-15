@@ -30,7 +30,7 @@ import sys, string, weakref
 
 from gamera.core import *          # Gamera specific
 from gamera.config import config
-from gamera import paths, util
+from gamera import paths, util, plugin
 from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui
 import gamera.plugins.gui_support  # Gamera plugin
 
@@ -38,6 +38,12 @@ import gamera.plugins.gui_support  # Gamera plugin
 
 # we want this done on import
 wxInitAllImageHandlers()
+
+def _sort_by_nrows(a, b):
+   return cmp(a.nrows, b.nrows)
+
+def _sort_by_ncols(a, b):
+   return cmp(a.nrows, b.nrows)
 
 #############################################################################
 
@@ -468,7 +474,7 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
          image_menu.shell_frame.icon_display.update_icons()
 
    def _OnSave(self, *args):
-      filename = gui_util.save_file_dialog(self, "TIFF (*.tiff)|*.tiff|PNG (*.png)|*.png")
+      filename = gui_util.save_file_dialog(self, util.get_file_extensions("save"))
       self.original_image.save_image(filename)
 
    def _OnPrint(self, *args):
@@ -1272,14 +1278,14 @@ class MultiImageDisplay(wxGrid):
    # To minimize the size of the grid, we sort the images
    # first by height, and then within each row by width
    def _sort_by_size(self, list):
-      list.sort(lambda x, y: cmp(x.nrows, y.nrows))
+      list.sort(_sort_by_nrows)
       outlist = []
       while len(list):
          if len(list) < self.cols:
             sublist = list; list = []
          else:
             sublist = list[:self.cols]; list = list[self.cols:]
-         sublist.sort(lambda x, y: cmp(x.ncols, y.ncols))
+         sublist.sort(_sort_by_ncols)
          outlist.extend(sublist)
       return outlist
 
@@ -1680,7 +1686,7 @@ class MultiImageWindow(wxPanel):
 
    def set_choices(self):
       methods = [x[0] + "()" for x in
-                 ImageBase.methods_flat_category("Features", ONEBIT)]
+                 plugin.methods_flat_category("Features", ONEBIT)]
       methods.sort()
 
       self.display_choices = [

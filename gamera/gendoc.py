@@ -77,7 +77,7 @@ docutils.parsers.rst.directives.register_directive( 'code', code_block )
 # Import Gamera
 
 try:
-   from gamera import core, args, paths, util
+   from gamera import core, args, paths, util, plugin
    from gamera.plugins import _png_support
    from gamera.plugins import _image_conversion
    from gamera.enums import *
@@ -87,6 +87,12 @@ except ImportError, e:
    sys.exit(1)
 
 ######################################################################
+
+def sort_lowercase(a, b):
+   return cmp(a.lower(), b.lower())
+
+def sort_firstitem_lowercase(a, b):
+   return cmp(a[0].lower(), b[0].lower())
 
 _underline_levels = "=-`:'"
 def underline(level, s, extra=0):
@@ -235,7 +241,7 @@ class PluginDocumentationGenerator:
             dest[key] = val
             flat[key] = val
 
-      methods = core.ImageBase.methods
+      methods = plugin.plugin_methods
       flat_methods = {}
       flat_list = {}
       for pixel_type in ALL + [NONIMAGE]:
@@ -284,7 +290,7 @@ class PluginDocumentationGenerator:
       index = []
       toc_recurse(s, methods, 0, links, index)
       s.write("Alphabetical\n-------------\n")
-      index.sort(lambda x, y: cmp(x.lower(), y.lower()))
+      index.sort(sort_lowercase)
       letter = ord('A') - 1
       first = True
       for name in index:
@@ -447,7 +453,7 @@ class ClassDocumentationGenerator:
       s = open(os.path.join(self.docgen.src_path, "classes.txt"), "w")
       s.write("=======\nClasses\n=======\n\n")
       s.write("Alphabetical\n-------------\n")
-      self.class_names.sort(lambda x, y: cmp(x[0].lower(), y[0].lower()))
+      self.class_names.sort(sort_firstitem_lowercase)
       letter = '~'
       first = True
       links = []

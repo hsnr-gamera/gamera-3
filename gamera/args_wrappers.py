@@ -24,7 +24,7 @@ import re
 from enums import *
 import util
 
-class WrapperArg:
+class Arg:
    arg_format = 'O'
    convert_from_PyObject = False
    multiple = False
@@ -50,8 +50,8 @@ class WrapperArg:
 
    def declare(self):
       if self.name == None:
-         self.name = "_%08d" % WrapperArg.uid
-         WrapperArg.uid += 1
+         self.name = "_%08d" % Arg.uid
+         Arg.uid += 1
       if self.name == 'return' and hasattr(self, 'return_type'):
          result = "%s %s;\n" % (self.return_type, self.symbol)
       else:
@@ -90,7 +90,7 @@ class WrapperArg:
       else:
          return ""
       
-class Int(WrapperArg):
+class Int(Arg):
    arg_format = 'i'
    c_type = 'int'
 
@@ -99,14 +99,14 @@ class Int(WrapperArg):
 
 Choice = Check = Int
 
-class Float(WrapperArg):
+class Float(Arg):
    arg_format = 'd'
    c_type = 'double'
 
    def to_python(self):
       return '%(pysymbol)s = PyFloat_FromDouble((double)%(symbol)s);' % self
 
-class Complex(WrapperArg):
+class Complex(Arg):
    arg_format = 'D'
    c_type = 'Py_complex'
 
@@ -117,7 +117,7 @@ class Complex(WrapperArg):
       return '''Py_complex %(pysymbol)s_temp = PyComplex_AsCComplex(%(pysymbol)s);
       %(symbol)s = ComplexPixel(%(pysymbol)s_temp.real, %(pysymbol)s_temp.imag);'''
 
-class String(WrapperArg):
+class String(Arg):
    arg_format = 's'
    c_type = 'char*'
    return_type = 'std::string'
@@ -127,7 +127,7 @@ class String(WrapperArg):
 
 FileOpen = FileSave = Directory = ChoiceString = String
 
-class ImageType(WrapperArg):
+class ImageType(Arg):
    c_type = 'Image*'
    convert_from_PyObject = True
    multiple = True
@@ -189,7 +189,7 @@ class ImageType(WrapperArg):
          result = [util.get_pixel_type_name(pixel_type) + "ImageView"]
       return [(x, pixel_type) for x in result]
 
-class Rect(WrapperArg):
+class Rect(Arg):
    c_type = 'Rect*'
    convert_from_PyObject = True
 
@@ -205,7 +205,7 @@ class Rect(WrapperArg):
    def to_python(self):
       return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
             
-class Region(WrapperArg):
+class Region(Arg):
    c_type = 'Region*'
    convert_from_PyObject = True
 
@@ -222,7 +222,7 @@ class Region(WrapperArg):
       return_pyarg = create_RegionObject(*%(symbol)s);
       delete %(symbol)s;""" % self
 
-class RegionMap(WrapperArg):
+class RegionMap(Arg):
    c_type = 'RegionMap*'
    convert_from_PyObject = True
 
@@ -239,7 +239,7 @@ class RegionMap(WrapperArg):
       return_pyarg = create_RegionMapObject(*%(symbol)s);
       delete %(symbol)s;""" % self
 
-class ImageList(WrapperArg):
+class ImageList(Arg):
    c_type = 'ImageVector'
    return_type = 'std::list<Image*>*'
    convert_from_PyObject = True
@@ -270,7 +270,7 @@ class ImageList(WrapperArg):
       delete %(symbol)s;
       """ % self
 
-class Class(WrapperArg):
+class Class(Arg):
    arg_format = 'O'
    c_type = 'PyObject*'
    convert_from_PyObject = True
@@ -281,7 +281,7 @@ class Class(WrapperArg):
    def to_python(self):
       return "%(pysymbol)s = %(symbol)s;" % self
 
-class IntVector(WrapperArg):
+class IntVector(Arg):
    arg_format = 'O'
    convert_from_PyObject = True
    c_type = 'IntVector*'
@@ -299,7 +299,7 @@ class IntVector(WrapperArg):
       delete %(symbol)s;
       """ % self
 
-class FloatVector(WrapperArg):
+class FloatVector(Arg):
    arg_format = 'O'
    convert_from_PyObject = True
    c_type = 'FloatVector*'
@@ -317,7 +317,7 @@ class FloatVector(WrapperArg):
       delete %(symbol)s;
       """ % self
 
-class ComplexVector(WrapperArg):
+class ComplexVector(Arg):
    arg_format = 'O'
    convert_from_PyObject = True
    c_type = 'ComplexVector*'
@@ -335,7 +335,7 @@ class ComplexVector(WrapperArg):
       delete %(symbol)s;
       """ % self
 
-class Pixel(WrapperArg):
+class Pixel(Arg):
    def from_python(self):
       return ''
 
@@ -351,7 +351,25 @@ class Pixel(WrapperArg):
       else:
          return args[0].call(function, args[1:], new_output_args, limit_choices)
 
-class PointVector(WrapperArg):
+class Point(Arg):
+   c_type = "Point"
+   delete_cpp = False
+   convert_from_PyObject = True
+
+   def from_python(self):
+      return """
+      try {
+         %(symbol)s = coerce_Point(%(pysymbol)s);
+      } catch (std::exception e) {
+         PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be a Point, or convertible to a Point");
+         return 0;
+      }
+      """ % self
+
+   def to_python(self):
+      return """%(pysymbol)s = create_PointObject(%(symbol)s);""" % self
+
+class PointVector(Arg):
    arg_format = 'O'
    convert_from_PyObject = True
    c_type = 'PointVector*'
@@ -368,7 +386,7 @@ class PointVector(WrapperArg):
       delete %(symbol)s;
       """ % self
 
-class ImageInfo(WrapperArg):
+class ImageInfo(Arg):
    arg_format = "O";
    c_type = 'ImageInfo*'
    convert_from_PyObject = True

@@ -61,7 +61,9 @@ The coordinates can be specified either by two floats or one Points:
 """
   self_type = ImageType(ALL)
   args = Args([Float("y1"), Float("x1"), Int("size", default=5),
-               Choice("style", "+ x hollow_square filled_square".split(), default=0), Pixel("value")])
+               Choice("style", "+ x hollow_square filled_square".split(),
+                      default=0),
+               Pixel("value")])
   authors = "Michael Droettboom"
 
   def __call__(self, *args):

@@ -534,3 +534,31 @@ class CallbackSet(sets.Set, CallbackObject):
       self.trigger_callback('add', self)
       self.trigger_callback('length_change', len(self))
 
+def get_file_extensions(mode):
+   from gamera import plugin
+   import os.path
+   import sets
+   methods = plugin.methods_flat_category("File")
+   methods = [y for x, y in methods if x.startswith(mode) and not x.endswith("image")]
+   extensions = sets.Set()
+   types = []
+   for method in methods:
+      wildcards = ";".join(["*.%s;*.%s" %
+                            (ext.lower(), ext.upper()) for ext in method.exts])
+      type = "%s Files (%s)|%s" % (method.exts[0].upper(), wildcards, wildcards)
+      types.append(type)
+      extensions.union_update(method.exts)
+      extensions.union_update([x.upper() for x in method.exts])
+   all_extensions = ";".join(["*.%s" % x for x in extensions])
+   types.insert(0, "All images (%s)|%s" % (all_extensions, all_extensions))
+   types.append("All files (*.*)|*.*")
+   return "|".join(types)
+
+class _ImageFileExtensionFinder:
+   def __init__(self, mode):
+      self.mode = mode
+   def __str__(self):
+      return get_file_extensions(self.mode)
+load_image_file_extension_finder = _ImageFileExtensionFinder("load")
+save_image_file_extension_finder = _ImageFileExtensionFinder("save")
+

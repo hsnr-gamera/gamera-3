@@ -20,9 +20,11 @@
 
 from gamera.args import *
 from gamera import paths
-import new, os, os.path, imp, inspect, sys, copy
+import new, os, os.path, imp, inspect, sys, copy, sets
 from types import *
 from enums import *
+
+plugin_methods = {}
 
 class PluginModule:
    category = None
@@ -53,7 +55,7 @@ class PluginModule:
       for function in self.functions:
          if not isinstance(function, ClassType):
             function = function.__class__
-         function.register(self)
+         function.register()
 
 class Builtin(PluginModule):
    author = "Michael Droettboom and Karl MacMillan"
@@ -73,16 +75,12 @@ class PluginFunction:
    author = None
    add_to_image = True
 
-   def register(cls, add_to_image=True):
-      add_to_image = add_to_image and cls.add_to_image
+   def register(cls):
+      # add_to_image = add_to_image and cls.add_to_image
       if cls.return_type != None:
          if cls.return_type.name == None:
             cls.return_type = copy.copy(cls.return_type)
             cls.return_type.name = cls.__name__
-      if cls.category == None:
-         category = cls.module.category
-      else:
-         category = cls.category
       if not hasattr(cls, "__call__"):
          # This loads the actual C++ function if it is not directly
          # linked in the Python PluginFunction class
@@ -103,9 +101,29 @@ class PluginFunction:
       else:
          func = cls.__call__
       cls.__call__ = staticmethod(func)
-      from gamera import core
-      if add_to_image:
-         core.ImageBase.add_plugin_method(cls, func, category)
+
+      if cls.category == None:
+         category = cls.module.category
+      else:
+         category = cls.category
+      if not category is None and not func is None:
+         image_type = isinstance(cls.self_type, ImageType)
+         if image_type:
+            pixel_types = cls.self_type.pixel_types
+         else:
+            pixel_types = [NONIMAGE]
+         for type in pixel_types:
+            if not plugin_methods.has_key(type):
+               plugin_methods[type] = {}
+            start = plugin_methods[type]
+            for subcategory in category.split('/'):
+               if not start.has_key(subcategory):
+                  start[subcategory] = {}
+               start = start[subcategory]
+            start[cls.__name__] = cls
+
+      if not func is None and not cls.self_type is None:
+         cls.self_type.register(cls, func)
    register = classmethod(register)
 
 def PluginFactory(name, category=None,
@@ -130,3 +148,25 @@ def PluginFactory(name, category=None,
 
 def get_config_options(command):
    return os.popen(command).read()
+
+def methods_flat_category(category, pixel_type=None):
+   if pixel_type == None:
+      methods = sets.Set()
+      for pixel_type in ALL + [NONIMAGE]:
+         methods.union_update(methods_flat_category(category, pixel_type))
+      return list(methods)
+   else:
+      methods = plugin_methods[pixel_type]
+      if methods.has_key(category):
+         return _methods_flatten(methods[category])
+      else:
+         return []
+
+def _methods_flatten(mat):
+   list = []
+   for key, val in mat.items():
+      if type(val) == DictType:
+         list.extend(_methods_flatten(val))
+      else:
+         list.append((key, val))
+   return list

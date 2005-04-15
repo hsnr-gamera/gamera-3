@@ -41,7 +41,6 @@ init_gamera - parse the gamera options and load all of the plugins.
 """
 
 # Python standard library
-from new import instancemethod
 from array import array
 from types import *
 
@@ -60,7 +59,6 @@ from gameracore import ImageData, Size, Dimensions, Point, \
      Rect, Region, RegionMap, ImageInfo, RGBPixel
 # import gamera.gameracore for subclassing
 import gameracore
-# from classify import InteractiveClassifier, NonInteractiveClassifier
 from gamera.gui import has_gui
 
 # from gamera.classify import *
@@ -82,16 +80,32 @@ supported.
   The type of `storage format`__ to use for the resulting image.
 
 .. __: image_types.html#storage-formats"""
-   from gamera.plugins import _tiff_support, _png_support
-   try:
-      image = _tiff_support.load_tiff(filename, compression)
-   except RuntimeError:
+   from gamera import plugin
+   import os.path
+   methods = plugin.methods_flat_category("File")
+   methods = [y for x, y in methods if x.startswith("load") and x != "load_image"]
+
+   # First, try being smart by loading by extension
+   for method in methods:
+      for ext in method.exts:
+         if os.path.splitext(filename)[1].lower() == ext.lower():
+            try:
+               image = method.__call__(filename, compression)
+            except IOError, e:
+               print e
+            else:
+               return image
+
+   # Then just try all options
+   for method in methods:
       try:
-         image = _png_support.load_PNG(filename, compression)
-      except RuntimeError, AttributeError:
-         raise IOError("%s is not a TIFF or PNG file." % filename)
-   image.name = filename
-   return image
+         image = method.__call__(filename, compression)
+      except IOError, e:
+         print e
+      else:
+         return image
+
+   raise IOError("'%s' could not be loaded." % filename)
 
 def save_image(image, filename):
    """**save_image** (Image(ALL) *image*, String *filename*)
@@ -99,12 +113,21 @@ def save_image(image, filename):
 Saves an image to a file.  The file type is automatically
 determined from the extension.
 """
-   if filename.lower().endswith("png"):
-      from gamera.plugins import _png_support
-      _png_support.save_PNG(image, filename)
-   else:
-      from gamera.plugins import _tiff_support
-      _tiff_support.save_tiff(image, filename)
+   from gamera import plugin
+   import os.path
+   methods = plugin.methods_flat_category("File")
+   methods = [y for x, y in methods if x.startswith("save") and x != "save_image"]
+
+   for method in methods:
+      for ext in method.exts:
+         if os.path.splitext(filename)[1].lower() == ext.lower():
+            method.__call__(image, filename)
+              
+   # For backward compatibility, fall back to tiff if
+   # we can't automatically determine the filetype by
+   # the extension
+   from gamera.plugins import _tiff_support
+   _tiff_support.save_tiff(image, filename)
 
 def nested_list_to_image(l, t=-1):
    from gamera.plugins import image_utilities
@@ -175,36 +198,6 @@ class ImageBase:
       if self._display:
          self._display.close()
 
-   def add_plugin_method(cls, plug, func, category=None):
-      """Add a plugin method to all Image instances.
-plug -- subclass of PluginFunction describing the function.
-func -- raw function pointer.
-category -- menu category that the method should be placed under.
-Categories may be nested using '/' (i.e. "General/Specific")
-
-Internal use only."""
-      from gamera import args
-      methods = cls.methods
-      image_type =  isinstance(plug.self_type, args.ImageType)
-      if not func is None and image_type:
-         func = instancemethod(func, None, gameracore.Image)
-         setattr(cls, plug.__name__, func)
-      if not category is None:
-        if image_type:
-           pixel_types = plug.self_type.pixel_types
-        else:
-           pixel_types = [NONIMAGE]
-        for type in pixel_types:
-          if not methods.has_key(type):
-            methods[type] = {}
-          start = methods[type]
-          for subcategory in category.split('/'):
-            if not start.has_key(subcategory):
-              start[subcategory] = {}
-            start = start[subcategory]
-          start[plug.__name__] = plug
-   add_plugin_method = classmethod(add_plugin_method)
-
    def pixel_type_name(self):
       """String **pixel_type_name** ()
 
@@ -230,23 +223,6 @@ See `storage formats`_ for more information."""
       return self._storage_format_names[self.data.storage_format]
    storage_format_name = property(storage_format_name, doc=storage_format_name.__doc__)
 
-   def methods_flat_category(cls, category, pixel_type=None):
-      methods = cls.methods[pixel_type]
-      if methods.has_key(category):
-         return cls._methods_flatten(methods[category])
-      else:
-         return []
-   methods_flat_category = classmethod(methods_flat_category)
-
-   def _methods_flatten(cls, mat):
-     list = []
-     for key, val in mat.items():
-       if type(val) == DictType:
-         list.extend(cls._methods_flatten(val))
-       else:
-         list.append((key, val))
-     return list
-   _methods_flatten = classmethod(_methods_flatten)
 
    def load_image(filename, compression=DENSE):
       """Load an image from the given filename.  At present, TIFF and PNG files are
@@ -471,9 +447,10 @@ Changes to subimages will affect all other subimages viewing the same data."""
    _get_feature_vector_size = classmethod(_get_feature_vector_size)
 
    def get_feature_functions(cls, features='all'):
+      from gamera import plugin
       global all_features
       if all_features is None:
-         all_features = cls.methods_flat_category('Features', ONEBIT)
+         all_features = plugin.methods_flat_category('Features', ONEBIT)
          all_features.sort()
       if features == 'all' or features is None:
          functions = all_features
@@ -608,10 +585,10 @@ def _init_gamera():
    for method in (
       plugin.PluginFactory(
          "load_image", "File", plugin.ImageType(ALL, "image"),
-         plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename")])),
+         plugin.ImageType(ALL), plugin.Args([plugin.FileOpen("filename", extension=util.load_image_file_extension_finder)])),
       plugin.PluginFactory(
          "save_image", "File", None,
-         plugin.ImageType(ALL), plugin.Args([plugin.FileSave("filename")])),
+         plugin.ImageType(ALL), plugin.Args([plugin.FileSave("filename", extension=util.save_image_file_extension_finder)])),
       plugin.PluginFactory(
          "display", "Displaying", None, plugin.ImageType(ALL), None),
       plugin.PluginFactory(

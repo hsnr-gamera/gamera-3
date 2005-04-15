@@ -251,6 +251,38 @@ inline PyObject* create_PointObject(const Point& d) {
   return (PyObject*)so;
 }
 
+inline Point coerce_Point(PyObject* obj) {
+  PyTypeObject* t2 = get_PointType();
+  if (t2 == 0) {
+    PyErr_SetString(PyExc_RuntimeError, "Couldn't get Point type.");
+    throw std::runtime_error("Couldn't get Point type.");
+  }
+  if (PyObject_TypeCheck(obj, t2))
+    return Point(*(((PointObject*)obj)->m_x));
+  
+  PyObject* py_x0 = NULL;
+  PyObject* py_y0 = NULL;
+  PyObject* py_x1 = NULL;
+  PyObject* py_y1 = NULL;
+  py_x0 = PyObject_GetAttrString(obj, "x");
+  if (py_x0 != NULL) {
+    py_x1 = PyNumber_Int(py_x0);
+    if (py_x1 != NULL) {
+      long x = PyInt_AsLong(py_x1);
+      py_y0 = PyObject_GetAttrString(obj, "y");
+      if (py_y0 != NULL) {
+	py_y1 = PyNumber_Int(py_y0);
+	if (py_y1 != NULL) {
+	  long y = PyInt_AsLong(py_y1);
+	  return Point((size_t)x, (size_t)y);
+	}
+      }
+    }
+  }
+  PyErr_SetString(PyExc_TypeError, "Argument is not a Point (or convertible to one.");
+  throw std::runtime_error("Argument is not a Point (or convertible to one.");
+}
+
 /*
   RECT OBJECT
 */
@@ -932,83 +964,82 @@ inline PyObject* PointVector_to_python(PointVector* cpp) {
 }
 
 inline FloatVector* FloatVector_from_python(PyObject* py) {
-  int size = PyObject_Size(py);
-  if (size < 0) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of floats.\n");
-      return 0;
-  }
+  PyObject* seq = PySequence_Fast(py, "Argument must be a sequence of floats.");
+  if (seq == NULL)
+    return 0;
+  int size = PySequence_Fast_GET_SIZE(seq);
   FloatVector* cpp = new FloatVector(size);
   for (int i = 0; i < size; ++i) {
-    PyObject* number = PyObject_GetItem(py, PyInt_FromLong(i));
+    PyObject* number = PySequence_Fast_GET_ITEM(seq, i);
     if (!PyFloat_Check(number)) {
       PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of floats.\n");
+		      "Argument must be a sequence of floats.");
+      Py_DECREF(seq);
       return 0;
     }      
     (*cpp)[i] = (double)PyFloat_AsDouble(number);
   }
+  Py_DECREF(seq);
   return cpp;
 }
 
 inline ComplexVector* ComplexVector_from_python(PyObject* py) {
-  int size = PyObject_Size(py);
-  if (size < 0) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of Complex numbers.\n");
-      return 0;
-  }
+  PyObject* seq = PySequence_Fast(py, "Argument must be a sequence of complex numbers.");
+  if (seq == NULL)
+    return 0;
+  int size = PySequence_Fast_GET_SIZE(seq);
   ComplexVector* cpp = new ComplexVector(size);
   for (int i = 0; i < size; ++i) {
-    PyObject* value = PyObject_GetItem(py, PyInt_FromLong(i));
+    PyObject* value = PySequence_Fast_GET_ITEM(seq, i);
     if (!PyComplex_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Argument must be a sequence of complex numbers.");
+      Py_DECREF(seq);
       return 0;
     }
     Py_complex temp = PyComplex_AsCComplex(value);
     (*cpp)[i] = ComplexPixel(temp.real, temp.imag);
   }
+  Py_DECREF(seq);
   return cpp;
 }
 
 inline IntVector* IntVector_from_python(PyObject* py) {
-  int size = PyObject_Size(py);
-  if (size < 0) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of integers.\n");
-      return 0;
-  }
+  PyObject* seq = PySequence_Fast(py, "Argument must be a sequence of ints.");
+  if (seq == NULL)
+    return 0;
+  int size = PySequence_Fast_GET_SIZE(seq);
   IntVector* cpp = new IntVector(size);
   for (int i = 0; i < size; ++i) {
-    PyObject* number = PyObject_GetItem(py, PyInt_FromLong(i));
+    PyObject* number = PySequence_Fast_GET_ITEM(seq, i);
     if (!PyInt_Check(number)) {
       PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of integers.\n");
+		      "Argument must be a sequence of ints.");
+      Py_DECREF(seq);
       return 0;
     }      
     (*cpp)[i] = (int)PyInt_AsLong(number);
   }
+  Py_DECREF(seq);
   return cpp;
 }
 
 inline PointVector* PointVector_from_python(PyObject* py) {
-  int size = PyObject_Size(py);
-  if (size < 0) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of Points.\n");
-      return 0;
-  }
+  PyObject* seq = PySequence_Fast(py, "Argument must be an iterable of Points");
+  if (seq == NULL)
+    return 0;
+  int size = PySequence_Fast_GET_SIZE(seq);
   PointVector* cpp = new PointVector();
   cpp->reserve(size);
   for (int i = 0; i < size; ++i) {
-    PointObject* point = (PointObject*)PyObject_GetItem(py, PyInt_FromLong(i));
-    if (!is_PointObject((PyObject*)point)) {
-      PyErr_SetString(PyExc_TypeError,
-		      "Argument must be a sequence of Points.\n");
+    PyObject* point = PySequence_Fast_GET_ITEM(seq, i);
+    try {
+      Point p = coerce_Point(point);
+      cpp->push_back(p);
+    } catch (std::exception e) {
       return 0;
     }
-    cpp->push_back(Point(*point->m_x));
   }
+  Py_DECREF(seq);
   return cpp;
 }
 

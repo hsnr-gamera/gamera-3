@@ -21,7 +21,7 @@
 from wxPython.wx import *   # wxPython
 import weakref              # Python standard library
 from gamera.core import *   # Gamera-specific
-from gamera import util
+from gamera import util, plugin
 from gamera.gui import var_name, gui_util
 from gamera.args import *
 
@@ -50,7 +50,7 @@ def members_for_menu(self):
            if hasattr(self, x)]
 
 def methods_for_menu(self):
-   return self.methods[self.data.pixel_type]
+   return plugin.plugin_methods[self.data.pixel_type]
 
 class ImageMenu:
    _base_method_id = 10003

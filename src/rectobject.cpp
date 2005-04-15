@@ -298,19 +298,20 @@ static void rect_dealloc(PyObject* self) {
 }
 
 #define CREATE_SET_POINT_FUNC(name) static int rect_set_##name(PyObject* self, PyObject* value) {\
-  if (!is_PointObject(value)) { \
-    PyErr_SetString(PyExc_TypeError, "Type Error!"); \
-    return -1; \
-  } \
-  Rect* x = ((RectObject*)self)->m_x; \
   try { \
-    x->name(*((PointObject*)value)->m_x); \
-  } catch(std::exception& e) { \
-    PyErr_SetString(PyExc_TypeError, e.what()); \
+    Point p = coerce_Point(value); \
+    Rect* x = ((RectObject*)self)->m_x; \
+    try { \
+      x->name(p); \
+    } catch(std::exception& e) { \
+      PyErr_SetString(PyExc_TypeError, e.what()); \
+      return -1; \
+    } \
+    return 0; \
+  } catch (std::exception e) { \
     return -1; \
   } \
-  return 0; \
-}
+} 
 
 CREATE_GET_POINT_FUNC(ul)
 CREATE_GET_POINT_FUNC(ur)

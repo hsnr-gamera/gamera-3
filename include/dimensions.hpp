@@ -87,18 +87,12 @@ namespace Gamera {
 
     /// Equality operator
     bool operator==(const Point& x) const {
-      if (m_x == x.m_x && m_y == x.m_y)
-        return true;
-      else
-        return false;
+      return (m_x == x.m_x && m_y == x.m_y);
     }
 
     /// Inequality operator
     bool operator!=(const Point& x) const {
-      if (m_x != x.m_x || m_y != x.m_y)
-	return true;
-      else
-	return false;
+      return (m_x != x.m_x || m_y != x.m_y);
     }
   private:
     coord_t m_x, m_y;

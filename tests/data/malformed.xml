@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gamera-database version="2.0">
+  <glyphs>
+    <glyph uly="7" ulx="758" nrows="23" ncols="16">
+      <ids state="MANUAL">
+        <id name="latin.lower.letter.h" confidence="1.000000"/>
+      </ids>
+      <features scaling="1.0">
+        <feature name="area">
+          368.0
+        </feature>
+        <feature name="aspect_ratio">
+          0.695652173913
+        </feature>
+        <feature name="black_area">
+          129.0
+        </feature>
+        <feature name="compactness">
+          0.736434108527
+        </feature>
+        <feature name="moments">
+          0.136039402174 0.197896975425 0.0424556874833 0.146643276094
+          0.0595990667957 0.0166513873378 0.0249483684912 0.0190762410872
+          0.0459351203709
+        </feature>
+        <feature name="ncols_feature">
+          16.0
+        </feature>
+        <feature name="nholes">
+          0.5625 0.565217391304
+        </feature>
+        <feature name="nholes_extended">
+          4.0 3.0 2.0 0.0 1.0 0.0 5.0 5.0
+        </feature>
+        <feature name="nrows_feature">
+          23.0
+        </feature>
+        <feature name="skeleton_features">
+          4.0 6.0 0.204081632653 2.0 1.0 2.0
+        </feature>
+        <feature name="top_bottom">
+          0.0 0.95652173913
+        </feature>
+        <feature name="volume">
+          0.350543478261

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gamera-database version="2.0">
+  <symbols>
+    <symbol name="_group"/>
+    <symbol name="_group._part"/>
+    <symbol name="_group.latin.capital.letter.m"/>
+    <symbol name="_group.latin.lower.i"/>
+    <symbol name="_group.latin.lower.letter.g"/>
+    <symbol name="_group.latin.lower.letter.h"/>
+    <symbol name="_group.latin.lower.letter.i"/>
+    <symbol name="_group.latin.lower.letter.n"/>
+    <symbol name="_group.latin.lower.ligature.ft"/>
+    <symbol name="_split.cc_analysis"/>
+    <symbol name="_split.cc_and_cluster"/>
+    <symbol name="_split.splitx"/>
+    <symbol name="_split.splitx_left"/>
+    <symbol name="_split.splitx_max"/>
+    <symbol name="_split.splitx_right"/>
+    <symbol name="_split.splity"/>
+    <symbol name="_split.splity_bottom"/>
+    <symbol name="_split.splity_top"/>
+    <symbol name="comma"/>
+    <symbol name="full.stop"/>
+    <symbol name="hyphen-minus"/>
+    <symbol name="latin.capital.letter.c"/>
+    <symbol name="latin.capital.letter.m"/>
+    <symbol name="latin.capital.letter.t"/>
+    <symbol name="latin.lower.letter.a"/>
+    <symbol name="latin.lower.letter.d"/>
+    <symbol name="latin.lower.letter.e"/>
+    <symbol name="latin.lower.letter.h"/>
+    <symbol name="latin.lower.letter.n"/>
+    <symbol name="latin.lower.letter.o"/>
+    <symbol name="latin.lower.letter.o-"/>
+    <symbol name="latin.lower.letter.r"/>
+    <symbol name="latin.lower.letter.s"/>
+    <symbol name="latin.lower.letter.t"/>
+    <symbol name="latin.lower.ligature.fi"/>
+    <symbol name="latin.lower.ligature.ft"/>
+    <symbol name="noise"/>
+    <symbol name="skip"/>
+  </symbols>
+</gamera-database>

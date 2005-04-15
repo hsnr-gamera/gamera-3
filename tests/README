@@ -1,0 +1,8 @@
+The tests in this directory test Gamera using the py.test framework.
+
+The py.test framework must be installed from 
+
+http://codespeak.net/py/
+
+This package is not required for the proper functioning of Gamera,
+only to run the tests.

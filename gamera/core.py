@@ -91,8 +91,8 @@ supported.
          if os.path.splitext(filename)[1].lower() == ext.lower():
             try:
                image = method.__call__(filename, compression)
-            except IOError, e:
-               print e
+            except:
+               pass
             else:
                return image
 
@@ -100,8 +100,8 @@ supported.
    for method in methods:
       try:
          image = method.__call__(filename, compression)
-      except IOError, e:
-         print e
+      except:
+         pass
       else:
          return image
 

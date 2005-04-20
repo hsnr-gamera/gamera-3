@@ -45,9 +45,9 @@ class ConfigOptionParser(OptionParser):
    def get_config_files(self):
       return []
 
-   def parse_args(self):
+   def parse_args(self, args=[]):
       if self._cache is None:
-         options, args = OptionParser.parse_args(self)
+         options, args = OptionParser.parse_args(self, args)
          files = self.get_config_files()
          config_parser = ConfigParser.RawConfigParser()
          config_parser.read(files)

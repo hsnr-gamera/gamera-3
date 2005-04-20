@@ -1049,7 +1049,7 @@ config.add_option(
    '', '--grid-max-cell-height', default=200, type="int",
    help='[grid] Maximum height of a grid cell')
 config.add_option(
-   '', '--grid-max_label_length', default=200, type="int",
+   '', '--grid-max-label-length', default=200, type="int",
    help='[grid] Maximum length (in pixels) of the row labels in the grid')
 config.add_option(
    '', '--grid-cell-padding', default=8, type="int",
@@ -1916,7 +1916,11 @@ class MultiImageFrame(ImageFrameBase):
 # Draws a horizontal bar graph
 def graph_horiz(data, dc, x1, y1, x2, y2, mark=None, border=1):
    scale_x = float(x2 - x1) / float(len(data))
-   scale_y = (y2 - y1) / max(data)
+   max_data = max(data)
+   if max_data == 0:
+      scale_y = 1.0
+   else:
+      scale_y = (y2 - y1) / max_data
    m = log(max(data))
    dc.SetPen(wxTRANSPARENT_PEN)
    light_blue = wxColor(128, 128, 255)
@@ -1942,7 +1946,11 @@ def graph_horiz(data, dc, x1, y1, x2, y2, mark=None, border=1):
 # Draws a vertical bar graph
 def graph_vert(data, dc, x1, y1, x2, y2, mark=None, border=1):
    scale_y = float(y2 - y1) / float(len(data))
-   scale_x = (x2 - x1) / max(data)
+   max_data = max(data)
+   if max_data == 0:
+      scale_x = 1.0
+   else:
+      scale_x = (x2 - x1) / max_data
    light_blue = wxColor(128, 128, 255)
    dc.SetPen(wxTRANSPARENT_PEN)
    for i in range(len(data)):

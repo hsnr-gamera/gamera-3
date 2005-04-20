@@ -49,18 +49,31 @@ command_line_utils = (
     """#!%(executable)s
 %(header)s
 print "Loading GAMERA..."
+print "Using 'gamera_gui --help' to display command line options"
+import sys
 try:
    from gamera.gui import gui
    gui.run()
+   from gamera.config import config
+   config.parse_args(sys.argv[1:])
 except Exception, e:
-   if not isinstance(e, SystemExit):
+   if not isinstance(e, (SystemExit, KeyboardInterrupt)):
      import traceback
-     print "Gamera made a fatal error:"
+     import textwrap
+     print "Gamera made the following fatal error:"
+     print 
+     print textwrap.fill(str(e))
      print
+     print "=" * 75
+     print "The traceback is below.  Please send this to the Gamera developers"
+     print "if you feel you got here in error."
+     print "-" * 75
      traceback.print_exc()
-   print
-   print "Press <ENTER> to exit."
-   x = raw_input()
+     print "=" * 75
+   if sys.platform == "win32":
+     print
+     print "Press <ENTER> to exit."
+     x = raw_input()
    """), )
    
 if sys.platform == 'win32':

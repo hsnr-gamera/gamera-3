@@ -540,6 +540,9 @@ def get_file_extensions(mode):
    import sets
    methods = plugin.methods_flat_category("File")
    methods = [y for x, y in methods if x.startswith(mode) and not x.endswith("image")]
+
+   if len(methods) == 0:
+      raise RuntimeError("There don't seem to be any imported plugins that can %s files.  Try running init_gamera() or explictly loading file i/o plugins such as tiff_support and png_support." % mode)
    extensions = sets.Set()
    types = []
    for method in methods:

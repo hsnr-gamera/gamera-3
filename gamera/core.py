@@ -85,6 +85,9 @@ supported.
    methods = plugin.methods_flat_category("File")
    methods = [y for x, y in methods if x.startswith("load") and x != "load_image"]
 
+   if len(methods) == 0:
+      raise RuntimeError("There don't seem to be any imported plugins that can load files.  Try running init_gamera(), or explicitly loading the plugins that support file loading, such as tiff_support and png_support.")
+
    # First, try being smart by loading by extension
    for method in methods:
       for ext in method.exts:
@@ -117,6 +120,9 @@ determined from the extension.
    import os.path
    methods = plugin.methods_flat_category("File")
    methods = [y for x, y in methods if x.startswith("save") and x != "save_image"]
+
+   if len(methods) == 0:
+      raise RuntimeError("There don't seem to be any imported plugins that can save files.  Try running init_gamera(), or explicitly loading the plugins that support file saving, such as tiff_support and png_support.")
 
    for method in methods:
       for ext in method.exts:

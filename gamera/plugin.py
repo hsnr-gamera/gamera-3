@@ -156,10 +156,10 @@ def methods_flat_category(category, pixel_type=None):
          methods.union_update(methods_flat_category(category, pixel_type))
       return list(methods)
    elif plugin_methods.has_key(pixel_type):
-         methods = plugin_methods[pixel_type]
-         if methods.has_key(category):
-            return _methods_flatten(methods[category])
-      return []
+      methods = plugin_methods[pixel_type]
+      if methods.has_key(category):
+         return _methods_flatten(methods[category])
+   return []
 
 def _methods_flatten(mat):
    list = []

@@ -52,10 +52,10 @@ print "Loading GAMERA..."
 print "Using 'gamera_gui --help' to display command line options"
 import sys
 try:
-   from gamera.gui import gui
-   gui.run()
    from gamera.config import config
    config.parse_args(sys.argv[1:])
+   from gamera.gui import gui
+   gui.run()
 except Exception, e:
    if not isinstance(e, (SystemExit, KeyboardInterrupt)):
      import traceback

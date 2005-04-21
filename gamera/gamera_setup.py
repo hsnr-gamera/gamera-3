@@ -141,3 +141,8 @@ def generate_plugins(plugins, location, compiling_gamera=0):
    
    generate.restore_import()
    return plugin_extensions
+
+def get_gamera_include_dirs():
+   return [os.path.join(get_python_inc(), "gamera"),
+           os.path.join(get_python_inc(), "../gamera"),
+           "/usr/include/gamera"]

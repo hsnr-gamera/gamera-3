@@ -255,6 +255,8 @@ template = Template("""
   
 def generate_plugin(plugin_filename, location, compiling_gamera,
                     extra_compile_args=[], extra_link_args=[], libraries=[]):
+  from gamera import gamera_setup
+
   plug_path, filename = path.split(plugin_filename)
   module_name = filename.split('.')[0]
   cpp_filename = path.join(plug_path, "_" + module_name + ".cpp")
@@ -277,9 +279,7 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
   include_dirs = (["include", plug_path, "include/plugins"] +
                   plugin_module.module.cpp_include_dirs)
   if not compiling_gamera:
-     include_dirs.append(os.path.join(sysconfig.get_python_inc(), "gamera"))
-     include_dirs.append(os.path.join(sysconfig.get_python_inc(), "../gamera"))
-     include_dirs.append("/usr/include/gamera")
+     include_dirs.extend(gamera_setup.get_gamera_include_dirs())
   if not regenerate:
     for header in plugin_module.module.cpp_headers:
       found_header = 0

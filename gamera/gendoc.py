@@ -78,7 +78,7 @@ docutils.parsers.rst.directives.register_directive( 'code', code_block )
 
 try:
    from gamera import core, args, paths, util, plugin
-   from gamera.plugins import _png_support
+   from gamera.plugins import png_support, tiff_support, _png_support
    from gamera.plugins import _image_conversion
    from gamera.enums import *
 except ImportError, e:
@@ -229,14 +229,14 @@ class PluginDocumentationGenerator:
    get_generic_images = staticmethod(get_generic_images)
 
    def get_methods(plugins):
-      def methods_flatten(dest, source, flat):
+      def methods_flatten(dest, source, flat, all=False):
          for key, val in source.items():
           if type(val) == dict:
             if key != "Test":
-               if plugins is None or key in plugins:
+               if plugins is None or key in plugins or all:
                   if not dest.has_key(key):
                      dest[key] = {}
-                  methods_flatten(dest[key], val, flat)
+                  methods_flatten(dest[key], val, flat, True)
           else:
             dest[key] = val
             flat[key] = val
@@ -246,7 +246,7 @@ class PluginDocumentationGenerator:
       flat_list = {}
       for pixel_type in ALL + [NONIMAGE]:
          if methods.has_key(pixel_type): 
-             methods_flatten(flat_methods, methods[pixel_type], flat_list)
+             methods_flatten(flat_methods, methods[pixel_type], flat_list, False)
 
       return flat_methods
    get_methods = staticmethod(get_methods)

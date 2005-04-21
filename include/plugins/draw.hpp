@@ -236,14 +236,14 @@ void draw_bezier(T& image,
 
   double y = start_y;
   double x = start_x;
-  for (double a = 1.0, b = 0.0; b <= 1.0; a -= epsilon, b += epsilon) {
+  for (double a = 1.0, b = 0.0; a > 0.0; a -= epsilon, b += epsilon) {
     double a_3 = a * a * a;
     double a_2_b = a * a * b * 3.0;
     double b_3 = b * b * b;
     double b_2_a = b * b * a * 3.0;
 
-    double new_x = start_x * a_3 + c1_x * a_2_b + c2_x * b_2_a + end_x * b_3;
-    double new_y = start_y * a_3 + c1_y * a_2_b + c2_y * b_2_a + end_y * b_3;
+    double new_x = start_x*a_3 + c1_x*a_2_b + c2_x*b_2_a + end_x*b_3;
+    double new_y = start_y*a_3 + c1_y*a_2_b + c2_y*b_2_a + end_y*b_3;
     draw_line(image, y, x, new_y, new_x, value);
     y = new_y; x = new_x;
   }

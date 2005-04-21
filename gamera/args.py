@@ -186,7 +186,7 @@ class Class(Arg):
       if self.klass is None:
          result = "object"
       else:
-         result = "``%s``" % self.klass.__name__
+         result = "%s" % self.klass.__name__
       if name:
          result += " *%s*" % self.name
       return result

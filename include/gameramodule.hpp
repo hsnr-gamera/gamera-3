@@ -1170,7 +1170,7 @@ inline T pixel_from_python<T>::convert(PyObject* obj) {
 	Py_complex temp = PyComplex_AsCComplex(obj);
 	return (T)temp.real;
       }
-      return T(*(((RGBPixelObject*)obj)->m_x));
+      return T((*(((RGBPixelObject*)obj)->m_x)).luminance());
     }
     return (T)PyInt_AsLong(obj);
   }

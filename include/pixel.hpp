@@ -264,36 +264,36 @@ namespace Gamera {
       return std::numeric_limits<T>::max() - data_[2];
     }
 
-    /// Conversion operator to a FloatPixel
-    operator FloatPixel() {
-      return FloatPixel(luminance());
-    }
+//     /// Conversion operator to a FloatPixel
+//     operator FloatPixel() {
+//       return FloatPixel(luminance());
+//     }
 
-    /// Conversion operator to a ComplexPixel
-    operator ComplexPixel() {
-      ComplexPixel temp;
-      temp.real = luminance();
-      temp.imag = 0;
-      return ComplexPixel(temp);
-    }
+//     /// Conversion operator to a ComplexPixel
+//     operator ComplexPixel() {
+//       ComplexPixel temp;
+//       temp.real = luminance();
+//       temp.imag = 0;
+//       return ComplexPixel(temp);
+//     }
 
-    /// Conversion operator to a GreyScalePixel
-    operator GreyScalePixel() {
-      return GreyScalePixel(luminance());
-    }
+//     /// Conversion operator to a GreyScalePixel
+//     operator GreyScalePixel() {
+//       return GreyScalePixel(luminance());
+//     }
 
-    /// Conversion operator to a Grey16Pixel
-    operator Grey16Pixel() {
-      return Grey16Pixel(luminance());
-    }
+//     /// Conversion operator to a Grey16Pixel
+//     operator Grey16Pixel() {
+//       return Grey16Pixel(luminance());
+//     }
 
-    /// Conversion operator to a OneBitPixel
-    operator OneBitPixel() {
-      if (luminance())
-	return 1;
-      else
-	return 0;
-    }
+//     /// Conversion operator to a OneBitPixel
+//     operator OneBitPixel() {
+//       if (luminance())
+// 	return 1;
+//       else
+// 	return 0;
+//     }
   };
 
   /// This is the standard form of the RGB pixels

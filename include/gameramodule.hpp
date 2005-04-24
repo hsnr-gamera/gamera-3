@@ -1036,6 +1036,9 @@ inline PointVector* PointVector_from_python(PyObject* py) {
       Point p = coerce_Point(point);
       cpp->push_back(p);
     } catch (std::exception e) {
+      PyErr_SetString(PyExc_TypeError,
+		      "Argument must be a iterable of Points.");
+      Py_DECREF(seq);
       return 0;
     }
   }

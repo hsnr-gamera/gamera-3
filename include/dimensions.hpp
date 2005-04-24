@@ -54,10 +54,7 @@ namespace Gamera {
     /**
      * Construct a point for the given x and y coordinates.
      */
-    Point(coord_t x, coord_t y) {
-      m_x = x;
-      m_y = y;
-    }
+    Point(coord_t x, coord_t y) : m_x(x), m_y(x) { }
 
     /// Return the x coordinate.
     coord_t x() const {
@@ -117,10 +114,7 @@ namespace Gamera {
     Size() : m_width(1), m_height(1) { }
     
     /// Construct a size object from width and height.
-    Size(coord_t width, coord_t height) {
-      m_width = width;
-      m_height = height;
-    }
+    Size(coord_t width, coord_t height) : m_width(width), m_height(height) { }
 
     /// Return the width
     coord_t width() const {
@@ -170,10 +164,7 @@ namespace Gamera {
   class Dimensions {
   public:
     Dimensions() : m_ncols(1), m_nrows(1) { }
-    Dimensions(coord_t rows, coord_t cols) {
-      m_ncols = cols;
-      m_nrows = rows;
-    }
+    Dimensions(coord_t rows, coord_t cols) : m_ncols(cols), m_nrows(rows) { }
     coord_t ncols() const { return m_ncols; }
     coord_t nrows() const { return m_nrows; }
     void ncols(coord_t ncols) { m_ncols = ncols; }

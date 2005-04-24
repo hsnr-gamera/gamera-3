@@ -50,7 +50,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { "move", point_move, METH_VARARGS,
-    "**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
+    "**move** (*x*, *y*)\n\nMoves the point by the *x*, *y* amount."},
   { NULL }
 };
 

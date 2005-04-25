@@ -158,8 +158,9 @@ def methods_flat_category(category, pixel_type=None):
    elif plugin_methods.has_key(pixel_type):
       methods = plugin_methods[pixel_type]
       if methods.has_key(category):
-         return _methods_flatten(methods[category])
-   return []
+         # We have to cast the lists to sets here to make Python 2.3.0 happy.
+         return sets.Set(_methods_flatten(methods[category]))
+   return sets.Set()
 
 def _methods_flatten(mat):
    list = []

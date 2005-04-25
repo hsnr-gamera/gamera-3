@@ -550,8 +550,9 @@ def get_file_extensions(mode):
                             (ext.lower(), ext.upper()) for ext in method.exts])
       type = "%s Files (%s)|%s" % (method.exts[0].upper(), wildcards, wildcards)
       types.append(type)
-      extensions.union_update(method.exts)
-      extensions.union_update([x.upper() for x in method.exts])
+      # We have to cast the lists to sets here to make Python 2.3.0 happy.
+      extensions.union_update(sets.Set(method.exts))
+      extensions.union_update(sets.Set([x.upper() for x in method.exts]))
    all_extensions = ";".join(["*.%s" % x for x in extensions])
    types.insert(0, "All images (%s)|%s" % (all_extensions, all_extensions))
    types.append("All files (*.*)|*.*")

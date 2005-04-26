@@ -45,6 +45,8 @@ namespace Gamera {
    * This is a simple class to hold a single coordinate on a plane (x/y value pair).
    */
   class Point {
+  private:
+    coord_t m_x, m_y;
   public:
     /**
      * Default constructor - x and y are 0
@@ -54,10 +56,7 @@ namespace Gamera {
     /**
      * Construct a point for the given x and y coordinates.
      */
-    Point(coord_t x, coord_t y) {
-      m_x = x;
-      m_y = y;
-    }
+    Point(coord_t x, coord_t y) : m_x(x), m_y(y) {}
 
     /// Return the x coordinate.
     coord_t x() const {
@@ -94,8 +93,6 @@ namespace Gamera {
     bool operator!=(const Point& x) const {
       return (m_x != x.m_x || m_y != x.m_y);
     }
-  private:
-    coord_t m_x, m_y;
   };
 
   /*
@@ -112,15 +109,14 @@ namespace Gamera {
    * refer to nrows - 1 or ncols - 1.
    */
   class Size {
+  private:
+    coord_t m_width, m_height;
   public:
     /// Default constructor - set width and height to 0
     Size() : m_width(1), m_height(1) { }
     
     /// Construct a size object from width and height.
-    Size(coord_t width, coord_t height) {
-      m_width = width;
-      m_height = height;
-    }
+    Size(coord_t width, coord_t height) : m_width(width), m_height(height) {}
 
     /// Return the width
     coord_t width() const {
@@ -157,8 +153,6 @@ namespace Gamera {
       else
 	return false;
     }
-  private:
-    coord_t m_width, m_height;
   };
 
   /*
@@ -168,12 +162,11 @@ namespace Gamera {
    * refer to width or height + 1.
    */
   class Dimensions {
+  private:
+    coord_t m_ncols, m_nrows;
   public:
     Dimensions() : m_ncols(1), m_nrows(1) { }
-    Dimensions(coord_t rows, coord_t cols) {
-      m_ncols = cols;
-      m_nrows = rows;
-    }
+    Dimensions(coord_t rows, coord_t cols) : m_ncols(cols), m_nrows(rows) {}
     coord_t ncols() const { return m_ncols; }
     coord_t nrows() const { return m_nrows; }
     void ncols(coord_t ncols) { m_ncols = ncols; }
@@ -190,8 +183,6 @@ namespace Gamera {
       else
 	return false;
     }
-  private:
-    coord_t m_ncols, m_nrows;
   };
 
   /*

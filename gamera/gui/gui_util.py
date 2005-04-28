@@ -101,7 +101,7 @@ class FileDialog(wxFileDialog):
          self._multiple = False
       wxFileDialog.__init__(
          self, parent, "Choose a file",
-         cls.last_directory, "", extensions, self._flags)
+         cls.last_directory, "", str(extensions), self._flags)
       self.extensions = extensions
 
    def show(self):

@@ -17,7 +17,25 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-# Gamera specific
+# This stuff must come the very first before any other gui-specific things
+# are imported.
+
+# Choose wxPython 2.4 if there are multiple versions installed
+try:
+   import wxversion
+except ImportError:
+   pass
+else:
+   wxversion.select("2.6")
+
+# wxPython
+from wxPython.wx import *
+
+if wxVERSION[:2] != (2, 4):
+   raise RuntimeError("""This version of Gamera requires wxPython 2.4.x.
+However, it seems that you have wxPython %s installed.
+In order to use wxPython 2.6.x, you will need to upgrade to Gamera 3.x"""
+                      % ".".join([str(x) for x in wxVERSION]))
 
 import inspect
 from gamera.core import *
@@ -27,9 +45,6 @@ from gamera.gui import gamera_display, image_menu, \
      icon_display, classifier_display, var_name, gui_util, \
      image_browser, has_gui
 
-# wxPython
-from wxPython.wx import *
-# Handle multiple versions of wxPython
 
 try:
    from wxPython import py

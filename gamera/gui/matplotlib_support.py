@@ -96,7 +96,9 @@ else:
             dialog_data.EnablePageNumbers(False)
             dialog_data.EnableSelection(False)
          printer = wx.Printer(dialog_data)
-         printer.Print(self, printout, True)
+         if not printer.Print(self, printout, True):
+            if printer.GetLastError() == wx.PRINTER_ERROR:
+               gui_util.message("A printing error occurred.")
 
       def zoom(self, evt):
          if evt.GetIsDown():

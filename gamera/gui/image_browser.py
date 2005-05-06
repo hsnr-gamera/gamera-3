@@ -20,7 +20,6 @@
 from gamera import core, config
 from gamera.gui import gamera_display, gui_util, gamera_icons
 from wxPython.wx import *
-from wxPython.lib.mixins.listctrl import wxListCtrlAutoWidthMixin
 import glob, string, os.path
 
 class FileList(wxGenericDirCtrl):

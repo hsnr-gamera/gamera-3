@@ -26,11 +26,17 @@ try:
 except ImportError:
    pass
 else:
-   wxversion.select("2.6")
+   try:
+      wxversion.select("2.4")
+   except:
+      raise RuntimeError("""This version of Gamera requires wxPython 2.4.x.
+However, it seems that you do not have that version installed.
+In order to use wxPython 2.6.x, you will need to upgrade to Gamera 3.x""")
+      
 
 # wxPython
 from wxPython.wx import *
-
+# Check that the version is correct
 if wxVERSION[:2] != (2, 4):
    raise RuntimeError("""This version of Gamera requires wxPython 2.4.x.
 However, it seems that you have wxPython %s installed.

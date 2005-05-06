@@ -298,8 +298,8 @@ this problem:
 
   2. programmatically set Gamera options
 
-Having Gamera to parse the command line
-```````````````````````````````````````
+Having Gamera parse the command line
+````````````````````````````````````
 
 Generally, if your script would rather ignore the command line and
 pass all command line arguments verbatim to Gamera, simply do the

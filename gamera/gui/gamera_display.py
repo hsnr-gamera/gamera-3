@@ -478,13 +478,16 @@ class ImageDisplay(wxScrolledWindow, util.CallbackObject):
       self.original_image.save_image(filename)
 
    def _OnPrint(self, *args):
-      printout = GameraPrintout(self.original_image)
       dialog_data = wxPrintDialogData()
       dialog_data.EnableHelp(False)
       dialog_data.EnablePageNumbers(False)
       dialog_data.EnableSelection(False)
       printer = wxPrinter(dialog_data)
-      printer.Print(self, printout, True)
+      printout = GameraPrintout(self.original_image)
+      if not printer.Print(self, printout, True):
+         if printer.GetLastError() == wx.PRINTER_ERROR:
+            gui_util.message("A printing error occurred.")
+      printout.Destroy()
 
    ########################################
    # CALLBACKS

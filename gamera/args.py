@@ -342,10 +342,9 @@ class ImageInfo(Class):
 class Point(Arg):
    def __init__(self, name=None, default=None):
       Arg.__init__(self, name)
-      from gamera.core import Point
       if default is None:
          self.has_default = False
-         self.default = Point(0, 0)
+         self.default = (0, 0)
       else:
          self.has_default = True
          self.default = default

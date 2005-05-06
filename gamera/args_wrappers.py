@@ -360,7 +360,7 @@ class Point(Arg):
       return """
       try {
          %(symbol)s = coerce_Point(%(pysymbol)s);
-      } catch (std::exception e) {
+      } catch (std::invalid_argument e) {
          PyErr_SetString(PyExc_TypeError, "Argument '%(name)s' must be a Point, or convertible to a Point");
          return 0;
       }

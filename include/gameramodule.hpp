@@ -52,11 +52,12 @@
 inline PyObject* get_module_dict(char* module_name) {
   PyObject* mod = PyImport_ImportModule(module_name);
   if (mod == 0)
-    return PyErr_Format(PyExc_RuntimeError, "Unable to load %s.\n", module_name);
+    return PyErr_Format(PyExc_ImportError, "Unable to load module '%s'.\n", module_name);
   PyObject* dict = PyModule_GetDict(mod);
   if (dict == 0)
     return PyErr_Format(PyExc_RuntimeError,
-			"Unable to get dict for module %s.\n", module_name);
+			"Unable to get dict for module '%s'.\n",
+			module_name);
   Py_DECREF(mod);
   return dict;
 }
@@ -78,20 +79,20 @@ inline PyObject* get_ArrayInit() {
   if (t == 0) {
     PyObject* array_module = PyImport_ImportModule("array");
     if (array_module == 0) {
-      PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get array module.\n");
+      PyErr_SetString(PyExc_ImportError,
+		      "Unable to get 'array' module.\n");
       return 0;
     }
     PyObject* array_dict = PyModule_GetDict(array_module);
     if (array_dict == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get array module dictionary.\n");
+		      "Unable to get 'array' module dictionary.\n");
       return 0;
     }
     t = PyDict_GetItemString(array_dict, "array");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get array object.\n");
+		      "Unable to get 'array' object.\n");
       return 0;
     }
     Py_DECREF(array_module);
@@ -108,7 +109,7 @@ inline PyObject* get_ArrayAppend() {
     t = PyObject_GetAttrString(array_init, "append");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get array append method.\n");
+		      "Unable to get 'array' append method.\n");
       return 0;
     }
   }
@@ -179,7 +180,7 @@ inline PyTypeObject* get_DimensionsType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Dimensions");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Dimensions type for gamera.gameracore.\n");
+		      "Unable to get Dimensions type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -252,6 +253,7 @@ inline PyObject* create_PointObject(const Point& d) {
 }
 
 inline Point coerce_Point(PyObject* obj) {
+  // Fast method if the Point is a real Point type.
   PyTypeObject* t2 = get_PointType();
   if (t2 == 0) {
     PyErr_SetString(PyExc_RuntimeError, "Couldn't get Point type.");
@@ -259,29 +261,36 @@ inline Point coerce_Point(PyObject* obj) {
   }
   if (PyObject_TypeCheck(obj, t2))
     return Point(*(((PointObject*)obj)->m_x));
-  
+
   PyObject* py_x0 = NULL;
   PyObject* py_y0 = NULL;
   PyObject* py_x1 = NULL;
   PyObject* py_y1 = NULL;
-  py_x0 = PyObject_GetAttrString(obj, "x");
-  if (py_x0 != NULL) {
-    py_x1 = PyNumber_Int(py_x0);
-    if (py_x1 != NULL) {
-      long x = PyInt_AsLong(py_x1);
-      py_y0 = PyObject_GetAttrString(obj, "y");
-      if (py_y0 != NULL) {
+
+  // Treat 2-element sequences as Points.
+  if (PySequence_Check(obj)) {
+    if (PySequence_Length(obj) == 2) {
+      py_x0 = PySequence_GetItem(obj, 0);
+      py_x1 = PyNumber_Int(py_x0);
+      if (py_x1 != NULL) {
+	long x = PyInt_AsLong(py_x1);
+	Py_DECREF(py_x1);
+	py_y0 = PySequence_GetItem(obj, 1);
 	py_y1 = PyNumber_Int(py_y0);
 	if (py_y1 != NULL) {
 	  long y = PyInt_AsLong(py_y1);
+	  Py_DECREF(py_y1);
 	  return Point((size_t)x, (size_t)y);
 	}
       }
     }
   }
-  PyErr_SetString(PyExc_TypeError, "Argument is not a Point (or convertible to one.");
-  throw std::runtime_error("Argument is not a Point (or convertible to one.");
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Argument is not a Point (or convertible to one.)");
+  throw std::invalid_argument("Argument is not a Point (or convertible to one.)");
 }
+
 
 /*
   RECT OBJECT

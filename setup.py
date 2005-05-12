@@ -49,7 +49,7 @@ command_line_utils = (
     """#!%(executable)s
 %(header)s
 print "Loading GAMERA..."
-print "Using 'gamera_gui --help' to display command line options"
+print "Use 'gamera_gui --help' to display command line options"
 import sys
 try:
    from gamera.config import config

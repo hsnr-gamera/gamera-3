@@ -43,9 +43,11 @@ void save_tiff(const T& matrix, const char* filename);
   ImageInfo object.  See image_info.hpp for more information.
 */
 ImageInfo* tiff_info(const char* filename) {
+  TIFFErrorHandler saved_handler = TIFFSetErrorHandler(NULL);
   TIFF* tif = 0;
   tif = TIFFOpen(filename, "r");
   if (tif == 0) {
+    TIFFSetErrorHandler(saved_handler);
     throw std::invalid_argument("Failed to open image header");
   }
   // Create this later so it isn't leaked if filename does
@@ -76,6 +78,7 @@ ImageInfo* tiff_info(const char* filename) {
   info->inverted(tmp == PHOTOMETRIC_MINISWHITE);
 
   TIFFClose(tif);
+  TIFFSetErrorHandler(saved_handler);
   return info;
 }
 namespace {
@@ -312,6 +315,7 @@ namespace {
 }
 
 Image* load_tiff(const char* filename, int storage) {
+  TIFFErrorHandler saved_handler = TIFFSetErrorHandler(NULL);
   ImageInfo* info = tiff_info(filename);
   if (info->ncolors() == 1) {
     if (info->depth() == 1) {
@@ -322,6 +326,7 @@ Image* load_tiff(const char* filename, int storage) {
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	delete info;
+	TIFFSetErrorHandler(saved_handler);
 	return image;
       } else {
 	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
@@ -330,12 +335,14 @@ Image* load_tiff(const char* filename, int storage) {
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	delete info;
+	TIFFSetErrorHandler(saved_handler);
 	return image;
       }
     }
   }
   if (storage == RLE) {
     delete info;
+    TIFFSetErrorHandler(saved_handler);
     throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
   }
   if (info->ncolors() == 3) {
@@ -344,6 +351,7 @@ Image* load_tiff(const char* filename, int storage) {
       fact::create(0, 0, info->nrows(), info->ncols());
     tiff_load_rgb(*image, *info, filename);
     delete info;
+    TIFFSetErrorHandler(saved_handler);
     return image;
   } else if (info->depth() == 8) {
     typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
@@ -352,6 +360,7 @@ Image* load_tiff(const char* filename, int storage) {
     image->resolution(info->x_resolution());
     tiff_load_greyscale(*image, *info, filename);
     delete info;
+    TIFFSetErrorHandler(saved_handler);
     return image;
   } else if (info->depth() == 16) {
     typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
@@ -360,9 +369,11 @@ Image* load_tiff(const char* filename, int storage) {
     image->resolution(info->x_resolution());
     tiff_load_greyscale(*image, *info, filename);
     delete info;
+    TIFFSetErrorHandler(saved_handler);
     return image;
   }
   delete info;
+  TIFFSetErrorHandler(saved_handler);
   throw std::runtime_error("Unable to load image of this type!");
   return 0;
 }
@@ -381,7 +392,6 @@ void save_tiff(const T& matrix, const char* filename) {
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, matrix.resolution());
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, matrix.ncolors());
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-
 
   tiff_saver<typename T::value_type> saver;
   saver(matrix, tif);

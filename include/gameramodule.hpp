@@ -1189,6 +1189,7 @@ inline T pixel_from_python<T>::convert(PyObject* obj) {
   return (T)PyFloat_AsDouble(obj);
 }
 
+template<>
 inline RGBPixel pixel_from_python<RGBPixel>::convert(PyObject* obj) {
   if (!is_RGBPixelObject(obj)) {
     if (!PyFloat_Check(obj)) {
@@ -1206,6 +1207,7 @@ inline RGBPixel pixel_from_python<RGBPixel>::convert(PyObject* obj) {
   return RGBPixel(*(((RGBPixelObject*)obj)->m_x));
 }
 
+template<>
 inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
   if (!PyComplex_Check(obj)) {
     if (!is_RGBPixelObject(obj)) {

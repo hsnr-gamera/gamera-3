@@ -387,8 +387,8 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     }
     std::copy(tmp_fv, tmp_fv + o->num_features, current_features);
     o->normalize->add(tmp_fv, tmp_fv + o->num_features);
-    char* tmp_id_name;
-    int len;
+    char* tmp_id_name = NULL;
+    int len = 0;
     if (image_get_id_name(cur_image, &tmp_id_name, &len) < 0) {
       knn_delete_feature_data(o);
       PyErr_SetString(PyExc_TypeError, "knn: could not get id name");
@@ -646,7 +646,7 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  double distance;
+  double distance = 0.0;
   compute_distance(o->distance_type, imagea, imageb, &distance, o->weight_vector,
 		   o->num_features);
   return Py_BuildValue("f", distance);

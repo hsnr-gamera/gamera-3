@@ -10,10 +10,13 @@
 ---------------------------------------------------------------------------- */
 #include <ga/GAStringGenome.h>
 
+template<>
 const char * 
 GA1DArrayAlleleGenome<char>::className() const {return "GAStringGenome";}
+template<>
 int GA1DArrayAlleleGenome<char>::classID() const {return GAID::StringGenome;}
 
+template<>
 GA1DArrayAlleleGenome<char>::
 GA1DArrayAlleleGenome(unsigned int length, const GAAlleleSet<char> & s,
 		      GAGenome::Evaluator f, void * u) :
@@ -28,6 +31,7 @@ GA1DArrayGenome<char>(length, f, u){
   crossover(DEFAULT_STRING_CROSSOVER);
 }
 
+template<>
 GA1DArrayAlleleGenome<char>::
 GA1DArrayAlleleGenome(const GAAlleleSetArray<char> & sa,
 		      GAGenome::Evaluator f, void * u) :
@@ -52,6 +56,7 @@ GA1DArrayAlleleGenome<char>::~GA1DArrayAlleleGenome(){
 #ifndef NO_STREAMS
 // The read specialization takes in each character whether it is whitespace or
 // not and stuffs it into the genome.  This is unlike the default array read.
+template<>
 int
 GA1DArrayAlleleGenome<char>::read(istream & is)
 {
@@ -72,6 +77,7 @@ GA1DArrayAlleleGenome<char>::read(istream & is)
 
 // Unlike the base array genome, here when we write out we don't put any
 // whitespace between genes.  No newline at end of it all.
+template<>
 int
 GA1DArrayAlleleGenome<char>::write(ostream & os) const
 {

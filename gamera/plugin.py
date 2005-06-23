@@ -101,7 +101,7 @@ class PluginFunction:
       else:
          func = cls.__call__
       cls.__call__ = staticmethod(func)
-
+      
       if cls.category == None:
          category = cls.module.category
       else:

@@ -167,8 +167,7 @@ namespace Gamera {
       value_type tmp = *(m_const_begin + (row * m_image_data->stride()) + col);
       if (tmp == m_label)
 	return tmp;
-      else
-	return 0;
+      return 0;
     }
     void set(size_t row, size_t col, value_type value) {
       if (*(m_begin + (row * m_image_data->stride()) + col) == m_label)

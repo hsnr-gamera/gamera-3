@@ -431,36 +431,44 @@ namespace Gamera {
     Specialization for pixel_traits
   */
 
+  template<>
   inline OneBitPixel pixel_traits<OneBitPixel>::black() {
     return 1;
   }
 
+  template<>
   inline OneBitPixel pixel_traits<OneBitPixel>::white() {
     return 0;
   }
 
+  template<>
   inline RGBPixel pixel_traits<RGBPixel>::black() {
     return RGBPixel(0, 0, 0);
   }
   
+  template<>
   inline RGBPixel pixel_traits<RGBPixel>::white() {
     return RGBPixel(std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max(),
 		    std::numeric_limits<GreyScalePixel>::max());
   }
 
+  template<>
   inline FloatPixel pixel_traits<FloatPixel>::default_value() {
     return 0.0;
   }
 
+  template<>
   inline ComplexPixel pixel_traits<ComplexPixel>::white() {
     return ComplexPixel(std::numeric_limits<double>::max(), 0.0);
   }
 
+  template<>
   inline ComplexPixel pixel_traits<ComplexPixel>::black() {
     return ComplexPixel(0.0, 0.0);
   }
 
+  template<>
   inline ComplexPixel pixel_traits<ComplexPixel>::default_value() {
     return pixel_traits<ComplexPixel>::black();
   }

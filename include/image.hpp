@@ -98,8 +98,11 @@ namespace Gamera {
     inline size_t ncolors() const { return 1; }
   };
 
+  template<>
   inline size_t ImageBase<OneBitPixel>::depth() const { return 1; }
+  template<>
   inline size_t ImageBase<RGBPixel>::ncolors() const { return 3; }
+  template<>
   inline size_t ImageBase<RGBPixel>::depth() const { return 8; }
 
 };

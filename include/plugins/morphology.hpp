@@ -47,6 +47,7 @@ namespace Gamera {
     return *(max_element(begin, end));
   }
 
+  template<>
   inline OneBitPixel Max<OneBitPixel>::operator()
     (vector<OneBitPixel>::iterator begin,
      vector<OneBitPixel>::iterator end) {
@@ -66,6 +67,7 @@ namespace Gamera {
     return *(min_element(begin, end));
   }
 
+  template<>
   inline OneBitPixel Min<OneBitPixel>::operator()
     (vector<OneBitPixel>::iterator begin,
      vector<OneBitPixel>::iterator end) {
@@ -163,6 +165,7 @@ namespace Gamera {
     return *(begin + rank);
   }
 
+  template<>
   inline OneBitPixel Rank<OneBitPixel>::operator() (vector<OneBitPixel>::iterator begin,
 						    vector<OneBitPixel>::iterator end) {
     nth_element(begin, end - rank, end);

@@ -117,10 +117,33 @@ require recursion.
   args = Args([Int('cc_size', range=(1, 100))])
   doc_examples = [(ONEBIT,5), (ONEBIT,15)]
 
+class distance_transform(PluginFunction):
+  """For all background pixels, calculate the distance to the nearest
+object or contour. In the destination image, all pixels corresponding to
+background will be assigned the their distance value, all pixels
+corresponding to objects will be assigned 0.  The result is returned
+as a Float image.
+
+*norm*:
+
+    0: use chessboard distance (L-infinity norm)
+
+    1: use Manhattan distance (L1 norm)
+
+    2: use Euclidean distance (L2 norm)
+
+If you use the L2 norm, the destination pixels must be real valued to give correct results.
+"""
+  self_type = ImageType([ONEBIT])
+  args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
+  return_type = ImageType([FLOAT])
+  doc_examples = [(ONEBIT,5),]
+
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
   category = "Morphology"
-  functions = [erode_dilate, erode, dilate, rank, mean, despeckle]
+  functions = [erode_dilate, erode, dilate, rank, mean, despeckle,
+               distance_transform]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 

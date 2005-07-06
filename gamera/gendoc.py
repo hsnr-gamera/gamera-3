@@ -495,12 +495,16 @@ def docstring(name, arguments, options, content, lineno,
          textnodes, messages = state.inline_text(title_text, lineno)
          titles = [docutils.nodes.title(title_text, '', *textnodes)] + messages
          node = docutils.nodes.section(text, *titles)
-         node['name'] = name
-         state_machine.document.note_implicit_target(node, node)
+         version = [int(x) for x in docutils.__version__.split(".")]
+         if version >= (0, 3, 9):
+            node['names'] = [name]  # docutils 0.3.9 way
+         else:
+            node['name'] = name     # docutils 0.3.7 way
+         state_machine.document.note_implicit_target(node)
       else:
          node = docutils.nodes.paragraph(text)
       content = docutils.statemachine.StringList(initlist=content, parent=node)
-      state.nested_parse(content, 0, node)
+      state.nested_parse(content, content_offset, node)
       return node
       
    base_obj = import_helper(*arguments[:2])

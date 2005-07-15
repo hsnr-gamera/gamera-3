@@ -184,8 +184,8 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
 
   _clip_points(image, y1, x1, y2, x2);
 
-  for (size_t y = y1; y < y2; ++y) 
-    for (size_t x = x1; x < x2; ++x)
+  for (size_t y = y1; y <= y2; ++y) 
+    for (size_t x = x1; x <= x2; ++x)
       image.set(y, x, value);
 }
 

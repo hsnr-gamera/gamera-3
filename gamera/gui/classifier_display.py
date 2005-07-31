@@ -734,8 +734,8 @@ class ClassifierFrame(ImageFrameBase):
                                             display.GetGridCursorCol())
             active_id = display
             inactive_id = self.get_other_multi(display)
-            break
-      return selection, active_id, inactive_id
+            return selection, active_id, inactive_id
+      return [], self.multi_iw.id, self.class_iw.id
 
    def display_cc(self, cc):
       if self.splitterhr0.IsSplit():

@@ -142,7 +142,7 @@ docstring`__ way:
 
 On a related note, you can also have the documentation system
 (``doc/gendoc.py``) generate an example automatically.  See
-`documenting Plugin functions`_. 
+`documenting and unit-testing Plugin functions`_. 
 
 Next, we define ``self_type``, which is the type of object this
 method can be called on.  If ``self_type`` is an ``ImageType``, the method
@@ -552,8 +552,8 @@ There are essentially two ways to update the progress bar:
    have completed.  ``.update`` is useful when the number of steps can
    not be pre-determined.
 
-Documenting Plugin functions
-----------------------------
+Documenting and unit-testing Plugin functions
+---------------------------------------------
 
 The docstring of each ``PluginFunction`` class is used to generate
 HTML documentation.  The docstrings should be formatted in
@@ -569,9 +569,13 @@ script::
   python gendoc.py
 
 In addition to text, image examples can be generated on-the-fly and
-included in the documentation using
-the ``doc_examples`` member.  The ``doc_examples`` member is a list of
-tuples or functions:
+included in the documentation using the ``doc_examples`` member.  The
+``doc_examples`` mechanism is also used to write rudimentary
+unit-tests for Gamera's `unit-testing framework`__.
+
+.. __: unit_testing.html
+
+The ``doc_examples`` member is a list of tuples or functions:
 
 - If the element is a tuple, it is a list of arguments that will be
   passed into the plugin method to create an example.  Where image
@@ -585,10 +589,12 @@ tuples or functions:
 - If the element is a function, that function will be called to create
   the example.  The function will be passed one argument, ``images``,
   which is a dictionary of the standard Gamera example images.  Any
-  images or values returned will be included in the documentation.  For
-  example the following loads the standard RGB and GreyScale images,
-  clips them appropriately, adds them together, and then returns all of
-  them for inclusion in the documentation.
+  images or values returned will be included in the documentation.
+  Any exceptions raised by the function will be logged by the
+  unit-testing framework when it is run.  For example the following
+  loads the standard RGB and GreyScale images, clips them
+  appropriately, adds them together, and then returns all of them for
+  inclusion in the documentation.
 
 .. code:: Python
 

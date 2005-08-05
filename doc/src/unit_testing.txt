@@ -1,0 +1,51 @@
+========================
+Unit testing with Gamera
+========================
+
+Introduction
+============
+
+Gamera does not contain its own unit testing framework, but instead
+uses the great `py.test`__ framework.  
+
+.. note::
+
+  **py.test** is still considered beta-level software, and is somewhat
+  cumbersome to install (perhaps the same could be said about
+  Gamera).  It is not required for proper operation of Gamera, and is
+  only needed for those developers who wish to port Gamera to new
+  platforms or write unit tests for new code.
+
+.. __: http://codespeak.net/py/current/doc/
+
+This document does not attempt to replicate the `py.test`__
+documentation, and will only discuss Gamera-specific additions.
+
+.. __: http://codespeak.net/py/current/doc/
+
+Mile-high view
+==============
+
+1. Install and test `py.test` using the instructions here__.
+
+.. __: http://codespeak.net/py/current/doc/
+
+2. From the gamera/tests directory, run all the unit tests with the
+   command::
+
+     py.test
+
+3. New unit tests can be added following the instructions in the
+   py.test documentation.
+
+Testing Gamera plugins
+======================
+
+The unit test in ``gamera/tests/test_plugins.py`` will load and run
+the ``doc_example`` functions of all plugins available in Gamera.
+Therefore, writing a unit test for a Gamera plugin is often as simple
+as writing a ``doc_example`` plugin with the function.  This is
+explained in `Writing Plugins: Documenting and unit-testing Plugin
+functions`__.
+
+.. __: writing_plugins.html#documenting-and-unit-testing-plugin-functions

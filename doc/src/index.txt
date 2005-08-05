@@ -74,6 +74,10 @@ How To
 
 .. __: classify.html
 
+- `Unit testing`__: How to write and run unit-tests with Gamera.
+
+.. __: unit_testing.html
+
 Reference
 =========
 

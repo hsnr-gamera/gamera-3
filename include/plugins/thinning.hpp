@@ -52,18 +52,15 @@ namespace Gamera {
     size_t y_after = (y == image.nrows() - 1) ? image.nrows() - 2 : y + 1;
     size_t x_after = (x == image.ncols() - 1) ? image.ncols() - 2 : x + 1;
 
-    size_t a,b,c,d,e,f,g,h;
-
-    a = is_black(image.get(y_before, x)) ? 2 : 0;
-    b = is_black(image.get(y_before, x_after)) ? 4 : 0;
-    c = is_black(image.get(y, x_after)) ? 8 : 0;
-    d = is_black(image.get(y_after, x_after)) ? 16 : 0;
-    e = is_black(image.get(y_after, x)) ? 32 : 0;
-    f = is_black(image.get(y_after, x_before)) ? 64 : 0;
-    g = is_black(image.get(y, x_before)) ? 128 : 0;
-    h = is_black(image.get(y_before, x_before)) ? 256 : 0;
-
-    p = a | b | c | d | e | f | g | h;
+    p = 0;
+    p |= is_black(image.get(Point(x, y_before))) ? 1 : 0;
+    p |= is_black(image.get(Point(x_after, y_before))) ? 2 : 0;
+    p |= is_black(image.get(Point(x_after, y))) ? 4 : 0;
+    p |= is_black(image.get(Point(x_after, y_after))) ? 8 : 0;
+    p |= is_black(image.get(Point(x, y_after))) ? 16 : 0;
+    p |= is_black(image.get(Point(x_before, y_after))) ? 32 : 0;
+    p |= is_black(image.get(Point(x_before, y))) ? 64 : 0;
+    p |= is_black(image.get(Point(x_before, y_before))) ? 128 : 0;
 
     N = 0;
     S = 0;

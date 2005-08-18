@@ -189,6 +189,8 @@ class Class(Arg):
          result = "%s" % self.klass.__name__
       if name:
          result += " *%s*" % self.name
+      if self.list_of:
+         return "[%s]" % result
       return result
 
 class ImageType(Arg):
@@ -210,6 +212,8 @@ class ImageType(Arg):
       result = '``Image`` [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
       if name:
          result += " *%s*" % self.name
+      if self.list_of:
+         return "[%s]" % result
       return result
 
    def register(self, plug, func):
@@ -224,6 +228,12 @@ class Rect(Arg):
       if not core is None:
          self.klass = core.Rect
       self.list_of = bool(list_of)
+
+   def rest_repr(self, name=False):
+      result = Arg.rest_repr(self, name)
+      if self.list_of:
+         return "[%s]" % result
+      return result
       
 class Choice(Arg):
    def __init__(self, name=None, choices=[], default=None):

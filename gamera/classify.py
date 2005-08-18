@@ -326,7 +326,10 @@ a list of glyphs that is already updated for splitting."""
          if (len(parts) != 2 or not hasattr(glyph, parts[1])):
             raise ClassifierError("'%s' is not a known or valid split function." % parts[1])
          try:
-            splits = getattr(glyph, parts[1]).__call__(glyph)
+            if sys.version_info[:2] < (2, 4):
+               splits = getattr(glyph, parts[1]).__call__(glyph)
+            else:
+               splits = getattr(glyph, parts[1]).__call__()
          except core.SegmentationError:
             if len(glyph.id_name) >= 2:
                glyph.id_name = glyph.id_name[1:]

@@ -45,31 +45,24 @@ namespace Gamera {
   */
 
   template<class T>
-  void thin_zs_get(size_t y, size_t x, const T& image, unsigned char& p,
-		   size_t& N, size_t& S) {
-    size_t y_before = (y == 0) ? 1 : y - 1;
+  inline void thin_zs_get(const size_t& y, const size_t& y_before, const size_t& y_after, 
+			  const size_t& x, const T& image, unsigned char& p,
+			  size_t& N, size_t& S) {
     size_t x_before = (x == 0) ? 1 : x - 1;
-    size_t y_after = (y == image.nrows() - 1) ? image.nrows() - 2 : y + 1;
     size_t x_after = (x == image.ncols() - 1) ? image.ncols() - 2 : x + 1;
 
-    p = 0;
-    p |= is_black(image.get(Point(x, y_before))) ? 1 : 0;
-    p |= is_black(image.get(Point(x_after, y_before))) ? 2 : 0;
-    p |= is_black(image.get(Point(x_after, y))) ? 4 : 0;
-    p |= is_black(image.get(Point(x_after, y_after))) ? 8 : 0;
-    p |= is_black(image.get(Point(x, y_after))) ? 16 : 0;
-    p |= is_black(image.get(Point(x_before, y_after))) ? 32 : 0;
-    p |= is_black(image.get(Point(x_before, y))) ? 64 : 0;
-    p |= is_black(image.get(Point(x_before, y_before))) ? 128 : 0;
+    p = ((is_black(image.get(Point(x_before, y_before))) << 7) |
+	 (is_black(image.get(Point(x_before, y))) << 6) |
+	 (is_black(image.get(Point(x_before, y_after))) << 5) |
+	 (is_black(image.get(Point(x, y_after))) << 4) |
+	 (is_black(image.get(Point(x_after, y_after))) << 3) |
+	 (is_black(image.get(Point(x_after, y))) << 2) |
+	 (is_black(image.get(Point(x_after, y_before))) << 1) |
+	 (is_black(image.get(Point(x, y_before)))));
 
     N = 0;
     S = 0;
-    bool prev;
-    if (p & (1 << 7)) {
-      prev = true;
-    } else {
-      prev = false;
-    }
+    bool prev = p & (1 << 7);
     for (unsigned char p_copy = p; p_copy; p_copy >>= 1) {
       if (p_copy & 1) {
 	++N;
@@ -82,35 +75,45 @@ namespace Gamera {
   template<class T>
   void thin_zs_flag_bp1(const T& thin, T& flag) {
     register unsigned char p;
-    size_t N, S;
-    for (size_t y = 0; y < thin.nrows(); ++y)
+    size_t N, S; 
+    for (size_t y = 0; y < thin.nrows(); ++y) {
+      size_t y_before = (y == 0) ? 1 : y - 1;
+      size_t y_after = (y == thin.nrows() - 1) ? thin.nrows() - 2 : y + 1;
       for (size_t x = 0; x < thin.ncols(); ++x) {
-	thin_zs_get(y, x, thin, p, N, S);
-	if ((N <= 6) && (N >= 2) &&
-	    (S == 1) &&
-	    !((p & 21) == 21) && // 00010101
-	    !((p & 84) == 84))   // 01010100
-	  flag.set(y, x, black(flag));
-	else
-	  flag.set(y, x, white(flag));
+	if (is_black(thin.get(Point(x, y)))) {
+	  thin_zs_get(y, y_before, y_after, x, thin, p, N, S);
+	  if ((N <= 6) && (N >= 2) &&
+	      (S == 1) &&
+	      !((p & 21) == 21) && // 00010101
+	      !((p & 84) == 84))   // 01010100
+	    flag.set(y, x, black(flag));
+	  else
+	    flag.set(y, x, white(flag));
+	}
       }
+    }
   }
   
   template<class T>
   void thin_zs_flag_bp2(const T& thin, T& flag) {
     register unsigned char p;
     size_t N, S;
-    for (size_t y = 0; y < thin.nrows(); ++y)
+    for (size_t y = 0; y < thin.nrows(); ++y) {
+      size_t y_before = (y == 0) ? 1 : y - 1;
+      size_t y_after = (y == thin.nrows() - 1) ? thin.nrows() - 2 : y + 1;
       for (size_t x = 0; x < thin.ncols(); ++x) {
-	thin_zs_get(y, x, thin, p, N, S);
-	if ((N <= 6) && (N >= 2) &&
-	    (S == 1) &&
-	    !((p & 69) == 69) && // 01000101
-	    !((p & 81) == 81))   // 01010001
-	  flag.set(y, x, black(flag));
-	else
-	  flag.set(y, x, white(flag));
+        if (is_black(thin.get(Point(x, y)))) {
+	  thin_zs_get(y, y_before, y_after, x, thin, p, N, S);
+	  if ((N <= 6) && (N >= 2) &&
+	      (S == 1) &&
+	      !((p & 69) == 69) && // 01000101
+	      !((p & 81) == 81))   // 01010001
+	    flag.set(y, x, black(flag));
+	  else
+	    flag.set(y, x, white(flag));
+	}
       }
+    }
   }
     
   template<class T>
@@ -296,23 +299,25 @@ namespace Gamera {
   Øivind Due Trier, late one night at Michigan State University.
   */
 
-static bool thin_lc_look_up[16][16]= 
-  {{false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 0 */ 
-   {false, false, false, false, true, false, true, true, false, false, false, false, false, true, false, false}, /* 1 */ 
-   {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* 2 */ 
-   {false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false}, /* 3 */ 
-   {false, true, false, true, false, false, false, true, false, false, false, false, false, true, false, true}, /* 4 */ 
-   {true, false, false, true, false, false, true, false, true, true, false, true, true, false, true, false}, /* 5 */ 
-   {false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, true}, /* 6 */ 
-   {false, true, false, true, true, false, true, false, false, true, false, true, false, false, false, false}, /* 7 */ 
-   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 8 */ 
-   {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false}, /* 9 */ 
-   {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* A */ 
-   {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true}, /* B */ 
-   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* C */
-   {true, true, false, true, true, false, true, false, true, true, false, true, true, false, true, false}, /* D */ 
-   {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, true}, /* E */ 
-   {false, false, false, false, true, false, true, false, false, false, false, true, false, false, true, false}};/* F */
+// static bool thin_lc_look_up[16][16]= 
+//   {{false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 0 */ 
+//    {false, false, false, false, true, false, true, true, false, false, false, false, false, true, false, false}, /* 1 */ 
+//    {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* 2 */ 
+//    {false, false, false, false, true, true, true, true, false, false, false, false, false, true, false, false}, /* 3 */ 
+//    {false, true, false, true, false, false, false, true, false, false, false, false, false, true, false, true}, /* 4 */ 
+//    {true, false, false, true, false, false, true, false, true, true, false, true, true, false, true, false}, /* 5 */ 
+//    {false, true, false, true, false, true, false, true, false, false, false, false, false, true, false, true}, /* 6 */ 
+//    {false, true, false, true, true, false, true, false, false, true, false, true, false, false, false, false}, /* 7 */ 
+//    {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* 8 */ 
+//    {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, false}, /* 9 */ 
+//    {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}, /* A */ 
+//    {false, false, false, false, false, true, false, true, false, false, false, false, false, true, false, true}, /* B */ 
+//    {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false}, /* C */
+//    {true, true, false, true, true, false, true, false, true, true, false, true, true, false, true, false}, /* D */ 
+//    {false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, true}, /* E */ 
+//    {false, false, false, false, true, false, true, false, false, false, false, true, false, false, true, false}};/* F */
+
+  static unsigned short thin_lc_look_up[16] = {0x2020, 0x20d0, 0x0, 0x20f0, 0xa08a, 0x5b49, 0xa0aa, 0xa5a, 0x2020, 0x20a0, 0x0, 0xa0a0, 0x2020, 0x5b5b, 0xa020, 0x4850};
 
   template<class T>
   typename ImageFactory<T>::view_type* thin_lc(const T& in) {
@@ -326,34 +331,29 @@ static bool thin_lc_look_up[16][16]=
     size_t nrows = thin_view->nrows();
     size_t ncols = thin_view->ncols();
     typename view_type::vec_iterator it = thin_view->vec_begin();
-    for (size_t y = 0; y < nrows; ++y)
+    for (size_t y = 0; y < nrows; ++y) {
+      size_t y_before = (y == 0) ? 1 : y - 1;
+      size_t y_after = (y == nrows - 1) ? nrows - 2 : y + 1;
       for (size_t x = 0; x < ncols; ++x, ++it) {
 	if (is_black(*it)) {
-	  size_t y_before = (y == 0) ? 1 : y - 1;
 	  size_t x_before = (x == 0) ? 1 : x - 1;
-	  size_t y_after = (y == nrows - 1) ? nrows - 2 : y + 1;
 	  size_t x_after = (x == ncols - 1) ? ncols - 2 : x + 1;
-
-	  size_t a, b, c, d;
 	  
-	  a = is_black(thin_view->get(y_before, x)) ? 1 : 0;
-	  b = is_black(thin_view->get(y_before, x_after)) ? 2 : 0;
-	  c = is_black(thin_view->get(y, x_after)) ? 4 : 0;
-	  d = is_black(thin_view->get(y_after, x_after)) ? 8 : 0;
+	  size_t j = ((is_black(thin_view->get(Point(x_after, y_after))) << 3) |
+		      (is_black(thin_view->get(Point(x_after, y))) << 2) |
+		      (is_black(thin_view->get(Point(x_after, y_before))) << 1) |
+		      (is_black(thin_view->get(Point(x, y_before)))));
 
-	  size_t j = a | b | c | d;
+	  size_t i = ((is_black(thin_view->get(Point(x_before, y_before))) << 3) |
+		      (is_black(thin_view->get(Point(x_before, y))) << 2) |
+		      (is_black(thin_view->get(Point(x_before, y_after))) << 1) |
+		      (is_black(thin_view->get(Point(x, y_after)))));
 
-	  a = is_black(thin_view->get(y_after, x)) ? 1 : 0;
-	  b = is_black(thin_view->get(y_after, x_before)) ? 2 : 0;
-	  c = is_black(thin_view->get(y, x_before)) ? 4 : 0;
-	  d = is_black(thin_view->get(y_before, x_before)) ? 8 : 0;
-
-	  size_t i = a | b | c | d;
-
-	  if (thin_lc_look_up[i][j])
+	  if (thin_lc_look_up[i] & (1 << j))
 	    *it = white(*thin_view);
 	}
       }
+    }
     return thin_view;
   }
 

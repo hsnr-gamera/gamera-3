@@ -427,13 +427,15 @@ namespace Gamera {
     size_t end_points = 0, total_pixels = 0;
     size_t center_x = 0, center_y = 0;
     for (size_t y = 0; y < skel->nrows(); ++y) {
+      size_t y_before = (y == 0) ? 1 : y - 1;
+      size_t y_after = (y == skel->nrows() - 1) ? skel->nrows() - 2 : y + 1;
       for (size_t x = 0; x < skel->ncols(); ++x) {
 	if (is_black(skel->get(y, x))) {
 	  ++total_pixels;
 	  center_x += x;
 	  center_y += y;
 	  size_t N, S;
-	  thin_zs_get(y, x, *skel, p, N, S);
+	  thin_zs_get(y, y_before, y_after, x, *skel, p, N, S);
 	  switch (N) {
 	  case 4:
 	    ++X_joints;

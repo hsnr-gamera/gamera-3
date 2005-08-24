@@ -117,6 +117,13 @@ class IconDisplay(wxListCtrl):
          for i in self.data.values():
             if i.index > index:
                i.index = i.index - 1
+         if index < self.GetItemCount():
+            next = index
+         else:
+            next = self.GetItemCount() - 1
+         if next >= 0:
+            self.SetItemState(
+               next, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED)
 
    def update_icons(self, locals=None):
       if locals != None:

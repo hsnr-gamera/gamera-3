@@ -63,12 +63,13 @@ namespace Gamera {
     N = 0;
     S = 0;
     bool prev = p & (1 << 7);
-    for (unsigned char p_copy = p; p_copy; p_copy >>= 1) {
-      if (p_copy & 1) {
+    for (size_t i = 0; i < 8; ++i) {
+      if (p & (1 << i)) {
 	++N;
 	S += !prev;
-      }
-      prev = p_copy & 1;
+	prev = true;
+      } else
+	prev = false;
     }
   }
 
@@ -146,8 +147,10 @@ namespace Gamera {
     while (deleted) {
       thin_zs_flag_bp1(*thin_view, *flag_view);
       deleted = thin_zs_del_fbp(*thin_view, *flag_view);
+      if (!deleted)
+	break;
       thin_zs_flag_bp2(*thin_view, *flag_view);
-      deleted = deleted || thin_zs_del_fbp(*thin_view, *flag_view);
+      deleted = thin_zs_del_fbp(*thin_view, *flag_view);
     }
 
     delete flag_view;
@@ -356,7 +359,6 @@ namespace Gamera {
     typedef typename ImageFactory<T>::view_type view_type;
     view_type* thin_view = thin_zs(in);
     if (in.nrows() == 1 || in.ncols() == 1) {
-      image_copy_fill(in, *thin_view);
       return thin_view;
     }
     size_t nrows = thin_view->nrows();

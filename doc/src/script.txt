@@ -319,7 +319,7 @@ to parse:
 
   from gamera.core import *
   from gamera.config import config
-  config.parse_args(["--progress-bars"])
+  config.parse_args(["--progress-bar"])
 
 Programmatically setting options
 ````````````````````````````````
@@ -337,7 +337,7 @@ For example,
 
 is directly equivalent to the following command line::
 
-  gamera_gui --progress-bars
+  gamera_gui --progress-bar
 
 Note that the name of the command line argument is changed to be a
 valid Python identifier name when used with the ``.set`` method: the

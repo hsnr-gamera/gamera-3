@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from wxPython.wx import *
+import wx
 import array
 import os.path
 import string
@@ -35,12 +35,11 @@ class Args:
       self.controls = []
       # Controls
       if util.is_sequence(self.list[0]):
-         notebook = wxNotebook(parent, -1)
+         notebook = wx.Notebook(parent, -1)
          for page in self.list:
-            panel = wxPanel(notebook, -1)
+            panel = wx.Panel(notebook, -1)
             gs = self._create_page(locals, panel, page[1:])
             panel.SetSizer(gs)
-            gs.RecalcSizes()
             notebook.AddPage(panel, page[0])
          return notebook
       else:
@@ -48,88 +47,108 @@ class Args:
 
    def _create_page(self, locals, parent, page):
       if len(page) > 15:
-         sw = wxScrolledWindow(
-            parent, style=wxSIMPLE_BORDER,
+         sw = wx.ScrolledWindow(
+            parent, style=wx.SIMPLE_BORDER,
             size=(450, 400))
          sw.EnableScrolling(0, 1)
          sw.SetScrollRate(0, 20)
          gs = self._create_page_impl(locals, sw, page)
          sw.SetSizer(gs)
          gs.SetVirtualSizeHints(sw)
-         gs.RecalcSizes()
          return sw
       else:
          return self._create_page_impl(locals, parent, page)
 
    def _create_page_impl(self, locals, parent, page):
-      gs = wxFlexGridSizer(len(page), 2, 2, 2)
+      gs = wx.FlexGridSizer(len(page), 2, 2, 2)
       for item in page:
          if item.name == None:
             item.name = "ERROR!  No name given!"
-         gs.Add(wxStaticText(parent, -1, item.name),
+         gs.Add(wx.StaticText(parent, -1, item.name),
                 0,
-                (wxTOP|wxLEFT|wxRIGHT|
-                 wxEXPAND|
-                 wxALIGN_CENTER_VERTICAL|
-                 wxALIGN_LEFT), 10)
+                (wx.TOP|wx.LEFT|wx.RIGHT|
+                 wx.EXPAND|
+                 wx.ALIGN_CENTER_VERTICAL|
+                 wx.ALIGN_LEFT), 10)
          control = item.get_control(parent, locals)
          self.controls.append(control)
          gs.Add(control.control,
                 0,
-                (wxTOP|wxLEFT|wxRIGHT|
-                 wxEXPAND|
-                 wxALIGN_CENTER_VERTICAL|
-                 wxALIGN_RIGHT), 10)
+                (wx.TOP|wx.LEFT|wx.RIGHT|
+                 wx.EXPAND|
+                 wx.ALIGN_CENTER_VERTICAL|
+                 wx.ALIGN_RIGHT), 10)
       gs.AddGrowableCol(1)
-      gs.RecalcSizes()
       return gs
 
    def _create_buttons(self):
       # Buttons
-      buttons = wxBoxSizer(wxHORIZONTAL)
-      ok = wxButton(self.window, wxID_OK, "OK")
+      buttons = wx.BoxSizer(wx.HORIZONTAL)
+      ok = wx.Button(self.window, wx.ID_OK, "OK")
       ok.SetDefault()
-      buttons.Add(ok, 1, wxEXPAND|wxALL, 5)
-      buttons.Add(wxButton(self.window,
-                           wxID_CANCEL,
+      buttons.Add(ok, 1, wx.EXPAND|wx.ALL, 5)
+      buttons.Add(wx.Button(self.window,
+                           wx.ID_CANCEL,
                            "Cancel"),
                   1,
-                  wxEXPAND|wxALL,
+                  wx.EXPAND|wx.ALL,
                   5)
       return buttons
 
    def _create_wizard_buttons(self):
       # Buttons
-      buttons = wxBoxSizer(wxHORIZONTAL)
-      buttons.Add(wxButton(self.window,
-                           wxID_CANCEL,
+      buttons = wx.BoxSizer(wx.HORIZONTAL)
+      buttons.Add(wx.Button(self.window,
+                           wx.ID_CANCEL,
                            "< Back"),
                   1,
-                  wxEXPAND|wxALL,
+                  wx.EXPAND|wx.ALL,
                   5)
-      ok = wxButton(self.window,
-                    wxID_OK,
+      ok = wx.Button(self.window,
+                    wx.ID_OK,
                     "Next >")
       ok.SetDefault()
       buttons.Add(ok,
                   1,
-                  wxEXPAND|wxALL,
+                  wx.EXPAND|wx.ALL,
                   5)
       return buttons
 
+   if wx.VERSION >= (2, 5):
+      import wx.html
+      def _create_help_display(self, docstring):
+         try:
+            html = gui_util.docstring_to_html(docstring)
+            window = wx.html.HtmlWindow(self.window, -1, size=wx.Size(50, 100))
+            if wx.VERSION >= (2, 5) and "gtk2" in wx.PlatformInfo:
+               window.SetStandardFonts()
+            window.SetPage(html)
+            window.SetBackgroundColour(wx.Colour(255, 255, 232))
+            window.SetBestFittingSize(wx.Size(50, 150))
+            return window
+         except Exception, e:
+            print e
+   else:
+      def _create_help_display(self, docstring):
+         style = (wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
+         window = wx.TextCtrl(self.window, -1, style=style, size=wx.Size(50, 100))
+         window.SetValue(docstring)
+         window.SetBackgroundColour(wx.Colour(255, 255, 232))
+         return window
+
    # generates the dialog box
-   def setup(self, parent, locals):
-      self.window = wxDialog(parent, -1, self.name,
-                             style=wxCAPTION)
+   def setup(self, parent, locals, docstring = ""):
+      self.window = wx.Dialog(parent, -1, self.name,
+                              style=wx.CAPTION|wx.RESIZE_BORDER)
       self.window.SetAutoLayout(1)
       if self.wizard:
-         bigbox = wxBoxSizer(wxHORIZONTAL)
+         bigbox = wx.BoxSizer(wx.HORIZONTAL)
          from gamera.gui import gamera_icons
          bmp = gamera_icons.getGameraWizardBitmap()
-         bitmap = wxStaticBitmap(self.window, -1, bmp)
-         bigbox.Add(bitmap, 0, wxALIGN_TOP)
-      self.box = wxBoxSizer(wxVERTICAL)
-      self.border = wxBoxSizer(wxHORIZONTAL)
+         bitmap = wx.StaticBitmap(self.window, -1, bmp)
+         bigbox.Add(bitmap, 0, wx.ALIGN_TOP)
+      self.box = wx.BoxSizer(wx.VERTICAL)
+      self.border = wx.BoxSizer(wx.HORIZONTAL)
       self.window.SetSizer(self.border)
       self.gs = self._create_controls(locals, self.window)
       if self.wizard:
@@ -138,34 +157,29 @@ class Args:
          buttons = self._create_buttons()
       # Put it all together
       if self.title != None:
-         static_text = wxStaticText(self.window, -1, self.title)
-         font = wxFont(12,
-                                   wxSWISS,
-                                   wxNORMAL,
-                                   wxBOLD,
-                                   False,
-                                   "Helvetica")
+         static_text = wx.StaticText(self.window, -1, self.title)
+         font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, False, "Helvetica")
          static_text.SetFont(font)
          self.box.Add(static_text, 0,
-                      wxEXPAND|wxBOTTOM, 20)
-      self.box.Add(self.gs, 1,
-                   wxEXPAND|wxALIGN_RIGHT)
-      self.box.Add(wxPanel(self.window, -1, size=(20,20)), 0,
-                   wxALIGN_RIGHT)
-      self.box.Add(buttons, 0, wxALIGN_RIGHT)
+                      wx.EXPAND|wx.BOTTOM, 20)
+      self.box.Add(self.gs, 0,
+                   wx.EXPAND|wx.ALIGN_RIGHT)
+      self.box.Add(wx.Panel(self.window, -1, size=(20,20)), 0,
+                   wx.ALIGN_RIGHT)
+      if docstring:
+         help = self._create_help_display(docstring)
+         self.box.Add(help, 1, wx.EXPAND)
+      self.box.Add(buttons, 0, wx.ALIGN_RIGHT)
       if self.wizard:
          bigbox.Add(
             self.box, 1,
-            wxEXPAND|wxALL|wxALIGN_TOP,
+            wx.EXPAND|wx.ALL|wx.ALIGN_TOP,
             15)
-         bigbox.RecalcSizes()
          self.border.Add(
-            bigbox, 1, wxEXPAND|wxALL, 10)
+            bigbox, 1, wx.EXPAND|wx.ALL, 10)
       else:
          self.border.Add(
-            self.box, 1, wxEXPAND|wxALL, 15)
-      self.border.RecalcSizes()
-      self.box.RecalcSizes()
+            self.box, 1, wx.EXPAND|wx.ALL, 15)
       self.border.Layout()
       self.border.Fit(self.window)
       size = self.window.GetSize()
@@ -180,15 +194,15 @@ class Args:
    def get_args(self):
       return [control.get() for control in self.controls]
 
-   def show(self, parent=None, locals={}, function=None, wizard=0):
+   def show(self, parent=None, locals={}, function=None, wizard=0, docstring=""):
       self.wizard = wizard
       if function != None:
          self.function = function
-      self.setup(parent, locals)
+      self.setup(parent, locals, docstring)
       while 1:
-         result = wxDialog.ShowModal(self.window)
+         result = wx.Dialog.ShowModal(self.window)
          try:
-            if result == wxID_CANCEL:
+            if result == wx.ID_CANCEL:
                return None
             elif self.function is None:
                if function is None:
@@ -203,21 +217,21 @@ class Args:
             break
       self.window.Destroy()
 
-class _NumericValidator(wxPyValidator):
+class _NumericValidator(wx.PyValidator):
    def __init__(self, name="Float entry box ", range=None):
-      wxPyValidator.__init__(self)
+      wx.PyValidator.__init__(self)
       self.rng = range
       self.name = name
-      EVT_CHAR(self, self.OnChar)
+      wx.EVT_CHAR(self, self.OnChar)
 
    def Clone(self):
       return self.__class__(self.name, self.rng)
 
    def show_error(self, s):
-      dlg = wxMessageDialog(
+      dlg = wx.MessageDialog(
          self.GetWindow(), s,
          "Dialog Error",
-         wxOK | wxICON_ERROR)
+         wx.OK | wx.ICON_ERROR)
       dlg.ShowModal()
       dlg.Destroy()
 
@@ -242,15 +256,15 @@ class _NumericValidator(wxPyValidator):
 
    def OnChar(self, event):
       key = event.KeyCode()
-      if (key < WXK_SPACE or
-          key == WXK_DELETE or key > 255):
+      if (key < wx.WXK_SPACE or
+          key == wx.WXK_DELETE or key > 255):
          event.Skip()
          return
       if chr(key) in self._digits:
          event.Skip()
          return
-      if not wxValidator_IsSilent():
-         wxBell()
+      if not wx.Validator_IsSilent():
+         wx.Bell()
 
    def TransferToWindow(self):
       return True
@@ -264,7 +278,7 @@ class _IntValidator(_NumericValidator):
 
 class Int:
    def get_control(self, parent, locals=None):
-      self.control = wxSpinCtrl(
+      self.control = wx.SpinCtrl(
          parent, -1,
          value=str(self.default),
          min=self.rng[0], max=self.rng[1],
@@ -284,7 +298,7 @@ class _RealValidator(_NumericValidator):
 
 class Real:
    def get_control(self, parent, locals=None):
-      self.control = wxTextCtrl(
+      self.control = wx.TextCtrl(
          parent, -1, str(self.default),
          validator=_RealValidator(name=self.name, range=self.rng))
       return self
@@ -297,7 +311,7 @@ class Real:
 
 class String:
    def get_control(self, parent, locals=None):
-      self.control = wxTextCtrl(parent, -1, str(self.default))
+      self.control = wx.TextCtrl(parent, -1, str(self.default))
       return self
 
    def get(self):
@@ -340,35 +354,36 @@ class Class:
    def get_control(self, parent, locals=None):
       if util.is_string_or_unicode(self.klass):
          self.klass = eval(self.klass)
-      self.control = wxChoice(
+      self.control = wx.Choice(
          parent, -1, choices = self.determine_choices(locals))
+      self.control.SetSelection(self.default)
       return self
 
    def get(self):
-      if self.control.Number() > 0:
+      try:
          return self.locals[self.control.GetStringSelection()]
-      else:
+      except:
          if self.list_of:
             return []
          else:
             return None
 
    def get_string(self):
-      if self.control.Number() > 0:
+      try:
          return self.control.GetStringSelection()
-      else:
+      except:
          if self.list_of:
-            return '[]'
+            return []
          else:
-            return 'None'
+            return None
 
 class _Vector(Class):
    def get_control(self, parent, locals=None):
       if util.is_string_or_unicode(self.klass):
          self.klass = eval(self.klass)
       self.choices = self.determine_choices(locals)
-      self.control = wxComboBox( 
-        parent, -1, str(self.default), choices=self.choices, style=wxCB_DROPDOWN)
+      self.control = wx.ComboBox( 
+        parent, -1, str(self.default), choices=self.choices, style=wx.CB_DROPDOWN)
       return self
 
    def get(self):
@@ -468,7 +483,7 @@ class Choice:
             choices.append(choice[0])
          else:
             choices.append(choice)
-      self.control = wxChoice(parent, -1, choices=choices)
+      self.control = wx.Choice(parent, -1, choices=choices)
       if self.default < 0:
          self.default = len(choices) + self.default
       if self.default >= 0 and self.default < len(self.choices):
@@ -494,17 +509,16 @@ class Choice:
 class ChoiceString:
    def get_control(self, parent, locals=None):
       if self.strict:
-         self.control = wxChoice(parent, -1, choices=self.choices)
-         if self.has_default:
-            default_index = self.choices.index(self.default)
-            self.control.SetSelection(default_index)
+         self.control = wx.Choice(parent, -1, choices=self.choices)
+         default_index = self.choices.index(self.default)
+         self.control.SetSelection(default_index)
       else:
          if self.has_default:
             default = self.default
          else:
             default = self.choices[0]
-         self.control = wxComboBox( 
-            parent, -1, default, choices=self.choices, style=wxCB_DROPDOWN)
+         self.control = wx.ComboBox( 
+            parent, -1, default, choices=self.choices, style=wx.CB_DROPDOWN)
       return self
 
    def get_string(self):
@@ -521,13 +535,13 @@ class _Filename:
    def get_control(self, parent, locals=None, text=None):
       if text is None:
          text = self.default
-      self.control = wxBoxSizer(wxHORIZONTAL)
-      self.text = wxTextCtrl(parent, -1, text, size=wxSize(200, 24))
-      browseID = wxNewId()
-      browse = wxButton(
-         parent, browseID, "...", size=wxSize(24, 24))
-      EVT_BUTTON(browse, browseID, self.OnBrowse)
-      self.control.Add(self.text, 1, wxEXPAND)
+      self.control = wx.BoxSizer(wx.HORIZONTAL)
+      self.text = wx.TextCtrl(parent, -1, text, size=wx.Size(200, 24))
+      browseID = wx.NewId()
+      browse = wx.Button(
+         parent, browseID, "...", size=wx.Size(24, 24))
+      wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
+      self.control.Add(self.text, 1, wx.EXPAND)
       self.control.Add(browse, 0)
       return self
 
@@ -552,8 +566,8 @@ class FileOpen(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      while wxIsBusy():
-         wxEndBusyCursor()
+      while wx.IsBusy():
+         wx.EndBusyCursor()
 
    def get(self):
       while 1:
@@ -582,8 +596,8 @@ class FileSave(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      while wxIsBusy():
-         wxEndBusyCursor()
+      while wx.IsBusy():
+         wx.EndBusyCursor()
 
 class Directory(_Filename):
    def OnBrowse(self, event):
@@ -592,8 +606,8 @@ class Directory(_Filename):
       if filename:
          self.text.SetValue(filename)
       parent.Raise()
-      while wxIsBusy():
-         wxEndBusyCursor()
+      while wx.IsBusy():
+         wx.EndBusyCursor()
 
    def get(self):
       while 1:
@@ -617,7 +631,7 @@ class Directory(_Filename):
 
 class Radio:
    def get_control(self, parent, locals=None):
-      self.control = wxRadioButton(parent, -1, self.radio_button)
+      self.control = wx.RadioButton(parent, -1, self.radio_button)
       return self
 
    def get_string(self):
@@ -628,7 +642,7 @@ class Radio:
 
 class Check:
    def get_control(self, parent, locals=None):
-      self.control = wxCheckBox(parent, -1, self.check_box)
+      self.control = wx.CheckBox(parent, -1, self.check_box)
       self.control.Enable(self.enabled)
       self.control.SetValue(self.default)
       return self
@@ -665,7 +679,7 @@ class ImageList(Class):
 
 class Info:
    def get_control(self, parent, locals=None):
-      self.control = wxStaticText(parent, -1, "")
+      self.control = wx.StaticText(parent, -1, "")
       return self
 
    def get_string(self):
@@ -683,8 +697,8 @@ class Pixel(_Filename):
       return _Filename.get_control(self, parent, locals, text)
 
    def OnBrowse(self, event):
-      dialog = wxColourDialog(None)
-      if dialog.ShowModal() == wxID_OK:
+      dialog = wx.ColourDialog(None)
+      if dialog.ShowModal() == wx.ID_OK:
          color = dialog.GetColourData().GetColour()
          self.text.SetValue("RGBPixel(%d, %d, %d)" % (color.Red(), color.Green(), color.Blue()))
       self.text.GetParent().Raise()
@@ -737,6 +751,41 @@ class Point:
    
    def get_string(self):
       return str(self.get())
+
+class Dim(Point):
+   def get(self):
+      from gamera.core import Point
+      return Dim(int(self.control_x.GetValue()),
+                   int(self.control_y.GetValue()))
+   
+   def get_string(self):
+      return str(self.get())
+
+class FloatPoint:
+   def get_control(self, parent, locals=None):
+      from gamera.core import FloatPoint
+      default = FloatPoint(self.default)
+      self.control = wx.BoxSizer(wx.HORIZONTAL)
+      self.control.Add(wx.StaticText(parent, -1, "x:"))
+      self.control_x = wx.TextCtrl(
+         parent, -1, str(default.x),
+         validator = _RealValidator(name=self.name))
+      self.control.Add(self.control_x, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+      self.control.Add(wx.StaticText(parent, -1, "y:"))
+      self.control_y = wx.TextCtrl(
+         parent, -1, str(default.y),
+         validator = _RealValidator(name=self.name))
+      self.control.Add(self.control_y, 1, wx.EXPAND | wx.LEFT, 5)
+      return self
+
+   def get(self):
+      from gamera.core import FloatPoint
+      return FloatPoint(float(self.control_x.GetValue()),
+                        float(self.control_y.GetValue()))
+
+   def get_string(self):
+      return str(self.get())
+
 
 from gamera import args
 args.mixin(locals(), "GUI")

@@ -24,10 +24,6 @@ import _morphology
 
 class erode(PluginFunction):
   """Erodes the image by the image morphology method.
-
-*in_place*:
-  When ``True`` (default) the operation is performed in place,
-  otherwise a new object is returned.
 """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
@@ -39,10 +35,6 @@ class erode(PluginFunction):
 
 class dilate(PluginFunction):
   """Dilates the image by the image morphology method.
-
-*in_place*:
-  When ``True`` (default) the operation is performed in place,
-  otherwise a new object is returned.
 """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
@@ -67,9 +59,6 @@ class erode_dilate(PluginFunction):
     use a 3x3 rectangular morphology operator
   octagonal (1)
     use a 3x3 octagonal morphology operator
-*in_place*:
-  When ``True`` (default) the operation is performed in place,
-  otherwise a new object is returned.
 """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('ntimes', range=(0, 10), default=1), \

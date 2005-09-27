@@ -154,8 +154,8 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
 
 template<class T>
 void draw_line_points(T& image, Point& a, Point& b,
-		      typename T::value_type value, double alpha = 1.0) {
-  draw_line(image, a.y(), a.x(), b.y(), b.x(), value, alpha);
+		      typename T::value_type value) {
+  draw_line(image, a.y(), a.x(), b.y(), b.x(), value);
 }
 
 

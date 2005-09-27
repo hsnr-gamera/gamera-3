@@ -195,7 +195,7 @@ options.  For example, from the ``resize`` plugin method::
 ChoiceString
 ------------
 
-**ChoiceString** (string *name*, list *choices* = ``[]``, int
+**ChoiceString** (string *name*, list *choices* = ``[]``, string
 *default* = None, strict = ``True``)
 
 A set of choices of strings.  Corresponds to the C type ``char *``.

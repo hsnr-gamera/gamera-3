@@ -54,7 +54,7 @@ PyTypeObject* get_SizeType() {
 static PyObject* size_new(PyTypeObject* pytype, PyObject* args,
 			  PyObject* kwds) {
   int width, height;
-  if (PyArg_ParseTuple(args, "ii", &width, &height) <= 0)
+  if (PyArg_ParseTuple(args, "ii:Size.__init__", &width, &height) <= 0)
     return 0;
   SizeObject* so;
   so = (SizeObject*)pytype->tp_alloc(pytype, 0);

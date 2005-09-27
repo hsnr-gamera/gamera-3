@@ -33,13 +33,12 @@ namespace Gamera {
    */
   class ImageInfo {
   public:
-    double m_x_resolution, m_y_resolution;
-    size_t m_nrows, m_ncols;
-    size_t m_depth;
-    size_t m_ncolors;
-    bool m_inverted;
-    ImageInfo() : m_x_resolution(0), m_y_resolution(0), m_nrows(0), m_ncols(0),
-		  m_depth(0), m_ncolors(0), m_inverted(false) {
+    ImageInfo() {
+      m_x_resolution = 0; m_y_resolution = 0;
+      m_nrows = 0; m_ncols = 0;
+      m_depth = 0;
+      m_ncolors = 0;
+      m_inverted = false;
     }
     double x_resolution() { return m_x_resolution; }
     double y_resolution() { return m_y_resolution; }
@@ -55,7 +54,12 @@ namespace Gamera {
     void depth(size_t x) { m_depth = x; }
     void ncolors(size_t x) { m_ncolors = x; }
     void inverted(bool x) { m_inverted = x; }
- 
+  public:
+    double m_x_resolution, m_y_resolution;
+    size_t m_nrows, m_ncols;
+    size_t m_depth;
+    size_t m_ncolors;
+    bool m_inverted;
   };
 
 };

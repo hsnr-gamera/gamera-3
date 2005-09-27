@@ -73,22 +73,28 @@ most common argument types are presented in the GUI:
 
 .. image:: images/arguments_dialog.png
 
-Incidentally, it was produced by the following code::
+Incidentally, it was produced by the following code:
 
-   Args([Int("Int", range=(0, 5), default=1),
-         Real("Real", range=(0, 1), default=0.5),
-         String("String", default='Hello World'),
-         Class("Class", dict),
-         ImageType(ALL, "ImageType"),
-         FileOpen("FileOpen", "file.txt", "*.txt"),
-         FileSave("FileSave", "file.tiff", "*.tiff;*.tif"),
-         Directory("Directory"),
-         Radio("Radio 1", "Tastes great"),
-         Radio("Radio 2", "Less filling"),
-         Check("Check", "Power", default=True),
-         Info("Info: This is just for information!")
-         ]
-        )  
+.. code:: Python
+
+   args = Args([Int("Int"),
+                Real("Real"),
+                String("String"),
+                Class("Class"),
+		ImageType(ALL, "ImageType"),
+		FileOpen("FileOpen"),
+		FileSave("FileSave"),
+		Directory("Directory"),
+		Radio("Radio 1", "Tastes great"),
+		Radio("Radio 2", "Less filling"),
+		Check("Check", "Power"),
+		Info("Info: This is just for information"),
+		Pixel("Pixel"),
+		Point("Point"),
+		FloatPoint("FloatPoint")])
+
+Plugin types reference
+======================
 
 Int
 ---
@@ -324,6 +330,31 @@ Pixel
 A pixel value corresponding to the type of the "self" image.  For instance,
 if the method is operating on a FLOAT image, this argument will take
 a FLOAT value.
+
+Point
+-----
+
+**Point** (string *name*, default = (0, 0))
+
+A Point object for representing coordinates as unsigned integers.
+This will be displayed in the automatically-generated dialog box as a
+pair of numbers.
+
+PointVector
+-----------
+
+**PointVector** (string *name*)
+
+A Python sequence of Points.
+
+FloatPoint
+----------
+
+**FloatPoint** (string *name*, default = (0.0, 0.0))
+
+A FloatPoint object for representing coordinates as floating point
+values.  This will be displayed in the automatically-generated dialog
+box as a pair of numbers.
 
 Info
 ----

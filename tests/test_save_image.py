@@ -15,3 +15,4 @@ def test_save_image():
    for type in ["OneBit", "GreyScale", "RGB"]:
       _test_save_image(type)
    _test_save_image("OneBit", RLE)
+

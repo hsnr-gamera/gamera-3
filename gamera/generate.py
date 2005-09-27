@@ -117,7 +117,9 @@ template = Template("""
     [[for function in module.functions]]
       [[if not function.pure_python]]
         { \"[[function.__name__]]\",
-          call_[[function.__name__]], METH_VARARGS },
+          call_[[function.__name__]], METH_VARARGS,
+          [[function.escape_docstring()]]
+        },
       [[end]]
     [[end]]
     { NULL }
@@ -157,11 +159,11 @@ template = Template("""
       [[# the argument tuple. #]]
       [[if function.feature_function]]
          int offset = -1;
-         if (PyArg_ParseTuple(args, \"O|i\",&[[function.self_type.pysymbol]], &offset) <= 0)
+         if (PyArg_ParseTuple(args, \"O|i:[[function.__name__]]\",&[[function.self_type.pysymbol]], &offset) <= 0)
            return 0;
       [[else]]
          [[if pyarg_format != '']]
-           if (PyArg_ParseTuple(args, \"[[pyarg_format]]\"
+           if (PyArg_ParseTuple(args, \"[[pyarg_format]]:[[function.__name__]]\"
            [[for arg in args]]
              ,
              &[[arg.pysymbol]]
@@ -254,7 +256,8 @@ template = Template("""
   """)
   
 def generate_plugin(plugin_filename, location, compiling_gamera,
-                    extra_compile_args=[], extra_link_args=[], libraries=[]):
+                    extra_compile_args=[], extra_link_args=[], libraries=[],
+                    define_macros=[]):
   from gamera import gamera_setup
 
   plug_path, filename = path.split(plugin_filename)
@@ -316,5 +319,5 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
                    libraries=extra_libraries,
                    extra_compile_args=plugin_module.module.extra_compile_args + extra_compile_args,
                    extra_link_args=plugin_module.module.extra_link_args + extra_link_args,
-                   define_macros=plugin_module.module.define_macros,
+                   define_macros=plugin_module.module.define_macros + define_macros,
                    extra_objects=plugin_module.module.extra_objects)

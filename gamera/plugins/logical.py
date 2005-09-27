@@ -42,8 +42,9 @@ See or_image_ for some usage examples.
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    onebit = images[ONEBIT].subimage(0, 0, 68, 70)
-    greyscale = images[GREYSCALE].to_onebit().subimage(0, 0, 68, 70)
+    from gamera.core import Dim
+    onebit = images[ONEBIT].subimage((0, 0), Dim(70, 68))
+    greyscale = images[GREYSCALE].to_onebit().subimage((0, 0), Dim(70, 68))
     return [onebit, greyscale, onebit.and_image(greyscale, False)]
   doc_examples = [__doc_example1__]
 
@@ -106,8 +107,9 @@ Removing a connected component from its original image.
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    onebit = images[ONEBIT].subimage(0, 0, 68, 70)
-    greyscale = images[GREYSCALE].to_onebit().subimage(0, 0, 68, 70)
+    from gamera.core import Dim
+    onebit = images[ONEBIT].subimage((0, 0), Dim(70, 68))
+    greyscale = images[GREYSCALE].to_onebit().subimage((0, 0), Dim(70, 68))
     return [onebit, greyscale, onebit.or_image(greyscale, False)]
   doc_examples = [__doc_example1__]
 

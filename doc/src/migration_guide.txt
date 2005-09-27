@@ -1,0 +1,690 @@
+=======================================
+Migrating from Gamera 2.x to Gamera 3.x
+=======================================
+
+The migration from Gamera 2.x to Gamera 3.x is intended to be as
+painless as possible.  
+
+In future releases of Gamera, backward compatibility will need to be
+broken in order to fix some low-level design flaws in Gamera.  Gamera
+3.x is the first step in that process.  Certain functions signatures
+that existed in 2.x have been deprecated in 3.x, but they continue to
+work in order to maintain backward compatibility with existing
+scripts.  As of Gamera 3.x, these deprecated calls all have easy
+alternatives, and they should be replaced with the new recommended
+forms as soon as possible to ensure compatibility with future versions
+of Gamera.
+
+Note, however, that some rarely-used deprecated functions do not have
+direct alternatives in Gamera 2.x, so this migration process may break
+your scripts' compatibility with Gamera 2.x.  However, if appropriate
+care is taken, such as switching based on the Gamera version, it
+should still be possible to write code that is compatible with both
+Gamera 2.x and Gamera 3.x.
+
+This document is divided into the following sections:
+
+  - `Reasons for deprecations`_ describes the different categories of
+    deprecated functions, and what changes are required in end-user
+    scripts.
+
+  - `How to migrate existing code`_ presents some tips and
+    techniques for making migration easier.
+
+  - `Migration tools`_ describes the provided tools for finding and
+    replacing deprecated calls in end-user code.  This tools provide
+    only a semi-automated process.
+
+  - `C++ deprecations reference`_ and `Python deprecations reference`_
+    list all deprecated functions, with their reason for deprecation
+    and a suggested alternative.
+
+Reasons for deprecations
+========================
+
+(x, y) coordinate consistency
+-----------------------------
+
+In Gamera 2.x, some functions received coordinates in the order (y, x),
+(or (rows, cols)), while others took coordinates in (x, y) order.
+This self-inconsistency and departure from the majority of image
+processing systems often resulted in confusion and subtle errors.
+
+The new recommended way to call these functions is to pass in Point,
+FloatPoint, Size or Dim arguments as required, instead of two
+integers.  This solution allows the old function signatures to be
+maintained for backward compatibility, while allowing migration to a
+style that consistently uses (x, y) ordering everywhere.
+
+For example, ``image.get(r, c)`` becomes ``image.get(Point(c, r))``.
+
+2-element sequences in place of Point type
+''''''''''''''''''''''''''''''''''''''''''
+
+For convenience in Python code, 2-element sequences can be used
+wherever Point or FloatPoint is expected.  Therefore, ``image.get((x, y))``
+is equivalent to ``image.get(Point(x, y))``.
+
+Dimensions type
+'''''''''''''''
+
+Additionally, the ``Dimensions`` class, whose constructor is
+``Dimensions(nrows, ncols)``, has been deprecated because it is
+inconsistent with the new requirement of "(x, y) everywhere".  Since
+it would be impossible to change the order of the constructor's
+arguments without breaking backward imcompatibility, a new type has
+been introduced, ``Dim``, which is identical to Dimensions in all
+respects except its constructor is ``Dim(ncols, nrows)``.  All uses of
+the ``Dimensions`` type are deprecated and should be migrated to use ``Dim``
+instead.
+
+FloatPoint type
+'''''''''''''''
+
+A new FloatPoint type has been added to hold coordinates using
+floating point numbers.  The standard Gamera ``Point`` stores
+coordinates as unsigned (positive) integers, and doesn't have any
+arithmetic operators.  For this reason, ``FloatPoint`` is highly
+recommended for any analyses that require precision and flexibility.
+``Point`` is kept around for backward compatibility, and because it is
+a more natural way to refer to physical pixels, as opposed to logical
+coordinates.
+
+There are, however, implicit conversions (in Python only) between the
+two types, so a ``FloatPoint`` can be used in place of ``Point`` where
+it makes sense.  Care should be taken to ensure that negative values
+are never used to reference image pixels.  (Range checking is
+performed when accessing from Python, but not when accessing from C++.)
+
+Additionally, the standard arithmetic operators are available on
+``FloatPoint`` objects (+ - * / abs).
+
+Functions should be parameterized by arguments, not by name
+-----------------------------------------------------------
+
+There are certain groups of plugin functions that perform essentially
+the same functionality.  Take for example::
+
+  black_horizontal_run_histogram()
+  black_vertical_run_histogram()
+  white_horizontal_run_histogram()
+  white_vertical_run_histogram()
+
+These four functions compute a run length histogram, parameterized by
+the color and direction of the runs.  Maintaining
+four separate functions for a single logical task has a number
+of disadvantages:
+
+  - Even if the code is abstracted such that the core of the algorithm
+    is in a single function, the documentation still needs to be
+    updated in multiple places.
+
+  - The generated documentation becomes longer and therefore harder to browse
+    through, and contains a lot of redundant information or excessive
+    hyperlinking.
+
+  - Autocompletion in the Gamera shell becomes less useful.
+
+  - Alphabetization of the functions doesn't necessarily reveal their
+    membership as part of the same family of functionality.
+
+Therefore, in Gamera 3.x, these sorts of functions have been merged
+into a single function.  For example, the four functions above are now
+the single function::
+
+  run_histogram(color, direction)
+
+How to migrate existing code
+============================
+
+There are two distinct techniques for finding deprecated functions:
+one for C++ code and one for Python code.
+
+C++ code
+--------
+
+On the C++ side, all deprecated function calls will be caught at
+compile time.  Simply recompiling your C++ code will provide compiler
+warnings to this effect.
+
+The compiler warnings produced by gcc can be fairly cryptic.  The
+gamera_deprecation_filter_ (described below) will filter these warning
+messages and produce detailed human-readable suggestions for updating
+your deprecated calls.
+
+.. note::
+
+  This technique only works with gcc version 3.1 and greater.
+
+Python code
+-----------
+
+Finding the deprecated calls in Python code is somewhat more
+difficult, since the exact function calls being made can not be
+determined until runtime.
+
+When a deprecated function call is made, a deprecation warning is
+printed to stderr.  This message provides the name of the deprecated
+function, the reason it was deprecated, and a suggested alternative.
+The only way to find all deprecated calls in your code this is to
+ensure that all of your code is run.  This is sometimes difficult to
+do, though a code coverage tool such as Garth Rees' `Statement
+coverage for Python`__ may help.
+
+.. __: http://www.garethrees.org/2001/12/04/python-coverage/
+
+A manual search through your code for deprecated functions may in some
+cases be more efficient.  A master list of all deprecated Python
+functions in Gamera is presented in the `Python deprecations reference`_.
+
+Migration tools
+===============
+
+There are a number of scripts in the ``migration_tools`` directory
+that make the process of migrating code from Gamera 2.x to 3.x easier.
+
+  - gamera_deprecation_filter_: Helps display the deprecated calls in
+    your C++ code.
+
+  - replace_get_set_: Replaces C++ calls to get and set in the old
+    form to the new form.
+
+gamera_deprecation_filter
+-------------------------
+
+
+The ``gamera_deprecation_filter`` tool is useful for correcting
+calls to deprecated Gamera functions from you C++ code.
+
+This tool only works with ``gcc``, and only on non-MS Windows
+platforms (for some unknown reason.
+
+The output from ``gcc`` about deprecated functions is helpful,
+but is somewhat limited.  For example::
+
+  include/dimensions.hpp:314: warning: `__comp_ctor' is deprecated
+  (declared at include/dimensions.hpp:216)
+
+Here ``__comp_ctor`` refers to the constructor of the Dimensions
+class.  Not only is this cryptic, but it doesn't specify which of the
+overloaded signatures it is referring to (except by line
+numbers).  It also doesn't explain *why* the function call was
+deprecated or suggest a reasonable alternative.
+
+This filter replaces these cryptic warnings with more human-readable
+ones by extracting and displaying the comment associated with the
+deprecated function.  For example, the above warning becomes::
+
+  include/dimensions.hpp:314: warning: deprecated call
+  return Dimensions(nrows(), ncols());
+
+  Dimensions(nrows, ncols) is deprecated.
+
+  Reason: (x, y) coordinate consistency.
+
+  Use Dim(ncols, nrows) instead.
+
+This script can be used as a filter or on a given filename.  Be sure
+to send ``stderr`` to ``gamera_deprecation_filter``.
+
+Usage as a filter::
+
+    $ python setup.py build 2>&1 | ./migration_tools/gamera_deprecation_filter
+
+or offline::
+
+    $ python setup.py build &> log
+    $ ./gamera_deprecation_filter log
+
+
+replace_get_set
+---------------
+
+
+This script searches through C++ source files and corrects all uses of
+get and set in the deprecated Gamera 2.x style to the new Gamera 3.x
+style.  For example::
+
+   get(r, c)
+
+will change to::
+
+   get(Point(c, r))
+
+Note that this script uses regular expressions and is pretty naive
+about its understanding of C++, and will replace any method .get or
+.set (or ->get and ->set), not just those on Gamera Image objects, so
+it is recommended to check the results with a visual diffing tool.
+
+Usage on files::
+
+  $ ./replace_get_set source.hpp > source.hpp.new
+
+or as a filter::
+
+  $ cat source.hpp | ./replace_get_set > source.hpp.new
+
+
+C++ deprecations reference
+==========================
+
+This is an alphabetical list of the deprecated C++ functions.
+
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Deprecated function                                                             |Notes                                                                           |
++================================================================================+================================================================================+
+|black_run_end<T>(T& begin, const T end) is deprecated. [2_]                     |Use run_end(runs::Black(), begin, end) instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|black_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is                 |Use run_histogram(runs::Black(), begin, end, hist) instead.                     |
+|deprecated. [2_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent(const self& other, const Point& upper_left, const            |Use ConnectedComponent(other, Point(offset_x, offset_y), Dim(ncols,             |
+|Dimensions& dim) is deprecated. [1_]                                            |nrows)) instead.                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent(const self& other, size_t offset_y, size_t                   |Use ConnectedComponent(other, Point(offset_x, offset_y), Dim(ncols,             |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |nrows)) instead.                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent(T& image_data, value_type label, const Point&                |Use ConnectedComponent(image_data, label, Point(offset_x, offset_y),            |
+|upper_left, const Dimensions& dim) is deprecated. [1_]                          |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent(T& image_data, value_type label, size_t offset_y,            |Use ConnectedComponent(image_data, label, Point(offset_x, offset_y),            |
+|size_t offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent::get(size_t row, size_t col) is deprecated. [1_]             |Use get(Point(col, row)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ConnectedComponent::set(size_t row, size_t col, value_type value) is            |Use set(Point(col, row), value) instead.                                        |
+|deprecated. [1_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_sum(const T& a, const U& b, size_t yo, size_t xo,                    |Use corelation_sum(a, b, Point(xo, yo), progress_bar) instead.                  |
+|ProgressBar progress_bar = ProgressBar()) is deprecated. [1_]                   |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo,            |Use corelation_sum_squares(a, b, Point(xo, yo), progress_bar) instead.          |
+|ProgressBar progress_bar = ProgressBar()) is deprecated. [1_]                   |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_weighted(const T& a, const U& b, size_t yo, size_t xo,               |Use corelation_weighted(a, b, Point(xo, yo), bb, bw, wb, ww,                    |
+|double bb, double bw, double wb, double ww, ProgressBar progress_bar =          |progress_bar) instead.                                                          |
+|ProgressBar()) is deprecated [1_]                                               |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|create_ImageDataObject(int nrows, int ncols, int page_offset_y, int             |Use create_ImageDataObject(Dim(nrows, ncols), Point(page_offset_x,              |
+|page_offset_x, int pixel_type, int storage_format) is deprecated. [1_]          |page_offset_y), pixel_type, storage_format) instead.                            |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Dimensions(nrows, ncols) is deprecated. [1_]                                    |Use Dim(ncols, nrows) instead.                                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Dimensions(nrows, ncols) is deprecated. [1_]                                    |Use Dim(ncols, nrows) instead.                                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_bezier(T& image, double start_y, double start_x, double c1_y,              |Use draw_bezier(image, FloatPoint(start_x, start_y), FloatPoint(c1_x,           |
+|double c1_x, double c2_y, double c2_x, double end_y, double end_x,              |c1_y), FloatPoint(c2_x, c2_y), FloatPoint(end_x, end_y), value,                 |
+|typename T::value_type value, double accuracy = 0.1) is deprecated.             |accuracy) instead.                                                              |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_filled_rect(T& image, double y1, double x1, double y2, double x2,          |Use draw_filled_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2),             |
+|typename T::value_type value) is deprecated. [1_]                               |value) instead.                                                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_hollow_rect(T& image, double y1, double x1, double y2, double x2,          |Use draw_hollow_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2),             |
+|typename T::value_type value) is deprecated. [1_]                               |value) instead.                                                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_line(T& image, double y1, double x1, double y2, double x2,                 |Use draw_line(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value)             |
+|typename T::value_type value) is deprecated. [1_]                               |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_marker(T& image, double& y1, double& x1, size_t size, size_t               |Use draw_marker(image, FloatPoint(x1, y1), size, style, value)                  |
+|style, typename T::value_type value) is deprecated. [1_]                        |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_black_run<Iter, Functor>(Iter i, const Iter end, const int               |Use filter_run(i, end, max_length, functor, runs::Black()) instead.             |
+|max_length, const Functor& functor) is deprecated. [2_]                         |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_narrow_black_runs<T>(T& image, size_t max_width) is deprecated.          |Use filter_narrow_runs(image, max_width, runs::Black()) instead.                |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_narrow_runs<T>(T& image, size_t max_width) is deprecated. [2_]           |Use filter_narrow_runs(image, max_width, runs::Black()) instead.                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_narrow_white_runs<T>(T& image, size_t max_width) is deprecated.          |Use filter_narrow_runs(image, max_width, runs::White()) instead.                |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_short_black_runs<T>(T& image, size_t max_width) is deprecated.           |Use filter_short_runs(image, max_width, runs::Black()) instead.                 |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_short_runs<T>(T& image, size_t max_width) is deprecated. [2_]            |Use filter_short_runs(image, max_width, runs::Black()) instead.                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_short_white_runs<T>(T& image, size_t max_width) is deprecated.           |Use filter_short_runs(image, max_width, runs::White()) instead.                 |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_tall_black_runs<T>(T& image, size_t min_width) is deprecated.            |Use filter_tall_runs(image, min_width, runs::Black()) instead.                  |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_tall_runs<T>(T& image, size_t min_width) is deprecated. [2_]             |Use filter_tall_runs(image, min_width, runs::Black()) instead.                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_tall_white_runs<T>(T& image, size_t min_width) is deprecated.            |Use filter_tall_runs(image, min_width, runs::White()) instead.                  |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_white_run<Iter, Functor>(Iter i, const Iter end, const int               |Use filter_run(i, end, max_length, functor, runs::White()) instead.             |
+|max_length, const Functor& functor) is deprecated. [2_]                         |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_wide_black_runs<T>(T& image, size_t min_width) is deprecated.            |Use filter_wide_runs(image, min_width, runs::Black()) instead.                  |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_wide_runs<T>(T& image, size_t min_width) is deprecated. [2_]             |Use filter_wide_runs(image, min_width, runs::Black()) instead.                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_wide_white_runs<T>(T& image, size_t min_width) is deprecated.            |Use filter_wide_runs(image, min_width, runs::White()) instead.                  |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|flood_fill(T& image, size_t y, size_t x, const typename T::value_type&          |Use flood_fill(image, Point(x, y), color) instead.                              |
+|color) is deprecated. [1_]                                                      |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Image(const Point& upper_left, const Dimensions& dim) is deprecated.            |Use Image(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.                |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Image(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1,               |Use Image(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.                |
+|size_t ncols = 1) is deprecated. [1_]                                           |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_long_black_run<Iter>(Iter i, const Iter end, const int             |Use image_filter_long_run(i, end, min_length, runs::Black()) instead.           |
+|min_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_long_run<Iter>(Iter i, const Iter end, const int                   |Use image_filter_long_run(i, end, min_length, runs::Black()) instead.           |
+|min_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_long_white_run<Iter>(Iter i, const Iter end, const int             |Use image_filter_long_run(i, end, min_length, runs::White()) instead.           |
+|min_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_short_black_run<Iter>(Iter i, const Iter end, const int            |Use image_filter_short_run(i, end, max_length, runs::Black()) instead.          |
+|max_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_short_run<Iter>(Iter i, const Iter end, const int                  |Use image_filter_short_run(i, end, max_length, runs::Black()) instead.          |
+|max_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|image_filter_short_white_run<Iter>(Iter i, const Iter end, const int            |Use image_filter_short_run(i, end, max_length, runs::White()) instead.          |
+|max_length) is deprecated. [2_]                                                 |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageBase(const Point& upper_left, const Dimensions& dim) is                    |Use ImageBase(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.            |
+|deprecated. [1_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageBase(size_t origin_y = 0, size_t origin_x = 0, size_t nrows = 1,           |Use ImageBase(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.            |
+|size_t ncols = 1) is deprecated. [1_]                                           |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageData(const Size& size, size_t page_offset_y = 0, size_t                    |Use ImageData(Size(width, height), Point(page_offset_x, page_offset_y)          |
+|page_offset_x = 0) is deprecated. [1_]                                          |= (0, 0)) instead.                                                              |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageData(Dimensions& dim, size_t page_offset_y = 0, size_t                     |Use ImageData(Dim(ncols, nrows), Point(page_offset_x, page_offset_y))           |
+|page_offset_x = 0) is deprecated. [1_]                                          |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageData(size_t nrows, size_t ncols, size_t page_offset_y, size_t              |Use ImageData(Dim(ncols, nrows), Point(page_offset_x, page_offset_y) =          |
+|page_offset_x) is deprecated. [1_]                                              |(0, 0)) instead.                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageDataBase(const Size& size, size_t page_offset_y = 0, size_t                |Use ImageDataBase(Size(width, height), Point(page_offset_x,                     |
+|page_offset_x = 0) is deprecated. [1_]                                          |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageDataBase(Dimensions& dim, size_t page_offset_y = 0, size_t                 |Use ImageDataBase(Dim(ncols, nrows), Point(page_offset_x,                       |
+|page_offset_x = 0) is deprecated. [1_]                                          |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageDataBase(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y          |Use ImageDataBase(Dim(ncols, nrows), Point(page_offset_x,                       |
+|= 0, size_t page_offset_x = 0) is deprecated. [1_]                              |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageFactory<ComplexImageView>::new_view(const ComplexImageView& view,          |Use ImageFactory<ComplexImageView>::new_view(view, Point(ul_x, ul_y),           |
+|size_t ul_y, size_t ul_x, size_t nrows, size_t ncols) is deprecated.            |Dim(ncols, nrows)) instead.                                                     |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageFactory<RGBImageView>::new_view(const RGBImageView& view, size_t           |Use ImageFactory<RGBImageView>::new_view(view, Point(ul_x, ul_y),               |
+|ul_y, size_t ul_x, size_t nrows, size_t ncols) is deprecated. [1_]              |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageFactory<T>::new_view(const T& view, size_t ul_y, size_t ul_x,              |Use ImageFactory<T>::new_view(view, Point(ul_x, ul_y), Dim(ncols,               |
+|size_t nrows, size_t ncols) is deprecated. [1_]                                 |nrows)) instead.                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>(const self& other, const Point& upper_left, const                  |Use ImageView<T>(other, Point(offset_x, offset_y), Dim(ncols, nrows),           |
+|Dimensions& dim, bool do_range_check = true) is deprecated. [1_]                |do_range_check) instead.                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>(const self& other, size_t offset_y, size_t offset_x,               |Use ImageView<T>(other, Point(offset_x, offset_y), Dim(ncols, nrows),           |
+|size_t nrows, size_t ncols, bool do_range_check = true) is deprecated.          |do_range_check) instead.                                                        |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>(T& image_data, const Point& upper_left, const Dimensions&          |Use ImageView<T>(image_data, Point(offset_x, offset_y), Dim(ncols,              |
+|dim, bool do_range_check = true) is deprecated. [1_]                            |nrows), do_range_check) instead.                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>(T& image_data, size_t offset_y, size_t offset_x, size_t            |Use ImageView<T>(image_data, Point(offset_x, offset_y), Dim(ncols,              |
+|nrows, size_t ncols, bool do_range_check = true) is deprecated. [1_]            |nrows), do_range_check) instead.                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>::get(size_t row, size_t col) is deprecated. [1_]                   |Use ImageView<T>::get(Point(col, row)) instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageView<T>::set(size_t row, size_t col, value_type value) is                  |Use ImageView<T>::get(Point(col, row)) instead.                                 |
+|deprecated. [1_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_black_horizontal_runs<T>(T& image) is deprecated. [2_]                  |Use iterate_runs(image, runs::Black(), runs::Horizontal()) instead.             |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_black_vertical_runs<T>(T& image) is deprecated. [2_]                    |Use iterate_runs(image, runs::Black(), runs::Vertical()) instead.               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_white_horizontal_runs<T>(T& image) is deprecated. [2_]                  |Use iterate_runs(image, runs::White(), runs::Horizontal()) instead.             |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_white_vertical_runs<T>(T& image) is deprecated. [2_]                    |Use iterate_runs(image, runs::White(), runs::Vertical()) instead.               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|max_black_run<T>(T& begin, const T end) is deprecated. [2_]                     |Use max_run(runs::Black(), begin, end) instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_horizontal_run<T>(const T& image) is deprecated.            |Use most_frequent_run(image, runs::Black(), runs::Horizontal())                 |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_horizontal_runs<T>(const T& image) is deprecated.           |Use most_frequent_runs(image, runs::Black(), runs::Horizontal())                |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_horizontal_runs<T>(const T& image, long n) is               |Use most_frequent_runs(image, n, runs::Black(), runs::Horizontal())             |
+|deprecated. [2_]                                                                |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_vertical_run<T>(const T& image) is deprecated.              |Use most_frequent_run(image, runs::Black(), runs::Vertical()) instead.          |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_vertical_runs<T>(const T& image) is deprecated.             |Use most_frequent_runs(image, runs::Black(), runs::Vertical())                  |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_vertical_runs<T>(const T& image, long n) is                 |Use most_frequent_runs(image, n, runs::Black(), runs::Vertical())               |
+|deprecated. [2_]                                                                |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_horizontal_run<T>(const T& image) is deprecated.            |Use most_frequent_run(image, runs::White(), runs::Horizontal())                 |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_horizontal_runs<T>(const T& image) is deprecated.           |Use most_frequent_runs(image, runs::White(), runs::Horizontal())                |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_horizontal_runs<T>(const T& image, long n) is               |Use most_frequent_runs(image, n, runs::White(), runs::Horizontal())             |
+|deprecated. [2_]                                                                |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_vertical_run<T>(const T& image) is deprecated.              |Use most_frequent_run(image, runs::White(), runs::Vertical()) instead.          |
+|[2_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_vertical_runs(const T& image, long n) is                    |Use most_frequent_runs(image, n, runs::White(), runs::Vertical())               |
+|deprecated. [2_]                                                                |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_vertical_runs<T>(const T& image) is deprecated.             |Use most_frequent_runs(image, runs::White(), runs::Vertical())                  |
+|[2_]                                                                            |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect(const Point& upper_left, const Dimensions& dim) is deprecated.             |Use Rect(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.                 |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect::dimensions() is deprecated. [1_]                                          |Use Rect::dim() instead.                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect::dimensions(const Dimensions& dim) is deprecated. [1_]                     |Use Rect::dim(Dim(ncols, nrows)) instead.                                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect::dimensions(coord_t nrows, coord_t ncols) is deprecated. [1_]              |Use Rect::dim(Dim(ncols, nrows)) instead.                                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect::rect_set(const Point& upper_left, const Dimensions& dim) is               |Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows))                |
+|deprecated. [1_]                                                                |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect::rect_set(coord_t origin_y, coord_t origin_x, coord_t nrows,               |Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows))                |
+|coord_t ncols) is deprecated. [1_]                                              |instead.                                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|RegionTemplate(const Point& ul, const Dimensions& dim) is deprecated.           |Use RegionTemplate(Point(x, y), Dim(ncols, nrows) instead.                      |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|RegionTemplate(size_t origin_y = 0, size_t origin_x = 0, size_t nrows           |Use RegionTemplate(Point(origin_x, origin_y), Dim(ncols, nrows))                |
+|= 1, size_t ncols = 1) is deprecated. [1_]                                      |instead                                                                         |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|resize(T& image, int nrows, int ncols, int resize_quality) [1_]                 |Use resize(image, Dim(ncols, nrows), resize_quality) instead.                   |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|RleImageData(const Size& size, size_t page_offset_y = 0, size_t                 |Use RleImageData(Size(width, height), Point(page_offset_x,                      |
+|page_offset_x = 0) is deprecated. [1_]                                          |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|RleImageData(const Size& size, size_t page_offset_y = 0, size_t                 |Use RleImageData(Size(width, height), Point(page_offset_x,                      |
+|page_offset_x = 0) is deprecated. [1_]                                          |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y           |Use RleImageData(Dim(ncols, nrows), Point(page_offset_x,                        |
+|= 0, size_t page_offset_x = 0) is deprecated. [1_]                              |page_offset_y) = (0, 0)) instead.                                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|StaticImage(const Dimensions& dim) is deprecated. [1_]                          |Use StaticImage(Dim(cols, rows)) instead.                                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|StaticImage(size_t rows = 1, size_t cols = 1) is deprecated. [1_]               |Use StaticImage(Dim(cols, rows)) instead.                                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<COMPLEX, DENSE>::create(size_t offset_y, size_t              |Use TypeIdImageFactory<COMPLEX, DENSE>::create(Point(ul_x, ul_y),               |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<FLOAT, DENSE>::create(size_t offset_y, size_t                |Use TypeIdImageFactory<FLOAT, DENSE>::create(Point(ul_x, ul_y),                 |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<GREY16, DENSE>::create(size_t offset_y, size_t               |Use TypeIdImageFactory<GREY16, DENSE>::create(Point(ul_x, ul_y),                |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<GREYSCALE, DENSE>::create(size_t offset_y, size_t            |Use TypeIdImageFactory<GREYSCALE, DENSE>::create(Point(ul_x, ul_y),             |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<ONEBIT, DENSE>::create(size_t offset_y, size_t               |Use TypeIdImageFactory<ONEBIT, DENSE>::create(Point(ul_x, ul_y),                |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<ONEBIT, RLE>::create(size_t offset_y, size_t                 |Use TypeIdImageFactory<ONEBIT, RLE>::create(Point(ul_x, ul_y),                  |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|TypeIdImageFactory<RGB, DENSE>::create(size_t offset_y, size_t                  |Use TypeIdImageFactory<RGB, DENSE>::create(Point(ul_x, ul_y),                   |
+|offset_x, size_t nrows, size_t ncols) is deprecated. [1_]                       |Dim(ncols, nrows)) instead.                                                     |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|white_run_end<T>(T& begin, const T end) is deprecated. [2_]                     |Use run_end(runs::White(), begin, end) instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|white_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is                 |Use run_histogram(runs::White(), begin, end, hist) instead.                     |
+|deprecated. [2_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+
+.. _1: #x-y-coordinate-consistency
+.. _2: #functions-should-be-parameterized-by-arguments-not-by-name
+
+
+
+Python deprecations reference
+=============================
+
+This is an alphabetical list of the deprecated Python functions.
+
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Deprecated function                                                             |Notes                                                                           |
++================================================================================+================================================================================+
+|black_horizontal_run_histogram() is deprecated.                                 |Use run_histogram('black', 'horizontal') instead.                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|black_vertical_run_histogram() is deprecated.                                   |Use run_histogram('black', 'vertical') instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Cc(image, label, offset_y, offset_x, nrows, ncols) is deprecated. [1_]          |Use Cc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.          |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Cc(image, label, Point offset, Dimensions dimensions) is deprecated.            |Use Cc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.          |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|convolve_xy now takes a different argument order. [1_]                          |Change the order of the first two arguments to (kernel_x, kernel_y),            |
+|                                                                                |rather than the old way (kernel_y, kernel_x).                                   |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_sum(template, y, x) is deprecated. [1_]                              |Use corelation_sum(template, (x, y)) instead.                                   |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_sum_squares(template, y, x) is deprecated. [1_]                      |Use corelation_sum_squares(template, (x, y)) instead.                           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|corelation_weighted(template, y, x, bb, bw, wb, ww) is deprecated.              |Use corelation_weighted(template, (x, y), bb, bw, wb, ww) instead.              |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Dimensions(nrows, ncols) is deprecated. [1_]                                    |Use Dim(ncols, nrows) instead.                                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_bezier(start_y, start_x, c1_y, c1_x, c2_y, c2_x, end_y, end_x,             |Use draw_bezier((start_x, start_y), (c1_x, c1_y), (c2_x, c2_y),                 |
+|value, accuracy) is deprecated. [1_]                                            |(end_x, end_y), value, accuracy) instead.                                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_filled_rect(y1, x1, y2, x2, value) is deprecated. [1_]                     |Use draw_filled_rect((x1, y1), (x2, y2), value) instead.                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_hollow_rect(y1, x1, y2, x2, value) is deprecated. [1_]                     |Use draw_hollow_rect((x1, y1), (x2, y2), value) instead.                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_line(y1, x1, y2, x2, value) is deprecated. [1_]                            |Use draw_line((x1, y1), (x2, y2), value) instead.                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|draw_marker(y1, x1, size, style, value) is deprecated. [1_]                     |Use draw_marker((x1, y1), size, style, value) instead.                          |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_narrow_black_runs(Int *length*) is deprecated.                           |Use filter_narrow_runs(length, 'black') instead.                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_narrow_white_runs(Int *length*) is deprecated.                           |Use filter_narrow_runs(length, 'white') instead.                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_short_black_runs(Int *length*) is deprecated.                            |Use filter_short_runs(length, 'black') instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_short_white_runs(Int *length*) is deprecated.                            |Use filter_short_runs(length, 'white') instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_tall_black_runs(Int *length*) is deprecated.                             |Use filter_tall_runs(length, 'black') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_tall_white_runs(Int *length*) is deprecated.                             |Use filter_tall_runs(length, 'white') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_wide_black_runs(Int *length*) is deprecated.                             |Use filter_wide_runs(length, 'black') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|filter_wide_white_runs(Int *length*) is deprecated.                             |Use filter_wide_runs(length, 'white') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|flood_fill(y1, x1, color) is deprecated. [1_]                                   |Use flood_fill((x1, y1), color) instead.                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|get(y, x) is deprecated. [1_]                                                   |Use get((x, y)) instead.                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Image(offset_y, offset_x, nrows, ncols, pixel_type, storage_format) is          |Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type,                  |
+|deprecated. [1_]                                                                |storage_format) instead.                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Image(Point point, Dimensions dimensions, pixel_type, storage_format)           |Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type,                  |
+|is deprecated. [1_]                                                             |storage_format) instead.                                                        |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageData(nrows, ncols, page_offset_y, page_offset_x, pixel_type,               |Use ImageData(Dim(ncols, nrows), (page_offset_x, page_offset_y),                |
+|storage_format) is deprecated. [1_]                                             |pixel_type, storage_format) instead.                                            |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageData.dimensions(nrows, ncols) is deprecated. [1_]                          |Use ImageData.dimensions(Dim(ncols, nrows)) instead.                            |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|ImageDisplay.highlight_rectangle(y, x, h, w, color, text = '') is               |Use highlight_rectangle(Rect r, color, text) instead.                           |
+|deprecated. [1_]                                                                |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_black_horizontal_runs() is deprecated.                                  |Use iterate_runs('black', 'horizontal') instead.                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_black_vertical_runs() is deprecated.                                    |Use iterate_runs('black', 'vertical') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_white_horizontal_runs() is deprecated.                                  |Use iterate_runs('white', 'horizontal') instead.                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|iterate_white_vertical_runs() is deprecated.                                    |Use iterate_runs('white', 'vertical') instead.                                  |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_horizontal_run() is deprecated.                             |Use most_frequent_run('black', 'horizontal') instead.                           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_horizontal_runs(Int n = -1) is deprecated.                  |Use most_frequent_runs(n, 'black', 'horizontal') instead.                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_vertical_run() is deprecated.                               |Use most_frequent_run('black', 'vertical') instead.                             |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_black_vertical_runs(Int n = -1) is deprecated.                    |Use most_frequent_runs(n, 'black', 'vertical') instead.                         |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_horizontal_run() is deprecated.                             |Use most_frequent_run('white', 'horizontal') instead.                           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_horizontal_runs(Int n = -1) is deprecated.                  |Use most_frequent_runs(n, 'white', 'horizontal') instead.                       |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_vertical_run() is deprecated.                               |Use most_frequent_run('white', 'vertical') instead.                             |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|most_frequent_white_vertical_runs(Int n = -1) is deprecated.                    |Use most_frequent_runs(n, 'white', 'vertical') instead.                         |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect(offset_y, offset_x, nrows, ncols) is deprecated. [1_]                      |Use Rect((offset_x, offset_y), Dim(ncols, nrows)) instead.                      |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect(Point offset, Dimensions dimensions) is deprecated. [1_]                   |Use Rect((offset_x, offset_y), Dim(ncols, nrows)) instead.                      |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect.dimensions property is deprecated. [1_]                                    |Use Rect.dim instead.                                                           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Rect.dimensions property is deprecated. [1_]                                    |Use Rect.dim instead.                                                           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Region(offset_y, offset_x, nrows, ncols) is deprecated. [1_]                    |Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.                    |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|Region(Point offset, Dimensions dimensions) is deprecated. [1_]                 |Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.                    |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|resize(nrows, ncols, interp_type) is deprecated. [1_]                           |Use resize(Dim(ncols, nrows), interp_type) instead.                             |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|set(y, x, value) is deprecated. [1_]                                            |Use set((x, y), value) instead.                                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|SubImage(image, offset_y, offset_x, nrows, ncols) is deprecated. [1_]           |Use SubImage(image, (offset_x, offset_y), Dim(ncols, nrows)) instead.           |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|SubImage(image, Point offset, Dimensions dimensions) is deprecated.             |Use Image(image, (offset_x, offset_y), Dim(ncols, nrows)) instead.              |
+|[1_]                                                                            |                                                                                |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|white_horizontal_run_histogram() is deprecated.                                 |Use run_histogram('white', 'horizontal') instead.                               |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+|white_vertical_run_histogram() is deprecated.                                   |Use run_histogram('white', 'vertical') instead.                                 |
++--------------------------------------------------------------------------------+--------------------------------------------------------------------------------+
+
+.. _1: #x-y-coordinate-consistency
+.. _2: #functions-should-be-parameterized-by-arguments-not-by-name
+
+

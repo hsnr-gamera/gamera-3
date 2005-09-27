@@ -38,13 +38,18 @@ namespace Gamera {
   template<class T>
   inline IntVector* projection(T i, const T end) {
     IntVector* proj = new IntVector(end - i, 0);
-    typename T::iterator j;
-    typename IntVector::iterator p = proj->begin();
-    for (; i != end; ++i, ++p) {
-      for (j = i.begin(); j != i.end(); ++j) {
-	if (is_black(*j))
+    try {
+      typename T::iterator j;
+      typename IntVector::iterator p = proj->begin();
+      for (; i != end; ++i, ++p) {
+	for (j = i.begin(); j != i.end(); ++j) {
+	  if (is_black(*j))
 	    *p += 1;
+	}
       }
+    } catch (std::exception e) {
+      delete proj;
+      throw;
     }
     return proj;
   }
@@ -76,12 +81,17 @@ namespace Gamera {
   template<class T>
   IntVector* projection_cols(const T& image) {
     IntVector* proj = new IntVector(image.ncols(), 0);
-    for (size_t r = 0; r != image.nrows(); ++r) {
-      for (size_t c = 0; c != image.ncols(); ++c) {
-	if (is_black(image.get(r, c))) {
-	  (*proj)[c] += 1;
+    try {
+      for (size_t r = 0; r != image.nrows(); ++r) {
+	for (size_t c = 0; c != image.ncols(); ++c) {
+	  if (is_black(image.get(Point(c, r)))) {
+	    (*proj)[c] += 1;
+	  }
 	}
       }
+    } catch (std::exception e) {
+      delete proj;
+      throw;
     }
     return proj;
   }
@@ -103,32 +113,32 @@ namespace Gamera {
   template<class T>
   IntVector* yproj_vertical_strip(T& image, size_t offset_x,
 				  size_t width) {
-    Rect r(image.offset_y(), image.offset_x() + offset_x,
-	   image.nrows(), width);
+    Rect r(Point(image.offset_x() + offset_x, image.offset_y()),
+	   Dim(width, image.nrows()));
     return projection_rows(image, r);
   }
   
   template<class T>
   IntVector* yproj_horizontal_strip(T& image, size_t offset_y,
 				    size_t height) {
-    Rect r(image.offset_y() + offset_y, image.offset_x(),
-	   height, image.ncols());
+    Rect r(Point(image.offset_x(), image.offset_y() + offset_y), 
+	   Dim(image.ncols(), height));
     return projection_rows(image, r);
   }
 
   template<class T>
   IntVector* xproj_vertical_strip(T& image, size_t offset_x,
 				  size_t width) {
-    Rect r(image.offset_y(), image.offset_x() + offset_x,
-	   image.nrows(), width);
+    Rect r(Point(image.offset_x() + offset_x, image.offset_y()),
+	   Dim(width, image.nrows()));
     return projection_cols(image, r);
   }
 
   template<class T>
   IntVector* xproj_horizontal_strip(T& image, size_t offset_y,
 				    size_t height) {
-    Rect r(image.offset_y() + offset_y, image.offset_x(),
-	   height, image.ncols());
+    Rect r(Point(image.offset_x(), image.offset_y() + offset_y),
+	   Dim(image.ncols(), height));
     return projection_cols(image, r);
   }
 
@@ -154,7 +164,7 @@ namespace Gamera {
     // compute skewed projections simultanously
     for (size_t r = 0; r < image.nrows(); ++r) {
       for (size_t c = 0; c < image.ncols(); ++c) {
-        if (is_black(image.get(r,c))) {
+        if (is_black(image.get(Point(c, r)))) {
           for (i = 0; i < n; i++) {
             x = (int) round(c*cosa[i] - r*sina[i]);
             if ((x > 0) && (x < (int)image.ncols()))
@@ -204,7 +214,7 @@ namespace Gamera {
     // compute skewed projections simultanously
     for (size_t r = 0; r < image.nrows(); ++r) {
       for (size_t c = 0; c < image.ncols(); ++c) {
-        if (is_black(image.get(r,c))) {
+        if (is_black(image.get(Point(c, r)))) {
           for (i = 0; i < n; i++) {
             y = (int) round(c*sina[i] + r*cosa[i]);
             if ((y > 0) && (y < (int)image.nrows()))

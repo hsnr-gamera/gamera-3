@@ -20,27 +20,12 @@
 # This stuff must come the very first before any other gui-specific things
 # are imported.
 
-# Choose wxPython 2.4 if there are multiple versions installed
-try:
-   import wxversion
-except ImportError:
-   pass
-else:
-   try:
-      wxversion.select("2.4")
-   except:
-      raise RuntimeError("""This version of Gamera requires wxPython 2.4.x.
-However, it seems that you do not have that version installed.
-In order to use wxPython 2.6.x, you will need to upgrade to Gamera 3.x""")
-      
-
 # wxPython
 from wxPython.wx import *
 # Check that the version is correct
-if wxVERSION[:2] != (2, 4):
-   raise RuntimeError("""This version of Gamera requires wxPython 2.4.x.
-However, it seems that you have wxPython %s installed.
-In order to use wxPython 2.6.x, you will need to upgrade to Gamera 3.x"""
+if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 6):
+   raise RuntimeError("""This version of Gamera requires either wxPython 2.4.x or
+wxPython 2.6.x.  However, it seems that you have wxPython %s installed."""
                       % ".".join([str(x) for x in wxVERSION]))
 
 import inspect
@@ -51,15 +36,9 @@ from gamera.gui import gamera_display, image_menu, \
      icon_display, classifier_display, var_name, gui_util, \
      image_browser, has_gui
 
-
-try:
-   from wxPython import py
-   shell = py.shell
-except:
-   from wxPython.lib.PyCrust import shell
-   
-from wxPython.stc import *
-from wxPython.lib.splashscreen import SplashScreen
+# wxPython
+import wx
+import wx.py
 
 # Python standard library
 # import interactive
@@ -67,10 +46,10 @@ import sys, traceback, os, string, os.path, imp
 
 # Set default options
 config.add_option(
-   "", "--shell-font-face", default=py.editwindow.FACES['mono'],
+   "", "--shell-font-face", default=wx.py.editwindow.FACES['mono'],
    help="[shell] Font face used in the shell")
 config.add_option(
-   "", "--shell-font-size", default=py.editwindow.FACES['size'],
+   "", "--shell-font-size", default=wx.py.editwindow.FACES['size'],
    type="int",
    help="[shell] Font size used in the shell")
 config.add_option(
@@ -89,24 +68,24 @@ class GameraGui:
    GetImageFilename = staticmethod(GetImageFilename)
 
    def ShowImage(image, title, view_function=None, owner=None):
-      wxBeginBusyCursor()
+      wx.BeginBusyCursor()
       try:
          img = gamera_display.ImageFrame(title=title, owner=owner)
          img.set_image(image, view_function)
          img.Show(True)
       finally:
-         wxEndBusyCursor()
+         wx.EndBusyCursor()
       return img
    ShowImage = staticmethod(ShowImage)
 
    def ShowImages(list, view_function=None):
-      wxBeginBusyCursor()
+      wx.BeginBusyCursor()
       try:
          img = gamera_display.MultiImageFrame(title = "Multiple Images")
          img.set_image(list, view_function)
          img.Show(1)
       finally:
-         wxEndBusyCursor()
+         wx.EndBusyCursor()
       return img
    ShowImages = staticmethod(ShowImages)
 
@@ -125,11 +104,11 @@ class GameraGui:
       if classifier is None:
          from gamera import knn
          classifier = knn.kNNInteractive()
-      wxBeginBusyCursor()
+      wx.BeginBusyCursor()
       class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
       class_disp.set_image(current_database, image)
       class_disp.Show(1)
-      wxEndBusyCursor()
+      wx.EndBusyCursor()
       return class_disp
    ShowClassifier = staticmethod(ShowClassifier)
 
@@ -145,47 +124,57 @@ class GameraGui:
       return gui_util.ProgressBox(message, length)
    ProgressBox = staticmethod(ProgressBox)
 
-######################################################################
+if wx.VERSION >= (2, 5):
+   import wx.html
+   class Calltip(wx.html.HtmlWindow):
+      def __init__(self, parent=None, id=-1):
+         wx.html.HtmlWindow.__init__(self, parent, id)
+         wx.py.crust.dispatcher.connect(receiver=self.display, signal='Shell.calltip')
+         if wx.VERSION >= (2, 5) and "gtk2" in wx.PlatformInfo:
+            self.SetStandardFonts()
+         self.SetBackgroundColour(wx.Colour(255, 255, 232))
+         self.message_displayed = False
+         self.cache = {}
 
-class PyCrustGameraShell(shell.Shell):
-   def __init__(self, main_win, parent, id, message):
-      # Win32 change
-      # WIN32TODO: This needs to be tested
-      # if wxPython was compiled with Unicode
-##       if hasattr(wxLocale, 'GetSystemEncoding'): 
-##          self.SetCodePage(wxSTC_CP_UTF8)
-##       else:
-##          self.SetCodePage(1)
+      def display(self, calltip):
+         """Receiver for Shell.calltip signal."""
+         html = gui_util.docstring_to_html(calltip)
+         self.SetPage(html)
+         self.SetBackgroundColour(wx.Colour(255, 255, 232))
 
-      self.history_win = None
+      def OnLinkClicked(self, link):
+         if not self.message_displayed:
+            gui_util.message("Clicking on links is not supported.")
+            self.message_displayed = True
+else:
+   Calltip = wx.py.crust.Calltip
+
+class PyShellGameraShell(wx.py.shell.Shell):
+   def __init__(self, *args, **kwargs):
       self.update = None
-      shell.Shell.__init__(self, parent, id, introText=message)
-      
+      wx.py.shell.Shell.__init__(self, *args, **kwargs)
+      self.push("from gamera.gui import gui")
+      self.push("from gamera.gui.matplotlib_support import *")
+      self.push("from gamera.core import *")
+      self.push("init_gamera()")
       self.locals = self.interp.locals
-      self.main_win = main_win
-      self.SetMarginType(1, 0)
-      self.SetMarginWidth(1, 0)
+      self.autoCallTip = False
 
-      style = py.editwindow.FACES.copy()
+      style = wx.py.editwindow.FACES.copy()
       style['mono'] = config.get("shell_font_face")
       style['size'] = config.get("shell_font_size")
       self.setStyles(style)
+      self.ScrollToLine(1)
+      if wx.VERSION < (2, 5):
+         self.autoComplete = False
 
    def addHistory(self, command):
-      if self.history_win:
-         self.history_win.add_line(command)
       if self.update:
          self.update()
-      shell.Shell.addHistory(self, command)
+      wx.py.shell.Shell.addHistory(self, command)
 
-   def GetLocals(self):
-      return self.interp.locals
-
-   def run(self, source):
-      shell.Shell.run(self, source.strip())
-      
    def push(self, source):
-      shell.Shell.push(self, source)
+      wx.py.shell.Shell.push(self, source)
       if source.strip().startswith("import "):
          new_modules = [x.strip() for x in source.strip()[7:].split(",")]
          for module in new_modules:
@@ -200,84 +189,66 @@ class PyCrustGameraShell(shell.Shell):
 
    def OnKeyDown(self, event):
       key = event.KeyCode()
-      if self.AutoCompActive():
-         event.Skip()
-      elif key == WXK_UP:
-         self.OnHistoryInsert(step=+1)
-      elif key == WXK_DOWN:
-         self.OnHistoryInsert(step=-1)
-      else:
-         shell.Shell.OnKeyDown(self, event)
+      if key in (wx.WXK_UP, wx.WXK_DOWN):
+         event.m_controlDown = True
+      wx.py.shell.Shell.OnKeyDown(self, event)
 
-   def writeOut(self, text):
-      self.write(text)
-      wxYield()
-
-######################################################################
-
-class History(wxStyledTextCtrl):
-   def __init__(self, parent):
-      wxStyledTextCtrl.__init__(
-         self, parent, -1,
-         wxDefaultPosition, wxDefaultSize,
-         style=wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-      style = "face:%s,size:%d" % (
-         config.get("shell_font_face"), config.get("shell_font_size"))
-      self.StyleSetSpec(wxSTC_STYLE_DEFAULT, style)
-      self.SetTabWidth(2)
-      EVT_KEY_DOWN(self, self.OnKey)
-      EVT_LEFT_DCLICK(self, self.OnDoubleClick)
-
-   def OnKey(self, evt):
-      evt.Skip()
-
-   def OnDoubleClick(self, evt):
-      text = self.GetCurLine()[0]
-      if text != '':
-         for i in range(self.GetCurrentLine() + 1, self.GetLineCount()):
-            text2 = self.GetLine(i)
-            if text2 != '':
-               if text2[0] in (' ', '\t'):
-                  text = text + string.split(text2, "\n")[0] + "\n"
-         self.shell.run(string.split(text, "\n")[0])
-
-   def add_line(self, text):
-      self.GotoPos(self.GetTextLength())
-      self.AddText(text + "\n")
-
-######################################################################
-
-class ShellFrame(wxFrame):
+   def GetLocals(self):
+      return self.locals
+      
+class PyCrustGameraShell(wx.py.crust.Crust):
+   def __init__(self, parent, id=-1, pos=wx.DefaultPosition, 
+                size=wx.DefaultSize, style=0,
+                name='Crust Window', rootObject=None, rootLabel=None,
+                rootIsNamespace=True, intro='', locals=None, 
+                InterpClass=None, *args, **kwds):
+      wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
+      self.shell = PyShellGameraShell(parent=self, introText=intro, 
+                                      locals=locals, InterpClass=InterpClass, 
+                                      *args, **kwds)
+      self.editor = self.shell
+      if rootObject is None:
+         rootObject = self.shell.interp.locals
+      self.notebook = wx.Notebook(parent=self, id=-1, style=wx.NB_BOTTOM)
+      self.shell.interp.locals['notebook'] = self.notebook
+      self.filling = wx.py.filling.Filling(parent=self.notebook, 
+                                        rootObject=rootObject, 
+                                        rootLabel=rootLabel, 
+                                        rootIsNamespace=rootIsNamespace)
+      # Add 'filling' to the interpreter's locals.
+      ## self.shell.interp.locals['filling'] = self.filling
+      self.calltip = Calltip(parent=self.notebook)
+      self.notebook.AddPage(page=self.calltip, text='Documentaton', select=True)
+      self.notebook.AddPage(page=self.filling, text='Namespace')
+      self.sessionlisting = wx.py.crust.SessionListing(parent=self.notebook)
+      self.notebook.AddPage(page=self.sessionlisting, text='History')
+      self.SplitHorizontally(self.shell, self.notebook, parent.GetClientSize()[1] - 200)
+      self.SetMinimumPaneSize(1)
+      
+class ShellFrame(wx.Frame):
    def __init__(self, parent, id, title):
       global shell
-      wxFrame.__init__(
+      wx.Frame.__init__(
          self, parent, id, title, (100, 100),
          # Win32 change
          [600, 550],
-         style=wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
-      EVT_CLOSE(self, self._OnCloseWindow)
+         style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
+      wx.EVT_CLOSE(self, self._OnCloseWindow)
 
       self.known_modules = {}
       self.menu = self.make_menu()
       self.SetMenuBar(self.menu)
 
-      self.hsplitter = wxSplitterWindow(
+      self.splitter = wx.SplitterWindow(
          self, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
-         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
-      self.splitter = wxSplitterWindow(
-         self.hsplitter, -1,
-         style=wxSP_FULLSASH|wxSP_3DSASH|wxCLIP_CHILDREN|
-         wxNO_FULL_REPAINT_ON_RESIZE|wxSP_LIVE_UPDATE)
+         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
 
       self.icon_display = icon_display.IconDisplay(self.splitter, self)
-      
-      self.history = History(self.hsplitter)
-      self.shell = PyCrustGameraShell(self, self.splitter, -1,
-                                      "Welcome to Gamera")
-      self.shell.history_win = self.history
-
-      self.history.shell = self.shell
+      self.crust = PyCrustGameraShell(self.splitter, -1)
+      self.shell = self.crust.shell
+      self.shell.main_win = self
+      self.shell.update = self.Update
       image_menu.set_shell(self.shell)
       image_menu.set_shell_frame(self)
       self.shell.push("from gamera.gui import gui")
@@ -290,24 +261,20 @@ class ShellFrame(wxFrame):
       self.shell.update = self.Update
       self.icon_display.shell = self.shell
       self.icon_display.main = self
+      self.Update()
       self.shell.SetFocus()
 
       self.splitter.SetMinimumPaneSize(20)
-      self.splitter.SplitVertically(self.icon_display, self.shell, 120)
-
-      self.hsplitter.SetMinimumPaneSize(20)
-      self.hsplitter.SplitHorizontally(self.splitter, self.history, 380)
-      self.hsplitter.SetSashPosition(380)
+      self.splitter.SplitVertically(self.icon_display, self.crust, 120)
       self.splitter.SetSashPosition(120)
 
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)
       from gamera.gui import gamera_icons
-      icon = wxIconFromBitmap(gamera_icons.getIconBitmap())
+      icon = wx.IconFromBitmap(gamera_icons.getIconBitmap())
       self.SetIcon(icon)
-      self.Move(wxPoint(int(30), int(30)))
-
-      wxYield()
+      self.Move(wx.Point(int(30), int(30)))
+      wx.Yield()
 
    def import_command_line_modules(self):
       for file in config.get_free_args():
@@ -356,22 +323,25 @@ class ShellFrame(wxFrame):
       self.import_toolkits = {}
       self.reload_toolkits = {}
       self.toolkit_menus = {}
-      toolkits_menu = wxMenu()
-      for toolkit in toolkits:
-         toolkitID = wxNewId()
-         toolkit_menu = wxMenu() #style=wxMENU_TEAROFF)
-         toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
-                             "Import %s toolkit" % toolkit)
-         EVT_MENU(self, toolkitID, self._OnImportToolkit)
-         self.import_toolkits[toolkitID] = toolkit
-         toolkitID = wxNewId()
-         toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
-                             "Reload %s toolkit" % toolkit)
-         EVT_MENU(self, toolkitID, self._OnReloadToolkit)
-         self.reload_toolkits[toolkitID] = toolkit
-         toolkits_menu.AppendMenu(wxNewId(), toolkit, toolkit_menu)
-         self.toolkit_menus[toolkit] = toolkit_menu
-      menubar = wxMenuBar()
+      toolkits_menu = wx.Menu()
+      if len(toolkits):
+         for toolkit in toolkits:
+            toolkitID = wx.NewId()
+            toolkit_menu = wx.Menu() #style=wxMENU_TEAROFF)
+            toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
+                                "Import %s toolkit" % toolkit)
+            wx.EVT_MENU(self, toolkitID, self._OnImportToolkit)
+            self.import_toolkits[toolkitID] = toolkit
+            toolkitID = wx.NewId()
+            toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
+                                "Reload %s toolkit" % toolkit)
+            wx.EVT_MENU(self, toolkitID, self._OnReloadToolkit)
+            self.reload_toolkits[toolkitID] = toolkit
+            toolkits_menu.AppendMenu(wx.NewId(), toolkit, toolkit_menu)
+            self.toolkit_menus[toolkit] = toolkit_menu
+      else:
+         toolkits_menu.Append(wx.NewId(), "No toolkits installed.")
+      menubar = wx.MenuBar()
       menubar.Append(file_menu, "&File")
       menubar.Append(classify_menu, "&Classify")
       menubar.Append(toolkits_menu, "&Toolkits")
@@ -393,10 +363,10 @@ class ShellFrame(wxFrame):
          name = var_name.get("image", self.shell.locals)
          if name:
             try:
-               wxBeginBusyCursor()
+               wx.BeginBusyCursor()
                self.shell.run('%s = load_image(r"%s")' % (name, filename))
             finally:
-               wxEndBusyCursor()
+               wx.EndBusyCursor()
 
    def _OnImageBrowser(self, event):
       browser = image_browser.ImageBrowserFrame()
@@ -408,13 +378,13 @@ class ShellFrame(wxFrame):
       if filename:
          name = var_name.get("glyphs", self.shell.locals)
          if name:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             try:
                self.shell.run("from gamera import gamera_xml")
                self.shell.run('%s = gamera_xml.glyphs_from_xml(r"%s")' %
                               (name, filename))
             finally:
-               wxEndBusyCursor()
+               wx.EndBusyCursor()
 
    def _OnExecFile(self, event):
       filename = gui_util.open_file_dialog(self, "Python files (*py)|*.py")
@@ -431,7 +401,7 @@ class ShellFrame(wxFrame):
    def _OnBiollante(self, event):
       from gamera.gui import gaoptimizer_display
       from gamera import knn
-      frame = gaoptimizer_display.OptimizerFrame(NULL, -1, "GA Optimization for k-NN")
+      frame = gaoptimizer_display.OptimizerFrame(None, -1, "GA Optimization for k-NN")
       frame.Show(True)
 
    def _OnClassifier(self, event):
@@ -451,7 +421,7 @@ class ShellFrame(wxFrame):
 
    def _OnCloseWindow(self, event):
       for window in self.GetChildren():
-         if isinstance(window, wxFrame):
+         if isinstance(window, wx.Frame):
             if not window.Close():
                return
       self.Destroy()
@@ -477,36 +447,36 @@ class CustomMenu:
          menu = main_win.toolkit_menus[name]
          menu.AppendSeparator()
          if self._items == []:
-            menu.Append(wxNewId(), "--- empty ---")
+            menu.Append(wx.NewId(), "--- empty ---")
          else:
             for item in self._items:
                if item == "-":
                   menu.Break()
                else:
-                  menuID = wxNewId()
+                  menuID = wx.NewId()
                   menu.Append(menuID, item)
-                  EVT_MENU(main_win, menuID,
+                  wx.EVT_MENU(main_win, menuID,
                            getattr(self, "_On" +
                                    util.string2identifier(item)))
 
-class StatusBar(wxStatusBar):
+class StatusBar(wx.StatusBar):
    def __init__(self, parent):
-      wxStatusBar.__init__(self, parent, -1)
+      wx.StatusBar.__init__(self, parent, -1)
       self.SetFieldsCount(3)
       self.SetStatusText("Gamera", 0)
 
-class GameraSplash(wxSplashScreen):
+class GameraSplash(wx.SplashScreen):
    def __init__(self):
       from gamera.gui import gamera_icons
-      wxSplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
-                              wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_NO_TIMEOUT,
+      wx.SplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
+                              wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_NO_TIMEOUT,
                               1000, None, -1,
-                              style = (wxSIMPLE_BORDER|
-                                       wxFRAME_NO_TASKBAR|wxSTAY_ON_TOP))
+                              style = (wx.SIMPLE_BORDER|
+                                       wx.FRAME_NO_TASKBAR|wx.STAY_ON_TOP))
 
 def _show_shell():
    global main_win
-   main_win = ShellFrame(NULL, -1, "Gamera")
+   main_win = ShellFrame(None, -1, "Gamera")
    main_win.Show(True)
    main_win.import_command_line_modules()
 
@@ -517,10 +487,10 @@ def run(startup=_show_shell):
    has_gui.gui = GameraGui
    from gamera.gui import args_gui
 
-   class MyApp(wxApp):
+   class MyApp(wx.App):
       def __init__(self, startup, parent):
          self._startup = startup
-         wxApp.__init__(self, parent)
+         wx.App.__init__(self, 0)
          self.SetExitOnFrameDelete(1)
 
       # wxWindows calls this method to initialize the application
@@ -528,6 +498,7 @@ def run(startup=_show_shell):
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()
+         wx.Yield()
          init_gamera()
          self._startup()
          self.splash.Show(0)

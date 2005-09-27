@@ -120,13 +120,12 @@ as a Float image.
     1: use Manhattan distance (L1 norm)
 
     2: use Euclidean distance (L2 norm)
-
-If you use the L2 norm, the destination pixels must be real valued to give correct results.
 """
   self_type = ImageType([ONEBIT])
   args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
   return_type = ImageType([FLOAT])
   doc_examples = [(ONEBIT,5),]
+  author = "Ulrich Koethe (wrapped from VIGRA by Michael Droettboom"
 
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]

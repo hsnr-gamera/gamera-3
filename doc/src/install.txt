@@ -325,6 +325,13 @@ Prerequisites
 
 - X11
 
+- Optional: Matlplotlib
+
+  Matplotlib can be compiled from source or downloaded as a binary.  We
+  recommend the binary which can be downloaded here__.
+
+.. __: http://sda.iu.edu/projects.html
+
 Standard Build and Install
 ----------------------------
 

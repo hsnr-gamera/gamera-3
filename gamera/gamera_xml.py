@@ -372,7 +372,8 @@ class LoadXML:
       self._classification_state = core.UNCLASSIFIED
 
    def _tag_end_glyph(self):
-      glyph = core.Image(self._ul_y, self._ul_x, self._nrows, self._ncols,
+      glyph = core.Image(core.Point(self._ul_x, self._ul_y),
+                         core.Dim(self._ncols, self._nrows),
                          core.ONEBIT, core.DENSE)
       if not self._data is None:
          glyph.from_rle(str(u''.join(self._data)))

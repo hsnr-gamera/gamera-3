@@ -47,7 +47,7 @@ numeric_io.py, numarray_io.py and pil_io.py respectively.
     ##   page_offset_y, page_offset_x,
     ##   nrows, ncols, pixel_format=0, storage_type=0,
     ## so we'll do something similar:
-    args = Args([Int("nrows"), Int("ncols"),
+    args = Args([Point("offset"), Dim("dim"),
                  Int("pixel_type"), Int("storage_type"),
                  Class("data_string")])
     return_type = ImageType(ALL)
@@ -61,3 +61,5 @@ class StringIOModule(PluginModule):
     url = ('http://www.oeb.harvard.edu/faculty/holbrook/'
            'people/alex/Website/alex.htm')
 module = StringIOModule()
+
+_from_raw_string = _from_raw_string()

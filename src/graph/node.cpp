@@ -95,7 +95,7 @@ PyObject* node___repr__(PyObject* self) {
 
 PyObject* node___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   PyObject* data = NULL;
-  if (PyArg_ParseTuple(args, "|O", &data) <= 0)
+  if (PyArg_ParseTuple(args, "|O:Node.__call__", &data) <= 0)
     return 0;
   if (data == NULL)
     return node_get_data(self);

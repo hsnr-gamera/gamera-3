@@ -53,16 +53,38 @@ namespace Gamera {
   class RegionTemplate : public Rect {
   public:
     typedef std::map<std::string, V> map_type;
-    RegionTemplate(size_t origin_y = 0, size_t origin_x = 0,
-		   size_t nrows = 1, size_t ncols = 1) :
-      Rect(origin_y, origin_x, nrows, ncols), m_value_map() { }
     RegionTemplate(const Point& ul, const Point& lr) :
       Rect(ul, lr) { }
     RegionTemplate(const Rect& r) :
       Rect(r) { }
     RegionTemplate(const Point& ul, const Size& size)
       : Rect(ul, size) {}
-    RegionTemplate(const Point& ul, const Dimensions& dim)
+#ifdef GAMERA_DEPRECATED
+    /*
+RegionTemplate(size_t origin_y = 0, size_t origin_x = 0, size_t nrows
+= 1, size_t ncols = 1) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use RegionTemplate(Point(origin_x, origin_y), Dim(ncols, nrows)) instead
+    */
+    RegionTemplate(size_t origin_y = 0, size_t origin_x = 0,
+		   size_t nrows = 1, size_t ncols = 1) GAMERA_CPP_DEPRECATED;
+#endif
+
+#ifdef GAMERA_DEPRECATED
+    /*
+RegionTemplate(const Point& ul, const Dimensions& dim) is deprecated.
+
+Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
+in favor of Dim).
+
+Use RegionTemplate(Point(x, y), Dim(ncols, nrows) instead.
+    */
+    RegionTemplate(const Point& ul, const Dimensions& dim) 
+      GAMERA_CPP_DEPRECATED;
+#endif
+    RegionTemplate(const Point& ul, const Dim& dim)
       : Rect(ul, dim) {}
     V get(const std::string& key) const {
       typename map_type::const_iterator i = m_value_map.find(key);
@@ -117,6 +139,17 @@ namespace Gamera {
 	return -(int)(b.ul_y() - a.lr_y());
     }
   }
+
+#ifdef GAMERA_DEPRECATED
+  template<class V>
+  RegionTemplate<V>::RegionTemplate(size_t origin_y, size_t origin_x,
+				    size_t nrows, size_t ncols) :
+    Rect(Point(origin_x, origin_y), Dim(ncols, nrows)), m_value_map() { } // deprecated call
+
+  template<class V>
+  RegionTemplate<V>::RegionTemplate(const Point& ul, const Dimensions& dim)
+    : Rect(ul, dim) {}
+#endif
 
   template<class T>
   class RegionMapTemplate : public std::list<RegionTemplate<T> > {

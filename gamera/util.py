@@ -20,13 +20,13 @@
 
 from __future__ import generators
 
-import string, UserList, sys, re   ## Python standard
+import string, sys, traceback, re, warnings   ## Python standard
 from types import *
 from math import pow
 from gamera.enums import *
 from gamera.gui import has_gui
 from gamera.config import config
-from gamera.backport import sets
+from gamera.backport import sets, textwrap
 
 config.add_option(
    "-p", "--progress-bar", action="store_true",
@@ -566,3 +566,23 @@ class _ImageFileExtensionFinder:
 load_image_file_extension_finder = _ImageFileExtensionFinder("load")
 save_image_file_extension_finder = _ImageFileExtensionFinder("save")
 
+_warnings_history = {}
+def __warn_deprecated__(message, other_filename=None, other_lineno=None,
+                        from_cpp=False):
+   stack = traceback.extract_stack()
+   if not from_cpp:
+      filename, lineno, scope, call = stack[-3]
+   else:
+      filename, lineno, scope, call = stack[-2]
+   if other_filename is None:
+      other_filename, other_lineno, scope, call = stack[-2]
+   key = "%s:%d:%s:%d" % (filename, lineno, other_filename, other_lineno)
+   if filename.endswith("code.py"):
+      filename = "<shell>"
+      lineno = 0
+   if not _warnings_history.has_key(key):
+      _warnings_history[key] = None
+      warnings.warn_explicit("\n" + message,
+                             DeprecationWarning, filename, lineno)
+
+warn_deprecated = __warn_deprecated__

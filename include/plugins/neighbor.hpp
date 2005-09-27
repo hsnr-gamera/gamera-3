@@ -55,24 +55,24 @@ void neighbor16(const T& m, F& func, M& tmp,
 
   for (unsigned int row = 0; row < m.nrows() - 4; row++) {
     for (unsigned int col = 0; col < m.ncols() - 4; col++) {
-      window[0] = m.get(row, col);
-      window[1] = m.get(row, col + 1);
-      window[2] = m.get(row, col + 2);
-      window[3] = m.get(row, col + 3);
-      window[4] = m.get(row + 1, col);
-      window[5] = m.get(row + 1, col + 1);
-      window[6] = m.get(row + 1, col + 2);
-      window[7] = m.get(row + 1, col + 3);
-      window[8] = m.get(row + 2, col);
-      window[9] = m.get(row + 2, col + 1);
-      window[10] = m.get(row + 2, col + 2);
-      window[11] = m.get(row + 2, col + 3);
-      window[12] = m.get(row + 3, col);
-      window[13] = m.get(row + 3, col + 1);
-      window[14] = m.get(row + 3, col + 2);
-      window[15] = m.get(row + 3, col + 3); 
-      tmp.set(row + center_row, 
-	      col + center_col,
+      window[0] = m.get(Point(col, row));
+      window[1] = m.get(Point(col + 1, row));
+      window[2] = m.get(Point(col + 2, row));
+      window[3] = m.get(Point(col + 3, row));
+      window[4] = m.get(Point(col, row + 1));
+      window[5] = m.get(Point(col + 1, row + 1));
+      window[6] = m.get(Point(col + 2, row + 1));
+      window[7] = m.get(Point(col + 3, row + 1));
+      window[8] = m.get(Point(col, row + 2));
+      window[9] = m.get(Point(col + 1, row + 2));
+      window[10] = m.get(Point(col + 2, row + 2));
+      window[11] = m.get(Point(col + 3, row + 2));
+      window[12] = m.get(Point(col, row + 3));
+      window[13] = m.get(Point(col + 1, row + 3));
+      window[14] = m.get(Point(col + 2, row + 3));
+      window[15] = m.get(Point(col + 3, row + 3)); 
+      tmp.set(Point(col + center_col, 
+	      row + center_row),
 	      func(window.begin(), window.end()));
     }
   }
@@ -101,84 +101,84 @@ void neighbor9(const T& m, F func, M& tmp) {
   // Upper-left
   for (unsigned int i = 0; i < 4; ++i)
     window[i] = white(m);
-  window[4] = m.get(0, 0);
-  window[5] = m.get(0, 1);
+  window[4] = m.get(Point(0, 0));
+  window[5] = m.get(Point(1, 0));
   window[6] = white(m);
-  window[7] = m.get(1, 0);
-  window[8] = m.get(1, 1);
-  tmp.set(0, 0, func(window.begin(), window.end()));
+  window[7] = m.get(Point(0, 1));
+  window[8] = m.get(Point(1, 1));
+  tmp.set(Point(0, 0), func(window.begin(), window.end()));
   
   // Upper-right
-  window[3] = m.get(0, ncols_m2);
-  window[4] = m.get(0, ncols_m1);
-  window[6] = m.get(1, ncols_m2);
-  window[7] = m.get(1, ncols_m1);
+  window[3] = m.get(Point(ncols_m2, 0));
+  window[4] = m.get(Point(ncols_m1, 0));
+  window[6] = m.get(Point(ncols_m2, 1));
+  window[7] = m.get(Point(ncols_m1, 1));
   window[5] = window[8] = white(m);
-  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
   
   // Lower-left
-  window[1] = m.get(nrows_m2, 0);
-  window[2] = m.get(nrows_m2, 1);
-  window[4] = m.get(nrows_m1, 0);
-  window[5] = m.get(nrows_m1, 1);
+  window[1] = m.get(Point(0, nrows_m2));
+  window[2] = m.get(Point(1, nrows_m2));
+  window[4] = m.get(Point(0, nrows_m1));
+  window[5] = m.get(Point(1, nrows_m1));
   window[6] = white(m);
   window[3] = window[7] = white(m);
-  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+  tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
 
   // Lower-right
-  window[0] = m.get(nrows_m2, ncols_m2);
-  window[1] = m.get(nrows_m2, ncols_m1);
-  window[3] = m.get(nrows_m1, ncols_m2);
-  window[4] = m.get(nrows_m1, ncols_m1);
+  window[0] = m.get(Point(ncols_m2, nrows_m2));
+  window[1] = m.get(Point(ncols_m1, nrows_m2));
+  window[3] = m.get(Point(ncols_m2, nrows_m1));
+  window[4] = m.get(Point(ncols_m1, nrows_m1));
   window[2] = window[4] = white(m);
-  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
   window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[3] = m.get(0, col - 1);
-    window[4] = m.get(0, col);
-    window[5] = m.get(0, col + 1);
-    window[6] = m.get(1, col - 1);
-    window[7] = m.get(1, col);
-    window[8] = m.get(1, col + 1);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    window[3] = m.get(Point(col - 1, 0));
+    window[4] = m.get(Point(col, 0));
+    window[5] = m.get(Point(col + 1, 0));
+    window[6] = m.get(Point(col - 1, 1));
+    window[7] = m.get(Point(col, 1));
+    window[8] = m.get(Point(col + 1, 1));
+    tmp.set(Point(col, 0), func(window.begin(), window.end()));
   }
 
   // Bottom edge
   window[6] = window[7] = window[8] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m2, col - 1);
-    window[1] = m.get(nrows_m2, col);
-    window[2] = m.get(nrows_m2, col + 1);
-    window[3] = m.get(nrows_m1, col - 1);
-    window[4] = m.get(nrows_m1, col);
-    window[5] = m.get(nrows_m1, col + 1);
-    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
+    window[0] = m.get(Point(col - 1, nrows_m2));
+    window[1] = m.get(Point(col, nrows_m2));
+    window[2] = m.get(Point(col + 1, nrows_m2));
+    window[3] = m.get(Point(col - 1, nrows_m1));
+    window[4] = m.get(Point(col, nrows_m1));
+    window[5] = m.get(Point(col + 1, nrows_m1));
+    tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
   }
 
   // Left edge
   window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[1] = m.get(row - 1, 0);
-    window[2] = m.get(row - 1, 1);
-    window[4] = m.get(row, 0);
-    window[5] = m.get(row, 1);
-    window[7] = m.get(row + 1, 0);
-    window[8] = m.get(row + 1, 1);
-    tmp.set(row, 0, func(window.begin(), window.end()));
+    window[1] = m.get(Point(0, row - 1));
+    window[2] = m.get(Point(1, row - 1));
+    window[4] = m.get(Point(0, row));
+    window[5] = m.get(Point(1, row));
+    window[7] = m.get(Point(0, row + 1));
+    window[8] = m.get(Point(1, row + 1));
+    tmp.set(Point(0, row), func(window.begin(), window.end()));
   }
 
   // Right edge
   window[2] = window[5] = window[8] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, ncols_m2);
-    window[1] = m.get(row - 1, ncols_m1);
-    window[3] = m.get(row, ncols_m2);
-    window[4] = m.get(row, ncols_m1);
-    window[6] = m.get(row + 1, ncols_m2);
-    window[7] = m.get(row + 1, ncols_m1);
-    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+    window[0] = m.get(Point(ncols_m2, row - 1));
+    window[1] = m.get(Point(ncols_m1, row - 1));
+    window[3] = m.get(Point(ncols_m2, row));
+    window[4] = m.get(Point(ncols_m1, row));
+    window[6] = m.get(Point(ncols_m2, row + 1));
+    window[7] = m.get(Point(ncols_m1, row + 1));
+    tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
   }
   
   // Core of image
@@ -189,8 +189,8 @@ void neighbor9(const T& m, F func, M& tmp) {
       typename std::vector<typename T::value_type>::iterator window_it = window.begin();
       for (int ri = -1; ri < 2; ++ri)
 	for (int ci = -1; ci < 2; ++ci, ++window_it) 
-	  *window_it = m.get(row + ri, col + ci);
-      tmp.set(row, col, func(window.begin(), window.end()));
+	  *window_it = m.get(Point(col + ci, row + ri));
+      tmp.set(Point(col, row), func(window.begin(), window.end()));
     }
   }
 }
@@ -221,75 +221,75 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   // Upper-left
   for (unsigned int i = 0; i < 4; ++i)
     window[i] = white(m);
-  window[4] = m.get(0, 1);
+  window[4] = m.get(Point(1, 0));
   window[5] = white(m);
-  window[6] = m.get(1, 0);
-  window[7] = m.get(1, 1);
-  tmp.set(0, 0, func(window.begin(), window.end()));
+  window[6] = m.get(Point(0, 1));
+  window[7] = m.get(Point(1, 1));
+  tmp.set(Point(0, 0), func(window.begin(), window.end()));
   
   // Upper-right
-  window[3] = m.get(0, ncols_m2);
-  window[5] = m.get(1, ncols_m2);
-  window[6] = m.get(1, ncols_m1);
+  window[3] = m.get(Point(ncols_m2, 0));
+  window[5] = m.get(Point(ncols_m2, 1));
+  window[6] = m.get(Point(ncols_m1, 1));
   window[4] = window[7] = white(m);
-  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
   
   // Lower-left
-  window[1] = m.get(nrows_m2, 0);
-  window[2] = m.get(nrows_m2, 1);
-  window[4] = m.get(nrows_m1, 1);
+  window[1] = m.get(Point(0, nrows_m2));
+  window[2] = m.get(Point(1, nrows_m2));
+  window[4] = m.get(Point(1, nrows_m1));
   window[3] = window[5] = window[6] = white(m);
-  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+  tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
 
   // Lower-right
-  window[0] = m.get(nrows_m2, ncols_m2);
-  window[1] = m.get(nrows_m2, ncols_m1);
-  window[3] = m.get(nrows_m1, ncols_m2);
+  window[0] = m.get(Point(ncols_m2, nrows_m2));
+  window[1] = m.get(Point(ncols_m1, nrows_m2));
+  window[3] = m.get(Point(ncols_m2, nrows_m1));
   window[2] = window[4] = white(m);
-  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
   window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[3] = m.get(0, col - 1);
-    window[4] = m.get(0, col + 1);
-    window[5] = m.get(1, col - 1);
-    window[6] = m.get(1, col);
-    window[7] = m.get(1, col + 1);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    window[3] = m.get(Point(col - 1, 0));
+    window[4] = m.get(Point(col + 1, 0));
+    window[5] = m.get(Point(col - 1, 1));
+    window[6] = m.get(Point(col, 1));
+    window[7] = m.get(Point(col + 1, 1));
+    tmp.set(Point(col, 0), func(window.begin(), window.end()));
   }
 
   // Bottom edge
   window[5] = window[6] = window[7] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m2, col - 1);
-    window[1] = m.get(nrows_m2, col);
-    window[2] = m.get(nrows_m2, col + 1);
-    window[3] = m.get(nrows_m1, col - 1);
-    window[4] = m.get(nrows_m1, col + 1);
-    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
+    window[0] = m.get(Point(col - 1, nrows_m2));
+    window[1] = m.get(Point(col, nrows_m2));
+    window[2] = m.get(Point(col + 1, nrows_m2));
+    window[3] = m.get(Point(col - 1, nrows_m1));
+    window[4] = m.get(Point(col + 1, nrows_m1));
+    tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
   }
 
   // Left edge
   window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[1] = m.get(row - 1, 1);
-    window[2] = m.get(row - 1, 0);
-    window[4] = m.get(row, 1);
-    window[6] = m.get(row + 1, 0);
-    window[7] = m.get(row + 1, 1);
-    tmp.set(row, 0, func(window.begin(), window.end()));
+    window[1] = m.get(Point(1, row - 1));
+    window[2] = m.get(Point(0, row - 1));
+    window[4] = m.get(Point(1, row));
+    window[6] = m.get(Point(0, row + 1));
+    window[7] = m.get(Point(1, row + 1));
+    tmp.set(Point(0, row), func(window.begin(), window.end()));
   }
 
   // Right edge
   window[2] = window[4] = window[7] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, ncols_m2);
-    window[1] = m.get(row - 1, ncols_m1);
-    window[3] = m.get(row, ncols_m2);
-    window[5] = m.get(row + 1, ncols_m2);
-    window[6] = m.get(row + 1, ncols_m1);
-    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+    window[0] = m.get(Point(ncols_m2, row - 1));
+    window[1] = m.get(Point(ncols_m1, row - 1));
+    window[3] = m.get(Point(ncols_m2, row));
+    window[5] = m.get(Point(ncols_m2, row + 1));
+    window[6] = m.get(Point(ncols_m1, row + 1));
+    tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
   }
 
   // Core of image
@@ -297,15 +297,15 @@ void neighbor8o(const T& m, F& func, M& tmp) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // eight iterators
-      window[0] = m.get(row - 1, col);
-      window[1] = m.get(row - 1, col + 1);
-      window[2] = m.get(row, col + 1);
-      window[3] = m.get(row + 1, col + 1);
-      window[4] = m.get(row + 1, col);
-      window[5] = m.get(row + 1, col - 1);
-      window[6] = m.get(row, col - 1);
-      window[7] = m.get(row - 1, col - 1);
-      tmp.set(row, col, func(window.begin(), window.end()));
+      window[0] = m.get(Point(col, row - 1));
+      window[1] = m.get(Point(col + 1, row - 1));
+      window[2] = m.get(Point(col + 1, row));
+      window[3] = m.get(Point(col + 1, row + 1));
+      window[4] = m.get(Point(col, row + 1));
+      window[5] = m.get(Point(col - 1, row + 1));
+      window[6] = m.get(Point(col - 1, row));
+      window[7] = m.get(Point(col - 1, row - 1));
+      tmp.set(Point(col, row), func(window.begin(), window.end()));
     }
   }
 }
@@ -334,63 +334,63 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   // efficient than all of the if's one would have to do in the inner loop
 
   // Upper left
-  window[2] = m.get(0, 0);
-  window[4] = m.get(1, 1);
+  window[2] = m.get(Point(0, 0));
+  window[4] = m.get(Point(1, 1));
   window[0] = window[1] = window[3] = white(m);
-  tmp.set(0, 0, func(window.begin(), window.end()));
+  tmp.set(Point(0, 0), func(window.begin(), window.end()));
 
   // Upper right
-  window[2] = m.get(0, ncols_m1);
-  window[3] = m.get(1, ncols_m2);
+  window[2] = m.get(Point(ncols_m1, 0));
+  window[3] = m.get(Point(ncols_m2, 1));
   window[4] = white(m);
-  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
 
   // Lower left
-  window[1] = m.get(nrows_m2, 1);
-  window[2] = m.get(nrows_m1, 0);
+  window[1] = m.get(Point(1, nrows_m2));
+  window[2] = m.get(Point(0, nrows_m1));
   window[3] = white(m);
-  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+  tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
 
   // Lower right
-  window[0] = m.get(nrows_m2, ncols_m2);
+  window[0] = m.get(Point(ncols_m2, nrows_m2));
   window[1] = white(m);
-  window[2] = m.get(nrows_m1, ncols_m1);
-  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+  window[2] = m.get(Point(ncols_m1, nrows_m1));
+  tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
   window[0] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[2] = m.get(0, col);
-    window[3] = m.get(1, col - 1);
-    window[4] = m.get(1, col + 1);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    window[2] = m.get(Point(col, 0));
+    window[3] = m.get(Point(col - 1, 1));
+    window[4] = m.get(Point(col + 1, 1));
+    tmp.set(Point(col, 0), func(window.begin(), window.end()));
   }
 
   // Bottom edge
   window[3] = window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m2, col - 1);
-    window[1] = m.get(nrows_m2, col + 1);
-    window[2] = m.get(nrows_m1, col);
-    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
+    window[0] = m.get(Point(col - 1, nrows_m2));
+    window[1] = m.get(Point(col + 1, nrows_m2));
+    window[2] = m.get(Point(col, nrows_m1));
+    tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
   }
 
   // Left edge
   window[0] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[1] = m.get(row - 1, 1);
-    window[2] = m.get(row, 0);
-    window[4] = m.get(row + 1, 1);
-    tmp.set(row, 0, func(window.begin(), window.end()));
+    window[1] = m.get(Point(1, row - 1));
+    window[2] = m.get(Point(0, row));
+    window[4] = m.get(Point(1, row + 1));
+    tmp.set(Point(0, row), func(window.begin(), window.end()));
   }
 
   // Right edge
   window[1] = window[4] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, ncols_m2);
-    window[2] = m.get(row, ncols_m1);
-    window[3] = m.get(row + 1, ncols_m2);
-    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+    window[0] = m.get(Point(ncols_m2, row - 1));
+    window[2] = m.get(Point(ncols_m1, row));
+    window[3] = m.get(Point(ncols_m2, row + 1));
+    tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
   }
 
   // Core of image
@@ -398,12 +398,12 @@ void neighbor4x(const T& m, F& func, M& tmp) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
-      window[0] = m.get(row - 1, col - 1);
-      window[1] = m.get(row - 1, col + 1);
-      window[2] = m.get(row, col);
-      window[3] = m.get(row + 1, col - 1);
-      window[4] = m.get(row + 1, col + 1);
-      tmp.set(row, col, func(window.begin(), window.end()));
+      window[0] = m.get(Point(col - 1, row - 1));
+      window[1] = m.get(Point(col + 1, row - 1));
+      window[2] = m.get(Point(col, row));
+      window[3] = m.get(Point(col - 1, row + 1));
+      window[4] = m.get(Point(col + 1, row + 2));
+      tmp.set(Point(col, row), func(window.begin(), window.end()));
     }
   }
 }
@@ -434,70 +434,70 @@ void neighbor4o(const T& m, F& func, M& tmp) {
   // Corners
   // Upper-left
   window[0] = window[1] = white(m);
-  window[2] = m.get(0, 0);
-  window[3] = m.get(0, 1);
-  window[4] = m.get(1, 0);
-  tmp.set(0, 0, func(window.begin(), window.end()));
+  window[2] = m.get(Point(0, 0));
+  window[3] = m.get(Point(1, 0));
+  window[4] = m.get(Point(0, 1));
+  tmp.set(Point(0, 0), func(window.begin(), window.end()));
 
   // Upper-right
-  window[1] = m.get(0, ncols_m2);
-  window[2] = m.get(0, ncols_m1);
+  window[1] = m.get(Point(ncols_m2, 0));
+  window[2] = m.get(Point(ncols_m1, 0));
   window[3] = white(m);
-  window[4] = m.get(1, ncols_m1);
-  tmp.set(0, ncols_m1, func(window.begin(), window.end()));
+  window[4] = m.get(Point(ncols_m1, 1));
+  tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
 
   // Lower-left
-  window[0] = m.get(nrows_m2, 0);
-  window[2] = m.get(nrows_m1, 0);
-  window[3] = m.get(nrows_m1, 1);
+  window[0] = m.get(Point(0, nrows_m2));
+  window[2] = m.get(Point(0, nrows_m1));
+  window[3] = m.get(Point(1, nrows_m1));
   window[1] = window[4] = white(m);
-  tmp.set(nrows_m1, 0, func(window.begin(), window.end()));
+  tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
 
   // Lower-right
-  window[0] = m.get(nrows_m2, ncols_m1);
-  window[1] = m.get(nrows_m1, ncols_m2);
-  window[2] = m.get(nrows_m1, ncols_m1);
+  window[0] = m.get(Point(ncols_m1, nrows_m2));
+  window[1] = m.get(Point(ncols_m2, nrows_m1));
+  window[2] = m.get(Point(ncols_m1, nrows_m1));
   window[3] = white(m);
-  tmp.set(nrows_m1, ncols_m1, func(window.begin(), window.end()));
+  tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
   window[0] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[1] = m.get(0, col - 1);
-    window[2] = m.get(0, col);
-    window[3] = m.get(0, col + 1);
-    window[4] = m.get(1, col);
-    tmp.set(0, col, func(window.begin(), window.end()));
+    window[1] = m.get(Point(col - 1, 0));
+    window[2] = m.get(Point(col, 0));
+    window[3] = m.get(Point(col + 1, 0));
+    window[4] = m.get(Point(col, 1));
+    tmp.set(Point(col, 0), func(window.begin(), window.end()));
   }
 
   // Bottom edge
   window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = m.get(nrows_m2, col);
-    window[1] = m.get(nrows_m1, col - 1);
-    window[2] = m.get(nrows_m1, col);
-    window[3] = m.get(nrows_m1, col + 1);
-    tmp.set(nrows_m1, col, func(window.begin(), window.end()));
+    window[0] = m.get(Point(col, nrows_m2));
+    window[1] = m.get(Point(col - 1, nrows_m1));
+    window[2] = m.get(Point(col, nrows_m1));
+    window[3] = m.get(Point(col + 1, nrows_m1));
+    tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
   }
 
   // Left edge
   window[1] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, 0);
-    window[2] = m.get(row, 0);
-    window[3] = m.get(row, 1);
-    window[4] = m.get(row + 1, 0);
-    tmp.set(row, 0, func(window.begin(), window.end()));
+    window[0] = m.get(Point(0, row - 1));
+    window[2] = m.get(Point(0, row));
+    window[3] = m.get(Point(1, row));
+    window[4] = m.get(Point(0, row + 1));
+    tmp.set(Point(0, row), func(window.begin(), window.end()));
   }
 
   // Right edge
   window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = m.get(row - 1, ncols_m1);
-    window[1] = m.get(row, ncols_m2);
-    window[2] = m.get(row, ncols_m1);
-    window[4] = m.get(row + 1, ncols_m1);
-    tmp.set(row, ncols_m1, func(window.begin(), window.end()));
+    window[0] = m.get(Point(ncols_m1, row - 1));
+    window[1] = m.get(Point(ncols_m2, row));
+    window[2] = m.get(Point(ncols_m1, row));
+    window[4] = m.get(Point(ncols_m1, row + 1));
+    tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
   }
 
   // Core of image
@@ -505,12 +505,12 @@ void neighbor4o(const T& m, F& func, M& tmp) {
     for (unsigned int col = 1; col < ncols_m1; col++) {
       // This may seem silly, but it's significantly faster than using
       // nine iterators
-      window[0] = m.get(row - 1, col);
-      window[1] = m.get(row, col - 1);
-      window[2] = m.get(row, col);
-      window[3] = m.get(row, col + 1);
-      window[4] = m.get(row + 1, col);
-      tmp.set(row, col, func(window.begin(), window.end()));
+      window[0] = m.get(Point(col, row - 1));
+      window[1] = m.get(Point(col - 1, row));
+      window[2] = m.get(Point(col, row));
+      window[3] = m.get(Point(col + 1, row));
+      window[4] = m.get(Point(col, row + 1));
+      tmp.set(Point(col, row), func(window.begin(), window.end()));
     }
   }
 }

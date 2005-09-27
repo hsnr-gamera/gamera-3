@@ -24,15 +24,15 @@
 #include <stack>
 
 template<class T>
-inline void _clip_points(T& image, size_t& y1, size_t& x1, size_t& y2, size_t& x2) {
-  y1 -= image.ul_y();
-  y2 -= image.ul_y();
+inline void _clip_points(T& image, size_t& x1, size_t& y1, size_t& x2, size_t& y2) {
   x1 -= image.ul_x();
   x2 -= image.ul_x();
-  y1 = std::min(y1, image.nrows());
-  y2 = std::min(y2, image.nrows());
+  y1 -= image.ul_y();
+  y2 -= image.ul_y();
   x1 = std::min(x1, image.ncols());
   x2 = std::min(x2, image.ncols());
+  y1 = std::min(y1, image.nrows());
+  y2 = std::min(y2, image.nrows());
 }
 
 /* 
@@ -41,8 +41,8 @@ Po-Han Lin's "Extremely Fast Line Algorithm"
 Freely useable in non-commercial applications as long as credits to Po-Han Lin and link to http://www.edepot.com is provided in source code and can been seen in compiled executable. 
 */
 
-inline void _cut_line(double &y1, double &x1, double &y2, double &x2, 
-		      double y_len, double x_len, double lower, double upper) {
+inline void _cut_line(double &x1, double &y1, double &x2, double &y2, 
+		      double x_len, double y_len, double lower, double upper) {
   if (y1 < lower) {
     x1 += (-y1 * x_len) / y_len;
     y1 = 0;
@@ -54,9 +54,14 @@ inline void _cut_line(double &y1, double &x1, double &y2, double &x2,
   }
 }
 
-template<class T>
-void draw_line(T& image, double y1, double x1, double y2, double x2,
-	       typename T::value_type value) {
+template<class T, class P>
+void _draw_line(T& image, const P& a, const P& b, 
+	       const typename T::value_type value) {
+  double x1 = double(a.x());
+  double y1 = double(a.y());
+  double x2 = double(b.x());
+  double y2 = double(b.y());
+
   y1 -= (double)image.ul_y();
   y2 -= (double)image.ul_y();
   x1 -= (double)image.ul_x();
@@ -72,7 +77,7 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
   if (y_len == 0 && x_len == 0) {
     if (y1 >= 0 && y1 < image.nrows() &&
 	x1 >= 0 && x1 < image.ncols())
-      image.set((size_t)y1, (size_t)x1, value);
+      image.set(Point((size_t)x1, (size_t)y1), value);
     return;
   }
 
@@ -80,17 +85,17 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
   // It is more efficient to do a little math now than to test when 
   // writing each pixel.
   if (y_len > 0)
-    _cut_line(y1, x1, y2, x2, y_len, x_len, 
+    _cut_line(x1, y1, x2, y2, x_len, y_len, 
 	      0.0, (double)image.nrows() - 1);
   else
-    _cut_line(y2, x2, y1, x1, y_len, x_len, 
+    _cut_line(x2, y2, x1, y1, x_len, y_len, 
 	      0.0, (double)image.nrows() - 1);
 
   if (x_len > 0)
-    _cut_line(x1, y1, x2, y2, x_len, y_len, 
+    _cut_line(y1, x1, y2, x2, y_len, x_len, 
 	      0.0, (double)image.ncols() - 1);
   else
-    _cut_line(x2, y2, x1, y1, x_len, y_len, 
+    _cut_line(y2, x2, y1, x1, y_len, x_len, 
 	      0.0, (double)image.ncols() - 1);
 
   if (!(y1 >= 0 && y1 < image.nrows() &&
@@ -116,14 +121,14 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
       for (double i = 0; i > end_val; --i) {
 	size_t y = size_t(y1 + i);
 	size_t x = size_t(x1 + j);
-	image.set(y, x, value);
+	image.set(Point((size_t)x, (size_t)y), value);
 	j += dec_inc;
       }
     } else {
       for (double i = 0; i > end_val; --i) {
 	size_t y = size_t(y1 + j);
 	size_t x = size_t(x1 + i);
-	image.set(y, x, value);
+	image.set(Point((size_t)x, (size_t)y), value);
 	j += dec_inc;
       }
     }      
@@ -138,40 +143,95 @@ void draw_line(T& image, double y1, double x1, double y2, double x2,
       for (double i = 0; i < end_val; ++i) {
 	size_t y = size_t(y1 + i);
 	size_t x = size_t(x1 + j);
-	image.set(y, x, value);
+	image.set(Point((size_t)x, (size_t)y), value);
 	j += dec_inc;
       }
     } else {
       for (double i = 0; i < end_val; ++i) {
 	size_t y = size_t(y1 + j);
 	size_t x = size_t(x1 + i);
-	image.set(y, x, value);
+	image.set(Point((size_t)x, (size_t)y), value);
 	j += dec_inc;
       }
     }      
   }
 }
 
-template<class T>
-void draw_line_points(T& image, Point& a, Point& b,
-		      typename T::value_type value) {
-  draw_line(image, a.y(), a.x(), b.y(), b.x(), value);
+template<class T, class P>
+void draw_line(T& image, const P& a, const P& b, 
+	       const typename T::value_type value, const double thickness=1.0) {
+  const double half_thickness = (thickness - 1.0) / 2.0;
+  for (double x = -half_thickness; x <= 0.0; x += 1.0) 
+    for (double y = -half_thickness; y <= 0.0; y += 1.0) 
+      _draw_line(image, P((double)a.x()+x, (double)a.y()+y), P((double)b.x()+x, (double)b.y()+y), value);
+  
+  for (double x = half_thickness; x >= 0.0; x -= 1.0) 
+    for (double y = half_thickness; y >= 0.0; y -= 1.0) 
+      _draw_line(image, P((double)a.x()+x, (double)a.y()+y), P((double)b.x()+x, (double)b.y()+y), value);
+
+  _draw_line(image, a, b, value);
 }
 
+#ifdef GAMERA_DEPRECATED
+/*
+draw_line(T& image, double y1, double x1, double y2, double x2,
+typename T::value_type value) is deprecated.
 
+Reason: (x, y) coordinate consistency.
+
+Use draw_line(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
+*/
 template<class T>
-void draw_hollow_rect(T& image, double y1_, double x1_, double y2_, double x2_,
-		      typename T::value_type value) {
-  draw_line(image, y1_, x1_, y1_, x2_, value);
-  draw_line(image, y1_, x1_, y2_, x1_, value);
-  draw_line(image, y2_, x2_, y2_, x1_, value);
-  draw_line(image, y2_, x2_, y1_, x2_, value);
+GAMERA_CPP_DEPRECATED
+void draw_line(T& image, const double y1, const double x1, const double y2, const double x2,
+	       const typename T::value_type value, const double thickness=1.0) {
+  // TODO: Should be FloatPoint
+  draw_line(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value);
+}
+#endif
+
+template<class T, class P>
+void draw_hollow_rect(T& image, const P& a, const P& b, 
+		      const typename T::value_type value,
+		      const double thickness = 1.0) {
+  draw_line(image, a, P(a.x(), b.y()), value, thickness);
+  draw_line(image, a, P(b.x(), a.y()), value, thickness);
+  draw_line(image, b, P(b.x(), a.y()), value, thickness);
+  draw_line(image, b, P(a.x(), b.y()), value, thickness);
 }
 
 template<class T>
-void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
-		      typename T::value_type value) {
-  size_t x1, x2, y1, y2;
+void draw_hollow_rect(T& image, const Rect& r, const typename T::value_type value) {
+  draw_hollow_rect(image, r.ul(), r.lr(), value);
+}
+
+#ifdef GAMERA_DEPRECATED
+/*
+draw_hollow_rect(T& image, double y1, double x1, double y2, double x2,
+typename T::value_type value) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use draw_hollow_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
+*/
+template<class T>
+GAMERA_CPP_DEPRECATED
+void draw_hollow_rect(T& image, const double y1_, const double x1_, 
+		      const double y2_, const double x2_,
+		      const typename T::value_type value) {
+  // TODO: Should be FloatPoint
+  draw_hollow_rect(image, FloatPoint(x1_, y1_), FloatPoint(x2_, y2_), value);
+}
+#endif
+
+template<class T, class P>
+void draw_filled_rect(T& image, const P& a, const P& b, const typename T::value_type value) {
+  size_t x1, y1, x2, y2;
+  size_t x1_ = (size_t)a.x();
+  size_t y1_ = (size_t)a.y();
+  size_t x2_ = (size_t)b.x();
+  size_t y2_ = (size_t)b.y();
+
   if (x1_ > x2_)
     x1 = x2_, x2 = x1_;
   else
@@ -182,49 +242,98 @@ void draw_filled_rect(T& image, size_t y1_, size_t x1_, size_t y2_, size_t x2_,
   else
     y1 = y1_, y2 = y2_;
 
-  _clip_points(image, y1, x1, y2, x2);
+  _clip_points(image, x1, y1, x2, y2);
 
   for (size_t y = y1; y <= y2; ++y) 
     for (size_t x = x1; x <= x2; ++x)
-      image.set(y, x, value);
+      image.set(Point(x, y), value);
 }
 
 template<class T>
-void draw_marker(T& image, double& y1, double& x1, size_t size, size_t style, typename T::value_type value) {
+void draw_filled_rect(T& image, const Rect& r, const typename T::value_type value) {
+  draw_filled_rect(image, r.ul(), r.lr(), value);
+}
+
+#ifdef GAMERA_DEPRECATED
+/*
+draw_filled_rect(T& image, double y1, double x1, double y2, double x2,
+typename T::value_type value) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use draw_filled_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
+*/
+template<class T>
+GAMERA_CPP_DEPRECATED
+void draw_filled_rect(T& image, const size_t y1_, const size_t x1_, const size_t y2_, const size_t x2_,
+		      const typename T::value_type value) {
+  // TODO: Should be FloatPoint
+  draw_filled_rect(image, FloatPoint(x1_, y1_), FloatPoint(x2_, y2_), value);
+}
+#endif
+
+template<class T, class P>
+void draw_marker(T& image, const P& p, const size_t size, const size_t style, 
+		 const typename T::value_type value) {
   double half_size = ceil(double(size) / 2.0);
   switch (style) {
   case 0:
-    draw_line(image, y1 - half_size, x1, y1 + half_size, x1, value);
-    draw_line(image, y1, x1 - half_size, y1, x1 + half_size, value);
+    draw_line(image, P(p.x(), p.y() - half_size), P(p.x(), p.y() + half_size), value);
+    draw_line(image, P(p.x() - half_size, p.y()), P(p.x() + half_size, p.y()), value);
     break;
   case 1:
-    draw_line(image, y1 - half_size, x1 - half_size, y1 + half_size, x1 + half_size, value);
-    draw_line(image, y1 - half_size, x1 + half_size, y1 + half_size, x1 - half_size, value);
+    draw_line(image, P(p.x() - half_size, p.y() - half_size), 
+	      P(p.x() + half_size, p.y() + half_size), value);
+    draw_line(image, P(p.x() + half_size, p.y() - half_size), 
+	      P(p.x() - half_size, p.y() + half_size), value);
     break;
   case 2:
-    draw_hollow_rect(image, y1 - half_size, x1 - half_size, y1 + half_size, x1 + half_size, value);
+    draw_hollow_rect(image, P(p.x() - half_size, p.y() - half_size), 
+		     P(p.x() + half_size, p.y() + half_size), value);
     break;
   case 3:
-    draw_filled_rect(image, size_t(std::max(y1 - half_size, 0.0)), size_t(std::max(x1 - half_size, 0.0)), 
-		     size_t(y1 + half_size), size_t(x1 + half_size), value);
+    draw_filled_rect(image, P(p.x() - half_size, p.y() - half_size), 
+		     P(p.x() + half_size, p.y() + half_size), value);
     break;
   default:
     throw std::runtime_error("Invalid style.");
   }
 }
 
+#ifdef GAMERA_DEPRECATED
+/*
+draw_marker(T& image, double& y1, double& x1, size_t size, size_t
+style, typename T::value_type value) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use draw_marker(image, FloatPoint(x1, y1), size, style, value) instead.
+*/
+template<class T>
+GAMERA_CPP_DEPRECATED
+void draw_marker(T& image, const double& y1, const double& x1, const size_t size, 
+		 const size_t style, const typename T::value_type value) {
+  // TODO: Should be FloatPoint
+  draw_marker(image, FloatPoint(x1, y1), size, style, value);
+}
+#endif
+
 inline double square(double a) {
   return a * a;
 }
 
-template<class T>
-void draw_bezier(T& image, 
-		 double start_y, double start_x, 
-		 double c1_y, double c1_x, 
-		 double c2_y, double c2_x,
-		 double end_y, double end_x,
-		 typename T::value_type value,
-		 double accuracy = 0.1) {
+template<class T, class P>
+void draw_bezier(T& image, const P& start, const P& c1, const P& c2, 
+		 const P& end, const typename T::value_type value,
+		 const double thickness = 1.0, const double accuracy = 0.1) {
+  double start_x = double(start.x());
+  double start_y = double(start.y());
+  double c1_x = double(c1.x());
+  double c1_y = double(c1.y());
+  double c2_x = double(c2.x());
+  double c2_y = double(c2.y());
+  double end_x = double(end.x());
+  double end_y = double(end.y());
 
   // All of this is just to calculate epsilon given the accuracy and
   // the length and "waviness" of the curve
@@ -244,10 +353,62 @@ void draw_bezier(T& image,
 
     double new_x = start_x*a_3 + c1_x*a_2_b + c2_x*b_2_a + end_x*b_3;
     double new_y = start_y*a_3 + c1_y*a_2_b + c2_y*b_2_a + end_y*b_3;
-    draw_line(image, y, x, new_y, new_x, value);
+    draw_line(image, P(x, y), P(new_x, new_y), value, thickness);
     y = new_y; x = new_x;
   }
-  draw_line(image, y, x, end_y, end_x, value);
+  draw_line(image, P(x, y), end, value, thickness);
+}
+
+#ifdef GAMERA_DEPRECATED
+/*
+draw_bezier(T& image, double start_y, double start_x, double c1_y,
+double c1_x, double c2_y, double c2_x, double end_y, double end_x,
+typename T::value_type value, double thickness = 1.0, double accuracy
+= 0.1) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use draw_bezier(image, FloatPoint(start_x, start_y), FloatPoint(c1_x,
+c1_y), FloatPoint(c2_x, c2_y), FloatPoint(end_x, end_y), value,
+thickness, accuracy) instead.
+*/
+template<class T>
+GAMERA_CPP_DEPRECATED
+void draw_bezier(T& image, 
+		 const double start_y, const double start_x, 
+		 const double c1_y, const double c1_x, 
+		 const double c2_y, const double c2_x,
+		 const double end_y, const double end_x,
+		 const typename T::value_type value,
+		 const double thickness = 1.0,
+		 const double accuracy = 0.1) {
+  // TODO: Should be FloatPoint
+  draw_bezier(image, FloatPoint(start_x, start_y), FloatPoint(c1_x, c1_y), 
+	      FloatPoint(c2_x, c2_y), FloatPoint(end_x, end_y), value, thickness, accuracy);
+}
+#endif
+
+template<class T, class P>
+void draw_circle(T& image, const P& c, const double r, const typename T::value_type value,
+		 const double thickness = 1.0, const double accuracy = 0.1) {
+  static const double kappa = 4.0 * ((sqrt(2.0) - 1.0) / 3.0);
+  
+  // Bezier circle approximation from 
+  // http://www.whizkidtech.redprince.net/bezier/circle/
+  const double z = kappa * r;
+
+  draw_bezier(image, P(c.x(), c.y() - r), P(c.x() + z, c.y() - r),
+	      P(c.x() + r, c.y() - z), P(c.x() + r, c.y()), 
+	      value, thickness, accuracy);
+  draw_bezier(image, P(c.x() + r, c.y()), P(c.x() + r, c.y() + z),
+	      P(c.x() + z, c.y() + r), P(c.x(), c.y() + r),
+	      value, thickness, accuracy);
+  draw_bezier(image, P(c.x(), c.y() + r), P(c.x() - z, c.y() + r),
+	      P(c.x() - r, c.y() + z), P(c.x() - r, c.y()),
+	      value, thickness, accuracy);
+  draw_bezier(image, P(c.x() - r, c.y()), P(c.x() - r, c.y() - z),
+	      P(c.x() - z, c.y() - r), P(c.x(), c.y() - r),
+	      value, thickness, accuracy);
 }
 
 /* From John R. Shaw's QuickFill code which is based on
@@ -266,8 +427,8 @@ struct FloodFill {
     if (left + 1 <= right) {
       typename T::value_type col1, col2;
       for (size_t x = left + 1; x <= right; ++x) {
-	col1 = image.get(y, x-1);
-	col2 = image.get(y, x);
+	col1 = image.get(Point(x-1, y));
+	col2 = image.get(Point(x, y));
 	if (col1 == interior && col2 != interior) {
 	  s.push(Point(x-1, y));
 	}
@@ -290,17 +451,17 @@ struct FloodFill {
 	for (right = p.x();
 	     right < image.ncols();
 	     ++right) {
-	  if (image.get(p.y(), right) != interior)
+	  if (image.get(Point(right, p.y())) != interior)
 	    break;
-	  image.set(p.y(), (size_t)right, color);
+	  image.set(Point(right, p.y()), color);
 	}
 	--right;
 
 	long int l = p.x() - 1;
 	for (; l >= 0; --l) {
-	  if (image.get(p.y(), l) != interior)
+	  if (image.get(Point(l, p.y())) != interior)
 	    break;
-	  image.set(p.y(), l, color);
+	  image.set(Point(l, p.y()), color);
 	}
 	left = (size_t)l + 1;
 
@@ -311,10 +472,10 @@ struct FloodFill {
 	    travel(image, s, interior, color, left, right, p.y() - 1);
 	} else {
 	  if (p.y() < image.nrows() - 1)
-	    if (image.get(p.y() + 1, left) != color)
+	    if (image.get(Point(left, p.y() + 1)) != color)
 	      s.push(Point(left, p.y() + 1));
 	  if (p.y() > 1)
-	    if (image.get(p.y() - 1, left) != color)
+	    if (image.get(Point(left, p.y() - 1)) != color)
 	      s.push(Point(left, p.y() - 1));
 	}
       }
@@ -322,35 +483,52 @@ struct FloodFill {
   }
 };
 
-template<class T>
-void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
-  y -= image.ul_y();
-  x -= image.ul_x();
+template<class T, class P>
+void flood_fill(T& image, const P& p, const typename T::value_type& color) {
+  double x = double(p.x()) - double(image.ul_x());
+  double y = double(p.y()) - double(image.ul_y());
   if (y >= image.nrows() || x >= image.ncols())
     throw std::runtime_error("Coordinate out of range.");
-  typename T::value_type interior = image.get(y, x);
+  typename T::value_type interior = image.get(Point((size_t)x, (size_t)y));
   if (color == interior)
     return;
   typename FloodFill<T>::Stack s;
-  s.push(Point(x, y));
+  s.push(Point((size_t)x, (size_t)y));
   FloodFill<T>::fill_seeds(image, s, interior, color);
 }
+
+#ifdef GAMERA_DEPRECATED
+/*
+flood_fill(T& image, size_t y, size_t x, const typename T::value_type&
+color) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use flood_fill(image, Point(x, y), color) instead.
+*/
+template<class T>
+GAMERA_CPP_DEPRECATED
+void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
+  // TODO: Should be FloatPoint
+  flood_fill(image, Point(x, y), color);
+}
+#endif
 
 template<class T>
 void remove_border(T& image) {
   size_t bottom = image.nrows() - 1;
   size_t right = image.ncols() - 1;
   for (size_t x = 0; x < image.ncols(); ++x) {
-    if (image.get(0, x) != 0)
-      flood_fill(image, 0, x, white(image));
-    if (image.get(bottom, x) != 0)
-      flood_fill(image, bottom, x, white(image));
+    if (image.get(Point(x, 0)) != 0)
+      flood_fill(image, Point(x, 0), white(image));
+    if (image.get(Point(x, bottom)) != 0)
+      flood_fill(image, Point(x, bottom), white(image));
   }
   for (size_t y = 0; y < image.nrows(); ++y) {
-    if (image.get(y, 0) != 0)
-      flood_fill(image, y, 0, white(image));
-    if (image.get(y, right) != 0)
-      flood_fill(image, y, right, white(image));
+    if (image.get(Point(0, y)) != 0)
+      flood_fill(image, Point(0, y), white(image));
+    if (image.get(Point(right, y)) != 0)
+      flood_fill(image, Point(right, y), white(image));
   }
 }
 
@@ -367,8 +545,8 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
        y <= lr_y; ++y, ++ya, ++yb)
     for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); 
 	 x <= lr_x; ++x, ++xa, ++xb) {
-      if (is_black(b.get(yb, xb))) 
-	a.set(ya, xa, color);
+      if (is_black(b.get(Point(xb, yb)))) 
+	a.set(Point(xa, ya), color);
     }
 }
 

@@ -67,7 +67,7 @@ namespace Gamera {
 			       typename vector<T>::iterator end) {
     return *(min_element(begin, end));
   }
-
+  
   template<>
   inline OneBitPixel Min<OneBitPixel>::operator()
     (vector<OneBitPixel>::iterator begin,
@@ -86,57 +86,68 @@ namespace Gamera {
     if (m.nrows() < 3 || m.ncols() < 3)
       return simple_image_copy(m);
 
-    data_type* new_data = new data_type(m.size(), m.offset_y(), m.offset_x());
+    data_type* new_data = new data_type(m.size(), m.origin());
     view_type* new_view = new view_type(*new_data);
 
-    if (times > 1) {
-      view_type* flip_view = simple_image_copy(m);
-
-      unsigned int r, ngeo = 0;
-      bool n8;
-      ngeo = 1;
-      for (r = 1; r <= times; r++) {
-	if (r > 1) {
-	  typename view_type::vec_iterator g = flip_view->vec_begin();
-	  typename view_type::vec_iterator h = new_view->vec_begin();
-	  for (; g != flip_view->vec_end(); g++, h++)
-	    *g = *h;
+    try {
+      if (times > 1) {
+	view_type* flip_view = simple_image_copy(m);
+	try {
+	  unsigned int r, ngeo = 0;
+	  bool n8;
+	  ngeo = 1;
+	  for (r = 1; r <= times; r++) {
+	    if (r > 1) {
+	      typename view_type::vec_iterator g = flip_view->vec_begin();
+	      typename view_type::vec_iterator h = new_view->vec_begin();
+	      for (; g != flip_view->vec_end(); g++, h++)
+		*g = *h;
+	    }
+	    if (geo && (ngeo % 2 == 0))
+	      n8 = true;
+	    else
+	      n8 = false;
+	    if (direction) {
+	      if (n8)
+		neighbor4x(*flip_view, max, *new_view);
+	      else
+		neighbor9(*flip_view, max, *new_view);
+	    }
+	    else {
+	      if (n8)
+		neighbor4x(*flip_view, min, *new_view);
+	      else
+		neighbor9(*flip_view, min, *new_view);
+	    }
+	    ngeo++;
+	  }
+	} catch (std::exception e) {
+	  delete flip_view->data();
+	  delete flip_view;
+	  throw;
 	}
-	if (geo && (ngeo % 2 == 0))
-	  n8 = true;
-	else
-	  n8 = false;
+	delete flip_view->data();
+	delete flip_view;
+	return new_view;
+      } else {
 	if (direction) {
-	  if (n8)
-	    neighbor4x(*flip_view, max, *new_view);
+	  if (geo)
+	    neighbor4x(m, max, *new_view);
 	  else
-	    neighbor9(*flip_view, max, *new_view);
+	    neighbor9(m, max, *new_view);
 	}
 	else {
-	  if (n8)
-	    neighbor4x(*flip_view, min, *new_view);
+	  if (geo)
+	    neighbor4x(m, min, *new_view);
 	  else
-	    neighbor9(*flip_view, min, *new_view);
+	    neighbor9(m, min, *new_view);
 	}
-	ngeo++;
+	return new_view;
       }
-      delete flip_view->data();
-      delete flip_view;
-      return new_view;
-    } else {
-      if (direction) {
-	if (geo)
-	  neighbor4x(m, max, *new_view);
-	else
-	  neighbor9(m, max, *new_view);
-      }
-      else {
-	if (geo)
-	  neighbor4x(m, min, *new_view);
-	else
-	  neighbor9(m, min, *new_view);
-      }
-      return new_view;
+    } catch (std::exception e) {
+      delete new_view;
+      delete new_data;
+      throw;
     }
   }
 
@@ -180,11 +191,17 @@ namespace Gamera {
     if (m.nrows() < 3 || m.ncols() < 3)
       return simple_image_copy(m);
 
-    data_type* new_data = new data_type(m.size(), m.offset_y(), m.offset_x());
+    data_type* new_data = new data_type(m.size(), m.origin());
     view_type* new_view = new view_type(*new_data);
 
-    Rank<typename T::value_type> rank(r);
-    neighbor9(m, rank, *new_view);
+    try {
+      Rank<typename T::value_type> rank(r);
+      neighbor9(m, rank, *new_view);
+    } catch (std::exception e) {
+      delete new_view;
+      delete new_data;
+      throw;
+    }
     return new_view;
   }
 
@@ -235,11 +252,17 @@ namespace Gamera {
     if (m.nrows() < 3 || m.ncols() < 3)
       return simple_image_copy(m);
 
-    data_type* new_data = new data_type(m.size(), m.offset_y(), m.offset_x());
+    data_type* new_data = new data_type(m.size(), m.origin());
     view_type* new_view = new view_type(*new_data);
 
-    Mean<typename T::value_type> mean_op;
-    neighbor9(m, mean_op, *new_view);
+    try {
+      Mean<typename T::value_type> mean_op;
+      neighbor9(m, mean_op, *new_view);
+    } catch (std::exception e) {
+      delete new_view;
+      delete new_data;
+      throw;
+    }
     return new_view;
   }
 
@@ -265,16 +288,22 @@ namespace Gamera {
   void despeckle_single_pixel(T &m) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(m.size(), m.offset_y(), m.offset_x());
+    data_type* new_data = new data_type(m.size(), m.origin());
     view_type* new_view = new view_type(*new_data);
 
-    All<typename T::value_type> all_op;
-    neighbor9(m, all_op, *new_view);
-
-    typename T::vec_iterator g = m.vec_begin();
-    typename view_type::vec_iterator h = new_view->vec_begin();
-    for (; g != m.vec_end(); g++, h++)
-      *g = *h;
+    try {
+      All<typename T::value_type> all_op;
+      neighbor9(m, all_op, *new_view);
+      
+      typename T::vec_iterator g = m.vec_begin();
+      typename view_type::vec_iterator h = new_view->vec_begin();
+      for (; g != m.vec_end(); g++, h++)
+	*g = *h;
+    } catch (std::exception e) {
+      delete new_view;
+      delete new_data;
+      throw;
+    }
     return;
   }
 
@@ -287,19 +316,19 @@ namespace Gamera {
       return;
     }
     typedef typename T::value_type value_type;
-    ImageData<value_type> mat_data(m.nrows(), m.ncols());
-    ImageView<ImageData<value_type> > tmp(mat_data, 0, 0, m.nrows(), m.ncols());
+    ImageData<value_type> mat_data(m.dim(), m.origin());
+    ImageView<ImageData<value_type> > tmp(mat_data);
 
     typedef std::vector<Point> PixelQueue;
     PixelQueue pixel_queue;
     pixel_queue.reserve(size * 2);
     for (size_t r = 0; r < m.nrows(); ++r) {
       for (size_t c = 0; c < m.ncols(); ++c) {
-	if (is_white(tmp.get(r, c)) && is_black(m.get(r, c))) {
+	if (is_white(tmp.get(Point(c, r))) && is_black(m.get(Point(c, r)))) {
 	  pixel_queue.clear();
 	  pixel_queue.push_back(Point(c, r));
 	  bool bail = false;
-	  tmp.set(r, c, 1);
+	  tmp.set(Point(c, r), 1);
 	  for (size_t i = 0;
 	       (i < pixel_queue.size()) && (pixel_queue.size() < size);
 	       ++i) {
@@ -308,10 +337,10 @@ namespace Gamera {
 		 r2 < std::min(center.y() + 2, m.nrows()); ++r2) {
 	      for (size_t c2 = (center.x()>0) ? center.x() - 1 : 0; 
 		   c2 < std::min(center.x() + 2, m.ncols()); ++c2) {
-		if (is_black(m.get(r2, c2)) && is_white(tmp.get(r2, c2))) {
-		  tmp.set(r2, c2, 1);
+		if (is_black(m.get(Point(c2, r2))) && is_white(tmp.get(Point(c2, r2)))) {
+		  tmp.set(Point(c2, r2), 1);
 		  pixel_queue.push_back(Point(c2, r2));
-		} else if (tmp.get(r2, c2) == 2) {
+		} else if (tmp.get(Point(c2, r2)) == 2) {
 		  bail = true;
 		  break;
 		}
@@ -325,12 +354,12 @@ namespace Gamera {
 	  if (!bail && pixel_queue.size() < size) {
 	    for (typename PixelQueue::iterator i = pixel_queue.begin();
 		 i != pixel_queue.end(); ++i) {
-	      m.set(i->y(), i->x(), white(m));
+	      m.set(Point(i->x(), i->y()), white(m));
 	    }
 	  } else {
 	    for (typename PixelQueue::iterator i = pixel_queue.begin();
 		 i != pixel_queue.end(); ++i) {
-	      tmp.set(i->y(), i->x(), 2);
+	      tmp.set(Point(i->x(), i->y()), 2);
 	    }
 	  }
 	}
@@ -340,8 +369,8 @@ namespace Gamera {
 
   template<class T>
   Image* distance_transform(const T& src, int norm) {
-    FloatImageData* dest_data = new FloatImageData(src.size(), src.offset_y(), src.offset_x());
-    FloatImageView* dest = new FloatImageView(*dest_data, src);
+    FloatImageData* dest_data = new FloatImageData(src.size(), src.origin());
+    FloatImageView* dest = new FloatImageView(*dest_data);
     
     try {
       vigra::distanceTransform(src_image_range(src), dest_image(*dest), 0, norm);

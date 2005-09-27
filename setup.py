@@ -117,7 +117,9 @@ extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
                          "src/sizeobject.cpp",
                          "src/pointobject.cpp",
+                         "src/floatpointobject.cpp",
                          "src/dimensionsobject.cpp",
+                         "src/dimobject.cpp",
                          "src/rectobject.cpp",
                          "src/regionobject.cpp",
                          "src/regionmapobject.cpp",
@@ -144,7 +146,6 @@ extensions.extend(plugin_extensions)
 description = ("This is the Gamera installer. " +
                "Please ensure that Python and wxPython 2.4.0 " +
                "(or later) are installed before proceeding.")
-
 
 includes = [(os.path.join(gamera_setup.include_path, path),
              glob.glob(os.path.join("include", os.path.join(path, ext))))
@@ -173,6 +174,7 @@ elif sys.platform == 'win32':
                                           'FreeVCCompiler',
                                           'Visual C++ 2003 Toolkit')
        ccompiler.new_compiler = FreeVCCompiler.ret_freevc
+       
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",
       version=gamera_version,
@@ -183,4 +185,5 @@ setup(cmdclass = gamera_setup.cmdclass,
       description = description,
       packages = packages,
       scripts = scripts,
-      data_files=[(os.path.join(gamera_setup.lib_path, "$LIB/test"), glob.glob("gamera/test/*.tiff"))] + includes)
+      data_files=[(os.path.join(gamera_setup.lib_path, "$LIB/test"),
+                   glob.glob("gamera/test/*.tiff"))] + includes)

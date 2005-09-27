@@ -74,14 +74,12 @@ template<class T>
 Image* threshold(const T &m, int threshold, int storage_format) {
   if (storage_format == DENSE) {
     typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
-    typename fact_type::image_type* view = fact_type::create(m.offset_y(), m.offset_x(),
-							     m.nrows(), m.ncols());
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
     threshold_fill(m, *view, threshold);
     return view;
   } else {
     typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
-    typename fact_type::image_type* view = fact_type::create(m.offset_y(), m.offset_x(),
-							     m.nrows(), m.ncols());
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
     threshold_fill(m, *view, threshold);
     return view;
   }
@@ -170,14 +168,12 @@ Image* otsu_threshold(const T &m, int storage_format) {
   int threshold = otsu_find_threshold(m);
   if (storage_format == DENSE) {
     typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
-    typename fact_type::image_type* view = fact_type::create(m.offset_y(), m.offset_x(),
-							     m.nrows(), m.ncols());
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
     threshold_fill(m, *view, threshold);
     return view;
   } else {
     typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
-    typename fact_type::image_type* view = fact_type::create(m.offset_y(), m.offset_x(),
-							     m.nrows(), m.ncols());
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
     threshold_fill(m, *view, threshold);
     return view;
   }
@@ -228,11 +224,11 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
   
   typedef FloatImageData histogram_data_type;
   typedef FloatImageView histogram_type;
-  histogram_data_type histogram_data(256, 256);
+  histogram_data_type histogram_data(Dim(256, 256));
   histogram_type histogram(histogram_data);
-  histogram_data_type P_histogram_data(256, 256);
+  histogram_data_type P_histogram_data(Dim(256, 256));
   histogram_type P_histogram(P_histogram_data);
-  histogram_data_type H_histogram_data(256, 256);
+  histogram_data_type H_histogram_data(Dim(256, 256));
   histogram_type H_histogram(H_histogram_data);
 
   typename histogram_type::vec_iterator hist_it = histogram.vec_begin();
@@ -241,54 +237,54 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
 
   for (size_t y = 0; y < m.nrows(); ++y)
     for (size_t x = 0; x < m.ncols(); ++x) {
-      size_t a = m.get(y, x);
-      size_t b = average->get(y, x);
-      histogram.set(b, a, histogram.get(b, a) + 1.0);
+      size_t a = m.get(Point(x, y));
+      size_t b = average->get(Point(x, y));
+      histogram.set(Point(a, b), histogram.get(Point(a, b)) + 1.0);
     }
  
   double one_over_area = 1.0 / (m.nrows() * m.ncols());
   for (size_t b = 0; b < 256; ++b)
     for (size_t a = 0; a < 256; ++a)
-      histogram.set(b, a, histogram.get(b, a) * one_over_area);
+      histogram.set(Point(a, b), histogram.get(Point(a, b)) * one_over_area);
 
   double P_sum = 0.0;
   for (size_t s = 0; s < 256; ++s) {
-    P_sum += histogram.get(0, s);
-    P_histogram.set(0, s, P_sum);
+    P_sum += histogram.get(Point(s, 0));
+    P_histogram.set(Point(s, 0), P_sum);
   }
   for (size_t t = 1; t < 256; ++t) {
     P_sum = 0.0;
     for (size_t s = 0; s < 256; ++s) {
-      P_sum += histogram.get(t, s);
-      P_histogram.set(t, s, P_histogram.get(t - 1, s) + P_sum);
+      P_sum += histogram.get(Point(s, t));
+      P_histogram.set(Point(s, t), P_histogram.get(Point(s, t - 1)) + P_sum);
     }
   }
   
   double H_sum = 0.0;
   for (size_t s = 0; s < 256; ++s) {
-    double p = histogram.get(0, s);
+    double p = histogram.get(Point(s, 0));
     if (p != 0)
       H_sum -= p * log(p);
-    H_histogram.set(0, s, H_sum);
+    H_histogram.set(Point(s, 0), H_sum);
   }
   for (size_t t = 1; t < 256; ++t) {
     H_sum = 0.0;
     for (size_t s = 0; s < 256; ++s) {
-      double p = histogram.get(t, s);
+      double p = histogram.get(Point(s, t));
       if (p != 0)
 	H_sum -= p * log(p);
-      H_histogram.set(t, s, H_histogram.get(t - 1, s) + H_sum);
+      H_histogram.set(Point(s, t), H_histogram.get(Point(s, t - 1)) + H_sum);
     }
   }
 
   double Phi_max = std::numeric_limits<double>::min();
   double tiny = 1e-6;
-  double H_end = H_histogram.get(255, 255);
+  double H_end = H_histogram.get(Point(255, 255));
   size_t threshold = 0, avg_threshold = 0;
   for (size_t s = 0; s < 256; ++s)
     for (size_t t = 0; t < 256; ++t) {
-      double P = P_histogram.get(t, s);
-      double H = H_histogram.get(t, s);
+      double P = P_histogram.get(Point(s, t));
+      double H = H_histogram.get(Point(s, t));
       if ((P > tiny) && ((1.0 - P) > tiny)) {	
 	double Phi = log(P * (1.0 - P)) + H / P + (H_end - H) / (1.0 - P);
 	if (Phi > Phi_max) {
@@ -301,28 +297,26 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
 
   if (storage_format == DENSE) {
     typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
-    typename result_type::image_type* view = result_type::create(m.offset_y(), m.offset_x(),
-								 m.nrows(), m.ncols());
+    typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
     for (size_t y = 0; y < m.nrows(); ++y)
       for (size_t x = 0; x < m.ncols(); ++x) {
-	if (m.get(y, x) <= threshold && average->get(y, x) <= avg_threshold)
-	  view->set(y, x, black(*view));
+	if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
+	  view->set(Point(x, y), black(*view));
 	else
-	  view->set(y, x, white(*view));
+	  view->set(Point(x, y), white(*view));
       }
     delete average->data();
     delete average;
     return view;
   } else {
     typedef TypeIdImageFactory<ONEBIT, RLE> result_type;
-    typename result_type::image_type* view = result_type::create(m.offset_y(), m.offset_x(),
-								 m.nrows(), m.ncols());
+    typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
     for (size_t y = 0; y < m.nrows(); ++y) 
       for (size_t x = 0; x < m.ncols(); ++x) {
-	if (m.get(y, x) <= threshold && average->get(y, x) <= avg_threshold)
-	  view->set(y, x, black(*view));
+	if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
+	  view->set(Point(x, y), black(*view));
 	else
-	  view->set(y, x, white(*view));
+	  view->set(Point(x, y), white(*view));
       }
 
     delete average->data();
@@ -353,16 +347,8 @@ Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, siz
   typedef typename T::value_type pixel_type;
   int half_region_size = region_size / 2;
 
-  //  if (storage_format == DENSE) {
-    typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
-    typename result_type::image_type* view = result_type::create(m.offset_y(), m.offset_x(),
-								 m.nrows(), m.ncols());
-    //  } else {
-    //typedef TypeIdImageFactory<ONEBIT, RLE> result_type;
-    //typename result_type::image_type* view = result_type::create(m.offset_y(), m.offset_x(),
-    //					 m.nrows(), m.ncols());
-//  }
-
+  typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
+  typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
   OneBitPixel confused;
   if (set_doubt_to_low)
     confused = black(*view);
@@ -377,23 +363,185 @@ Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, siz
 	int use_dy = (y + dy < 0 || y + dy >= m.nrows()) ? -dy : dy;
 	for (int dx = -half_region_size; dx < half_region_size; ++dx) {
 	  int use_dx = (x + dx < 0 || x + dx >= m.ncols()) ? -dx : dx;
-	  pixel_type pixel = m.get(y + use_dy, x + use_dx);
+	  pixel_type pixel = m.get(Point(x + use_dx, y + use_dy));
 	  minimum = std::min(minimum, pixel);
 	  maximum = std::max(maximum, pixel);
 	}
       }
       pixel_type c = maximum - minimum;
       if (c < contrast_limit)
-	view->set(y, x, confused);
+	view->set(Point(x, y), confused);
       else {
 	long t = (maximum + minimum) / 2;
-	if (m.get(y, x) >= t)
-	  view->set(y, x, white(*view));
+	if (m.get(Point(x, y)) >= t)
+	  view->set(Point(x, y), white(*view));
 	else
-	  view->set(y, x, black(*view));
+	  view->set(Point(x, y), black(*view));
       }
     }
   return view;
+}
+
+/*
+Color-based thresholding using the algorithm from DjVu image
+compression.  See:
+
+Bottou, L., P. Haffner, P. G. Howard, P. Simard, Y. Bengio and
+Y. LeCun.  1998.  High Quality Document Image Compression with DjVu.  AT&T
+Labs, Lincroft, NJ.
+http://research.microsoft.com/~patrice/PDF/jei.pdf
+
+Solomon, D.  Image Compression: The Complete Reference.  2nd Edition.
+559-61.
+*/
+
+template<class T, class U>
+inline double
+djvu_distance(const T& x, const U& y) {
+  double r = (double)x.red() - (double)y.red();
+  double g = (double)x.green() - (double)y.green();
+  double b = (double)x.blue() - (double)y.blue();
+  return (0.75*r*r + g*g + 0.5*b*b);
+}
+
+#define CONVERGE_THRESHOLD 2
+template<class T>
+inline bool djvu_converged(const T& fg, const T& bg) {
+  return (djvu_distance(fg, bg) < CONVERGE_THRESHOLD);
+}
+
+template<class T, class U>
+void djvu_threshold_recurse(const T image, 
+			    const double smoothness,
+			    const size_t min_block_size,
+			    U& fg_image, U& bg_image,
+			    Rgb<double> fg_init, 
+			    Rgb<double> bg_init, 
+			    const size_t block_size) {
+  typedef typename T::value_type value_type;
+  typedef Rgb<double> promote_t;
+  // typedef typename vigra::NumericTraits<RGBPixel::value_type>::Promote promote;
+
+  promote_t fg = fg_init;
+  promote_t bg = bg_init;
+  promote_t last_fg, last_bg;
+  promote_t fg_init_scaled = promote_t(fg_init) * smoothness;
+  promote_t bg_init_scaled = promote_t(bg_init) * smoothness;
+  do {
+    last_fg = fg;
+    last_bg = bg;
+    promote_t fg_avg, bg_avg;
+    size_t fg_count = 0, bg_count = 0;
+    typename T::const_vec_iterator i = image.vec_begin();
+    for ( ; i != image.vec_end(); ++i) {
+      double fg_dist = djvu_distance(*i, fg);
+      double bg_dist = djvu_distance(*i, bg);
+      if (fg_dist <= bg_dist) {
+	fg_avg += *i;
+	++fg_count;
+      } else {
+	bg_avg += *i;
+	++bg_count;
+      }
+    }
+    if (fg_count)
+      fg = (((fg_avg / fg_count) * (1.0 - smoothness)) + fg_init_scaled);
+    if (bg_count)
+      bg = (((bg_avg / bg_count) * (1.0 - smoothness)) + bg_init_scaled);
+  } while (!(djvu_converged(fg, last_fg) && (djvu_converged(bg, last_bg))));
+
+  if (block_size < min_block_size) {
+    fg_image.set(Point(image.ul_x() / min_block_size,
+		       image.ul_y() / min_block_size), fg);
+    bg_image.set(Point(image.ul_x() / min_block_size,
+		       image.ul_y() / min_block_size), bg);
+    return;
+  }
+
+  for (size_t r = 0; r <= (image.nrows() - 1) / block_size; ++r) {
+    for (size_t c = 0; c <= (image.ncols() - 1) / block_size; ++c) {
+      Point ul(c * block_size + image.ul_x(), r * block_size + image.ul_y());
+      Point lr(std::min((c + 1) * block_size + image.ul_x(), image.lr_x()),
+	       std::min((r + 1) * block_size + image.ul_y(), image.lr_y()));
+      djvu_threshold_recurse(T(image, ul, lr), smoothness, min_block_size, 
+			     fg_image, bg_image, fg, bg, block_size / 2);
+    }
+  }
+}
+
+template<class T>
+Image *djvu_threshold(const T& image, const double smoothness, 
+		      const size_t max_block_size, const size_t min_block_size,
+		      const size_t block_factor,
+		      const typename T::value_type init_fg, 
+		      const typename T::value_type init_bg) {
+  RGBImageData fg_data(Dim(image.ncols() / min_block_size + 1,
+			   image.nrows() / min_block_size + 1),
+		       Point(0, 0));
+  RGBImageView fg_image(fg_data);
+
+  RGBImageData bg_data(Dim(image.ncols() / min_block_size + 1,
+			   image.nrows() / min_block_size + 1),
+		       Point(0, 0));
+  RGBImageView bg_image(bg_data);
+
+  djvu_threshold_recurse(image, smoothness, min_block_size, 
+			 fg_image, bg_image,
+			 init_fg, init_bg, max_block_size);
+
+  typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
+  typename result_type::image_type* result = result_type::create
+    (image.origin(), image.dim());
+  
+  typename choose_accessor<T>::interp_accessor fg_acc = 
+    choose_accessor<T>::make_interp_accessor(fg_image);
+  typename choose_accessor<T>::interp_accessor bg_acc = 
+    choose_accessor<T>::make_interp_accessor(bg_image);
+
+  for (size_t r = 0; r < image.nrows(); ++r) {
+    for (size_t c = 0; c < image.ncols(); ++c) {
+      RGBPixel fg = fg_acc(fg_image.upperLeft(), (double)c / min_block_size,
+			   (double)r / min_block_size);
+      RGBPixel bg = bg_acc(bg_image.upperLeft(), (double)c / min_block_size,
+			   (double)r / min_block_size);
+      double fg_dist = djvu_distance(image.get(Point(c, r)), fg);
+      double bg_dist = djvu_distance(image.get(Point(c, r)), bg);
+      if (fg_dist < bg_dist)
+	result->set(Point(c, r), black(*result));
+      else
+	result->set(Point(c, r), white(*result));
+    }
+  }
+
+  return result;
+}
+
+Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2, 
+		      int max_block_size = 512, int min_block_size = 16, 
+		      int block_factor = 2) {
+  // We do an approximate histrogram here, using 6 bits per pixel
+  // plane.  That greatly reduces the amount of memory required.
+  RGBPixel max_color;
+  {
+    size_t max_count = 0;
+    std::vector<size_t> histogram(64 * 64 * 64, 0);
+    for (RGBImageView::const_vec_iterator i = image.vec_begin();
+	 i != image.vec_end(); ++i) {
+      size_t approx_color = (((size_t)((*i).red() & 0xfc) << 10) |
+			     ((size_t)((*i).green() & 0xfc) << 4) |
+			     ((size_t)((*i).blue() & 0xfc) >> 2));
+      size_t x = histogram[approx_color]++;
+      if (x > max_count) {
+	max_count = x;
+	max_color = RGBPixel((*i).red() & 0xfc,
+			     (*i).green() & 0xfc,
+			     (*i).blue() & 0xfc);
+      }
+    }
+  }
+
+  return djvu_threshold(image, smoothness, max_block_size, min_block_size, 
+			block_factor, RGBPixel(0, 0, 0), max_color);
 }
 
 #endif

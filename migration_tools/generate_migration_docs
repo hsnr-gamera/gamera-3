@@ -1,0 +1,362 @@
+#!/usr/bin/env python
+
+"""This script builds the documentation about migrating
+from Gamera 2.x to Gamera 3.x.  End users should not
+have to run this script."""
+
+import cStringIO
+import imp
+import os
+import re
+import textwrap
+
+# This is the main content of the document with Python
+# formatting markers in it for parts that are
+# automatically generated.
+source = """=======================================
+Migrating from Gamera 2.x to Gamera 3.x
+=======================================
+
+The migration from Gamera 2.x to Gamera 3.x is intended to be as
+painless as possible.  
+
+In future releases of Gamera, backward compatibility will need to be
+broken in order to fix some low-level design flaws in Gamera.  Gamera
+3.x is the first step in that process.  Certain functions signatures
+that existed in 2.x have been deprecated in 3.x, but they continue to
+work in order to maintain backward compatibility with existing
+scripts.  As of Gamera 3.x, these deprecated calls all have easy
+alternatives, and they should be replaced with the new recommended
+forms as soon as possible to ensure compatibility with future versions
+of Gamera.
+
+Note, however, that some rarely-used deprecated functions do not have
+direct alternatives in Gamera 2.x, so this migration process may break
+your scripts' compatibility with Gamera 2.x.  However, if appropriate
+care is taken, such as switching based on the Gamera version, it
+should still be possible to write code that is compatible with both
+Gamera 2.x and Gamera 3.x.
+
+This document is divided into the following sections:
+
+  - `Reasons for deprecations`_ describes the different categories of
+    deprecated functions, and what changes are required in end-user
+    scripts.
+
+  - `How to migrate existing code`_ presents some tips and
+    techniques for making migration easier.
+
+  - `Migration tools`_ describes the provided tools for finding and
+    replacing deprecated calls in end-user code.  This tools provide
+    only a semi-automated process.
+
+  - `C++ deprecations reference`_ and `Python deprecations reference`_
+    list all deprecated functions, with their reason for deprecation
+    and a suggested alternative.
+
+Reasons for deprecations
+========================
+
+(x, y) coordinate consistency
+-----------------------------
+
+In Gamera 2.x, some functions received coordinates in the order (y, x),
+(or (rows, cols)), while others took coordinates in (x, y) order.
+This self-inconsistency and departure from the majority of image
+processing systems often resulted in confusion and subtle errors.
+
+The new recommended way to call these functions is to pass in Point,
+FloatPoint, Size or Dim arguments as required, instead of two
+integers.  This solution allows the old function signatures to be
+maintained for backward compatibility, while allowing migration to a
+style that consistently uses (x, y) ordering everywhere.
+
+For example, ``image.get(r, c)`` becomes ``image.get(Point(c, r))``.
+
+2-element sequences in place of Point type
+''''''''''''''''''''''''''''''''''''''''''
+
+For convenience in Python code, 2-element sequences can be used
+wherever Point or FloatPoint is expected.  Therefore, ``image.get((x, y))``
+is equivalent to ``image.get(Point(x, y))``.
+
+Dimensions type
+'''''''''''''''
+
+Additionally, the ``Dimensions`` class, whose constructor is
+``Dimensions(nrows, ncols)``, has been deprecated because it is
+inconsistent with the new requirement of "(x, y) everywhere".  Since
+it would be impossible to change the order of the constructor's
+arguments without breaking backward imcompatibility, a new type has
+been introduced, ``Dim``, which is identical to Dimensions in all
+respects except its constructor is ``Dim(ncols, nrows)``.  All uses of
+the ``Dimensions`` type are deprecated and should be migrated to use ``Dim``
+instead.
+
+FloatPoint type
+'''''''''''''''
+
+A new FloatPoint type has been added to hold coordinates using
+floating point numbers.  The standard Gamera ``Point`` stores
+coordinates as unsigned (positive) integers, and doesn't have any
+arithmetic operators.  For this reason, ``FloatPoint`` is highly
+recommended for any analyses that require precision and flexibility.
+``Point`` is kept around for backward compatibility, and because it is
+a more natural way to refer to physical pixels, as opposed to logical
+coordinates.
+
+There are, however, implicit conversions (in Python only) between the
+two types, so a ``FloatPoint`` can be used in place of ``Point`` where
+it makes sense.  Care should be taken to ensure that negative values
+are never used to reference image pixels.  (Range checking is
+performed when accessing from Python, but not when accessing from C++.)
+
+Additionally, the standard arithmetic operators are available on
+``FloatPoint`` objects (+ - * / abs).
+
+Functions should be parameterized by arguments, not by name
+-----------------------------------------------------------
+
+There are certain groups of plugin functions that perform essentially
+the same functionality.  Take for example::
+
+  black_horizontal_run_histogram()
+  black_vertical_run_histogram()
+  white_horizontal_run_histogram()
+  white_vertical_run_histogram()
+
+These four functions compute a run length histogram, parameterized by
+the color and direction of the runs.  Maintaining
+four separate functions for a single logical task has a number
+of disadvantages:
+
+  - Even if the code is abstracted such that the core of the algorithm
+    is in a single function, the documentation still needs to be
+    updated in multiple places.
+
+  - The generated documentation becomes longer and therefore harder to browse
+    through, and contains a lot of redundant information or excessive
+    hyperlinking.
+
+  - Autocompletion in the Gamera shell becomes less useful.
+
+  - Alphabetization of the functions doesn't necessarily reveal their
+    membership as part of the same family of functionality.
+
+Therefore, in Gamera 3.x, these sorts of functions have been merged
+into a single function.  For example, the four functions above are now
+the single function::
+
+  run_histogram(color, direction)
+
+How to migrate existing code
+============================
+
+There are two distinct techniques for finding deprecated functions:
+one for C++ code and one for Python code.
+
+C++ code
+--------
+
+On the C++ side, all deprecated function calls will be caught at
+compile time.  Simply recompiling your C++ code will provide compiler
+warnings to this effect.
+
+The compiler warnings produced by gcc can be fairly cryptic.  The
+gamera_deprecation_filter_ (described below) will filter these warning
+messages and produce detailed human-readable suggestions for updating
+your deprecated calls.
+
+.. note::
+
+  This technique only works with gcc version 3.1 and greater.
+
+Python code
+-----------
+
+Finding the deprecated calls in Python code is somewhat more
+difficult, since the exact function calls being made can not be
+determined until runtime.
+
+When a deprecated function call is made, a deprecation warning is
+printed to stderr.  This message provides the name of the deprecated
+function, the reason it was deprecated, and a suggested alternative.
+The only way to find all deprecated calls in your code this is to
+ensure that all of your code is run.  This is sometimes difficult to
+do, though a code coverage tool such as Garth Rees' `Statement
+coverage for Python`__ may help.
+
+.. __: http://www.garethrees.org/2001/12/04/python-coverage/
+
+A manual search through your code for deprecated functions may in some
+cases be more efficient.  A master list of all deprecated Python
+functions in Gamera is presented in the `Python deprecations reference`_.
+
+Migration tools
+===============
+
+There are a number of scripts in the ``migration_tools`` directory
+that make the process of migrating code from Gamera 2.x to 3.x easier.
+
+  - gamera_deprecation_filter_: Helps display the deprecated calls in
+    your C++ code.
+
+  - replace_get_set_: Replaces C++ calls to get and set in the old
+    form to the new form.
+
+gamera_deprecation_filter
+-------------------------
+
+%(gamera_deprecation_filter_docs)s
+
+replace_get_set
+---------------
+
+%(replace_get_set_docs)s
+
+C++ deprecations reference
+==========================
+
+This is an alphabetical list of the deprecated C++ functions.
+
+%(cpp_deprecations)s
+
+Python deprecations reference
+=============================
+
+This is an alphabetical list of the deprecated Python functions.
+
+%(python_deprecations)s
+"""
+
+# This is a list of reasons for deprecating functions and
+# their 
+reasons = [
+   ("(x, y) coordinate consistency",
+    "#x-y-coordinate-consistency"),
+   ("Functions parameterized by arguments, not by name",
+    "#functions-should-be-parameterized-by-arguments-not-by-name")]
+
+def get_tool_docs(tools, chunks):
+   for tool in tools:
+      mod = imp.load_module(tool, open(tool, "r"), tool, ("", "", imp.PY_SOURCE))
+      chunks[tool + "_docs"] = mod.__doc__
+
+def get_files_recursively(root, extensions):
+   for dirpath, dirnames, filenames in os.walk(root):
+      if not "build" in dirpath and not "dist" in dirpath:
+         for filename in filenames:
+            root, ext = os.path.splitext(filename)
+            if ext in extensions:
+               yield open(os.path.join(dirpath, filename), "r")
+
+def find_all_matches(regex, file):
+   for match in regex.findall(file.read()):
+      yield match
+
+def find_comments(file):
+   lines = file.readlines()
+   for lineno, line in enumerate(lines):
+      if "GAMERA_CPP_DEPRECATED" in line and not line.startswith("#"):
+         comment = []
+         for i in xrange(lineno, -1, -1):
+            if i < 0 or i >= len(lines):
+               raise RuntimeError("Couldn't find comment.")
+            find = lines[i].find(r"*/")
+            if find != -1:
+               comment.insert(0, lines[i][:find].strip())
+               break
+         for j in xrange(i - 1, -1, -1):
+            if j < 0 or j >= len(lines):
+               raise RuntimeError("Couldn't find comment.")
+            find = lines[j].find(r"/*")
+            if find != -1:
+               comment.insert(0, lines[j][find+2:].strip())
+               break
+            comment.insert(0, lines[j].strip())
+         comment = "\n".join(comment)
+         yield comment
+
+def format_deprecations(deprecations):
+   table_line = "+" + ("-" * 80) + "+" + ("-" * 80) + "+\n"
+   table_header = "+" + ("=" * 80) + "+" + ("=" * 80) + "+\n"
+   output = cStringIO.StringIO()
+   output.write(table_line)
+   output.write("|%-80s|%-80s|\n" % ("Deprecated function", "Notes"))
+   output.write(table_header)
+   for deprecation in deprecations:
+      parts = deprecation.split("\n\n")
+      if len(parts) != 3:
+         continue
+      function = parts[0].strip()
+      reason = parts[1][len("Reason: "):].strip()
+      for i, r in enumerate(reasons):
+         if reason.startswith(r[0]):
+            function = function + " [%d_]" % (i + 1)
+            break
+      suggestion = "\n\n".join(parts[2:]).strip()
+      function = textwrap.wrap(function)
+      suggestion = textwrap.wrap(suggestion)
+      lines = max(len(function), len(suggestion))
+      for x in function, suggestion:
+         if len(x) < lines:
+            for i in range(lines - len(x)):
+               x.append("")
+      for a, b in zip(function, suggestion):
+         output.write("|%-80s|%-80s|\n" % (a, b))
+      output.write(table_line)
+   output.write("\n")
+   for i, r in enumerate(reasons):
+      output.write(".. _%d: %s\n" % (i + 1, r[1]))
+   output.write("\n")
+   return output.getvalue()
+
+def get_cpp_deprecations():
+   deprecations = []
+   for fd in get_files_recursively("..", [".hpp", ".cpp"]):
+      for match in find_comments(fd):
+         deprecations.append(match)
+   deprecations.sort(lambda x, y: cmp(x.lower(), y.lower()))
+   print "%d C++ deprecations" % len(deprecations)
+   return deprecations
+
+cpp_python_deprecation_regex = re.compile(
+   "send_deprecation_warning\((?P<x>.*?),\s*\"[^\"]+\",\s*__LINE__\)", re.DOTALL)
+python_deprecation_regex = re.compile(
+   "warn_deprecated\((?P<x>(?:(?:(?:\"\"\".*?\"\"\")|(?:'''.*?''')|(?:\".*?\")|(?:\'.*?\'))\s*)+)\)", re.DOTALL)
+python_deprecation_regex2 = re.compile("\.\.\s+warning::\s+(?P<x>.*?)\"\"\"", re.DOTALL)
+def get_python_deprecations():
+   deprecations = []
+   for data in get_files_recursively("..", [".hpp", ".cpp"]):
+      for match in find_all_matches(cpp_python_deprecation_regex, data):
+         try:
+            deprecations.append(eval("(%s)" % match))
+         except SyntaxError:
+            pass
+   for data in get_files_recursively("..", [".py"]):
+      for match in find_all_matches(python_deprecation_regex, data):
+         try:
+            deprecations.append(eval(match))
+         except SyntaxError:
+            pass
+   for data in get_files_recursively("..", [".py"]):
+      for match in find_all_matches(python_deprecation_regex2, data):
+         deprecations.append(match)
+   deprecations.sort(lambda x, y: cmp(x.lower(), y.lower()))
+   print "%d Python deprecations" % len(deprecations)
+   return deprecations
+
+def main():
+   chunks = {}
+   get_tool_docs("gamera_deprecation_filter replace_get_set".split(),
+                 chunks)
+
+   chunks["cpp_deprecations"] = format_deprecations(get_cpp_deprecations())
+   chunks["python_deprecations"] = format_deprecations(get_python_deprecations())
+   
+   output = open("../doc/src/migration_guide.txt", "w")
+   output.write(source % chunks)
+   output.close()
+
+if __name__ == "__main__":
+   main()

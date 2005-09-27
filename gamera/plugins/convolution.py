@@ -22,6 +22,7 @@ and computing histograms."""
 
 from gamera.plugin import *
 from gamera.plugins import image_utilities
+from gamera import util
 import _arithmetic
 import _convolution
 
@@ -110,18 +111,24 @@ This is equivalent to what the Vigra library calls "Separable Convolution".
    See ``convolve`` for information about *border_treatment*
    values."""
     self_type = ImageType(CONVOLUTION_TYPES)
-    args = Args([ImageType([FLOAT], 'kernel_y'),
-                 ImageType([FLOAT], 'kernel_x'),
+    args = Args([ImageType([FLOAT], 'kernel_x'),
+                 ImageType([FLOAT], 'kernel_y'),
                  Choice('border_treatment',
                         ['avoid', 'clip', 'repeat', 'reflect', 'wrap'],
                         default=1)])
     return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True
 
-    def __call__(self, kernel_y, kernel_x=None, border_treatment=1):
+    def __call__(self, kernel_x, kernel_y=None, border_treatment=1):
         from gamera.gameracore import FLOAT
-        if kernel_x is None:
-            kernel_x = kernel_y
+        util.warn_deprecated("""convolve_xy now takes a different argument order.
+
+Reason: (x, y) coordinate consistency.
+
+Change the order of the first two arguments to (kernel_x, kernel_y), rather
+than the old way (kernel_y, kernel_x).""")
+        if kernel_y is None:
+            kernel_y = kernel_x
         if kernel_y == kernel_x:
             if type(kernel_y) == list:
                 kernel_x = kernel_y = image_utilities.nested_list_to_image(kernel_y, FLOAT)

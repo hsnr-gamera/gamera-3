@@ -121,11 +121,11 @@ namespace Gamera {
   protected:
     ImageIteratorBase(Iterator base, size_t width)
       : x(base), y(width) {}
-    ImageIteratorBase(ImageIteratorBase const & rhs)
+    ImageIteratorBase(const ImageIteratorBase & rhs)
       : x(rhs.x), y(rhs.y) {}
     ImageIteratorBase()
       : x(Iterator()), y(0) {}
-    ImageIteratorBase & operator=(ImageIteratorBase const & rhs) {
+    ImageIteratorBase & operator=(const ImageIteratorBase & rhs) {
       if(this != &rhs)
         {
 	  x = rhs.x;

@@ -367,6 +367,12 @@ namespace Gamera {
 	return ((nrows - 1) * col_length) + other_col_distance + col_distance;
       }
     }
+    size_t row() const {
+      return m_rowiterator.row();
+    }
+    size_t col() const {
+      return m_coliterator.col();
+    }
   public:
     Row m_rowiterator;
     Col m_coliterator;

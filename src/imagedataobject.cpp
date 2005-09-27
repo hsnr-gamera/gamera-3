@@ -52,27 +52,27 @@ static PyTypeObject ImageDataType = {
 
 static PyGetSetDef imagedata_getset[] = {
   { "nrows", (getter)imagedata_get_nrows, (setter)imagedata_set_nrows,
-    "(int property)\n\nThe number of rows", 0 },
+    "(int property get/set)\n\nThe number of rows", 0 },
   { "ncols", (getter)imagedata_get_ncols, (setter)imagedata_set_ncols,
-    "(int property)\n\nThe number of columns", 0 },
+    "(int property get/set)\n\nThe number of columns", 0 },
   { "page_offset_x", (getter)imagedata_get_page_offset_x,
     (setter)imagedata_set_page_offset_x,
-    "(int property)\n\nThe *x* offset in the page for the data", 0 },
+    "(int property get/set)\n\nThe *x* offset in the page for the data", 0 },
   { "page_offset_y", (getter)imagedata_get_page_offset_y,
     (setter)imagedata_set_page_offset_y,
-    "(int property)\n\nThe *y* offset in the page for the data", 0 },
+    "(int property get/set)\n\nThe *y* offset in the page for the data", 0 },
   { "stride", (getter)imagedata_get_stride, 0,
-    "(int property)\n\nThe length of the data stride", 0 },
+    "(int property get/set)\n\nThe length of the data stride", 0 },
   { "size", (getter)imagedata_get_size, 0,
-    "(Size property)\n\nThe size of the image data", 0 },
+    "(Size property get/set)\n\nThe size of the image data", 0 },
   { "bytes", (getter)imagedata_get_bytes, 0,
-    "(int property)\n\nThe size of the data in bytes", 0 },
+    "(int property get/set)\n\nThe size of the data in bytes", 0 },
   { "mbytes", (getter)imagedata_get_mbytes, 0,
-    "(int property)\n\nThe size of the data in megabytes", 0 },
+    "(int property get/set)\n\nThe size of the data in megabytes", 0 },
   { "pixel_type", (getter)imagedata_get_pixel_type, 0,
-    "(int property)\n\nThe type of the pixels.  See `pixel types`__ for more info.\n\n.. __: image_types.html#pixel-types", 0 },
+    "(int property get/set)\n\nThe type of the pixels.  See `pixel types`__ for more info.\n\n.. __: image_types.html#pixel-types", 0 },
   { "storage_format", (getter)imagedata_get_storage_format, 0,
-    "(int property)\n\nThe format of the storage.  See `storage formats`__ for more info.\n\n.. __: image_types.html#storage-formats", 0 },
+    "(int property get/set)\n\nThe format of the storage.  See `storage formats`__ for more info.\n\n.. __: image_types.html#storage-formats", 0 },
   { NULL }
 };
 
@@ -87,12 +87,58 @@ PyTypeObject* get_ImageDataType() {
 
 static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
 			       PyObject* kwds) {
-  int nrows, ncols, page_offset_y, page_offset_x, format, pixel;
-  if (PyArg_ParseTuple(args, "iiiiii", &nrows, &ncols, &page_offset_y,
-		       &page_offset_x, &pixel, &format) <= 0)
-    return 0;
+  int format, pixel;
+  int num_args = PyTuple_GET_SIZE(args);
+
+  if (num_args == 4) {
+    PyObject* py_point = NULL;
+    PyObject* py_dim = NULL;
+    if (PyArg_ParseTuple(args, "OOii", &py_dim, &py_point, &pixel, &format)) {
+      if (is_DimObject(py_dim)) {
+	try {
+	  return create_ImageDataObject(*(((DimObject*)py_dim)->m_x), coerce_Point(py_point), pixel, format);
+	} catch (std::invalid_argument e) {
+	  ;
+	}
+      }
+    }
+  }
+
+  PyErr_Clear();
   
-  return create_ImageDataObject(nrows, ncols, page_offset_y, page_offset_x, pixel, format);
+  if (num_args == 1) {
+    PyObject* py_rect;
+    if (PyArg_ParseTuple(args, "O", &py_rect)) {
+      if (is_RectObject(py_rect)) {
+	Rect* rect = ((RectObject*)py_rect)->m_x;
+	return create_ImageDataObject(rect->dim(), rect->origin(), pixel, format);
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+
+  if (num_args == 6) {
+    int nrows, ncols, page_offset_y, page_offset_x, format, pixel;
+    if (PyArg_ParseTuple(args, "iiiiii", &nrows, &ncols, &page_offset_y,
+			 &page_offset_x, &pixel, &format)) {
+      if (send_deprecation_warning(
+"ImageData(nrows, ncols, page_offset_y, page_offset_x, pixel_type, \n"
+"storage_format) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use ImageData(Dim(ncols, nrows), (page_offset_x, page_offset_y),\n"
+"pixel_type, storage_format) instead.", 
+"imagedataobject.cpp", __LINE__) == 0)
+	return 0;
+      return create_ImageDataObject(Dim(ncols, nrows), Point(page_offset_x, page_offset_y), pixel, format);
+    }
+  }
+#endif      
+  
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageData constructor.  Valid forms are: (Dim dim, Point p, pixel_type = 0, storage_format = 0), and (Rect rect, pixel_type = 0, storage_format = 0). ");
+  return 0;
 }
  
 static void imagedata_dealloc(PyObject* self) {
@@ -140,12 +186,37 @@ static PyObject* imagedata_get_storage_format(PyObject* self) {
 
 static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
   ImageDataBase* x = ((ImageDataObject*)self)->m_x;
-  int nrows, ncols;
-  if (PyArg_ParseTuple(args, "ii", &nrows, &ncols) <= 0)
-    return 0;
-  x->dimensions((size_t)nrows, (size_t)ncols);
-  Py_INCREF(Py_None);
-  return Py_None;
+  int num_args = PyTuple_GET_SIZE(args);
+  if (num_args == 1) {
+    PyObject* py_dim;
+    if (PyArg_ParseTuple(args, "O", &py_dim)) {
+      if (is_DimObject(py_dim)) {
+	x->dim(*(((DimObject*)py_dim)->m_x));
+	Py_INCREF(Py_None);
+	return Py_None;
+      }
+    }
+  }
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+  if (num_args == 2) {
+    int nrows, ncols;
+    if (PyArg_ParseTuple(args, "ii", &nrows, &ncols)) {
+      if (send_deprecation_warning(
+"ImageData.dimensions(nrows, ncols) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use ImageData.dimensions(Dim(ncols, nrows)) instead.",
+"imagedataobject.cpp", __LINE__) == 0)
+	return 0;
+      x->dimensions((size_t)nrows, (size_t)ncols); // deprecated call
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  }
+#endif
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageData.dimensions.  Must be one Dim argument.");
+  return 0;
 }
 
 void init_ImageDataType(PyObject* module_dict) {
@@ -160,7 +231,21 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
   ImageDataType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageDataType.tp_free = NULL; // _PyObject_Del;
-  ImageDataType.tp_doc = "Manages the underlying data of Image views.";
+  ImageDataType.tp_doc = 
+"There are many ways to initialize ImageData:\n\n"
+"  - ImageData(Dim *dim*, Point *offset*, Int *pixel_type*, Int *storage_format*)\n\n"
+"  - ImageData(Rect *rect*, Int *pixel_type*, Int *storage_format*)\n\n"
+"**Deprecated forms:**\n\n"
+"  - ImageData(Int *nrows*, Int *ncols*, Int *page_offset_y*, Int *page_offset_x*, "
+"Int *pixel_type*, Int *storage_format*)\n\n"
+"*pixel_type*\n"
+"  An integer value specifying the type of the pixels in the image.\n"
+"  See `pixel types`__ for more information.\n\n"
+".. __: image_types.html#pixel-types\n\n"
+"*storage_format*\n"
+"  An integer value specifying the method used to store the image data.\n"
+"  See `storage formats`__ for more information.\n\n"
+".. __: image_types.html#storage-formats\n";
   PyType_Ready(&ImageDataType);
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants

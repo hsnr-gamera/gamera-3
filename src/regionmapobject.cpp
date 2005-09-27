@@ -53,10 +53,15 @@ PyTypeObject* get_RegionMapType() {
 
 static PyObject* regionmap_new(PyTypeObject* pytype, PyObject* args,
 			    PyObject* kwds) {
-    RegionMapObject* so;
-    so = (RegionMapObject*)pytype->tp_alloc(pytype, 0);
-    so->m_x = new RegionMap();
-    return (PyObject*)so;
+  int num_args = PyTuple_GET_SIZE(args);
+  if (num_args != 0) {
+    PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageInfo constructor.");
+    return 0;
+  }
+  RegionMapObject* so;
+  so = (RegionMapObject*)pytype->tp_alloc(pytype, 0);
+  so->m_x = new RegionMap();
+  return (PyObject*)so;
 }
 
 static void regionmap_dealloc(PyObject* self) {
@@ -67,7 +72,7 @@ static void regionmap_dealloc(PyObject* self) {
 
 static PyObject* regionmap_lookup(PyObject* self, PyObject* args) {
   PyObject* key;
-  if (PyArg_ParseTuple(args, "O", &key) <= 0)
+  if (PyArg_ParseTuple(args, "O:lookup", &key) <= 0)
     return 0;
   if (!is_RectObject(key)) {
     PyErr_SetString(PyExc_TypeError, "Key must be a Rect!");
@@ -80,7 +85,7 @@ static PyObject* regionmap_lookup(PyObject* self, PyObject* args) {
 
 static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
   PyObject* key;
-  if (PyArg_ParseTuple(args, "O", &key) <= 0)
+  if (PyArg_ParseTuple(args, "O:add_region", &key) <= 0)
     return 0;
   if (!is_RegionObject(key)) {
     PyErr_SetString(PyExc_TypeError, "Must be a Region!");

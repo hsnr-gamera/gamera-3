@@ -20,7 +20,7 @@ Console window
   .. image:: images/console.png
 
 The main Gamera console window is divided into three parts: the Python
-console, the icon display and the history.
+console, the icon display and the information pane.
 
 Python console
 ``````````````
@@ -115,7 +115,8 @@ The **Info** submenu displays basic information about the image.
 The rest of the context menu contains plugin methods, sorted by category.  The
 plugin methods are documented here__.
 Many of the plugin methods require arguments.  In that case, a dialog
-will be displayed.  For example the dialog for ``erode_dilate`` is:
+will be displayed.  This dialog includes a brief description of the
+method, if available.  For example the dialog for ``erode_dilate`` is:
 
   .. image:: images/erode_dilate_dialog.png
 
@@ -128,12 +129,39 @@ to perform the operation and automatically run in the console:
 
 .. __: plugins.html
 
-History
-```````
+Information pane
+````````````````
 
-At the bottom of the console window is a history which displays all of
-the code that has been entered in the Python console.  Code can be
-copied and pasted from here to build Gamera scripts.
+The information pane includes three modes, selectable via the tabs.
+(These tabs will appear at the top of the information pane on Windows
+and Mac OSX).  This functionality is adapted from the PyCrust_ project
+and should be familiar to users of that tool.
+
+.. _PyCrust: http://sourceforge.net/projects/pycrust/
+
+Documentation
+'''''''''''''
+
+The documentation pane displays the docstring of the object that was
+last typed in the console window.  
+
+For an example, type "Image(" in the console, and the docstring for
+the Image constructor will be displayed.
+
+Namespace
+'''''''''
+
+This is a "namespace browser" which displays the objects in the
+namespace of the console in a tree like view. 
+
+For an example, type ``x = 5`` in the console, and then find the
+variable ``x`` in the locals part of the namespace tree.
+
+History
+'''''''
+
+History contains a command history that can be copied-and-pasted into
+an editor to develop scripts.
 
 Console menu
 ````````````

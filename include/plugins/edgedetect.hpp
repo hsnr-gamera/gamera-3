@@ -12,16 +12,21 @@ typename ImageFactory<T>::view_type* difference_of_exponential_edge_image(const 
     throw std::runtime_error("The scale and gradient_threshold must be greater than 0");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
+    new typename ImageFactory<T>::data_type(src.size(), src.origin());
 
   typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data, src);
+    new typename ImageFactory<T>::view_type(*dest_data);
 
-  vigra::differenceOfExponentialEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold);
-
-  if (min_edge_length > 0)
-    vigra::removeShortEdges(dest_image_range(*dest), min_edge_length, NumericTraits<typename T::value_type>::one());
-
+  try {
+    vigra::differenceOfExponentialEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold);
+    
+    if (min_edge_length > 0)
+      vigra::removeShortEdges(dest_image_range(*dest), min_edge_length, NumericTraits<typename T::value_type>::one());
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
@@ -31,22 +36,27 @@ typename ImageFactory<T>::view_type* difference_of_exponential_crack_edge_image(
     throw std::runtime_error("The scale and gradient threshold must be greater than 0");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.nrows() * 2, src.ncols() *2, src.offset_y(), src.offset_x());
+    new typename ImageFactory<T>::data_type(Dim(src.ncols() * 2, src.nrows() * 2), src.origin());
 
   typename ImageFactory<T>::view_type* dest =
     new typename ImageFactory<T>::view_type(*dest_data);
 
-  vigra::differenceOfExponentialCrackEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold, NumericTraits<typename T::value_type>::one());
-
-  if (min_edge_length > 0)
-    vigra::removeShortEdges(dest_image_range(*dest), min_edge_length, NumericTraits<typename T::value_type>::one());
-
-  if (close_gaps)
-    vigra::closeGapsInCrackEdgeImage(dest_image_range(*dest), NumericTraits<typename T::value_type>::one());
-  
-  if (beautify)
-    vigra::beautifyCrackEdgeImage(dest_image_range(*dest), NumericTraits<typename T::value_type>::one(), NumericTraits<typename T::value_type>::zero());
-
+  try {
+    vigra::differenceOfExponentialCrackEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold, NumericTraits<typename T::value_type>::one());
+    
+    if (min_edge_length > 0)
+      vigra::removeShortEdges(dest_image_range(*dest), min_edge_length, NumericTraits<typename T::value_type>::one());
+    
+    if (close_gaps)
+      vigra::closeGapsInCrackEdgeImage(dest_image_range(*dest), NumericTraits<typename T::value_type>::one());
+    
+    if (beautify)
+      vigra::beautifyCrackEdgeImage(dest_image_range(*dest), NumericTraits<typename T::value_type>::one(), NumericTraits<typename T::value_type>::zero());
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
@@ -56,12 +66,18 @@ typename ImageFactory<T>::view_type* canny_edge_image(const T& src, double scale
     throw std::runtime_error("The scale and gradient threshold must be >= 0");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), src.offset_x());
+    new typename ImageFactory<T>::data_type(src.size(), src.origin());
 
   typename ImageFactory<T>::view_type* dest =
     new typename ImageFactory<T>::view_type(*dest_data, src);
 
-  vigra::cannyEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold, NumericTraits<typename T::value_type>::one());
+  try {
+    vigra::cannyEdgeImage(src_image_range(src), dest_image(*dest), scale, gradient_threshold, NumericTraits<typename T::value_type>::one());
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 

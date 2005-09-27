@@ -1,0 +1,5 @@
+This directory contains a number of tools to help migrate Gamera
+scripts from Gamera 2.x to Gamera 3.x.
+
+See doc/html/migration_guide.html for more information.
+

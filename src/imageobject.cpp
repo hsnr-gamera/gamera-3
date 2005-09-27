@@ -86,22 +86,36 @@ PyTypeObject* get_CCType() {
 }
 
 static PyGetSetDef image_getset[] = {
-  { "data", (getter)image_get_data, 0, "(read-only property)\n\nReturns the underlying ImageData__ object.\n\n.. __: gamera.core.ImageData.html", 0 },
+  { "data", (getter)image_get_data, 0, 
+"(read-only property)\n\n"
+"Returns the underlying ImageData__ object.\n\n"
+".. __: gamera.core.ImageData.html", 0 },
   { "features", (getter)image_get_features, (setter)image_set_features,
-    "(read/write property)\n\nThe feature vector of the image (of type array)", 0 },
+"(read/write property)\n\n"
+"The feature vector of the image (of type array)",
+    0 },
   { "id_name", (getter)image_get_id_name, (setter)image_set_id_name,
-    "(read/write property)\n\nA list of strings representing the classifications of the image.",
+"(read/write property)\n\n"
+"A list of strings representing the classifications of the image.",
     0 },
   { "children_images", (getter)image_get_children_images, 
     (setter)image_set_children_images,
-    "(read/write property)\n\nA list of images created from classifications that produce images, such as splitting algorithms.", 0 },
+"(read/write property)\n\n"
+"A list of images created from classifications that produce images, such as splitting algorithms.", 
+    0 },
   { "classification_state", (getter)image_get_classification_state, 
     (setter)image_set_classification_state,
-    "(read/write property)\n\nHow (or whether) an image is classified", 0 },
+"(read/write property)\n\n"
+"How (or whether) an image is classified", 
+    0 },
   { "scaling", (getter)image_get_scaling, (setter)image_set_scaling,
-    "(read/write property)\n\nThe scaling (if any) applied to the features as a floating-point value.", 0 },
+"(read/write property)\n\n"
+"The scaling (if any) applied to the features as a floating-point value.",
+    0 },
   { "resolution", (getter)image_get_resolution, (setter)image_set_resolution,
-    "(read/write property)\n\nThe resolution of the image", 0 },
+"(read/write property)\n\n"
+"The resolution of the image",
+    0 },
   { NULL }
 };
 
@@ -111,8 +125,28 @@ static PyGetSetDef cc_getset[] = {
 };
 
 static PyMethodDef image_methods[] = {
-  { "get", image_get, METH_VARARGS, "**get** (Int *y*, Int *x*)\n\nGets a pixel value at the given (y, x) coordinate.\n\nThis coordinate is relative to the image view, not the logical coordinates." },
-  { "set", image_set, METH_VARARGS, "**set** (Int *y*, Int *x*)\n\nSets a pixel value at the given (y, x) coordinate.\n\nThis coordinate is relative to the image view, not the logical coordinates." },
+  { "get", image_get, METH_VARARGS, 
+"**get** (Point *p*)\n\n"
+"Gets a pixel value at the given (*x*, *y*) coordinate.\n\n"
+"A 2-element sequence may be used in place of the ``Point`` argument.  For "
+"instance, the following are all equivalent:\n\n"
+".. code:: Python\n\n"
+"    px = image.get(Point(5, 2))\n"
+"    px = image.get((5, 2))\n"
+"    px = image.get([5, 2])\n\n"
+"This coordinate is relative to the image view, not the logical coordinates."
+  },
+  { "set", image_set, METH_VARARGS, 
+"**set** (Point *p*, Pixel *value*)\n\n"
+"Sets a pixel value at the given (*x*, *y*) coordinate.\n\n"
+"A 2-element sequence may be used in place of the ``Point`` argument.  For "
+"instance, the following are all equivalent:\n\n"
+".. code:: Python\n\n"
+"    image.set(Point(5, 2), value)\n"
+"    image.set((5, 2), value)\n"
+"    image.set([5, 2], value)\n\n"
+"This coordinate is relative to the image view, not the logical coordinates."
+  },
   { "__getitem__", image_getitem, METH_VARARGS },
   { "__setitem__", image_setitem, METH_VARARGS },  
   { "__len__", image_len, METH_NOARGS },  
@@ -121,8 +155,8 @@ static PyMethodDef image_methods[] = {
   { NULL }
 };
 
-static bool _image_new(int offset_y, int offset_x, int nrows, int ncols, int pixel, int format, 
-		       ImageDataObject* &py_data, Rect* &image) {
+static PyObject* _image_new(PyTypeObject* pytype, const Point& offset, const Dim& dim, 
+			    int pixel, int format) {
   /*
     This is looks really awful, but it is not. We are simply creating a
     matrix view and some matrix data based on the pixel type and storage
@@ -133,119 +167,132 @@ static bool _image_new(int offset_y, int offset_x, int nrows, int ncols, int pix
     through RTTI, but it is simpler to use an enum and makes it easier to
     export to Python.
   */
+  ImageDataObject* py_data = NULL;
+  Rect* image = NULL;
   try {
     if (format == DENSE) {
       if (pixel == ONEBIT) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<OneBitPixel>* data = (ImageData<OneBitPixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset, dim);
       } else if (pixel == GREYSCALE) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<GreyScalePixel>* data = (ImageData<GreyScalePixel>*)(py_data->m_x);
-	image = (Rect *)new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect *)new ImageView<ImageData<GreyScalePixel> >(*data, offset, dim);
       } else if (pixel == GREY16) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<Grey16Pixel>* data = (ImageData<Grey16Pixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset, dim);
       } else if (pixel == Gamera::FLOAT) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<FloatPixel>* data = (ImageData<FloatPixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset, dim);
       } else if (pixel == RGB) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<RGBPixel>* data = (ImageData<RGBPixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset, dim);
       } else if (pixel == Gamera::COMPLEX) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	ImageData<ComplexPixel>* data = (ImageData<ComplexPixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset, dim);
       } else {
-	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
-	return false;
+	PyErr_Format(PyExc_TypeError, "Unknown pixel type '%d'.", pixel);
+	return NULL;
       }
     } else if (format == RLE) {
       if (pixel == ONEBIT) {
-	py_data = (ImageDataObject*)create_ImageDataObject(nrows, ncols, offset_y, offset_x, pixel, format);
+	py_data = (ImageDataObject*)create_ImageDataObject(dim, offset, pixel, format);
 	RleImageData<OneBitPixel>* data = (RleImageData<OneBitPixel>*)(py_data->m_x);
-	image = (Rect*)new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	image = (Rect*)new ImageView<RleImageData<OneBitPixel> >(*data, offset, dim);
       } else {
 	PyErr_SetString(PyExc_TypeError,
-			"Pixel type must be Onebit for Rle data!");
-	return false;
+			"Pixel type must be ONEBIT if storage format is RLE.");
+	return NULL;
       }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return false;
+      PyErr_SetString(PyExc_TypeError, "Unknown pixel type/storage format combination.");
+      return NULL;
     }
   } catch (std::exception& e) {
+    Py_DECREF(py_data);
+    delete image;
     PyErr_SetString(PyExc_RuntimeError, e.what());
-    return false;
+    return NULL;
   }
-  return true;
+
+  ImageObject* o;
+  // we do not call rect_new here because we do all of the
+  // required initializations
+  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  // initialize the weakreflist
+  o->m_weakreflist = NULL;
+  o->m_data = (PyObject*)py_data;
+  ((RectObject*)o)->m_x = image;
+  PyObject* o2 = init_image_members(o);
+  return o2;
 }
 
 static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 			   PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);
-  Rect* image = NULL;
-  ImageDataObject* py_data = NULL;
-  if (num_args >= 4 && num_args <= 6) {
-    int offset_y, offset_x, nrows, ncols, pixel, format;
-    pixel = format = 0;
-    static char *kwlist[] = {"offset_y", "offset_x", "nrows", "ncols", "pixel_type", "storage_format", NULL};
-    if (PyArg_ParseTupleAndKeywords(args, kwds, "iiii|ii", kwlist, 
-				    &offset_y, &offset_x, &nrows, &ncols, &pixel, &format) > 0) {
-      if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
-	return 0;
-    }
-  }
-  if (image == NULL && num_args >= 2 && num_args <= 4) {
-    PyObject *a, *b;
-    int pixel, format;
-    pixel = format = 0;
+
+  if (num_args >= 2 && num_args <= 4) {
+    PyObject* a = NULL;
+    PyObject* b = NULL;
+    int pixel = 0;
+    int format = 0;
     static char *kwlist[] = {"a", "b", "pixel_type", "storage_format", NULL};
-    if (PyArg_ParseTupleAndKeywords(args, kwds, "OO|ii", kwlist, 
-				    &a, &b, &pixel, &format)) {
-      if (is_PointObject(a)) {
-	if (is_PointObject(b)) {
-	  // We could have just delegated to the overloaded constructors of Rect here,
-	  // but since ImageData is not overloaded in the same way, we have to do this
-	  // manually anyway, so we just convert to the four integer parameters each time.
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Point* point_b = ((PointObject*)b)->m_x;
-	  int nrows = point_b->y() - point_a->y() + 1;
-	  int ncols = point_b->x() - point_a->x() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
-	    return 0;
-	} else if (is_SizeObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
+    if (PyArg_ParseTupleAndKeywords(args, kwds, "OO|ii", kwlist, &a, &b, &pixel, &format)) {
+      Point point_a;
+      try {
+	point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+	goto phase2;
+      } 
+
+      try {
+	Point point_b = coerce_Point(b);
+	int ncols = point_b.x() - point_a.x() + 1;
+	int nrows = point_b.y() - point_a.y() + 1;
+	return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
+      } catch (std::invalid_argument e) {
+	PyErr_Clear();
+	if (is_SizeObject(b)) {
 	  Size* size_b = ((SizeObject*)b)->m_x;
 	  int nrows = size_b->height() + 1;
 	  int ncols = size_b->width() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
+	  return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
+	} else if (is_DimObject(b)) {
+	  Dim* dim_b = ((DimObject*)b)->m_x;
+	  return _image_new(pytype, point_a, *dim_b, pixel, format);
+	} 
+#ifdef GAMERA_DEPRECATED
+	else if (is_DimensionsObject(b)) {
+	  if (send_deprecation_warning(
+"Image(Point point, Dimensions dimensions, pixel_type, storage_format) \n"
+"is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+"in favor of Dim).\n\n"
+"Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type, \n"
+"storage_format) instead.", 
+"imageobject.cpp", __LINE__) == 0)
 	    return 0;
-	} else if (is_DimensionsObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
-	  int nrows = size_b->nrows();
-	  int ncols = size_b->ncols();
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_image_new(offset_y, offset_x, nrows, ncols, pixel, format, py_data, image))
-	    return 0;
+	  Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
+	  return _image_new(pytype, point_a, Dim(dim_b->ncols(), dim_b->nrows()), 
+			    pixel, format);
 	}
+#endif
       }
     }
   }
-      
-  if (image == NULL && num_args >= 1 && num_args <= 3) {
-    PyObject *src;
-    int pixel, format;
-    pixel = format = -1;
+
+ phase2:
+  PyErr_Clear();
+
+  if (num_args >= 1 && num_args <= 3) {
+    PyObject* src = NULL;
+    int pixel = -1;
+    int format = -1;
     static char *kwlist[] = {"image", "pixel_type", "storage_format", NULL};
     if (PyArg_ParseTupleAndKeywords(args, kwds, "O|ii", kwlist, 
 				    &src, &pixel, &format)) {
@@ -265,280 +312,327 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 	  if (format == -1)
 	    format = 0;
 	}
-	if (!_image_new(rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), pixel, format, py_data, image))
-	  return 0;
+	return _image_new(pytype, rect->origin(), rect->dim(), pixel, format);
       }
     }
   }
 
-  if (image == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments to image constructor.");
-    return 0;
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+
+  if (num_args >= 4 && num_args <= 6) {
+    int offset_y, offset_x, nrows, ncols;
+    int pixel = 0;
+    int format = 0;
+    static char *kwlist[] = {"offset_y", "offset_x", "nrows", "ncols", "pixel_type", "storage_format", NULL};
+    if (PyArg_ParseTupleAndKeywords(args, kwds, "iiii|ii", kwlist, 
+				    &offset_y, &offset_x, &nrows, &ncols, &pixel, &format)) {
+      if (send_deprecation_warning(
+"Image(offset_y, offset_x, nrows, ncols, pixel_type, storage_format) is \n"
+"deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type, \n"
+"storage_format) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+      return _image_new(pytype, Point(offset_x, offset_y), Dim(ncols, nrows), 
+			pixel, format);
+    }
   }
-      
-  ImageObject* o;
-  // we do not call rect_new here because we do all of the
-  // required initializations
-  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
-  // initialize the weakreflist
-  o->m_weakreflist = NULL;
-  o->m_data = (PyObject*)py_data;
-  ((RectObject*)o)->m_x = image;
-  PyObject* o2 = init_image_members(o);
-  return o2;
+#endif /* GAMERA_DEPRECATED */
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to Image constructor.  See the Image docstring for valid arguments.");
+  return 0;
 }
 
-static bool _sub_image_new(PyObject* py_src, int offset_y, int offset_x, int nrows, int ncols, 
-			   Rect* &image) {
+static PyObject* _sub_image_new(PyTypeObject* pytype, PyObject* py_src, const Point& offset,
+				const Dim& dim) {
   if (!is_ImageObject(py_src)) {
-    PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
+    PyErr_SetString(PyExc_TypeError, "First argument to SubImage constructor must be an Image (or SubImage).");
     return false;
   }
+
   int pixel, format;
   ImageObject* src = (ImageObject*)py_src;
   pixel = ((ImageDataObject*)src->m_data)->m_pixel_type;
   format = ((ImageDataObject*)src->m_data)->m_storage_format;
+  Rect* subimage = NULL;
 
   try {
     if (format == DENSE) {
       if (pixel == ONEBIT) {
 	ImageData<OneBitPixel>* data =
 	  ((ImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image =	(Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<OneBitPixel> >(*data, offset, dim);
       } else if (pixel == GREYSCALE) {
 	ImageData<GreyScalePixel>* data =
 	  ((ImageData<GreyScalePixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect*)new ImageView<ImageData<GreyScalePixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<GreyScalePixel> >(*data, offset, dim);
       } else if (pixel == GREY16) {
 	ImageData<Grey16Pixel>* data =
 	  ((ImageData<Grey16Pixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<Grey16Pixel> >(*data, offset, dim);
       } else if (pixel == Gamera::FLOAT) {
 	ImageData<FloatPixel>* data =
 	  ((ImageData<FloatPixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<FloatPixel> >(*data, offset, dim);
       } else if (pixel == RGB) {
 	ImageData<RGBPixel>* data =
 	  ((ImageData<RGBPixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<RGBPixel> >(*data, offset, dim);
       } else if (pixel == Gamera::COMPLEX) {
 	ImageData<ComplexPixel>* data =
 	  ((ImageData<ComplexPixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect*)new ImageView<ImageData<ComplexPixel> >(*data, offset, dim);
       } else {
-	PyErr_SetString(PyExc_TypeError, "Unknown Pixel type!");
-	return false;
+	PyErr_Format(PyExc_TypeError, "Unknown pixel type '%d'.  Receiving this error indicates an internal inconsistency or memory corruption.  Please report it on the Gamera mailing list.", pixel);
+	return NULL;
       }
     } else if (format == RLE) {
       if (pixel == ONEBIT) {
 	RleImageData<OneBitPixel>* data =
 	  ((RleImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
-	image = (Rect *)new ImageView<RleImageData<OneBitPixel> >(*data, offset_y, offset_x, nrows, ncols);
+	subimage = (Rect *)new ImageView<RleImageData<OneBitPixel> >(*data, offset, dim);
       } else {
 	PyErr_SetString(PyExc_TypeError,
-			"Pixel type must be Onebit for Rle data!");
-	return false;
+			"Pixel type must be ONEBIT if storage format is RLE.  Receiving this error indicates an internal inconsistency or memory corruption.  Please report it on the Gamera mailing list.");
+	return NULL;
       }
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return false;
+      PyErr_SetString(PyExc_TypeError, "Unknown pixel type/storage format combination.  Receiving this error indicates an internal inconsistency or memory corruption.  Please report it on the Gamera mailing list.");
+      return NULL;
     }
   } catch (std::exception& e) {
+    delete subimage;
     PyErr_SetString(PyExc_RuntimeError, e.what());
-    return false;
-  }
-  return true;
-}
-			   
-
-PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
-  int num_args = PyTuple_GET_SIZE(args);
-  PyObject* image = NULL;
-  Rect* subimage = NULL;
-  if (num_args == 5) {
-    int offset_y, offset_x, nrows, ncols;
-    if (PyArg_ParseTuple(args, "Oiiii", 
-			 &image, &offset_y, &offset_x, &nrows, &ncols) > 0) {
-      if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
-	  return 0;
-    }
-  }
-  if (subimage == NULL && num_args == 3) {
-    PyObject *a, *b;
-    if (PyArg_ParseTuple(args, "OOO", &image, &a, &b)) {
-      if (is_PointObject(a)) {
-	if (is_PointObject(b)) {
-	  // We could have just delegated to the overloaded constructors of Rect here,
-	  // but since ImageData is not overloaded in the same way, we have to do this
-	  // manually anyway, so we just convert to the four integer parameters each time.
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Point* point_b = ((PointObject*)b)->m_x;
-	  int nrows = point_b->y() - point_a->y() + 1;
-	  int ncols = point_b->x() - point_a->x() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
-	    return 0;
-	} else if (is_SizeObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Size* size_b = ((SizeObject*)b)->m_x;
-	  int nrows = size_b->height() + 1;
-	  int ncols = size_b->width() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
-	    return 0;
-	} else if (is_DimensionsObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
-	  int nrows = size_b->nrows();
-	  int ncols = size_b->ncols();
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_sub_image_new(image, offset_y, offset_x, nrows, ncols, subimage))
-	    return 0;
-	}
-      }
-    }
-  }
-      
-  if (subimage == NULL && num_args == 2) {
-    PyObject* pyrect;
-    if (PyArg_ParseTuple(args, "OO", &image, &pyrect)) {
-      if (is_RectObject(pyrect)) {
-	Rect* rect = ((RectObject*)pyrect)->m_x;
-	if (!_sub_image_new(image, rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), subimage))
-	  return 0;
-      }
-    }
-  }
-
-  if (subimage == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments to SubImage constructor.");
-    return 0;
+    return NULL;
   }
 
   ImageObject* o;
   o = (ImageObject*)pytype->tp_alloc(pytype, 0);
   ((RectObject*)o)->m_x = subimage;
-  o->m_data = ((ImageObject*)image)->m_data;
+  o->m_data = ((ImageObject*)py_src)->m_data;
   Py_INCREF(o->m_data);
-  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
+  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)py_src)->m_x)->resolution());
   return init_image_members(o);
 }
+			   
 
-static bool _cc_new(PyObject* py_src, int label, int offset_y, int offset_x, int nrows, int ncols, Rect* &cc) {
-  if (!is_ImageObject(py_src)) {
-    PyErr_SetString(PyExc_TypeError, "First argument must be an image!");
-    return false;
+PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  PyObject* image;
+  if (num_args == 3) {
+    PyObject *a, *b;
+    if (PyArg_ParseTuple(args, "OOO", &image, &a, &b)) {
+      Point point_a;
+      try {
+	point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+	goto phase2;
+      } 
+      try {
+	Point point_b = coerce_Point(b);
+	int nrows = point_b.y() - point_a.y() + 1;
+	int ncols = point_b.x() - point_a.x() + 1;
+	return _sub_image_new(pytype, image, point_a, Dim(ncols, nrows));
+      } catch (std::invalid_argument e) {
+	PyErr_Clear();
+	if (is_SizeObject(b)) {
+	  Size* size_b = ((SizeObject*)b)->m_x;
+	  int nrows = size_b->height() + 1;
+	  int ncols = size_b->width() + 1;
+	  return _sub_image_new(pytype, image, point_a, Dim(ncols, nrows));
+	} else if (is_DimObject(b)) {
+	  Dim* dim_b = ((DimObject*)b)->m_x;
+	  return _sub_image_new(pytype, image, point_a, *dim_b);
+	}
+#ifdef GAMERA_DEPRECATED
+	else if (is_DimensionsObject(b)) {
+	  if (send_deprecation_warning(
+"SubImage(image, Point offset, Dimensions dimensions) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+"in favor of Dim).\n\n"
+"Use Image(image, (offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+	  Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
+	  int nrows = dim_b->nrows();
+	  int ncols = dim_b->ncols();
+	  return _sub_image_new(pytype, image, point_a, Dim(ncols, nrows));
+	}
+#endif
+      }
+    }
   }
+
+ phase2:
+  PyErr_Clear();
+
+  if (num_args == 2) {
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, "OO", &image, &pyrect)) {
+      if (is_RectObject(pyrect)) {
+	Rect* rect = ((RectObject*)pyrect)->m_x;
+	return _sub_image_new(pytype, image, rect->origin(), rect->dim());
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+
+  if (num_args == 5) {
+    int offset_y, offset_x, nrows, ncols;
+    if (PyArg_ParseTuple(args, "Oiiii", 
+			 &image, &offset_y, &offset_x, &nrows, &ncols) > 0) {
+      if (send_deprecation_warning(
+"SubImage(image, offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use SubImage(image, (offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+      return _sub_image_new(pytype, image, Point(offset_x, offset_y), Dim(ncols, nrows));
+    }
+  }
+#endif
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to SubImage constructor.  See the SubImage docstring for valid arguments.");
+  return 0;
+}
+
+static PyObject* _cc_new(PyTypeObject* pytype, PyObject* py_src, int label, 
+			 const Point& offset, const Dim& dim) {
+  if (!is_ImageObject(py_src)) {
+    PyErr_SetString(PyExc_TypeError, "First argument to the Cc constructor must be an Image (or SubImage).");
+    return NULL;
+  }
+
   int pixel, format;
   ImageObject* src = (ImageObject*)py_src;
   pixel = ((ImageDataObject*)src->m_data)->m_pixel_type;
   format = ((ImageDataObject*)src->m_data)->m_storage_format;
 
+  Rect* cc = NULL;
+
   try {
     if (pixel != ONEBIT) {
-      PyErr_SetString(PyExc_TypeError, "Image must be OneBit!");
-      return false;
+      PyErr_SetString(PyExc_TypeError, "Cc objects may only be created from ONEBIT Images.");
+      return NULL;
     }
     
     if (format == DENSE) {
       ImageData<OneBitPixel>* data =
 	((ImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
-      cc = (Rect*)new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, offset_y, offset_x, nrows, ncols);
+      cc = (Rect*)new ConnectedComponent<ImageData<OneBitPixel> >(*data, label, offset, dim);
     } else if (format == RLE) {
       RleImageData<OneBitPixel>* data =
 	((RleImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
-      cc = (Rect*)new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label, offset_y, offset_x, nrows, ncols);
+      cc = (Rect*)new ConnectedComponent<RleImageData<OneBitPixel> >(*data, label, offset, dim);
     } else {
-      PyErr_SetString(PyExc_TypeError, "Unknown Format!");
-      return false;
+      PyErr_SetString(PyExc_TypeError, "Unknown pixel type/storage format combination.   Receiving this error indicates an internal inconsistency or memory corruption.  Please report it on the Gamera mailing list.");
+      return NULL;
     }
   } catch (std::exception& e) {
+    delete cc;
     PyErr_SetString(PyExc_RuntimeError, e.what());
-    return false;
-  }
-  return true;
-}
-
-PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
-  int num_args = PyTuple_GET_SIZE(args);
-  PyObject* image = NULL;
-  Rect* cc = NULL;
-  if (num_args == 6) {
-    int offset_y, offset_x, nrows, ncols, label;
-    if (PyArg_ParseTuple(args, "Oiiiii", 
-			 &image, &label, &offset_y, &offset_x, &nrows, &ncols) > 0) {
-      if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
-	  return 0;
-    }
-  }
-  if (cc == NULL && num_args == 4) {
-    PyObject *a, *b;
-    int label;
-    if (PyArg_ParseTuple(args, "OiOO", &image, &label, &a, &b)) {
-      if (is_PointObject(a)) {
-	if (is_PointObject(b)) {
-	  // We could have just delegated to the overloaded constructors of Rect here,
-	  // but since ImageData is not overloaded in the same way, we have to do this
-	  // manually anyway, so we just convert to the four integer parameters each time.
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Point* point_b = ((PointObject*)b)->m_x;
-	  int nrows = point_b->y() - point_a->y() + 1;
-	  int ncols = point_b->x() - point_a->x() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
-	    return 0;
-	} else if (is_SizeObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Size* size_b = ((SizeObject*)b)->m_x;
-	  int nrows = size_b->height() + 1;
-	  int ncols = size_b->width() + 1;
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
-	    return 0;
-	} else if (is_DimensionsObject(b)) {
-	  Point* point_a = ((PointObject*)a)->m_x;
-	  Dimensions* size_b = ((DimensionsObject*)b)->m_x;
-	  int nrows = size_b->nrows();
-	  int ncols = size_b->ncols();
-	  int offset_y = point_a->y();
-	  int offset_x = point_a->x();
-	  if (!_cc_new(image, label, offset_y, offset_x, nrows, ncols, cc))
-	    return 0;
-	}
-      }
-    }
-  }
-      
-  if (cc == NULL && num_args == 3) {
-    int label;
-    PyObject* pyrect;
-    if (PyArg_ParseTuple(args, "OiO", &image, &label, &pyrect)) {
-      if (is_RectObject(pyrect)) {
-	Rect* rect = ((RectObject*)pyrect)->m_x;
-	if (!_cc_new(image, label, rect->ul_y(), rect->ul_x(), rect->nrows(), rect->ncols(), cc))
-	  return 0;
-      }
-    }
-  }
-
-  if (cc == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments to image constructor.");
-    return 0;
+    return NULL;
   }
 
   ImageObject* o;
   o = (ImageObject*)pytype->tp_alloc(pytype, 0);
   ((RectObject*)o)->m_x = cc;
-  o->m_data = ((ImageObject*)image)->m_data;
+  o->m_data = ((ImageObject*)py_src)->m_data;
   Py_INCREF(o->m_data);
   // set the resolution
-  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)image)->m_x)->resolution());
+  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)py_src)->m_x)->resolution());
   return init_image_members(o);
+}
+
+PyObject* cc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  PyObject* image = NULL;
+
+  if (num_args == 4) {
+    PyObject *a, *b;
+    int label;
+    if (PyArg_ParseTuple(args, "OiOO", &image, &label, &a, &b)) {
+      Point point_a;
+      try {
+	point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+	goto phase2;
+      } 
+      try {
+	Point point_b = coerce_Point(b);
+	int nrows = point_b.y() - point_a.y() + 1;
+	int ncols = point_b.x() - point_a.x() + 1;
+	return _cc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+      } catch (std::invalid_argument e) {
+	PyErr_Clear();
+	if (is_SizeObject(b)) {
+	  Size* size_b = ((SizeObject*)b)->m_x;
+	  int nrows = size_b->height() + 1;
+	  int ncols = size_b->width() + 1;
+	  return _cc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+	} else if (is_DimObject(b)) {
+	  Dim* dim_b = ((DimObject*)b)->m_x;
+	  return _cc_new(pytype, image, label, point_a, *dim_b);
+	}
+#ifdef GAMERA_DEPRECATED
+	else if (is_DimensionsObject(b)) {
+	  if (send_deprecation_warning(
+"Cc(image, label, Point offset, Dimensions dimensions) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+"in favor of Dim).\n\n"
+"Use Cc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	    return 0;
+	  Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
+	  int nrows = dim_b->nrows();
+	  int ncols = dim_b->ncols();
+	  return _cc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+	} 
+#endif
+      }
+    }
+  }
+
+ phase2:
+  PyErr_Clear();
+      
+  if (num_args == 3) {
+    int label;
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, "OiO", &image, &label, &pyrect)) {
+      if (is_RectObject(pyrect)) {
+	Rect* rect = ((RectObject*)pyrect)->m_x;
+	return _cc_new(pytype, image, label, rect->origin(), rect->dim());
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+  if (num_args == 6) {
+    int offset_y, offset_x, nrows, ncols, label;
+    if (PyArg_ParseTuple(args, "Oiiiii", 
+			 &image, &label, &offset_y, &offset_x, &nrows, &ncols) > 0) {
+      if (send_deprecation_warning(
+"Cc(image, label, offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use Cc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+      return _cc_new(pytype, image, label, Point(offset_x, offset_y), Dim(ncols, nrows));
+    }
+  }
+#endif
+  
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to Cc constructor.  See the Cc docstring for valid arguments.");
+  return 0;
 }
 
 static void image_dealloc(PyObject* self) {
@@ -587,36 +681,37 @@ static int image_clear(PyObject* self) {
   return 0;
 }
 
-static PyObject* image_get(PyObject* self, int row, int col) {
+static PyObject* image_get(PyObject* self, const Point& point) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
-  if (size_t(row) >= o->m_x->nrows() || size_t(col) >= o->m_x->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Index is out of range for image.");
+  Rect* r = (Rect*)o->m_x;
+  if (point.y() >= r->nrows() || point.x() >= r->ncols()) {
+    PyErr_Format(PyExc_IndexError, "('%d', '%d') is out of bounds for image with size ('%d', '%d').  Remember get/set coordinates are relative to the upper left corner of the subimage, not to the corner of the page.", point.x(), point.y(), r->ncols(), r->nrows());
     return 0;
   }
   if (is_CCObject(self)) {
-    return PyInt_FromLong(((Cc*)o->m_x)->get((size_t)row, (size_t)col));
+    return PyInt_FromLong(((Cc*)o->m_x)->get(point));
   } else if (od->m_storage_format == RLE) {
-    return PyInt_FromLong(((OneBitRleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+    return PyInt_FromLong(((OneBitRleImageView*)o->m_x)->get(point));
   } else {
     switch (od->m_pixel_type) {
     case Gamera::FLOAT:
-      return PyFloat_FromDouble(((FloatImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      return PyFloat_FromDouble(((FloatImageView*)o->m_x)->get(point));
       break;
     case Gamera::RGB:
-      return create_RGBPixelObject(((RGBImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      return create_RGBPixelObject(((RGBImageView*)o->m_x)->get(point));
       break;
     case Gamera::GREYSCALE:
-      return PyInt_FromLong(((GreyScaleImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      return PyInt_FromLong(((GreyScaleImageView*)o->m_x)->get(point));
       break;
     case Gamera::GREY16:
-      return PyInt_FromLong(((Grey16ImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      return PyInt_FromLong(((Grey16ImageView*)o->m_x)->get(point));
       break;
     case Gamera::ONEBIT:
-      return PyInt_FromLong(((OneBitImageView*)o->m_x)->get((size_t)row, (size_t)col));
+      return PyInt_FromLong(((OneBitImageView*)o->m_x)->get(point));
       break;
     case Gamera::COMPLEX: {
-      ComplexPixel temp = ((ComplexImageView*)o->m_x)->get((size_t)row, (size_t)col);
+      ComplexPixel temp = ((ComplexImageView*)o->m_x)->get(point);
       return PyComplex_FromDoubles(temp.real(), temp.imag());
       break;
     } default:
@@ -625,11 +720,16 @@ static PyObject* image_get(PyObject* self, int row, int col) {
   }
 }
 
-static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
+static PyObject* image_set(PyObject* self, const Point& point, PyObject* value) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
-  if (size_t(row) >= o->m_x->nrows() || size_t(col) >= o->m_x->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Index is out of range for image.");
+  Rect* r = (Rect*)o->m_x;
+  if (point.y() >= r->nrows() || point.x() >= r->ncols()) {
+    PyErr_Format(PyExc_IndexError, 
+		 "('%d', '%d') is out of bounds for image with size ('%d', '%d').  " 
+		 "Remember get/set coordinates are relative to the upper left corner "
+		 "of the subimage, not to the corner of the page.", 
+		 point.x(), point.y(), r->ncols(), r->nrows());
     return 0;
   }
   if (is_CCObject(self)) {
@@ -637,19 +737,19 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for CC objects must be an int.");
       return 0;
     }
-    ((Cc*)o->m_x)->set((size_t)row, (size_t)col, (OneBitPixel)PyInt_AS_LONG(value));
+    ((Cc*)o->m_x)->set(point, (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
     if (!PyFloat_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for Float objects must be a float.");
       return 0;
     }
-    ((FloatImageView*)o->m_x)->set((size_t)row, (size_t)col, PyFloat_AS_DOUBLE(value));
+    ((FloatImageView*)o->m_x)->set(point, PyFloat_AS_DOUBLE(value));
   } else if (od->m_storage_format == RLE) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an int.");
       return 0;
     }
-    ((OneBitRleImageView*)o->m_x)->set((size_t)row, (size_t)col,
+    ((OneBitRleImageView*)o->m_x)->set(point,
 				       (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == RGB) {
     if (!is_RGBPixelObject((PyObject*)value)) {
@@ -657,27 +757,27 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
       return 0;
     }
     RGBPixelObject* v = (RGBPixelObject*)value;
-    ((RGBImageView*)o->m_x)->set((size_t)row, (size_t)col, *v->m_x);
+    ((RGBImageView*)o->m_x)->set(point, *v->m_x);
   } else if (od->m_pixel_type == GREYSCALE) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for GreyScale objects must be an int.");
       return 0;
     }
-    ((GreyScaleImageView*)o->m_x)->set((size_t)row, (size_t)col,
+    ((GreyScaleImageView*)o->m_x)->set(point,
 				       (GreyScalePixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == GREY16) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for Grey16 objects must be an int.");
       return 0;
     }
-    ((Grey16ImageView*)o->m_x)->set((size_t)row, (size_t)col,
+    ((Grey16ImageView*)o->m_x)->set(point,
 				    (Grey16Pixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == ONEBIT) {
     if (!PyInt_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an int.");
       return 0;
     }
-    ((OneBitImageView*)o->m_x)->set((size_t)row, (size_t)col,
+    ((OneBitImageView*)o->m_x)->set(point,
 				    (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::COMPLEX) {
     if (!PyComplex_Check(value)) {
@@ -685,7 +785,7 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
       return 0;
     }
     ComplexPixel temp(PyComplex_RealAsDouble(value), PyComplex_ImagAsDouble(value));
-    ((ComplexImageView*)o->m_x)->set((size_t)row, (size_t)col, temp);
+    ((ComplexImageView*)o->m_x)->set(point, temp);
   }
   Py_INCREF(Py_None);
   return Py_None;
@@ -693,49 +793,84 @@ static PyObject* image_set(PyObject* self, int row, int col, PyObject* value) {
 
 static PyObject* image_get(PyObject* self, PyObject* args) {
   int num_args = PyTuple_GET_SIZE(args);
-  Image* image = (Image*)((RectObject*)self)->m_x;
-  int row, col, i;
+  if (num_args == 1) {
+    PyObject* py_point;
+    if (PyArg_ParseTuple(args, "O", &py_point)) {
+      try {
+	return image_get(self, coerce_Point(py_point));
+      } catch (std::invalid_argument e) {
+	PyErr_Clear();
+	int i;
+	if (PyArg_ParseTuple(args, "i", &i)) {
+	  Rect* image = (Image*)((RectObject*)self)->m_x;
+	  return image_get(self, Point(i % image->ncols(), i / image->ncols()));
+	}
+      }
+    }
+  }
+  
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
   if (num_args == 2) {
-    if (PyArg_ParseTuple(args, "ii", &row, &col) <= 0)
-      return 0;
-  } else if (num_args == 1) {
-    if (PyArg_ParseTuple(args, "i", &i) <= 0)
-      return 0;
-    row = i / image->ncols();
-    col = i % image->ncols();
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments");
-    return 0;
-  }
-  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
-    return 0;
-  }
-  return image_get(self, row, col);
+    int row, col;
+    if (PyArg_ParseTuple(args, "ii", &row, &col)) {
+      if (send_deprecation_warning(
+"get(y, x) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use get((x, y)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0 ;
+      return image_get(self, Point(col, row));
+    }
+  } 
+#endif
+  
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to get.  Acceptable forms are: get(Point p), get((x, y)) and get(int index).");
+  return 0;
 }
 
 static PyObject* image_set(PyObject* self, PyObject* args) {
   int num_args = PyTuple_GET_SIZE(args);
-  Image* image = (Image*)((RectObject*)self)->m_x;
-  int row, col, i;
   PyObject* value;
-  if (num_args == 3) {
-    if (PyArg_ParseTuple(args, "iiO", &row, &col, &value) <= 0)
-      return 0;
-  } else if (num_args == 2) {
-    if (PyArg_ParseTuple(args, "iO", &i, &value) <= 0)
-      return 0;
-    row = i / image->ncols();
-    col = i % image->ncols();
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments");
-    return 0;
-  }  
-  if (size_t(row) >= image->nrows() || size_t(col) >= image->ncols()) {
-    PyErr_SetString(PyExc_IndexError, "Out of bounds for image");
-    return 0;
+  if (num_args == 2) {
+    PyObject* py_point;
+    if (PyArg_ParseTuple(args, "OO", &py_point, &value)) {
+      try {
+	return image_set(self, coerce_Point(py_point), value);
+      } catch (std::invalid_argument e) {
+	PyErr_Clear();
+	int i;
+	if (PyArg_ParseTuple(args, "iO", &i, &value)) {
+	  Rect* image = ((RectObject*)self)->m_x;
+	  return image_set(self, Point(i % image->ncols(), i / image->ncols()), value);
+	}
+      } 
+    }
   }
-  return image_set(self, row, col, value);
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+  if (num_args == 3) {
+    int row, col;
+    if (PyArg_ParseTuple(args, "iiO", &row, &col, &value)) {
+      if (send_deprecation_warning(
+"set(y, x, value) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use set((x, y), value) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+      return image_set(self, Point(col, row), value);
+    }
+  } 
+#endif
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, 
+		  "Invalid arguments to set.  "
+		  "Acceptable forms are: set(Point p, Pixel v), get((x, y), Pixel v) "
+		  "and get(Int index, Pixel v).");
+  return 0;
 }
 
 // convert Python indexing into row/col format for images
@@ -759,52 +894,46 @@ static inline int get_rowcol(Image* image, long index, size_t* row, size_t* col)
   } */
 
 static PyObject* image_getitem(PyObject* self, PyObject* args) {
-  size_t row, col;
   PyObject* arg = PyTuple_GET_ITEM(args, 0);
-  if (PyTuple_Check(arg)) {
-    if (PyArg_ParseTuple(arg, "ii", &row, &col) <= 0)
-      return 0;
-  } else if (PyInt_Check(arg)) {
+  Point point;
+  if (PyInt_Check(arg)) {
     size_t i;
     i = PyInt_AsLong(arg);
-    Image* image = (Image*)((RectObject*)self)->m_x;
-    row = i / image->ncols();
-    col = i % image->ncols();
-  } else if (is_PointObject(arg)) {
-    Point* point = (Point*)((PointObject*)arg)->m_x;
-    row = point->y();
-    col = point->x();
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments");
-    return 0;
-  }    
-  return image_get(self, row, col);
+    Rect* image = ((RectObject*)self)->m_x;
+    return image_get(self, Point(i % image->ncols(), i / image->ncols()));
+  } 
+  try {
+    return image_get(self, coerce_Point(arg));
+  } catch (std::invalid_argument e) {
+    ;
+  }
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to __getitem__.  Acceptable forms are: image[Point p], image[x, y], image[index]");
+  return 0;
 }
 
 static PyObject* image_setitem(PyObject* self, PyObject* args) {
-  size_t row, col;
   PyObject* value;
   PyObject* arg;
+  Point point;
   if (PyArg_ParseTuple(args, "OO", &arg, &value) <= 0) 
     return 0;
-  if (PyTuple_Check(arg)) {
-    if (PyArg_ParseTuple(arg, "ii", &row, &col) <= 0)
-      return 0;
-  } else if (PyInt_Check(arg)) {
+  if (PyInt_Check(arg)) {
     size_t i;
     i = PyInt_AsLong(arg);
-    Image* image = (Image*)((RectObject*)self)->m_x;
-    row = i / image->ncols();
-    col = i % image->ncols();
-  } else if (is_PointObject(arg)) {
-    Point* point = (Point*)((PointObject*)arg)->m_x;
-    row = point->y();
-    col = point->x(); 
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Invalid arguments");
-    return 0;
-  }    
-  return image_set(self, row, col, value);
+    Rect* image = ((RectObject*)self)->m_x;
+    return image_set(self, Point(i % image->ncols(), i / image->ncols()), value);
+  }
+  try {
+    return image_set(self, coerce_Point(arg), value);
+  } catch (std::invalid_argument e) {
+    ; 
+  }
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to __setitem__.  Acceptable forms are: image[Point p], image[x, y], image[int index]");
+  return 0;
 }
 
 static PyObject* image_len(PyObject* self, PyObject* args) {
@@ -845,7 +974,7 @@ static PyObject* image_get_scaling(PyObject* self) {
 static int image_set_scaling(PyObject* self, PyObject* v) {
   RectObject* o = (RectObject*)self;
   if (!PyFloat_Check(v)) {
-    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    PyErr_SetString(PyExc_TypeError, "scaling must be a float value.");
     return -1;
   }
   ((Image*)o->m_x)->scaling(PyFloat_AS_DOUBLE(v));
@@ -860,7 +989,7 @@ static PyObject* image_get_resolution(PyObject* self) {
 static int image_set_resolution(PyObject* self, PyObject* v) {
   RectObject* o = (RectObject*)self;
   if (!PyFloat_Check(v)) {
-    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    PyErr_SetString(PyExc_TypeError, "resolution must be a float value.");
     return -1;
   }
   ((Image*)o->m_x)->resolution(PyFloat_AS_DOUBLE(v));
@@ -875,7 +1004,7 @@ static PyObject* cc_get_label(PyObject* self) {
 static int cc_set_label(PyObject* self, PyObject* v) {
   RectObject* o = (RectObject*)self;
   if (!PyInt_Check(v)) {
-    PyErr_SetString(PyExc_TypeError, "Type Error!");
+    PyErr_SetString(PyExc_TypeError, "label must be a int value.");
     return -1;
   }
   ((Cc*)o->m_x)->label(PyInt_AS_LONG(v));
@@ -988,7 +1117,28 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   ImageType.tp_traverse = image_traverse;
   ImageType.tp_clear = image_clear;
-  ImageType.tp_doc = "The Image constructor creates a new image with newly allocated underlying data.\n\nThere are multiple ways to create an Image:\n\n  - **Image** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Point *lower_right*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Size *size*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Point *upper_left*, Dimensions *dimensions*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Rect *rectangle*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n  - **Image** (Image *image*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\nNote that the last constructor creates a new image with the same position\nand dimensions as the passed in image, but does not copy the data.\n(For that use image_copy).\n\n*pixel_type*\n  An integer value specifying the type of the pixels in the image.\n  See `pixel types`__ for more information.\n\n.. __: image_types.html#pixel-types\n\n*storage_format*\n  An integer value specifying the method used to store the image data.\n  See `storage formats`__ for more information.\n\n.. __: image_types.html#storage-formats\n";
+  ImageType.tp_doc = 
+"The Image constructor creates a new image with newly allocated underlying data.\n\n"
+"There are multiple ways to create an Image:\n\n"
+"  - **Image** (Point *upper_left*, Point *lower_right*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"  - **Image** (Point *upper_left*, Size *size*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"  - **Image** (Point *upper_left*, Dim *dim*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"  - **Image** (Rect *rectangle*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"  - **Image** (Image *image*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"**Deprecated forms:**\n\n"
+"  - **Image** (Point *upper_left*, Dimensions *dimensions*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"  - **Image** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*, Choice *pixel_type* = ONEBIT, Choice *format* = DENSE)\n\n"
+"Note that the constructor taking an Image creates a new image with the same position\n"
+"and dimensions as the passed in image, but does not copy the data.\n"
+"(For that, use image_copy).\n\n"
+"*pixel_type*\n"
+"  An integer value specifying the type of the pixels in the image.\n"
+"  See `pixel types`__ for more information.\n\n"
+".. __: image_types.html#pixel-types\n\n"
+"*storage_format*\n"
+"  An integer value specifying the method used to store the image data.\n"
+"  See `storage formats`__ for more information.\n\n"
+".. __: image_types.html#storage-formats\n";
   PyType_Ready(&ImageType);
   PyDict_SetItemString(module_dict, "Image", (PyObject*)&ImageType);
 
@@ -1003,7 +1153,16 @@ void init_ImageType(PyObject* module_dict) {
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
   SubImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   SubImageType.tp_free = NULL; // _PyObject_Del;
-  SubImageType.tp_doc = "Creates a new view on existing data.\n\nThere are a number of ways to create a subimage:\n\n  - **SubImage** (Image *image*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Point *lower_right*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Size *size*)\n\n  - **SubImage** (Image *image*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **SubImage** (Image *image*, Rect *rectangle*)\n\nChanges to subimages will affect all other subimages viewing the same data.";
+  SubImageType.tp_doc = 
+"Creates a new view on existing data.\n\nThere are a number of ways to create a subimage:\n\n"
+"  - **SubImage** (Image *image*, Point *upper_left*, Point *lower_right*)\n\n"
+"  - **SubImage** (Image *image*, Point *upper_left*, Size *size*)\n\n"
+"  - **SubImage** (Image *image*, Point *upper_left*, Dim *dim*)\n\n"
+"  - **SubImage** (Image *image*, Rect *rectangle*)\n\n"
+"**Deprecated forms:**\n\n"
+"  - **SubImage** (Image *image*, Point *upper_left*, Dimensions *dimensions*)\n\n"
+"  - **SubImage** (Image *image*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n"
+"Changes to subimages will affect all other subimages viewing the same data.";
   PyType_Ready(&SubImageType);
   PyDict_SetItemString(module_dict, "SubImage", (PyObject*)&SubImageType);
 
@@ -1020,7 +1179,19 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_alloc = NULL;
   CCType.tp_richcompare = cc_richcompare;
   CCType.tp_free = NULL; //_PyObject_Del;
-  CCType.tp_doc = "Creates a connected component representing part of a OneBit image. It is rare to create one of these objects directly: most often you will just use cc_analysis to create connected components.\n\nThere are a number of ways to create a Cc:\n\n  - **Cc** (Image *image*, Int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Point *lower_right*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Size *size*)\n\n  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n  - **Cc** (Image *image*, Int *label*, Rect *rectangle*)\n\n*label*\n  The pixel value used to represent this Cc.";
+  CCType.tp_doc = 
+"Creates a connected component representing part of a OneBit image.\n\n"
+"It is rare to create one of these objects directly: most often you "
+"will just use cc_analysis to create connected components.\n\n"
+"There are a number of ways to create a Cc:\n\n"
+"  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Point *lower_right*)\n\n"
+"  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Size *size*)\n\n"
+"  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dim *dim*)\n\n"
+"  - **Cc** (Image *image*, Int *label*, Rect *rectangle*)\n\n"
+"**Deprecated forms:**\n\n"
+"  - **Cc** (Image *image*, Int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n"
+"  - **Cc** (Image *image*, Int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n"
+"*label*\n  The pixel value used to represent this Cc.";
   PyType_Ready(&CCType);
   PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
 

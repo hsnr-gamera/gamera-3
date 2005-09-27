@@ -89,7 +89,7 @@ GraphObject* graph_new(size_t flags) {
 PyObject* graph_new(PyTypeObject* pytype, PyObject* args, 
 		    PyObject* kwds) {
   long flags = FLAG_DEFAULT;
-  if (PyArg_ParseTuple(args, "|i", &flags) <= 0)
+  if (PyArg_ParseTuple(args, "|i:Graph.__init__", &flags) <= 0)
     return 0;
   return (PyObject*)graph_new((size_t)flags);
 }
@@ -140,7 +140,7 @@ GraphObject* graph_copy(GraphObject* so, size_t flags) {
 PyObject* graph_copy(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   long flags = so->m_flags;
-  if (PyArg_ParseTuple(args, "|i", &flags) <= 0)
+  if (PyArg_ParseTuple(args, "|i:copy", &flags) <= 0)
     return 0;
   return (PyObject*)graph_copy(so, (size_t)flags);
 }
@@ -198,7 +198,7 @@ PyObject* graph_add_edge(PyObject* self, PyObject* args) {
   CostType cost = 1.0;
   PyObject* label = NULL;
   if (PyArg_ParseTuple
-      (args, "OO|dO", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
+      (args, "OO|dO:add_edge", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
     return 0;
   return PyInt_FromLong((long)graph_add_edge(so, from_pyobject, to_pyobject, cost, label) != 0);
 }
@@ -206,7 +206,7 @@ PyObject* graph_add_edge(PyObject* self, PyObject* args) {
 PyObject* graph_add_edges(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   PyObject* a;
-  if (PyArg_ParseTuple(args, "O", &a) <= 0)
+  if (PyArg_ParseTuple(args, "O:add_edges", &a) <= 0)
     return 0;
   PyObject* seq = PySequence_Fast(a, "Input must be an iterable of edge tuples");
   if (seq == NULL)
@@ -217,7 +217,7 @@ PyObject* graph_add_edges(PyObject* self, PyObject* args) {
     PyObject* from_node, *to_node;
     CostType cost = 1;
     PyObject* label = NULL;
-    if (PyArg_ParseTuple(tuple, "OO|dO", &from_node, &to_node, &cost, &label) <= 0) {
+    if (PyArg_ParseTuple(tuple, "OO|dO:add_edges sequence element", &from_node, &to_node, &cost, &label) <= 0) {
       Py_DECREF(seq);
       return 0;
     }
@@ -233,7 +233,7 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
   PyObject* a = NULL;
   PyObject* b = NULL;
   bool result = false;
-  if (PyArg_ParseTuple(args, "O|O", &a, &b) <= 0)
+  if (PyArg_ParseTuple(args, "O|O:remove_edge", &a, &b) <= 0)
     return 0;
   if (b == NULL) {
     if (is_EdgeObject(a)) {
@@ -369,7 +369,7 @@ void graph_make_undirected(GraphObject* so) {
 PyObject* graph_make_directed(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int directed = 1;
-  if (PyArg_ParseTuple(args, "|i", &directed) <= 0)
+  if (PyArg_ParseTuple(args, "|i:make_directed", &directed) <= 0)
     return 0;
   if (directed)
     graph_make_directed(so);
@@ -451,7 +451,7 @@ void graph_make_acyclic(GraphObject* so) {
 PyObject* graph_make_cyclic(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int cyclic = 1;
-  if (PyArg_ParseTuple(args, "|i", &cyclic) <= 0)
+  if (PyArg_ParseTuple(args, "|i:make_cyclic", &cyclic) <= 0)
     return 0;
   if (cyclic)
     graph_make_cyclic(so);
@@ -584,7 +584,7 @@ PyObject* graph_make_multi_connected(PyObject* self, PyObject* args) {
 PyObject* graph_make_singly_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int maximum = 1;
-  if (PyArg_ParseTuple(args, "|i", &maximum) <= 0)
+  if (PyArg_ParseTuple(args, "|i:make_singly_connected", &maximum) <= 0)
     return 0;
   graph_make_singly_connected(so, maximum != 0);
   Py_INCREF(Py_None);
@@ -625,7 +625,7 @@ void graph_make_not_self_connected(GraphObject* so) {
 PyObject* graph_make_self_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int self_connected = 1;
-  if (PyArg_ParseTuple(args, "|i", &self_connected) <= 0)
+  if (PyArg_ParseTuple(args, "|i:make_self_connected", &self_connected) <= 0)
     return 0;
   if (self_connected)
     graph_make_self_connected(so);
@@ -683,7 +683,7 @@ PyObject* graph_get_edges(PyObject* self, PyObject* args) {
 PyObject* graph_has_edge(PyObject* self, PyObject* args) {
   GraphObject* so = (GraphObject*)self;
   PyObject *a = NULL, *b = NULL;
-  if (PyArg_ParseTuple(args, "O|O", &a, &b) <= 0)
+  if (PyArg_ParseTuple(args, "O|O:has_edge", &a, &b) <= 0)
     return 0;
   if (is_EdgeObject(a) && b == NULL) {
     Edge *edge = ((EdgeObject*)a)->m_x;

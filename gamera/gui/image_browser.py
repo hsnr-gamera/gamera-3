@@ -17,26 +17,26 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import wx
 from gamera import core, config
 from gamera.gui import gamera_display, gui_util, gamera_icons
-from wxPython.wx import *
 import glob, string, os.path
 
-class FileList(wxGenericDirCtrl):
+class FileList(wx.GenericDirCtrl):
    def __init__(self, parent, ID, image_display):
-      wxGenericDirCtrl.__init__(
+      wx.GenericDirCtrl.__init__(
           self, parent, ID,
           filter="All files (*.*)|*.*|TIFF files (*.tiff,*.tif)|*.tiff,*.tif",
-          style=wxDIRCTRL_SHOW_FILTERS)
+          style=wx.DIRCTRL_SHOW_FILTERS)
       # self.SetDefaultPath(config.options.file.default_directory)
-      EVT_TREE_ITEM_ACTIVATED(self.GetTreeCtrl(), -1, self.OnItemSelected)
+      wx.EVT_TREE_ITEM_ACTIVATED(self.GetTreeCtrl(), -1, self.OnItemSelected)
       self.image_display = image_display
 
    def OnItemSelected(self, e):
       filename = self.GetFilePath()
       if filename == '':
          return
-      wxBeginBusyCursor()
+      wx.BeginBusyCursor()
       try:
          try:
             image = core.load_image(filename)
@@ -45,20 +45,20 @@ class FileList(wxGenericDirCtrl):
                              % (filename, str(e)))
             return
       finally:
-         wxEndBusyCursor()
+         wx.EndBusyCursor()
       width, height = self.image_display.id.GetSize()
       scale = max(float(width) / float(image.width),
                   (float(height) / float(image.height)))
       self.image_display.id.set_image(image, weak=0)
       self.image_display.id.scale(scale)
 
-class ImageBrowserFrame(wxFrame):
+class ImageBrowserFrame(wx.Frame):
    def __init__(self):
-      wxFrame.__init__(self, NULL, -1, "Image File Browser",
-                       wxDefaultPosition,(600, 400))
-      icon = wxIconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
+      wx.Frame.__init__(self, None, -1, "Image File Browser",
+                       wx.DefaultPosition,(600, 400))
+      icon = wx.IconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
       self.SetIcon(icon)
-      self.splitter = wxSplitterWindow(self, -1)
+      self.splitter = wx.SplitterWindow(self, -1)
       self.image = gamera_display.ImageWindow(self.splitter, -1)
       self.file = FileList(self.splitter, -1, self.image)
       self.splitter.SetMinimumPaneSize(20)

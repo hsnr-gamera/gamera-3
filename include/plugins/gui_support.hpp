@@ -209,7 +209,7 @@ template<class T>
 Image *color_ccs(T& m) {
   typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
   RGBViewFactory::image_type* image =
-    RGBViewFactory::create(0, 0, m.nrows(), m.ncols());
+    RGBViewFactory::create(m.origin(), m.dim());
 
   typename T::vec_iterator src = m.vec_begin();
   typename RGBImageView::vec_iterator dst = image->vec_begin();

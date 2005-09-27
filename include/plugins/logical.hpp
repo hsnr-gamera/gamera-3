@@ -51,23 +51,29 @@ logical_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
     return NULL;
   } else {
     typename ImageFactory<T>::data_type* dest_data =
-      new typename ImageFactory<T>::data_type(a.size(), a.offset_y(), 
-					    a.offset_x());
-    VIEW* dest = new VIEW(*dest_data, a);
+      new typename ImageFactory<T>::data_type(a.size(), a.origin());
+    VIEW* dest = new VIEW(*dest_data);
     typename T::vec_iterator ia = a.vec_begin();
     typename U::const_vec_iterator ib = b.vec_begin();
     typename VIEW::vec_iterator id = dest->vec_begin();
     typename choose_accessor<VIEW>::accessor ad = choose_accessor<VIEW>::make_accessor(*dest);
+    
+    try {
 
     // Vigra's combineTwoImages does not clip back to one of the standard
     // Gamera image types, so we have to do this differently ourselves.  MGD
 
-    for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
-      bool b = functor(is_black(*ia), is_black(*ib));
-      if (b)
-	ad.set(white(a), id);
-      else
-	ad.set(black(a), id);
+      for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
+	bool b = functor(is_black(*ia), is_black(*ib));
+	if (b)
+	  ad.set(white(a), id);
+	else
+	  ad.set(black(a), id);
+      }
+    } catch (std::exception e) {
+      delete dest;
+      delete dest_data;
+      throw;
     }
     return dest;
   }

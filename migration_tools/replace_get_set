@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+
+"""
+This script searches through C++ source files and corrects all uses of
+get and set in the deprecated Gamera 2.x style to the new Gamera 3.x
+style.  For example::
+
+   get(r, c)
+
+will change to::
+
+   get(Point(c, r))
+
+Note that this script uses regular expressions and is pretty naive
+about its understanding of C++, and will replace any method .get or
+.set (or ->get and ->set), not just those on Gamera Image objects, so
+it is recommended to check the results with a visual diffing tool.
+
+Usage on files::
+
+  $ ./replace_get_set source.hpp > source.hpp.new
+
+or as a filter::
+
+  $ cat source.hpp | ./replace_get_set > source.hpp.new
+"""
+
+import re
+import sys
+
+get_regex = re.compile("(?:\.|(?:->))get\((?!P)(?P<a>.*?),(?P<space>\s+)(?P<b>.*?)\)")
+set_regex = re.compile("(?:\.|(?:->))set\((?!P)(?P<a>.*?),(?P<space>\s+)(?P<b>.*?),(?P<space2>\s+)(?P<v>.*?)\)")
+
+def migrate_get_and_set(input_data):
+   while 1:
+      get_match = get_regex.search(input_data)
+      set_match = set_regex.search(input_data)
+      if not get_match is None:
+         group = get_match.group
+         input_data = (input_data[:get_match.start()] +
+                 "get(Point(%s,%s%s))" %
+                 (group("b"), group("space"), group("a")) +
+                 input_data[get_match.end():])
+         num_substitutions += 1
+      elif not set_match is None:
+         group = set_match.group
+         input_data = (input_data[:set_match.start()] +
+                 "set(Point(%s,%s%s),%s%s)" %
+                 (group("b"), group("space"),
+                  group("a"), group("space2"),
+                  group("v")) +
+                 input_data[set_match.end():])
+         num_substitutions += 1
+      else:
+         break
+   return input_data
+
+def migrate_get_and_set_streams(input_stream, output_stream):
+   output_stream.write(migrate_get_and_set(input_stream.read()))
+
+def main():
+   from optparse import OptionParser
+   parser = OptionParser(usage = __doc__)
+   options, args = parser.parse_args()
+   if len(args) > 1:
+      parser.error("You must supply a single filename to filter.")
+   if len(args) == 0:
+      input_stream = sys.stdin
+   else:
+      input_stream = open(args[0], "r")
+   output_stream = sys.stdout
+   migrate_get_and_set_streams(input_stream, output_stream)
+      
+if __name__ == "__main__":
+   main()

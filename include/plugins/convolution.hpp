@@ -32,24 +32,29 @@ typename ImageFactory<T>::view_type* convolve(const T& src, const U& k, int bord
     throw std::runtime_error("The image must be bigger than the kernel.");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
-					    src.offset_x());
+    new typename ImageFactory<T>::data_type(src.size(), src.ul());
   typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data, src);
+    new typename ImageFactory<T>::view_type(*dest_data);
 
   // I originally had the following two lines abstracted out in a function,
   // but that seemed to choke and crash gcc 3.3.2
-  typename U::ConstIterator center = k.upperLeft() + Diff2D(k.center_x(), k.center_y());
-  tuple5<
-    typename U::ConstIterator,
-    typename choose_accessor<U>::accessor,
-    Diff2D, Diff2D, BorderTreatmentMode> kernel
-    (center, choose_accessor<U>::make_accessor(k), 
-     Diff2D(-k.center_x(), -k.center_y()),
-     Diff2D(k.width() - k.center_x(), k.height() - k.center_y()),
-     (BorderTreatmentMode)border_mode);
-
-  vigra::convolveImage(src_image_range(src), dest_image(*dest), kernel); 
+  try {
+    typename U::ConstIterator center = k.upperLeft() + Diff2D(k.center_x(), k.center_y());
+    tuple5<
+      typename U::ConstIterator,
+      typename choose_accessor<U>::accessor,
+      Diff2D, Diff2D, BorderTreatmentMode> kernel
+      (center, choose_accessor<U>::make_accessor(k), 
+       Diff2D(-k.center_x(), -k.center_y()),
+       Diff2D(k.width() - k.center_x(), k.height() - k.center_y()),
+       (BorderTreatmentMode)border_mode);
+    
+    vigra::convolveImage(src_image_range(src), dest_image(*dest), kernel); 
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
@@ -61,23 +66,28 @@ typename ImageFactory<T>::view_type* convolve_x(const T& src, const U& k, int bo
     throw std::runtime_error("The 1D kernel must have only one row.");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
-					    src.offset_x());
+    new typename ImageFactory<T>::data_type(src.size(), src.origin());
   typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data, src);
+    new typename ImageFactory<T>::view_type(*dest_data);
 
   // I originally had the following two lines abstracted out in a function,
   // but that seemed to choke and crash gcc 3.3.2
-  typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
-  tuple5<
-    typename U::const_vec_iterator,
-    typename choose_accessor<U>::accessor,
-    int, int, BorderTreatmentMode> kernel
-    (center, choose_accessor<U>::make_accessor(k), 
-     -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
-     (BorderTreatmentMode)border_mode);
-
-  vigra::separableConvolveX(src_image_range(src), dest_image(*dest), kernel); 
+  try {
+    typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
+    tuple5<
+      typename U::const_vec_iterator,
+      typename choose_accessor<U>::accessor,
+      int, int, BorderTreatmentMode> kernel
+      (center, choose_accessor<U>::make_accessor(k), 
+       -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
+       (BorderTreatmentMode)border_mode);
+    
+    vigra::separableConvolveX(src_image_range(src), dest_image(*dest), kernel); 
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
@@ -89,32 +99,43 @@ typename ImageFactory<T>::view_type* convolve_y(const T& src, const U& k, int bo
     throw std::runtime_error("The 1D kernel must have only one row.");
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(src.size(), src.offset_y(), 
-					    src.offset_x());
+    new typename ImageFactory<T>::data_type(src.size(), src.origin());
   typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data, src);
+    new typename ImageFactory<T>::view_type(*dest_data);
 
   // I originally had the following two lines abstracted out in a function,
   // but that seemed to choke and crash gcc 3.3.2
-  typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
-  tuple5<
-    typename U::const_vec_iterator,
-    typename choose_accessor<U>::accessor,
-    int, int, BorderTreatmentMode> kernel
-    (center, choose_accessor<U>::make_accessor(k), 
-     -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
-     (BorderTreatmentMode)border_mode);
-  
-  vigra::separableConvolveY(src_image_range(src), dest_image(*dest), kernel); 
+  try {
+    typename U::const_vec_iterator center = k.vec_begin() + k.center_x();
+    tuple5<
+      typename U::const_vec_iterator,
+      typename choose_accessor<U>::accessor,
+      int, int, BorderTreatmentMode> kernel
+      (center, choose_accessor<U>::make_accessor(k), 
+       -int(k.center_x()), int(k.width()) - int(k.center_x()) - 1,
+       (BorderTreatmentMode)border_mode);
+    
+    vigra::separableConvolveY(src_image_range(src), dest_image(*dest), kernel); 
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
 FloatImageView* _copy_kernel(const Kernel1D<FloatPixel>& kernel) {
-  FloatImageData* dest_data = new FloatImageData(1, kernel.size(), 0, 0);
+  FloatImageData* dest_data = new FloatImageData(Dim(kernel.size(), 1));
   FloatImageView* dest = new FloatImageView(*dest_data);
-  FloatImageView::vec_iterator iout = dest->vec_begin();
-  for (int iin = kernel.left(); iin != kernel.right(); ++iout, ++iin)
-    *iout = kernel[iin];
+  try {
+    FloatImageView::vec_iterator iout = dest->vec_begin();
+    for (int iin = kernel.left(); iin != kernel.right(); ++iout, ++iin)
+      *iout = kernel[iin];
+  } catch (std::exception e) {
+    delete dest;
+    delete dest_data;
+    throw;
+  }
   return dest;
 }
 
@@ -156,17 +177,17 @@ FloatImageView* SymmetricGradientKernel() {
 }
 
 FloatImageView* SimpleSharpeningKernel(double sf) {
-  FloatImageData* dest_data = new FloatImageData(3, 3, 0, 0);
+  FloatImageData* dest_data = new FloatImageData(Dim(3, 3));
   FloatImageView* dest = new FloatImageView(*dest_data);
-  dest->set(0, 0, -sf/16.0);
-  dest->set(0, 1, -sf/8.0);
-  dest->set(0, 2, -sf/16.0);
-  dest->set(1, 0, -sf/8.0);
-  dest->set(1, 1, 1.0+sf*0.75);
-  dest->set(1, 2, -sf/8.0);
-  dest->set(2, 0, -sf/16.0);
-  dest->set(2, 1, -sf/8.0);
-  dest->set(2, 2, -sf/16.0);
+  dest->set(Point(0, 0), -sf/16.0);
+  dest->set(Point(1, 0), -sf/8.0);
+  dest->set(Point(2, 0), -sf/16.0);
+  dest->set(Point(0, 1), -sf/8.0);
+  dest->set(Point(1, 1), 1.0+sf*0.75);
+  dest->set(Point(2, 1), -sf/8.0);
+  dest->set(Point(2, 0), -sf/16.0);
+  dest->set(Point(2, 1), -sf/8.0);
+  dest->set(Point(2, 2), -sf/16.0);
   return dest;
 }
 

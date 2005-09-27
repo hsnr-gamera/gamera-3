@@ -69,49 +69,49 @@ bool fill_image_from_string(T &image, PyObject* data_string) {
   return true;
 }
 
-Image* _from_raw_string(size_t nrows, size_t ncols, 
+Image* _from_raw_string(Point offset, Dim size, 
 			int pixel_type, int storage_format, 
 			PyObject* data_string) {
   if (pixel_type == ONEBIT and storage_format == RLE) {
     typedef TypeIdImageFactory<ONEBIT, RLE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == ONEBIT and storage_format == DENSE) {
     typedef TypeIdImageFactory<ONEBIT, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == GREYSCALE) {
     typedef TypeIdImageFactory<GREYSCALE, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == GREY16) {
     typedef TypeIdImageFactory<GREY16, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == RGB) {
     typedef TypeIdImageFactory<RGB, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == FLOAT) {
     typedef TypeIdImageFactory<FLOAT, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else if (pixel_type == COMPLEX) {
     typedef TypeIdImageFactory<COMPLEX, DENSE> factory;
     typedef factory::image_type image_type;
-    image_type* image = factory::create(0, 0, nrows, ncols);
+    image_type* image = factory::create(offset, size);
     if (fill_image_from_string(*image, data_string))
       return image;
   } else {

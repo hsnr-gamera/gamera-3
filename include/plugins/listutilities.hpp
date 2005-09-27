@@ -26,7 +26,7 @@ using namespace Gamera;
 
 int permute_list(PyObject* list) {
   if (!PyList_Check(list)) {
-    PyErr_Format(PyExc_TypeError, "Must pass a Python sequence to permute_list.");
+    PyErr_Format(PyExc_TypeError, "Python list required.");
     return 0;
   }
   size_t n = PyList_Size(list);

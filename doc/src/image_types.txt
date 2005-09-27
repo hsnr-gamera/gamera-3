@@ -45,7 +45,7 @@ The pixels in an image can be one of the following types:
 	fact that the image data can be "shared."
 
    ``FLOAT``
-        32-bit floating point greyscale.  This is useful for images
+        Double-precision floating point greyscale.  This is useful for images
         that need a really wide dynamic range.
 
    .. warning:: Unfortunately, at this time ``FLOAT`` images can not be saved

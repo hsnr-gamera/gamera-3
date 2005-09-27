@@ -27,6 +27,7 @@ import locale, sys, glob, cStringIO, inspect, getopt, os.path, shutil
 from stat import ST_MTIME
 from time import strftime, localtime
 import traceback
+import warnings
 try:
    locale.setlocale(locale.LC_ALL, '')
 except:
@@ -498,6 +499,7 @@ def docstring(name, arguments, options, content, lineno,
          version = tuple([int(x) for x in docutils.__version__.split(".")])
          if version >= (0, 3, 9):
             node['names'] = [name]  # docutils 0.3.9 way
+            node['name'] = name
          else:
             node['name'] = name     # docutils 0.3.7 way
          state_machine.document.note_implicit_target(node)
@@ -506,7 +508,7 @@ def docstring(name, arguments, options, content, lineno,
       content = docutils.statemachine.StringList(initlist=content, parent=node)
       state.nested_parse(content, content_offset, node)
       return node
-      
+
    base_obj = import_helper(*arguments[:2])
    if len(arguments) == 2:
       name = arguments[1].split(".")[-1]

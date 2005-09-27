@@ -1,15 +1,11 @@
-====================
-Gamera documentation
-====================
+========================
+Gamera 3.x documentation
+========================
 
 :Editor: Michael Droettboom
 
 Introduction
 ============
-
-This is the Gamera documentation.  Please note that it is still a work
-in progress and has many holes in it.  If you'd like any holes filled
-in, please contact Michael Droettboom at ``mdboom at jhu dot edu``.
 
 This documentation consists of some HOW TO documentation and some
 reference documentation.  In addition, there are some more formal
@@ -114,6 +110,18 @@ Reference
 
 .. __: xml_format.html
 
+
+Migration from Gamera 2.x to Gamera 3.x
+=======================================
+
+- `Major changes`__ from Gamera 2.x to Gamera 3.x
+
+.. __: major_changes_3x.html
+
+- `Migration guide`__: Describes how to migrate existing Gamera scripts
+  to Gamera 3.x
+
+.. __: migration_guide.html
 
 Acknowledgements
 ================

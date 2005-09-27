@@ -41,13 +41,15 @@ namespace Gamera {
 
     size_t int_threshold = size_t(threshold + 0.5);
 
-    T a_roi(a, a.intersection(b.expand(int_threshold)));
-    if (a_roi.ul_x() > a_roi.lr_x() || a_roi.ul_y() > a_roi.lr_y())
+    Rect r = a.intersection(b.expand(int_threshold));
+    if (r.ul_x() > r.lr_x() || r.ul_y() > r.lr_y())
       return false;
+    T a_roi(a, r);
 
-    U b_roi(b, b.intersection(a.expand(int_threshold)));
-    if (b_roi.ul_x() > b_roi.lr_x() || b_roi.ul_y() > b_roi.lr_y())
+    r = b.intersection(a.expand(int_threshold));
+    if (r.ul_x() > r.lr_x() || r.ul_y() > r.lr_y())
       return false;
+    U b_roi(b, r);
 
     double threshold_2 = threshold * threshold;
     long start_c, end_c, dir_c;
@@ -80,7 +82,7 @@ namespace Gamera {
 
     for (long r = start_r; r != end_r; r += dir_r) {
       for (long c = start_c; c != end_c; c += dir_c) {
-	if (is_black(a_roi.get(r, c))) {
+	if (is_black(a_roi.get(Point(c, r)))) {
 	  bool is_edge = false;
 	  if (r == 0l || (size_t)r == a_roi.nrows() - 1 || 
 	      c == 0l || (size_t)c == a_roi.ncols() - 1) {
@@ -89,7 +91,7 @@ namespace Gamera {
 	  } else {
 	    for (long ri = r - 1; ri < r + 2; ++ri) {
 	      for (long ci = c - 1; ci < c + 2; ++ci) {
-		if (is_white(a_roi.get(ri, ci))) {
+		if (is_white(a_roi.get(Point(ci, ri)))) {
 		  is_edge = true;
 		  goto edge_found;
 		}
@@ -102,7 +104,7 @@ namespace Gamera {
 	  double a_x = double(c + a_roi.ul_x());
 	  for (size_t r2 = 0; r2 < b_roi.nrows(); ++r2) {
 	    for (size_t c2 = 0; c2 < b_roi.ncols(); ++c2) {
-	      if (is_black(b_roi.get(r2, c2))) {
+	      if (is_black(b_roi.get(Point(c2, r2)))) {
 		double distance_y = double(r2 + b_roi.ul_y()) - a_y;
 		double distance_x = double(c2 + b_roi.ul_x()) - a_x;
 		double distance = distance_x*distance_x + distance_y*distance_y;
@@ -119,7 +121,6 @@ namespace Gamera {
   
   template<class T, class U>
   FloatVector *polar_distance(T &a, U &b) {
-    FloatVector *result = new FloatVector(3);
     double x = (double)a.center_x() - (double)b.center_x();
     double y = (double)a.center_y() - (double)b.center_y();
     double r = sqrt(pow(x, 2.0) + pow(y, 2.0));
@@ -132,6 +133,7 @@ namespace Gamera {
       q += M_PI;
     double avg_diag = ((sqrt(pow(a.nrows(), 2.0) + pow(a.ncols(), 2.0)) +
 			sqrt(pow(b.nrows(), 2.0) + pow(b.ncols(), 2.0))) / 2.0);
+    FloatVector *result = new FloatVector(3);
     (*result)[0] = r / avg_diag;
     (*result)[1] = q;
     (*result)[2] = r;

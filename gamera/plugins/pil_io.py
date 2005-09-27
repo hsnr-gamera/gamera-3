@@ -47,16 +47,21 @@ Requires a copying operation;  may fail for very large images.
         args = Args([Class("image")])
         pure_python = True
 
-        def __call__(image):
+        def __call__(image, offset=None):
             from gamera.plugins import _string_io
+            from gamera.core import Dim, Point
             typecode = image.mode
+            if offset is None:
+                offset = Point(0, 0)
             if _inverse_modes.has_key(typecode):
                 pixel_type = _inverse_modes[typecode]
             else:
                 raise ValueError("Only RGB and 8-bit Greyscale 'L' PIL image modes are supported.")
-            return _string_io._from_raw_string(image.size[1], image.size[0],
-                                               pixel_type, DENSE,
-                                               image.tostring())
+            return _string_io._from_raw_string(
+                offset,
+                Dim(image.size[0], image.size[1]),
+                pixel_type, DENSE,
+                image.tostring())
         __call__ = staticmethod(__call__)
 
     class to_pil(PluginFunction):

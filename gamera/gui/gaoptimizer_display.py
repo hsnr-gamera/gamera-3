@@ -20,8 +20,7 @@
 
 # TODO: needs to be rewritten
 
-from wxPython.wx import *
-from wxPython.lib.filebrowsebutton import FileBrowseButton
+import wx
 from gamera.gui import gui_util
 from gamera.args import *
 from gamera.core import *
@@ -31,23 +30,23 @@ from gamera import plugin
 from gamera import gamera_xml
 import time, math
 
-SIZER_FLAGS = (wxTOP|wxLEFT|wxRIGHT|
-               wxEXPAND|
-               wxALIGN_CENTER_VERTICAL|
-               wxALIGN_LEFT)
+SIZER_FLAGS = (wx.TOP|wx.LEFT|wx.RIGHT|
+               wx.EXPAND|
+               wx.ALIGN_CENTER_VERTICAL|
+               wx.ALIGN_LEFT)
 
 MAX_POPULATION = 10000
 MAX_K = 300
 TIMER_INTERVAL = 2500
 
-class OptimizerFrame(wxFrame):
+class OptimizerFrame(wx.Frame):
    def __init__(self, parent, id, title):
-      wxFrame.__init__(self, parent, id, title, wxDefaultPosition,
+      wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition,
                        (400, 500))
 
       self.setup_menus()
       self.classifier = None
-      self.notebook = wxNotebook(self, -1)
+      self.notebook = wx.Notebook(self, -1)
       self.notebook.SetAutoLayout(True)
       self.running = False
       self.elapsed_time = 0
@@ -62,65 +61,65 @@ class OptimizerFrame(wxFrame):
       self.weights_panel = WeightsPanel(self.notebook)
       self.notebook.AddPage(self.weights_panel, "Best Weights")
 
-      id = wxNewId()
-      self.timer = wxTimer(self, id)
-      EVT_TIMER(self, id, self.timer_cb)
+      id = wx.NewId()
+      self.timer = wx.Timer(self, id)
+      wx.EVT_TIMER(self, id, self.timer_cb)
       self.last_generation = 0
-      EVT_CLOSE(self, self.close_cb)
+      wx.EVT_CLOSE(self, self.close_cb)
 
    def timer_cb(self, evt):
       self.update_status()
 
    def setup_menus(self):
       # open
-      menu = wxMenu()
-      id = wxNewId()
+      menu = wx.Menu()
+      id = wx.NewId()
       menu.Append(id, "&Open data...", "Open a k-NN database")
-      EVT_MENU(self, id, self.open_cb)
+      wx.EVT_MENU(self, id, self.open_cb)
 
       # save
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Save settings", "Save the current weights")
-      EVT_MENU(self, id, self.save_cb)
+      wx.EVT_MENU(self, id, self.save_cb)
       menu.Enable(id, False)
 
       # save as
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Save settings as...", "Save the current weights")
-      EVT_MENU(self, id, self.save_as_cb)
+      wx.EVT_MENU(self, id, self.save_as_cb)
       menu.Enable(id, False)
 
       # exit
       menu.AppendSeparator()
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Exit", "Exit the application")
-      EVT_MENU(self, id, self.close_cb)
+      wx.EVT_MENU(self, id, self.close_cb)
 
       self.file_menu = menu
 
-      menu = wxMenu()
+      menu = wx.Menu()
       # start
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Start", "Start the optimization")
-      EVT_MENU(self, id, self.start_cb)
+      wx.EVT_MENU(self, id, self.start_cb)
       menu.Enable(id, False)
 
       # stop
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Stop", "Stop the optimization")
-      EVT_MENU(self, id, self.stop_cb)
+      wx.EVT_MENU(self, id, self.stop_cb)
       menu.Enable(id, False)
 
       # Features
       menu.AppendSeparator()
-      id = wxNewId()
+      id = wx.NewId()
       menu.Append(id, "&Features...", "Set the features for the classifier")
-      EVT_MENU(self, id, self.features_cb)
+      wx.EVT_MENU(self, id, self.features_cb)
       menu.Enable(id, False)
 
       self.optimizer_menu = menu
 
-      self.menu_bar = wxMenuBar()
+      self.menu_bar = wx.MenuBar()
       self.menu_bar.Append(self.file_menu, "&File")
       self.menu_bar.Append(self.optimizer_menu, "&Optimizer")
       self.SetMenuBar(self.menu_bar)
@@ -147,14 +146,14 @@ class OptimizerFrame(wxFrame):
    def stop(self):
       if self.classifier is not None and self.running:
          self.timer.Stop()
-         wxBeginBusyCursor()
+         wx.BeginBusyCursor()
          self.classifier.stop_optimizing()
          self.running = False
          self.enable_controls(True)
          id = self.optimizer_menu.FindItem("Stop")
          self.optimizer_menu.Enable(id, False)
          
-         wxEndBusyCursor()
+         wx.EndBusyCursor()
 
    def start(self):
       if self.running:
@@ -183,7 +182,7 @@ class OptimizerFrame(wxFrame):
          if features == None:
             return
 
-         wxBeginBusyCursor()
+         wx.BeginBusyCursor()
          self.filename = filename
          glyphs = None
          try:
@@ -191,7 +190,7 @@ class OptimizerFrame(wxFrame):
                glyphs = gamera_xml.glyphs_from_xml(filename)
                self.set_classifier(kNNNonInteractive(glyphs, features))
             finally:
-               wxEndBusyCursor()
+               wx.EndBusyCursor()
          except Exception, e:
             gui_util.message('Error opening the xml file. The error was:\n\"%s"' %
                              str(e))                
@@ -207,9 +206,9 @@ class OptimizerFrame(wxFrame):
          gui_util.message("There is no loaded classifier to save.")
       else:
          if self.settings_filename is not None:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             self.classifier.save_settings(self.settings_filename)
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
          else:
             self.save_as_cb(evt)
 
@@ -219,21 +218,21 @@ class OptimizerFrame(wxFrame):
       else:
          self.settings_filename = gui_util.save_file_dialog(self)
          if self.settings_filename is not None:
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             self.classifier.save_settings(self.settings_filename)
-            wxEndBusyCursor()
+            wx.EndBusyCursor()
 
    def start_cb(self, evt):
       self.start()
 
    def stop_cb(self, evt):
       if self.running:
-         response = wxMessageDialog(
+         response = wx.MessageDialog(
             self,
             "Are you sure you want to stop the optimizer?  (This may take a few seconds.)",
             "Stop?",
-            wxYES_NO).ShowModal()
-         if response == wxID_NO:
+            wx.YES_NO).ShowModal()
+         if response == wx.ID_NO:
             return
          self.stop()
 
@@ -285,81 +284,81 @@ class OptimizerFrame(wxFrame):
       self.weights_panel.update_cb()
 
 
-class StatusPanel(wxPanel):
+class StatusPanel(wx.Panel):
    def __init__(self, parent, classifier):
-      wxPanel.__init__(self, parent, -1)
+      wx.Panel.__init__(self, parent, -1)
 
       self.classifier = classifier
 
-      sizer = wxFlexGridSizer(9, 2, 8, 8)
+      sizer = wx.FlexGridSizer(9, 2, 8, 8)
       sizer.AddGrowableCol(1)
 
       TEXT_SIZE=(150,25)
 
       # state
-      sizer.Add(wxStaticText(self, -1, "Status:"), 0, SIZER_FLAGS, 10)
-      self.state_display = wxStaticText(
+      sizer.Add(wx.StaticText(self, -1, "Status:"), 0, SIZER_FLAGS, 10)
+      self.state_display = wx.StaticText(
           self, -1,"not running")
       sizer.Add(self.state_display, 0, SIZER_FLAGS, 10)
 
       # initial rate
-      sizer.Add(wxStaticText(self, -1, "Initial recognition rate:"), 0, SIZER_FLAGS, 10)
-      self.initial_rate_display = wxStaticText(
+      sizer.Add(wx.StaticText(self, -1, "Initial recognition rate:"), 0, SIZER_FLAGS, 10)
+      self.initial_rate_display = wx.StaticText(
           self, -1,"0")
       sizer.Add(self.initial_rate_display, 0, SIZER_FLAGS, 10)
 
       # Best rate
-      sizer.Add(wxStaticText(self, -1, "Best rate:"), 0, SIZER_FLAGS, 10)
-      self.best_rate_display = wxStaticText(
-          self, -1, "0.0%", style=wxTE_READONLY, size=TEXT_SIZE)
+      sizer.Add(wx.StaticText(self, -1, "Best rate:"), 0, SIZER_FLAGS, 10)
+      self.best_rate_display = wx.StaticText(
+          self, -1, "0.0%", style=wx.TE_READONLY, size=TEXT_SIZE)
       sizer.Add(self.best_rate_display, 0, SIZER_FLAGS, 10)
 
       # generation
-      sizer.Add(wxStaticText(self, -1, "Current generation:"), 0, SIZER_FLAGS, 10)
-      self.generation_display = wxStaticText(
-          self, -1, "0.0%", style=wxTE_READONLY, size=TEXT_SIZE)
+      sizer.Add(wx.StaticText(self, -1, "Current generation:"), 0, SIZER_FLAGS, 10)
+      self.generation_display = wx.StaticText(
+          self, -1, "0.0%", style=wx.TE_READONLY, size=TEXT_SIZE)
       sizer.Add(self.generation_display, 0, SIZER_FLAGS, 10)
 
       # elapsed time
-      sizer.Add(wxStaticText(self, -1, "Elapsed time:"), 0, SIZER_FLAGS, 10)
-      self.elapsed_display = wxStaticText(
-          self, -1, "0.0%", style=wxTE_READONLY, size=TEXT_SIZE)
+      sizer.Add(wx.StaticText(self, -1, "Elapsed time:"), 0, SIZER_FLAGS, 10)
+      self.elapsed_display = wx.StaticText(
+          self, -1, "0.0%", style=wx.TE_READONLY, size=TEXT_SIZE)
       sizer.Add(self.elapsed_display, 0, SIZER_FLAGS, 10)
 
       SLIDER_SIZE=(150, 10)
-      SLIDER_STYLE=wxSL_LABELS
+      SLIDER_STYLE=wx.SL_LABELS
 
       # population size
-      sizer.Add(wxStaticText(self, -1, "Population size:"), 0, SIZER_FLAGS, 10)
-      id = wxNewId()
-      self.population_display = wxSlider(
+      sizer.Add(wx.StaticText(self, -1, "Population size:"), 0, SIZER_FLAGS, 10)
+      id = wx.NewId()
+      self.population_display = wx.Slider(
           self, id, 10, 10, 1000, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.population_display, 0, SIZER_FLAGS, 10)
-      EVT_COMMAND_SCROLL(self, id, self.population_cb)
+      wx.EVT_COMMAND_SCROLL(self, id, self.population_cb)
 
       # k
-      sizer.Add(wxStaticText(self, -1, "Size of k:"), 0, SIZER_FLAGS, 10)
-      id = wxNewId()
-      self.k_display = wxSlider(
+      sizer.Add(wx.StaticText(self, -1, "Size of k:"), 0, SIZER_FLAGS, 10)
+      id = wx.NewId()
+      self.k_display = wx.Slider(
           self, id, 1, 1, 200, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.k_display, 0, SIZER_FLAGS, 10)
-      EVT_COMMAND_SCROLL(self, id, self.k_cb)
+      wx.EVT_COMMAND_SCROLL(self, id, self.k_cb)
 
       # crossover rate
-      sizer.Add(wxStaticText(self, -1, "Crossover rate:"), 0, SIZER_FLAGS, 10)
-      id = wxNewId()
-      self.crossover_display = wxSlider(
+      sizer.Add(wx.StaticText(self, -1, "Crossover rate:"), 0, SIZER_FLAGS, 10)
+      id = wx.NewId()
+      self.crossover_display = wx.Slider(
           self, id, 60, 0, 100, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.crossover_display, 0, SIZER_FLAGS, 10)
-      EVT_COMMAND_SCROLL(self, id, self.crossover_cb)
+      wx.EVT_COMMAND_SCROLL(self, id, self.crossover_cb)
 
       # mutation rate
-      sizer.Add(wxStaticText(self, -1, "Mutation rate:"), 0, SIZER_FLAGS, 10)
-      id = wxNewId()
-      self.mutation_display = wxSlider(
+      sizer.Add(wx.StaticText(self, -1, "Mutation rate:"), 0, SIZER_FLAGS, 10)
+      id = wx.NewId()
+      self.mutation_display = wx.Slider(
           self, id, 5, 0, 100, size=SLIDER_SIZE, style=SLIDER_STYLE)
       sizer.Add(self.mutation_display, 0, SIZER_FLAGS, 10)
-      EVT_COMMAND_SCROLL(self, id, self.mutation_cb)
+      wx.EVT_COMMAND_SCROLL(self, id, self.mutation_cb)
 
       self.SetAutoLayout(True)
       self.SetSizer(sizer)
@@ -406,9 +405,9 @@ class StatusPanel(wxPanel):
             "%d:h %d:m %d:s" % (hours, minutes, secs))
 
 GAUGE_WIDTH = 300
-class WeightsPanel(wxScrolledWindow):
+class WeightsPanel(wx.ScrolledWindow):
    def __init__(self, parent):
-      wxScrolledWindow.__init__(self, parent, -1)
+      wx.ScrolledWindow.__init__(self, parent, -1)
 
    def new_classifier(self, classifier):
       glyphs = classifier.get_glyphs()
@@ -423,12 +422,12 @@ class WeightsPanel(wxScrolledWindow):
             feature_functions.append(x[0])
       self.DestroyChildren()
       self.classifier = classifier
-      sizer = wxFlexGridSizer(len(feature_functions), 2, 4, 8)
+      sizer = wx.FlexGridSizer(len(feature_functions), 2, 4, 8)
       self.bars = []
       for x in feature_functions:
-         text = wxStaticText(self, -1, x)
+         text = wx.StaticText(self, -1, x)
          sizer.Add(text, 0, SIZER_FLAGS, 10)
-         bar = wxGauge(self, -1, 100, style=wxGA_SMOOTH, size=(200, 10))
+         bar = wx.Gauge(self, -1, 100, style=wx.GA_SMOOTH, size=(200, 10))
          bar.SetAutoLayout(True)
          sizer.Add(bar, 0, SIZER_FLAGS, 10)
          self.bars.append(bar)
@@ -444,9 +443,9 @@ class WeightsPanel(wxScrolledWindow):
          if value != bar.GetValue():
             bar.SetValue(int(weight * 100))
 
-class BiollanteApp(wxApp):
+class BiollanteApp(wx.App):
    def OnInit(self):
-      frame = OptimizerFrame(NULL, -1,
+      frame = OptimizerFrame(None, -1,
                              "GA Optimization for k-NN")
       frame.Show(True)
       self.SetTopWindow(frame)

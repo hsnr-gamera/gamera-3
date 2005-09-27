@@ -49,8 +49,7 @@ arithmetic_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
     return NULL;
   } else {
     typename ImageFactory<T>::data_type* dest_data =
-      new typename ImageFactory<T>::data_type(a.size(), a.offset_y(), 
-					    a.offset_x());
+      new typename ImageFactory<T>::data_type(a.size(), a.origin());
     VIEW* dest = new VIEW(*dest_data, a);
     typename T::vec_iterator ia = a.vec_begin();
     typename U::const_vec_iterator ib = b.vec_begin();
@@ -59,12 +58,18 @@ arithmetic_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
 
     // Vigra's combineTwoImages does not clip back to one of the standard
     // Gamera image types, so we have to do this differently ourselves.  MGD
-
-    for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
-      ad.set(NumericTraits<TVALUE>::fromPromote
-	     (functor(typename NumericTraits<TVALUE>::Promote(*ia),
-		      typename NumericTraits<TVALUE>::Promote(*ib))),
-	     id);
+    
+    try {
+      for (; ia != a.vec_end(); ++ia, ++ib, ++id) {
+	ad.set(NumericTraits<TVALUE>::fromPromote
+	       (functor(typename NumericTraits<TVALUE>::Promote(*ia),
+			typename NumericTraits<TVALUE>::Promote(*ib))),
+	       id);
+      }
+    } catch (std::exception e) {
+      delete dest;
+      delete dest_data;
+      throw;
     }
     return dest;
   }

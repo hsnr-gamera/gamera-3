@@ -328,7 +328,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
   PyObject* images;
   KnnObject* o = (KnnObject*)self;
   if (o->ga_running == true) {
-    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    PyErr_SetString(PyExc_RuntimeError, "knn: cannot call while ga is active.");
     return 0;
   }
   if (PyArg_ParseTuple(args, "O", &images) <= 0) {
@@ -352,7 +352,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
 
   int images_size = PySequence_Fast_GET_SIZE(images_seq);
   if (images_size == 0) {
-    PyErr_SetString(PyExc_TypeError, "Initial database of a non-interactive kNN classifier must have at least one element.");
+    PyErr_SetString(PyExc_ValueError, "Initial database of a non-interactive kNN classifier must have at least one element.");
     Py_DECREF(images_seq);
     return 0;
   }
@@ -377,12 +377,12 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     
     if (image_get_fv(cur_image, &tmp_fv, &tmp_fv_len) < 0) {
       knn_delete_feature_data(o);
-      PyErr_SetString(PyExc_TypeError, "knn: could not get features from image");
+      PyErr_SetString(PyExc_ValueError, "knn: could not get features from image");
       goto error;
     }
     if (size_t(tmp_fv_len) != o->num_features) {
       knn_delete_feature_data(o);
-      PyErr_SetString(PyExc_TypeError, "knn: feature vector lengths don't match");
+      PyErr_SetString(PyExc_ValueError, "knn: feature vector lengths don't match");
       goto error;
     }
     std::copy(tmp_fv, tmp_fv + o->num_features, current_features);
@@ -391,7 +391,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     int len = 0;
     if (image_get_id_name(cur_image, &tmp_id_name, &len) < 0) {
       knn_delete_feature_data(o);
-      PyErr_SetString(PyExc_TypeError, "knn: could not get id name");
+      PyErr_SetString(PyExc_ValueError, "knn: could not get id name");
       goto error;
     }
     o->id_names[i] = new char[len + 1];
@@ -425,7 +425,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
 static PyObject* knn_classify(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   if (o->ga_running == true) {
-    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    PyErr_SetString(PyExc_RuntimeError, "knn: cannot call while ga is active.");
     return 0;
   }
   if (o->feature_vectors == 0) {
@@ -445,11 +445,11 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   double* fv;
   int fv_len;
   if (image_get_fv(unknown, &fv, &fv_len) < 0) {
-    PyErr_SetString(PyExc_TypeError, "knn: could not get features");
+    PyErr_SetString(PyExc_ValueError, "knn: could not get features");
     return 0;
   }
   if (size_t(fv_len) != o->num_features) {
-    PyErr_SetString(PyExc_TypeError, "knn: features not the correct size");
+    PyErr_SetString(PyExc_ValueError, "knn: features not the correct size");
     return 0;
   }
 
@@ -492,7 +492,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   if (o->ga_running == true) {
-    PyErr_SetString(PyExc_TypeError, "knn: cannot call while ga is active.");
+    PyErr_SetString(PyExc_RuntimeError, "knn: cannot call while ga is active.");
     return 0;
   }
   PyObject* unknown, *iterator, *container;
@@ -673,7 +673,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
 
   int images_len = PySequence_Fast_GET_SIZE(images_seq);
   if (!(images_len > 1)) {
-    PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    PyErr_SetString(PyExc_ValueError, "List must have at least two images.");
     Py_DECREF(images_seq);
     return 0;
   }
@@ -694,7 +694,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   }
   double* weights = o->weight_vector;
   if (len_a != (int)o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    PyErr_SetString(PyExc_ValueError, "knn: feature vector lengths don't match.");
     Py_DECREF(images_seq);
     return 0;
   }
@@ -702,8 +702,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   // create the normalization object
   double* tmp_a = new double[len_a];
   double* tmp_b = new double[len_a];
-  FloatImageData* data = new FloatImageData(images_len, images_len);
-  FloatImageView* mat = new FloatImageView(*data, 0, 0, images_len, images_len);
+  FloatImageData* data = new FloatImageData(Dim(images_len, images_len));
+  FloatImageView* mat = new FloatImageView(*data);
 
   kNN::Normalize norm(len_a);
   for (int i = 0; i < images_len; ++i) { 
@@ -717,7 +717,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     if (image_get_fv(cur_a, &buf_a, &len_a) < 0) 
       goto mat_error;
     if (len_a != (int)o->num_features) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+      PyErr_SetString(PyExc_ValueError, "knn: feature vector lengths don't match.");
       goto mat_error;
     }
     if (normalize)
@@ -749,8 +749,8 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
 	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
 	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
-      mat->set(i, j, distance);
-      mat->set(j, i, distance);
+      mat->set(Point(j, i), distance);
+      mat->set(Point(i, j), distance);
     }
     if (progress)
       PyObject_CallObject(progress, NULL);
@@ -786,14 +786,14 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 
   int images_len = PySequence_Fast_GET_SIZE(images_seq);
   if (!(images_len > 1)) {
-    PyErr_SetString(PyExc_TypeError, "List must have at least two images.");
+    PyErr_SetString(PyExc_ValueError, "List must have at least two images.");
     Py_DECREF(images_seq);
     return 0;
   }
   // create the 'vector' for the output
   int list_len = ((images_len * images_len) - images_len) / 2;
-  FloatImageData* data = new FloatImageData(1, list_len);
-  FloatImageView* list = new FloatImageView(*data, 0, 0, 1, list_len);
+  FloatImageData* data = new FloatImageData(Dim(list_len, 1));
+  FloatImageView* list = new FloatImageView(*data);
 
   // create a default set of weights for the distance calculation.
   double* buf_a, *buf_b;
@@ -812,7 +812,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 
   double* weights = o->weight_vector;
   if (len_a != (int)o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: feature vector lengths don't match.");
+    PyErr_SetString(PyExc_ValueError, "knn: feature vector lengths don't match.");
     Py_DECREF(images_seq);
     return 0;
   }
@@ -859,7 +859,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 	goto uniq_error;
 		
       if (len_a != len_b) {
-	PyErr_SetString(PyExc_RuntimeError, "Feature vector lengths do not match!");
+	PyErr_SetString(PyExc_ValueError, "Feature vector lengths do not match!");
 	goto uniq_error;
       }
       if (normalize)
@@ -869,7 +869,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
 	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
-      list->set(0, index, distance);
+      list->set(Point(index, 0), distance);
       index++;
     }
     // call the progress object
@@ -1022,7 +1022,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     int indexes_size = PySequence_Fast_GET_SIZE(indexes_seq);
     // Make certain that there aren't too many indexes
     if (indexes_size > (int)o->num_features) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: index list too large for data");
+      PyErr_SetString(PyExc_ValueError, "knn: index list too large for data");
       Py_DECREF(indexes_seq);
       return 0;
     }
@@ -1040,7 +1040,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     // make certain that none of the indexes are out of range
     for (size_t i = 0; i < idx.size(); ++i) {
       if (idx[i] > (long)(o->num_features - 1)) {
-	PyErr_SetString(PyExc_RuntimeError, "knn: index out of range in index list");
+	PyErr_SetString(PyExc_IndexError, "knn: index out of range in index list");
 	Py_DECREF(indexes_seq);
 	return 0;
       }
@@ -1113,7 +1113,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
 
   FILE* file = fopen(filename, "w+b");
   if (file == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: error opening file.");
+    PyErr_SetString(PyExc_IOError, "knn: error opening file.");
     return 0;
   }
 
@@ -1125,28 +1125,28 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   // write the header info
   unsigned long version = 1;
   if (fwrite((const void*)&version, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
   unsigned long num_k = (unsigned long)o->num_k;
   if (fwrite((const void*)&num_k, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
   unsigned long num_features = (unsigned long)o->num_features;
   if (fwrite((const void*)&num_features, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
   unsigned long num_feature_vectors = (unsigned long)o->num_feature_vectors;
   if (fwrite((const void*)&num_feature_vectors, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
   
   // write the feature names
   if (fwrite((const void*)&feature_size, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
 
@@ -1154,12 +1154,12 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
     PyObject* cur_string = PyList_GET_ITEM(features, i);
     unsigned long string_size = PyString_GET_SIZE(cur_string) + 1;
     if (fwrite((const void*)&string_size, sizeof(unsigned long), 1, file) != 1) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
     if (fwrite((const void*)PyString_AS_STRING(cur_string),
 	       sizeof(char), string_size, file) != string_size) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
   }
@@ -1167,24 +1167,24 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   for (size_t i = 0; i < o->num_feature_vectors; ++i) {
     unsigned long len = strlen(o->id_names[i]) + 1; // include \0
     if (fwrite((const void*)&len, sizeof(unsigned long), 1, file) != 1) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
     if (fwrite((const void*)o->id_names[i], sizeof(char), len, file) != len) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
   }
 
   if (fwrite((const void*)o->normalize->get_norm_vector(),
 	     sizeof(double), o->num_features, file) != o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
 
   if (fwrite((const void*)o->weight_vector, sizeof(double), o->num_features, file)
       != o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
 
@@ -1193,7 +1193,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   for (size_t i = 0; i < o->num_feature_vectors; ++i, cur += o->num_features) {
     if (fwrite((const void*)cur, sizeof(double), o->num_features, file)
 	!= o->num_features) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem writing to a file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
   }
@@ -1210,33 +1210,33 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
 
   FILE* file = fopen(filename, "rb");
   if (file == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: error opening file.");
+    PyErr_SetString(PyExc_IOError, "knn: error opening file.");
     return 0;
   }
 
   unsigned long version, num_k, num_features, num_feature_vectors, num_feature_names;
   if (fread((void*)&version, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   if (version != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: unknown version of knn file.");
+    PyErr_SetString(PyExc_IOError, "knn: unknown version of knn file.");
     return 0;
   }
   if (fread((void*)&num_k, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   if (fread((void*)&num_features, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   if (fread((void*)&num_feature_vectors, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   if (fread((void*)&num_feature_names, sizeof(unsigned long), 1, file) != 1) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   PyObject* feature_names = PyList_New(num_feature_names);
@@ -1248,7 +1248,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
     }
     char tmp_string[1024];
     if (fread((void*)&tmp_string, sizeof(char), string_size, file) != string_size) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
       return 0;
     }
     PyList_SET_ITEM(feature_names, i,
@@ -1265,12 +1265,12 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   for (size_t i = 0; i < o->num_feature_vectors; ++i) {
     unsigned long len;
     if (fread((void*)&len, sizeof(unsigned long), 1, file) != 1) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
       return 0;
     }
     o->id_names[i] = new char[len];
     if (fread((void*)o->id_names[i], sizeof(char), len, file) != len) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
       return 0;
     }
     id_name_histogram[o->id_names[i]]++;
@@ -1278,20 +1278,20 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
 
   double* tmp_norm = new double[o->num_features];
   if (fread((void*)tmp_norm, sizeof(double), o->num_features, file) != o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
   o->normalize->set_norm_vector(tmp_norm, tmp_norm + o->num_features);
   delete[] tmp_norm;
   if (fread((void*)o->weight_vector, sizeof(double), o->num_features, file) != o->num_features) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+    PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
     return 0;
   }
 
   double* cur = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, cur += o->num_features) {
     if (fread((void*)cur, sizeof(double), o->num_features, file) != o->num_features) {
-      PyErr_SetString(PyExc_RuntimeError, "knn: problem reading file.");
+      PyErr_SetString(PyExc_IOError, "knn: problem reading file.");
       return 0;
     }
     o->id_name_histogram[i] = id_name_histogram[o->id_names[i]];
@@ -1306,7 +1306,7 @@ static PyObject* knn_get_weights(PyObject* self, PyObject* args) {
   PyObject* arglist = Py_BuildValue("(s)", "d");
   PyObject* array = PyEval_CallObject(array_init, arglist);
   if (array == 0) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: Error creating array.");
+    PyErr_SetString(PyExc_IOError, "knn: Error creating array.");
     return 0;
   }
   Py_DECREF(arglist);
@@ -1338,7 +1338,7 @@ static PyObject* knn_set_weights(PyObject* self, PyObject* args) {
     return 0;
   }
   if (size_t(len) != o->num_features * sizeof(double)) {
-    PyErr_SetString(PyExc_RuntimeError, "knn: weight vector is not the correct size.");
+    PyErr_SetString(PyExc_ValueError, "knn: weight vector is not the correct size.");
     return 0;
   }
   for (size_t i = 0; i < o->num_features; ++i) {

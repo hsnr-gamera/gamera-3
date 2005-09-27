@@ -59,25 +59,30 @@ ImageInfo* tiff_info(const char* filename) {
     stupid non-type-checked interface.  The following seems to work well
     (notice that resolution is floating point).  KWM 6/6/01
    */
-  unsigned short tmp;
-  int size;
-  TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGEWIDTH, (int)&size);
-  info->ncols((size_t)size);
-  TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGELENGTH, (int)&size);
-  info->nrows((size_t)size);
-  TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &tmp);
-  info->depth((size_t)tmp);
-  float res;
-  TIFFGetFieldDefaulted(tif, TIFFTAG_XRESOLUTION, &res);
-  info->x_resolution(res);
-  TIFFGetFieldDefaulted(tif, TIFFTAG_YRESOLUTION, &res);
-  info->y_resolution(res);
-  TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &tmp);
-  info->ncolors((size_t)tmp);
-  TIFFGetFieldDefaulted(tif, TIFFTAG_PHOTOMETRIC, &tmp);
-  info->inverted(tmp == PHOTOMETRIC_MINISWHITE);
-
-  TIFFClose(tif);
+  try {
+    unsigned short tmp;
+    int size;
+    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGEWIDTH, (int)&size);
+    info->ncols((size_t)size);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGELENGTH, (int)&size);
+    info->nrows((size_t)size);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &tmp);
+    info->depth((size_t)tmp);
+    float res;
+    TIFFGetFieldDefaulted(tif, TIFFTAG_XRESOLUTION, &res);
+    info->x_resolution(res);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_YRESOLUTION, &res);
+    info->y_resolution(res);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &tmp);
+    info->ncolors((size_t)tmp);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_PHOTOMETRIC, &tmp);
+    info->inverted(tmp == PHOTOMETRIC_MINISWHITE);
+    
+    TIFFClose(tif);
+  } catch (std::exception e) {
+    TIFFSetErrorHandler(saved_handler);
+    delete info;
+  }
   TIFFSetErrorHandler(saved_handler);
   return info;
 }
@@ -104,7 +109,7 @@ namespace {
 	  tmp = pixel_traits<OneBitPixel>::black();
 	else
 	  tmp = pixel_traits<OneBitPixel>::white(); 
-	matrix.set(i, j, tmp);
+	matrix.set(Point(j, i), tmp);
 	if (k == 0)
 	  k = 8;
       }
@@ -322,7 +327,7 @@ Image* load_tiff(const char* filename, int storage) {
       if (storage == DENSE) {
 	typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
 	fact_type::image_type*
-	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
+	  image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	delete info;
@@ -331,7 +336,7 @@ Image* load_tiff(const char* filename, int storage) {
       } else {
 	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
 	fact_type::image_type*
-	  image = fact_type::create(0, 0, info->nrows(), info->ncols());
+	  image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
 	image->resolution(info->x_resolution());
 	tiff_load_onebit(*image, *info, filename);
 	delete info;
@@ -348,7 +353,7 @@ Image* load_tiff(const char* filename, int storage) {
   if (info->ncolors() == 3) {
     typedef TypeIdImageFactory<RGB, DENSE> fact;
     fact::image_type* image =
-      fact::create(0, 0, info->nrows(), info->ncols());
+      fact::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
     tiff_load_rgb(*image, *info, filename);
     delete info;
     TIFFSetErrorHandler(saved_handler);
@@ -356,7 +361,7 @@ Image* load_tiff(const char* filename, int storage) {
   } else if (info->depth() == 8) {
     typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
     fact_type::image_type*
-      image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
     image->resolution(info->x_resolution());
     tiff_load_greyscale(*image, *info, filename);
     delete info;
@@ -365,7 +370,7 @@ Image* load_tiff(const char* filename, int storage) {
   } else if (info->depth() == 16) {
     typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
     fact_type::image_type*
-      image = fact_type::create(0, 0, info->nrows(), info->ncols());
+      image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
     image->resolution(info->x_resolution());
     tiff_load_greyscale(*image, *info, filename);
     delete info;
@@ -392,6 +397,7 @@ void save_tiff(const T& matrix, const char* filename) {
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, matrix.resolution());
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, matrix.ncolors());
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+
 
   tiff_saver<typename T::value_type> saver;
   saver(matrix, tif);

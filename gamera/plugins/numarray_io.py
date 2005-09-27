@@ -41,6 +41,8 @@ else:
     class from_numarray(PluginFunction):
         '''Instantiates a Gamera image from a numarray
 multi-dimensional array *array*.
+
+Optionally, an *offset* for the image data may be provided.
             
 The array must be one of the following types and will map to
 the corresponding Gamera image type:
@@ -76,12 +78,17 @@ To use this function, which is not a method on images, do the following:
         args = Args([Class("array")])
         return_type = ImageType(ALL)
         pure_python = True
-        def __call__(array):
+        def __call__(array, offset=None):
             from gamera.plugins import _string_io
+            from gamera.core import Point, Dim
+            if offset is None:
+                offset = Point(0, 0)
             pixel_type = from_numarray._check_input(array)
-            return _string_io._from_raw_string(array.shape[0], array.shape[1],
-                                               pixel_type, DENSE,
-                                               array.tostring())
+            return _string_io._from_raw_string(
+                offset,
+                Dim(array.shape[1], array.shape[0]),
+                pixel_type, DENSE,
+                array.tostring())
         __call__ = staticmethod(__call__)
 
         def _check_input(array):

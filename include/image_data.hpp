@@ -38,34 +38,88 @@ namespace Gamera {
 
   class ImageDataBase {
   public:
+
+#ifdef GAMERA_DEPRECATED
+    /* 
+ImageDataBase(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y
+= 0, size_t page_offset_x = 0) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageDataBase(Dim(ncols, nrows), Point(page_offset_x, page_offset_y) = (0, 0)) instead.
+    */
     ImageDataBase(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-		  size_t page_offset_x = 0) {
-      if (nrows < 1 || ncols < 1)
-	throw std::range_error("nrows and ncols must be >= 1.");
-      m_size = nrows * ncols;
-      m_stride = ncols;
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+		  size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif /* GAMERA_DEPRECATED */
+
+    ImageDataBase(const Dim& dim, const Point& offset) {
+      m_size = (dim.nrows() * dim.ncols());
+      m_stride = dim.ncols();
+      m_page_offset_x = offset.x();
+      m_page_offset_y = offset.y();
       m_user_data = 0;
     }
+
+    ImageDataBase(const Dim& dim) {
+      m_size = (dim.nrows() * dim.ncols());
+      m_stride = dim.ncols();
+      m_page_offset_x = 0;
+      m_page_offset_y = 0;
+      m_user_data = 0;
+    }
+
+#ifdef GAMERA_DEPRECATED
+    /* 
+ImageDataBase(const Size& size, size_t page_offset_y = 0, size_t
+page_offset_x = 0) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageDataBase(Size(width, height), Point(page_offset_x, page_offset_y) = (0, 0)) instead.
+    */
     ImageDataBase(const Size& size, size_t page_offset_y = 0,
-		  size_t page_offset_x = 0) {
+		  size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageDataBase(const Size& size, const Point& offset) {
       m_size = (size.height() + 1) * (size.width() + 1);
       m_stride = size.width() + 1;
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+      m_page_offset_x = offset.x();
+      m_page_offset_y = offset.y();
       m_user_data = 0;
     }
+
+    ImageDataBase(const Size& size) {
+      m_size = (size.height() + 1) * (size.width() + 1);
+      m_stride = size.width() + 1;
+      m_page_offset_x = 0;
+      m_page_offset_y = 0;
+      m_user_data = 0;
+    }
+
+#ifdef GAMERA_DEPRECATED
+    /* 
+ImageDataBase(Dimensions& dim, size_t page_offset_y = 0, size_t
+page_offset_x = 0) is deprecated.
+
+Reason: (x, y) coordinate consistency.  (Dimensions is now deprecated in favor of Dim).
+
+Use ImageDataBase(Dim(ncols, nrows), Point(page_offset_x, page_offset_y) = (0, 0)) instead.
+    */
     ImageDataBase(const Dimensions& dim, size_t page_offset_y = 0,
-		  size_t page_offset_x = 0) {
-      if (dim.nrows() < 1 || dim.ncols() < 1)
+		  size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageDataBase(const Rect& rect) {
+      if (rect.nrows() < 1 || rect.ncols() < 1)
 	throw std::range_error("nrows and ncols must be >= 1.");
-      m_size = dim.nrows() * dim.ncols();
-      m_stride = dim.ncols();
-      m_page_offset_x = page_offset_x;
-      m_page_offset_y = page_offset_y;
+      m_size = rect.nrows() * rect.ncols();
+      m_stride = rect.ncols();
+      m_page_offset_x = rect.ul_x();
+      m_page_offset_y = rect.ul_y();
       m_user_data = 0;
     }
+
     virtual ~ImageDataBase() {
     }
 
@@ -75,8 +129,10 @@ namespace Gamera {
     size_t stride() const { return m_stride; }
     size_t ncols() const { return m_stride; }
     size_t nrows() const { return size() / m_stride; }
+    Dim dim() const { return Dim(m_stride, size() / m_stride); }
     size_t page_offset_x() const { return m_page_offset_x; }
     size_t page_offset_y() const { return m_page_offset_y; }
+    Point offset() const { return Point(m_page_offset_x, m_page_offset_y); }
     size_t size() const { return m_size; }
     virtual size_t bytes() const = 0;
     virtual double mbytes() const = 0;
@@ -94,6 +150,7 @@ namespace Gamera {
       do_resize((m_size / m_stride) * m_stride);
     }
     virtual void dimensions(size_t rows, size_t cols) = 0;
+    virtual void dim(const Dim& dim) = 0;
   public:
     void* m_user_data;
   protected:
@@ -103,6 +160,41 @@ namespace Gamera {
     size_t m_page_offset_x;
     size_t m_page_offset_y;
   };
+
+#ifdef GAMERA_DEPRECATED  
+  inline ImageDataBase::ImageDataBase(size_t nrows, size_t ncols, 
+				      size_t page_offset_y, 
+				      size_t page_offset_x) {
+    if (nrows < 1 || ncols < 1)
+      throw std::range_error("nrows and ncols must be >= 1.");
+    m_size = nrows * ncols;
+    m_stride = ncols;
+    m_page_offset_x = page_offset_x;
+    m_page_offset_y = page_offset_y;
+    m_user_data = 0;
+  }
+  
+  inline ImageDataBase::ImageDataBase(const Size& size, size_t page_offset_y,
+				      size_t page_offset_x) {
+    m_size = (size.height() + 1) * (size.width() + 1);
+    m_stride = size.width() + 1;
+    m_page_offset_x = page_offset_x;
+    m_page_offset_y = page_offset_y;
+    m_user_data = 0;
+  }
+
+  inline ImageDataBase::ImageDataBase(const Dimensions& dim, 
+				      size_t page_offset_y, 
+				      size_t page_offset_x) {
+    if (dim.nrows() < 1 || dim.ncols() < 1)
+      throw std::range_error("nrows and ncols must be >= 1.");
+    m_size = dim.nrows() * dim.ncols();
+    m_stride = dim.ncols();
+    m_page_offset_x = page_offset_x;
+    m_page_offset_y = page_offset_y;
+    m_user_data = 0;
+  }
+#endif
 
   template<class T>
   class ImageData : public ImageDataBase {
@@ -117,24 +209,73 @@ namespace Gamera {
     typedef T* iterator;
     typedef const T* const_iterator;
 
+#ifdef GAMERA_DEPRECATED
+    /* 
+ImageData(size_t nrows, size_t ncols, size_t page_offset_y, size_t page_offset_x) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageData(Dim(ncols, nrows), Point(page_offset_x, page_offset_y) = (0, 0))
+instead.
+    */
     ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-	      size_t page_offset_x = 0) : ImageDataBase(nrows, ncols,
-							page_offset_y,
-							page_offset_x) {
+	      size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageData(const Dim& dim, const Point& offset) : 
+      ImageDataBase(dim, offset) {
       m_data = 0;
       create_data();
     }
-    ImageData(const Size& size, size_t page_offset_y = 0,
-	      size_t page_offset_x = 0) : ImageDataBase(size,
-							page_offset_y,
-							page_offset_x) {
+
+    ImageData(const Dim& dim) : 
+      ImageDataBase(dim) {
       m_data = 0;
       create_data();
     }
+
+#ifdef GAMERA_DEPRECATED
+    /* 
+ImageData(const Size& size, size_t page_offset_y = 0, size_t page_offset_x = 0)
+is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageData(Size(width, height), Point(page_offset_x, page_offset_y)
+= (0, 0)) instead.  
+    */ 
+    ImageData(const Size& size, size_t page_offset_y = 0, 
+	      size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageData(const Size& size, const Point& offset) :
+      ImageDataBase(size, offset) { 
+      m_data = 0;
+      create_data(); 
+    }
+
+    ImageData(const Size& size) : 
+      ImageDataBase(size) { 
+      m_data = 0;
+      create_data();
+    }
+
+#ifdef GAMERA_DEPRECATED 
+    /* 
+ImageData(Dimensions& dim, size_t page_offset_y = 0, size_t
+page_offset_x = 0) is deprecated.
+
+Reason: (x, y) coordinate consistency.  (Dimensions is now deprecated in favor of Dim).
+
+Use ImageData(Dim(ncols, nrows), Point(page_offset_x, page_offset_y))
+instead.
+    */
     ImageData(const Dimensions& dim, size_t page_offset_y = 0,
-	      size_t page_offset_x = 0) : ImageDataBase(dim,
-							page_offset_y,
-							page_offset_x) {
+	      size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageData(const Rect& rect) : 
+      ImageDataBase(rect) { 
       m_data = 0;
       create_data();
     }
@@ -152,7 +293,11 @@ namespace Gamera {
     virtual double mbytes() const { return (m_size * sizeof(T)) / 1048576.0; }
     virtual void dimensions(size_t rows, size_t cols) {
       m_stride = cols; do_resize(rows * cols); }
-
+    virtual void dim(const Dim& dim) {
+      m_stride = dim.ncols(); do_resize(dim.nrows() * dim.ncols()); }
+    virtual Dim dim() const {
+      return Dim(m_stride, size() / m_stride);      
+    }
 
     /*
       Iterators
@@ -193,6 +338,32 @@ namespace Gamera {
 
     T* m_data;
   };
+
+#ifdef GAMERA_DEPRECATED
+  template<class T>
+  ImageData<T>::ImageData(size_t nrows, size_t ncols, size_t page_offset_y,
+			  size_t page_offset_x) : 
+    ImageDataBase(Dim(ncols, nrows), Point(page_offset_x, page_offset_y)) {
+    m_data = 0;
+    create_data();
+  }
+
+  template<class T>
+  ImageData<T>::ImageData(const Size& size, size_t page_offset_y, 
+			  size_t page_offset_x) :
+    ImageDataBase(size, Point(page_offset_x, page_offset_y)) {
+    m_data = 0;
+    create_data();
+  }
+
+  template<class T>
+  ImageData<T>::ImageData(const Dimensions& dim, size_t page_offset_y,
+			  size_t page_offset_x) : 
+    ImageDataBase(Dim(dim.ncols(), dim.nrows()), Point(page_offset_x, page_offset_y)) {
+    m_data = 0;
+    create_data();
+  }
+#endif
 }
 
 #endif

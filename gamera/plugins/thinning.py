@@ -18,6 +18,7 @@
 #
 
 from gamera.plugin import *
+import _thinning
 
 class Thinning(PluginFunction):
     self_type = ImageType([ONEBIT])
@@ -25,7 +26,11 @@ class Thinning(PluginFunction):
     doc_examples = [(ONEBIT,)]
 
 class thin_zs(Thinning):
-    """Thins (skeletonizes) a ONEBIT image using the Zhang and Suen algorithm
+    """Thins (skeletonizes) a ONEBIT image using the Zhang and Suen algorithm.
+
+The resulting skeleton is not a medial axis transformation, and the
+ends of the skeleton will not extend to the edges of the original
+image.
 
 T. Y. Zhang and C. Y. Suen. 1984.
 A Fast Parallel Algorithm for Thinning Digital Patterns.,
@@ -36,14 +41,15 @@ R. C. Gonzalez and P. Wintz. 1987
 2. edition. 398-402. 
 """
     pass
-    
-class thin_hs(Thinning):
-    """Thins (skeletonizes) a ONEBIT image using the Haralick and
-Shapiro algorithm.
 
-While this algorithm is significantly slower than thin_zs_ and
-thin_lc_, it has the interesting property that all pixels are never
-more than 4-connected.
+_hs_common_docstring = """Derives the medial axis transformation from a ONEBIT image
+using the Haralick and Shapiro algorithm.
+
+%s
+
+Unlike thin_zs_ and thin_lc_, this function performs a medial axis
+transformation, and the ends of the skeleton extend to the corners of
+the original image.
 
 Consider using thin_hs_large_image_ instead, for faster performance on
 large images with a lot of connected components.
@@ -53,7 +59,16 @@ R. M. Haralick and L. G. Shapiro. 1992.
 Vol. 1, Chapter 5 (especially 5.10.1).
 Reading, MA: Addison-Wesley.
 """
+    
+class thin_hs(Thinning):
+    _hs_common_docstring % "This function is an alias for medial_axis_transform_hs_."
     pass
+
+class medial_axis_transform_hs(Thinning):
+    _hs_common_docstring % "This function is an alias for thin_hs_."
+    pure_python = True
+    def __call__(self):
+        return _thinning.thin_hs(self)
 
 class thin_hs_large_image(Thinning):
     """Thins (skeletonizes) a ONEBIT
@@ -75,8 +90,21 @@ overhead, which is why both versions are included.
         return copy
     __call__ = staticmethod(__call__)
 
+class medial_axis_transform_large_image_hs(Thinning):
+    """This function is an alias for thin_hs_large_image_."""
+    pure_python = True
+    def __call__(self):
+        return thin_hs_large_image()(self)
+
 class thin_lc(Thinning):
     """Thins (skeletonizes) a ONEBIT image using the Lee and Chen algorithm.
+
+This function is a simple extension to the Zhang and Suen algorithm in
+thin_zs_ that ensure that no two pixels are more than 4-connected.
+
+The resulting skeleton is not a medial axis transformation, and the
+ends of the skeleton will not extend to the edges of the original
+image.
 
 H.-J. Lee and B. Chen. 1992.
 Recognition of handwritten chinese characters via short
@@ -86,10 +114,13 @@ line segments. *Pattern Recognition*. 25(5) 543-552.
 
 class ThinningModule(PluginModule):
     category = "Filter/Thinning"
-    functions = [thin_zs, thin_hs, thin_hs_large_image, thin_lc]
+    functions = [thin_zs, thin_hs, medial_axis_transform_hs,
+                 thin_hs_large_image, medial_axis_transform_large_image_hs,
+                 thin_lc]
     cpp_headers = ["thinning.hpp"]
     author = "Michael Droettboom and Karl MacMillan (based on code by Øivind Due Trier and Qian Huang)"
     url = "http://gamera.dkc.jhu.edu/"
 module = ThinningModule()
 
 del Thinning
+del _hs_common_docstring

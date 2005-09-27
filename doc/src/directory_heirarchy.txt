@@ -4,74 +4,83 @@ The Directory Hierarchy
 
 The Gamera source tree looks something like this:
 
-+----------+----------------------------------------------------------------+
-| ./       | Basic information files for building Gamera.                   |
-|          +---------------+------------------------------------------------+
-|          | setup.py      | A Python ``distutils``-based build script.     |
-|          |               | See `building and installing Gamera`_.         |
-+----------+---------------+------------------------------------------------+
-| doc/     | Documentation for Gamera                                       |
-|          +---------------+------------------------------------------------+
-|          | gendoc.py     | Script to generate documentation.              |
-|          |               | (requires that docutils_ be installed)         |
-|          +---------------+------------------------------------------------+
-|          | src/          | Source files for the static documentation.     |
-|          |               | These are written in the reStructuredText      |
-|          |               | format used by docutils_.                      |
-|          +---------------+------------------------------------------------+
-|          | html/         | The generated HTML documentation.              |
-+----------+---------------+------------------------------------------------+
-| gamera/  | All the files needed by Gamera at runtime.                     |
-|          | Since Python is interpreted, this means                        |
-|          | Python source files.                                           |
-|          +---------------+------------------------------------------------+
-|          | gui/          | Python source related to the GUI.  These are   |
-|          |               | optional.                                      |
-|          +---------------+------------------------------------------------+
-|          | plugins/      | Python source for plugins.  This is mostly     |
-|          |               | metadata that describes how to compile and run |
-|          |               | C++ plugins.  See `Writing Gamera Plugins`_    |
-|          |               | for more info.                                 |
-|          +---------------+------------------------------------------------+
-|	   | pixmaps/      | Images and icons used by the Gamera GUI.       |
-|          |               | These PNG files are converted into Python      |
-|          |               | source code (``gamera/gui/gamera_icons.py``)   |
-|          |               | using the ``convert_images.py`` script.        |
-+----------+---------------+------------------------------------------------+
-| include/ | C++ header (``.hpp``) files.                                   |
-|          | Since the Gamera C++ code is so heavily                        |
-|          | templatized, most of the code is here.                         |
-|          +---------------+------------------------------------------------+
-|          | plugins/      | Source code for the C++-based plugins.         |
-|          +---------------+------------------------------------------------+
-|          | vigra/        | Code from the `VIGRA Computer Vision Library`_ |
-|          |               | used by Gamera.  Gamera can use these methods  |
-|          |               | directly thanks to the ``vigra_*.hpp`` headers.|
-+----------+---------------+------------------------------------------------+
-| misc/    | Other miscellaneous files for information that                 |
-|          | are not used directly by Gamera.                               |
-|          +---------------+------------------------------------------------+
-|          | gamera.dtd    | An XML DTD for Gamera's XML file format.       |
-+----------+---------------+------------------------------------------------+
-| src/     | Source code (that compiles directly to object                  |
-|          | files.)                                                        |
-|          +---------------+------------------------------------------------+
-|          | ga/	   | GALib_: Matthew's Genetic Algorithm Library    |
-|          |               | Used to optimize the kNN classifier.           |
-|          +---------------+------------------------------------------------+
-|          | graph/	   | A graph library.  API should be considered     |
-|          |               | unstable.                                      |
-|          +---------------+------------------------------------------------+
-|          | libtiff/      | libtiff_: A library for reading/writting Tagged|
-|          |               | Image Format Files (otherwise known as *Tons of|
-|          |               | Incompatible File Formats*).  Included for     |
-|          |               | compiling convenience on MS-Windows and Mac    |
-|          |               | OS-X.                                          |
-+----------+---------------+------------------------------------------------+
-| examples/| Basic Gamera scripts to be used as starting points for end-user|
-|          | applications.  See the `script-writing documentation`_ for more|
-|          | information                                                    |
-+----------+---------------+------------------------------------------------+
++---------------------+----------------------------------------------------------------+
+| ./                  | Basic information files for building Gamera.                   |
+|                     +---------------+------------------------------------------------+
+|                     | setup.py      | A Python ``distutils``-based build script.     |
+|                     |               | See `building and installing Gamera`_.         |
++---------------------+---------------+------------------------------------------------+
+| doc/                | Documentation for Gamera                                       |
+|                     +---------------+------------------------------------------------+
+|                     | gendoc.py     | Script to generate documentation.              |
+|                     |               | (requires that docutils_ be installed)         |
+|                     +---------------+------------------------------------------------+
+|                     | src/          | Source files for the static documentation.     |
+|                     |               | These are written in the reStructuredText      |
+|                     |               | format used by docutils_.                      |
+|                     +---------------+------------------------------------------------+
+|                     | html/         | The generated HTML documentation.              |
++---------------------+---------------+------------------------------------------------+
+| gamera/             | All the files needed by Gamera at runtime.                     |
+|                     | Since Python is interpreted, this means                        |
+|                     | Python source files.                                           |
+|                     +---------------+------------------------------------------------+
+|                     | gui/          | Python source related to the GUI.  These are   |
+|                     |               | optional.                                      |
+|                     +---------------+------------------------------------------------+
+|                     | plugins/      | Python source for plugins.  This is mostly     |
+|                     |               | metadata that describes how to compile and run |
+|                     |               | C++ plugins.  See `Writing Gamera Plugins`_    |
+|                     |               | for more info.                                 |
+|                     +---------------+------------------------------------------------+
+|                     | pixmaps/      | Images and icons used by the Gamera GUI.       |
+|                     |               | These PNG files are converted into Python      |
+|                     |               | source code (``gamera/gui/gamera_icons.py``)   |
+|                     |               | using the ``convert_images.py`` script.        |
++---------------------+---------------+------------------------------------------------+
+| include/            | C++ header (``.hpp``) files.                                   |
+|                     | Since the Gamera C++ code is so heavily                        |
+|                     | templatized, most of the code is here.                         |
+|                     +---------------+------------------------------------------------+
+|                     | plugins/      | Source code for the C++-based plugins.         |
+|                     +---------------+------------------------------------------------+
+|                     | vigra/        | Code from the `VIGRA Computer Vision Library`_ |
+|                     |               | used by Gamera.  Gamera can use these methods  |
+|                     |               | directly thanks to the ``vigra_*.hpp`` headers.|
++---------------------+---------------+------------------------------------------------+
+| misc/               | Other miscellaneous files for information that                 |
+|                     | are not used directly by Gamera.                               |
+|                     +---------------+------------------------------------------------+
+|                     | gamera.dtd    | An XML DTD for Gamera's XML file format.       |
++---------------------+---------------+------------------------------------------------+
+| src/                | Source code (that compiles directly to object                  |
+|                     | files.)                                                        |
+|                     +---------------+------------------------------------------------+
+|                     | ga/           | GALib_: Matthew's Genetic Algorithm Library    |
+|                     |               | Used to optimize the kNN classifier.           |
+|                     +---------------+------------------------------------------------+
+|                     | graph/        | A graph library.  API should be considered     |
+|                     |               | unstable.                                      |
+|                     +---------------+------------------------------------------------+
+|                     | libtiff/      | libtiff_: A library for reading/writting Tagged|
+|                     |               | Image Format Files (otherwise known as *Tons of|
+|                     |               | Incompatible File Formats*).  Included for     |
+|                     |               | compiling convenience on MS-Windows and Mac    |
+|                     |               | OS-X.                                          |
++---------------------+---------------+------------------------------------------------+
+| tests/              | Includes unit tests for running with the ``py.test`` framework.|
+|                     | These files are mainly useful only for the developers of       |
+|                     | Gamera.                                                        |
++---------------------+---------------+------------------------------------------------+
+| migration_tools/    | Some tools to help migrate scripts from Gamera 2.x to Gamera   |
+|                     | 3.x                                                            |
+|                     |                                                                |
+|                     |                                                                |
++---------------------+---------------+------------------------------------------------+
+| examples/           | Basic Gamera scripts to be used as starting points for end-user|
+|                     | applications.  See the `script-writing documentation`_ for more|
+|                     | information                                                    |
++---------------------+---------------+------------------------------------------------+
 
 .. _building and installing Gamera: install.html
 .. _docutils: http://docutils.sf.net/

@@ -76,12 +76,15 @@ To use this function, which is not a method on images, do the following:
         args = Args([Class("array")])
         return_type = ImageType(ALL)
         pure_python = True
-        def __call__(array):
+        def __call__(array, offset=(0, 0)):
             from gamera.plugins import _string_io
+            from gamera.core import Dim
             pixel_type = from_numeric._check_input(array)
-            return _string_io._from_raw_string(array.shape[0], array.shape[1],
-                                         pixel_type, DENSE,
-                                         array.tostring())
+            return _string_io._from_raw_string(
+                offset,
+                Dim(array.shape[1], array.shape[0]),
+                pixel_type, DENSE,
+                array.tostring())
         __call__ = staticmethod(__call__)
 
         def _check_input(array):

@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from wxPython.wx import *   # wxPython
+import wx
 import weakref              # Python standard library
 from gamera.core import *   # Gamera-specific
 from gamera import util, plugin
@@ -38,7 +38,6 @@ def set_shell_frame(sf):
 
 ######################################################################
 
-   
 _members_for_menu = ('pixel_type_name',
                      'storage_format_name',
                      'ul_x', 'ul_y', 'nrows', 'ncols',
@@ -69,7 +68,7 @@ class ImageMenu:
          gui_util.message("All selected images are not of the same type.")
       self.image_name = name_
 
-      self._method_id = 10000
+      self._menu_ids = []
       members = members_for_menu(self.images[0])
       methods = methods_for_menu(self.images[0])
       menu = self.create_menu(
@@ -78,41 +77,46 @@ class ImageMenu:
         self.images[0].pixel_type_name,
         extra_methods)
       self.did_something = 0
-      self.parent.PopupMenu(menu, wxPoint(x, y))
-      for i in range(10000, self._method_id):
+      self.parent.PopupMenu(menu, wx.Point(x, y))
+      for i in self._menu_ids:
          self.parent.Disconnect(i)
       menu.Destroy()
+
+   def get_id(self):
+      id = wx.NewId()
+      self._menu_ids.append(id)
+      return id
 
 ##   def __del__(self):
 ##     print 'ImageMenu deleted'
 
    # Given a list of variables and methods, put it all together
    def create_menu(self, members, methods, type, type_name, extra_methods):
-      menu = wxMenu()
+      menu = wx.Menu()
       # Top line
       if self.mode == HELP_MODE:
          menu.Append(0, "Help")
-      menu.Append(self._method_id, type_name + " Image")
-      self._method_id += 1
+      id = self.get_id()
+      menu.Append(id, type_name + " Image")
       menu.AppendSeparator()
-      menu.Append(self._method_id, "new reference")
-      EVT_MENU(self.parent, self._method_id, self.OnCreateReference)
-      self._method_id += 1
-      menu.Append(self._method_id, "new copy")
-      EVT_MENU(self.parent, self._method_id, self.OnCreateCopy)
-      self._method_id += 1
-      menu.Append(self._method_id, "delete image")
-      EVT_MENU(self.parent, self._method_id, self.OnDeleteImage)
-      self._method_id += 1
+      id = self.get_id()
+      menu.Append(id, "new reference")
+      wx.EVT_MENU(self.parent, id, self.OnCreateReference)
+      id = self.get_id()
+      menu.Append(id, "new copy")
+      wx.EVT_MENU(self.parent, id, self.OnCreateCopy)
+      id = self.get_id()
+      menu.Append(id, "delete image")
+      wx.EVT_MENU(self.parent, id, self.OnDeleteImage)
       menu.AppendSeparator()
 
-      info_menu = wxMenu()
-      menu.AppendMenu(self._method_id, "Info", info_menu)
-      self._method_id += 1
+      info_menu = wx.Menu()
+      id = self.get_id()
+      menu.AppendMenu(id, "Info", info_menu)
       # Variables
       for member in members:
-         info_menu.Append(self._method_id, member)
-         self._method_id += 1
+         id = self.get_id()
+         info_menu.Append(id, member)
 
       # Methods
       menu.AppendSeparator()
@@ -131,14 +135,14 @@ class ImageMenu:
       items.sort()
       for key, val in items:
          if type(val) == dict:
-            item = self.create_methods(val, wxMenu())
-            menu.AppendMenu(self._method_id, key, item)
-            self._method_id += 1
+            item = self.create_methods(val, wx.Menu())
+            id = self.get_id()
+            menu.AppendMenu(id, key, item)
          else:
-            menu.Append(self._method_id, key)
-            EVT_MENU(self.parent, self._method_id, self.OnPopupFunction)
-            self.functions[self._method_id] = val
-            self._method_id += 1
+            id = self.get_id()
+            menu.Append(id, key)
+            wx.EVT_MENU(self.parent, id, self.OnPopupFunction)
+            self.functions[id] = val
       return menu
 
    def create_extra_methods(self, methods, menu):
@@ -146,13 +150,13 @@ class ImageMenu:
       items.sort()
       for key, val in items:
          if type(val) == dict:
-            item = self.create_extra_methods(val, wxMenu())
-            menu.AppendMenu(self._method_id, key, item)
-            self._method_id += 1
+            id = self.get_id()
+            item = self.create_extra_methods(val, wx.Menu())
+            menu.AppendMenu(id, key, item)
          else:
-            menu.Append(self._method_id, key)
-            EVT_MENU(self.parent, self._method_id, val)
-            self._method_id += 1
+            id = self.get_id()
+            menu.Append(id, key)
+            wx.EVT_MENU(self.parent, id, val)
       return menu
 
    def get_shell(self):
@@ -204,7 +208,13 @@ class ImageMenu:
          # if not, we can just use empty parentheses
          return function.__name__ + "()"
       # else, display the argument gui and use what it returns
-      return function.args.show(self.parent, sh.GetLocals(), function.__name__)
+      try:
+         result = function.args.show(
+            self.parent, sh.GetLocals(),
+            function.__name__, docstring=function.__call__.__doc__)
+      except Exception, e:
+         print e
+      return result
 
    def get_result_name(self, function, dict):
       if function.return_type not in ('', None):
@@ -229,14 +239,14 @@ class ImageMenu:
             if result_name is None: return
             # If there is no image name, we have to run the code locally (i.e.
             # not in the shell)
-            wxBeginBusyCursor()
+            wx.BeginBusyCursor()
             try:
                if self.image_name is None:
                   self._run_locally(sh, result_name, func_call)
                else:
                   self._run_in_shell(sh, result_name, func_call)
             finally:
-               wxEndBusyCursor()
+               wx.EndBusyCursor()
       self.did_something = 1
       sh.update()
 

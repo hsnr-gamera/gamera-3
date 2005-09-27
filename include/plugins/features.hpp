@@ -286,12 +286,12 @@ namespace Gamera {
     double cols = image.width() / 4.0;
     size_t rows_int = size_t(rows + 1);
     size_t cols_int = size_t(cols + 1);
+    Dim size(cols_int, rows_int);
     double start_col = double(image.offset_x());
     for (size_t i = 0; i < 4; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 4; ++j) {
-	T tmp(image, size_t(start_row), size_t(start_col),
-	      rows_int, cols_int);
+	T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
 	*(buf++) = volume(tmp);
 	start_row += rows;
       }
@@ -311,12 +311,12 @@ namespace Gamera {
     double cols = image.width() / 8.0;
     size_t rows_int = size_t(rows + 1);
     size_t cols_int = size_t(cols + 1);
+    Dim size(cols_int, rows_int);
     double start_col = double(image.offset_x());
     for (size_t i = 0; i < 8; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 8; ++j) {
-	T tmp(image, size_t(start_row), size_t(start_col),
-	      rows_int, cols_int);
+	T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
 	*(buf++) = volume(tmp);
 	start_row += rows;
       }
@@ -430,7 +430,7 @@ namespace Gamera {
       size_t y_before = (y == 0) ? 1 : y - 1;
       size_t y_after = (y == skel->nrows() - 1) ? skel->nrows() - 2 : y + 1;
       for (size_t x = 0; x < skel->ncols(); ++x) {
-	if (is_black(skel->get(y, x))) {
+	if (is_black(skel->get(Point(x, y)))) {
 	  ++total_pixels;
 	  center_x += x;
 	  center_y += y;
@@ -467,7 +467,7 @@ namespace Gamera {
     size_t x_axis_crossings = 0;
     bool last_pixel = false;
     for (size_t y = 0; y < skel->nrows(); ++y)
-      if (is_black(skel->get(y, center_x)) && !last_pixel) {
+      if (is_black(skel->get(Point(center_x, y))) && !last_pixel) {
 	last_pixel = true;
 	++x_axis_crossings;
       } else 
@@ -477,7 +477,7 @@ namespace Gamera {
     size_t y_axis_crossings = 0;
     last_pixel = false;
     for (size_t x = 0; x < skel->ncols(); ++x)
-      if (is_black(skel->get(center_y, x)) && !last_pixel) {
+      if (is_black(skel->get(Point(x, center_y))) && !last_pixel) {
 	last_pixel = true;
 	++y_axis_crossings;
       } else 

@@ -107,7 +107,7 @@ PyObject* edge___repr__(PyObject* self) {
 
 PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   PyObject* data = NULL;
-  if (PyArg_ParseTuple(args, "|O", &data) <= 0)
+  if (PyArg_ParseTuple(args, "|O:Edge.__call__", &data) <= 0)
     return 0;
   if (data == NULL)
     return edge_get_cost(self);

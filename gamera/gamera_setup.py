@@ -73,7 +73,8 @@ elif sys.platform == "win32":
 sys.path.append("gamera")
 import generate
 
-extras = {'extra_compile_args': ['-Wall']}
+extras = {'extra_compile_args': ['-Wall'],
+          'define_macros': [('GAMERA_INCLUDE_DEPRECATED', '1')]}
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
    extras['extra_compile_args'] = ['/GR']#, "/Zi"]
 elif sys.platform == 'darwin':

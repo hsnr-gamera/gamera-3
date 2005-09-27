@@ -555,10 +555,21 @@ There are essentially two ways to update the progress bar:
 Documenting and unit-testing Plugin functions
 ---------------------------------------------
 
-The docstring of each ``PluginFunction`` class is used to generate
-HTML documentation.  The docstrings should be formatted in
-reStructuredText_, which is becoming a de-facto Python standard for
-documentation, as well as being rather easy to read and use.
+The docstring of each ``PluginFunction`` class is used like a regular
+Python docstring, but also has the following advantages in Gamera:
+ 
+  - It will be included in the automatically generated HTML
+    documentation.
+
+  - It is displayed in the Documentation pane in the Gamera shell
+    window.
+
+  - It is displayed in the automatically-generated dialog box for the
+    plugin.
+
+The docstrings should be formatted in reStructuredText_, which is
+becoming a de-facto Python standard for documentation, as well as
+being rather easy to read and use.
 
 .. _reStructuredText: http://structuredtext.sourceforge.net
 
@@ -627,13 +638,13 @@ not load a standard image.
 
   def __doc_example1__(images):
     from random import randint
-    from gamera.core import Image
-    image = Image(0, 0, 100, 100, RGB, DENSE)
+    from gamera.core import Image, Dim
+    image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
-      image.draw_bezier(randint(0, 100), randint(0, 100),
-                        randint(0, 100), randint(0, 100),
-                        randint(0, 100), randint(0, 100),
-                        randint(0, 100), randint(0, 100),
+      image.draw_bezier((randint(0, 100), randint(0, 100)),
+                        (randint(0, 100), randint(0, 100)),
+                        (randint(0, 100), randint(0, 100)),
+                        (randint(0, 100), randint(0, 100)),
                         RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
     return image
   doc_examples = [__doc_example1__]

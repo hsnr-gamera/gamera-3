@@ -1,0 +1,123 @@
+#!/usr/bin/env python
+
+"""
+The ``gamera_deprecation_filter`` tool is useful for correcting
+calls to deprecated Gamera functions from you C++ code.
+
+This tool only works with ``gcc``, and only on non-MS Windows
+platforms (for some unknown reason.
+
+The output from ``gcc`` about deprecated functions is helpful,
+but is somewhat limited.  For example::
+
+  include/dimensions.hpp:314: warning: `__comp_ctor' is deprecated
+  (declared at include/dimensions.hpp:216)
+
+Here ``__comp_ctor`` refers to the constructor of the Dimensions
+class.  Not only is this cryptic, but it doesn't specify which of the
+overloaded signatures it is referring to (except by line
+numbers).  It also doesn't explain *why* the function call was
+deprecated or suggest a reasonable alternative.
+
+This filter replaces these cryptic warnings with more human-readable
+ones by extracting and displaying the comment associated with the
+deprecated function.  For example, the above warning becomes::
+
+  include/dimensions.hpp:314: warning: deprecated call
+  return Dimensions(nrows(), ncols());
+
+  Dimensions(nrows, ncols) is deprecated.
+
+  Reason: (x, y) coordinate consistency.
+
+  Use Dim(ncols, nrows) instead.
+
+This script can be used as a filter or on a given filename.  Be sure
+to send ``stderr`` to ``gamera_deprecation_filter``.
+
+Usage as a filter::
+
+    $ python setup.py build 2>&1 | ./migration_tools/gamera_deprecation_filter
+
+or offline::
+
+    $ python setup.py build &> log
+    $ ./gamera_deprecation_filter log
+"""
+
+import re
+import sys
+
+def get_lineno(filename, lineno):
+   return open(filename, "r").readlines()[lineno - 1]
+
+comment_cache = {}
+def get_comment_before_lineno(filename, lineno):
+   comment_key = "%s:%d" % (filename, lineno)
+   if comment_cache.has_key(comment_key):
+      return comment_cache[comment_key]
+   
+   lines = open(filename, "r").readlines()
+   comment = []
+   for i in xrange(lineno - 1, -1, -1):
+      if i < 0 or i >= len(lines):
+         raise RuntimeError()
+      find = lines[i].find(r"*/")
+      if find != -1:
+         comment.insert(0, lines[i][:find].strip())
+         break
+   for j in xrange(i - 1, -1, -1):
+      if j < 0 or j >= len(lines):
+         raise RuntimeError()
+      find = lines[j].find(r"/*")
+      if find != -1:
+         comment.insert(0, lines[j][find+2:].strip())
+         break
+      comment.insert(0, lines[j].strip())
+   comment = "\n".join(comment)
+   comment_cache[comment_key] = comment
+   return comment
+
+warning_regex = re.compile("(?P<filename>.+?):(?P<lineno>\d+?): warning: `.+?' is deprecated \(declared at (?P<decl_filename>.+?):(?P<decl_lineno>\d+?)\)")
+def filter_warnings(input_stream, output_stream):
+   duplicates = {}
+   for line in input_stream:
+      match = warning_regex.match(line)
+      if not match is None:
+         filename = match.group("filename")
+         lineno = int(match.group("lineno"))
+         decl_filename = match.group("decl_filename")
+         decl_lineno = int(match.group("decl_lineno"))
+         source_line = get_lineno(filename, lineno).strip()
+         if "// deprecated call" in source_line:
+            print >> output_stream, (
+               "Gamera is making a *deliberate* deprecated call to provide backward\n" +
+               "compatibility.  This does not represent an error.")
+         else:
+            print >> output_stream, "%s:%d: warning: deprecated call" % (filename, lineno)
+            print >> output_stream, source_line.strip()
+            try:
+               comment = get_comment_before_lineno(decl_filename, decl_lineno)
+            except RuntimeError:
+               print >> output_stream, "Information about this deprecation could not be found."
+            else:
+               print >> output_stream, comment.strip()
+            print >> output_stream
+      else:
+         print >> output_stream, line[:-1]
+
+def main():
+   from optparse import OptionParser
+   parser = OptionParser(usage = __doc__)
+   options, args = parser.parse_args()
+   if len(args) > 1:
+      parser.error("You must supply a single filename to filter.")
+   if len(args) == 0:
+      input_stream = sys.stdin
+   else:
+      input_stream = open(args[0], "r")
+   output_stream = sys.stdout
+   filter_warnings(input_stream, output_stream)
+
+if __name__ == "__main__":
+   main()

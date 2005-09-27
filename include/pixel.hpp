@@ -179,6 +179,18 @@ namespace Gamera {
     template<class I>
     Rgb(I i, const I end) : RGBValue<T>(i, end) { }
 
+    /* This is totally arbitrary, and doesn't make sense in terms
+       of "colors", but it will make using RGB as a key in a std::map
+       work.
+    */
+    bool operator<(const Rgb<T>& other) const {
+      const typename vigra::NumericTraits<T>::Promote s = 
+	(typename vigra::NumericTraits<T>::Promote)vigra::NumericTraits<T>::max;
+      const typename vigra::NumericTraits<T>::Promote s2 = s * s;
+      return (red() * s2 + green() * s + blue() <
+	      other.red() * s2 + green() * s + blue());
+    }
+
     /// Set the red component to the passed in value.
     void red(T v) {
       setRed(v);
@@ -298,6 +310,8 @@ namespace Gamera {
 
   /// This is the standard form of the RGB pixels
   typedef Rgb<GreyScalePixel> RGBPixel;
+
+  
   
   /*
    * This is a test for black/white regardless of the pixel type. For some
@@ -311,9 +325,6 @@ namespace Gamera {
    */
   template<class T>
   inline bool is_black(T value) {
-    /* T tmp = value;
-    if (tmp) return true;
-    else return false; */
     return value;
   }
 
@@ -322,9 +333,6 @@ namespace Gamera {
    */
   template<class T>
   inline bool is_white(T value) {
-    /* T tmp = value;
-    if (!tmp) return true;
-    else return false; */
     return !value;
   }
 
@@ -524,7 +532,7 @@ namespace Gamera {
   }
 
   inline GreyScalePixel blend(GreyScalePixel original, GreyScalePixel add, double alpha) {
-    return (GreyScalePixel)(alpha * original + (1.0 - alpha) * add);
+    return (GreyScalePixel)(alpha * double(original) + (1.0 - alpha) * double(add));
   }
 
   inline Grey16Pixel blend(Grey16Pixel original, GreyScalePixel add, double alpha) {

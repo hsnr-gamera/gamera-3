@@ -218,7 +218,7 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_repr = rgbpixel_repr;
   RGBPixelType.tp_str = rgbpixel_str;
   RGBPixelType.tp_hash = rgbpixel_hash;
-  RGBPixelType.tp_doc = "**RGBPixel** (*red*, *green*, *blue*).\n\n"
+  RGBPixelType.tp_doc = "__init__(*red*, *green*, *blue*).\n\n"
     "Example: ``RGBPixel(255, 0, 0)``.\n\n"
     "Each color value is in the range 0-255 (8 bits).\n\n"
     "For more information about color operations, see the `Color plugin docs`__.\n\n"

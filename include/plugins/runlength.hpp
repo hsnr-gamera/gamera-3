@@ -22,81 +22,246 @@
 #include "gamera.hpp"
 #include "python_iterator.hpp"
 #ifndef GAMERA_NO_PYTHON
-  #include "Python.h"
+#include "Python.h"
 #endif
 #include <vector>
 #include <algorithm>
 #include <sstream>
 
+#undef major
+#undef minor
+
 namespace Gamera {
   typedef std::pair<size_t, int> RunPair;
   typedef std::vector<RunPair> RunVector;
 
-  /*
-    Information about runs.
-  */
+  ///////////////////////////////////////////////////////////////////////////
+  // These classes manage the two dimensions on which most of the
+  // functions in this modules are parameterized: color and direction.
+  // These parameters are templatized types in most functions.
+  namespace runs {
+    class White {
+    public:
+      template<class T>
+      inline bool is_self(const T& v) const {
+	return is_white(v);
+      }
+      template<class T>
+      inline bool is_other(const T& v) const {
+	return is_black(v);
+      }
+      template<class T>
+      inline typename T::value_type self(const T& v) const {
+	return white(v);
+      }
+      template<class T>
+      inline typename T::value_type other(const T& v) const {
+	return black(v);
+      }
+    };
 
+    class Black {
+    public:
+      template<class T>
+      inline bool is_self(const T& v) const {
+	return is_black(v);
+      }
+      template<class T>
+      inline bool is_other(const T& v) const {
+	return is_white(v);
+      }
+      template<class T>
+      inline typename T::value_type self(const T& v) const {
+	return black(v);
+      }
+      template<class T>
+      inline typename T::value_type other(const T& v) const {
+	return white(v);
+      }
+    };
+
+    inline Black get_other_color(const White& color) {
+      return Black();
+    }
+
+    inline White get_other_color(const Black& color) {
+      return White();
+    }
+
+    class Horizontal {
+    public:
+      template<class T>
+      inline typename T::const_row_iterator begin(const T& image) const {
+	return image.row_begin();
+      }
+      template<class T>
+      inline typename T::const_row_iterator end(const T& image) const {
+	return image.row_end();
+      }
+      template<class T>
+      inline typename T::row_iterator begin(T& image) const {
+	return image.row_begin();
+      }
+      template<class T>
+      inline typename T::row_iterator end(T& image) const {
+	return image.row_end();
+      }
+      template<class T>
+      size_t major(const T& image) const {
+	return image.nrows();
+      }
+      template<class T>
+      size_t minor(const T& image) const {
+	return image.ncols();
+      }
+    };
+
+    class Vertical {
+    public:
+      template<class T>
+      inline typename T::const_col_iterator begin(const T& image) const {
+	return image.col_begin();
+      }
+      template<class T>
+      inline typename T::const_col_iterator end(const T& image) const {
+	return image.col_end();
+      }
+      template<class T>
+      inline typename T::col_iterator begin(T& image) const {
+	return image.col_begin();
+      }
+      template<class T>
+      inline typename T::col_iterator end(T& image) const {
+	return image.col_end();
+      }
+      template<class T>
+      size_t major(const T& image) const {
+	return image.ncols();
+      }
+      template<class T>
+      size_t minor(const T& image) const {
+	return image.nrows();
+      }
+    };
+
+    template<class T, class Direction>
+    class GetIterator {
+    public:
+      typedef typename T::vec_iterator iterator;
+      typedef typename T::const_vec_iterator const_iterator;
+    };
+
+    template<class T>
+    class GetIterator<T, Vertical> {
+    public:
+      typedef typename T::col_iterator iterator;
+      typedef typename T::const_col_iterator const_iterator;
+    };
+
+    template<class T>
+    class GetIterator<T, Horizontal> {
+    public:
+      typedef typename T::row_iterator iterator;
+      typedef typename T::const_row_iterator const_iterator;
+    };
+  }
+  
+///////////////////////////////////////////////////////////////////////////
+// Finding the end of runs
+  template<class T, class Color>
+  inline void run_end(T& i, const T end, const Color& color) {
+    for (; i != end; ++i) {
+      if (color.is_other(*i))
+	break;
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+black_run_end<T>(T& begin, const T end) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_end(runs::Black(), begin, end) instead.
+  */    
   template<class T>
+  GAMERA_CPP_DEPRECATED
   inline void black_run_end(T& i, const T end) {
-    for (; i != end; ++i) {
-      if (is_white(*i))
-	break;
-    }
+    return run_end(i, end, runs::Black());
   }
+#endif
 
-  template<class T>
-  inline void white_run_end(T& i, const T end) {
-    for (; i != end; ++i) {
-      if (is_black(*i))
-	break;
-    }
-  }
-
+#ifdef GAMERA_DEPRECATED
   /*
-    These functions find the length of the largest run in a a row
-    or column of a image.
-  */
+white_run_end<T>(T& begin, const T end) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_end(runs::White(), begin, end) instead.
+  */    
   template<class T>
-  inline size_t max_black_run(T i, const T end) {
+  GAMERA_CPP_DEPRECATED
+  inline void white_run_end(T& i, const T end) {
+    return run_end(i, end, runs::White());
+  }
+#endif
+
+///////////////////////////////////////////////////////////////////////////
+//  Find the length of the largest run in a a row
+//  or column of a image.
+  template<class T, class Color>
+  inline size_t max_run(T i, const T end, const Color& color) {
     size_t max = 0;
     while (i != end) {
-      if (is_black(*i)) {
+      if (color.is_self(*i)) {
 	T last = i;
-	black_run_end(i, end);
+	run_end(i, end, color);
 	size_t cur_length = i - last;
 	if (cur_length > max)
 	  max = cur_length;
       } else {
-	white_run_end(i, end);
+	run_end(i, end, color);
       }
     }
     return max;
   }
-	
+
+#ifdef GAMERA_DEPRECATED
+  /*
+max_black_run<T>(T& begin, const T end) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use max_run(runs::Black(), begin, end) instead.
+  */    
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  inline size_t max_black_run(T i, const T end) {
+    return max_run(i, end, runs::Black());
+  }
+#endif	
+
+#ifdef GAMERA_DEPRECATED
+  /*
+max_white_run<T>(T& begin, const T end) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use max_run(runs::White(), begin, end) instead.
+  */    
   template<class T>
   inline size_t max_white_run(T i, const T end) {
-    size_t max = 0;
-    while (i != end) {
-      if (is_white(*i)) {
-	T last = i;
-	white_run_end(i, end);
-	size_t cur_length = i - last;
-	if (cur_length > max)
-	  max = cur_length;
-      } else {
-	black_run_end(i, end);
-      }
-    }
-    return max;
+    return max_run(i, end, runs::White());
   }
+#endif
 
-  /*
-    Run-length histograms. These make a histogram of the lenght of the runs
-    in an image. They take an iterator range and a random-access container
-    for the result (that should be appropriately sized). The histogram vector
-    is not filled with zeros so that successive calls can be made to this
-    algorithm with the same vector to do the histogram of an entire image. KWM
-  */
+///////////////////////////////////////////////////////////////////////////
+// Run-length histograms. These make a histogram of the lenght of the
+// runs in an image. They take an iterator range and a random-access
+// container for the result (that should be appropriately sized). The
+// histogram vector is not filled with zeros so that successive calls
+// can be made to this algorithm with the same vector to do the
+// histogram of an entire image. KWM
   
   template<class T>
   struct SortBySecondFunctor {
@@ -109,13 +274,17 @@ namespace Gamera {
 
   RunVector* _sort_run_results(IntVector* hist) {
     RunVector* runs = new RunVector(hist->size());
-    for (size_t i = 0; i < hist->size(); ++i) {
-      (*runs)[i].first = i;
-      (*runs)[i].second = (*hist)[i];
+    try {
+      for (size_t i = 0; i < hist->size(); ++i) {
+	(*runs)[i].first = i;
+	(*runs)[i].second = (*hist)[i];
+      }
+      SortBySecondFunctor<RunPair> func;
+      std::sort(runs->begin(), runs->end(), func);
+    } catch (std::exception e) {
+      delete runs;
+      throw;
     }
-    delete hist;
-    SortBySecondFunctor<RunPair> func;
-    std::sort(runs->begin(), runs->end(), func);
     return runs;
   }
 
@@ -131,255 +300,857 @@ namespace Gamera {
     return result;
   }
 
+  template<class T, class Vec, class Color>
+  inline void run_histogram(T i, const T end, Vec& hist, const Color& color) {
+    while (i != end) {
+      if (color.is_self(*i)) {
+	T last = i;
+	run_end(i, end, color);
+	size_t cur_length = i - last;
+	hist[cur_length]++;
+      } else {
+	run_end(i, end, get_other_color(color));
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+black_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is
+deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_histogram(runs::Black(), begin, end, hist) instead.
+  */    
   template<class T, class Vec>
+  GAMERA_CPP_DEPRECATED
   inline void black_run_histogram(T i, const T end, Vec& hist) {
-    while (i != end) {
-      if (is_black(*i)) {
-	T last = i;
-	black_run_end(i, end);
-	size_t cur_length = i - last;
-	hist[cur_length]++;
-      } else {
-	white_run_end(i, end);
-      }
-    }
+    run_histogram(i, end, hist, runs::Black());
   }
+#endif
 
+#ifdef GAMERA_DEPRECATED
+  /*
+white_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is
+deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_histogram(runs::White(), begin, end, hist) instead.
+  */    
   template<class T, class Vec>
+  GAMERA_CPP_DEPRECATED
   inline void white_run_histogram(T i, const T end, Vec& hist) {
-    while (i != end) {
-      if (is_white(*i)) {
-	T last = i;
-	white_run_end(i, end);
-	size_t cur_length = i - last;
-	hist[cur_length]++;
-      } else {
-	black_run_end(i, end);
-      }
+    run_histogram(i, end, hist, runs::White());
+  }
+#endif
+
+  /* Horizontal run histograms and vertical run histograms use an entirely
+     different algorithm, for efficiency reasons.  These are handled by
+     the overloading on the direction parameter.
+  */
+  template<class T, class Color>
+  IntVector* run_histogram(const T& image, const Color& color, const runs::Horizontal& direction) {
+    typedef typename runs::GetIterator<T, runs::Horizontal>::const_iterator iterator;
+    IntVector* hist = new IntVector(image.ncols() + 1, 0);
+  
+    try {
+      iterator end = direction.end(image);
+      for (iterator i = direction.begin(image); i != end; ++i)
+	run_histogram(i.begin(), i.end(), *hist, color);
+    } catch (std::exception e) {
+      delete hist;
+      throw;
     }
+    return hist;
   }
 
+  template<class Color, class T>
+  IntVector* run_histogram(const T& image, const Color& color, const runs::Vertical& direction) {
+    // MGD: Changed so data is accessed in row-major order.  This should make things
+    //      much faster.
+    typedef typename runs::GetIterator<T, runs::Vertical>::const_iterator iterator;
+    IntVector* hist = new IntVector(image.nrows() + 1, 0);
+    IntVector tmp(image.ncols(), 0);
+
+    try {
+      for (size_t r = 0; r != image.nrows(); ++r) {
+	for (size_t c = 0; c != image.ncols(); ++c) {
+	  if (color.is_self(image.get(Point(c, r)))) {
+	    tmp[c]++;
+	  } else {
+	    if (tmp[c] > 0) {
+	      (*hist)[tmp[c]]++;
+	      tmp[c] = 0;
+	    }
+	  }
+	}
+      }
+    } catch (std::exception e) {
+      delete hist;
+      throw;
+    }
+
+    return hist;
+  }
+
+  template<class T>
+  IntVector* run_histogram(const T& image, char* const& color_, char* const& direction_) {
+    std::string color(color_);
+    std::string direction(direction_);
+    if (color == "black") {
+      if (direction == "horizontal") {
+	return run_histogram(image, runs::Black(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return run_histogram(image, runs::Black(), runs::Vertical());
+      }
+    } else if (color == "white") {
+      if (direction == "horizontal") {
+	return run_histogram(image, runs::White(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return run_histogram(image, runs::White(), runs::Vertical());
+      }
+    }
+    throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
+  } 
+
+#ifdef GAMERA_DEPRECATED
+  /*
+black_horizontal_run_histogram<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_histogram(image, runs::Black(), runs::Horizontal()) instead.
+  */    
   template<class T>
   IntVector* black_horizontal_run_histogram(const T& image) {
-    typedef typename T::const_row_iterator iterator;
-    IntVector* hist = new IntVector(image.ncols() + 1, 0);
-  
-    iterator end = image.row_end();
-    for (iterator i = image.row_begin(); i != end; ++i)
-      black_run_histogram(i.begin(), i.end(), *hist);
-
-    return hist;
+    return run_histogram(image, runs::Black(), runs::Horizontal());
   }    
+#endif
 
-  template<class T>
-  size_t most_frequent_black_horizontal_run(const T& image) {
-    IntVector* hist = black_horizontal_run_histogram(image);
-    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
-    delete hist;
-    return result;
-  }
+#ifdef GAMERA_DEPRECATED
+  /*
+white_horizontal_run_histogram<T>(const T& image) is deprecated.
 
-  template<class T>
-  RunVector* most_frequent_black_horizontal_runs(const T& image) {
-    IntVector* hist = black_horizontal_run_histogram(image);
-    return _sort_run_results(hist);
-  }
+Reason: Functions parameterized by arguments, not by name.
 
-  template<class T>
-  PyObject* most_frequent_black_horizontal_runs(const T& image, long n) {
-    RunVector* runs = most_frequent_black_horizontal_runs(image);
-    return _run_results_to_python(runs, n);
-  }
-
-  template<class T>
-  IntVector* black_vertical_run_histogram(const T& image) {
-    // MGD: Changed so data is accessed in row-major order.  This should make things
-    //      much faster.
-    typedef typename T::const_col_iterator iterator;
-    IntVector* hist = new IntVector(image.nrows() + 1, 0);
-    IntVector tmp(image.ncols(), 0);
-
-    for (size_t r = 0; r != image.nrows(); ++r) {
-      for (size_t c = 0; c != image.ncols(); ++c) {
-	if (is_black(image.get(r, c))) {
-	  tmp[c]++;
-	} else {
-	  if (tmp[c] > 0) {
-	    (*hist)[tmp[c]]++;
-	    tmp[c] = 0;
-	  }
-	}
-      }
-    }
-      
-    return hist;
-  }
-
-  template<class T>
-  size_t most_frequent_black_vertical_run(const T& image) {
-    IntVector* hist = black_vertical_run_histogram(image);
-    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
-    delete hist;
-    return result;
-  }
-
-  template<class T>
-  RunVector* most_frequent_black_vertical_runs(const T& image) {
-    IntVector* hist = black_vertical_run_histogram(image);
-    return _sort_run_results(hist);
-  }
-
-  template<class T>
-  PyObject* most_frequent_black_vertical_runs(const T& image, long n) {
-    RunVector* runs = most_frequent_black_vertical_runs(image);
-    return _run_results_to_python(runs, n);
-  }
-
+Use run_histogram(image, runs::White(), runs::Horizontal()) instead.
+  */    
   template<class T>
   IntVector* white_horizontal_run_histogram(const T& image) {
-    typedef typename T::const_row_iterator iterator;
-    IntVector* hist = new IntVector(image.ncols() + 1, 0);
-
-    iterator end = image.row_end();
-    for (iterator i = image.row_begin(); i != end; ++i) {
-      white_run_histogram(i.begin(), i.end(), *hist);
-    }
-    return hist;
+    return run_histogram(image, runs::White(), runs::Horizontal());
   }    
+#endif
 
+#ifdef GAMERA_DEPRECATED
+  /*
+black_vertical_run_histogram<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use run_histogram(image, runs::Black(), runs::Vertical()) instead.
+  */    
   template<class T>
-  size_t most_frequent_white_horizontal_run(const T& image) {
-    IntVector* hist = white_horizontal_run_histogram(image);
-    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
-    delete hist;
-    return result;
-  }
+  IntVector* black_vertical_run_histogram(const T& image) {
+    return run_histogram(image, runs::Black(), runs::Vertical());
+  }    
+#endif
 
-  template<class T>
-  RunVector* most_frequent_white_horizontal_runs(const T& image) {
-    IntVector* hist = white_horizontal_run_histogram(image);
-    return _sort_run_results(hist);
-  }
+#ifdef GAMERA_DEPRECATED
+  /*
+white_vertical_run_histogram<T>(const T& image) is deprecated.
 
-  template<class T>
-  PyObject* most_frequent_white_horizontal_runs(const T& image, long n) {
-    RunVector* runs = most_frequent_white_horizontal_runs(image);
-    return _run_results_to_python(runs, n);
-  }
+Reason: Functions parameterized by arguments, not by name.
 
+Use run_histogram(image, runs::White(), runs::Vertical()) instead.
+  */    
   template<class T>
   IntVector* white_vertical_run_histogram(const T& image) {
-    // MGD: Changed so data is accessed in row-major order.  This should make things
-    //      much faster.
-    typedef typename T::const_col_iterator iterator;
-    IntVector* hist = new IntVector(image.nrows() + 1, 0);
-    IntVector tmp(image.ncols(), 0);
+    return run_histogram(image, runs::White(), runs::Vertical());
+  }    
+#endif
 
-    for (size_t r = 0; r != image.nrows(); ++r) {
-      for (size_t c = 0; c != image.ncols(); ++c) {
-	if (is_white(image.get(r, c))) {
-	  tmp[c]++;
-	} else {
-	  if (tmp[c] > 0) {
-	    (*hist)[tmp[c]]++;
-	    tmp[c] = 0;
-	  }
-	}
+///////////////////////////////////////////////////////////////////////////
+// Most frequent run(s) (basically returning a subset of a sorted histogram)  
+
+  template<class T, class Color, class Direction>
+  size_t most_frequent_run(const T& image, const Color& color, const Direction& direction) {
+    IntVector* hist = run_histogram(image, color, direction);
+    size_t result;
+    try {
+      result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    } catch (std::exception e) {
+      delete hist;
+      throw;
+    }
+    delete hist;
+    return result;
+  }
+  
+  template<class T>
+  size_t most_frequent_run(const T& image, char* const& color_, char* const& direction_) {
+    std::string color(color_);
+    std::string direction(direction_);
+    if (color == "black") {
+      if (direction == "horizontal") {
+	return most_frequent_run(image, runs::Black(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_run(image, runs::Black(), runs::Vertical());
+      }
+    } else if (color == "white") {
+      if (direction == "horizontal") {
+	return most_frequent_run(image, runs::White(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_run(image, runs::White(), runs::Vertical());
       }
     }
-      
-    return hist;
-  }
+    throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
+  } 
 
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_black_horizontal_run<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_run(image, runs::Black(), runs::Horizontal())
+instead.
+  */
   template<class T>
+  GAMERA_CPP_DEPRECATED
+  size_t most_frequent_black_horizontal_run(const T& image) {
+    return most_frequent_run(image, runs::Black(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_horizontal_run<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_run(image, runs::White(), runs::Horizontal())
+instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  size_t most_frequent_white_horizontal_run(const T& image) {
+    return most_frequent_run(image, runs::White(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_black_vertical_run<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_run(image, runs::Black(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  size_t most_frequent_black_vertical_run(const T& image) {
+    return most_frequent_run(image, runs::Black(), runs::Vertical());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_vertical_run<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_run(image, runs::White(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
   size_t most_frequent_white_vertical_run(const T& image) {
-    IntVector* hist = white_vertical_run_histogram(image);
-    size_t result = std::max_element(hist->begin(), hist->end()) - hist->begin();
+    return most_frequent_run(image, runs::White(), runs::Vertical());
+  }
+#endif
+
+  template<class T, class Color, class Direction>
+  RunVector* most_frequent_runs(const T& image, const Color& color, const Direction& direction) {
+    IntVector* hist = run_histogram(image, color, direction);
+    RunVector* result = NULL;
+    try {
+      result = _sort_run_results(hist);
+    } catch (std::exception e) {
+      delete hist;
+      throw;
+    }
     delete hist;
     return result;
   }
 
   template<class T>
+  RunVector* most_frequent_runs(const T& image, char* const& color_, char* const& direction_) {
+    std::string color(color_);
+    std::string direction(direction_);
+    if (color == "black") {
+      if (direction == "horizontal") {
+	return most_frequent_runs(image, runs::Black(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_runs(image, runs::Black(), runs::Vertical());
+      }
+    } else if (color == "white") {
+      if (direction == "horizontal") {
+	return most_frequent_runs(image, runs::White(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_runs(image, runs::White(), runs::Vertical());
+      }
+    }
+    throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
+  } 
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_black_horizontal_runs<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, runs::Black(), runs::Horizontal()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  RunVector* most_frequent_black_horizontal_runs(const T& image) {
+    return most_frequent_runs(image, runs::Black(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_horizontal_runs<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, runs::White(), runs::Horizontal()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  RunVector* most_frequent_white_horizontal_runs(const T& image) {
+    return most_frequent_runs(image, runs::White(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_black_vertical_runs<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, runs::Black(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  RunVector* most_frequent_black_vertical_runs(const T& image) {
+    return most_frequent_runs(image, runs::Black(), runs::Vertical());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_vertical_runs<T>(const T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, runs::White(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
   RunVector* most_frequent_white_vertical_runs(const T& image) {
-    IntVector* hist = white_vertical_run_histogram(image);
-    return _sort_run_results(hist);
+    return most_frequent_runs(image, runs::White(), runs::Vertical());
   }
-
-  template<class T>
-  PyObject* most_frequent_white_vertical_runs(const T& image, long n) {
-    RunVector* runs = most_frequent_white_vertical_runs(image);
-    return _run_results_to_python(runs, n);
-  }
-
-  /*
-    Rulength filtering.
-  */
-
-  template<class T>
-  void filter_narrow_runs(T& image, size_t max_width) {
-    image_filter_short_run(image.row_begin(), image.row_end(), max_width);
-  }
-
-  template<class T>
-  void filter_short_runs(T& image, size_t max_height) {
-    image_filter_short_run(image.col_begin(), image.col_end(), max_height);
-  }
-
-  template<class T>
-  void filter_tall_runs(T& image, size_t min_height) {
-    image_filter_long_run(image.col_begin(), image.col_end(), min_height);
-  }
-
-  template<class T>
-  void filter_wide_runs(T& image, size_t min_width) {
-    image_filter_long_run(image.row_begin(), image.row_end(), min_width);
-  }
-
-  template<class T>
-  void filter_narrow_black_runs(T& image, size_t max_width) {
-    image_filter_short_black_run(image.row_begin(), image.row_end(), max_width);
-  }
-
-  template<class T>
-  void filter_short_black_runs(T& image, size_t max_height) {
-    image_filter_short_black_run(image.col_begin(), image.col_end(), max_height);
-  }
-
-  template<class T>
-  void filter_tall_black_runs(T& image, size_t min_height) {
-    image_filter_long_black_run(image.col_begin(), image.col_end(), min_height);
-  }
-
-  template<class T>
-  void filter_wide_black_runs(T& image, size_t min_width) {
-    image_filter_long_black_run(image.row_begin(), image.row_end(), min_width);
-  }
-
-  template<class T>
-  void filter_narrow_white_runs(T& image, size_t max_width) {
-    image_filter_short_white_run(image.row_begin(), image.row_end(), max_width);
-  }
-
-  template<class T>
-  void filter_short_white_runs(T& image, size_t max_height) {
-    image_filter_short_white_run(image.col_begin(), image.col_end(), max_height);
-  }
-
-  template<class T>
-  void filter_tall_white_runs(T& image, size_t min_height) {
-    image_filter_long_white_run(image.col_begin(), image.col_end(), min_height);
-  }
-
-  template<class T>
-  void filter_wide_white_runs(T& image, size_t min_width) {
-    image_filter_long_white_run(image.row_begin(), image.row_end(), min_width);
-  }
-
+#endif
   
+  template<class T, class Color, class Direction>
+  PyObject* most_frequent_runs(const T& image, long n, const Color& color, const Direction& direction) {
+    RunVector* runs = most_frequent_runs(image, color, direction);
+    PyObject* result;
+    try {
+      result = _run_results_to_python(runs, n);
+    } catch (std::exception e) {
+      delete runs;
+      throw;
+    }
+    return result;
+  }
 
+  template<class T>
+  PyObject* most_frequent_runs(const T& image, long n, char* const& color_, char* const& direction_) {
+    std::string color(color_);
+    std::string direction(direction_);
+    if (color == "black") {
+      if (direction == "horizontal") {
+	return most_frequent_runs(image, n, runs::Black(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_runs(image, n, runs::Black(), runs::Vertical());
+      }
+    } else if (color == "white") {
+      if (direction == "horizontal") {
+	return most_frequent_runs(image, n, runs::White(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return most_frequent_runs(image, n, runs::White(), runs::Vertical());
+      }
+    }
+    throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
+  } 
+
+#ifdef GAMERA_DEPRECATED
   /*
-    To/From rle
+most_frequent_black_horizontal_runs<T>(const T& image, long n) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, n, runs::Black(), runs::Horizontal()) instead.
   */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* most_frequent_black_horizontal_runs(const T& image, long n) {
+    return most_frequent_runs(image, n, runs::Black(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_horizontal_runs<T>(const T& image, long n) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, n, runs::White(), runs::Horizontal()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* most_frequent_white_horizontal_runs(const T& image, long n) {
+    return most_frequent_runs(image, n, runs::White(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_black_vertical_runs<T>(const T& image, long n) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, n, runs::Black(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* most_frequent_black_vertical_runs(const T& image, long n) {
+    return most_frequent_runs(image, n, runs::Black(), runs::Vertical());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+most_frequent_white_vertical_runs(const T& image, long n) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use most_frequent_runs(image, n, runs::White(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* most_frequent_white_vertical_runs(const T& image, long n) {
+    return most_frequent_runs(image, n, runs::White(), runs::Vertical());
+  }
+#endif
+
+///////////////////////////////////////////////////////////////////////////
+// Runlength filtering.
+
+  // filter based on run-length
+  template<class Iter, class Functor, class Color>
+  inline void filter_run(Iter i, const Iter end, const int min_length, const Functor& functor, const Color& color) {
+    while (i != end) {
+      if (color.is_self(*i)) {
+	Iter last = i;
+	run_end(i, end, color);
+	if (functor(i - last, min_length))
+	  std::fill(last, i, color.other(i));
+      } else {
+	run_end(i, end, get_other_color(color));
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_black_run<Iter, Functor>(Iter i, const Iter end, const int
+max_length, const Functor& functor) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_run(i, end, max_length, functor, runs::Black()) instead.
+  */
+  template<class Iter, class Functor>
+  GAMERA_CPP_DEPRECATED
+  inline void filter_black_run(Iter i, const Iter end, const int max_length, const Functor& functor) {
+    filter_run(i, end, max_length, functor, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_white_run<Iter, Functor>(Iter i, const Iter end, const int
+max_length, const Functor& functor) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_run(i, end, max_length, functor, runs::White()) instead.
+  */
+  template<class Iter, class Functor>
+  GAMERA_CPP_DEPRECATED
+  inline void filter_white_run(Iter i, const Iter end, const int max_length, const Functor& functor) {
+    filter_run(i, end, max_length, functor, runs::White());
+  }
+#endif
+
+  template<class Iter, class Color>
+  inline void image_filter_long_run(Iter i, const Iter end, const int min_length, const Color& color) {
+    for (; i != end; i++)
+      filter_run(i.begin(), i.end(), min_length, std::greater<size_t>(), color);
+  }
+
+  template<class Iter, class Color>
+  inline void image_filter_short_run(Iter i, const Iter end, const int max_length, const Color& color) {
+    for (; i != end; i++)
+      filter_run(i.begin(), i.end(), max_length, std::less<size_t>(), color);
+  }
+  
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_long_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_long_run(i, end, min_length, runs::Black()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_long_run(Iter i, const Iter end, const int min_length) {
+    image_filter_long_run(i, end, min_length, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_short_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_short_run(i, end, max_length, runs::Black()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_short_run(Iter i, const Iter end, const int max_length) {
+    image_filter_short_run(i, end, max_length, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_long_black_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_long_run(i, end, min_length, runs::Black()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_long_black_run(Iter i, const Iter end, const int min_length) {
+    image_filter_long_run(i, end, min_length, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_short_black_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_short_run(i, end, max_length, runs::Black()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_short_black_run(Iter i, const Iter end, const int max_length) {
+    image_filter_short_run(i, end, max_length, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_long_white_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_long_run(i, end, min_length, runs::White()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_long_white_run(Iter i, const Iter end, const int min_length) {
+    image_filter_long_run(i, end, min_length, runs::White());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+image_filter_short_white_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use image_filter_short_run(i, end, max_length, runs::White()) instead.
+  */
+  template<class Iter>
+  GAMERA_CPP_DEPRECATED
+  inline void image_filter_short_white_run(Iter i, const Iter end, const int max_length) {
+    image_filter_short_run(i, end, max_length, runs::White());
+  }
+#endif
+
+  template<class T, class Color>
+  void filter_narrow_runs(T& image, size_t max_width, const Color& color) {
+    image_filter_short_run(image.row_begin(), image.row_end(), max_width, color);
+  }
+
+  template<class T>
+  void filter_narrow_runs(T& image, size_t max_width, char* const& color_) {
+    std::string color(color_);
+    if (color == "black")
+      return filter_narrow_runs(image, max_width, runs::Black());
+    else if (color == "white")
+      return filter_narrow_runs(image, max_width, runs::White());
+    throw std::runtime_error("color must be either \"black\" or \"white\".");
+  }
+
+  template<class T, class Color>
+  void filter_short_runs(T& image, size_t max_height, const Color& color) {
+    image_filter_short_run(image.col_begin(), image.col_end(), max_height, color);
+  }
+
+  template<class T>
+  void filter_short_runs(T& image, size_t max_width, char* const& color_) {
+    std::string color(color_);
+    if (color == "black")
+      return filter_short_runs(image, max_width, runs::Black());
+    else if (color == "white")
+      return filter_short_runs(image, max_width, runs::White());
+    throw std::runtime_error("color must be either \"black\" or \"white\".");
+  }
+
+  template<class T, class Color>
+  void filter_tall_runs(T& image, size_t min_height, const Color& color) {
+    image_filter_long_run(image.col_begin(), image.col_end(), min_height, color);
+  }
+
+  template<class T>
+  void filter_tall_runs(T& image, size_t max_width, char* const& color_) {
+    std::string color(color_);
+    if (color == "black")
+      return filter_tall_runs(image, max_width, runs::Black());
+    else if (color == "white")
+      return filter_tall_runs(image, max_width, runs::White());
+    throw std::runtime_error("color must be either \"black\" or \"white\".");
+  }
+
+  template<class T, class Color>
+  void filter_wide_runs(T& image, size_t min_width, const Color& color) {
+    image_filter_long_run(image.row_begin(), image.row_end(), min_width, color);
+  }
+
+  template<class T>
+  void filter_wide_runs(T& image, size_t max_width, char* const& color_) {
+    std::string color(color_);
+    if (color == "black")
+      return filter_wide_runs(image, max_width, runs::Black());
+    else if (color == "white")
+      return filter_wide_runs(image, max_width, runs::White());
+    throw std::runtime_error("color must be either \"black\" or \"white\".");
+  }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_narrow_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_narrow_runs(image, max_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_narrow_runs(T& image, size_t max_width) {
+    filter_narrow_runs(image, max_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_short_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_short_runs(image, max_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_short_runs(T& image, size_t max_width) {
+    filter_short_runs(image, max_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_tall_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_tall_runs(image, min_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_tall_runs(T& image, size_t min_width) {
+    filter_tall_runs(image, min_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_wide_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_wide_runs(image, min_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_wide_runs(T& image, size_t min_width) {
+    filter_wide_runs(image, min_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_narrow_black_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_narrow_runs(image, max_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_narrow_black_runs(T& image, size_t max_width) {
+    filter_narrow_runs(image, max_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_short_black_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_short_runs(image, max_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_short_black_runs(T& image, size_t max_width) {
+    filter_short_runs(image, max_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_tall_black_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_tall_runs(image, min_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_tall_black_runs(T& image, size_t min_width) {
+    filter_tall_runs(image, min_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_wide_black_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_wide_runs(image, min_width, runs::Black()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_wide_black_runs(T& image, size_t min_width) {
+    filter_wide_runs(image, min_width, runs::Black());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_narrow_white_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_narrow_runs(image, max_width, runs::White()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_narrow_white_runs(T& image, size_t max_width) {
+    filter_narrow_runs(image, max_width, runs::White());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_short_white_runs<T>(T& image, size_t max_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_short_runs(image, max_width, runs::White()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_short_white_runs(T& image, size_t max_width) {
+    filter_short_runs(image, max_width, runs::White());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_tall_white_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_tall_runs(image, min_width, runs::White()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_tall_white_runs(T& image, size_t min_width) {
+    filter_tall_runs(image, min_width, runs::White());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+filter_wide_white_runs<T>(T& image, size_t min_width) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use filter_wide_runs(image, min_width, runs::White()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  void filter_wide_white_runs(T& image, size_t min_width) {
+    filter_wide_runs(image, min_width, runs::White());
+  }
+#endif
+
+///////////////////////////////////////////////////////////////////////////
+// TO/FROM RLE
 #ifndef GAMERA_NO_PYTHON
 
   template<class T>
@@ -391,10 +1162,10 @@ namespace Gamera {
 	 i != image.vec_end(); /* deliberately blank */) {
       typename T::const_vec_iterator start;
       start = i;
-      white_run_end(i, image.vec_end());
+      run_end(i, image.vec_end(), runs::White());
       oss << int(i - start) << " ";
       start = i;
-      black_run_end(i, image.vec_end());
+      run_end(i, image.vec_end(), runs::Black());
       oss << int(i - start) << " ";
     }
 
@@ -459,6 +1230,8 @@ namespace Gamera {
     }
   }
 
+///////////////////////////////////////////////////////////////////////////
+// Run iterators
   struct make_vertical_run {
     Rect operator() (const int start, const int end, const int column) {
       return Rect(Point(column, start), Point(column, end - 1));
@@ -517,9 +1290,9 @@ namespace Gamera {
     size_t m_offset_x, m_offset_y;
   };
 
-  template<class Iterator, class RunMaker>
-  struct BlackRunIterator : IteratorObject {
-    typedef BlackRunIterator<Iterator, RunMaker> SelfType;
+  template<class Iterator, class RunMaker, class Color>
+  struct RunIterator : IteratorObject {
+    typedef RunIterator<Iterator, RunMaker, Color> SelfType;
     int init(Iterator begin, Iterator end, int sequence, size_t offset) {
       m_begin = m_it = begin;
       m_end = end;
@@ -531,9 +1304,9 @@ namespace Gamera {
       SelfType* so = (SelfType*)self;
       PyObject* result = 0;
       while (so->m_it != so->m_end) {
-	white_run_end(so->m_it, so->m_end);
+	run_end(so->m_it, so->m_end, Color());
 	Iterator start = so->m_it;
-	black_run_end(so->m_it, so->m_end);
+	run_end(so->m_it, so->m_end, get_other_color(Color()));
 	if (so->m_it - start > 0) {
 	  result = create_RectObject
 	    (RunMaker()
@@ -549,71 +1322,103 @@ namespace Gamera {
     size_t m_offset;
   };
 
-  template<class Iterator, class RunMaker>
-  struct WhiteRunIterator : IteratorObject {
-    typedef WhiteRunIterator<Iterator, RunMaker> SelfType;
-    int init(Iterator begin, Iterator end, int sequence, size_t offset) {
-      m_begin = m_it = begin;
-      m_end = end;
-      m_sequence = sequence;
-      m_offset = offset;
-      return 1;
-    }
-    static PyObject* next(IteratorObject* self) {
-      SelfType* so = (SelfType*)self;
-      PyObject* result = 0;
-      while (so->m_it != so->m_end) {
-	black_run_end(so->m_it, so->m_end);
-	Iterator start = so->m_it;
-	white_run_end(so->m_it, so->m_end);
-	if (so->m_it - start > 0) {
-	  result = create_RectObject
-	    (RunMaker()
-	     ((start - so->m_begin) + so->m_offset, (so->m_it - so->m_begin) + so->m_offset, so->m_sequence));
-	  break;
-	}
-      }
-      return result;
-    }
-    
-    Iterator m_begin, m_it, m_end;
-    int m_sequence;
-    size_t m_offset;
-  };
+  template<class T, class Color>
+  PyObject* iterate_runs(T& image, const Color& color, const runs::Horizontal& direction) {
+    typedef RowIterator<T, RunIterator<typename T::col_iterator, make_horizontal_run, Color> > Iterator;
+    Iterator* iterator = iterator_new<Iterator>();
+    iterator->init(image);
+    return (PyObject*)iterator;
+  }
+
+  template<class T, class Color>
+  PyObject* iterate_runs(T& image, const Color& color, const runs::Vertical& direction) {
+    typedef ColIterator<T, RunIterator<typename T::row_iterator, make_vertical_run, Color> > Iterator;
+    Iterator* iterator = iterator_new<Iterator>();
+    iterator->init(image);
+    return (PyObject*)iterator;
+  }
 
   template<class T>
+  PyObject* iterate_runs(T& image, char* const& color_, char* const& direction_) {
+    std::string color(color_);
+    std::string direction(direction_);
+    if (color == "black") {
+      if (direction == "horizontal") {
+	return iterate_runs(image, runs::Black(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return iterate_runs(image, runs::Black(), runs::Vertical());
+      }
+    } else if (color == "white") {
+      if (direction == "horizontal") {
+	return iterate_runs(image, runs::White(), runs::Horizontal());
+      } else if (direction == "vertical") {
+	return iterate_runs(image, runs::White(), runs::Vertical());
+      }
+    }
+    throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
+  } 
+
+#ifdef GAMERA_DEPRECATED
+  /*
+iterate_black_horizontal_runs<T>(T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use iterate_runs(image, runs::Black(), runs::Horizontal()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
   PyObject* iterate_black_horizontal_runs(T& image) {
-    typedef RowIterator<T, BlackRunIterator<typename T::col_iterator, make_horizontal_run> > Iterator;
-    Iterator* iterator = iterator_new<Iterator>();
-    iterator->init(image);
-    return (PyObject*)iterator;
+    return iterate_runs(image, runs::Black(), runs::Horizontal());
   }
-
-  template<class T>
-  PyObject* iterate_black_vertical_runs(T& image) {
-    typedef ColIterator<T, BlackRunIterator<typename T::row_iterator, make_vertical_run> > Iterator;
-    Iterator* iterator = iterator_new<Iterator>();
-    iterator->init(image);
-    return (PyObject*)iterator;
-  }
-
-  template<class T>
-  PyObject* iterate_white_horizontal_runs(T& image) {
-    typedef RowIterator<T, WhiteRunIterator<typename T::col_iterator, make_horizontal_run> > Iterator;
-    Iterator* iterator = iterator_new<Iterator>();
-    iterator->init(image);
-    return (PyObject*)iterator;
-  }
-
-  template<class T>
-  PyObject* iterate_white_vertical_runs(T& image) {
-    typedef ColIterator<T, WhiteRunIterator<typename T::row_iterator, make_vertical_run> > Iterator;
-    Iterator* iterator = iterator_new<Iterator>();
-    iterator->init(image);
-    return (PyObject*)iterator;
-  }
-
 #endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+iterate_white_horizontal_runs<T>(T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use iterate_runs(image, runs::White(), runs::Horizontal()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* iterate_white_horizontal_runs(T& image) {
+    return iterate_runs(image, runs::White(), runs::Horizontal());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+iterate_black_vertical_runs<T>(T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use iterate_runs(image, runs::Black(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* iterate_black_vertical_runs(T& image) {
+    return iterate_runs(image, runs::Black(), runs::Vertical());
+  }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+  /*
+iterate_white_vertical_runs<T>(T& image) is deprecated.
+
+Reason: Functions parameterized by arguments, not by name.
+
+Use iterate_runs(image, runs::White(), runs::Vertical()) instead.
+  */
+  template<class T>
+  GAMERA_CPP_DEPRECATED
+  PyObject* iterate_white_vertical_runs(T& image) {
+    return iterate_runs(image, runs::White(), runs::Vertical());
+  }
+#endif
+
+#endif // GAMERA_NOPYTHON
 
 }
 

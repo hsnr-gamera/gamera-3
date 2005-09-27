@@ -333,7 +333,7 @@ For example,
 .. code:: Python
 
   from gamera.config import config
-  config.set("progress_bars", True)
+  config.set("progress_bar", True)
 
 is directly equivalent to the following command line::
 

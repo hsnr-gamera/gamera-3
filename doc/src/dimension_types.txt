@@ -30,6 +30,19 @@ __init__
 
 .. docstring:: gamera.core Size width height
 
+Dim
+---
+
+.. docstring:: gamera.core Dim
+   :no_title:
+
+__init__
+''''''''
+
+**Dim** (Int *ncols*, Int *nrows*)
+
+.. docstring:: gamera.core Dim ncols nrows
+
 Dimensions
 ----------
 

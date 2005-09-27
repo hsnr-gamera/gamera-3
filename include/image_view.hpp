@@ -128,19 +128,22 @@ namespace Gamera {
     // range check is optional at construction to allow for cases
     // the data is not correctly sized at creation time. See
     // dense_image.hpp for a situation where this occurs. KWM
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>(T& image_data, size_t offset_y, size_t offset_x, size_t
+nrows, size_t ncols, bool do_range_check = true) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageView<T>(image_data, Point(offset_x, offset_y), Dim(ncols,
+nrows), do_range_check) instead.
+    */
     ImageView(T& image_data, size_t offset_y,
-	       size_t offset_x, size_t nrows, size_t ncols,
-	       bool do_range_check = true)
-      : base_type(offset_y, offset_x, nrows, ncols) {
-      m_image_data = &image_data;
-      if (do_range_check) {
-	range_check();
-	calculate_iterators();
-      }
-    }
+	      size_t offset_x, size_t nrows, size_t ncols,
+	      bool do_range_check = true) GAMERA_CPP_DEPRECATED;
+#endif
     ImageView(T& image_data) 
-      : base_type(image_data.page_offset_y(), image_data.page_offset_x(),
-		  image_data.nrows(), image_data.ncols()) {
+      : base_type(image_data.offset(), image_data.dim()) {
       m_image_data = &image_data;
       range_check();
       calculate_iterators();
@@ -172,25 +175,49 @@ namespace Gamera {
 	calculate_iterators();
       }
     }
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>(T& image_data, const Point& upper_left, const Dimensions&
+dim, bool do_range_check = true) is deprecated.
+
+Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
+in favor of Dim).
+
+Use ImageView<T>(image_data, Point(offset_x, offset_y), Dim(ncols,
+nrows), do_range_check) instead.
+    */
     ImageView(T& image_data, const Point& upper_left,
-	       const Dimensions& dim, bool do_range_check = true)
-      : base_type(upper_left, dim) {
+	      const Dimensions& dim, bool do_range_check = true) 
+      GAMERA_CPP_DEPRECATED;
+#endif
+
+    ImageView(T& image_data, const Point& upper_left,
+	      const Dim& dim, bool do_range_check = true)
+      : base_type(upper_left, dim) { 
       m_image_data = &image_data;
       if (do_range_check) {
 	range_check();
 	calculate_iterators();
       }
     }
+
     //
     // COPY CONSTRUCTORS
     //
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>(const self& other, size_t offset_y, size_t offset_x, size_t
+nrows, size_t ncols, bool do_range_check = true) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageView<T>(other, Point(offset_x, offset_y), Dim(ncols,
+nrows), do_range_check) instead.
+    */
     ImageView(const self& other, size_t offset_y,
-	      size_t offset_x, size_t nrows, size_t ncols)
-      : base_type(offset_y, offset_x, nrows, ncols) {
-      m_image_data = other.m_image_data;
-      range_check();
-      calculate_iterators();
-    }
+	      size_t offset_x, size_t nrows, size_t ncols) 
+      GAMERA_CPP_DEPRECATED;
+#endif
     ImageView(const self& other, const Rect& rect)
       : base_type(rect) {
       m_image_data = other.m_image_data;
@@ -211,35 +238,72 @@ namespace Gamera {
       range_check();
       calculate_iterators();
     }
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>(const self& other, const Point& upper_left, const Dimensions&
+dim, bool do_range_check = true) is deprecated.
+
+Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
+in favor of Dim).
+
+Use ImageView<T>(other, Point(offset_x, offset_y), Dim(ncols,
+nrows), do_range_check) instead.
+    */
     ImageView(const self& other, const Point& upper_left,
-	       const Dimensions& dim)
+	      const Dimensions& dim) GAMERA_CPP_DEPRECATED;
+#endif
+    ImageView(const self& other, const Point& upper_left,
+	      const Dim& dim)
       : base_type(upper_left, dim) {
       m_image_data = other.m_image_data;
       range_check();
       calculate_iterators();
     }
+
     //
     //  FUNCTION ACCESS
     //
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>::get(size_t row, size_t col) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageView<T>::get(Point(col, row)) instead.
+    */
+    GAMERA_CPP_DEPRECATED
     value_type get(size_t row, size_t col) const {
       return m_accessor(m_const_begin + (row * m_image_data->stride()) + col);
     }
+#endif
+
+#ifdef GAMERA_DEPRECATED
+    /*
+ImageView<T>::set(size_t row, size_t col, value_type value) is
+deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use ImageView<T>::get(Point(col, row)) instead.
+    */
+    GAMERA_CPP_DEPRECATED
     void set(size_t row, size_t col, value_type value) {
       m_accessor.set(value, m_begin + (row * m_image_data->stride()) + col);
     }
+#endif
     value_type get(const Point& p) const {
-      return get(p.y(), p.x());
+      return m_accessor(m_const_begin + (p.y() * m_image_data->stride()) + p.x());
+
     }
     void set(const Point& p, value_type value) {
-      set(p.y(), p.x(), value);
+      m_accessor.set(value, m_begin + (p.y() * m_image_data->stride()) + p.x());
     }
 
     //
     // Misc
     //
     virtual T* data() const { return m_image_data; }
-    self parent() const { return self(*m_image_data, m_image_data->page_offset_y(), m_image_data->page_offset_x()
-				, m_image_data->nrows(), m_image_data->ncols()); }
+    self parent() const { return self(*m_image_data, m_image_data->offset(), m_image_data->dim()); }
     self& image() { return *this; }
 
     //
@@ -279,7 +343,9 @@ namespace Gamera {
     //
     // 2D iterators
     //
+
     typedef Gamera::ImageIterator<ImageView, typename T::iterator> Iterator;
+
     Iterator upperLeft() {
       return Iterator(this, m_image_data->begin(), m_image_data->stride())
 	+ Diff2D(offset_x() - m_image_data->page_offset_x(), offset_y() - m_image_data->page_offset_y());
@@ -373,6 +439,49 @@ namespace Gamera {
     typename T::const_iterator m_const_begin, m_const_end;
     accessor m_accessor;
   };
+
+#ifdef GAMERA_DEPRECATED
+  template<class T>
+  ImageView<T>::ImageView(T& image_data, size_t offset_y,
+			  size_t offset_x, size_t nrows, size_t ncols,
+			  bool do_range_check)
+    : base_type(Point(offset_x, offset_y), Dim(ncols, nrows)) {
+    m_image_data = &image_data;
+    if (do_range_check) {
+      range_check();
+      calculate_iterators();
+    }
+  }
+  
+  template<class T>
+  ImageView<T>::ImageView(T& image_data, const Point& upper_left,
+			  const Dimensions& dim, bool do_range_check)
+    : base_type(upper_left, Dim(dim.ncols(), dim.nrows())) {
+    m_image_data = &image_data;
+    if (do_range_check) {
+      range_check();
+      calculate_iterators();
+    }
+  }
+
+  template<class T>
+  ImageView<T>::ImageView(const self& other, size_t offset_y,
+			  size_t offset_x, size_t nrows, size_t ncols)
+    : base_type(Point(offset_x, offset_y), Dim(ncols, nrows)) {
+    m_image_data = other.m_image_data;
+    range_check();
+    calculate_iterators();
+  }
+
+  template<class T>
+  ImageView<T>::ImageView(const self& other, const Point& upper_left,
+			  const Dimensions& dim)
+    : base_type(upper_left, Dim(dim.ncols(), dim.nrows())) {
+    m_image_data = other.m_image_data;
+    range_check();
+    calculate_iterators();
+  }
+#endif
 
 }
 

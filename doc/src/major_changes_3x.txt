@@ -1,0 +1,78 @@
+===========================================
+Major changes from Gamera 2.x to Gamera 3.x
+===========================================
+
+Deprecated functions
+====================
+
+Some functions have been deprecated.  They will continue to work for
+now, but will be removed at some point in the future.  For more
+information, see the `migration guide`__.
+
+.. __: migration_guide.html
+
+Plugin system
+=============
+
+Some more types were added to the plugin system, meaning they can be
+conveniently passed between Python and C++ plugins.
+
+  - **Point**
+
+  - **FloatPoint**
+
+  - **Dim**
+
+Graphical user interface
+========================
+
+- **wxPython 2.6.x support**:
+
+  Gamera now runs with the wxPython 2.6.x as well as the wxPython
+  2.4.x series.
+
+  Note that native Cocoa support on OSX is not currently supported,
+  since as of the time of this writing, wxPython is broken__.
+
+.. __: http://sourceforge.net/tracker/index.php?func=detail&aid=1194622&group_id=9863&atid=109863
+
+  wxPython 2.6.x is a lot closer to the native look and feel of the 
+  various platforms.  You may notice that the placement of some
+  buttons in some dialog boxes has changed and other minor look and
+  feel details.  Most of these are not due to any changes in Gamera
+  itself.
+
+- **New information pane in the shell** (replacing the History pane)
+
+  This includes three tabs, based on PyCrust:
+
+  - **Docstring display**:
+
+    When a function or property is typed in the shell, its docstring
+    is displayed in the bottom pane.  This is less annoying than the
+    popup that would occasionally fill the entire screen with a long
+    docstring.
+
+    If wxPython 2.6 and docutils is installed, the docstring is
+    formatted as reStructuredText with bold and italics etc.
+
+  - **Namespace**:
+  
+    Browse all of the objects in the shell.
+
+  - **History**:
+   
+    An improved command history.
+
+- **Docstrings in dialog boxes**
+
+  Many dialog boxes now include docstrings where appropriate.
+
+General sanity fixes
+====================
+
+- There were a few places where memory leaks were happening only when
+  an exception was raised.  Many of these exceptions are now being
+  caught and the leaked objects are deleted.
+
+- Docstrings on C++ plugins work correctly.

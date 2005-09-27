@@ -55,8 +55,8 @@ from enums import ALL, NONIMAGE
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
-from gameracore import ImageData, Size, Dimensions, Point, \
-     Rect, Region, RegionMap, ImageInfo, RGBPixel
+from gameracore import ImageData, Size, Dimensions, Dim, Point, \
+     FloatPoint, Rect, Region, RegionMap, ImageInfo, RGBPixel
 # import gamera.gameracore for subclassing
 import gameracore
 from gamera.gui import has_gui
@@ -228,7 +228,6 @@ values in ``Image.data.storage_format`` is more efficient.
 See `storage formats`_ for more information."""
       return self._storage_format_names[self.data.storage_format]
    storage_format_name = property(storage_format_name, doc=storage_format_name.__doc__)
-
 
    def load_image(filename, compression=DENSE):
       """Load an image from the given filename.  At present, TIFF and PNG files are
@@ -425,19 +424,23 @@ If the image is unclassified, returns -1.0.
       return False
 
    def subimage(self, *args, **kwargs):
-      """Creates a new view that is part of an existing image.
+      """Creates a new view on existing data.
 
 There are a number of ways to create a subimage:
 
-  - **subimage** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)
+   - subimage(Point *upper_left*, Point *lower_right*)
+      
+   - subimage(Point *upper_left*, Size *size*)
 
-  - **subimage** (Point *upper_left*, Point *lower_right*)
+   - subimage(Point *upper_left*, Dim *dim*)
 
-  - **subimage** (Point *upper_left*, Size *size*)
+   - subimage(Rect *rectangle*)
 
-  - **subimage** (Point *upper_left*, Dimensions *dimensions*)
+**Deprecated forms:**
 
-  - **subimage** (Rect *rectangle*)
+   - subimage(Point *upper_left*, Dimensions *dimensions*)
+
+   - subimage(Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)
 
 Changes to subimages will affect all other subimages viewing the same data."""
       if hasattr(self, "label"):
@@ -667,7 +670,7 @@ if __name__ == "__main__":
 
 __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL DENSE RLE "
-           "ImageData Size Dimensions Point Rect Region RegionMap "
+           "ImageData Size Dimensions Dim Point FloatPoint Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel "
            "save_image").split()

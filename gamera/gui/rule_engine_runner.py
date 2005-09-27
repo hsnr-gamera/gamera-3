@@ -20,22 +20,22 @@
 
 from inspect import isfunction, ismodule
 from os import path
-from wxPython.wx import *
+import wx
 from gamera.gui import toolbar, gui_util
 
-class RuleEngineRunnerTree(wxTreeCtrl):
+class RuleEngineRunnerTree(wx.TreeCtrl):
    def __init__(self, toplevel, parent):
       self.toplevel = toplevel
       self.modules = []
       self.undo_history = []
       self.added = []
       self.removed = []
-      id = wxNewId()
-      wxTreeCtrl.__init__(self, parent, id)
+      id = wx.NewId()
+      wx.TreeCtrl.__init__(self, parent, id)
       self.root = self.AddRoot("RuleSets")
       self.SetItemHasChildren(self.root, True)
       self.SetPyData(self.root, "")
-      EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
+      wx.EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.Expand(self.root)
 
    def _OnKey(self, event):
@@ -116,11 +116,11 @@ class RuleEngineRunnerTree(wxTreeCtrl):
                rule_node = self.AppendItem(rule_engine_node, rule.__name__)
                self.SetPyData(rule_node, rule)
 
-class RuleEngineRunnerPanel(wxPanel):
+class RuleEngineRunnerPanel(wx.Panel):
    def __init__(self, toplevel, parent = None, id = -1):
-      wxPanel.__init__(
+      wx.Panel.__init__(
         self, parent, id,
-        style=wxWANTS_CHARS|wxCLIP_CHILDREN|wxNO_FULL_REPAINT_ON_RESIZE)
+        style=wx.WANTS_CHARS|wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
       self.toplevel = toplevel
       self.SetAutoLayout(True)
       self.toolbar = toolbar.ToolBar(self, -1)
@@ -141,18 +141,18 @@ class RuleEngineRunnerPanel(wxPanel):
         13, gamera_icons.getIconSelectRemovedBitmap(),
         "Select removed glyphs", self.tree._OnSelectRemoved)
 
-      lc = wxLayoutConstraints()
-      lc.top.SameAs(self, wxTop, 0)
-      lc.left.SameAs(self, wxLeft, 0)
-      lc.right.SameAs(self, wxRight, 0)
+      lc = wx.LayoutConstraints()
+      lc.top.SameAs(self, wx.Top, 0)
+      lc.left.SameAs(self, wx.Left, 0)
+      lc.right.SameAs(self, wx.Right, 0)
       lc.height.AsIs()
       self.toolbar.SetAutoLayout(True)
       self.toolbar.SetConstraints(lc)
-      lc = wxLayoutConstraints()
+      lc = wx.LayoutConstraints()
       lc.top.Below(self.toolbar, 0)
-      lc.left.SameAs(self, wxLeft, 0)
-      lc.right.SameAs(self, wxRight, 0)
-      lc.bottom.SameAs(self, wxBottom, 0)
+      lc.left.SameAs(self, wx.Left, 0)
+      lc.right.SameAs(self, wx.Right, 0)
+      lc.bottom.SameAs(self, wx.Bottom, 0)
       self.tree.SetAutoLayout(True)
       self.tree.SetConstraints(lc)
       self.Layout()

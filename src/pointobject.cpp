@@ -50,7 +50,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { "move", point_move, METH_VARARGS,
-    "**move** (*x*, *y*)\n\nMoves the point by the *x*, *y* amount."},
+    "**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
   { NULL }
 };
 
@@ -118,7 +118,7 @@ CREATE_SET_FUNC(y)
 static PyObject* point_move(PyObject* self, PyObject* args) {
   Point* x = ((PointObject*)self)->m_x;
   int xv, y;
-  if (PyArg_ParseTuple(args, "ii", &xv, &y) <= 0)
+  if (PyArg_ParseTuple(args, "ii:move", &xv, &y) <= 0)
     return 0;
   x->move(xv, y);
   Py_INCREF(Py_None);
@@ -196,7 +196,15 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_free = NULL; // _PyObject_Del;
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
-  PointType.tp_doc = "Point stores an (*x*, *y*) coordinate point.";
+  PointType.tp_doc = 
+"__init__(Int *x*, Int *y*)\n\n"
+"Point stores an (*x*, *y*) coordinate point.\n\n"
+"Most functions that take a Point as an argument can also take a\n"
+"2-element sequence.  For example, the following are all equivalent:\n\n"
+".. code:: Python\n\n"
+"    px = image.get(Point(5, 2))\n"
+"    px = image.get((5, 2))\n"
+"    px = image.get([5, 2])\n\n";
   PyType_Ready(&PointType);
   PyDict_SetItemString(module_dict, "Point", (PyObject*)&PointType);
 }

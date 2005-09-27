@@ -26,33 +26,50 @@
 namespace Gamera {
 
   template<class T, class U>
-  double corelation_weighted(const T& a, const U& b, size_t yo, size_t xo, double bb, double bw, double wb, double ww, ProgressBar progress_bar = ProgressBar()) {
-    size_t ul_y = std::max(a.ul_y(), yo);
-    size_t ul_x = std::max(a.ul_x(), xo);
-    size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
-    size_t lr_x = std::min(a.lr_x(), xo + b.ncols());
+  double corelation_weighted(const T& a, const U& b, const Point& p, double bb, double bw, double wb, double ww) {
+    size_t ul_y = std::max(a.ul_y(), p.y());
+    size_t ul_x = std::max(a.ul_x(), p.x());
+    size_t lr_y = std::min(a.lr_y(), p.y() + b.nrows());
+    size_t lr_x = std::min(a.lr_x(), p.x() + b.ncols());
     double result = 0;
     double area = 0;
 
-    progress_bar.set_length(lr_y - ul_y);
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
-      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) 
-	if (is_black(b.get(yb, xb))) {
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-p.y(); y < lr_y; ++y, ++ya, ++yb) {
+      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-p.x(); x < lr_x; ++x, ++xa, ++xb) {
+	if (is_black(b.get(Point(xb, yb)))) {
 	  area++;
-	  if (is_black(a.get(ya, xa)))
+	  if (is_black(a.get(Point(xa, ya))))
 	    result += bb;
 	  else
 	    result += bw;
 	} else {
-	  if (is_black(a.get(ya, xa)))
+	  if (is_black(a.get(Point(xa, ya))))
 	    result += wb;
 	  else
 	    result += ww;
 	}
-      progress_bar.step();
+      }
     }
     return result / area;
   }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+corelation_weighted(const T& a, const U& b, size_t yo, size_t xo,
+double bb, double bw, double wb, double ww, ProgressBar progress_bar =
+ProgressBar()) is deprecated
+
+Reason: (x, y) coordinate consistency.
+
+Use corelation_weighted(a, b, Point(xo, yo), bb, bw, wb, ww,
+progress_bar) instead.
+  */
+  template<class T, class U>
+  GAMERA_CPP_DEPRECATED
+  double corelation_weighted(const T& a, const U& b, size_t yo, size_t xo, double bb, double bw, double wb, double ww, ProgressBar progress_bar = ProgressBar()) {
+    return corelation_weighted(a, b, Point(xo, yo), bb, bw, wb, ww, progress_bar);
+  }
+#endif
 
   inline double corelation_absolute_distance(OneBitPixel a, OneBitPixel b) {
     if (is_black(a) == is_black(b))
@@ -67,20 +84,20 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  double corelation_sum(const T& a, const U& b, size_t yo, size_t xo, 
+  double corelation_sum(const T& a, const U& b, const Point& p, 
 			ProgressBar progress_bar = ProgressBar()) {
-    size_t ul_y = std::max(a.ul_y(), yo);
-    size_t ul_x = std::max(a.ul_x(), xo);
-    size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
-    size_t lr_x = std::min(a.lr_x(), xo + b.ncols());
+    size_t ul_y = std::max(a.ul_y(), p.y());
+    size_t ul_x = std::max(a.ul_x(), p.x());
+    size_t lr_y = std::min(a.lr_y(), p.y() + b.nrows());
+    size_t lr_x = std::min(a.lr_x(), p.x() + b.ncols());
     double result = 0;
     double area = 0;
 
     progress_bar.set_length(lr_y - ul_y);
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
-      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) {
-	typename T::value_type px_a = a.get(yb, xb);
-	typename U::value_type px_b = b.get(yb, xb);
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-p.y(); y < lr_y; ++y, ++ya, ++yb) {
+      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-p.x(); x < lr_x; ++x, ++xa, ++xb) {
+	typename T::value_type px_a = a.get(Point(xb, yb));
+	typename U::value_type px_b = b.get(Point(xb, yb));
 	if (is_black(px_b))
 	  area++;
 	result += corelation_absolute_distance(px_a, px_b);
@@ -89,6 +106,23 @@ namespace Gamera {
     }
     return result / area;
   }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+corelation_sum(const T& a, const U& b, size_t yo, size_t xo,
+ProgressBar progress_bar = ProgressBar()) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use corelation_sum(a, b, Point(xo, yo), progress_bar) instead.
+  */
+  template<class T, class U>
+  GAMERA_CPP_DEPRECATED
+  double corelation_sum(const T& a, const U& b, size_t yo, size_t xo, 
+			ProgressBar progress_bar = ProgressBar()) {
+    return corelation_sum(a, b, Point(xo, yo), progress_bar);
+  }
+#endif
 
   inline double corelation_square_absolute_distance(OneBitPixel a, OneBitPixel b) {
     if (is_black(a) == is_black(b))
@@ -106,19 +140,19 @@ namespace Gamera {
   }
 
   template<class T, class U>
-  double corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo, ProgressBar progress_bar = ProgressBar()) {
-    size_t ul_y = std::max(a.ul_y(), yo);
-    size_t ul_x = std::max(a.ul_x(), xo);
-    size_t lr_y = std::min(a.lr_y(), yo + b.nrows());
-    size_t lr_x = std::min(a.lr_x(), xo + b.ncols());
+  double corelation_sum_squares(const T& a, const U& b, const Point& p, ProgressBar progress_bar = ProgressBar()) {
+    size_t ul_y = std::max(a.ul_y(), p.y());
+    size_t ul_x = std::max(a.ul_x(), p.x());
+    size_t lr_y = std::min(a.lr_y(), p.y() + b.nrows());
+    size_t lr_x = std::min(a.lr_x(), p.x() + b.ncols());
     double result = 0;
     double area = 0;
 
     progress_bar.set_length(lr_y - ul_y);
-    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-yo; y < lr_y; ++y, ++ya, ++yb) {
-      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-xo; x < lr_x; ++x, ++xa, ++xb) {
-	typename T::value_type px_a = a.get(yb, xb);
-	typename U::value_type px_b = b.get(yb, xb);
+    for (size_t y = ul_y, ya = ul_y-a.ul_y(), yb = ul_y-p.y(); y < lr_y; ++y, ++ya, ++yb) {
+      for (size_t x = ul_x, xa = ul_x-a.ul_x(), xb = ul_x-p.x(); x < lr_x; ++x, ++xa, ++xb) {
+	typename T::value_type px_a = a.get(Point(xb, yb));
+	typename U::value_type px_b = b.get(Point(xb, yb));
 	if (is_black(px_b))
 	  area++;
 	result += corelation_square_absolute_distance(px_a, px_b);
@@ -127,6 +161,22 @@ namespace Gamera {
     }
     return result / area;
   }
+
+#ifdef GAMERA_DEPRECATED
+  /*
+corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo,
+ProgressBar progress_bar = ProgressBar()) is deprecated.
+
+Reason: (x, y) coordinate consistency.
+
+Use corelation_sum_squares(a, b, Point(xo, yo), progress_bar) instead.
+  */
+  template<class T, class U>
+  GAMERA_CPP_DEPRECATED
+  double corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo, ProgressBar progress_bar = ProgressBar()) {
+    return corelation_sum_squares(a, b, Point(xo, yo), progress_bar);
+  }
+#endif
 }
 
 #endif

@@ -25,7 +25,10 @@ the data:
 
 .. code:: CPP
 
-   OneBitImageData image_data(50, 50, 0, 0);
+   OneBitImageData image_data(Dim(50, 50));
+
+This creates data that is 50 pixels width and 50 pixels high, and has
+a logical origin of (0, 0).
 
 Then you can create a view on all of the data:
 
@@ -38,7 +41,19 @@ different overloaded version of the view constructor:
 
 .. code:: CPP
 
-   OneBitImageView subimage_view(image_data, 25, 25, 10, 10);
+   OneBitImageView subimage_view(image_data, Point(25, 25), Dim(10, 10));
+
+This will create a view on the image from (25, 25) that is 10 pixels
+tall and wide, i.e. the lower-right corner will be at (35, 35).  An
+alternate way to do this would be to specify two points:
+
+.. code:: CPP
+
+   OneBitImageView subimage_view(image_data, Point(25, 25), Point(35, 35));
+
+The different constructor forms are discussed in more detail in the
+`ImageView<T> objects`_ section.
+
 
 Memory management issues
 ------------------------
@@ -56,7 +71,7 @@ of the underlying data.  For example:
 
 .. code:: CPP
 
-   OneBitImageData image_data = new OneBitImageData(50, 50, 0, 0);
+   OneBitImageData image_data = new OneBitImageData(Dim(50, 50), Point(0, 0));
    OneBitImageView image_view = new OneBitImageView(*image_data);
    
    ...
@@ -144,6 +159,18 @@ There are a few different constructors available for data objects:
 
 .. code:: CPP
 
+    ImageData(const Dim& dim, const Point& offset);
+    ImageData(const Dim& dim); // offset == (0, 0)
+    ImageData(const Size& size, const Point& offset);
+    ImageData(const Size& size); // offset == (0, 0)
+    ImageData(const Rect& rect);
+
+There are also some deprecated forms that you may see in legacy code,
+but which are no longer supported since they are not consistent about
+specifying *x* before *y*:
+
+.. code:: CPP
+
     ImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
 	      size_t page_offset_x = 0);
     ImageData(const Size& size, size_t page_offset_y = 0,
@@ -151,15 +178,21 @@ There are a few different constructors available for data objects:
     ImageData(const Dimensions& dim, size_t page_offset_y = 0,
 	      size_t page_offset_x = 0);
 
-The arguments *page_offset_x* and *page_offset_y* are used to specify
-a logical offset of the data.  For instance, if the image data is from
-part of the page, the upper left corner may not be logically (0, 0).
-This is purely for logical purposes when your system needs to know the
-relative positions of image bounding boxes, and does not affect the
-size of the image data created in any way.
+The *offset* arguments are used to specify a logical offset of the
+data.  For instance, if the image data is from part of the page, the
+upper left corner may not be logically (0, 0).  This is purely for
+logical purposes when your system needs to know the relative positions
+of image bounding boxes, and does not affect the size of the image
+data created in any way.
 
-The ``Size`` and ``Dimensions`` classes are simple ways of storing
-sizes and dimensions defined in ``gamera/dimensions.hpp``.
+The ``Size`` and ``Dim`` classes are simple ways of storing
+sizes and dimensions defined in ``gamera/dimensions.hpp``.  (See the
+`Dimension types`__ chapter for more information). ``Size(w,
+h)`` is always equal to ``Dim(w + 1, h + 1)``.  Both forms are
+supported to make it easier to adapt existing algorithms that use one
+or the other standard.
+
+.. __: dimension_types.html
 
 While there are other public members and methods to the ``ImageData``
 class, we do not recommend using any of them unless you really know
@@ -204,32 +237,45 @@ There are a number of different ways to construct image views:
   // Creates a view covering all of the data
   ImageView(T& image_data);
 
-  // Creates a view with a specified bounding box
-  ImageView(T& image_data, size_t offset_y,
-	    size_t offset_x, size_t nrows, size_t ncols,
-	    bool do_range_check = true);
+  ImageView(T& image_data, const Rect& rect, 
+            bool do_range_check = true);
   ImageView(T& image_data, const Point& upper_left,
 	    const Point& lower_right, bool do_range_check = true)
   ImageView(T& image_data, const Point& upper_left,
 	    const Size& size, bool do_range_check = true)
   ImageView(T& image_data, const Point& upper_left,
+	    const Dim& dim, bool do_range_check = true)
+  
+There are also some deprecated forms that you may see in legacy code,
+but which are no longer supported since they are not consistent about
+specifying *x* before *y*:
+
+.. code:: CPP
+
+  // Creates a view with a specified bounding box
+  ImageView(T& image_data, size_t offset_y,
+	    size_t offset_x, size_t nrows, size_t ncols,
+	    bool do_range_check = true);
+  ImageView(T& image_data, const Point& upper_left,
 	    const Dimensions& dim, bool do_range_check = true)
 
-The ``Size``, ``Point`` and ``Dimensions`` classes are simple ways of storing
-sizes and dimensions defined in ``gamera/dimensions.hpp``.
+The ``Size``, ``Point`` and ``Dim`` classes are simple ways of storing
+sizes and dimensions defined in ``gamera/dimensions.hpp``.  (See the
+`Dimension types`__ chapter for more information).
 
-Coordinates for any given bounding boxes are relative
-to the ``page_offset_x`` and ``page_offset_y`` of the underlying
-data.  Therefore:
+.. __: dimension_types.html
+
+Coordinates for any given bounding boxes are relative to the offset of
+the underlying data.  Therefore:
 
 .. code:: CPP
 
    // Create data with an size of (64, 64) and an offset of (32, 32);
-   OneBitImageData image_data(64, 64, 32, 32);
+   OneBitImageData image_data(Size(64, 64), Point(32, 32));
    // This is a view over all of the data
-   OneBitImageView image_view(image_data, 32, 32, 64, 64);
+   OneBitImageView image_view(image_data, Point(32, 32), Size(64, 64));
    // This raises an exception, since it's out of range for the data
-   OneBitImageView image_view(image_data, 0, 0, 64, 64);
+   OneBitImageView image_view(image_data, Point(0, 0), Size(64, 64));
 
 You can get the type of the pixels referenced by an ``ImageView``
 using the expression ``typename T::value_type``.
@@ -265,6 +311,12 @@ The different interfaces for accessing pixels are discussed below:
 This is perhaps the most straightforward way to access the pixels of
 an image.  There are two public methods of ``ImageView``:
 
+   - value_type **get** (const Point& *point*)
+
+   - void **set** (const Point& *point*, value_type *value*)
+
+There are also deprecated forms that you may see in legacy code:
+
    - value_type **get** (size_t *row*, size_t *col*)
 
    - void **set** (size_t *row*, size_t *col*, value_type *value*)
@@ -281,12 +333,12 @@ An example using ``get`` / ``set`` over an entire image:
   typename ImageFactory<T>::view_type* test_get_set(const T& image) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    data_type* new_data = new data_type(image);
     view_type* new_view = new view_type(*new_data);
     
     for (size_t r = 0; r < in.nrows(); ++r) {
       for (size_t c = 0; c < in.ncols(); ++c) {
-	new_view.set(r, c, image.get(r, c) / 2);
+	new_view.set(Point(c, r), image.get(Point(c, r)) / 2);
       }
     }
 
@@ -306,7 +358,8 @@ arrays:
    image[row][col] = value;
 
 This interface is provided as a convenience to support the large body
-of legacy code written in this style.  Keep in mind, it is not really
+of legacy code written in this style.  Note that ``[row][col]`` is the
+reverse of get and set's ``Point(x, y)``.  Keep in mind, it is not really
 a 2-diminsional array underneath -- this view is "faked."
 
 An example using the C-style 2-dimensional array interface:
@@ -317,7 +370,7 @@ An example using the C-style 2-dimensional array interface:
   typename ImageFactory<T>::view_type* test_c_2d(const T& image) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    data_type* new_data = new data_type(image);
     view_type* new_view = new view_type(*new_data);
     
     for (size_t r = 0; r < image.nrows(); ++r) {
@@ -332,8 +385,8 @@ An example using the C-style 2-dimensional array interface:
 Iterators
 `````````
 
-Iterators provide a lot of readability and convenience
-advantages over the other approaches.
+Iterators provide a lot of readability and convenience advantages over
+the other approaches.
 
 Gamera has three kinds of iterators:
 
@@ -342,8 +395,8 @@ Gamera has three kinds of iterators:
 2. Row/column iterators: Iterates along either rows or columns.  Incrementing the iterator
    moves one row down or one column to the right.  Calling ``begin()`` on a ``row_iterator``,
    returns a ``col_iterator`` and vice versa.
-3. Two-dimensional iterators: Provide a free form of movement of the
-   iterator in any direction.
+3. Two-dimensional iterators: Provide free movement of the iterator in
+   any direction.
 
 The first two kinds of iterators follow the conventions of the C++ STL
 enough that they can be used with STL algorithms.  All iterators are
@@ -390,7 +443,7 @@ An example using ``vec_iterators``:
   typename ImageFactory<T>::view_type* test_vec_iterator(const T& image) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    data_type* new_data = new data_type(image);
     view_type* new_view = new view_type(*new_data);
 
     typename T::const_vec_iterator i = image.vec_begin();
@@ -431,7 +484,7 @@ column interators (``ImageView<T>::col_iterators``):
   typename ImageFactory<T>::view_type* test_row_col_iterator(const T& image) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    data_type* new_data = new data_type(image);
     view_type* new_view = new view_type(*new_data);
 
     typedef typename T::const_row_iterator IteratorI;
@@ -458,7 +511,7 @@ major order instead, you could write:
   typename ImageFactory<T>::view_type* test_col_row_iterator(const T& image) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
+    data_type* new_data = new data_type(image);
     view_type* new_view = new view_type(*new_data);
 
     typedef typename T::const_col_iterator IteratorI;
@@ -558,29 +611,9 @@ method.
    relative = i(1, 1)            // down and to the right
    relative = i(-1, -1)	         // up and to the left
 
-You can also use the two-dimensional iterators exactly like a `vector
-iterator`_.  Incrementing them directly will move through the image
-left-to-right, top-to-bottom:
-
-.. code:: CPP
-
-  template<class T>
-  typename ImageFactory<T>::view_type* test_2d_iterator(const T& image) {
-    typedef typename ImageFactory<T>::data_type data_type;
-    typedef typename ImageFactory<T>::view_type view_type;
-    data_type* new_data = new data_type(image.size(), image.offset_y(), image.offset_x());
-    view_type* new_view = new view_type(*new_data);
-
-    typename T::Iterator i = image.upperLeft();
-    typename view_type::Iterator j = new_view->upperLeft();
-    for ( ; i != image.lowerRight(); ++i, ++j)
-      j.set(i.get());
-
-    return new_view;
-  }
-
 For an example of how two-dimensional iterators can be used in a more
-real-world situation, see the ``cc_analysis`` method in ``include/plugins/segmentation.py``.
+real-world situation, see the ``cc_analysis`` method in
+``include/plugins/segmentation.py``.
 
 Speed tests
 ```````````
@@ -595,9 +628,11 @@ salt.
 
 .. image:: images/pixel_access_runtimes.png
 
-The performance of the 1-dimensional
-iterator is perhaps surprising, since it appears to be the simplest
-code.  In fact, however, ``vec_iterators`` must support the image view model, and therefore do basic "range checking" upon each increment.  This introduces some overhead.
+The performance of the 1-dimensional iterator is perhaps surprising,
+since it appears to be the simplest code.  In fact, however,
+``vec_iterators`` must support the image view model, and therefore do
+basic "range checking" upon each increment.  This introduces some
+overhead.
 
 .. _VIGRA: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
 
@@ -606,8 +641,8 @@ the clear winner.  Since the underlying data is stored row major order,
 accessing it in column major order is a major performance hit, in part
 due to the extra pointer arithmetic and in part due to worse cache performance.
 
-.. note:: Any performance improvement should be justified only
-   by profiling on real-world data
+.. note:: Any performance improvement should be justified only by
+   profiling on real-world data
 
 Making generic programming work
 ===============================
@@ -615,7 +650,7 @@ Making generic programming work
 Everything discussed so far has been completely polymorphic: these techniques
 should work identically on all types of images.  However, where the
 images vary is in the pixel types themselves.  Careful programming
-can keep your algorithms generic against all pixel types, but when
+can keep your algorithms generic across all pixel types, but when
 that is no longer possible, it is also possible to specialize
 (i.e. write a special version of an algorithm for a particular pixel
 type.)

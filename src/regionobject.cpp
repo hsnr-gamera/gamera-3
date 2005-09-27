@@ -45,47 +45,72 @@ PyTypeObject* get_RegionType() {
   return &RegionType;
 }
 
+static PyObject* _region_new(PyTypeObject* pytype, Region* region) {
+  RectObject* so;
+  so = (RectObject*)pytype->tp_alloc(pytype, 0);
+  so->m_x = region;
+  return (PyObject*)so;
+}
+
 static PyObject* region_new(PyTypeObject* pytype, PyObject* args,
 			    PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);
+  if (num_args == 2) {
+    PyObject *a, *b;
+    if (PyArg_ParseTuple(args, "OO", &a, &b)) {
+      Point point_a;
+      try {
+	point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+	goto phase2;
+      }
+      try {
+	Point point_b = coerce_Point(b);
+	return _region_new(pytype, new Region(point_a, point_b));
+      } catch (std::invalid_argument e) {
+	if (is_SizeObject(b)) {
+	  return _region_new(pytype, new Region(point_a, *((SizeObject*)b)->m_x));
+	} else if (is_DimObject(b)) {
+	  return _region_new(pytype, new Region(point_a, *((DimObject*)b)->m_x));
+	}
+#ifdef GAMERA_DEPRECATED
+	else if (is_DimensionsObject(b)) {
+	  if (send_deprecation_warning(
+"Region(Point offset, Dimensions dimensions) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+"in favor of Dim).\n\n"
+"Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	    return 0;
+	  Dimensions* dim = ((DimensionsObject*)b)->m_x;
+	  return _region_new(pytype, new Region(point_a, Dim(dim->ncols(), dim->nrows()))); // deprecated call
+	}
+#endif
+      }
+    }
+  }
+
+ phase2:
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
   if (num_args == 4) {
     int offset_x, offset_y, nrows, ncols;
-    if (PyArg_ParseTuple(args, "iiii", &offset_x, &offset_y, &nrows, &ncols)
-	<= 0)
-      return 0;
-    RectObject* so;
-    so = (RectObject*)pytype->tp_alloc(pytype, 0);
-    so->m_x = new Region((size_t)offset_x, (size_t)offset_y, (size_t)nrows,
-			 (size_t)ncols);
-    return (PyObject*)so;
-  } else if (num_args == 2) {
-    PyObject *a, *b;
-    if (PyArg_ParseTuple(args, "OO", &a, &b) <= 0)
-      return 0;
-    if (is_PointObject(a) && is_PointObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Region(*((PointObject*)a)->m_x, *((PointObject*)b)->m_x);
-      return (PyObject*)so;
-    } else if (is_PointObject(a) && is_SizeObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Region(*((PointObject*)a)->m_x, *((SizeObject*)b)->m_x);
-      return (PyObject*)so;
-    } else if (is_PointObject(a) && is_DimensionsObject(b)) {
-      RectObject* so;
-      so = (RectObject*)pytype->tp_alloc(pytype, 0);
-      so->m_x = new Region(*((PointObject*)a)->m_x,
-			   *((DimensionsObject*)b)->m_x);
-      return (PyObject*)so;
-    } else {
-      PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
-      return 0;
+    if (PyArg_ParseTuple(args, "iiii", &offset_x, &offset_y, &nrows, &ncols)) {
+      if (send_deprecation_warning(
+"Region(offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
+"Reason: (x, y) coordinate consistency.\n\n"
+"Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
+"imageobject.cpp", __LINE__) == 0)
+	return 0;
+      return _region_new(pytype, new Region(Point(offset_x, offset_y), Dim(ncols, nrows)));
     }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "No overloaded functions match!");
-    return 0;
   }
+#endif
+  
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments for Region constructor.");
+  return 0;
 }
 
 static void region_dealloc(PyObject* self) {

@@ -25,11 +25,34 @@
   convenience.
  */
 
+/* 
+  Deprecation of functions 
+  This stuff handles the deprecation of certain method
+  signatures from Gamera 2.x - 3.x.
+
+  Unfortunately this stuff only works on gcc, and not on mingw gcc.
+*/
+#if GAMERA_INCLUDE_DEPRECATED == 1
+#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
+#define GAMERA_CPP_DEPRECATED \
+ __attribute__((__deprecated__))
+#else
+#define GAMERA_CPP_DEPRECATED
+#endif /* __GNUC__ */
+#define GAMERA_DEPRECATED
+#undef GAMERA_NO_DEPRECATED
+#else /* GAMERA_INCLUDE_DEPRECATED */
+#define GAMERA_CPP_DEPRECATED
+#define GAMERA_NO_DEPRECATED
+#undef GAMERA_DEPRECATED
+#endif /* GAMERA_INCLUDE_DEPRECATED */
+
 #include <vector>
 #include <list>
 
 #include "pixel.hpp"
 #include "dimensions.hpp"
+#include "floatpoint.hpp"
 #include "image_info.hpp"
 #include "image_algorithm.hpp"
 #include "utility.hpp"
@@ -170,6 +193,7 @@ namespace Gamera {
   }
   
 }
+
 
 #endif
 

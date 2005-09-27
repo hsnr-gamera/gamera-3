@@ -321,7 +321,7 @@ PyObject* graph_optimize_partitions(PyObject* self, PyObject* args) {
   PyObject* a, *eval_func;
   int max_parts_per_group = 5;
   int max_graph_size = 16;
-  if (PyArg_ParseTuple(args, "OO|ii", &a, &eval_func, &max_parts_per_group, &max_graph_size) <= 0)
+  if (PyArg_ParseTuple(args, "OO|ii:optimize_partitions", &a, &eval_func, &max_parts_per_group, &max_graph_size) <= 0)
     return 0;
   Node* root = graph_find_node(so, (PyObject*)a);
   if (root == NULL)

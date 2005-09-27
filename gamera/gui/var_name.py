@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-from wxPython.wx import *
+import wx
 import keyword, re
 
 variable_name = re.compile("^[A-Za-z_][A-Za-z0-9_]*$")
@@ -39,13 +39,13 @@ def get(default='untitled', dict={}):
          if number > 1000:
             number = 0
             break
-      dlg = wxTextEntryDialog(
-          NULL,
+      dlg = wx.TextEntryDialog(
+          None,
           'Please enter a variable name for the result',
           'Select a variable name', name,
-          style=wxOK|wxCANCEL|wxCENTRE)
+          style=wx.OK|wx.CANCEL|wx.CENTRE)
       button = dlg.ShowModal()
-      if button == wxID_OK:
+      if button == wx.ID_OK:
          result = dlg.GetValue()
          dlg.Destroy()
          if not verify_variable_name(result):

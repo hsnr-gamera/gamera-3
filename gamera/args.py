@@ -173,7 +173,7 @@ class String(Arg):
       if name:
          result += " *%s*" % self.name
          if self.has_default:
-            result += " = %d" % self.default
+            result += " = %s" % repr(self.default)
       return result
 
 class Class(Arg):
@@ -228,7 +228,7 @@ class Rect(Arg):
       if not core is None:
          self.klass = core.Rect
       self.list_of = bool(list_of)
-
+   
    def rest_repr(self, name=False):
       result = Arg.rest_repr(self, name)
       if self.list_of:
@@ -285,7 +285,7 @@ class ChoiceString(Arg):
       if name:
          result += " *%s*" % self.name
          if self.has_default:
-            result += " = %s" % self.choices[self.default]
+            result += " = %s" % self.default
       return result
 
 class _Filename(Arg):
@@ -358,6 +358,19 @@ class Point(Arg):
       else:
          self.has_default = True
          self.default = default
+
+class FloatPoint(Arg):
+   def __init__(self, name=None, default=None):
+      Arg.__init__(self, name)
+      if default is None:
+         self.has_default = False
+         self.default = (0.0, 0.0)
+      else:
+         self.has_default = True
+         self.default = default
+
+class Dim(Point):
+   pass
 
 class _Vector(Class):
    def __init__(self, name=None, default=None, length=-1):
@@ -432,7 +445,7 @@ class Wizard:
             dialog_history = dialog_history[0:-1]
       self.done()
 
-__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector ChoiceString Point'.split()
+__all__ = 'Args Int Real Float Complex String Class ImageType Rect Choice FileOpen FileSave Directory Radio Check Region RegionMap ImageInfo FloatVector IntVector ComplexVector ImageList Info Wizard Pixel PointVector _Vector ChoiceString Point FloatPoint Dim'.split()
 
 ___mixin_locals = locals()
 def mixin(module, name):

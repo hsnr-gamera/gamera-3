@@ -313,7 +313,7 @@ The coordinates can be specified either by four integers, two FloatPoints, or on
         pass
     elif len(args) == 5:
       try:
-        y1, x1, y2, x1, value = args
+        y1, x1, y2, x2, value = args
         result = _draw.draw_filled_rect(self, (x1, y1), (x2, y2), value)
         warn_deprecated("""draw_filled_rect(y1, x1, y2, x2, value) is deprecated.
 

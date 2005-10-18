@@ -185,8 +185,8 @@ FloatImageView* SimpleSharpeningKernel(double sf) {
   dest->set(Point(0, 1), -sf/8.0);
   dest->set(Point(1, 1), 1.0+sf*0.75);
   dest->set(Point(2, 1), -sf/8.0);
-  dest->set(Point(2, 0), -sf/16.0);
-  dest->set(Point(2, 1), -sf/8.0);
+  dest->set(Point(0, 2), -sf/16.0);
+  dest->set(Point(1, 2), -sf/8.0);
   dest->set(Point(2, 2), -sf/16.0);
   return dest;
 }

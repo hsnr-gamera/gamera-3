@@ -21,7 +21,7 @@ from sys import stderr
 
 try:
    import matplotlib
-   if matplotlib.__version__ != "0.73.1":
+   if matplotlib.__version__ not in ("0.73.1", "0.84"):
       print >>stderr, "WARNING: The version of matplotlib you have installed has not been officially"
       print >>stderr, "tested with Gamera.  It may work fine, or you may experience strange"
       print >>stderr, "problems using the matplotlib functionality.  Please include the"
@@ -231,6 +231,14 @@ else:
 
    _plot_num = 0
    def plot(*args):
+      # Having inf values in the array raises a cryptic error
+      # message from matplotlib
+      inf = 1e300
+      line = args[0]
+      for x in line:
+         if x > inf or x < -inf:
+            raise ValueError("Line contains 'inf' or '-inf' values which can not be plotted.")
+
       figure = Figure()
       axis = figure.add_subplot(111)
       axis.plot(*args)

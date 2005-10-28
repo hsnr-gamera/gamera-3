@@ -129,6 +129,12 @@ Labs, Lincroft, NJ.
 
 http://research.microsoft.com/~patrice/PDF/jei.pdf
 
+This implementation features an additional extension to the algorithm
+described above.  Once the background and foreground colors are
+determined for each block, the image is thresholded by interpolating
+the foreground and background colors between the blocks.  This
+prevents "blockiness" along boundaries of strong color change.
+
 *smoothness*
    The amount of effect that parent blocks have on their children
    blocks.  Higher values will result in more smoothness between
@@ -151,6 +157,11 @@ http://research.microsoft.com/~patrice/PDF/jei.pdf
                  Int("min_block_size", default=64),
                  Int("block_factor", default=2, range=(1, 8))])
     return_type = ImageType([ONEBIT], "output")
+    def __call__(image, smoothness=0.2, max_block_size=512, min_block_size=64,
+                 block_factor=2):
+        return _threshold.djvu_threshold(image, smoothness, max_block_size,
+                                         min_block_size, block_factor)
+    __call__ = staticmethod(__call__)
     doc_examples = [(RGB, 0.5, 512, 64, 2)]
 
 class ThresholdModule(PluginModule):

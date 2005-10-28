@@ -35,6 +35,8 @@ class GameraConfigOptionParser(ConfigOptionParser):
       return ([join(dir, "gamera.cfg"), join(expanduser("~"), ".gamera")] +
               self.extra_files)
 
-config = GameraConfigOptionParser()
+config = GameraConfigOptionParser(usage = "%prog [options] [script [script_args]]")
+config.disable_interspersed_args()
+
 
 __all__ = ["config"]

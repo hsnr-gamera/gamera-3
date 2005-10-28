@@ -177,7 +177,7 @@ elif sys.platform == 'win32':
        
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",
-      version=gamera_version,
+      version = gamera_version,
       url = "http://gamera.sourceforge.net/",
       author = "Michael Droettboom and Karl MacMillan",
       author_email = "gamera-devel@yahoogroups.com",

@@ -277,7 +277,9 @@ class ShellFrame(wx.Frame):
       wx.Yield()
 
    def import_command_line_modules(self):
-      for file in config.get_free_args():
+      sys.argv = config.get_free_args()
+      if len(sys.argv):
+         file = sys.argv[0]
          try:
             name = os.path.basename(file)[:-3]
             module = imp.load_source(name, file)

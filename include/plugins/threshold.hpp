@@ -398,6 +398,8 @@ Solomon, D.  Image Compression: The Complete Reference.  2nd Edition.
 template<class T, class U>
 inline double
 djvu_distance(const T& x, const U& y) {
+  // This approximates YUV distance, which is far more natural
+  // than RGB distance.
   double r = (double)x.red() - (double)y.red();
   double g = (double)x.green() - (double)y.green();
   double b = (double)x.blue() - (double)y.blue();
@@ -420,11 +422,11 @@ void djvu_threshold_recurse(const T image,
 			    const size_t block_size) {
   typedef typename T::value_type value_type;
   typedef Rgb<double> promote_t;
-  // typedef typename vigra::NumericTraits<RGBPixel::value_type>::Promote promote;
 
   promote_t fg = fg_init;
   promote_t bg = bg_init;
   promote_t last_fg, last_bg;
+  bool fg_converged = false, bg_converged = false;
   promote_t fg_init_scaled = promote_t(fg_init) * smoothness;
   promote_t bg_init_scaled = promote_t(bg_init) * smoothness;
   do {
@@ -432,8 +434,8 @@ void djvu_threshold_recurse(const T image,
     last_bg = bg;
     promote_t fg_avg, bg_avg;
     size_t fg_count = 0, bg_count = 0;
-    typename T::const_vec_iterator i = image.vec_begin();
-    for ( ; i != image.vec_end(); ++i) {
+    for (typename T::const_vec_iterator i = image.vec_begin();
+	 i != image.vec_end(); ++i) {
       double fg_dist = djvu_distance(*i, fg);
       double bg_dist = djvu_distance(*i, bg);
       if (fg_dist <= bg_dist) {
@@ -444,27 +446,35 @@ void djvu_threshold_recurse(const T image,
 	++bg_count;
       }
     }
-    if (fg_count)
+
+    if (fg_count) {
       fg = (((fg_avg / fg_count) * (1.0 - smoothness)) + fg_init_scaled);
-    if (bg_count)
+      fg_converged = djvu_converged(fg, last_fg);
+    } else {
+      fg_converged = true;
+    }
+    if (bg_count) {
       bg = (((bg_avg / bg_count) * (1.0 - smoothness)) + bg_init_scaled);
-  } while (!(djvu_converged(fg, last_fg) && (djvu_converged(bg, last_bg))));
+      bg_converged = djvu_converged(bg, last_bg);
+    } else {
+      bg_converged = true;
+    }
+  } while (!(fg_converged && bg_converged));
 
   if (block_size < min_block_size) {
     fg_image.set(Point(image.ul_x() / min_block_size,
 		       image.ul_y() / min_block_size), fg);
     bg_image.set(Point(image.ul_x() / min_block_size,
 		       image.ul_y() / min_block_size), bg);
-    return;
-  }
-
-  for (size_t r = 0; r <= (image.nrows() - 1) / block_size; ++r) {
-    for (size_t c = 0; c <= (image.ncols() - 1) / block_size; ++c) {
-      Point ul(c * block_size + image.ul_x(), r * block_size + image.ul_y());
-      Point lr(std::min((c + 1) * block_size + image.ul_x(), image.lr_x()),
-	       std::min((r + 1) * block_size + image.ul_y(), image.lr_y()));
-      djvu_threshold_recurse(T(image, ul, lr), smoothness, min_block_size, 
-			     fg_image, bg_image, fg, bg, block_size / 2);
+  } else {
+    for (size_t r = 0; r <= (image.nrows() - 1) / block_size; ++r) {
+      for (size_t c = 0; c <= (image.ncols() - 1) / block_size; ++c) {
+	Point ul(c * block_size + image.ul_x(), r * block_size + image.ul_y());
+	Point lr(std::min((c + 1) * block_size + image.ul_x(), image.lr_x()),
+		 std::min((r + 1) * block_size + image.ul_y(), image.lr_y()));
+	djvu_threshold_recurse(T(image, ul, lr), smoothness, min_block_size, 
+			       fg_image, bg_image, fg, bg, block_size / 2);
+      }
     }
   }
 }
@@ -475,6 +485,9 @@ Image *djvu_threshold(const T& image, const double smoothness,
 		      const size_t block_factor,
 		      const typename T::value_type init_fg, 
 		      const typename T::value_type init_bg) {
+  // Create some temporary images to store the foreground and 
+  // background colors for each block
+
   RGBImageData fg_data(Dim(image.ncols() / min_block_size + 1,
 			   image.nrows() / min_block_size + 1),
 		       Point(0, 0));
@@ -500,13 +513,13 @@ Image *djvu_threshold(const T& image, const double smoothness,
 
   for (size_t r = 0; r < image.nrows(); ++r) {
     for (size_t c = 0; c < image.ncols(); ++c) {
-      RGBPixel fg = fg_acc(fg_image.upperLeft(), (double)c / min_block_size,
-			   (double)r / min_block_size);
-      RGBPixel bg = bg_acc(bg_image.upperLeft(), (double)c / min_block_size,
-			   (double)r / min_block_size);
+      double c_frac = (double)c / min_block_size;
+      double r_frac = (double)r / min_block_size;
+      RGBPixel fg = fg_acc(fg_image.upperLeft(), c_frac, r_frac); 
+      RGBPixel bg = bg_acc(bg_image.upperLeft(), c_frac, r_frac);
       double fg_dist = djvu_distance(image.get(Point(c, r)), fg);
       double bg_dist = djvu_distance(image.get(Point(c, r)), bg);
-      if (fg_dist < bg_dist)
+      if (fg_dist <= bg_dist)
 	result->set(Point(c, r), black(*result));
       else
 	result->set(Point(c, r), white(*result));
@@ -539,6 +552,9 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
       }
     }
   }
+
+  if (max_color.red() < 128 || max_color.green() < 128 || max_color.blue() < 128)
+    max_color = RGBPixel(255, 255, 255);
 
   return djvu_threshold(image, smoothness, max_block_size, min_block_size, 
 			block_factor, RGBPixel(0, 0, 0), max_color);

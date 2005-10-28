@@ -325,7 +325,7 @@ Prerequisites
 
 - X11
 
-- Optional: Matlplotlib
+- Optional: Matplotlib
 
   Matplotlib can be compiled from source or downloaded as a binary.  We
   recommend the binary which can be downloaded here__.

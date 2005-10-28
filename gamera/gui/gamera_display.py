@@ -2024,8 +2024,7 @@ def graph_vert(data, dc, x1, y1, x2, y2, mark=None, border=1):
    if mark:
       dc.SetBrush(wx.CYAN_BRUSH)
       dc.SetLogicalFunction(wx.XOR)
-      dc.DrawRectangle(x1, y1 + mark * scale_y,
-                       x2 - x1, scale_y + 1)
+      dc.DrawRectangle(x1, y1 + mark * scale_y, x2 - x1, scale_y + 1)
       dc.SetLogicalFunction(wx.COPY)
    if border:
       dc.SetPen(wx.BLACK_PEN)

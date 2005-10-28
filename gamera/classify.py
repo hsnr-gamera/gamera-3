@@ -312,7 +312,7 @@ Return type: (*add*, *remove*)
 *max_recursion* = ``10``)
 
 A convenience wrapper around classify_list_automatic_ that returns
-a list of glyphs that is already updated for splitting."""
+a list of glyphs that is already updated based on splitting."""
       added, removed = self.classify_list_automatic(glyphs, *args, **kwargs)
       return self._update_after_classification(glyphs, added, removed)
 

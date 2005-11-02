@@ -280,10 +280,57 @@ the underlying data.  Therefore:
 You can get the type of the pixels referenced by an ``ImageView``
 using the expression ``typename T::value_type``.
 
-Creating images based on other images
--------------------------------------
+Image factories
+---------------
 
-TODO: Write about ``ImageFactory<T>``.
+There are other convenience classes for creating image types.
+
+TypeIdImageFactory
+``````````````````
+
+``TypeIdImageFactory`` is useful if you want to create an image of a
+specific type based on a pair of integer constants.  For example, the
+following code snippit creates a DENSE or RLE image based on an
+integer constant passed in as a parameter to the function.  Note that
+the types of each of the ``TypeIdImageFactory`` s are different and
+not polymorphic, so the interior function (``threshold_fill``) must be
+called from two locations.
+
+.. code:: CPP
+
+   template<class T>
+   Image* threshold(const T &m, int threshold, int storage_format) {
+     if (storage_format == DENSE) {
+       typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
+       typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
+       threshold_fill(m, *view, threshold);
+       return view;
+     } else {
+       typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
+       typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
+       threshold_fill(m, *view, threshold);
+       return view;
+     }
+   }
+
+ImageFactory
+````````````
+
+It is a common use case to create a result image whose type is related
+to the type of an input image.  In many cases, one could just use the
+same type as the result type.  However, if a ``Cc`` image type is
+passed into a function, you would most likely want to return a regular
+``OneBit`` image as a result.  ``ImageFactory`` is designed to get
+around this problem.  It will create an appropriate result type from
+a given input type.  For example, see the following code snippet:
+
+.. code:: CPP
+
+   template<class T>
+   Image* abutaleb_threshold(const T &m, int storage_format) {
+     typedef typename ImageFactory<T>::view_type view_type;
+     view_type* average = mean(m);
+   ...
 
 Accessing pixels
 ================
@@ -793,5 +840,20 @@ pixels is not fixed.):
 Connected components
 ====================
 
-TODO: Not yet written.
+Connected components (``Cc``) are a special kind of view on ``ONEBIT`` image
+data.  Remember that ``ONEBIT`` images are actually stored as
+16-bits-per-pixel data.  Therefore each pixel may have a "connected
+component" label associated with it.
+
+Each ``Cc`` object defines a bounding box and a ``label`` value which
+indicates the pixel value that the ``Cc`` object corresponds to.
+Pixels with that value will appear to be black, and pixels without
+that value will appear to be white.
+
+As a programmer using a ``Cc`` object, this detail should not matter
+most of the time: it will behave as a standalone ``ONEBIT`` image.
+However, care should be taken when setting the values of a ``Cc``
+object: it may be possible to make pixels "disappear" by setting them
+to a value other than ``label``.
+
 

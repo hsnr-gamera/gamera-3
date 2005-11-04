@@ -15,10 +15,6 @@ can take.  This serves two main purposes:
 
 .. image:: images/erode_dilate_dialog.png
 
-This argument interface can also be used to make Wizard-like
-interfaces (a sequence of dialogs) to help the user navigate through
-complex processes.  (See `Writing Wizards`_).
-
 All of the classes necessary to make this happen are in
 ``gamera/args.py``, which is included in ``gamera/plugin.py``.  You
 can refer to those files for more information if necessary.
@@ -26,7 +22,7 @@ can refer to those files for more information if necessary.
 This document will first describe the common case of using ``args.py``
 for  `specifying the type metadata of a plugin method`_.  Then
 `advanced usage`_ of ``args.py`` for other
-custom purposes, and `writing wizards`_ is covered.
+custom purposes is covered.
 
 Specifying the type metadata of a plugin method
 ===============================================
@@ -41,9 +37,6 @@ The ``args`` member must be an instance of the ``Args`` class.  The
 ``Args`` class is constructed as:
 
     Args(*list*)
-
-(There are more optional arguments, but they are only used for
-`writing wizards`_).
 
 The *list* argument is a list of ``Arg`` instances, in the order the
 arguments appear in the function call.  For instance, to call a C++
@@ -402,15 +395,6 @@ When the user clicks **Ok**, the results are returned in a list::
 If the user clicks **Cancel**, ``None`` is returned::
 
    None
-
-Writing Wizards
-===============
-
-Now we'll extend things even further to put a number of these dialog
-boxes together into a wizard.
-
-TODO: But that's for another day... ;)
-
 
 Under the hood...
 =================

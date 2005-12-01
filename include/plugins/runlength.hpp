@@ -1304,9 +1304,9 @@ Use filter_wide_runs(image, min_width, runs::White()) instead.
       SelfType* so = (SelfType*)self;
       PyObject* result = 0;
       while (so->m_it != so->m_end) {
-	run_end(so->m_it, so->m_end, Color());
-	Iterator start = so->m_it;
 	run_end(so->m_it, so->m_end, get_other_color(Color()));
+	Iterator start = so->m_it;
+	run_end(so->m_it, so->m_end, Color());
 	if (so->m_it - start > 0) {
 	  result = create_RectObject
 	    (RunMaker()

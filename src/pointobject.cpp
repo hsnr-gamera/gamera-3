@@ -182,6 +182,11 @@ static PyObject* point_repr(PyObject* self) {
 			     (int)x->x(), (int)x->y());
 }
 
+static long point_hash(PyObject* self) {
+  Point* x = ((PointObject*)self)->m_x;
+  return ((x->x() << 16) + x->y());
+}
+
 void init_PointType(PyObject* module_dict) {
   PointType.ob_type = &PyType_Type;
   PointType.tp_name = "gameracore.Point";
@@ -196,6 +201,7 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_free = NULL; // _PyObject_Del;
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
+  PointType.tp_hash = point_hash;
   PointType.tp_doc = 
 "__init__(Int *x*, Int *y*)\n\n"
 "Point stores an (*x*, *y*) coordinate point.\n\n"

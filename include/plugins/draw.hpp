@@ -29,10 +29,10 @@ inline void _clip_points(T& image, size_t& x1, size_t& y1, size_t& x2, size_t& y
   x2 -= image.ul_x();
   y1 -= image.ul_y();
   y2 -= image.ul_y();
-  x1 = std::min(x1, image.ncols());
-  x2 = std::min(x2, image.ncols());
-  y1 = std::min(y1, image.nrows());
-  y2 = std::min(y2, image.nrows());
+  x1 = std::min(x1, image.ncols() - 1);
+  x2 = std::min(x2, image.ncols() - 1);
+  y1 = std::min(y1, image.nrows() - 1);
+  y2 = std::min(y2, image.nrows() - 1);
 }
 
 /* 
@@ -232,6 +232,8 @@ void draw_filled_rect(T& image, const P& a, const P& b, const typename T::value_
   size_t x2_ = (size_t)b.x();
   size_t y2_ = (size_t)b.y();
 
+  _clip_points(image, x1_, y1_, x2_, y2_);
+
   if (x1_ > x2_)
     x1 = x2_, x2 = x1_;
   else
@@ -241,8 +243,6 @@ void draw_filled_rect(T& image, const P& a, const P& b, const typename T::value_
     y1 = y2_, y2 = y1_;
   else
     y1 = y1_, y2 = y2_;
-
-  _clip_points(image, x1, y1, x2, y2);
 
   for (size_t y = y1; y <= y2; ++y) 
     for (size_t x = x1; x <= x2; ++x)

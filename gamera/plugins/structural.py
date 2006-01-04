@@ -63,13 +63,29 @@ See Numerical Recipes in C, section 15.2__ for more information.
     return_type = Class("a_b_q")
     args = Args([PointVector("points")])
 
+class least_squares_fit_xy(PluginFunction):
+    """Identical to *least_squares_fit* for line angles below 45 degrees.
+For lines with a more vertical slope a least square fit of *x = my + b* is
+done instead.
+
+The result is a tuple of the form (*m*, *b*, *q*, *x_of_y*) where *m, b, q*
+are the same as in *least_squares_fit*, but the integer value *x_of_y*
+determines the actual meaning of the parameters *m* and *b*:
+
+When *x_of_y* is zero, *y = mx + b*. Otherwise *x = my + b*.
+"""
+    self_type = None
+    return_type = Class("a_b_q_xofy")
+    args = Args([PointVector("points")])
+    author = "Christoph Dalitz"
+
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]
     category = "Relational"
     functions = [polar_distance, polar_match,
                  bounding_box_grouping_function,
                  shaped_grouping_function,
-                 least_squares_fit]
+                 least_squares_fit, least_squares_fit_xy]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
@@ -78,3 +94,4 @@ module = RelationalModule()
 bounding_box_grouping_function = bounding_box_grouping_function()
 shaped_grouping_function = shaped_grouping_function()
 least_squares_fit = least_squares_fit()
+least_squares_fit_xy = least_squares_fit_xy()

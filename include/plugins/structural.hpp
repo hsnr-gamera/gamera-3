@@ -300,6 +300,35 @@ namespace Gamera {
     least_squares_fit(*points, a, b, q);
     return Py_BuildValue("fff", b, a, q);
   }
+
+  PyObject* least_squares_fit_xy(const PointVector* points) {
+    double a, b, q;
+    int x_of_y = 0;
+    size_t xmin, xmax, ymin, ymax;
+    PointVector::const_iterator p;
+    p = points->begin();
+    xmin = xmax = p->x(); ymin = ymax = p->y();
+    for (p = points->begin() + 1; p != points->end(); ++p) {
+      if (p->x() > xmax) xmax = p->x();
+      if (p->x() < xmin) xmin = p->x();
+      if (p->y() > ymax) ymax = p->y();
+      if (p->y() < ymin) ymin = p->y();
+    }
+    if ((xmax-xmin) > (ymax-ymin)) {
+      // line closer to horizontal
+      least_squares_fit(*points, a, b, q);
+    } else {
+      // line closer to vertical
+      PointVector transposed;
+      for (p=points->begin(); p!=points->end(); ++p) {
+        transposed.push_back(Point(p->y(),p->x()));
+      }
+      least_squares_fit(transposed, a, b, q);
+      x_of_y = 1;
+    }
+
+    return Py_BuildValue("fffi", b, a, q, x_of_y);
+  }
   
 }
 #endif

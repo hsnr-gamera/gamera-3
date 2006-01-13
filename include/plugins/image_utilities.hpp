@@ -746,5 +746,13 @@ Use resize(image, Dim(ncols, nrows), resize_quality) instead.
     return (error / (a.nrows() * a.ncols())) / 3.0;
   }
 
+  template<class T>
+  void reset_onebit_image(T &image) {
+    typename T::vec_iterator i;
+    for (i = image.vec_begin(); i != image.vec_end(); ++i) {
+      if (i.get() > 0) i.set(1);
+    }
+  }
+
 }
 #endif

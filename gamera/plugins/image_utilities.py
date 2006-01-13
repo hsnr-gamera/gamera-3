@@ -376,6 +376,15 @@ class mse(PluginFunction):
     args = Args([ImageType([RGB])])
     return_type = Float()
 
+class reset_onebit_image(PluginFunction):
+      """Resets all black pixel values in a onebit image to one.
+This can be necessary e.g. after a CC analysis which sets black
+pixels to some other label value.
+"""
+      category="Utility"
+      self_type = ImageType([ONEBIT])
+      author = "Christoph Dalitz"
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
@@ -386,7 +395,7 @@ class UtilModule(PluginModule):
                  nested_list_to_image,
                  to_nested_list, shear_row, shear_column,
                  mirror_horizontal, mirror_vertical,
-                 diff_images, mse]
+                 diff_images, mse, reset_onebit_image]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 module = UtilModule()

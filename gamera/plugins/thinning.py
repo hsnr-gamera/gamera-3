@@ -78,7 +78,9 @@ Unlike thin_hs_, this algorithm performs skeletonization on one
 connected component at a time.  On large images with a lot of
 connected components, this can be significantly faster.  However, for
 small images with a single connected component, this has unnecessary
-overhead, which is why both versions are included.
+overhead, which is why both versions are included.  Please note cc_analysis
+results in a labelled image, which you can reset afterwards with
+reset_onebit_image().
 """
     pure_python = True
     def __call__(self):

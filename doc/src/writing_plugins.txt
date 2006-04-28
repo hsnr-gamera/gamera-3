@@ -413,6 +413,21 @@ argument lists are documented in `Specifying arguments`__.
 
 .. __: args.html
 
+The *args* parameter in the plugin prototype allows the specifictaion of
+default values for arguments. These are however used only in the GUI for
+the argument dialog box. If you need an actual default argument for your
+plugin function, you must define the ``__call__`` method in your plugin, e.g.
+
+.. code:: Python
+
+      # wrapper for passing a default argument
+      def __call__(self, nrows, ncols, interpolation="Linear"):
+          return _example.resize_copy(self, nrows, ncols, interpolation)
+    __call__ = staticmethod(__call__)
+
+``_example`` must be replaced by the actual name of your source file plus
+a leading underscore.
+
 Free functions
 --------------
 
@@ -423,7 +438,7 @@ system to automate the wrapping/building process, while foregoing the
 automatic inclusion of the method in the Image class and on the right-click context
 menu. It's as simple as setting ``self_type`` to ``None`` in the metadata object:
 
-.. code:: CPP
+.. code:: Python
 
   # C++ free function
   class union_images(PluginFunction):
@@ -431,6 +446,14 @@ menu. It's as simple as setting ``self_type`` to ``None`` in the metadata object
       self_type = None
       args = Args([ImageList('list_of_images')])
       return_type = ImageType([ONEBIT])
+
+As these functions are not image methods, but standalone *callable* classes,
+you additionally must create an instance of this class in the same python
+metadata file:
+
+.. code:: Python
+
+  union_images = union_images()
 
 Pure Python methods
 -------------------
@@ -759,3 +782,4 @@ References
 
 .. [Stroustrup1997] Stroustrup, B. 1997. *The C++ Programming
    Language: Third Edition.*  Reading, MA: Addison-Wesley.
+

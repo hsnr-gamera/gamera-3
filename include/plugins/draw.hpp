@@ -275,7 +275,7 @@ void draw_filled_rect(T& image, const size_t y1_, const size_t x1_, const size_t
 template<class T, class P>
 void draw_marker(T& image, const P& p, const size_t size, const size_t style, 
 		 const typename T::value_type value) {
-  double half_size = ceil(double(size) / 2.0);
+  int half_size = (int)ceil(double(size) / 2.0);
   switch (style) {
   case 0:
     draw_line(image, P(p.x(), p.y() - half_size), P(p.x(), p.y() + half_size), value);
@@ -291,10 +291,14 @@ void draw_marker(T& image, const P& p, const size_t size, const size_t style,
     draw_hollow_rect(image, P(p.x() - half_size, p.y() - half_size), 
 		     P(p.x() + half_size, p.y() + half_size), value);
     break;
-  case 3:
-    draw_filled_rect(image, P(p.x() - half_size, p.y() - half_size), 
-		     P(p.x() + half_size, p.y() + half_size), value);
+  case 3: {
+    int leftx = std::max((int)p.x() - half_size, 0);
+    int rightx = std::min((int)p.x() + half_size, (int)image.ncols()-1);
+    int topy = std::max((int)p.y() - half_size, 0);
+    int boty = std::min((int)p.y() + half_size, (int)image.nrows()-1);
+    draw_filled_rect(image, P(leftx, topy), P(rightx, boty), value);
     break;
+  }
   default:
     throw std::runtime_error("Invalid style.");
   }
@@ -551,3 +555,5 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
 }
 
 #endif
+
+

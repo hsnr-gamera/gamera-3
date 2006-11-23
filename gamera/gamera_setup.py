@@ -63,8 +63,11 @@ if sys.platform == "darwin":
    from gamera.mac import gamera_mac_setup
    cmdclass['bdist_osx'] = gamera_mac_setup.bdist_osx
 elif sys.platform == "win32":
-   from win32 import bdist_msi
-   cmdclass['bdist_msi'] = bdist_msi.bdist_msi
+   try:
+      from win32 import bdist_msi
+      cmdclass['bdist_msi'] = bdist_msi.bdist_msi
+   except ImportError:
+      pass
 
 # If gamera.generate is imported gamera.__init__.py will
 # also be imported, which won't work until the build is

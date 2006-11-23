@@ -464,6 +464,9 @@ Creates a new classifier instance.
       if type(database) == list:
          self._database = util.CallbackList(database)
          self.set_glyphs(database)
+      elif database[-4:] == ".xml":
+         self._database = util.CallbackList(database)
+         self.from_xml_filename(database)
       else:
          self._database = util.CallbackList([])
          self.unserialize(database)

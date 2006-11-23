@@ -86,12 +86,15 @@ Use the MSVC-built Python from python.org:
 
    Find your ``pythonXX.dll`` file, where ``XX`` is the version of
    Python you have installed.  This is normally in
-   ``C:\WINDOWS\system32\`` or ``C:\winnt\system32\``.
+   ``%WINDIR%\system32\``, where ``%WINDIR%`` is the value of the
+   environment variable ``WINDIR``.
 
    Make a ``.def`` file from your ``pythonXX.dll``.  (You will need to
-   install ``pexports.exe`` from the Cygwin installer)::
+   install ``pexports.exe`` from the `MingW utilities`__)::
 
-  	pexports 'C:\WINDOWS\system32\pythonXX.dll' > pythonXX.def
+  	pexports "$WINDIR"'\system32\pythonXX.dll' > pythonXX.def
+
+.. __: http://www.mingw.org/download.shtml
 
    Then create a static library (``libpythonXX.a``)::
 

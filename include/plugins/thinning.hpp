@@ -124,8 +124,8 @@ namespace Gamera {
     data_type* flag_data = 0;
     view_type* flag_view = 0;
     try {
-      data_type* flag_data = new data_type(in.size(), in.origin());
-      view_type* flag_view = new view_type(*flag_data);
+      flag_data = new data_type(in.size(), in.origin());
+      flag_view = new view_type(*flag_data);
       
       try {
 	bool deleted = true;
@@ -395,3 +395,4 @@ namespace Gamera {
 
 }
 #endif
+

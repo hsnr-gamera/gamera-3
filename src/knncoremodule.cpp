@@ -1006,7 +1006,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     return 0;
   if (o->feature_vectors == 0) {
     PyErr_SetString(PyExc_RuntimeError,
-		    "knn: leave_one_out called before instantiate from images.");
+		    "knn: leave_one_out called before instantiate_from_images.");
     return 0;
   }
   if (indexes == 0) {

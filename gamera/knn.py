@@ -216,6 +216,7 @@ leave-one-out cross-validation. The return value is a
 floating-point number between 0.0 (0% correct) and 1.0 (100%
 correct).
 """
+      self.instantiate_from_images(self.database)
       ans = self.leave_one_out()
       return float(ans[0]) / float(ans[1])
 

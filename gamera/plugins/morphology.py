@@ -46,6 +46,8 @@ class dilate(PluginFunction):
 
 class erode_dilate(PluginFunction):
   """Erodes or dilates the image by the image morphology method.
+     In case of calling with onebit images and shape is set to
+     rectangular erode_with_structure/dilate_with_structure is used.
 
 *ntimes*
   The number of times to perform the operation.
@@ -127,12 +129,88 @@ as a Float image.
   doc_examples = [(ONEBIT,5),]
   author = "Ulrich Koethe (wrapped from VIGRA by Michael Droettboom"
 
+
+class dilate_with_structure(PluginFunction):
+    """Performs a binary morphological dilation with the given structuring
+element.
+
+Note that it is necessary to specify which point in the structuring
+element shall be treated as origin. This allows for arbitrary structuring
+elements. Examples:
+
+.. code:: Python
+
+   # same as image.dilate(), but faster
+   structure = Image(Point(0,0), Point(2,2), ONEBIT)
+   structure.fill(1)
+   image = image.dilate_with_structure(structure, Point(1,1))
+
+   # same as image.erode_dilate(3,0,0), but much faster
+   structure = Image(Point(0,0), Point(6,6), ONEBIT)
+   structure.fill(1)
+   image = image.dilate_with_structure(structure, Point(3,3))
+
+The implementation is straightforward and can be slow for large
+structuring elements. If you know that your structuring element is
+connected and its origin is black, you can set *only_border* to ``True``,
+because in this case only the border pixels in the image need to be
+considered which can speed up the dilation for some images
+(though not for all).
+
+References:
+
+  A proof that only the contour pixels need to be dilated for connected
+  structuring elements containing their origin is given by Luc Vincent in
+  *Morphological Transformations of Binary Images with Arbitrary
+  Structuring Elements*, Signal Processing, Vol. 22, No. 1, pp. 3-23,
+  January 1991 (see theorem 2.13)
+"""
+    self_type = ImageType([ONEBIT])
+    args = Args([ImageType([ONEBIT],'structuring_element'),
+                 Point('origin'),
+                 Check('only_border', default=False)])
+    return_type = ImageType([ONEBIT])
+    author = "Christoph Dalitz"
+
+    def __call__(self, structuring_element, origin, only_border=False):
+        return _morphology.dilate_with_structure(self, structuring_element, origin, only_border)
+
+    __call__ = staticmethod(__call__)
+
+class erode_with_structure(PluginFunction):
+    """Performs a binary morphological erosion with the given structuring
+element.
+
+Note that it is necessary to specify which point in the structuring
+element shall be treated as origin. This allows for arbitrary structuring
+elements.
+
+Border pixels at which the structuring element extends beyond the image
+dimensions are whitened. In other words the image is padded with white
+pixels before erosion.
+
+Example:
+
+.. code:: Python
+
+   # same as image.erode(), but faster
+   structure = Image(Point(0,0), Point(2,2), ONEBIT)
+   structure.fill(1)
+   image = image.erode_with_structure(structure, Point(1,1))
+"""
+    self_type = ImageType([ONEBIT])
+    args = Args([ImageType([ONEBIT],'structuring_element'),
+                 Point('origin')])
+    return_type = ImageType([ONEBIT])
+    author = "Christoph Dalitz"
+
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
   category = "Morphology"
   functions = [erode_dilate, erode, dilate, rank, mean, despeckle,
-               distance_transform]
+               distance_transform, dilate_with_structure, erode_with_structure]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.dkc.jhu.edu/"
 
 module = MorphologyModule()
+

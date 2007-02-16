@@ -35,6 +35,140 @@ using namespace std;
 
 namespace Gamera {
 
+  
+  /*
+  * binary dilation with arbitrary structuring element
+  */
+  template<class T, class U>
+  typename ImageFactory<T>::view_type* dilate_with_structure(const T &src, const U &structuring_element, Point origin, bool only_border=false)
+  {
+	typedef typename ImageFactory<T>::data_type data_type;
+	typedef typename ImageFactory<T>::view_type view_type;
+	typedef typename T::value_type value_type;
+	int x,y;
+
+	value_type blackval = black(src);
+
+	data_type* dest_data = new data_type(src.size(), src.origin());
+	view_type* dest = new view_type(*dest_data);
+
+	// build list of structuring element offsets
+	IntVector se_x;
+	IntVector se_y;
+	int left, right, top, bottom, xoff, yoff;
+	left = right = top = bottom = 0;
+	for (y = 0; y < (int)structuring_element.nrows(); y++)
+		for (x = 0; x < (int)structuring_element.ncols(); x++)
+		if (is_black(structuring_element.get(Point(x,y)))) {
+			xoff = x - origin.x();
+			yoff = y - origin.y();
+			se_x.push_back(xoff);
+			se_y.push_back(yoff);
+			if (left < -xoff) left = -xoff;
+			if (right < xoff) right = xoff;
+			if (top < -yoff) top = -yoff;
+			if (bottom < yoff) bottom = yoff;
+		}
+
+	// move structuring element over image and add its black pixels
+	size_t i;
+	int ncols = (int)src.ncols();
+	int nrows = (int)src.nrows();
+	int maxy = nrows - bottom;
+	int maxx = ncols - right;
+	// first skip borders for saving range checks
+	for (y = top; y < maxy; y++)
+		for (x = left; x < maxx; x++) {
+		// is it a bulk pixel?
+		if (only_border && x > 0 && x < ncols - 1 && y > 0 && y < nrows - 1 &&
+			src.get(Point(x-1,y-1)) && src.get(Point(x,y-1)) &&
+			src.get(Point(x+1,y-1)) && src.get(Point(x-1,y)) &&
+			src.get(Point(x+1,y)) && src.get(Point(x-1,y+1)) &&
+			src.get(Point(x,y+1)) && src.get(Point(x+1,y+1))) {
+			dest->set(Point(x,y),blackval);
+			continue;
+		}
+		if (is_black(src.get(Point(x,y)))) {
+			for (i = 0; i < se_x.size(); i++) {
+			dest->set(Point(x + se_x[i], y + se_y[i]), blackval);
+			}
+		}
+		}
+	// now process borders where structuring element leaves image
+	int sx, sy;
+	for (y = 0; y < nrows; y++)
+		for (x = 0; x < ncols; x++)
+		if (y < top || y >= maxy || x < left || x >= maxx) {
+			if (is_black(src.get(Point(x,y)))) {
+			for (i = 0; i < se_x.size(); i++) {
+				sx = x + se_x[i];
+				sy = y + se_y[i];
+				if (sx >= 0 && sx < ncols && sy >= 0 && sy < nrows)
+				dest->set(Point(sx, sy), blackval);
+			}
+			}
+		}
+
+	return dest;
+  }
+
+
+  /*
+  * binary erosion with arbitrary structuring element
+  */
+  template<class T, class U>
+  typename ImageFactory<T>::view_type* erode_with_structure(const T &src, const U &structuring_element, Point origin){
+	typedef typename ImageFactory<T>::data_type data_type;
+	typedef typename ImageFactory<T>::view_type view_type;
+	typedef typename T::value_type value_type;
+	int x,y;
+
+	value_type blackval = black(src);
+
+	data_type* dest_data = new data_type(src.size(), src.origin());
+	view_type* dest = new view_type(*dest_data);
+
+	// build list of structuring element offsets
+	IntVector se_x;
+	IntVector se_y;
+	int left, right, top, bottom, xoff, yoff;
+	left = right = top = bottom = 0;
+	for (y = 0; y < (int)structuring_element.nrows(); y++)
+		for (x = 0; x < (int)structuring_element.ncols(); x++)
+		if (is_black(structuring_element.get(Point(x,y)))) {
+			xoff = x - origin.x();
+			yoff = y - origin.y();
+			se_x.push_back(xoff);
+			se_y.push_back(yoff);
+			if (left < -xoff) left = -xoff;
+			if (right < xoff) right = xoff;
+			if (top < -yoff) top = -yoff;
+			if (bottom < yoff) bottom = yoff;
+		}
+
+	// move structuring element over image and check whether it is
+	// fully contained in the source image
+	size_t i;
+	bool contained;
+	int maxy = (int)src.nrows() - bottom;
+	int maxx = (int)src.ncols() - right;
+	for (y = top; y < maxy; y++)
+		for (x = left; x < maxx; x++) {
+		if (is_black(src.get(Point(x,y)))) {
+			contained = true;
+			for (i = 0; i < se_x.size(); i++) {
+			if (is_white(src.get(Point(x + se_x[i], y + se_y[i])))) {
+				contained = false;
+				break;
+			}
+			}
+			if (contained) dest->set(Point(x,y),blackval);
+		}
+		}
+
+	return dest;
+  }
+
   template<class T>
   class Max {
   public:
@@ -74,9 +208,10 @@ namespace Gamera {
      vector<OneBitPixel>::iterator end) {
     return *(max_element(begin, end));
   }
-
+  /* in raw this functions was named erode_dilate() but for the template specialsation a workaround is needed to
+  create no loop in calling with onebit images.*/
   template<class T>
-  typename ImageFactory<T>::view_type* erode_dilate(T &m, const size_t times, int direction, int geo) {
+  typename ImageFactory<T>::view_type* erode_dilate_original(T &m, const size_t times, int direction, int geo) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
     typedef typename T::value_type value_type;
@@ -150,7 +285,40 @@ namespace Gamera {
       throw;
     }
   }
+  
+  //the  new erode_dilate function which calls the former original erode_dilate function
+  template<class T>
+  typename ImageFactory<T>::view_type* erode_dilate(T &m, const size_t times, int direction, int geo){
+	typedef typename ImageFactory<T>::view_type view_type;
+	view_type* new_view = new view_type();
+	
+	new_view = erode_dilate_original(m,times,direction,geo);
+	return new_view;
+  }
+  
+  /*template spceialsation of erode_dilate using erdode_with_structure/dilate_with_structure for onebit images in
+  assumption that it should be faster*/
+  template<>
+  ImageFactory<OneBitImageView>::view_type* erode_dilate<OneBitImageView>(OneBitImageView &src, const size_t times, int direction, int geo){
+	OneBitImageData* struct_data = new OneBitImageData(Dim(1+2*times,1+2*times),Point(0,0));
+	OneBitImageView* struct_view = new OneBitImageView(*struct_data);
+	OneBitImageView* result_view = new OneBitImageView();
+	//creating structuring element
+	for(int y = 0; y < (int)struct_view->nrows(); y++){
+		for(int x = 0; x < (int)struct_view->ncols(); x++)
+			struct_view->set(Point(x,y),OneBitPixel(1));
+	}
+	
+	if(geo)
+		result_view = erode_dilate_original(src,times,direction,geo);
+	if(direction)
+		result_view = erode_with_structure(src,*struct_view, Point(times,times));
+	else
+		result_view = dilate_with_structure(src,*struct_view,Point(times,times),false);
 
+	return result_view;
+  }
+  
   template<class T>
   void erode(T& image) {
     erode_dilate(image, 1, 1, 0);
@@ -383,3 +551,4 @@ namespace Gamera {
   }
 }
 #endif
+

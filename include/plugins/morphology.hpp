@@ -114,8 +114,8 @@ namespace Gamera {
 
 
   /*
-  * binary erosion with arbitrary structuring element
-  */
+   * binary erosion with arbitrary structuring element
+   */
   template<class T, class U>
   typename ImageFactory<T>::view_type* erode_with_structure(const T &src, const U &structuring_element, Point origin){
 	typedef typename ImageFactory<T>::data_type data_type;
@@ -208,8 +208,8 @@ namespace Gamera {
      vector<OneBitPixel>::iterator end) {
     return *(max_element(begin, end));
   }
-  /* in raw this functions was named erode_dilate() but for the template specialsation a workaround is needed to
-  create no loop in calling with onebit images.*/
+  /* the general implementation (both for onebit and greyscale) needed 
+     to be renamed to allow for template specilization on onebit images */
   template<class T>
   typename ImageFactory<T>::view_type* erode_dilate_original(T &m, const size_t times, int direction, int geo) {
     typedef typename ImageFactory<T>::data_type data_type;
@@ -244,13 +244,13 @@ namespace Gamera {
 	      n8 = false;
 	    if (direction) {
 	      if (n8)
-		neighbor4x(*flip_view, max, *new_view);
+		neighbor4o(*flip_view, max, *new_view);
 	      else
 		neighbor9(*flip_view, max, *new_view);
 	    }
 	    else {
 	      if (n8)
-		neighbor4x(*flip_view, min, *new_view);
+		neighbor4o(*flip_view, min, *new_view);
 	      else
 		neighbor9(*flip_view, min, *new_view);
 	    }
@@ -267,13 +267,13 @@ namespace Gamera {
       } else {
 	if (direction) {
 	  if (geo)
-	    neighbor4x(m, max, *new_view);
+	    neighbor4o(m, max, *new_view);
 	  else
 	    neighbor9(m, max, *new_view);
 	}
 	else {
 	  if (geo)
-	    neighbor4x(m, min, *new_view);
+	    neighbor4o(m, min, *new_view);
 	  else
 	    neighbor9(m, min, *new_view);
 	}
@@ -286,7 +286,7 @@ namespace Gamera {
     }
   }
   
-  //the  new erode_dilate function which calls the former original erode_dilate function
+  /* implementation for non-onebit images */
   template<class T>
   typename ImageFactory<T>::view_type* erode_dilate(T &m, const size_t times, int direction, int geo){
 	typedef typename ImageFactory<T>::view_type view_type;
@@ -296,27 +296,46 @@ namespace Gamera {
 	return new_view;
   }
   
-  /*template spceialsation of erode_dilate using erdode_with_structure/dilate_with_structure for onebit images in
-  assumption that it should be faster*/
+  /* for onebit images the use of erode/dilate_with_structure is much faster
+     than the general implementation erode_dilate_original */
   template<>
   ImageFactory<OneBitImageView>::view_type* erode_dilate<OneBitImageView>(OneBitImageView &src, const size_t times, int direction, int geo){
-	OneBitImageData* struct_data = new OneBitImageData(Dim(1+2*times,1+2*times),Point(0,0));
-	OneBitImageView* struct_view = new OneBitImageView(*struct_data);
-	OneBitImageView* result_view = new OneBitImageView();
-	//creating structuring element
-	for(int y = 0; y < (int)struct_view->nrows(); y++){
-		for(int x = 0; x < (int)struct_view->ncols(); x++)
-			struct_view->set(Point(x,y),OneBitPixel(1));
-	}
-	
-	if(geo)
-		result_view = erode_dilate_original(src,times,direction,geo);
-	if(direction)
-		result_view = erode_with_structure(src,*struct_view, Point(times,times));
-	else
-		result_view = dilate_with_structure(src,*struct_view,Point(times,times),false);
 
-	return result_view;
+    if (src.nrows() < 3 || src.ncols() < 3 || times < 1)
+      return simple_image_copy(src);
+
+    OneBitImageData* se_data = new OneBitImageData(Dim(1+2*times,1+2*times));
+	OneBitImageView* se = new OneBitImageView(*se_data);
+	OneBitImageView* result;
+
+    // structuring element se depends on the geometry
+	if (geo) {
+      // create octagonal kernel
+      //result = erode_dilate_original(src,times,direction,geo);
+      //return result;
+      int n_corner = (1+(int)times) / 2;
+      int n = (int)se->ncols()-1;
+      for(int y = 0; y < (int)se->nrows(); y++)
+        for(int x = 0; x < (int)se->ncols(); x++)
+          if (!(x+y < n_corner || n-x+y < n_corner ||
+                x+n-y < n_corner || n-x+n-y < n_corner))
+          se->set(Point(x,y),OneBitPixel(1));
+    }
+    else {
+      // create square kernel
+      for(int y = 0; y < (int)se->nrows(); y++)
+        for(int x = 0; x < (int)se->ncols(); x++)
+          se->set(Point(x,y),OneBitPixel(1));
+    }
+
+	if (direction)
+      result = erode_with_structure(src,*se, Point(times,times));
+	else
+      result = dilate_with_structure(src,*se,Point(times,times),false);
+    delete se->data();
+    delete se;
+
+	return result;
   }
   
   template<class T>

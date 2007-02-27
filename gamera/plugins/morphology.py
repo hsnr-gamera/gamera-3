@@ -60,7 +60,8 @@ class erode_dilate(PluginFunction):
   rectangular (0)
     use a 3x3 rectangular morphology operator
   octagonal (1)
-    use a 3x3 octagonal morphology operator
+    use octagonal morphology operator by alternately using
+    a 3x3 cross and a 3x3 square structuring element
 """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('ntimes', range=(0, 10), default=1), \
@@ -140,12 +141,12 @@ elements. Examples:
 
 .. code:: Python
 
-   # same as image.dilate(), but faster
+   # same as image.dilate()
    structure = Image(Point(0,0), Point(2,2), ONEBIT)
    structure.fill(1)
    image = image.dilate_with_structure(structure, Point(1,1))
 
-   # same as image.erode_dilate(3,0,0), but much faster
+   # same as image.erode_dilate(3,0,0)
    structure = Image(Point(0,0), Point(6,6), ONEBIT)
    structure.fill(1)
    image = image.dilate_with_structure(structure, Point(3,3))
@@ -193,7 +194,7 @@ Example:
 
 .. code:: Python
 
-   # same as image.erode(), but faster
+   # same as image.erode()
    structure = Image(Point(0,0), Point(2,2), ONEBIT)
    structure.fill(1)
    image = image.erode_with_structure(structure, Point(1,1))

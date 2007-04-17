@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
-# vi:set tabsize=3:
+# -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
+# vim: set tabstop=3 shiftwidth=3 expandtab:
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan

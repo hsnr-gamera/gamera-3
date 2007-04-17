@@ -1,3 +1,6 @@
+# -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
+# vim: set tabstop=3 shiftwidth=3 expandtab:
+
 """PyPlate : a simple Python-based templating program
 
 PyPlate parses a file and replaces directives (in double square brackets [[ ... ]])
@@ -32,7 +35,6 @@ PyPlate defines the following directives:
    [[call ...]]  call a templating function (not a regular Python function)
  """
 
-# vi:set tabsize=3:
 #
 # Copyright (C) 2001-2005 Michael Droettboom
 #

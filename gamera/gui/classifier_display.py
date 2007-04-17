@@ -1,4 +1,5 @@
-# vi:set tabsize=3:
+# -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
+# vim: set tabstop=3 shiftwidth=3 expandtab:
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
@@ -1591,7 +1592,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       self.SetItemHasChildren(self.root, True)
       self.SetPyData(self.root, "")
       wx.EVT_KEY_DOWN(self, self._OnKey)
-      wx.EVT_LEFT_DOWN(self, self._OnLeftDown)
+      wx.EVT_TREE_SEL_CHANGED(self, id, self._OnChanged)
       wx.EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
       self.toplevel._symbol_table.add_callback(
          'add', self.symbol_table_add_callback)
@@ -1690,11 +1691,8 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       if symbol != None:
          self.toplevel.toplevel.classify_manual(symbol)
 
-   def _OnLeftDown(self, event):
-      pt = event.GetPosition()
-      item, flags = self.HitTest(pt)
-      if flags == 4:
-         return
+   def _OnChanged(self, event):
+      item = self.GetSelection()
       data = self.GetPyData(item)
       if data != None:
          self.toplevel.text.SetValue(data)

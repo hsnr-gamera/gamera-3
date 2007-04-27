@@ -61,10 +61,10 @@ ImageInfo* tiff_info(const char* filename) {
    */
   try {
     unsigned short tmp;
-    int size;
-    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGEWIDTH, (int)&size);
+    uint32 size;
+    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGEWIDTH, &size);
     info->ncols((size_t)size);
-    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGELENGTH, (int)&size);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_IMAGELENGTH, &size);
     info->nrows((size_t)size);
     TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &tmp);
     info->depth((size_t)tmp);

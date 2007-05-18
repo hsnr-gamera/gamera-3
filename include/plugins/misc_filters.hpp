@@ -25,6 +25,8 @@
 #include "logical.hpp"
 #include "morphology.hpp"
 #include "image_utilities.hpp"
+#include "vigra/gaborfilter.hxx"
+
 
 namespace Gamera {
   template<class T>
@@ -35,6 +37,32 @@ namespace Gamera {
     xor_image(*out, in);
     return out;
   }
+  
+
+  template<class T>
+  Image* create_gabor_filter(const T& src, double orientation, double frequency, int direction) {
+
+    FloatImageData* dest_data = new FloatImageData(src.size(), src.origin());
+    FloatImageView* dest = new FloatImageView(*dest_data);
+
+    image_copy_fill(src, *dest);
+
+    try {
+      vigra::createGaborFilter(dest_image_range(*dest), orientation, frequency,
+			       angularGaborSigma(direction, frequency),
+			       radialGaborSigma(frequency));
+      
+    } catch(std::exception e) {
+      delete dest;
+      delete dest_data;
+      throw std::runtime_error("VIGRA function 'createGaborFilter' failed!");
+    }
+
+    return dest;
+
+  }
+
 }
 
 #endif
+

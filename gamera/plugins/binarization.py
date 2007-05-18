@@ -241,6 +241,62 @@ doing.
     __call__ = staticmethod(__call__)
 
 
+class white_rohrer_threshold(PluginFunction):
+    """Creates a binary image using White and Rohrer's dynamic thresholding
+algorithm. It is the first of the two algorithms described in:
+
+J. M. White and G. D. Rohrer. 1983. Image thresholding for optical character
+recognition and other applications requiring character image extraction.
+IBM J. Res. Dev. 27(4), pp. 400-411
+
+The algorithm uses a 'running' average instead of true
+average of the gray values in the neighborhood.
+The lookahead parameter gives the number of lookahead
+pixels used in the biased running average that is used
+in deciding the threshold at each pixel location.
+
+Parameters:
+
+ *x_lookahead*
+   the number of lookahead pixels in the horizontal direction
+   for computing the running average. White and Rohrer suggest a value
+   of 8 for a 240 dpi scanning resolution.
+
+ *y_lookahead*
+   no of lines used for further averaging from the horizontal averages
+
+The other parameters are for calculating biased running average.
+Without bias the thresholding decision would be determined by noise
+fluctuations in uniform areas.
+
+This implementation uses code from XITE__. See the corresponding header
+source file for details.
+
+.. __: http://www.ifi.uio.no/forskning/grupper/dsb/Software/Xite/
+"""
+    return_type = ImageType([ONEBIT], "onebit")
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int("x lookahead", default=8),
+                 Int("y lookahead", default=1),
+                 Int("bias mode", default=0),
+                 Int("bias factor", default=100),
+                 Int("f factor",default=100),
+                 Int("g factor",default=100)])
+    author = "Uma Kompella (using code from the XITE library)"
+    doc_examples = [(GREYSCALE,)]
+
+    def __call__(self, x_lookahead=8, y_lookahead=1, bias_mode=0,
+				 bias_factor=100, f_factor=100, g_factor=100):
+        return _binarization.white_rohrer_threshold(self, 
+											   x_lookahead, 
+                                               y_lookahead,
+                                               bias_mode,
+                                               bias_factor,
+                                               f_factor,
+                                               g_factor)
+    __call__ = staticmethod(__call__)
+
+
 class BinarizationGenerator(PluginModule):
     category = "Binarization"
     cpp_headers = ["binarization.hpp"]
@@ -252,7 +308,8 @@ class BinarizationGenerator(PluginModule):
                  niblack_threshold, 
                  sauvola_threshold,
                  gatos_background,
-                 gatos_threshold]
+                 gatos_threshold,
+				 white_rohrer_threshold]
     author = "John Ashley Burgoyne and Ichiro Fujinaga"
     url = "http://gamera.dkc.jhu.edu/"
 

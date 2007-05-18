@@ -1,6 +1,7 @@
 /*
  *
  * Copyright (C) 2005 John Ashley Burgoyne and Ichiro Fujinaga
+ *               2007 Uma Kompella and Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -535,6 +536,371 @@ OneBitImageView* gatos_threshold(const T &src,
     return view;
 }
 
+
+/*
+ White Rohrer thresholding. This implementation uses code from
+ the XITE library. According to its license, it may be freely included
+ into Gamera (a GPL licensed software), provided the following
+ notice is included into the code:
+
+  Permission to use, copy, modify and distribute this software and its
+  documentation for any purpose and without fee is hereby granted, 
+  provided that this copyright notice appear in all copies and that 
+  both that copyright notice and this permission notice appear in supporting
+  documentation and that the name of B-lab, Department of Informatics or
+  University of Oslo not be used in advertising or publicity pertaining 
+  to distribution of the software without specific, written prior permission.
+
+  B-LAB DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL B-LAB
+  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+  OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+ Important notice: this implementation only works with 8-bit greyscale
+ images because the maximal value 255 for white is hard coded!!
+*/
+
+static struct {
+  int WR1_F_OFFSET;
+  int WR1_G_OFFSET;
+  int BIN_ERROR;
+  int BIN_FOREGROUND;
+  int BIN_BACKGROUND;
+  int BIN_OK;
+  int WR1_BIAS_CROSSOVER;
+  int WR1_BLACK_BIAS;
+  int WR1_WHITE_BIAS;
+  int WR1_BIAS;
+  double WR1_BLACK_BIAS_FACTOR;
+  double WR1_WHITE_BIAS_FACTOR;
+  int wr1_f_tab[512];
+  int wr1_g_tab[512];
+} wr1_params = {
+  /* WR1_F_OFFSET */  255,
+  /* WR1_G_OFFSET */  255,
+  /* BIN_ERROR */     -1,
+  /* BIN_FOREGROUND */ 0,
+  /* BIN_BACKGROUND */ 255,
+  /* BIN_OK */         0,
+  /* WR1_BIAS_CROSSOVER */ 93,
+  /* WR1_BLACK_BIAS */ -40,
+  /* WR1_WHITE_BIAS */ 40,
+  /* WR1_BIAS */       20,
+  /* WR1_BLACK_BIAS_FACTOR */ 0.0,
+  /* WR1_WHITE_BIAS_FACTOR */ -0.25,
+  /* wr1_f_tab */ {
+    -62,  -62,  -61,  -61,  -60,  -60,  -59,  -59,
+    -58,  -58,  -57,  -57,  -56,  -56,  -54,  -54,
+    -53,  -53,  -52,  -52,  -51,  -51,  -50,  -50,
+    -49,  -49,  -48,  -48,  -47,  -47,  -46,  -46,
+    -45,  -45,  -44,  -44,  -43,  -43,  -42,  -42,
+    -41,  -41,  -41,  -41,  -40,  -40,  -39,  -39,
+    -38,  -38,  -37,  -37,  -36,  -36,  -36,  -36,
+    -35,  -35,  -34,  -34,  -33,  -33,  -33,  -33,
+    -32,  -32,  -31,  -31,  -31,  -31,  -30,  -30,
+    -29,  -29,  -29,  -29,  -28,  -28,  -27,  -27,
+    -27,  -27,  -26,  -26,  -25,  -25,  -25,  -25,
+    -24,  -24,  -24,  -24,  -23,  -23,  -23,  -23,
+    -22,  -22,  -22,  -22,  -21,  -21,  -21,  -21,
+    -20,  -20,  -20,  -20,  -19,  -19,  -19,  -19,
+    -18,  -18,  -18,  -18,  -17,  -17,  -17,  -17,
+    -16,  -16,  -16,  -16,  -16,  -16,  -15,  -15,
+    -15,  -15,  -14,  -14,  -14,  -14,  -14,  -14,
+    -13,  -13,  -13,  -13,  -13,  -13,  -12,  -12,
+    -12,  -12,  -12,  -12,  -11,  -11,  -11,  -11,
+    -11,  -11,  -10,  -10,  -10,  -10,  -10,  -10,
+    -9,   -9,   -9,   -9,   -9,   -9,   -8,   -8,
+    -8,   -8,   -8,   -8,   -8,   -8,   -7,   -7,
+    -7,   -7,   -7,   -7,   -7,   -7,   -6,   -6,
+    -6,   -6,   -6,   -6,   -6,   -6,   -5,   -5,
+    -5,   -5,   -5,   -5,   -5,   -5,   -4,   -4,
+    -3,   -3,   -2,   -2,   -2,   -2,   -2,   -2,
+    -2,   -2,   -2,   -2,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,    0,    0,
+    1,    1,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    2,    2,    2,    2,    2,    2,    2,    2,
+    3,    3,    3,    3,    3,    3,    3,    3,
+    3,    3,    3,    3,    3,    3,    3,    3,
+    3,    3,    3,    3,    3,    3,    4,    4,
+    4,    4,    4,    4,    4,    4,    4,    4,
+    4,    4,    4,    4,    4,    4,    4,    4,
+    4,    4,    4,    4,    4,    4,    4,    4,
+    4,    4,    5,    5,    5,    5,    5,    5,
+    5,    5,    5,    5,    5,    5,    5,    5,
+    5,    5,    6,    6,    6,    6,    6,    6,
+    6,    6,    6,    6,    6,    6,    6,    6,
+    6,    6,    6,    6,    6,    6,    6,    6,
+    6,    6,    6,    6,    6,    6,    6,    6,
+    6,    6,    7,    7,    7,    7,    7,    7,
+    7,    7,    7,    7,    7,    7,    7,    7,
+    7,    7,    7,    7,    7,    7,    7,    7,
+    7,    7,    7,    7,    8,    8,    8,    8,
+    8,    8,    8,    8,    8,    8,    8,    8,
+    8,    8,    8,    8,    8,    8,    8,    8,
+    8,    8,    9,    9,    9,    9,    9,    9,
+    9,    9,    9,    9,    9,    9,    9,    9,
+    9,    9,    9,    9,    9,    9,    9,    9,
+    9,    9,    9,    9,    9,    9,    9,    9,
+    9,    9,   10,   10,   10,   10,   10,   10,
+    10,   10,   10,   10,   10,   10,   10,   10,
+    10,   10,   10,   10,   10,   10,   10,    0
+  },
+  /* wr1_g_tab */ {
+    -126, -126, -125, -125, -124, -124, -123, -123,
+    -122, -122, -121, -121, -120, -120, -119, -119,
+    -118, -118, -117, -117, -116, -116, -115, -115,
+    -114, -114, -113, -113, -112, -112, -111, -111,
+    -110, -110, -109, -109, -108, -108, -107, -107,
+    -106, -106, -105, -105, -104, -104, -103, -103,
+    -102, -102, -101, -101, -100, -100,  -99,  -99,
+    -98,  -98,  -97,  -97,  -96,  -96,  -95,  -95,
+    -94,  -94,  -93,  -93,  -92,  -92,  -91,  -91,
+    -90,  -90,  -89,  -89,  -88,  -88,  -87,  -87,
+    -86,  -86,  -85,  -85,  -84,  -84,  -83,  -83,
+    -82,  -82,  -81,  -81,  -80,  -80,  -79,  -79,
+    -78,  -78,  -77,  -77,  -76,  -76,  -75,  -75,
+    -74,  -74,  -73,  -73,  -72,  -72,  -71,  -71,
+    -70,  -70,  -69,  -69,  -68,  -68,  -67,  -67,
+    -66,  -66,  -65,  -65,  -64,  -64,  -63,  -63,
+    -61,  -61,  -59,  -59,  -57,  -57,  -54,  -54,
+    -52,  -52,  -50,  -50,  -48,  -48,  -46,  -46,
+    -44,  -44,  -42,  -42,  -41,  -41,  -39,  -39,
+    -37,  -37,  -36,  -36,  -34,  -34,  -33,  -33,
+    -31,  -31,  -30,  -30,  -29,  -29,  -27,  -27,
+    -26,  -26,  -25,  -25,  -24,  -24,  -23,  -23,
+    -22,  -22,  -21,  -21,  -20,  -20,  -19,  -19,
+    -18,  -18,  -17,  -17,  -16,  -16,  -15,  -15,
+    -14,  -14,  -14,  -14,  -13,  -13,  -12,  -12,
+    -12,  -12,  -11,  -11,  -10,  -10,  -10,  -10,
+    -9,   -9,   -8,   -8,   -8,   -8,   -7,   -7,
+    -7,   -7,   -6,   -6,   -6,   -6,   -5,   -5,
+    -5,   -5,   -4,   -4,   -2,   -2,   -2,   -2,
+    -2,   -2,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
+    -1,   -1,   -1,   -1,   -1,   -1,    0,    0,
+    1,    1,    1,    1,    1,    1,    1,    1,
+    1,    1,    1,    1,    1,    1,    1,    1,
+    1,    1,    2,    2,    2,    2,    2,    2,
+    4,    4,    5,    5,    5,    5,    6,    6,
+    6,    6,    7,    7,    7,    7,    8,    8,
+    8,    8,    9,    9,   10,   10,   10,   10,
+    11,   11,   12,   12,   12,   12,   13,   13,
+    14,   14,   14,   14,   15,   15,   16,   16,
+    17,   17,   18,   18,   19,   19,   20,   20,
+    21,   21,   22,   22,   23,   23,   24,   24,
+    25,   25,   26,   26,   27,   27,   29,   29,
+    30,   30,   31,   31,   33,   33,   34,   34,
+    36,   36,   37,   37,   39,   39,   41,   41,
+    42,   42,   44,   44,   46,   46,   48,   48,
+    50,   50,   52,   52,   54,   54,   57,   57,
+    59,   59,   61,   61,   63,   63,   64,   64,
+    65,   65,   66,   66,   67,   67,   68,   68,
+    69,   69,   70,   70,   71,   71,   72,   72,
+    73,   73,   74,   74,   75,   75,   76,   76,
+    77,   77,   78,   78,   79,   79,   80,   80,
+    81,   81,   82,   82,   83,   83,   84,   84,
+    85,   85,   86,   86,   87,   87,   88,   88,
+    89,   89,   90,   90,   91,   91,   92,   92,
+    93,   93,   94,   94,   95,   95,   96,   96,
+    97,   97,   98,   98,   99,   99,  100,  100,
+    101,  101,  102,  102,  103,  103,  104,  104,
+    105,  105,  106,  106,  107,  107,  108,  108,
+    109,  109,  110,  110,  111,  111,  112,  112,
+    113,  113,  114,  114,  115,  115,  116,  116,
+    117,  117,  118,  118,  119,  119,  120,  120,
+    121,  121,  122,  122,  123,  123,  124,  124,
+    125,  125,  126,  126,  127,  127,  127,    0
+  }
+};
+
+inline int wr1_bias (int x, int offset)
+{
+   int result;
+   int bias;
+   
+   x = 256 - x;
+
+   bias = -offset;
+   
+   if (x < wr1_params.WR1_BIAS_CROSSOVER)
+   {
+      result = x - bias
+	 - (int)(wr1_params.WR1_BLACK_BIAS_FACTOR*(wr1_params.WR1_BIAS_CROSSOVER-x));
+   }
+   else if (x >= wr1_params.WR1_BIAS_CROSSOVER)
+   {
+      result = x + bias
+	 + (int)(wr1_params.WR1_WHITE_BIAS_FACTOR*(x-wr1_params.WR1_BIAS_CROSSOVER));
+   }
+   else
+      result = x;
+
+/*
+   result = x-bias;
+*/
+   if (result < wr1_params.BIN_FOREGROUND)
+      result = wr1_params.BIN_FOREGROUND;
+   if (result > wr1_params.BIN_BACKGROUND)
+      result = wr1_params.BIN_BACKGROUND;
+   
+   return  256 - result; 
+}
+
+
+inline int wr1_f (int diff, int *f)
+{
+  /* if (abs(diff)>wr1_params.WR1_F_OFFSET)
+   {
+      Warning(2, "wr1_f: Error: diff = %i\n", diff);
+      return wr1_params.BIN_ERROR;
+      }*/
+   f[0] = -wr1_params.wr1_f_tab[wr1_params.WR1_F_OFFSET - diff];
+   return wr1_params.BIN_OK;
+}
+
+inline int wr1_g (int diff, int *g)
+{
+  /*   if (abs(diff)>wr1_params.WR1_G_OFFSET)
+   {
+      Warning(2, "wr1_g: Error: diff = %i\n", diff);   
+      return wr1_params.BIN_ERROR;
+      }*/
+   g[0] = -wr1_params.wr1_g_tab[wr1_params.WR1_G_OFFSET - diff];
+   return wr1_params.BIN_OK;
+}
+
+
+/*
+ * OneBit white_rohrer_threshold(GreyScale src, 
+ *                          int x_lookahead,
+ *                          int y_lookahead, 
+ *                          int bias_mode,
+ *                          int bias_factor,
+ *                          int f_factor
+ *                          int g_factor);
+ */
+
+template<class T>
+OneBitImageView* white_rohrer_threshold (const T& in, int x_lookahead, int y_lookahead,
+	     int bias_mode, int bias_factor, int f_factor, int g_factor)
+{
+  int xsize, ysize;
+  int x, y;
+  int u;
+  int prevY;
+  int Y = 0;
+  int f, g;
+  int x_ahead, y_ahead;
+  int t;
+  int offset = wr1_params.WR1_BIAS;
+  //double mu, s_dev;
+  FloatPixel mu = 0.0;
+  FloatPixel  s_dev = 0.0; 
+  int *Z;
+  int n;
+
+  typedef ImageFactory<OneBitImageView>::data_type data_type;
+  typedef ImageFactory<OneBitImageView>::view_type view_type;
+  data_type* bin_data = new data_type(in.size(), in.origin());
+  view_type* bin_view = new view_type(*bin_data);  
+  
+
+  xsize = in.ncols();
+  ysize = in.nrows();
+  //  std::cout<<"sizes are "<<ysize<<","<<xsize<<std::endl;
+  x_lookahead = x_lookahead % xsize;
+
+  if (bias_mode == 0) 
+  {
+    mu = image_mean(in);
+    s_dev = sqrt(image_variance(in));
+    offset = (int)(s_dev - 40) ;
+  } 
+  else 
+    offset = bias_mode;
+
+  Z = new int[2*xsize+1];
+  for(n = 0; n< 2*xsize+1; ++n)
+    Z[n] = 0;
+   
+  //Z[1] = prevY = (int)mu;
+  Z[0] = prevY = (int)mu;
+
+   for (y=0; y< 1+y_lookahead; y++)
+   {
+      if (y < y_lookahead)
+	 t = xsize;
+      else
+	 t = x_lookahead;
+      for (x=0; x< t; x++)
+      {
+	 u = in.get(Point(x,y));
+	 wr1_f (u-prevY, &f);
+	 Y = prevY + f;
+	 if (y == 1)
+	    Z[x] = (int)mu;
+	 else
+	 {
+	    wr1_g(Y-Z[x], &g);
+	    Z[x] = Z[x] + g; 
+	 }
+      }
+      
+   }
+   x_ahead = 1 + x_lookahead;
+   y_ahead = 1 + y_lookahead;
+ 
+   for (y = 0; y < ysize; y++)
+   {
+      for (x = 0; x < xsize; x++)
+      {
+	 if (in.get(Point(x,y)) < (bias_factor  
+			     * wr1_bias(Z[x_ahead],offset) / 100))
+	 {
+	    bin_view->set(Point(x,y),black(*bin_view));
+	 }
+	 
+	 else	
+	 {
+	    bin_view->set(Point(x,y),white(*bin_view));
+	 }
+
+	 x_ahead++;
+	 if (x_ahead > xsize)
+	 {
+	    x_ahead = 1;
+	    y_ahead++;
+	 }
+	 if (y_ahead <= ysize)
+	 {
+	    prevY = Y;
+	    wr1_f(in.get(Point(x_ahead,y_ahead))-prevY, &f);    
+	    Y = prevY + f_factor * f / 100;
+	    wr1_g(Y-Z[x_ahead], &g);
+	    Z[x_ahead] = Z[x_ahead] + g_factor * g / 100;
+	 }
+	 else
+	    Z[x_ahead] = Z[x_ahead-1];
+      }
+   }
+ 
+ delete [] Z;
+ Z = NULL;
+  
+ return bin_view;
+
+}
 
 #endif
 

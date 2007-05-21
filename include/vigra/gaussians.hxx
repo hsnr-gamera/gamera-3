@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -24,9 +39,10 @@
 #define VIGRA_GAUSSIANS_HXX
 
 #include <cmath>
-#include "vigra/config.hxx"
-#include "vigra/mathutil.hxx"
-#include "vigra/array_vector.hxx"
+#include "config.hxx"
+#include "mathutil.hxx"
+#include "array_vector.hxx"
+#include "error.hxx"
 
 namespace vigra {
 
@@ -49,24 +65,24 @@ template <class T = double>
 class Gaussian
 {
   public:
-  
+
         /** the value type if used as a kernel in \ref resamplingConvolveImage().
         */
-    typedef T            value_type;  
+    typedef T            value_type;
         /** the functor's argument type
         */
-    typedef T            argument_type;  
+    typedef T            argument_type;
         /** the functor's result type
         */
-    typedef T            result_type; 
-    
-        /** Create functor for the given standard deviation <tt>sigma</tt> and 
+    typedef T            result_type;
+
+        /** Create functor for the given standard deviation <tt>sigma</tt> and
             derivative order <i>n</i>. The functor then realizes the function
-             
+
             \f[ f_{\sigma,n}(x)=\frac{\partial^n}{\partial x^n}
                  \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{x^2}{2\sigma^2}}
             \f]
-             
+
             Precondition:
             \code
             sigma > 0.0
@@ -104,32 +120,32 @@ class Gaussian
         */
     value_type sigma() const
         { return sigma_; }
-    
+
         /** Get the derivative order of the Gaussian.
         */
     unsigned int derivativeOrder() const
         { return order_; }
-    
+
         /** Get the required filter radius for a discrete approximation of the Gaussian.
-            The radius is given as a multiple of the Gaussian's standard deviation 
+            The radius is given as a multiple of the Gaussian's standard deviation
             (default: <tt>sigma * (3 + 1/2 * derivativeOrder()</tt> -- the second term
-            accounts for the fact that the derivatives of the Gaussian become wider 
+            accounts for the fact that the derivatives of the Gaussian become wider
             with increasing order). The result is rounded to the next higher integer.
         */
     double radius(double sigmaMultiple = 3.0) const
         { return VIGRA_CSTD::ceil(sigma_ * (sigmaMultiple + 0.5 * derivativeOrder())); }
 
   private:
-    void calculateHermitePolynomial();    
+    void calculateHermitePolynomial();
     T horner(T x) const;
-    
+
     T sigma_, sigma2_, norm_;
     unsigned int order_;
     ArrayVector<T> hermitePolynomial_;
 };
 
 template <class T>
-typename Gaussian<T>::result_type 
+typename Gaussian<T>::result_type
 Gaussian<T>::operator()(argument_type x) const
 {
     T x2 = x * x;
@@ -160,7 +176,7 @@ T Gaussian<T>::horner(T x) const
         res = x * res + hermitePolynomial_[i];
     return res;
 }
-    
+
 template <class T>
 void Gaussian<T>::calculateHermitePolynomial()
 {
@@ -174,7 +190,7 @@ void Gaussian<T>::calculateHermitePolynomial()
     }
     else
     {
-        // calculate Hermite polynomial for requested derivative 
+        // calculate Hermite polynomial for requested derivative
         // recursively according to
         //     (0)
         //    h   (x) = 1

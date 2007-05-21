@@ -1,37 +1,51 @@
 //-- -*- c++ -*-
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 2003 by Christian-Dennis Rahn                */
-/*                        and Ullrich Koethe                            */
+/*               Copyright 2003 by Ullrich Koethe                       */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
 #ifndef VIGRA_MULTI_POINTOPERATORS_H
 #define VIGRA_MULTI_POINTOPERATORS_H
 
-#include <vigra/initimage.hxx>
-#include <vigra/copyimage.hxx>
-#include <vigra/transformimage.hxx>
-#include <vigra/combineimages.hxx>
-#include <vigra/inspectimage.hxx>
-#include <vigra/multi_array.hxx>
-#include <vigra/metaprogramming.hxx>
+#include "initimage.hxx"
+#include "copyimage.hxx"
+#include "transformimage.hxx"
+#include "combineimages.hxx"
+#include "inspectimage.hxx"
+#include "multi_array.hxx"
+#include "metaprogramming.hxx"
 
 
 
@@ -45,7 +59,7 @@ namespace vigra
     specified by a pair: an iterator referring to the first point of the array 
     and a shape object specifying the size of the (rectangular) ROI.
 
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"
 */
 //@{
 
@@ -93,6 +107,11 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
         template <class Iterator, class Shape, class Accessor, class VALUETYPE>
         void
         initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE v);
+
+
+        template <class Iterator, class Shape, class Accessor, class FUNCTOR>
+        void
+        initMultiArray(Iterator s, Shape const & shape, Accessor a,  FUNCTOR const & f);
     }
     \endcode
 
@@ -102,12 +121,17 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
         template <class Iterator, class Shape, class Accessor, class VALUETYPE>
         void
         initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE v);
+
+
+        template <class Iterator, class Shape, class Accessor, class FUNCTOR>
+        void
+        initMultiArray(triple<Iterator, Shape, Accessor> const & s, FUNCTOR const & f);
     }
     \endcode
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
     Namespace: vigra
     
     \code
@@ -120,6 +144,8 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
 
     <b> Required Interface:</b>
     
+    The function accepts either a value that is copied into every destination element: 
+    
     \code
     MultiIterator begin;
     
@@ -128,6 +154,24 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     
     accessor.set(v, begin); 
     \endcode
+    
+    or a functor that is called (without argument) at every location,
+    and the result is written into the current element. Internally,
+    functors are recognized by the meta function 
+    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> yielding <tt>VigraTrueType</tt>.
+    Make sure that your functor correctly defines <tt>FunctorTraits</tt> because
+    otherwise the code will not compile.
+    
+    \code
+    MultiIterator begin;    
+    Accessor accessor;
+    
+    FUNCTOR f;
+    assert(typeid(FunctorTraits<FUNCTOR>::isInitializer) == typeid(VigraTrueType));
+    
+    accessor.set(f(), begin); 
+    \endcode
+    
     
 */
 template <class Iterator, class Shape, class Accessor, class VALUETYPE>
@@ -152,37 +196,74 @@ initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE v)
 /********************************************************/
 
 template <class SrcIterator, class SrcShape, class SrcAccessor,
-          class DestIterator, class DestAccessor>
-inline void
-copyMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
-               DestIterator d, DestAccessor dest, MetaInt<0>)
+          class DestIterator, class DestShape, class DestAccessor>
+void
+copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, MetaInt<0>)
 {
-    copyLine(s, s + shape[0], src, d, dest);
+    if(sshape[0] == 1)
+    {
+        initLine(d, d + dshape[0], dest, src(s));
+    }
+    else
+    {
+        copyLine(s, s + sshape[0], src, d, dest);
+    }
 }
     
 template <class SrcIterator, class SrcShape, class SrcAccessor,
-          class DestIterator, class DestAccessor, int N>
+          class DestIterator, class DestShape, class DestAccessor, int N>
 void
-copyMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
-                   DestIterator d, DestAccessor dest, MetaInt<N>)
+copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+                   DestIterator d, DestShape const & dshape, DestAccessor dest, MetaInt<N>)
 {
-    SrcIterator send = s + shape[N];
-    for(; s != send; ++s, ++d)
+    DestIterator dend = d + dshape[N];
+    if(sshape[N] == 1)
     {
-        copyMultiArrayImpl(s.begin(), shape, src, d.begin(), dest, MetaInt<N-1>());
+        for(; d != dend; ++d)
+        {
+            copyMultiArrayImpl(s.begin(), sshape, src, d.begin(), dshape, dest, MetaInt<N-1>());
+        }
+    }
+    else
+    {
+        for(; d != dend; ++s, ++d)
+        {
+            copyMultiArrayImpl(s.begin(), sshape, src, d.begin(), dshape, dest, MetaInt<N-1>());
+        }
     }
 }
     
 /** \brief Copy a multi-dimensional array.
 
-    If necessary, type conversion takes place. The arrays must be represented by
-    iterators compatible with \ref vigra::MultiIterator.
-    The function uses accessors to access the data elements. Note that the iterator range 
-    must be specified by a shape object, because otherwise we could not control
-    the range simultaneously in all dimensions (this is a necessary consequence
-    of the \ref vigra::MultiIterator design).
+    This function can be applied in two modes:
+    
+    <DL>
+    <DT><b>Standard Mode:</b>
+        <DD>If the source and destination arrays have the same size, 
+        the corresponding array elements are simply copied.
+        If necessary, type conversion takes place.
+    <DT><b>Expanding Mode:</b>
+        <DD>If the source array has length 1 along some (or even all) dimensions,
+        the source value at index 0 is used for all destination
+        elements in those dimensions. For example, if we have single row of data
+        (column length is 1), we can copy it into a 2D image of the same width:
+        The given row is automatically repeated for every row of the destination image.
+        Again, type conversion os performed if necessary.
+    </DL>
+        
+    The arrays must be represented by
+    iterators compatible with \ref vigra::MultiIterator, and the iteration range 
+    is specified by means of shape objects. If only the source shape is given
+    the destination array is assumed to have the same shape, and standard mode
+    is applied. If two shapes are given, the size of corresponding dimensions
+    must be either equal (standard copy), or the source length must be 1 
+    (expanding copy). The function uses accessors to access the data elements. 
     
     <b> Declarations:</b>
+    
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    Namespace: vigra
     
     pass arguments explicitly:
     \code
@@ -193,6 +274,13 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
         copyMultiArray(SrcIterator s, 
                        SrcShape const & shape, SrcAccessor src,
                        DestIterator d, DestAccessor dest);
+
+
+        template <class SrcIterator, class SrcShape, class SrcAccessor,
+                  class DestIterator, class DestShape, class DestAccessor>
+        void
+        copyMultiArray(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+                       DestIterator d, DestShape const & dshape, DestAccessor dest);
     }
     \endcode
     
@@ -205,13 +293,17 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
         void
         copyMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
                        pair<DestIterator, DestAccessor> const & dest);
+                       
+                       
+        template <class SrcIterator, class SrcShape, class SrcAccessor,
+                  class DestIterator, class DestShape, class DestAccessor>
+        void
+        copyMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
+                       triple<DestIterator, DestShape, DestAccessor> const & dest);
     }
     \endcode
     
-    <b> Usage:</b>
-    
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
-    Namespace: vigra
+    <b> Usage - Standard Mode:</b>
     
     \code
     typedef vigra::MultiArray<3, int> Array;
@@ -220,6 +312,22 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
     ...
     
     vigra::copyMultiArray(srcMultiArrayRange(src), destMultiArray(dest));
+    \endcode
+
+    <b> Usage - Expanding Mode:</b>
+    
+    The source array is only 2D (it has depth 1). Thus, the destination
+    will contain 50 identical copies of this image. Note that the destination shape
+    must be passed to the algorithm for the expansion to work, so we use 
+    <tt>destMultiArrayRange()</tt> rather than <tt>destMultiArray()</tt>.
+    
+    \code
+    typedef vigra::MultiArray<3, int> Array;
+    Array src(Array::size_type(100, 200, 1)),
+          dest(Array::size_type(100, 200, 50));
+    ...
+    
+    vigra::copyMultiArray(srcMultiArrayRange(src), destMultiArrayRange(dest));
     \endcode
 
     <b> Required Interface:</b>
@@ -242,7 +350,7 @@ copyMultiArray(SrcIterator s,
                SrcShape const & shape, SrcAccessor src,
                DestIterator d, DestAccessor dest)
 {    
-    copyMultiArrayImpl(s, shape, src, d, dest, MetaInt<SrcIterator::level>());
+    copyMultiArrayImpl(s, shape, src, d, shape, dest, MetaInt<SrcIterator::level>());
 }
 
 template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -255,6 +363,32 @@ copyMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
     copyMultiArray(src.first, src.second, src.third, dest.first, dest.second);
 }
 
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor>
+void
+copyMultiArray(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest)
+{    
+    vigra_precondition(sshape.size() == dshape.size(),
+        "copyMultiArray(): dimensionality of source and destination array differ");
+    for(unsigned int i=0; i<sshape.size(); ++i)
+        vigra_precondition(sshape[i] == 1 || sshape[i] == dshape[i],
+            "copyMultiArray(): mismatch between source and destination shapes:\n"
+            "length of each source dimension must either be 1 or equal to the corresponding "
+            "destination length.");
+    copyMultiArrayImpl(s, sshape, src, d, dshape, dest, MetaInt<SrcIterator::level>());
+}
+
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor>
+inline void
+copyMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
+               triple<DestIterator, DestShape, DestAccessor> const & dest)
+{
+    
+    copyMultiArray(src.first, src.second, src.third, dest.first, dest.second, dest.third);
+}
+
 /********************************************************/
 /*                                                      */
 /*                 transformMultiArray                  */
@@ -262,45 +396,174 @@ copyMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
 /********************************************************/
 
 template <class SrcIterator, class SrcShape, class SrcAccessor,
-          class DestIterator, class DestAccessor, class Functor>
-inline void
-transformMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
-               DestIterator d, DestAccessor dest, Functor const & f, MetaInt<0>)
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+transformMultiArrayReduceImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               SrcShape const & reduceShape,
+               Functor const & ff, MetaInt<0>)
 {
-    transformLine(s, s + shape[0], src, d, dest, f);
+    DestIterator dend = d + dshape[0];
+    for(; d != dend; ++s.template dim<0>(), ++d)
+    {
+        Functor f = ff;
+        inspectMultiArray(s, reduceShape, src, f);
+        dest.set(f(), d);
+    }
 }
     
 template <class SrcIterator, class SrcShape, class SrcAccessor,
-          class DestIterator, class DestAccessor, class Functor, int N>
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor, int N>
 void
-transformMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
-                   DestIterator d, DestAccessor dest, 
+transformMultiArrayReduceImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+                   DestIterator d, DestShape const & dshape, DestAccessor dest, 
+                   SrcShape const & reduceShape,
                    Functor const & f, MetaInt<N>)
 {
-    SrcIterator send = s + shape[N];
-    for(; s != send; ++s, ++d)
+    DestIterator dend = d + dshape[N];
+    for(; d != dend; ++s.template dim<N>(), ++d)
     {
-        transformMultiArrayImpl(s.begin(), shape, src, d.begin(), dest, 
-                                f, MetaInt<N-1>());
+        transformMultiArrayReduceImpl(s, sshape, src, d.begin(), dshape, dest,
+                                      reduceShape, f, MetaInt<N-1>());
     }
+}
+
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, VigraTrueType)
+{
+    // reduce mode
+    SrcShape reduceShape = sshape;
+    for(unsigned int i=0; i<dshape.size(); ++i)
+    {
+        vigra_precondition(dshape[i] == 1 || sshape[i] == dshape[i],
+            "transformMultiArray(): mismatch between source and destination shapes:\n"
+            "In 'reduce'-mode, the length of each destination dimension must either be 1\n"
+            "or equal to the corresponding source length.");
+        if(dshape[i] != 1)
+            reduceShape[i] = 1;
+    }
+    transformMultiArrayReduceImpl(s, sshape, src, d, dshape, dest, reduceShape,
+                                  f, MetaInt<SrcIterator::level>());
+}
+    
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+transformMultiArrayExpandImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, MetaInt<0>)
+{
+    if(sshape[0] == 1)
+    {
+        initLine(d, d + dshape[0], dest, f(src(s)));
+    }
+    else
+    {
+        transformLine(s, s + sshape[0], src, d, dest, f);
+    }
+}
+    
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor, int N>
+void
+transformMultiArrayExpandImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+                   DestIterator d, DestShape const & dshape, DestAccessor dest, 
+                   Functor const & f, MetaInt<N>)
+{
+    DestIterator dend = d + dshape[N];
+    if(sshape[N] == 1)
+    {
+        for(; d != dend; ++d)
+        {
+            transformMultiArrayExpandImpl(s.begin(), sshape, src, d.begin(), dshape, dest,
+                                          f, MetaInt<N-1>());
+        }
+    }
+    else
+    {
+        for(; d != dend; ++s, ++d)
+        {
+            transformMultiArrayExpandImpl(s.begin(), sshape, src, d.begin(), dshape, dest,
+                                          f, MetaInt<N-1>());
+        }
+    }
+}
+
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, VigraFalseType)
+{
+    // expand mode
+    for(unsigned int i=0; i<sshape.size(); ++i)
+        vigra_precondition(sshape[i] == 1 || sshape[i] == dshape[i],
+            "transformMultiArray(): mismatch between source and destination shapes:\n"
+            "In 'expand'-mode, the length of each source dimension must either be 1\n"
+            "or equal to the corresponding destination length.");
+    transformMultiArrayExpandImpl(s, sshape, src, d, dshape, dest, 
+                                  f, MetaInt<SrcIterator::level>());
 }
     
 /** \brief Transform a multi-dimensional array with a unary function or functor.
 
-    The transformation given by the functor is applied to every source
-    element and the result written into the corresponding destination element.
+    This function can be applied in three modes:
+    
+    <DL>
+    <DT><b>Standard Mode:</b>
+        <DD>If the source and destination arrays have the same size, 
+        the transformation given by the functor is applied to every source
+        element and the result written into the corresponding destination element.
+        Unary functions, unary functors from the STL and the functors specifically 
+        defined in \ref TransformFunctor can be used in standard mode.
+        Creation of new functors is easiest by using \ref FunctorExpressions. 
+    <DT><b>Expanding Mode:</b>
+        <DD>If the source array has length 1 along some (or even all) dimensions,
+        the source value at index 0 is used for all destination
+        elements in those dimensions. In other words, the source index is not
+        incremented along these dimensions, but the transformation functor
+        is applied as usual. So, we can expand a small array (e.g. a single row of data,
+        column length is 1), into a larger one (e.g. a 2D image with the same width): 
+        the given values are simply reused as necessary (e.g. for every row of the 
+        destination image). The same functors as in standard mode can be applied.
+    <DT><b>Reducing Mode:</b>
+        <DD>If the destination array has length 1 along some (or even all) dimensions,
+        the source values in these dimensions are reduced to single values by means
+        of a suitable functor (e.g. \ref vigra::ReduceFunctor), which supports two 
+        function call operators: one
+        with a single argument to collect the values, and without argument to 
+        obtain the final (reduced) result. This behavior is a multi-dimensional
+        generalization of the C++ standard function <tt>std::accumulate()</tt>.
+    </DL>
+        
     The arrays must be represented by
-    iterators compatible with \ref vigra::MultiIterator.
-    The function uses accessors to access the pixel data.
-    Note that the unary functors of the STL can be used in addition to
-    the functors specifically defined in \ref TransformFunctor.
-    Creation of new functors is easiest by using \ref FunctorExpressions. Note that the iterator range 
-    must be specified by a shape object, because otherwise we could not control
-    the range simultaneously in all dimensions (this is a necessary consequence
-    of the \ref vigra::MultiIterator design).
-
+    iterators compatible with \ref vigra::MultiIterator, and the iteration range 
+    is specified by means of shape objects. If only the source shape is given
+    the destination array is assumed to have the same shape, and standard mode
+    is applied. If two shapes are given, the size of corresponding dimensions
+    must be either equal (standard copy), or the source length must be 1 
+    (expand mode), or the destination length must be 1 (reduce mode). However,
+    reduction and expansion cannot be executed at the same time, so the latter
+    conditions are mutual exclusive, even if they apply to different dimensions.
+    
+    The function uses accessors to access the data elements. 
+    
     <b> Declarations:</b>
 
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    Namespace: vigra
+    
     pass arguments explicitly:
     \code
     namespace vigra {
@@ -310,6 +573,15 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
         void
         transformMultiArray(SrcIterator s, SrcShape const & shape, SrcAccessor src,
                             DestIterator d, DestAccessor dest, Functor const & f);
+
+
+        template <class SrcIterator, class SrcShape, class SrcAccessor,
+                  class DestIterator, class DestShape, class DestAccessor, 
+                  class Functor>
+        void
+        transformMultiArray(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+                            DestIterator d, DestShape const & dshape, DestAccessor dest, 
+                            Functor const & f);
     }
     \endcode
 
@@ -322,31 +594,87 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
                   class Functor>
         void
         transformMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
-                       pair<DestIterator, DestAccessor> const & dest, Functor const & f);
+                            pair<DestIterator, DestAccessor> const & dest, Functor const & f);
+
+
+        template <class SrcIterator, class SrcShape, class SrcAccessor,
+                  class DestIterator, class DestShape, class DestAccessor, 
+                  class Functor>
+        void
+        transformMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
+                            triple<DestIterator, DestShape, DestAccessor> const & dest, 
+                            Functor const & f)
     }
     \endcode
 
-    <b> Usage:</b>
+    <b> Usage - Standard Mode:</b>
 
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
-    Namespace: vigra
+    Source and destination array have the same size.
     
     \code
     #include <cmath>         // for sqrt()
 
-    typedef vigra::MultiArray<3, int> Array;
+    typedef vigra::MultiArray<3, float> Array;
     Array src(Array::size_type(100, 200, 50)),
           dest(Array::size_type(100, 200, 50));
     ...
     
     vigra::transformMultiArray(srcMultiArrayRange(src),
                                destMultiArray(dest),
-                               &std::sqrt );
+                               (float(*)(float))&std::sqrt );
+
+    \endcode
+
+    <b> Usage - Expand Mode:</b>
+
+    The source array is only 2D (it has depth 1). Thus, the destination
+    will contain 50 identical copies of the transformed source array. 
+    Note that the destination shape must be passed to the algorithm for 
+    the expansion to work, so we use <tt>destMultiArrayRange()</tt> 
+    rather than <tt>destMultiArray()</tt>.
+    
+    \code
+    #include <cmath>         // for sqrt()
+
+    typedef vigra::MultiArray<3, float> Array;
+    Array src(Array::size_type(100, 200, 1)),
+          dest(Array::size_type(100, 200, 50));
+    ...
+    
+    vigra::transformMultiArray(srcMultiArrayRange(src),
+                               destMultiArrayRange(dest),
+                               (float(*)(float))&std::sqrt );
+
+    \endcode
+
+    <b> Usage - Reduce Mode:</b>
+
+    The destination array is only 1D (it's width and height are 1). 
+    Thus, it will contain accumulated data for every slice of the source volume
+    (or for every frame, if the source is intepreted as an image sequence).
+    In the example, we use the functor \ref vigra::FindAverage to calculate
+    the average gray value of every slice. Note that the destination shape
+    must also be passed for the reduction to work, so we use 
+    <tt>destMultiArrayRange()</tt> rather than <tt>destMultiArray()</tt>.
+    
+    \code
+    typedef vigra::MultiArray<3, float> Array;
+    Array src(Array::size_type(100, 200, 50)),
+          dest(Array::size_type(1, 1, 50));
+    ...
+    
+    vigra::transformMultiArray(srcMultiArrayRange(src),
+                               destMultiArrayRange(dest),
+                               vigra::FindAverage<float>() );
 
     \endcode
 
     <b> Required Interface:</b>
 
+    In standard and expand mode, the functor must be a model of UnaryFunction
+    (i.e. support function call with one argument and a return value
+    <tt>res = functor(arg)</tt>):
+    
     \code
     MultiIterator src_begin, src_end, dest_begin;
     
@@ -355,7 +683,31 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & shape, SrcAccessor src,
     Functor functor;
 
     dest_accessor.set(functor(src_accessor(src_begin)), dest_begin);
-
+    \endcode
+    
+    In reduce mode, it must be a model of UnaryAnalyser (i.e. support function call
+    with one argument and no return vakue <tt>functor(arg)</tt>) and Initializer
+    (i.e. support function call with no argument, but return value 
+    <tt>res = functor()</tt>). Internally, such functors are recognized by the 
+    meta functions <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isUnaryAnalyser</tt> and
+    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> which must both yield 
+    <tt>VigraTrueType</tt>. Make sure that your functor correctly defines 
+    <tt>FunctorTraits</tt> because otherwise reduce mode will not work. In addition,
+    the functor must be copy constructible in order to start each reduction
+    with a fresh functor.
+    
+    \code
+    MultiIterator src_begin, src_end, dest_begin;
+    
+    SrcAccessor src_accessor;
+    DestAccessor dest_accessor;
+    
+    FUNCTOR initial_functor, functor(initial_functor);
+    assert(typeid(FunctorTraits<FUNCTOR>::isInitializer) == typeid(VigraTrueType));
+    assert(typeid(FunctorTraits<FUNCTOR>::isUnaryAnalyser) == typeid(VigraTrueType));
+    
+    functor(src_accessor(src_begin));
+    dest_accessor.set(functor(), dest_begin);
     \endcode
 
 */
@@ -366,7 +718,8 @@ inline void
 transformMultiArray(SrcIterator s, SrcShape const & shape, SrcAccessor src,
                     DestIterator d, DestAccessor dest, Functor const & f)
 {    
-    transformMultiArrayImpl(s, shape, src, d, dest, f, MetaInt<SrcIterator::level>());
+    transformMultiArrayExpandImpl(s, shape, src, d, shape, dest, 
+                                  f, MetaInt<SrcIterator::level>());
 }
 
 template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -381,6 +734,36 @@ transformMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
                         dest.first, dest.second, f);
 }
 
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+transformMultiArray(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f)
+{    
+    vigra_precondition(sshape.size() == dshape.size(),
+        "transformMultiArray(): dimensionality of source and destination array differ");
+    typedef FunctorTraits<Functor> FT;
+    typedef typename 
+        And<typename FT::isInitializer, typename FT::isUnaryAnalyser>::result
+        isAnalyserInitializer;
+    transformMultiArrayImpl(s, sshape, src, d, dshape, dest, 
+                            f, isAnalyserInitializer());
+}
+
+template <class SrcIterator, class SrcShape, class SrcAccessor,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+inline void
+transformMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
+               triple<DestIterator, DestShape, DestAccessor> const & dest, 
+               Functor const & f)
+{
+    transformMultiArray(src.first, src.second, src.third, 
+                        dest.first, dest.second, dest.third, f);
+}
+
 /********************************************************/
 /*                                                      */
 /*                combineTwoMultiArrays                 */
@@ -389,51 +772,210 @@ transformMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & src,
 
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
           class SrcIterator2, class SrcAccessor2,
-          class DestIterator, class DestAccessor, 
+          class DestIterator, class DestShape, class DestAccessor, 
           class Functor>
-inline void
-combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 src1,
+void
+combineTwoMultiArraysReduceImpl(
+               SrcIterator1 s1, SrcShape const & sshape, SrcAccessor1 src1,
                SrcIterator2 s2, SrcAccessor2 src2,
-               DestIterator d, DestAccessor dest, Functor const & f, MetaInt<0>)
+               DestIterator d,  DestShape const & dshape, DestAccessor dest, 
+               SrcShape const & reduceShape,
+               Functor const & ff, MetaInt<0>)
 {
-    combineTwoLines(s1, s1 + shape[0], src1, s2, src2, d, dest, f);
+    DestIterator dend = d + dshape[0];
+    for(; d != dend; ++s1.template dim<0>(), ++s2.template dim<0>(), ++d)
+    {
+        Functor f = ff;
+        inspectTwoMultiArrays(s1, reduceShape, src1, s2, src2, f);
+        dest.set(f(), d);
+    }
 }
     
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
           class SrcIterator2, class SrcAccessor2,
-          class DestIterator, class DestAccessor, 
+          class DestIterator, class DestShape, class DestAccessor, 
           class Functor, int N>
 void
-combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 src1,
+combineTwoMultiArraysReduceImpl(
+               SrcIterator1 s1, SrcShape const & sshape, SrcAccessor1 src1,
                SrcIterator2 s2, SrcAccessor2 src2,
-               DestIterator d, DestAccessor dest, 
+               DestIterator d,  DestShape const & dshape, DestAccessor dest, 
+               SrcShape const & reduceShape,
                Functor const & f, MetaInt<N>)
 {
-    SrcIterator1 s1end = s1 + shape[N];
-    for(; s1 != s1end; ++s1, ++s2, ++d)
+    DestIterator dend = d + dshape[N];
+    for(; d != dend; ++s1.template dim<N>(), ++s2.template dim<N>(), ++d)
     {
-        combineTwoMultiArraysImpl(s1.begin(), shape, src1, 
-                                  s2.begin(), src2, d.begin(), dest, 
-                                  f, MetaInt<N-1>());
+        combineTwoMultiArraysReduceImpl(s1, sshape, src1, s2, src2, 
+                                        d.begin(), dshape, dest,
+                                        reduceShape, f, MetaInt<N-1>());
+    }
+}
+
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+combineTwoMultiArraysImpl(
+               SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+               SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, VigraTrueType)
+{
+    // reduce mode
+    SrcShape1 reduceShape = sshape1;
+    for(unsigned int i=0; i<dshape.size(); ++i)
+    {
+        vigra_precondition(sshape1[i] == sshape2[i] && 
+                           (dshape[i] == 1 || sshape1[i] == dshape[i]),
+            "combineTwoMultiArrays(): mismatch between source and destination shapes:\n"
+            "In 'reduce'-mode, the two source shapes must be equal, and\n"
+            "the length of each destination dimension must either be 1\n"
+            "or equal to the corresponding source length.");
+        if(dshape[i] != 1)
+            reduceShape[i] = 1;
+    }
+    combineTwoMultiArraysReduceImpl(s1, sshape1, src1, s2, src2, 
+                                    d, dshape, dest, reduceShape,
+                                    f, MetaInt<SrcIterator1::level>());
+}
+    
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+combineTwoMultiArraysExpandImpl(
+               SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+               SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, MetaInt<0>)
+{
+    DestIterator dend = d + dshape[0];
+    if(sshape1[0] == 1 && sshape2[0] == 1)
+    {
+        initLine(d, dend, dest, f(src1(s1), src2(s2)));
+    }
+    else if(sshape1[0] == 1)
+    {
+        typename SrcAccessor1::value_type sv1 = src1(s1);
+        for(; d != dend; ++d, ++s2)
+            dest.set(f(sv1, src2(s2)), d);
+    }
+    else if(sshape2[0] == 1)
+    {
+        typename SrcAccessor2::value_type sv2 = src2(s2);
+        for(; d != dend; ++d, ++s1)
+            dest.set(f(src1(s1), sv2), d);
+    }
+    else
+    {
+        combineTwoLines(s1, s1 + sshape1[0], src1, s2, src2, d, dest, f);
     }
 }
     
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor, int N>
+void
+combineTwoMultiArraysExpandImpl(
+               SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+               SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, MetaInt<N>)
+{
+    DestIterator dend = d + dshape[N];
+    int s1inc = sshape1[N] == 1
+                    ? 0 
+                    : 1;
+    int s2inc = sshape2[N] == 1
+                    ? 0 
+                    : 1;
+    for(; d != dend; ++d, s1 += s1inc, s2 += s2inc)
+    {
+        combineTwoMultiArraysExpandImpl(s1.begin(), sshape1, src1, 
+                                        s2.begin(), sshape2, src2, 
+                                        d.begin(), dshape, dest,
+                                        f, MetaInt<N-1>());
+    }
+}
+
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+combineTwoMultiArraysImpl(
+               SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+               SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f, VigraFalseType)
+{
+    // expand mode
+    for(unsigned int i=0; i<sshape1.size(); ++i)
+        vigra_precondition((sshape1[i] == 1 || sshape1[i] == dshape[i]) &&
+                           (sshape2[i] == 1 || sshape2[i] == dshape[i]),
+            "combineTwoMultiArrays(): mismatch between source and destination shapes:\n"
+            "In 'expand'-mode, the length of each source dimension must either be 1\n"
+            "or equal to the corresponding destination length.");
+    combineTwoMultiArraysExpandImpl(s1, sshape1, src1, s2, sshape2, src2, 
+                                    d, dshape, dest, 
+                                    f, MetaInt<SrcIterator1::level>());
+}
+
 /** \brief Combine two multi-dimensional arrays into one using a binary function or functor.
 
-    The transformation given by the functor is applied to the source 
-    array elements and the result written into the corresponding destination element.
-    This is typically used for operations like add and subtract.
+    This function can be applied in three modes:
+    
+    <DL>
+    <DT><b>Standard Mode:</b>
+        <DD>If the source and destination arrays have the same size, 
+        the transformation given by the functor is applied to every pair of
+        corresponding source elements and the result written into the corresponding 
+        destination element.
+        Binary functions, binary functors from the STL and the functors specifically 
+        defined in \ref CombineFunctor can be used in standard mode.
+        Creation of new functors is easiest by using \ref FunctorExpressions. 
+    <DT><b>Expanding Mode:</b>
+        <DD>If the source arrays have length 1 along some (or even all) dimensions,
+        the source values at index 0 are used for all destination
+        elements in those dimensions. In other words, the source index is not
+        incremented along those dimensions, but the transformation functor
+        is applied as usual. So, we can expand small arrays (e.g. a single row of data,
+        column length is 1), into larger ones (e.g. a 2D image with the same width): 
+        the given values are simply reused as necessary (e.g. for every row of the 
+        destination image). It is not even necessary that the source array shapes
+        are equal. For example, we can combine a small array with one that
+        hase the same size as the destination array. 
+        The same functors as in standard mode can be applied.
+    <DT><b>Reducing Mode:</b>
+        <DD>If the destination array has length 1 along some (or even all) dimensions,
+        the source values in these dimensions are reduced to single values by means
+        of a suitable functor which supports two function call operators: one
+        with two arguments to collect the values, and one without argument to 
+        obtain the final (reduced) result. This behavior is a multi-dimensional
+        generalization of the C++ standard function <tt>std::accumulate()</tt>.
+    </DL>
+        
     The arrays must be represented by
-    iterators compatible with \ref vigra::MultiIterator.
-    The function uses accessors to access the pixel data.
-    Note that the binary functors of the STL can be used in addition to
-    the functors specifically defined in \ref CombineFunctor.
-    Creation of new functors is easiest by using \ref FunctorExpressions. Note that the iterator range 
-    must be specified by a shape object, because otherwise we could not control
-    the range simultaneously in all dimensions (this is a necessary consequence
-    of the \ref vigra::MultiIterator design).
+    iterators compatible with \ref vigra::MultiIterator, and the iteration range 
+    is specified by means of shape objects. If only a single source shape is given
+    the destination array is assumed to have the same shape, and standard mode
+    is applied. If three shapes are given, the size of corresponding dimensions
+    must be either equal (standard copy), or the length of this dimension must
+    be 1 in one or both source arrays
+    (expand mode), or the destination length must be 1 (reduce mode). However,
+    reduction and expansion cannot be executed at the same time, so the latter
+    conditions are mutual exclusive, even if they apply to different dimensions.
+    
+    The function uses accessors to access the data elements. 
     
     <b> Declarations:</b>
+    
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    Namespace: vigra
     
     pass arguments explicitly:
     \code
@@ -442,10 +984,21 @@ combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 
                   class SrcIterator2, class SrcAccessor2,
                   class DestIterator, class DestAccessor, 
                   class Functor>
-        inline void
-        combineTwoMultiArrays(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 src1,
+        void combineTwoMultiArrays(
+                       SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 src1,
                        SrcIterator2 s2, SrcAccessor2 src2,
                        DestIterator d, DestAccessor dest, Functor const & f);
+
+
+        template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+                  class SrcIterator2, class SrcShape2, class SrcAccessor2,
+                  class DestIterator, class DestShape, class DestAccessor, 
+                  class Functor>
+        void combineTwoMultiArrays(
+                       SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+                       SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+                       DestIterator d, DestShape const & dshape, DestAccessor dest, 
+                       Functor const & f);
             }
     \endcode
     
@@ -456,20 +1009,30 @@ combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 
         template <class SrcIterator1, class SrcShape, class SrcAccessor1,
                   class SrcIterator2, class SrcAccessor2,
                   class DestIterator, class DestAccessor, class Functor>
-        void
-        combineTwoMultiArrays(triple<SrcIterator1, SrcShape, SrcAccessor1> const & src1,
+        void combineTwoMultiArrays(
+                       triple<SrcIterator1, SrcShape, SrcAccessor1> const & src1,
                        pair<SrcIterator2, SrcAccessor2> const & src2,
                        pair<DestIterator, DestAccessor> const & dest, Functor const & f);
+
+
+        template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+                  class SrcIterator2, class SrcShape2, class SrcAccessor2,
+                  class DestIterator, class DestShape, class DestAccessor, 
+                  class Functor>
+        void combineTwoMultiArrays(
+                       triple<SrcIterator1, SrcShape1, SrcAccessor1> const & src1,
+                       triple<SrcIterator2, SrcShape2, SrcAccessor2> const & src2,
+                       triple<DestIterator, DestShape, DestAccessor> const & dest, 
+                       Functor const & f);
     }
     \endcode
     
-    <b> Usage:</b>
+    <b> Usage - Standard Mode:</b>
     
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
-    Namespace: vigra
+    Source and destination arrays have the same size.
     
     \code
-    #include <functional>     // for plus
+    #include <functional>     // for std::plus
 
     typedef vigra::MultiArray<3, int> Array;
     Array src1(Array::size_type(100, 200, 50)),
@@ -481,15 +1044,73 @@ combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 
                 srcMultiArrayRange(src1), 
                 srcMultiArray(src2), 
                 destMultiArray(dest),  
-                std::plus<SrcValueType>());
+                std::plus<int>());
     
     \endcode
     
-    Note that <TT>SrcValueType</TT> must be replaced with the appropriate type (e.g. 
-    the promote type of the input images' pixel type, see also 
-    \ref NumericPromotionTraits)
+    <b> Usage - Expand Mode:</b>
+
+    One source array is only 2D (it has depth 1). This image will be added
+    to every slice of the other source array, and the result
+    if written into the corresponding destination slice. Note that the shapes
+    of all arrays must be passed to the algorithm, so we use 
+    <tt>srcMultiArrayRange()</tt> and <tt>destMultiArrayRange()</tt> 
+    rather than <tt>srcMultiArray()</tt> and <tt>destMultiArray()</tt>.
     
+    \code
+    #include <functional>     // for std::plus
+
+    typedef vigra::MultiArray<3, int> Array;
+    Array src1(Array::size_type(100, 200, 1)),
+          src2(Array::size_type(100, 200, 50)),
+          dest(Array::size_type(100, 200, 50));
+    ...
+    
+    vigra::combineTwoMultiArrays(
+                srcMultiArrayRange(src1), 
+                srcMultiArray(src2), 
+                destMultiArray(dest),  
+                std::plus<int>());
+
+    \endcode
+
+    <b> Usage - Reduce Mode:</b>
+
+    The destination array is only 1D (it's width and height are 1). 
+    Thus, it will contain accumulated data for every slice of the source volumes
+    (or for every frame, if the sources are intepreted as image sequences).
+    In the example, we use \ref vigra::ReduceFunctor together with a functor 
+    expression (see \ref FunctorExpressions)
+    to calculate the total absolute difference of the gray values in every pair of 
+    source slices. Note that the shapes of all arrays must be passed 
+    to the algorithm in order for the reduction to work, so we use 
+    <tt>srcMultiArrayRange()</tt> and <tt>destMultiArrayRange()</tt> 
+    rather than <tt>srcMultiArray()</tt> and <tt>destMultiArray()</tt>.
+    
+    \code
+    #include <vigra/functorexpression.hxx>
+    using namespace vigra::functor;
+        
+    typedef vigra::MultiArray<3, int> Array;
+    Array src1(Array::size_type(100, 200, 50)),
+          src2(Array::size_type(100, 200, 50)),
+          dest(Array::size_type(1, 1, 50));
+    ...
+    
+    vigra::combineTwoMultiArrays(
+                srcMultiArrayRange(src1), 
+                srcMultiArray(src2), 
+                destMultiArray(dest),  
+                reduceFunctor(Arg1() + abs(Arg2() - Arg3()), 0) );
+                // Arg1() is the sum accumulated so far, initialzed with 0
+
+    \endcode
+
     <b> Required Interface:</b>
+    
+    In standard and expand mode, the functor must be a model of BinaryFunction
+    (i.e. support function call with two arguments and a return value
+    <tt>res = functor(arg1, arg2)</tt>):
     
     \code
     MultiIterator src1_begin, src2_begin, dest_begin;
@@ -505,7 +1126,32 @@ combineTwoMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 
           dest_begin);
 
     \endcode
+        
+    In reduce mode, it must be a model of BinaryAnalyser (i.e. support function call
+    with two arguments and no return vakue <tt>functor(arg1, arg2)</tt>) and Initializer
+    (i.e. support function call with no argument, but return value 
+    <tt>res = functor()</tt>). Internally, such functors are recognized by the 
+    meta functions <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isBinaryAnalyser</tt> and
+    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> which must both yield 
+    <tt>VigraTrueType</tt>. Make sure that your functor correctly defines 
+    <tt>FunctorTraits</tt> because otherwise reduce mode will not work. In addition,
+    the functor must be copy constructible in order to start each reduction
+    with a fresh functor.
     
+    \code
+    MultiIterator src1_begin, src2_begin, dest_begin;
+    
+    SrcAccessor1 src1_accessor;
+    SrcAccessor2 src2_accessor;
+    DestAccessor dest_accessor;
+    
+    FUNCTOR initial_functor, functor(initial_functor);
+    assert(typeid(FunctorTraits<FUNCTOR>::isInitializer) == typeid(VigraTrueType));
+    assert(typeid(FunctorTraits<FUNCTOR>::isBinaryAnalyser) == typeid(VigraTrueType));
+    
+    functor(src1_accessor(src1_begin), src2_accessor(src2_begin));
+    dest_accessor.set(functor(), dest_begin);
+    \endcode
     
 */
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
@@ -517,8 +1163,8 @@ combineTwoMultiArrays(SrcIterator1 s1, SrcShape const & shape, SrcAccessor1 src1
                SrcIterator2 s2, SrcAccessor2 src2,
                DestIterator d, DestAccessor dest, Functor const & f)
 {    
-    combineTwoMultiArraysImpl(s1, shape, src1, s2, src2, d, dest, f, 
-                              MetaInt<SrcIterator1::level>());
+    combineTwoMultiArraysExpandImpl(s1, shape, src1, s2, shape, src2, d, shape, dest, f, 
+                                    MetaInt<SrcIterator1::level>());
 }
 
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
@@ -533,6 +1179,44 @@ combineTwoMultiArrays(triple<SrcIterator1, SrcShape, SrcAccessor1> const & src1,
     combineTwoMultiArrays(
            src1.first, src1.second, src1.third, 
            src2.first, src2.second, dest.first, dest.second, f);
+}
+
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+void
+combineTwoMultiArrays(
+               SrcIterator1 s1, SrcShape1 const & sshape1, SrcAccessor1 src1,
+               SrcIterator2 s2, SrcShape2 const & sshape2, SrcAccessor2 src2,
+               DestIterator d, DestShape const & dshape, DestAccessor dest, 
+               Functor const & f)
+{    
+    vigra_precondition(sshape1.size() == dshape.size() && sshape2.size() == dshape.size(),
+        "combineTwoMultiArrays(): dimensionality of source and destination arrays differ");
+    
+    typedef FunctorTraits<Functor> FT;
+    typedef typename 
+        And<typename FT::isInitializer, typename FT::isBinaryAnalyser>::result
+        isAnalyserInitializer;
+    combineTwoMultiArraysImpl(s1, sshape1, src1, s2, sshape2, src2, d, dshape, dest, 
+                              f, isAnalyserInitializer());
+}
+
+template <class SrcIterator1, class SrcShape1, class SrcAccessor1,
+          class SrcIterator2, class SrcShape2, class SrcAccessor2,
+          class DestIterator, class DestShape, class DestAccessor, 
+          class Functor>
+inline void
+combineTwoMultiArrays(
+               triple<SrcIterator1, SrcShape1, SrcAccessor1> const & src1,
+               triple<SrcIterator2, SrcShape2, SrcAccessor2> const & src2,
+               triple<DestIterator, DestShape, DestAccessor> const & dest, 
+               Functor const & f)
+{
+    combineTwoMultiArrays(src1.first, src1.second, src1.third, 
+                          src2.first, src2.second, src2.third, 
+                          dest.first, dest.second, dest.third, f);
 }
 
 /********************************************************/
@@ -577,7 +1261,8 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
 }
     
     
-/** \brief Combine three multi-dimensional arrays into one using a binary function or functor.
+/** \brief Combine three multi-dimensional arrays into one using a 
+           ternary function or functor.
 
     Except for the fact that it operates on three input arrays, this function is
     identical to \ref combineTwoMultiArrays().
@@ -619,7 +1304,7 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
     Namespace: vigra
     
     \code
@@ -697,7 +1382,7 @@ inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f,
     }
 }
     
-/** \brief Apply read-only functor to every element of a multi-dimensional array.
+/** \brief Call an analyzing functor at every element of a multi-dimensional array.
 
     This function can be used to collect statistics of the array etc.
     The results must be stored in the functor, which serves as a return
@@ -730,7 +1415,7 @@ inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
     Namespace: vigra
 
     \code
@@ -805,7 +1490,8 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
     }
 }
     
-/** \brief Apply read-only functor to every element of a multi-dimensional array.
+/** \brief Call an analyzing functor at all corresponding elements of 
+           two multi-dimensional arrays.
 
     This function can be used to collect statistics of the array etc.
     The results must be stored in the functor, which serves as a return
@@ -844,7 +1530,7 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi_pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"br>
+    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
     Namespace: vigra
 
     \code
@@ -895,7 +1581,7 @@ inspectTwoMultiArrays(triple<Iterator1, Shape, Accessor1> const & s1,
     
 //@}
 
-};	//-- namespace vigra
+}	//-- namespace vigra
 
 
 #endif	//-- VIGRA_MULTI_POINTOPERATORS_H

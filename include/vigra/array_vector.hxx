@@ -4,49 +4,64 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
 
 #ifndef VIGRA_ARRAY_VECTOR_HXX
 #define VIGRA_ARRAY_VECTOR_HXX
 
+#include "memory.hxx"
 #include <memory>
 #include <algorithm>
-#include <vigra/memory.hxx>
 
 namespace vigra
 {
 
 /** Replacement for <tt>std::vector</tt>.
-    
+
     This template implements the same functionality as <tt>std::vector</tt>.
-    However, it gives two usful guarantees, that <tt>std::vector</tt> fails 
+    However, it gives two usful guarantees, that <tt>std::vector</tt> fails
     to provide:
-    
+
     <ul>
     <li>The memory is always allocated as one contigous piece</li>
     <li>The iterator is always a <TT>T *</TT> </li>
     </ul>
-    
+
     This means that memory managed by <tt>ArrayVector</tt> can be passed
     to algorithms that expect raw memory. This is especially important
     when lagacy or C code has to be called, but it is also useful for certain
     optimizations.
-    
-    Refer to the documentation of <tt>std::vector</tt> for a detailed 
+
+    Refer to the documentation of <tt>std::vector</tt> for a detailed
     description of <tt>ArrayVector</tt> functionality.
 
     <b>\#include</b> "<a href="array_vector_8hxx-source.html">vigra/array_vector.hxx</a>"<br>
@@ -56,6 +71,7 @@ template <class T, class Alloc = std::allocator<T> >
 class ArrayVector
 {
     typedef ArrayVector<T, Alloc> this_type;
+    enum { minimumCapacity = 2 };
 
 public:
     typedef T value_type;
@@ -133,12 +149,12 @@ public:
     }
 
     inline reverse_iterator rend()
-    {    
+    {
         return (reverse_iterator(begin()));
     }
 
     inline const_reverse_iterator rend() const
-    {    
+    {
         return (const_reverse_iterator(begin()));
     }
 
@@ -232,16 +248,16 @@ template <class T, class Alloc>
 ArrayVector<T, Alloc>::ArrayVector()
 : alloc_(Alloc()),
   size_(0),
-  capacity_(5),
-  data_(reserve_raw(5))
+  capacity_(minimumCapacity),
+  data_(reserve_raw(minimumCapacity))
 {}
 
 template <class T, class Alloc>
 ArrayVector<T, Alloc>::ArrayVector(Alloc const & alloc)
 : alloc_(alloc),
   size_(0),
-  capacity_(5),
-  data_(reserve_raw(5))
+  capacity_(minimumCapacity),
+  data_(reserve_raw(minimumCapacity))
 {}
 
 template <class T, class Alloc>
@@ -256,7 +272,7 @@ ArrayVector<T, Alloc>::ArrayVector( size_type size, Alloc const & alloc)
 }
 
 template <class T, class Alloc>
-ArrayVector<T, Alloc>::ArrayVector( size_type size, 
+ArrayVector<T, Alloc>::ArrayVector( size_type size,
                          value_type const & initial, Alloc const & alloc)
 : alloc_(alloc),
   size_(size),
@@ -398,8 +414,8 @@ template <class InputIterator>
 typename ArrayVector<T, Alloc>::iterator
 ArrayVector<T, Alloc>::insert(iterator p, InputIterator i, InputIterator iend)
 {
-    difference_type n = iend - i;
-    difference_type pos = p - begin();
+    size_type n = iend - i;
+    size_type pos = p - begin();
     size_type new_size = size() + n;
     if(new_size >= capacity_)
     {
@@ -407,7 +423,7 @@ ArrayVector<T, Alloc>::insert(iterator p, InputIterator i, InputIterator iend)
         std::uninitialized_copy(begin(), p, new_data);
         std::uninitialized_copy(i, iend, new_data + pos);
         std::uninitialized_copy(p, end(), new_data + pos + n);
-        deallocate(data_, size_); // removed std:: MGD
+        deallocate(data_, size_);
         capacity_ = new_size;
         data_ = new_data;
     }
@@ -465,7 +481,9 @@ void ArrayVector<T, Alloc>::reserve( size_type new_capacity )
 template <class T, class Alloc>
 void ArrayVector<T, Alloc>::reserve()
 {
-    if(size_ == capacity_)
+    if(capacity_ == 0)
+        reserve(minimumCapacity);
+    else if(size_ == capacity_)
         reserve(2*capacity_);
 }
 

@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -24,8 +39,8 @@
 #ifndef VIGRA_ITERATORTRAITS_HXX
 #define VIGRA_ITERATORTRAITS_HXX
 
-#include <vigra/accessor.hxx>
-#include <vigra/imageiteratoradapter.hxx>
+#include "accessor.hxx"
+#include "imageiteratoradapter.hxx"
 
 namespace vigra {
 
@@ -52,6 +67,8 @@ namespace vigra {
         typedef typename iterator::column_iterator    column_iterator;
         typedef StandardAccessor<value_type>          DefaultAccessor;
         typedef StandardAccessor<value_type>          default_accessor;
+
+        typedef VigraTrueType/VigraFalseType          hasConstantStrides;
     };
     \endcode
 
@@ -75,6 +92,16 @@ namespace vigra {
     \ref IteratorBasedArgumentObjectFactories. The possibility to retrieve the default accessor by means of a traits
     class is especially important since this information is not
     contained in the iterator directly.
+    
+    The member <tt>hasConstantStrides</tt> is useful for certain 
+    optimizations: it helps to decide whether we can replace iterator
+    operations such as <tt>iter++</tt> ot <tt>iter =+ n</tt> with
+    corresponding pointer operations (which may be faster), where
+    the pointer is obtained as the address of iterator's pointee 
+    (the object the iterator currently  refers to). 
+    This flag would be tt>VigraFalseType</tt> for a
+    <tt>std::list&lt;int&gt;::iterator</tt>, but is <tt>VigraTrueType</tt> 
+    for most VIGRA iterators.
 
     <b>\#include</b> "<a href="iteratortraits_8hxx-source.html">vigra/iteratortraits.hxx</a>"
     Namespace: vigra
@@ -95,6 +122,9 @@ struct IteratorTraits
     typedef typename
         AccessorTraits<value_type>::default_accessor   DefaultAccessor;
     typedef DefaultAccessor                            default_accessor;
+
+    // default: disable the constant strides optimization
+    typedef VigraFalseType                             hasConstantStrides;
 };
 
 template <class T>
@@ -231,8 +261,9 @@ struct IteratorTraitsBase
         \htmlonly
         <th bgcolor="#f0e0c0" colspan=2 align=left>
         \endhtmlonly
-        <TT>\ref vigra::BasicImage "vigra::BasicImage<SomeType>" img;</TT>
-        \htmlonly
+        <TT>\ref vigra::BasicImage "vigra::BasicImage<SomeType>" img;</TT> or <br>
+         <TT>\ref vigra::BasicImageView "vigra::BasicImageView<SomeType>" img;</TT>
+         \htmlonly
         </th>
         \endhtmlonly
     </td></tr>
@@ -246,9 +277,25 @@ struct IteratorTraitsBase
     </td></tr>
     <tr><td>
 
+    <TT>srcImageRange(img, Rect2D(...))</TT>
+    </td><td>
+        create argument object containing the ROI specified by <tt>\ref vigra::Rect2D</tt> and
+        default accessor of source image
+
+    </td></tr>
+    <tr><td>
+
     <TT>srcImageRange(img, SomeAccessor())</TT>
     </td><td>
         create argument object containing upper left, lower right
+        of source image, and given accessor
+
+    </td></tr>
+    <tr><td>
+
+    <TT>srcImageRange(img, Rect2D(...), SomeAccessor())</TT>
+    </td><td>
+        create argument object containing the ROI specified by <tt>\ref vigra::Rect2D</tt> and
         of source image, and given accessor
 
     </td></tr>
@@ -262,10 +309,26 @@ struct IteratorTraitsBase
     </td></tr>
     <tr><td>
 
+    <TT>srcImage(img, Point2D(...))</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt>, and
+        default accessor of source image
+
+    </td></tr>
+    <tr><td>
+
     <TT>srcImage(img, SomeAccessor())</TT>
     </td><td>
         create argument object containing upper left
         of source image, and given accessor
+
+    </td></tr>
+    <tr><td>
+
+    <TT>srcImage(img, Point2D(...), SomeAccessor())</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt> of source image,
+        and given accessor
 
     </td></tr>
     <tr><td>
@@ -276,7 +339,15 @@ struct IteratorTraitsBase
         default accessor of mask image
 
     </td></tr>
-    <tr><td>
+     <tr><td>
+
+    <TT>maskImage(img, Point2D(...))</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt>, and
+        default accessor of mask image
+
+    </td></tr>
+   <tr><td>
 
     <TT>maskImage(img, SomeAccessor())</TT>
     </td><td>
@@ -286,9 +357,25 @@ struct IteratorTraitsBase
     </td></tr>
     <tr><td>
 
+    <TT>maskImage(img, Point2D(...), SomeAccessor())</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt> of mask image,
+        and given accessor
+
+    </td></tr>
+    <tr><td>
+
     <TT>destImageRange(img)</TT>
     </td><td>
         create argument object containing upper left, lower right, and
+        default accessor of destination image
+
+    </td></tr>
+    <tr><td>
+
+    <TT>destImageRange(img, Rect2D(...))</TT>
+    </td><td>
+        create argument object containing the ROI specified by <tt>\ref vigra::Rect2D</tt> and
         default accessor of destination image
 
     </td></tr>
@@ -302,9 +389,25 @@ struct IteratorTraitsBase
     </td></tr>
     <tr><td>
 
+    <TT>destImageRange(img, Rect2D(...), SomeAccessor())</TT>
+    </td><td>
+        create argument object containing the ROI specified by <tt>\ref vigra::Rect2D</tt>
+        of destination image, and given accessor
+
+    </td></tr>
+     <tr><td>
+
     <TT>destImage(img)</TT>
     </td><td>
         create argument object containing upper left, and
+        default accessor of destination image
+
+    </td></tr>
+     <tr><td>
+
+    <TT>destImage(img, Point2D(...))</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt>, and
         default accessor of destination image
 
     </td></tr>
@@ -316,13 +419,21 @@ struct IteratorTraitsBase
         of destination image, and given accessor
 
     </td></tr>
+    <tr><td>
+
+    <TT>destImage(img, Point2D(...), SomeAccessor())</TT>
+    </td><td>
+        create argument object with upper left at point given by <tt>\ref vigra::Point2D</tt> of destination image,
+        and given accessor
+
+    </td></tr>
     </table>
 
 
   \section MultiArrayBasedArgumentObjectFactories MultiArrayView Based Argument Object Factories
 
     <b>Include:</b> automatically included with 
-       "<a href="multi_array_8hxx-source.html">vigra/multi_array.hxx</a>"<br>
+       "<a href="multi__array_8hxx-source.html">vigra/multi_array.hxx</a>"<br>
     Namespace: vigra
 
     These factories can be used to create argument objects when we
@@ -565,7 +676,7 @@ srcIter(Iterator const & upperleft)
 {
     return pair<Iterator, typename IteratorTraits<Iterator>::DefaultAccessor>(
                   upperleft,
-                  IteratorTraits<Iterator>::DefaultAccessor());
+                  typename IteratorTraits<Iterator>::DefaultAccessor());
 }
 
 template <class Iterator>
@@ -575,7 +686,7 @@ srcIterRange(Iterator const & upperleft, Iterator const & lowerright)
     return triple<Iterator, Iterator,
                   typename IteratorTraits<Iterator>::DefaultAccessor>(
                   upperleft, lowerright,
-                  IteratorTraits<Iterator>::DefaultAccessor());
+                  typename IteratorTraits<Iterator>::DefaultAccessor());
 }
 
 template <class Iterator>
@@ -584,7 +695,7 @@ maskIter(Iterator const & upperleft)
 {
     return pair<Iterator, typename IteratorTraits<Iterator>::DefaultAccessor>(
                   upperleft,
-                  IteratorTraits<Iterator>::DefaultAccessor());
+                  typename IteratorTraits<Iterator>::DefaultAccessor());
 }
 
 template <class Iterator>
@@ -593,7 +704,7 @@ destIter(Iterator const & upperleft)
 {
     return pair<Iterator, typename IteratorTraits<Iterator>::DefaultAccessor>(
                   upperleft,
-                  IteratorTraits<Iterator>::DefaultAccessor());
+                  typename IteratorTraits<Iterator>::DefaultAccessor());
 }
 
 template <class Iterator>
@@ -603,7 +714,7 @@ destIterRange(Iterator const & upperleft, Iterator const & lowerright)
     return triple<Iterator, Iterator,
                   typename IteratorTraits<Iterator>::DefaultAccessor>(
                   upperleft, lowerright,
-                  IteratorTraits<Iterator>::DefaultAccessor());
+                  typename IteratorTraits<Iterator>::DefaultAccessor());
 }
 
 //@}

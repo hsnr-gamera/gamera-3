@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
  
@@ -24,8 +39,9 @@
 #ifndef VIGRA_COMBINEIMAGES_HXX
 #define VIGRA_COMBINEIMAGES_HXX
 
-#include "vigra/utilities.hxx"
-#include "vigra/numerictraits.hxx"
+#include "utilities.hxx"
+#include "numerictraits.hxx"
+#include "functortraits.hxx"
 #include <cmath>
 
 namespace vigra {
@@ -186,14 +202,14 @@ combineThreeLines(SrcIterator1 s1,
 */
 template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
-      class DestImageIterator, class DestAccessor,
+          class DestImageIterator, class DestAccessor,
           class Functor>
 void
 combineTwoImages(SrcImageIterator1 src1_upperleft, 
                  SrcImageIterator1 src1_lowerright, SrcAccessor1 sa1,
                  SrcImageIterator2 src2_upperleft, SrcAccessor2 sa2,
                  DestImageIterator dest_upperleft, DestAccessor da,
-         Functor const & f)
+                 Functor const & f)
 {
     int w = src1_lowerright.x - src1_upperleft.x;
     
@@ -209,14 +225,14 @@ combineTwoImages(SrcImageIterator1 src1_upperleft,
     
 template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
-      class DestImageIterator, class DestAccessor,
+          class DestImageIterator, class DestAccessor,
           class Functor>
 inline
 void
 combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1,
              pair<SrcImageIterator2, SrcAccessor2> src2,
              pair<DestImageIterator, DestAccessor> dest,
-         Functor const & f)
+             Functor const & f)
 {
     combineTwoImages(src1.first, src1.second, src1.third, 
                      src2.first, src2.second, 
@@ -332,14 +348,14 @@ template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
           class MaskImageIterator, class MaskAccessor,
           class DestImageIterator, class DestAccessor,
-      class Functor>
+          class Functor>
 void
 combineTwoImagesIf(SrcImageIterator1 src1_upperleft, 
                    SrcImageIterator1 src1_lowerright, SrcAccessor1 sa1,
                    SrcImageIterator2 src2_upperleft, SrcAccessor2 sa2,
                    MaskImageIterator mask_upperleft, MaskAccessor ma,
-               DestImageIterator dest_upperleft, DestAccessor da,
-               Functor const & f)
+                   DestImageIterator dest_upperleft, DestAccessor da,
+                   Functor const & f)
 {
     int w = src1_lowerright.x - src1_upperleft.x;
     
@@ -359,7 +375,7 @@ template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
           class MaskImageIterator, class MaskAccessor,
           class DestImageIterator, class DestAccessor,
-      class Functor>
+          class Functor>
 inline
 void
 combineTwoImagesIf(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1,
@@ -535,6 +551,10 @@ combineThreeImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
     
     If the gradient is represented by a vector-valued image instead of 
     a pair of scalar images, use \ref vigra::VectorNormFunctor.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType<tt>)    
 */
 template <class ValueType>
 class MagnitudeFunctor
@@ -550,19 +570,27 @@ class MagnitudeFunctor
     
         /** the functor's result type
         */
-    typedef typename NumericTraits<ValueType>::RealPromote result_type;
+    typedef typename SquareRootTraits<typename NormTraits<ValueType>::SquaredNormType>::SquareRootResult result_type;
     
         /** \deprecated use first_argument_type, second_argument_type, result_type
         */
     typedef ValueType value_type;
     
-        /** calculate transform '<TT>sqrt(v1*v1 + v2*v2)</TT>'. 
+        /** calculate transform '<TT>sqrt(squaredNorm(v1) + squaredNorm(v2))</TT>'. 
             
         */
     result_type operator()(first_argument_type const & v1, second_argument_type const & v2) const
     {
-        return VIGRA_CSTD::sqrt(v1*v1 + v2*v2);
+        return VIGRA_CSTD::sqrt(squaredNorm(v1) + squaredNorm(v2));
     }
+};
+
+template <class T>
+class FunctorTraits<MagnitudeFunctor<T> >
+: public FunctorTraitsBase<MagnitudeFunctor<T> >
+{
+public:
+    typedef VigraTrueType isBinaryFunctor;
 };
 
 /********************************************************/
@@ -574,6 +602,10 @@ class MagnitudeFunctor
 
 /** Calculate the gradient magnitude from RGB arguments.
     Can be used in conjunction with \ref gradientBasedTransform().
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType<tt>)    
 */
 template <class ValueType>
 class RGBGradientMagnitudeFunctor
@@ -613,6 +645,14 @@ class RGBGradientMagnitudeFunctor
                     gx.blue()*gx.blue() + gy.red()*gy.red() + 
                     gy.green()*gy.green() + gy.blue()*gy.blue());
     }
+};
+
+template <class T>
+class FunctorTraits<RGBGradientMagnitudeFunctor<T> >
+: public FunctorTraitsBase<RGBGradientMagnitudeFunctor<T> >
+{
+public:
+    typedef VigraTrueType isBinaryFunctor;
 };
 
 //@}

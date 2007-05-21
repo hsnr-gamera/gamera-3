@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
  
@@ -319,7 +334,9 @@
 #if !defined(NO_PARTIAL_TEMPLATE_SPECIALIZATION)
 
 #include <cmath>
-#include <vigra/numerictraits.hxx>
+#include "numerictraits.hxx"
+#include "mathutil.hxx"
+#include "functortraits.hxx"
 
 
 namespace vigra {
@@ -729,25 +746,29 @@ struct UnaryFunctor<VarFunctor<T> >;
          \
         V & operator()() const \
         { \
-            return const_cast<V &>(value_) op expr_(); \
+            const_cast<V &>(value_) op expr_(); \
+            return const_cast<V &>(value_); \
         } \
          \
         template <class T1>  \
         V & operator()(T1 const & v1) const \
         { \
-            return const_cast<V &>(value_) op expr_(v1); \
+            const_cast<V &>(value_) op expr_(v1); \
+            return const_cast<V &>(value_); \
         } \
          \
         template <class T1, class T2>  \
         V & operator()(T1 const & v1, T2 const & v2) const \
         { \
-            return const_cast<V &>(value_) op expr_(v1, v2); \
+            const_cast<V &>(value_) op expr_(v1, v2); \
+            return const_cast<V &>(value_); \
         } \
          \
         template <class T1, class T2, class T3>  \
         V & operator()(T1 const & v1, T2 const & v2, T3 const & v3) const \
         { \
-            return const_cast<V &>(value_) op expr_(v1, v2, v3); \
+            const_cast<V &>(value_) op expr_(v1, v2, v3); \
+            return const_cast<V &>(value_); \
         } \
          \
       private: \
@@ -986,11 +1007,11 @@ struct IfThenElseFunctor
     {
         typename 
             ResultTraits0<IfThenElseFunctor>::Res 
-            r2(expr2_(v1));
+            r2(expr2_());
         typename 
             ResultTraits0<IfThenElseFunctor>::Res 
-            r3(expr3_(v1));
-        return expr1_(v1) ? r2 : r3;
+            r3(expr3_());
+        return expr1_() ? r2 : r3;
     }
 
     template <class T> 
@@ -1061,8 +1082,8 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
 /*                                                          */
 /************************************************************/
 
-#define MAKE_FUNCTOR_UNARY_FUNCTION(function) \
-    using std::function; \
+#define MAKE_FUNCTOR_UNARY_FUNCTION(function, namespc) \
+    using ::namespc::function; \
     template <class EXPR> \
     struct Functor_##function; \
     \
@@ -1143,19 +1164,21 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
 
 /************************************************************/
 
-MAKE_FUNCTOR_UNARY_FUNCTION(sqrt)
-MAKE_FUNCTOR_UNARY_FUNCTION(exp)
-MAKE_FUNCTOR_UNARY_FUNCTION(log)
-MAKE_FUNCTOR_UNARY_FUNCTION(log10)
-MAKE_FUNCTOR_UNARY_FUNCTION(sin)
-MAKE_FUNCTOR_UNARY_FUNCTION(asin)
-MAKE_FUNCTOR_UNARY_FUNCTION(cos)
-MAKE_FUNCTOR_UNARY_FUNCTION(acos)
-MAKE_FUNCTOR_UNARY_FUNCTION(tan)
-MAKE_FUNCTOR_UNARY_FUNCTION(atan)
-MAKE_FUNCTOR_UNARY_FUNCTION(abs)
-MAKE_FUNCTOR_UNARY_FUNCTION(floor)
-MAKE_FUNCTOR_UNARY_FUNCTION(ceil)
+MAKE_FUNCTOR_UNARY_FUNCTION(sqrt, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(exp, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(log, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(log10, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(sin, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(asin, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(cos, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(acos, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(tan, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(atan, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(floor, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(ceil, std)
+MAKE_FUNCTOR_UNARY_FUNCTION(abs, vigra)
+//MAKE_FUNCTOR_UNARY_FUNCTION(norm, vigra)
+//MAKE_FUNCTOR_UNARY_FUNCTION(squaredNorm, vigra)
 
 #undef MAKE_FUNCTOR_UNARY_FUNCTION
 
@@ -1951,6 +1974,36 @@ operator,(UnaryAnalyser<EXPR1> const & e1,
 }
 
 } // namespace functor
+
+#if defined(__GNUC__) &&  __GNUC__ < 3
+using functor::Arg1;
+using functor::Arg2;
+using functor::Arg3;
+using functor::Param;
+#endif
+
+template <class T>
+class FunctorTraits<functor::UnaryFunctor<T> >
+: public FunctorTraitsBase<functor::UnaryFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isInitializer;
+    typedef VigraTrueType isUnaryFunctor;
+    typedef VigraTrueType isBinaryFunctor;
+    typedef VigraTrueType isTernaryFunctor;
+};
+
+template <class T>
+class FunctorTraits<functor::UnaryAnalyser<T> >
+: public FunctorTraitsBase<functor::UnaryAnalyser<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryAnalyser;
+    typedef VigraTrueType isBinaryAnalyser;
+    typedef VigraTrueType isTernaryAnalyser;
+};
+
+
 
 } // namespace vigra
 

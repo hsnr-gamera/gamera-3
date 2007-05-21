@@ -1,6 +1,6 @@
 /************************************************************************/
 /*                                                                      */
-/*         Copyright 2002-2003 by Ullrich Koethe, Hans Meine            */
+/*               Copyright 2004-2005 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
@@ -35,66 +35,101 @@
 /*                                                                      */
 /************************************************************************/
 
-#ifndef VIGRA_MEMORY_HXX
-#define VIGRA_MEMORY_HXX
+#ifndef VIGRA_STATIC_ASSERT_HXX
+#define VIGRA_STATIC_ASSERT_HXX
 
-#include "metaprogramming.hxx"
+// based on the static assertion design in boost::mpl (see www.boost.org)
 
-namespace vigra { namespace detail {
+#define VIGRA_PREPROCESSOR_CONCATENATE(a, b) VIGRA_PREPROCESSOR_CONCATENATE_IMPL(a, b)
+#define VIGRA_PREPROCESSOR_CONCATENATE_IMPL(a, b) a ## b
+
+namespace vigra {
+
+namespace staticAssert {
+
+template <bool Predicate>
+struct AssertBool;
+
+template <>
+struct AssertBool<true>
+{
+    typedef int type;
+    typedef void * not_type;
+};
+
+template <>
+struct AssertBool<false>
+{
+    typedef void * type;
+    typedef int not_type;
+};
 
 template <class T>
-void destroy_n(T * /* p */, int /* n */, VigraTrueType /* isPOD */)
+struct Assert;
+
+template <>
+struct Assert<VigraTrueType>
 {
-}
+    typedef int type;
+    typedef void * not_type;
+};
 
-template <class T>
-void destroy_n(T * p, int n, VigraFalseType /* isPOD */)
+template <>
+struct Assert<VigraFalseType>
 {
-	T * end = p + n;
-	for(; p != end; ++p)
-		p->~T();
+    typedef void * type;
+    typedef int not_type;
+};
+
+struct failure{};
+struct success {};
+inline int check( success ) { return 0; }
+
+template< typename Predicate >
+failure ************ (Predicate::************ 
+      assertImpl( void (*)(Predicate), typename Predicate::not_type )
+    );
+
+template< typename Predicate >
+success
+assertImpl( void (*)(Predicate), typename Predicate::type );
+
+/* Usage:
+
+1. Define an assertion class, derived from vigra::staticAssert::Assert,
+   whose name serves as an error message:
+   
+    template <int N>
+    struct FixedPoint_overflow_error__More_than_31_bits_requested
+    : vigra::staticAssert::AssertBool<(N < 32)>
+    {};
+
+2. Call VIGRA_STATIC_ASSERT() with the assertion class:
+
+    template <int N>
+    void test()
+    {
+        // signal error if N > 31
+        VIGRA_STATIC_ASSERT((FixedPoint_overflow_error__More_than_31_bits_requested<N>));
+    }
+    
+TODO: provide more assertion base classes for other (non boolean) types of tests
+*/
+#if !defined(__GNUC__) || __GNUC__ > 2
+#define VIGRA_STATIC_ASSERT(Predicate) \
+enum { \
+    VIGRA_PREPROCESSOR_CONCATENATE(vigra_assertion_in_line_, __LINE__) = sizeof( \
+         staticAssert::check( \
+              staticAssert::assertImpl( (void (*) Predicate)0, 1 ) \
+            ) \
+        ) \
 }
-
-template <class T>
-void destroy_n(T * p, int n)
-{
-    destroy_n(p, n, typename TypeTraits<T>::isPOD());
-}
-
-/********************************************************************/
-
-// g++ 2.95 has std::destroy() in the STL
-#if !defined(__GNUC__) ||  __GNUC__ >= 3
-
-template <class T>
-void destroy(T * p, VigraTrueType /* isPOD */)
-{
-}
-
-template <class T>
-void destroy(T * p, VigraFalseType /* isPOD */)
-{
-    p->~T();
-}
-
-template <class T>
-void destroy(T * p)
-{
-    destroy(p, typename TypeTraits<T>::isPOD());
-}
-
 #else
-
-} } // namespace vigra::detail
-
-#include <memory>
-
-namespace vigra { namespace detail {
-
-using std::destroy;
-
+#define VIGRA_STATIC_ASSERT(Predicate)
 #endif
 
-} } // namespace vigra::detail
+} // namespace staticAssert
 
-#endif // VIGRA_MEMORY_HXX
+} // namespace vigra
+
+#endif // VIGRA_STATIC_ASSERT_HXX

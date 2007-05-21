@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
 
@@ -24,12 +39,12 @@
 #define VIGRA_DIFF2D_HXX
 
 #include <cmath> // for sqrt()
-#include <iostream>  //  ??? <iosfwd> doesn't work on MSVC
-#include "vigra/config.hxx"
-#include "vigra/iteratortags.hxx"
-#include "vigra/iteratortraits.hxx"
-#include "vigra/iteratoradapter.hxx"
-#include "vigra/tuple.hxx"
+#include <iosfwd>
+#include "config.hxx"
+#include "iteratortags.hxx"
+#include "iteratortraits.hxx"
+#include "iteratoradapter.hxx"
+#include "tuple.hxx"
 
 namespace vigra {
 
@@ -428,6 +443,8 @@ struct IteratorTraits<Diff2D >
 {
     typedef Diff2D                               Iterator;
     typedef Iterator                             iterator;
+    typedef Iterator                             const_iterator;
+    // typedef                                   multable_iterator; undefined
     typedef iterator::iterator_category          iterator_category;
     typedef iterator::value_type                 value_type;
     typedef iterator::reference                  reference;
@@ -438,6 +455,7 @@ struct IteratorTraits<Diff2D >
     typedef iterator::column_iterator            column_iterator;
     typedef StandardConstValueAccessor<Diff2D>   DefaultAccessor;
     typedef StandardConstValueAccessor<Diff2D>   default_accessor;
+    typedef VigraTrueType                        hasConstantStrides;
 
 };
 
@@ -500,6 +518,20 @@ public:
     int height() const
     {
         return y;
+    }
+
+        /** Change the width.
+         */
+    void setWidth(int w)
+    {
+        x = w;
+    }
+
+        /** Change the height.
+         */
+    void setHeight(int h)
+    {
+        y = h;
     }
 
         /** Returns width()*height(), the area of a rectangle of this size.
@@ -1310,8 +1342,10 @@ class Dist2D
 
 //@}
 
-} // namespace vigra
-
+/**
+ * Output a \ref vigra::Diff2D as a tuple.
+ * Example Diff2D(-12, 13) -> "(-12, 13)"
+ */
 inline
 std::ostream & operator<<(std::ostream & o, vigra::Diff2D const & d)
 {
@@ -1319,6 +1353,10 @@ std::ostream & operator<<(std::ostream & o, vigra::Diff2D const & d)
     return o;
 }
 
+/**
+ * Output a \ref vigra::Size2D.
+ * Example Size2D(100, 200) -> "(100x200)"
+ */
 inline
 std::ostream &operator <<(std::ostream &s, vigra::Size2D const &d)
 {
@@ -1326,6 +1364,10 @@ std::ostream &operator <<(std::ostream &s, vigra::Size2D const &d)
     return s;
 }
 
+/**
+ * Output a description of a \ref vigra::Rect2D.
+ * Example Rect2D(10, 10, 30, 20) -> "[(10, 10) to (30, 20) = (20x10)]"
+ */
 inline
 std::ostream &operator <<(std::ostream &s, vigra::Rect2D const &r)
 {
@@ -1333,5 +1375,7 @@ std::ostream &operator <<(std::ostream &s, vigra::Rect2D const &r)
       << " = " << r.size() << "]";
     return s;
 }
+
+} // namespace vigra
 
 #endif // VIGRA_DIFF2D_HXX

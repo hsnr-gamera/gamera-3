@@ -4,19 +4,35 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -25,8 +41,8 @@
 #define VIGRA_MULTI_ITERATOR_HXX
 
 #include <sys/types.h>
-#include "vigra/tinyvector.hxx"
-#include "vigra/iteratortags.hxx"
+#include "tinyvector.hxx"
+#include "iteratortags.hxx"
 
 namespace vigra {
 
@@ -433,7 +449,7 @@ but iterator performance will suffer significantly, as is experienced with
 This design is necessary for compilers that do not support partial
 specialization (otherwise, MultiIterator could be specialized directly).
 
-<b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+<b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
 Namespace: vigra
 */
@@ -447,7 +463,7 @@ class MultiIteratorBase
         class <tt>type</tt>. This design is necessary for compilers that do not support partial
         specialization (otherwise, MultiIterator could be specialized directly).
 
-        <b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+        <b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
         Namespace: vigra
         */
@@ -521,14 +537,14 @@ class MultiIteratorBase
              */
         void operator++ ()
         {
-            m_ptr += m_stride [level];
+            type::m_ptr += type::m_stride [level];
         }
 
             /** prefix-decrement the iterator in it's current dimension
              */
         void operator-- ()
         {
-            m_ptr -= m_stride [level];
+            type::m_ptr -= type::m_stride [level];
         }
 
             /** postfix-increment the iterator in it's current dimension
@@ -554,7 +570,7 @@ class MultiIteratorBase
             */
         type & operator+= (difference_type n)
         {
-            m_ptr += n * m_stride [level];
+            type::m_ptr += n * type::m_stride [level];
             return *this;
         }
         
@@ -563,7 +579,7 @@ class MultiIteratorBase
             */
         type & operator+= (multi_difference_type const & d)
         {
-            m_ptr += total_stride(d.begin());
+            type::m_ptr += total_stride(d.begin());
             return *this;
         }
 
@@ -572,7 +588,7 @@ class MultiIteratorBase
             */
         type & operator-= (difference_type n)
         {
-            m_ptr -= n * m_stride [level];
+            type::m_ptr -= n * type::m_stride [level];
             return *this;
         }
         
@@ -581,7 +597,7 @@ class MultiIteratorBase
             */
         type & operator-= (multi_difference_type const & d)
         {
-            m_ptr -= total_stride(d.begin());
+            type::m_ptr -= total_stride(d.begin());
             return *this;
         }
         
@@ -591,7 +607,7 @@ class MultiIteratorBase
             */
         difference_type operator- (type const & d) const
         {
-            return (m_ptr - d.m_ptr) / m_stride[level];
+            return (type::m_ptr - d.m_ptr) / type::m_stride[level];
         }
 
         /* operators *, ->, ==, !=, < inherited */
@@ -601,14 +617,14 @@ class MultiIteratorBase
             */
         reference operator[] (difference_type n) const
         {
-            return m_ptr [n* m_stride [level]];
+            return type::m_ptr [n* type::m_stride [level]];
         }
 
             /** access the array element at the given offset.
             */
         reference operator[] (multi_difference_type const & d) const
         {
-            return m_ptr [total_stride(d.begin())];
+            return type::m_ptr [total_stride(d.begin())];
         }
 
             /** Return the (N-1)-dimensional multi-iterator that points to 
@@ -644,7 +660,7 @@ class MultiIteratorBase
         next_type end () const
         {
             next_type ret = *this;
-            ret += m_shape [level-1];
+            ret += type::m_shape [level-1];
             return ret;
         }
 
@@ -668,7 +684,7 @@ class MultiIteratorBase
         {
             vigra_precondition(d <= level,
                 "MultiIterator<N>::iteratorForDimension(d): d < N required");
-            return iterator(m_ptr, &m_stride [d], 0);
+            return iterator(type::m_ptr, &type::m_stride [d], 0);
         }
         
       protected:
@@ -676,7 +692,7 @@ class MultiIteratorBase
         difference_type 
         total_stride(typename multi_difference_type::const_iterator d) const
         {
-            return d[level]*m_stride[level] + base_type::total_stride(d);
+            return d[level]*type::m_stride[level] + base_type::total_stride(d);
         }
     };
 };
@@ -730,12 +746,12 @@ class MultiIteratorBase <2>
 
         void operator++ ()
         {
-            m_ptr += m_stride [level];
+            type::m_ptr += m_stride [level];
         }
 
         void operator-- ()
         {
-            m_ptr -= m_stride [level];
+            type::m_ptr -= m_stride [level];
         }
 
         type operator++ (int)
@@ -754,41 +770,41 @@ class MultiIteratorBase <2>
 
         type & operator+= (difference_type n)
         {
-            m_ptr += n * m_stride [level];
+            type::m_ptr += n * m_stride [level];
             return *this;
         }
         
         type & operator+= (multi_difference_type const & d)
         {
-            m_ptr += total_stride(d.begin());
+            type::m_ptr += total_stride(d.begin());
             return *this;
         }
 
         type  &operator-= (difference_type n)
         {
-            m_ptr -= n * m_stride [level];
+            type::m_ptr -= n * m_stride [level];
             return *this;
         }
         
         type & operator-= (multi_difference_type const & d)
         {
-            m_ptr -= total_stride(d.begin());
+            type::m_ptr -= total_stride(d.begin());
             return *this;
         }
         
         difference_type operator- (type const & d) const
         {
-            return (m_ptr - d.m_ptr) / m_stride[level];
+            return (type::m_ptr - d.m_ptr) / m_stride[level];
         }
 
         reference operator[] (difference_type n) const
         {
-            return m_ptr [n*m_stride [level]];
+            return type::m_ptr [n*m_stride [level]];
         }
 
         reference operator[] (multi_difference_type const & d) const
         {
-            return m_ptr [total_stride(d.begin())];
+            return type::m_ptr [total_stride(d.begin())];
         }
 
         next_type begin () const
@@ -807,7 +823,7 @@ class MultiIteratorBase <2>
         {
             vigra_precondition(d <= level,
                 "MultiIterator<N>::iteratorForDimension(d): d < N required");
-            return iterator(m_ptr, &m_stride [d], 0);
+            return iterator(type::m_ptr, &m_stride [d], 0);
         }
         
       protected:
@@ -990,7 +1006,7 @@ class MultiIteratorBase <1>
 
 This class wraps the MultiIteratorBase in a template of arity two.
 
-<b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+<b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
 Namespace: vigra
 */
@@ -1159,7 +1175,7 @@ public:
 This design is necessary for compilers that do not support partial
 specialization (otherwise, StridedMultiIterator could be specialized directly).
 
-<b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+<b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
 Namespace: vigra
 */
@@ -1174,7 +1190,7 @@ class StridedMultiIteratorBase
         class <tt>type</tt>. This design is necessary for compilers that do not support partial
         specialization (otherwise, MultiIterator could be specialized directly).
 
-        <b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+        <b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
         Namespace: vigra
         */
@@ -1256,14 +1272,14 @@ class StridedMultiIteratorBase
              */
         void operator++ ()
         {
-            m_ptr += m_stride [level];
+            type::m_ptr += type::m_stride [level];
         }
 
             /** prefix-decrement the iterator in it's current dimension
              */
         void operator-- ()
         {
-            m_ptr -= m_stride [level];
+            type::m_ptr -= type::m_stride [level];
         }
 
             /** postfix-increment the iterator in it's current dimension
@@ -1289,7 +1305,7 @@ class StridedMultiIteratorBase
             */
         type &operator+= (difference_type n)
         {
-            m_ptr += n * m_stride [level];
+            type::m_ptr += n * type::m_stride [level];
             return *this;
         }
 
@@ -1298,7 +1314,7 @@ class StridedMultiIteratorBase
             */
         type & operator+= (multi_difference_type const & d)
         {
-            m_ptr += total_stride(d.begin());
+            type::m_ptr += total_stride(d.begin());
             return *this;
         }
 
@@ -1307,7 +1323,7 @@ class StridedMultiIteratorBase
             */
         type &operator-= (difference_type n)
         {
-            m_ptr -= n * m_stride [level];
+            type::m_ptr -= n * type::m_stride [level];
             return *this;
         }
 
@@ -1316,7 +1332,7 @@ class StridedMultiIteratorBase
             */
         type & operator-= (multi_difference_type const & d)
         {
-            m_ptr -= total_stride(d.begin());
+            type::m_ptr -= total_stride(d.begin());
             return *this;
         }
         
@@ -1326,7 +1342,7 @@ class StridedMultiIteratorBase
             */
         difference_type operator- (type const & d) const
         {
-            return (m_ptr - d.m_ptr) / m_stride[level];
+            return (type::m_ptr - d.m_ptr) / type::m_stride[level];
         }
 
         /* operators *, ->, ==, !=, < inherited */
@@ -1336,14 +1352,14 @@ class StridedMultiIteratorBase
             */
         reference operator[] (difference_type n) const
         {
-            return m_ptr [n* m_stride [level]];
+            return type::m_ptr [n* type::m_stride [level]];
         }
 
             /** access the array element at the given offset.
             */
         reference operator[] (multi_difference_type const & d) const
         {
-            return m_ptr [total_stride(d.begin())];
+            return type::m_ptr [total_stride(d.begin())];
         }
         
             /** Return the (N-1)-dimensional multi-iterator that points to 
@@ -1379,7 +1395,7 @@ class StridedMultiIteratorBase
         next_type end () const
         {
             next_type ret = *this;
-            ret += m_shape [level-1];
+            ret += type::m_shape [level-1];
             return ret;
         }
         
@@ -1403,7 +1419,7 @@ class StridedMultiIteratorBase
         {
             vigra_precondition(d <= N,
                 "StridedMultiIterator<N>::iteratorForDimension(d): d <= N required");
-            return iterator(m_ptr, &m_stride [d], 0);
+            return iterator(type::m_ptr, &type::m_stride [d], 0);
         }
 
       protected:
@@ -1411,7 +1427,7 @@ class StridedMultiIteratorBase
         difference_type 
         total_stride(typename multi_difference_type::const_iterator d) const
         {
-            return d[level]*m_stride[level] + base_type::total_stride(d);
+            return d[level]*type::m_stride[level] + base_type::total_stride(d);
         }
     };
 };
@@ -1463,12 +1479,12 @@ class StridedMultiIteratorBase <2>
 
         void operator++ ()
         {
-            m_ptr += m_stride [level];
+            type::m_ptr += m_stride [level];
         }
 
         void operator-- ()
         {
-            m_ptr -= m_stride [level];
+            type::m_ptr -= m_stride [level];
         }
 
         type operator++ (int)
@@ -1487,41 +1503,41 @@ class StridedMultiIteratorBase <2>
 
         type &operator+= (int n)
         {
-            m_ptr += n * m_stride [level];
+            type::m_ptr += n * m_stride [level];
             return *this;
         }
 
         type & operator+= (multi_difference_type const & d)
         {
-            m_ptr += total_stride(d.begin());
+            type::m_ptr += total_stride(d.begin());
             return *this;
         }
 
         type  &operator-= (difference_type n)
         {
-            m_ptr -= n * m_stride [level];
+            type::m_ptr -= n * m_stride [level];
             return *this;
         }
         
         type & operator-= (multi_difference_type const & d)
         {
-            m_ptr -= total_stride(d.begin());
+            type::m_ptr -= total_stride(d.begin());
             return *this;
         }
 
         reference operator[] (difference_type n) const
         {
-            return m_ptr [n*m_stride [level]];
+            return type::m_ptr [n*m_stride [level]];
         }
         
         difference_type operator- (type const & d) const
         {
-            return (m_ptr - d.m_ptr) / m_stride[level];
+            return (type::m_ptr - d.m_ptr) / m_stride[level];
         }
 
         reference operator[] (multi_difference_type const & d) const
         {
-            return m_ptr [total_stride(d.begin())];
+            return type::m_ptr [total_stride(d.begin())];
         }
 
         next_type begin () const
@@ -1538,9 +1554,9 @@ class StridedMultiIteratorBase <2>
         
         iterator iteratorForDimension(unsigned int d) const
         {
-            vigra_precondition(d <= N,
+            vigra_precondition(d <= type::N,
                 "StridedMultiIterator<N>::iteratorForDimension(d): d <= N required");
-            return iterator(m_ptr, &m_stride [d], 0);
+            return iterator(type::m_ptr, &m_stride [d], 0);
         }
 
       protected:
@@ -1718,11 +1734,11 @@ class StridedMultiIteratorBase <1>
 /********************************************************/
 
 /** \brief A multi-dimensional hierarchical iterator to be used with 
-           \ref vigra::MultiArrayView is it is strided.
+           \ref vigra::MultiArrayView if it is strided.
 
 This class wraps the StridedMultiIteratorBase in a template of arity two.
 
-<b>\#include</b> "<a href="multi_iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
+<b>\#include</b> "<a href="multi__iterator_8hxx-source.html">vigra/multi_iterator.hxx</a>"
 
 Namespace: vigra
 */

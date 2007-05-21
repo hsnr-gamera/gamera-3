@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -25,12 +40,12 @@
 
 #include <cmath>
 #include <functional>
-#include "vigra/stdimage.hxx"
-#include "vigra/copyimage.hxx"
-#include "vigra/transformimage.hxx"
-#include "vigra/combineimages.hxx"
-#include "vigra/numerictraits.hxx"
-#include "vigra/imagecontainer.hxx"
+#include "stdimage.hxx"
+#include "copyimage.hxx"
+#include "transformimage.hxx"
+#include "combineimages.hxx"
+#include "numerictraits.hxx"
+#include "imagecontainer.hxx"
 #include <fftw.h>
 
 namespace vigra {
@@ -59,13 +74,21 @@ class FFTWComplex
         */
     typedef fftw_real const & const_reference;
 
-        /** const reference type (result of operator[] const)
+        /** iterator type (result of begin() )
         */
     typedef fftw_real * iterator;
 
-        /** const reference type (result of operator[] const)
+        /** const iterator type (result of begin() const)
         */
     typedef fftw_real const * const_iterator;
+
+        /** The norm type (result of magnitde())
+        */
+    typedef fftw_real NormType;
+
+        /** The squared norm type (result of squaredMagnitde())
+        */
+    typedef fftw_real SquaredNormType;
 
         /** Construct from real and imaginary part.
             Default: 0.
@@ -141,12 +164,12 @@ class FFTWComplex
 
         /** Squared magnitude x*conj(x)
         */
-    value_type squaredMagnitude() const
+    SquaredNormType squaredMagnitude() const
         { return c_re(*this)*c_re(*this)+c_im(*this)*c_im(*this); }
 
         /** Magnitude (length of radius vector).
         */
-    value_type magnitude() const
+    NormType magnitude() const
         { return VIGRA_CSTD::sqrt(squaredMagnitude()); }
 
         /** Phase angle.
@@ -198,8 +221,10 @@ struct NumericTraits<fftw_complex>
     typedef fftw_complex RealPromote;
     typedef fftw_complex ComplexPromote;
     typedef fftw_real    ValueType;
+
     typedef VigraFalseType isIntegral;
     typedef VigraFalseType isScalar;
+    typedef NumericTraits<fftw_real>::isSigned isSigned;
     typedef VigraFalseType isOrdered;
     typedef VigraTrueType  isComplex;
 
@@ -221,12 +246,31 @@ struct NumericTraits<FFTWComplex>
     typedef FFTWComplex Promote;
     typedef FFTWComplex RealPromote;
     typedef FFTWComplex ComplexPromote;
-    typedef fftw_real    ValueType;
+    typedef fftw_real   ValueType;
+
     typedef VigraFalseType isIntegral;
     typedef VigraFalseType isScalar;
+    typedef NumericTraits<fftw_real>::isSigned isSigned;
     typedef VigraFalseType isOrdered;
     typedef VigraTrueType  isComplex;
 };
+
+template<>
+struct NormTraits<fftw_complex>
+{
+    typedef fftw_complex Type;
+    typedef fftw_real    SquaredNormType;
+    typedef fftw_real    NormType;
+};
+
+template<>
+struct NormTraits<FFTWComplex>
+{
+    typedef FFTWComplex Type;
+    typedef fftw_real   SquaredNormType;
+    typedef fftw_real   NormType;
+};
+
 
 template <>
 struct PromoteTraits<fftw_complex, fftw_complex>
@@ -367,7 +411,15 @@ inline FFTWComplex conj(const FFTWComplex &a)
     return FFTWComplex(a.re, -a.im);
 }
 
+inline FFTWComplex::NormType norm(const FFTWComplex &a)
+{
+    return a.magnitude();
+}
 
+inline FFTWComplex::SquaredNormType squaredNorm(const FFTWComplex &a)
+{
+    return a.squaredMagnitude();
+}
 
 /********************************************************/
 /*                                                      */
@@ -391,6 +443,8 @@ struct IteratorTraits<
 {
     typedef BasicImageIterator<FFTWComplex, FFTWComplex **>  Iterator;
     typedef Iterator                             iterator;
+    typedef BasicImageIterator<FFTWComplex, FFTWComplex **>         mutable_iterator;
+    typedef ConstBasicImageIterator<FFTWComplex, FFTWComplex **>    const_iterator;
     typedef iterator::iterator_category          iterator_category;
     typedef iterator::value_type                 value_type;
     typedef iterator::reference                  reference;
@@ -401,6 +455,7 @@ struct IteratorTraits<
     typedef iterator::column_iterator            column_iterator;
     typedef VectorAccessor<FFTWComplex>          default_accessor;
     typedef VectorAccessor<FFTWComplex>          DefaultAccessor;
+    typedef VigraTrueType                        hasConstantStrides;
 };
 
 template<>
@@ -409,6 +464,8 @@ struct IteratorTraits<
 {
     typedef ConstBasicImageIterator<FFTWComplex, FFTWComplex **>    Iterator;
     typedef Iterator                             iterator;
+    typedef BasicImageIterator<FFTWComplex, FFTWComplex **>         mutable_iterator;
+    typedef ConstBasicImageIterator<FFTWComplex, FFTWComplex **>    const_iterator;
     typedef iterator::iterator_category          iterator_category;
     typedef iterator::value_type                 value_type;
     typedef iterator::reference                  reference;
@@ -419,6 +476,7 @@ struct IteratorTraits<
     typedef iterator::column_iterator            column_iterator;
     typedef VectorAccessor<FFTWComplex>          default_accessor;
     typedef VectorAccessor<FFTWComplex>          DefaultAccessor;
+    typedef VigraTrueType                        hasConstantStrides;
 };
 
 /* documentation: see fftw3.hxx
@@ -779,6 +837,7 @@ void applyFourierFilter(
     DestImageIterator destUpperLeft, DestAccessor da)
 {
     int w= srcLowerRight.x - srcUpperLeft.x;
+    int h= srcLowerRight.y - srcUpperLeft.y;
 
     // test for right memory layout (fftw expects a 2*width*height floats array)
     if (&(*(srcUpperLeft + Diff2D(w, 0))) == &(*(srcUpperLeft + Diff2D(0, 1))))
@@ -1081,6 +1140,7 @@ void applyFourierFilterFamily(
     const fftwnd_plan &forwardPlan, const fftwnd_plan &backwardPlan)
 {
     int w= srcLowerRight.x - srcUpperLeft.x;
+    int h= srcLowerRight.y - srcUpperLeft.y;
 
     // test for right memory layout (fftw expects a 2*width*height floats array)
     if (&(*(srcUpperLeft + Diff2D(w, 0))) == &(*(srcUpperLeft + Diff2D(0, 1))))

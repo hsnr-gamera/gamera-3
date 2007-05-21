@@ -4,21 +4,47 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
+/* Modifications by Pablo d'Angelo
+ * updated to vigra 1.4 by Douglas Wilkins
+ * as of 18 Febuary 2006:
+ *  - Added import/export of UINT16 and UINT32 image types.
+ * Modifications by Andrew Mihal
+ * updated to vigra 1.4 by Douglas Wilkins
+ * as of 18 Febuary 2006:
+ *  - Moved some RowIterator declarations around to avoid using default ctors
+ *    (cachedfileimages do not have default ctors for row iterators).
+ *  - Added some case-specific optimizations
+ */
 
 /*!
   \file  impex.hxx
@@ -36,16 +62,17 @@
 #pragma warning (disable: 4267)
 #endif
 
-#include "vigra/stdimage.hxx"
-#include "vigra/tinyvector.hxx"
-#include "vigra/imageinfo.hxx"
-#include "vigra/numerictraits.hxx"
-#include "vigra/codec.hxx"
-#include "vigra/accessor.hxx"
-#include "vigra/inspectimage.hxx"
-#include "vigra/transformimage.hxx"
-#include "vigra/copyimage.hxx"
-#include "vigra/multi_array.hxx"
+#include "sized_int.hxx"
+#include "stdimage.hxx"
+#include "tinyvector.hxx"
+#include "imageinfo.hxx"
+#include "numerictraits.hxx"
+#include "codec.hxx"
+#include "accessor.hxx"
+#include "inspectimage.hxx"
+#include "transformimage.hxx"
+#include "copyimage.hxx"
+#include "multi_array.hxx"
 
 // TODO
 // next refactoring: pluggable conversion algorithms
@@ -86,14 +113,53 @@ namespace vigra
         const size_type width = dec->getWidth();
         const size_type height = dec->getHeight();
         const size_type num_bands = dec->getNumBands();
-        
+
         vigra_precondition(num_bands == a.size(ys),
            "importImage(): number of bands (color channels) in file and destination image differ.");
 
         SrcValueType const * scanline;
-        DstRowIterator xs;
+        // MIHAL no default constructor available for cachedfileimages.
+        DstRowIterator xs = ys.rowIterator();
 
         // iterate
+		if (num_bands == 4) {
+            // Speedup for this particular case
+            unsigned int offset = dec->getOffset();
+            SrcValueType const * scanline0;
+            SrcValueType const * scanline1;
+            SrcValueType const * scanline2;
+            SrcValueType const * scanline3;
+            for( size_type y = 0; y < height; ++y, ++ys.y ) {
+                dec->nextScanline();
+                xs = ys.rowIterator();
+                scanline0 = static_cast< SrcValueType const * >
+                    (dec->currentScanlineOfBand(0));
+                scanline1 = static_cast< SrcValueType const * >
+                    (dec->currentScanlineOfBand(1));
+                scanline2 = static_cast< SrcValueType const * >
+                    (dec->currentScanlineOfBand(2));
+                scanline3 = static_cast< SrcValueType const * >
+                    (dec->currentScanlineOfBand(3));
+                for( size_type x = 0; x < width; ++x, ++xs ) {
+/*
+                    a.template setComponent<SrcValueType, DstRowIterator, 0>( *scanline0, xs );
+                    a.template setComponent<SrcValueType, DstRowIterator, 1>( *scanline1, xs );
+                    a.template setComponent<SrcValueType, DstRowIterator, 2>( *scanline2, xs );
+                    a.template setComponent<SrcValueType, DstRowIterator, 3>( *scanline3, xs );
+*/
+					a.setComponent( *scanline0, xs, 0);
+                    a.setComponent( *scanline1, xs, 1);
+                    a.setComponent( *scanline2, xs, 2);
+                    a.setComponent( *scanline3, xs, 3);
+                    scanline0 += offset;
+                    scanline1 += offset;
+                    scanline2 += offset;
+                    scanline3 += offset;
+                }
+            }
+        }
+        else {
+			// General case
         for( size_type y = 0; y < height; ++y, ++ys.y ) {
             dec->nextScanline();
             for( size_type b = 0; b < num_bands; ++b ) {
@@ -106,6 +172,7 @@ namespace vigra
                 }
             }
         }
+		}
     } // read_bands()
 
     /*!
@@ -137,7 +204,8 @@ namespace vigra
         const size_type height = dec->getHeight();
 
         SrcValueType const * scanline;
-        DstRowIterator xs;
+        // MIHAL no default constructor available for cachedfileimages.
+        DstRowIterator xs = ys.rowIterator();
 
         for( size_type y = 0; y < height; ++y, ++ys.y ) {
             dec->nextScanline();
@@ -176,11 +244,15 @@ namespace vigra
         std::string pixeltype = dec->getPixelType();
 
         if ( pixeltype == "UINT8" )
-            read_bands( dec.get(), iter, a, (unsigned char)0 );
+            read_bands( dec.get(), iter, a, (UInt8)0 );
         else if ( pixeltype == "INT16" )
-            read_bands( dec.get(), iter, a, short() );
+            read_bands( dec.get(), iter, a, Int16() );
+        else if ( pixeltype == "UINT16" )
+            read_bands( dec.get(), iter, a, (UInt16)0 );
         else if ( pixeltype == "INT32" )
-            read_bands( dec.get(), iter, a, int() );
+            read_bands( dec.get(), iter, a, Int32() );
+        else if ( pixeltype == "UINT32" )
+            read_bands( dec.get(), iter, a, (UInt32)0 );
         else if ( pixeltype == "FLOAT" )
             read_bands( dec.get(), iter, a, float() );
         else if ( pixeltype == "DOUBLE" )
@@ -220,11 +292,15 @@ namespace vigra
         std::string pixeltype = dec->getPixelType();
 
         if ( pixeltype == "UINT8" )
-            read_band( dec.get(), iter, a, (unsigned char)0 );
+            read_band( dec.get(), iter, a, (UInt8)0 );
         else if ( pixeltype == "INT16" )
-            read_band( dec.get(), iter, a, short() );
+            read_band( dec.get(), iter, a, Int16() );
+        else if ( pixeltype == "UINT16" )
+            read_band( dec.get(), iter, a, (UInt16)0 );
         else if ( pixeltype == "INT32" )
-            read_band( dec.get(), iter, a, int() );
+            read_band( dec.get(), iter, a, Int32() );
+        else if ( pixeltype == "UINT32" )
+            read_band( dec.get(), iter, a, (UInt32)0 );
         else if ( pixeltype == "FLOAT" )
             read_band( dec.get(), iter, a, float() );
         else if ( pixeltype == "DOUBLE" )
@@ -376,11 +452,51 @@ namespace vigra
         enc->setNumBands(num_bands);
         enc->finalizeSettings();
 
-        SrcRowIterator xs;
         DstValueType * scanline;
 
         // iterate
         ImageIterator ys(ul);
+        // MIHAL no default constructor available for cachedfileimages
+        SrcRowIterator xs = ys.rowIterator();
+
+		if (num_bands == 4) {
+            // Speedup for this particular case
+            unsigned int offset = enc->getOffset();
+            DstValueType * scanline0;
+            DstValueType * scanline1;
+            DstValueType * scanline2;
+            DstValueType * scanline3;
+            for( size_type y = 0; y < height; ++y, ++ys.y ) {
+                xs = ys.rowIterator();
+                scanline0 = static_cast< DstValueType * >
+                        (enc->currentScanlineOfBand(0));
+                scanline1 = static_cast< DstValueType * >
+                        (enc->currentScanlineOfBand(1));
+                scanline2 = static_cast< DstValueType * >
+                        (enc->currentScanlineOfBand(2));
+                scanline3 = static_cast< DstValueType * >
+                        (enc->currentScanlineOfBand(3));
+                for( size_type x = 0; x < width; ++x, ++xs) {
+/*
+                    *scanline0 = a.template getComponent<SrcRowIterator, 0>( xs );
+                    *scanline1 = a.template getComponent<SrcRowIterator, 1>( xs );
+                    *scanline2 = a.template getComponent<SrcRowIterator, 2>( xs );
+                    *scanline3 = a.template getComponent<SrcRowIterator, 3>( xs );
+*/
+                    *scanline0 = detail::RequiresExplicitCast<DstValueType>::cast(a.getComponent( xs, 0));
+                    *scanline1 = detail::RequiresExplicitCast<DstValueType>::cast(a.getComponent( xs, 1));
+                    *scanline2 = detail::RequiresExplicitCast<DstValueType>::cast(a.getComponent( xs, 2));
+                    *scanline3 = detail::RequiresExplicitCast<DstValueType>::cast(a.getComponent( xs, 3));
+                    scanline0 += offset;
+                    scanline1 += offset;
+                    scanline2 += offset;
+                    scanline3 += offset;
+                }
+                enc->nextScanline();
+            }
+        }
+        else {
+			// General case
         for( size_type y = 0; y < height; ++y, ++ys.y ) {
             for( size_type b = 0; b < num_bands; ++b ) {
                 xs = ys.rowIterator();
@@ -393,6 +509,7 @@ namespace vigra
             }
             enc->nextScanline();
         }
+		}
     } // write_bands()
 
     template< class MArray, class DstValueType >
@@ -460,11 +577,12 @@ namespace vigra
         enc->setNumBands(1);
         enc->finalizeSettings();
 
-        SrcRowIterator xs;
         DstValueType * scanline;
 
         // iterate
         ImageIterator ys(ul);
+        // MIHAL no default constructor available for cachedfileimages.
+        SrcRowIterator xs = ys.rowIterator();
         size_type y;
         for(  y = 0; y < height; ++y, ++ys.y ) {
             xs = ys.rowIterator();
@@ -476,7 +594,7 @@ namespace vigra
     } // write_band()
 
 namespace detail {
-        
+
     template < class SrcIterator, class SrcAccessor,
                class DestIterator, class DestAccessor >
     void mapScalarImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
@@ -485,16 +603,16 @@ namespace detail {
         typedef typename SrcAccessor::value_type SrcValue;
         typedef typename DestAccessor::value_type DestValue;
         typedef typename NumericTraits<SrcValue>::RealPromote PromoteValue;
-        
+
         FindMinMax<SrcValue> minmax;
         inspectImage( sul, slr, sget, minmax );
         double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
                        (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
-        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
+        double offset = (NumericTraits<DestValue>::min() / scale) - minmax.min ;
         transformImage( sul, slr, sget, dul, dget,
                         linearIntensityTransform( scale, offset ) );
     }
-    
+
     // export scalar images with conversion (if necessary)
     template < class SrcIterator, class SrcAccessor, class T >
     void exportScalarImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
@@ -510,7 +628,7 @@ namespace detail {
                         image.lowerRight(), image.accessor(), zero );
         }
     }
-        
+
     template < class SrcIterator, class SrcAccessor,
                class MArray>
     void mapVectorImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
@@ -519,25 +637,33 @@ namespace detail {
         typedef typename SrcAccessor::value_type SrcValue;
         typedef typename SrcValue::value_type SrcComponent;
         typedef typename MArray::value_type DestValue;
-        
+
         FindMinMax<SrcComponent> minmax;
         for(unsigned int i=0; i<sget.size(sul); ++i)
         {
-            VectorElementAccessor<SrcAccessor> band(i, sget);
+            // FIXME dangelo - This will break with vector accessors that have a "by value" interface.
+            // use VectorComponentValueAccessor instead, since it should work in both cases, even
+            // if it might be a bit slower..
+            //VectorElementAccessor<SrcAccessor> band(i, sget);
+            VectorComponentValueAccessor<typename SrcAccessor::value_type> band(i);
             inspectImage( sul, slr, band, minmax );
         }
         double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
                        (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
-        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
+// FIXME DGSW - Original was not correct. Is this what was intended?
+//        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
+        double offset = (NumericTraits<DestValue>::min() / scale) - minmax.min ;
         for(unsigned int i=0; i<sget.size(sul); ++i)
         {
             BasicImageView<DestValue> subImage = makeBasicImageView(array.bindOuter(i));
-            VectorElementAccessor<SrcAccessor> band(i, sget);
+            // FIXME dangelo: use VectorComponentValueAccessor
+            //VectorElementAccessor<SrcAccessor> band(i, sget);
+            VectorComponentValueAccessor<typename SrcAccessor::value_type> band(i);
             transformImage( sul, slr, band, subImage.upperLeft(), subImage.accessor(),
                             linearIntensityTransform( scale, offset ) );
         }
     }
-    
+
     // export vector images with conversion (if necessary)
     template < class SrcIterator, class SrcAccessor, class T >
     void exportVectorImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
@@ -546,32 +672,32 @@ namespace detail {
         int bands = sget.size(sul);
         vigra_precondition(isBandNumberSupported(enc->getFileType(), bands),
            "exportImage(): file format does not support requested number of bands (color channels)");
-        if ( !downcast ) 
+        if ( !downcast )
         {
             write_bands( enc, sul, slr, sget, zero );
         }
-        else 
+        else
         {
             // convert to unsigned char in the usual way
             int w = slr.x - sul.x;
             int h = slr.y - sul.y;
-            
+
             typedef vigra::MultiArray<3, T> MArray;
-            MArray array(MArray::difference_type(w, h, bands));
-            
+            MArray array(typename MArray::difference_type(w, h, bands));
+
             mapVectorImageToLowerPixelType(sul, slr, sget, array);
-            
+
             write_bands( enc, array, zero );
         }
-    }    
+    }
 } // namespace detail
-    
+
 
     /*!
       \brief Deprecated.
 
         Use \ref exportImage() instead.
-        
+
         <b> Declaration:</b>
 
         \code
@@ -663,15 +789,19 @@ namespace detail {
         typedef typename AccessorValueType::value_type SrcValueType;
         std::string pixeltype = info.getPixelType();
         std::auto_ptr<Encoder> enc = encoder(info);
-        bool downcast = negotiatePixelType(enc->getFileType(), 
+        bool downcast = negotiatePixelType(enc->getFileType(),
                         TypeAsString<SrcValueType>::result(), pixeltype);
         enc->setPixelType(pixeltype);
         if(pixeltype == "UINT8")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (unsigned char)0);
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt8)0);
         else if(pixeltype == "INT16")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, short());
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, Int16());
+        else if(pixeltype == "UINT16")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt16)0);
         else if(pixeltype == "INT32")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, int());
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, Int32());
+        else if(pixeltype == "UINT32")
+            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt32)0);
         else if(pixeltype == "FLOAT")
             detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, float());
         else if(pixeltype == "DOUBLE")
@@ -686,22 +816,26 @@ namespace detail {
         typedef typename SrcAccessor::value_type SrcValueType;
         std::string pixeltype = info.getPixelType();
         std::auto_ptr<Encoder> enc = encoder(info);
-        bool downcast = negotiatePixelType(enc->getFileType(), 
+        bool downcast = negotiatePixelType(enc->getFileType(),
                            TypeAsString<SrcValueType>::result(), pixeltype);
         enc->setPixelType(pixeltype);
         if(pixeltype == "UINT8")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (unsigned char)0);
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt8)0);
         else if(pixeltype == "INT16")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, short());
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, Int16());
+        else if(pixeltype == "UINT16")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt16)0);
         else if(pixeltype == "INT32")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, int());
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, Int32());
+        else if(pixeltype == "UINT32")
+            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt32)0);
         else if(pixeltype == "FLOAT")
             detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, float());
         else if(pixeltype == "DOUBLE")
             detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, double());
         enc->close();
     }
-    
+
 /********************************************************/
 /*                                                      */
 /*                     exportImage                      */
@@ -715,28 +849,28 @@ namespace detail {
     can be stored as TIFF without conversion, in contrast to most other
     image export toolkits). Otherwise, the pixel values are transformed
     to the range 0.255 and converted to <tt>unsigned char</tt>. Currently,
-    the following file formats are supported. The pixel types given in 
+    the following file formats are supported. The pixel types given in
     brackets are those that are written without conversion:
-    
+
     <DL>
     <DT>"BMP"<DD> Microsoft Windows bitmap image file (pixel types: UINT8 as gray and RGB).
     <DT>"GIF"<DD> CompuServe graphics interchange format; 8-bit color (pixel types: UINT8 as gray and RGB).
-    <DT>"JPEG"<DD> Joint Photographic Experts Group JFIF format; compressed 24-bit color 
+    <DT>"JPEG"<DD> Joint Photographic Experts Group JFIF format; compressed 24-bit color
                   (pixel types: UINT8 as gray and RGB). (only available if libjpeg is installed)
-    <DT>"PNG"<DD> Portable Network Graphic (pixel types: UINT8 and UINT16 with up to 4 channels). 
+    <DT>"PNG"<DD> Portable Network Graphic (pixel types: UINT8 and UINT16 with up to 4 channels).
                   (only available if libpng is installed)
     <DT>"PBM"<DD> Portable bitmap format (black and white).
     <DT>"PGM"<DD> Portable graymap format (pixel types: UINT8, INT16, INT32 as gray scale)).
     <DT>"PNM"<DD> Portable anymap (pixel types: UINT8, INT16, INT32 as gray and RGB).
     <DT>"PPM"<DD> Portable pixmap format (pixel types: UINT8, INT16, INT32 as RGB).
     <DT>"SUN"<DD> SUN Rasterfile (pixel types: UINT8 as gray and RGB).
-    <DT>"TIFF"<DD> Tagged Image File Format 
-                (pixel types: UINT8, INT16, INT32, FLOAT, DOUBLE with up to 4 channels). 
+    <DT>"TIFF"<DD> Tagged Image File Format
+                (pixel types: UINT8, INT16, INT32, FLOAT, DOUBLE with up to 4 channels).
                 (only available if libtiff is installed.)
-    <DT>"VIFF"<DD> Khoros Visualization image file 
+    <DT>"VIFF"<DD> Khoros Visualization image file
         (pixel types: UINT8, INT16, INT32, FLOAT, DOUBLE with arbitrary many channels).
     </DL>
-    
+
     <b> Declarations:</b>
 
     pass arguments explicitly:
@@ -774,7 +908,7 @@ namespace detail {
                       vigra::ImageExportInfo("myimage.jpg").setCompression("80"));
 
 
-    // force it to a particular pixel type (the pixel type must be supported by the 
+    // force it to a particular pixel type (the pixel type must be supported by the
     // desired image file format, otherwise an \ref vigra::PreconditionViolation exception will be thrown)
     vigra::exportImage(srcImageRange(out),
                       vigra::ImageExportInfo("myINT16image.tif").setPixelType("INT16"));
@@ -796,12 +930,12 @@ namespace detail {
                       const ImageExportInfo & info )
     {
         typedef typename NumericTraits<typename SrcAccessor::value_type>::isScalar is_scalar;
-        
+
         try
         {
             exportImage( sul, slr, sget, info, is_scalar() );
         }
-        catch(Encoder::TIFFNoLZWException &)
+        catch(Encoder::TIFFCompressionException &)
         {
             const_cast<ImageExportInfo &>(info).setCompression("");
             exportImage( sul, slr, sget, info, is_scalar() );

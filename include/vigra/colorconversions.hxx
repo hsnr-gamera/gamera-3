@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
  
@@ -25,8 +40,9 @@
 #define VIGRA_COLORCONVERSIONS_HXX
 
 #include <cmath>
-#include "vigra/mathutil.hxx"
-#include "vigra/rgbvalue.hxx"
+#include "mathutil.hxx"
+#include "rgbvalue.hxx"
+#include "functortraits.hxx"
 
 /** \page ColorConversions  Color Space Conversions
 
@@ -242,7 +258,11 @@ inline double gammaCorrection(double value, double gamma, double norm)
     By default, \f$ R_{max} = G_{max} = B_{max} = 255 \f$. This default can be overridden
     in the constructor. If both source and target colors components are stored 
     as <tt>unsigned char</tt>, a look-up-table will be used to speed up the transformation.
-*/
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    */
 template <class From, class To = From>
 class RGB2RGBPrimeFunctor
 {
@@ -325,6 +345,14 @@ class RGB2RGBPrimeFunctor<unsigned char, unsigned char>
     }
 };
 
+template <class From, class To>
+class FunctorTraits<RGB2RGBPrimeFunctor<From, To> >
+: public FunctorTraitsBase<RGB2RGBPrimeFunctor<From, To> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into non-linear (raw) RGB.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -341,6 +369,10 @@ class RGB2RGBPrimeFunctor<unsigned char, unsigned char>
     By default, \f$ R_{max} = G_{max} = B_{max} = 255 \f$. This default can be overridden
     in the constructor. If both source and target colors components are stored 
     as <tt>unsigned char</tt>, a look-up-table will be used to speed up the transformation.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class From, class To = From>
 class RGBPrime2RGBFunctor
@@ -424,6 +456,14 @@ class RGBPrime2RGBFunctor<unsigned char, unsigned char>
     }
 };
 
+template <class From, class To>
+class FunctorTraits<RGBPrime2RGBFunctor<From, To> >
+: public FunctorTraitsBase<RGBPrime2RGBFunctor<From, To> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert linear (raw) RGB into standardized tri-stimulus XYZ.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -443,6 +483,10 @@ class RGBPrime2RGBFunctor<unsigned char, unsigned char>
     in the constructor. X, Y, and Z are always positive and reach their maximum for white. 
     The white point is obtained by transforming RGB(255, 255, 255). It corresponds to the 
     D65 illuminant. Y represents the <em>luminance</em> ("brightness") of the color.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGB2XYZFunctor
@@ -497,6 +541,14 @@ class RGB2XYZFunctor
     component_type max_;
 };
 
+template <class T>
+class FunctorTraits<RGB2XYZFunctor<T> >
+: public FunctorTraitsBase<RGB2XYZFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into standardized tri-stimulus XYZ.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -510,6 +562,10 @@ class RGB2XYZFunctor
     
     See vigra::RGBPrime2RGBFunctor and vigra::RGB2XYZFunctor for a description of the two 
     steps.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2XYZFunctor
@@ -564,6 +620,14 @@ class RGBPrime2XYZFunctor
     component_type max_, gamma_;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2XYZFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2XYZFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert standardized tri-stimulus XYZ into linear (raw) RGB.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -581,6 +645,10 @@ class RGBPrime2XYZFunctor
     
     By default, \f$ R_{max} = G_{max} = B_{max} = 255 \f$. This default can be overridden
     in the constructor. This is the inverse transform of vigra::RGB2XYZFunctor.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class XYZ2RGBFunctor
@@ -632,6 +700,14 @@ class XYZ2RGBFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<XYZ2RGBFunctor<T> >
+: public FunctorTraitsBase<XYZ2RGBFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert standardized tri-stimulus XYZ into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -645,6 +721,10 @@ class XYZ2RGBFunctor
     
     See vigra::XYZ2RGBFunctor and vigra::RGB2RGBPrimeFunctor for a description of the two 
     steps.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class XYZ2RGBPrimeFunctor
@@ -698,6 +778,14 @@ class XYZ2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<XYZ2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<XYZ2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert standardized tri-stimulus XYZ into perceptual uniform CIE L*u*v*.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -724,6 +812,10 @@ class XYZ2RGBPrimeFunctor
     point. \f$L^{*}\f$ represents the
     <em>lighness</em> ("brightness") of the color, and \f$u^{*}, v^{*}\f$ code the 
     chromaticity.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class XYZ2LuvFunctor
@@ -779,12 +871,24 @@ class XYZ2LuvFunctor
     double gamma_;
 };
 
+template <class T>
+class FunctorTraits<XYZ2LuvFunctor<T> >
+: public FunctorTraitsBase<XYZ2LuvFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*u*v* into standardized tri-stimulus XYZ.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::XYZ2LuvFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Luv2XYZFunctor
@@ -841,6 +945,14 @@ class Luv2XYZFunctor
     double gamma_;
 };
 
+template <class T>
+class FunctorTraits<Luv2XYZFunctor<T> >
+: public FunctorTraitsBase<Luv2XYZFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert standardized tri-stimulus XYZ into perceptual uniform CIE L*a*b*.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -863,6 +975,10 @@ class Luv2XYZFunctor
     where \f$(X_n, Y_n, Z_n)\f$ is the reference white point. \f$L^{*}\f$ represents the
     <em>lighness</em> ("brightness") of the color, and \f$a^{*}, b^{*}\f$ code the 
     chromaticity.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class XYZ2LabFunctor
@@ -911,12 +1027,24 @@ class XYZ2LabFunctor
     double gamma_;
 };
 
+template <class T>
+class FunctorTraits<XYZ2LabFunctor<T> >
+: public FunctorTraitsBase<XYZ2LabFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*a*b* into standardized tri-stimulus XYZ.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::XYZ2LabFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Lab2XYZFunctor
@@ -967,6 +1095,13 @@ class Lab2XYZFunctor
     double gamma_;
 };
 
+template <class T>
+class FunctorTraits<Lab2XYZFunctor<T> >
+: public FunctorTraitsBase<Lab2XYZFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
 
 /** \brief Convert linear (raw) RGB into perceptual uniform CIE L*u*v*.
 
@@ -989,6 +1124,10 @@ class Lab2XYZFunctor
         -134.101 \leq & v^* & \leq 107.393
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGB2LuvFunctor
@@ -1045,6 +1184,14 @@ class RGB2LuvFunctor
     XYZ2LuvFunctor<component_type> xyz2luv;
 };
 
+template <class T>
+class FunctorTraits<RGB2LuvFunctor<T> >
+: public FunctorTraitsBase<RGB2LuvFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert linear (raw) RGB into perceptual uniform CIE L*a*b*.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1066,6 +1213,10 @@ class RGB2LuvFunctor
         -107.862 \leq & v^* & \leq 94.4758
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGB2LabFunctor
@@ -1122,12 +1273,24 @@ class RGB2LabFunctor
     XYZ2LabFunctor<component_type> xyz2lab;
 };
 
+template <class T>
+class FunctorTraits<RGB2LabFunctor<T> >
+: public FunctorTraitsBase<RGB2LabFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*u*v* into linear (raw) RGB.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGB2LuvFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Luv2RGBFunctor
@@ -1169,12 +1332,24 @@ class Luv2RGBFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<Luv2RGBFunctor<T> >
+: public FunctorTraitsBase<Luv2RGBFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*a*b* into linear (raw) RGB.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGB2LabFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Lab2RGBFunctor
@@ -1223,6 +1398,14 @@ class Lab2RGBFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<Lab2RGBFunctor<T> >
+: public FunctorTraitsBase<Lab2RGBFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into perceptual uniform CIE L*u*v*.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1244,6 +1427,10 @@ class Lab2RGBFunctor
         -134.101 \leq & v^* & \leq 107.393
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2LuvFunctor
@@ -1293,6 +1480,14 @@ class RGBPrime2LuvFunctor
     XYZ2LuvFunctor<component_type> xyz2luv;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2LuvFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2LuvFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into perceptual uniform CIE L*a*b*.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1314,6 +1509,10 @@ class RGBPrime2LuvFunctor
         -107.862 \leq & v^* & \leq 94.4758
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2LabFunctor
@@ -1363,12 +1562,24 @@ class RGBPrime2LabFunctor
     XYZ2LabFunctor<component_type> xyz2lab;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2LabFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2LabFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*u*v* into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2LuvFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Luv2RGBPrimeFunctor
@@ -1417,12 +1628,24 @@ class Luv2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<Luv2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<Luv2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert perceptual uniform CIE L*a*b* into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2LabFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class Lab2RGBPrimeFunctor
@@ -1471,6 +1694,14 @@ class Lab2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<Lab2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<Lab2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'PbPr color difference components.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1498,6 +1729,10 @@ class Lab2RGBPrimeFunctor
         -0.5 \leq & Pr & \leq 0.5
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2YPrimePbPrFunctor
@@ -1561,12 +1796,24 @@ class RGBPrime2YPrimePbPrFunctor
     component_type max_;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2YPrimePbPrFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2YPrimePbPrFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert Y'PbPr color difference components into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimePbPrFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class YPrimePbPr2RGBPrimeFunctor
@@ -1619,6 +1866,14 @@ class YPrimePbPr2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<YPrimePbPr2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<YPrimePbPr2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'IQ components.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1645,6 +1900,10 @@ class YPrimePbPr2RGBPrimeFunctor
         -0.523 \leq & Q & \leq 0.523
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2YPrimeIQFunctor
@@ -1708,12 +1967,24 @@ class RGBPrime2YPrimeIQFunctor
     component_type max_;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2YPrimeIQFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2YPrimeIQFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert Y'IQ color components into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeIQFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class YPrimeIQ2RGBPrimeFunctor
@@ -1766,6 +2037,14 @@ class YPrimeIQ2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<YPrimeIQ2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<YPrimeIQ2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'UV components.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1792,6 +2071,10 @@ class YPrimeIQ2RGBPrimeFunctor
         -0.615 \leq & V & \leq 0.615
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2YPrimeUVFunctor
@@ -1855,12 +2138,24 @@ class RGBPrime2YPrimeUVFunctor
     component_type max_;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2YPrimeUVFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2YPrimeUVFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert Y'UV color components into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeUVFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class YPrimeUV2RGBPrimeFunctor
@@ -1913,6 +2208,14 @@ class YPrimeUV2RGBPrimeFunctor
     }
 };
 
+template <class T>
+class FunctorTraits<YPrimeUV2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<YPrimeUV2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'CbCr color difference components.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
@@ -1929,6 +2232,10 @@ class YPrimeUV2RGBPrimeFunctor
         16 \leq & Cr & \leq 240
         \end{array}
     \f]
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class RGBPrime2YPrimeCbCrFunctor
@@ -1992,12 +2299,24 @@ class RGBPrime2YPrimeCbCrFunctor
     component_type max_;
 };
 
+template <class T>
+class FunctorTraits<RGBPrime2YPrimeCbCrFunctor<T> >
+: public FunctorTraitsBase<RGBPrime2YPrimeCbCrFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert Y'CbCr color difference components into non-linear (gamma corrected) R'G'B'.
 
     <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeCbCrFunctor
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
 */
 template <class T>
 class YPrimeCbCr2RGBPrimeFunctor
@@ -2052,6 +2371,14 @@ class YPrimeCbCr2RGBPrimeFunctor
                            NumericTraits<T>::fromRealPromote(ngreen * max_),
                            NumericTraits<T>::fromRealPromote(nblue * max_));
     }
+};
+
+template <class T>
+class FunctorTraits<YPrimeCbCr2RGBPrimeFunctor<T> >
+: public FunctorTraitsBase<YPrimeCbCr2RGBPrimeFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
 };
 
 /*
@@ -2197,7 +2524,9 @@ lab2Polar(V const & lab)
 {
     TinyVector<float, 3> result;
     result[1] = lab[0]/100.0;
-    double angle = VIGRA_CSTD::atan2(lab[2], lab[1])/M_PI*180.0-39.9977;
+    double angle = (lab[1] == 0.0 && lab[2] == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(lab[2], lab[1])/M_PI*180.0-39.9977;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
@@ -2280,7 +2609,9 @@ luv2Polar(V const & luv)
 {
     TinyVector<float, 3> result;
     result[1] = luv[0]/100.0;
-    double angle = VIGRA_CSTD::atan2(luv[2], luv[1])/M_PI*180.0-12.1727;
+    double angle = (luv[1] == 0.0 && luv[2] == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(luv[2], luv[1])/M_PI*180.0-12.1727;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
@@ -2363,7 +2694,9 @@ yPrimePbPr2Polar(V const & ypbpr)
 {
     TinyVector<float, 3> result;
     result[1] = ypbpr[0];
-    double angle = VIGRA_CSTD::atan2(-ypbpr[1], ypbpr[2])/M_PI*180.0-18.6481;
+    double angle = (ypbpr[1] == 0.0 && ypbpr[2] == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(-ypbpr[1], ypbpr[2])/M_PI*180.0-18.6481;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
@@ -2448,7 +2781,9 @@ yPrimeCbCr2Polar(V const & ycbcr)
     result[1] = (ycbcr[0]-16.0)/219.0;
     double cb = ycbcr[1]-128.0;
     double cr = ycbcr[2]-128.0;
-    double angle = VIGRA_CSTD::atan2(-cb, cr)/M_PI*180.0-18.6482;
+    double angle = (cb == 0.0 && cr == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(-cb, cr)/M_PI*180.0-18.6482;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
@@ -2531,7 +2866,9 @@ yPrimeIQ2Polar(V const & yiq)
 {
     TinyVector<float, 3> result;
     result[1] = yiq[0];
-    double angle = VIGRA_CSTD::atan2(-yiq[2], yiq[1])/M_PI*180.0+19.5807;
+    double angle = (yiq[1] == 0.0 && yiq[2] == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(-yiq[2], yiq[1])/M_PI*180.0+19.5807;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;
@@ -2614,7 +2951,9 @@ yPrimeUV2Polar(V const & yuv)
 {
     TinyVector<float, 3> result;
     result[1] = yuv[0];
-    double angle = VIGRA_CSTD::atan2(-yuv[1], yuv[2])/M_PI*180.0-13.4569;
+    double angle = (yuv[1] == 0.0 && yuv[2] == 0.0)
+        ? 0.0
+        : VIGRA_CSTD::atan2(-yuv[1], yuv[2])/M_PI*180.0-13.4569;
     result[0] = angle < 0.0 ?
                     angle + 360.0 :
                     angle;

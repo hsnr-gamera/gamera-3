@@ -1,22 +1,37 @@
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 1998-2002 by Ullrich Koethe                  */
+/*               Copyright 1998-2004 by Ullrich Koethe                  */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
  
@@ -24,11 +39,12 @@
 #ifndef VIGRA_CORNERDETECTION_HXX
 #define VIGRA_CORNERDETECTION_HXX
 
-#include <vigra/utilities.hxx>
-#include <vigra/numerictraits.hxx>
-#include <vigra/stdimage.hxx>
-#include <vigra/combineimages.hxx>
-#include <vigra/convolution.hxx>
+#include "utilities.hxx"
+#include "numerictraits.hxx"
+#include "stdimage.hxx"
+#include "combineimages.hxx"
+#include "convolution.hxx"
+#include "functortraits.hxx"
 
 namespace vigra {
 
@@ -41,8 +57,16 @@ struct CornerResponseFunctor
     result_type operator()(argument_type a1, 
                         argument_type a2, argument_type a3) const
     {
-	return (a1*a2 - a3*a3) - 0.04 * (a1 + a2) * (a1 + a2);
+        return (a1*a2 - a3*a3) - 0.04 * (a1 + a2) * (a1 + a2);
     }
+};
+
+template <class T>
+class FunctorTraits<CornerResponseFunctor<T> >
+: public FunctorTraitsBase<CornerResponseFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isTernaryFunctor;
 };
 
 template <class SrcType>
@@ -54,8 +78,16 @@ struct FoerstnerCornerFunctor
     result_type operator()(argument_type a1, 
                            argument_type a2, argument_type a3) const
     {
-	return (a1*a2 - a3*a3) / (a1 + a2);
+        return (a1*a2 - a3*a3) / (a1 + a2);
     }
+};
+
+template <class T>
+class FunctorTraits<FoerstnerCornerFunctor<T> >
+: public FunctorTraitsBase<FoerstnerCornerFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isTernaryFunctor;
 };
 
 template <class SrcType>
@@ -67,8 +99,16 @@ struct RohrCornerFunctor
     result_type operator()(argument_type a1, 
                         argument_type a2, argument_type a3) const
     {
-	return (a1*a2 - a3*a3);
+        return (a1*a2 - a3*a3);
     }
+};
+
+template <class T>
+class FunctorTraits<RohrCornerFunctor<T> >
+: public FunctorTraitsBase<RohrCornerFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isTernaryFunctor;
 };
 
 template <class SrcType>
@@ -80,8 +120,16 @@ struct BeaudetCornerFunctor
     result_type operator()(argument_type a1, 
                         argument_type a2, argument_type a3) const
     {
-	return (a3*a3 - a1*a2);
+        return (a3*a3 - a1*a2);
     }
+};
+
+template <class T>
+class FunctorTraits<BeaudetCornerFunctor<T> >
+: public FunctorTraitsBase<BeaudetCornerFunctor<T> >
+{
+  public:
+    typedef VigraTrueType isTernaryFunctor;
 };
 
 /** \addtogroup CornerDetection Corner Detection
@@ -129,11 +177,11 @@ struct BeaudetCornerFunctor
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void
         cornerResponseFunction(SrcIterator sul, SrcIterator slr, SrcAccessor as,
-			       DestIterator dul, DestAccessor ad,
-			       double scale)
+                               DestIterator dul, DestAccessor ad,
+                               double scale)
     }
     \endcode
     
@@ -141,12 +189,12 @@ struct BeaudetCornerFunctor
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         inline 
         void cornerResponseFunction(
-	           triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	           pair<DestIterator, DestAccessor> dest,
-	           double scale)
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   double scale)
     }
     \endcode
     
@@ -205,11 +253,11 @@ template <class SrcIterator, class SrcAccessor,
 void
 cornerResponseFunction(SrcIterator sul, SrcIterator slr, SrcAccessor as,
                        DestIterator dul, DestAccessor ad,
-		       double scale)
+                       double scale)
 {
     vigra_precondition(scale > 0.0,
                  "cornerResponseFunction(): Scale must be > 0");
-		 
+                 
     int w = slr.x - sul.x;
     int h = slr.y - sul.y;
     
@@ -217,7 +265,7 @@ cornerResponseFunction(SrcIterator sul, SrcIterator slr, SrcAccessor as,
     
     typedef typename 
         NumericTraits<typename SrcAccessor::value_type>::RealPromote TmpType;
-	
+        
     typedef BasicImage<TmpType> TmpImage;
     
     TmpImage gx(w,h);
@@ -238,12 +286,12 @@ template <class SrcIterator, class SrcAccessor,
 inline 
 void cornerResponseFunction(
            triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	   pair<DestIterator, DestAccessor> dest,
-	   double scale)
+           pair<DestIterator, DestAccessor> dest,
+           double scale)
 {
     cornerResponseFunction(src.first, src.second, src.third,
                             dest.first, dest.second,
-			    scale);
+                            scale);
 }
 
 /********************************************************/
@@ -287,11 +335,11 @@ void cornerResponseFunction(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void
         foerstnerCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
-			       DestIterator dul, DestAccessor ad,
-			       double scale)
+                               DestIterator dul, DestAccessor ad,
+                               double scale)
     }
     \endcode
     
@@ -299,12 +347,12 @@ void cornerResponseFunction(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         inline 
         void foerstnerCornerDetector(
-	           triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	           pair<DestIterator, DestAccessor> dest,
-	           double scale)
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   double scale)
     }
     \endcode
     
@@ -355,11 +403,11 @@ template <class SrcIterator, class SrcAccessor,
 void
 foerstnerCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
                        DestIterator dul, DestAccessor ad,
-		       double scale)
+                       double scale)
 {
     vigra_precondition(scale > 0.0,
                  "foerstnerCornerDetector(): Scale must be > 0");
-		 
+                 
     int w = slr.x - sul.x;
     int h = slr.y - sul.y;
     
@@ -367,7 +415,7 @@ foerstnerCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
     
     typedef typename 
         NumericTraits<typename SrcAccessor::value_type>::RealPromote TmpType;
-	
+        
     typedef BasicImage<TmpType> TmpImage;
     
     TmpImage gx(w,h);
@@ -388,12 +436,12 @@ template <class SrcIterator, class SrcAccessor,
 inline 
 void foerstnerCornerDetector(
            triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	   pair<DestIterator, DestAccessor> dest,
-	   double scale)
+           pair<DestIterator, DestAccessor> dest,
+           double scale)
 {
     foerstnerCornerDetector(src.first, src.second, src.third,
                             dest.first, dest.second,
-			    scale);
+                            scale);
 }
 
 /********************************************************/
@@ -435,11 +483,11 @@ void foerstnerCornerDetector(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void
         rohrCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
-			   DestIterator dul, DestAccessor ad,
-			   double scale)
+                           DestIterator dul, DestAccessor ad,
+                           double scale)
     }
     \endcode
     
@@ -447,12 +495,12 @@ void foerstnerCornerDetector(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         inline 
         void rohrCornerDetector(
-	           triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	           pair<DestIterator, DestAccessor> dest,
-	           double scale)
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   double scale)
     }
     \endcode
     
@@ -502,11 +550,11 @@ template <class SrcIterator, class SrcAccessor,
 void
 rohrCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
                        DestIterator dul, DestAccessor ad,
-		       double scale)
+                       double scale)
 {
     vigra_precondition(scale > 0.0,
                  "rohrCornerDetector(): Scale must be > 0");
-		 
+                 
     int w = slr.x - sul.x;
     int h = slr.y - sul.y;
     
@@ -514,7 +562,7 @@ rohrCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
     
     typedef typename 
         NumericTraits<typename SrcAccessor::value_type>::RealPromote TmpType;
-	
+        
     typedef BasicImage<TmpType> TmpImage;
     
     TmpImage gx(w,h);
@@ -535,12 +583,12 @@ template <class SrcIterator, class SrcAccessor,
 inline 
 void rohrCornerDetector(
            triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	   pair<DestIterator, DestAccessor> dest,
-	   double scale)
+           pair<DestIterator, DestAccessor> dest,
+           double scale)
 {
     rohrCornerDetector(src.first, src.second, src.third,
                             dest.first, dest.second,
-			    scale);
+                            scale);
 }
 
 /********************************************************/
@@ -571,11 +619,11 @@ void rohrCornerDetector(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void
         beaudetCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
-			   DestIterator dul, DestAccessor ad,
-			   double scale)
+                           DestIterator dul, DestAccessor ad,
+                           double scale)
     }
     \endcode
     
@@ -583,12 +631,12 @@ void rohrCornerDetector(
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-	          class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         inline 
         void beaudetCornerDetector(
-	           triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	           pair<DestIterator, DestAccessor> dest,
-	           double scale)
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   double scale)
     }
     \endcode
     
@@ -638,11 +686,11 @@ template <class SrcIterator, class SrcAccessor,
 void
 beaudetCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
                        DestIterator dul, DestAccessor ad,
-		       double scale)
+                       double scale)
 {
     vigra_precondition(scale > 0.0,
                  "beaudetCornerDetector(): Scale must be > 0");
-		 
+                 
     int w = slr.x - sul.x;
     int h = slr.y - sul.y;
     
@@ -650,7 +698,7 @@ beaudetCornerDetector(SrcIterator sul, SrcIterator slr, SrcAccessor as,
     
     typedef typename 
         NumericTraits<typename SrcAccessor::value_type>::RealPromote TmpType;
-	
+        
     typedef BasicImage<TmpType> TmpImage;
     
     TmpImage gx(w,h);
@@ -671,12 +719,12 @@ template <class SrcIterator, class SrcAccessor,
 inline 
 void beaudetCornerDetector(
            triple<SrcIterator, SrcIterator, SrcAccessor> src,
-	   pair<DestIterator, DestAccessor> dest,
-	   double scale)
+           pair<DestIterator, DestAccessor> dest,
+           double scale)
 {
     beaudetCornerDetector(src.first, src.second, src.third,
                             dest.first, dest.second,
-			    scale);
+                            scale);
 }
 
 

@@ -4,21 +4,47 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
+
+/* Modifications by Pablo d'Angelo
+ * updated to vigra 1.4 by Douglas Wilkins
+ * as of 18 Febuary 2006:
+ *  - Added UINT16 and UINT32 pixel types.
+ *  - Added support for obtaining extra bands beyond RGB.
+ *  - Added support for a position field that indicates the start of this
+ *    image relative to some global origin.
+ *  - Added support for x and y resolution fields.
+ *  - Added support for ICC Profiles
+ */
 
 #ifndef VIGRA_CODEC_HXX
 #define VIGRA_CODEC_HXX
@@ -27,11 +53,16 @@
 #include <string>
 #include <vector>
 
+#include "array_vector.hxx"
+#include "config.hxx"
+#include "diff2d.hxx"
+#include "sized_int.hxx"
+
 // possible pixel types:
-// "undefined", "UINT8", "INT16", "INT32", "FLOAT", "DOUBLE"
+// "undefined", "UINT8", "UINT16", "INT16", "UINT32", "INT32", "FLOAT", "DOUBLE"
 
 // possible compression types:
-// "undefined", "RLE", "LZW", "LOSSLESS", "JPEG"
+// "undefined", "RLE", "LZW", "LOSSLESS", "JPEG", "DEFLATE"
 
 // possible file types:
 // "undefined", "TIFF", "VIFF", "JPEG", "PNG", "PNM", "BMP", "SUN", "XPM"
@@ -47,44 +78,56 @@ namespace vigra
     {
         static std::string result() { return "undefined"; }
     };
-    
+
     template <>
-    struct TypeAsString<unsigned char>
+    struct TypeAsString<Int8>
+    {
+        static std::string result() { return "INT8"; }
+    };
+
+    template <>
+    struct TypeAsString<UInt8>
     {
         static std::string result() { return "UINT8"; }
     };
-    
+
     template <>
-    struct TypeAsString<short>
+    struct TypeAsString<Int16>
     {
         static std::string result() { return "INT16"; }
     };
-    
+
     template <>
-    struct TypeAsString<int>
+    struct TypeAsString<UInt16>
+    {
+        static std::string result() { return "UINT16"; }
+    };
+
+    template <>
+    struct TypeAsString<Int32>
     {
         static std::string result() { return "INT32"; }
     };
-    
+
     template <>
-    struct TypeAsString<long>
+    struct TypeAsString<UInt32>
     {
-        static std::string result() { return "INT32"; }
+        static std::string result() { return "UINT32"; }
     };
-    
+
     template <>
     struct TypeAsString<float>
     {
         static std::string result() { return "FLOAT"; }
     };
-    
+
     template <>
     struct TypeAsString<double>
     {
         static std::string result() { return "DOUBLE"; }
     };
-    
-    
+
+
     // codec description
     struct CodecDesc
     {
@@ -96,7 +139,7 @@ namespace vigra
         std::vector<int> bandNumbers;
     };
 
-    // Decoder and Encoder are pure virtual types that define a common
+    // Decoder and Encoder are virtual types that define a common
     // interface for all image file formats impex supports.
 
     struct Decoder
@@ -112,10 +155,29 @@ namespace vigra
         virtual unsigned int getWidth() const = 0;
         virtual unsigned int getHeight() const = 0;
         virtual unsigned int getNumBands() const = 0;
+        virtual unsigned int getNumExtraBands() const
+        {
+            return 0;
+        }
+
+        virtual vigra::Diff2D getPosition() const
+        {
+            return vigra::Diff2D();
+        }
+
         virtual unsigned int getOffset() const = 0;
 
         virtual const void * currentScanlineOfBand( unsigned int ) const = 0;
         virtual void nextScanline() = 0;
+
+        typedef ArrayVector<unsigned char> ICCProfile;
+
+        const ICCProfile & getICCProfile() const
+        {
+            return iccProfile_;
+        }
+
+        ICCProfile iccProfile_;
     };
 
     struct Encoder
@@ -135,10 +197,26 @@ namespace vigra
         virtual void setPixelType( const std::string & ) = 0;
         virtual void finalizeSettings() = 0;
 
+        virtual void setPosition( const vigra::Diff2D & pos )
+        {
+        }
+        virtual void setXResolution( float xres )
+        {
+        }
+        virtual void setYResolution( float yres )
+        {
+        }
+
+        typedef ArrayVector<unsigned char> ICCProfile;
+
+        virtual void setICCProfile(const ICCProfile & /* data */)
+        {
+        }
+
         virtual void * currentScanlineOfBand( unsigned int ) = 0;
         virtual void nextScanline() = 0;
-        
-        struct TIFFNoLZWException {};
+
+        struct TIFFCompressionException {};
     };
 
     // codec factory for registration at the codec manager
@@ -148,6 +226,7 @@ namespace vigra
         virtual CodecDesc getCodecDesc() const = 0;
         virtual std::auto_ptr<Decoder> getDecoder() const = 0;
         virtual std::auto_ptr<Encoder> getEncoder() const = 0;
+        virtual ~CodecFactory() {};
     };
 
     // factory functions to encapsulate the codec managers
@@ -157,22 +236,22 @@ namespace vigra
     // - (in case of decoders) the file's magic string
     // - the filename extension
 
-    std::auto_ptr<Decoder>
+    VIGRA_EXPORT std::auto_ptr<Decoder>
     getDecoder( const std::string &, const std::string & = "undefined" );
 
-    std::auto_ptr<Encoder>
+    VIGRA_EXPORT std::auto_ptr<Encoder>
     getEncoder( const std::string &, const std::string & = "undefined" );
 
     // functions to query the capabilities of certain codecs
 
-    std::vector<std::string> queryCodecPixelTypes( const std::string & );
+    VIGRA_EXPORT std::vector<std::string> queryCodecPixelTypes( const std::string & );
 
-    bool negotiatePixelType( std::string const & codecname,
+    VIGRA_EXPORT bool negotiatePixelType( std::string const & codecname,
                  std::string const & srcPixeltype, std::string & destPixeltype);
 
-    bool isPixelTypeSupported( const std::string &, const std::string & );
+    VIGRA_EXPORT bool isPixelTypeSupported( const std::string &, const std::string & );
 
-    bool isBandNumberSupported( const std::string &, int bands );
+    VIGRA_EXPORT bool isBandNumberSupported( const std::string &, int bands );
 }
 
 #endif // VIGRA_CODEC_HXX

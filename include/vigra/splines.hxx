@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -24,10 +39,11 @@
 #define VIGRA_SPLINES_HXX
 
 #include <cmath>
-#include "vigra/config.hxx"
-#include "vigra/mathutil.hxx"
-#include "vigra/polynomial.hxx"
-#include "vigra/array_vector.hxx"
+#include "config.hxx"
+#include "mathutil.hxx"
+#include "polynomial.hxx"
+#include "array_vector.hxx"
+#include "fixedpoint.hxx"
 
 namespace vigra {
 
@@ -273,6 +289,15 @@ class BSplineBase<0, T>
          return exec(x, derivativeOrder_);
     }
 
+    template <unsigned int IntBits, unsigned int FracBits>
+    FixedPoint<IntBits, FracBits> operator()(FixedPoint<IntBits, FracBits> x) const
+    {
+        typedef FixedPoint<IntBits, FracBits> Value;
+        return x.value < Value::ONE_HALF && -Value::ONE_HALF <= x.value 
+                   ? Value(Value::ONE, FPNoShift)
+                   : Value(0, FPNoShift);
+    }
+
     result_type operator()(first_argument_type x, second_argument_type derivative_order) const
     {        
          return exec(x, derivativeOrder_ + derivative_order);
@@ -339,6 +364,16 @@ class BSpline<1, T>
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
+    }
+
+    template <unsigned int IntBits, unsigned int FracBits>
+    FixedPoint<IntBits, FracBits> operator()(FixedPoint<IntBits, FracBits> x) const
+    {
+        typedef FixedPoint<IntBits, FracBits> Value;
+        int v = abs(x.value);
+        return v < Value::ONE ? 
+                Value(Value::ONE - v, FPNoShift)
+                : Value(0, FPNoShift);
     }
 
     result_type operator()(first_argument_type x, second_argument_type derivative_order) const
@@ -426,6 +461,26 @@ class BSpline<2, T>
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
+    }
+
+    template <unsigned int IntBits, unsigned int FracBits>
+    FixedPoint<IntBits, FracBits> operator()(FixedPoint<IntBits, FracBits> x) const
+    {
+        typedef FixedPoint<IntBits, FracBits> Value;
+        enum { ONE_HALF = Value::ONE_HALF, THREE_HALVES = ONE_HALF * 3, THREE_QUARTERS = THREE_HALVES / 2,
+               PREMULTIPLY_SHIFT1 = FracBits <= 16 ? 0 : FracBits - 16,
+               PREMULTIPLY_SHIFT2 = FracBits - 1 <= 16 ? 0 : FracBits - 17,
+               POSTMULTIPLY_SHIFT1 = FracBits - 2*PREMULTIPLY_SHIFT1, 
+               POSTMULTIPLY_SHIFT2 = FracBits - 2*PREMULTIPLY_SHIFT2  }; 
+        int v = abs(x.value);
+        return v == ONE_HALF 
+                   ? Value(ONE_HALF, FPNoShift)
+                   : v <= ONE_HALF 
+                       ? Value(THREE_QUARTERS - 
+                               (int)(sq((unsigned)v >> PREMULTIPLY_SHIFT2) >> POSTMULTIPLY_SHIFT2), FPNoShift)
+                       : v < THREE_HALVES
+                            ? Value((int)(sq((unsigned)(THREE_HALVES-v) >> PREMULTIPLY_SHIFT1) >> (POSTMULTIPLY_SHIFT1 + 1)), FPNoShift)
+                            : Value(0, FPNoShift);
     }
 
     result_type operator()(first_argument_type x, second_argument_type derivative_order) const
@@ -532,6 +587,26 @@ class BSpline<3, T>
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
+    }
+
+    template <unsigned int IntBits, unsigned int FracBits>
+    FixedPoint<IntBits, FracBits> operator()(FixedPoint<IntBits, FracBits> x) const
+    {
+        typedef FixedPoint<IntBits, FracBits> Value;
+        enum { ONE = Value::ONE, TWO = 2 * ONE, TWO_THIRDS = TWO / 3, ONE_SIXTH = ONE / 6,
+               PREMULTIPLY_SHIFT = FracBits <= 16 ? 0 : FracBits - 16,
+               POSTMULTIPLY_SHIFT = FracBits - 2*PREMULTIPLY_SHIFT }; 
+        int v = abs(x.value);
+        return v == ONE
+                   ? Value(ONE_SIXTH, FPNoShift)
+                   : v < ONE 
+                       ? Value(TWO_THIRDS + 
+                               (((int)(sq((unsigned)v >> PREMULTIPLY_SHIFT) >> (POSTMULTIPLY_SHIFT + PREMULTIPLY_SHIFT))
+                                       * (((v >> 1) - ONE) >> PREMULTIPLY_SHIFT)) >> POSTMULTIPLY_SHIFT), FPNoShift)
+                       : v < TWO
+                            ? Value((int)((sq((unsigned)(TWO-v) >> PREMULTIPLY_SHIFT) >> (POSTMULTIPLY_SHIFT + PREMULTIPLY_SHIFT))
+                                      * ((unsigned)(TWO-v) >> PREMULTIPLY_SHIFT) / 6) >> POSTMULTIPLY_SHIFT, FPNoShift)
+                            : Value(0, FPNoShift);
     }
 
     result_type operator()(first_argument_type x, second_argument_type derivative_order) const
@@ -709,11 +784,11 @@ class BSpline<5, T>
     typedef T WeightMatrix[6][6];
     static WeightMatrix & weights()
     {
-        static T b[6][6] = {{ 1.0/120.0, 13.0/60.0, 11.0/20.0, 13.0/60.0, 1.0/120.0}, 
-                            {-1.0/24.0, -5.0/12.0, 0.0, 5.0/12.0, 1.0/24.0},
-                            { 1.0/12.0, 1.0/6.0, -0.5, 1.0/6.0, 1.0/12.0},
-                            {-1.0/12.0, 1.0/6.0, 0.0, -1.0/6.0, 1.0/12.0},
-                            { 1.0/24.0, -1.0/6.0, 0.25, -1.0/6.0, 1.0/24.0},
+        static T b[6][6] = {{ 1.0/120.0, 13.0/60.0, 11.0/20.0, 13.0/60.0, 1.0/120.0, 0.0}, 
+                            {-1.0/24.0, -5.0/12.0, 0.0, 5.0/12.0, 1.0/24.0, 0.0},
+                            { 1.0/12.0, 1.0/6.0, -0.5, 1.0/6.0, 1.0/12.0, 0.0},
+                            {-1.0/12.0, 1.0/6.0, 0.0, -1.0/6.0, 1.0/12.0, 0.0},
+                            { 1.0/24.0, -1.0/6.0, 0.25, -1.0/6.0, 1.0/24.0, 0.0},
                             {-1.0/120.0, 1.0/24.0, -1.0/12.0, 1.0/12.0, -1.0/24.0, 1.0/120.0}};
         return b;
     }

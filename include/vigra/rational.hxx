@@ -4,21 +4,36 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    It was adapted from the file boost/rational.hpp of the            */
 /*    boost library.                                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -38,10 +53,10 @@
 #include <cmath>
 #include <stdexcept>
 #include <iosfwd>
-#include "vigra/config.hxx"
-#include "vigra/mathutil.hxx"
-#include "vigra/numerictraits.hxx"
-#include "vigra/metaprogramming.hxx"
+#include "config.hxx"
+#include "mathutil.hxx"
+#include "numerictraits.hxx"
+#include "metaprogramming.hxx"
 
 namespace vigra {
 
@@ -61,7 +76,7 @@ namespace vigra {
     This function works for arbitrary integer types, including user-defined
     (e.g. infinite precision) ones.
 
-    <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -102,7 +117,7 @@ IntType gcd(IntType n, IntType m)
     This function works for arbitrary integer types, including user-defined
     (e.g. infinite precision) ones.
 
-    <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -164,7 +179,7 @@ Rational<IntType> ceil(const Rational<IntType>& r);
     <tt>Rational</tt> implements the required interface of an
     \ref AlgebraicField and the required \ref RationalTraits "numeric and
     promotion traits". All arithmetic and comparison operators, as well
-    as some algebraic functions are supported .
+    as the relevant algebraic functions are supported .
 
     <b>See also:</b>
     <ul>
@@ -173,7 +188,7 @@ Rational<IntType> ceil(const Rational<IntType>& r);
     </ul>
 
 
-    <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -697,9 +712,18 @@ void Rational<IntType>::normalize()
 
         typedef typename NumericTraits<T>::isIntegral isIntegral;
         typedef VigraTrueType isScalar;
+        typedef typename NumericTraits<T>::isSigned isSigned;
         typedef VigraTrueType isOrdered;
 
         // etc.
+    };
+
+    template<class T>
+    struct NormTraits<Rational<T> >
+    {
+        typedef Rational<T>                           Type;
+        typedef typename NumericTraits<Type>::Promote SquaredNormType;
+        typedef Type                                  NormType;
     };
 
     template <class T1, class T2>
@@ -726,6 +750,7 @@ struct NumericTraits<Rational<T> >
 
     typedef typename NumericTraits<T>::isIntegral isIntegral;
     typedef VigraTrueType isScalar;
+    typedef typename NumericTraits<T>::isSigned isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
 
@@ -743,6 +768,14 @@ struct NumericTraits<Rational<T> >
     static Type fromRealPromote(RealPromote const & v)
         { return Type(NumericTraits<T>::fromRealPromote(v.numerator()),
                       NumericTraits<T>::fromRealPromote(v.denominator()), false); }
+};
+
+template<class T>
+struct NormTraits<Rational<T> >
+{
+    typedef Rational<T>                           Type;
+    typedef typename NumericTraits<Type>::Promote SquaredNormType;
+    typedef Type                                  NormType;
 };
 
 template <class T>
@@ -1142,6 +1175,22 @@ abs(const Rational<IntType>& r)
     return Rational<IntType>(-r.numerator(), r.denominator(), false);
 }
 
+    /// norm (same as <tt>abs(r)</tt>)
+template <typename IntType>
+inline Rational<IntType>
+norm(const Rational<IntType>& r)
+{
+    return abs(r);
+}
+
+    /// squared norm
+template <typename IntType>
+inline typename NormTraits<Rational<IntType> >::SquaredNormType
+squaredNorm(const Rational<IntType>& r)
+{
+    return typename NormTraits<Rational<IntType> >::SquaredNormType(sq(r.numerator()), sq(r.denominator()), false);
+}
+
     /** integer powers
 
         <tt>throws bad_rational</tt> if indeterminate expression.
@@ -1250,8 +1299,6 @@ inline T const & rational_cast(T const & v)
 
 //@}
 
-} // namespace vigra
-
 template <typename IntType>
 std::ostream& operator<< (std::ostream& os, const vigra::Rational<IntType>& r)
 {
@@ -1259,6 +1306,7 @@ std::ostream& operator<< (std::ostream& os, const vigra::Rational<IntType>& r)
     return os;
 }
 
+} // namespace vigra
 
 #endif  // VIGRA_RATIONAL_HPP
 

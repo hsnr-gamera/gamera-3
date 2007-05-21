@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -25,11 +40,11 @@
 #define VIGRA_CONVOLUTION_HXX
 
 #include <functional>
-#include "vigra/stdconvolution.hxx"
-#include "vigra/separableconvolution.hxx"
-#include "vigra/recursiveconvolution.hxx"
-#include "vigra/nonlineardiffusion.hxx"
-#include "vigra/combineimages.hxx"
+#include "stdconvolution.hxx"
+#include "separableconvolution.hxx"
+#include "recursiveconvolution.hxx"
+#include "nonlineardiffusion.hxx"
+#include "combineimages.hxx"
 
 /** \page Convolution Functions to Convolve Images and Signals
 
@@ -486,14 +501,14 @@ void gaussianSharpening(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_
     typedef typename NumericTraits<typename SrcAccessor::value_type>::RealPromote ValueType;
 
     BasicImage<ValueType> tmp(src_lr - src_ul);
-    typename BasicImage<ValueType>::Accessor tmp_acc(tmp.accessor());
 
-    gaussianSmoothing(src_ul, src_lr, src_acc, tmp.upperLeft(), tmp_acc, scale);
+    gaussianSmoothing(src_ul, src_lr, src_acc, tmp.upperLeft(), tmp.accessor(), scale);
 
     SrcIterator i_src = src_ul;
     DestIterator i_dest = dest_ul;
     typename BasicImage<ValueType>::traverser tmp_ul = tmp.upperLeft();
     typename BasicImage<ValueType>::traverser i_tmp = tmp_ul;
+    typename BasicImage<ValueType>::Accessor tmp_acc = tmp.accessor();
 
     for(; i_src.y != src_lr.y ; i_src.y++, i_dest.y++, i_tmp.y++ )
     {
@@ -752,6 +767,83 @@ gaussianGradient(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 {
     gaussianGradient(src.first, src.second, src.third,
                      dest.first, dest.second, scale);
+}
+
+/** \brief Calculate the gradient magnitude by means of a 1st derivatives of
+    Gaussian filter.
+
+    This function calls gaussianGradient() and returns the pixel-wise magnitude of
+    the resulting gradient vectors. If the original image has multiple bands,
+    the squared gradient magnitude is computed for each band separately, and the
+    return value is the square root of the sum of these sqaured magnitudes.
+
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor>
+        void gaussianGradientMagnitude(SrcIterator sul,
+                                       SrcIterator slr, SrcAccessor src,
+                                       DestIterator dupperleft, DestAccessor dest,
+                                       double scale);
+    }
+    \endcode
+
+
+    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor>
+        void
+        gaussianGradientMagnitude(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                                  pair<DestIterator, DestAccessor> dest,
+                                  double scale);
+    }
+    \endcode
+
+    <b> Usage:</b>
+
+    <b>\#include</b> "<a href="convolution_8hxx-source.html">vigra/convolution.hxx</a>"
+
+
+    \code
+    vigra::FImage src(w,h), grad(w,h);
+    ...
+
+    // calculate gradient magnitude at scale = 3.0
+    vigra::gaussianGradientMagnitude(srcImageRange(src), destImage(grad), 3.0);
+
+    \endcode
+
+*/
+template <class SrcIterator, class SrcAccessor,
+          class DestIterator, class DestAccessor>
+void gaussianGradientMagnitude(SrcIterator sul,
+                               SrcIterator slr, SrcAccessor src,
+                               DestIterator dupperleft, DestAccessor dest,
+                               double scale)
+{
+    typedef typename NumericTraits<typename SrcAccessor::value_type>::RealPromote TmpType;
+    BasicImage<TmpType> gradx(slr-sul), grady(slr-sul);
+
+    gaussianGradient(srcIterRange(sul, slr, src),
+                     destImage(gradx), destImage(grady), scale);
+    combineTwoImages(srcImageRange(gradx), srcImage(grady), destIter(dupperleft, dest),
+                     MagnitudeFunctor<TmpType>());
+}
+
+template <class SrcIterator, class SrcAccessor,
+          class DestIterator, class DestAccessor>
+inline void
+gaussianGradientMagnitude(triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                          pair<DestIterator, DestAccessor> dest,
+                          double scale)
+{
+    gaussianGradientMagnitude(src.first, src.second, src.third,
+                              dest.first, dest.second, scale);
 }
 
 /********************************************************/

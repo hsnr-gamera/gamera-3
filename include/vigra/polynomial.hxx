@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -27,10 +42,11 @@
 #include <cmath>
 #include <complex>
 #include <algorithm>
-#include "vigra/error.hxx"
-#include "vigra/mathutil.hxx"
-#include "vigra/numerictraits.hxx"
-#include "vigra/array_vector.hxx"
+#include <iosfwd>
+#include "error.hxx"
+#include "mathutil.hxx"
+#include "numerictraits.hxx"
+#include "array_vector.hxx"
 
 namespace vigra {
 
@@ -174,13 +190,17 @@ class PolynomialView
         */
     void deflateConjugatePair(Complex const & v);
     
-        /** Adjust the polynomial's order if the highest coefficients are zero.
+        /** Adjust the polynomial's order if the highest coefficients are near zero.
+            The order is reduced as long as the absolute value does not exceed 
+            the given \a epsilon.
         */
-    void minimizeOrder();    
+    void minimizeOrder(double epsilon = 0.0);    
     
         /** Normalize the polynomial, i.e. dived by the highest coefficient.
         */
     void normalize();
+     
+    void balance();
         
         /** Get iterator for the coefficient sequence.
         */
@@ -377,9 +397,9 @@ PolynomialView<T>::deflateConjugatePair(Complex const & v)
     
 template <class T>
 void 
-PolynomialView<T>::minimizeOrder()
+PolynomialView<T>::minimizeOrder(double epsilon)
 {
-    while(std::abs(coeffs_[order_]) < epsilon_)
+    while(std::abs(coeffs_[order_]) <= epsilon && order_ > 0)
             --order_;
 }
 
@@ -390,6 +410,18 @@ PolynomialView<T>::normalize()
     for(unsigned int i = 0; i<order_; ++i)
         coeffs_[i] /= coeffs_[order_];
     coeffs_[order_] = T(1.0);
+}
+
+template <class T>
+void 
+PolynomialView<T>::balance()
+{
+    Real p0 = abs(coeffs_[0]), po = abs(coeffs_[order_]);
+    Real norm = (p0 > 0.0)
+                    ? VIGRA_CSTD::sqrt(p0*po) 
+                    : po;
+    for(unsigned int i = 0; i<=order_; ++i)
+        coeffs_[i] /= norm;
 }
 
 /*****************************************************************/
@@ -413,14 +445,6 @@ template <class T>
 class Polynomial
 : public PolynomialView<T>
 {
-  protected:
-    using PolynomialView<T>::epsilon_;
-  public:
-    using PolynomialView<T>::begin;
-    using PolynomialView<T>::end;
-    using PolynomialView<T>::order;
-    using PolynomialView<T>::epsilon;
-  private:
     typedef PolynomialView<T> BaseType;
   public:
     typedef typename BaseType::Real    Real;
@@ -442,7 +466,7 @@ class Polynomial
     : BaseType(epsilon),
       polynomial_(order + 1, T())
     {
-        setCoeffs(&polynomial_[0], order);
+        this->setCoeffs(&polynomial_[0], order);
     }
     
         /** Copy constructor
@@ -451,7 +475,7 @@ class Polynomial
     : BaseType(p.epsilon()),
       polynomial_(p.begin(), p.end())
     {
-        setCoeffs(&polynomial_[0], p.order());
+        this->setCoeffs(&polynomial_[0], p.order());
     }
 
         /** Construct polynomial by copying the given coefficient sequence.
@@ -461,7 +485,7 @@ class Polynomial
     : BaseType(),
       polynomial_(i, i + order + 1)
     {
-        setCoeffs(&polynomial_[0], order);
+        this->setCoeffs(&polynomial_[0], order);
     }
     
         /** Construct polynomial by copying the given coefficient sequence.
@@ -474,7 +498,7 @@ class Polynomial
     : BaseType(epsilon),
       polynomial_(i, i + order + 1)
     {
-        setCoeffs(&polynomial_[0], order);
+        this->setCoeffs(&polynomial_[0], order);
     }
     
         /** Assigment
@@ -485,8 +509,8 @@ class Polynomial
             return *this;
         ArrayVector<T> tmp(p.begin(), p.end());
         polynomial_.swap(tmp);
-        setCoeffs(&polynomial_[0], p.order());
-        epsilon_ = p.epsilon_;
+        this->setCoeffs(&polynomial_[0], p.order());
+        this->epsilon_ = p.epsilon_;
         return *this;
     }
     
@@ -519,7 +543,7 @@ class Polynomial
     Polynomial<Complex> 
     getDeflated(Complex const & r) const
     {
-        Polynomial<Complex> res(begin(), order(), epsilon());
+        Polynomial<Complex> res(this->begin(), this->order(), this->epsilon());
         res.deflate(r);
         return res;
     }
@@ -552,14 +576,6 @@ template <unsigned int MAXORDER, class T>
 class StaticPolynomial
 : public PolynomialView<T>
 {
-  protected:
-    using PolynomialView<T>::epsilon_;
-  public:
-    using PolynomialView<T>::begin;
-    using PolynomialView<T>::end;
-    using PolynomialView<T>::order;
-    using PolynomialView<T>::epsilon;
-  private:
     typedef PolynomialView<T> BaseType;
     
   public:
@@ -585,7 +601,7 @@ class StaticPolynomial
         vigra_precondition(order <= MAXORDER,
             "StaticPolynomial(): order exceeds MAXORDER.");
         std::fill_n(polynomial_, order+1, T());
-        setCoeffs(polynomial_, order);
+        this->setCoeffs(polynomial_, order);
     }
     
         /** Copy constructor
@@ -594,7 +610,7 @@ class StaticPolynomial
     : BaseType(p.epsilon())
     {
         std::copy(p.begin(), p.end(), polynomial_);
-        setCoeffs(polynomial_, p.order());
+        this->setCoeffs(polynomial_, p.order());
     }
 
         /** Construct polynomial by copying the given coefficient sequence.
@@ -607,7 +623,7 @@ class StaticPolynomial
         vigra_precondition(order <= MAXORDER,
             "StaticPolynomial(): order exceeds MAXORDER.");
         std::copy(i, i + order + 1, polynomial_);
-        setCoeffs(polynomial_, order);
+        this->setCoeffs(polynomial_, order);
     }
     
         /** Construct polynomial by copying the given coefficient sequence.
@@ -622,7 +638,7 @@ class StaticPolynomial
         vigra_precondition(order <= MAXORDER,
             "StaticPolynomial(): order exceeds MAXORDER.");
         std::copy(i, i + order + 1, polynomial_);
-        setCoeffs(polynomial_, order);
+        this->setCoeffs(polynomial_, order);
     }
     
         /** Assigment.
@@ -632,8 +648,8 @@ class StaticPolynomial
         if(this == &p)
             return *this;
         std::copy(p.begin(), p.end(), polynomial_);
-        setCoeffs(polynomial_, p.order());
-        epsilon_ = p.epsilon_;
+        this->setCoeffs(polynomial_, p.order());
+        this->epsilon_ = p.epsilon_;
         return *this;
     }
     
@@ -666,9 +682,16 @@ class StaticPolynomial
     StaticPolynomial<MAXORDER, Complex> 
     getDeflated(Complex const & r) const
     {
-        StaticPolynomial<MAXORDER, Complex>  res(begin(), order(), epsilon());
+        StaticPolynomial<MAXORDER, Complex>  res(this->begin(), this->order(), this->epsilon());
         res.deflate(r);
         return res;
+    }
+    
+    void setOrder(unsigned int order)
+    {
+        vigra_precondition(order <= MAXORDER,
+            "taticPolynomial::setOrder(): order exceeds MAXORDER.");
+        this->order_ = order;
     }
 
   protected:
@@ -713,11 +736,13 @@ std::complex<T> complexDiv(std::complex<T> const & a, std::complex<T> const & b)
 }
 
 template <class T>
-std::complex<T> deleteImaginaryBelowEpsilon(std::complex<T> const & x, double eps)
+std::complex<T> deleteBelowEpsilon(std::complex<T> const & x, double eps)
 {
-    return std::abs(x.imag()) <= 2.0*eps*std::abs(x.real()) ?
-              std::complex<T>(x.real())
-           :  x;
+    return std::abs(x.imag()) <= 2.0*eps*std::abs(x.real()) 
+                ? std::complex<T>(x.real())
+                : std::abs(x.real()) <= 2.0*eps*std::abs(x.imag()) 
+                    ? std::complex<T>(NumericTraits<T>::zero(), x.imag())
+                    :  x;
 }
 
 template <class POLYNOMIAL>
@@ -832,6 +857,24 @@ int laguerre1Root(POLYNOMIAL const & p, Complex & x, unsigned int multiplicity)
         0;
 }
 
+template <class Real>
+struct PolynomialRootCompare
+{
+    Real epsilon;
+
+    PolynomialRootCompare(Real eps)
+    : epsilon(eps)
+    {}
+    
+    template <class T>
+    bool operator()(T const & l, T const & r)
+    {
+        return closeAtTolerance(l.real(), r.real(), epsilon)
+                     ? l.imag() < r.imag()
+                     : l.real() < r.real();
+    }
+};
+
 } // namespace detail 
 
 /** \addtogroup Polynomials Polynomials and root determination
@@ -853,10 +896,10 @@ int laguerre1Root(POLYNOMIAL const & p, Complex & x, unsigned int multiplicity)
     improved version of Laguerre's algorithm. The improvements are as follows:
     
     <ul>
-    <li>It uses an clever initial guess for the iteration, according to a proposal by Tien Chen</li>
+    <li>It uses a clever initial guess for the iteration, according to a proposal by Tien Chen</li>
     <li>It estimates each root's multiplicity, again according to Tien Chen, and reduces multiplicity
         by switching to the polynomial's derivative (which has the same root, with multiplicity
-        reduces by one), as proposed by C. Bond.</li>
+        reduced by one), as proposed by C. Bond.</li>
     </ul>
     
     The algorithm has been successfully used for polynomials up to order 80.
@@ -891,6 +934,8 @@ int laguerre1Root(POLYNOMIAL const & p, Complex & x, unsigned int multiplicity)
     ArrayVector<std::complex<double> > roots;
     polynomialRoots(poly, roots);
     \endcode
+
+    \see polynomialRootsEigenvalueMethod()
 */
 template <class POLYNOMIAL, class VECTOR>
 bool polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots, bool polishRoots)
@@ -904,7 +949,6 @@ bool polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots, bool polishRo
 
     WorkPolynomial p(poriginal.begin(), poriginal.order(), eps);
     p.minimizeOrder();
-        
     if(p.order() == 0)
         return true;
 
@@ -916,50 +960,43 @@ bool polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots, bool polishRo
     // handle the high order cases
     while(p.order() > 2)
     {
-        if(std::abs(p[0]) < eps)
+        p.balance();
+        
+        // find root estimate using Laguerre's method on deflated polynomial p;
+        // zero return indicates failure to converge
+        multiplicity = detail::laguerre1Root(p, x, multiplicity);
+    
+        if(multiplicity == 0)
+            return false;
+        // polish root on original polynomial poriginal;
+        // zero return indicates failure to converge
+        if(polishRoots && !detail::laguerre1Root(poriginal, x, multiplicity))
+            return false;
+        x = detail::deleteBelowEpsilon(x, eps);
+        roots.push_back(x);
+        p.deflate(x);
+        // determine the next starting guess
+        if(multiplicity > 1)
         {
-            // the simple case: missing constant coefficient => zero root
-            roots.push_back(Complex(0.0));
-            p.deflate(0.0);
-            x = detail::laguerreStartingGuess(p);
+            // probably multiple root => keep current root as starting guess
+            --multiplicity;
+            triedConjugate = false;
         }
         else
         {
-            // find root estimate using Laguerre's method on deflated polynomial p;
-            // zero return indicates failure to converge
-            multiplicity = detail::laguerre1Root(p, x, multiplicity);
-            if(multiplicity == 0)
-                return false;
-            // polish root on original polynomial poriginal;
-            // zero return indicates failure to converge
-            if(polishRoots && !detail::laguerre1Root(poriginal, x, multiplicity))
-                return false;
-            x = detail::deleteImaginaryBelowEpsilon(x, eps);
-            roots.push_back(x);
-            p.deflate(x);
-            // determine the next starting guess
-            if(multiplicity > 1)
+            // need a new starting guess
+            if(x.imag() != 0.0 && !triedConjugate)
             {
-                // probably multiple root => keep current root as starting guess
-                --multiplicity;
-                triedConjugate = false;
+                // if the root is complex and we don't already have 
+                // the conjugate root => try the conjugate as starting guess
+                triedConjugate = true;
+                x = conj(x);
             }
             else
             {
-                // need a new starting guess
-                if(x.imag() != 0.0 && !triedConjugate)
-                {
-                    // if the root is complex and we don't already have 
-                    // the conjugate root => try the conjugate as starting guess
-                    triedConjugate = true;
-                    x = conj(x);
-                }
-                else
-                {
-                    // otherwise generate new starting guess
-                    triedConjugate = false;
-                    x = detail::laguerreStartingGuess(p);
-                }
+                // otherwise generate new starting guess
+                triedConjugate = false;
+                x = detail::laguerreStartingGuess(p);
             }
         }
     }
@@ -979,19 +1016,20 @@ bool polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots, bool polishRo
         x = detail::complexDiv(q, a);
         if(polishRoots)
             detail::laguerre1Root(poriginal, x, 1);
-        roots.push_back(detail::deleteImaginaryBelowEpsilon(x, eps));
+        roots.push_back(detail::deleteBelowEpsilon(x, eps));
         x = detail::complexDiv(c, q);
         if(polishRoots)
             detail::laguerre1Root(poriginal, x, 1);
-        roots.push_back(detail::deleteImaginaryBelowEpsilon(x, eps));
+        roots.push_back(detail::deleteBelowEpsilon(x, eps));
     }
     else if(p.order() == 1)
     {
         x = detail::complexDiv(-p[0], p[1]);
         if(polishRoots)
             detail::laguerre1Root(poriginal, x, 1);
-        roots.push_back(detail::deleteImaginaryBelowEpsilon(x, eps));
+        roots.push_back(detail::deleteBelowEpsilon(x, eps));
     }
+    std::sort(roots.begin(), roots.end(), detail::PolynomialRootCompare<Real>(eps));
     return true;
 }
 
@@ -1034,6 +1072,8 @@ polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots)
     ArrayVector<double> roots;
     polynomialRealRoots(poly, roots);
     \endcode
+
+    \see polynomialRealRootsEigenvalueMethod()
 */
 template <class POLYNOMIAL, class VECTOR>
 bool polynomialRealRoots(POLYNOMIAL const & p, VECTOR & roots, bool polishRoots)
@@ -1058,5 +1098,18 @@ polynomialRealRoots(POLYNOMIAL const & poriginal, VECTOR & roots)
 //@}
 
 } // namespace vigra
+
+namespace std {
+
+template <class T>
+ostream & operator<<(ostream & o, vigra::PolynomialView<T> const & p)
+{
+    for(unsigned int k=0; k < p.order(); ++k)
+        o << p[k] << " ";
+    o << p[p.order()];
+    return o;
+}
+
+} // namespace std 
 
 #endif // VIGRA_POLYNOMIAL_HXX

@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -24,10 +39,10 @@
 #ifndef VIGRA_IMAGEITERATOR_HXX
 #define VIGRA_IMAGEITERATOR_HXX
 
-#include "vigra/utilities.hxx"
-#include "vigra/accessor.hxx"
-#include "vigra/iteratortraits.hxx"
-#include "vigra/metaprogramming.hxx"
+#include "utilities.hxx"
+#include "accessor.hxx"
+#include "iteratortraits.hxx"
+#include "metaprogramming.hxx"
 
 namespace vigra {
 
@@ -418,6 +433,11 @@ The following iterator traits must be defined for an image iterator:
     <td><tt>IteratorTraits&lt;ImageIterator&gt;::default_accessor</tt></td>
     <td>the default accessor to be used with the iterator</td>
 </tr>
+<tr>
+    <td><tt>IteratorTraits&lt;ImageIterator&gt;::hasConstantStrides</tt></td>
+    <td>whether the iterator uses constant strides on the underlying memory
+        (always <tt>VigraTrueType</tt> for <tt>ImageIterator</tt>s).</td>
+</tr>
 </table>
 </p>
 */
@@ -466,6 +486,15 @@ class DirectionSelector<UnstridedArrayTag>
 
         bool operator<(type const & rhs) const
          { return current_ < rhs.current_; }
+
+        bool operator<=(type const & rhs) const
+         { return current_ <= rhs.current_; }
+
+        bool operator>(type const & rhs) const
+         { return current_ > rhs.current_; }
+
+        bool operator>=(type const & rhs) const
+         { return current_ >= rhs.current_; }
 
         int operator-(type const & rhs) const
          { return current_ - rhs.current_; }
@@ -521,6 +550,15 @@ class DirectionSelector<StridedArrayTag>
 
         bool operator<(type const & rhs) const
          { return (current_ < rhs.current_); }
+
+        bool operator<=(type const & rhs) const
+         { return (current_ <= rhs.current_); }
+
+        bool operator>(type const & rhs) const
+         { return (current_ > rhs.current_); }
+
+        bool operator>=(type const & rhs) const
+         { return (current_ >= rhs.current_); }
 
         int operator-(type const & rhs) const
          { return (current_ - rhs.current_) / stride_; }
@@ -1131,32 +1169,44 @@ template <class T>
 struct IteratorTraits<ImageIterator<T> >
 : public IteratorTraitsBase<ImageIterator<T> >
 {
+    typedef ImageIterator<T>                              mutable_iterator;
+    typedef ConstImageIterator<T>                         const_iterator;
     typedef typename AccessorTraits<T>::default_accessor  DefaultAccessor;
     typedef DefaultAccessor                               default_accessor;
+    typedef VigraTrueType                                 hasConstantStrides;
 };
 
 template <class T>
 struct IteratorTraits<ConstImageIterator<T> >
 : public IteratorTraitsBase<ConstImageIterator<T> >
 {
+    typedef ImageIterator<T>                              mutable_iterator;
+    typedef ConstImageIterator<T>                         const_iterator;
     typedef typename AccessorTraits<T>::default_const_accessor  DefaultAccessor;
     typedef DefaultAccessor                               default_accessor;
+    typedef VigraTrueType                                 hasConstantStrides;
 };
 
 template <class T>
 struct IteratorTraits<StridedImageIterator<T> >
 : public IteratorTraitsBase<StridedImageIterator<T> >
 {
+    typedef StridedImageIterator<T>                       mutable_iterator;
+    typedef ConstStridedImageIterator<T>                  const_iterator;
     typedef typename AccessorTraits<T>::default_accessor  DefaultAccessor;
     typedef DefaultAccessor                               default_accessor;
+    typedef VigraTrueType                                 hasConstantStrides;
 };
 
 template <class T>
 struct IteratorTraits<ConstStridedImageIterator<T> >
 : public IteratorTraitsBase<ConstStridedImageIterator<T> >
 {
+    typedef StridedImageIterator<T>                       mutable_iterator;
+    typedef ConstStridedImageIterator<T>                  const_iterator;
     typedef typename AccessorTraits<T>::default_const_accessor  DefaultAccessor;
     typedef DefaultAccessor                               default_accessor;
+    typedef VigraTrueType                                 hasConstantStrides;
 };
 
 #else // NO_PARTIAL_TEMPLATE_SPECIALIZATION
@@ -1166,31 +1216,43 @@ struct IteratorTraits<ConstStridedImageIterator<T> >
     struct IteratorTraits<ImageIterator<VALUETYPE > > \
     : public IteratorTraitsBase<ImageIterator<VALUETYPE > > \
     { \
+        typedef ImageIterator<VALUETYPE>                         mutable_iterator; \
+        typedef ConstImageIterator<VALUETYPE>                    const_iterator; \
         typedef typename AccessorTraits<VALUETYPE >::default_accessor  DefaultAccessor; \
         typedef DefaultAccessor                               default_accessor; \
+        typedef VigraTrueType                                 hasConstantStrides; \
     }; \
     \
     template <>  \
     struct IteratorTraits<ConstImageIterator<VALUETYPE > > \
     : public IteratorTraitsBase<ConstImageIterator<VALUETYPE > > \
     { \
+        typedef ImageIterator<VALUETYPE>                         mutable_iterator; \
+        typedef ConstImageIterator<VALUETYPE>                    const_iterator; \
         typedef typename AccessorTraits<VALUETYPE >::default_const_accessor  DefaultAccessor; \
         typedef DefaultAccessor                               default_accessor; \
+        typedef VigraTrueType                                 hasConstantStrides; \
     }; \
     template <>  \
     struct IteratorTraits<StridedImageIterator<VALUETYPE > > \
     : public IteratorTraitsBase<StridedImageIterator<VALUETYPE > > \
     { \
+        typedef StridedImageIterator<VALUETYPE>                         mutable_iterator; \
+        typedef ConstStridedImageIterator<VALUETYPE>                    const_iterator; \
         typedef typename AccessorTraits<VALUETYPE >::default_accessor  DefaultAccessor; \
         typedef DefaultAccessor                               default_accessor; \
+        typedef VigraTrueType                                 hasConstantStrides; \
     }; \
     \
     template <>  \
     struct IteratorTraits<ConstStridedImageIterator<VALUETYPE > > \
     : public IteratorTraitsBase<ConstStridedImageIterator<VALUETYPE > > \
     { \
+        typedef StridedImageIterator<VALUETYPE>                         mutable_iterator; \
+        typedef ConstStridedImageIterator<VALUETYPE>                    const_iterator; \
         typedef typename AccessorTraits<VALUETYPE >::default_const_accessor  DefaultAccessor; \
         typedef DefaultAccessor                               default_accessor; \
+        typedef VigraTrueType                                 hasConstantStrides; \
     };
 
 VIGRA_DEFINE_ITERATORTRAITS(RGBValue<unsigned char>)
@@ -1522,6 +1584,7 @@ struct IteratorTraits<ConstValueIterator<T> >
     typedef typename iterator::column_iterator     column_iterator;
     typedef StandardConstAccessor<T>               DefaultAccessor;
     typedef StandardConstAccessor<T>               default_accessor;
+    typedef VigraTrueType                                 hasConstantStrides;
 };
 
 #endif

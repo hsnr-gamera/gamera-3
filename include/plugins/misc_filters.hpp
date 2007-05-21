@@ -49,8 +49,8 @@ namespace Gamera {
 
     try {
       vigra::createGaborFilter(dest_image_range(*dest), orientation, frequency,
-			       angularGaborSigma(direction, frequency),
-			       radialGaborSigma(frequency));
+			       vigra::angularGaborSigma(direction, frequency),
+			       vigra::radialGaborSigma(frequency));
       
     } catch(std::exception e) {
       delete dest;

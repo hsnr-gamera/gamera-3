@@ -4,19 +4,34 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
  
@@ -27,7 +42,8 @@
 #include <limits.h>
 #include <cfloat>
 #include <complex>
-#include "vigra/metaprogramming.hxx"
+#include "metaprogramming.hxx"
+#include "sized_int.hxx"
 
 /********************************************************/
 /*                                                      */
@@ -49,6 +65,12 @@
     <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
     \ref PromoteTraits
     <DD><em>Binary traits for promotion of arithmetic objects</em>
+    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
+    \ref SquareRootTraits
+    <DD><em>Unary traits for the calculation of the square root of arithmetic objects</em>
+    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
+    \ref NormTraits
+    <DD><em>Unary traits for the calculation of the norm and squared norm of arithmetic objects</em>
     </DL>
     
     These traits classes contain information that is used by generic
@@ -273,6 +295,14 @@
     </td></tr>
     <tr><td>
     <tr><td>
+    <b> <TT>typedef ... isSigned;</TT></b>
+    </td><td>
+        VigraTrueType if <TT>ArithmeticType</TT> is a signed type, 
+        VigraFalseType otherwise 
+    
+    </td></tr>
+    <tr><td>
+    <tr><td>
     <b> <TT>typedef ... isOrdered;</TT></b>
     </td><td>
         VigraTrueType if <TT>ArithmeticType</TT> supports operator<(), 
@@ -358,9 +388,99 @@
     Namespace: vigra
 */
 
+/** \page SquareRootTraits template<> struct SquareRootTraits<ArithmeticType>
+
+    Unary traits for the calculation of the square root of arithmetic objects.
+    
+    <b>\#include</b> 
+    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+
+    This traits class is used to determine appropriate argument and result types
+    for the function sqrt(). These traits are typically used like this:
+    
+    \code
+    ArithmeticType t = ...;
+    SquareRootTraits<ArithmeticType>::SquareRootResult r = 
+          sqrt((SquareRootTraits<ArithmeticType>::SquareRootArgument)t);
+    \endcode
+    
+    This approach avoids 'ambigouos overload errors' when taking the square root of 
+    an integer type. It also takes care of determining the proper result of the
+    sqrt() function of \ref vigra::FixedPoint and of the norm() function, when
+    it is implemented via sqrt(squaredNorm(x)).
+    The following members are defined in <b> <TT>SquareRootTraits<ArithmeticType></TT></b>:
+    
+    <table>
+    <tr><td>
+    <b> <TT>typedef ArithmeticType Type;</TT></b>
+    </td><td>
+            the type itself
+    </td></tr>
+    <tr><td>
+    <b> <TT>typedef ... SquareRootArgument;</TT></b>
+    </td><td>
+            required argument type for srqt(), i.e. <tt>sqrt((SquareRootArgument)x)</tt>
+    </td></tr>
+    <tr><td>
+    <b> <TT>typedef ... SquareRootResult;</TT></b>
+    </td><td>
+            result of <tt>sqrt((SquareRootArgument)x)</tt>
+    </td></tr>
+    </table>
+    
+    NormTraits for the built-in types are defined in <b>\#include</b> 
+    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    
+    Namespace: vigra
+*/
+
+/** \page NormTraits template<> struct NormTraits<ArithmeticType>
+
+    Unary traits for the calculation of the norm and squared norm of arithmetic objects.
+    
+    <b>\#include</b> 
+    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+
+    This traits class is used to determine appropriate result types
+    for the functions norm() and squaredNorm(). These functions are always 
+    declared like this (where <tt>ArithmeticType</tt> is a type thats supports a norm):
+    
+    \code
+    NormTraits<ArithmeticType>::NormType        norm(ArithmeticType const & t);
+    NormTraits<ArithmeticType>::SquaredNormType squaredNorm(ArithmeticType const & t);
+    \endcode
+    
+    The following members are defined in <b> <TT>NormTraits<ArithmeticType></TT></b>:
+    
+    <table>
+    <tr><td>
+    <b> <TT>typedef ArithmeticType Type;</TT></b>
+    </td><td>
+            the type itself
+    </td></tr>
+    <tr><td>
+    <b> <TT>typedef ... SquaredNormType;</TT></b>
+    </td><td>
+            result of <tt>squaredNorm(ArithmeticType)</tt>
+    </td></tr>
+    <tr><td>
+    <b> <TT>typedef ... NormType;</TT></b>
+    </td><td>
+            result of <tt>norm(ArithmeticType)</tt><br>
+            Usually equal to <tt>SquareRootTraits&lt;SquaredNormType&gt;::SquareRootResult
+    </td></tr>
+    </table>
+    
+    NormTraits for the built-in types are defined in <b>\#include</b> 
+    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    
+    Namespace: vigra
+*/
+
 namespace vigra {
 
 struct Error_NumericTraits_not_specialized_for_this_case { };
+struct Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char { };
 
 template<class A>
 struct NumericTraits
@@ -373,8 +493,25 @@ struct NumericTraits
 
     typedef Error_NumericTraits_not_specialized_for_this_case isScalar;
     typedef Error_NumericTraits_not_specialized_for_this_case isIntegral;
+    typedef Error_NumericTraits_not_specialized_for_this_case isSigned;
     typedef Error_NumericTraits_not_specialized_for_this_case isOrdered;
     typedef Error_NumericTraits_not_specialized_for_this_case isComplex;
+};
+
+template<>
+struct NumericTraits<char>
+{
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char Type;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char Promote;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char RealPromote;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char ComplexPromote;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char ValueType;
+
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char isScalar;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char isIntegral;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char isSigned;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char isOrdered;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char isComplex;
 };
 
 #ifndef NO_BOOL
@@ -389,6 +526,7 @@ struct NumericTraits<bool>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -427,6 +565,7 @@ struct NumericTraits<signed char>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -449,8 +588,13 @@ struct NumericTraits<signed char>
         return ((v < SCHAR_MIN) ? SCHAR_MIN : (v > SCHAR_MAX) ? SCHAR_MAX : v); 
     }
     static signed char fromRealPromote(RealPromote v) {
-        return ((v < 0.0) ? ((v < (float)SCHAR_MIN) ? SCHAR_MIN : static_cast<signed char>(v - 0.5)) : 
-                (v > SCHAR_MAX) ? SCHAR_MAX : static_cast<signed char>(v + 0.5)); 
+        return ((v < 0.0) 
+                   ? ((v < (RealPromote)SCHAR_MIN) 
+                       ? SCHAR_MIN 
+                       : static_cast<signed char>(v - 0.5)) 
+                   : (v > (RealPromote)SCHAR_MAX) 
+                       ? SCHAR_MAX 
+                       : static_cast<signed char>(v + 0.5)); 
     }
 };
 
@@ -465,6 +609,7 @@ struct NumericTraits<unsigned char>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -487,7 +632,11 @@ struct NumericTraits<unsigned char>
         return ((v < 0) ? 0 : (v > UCHAR_MAX) ? UCHAR_MAX : v); 
     }
     static unsigned char fromRealPromote(RealPromote const & v) {
-            return ((v < 0.0) ? 0 : ((v > (float)UCHAR_MAX) ? UCHAR_MAX : static_cast<unsigned char>(v + 0.5)));
+            return ((v < 0.0) 
+                     ? 0 
+                     : ((v > (RealPromote)UCHAR_MAX) 
+                         ? UCHAR_MAX 
+                         : static_cast<unsigned char>(v + 0.5)));
     }
 };
 
@@ -502,6 +651,7 @@ struct NumericTraits<short int>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -525,9 +675,13 @@ struct NumericTraits<short int>
                 (v > SHRT_MAX) ? SHRT_MAX : v); 
     }
     static short int fromRealPromote(RealPromote v) {
-        return ((v < 0.0) ? 
-                ((v < (float)SHRT_MIN) ? SHRT_MIN : static_cast<short int>(v - 0.5)) : 
-                ((v > (float)SHRT_MAX) ? SHRT_MAX : static_cast<short int>(v + 0.5))); 
+        return ((v < 0.0) 
+                 ? ((v < (RealPromote)SHRT_MIN) 
+                     ? SHRT_MIN 
+                     : static_cast<short int>(v - 0.5)) 
+                 : ((v > (RealPromote)SHRT_MAX) 
+                     ? SHRT_MAX 
+                     : static_cast<short int>(v + 0.5))); 
     }
 };
 
@@ -540,9 +694,9 @@ struct NumericTraits<short unsigned int>
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
 
-
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
 
@@ -565,8 +719,11 @@ struct NumericTraits<short unsigned int>
         return ((v < 0) ? 0 : (v > USHRT_MAX) ? USHRT_MAX : v); 
     }
     static short unsigned int fromRealPromote(RealPromote v) {
-            return ((v < 0.0) ? 
-              0 : ((v > (float)USHRT_MAX) ? USHRT_MAX : static_cast<short unsigned int>(v + 0.5)));
+            return ((v < 0.0) 
+                     ? 0 
+                     : ((v > (RealPromote)USHRT_MAX) 
+                         ? USHRT_MAX 
+                         : static_cast<short unsigned int>(v + 0.5)));
     }
 };
 
@@ -581,6 +738,7 @@ struct NumericTraits<int>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
 
@@ -601,9 +759,13 @@ struct NumericTraits<int>
     static RealPromote toRealPromote(int v) { return v; }
     static int fromPromote(Promote v) { return v; }
     static int fromRealPromote(RealPromote v) {
-        return ((v < 0.0) ? 
-                ((v < (float)INT_MIN) ? INT_MIN : static_cast<int>(v - 0.5)) : 
-                ((v > (float)INT_MAX) ? INT_MAX : static_cast<int>(v + 0.5))); 
+        return ((v < 0.0) 
+                 ? ((v < (RealPromote)INT_MIN) 
+                     ? INT_MIN 
+                     : static_cast<int>(v - 0.5)) 
+                 : ((v > (RealPromote)INT_MAX) 
+                     ? INT_MAX 
+                     : static_cast<int>(v + 0.5))); 
     }
 };
 
@@ -618,6 +780,7 @@ struct NumericTraits<unsigned int>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -638,9 +801,11 @@ struct NumericTraits<unsigned int>
     static RealPromote toRealPromote(unsigned int v) { return v; }
     static unsigned int fromPromote(Promote v) { return v; }
     static unsigned int fromRealPromote(RealPromote v) {
-            return ((v < 0.0) ? 0 : 
-               ((v > (float)UINT_MAX) ? 
-                         UINT_MAX : static_cast<unsigned int>(v + 0.5)));
+            return ((v < 0.0) 
+                     ? 0 
+                     : ((v > (RealPromote)UINT_MAX) 
+                         ? UINT_MAX 
+                         : static_cast<unsigned int>(v + 0.5)));
     }
 };
 
@@ -655,6 +820,7 @@ struct NumericTraits<long>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -675,9 +841,13 @@ struct NumericTraits<long>
     static RealPromote toRealPromote(long v) { return v; }
     static long fromPromote(Promote v) { return v; }
     static long fromRealPromote(RealPromote v) {
-        return ((v < 0.0) ? 
-                ((v < (float)LONG_MIN) ? LONG_MIN : static_cast<long>(v - 0.5)) : 
-                ((v > (float)LONG_MAX) ? LONG_MAX : static_cast<long>(v + 0.5))); 
+        return ((v < 0.0) 
+                 ? ((v < (RealPromote)LONG_MIN) 
+                     ? LONG_MIN 
+                     : static_cast<long>(v - 0.5)) 
+                 : ((v > (RealPromote)LONG_MAX) 
+                     ? LONG_MAX 
+                     : static_cast<long>(v + 0.5))); 
     }
 };
 
@@ -692,6 +862,7 @@ struct NumericTraits<unsigned long>
 
     typedef VigraTrueType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -712,9 +883,11 @@ struct NumericTraits<unsigned long>
     static RealPromote toRealPromote(unsigned long v) { return v; }
     static unsigned long fromPromote(Promote v) { return v; }
     static unsigned long fromRealPromote(RealPromote v) {
-            return ((v < 0.0) ? 0 : 
-               ((v > (float)ULONG_MAX) ? 
-                            ULONG_MAX : static_cast<unsigned long>(v + 0.5)));
+            return ((v < 0.0) 
+                     ? 0 
+                     : ((v > (RealPromote)ULONG_MAX) 
+                         ? ULONG_MAX 
+                         : static_cast<unsigned long>(v + 0.5)));
     }
 };
 
@@ -729,6 +902,7 @@ struct NumericTraits<float>
     
     typedef VigraFalseType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -757,6 +931,7 @@ struct NumericTraits<double>
 
     typedef VigraFalseType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -785,6 +960,7 @@ struct NumericTraits<long double>
 
     typedef VigraFalseType isIntegral;
     typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
     typedef VigraTrueType isOrdered;
     typedef VigraFalseType isComplex;
     
@@ -815,14 +991,15 @@ struct NumericTraits<std::complex<T> >
 
     typedef VigraFalseType isIntegral;
     typedef VigraFalseType isScalar;
+    typedef typename NumericTraits<T>::isSigned isSigned;
     typedef VigraFalseType isOrdered;
     typedef VigraTrueType isComplex;
     
-    static double zero() { return Type(0.0); }
-    static double one() { return Type(1.0); }
-    static double nonZero() { return one(); }
-    static double epsilon() { return Type(NumericTraits<T>::epsilon()); }
-    static double smallestPositive() { return Type(NumericTraits<T>::smallestPositive()); }
+    static Type zero() { return Type(0.0); }
+    static Type one() { return Type(1.0); }
+    static Type nonZero() { return one(); }
+    static Type epsilon() { return Type(NumericTraits<T>::epsilon()); }
+    static Type smallestPositive() { return Type(NumericTraits<T>::smallestPositive()); }
 
     static Promote toPromote(Type const & v) { return v; }
     static Type fromPromote(Promote const & v) { return v; }
@@ -831,11 +1008,74 @@ struct NumericTraits<std::complex<T> >
 
 #endif // NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
+/********************************************************/
+/*                                                      */
+/*                    SquareRootTraits                  */
+/*                                                      */
+/********************************************************/
+
+template<class T>
+struct SquareRootTraits
+{
+    typedef T                                                    Type;
+    typedef typename NumericTraits<T>::RealPromote               SquareRootResult;
+    typedef typename NumericTraits<T>::RealPromote               SquareRootArgument;
+};
 
 
 /********************************************************/
 /*                                                      */
-/*                      PromoteTraits                  */
+/*                       NormTraits                     */
+/*                                                      */
+/********************************************************/
+
+struct Error_NormTraits_not_specialized_for_this_case { };
+
+template<class T>
+struct NormTraits
+{
+    typedef T                                                            Type;
+    typedef typename T::SquaredNormType                                  SquaredNormType;
+    typedef typename SquareRootTraits<SquaredNormType>::SquareRootResult NormType;
+};
+
+#define VIGRA_DEFINE_NORM_TRAITS(T) \
+    template <> struct NormTraits<T> { \
+        typedef T Type; \
+        typedef NumericTraits<T>::Promote SquaredNormType; \
+        typedef T NormType; \
+    };
+
+VIGRA_DEFINE_NORM_TRAITS(bool)
+VIGRA_DEFINE_NORM_TRAITS(signed char)
+VIGRA_DEFINE_NORM_TRAITS(unsigned char)
+VIGRA_DEFINE_NORM_TRAITS(short)
+VIGRA_DEFINE_NORM_TRAITS(unsigned short)
+VIGRA_DEFINE_NORM_TRAITS(int)
+VIGRA_DEFINE_NORM_TRAITS(unsigned int)
+VIGRA_DEFINE_NORM_TRAITS(long)
+VIGRA_DEFINE_NORM_TRAITS(unsigned long)
+VIGRA_DEFINE_NORM_TRAITS(float)
+VIGRA_DEFINE_NORM_TRAITS(double)
+VIGRA_DEFINE_NORM_TRAITS(long double)
+
+#undef VIGRA_DEFINE_NORM_TRAITS
+
+#ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
+template<class T>
+struct NormTraits<std::complex<T> >
+{
+    typedef std::complex<T>                                              Type;
+    typedef typename NormTraits<T>::SquaredNormType                      SquaredNormType;
+    typedef typename SquareRootTraits<SquaredNormType>::SquareRootResult NormType;
+};
+
+#endif // NO_PARTIAL_TEMPLATE_SPECIALIZATION
+
+/********************************************************/
+/*                                                      */
+/*                      PromoteTraits                   */
 /*                                                      */
 /********************************************************/
 
@@ -848,98 +1088,98 @@ struct PromoteTraits
 };
 
 template<>
-struct PromoteTraits<char, char>
+struct PromoteTraits<signed char, signed char>
 {
     typedef int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, unsigned char>
+struct PromoteTraits<signed char, unsigned char>
 {
     typedef int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(unsigned char v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, short int>
+struct PromoteTraits<signed char, short int>
 {
     typedef int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(short int v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, short unsigned int>
+struct PromoteTraits<signed char, short unsigned int>
 {
     typedef unsigned int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(short unsigned int v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, int>
+struct PromoteTraits<signed char, int>
 {
     typedef int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(int v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, unsigned int>
+struct PromoteTraits<signed char, unsigned int>
 {
     typedef unsigned int Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(unsigned int v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, long>
+struct PromoteTraits<signed char, long>
 {
     typedef long Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(long v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, unsigned long>
+struct PromoteTraits<signed char, unsigned long>
 {
     typedef unsigned long Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(unsigned long v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, float>
+struct PromoteTraits<signed char, float>
 {
     typedef float Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(float v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, double>
+struct PromoteTraits<signed char, double>
 {
     typedef double Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(double v) { return v; }
 };
 
 template<>
-struct PromoteTraits<char, long double>
+struct PromoteTraits<signed char, long double>
 {
     typedef long double Promote;
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
     static Promote toPromote(long double v) { return v; }
 };
 
 template<>
-struct PromoteTraits<unsigned char, char>
+struct PromoteTraits<unsigned char, signed char>
 {
     typedef int Promote;
     static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1022,11 +1262,11 @@ struct PromoteTraits<unsigned char, long double>
 };
 
 template<>
-struct PromoteTraits<short int, char>
+struct PromoteTraits<short int, signed char>
 {
     typedef int Promote;
     static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1109,11 +1349,11 @@ struct PromoteTraits<short int, long double>
 };
 
 template<>
-struct PromoteTraits<short unsigned int, char>
+struct PromoteTraits<short unsigned int, signed char>
 {
     typedef unsigned int Promote;
     static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1196,11 +1436,11 @@ struct PromoteTraits<short unsigned int, long double>
 };
 
 template<>
-struct PromoteTraits<int, char>
+struct PromoteTraits<int, signed char>
 {
     typedef int Promote;
     static Promote toPromote(int v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1262,7 +1502,7 @@ template<>
 struct PromoteTraits<int, float>
 {
     typedef float Promote;
-    static Promote toPromote(int v) { return v; }
+    static Promote toPromote(int v) { return static_cast<Promote>(v); }
     static Promote toPromote(float v) { return v; }
 };
 
@@ -1283,11 +1523,11 @@ struct PromoteTraits<int, long double>
 };
 
 template<>
-struct PromoteTraits<unsigned int, char>
+struct PromoteTraits<unsigned int, signed char>
 {
     typedef unsigned int Promote;
     static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1349,7 +1589,7 @@ template<>
 struct PromoteTraits<unsigned int, float>
 {
     typedef float Promote;
-    static Promote toPromote(unsigned int v) { return v; }
+    static Promote toPromote(unsigned int v) { return static_cast<Promote>(v); }
     static Promote toPromote(float v) { return v; }
 };
 
@@ -1370,11 +1610,11 @@ struct PromoteTraits<unsigned int, long double>
 };
 
 template<>
-struct PromoteTraits<long, char>
+struct PromoteTraits<long, signed char>
 {
     typedef long Promote;
     static Promote toPromote(long v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1436,7 +1676,7 @@ template<>
 struct PromoteTraits<long, float>
 {
     typedef float Promote;
-    static Promote toPromote(long v) { return v; }
+    static Promote toPromote(long v) { return static_cast<Promote>(v); }
     static Promote toPromote(float v) { return v; }
 };
 
@@ -1457,11 +1697,11 @@ struct PromoteTraits<long, long double>
 };
 
 template<>
-struct PromoteTraits<unsigned long, char>
+struct PromoteTraits<unsigned long, signed char>
 {
     typedef unsigned long Promote;
     static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1523,7 +1763,7 @@ template<>
 struct PromoteTraits<unsigned long, float>
 {
     typedef float Promote;
-    static Promote toPromote(unsigned long v) { return v; }
+    static Promote toPromote(unsigned long v) { return static_cast<Promote>(v); }
     static Promote toPromote(float v) { return v; }
 };
 
@@ -1544,11 +1784,11 @@ struct PromoteTraits<unsigned long, long double>
 };
 
 template<>
-struct PromoteTraits<float, char>
+struct PromoteTraits<float, signed char>
 {
     typedef float Promote;
     static Promote toPromote(float v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1580,7 +1820,7 @@ struct PromoteTraits<float, int>
 {
     typedef float Promote;
     static Promote toPromote(float v) { return v; }
-    static Promote toPromote(int v) { return v; }
+    static Promote toPromote(int v) { return static_cast<Promote>(v); }
 };
 
 template<>
@@ -1588,7 +1828,7 @@ struct PromoteTraits<float, unsigned int>
 {
     typedef float Promote;
     static Promote toPromote(float v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
+    static Promote toPromote(unsigned int v) { return static_cast<Promote>(v); }
 };
 
 template<>
@@ -1596,7 +1836,7 @@ struct PromoteTraits<float, long>
 {
     typedef float Promote;
     static Promote toPromote(float v) { return v; }
-    static Promote toPromote(long v) { return v; }
+    static Promote toPromote(long v) { return static_cast<Promote>(v); }
 };
 
 template<>
@@ -1604,7 +1844,7 @@ struct PromoteTraits<float, unsigned long>
 {
     typedef float Promote;
     static Promote toPromote(float v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
+    static Promote toPromote(unsigned long v) { return static_cast<Promote>(v); }
 };
 
 template<>
@@ -1631,11 +1871,11 @@ struct PromoteTraits<float, long double>
 };
 
 template<>
-struct PromoteTraits<double, char>
+struct PromoteTraits<double, signed char>
 {
     typedef double Promote;
     static Promote toPromote(double v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1718,11 +1958,11 @@ struct PromoteTraits<double, long double>
 };
 
 template<>
-struct PromoteTraits<long double, char>
+struct PromoteTraits<long double, signed char>
 {
     typedef long double Promote;
     static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(char v) { return v; }
+    static Promote toPromote(signed char v) { return v; }
 };
 
 template<>
@@ -1856,9 +2096,11 @@ struct RequiresExplicitCast {
             { return NumericTraits<type>::fromRealPromote(v); } \
         static type cast(double v) \
             { return NumericTraits<type>::fromRealPromote(v); } \
+        static type cast(type v) \
+            { return v; } \
         template <class U> \
         static type cast(U v) \
-            { return v; } \
+            { return static_cast<type>(v); } \
  \
     };
 #else

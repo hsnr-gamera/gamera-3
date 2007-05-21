@@ -4,27 +4,43 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.3.0, Sep 10 2004 )                                    */
-/*    You may use, modify, and distribute this software according       */
-/*    to the terms stated in the LICENSE file included in               */
-/*    the VIGRA distribution.                                           */
-/*                                                                      */
+/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de                              */
+/*        koethe@informatik.uni-hamburg.de          or                  */
+/*        vigra@kogs1.informatik.uni-hamburg.de                         */
 /*                                                                      */
-/*  THIS SOFTWARE IS PROVIDED AS IS AND WITHOUT ANY EXPRESS OR          */
-/*  IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED      */
-/*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
+/*    Permission is hereby granted, free of charge, to any person       */
+/*    obtaining a copy of this software and associated documentation    */
+/*    files (the "Software"), to deal in the Software without           */
+/*    restriction, including without limitation the rights to use,      */
+/*    copy, modify, merge, publish, distribute, sublicense, and/or      */
+/*    sell copies of the Software, and to permit persons to whom the    */
+/*    Software is furnished to do so, subject to the following          */
+/*    conditions:                                                       */
+/*                                                                      */
+/*    The above copyright notice and this permission notice shall be    */
+/*    included in all copies or substantial portions of the             */
+/*    Software.                                                         */
+/*                                                                      */
+/*    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND    */
+/*    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES   */
+/*    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND          */
+/*    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT       */
+/*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
+/*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
+/*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
 #ifndef VIGRA_ACCESSOR_HXX
 #define VIGRA_ACCESSOR_HXX
 
-#include "vigra/numerictraits.hxx"
-#include "vigra/tuple.hxx"
+#include "metaprogramming.hxx"
+#include "numerictraits.hxx"
+#include "tuple.hxx"
 
 namespace vigra {
 
@@ -33,7 +49,7 @@ namespace vigra {
     Basic templates to encapsulate access to the data of an iterator.
 
     Data accessors are used to allow for flexible access to the data
-    an interator points to. When we access the data directly, we
+    an iterator points to. When we access the data directly, we
     are bound to what <TT>operator*()</TT> returns, if this method exists at
     all. Encapsulating access in an accessor enables a better
     decoupling of data structures and algorithms.
@@ -162,6 +178,11 @@ class StandardAccessor
     void set(V const & value, ITERATOR const & i) const
     { *i = detail::RequiresExplicitCast<VALUETYPE>::cast(value); }
 
+        /* This overload is needed to make the accessor work with a std::back_inserter */
+    template <class V, class ITERATOR>
+    void set(V const & value, ITERATOR & i) const
+    { *i = detail::RequiresExplicitCast<VALUETYPE>::cast(value); }
+
         /** Write the data item at an offset (can be 1D or 2D or higher order difference)..
             The type <TT>V</TT> of the passed
             in <TT>value</TT> is automatically converted to <TT>VALUETYPE</TT>.
@@ -223,6 +244,11 @@ class StandardValueAccessor
         */
     template <class V, class ITERATOR>
     void set(V value, ITERATOR const & i) const
+        { *i = detail::RequiresExplicitCast<VALUETYPE>::cast(value); }
+
+        /* This overload is needed to make the accessor work with a std::back_inserter */
+    template <class V, class ITERATOR>
+    void set(V value, ITERATOR & i) const
         { *i = detail::RequiresExplicitCast<VALUETYPE>::cast(value); }
 
         /** Write the data item at an offset (can be 1D or 2D or higher order difference)..
@@ -492,6 +518,13 @@ class VectorComponentValueAccessor
     { 
         i[diff][index_]= detail::RequiresExplicitCast<value_type>::cast(value); 
     }
+    
+        /** Reset the index to the given number.
+        */
+    void setIndex(int i)
+    {
+        index_ = i;
+    }
 };
 
 /********************************************************/
@@ -618,55 +651,63 @@ class SequenceAccessor
 : public StandardAccessor<SEQUENCE>
 {
   public:
-    /** the sequence's value_type
-    */
+        /** the sequence's value_type
+        */
     typedef typename SEQUENCE::value_type component_type;
 
-    /** the sequence's iterator type
-    */
+#ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
+    typedef typename
+            If<typename TypeTraits<SEQUENCE>::isConst,
+               typename SEQUENCE::const_iterator,
+               typename SEQUENCE::iterator>::type 
+            iterator;
+#else
+        /** the sequence's iterator type
+        */
     typedef typename SEQUENCE::iterator iterator;
+#endif
 
-    /** get begin iterator for sequence at given iterator position
-    */
+        /** get begin iterator for sequence at given iterator position
+        */
     template <class ITERATOR>
     iterator begin(ITERATOR const & i) const
     {
         return (*i).begin();
     }
 
-    /** get end iterator for sequence at given iterator position
-    */
+        /** get end iterator for sequence at given iterator position
+        */
     template <class ITERATOR>
     iterator end(ITERATOR const & i)  const
     {
          return (*i).end();
     }
 
-    /** get begin iterator for sequence at an offset
-        of given iterator position
-    */
+        /** get begin iterator for sequence at an offset
+            of given iterator position
+        */
     template <class ITERATOR, class DIFFERENCE>
     iterator begin(ITERATOR const & i, DIFFERENCE const & diff)  const
     {
         return i[diff].begin();
     }
 
-    /** get end iterator for sequence at a 2D difference vector
-        of given iterator position
-    */
+        /** get end iterator for sequence at a 2D difference vector
+            of given iterator position
+        */
     template <class ITERATOR, class DIFFERENCE>
     iterator end(ITERATOR const & i, DIFFERENCE const & diff)  const
     {
         return i[diff].end();
     }
 
-    /** get size of sequence at given iterator position
-    */
+        /** get size of sequence at given iterator position
+        */
     template <class ITERATOR>
     unsigned int size(ITERATOR const & i) const { return (*i).size(); }
 
-    /** get size of sequence at 2D difference vector of given iterator position
-    */
+        /** get size of sequence at 2D difference vector of given iterator position
+        */
     template <class ITERATOR, class DIFFERENCE>
     unsigned int size(ITERATOR const & i, DIFFERENCE const & diff) const
     { return i[diff].size(); }
@@ -907,17 +948,17 @@ VIGRA_DEFINE_ACCESSOR_TRAITS(unsigned long, StandardValueAccessor, StandardConst
 VIGRA_DEFINE_ACCESSOR_TRAITS(float, StandardValueAccessor, StandardConstValueAccessor)
 VIGRA_DEFINE_ACCESSOR_TRAITS(double, StandardValueAccessor, StandardConstValueAccessor)
 
-template <class T> class RGBValue;
+template <class T, unsigned int RED_IDX, unsigned int GREEN_IDX, unsigned int BLUE_IDX> class RGBValue;
 template <class T> class RGBAccessor;
 template <class T, int SIZE> class TinyVector;
 
 #ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
 
-template <class T>
-struct AccessorTraits<RGBValue<T> >
+template <class T, unsigned int RED_IDX, unsigned int GREEN_IDX, unsigned int BLUE_IDX>
+struct AccessorTraits<RGBValue<T, RED_IDX, GREEN_IDX, BLUE_IDX> >
 {
-    typedef RGBAccessor<RGBValue<T> >   default_accessor;
-    typedef RGBAccessor<RGBValue<T> >   default_const_accessor;
+    typedef RGBAccessor<RGBValue<T, RED_IDX, GREEN_IDX, BLUE_IDX> >   default_accessor;
+    typedef RGBAccessor<RGBValue<T, RED_IDX, GREEN_IDX, BLUE_IDX> >   default_const_accessor;
 };
 
 template <class T, int SIZE>

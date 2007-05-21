@@ -1,0 +1,18 @@
+Readme for VIGRA includion in Gamera
+====================================
+
+These header files are taken from VIGRA
+
+	version 1.5.0
+
+avaliable from 
+
+http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
+
+As the convolution in this version caused crashes in
+Gamera (possibly due to changes/bugs in the implementation
+of BORDER_TREATMENT_REFLECT in VIGRA), the file
+
+	stdconvolution.hxx
+
+is taken from VIGRA version 1.3.0.

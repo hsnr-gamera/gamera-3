@@ -49,7 +49,6 @@ class otsu_find_threshold(PluginFunction):
 
 N. Otsu: *A Threshold Selection Method from Grey-Level Histograms.*
 IEEE Transactions on Systems, Man, and Cybernetics (9), pp. 62-66 (1979)
-
 """
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")
@@ -79,8 +78,8 @@ Equivalent to ``image.threshold(image.otsu_find_threshold())``.
 class tsai_moment_preserving_find_threshold(PluginFunction):
     """Finds a threshold point using the Tsai Moment Preserving threshold algorithm. Reference:
 
-  W.H. Tsai: *Moment-Preserving Thresholding: A New Approach.*
-  Computer Vision Graphics and Image Processing (29), pp. 377-393 (1985)
+W.H. Tsai: *Moment-Preserving Thresholding: A New Approach.*
+Computer Vision Graphics and Image Processing (29), pp. 377-393 (1985)
 """
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")

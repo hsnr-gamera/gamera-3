@@ -1,5 +1,9 @@
+# -*- mode: python; indent-tabs-mode: nil; tab-width: 4 -*-
+# vim: set tabstop=4 shiftwidth=4 expandtab:
+
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+#               2007      Christoph Dalitz and Uma Kompella
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -41,7 +45,12 @@ Pixels less than the given value become black.
     __call__ = staticmethod(__call__)
 
 class otsu_find_threshold(PluginFunction):
-    """Finds a threshold point using the Otsu algorithm"""
+    """Finds a threshold point using the Otsu algorithm. Reference:
+
+N. Otsu: *A Threshold Selection Method from Grey-Level Histograms.*
+IEEE Transactions on Systems, Man, and Cybernetics (9), pp. 62-66 (1979)
+
+"""
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")
     doc_examples = [(GREYSCALE,)]
@@ -66,6 +75,43 @@ Equivalent to ``image.threshold(image.otsu_find_threshold())``.
     def __call__(image, storage_format = 0):
         return _threshold.otsu_threshold(image, storage_format)
     __call__ = staticmethod(__call__)
+
+class tsai_moment_preserving_find_threshold(PluginFunction):
+    """Finds a threshold point using the Tsai Moment Preserving threshold algorithm. Reference:
+
+  W.H. Tsai: *Moment-Preserving Thresholding: A New Approach.*
+  Computer Vision Graphics and Image Processing (29), pp. 377-393 (1985)
+"""
+    self_type = ImageType([GREYSCALE])
+    return_type = Int("threshold_point")
+    doc_examples = [(GREYSCALE,)]
+    author = "Uma Kompella"
+
+class tsai_moment_preserving_threshold(PluginFunction):
+    """Creates a binary image by splitting along a threshold value determined
+using the Tsai Moment Preserving Threshold algorithm.
+
+Equivalent to ``image.threshold(image.tsai_moment_preserving_find_threshold())``.
+
+*storage_format* (optional)
+  specifies the compression type for the result:
+
+  DENSE (0)
+    no compression
+  RLE (1)
+    run-length encoding compression
+"""
+    self_type = ImageType([GREYSCALE])
+    args = Args(Choice("storage format", ['dense', 'rle']))
+    return_type = ImageType([ONEBIT], "output")
+    doc_examples = [(GREYSCALE,)]
+    author = "Uma Kompella"
+    def __call__(image, storage_format = 0):
+        return _threshold.tsai_moment_preserving_threshold(image, storage_format)
+    __call__ = staticmethod(__call__)
+
+
+
 
 class abutaleb_threshold(PluginFunction):
     """Creates a binary image by using the Abutaleb locally-adaptive thresholding
@@ -170,7 +216,7 @@ class ThresholdModule(PluginModule):
     """
     category = "Thresholding"
     cpp_headers = ["threshold.hpp"]
-    functions = [threshold, otsu_find_threshold, otsu_threshold, abutaleb_threshold,
+    functions = [threshold, otsu_find_threshold, otsu_threshold, tsai_moment_preserving_find_threshold, tsai_moment_preserving_threshold, abutaleb_threshold,
                  bernsen_threshold, djvu_threshold]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"

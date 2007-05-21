@@ -179,6 +179,77 @@ Image* otsu_threshold(const T &m, int storage_format) {
   }
 }
 
+
+/*
+  threshold tsai_moment_preserving_find_threshold(GreyScale image);
+  Image* tsai_moment_preserving_threshold(GreyScale image);
+
+  tsai_moment_preserving_find_threshold finds a threshold point using the tsai moment preserving algorithm.
+  tsai_moment_preserving_threshold returns a thresholded image using the tsai_moment_preserving_find_threshold algorithm
+  to find the threshold point.
+*/
+
+template<class T>
+int tsai_moment_preserving_find_threshold(const T& matrix) {
+
+  int thresh;
+  int i;
+  double criterion;
+  double m1, m2, m3;
+  double cd, c0, c1, z0, z1, pd, p0, p1;
+
+  FloatVector* p = histogram(matrix);
+
+  /* calculate first 3 moments */
+  m1 = m2 = m3 = 0.0;
+  for (i = 0; i < 256; i++) {
+    m1 += i *(*p)[i];
+    m2 += i * i * (*p)[i];
+    m3 += i * i * i * (*p)[i];    
+  }
+
+  /* moment preserving bilevel thresholding calculations*/
+
+  cd = m2 - m1 * m1;
+  c0 = (-m2 * m2 + m1 * m3) / cd;
+  c1 = (-m3 + m2 * m1) / cd;
+  
+  z0 = 0.5 * (-c1 - sqrt (c1 * c1 - 4.0 * c0));
+  z1 = 0.5 * (-c1 + sqrt (c1 * c1 - 4.0 * c0));
+
+  pd = z1 - z0;
+  p0 = (z1 - m1) / pd;
+  p1 = 1.0 - p0;
+
+  /* find threshold */
+  for (thresh = 0, criterion = 0.0; thresh < 256; thresh++) {
+    criterion += (*p)[thresh];
+    if (criterion > p0)
+      break;
+  }
+
+  delete p;
+  return thresh;
+}
+
+template<class T>
+Image* tsai_moment_preserving_threshold(const T &m, int storage_format) {
+  int threshold = tsai_moment_preserving_find_threshold(m);
+  if(threshold == 255)
+    threshold = 0;
+  if (storage_format == DENSE) {
+    typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
+    threshold_fill(m, *view, threshold);
+    return view;
+  } else {
+    typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
+    typename fact_type::image_type* view = fact_type::create(m.origin(), m.dim());
+    threshold_fill(m, *view, threshold);
+    return view;
+  }
+}
+
 /*
 
 ________________________________________________________________

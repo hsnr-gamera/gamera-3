@@ -686,7 +686,7 @@ static PyObject* image_get(PyObject* self, const Point& point) {
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
   Rect* r = (Rect*)o->m_x;
   if (point.y() >= r->nrows() || point.x() >= r->ncols()) {
-    PyErr_Format(PyExc_IndexError, "('%d', '%d') is out of bounds for image with size ('%d', '%d').  Remember get/set coordinates are relative to the upper left corner of the subimage, not to the corner of the page.", point.x(), point.y(), r->ncols(), r->nrows());
+    PyErr_Format(PyExc_IndexError, "('%d', '%d') is out of bounds for image with size ('%d', '%d').  Remember get/set coordinates are relative to the upper left corner of the subimage, not to the corner of the page.", (int)point.x(), (int)point.y(), (int)r->ncols(), (int)r->nrows());
     return 0;
   }
   if (is_CCObject(self)) {
@@ -729,7 +729,7 @@ static PyObject* image_set(PyObject* self, const Point& point, PyObject* value) 
 		 "('%d', '%d') is out of bounds for image with size ('%d', '%d').  " 
 		 "Remember get/set coordinates are relative to the upper left corner "
 		 "of the subimage, not to the corner of the page.", 
-		 point.x(), point.y(), r->ncols(), r->nrows());
+		 (int)point.x(), (int)point.y(), (int)r->ncols(), (int)r->nrows());
     return 0;
   }
   if (is_CCObject(self)) {

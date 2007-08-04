@@ -43,7 +43,9 @@ namespace Gamera {
     typedef Rect rect_type;
     typedef Size size_type;
     typedef Point point_type;
+#if GAMERA_INCLUDE_DEPRECATED
     typedef Dimensions dimensions_type;
+#endif
     typedef StaticImage self;
     typedef ImageView<ImageData<T> > view_type;
     /*

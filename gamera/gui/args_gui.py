@@ -125,7 +125,10 @@ class Args:
                window.SetStandardFonts()
             window.SetPage(html)
             window.SetBackgroundColour(wx.Colour(255, 255, 232))
-            window.SetBestFittingSize(wx.Size(50, 150))
+            if wx.VERSION < (2, 8):
+               window.SetBestFittingSize(wx.Size(50, 150))
+            else:
+               window.SetInitialSize(wx.Size(50, 150))
             return window
          except Exception, e:
             print e
@@ -256,7 +259,8 @@ class _NumericValidator(wx.PyValidator):
       return True
 
    def OnChar(self, event):
-      key = event.KeyCode()
+      key = event.GetKeyCode()
+
       if (key < wx.WXK_SPACE or
           key == wx.WXK_DELETE or key > 255):
          event.Skip()

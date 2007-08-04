@@ -1,0 +1,4 @@
+- Drop Silvercity for pygments
+- Remove deprecated functions
+- Add numpy support
+- Inherit stylesheet from docutils one, rather than using a copy

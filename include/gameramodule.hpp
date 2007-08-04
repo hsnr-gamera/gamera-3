@@ -182,6 +182,7 @@ inline PyObject* create_SizeObject(const Size& d) {
 /*
   DIMENSIONS OBJECT
 */
+#if GAMERA_INCLUDE_DEPRECATED
 struct DimensionsObject {
   PyObject_HEAD
   Dimensions* m_x;
@@ -223,6 +224,7 @@ inline PyObject* create_DimensionsObject(const Dimensions& d) {
   so->m_x = new Dimensions(d);
   return (PyObject*)so;
 }
+#endif // GAMERA_INCLUDE_DEPRECATED
 
 /*
   DIM OBJECT

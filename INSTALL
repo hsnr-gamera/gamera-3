@@ -5,23 +5,18 @@ Building and installing Gamera
 Microsoft Windows
 =================
 
+.. note:: These Windows installation instructions are probably quite
+   out of date.
+
 Installing using the Windows installer
 --------------------------------------
 
 Prerequisites
 `````````````
 
-- Python 2.3.x (only the distribution from python.org has been tested)
+- Python 2.3.x or later (only the distribution from python.org has been tested)
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 Installation
 ````````````
@@ -43,17 +38,9 @@ Microsoft Visual Studio 6 or 7.
 Prerequisites
 `````````````
 
-- Python 2.3.x (only the distribution from python.org has been tested)
+- Python 2.3.x or later (only the distribution from python.org has been tested)
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 Cygwin/Mingw32
 ``````````````
@@ -217,28 +204,20 @@ Linux (and other \*nix)
 Prerequisites
 -------------
 
--  Python 2.2 and 2.3 are supported.
+-  Python 2.3 and later are supported
 
   You will need to have the headers (but not the complete
-  source) to build Gamera from source code.  Some Linux
-  distributions, such as SuSE and RedHat, include these as a
+  source) to build Gamera from source code.  Most Linux
+  distributions include these as a
   separate package (eg. ``python-dev``).
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 - ``gcc`` version 3.1 or later.
 
-- libtiff 3.5.x
+- libtiff 3.5.x or later
 
-- libpng 1.2.x
+- libpng 1.2.x or later
 
 Standard Build and Install
 --------------------------
@@ -289,6 +268,8 @@ the Desktop) and double-clicked to run Gamera.
 
 Mac OS-X
 ========
+
+.. note:: These installation instructions are probably quite out-of-date.
 
 OS-X support can be considered working but preliminary at this point.
 Gamera will only run on Panther (10.3).  We do not plan to support

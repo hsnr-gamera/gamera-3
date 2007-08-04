@@ -52,9 +52,11 @@ class ExtendedMultiImageDisplay(MultiImageDisplay):
       self._last_size_was_showing = True
 
    def _OnKey(self, event):
-      if event.KeyCode() == wx.WXK_F12:
+      keycode = event.GetKeyCode()
+
+      if keycode == wx.WXK_F12:
          self.toplevel.do_auto_move()
-      elif event.KeyCode() == wx.WXK_F11:
+      elif keycode == wx.WXK_F11:
          self.toplevel.move_back()
       event.Skip()
 
@@ -1680,7 +1682,9 @@ class SymbolTreeCtrl(wx.TreeCtrl):
          self.Delete(item)
 
    def _OnKey(self, evt):
-      if evt.KeyCode() == wx.WXK_DELETE:
+      keycode = evt.GetKeyCode()
+
+      if keycode == wx.WXK_DELETE:
          self.toplevel._symbol_table.remove(
             self.GetPyData(self.GetSelection()))
       else:
@@ -1737,26 +1741,29 @@ class SymbolTableEditorPanel(wx.Panel):
       wx.EndBusyCursor()
 
    def _OnKey(self, evt):
+      keycode = evt.GetKeyCode()
+      ctrldown = evt.ControlDown()
+
       find = self.text.GetValue()
-      if evt.KeyCode() == wx.WXK_TAB:
+      if keycode == wx.WXK_TAB:
          find = self._symbol_table.autocomplete(find)
          self.text.SetValue(find)
          self.text.SetInsertionPointEnd()
-      elif evt.KeyCode() == wx.WXK_RETURN:
+      elif keycode == wx.WXK_RETURN:
          self._OnEnter(evt)
-      elif evt.KeyCode() == wx.WXK_F12:
+      elif keycode == wx.WXK_F12:
          self.toplevel.do_auto_move()
-      elif evt.KeyCode() == wx.WXK_F11:
+      elif keycode == wx.WXK_F11:
          self.toplevel.move_back()
       # This behavior works automatically in GTK+
-      elif wx.Platform == '__WXMSW__' and evt.ControlDown():
-         if evt.KeyCode() == wx.WXK_LEFT:
+      elif wx.Platform == '__WXMSW__' and ctrldown:
+         if keycode == wx.WXK_LEFT:
             current = self.text.GetInsertionPoint()
             if current != 0:
                new = self.text.GetValue().rfind(".", 0, current - 1)
                self.text.SetInsertionPoint(new + 1)
             return
-         elif evt.KeyCode() == wx.WXK_BACK:
+         elif keycode == wx.WXK_BACK:
             current = self.text.GetInsertionPoint()
             value = self.text.GetValue()
             if current != 0:
@@ -1767,7 +1774,7 @@ class SymbolTableEditorPanel(wx.Panel):
                   self.text.SetValue(self.text.GetValue()[0:new + 1])
                self.text.SetInsertionPointEnd()
             return
-         elif evt.KeyCode() == wx.WXK_RIGHT:
+         elif keycode == wx.WXK_RIGHT:
             current = self.text.GetInsertionPoint()
             new = self.text.GetValue().find(".", current)
             if new == -1:

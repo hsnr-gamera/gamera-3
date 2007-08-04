@@ -5,23 +5,18 @@ Building and installing Gamera
 Microsoft Windows
 =================
 
+.. note:: These Windows installation instructions are probably quite
+   out of date.
+
 Installing using the Windows installer
 --------------------------------------
 
 Prerequisites
 `````````````
 
-- Python 2.3.x (only the distribution from python.org has been tested)
+- Python 2.3.x or later (only the distribution from python.org has been tested)
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 Installation
 ````````````
@@ -43,17 +38,9 @@ Microsoft Visual Studio 6 or 7.
 Prerequisites
 `````````````
 
-- Python 2.3.x (only the distribution from python.org has been tested)
+- Python 2.3.x or later (only the distribution from python.org has been tested)
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 Cygwin/Mingw32
 ``````````````
@@ -86,15 +73,12 @@ Use the MSVC-built Python from python.org:
 
    Find your ``pythonXX.dll`` file, where ``XX`` is the version of
    Python you have installed.  This is normally in
-   ``%WINDIR%\system32\``, where ``%WINDIR%`` is the value of the
-   environment variable ``WINDIR``.
+   ``C:\WINDOWS\system32\`` or ``C:\winnt\system32\``.
 
    Make a ``.def`` file from your ``pythonXX.dll``.  (You will need to
-   install ``pexports.exe`` from the `MingW utilities`__)::
+   install ``pexports.exe`` from the Cygwin installer)::
 
-  	pexports "$WINDIR"'\system32\pythonXX.dll' > pythonXX.def
-
-.. __: http://www.mingw.org/download.shtml
+  	pexports 'C:\WINDOWS\system32\pythonXX.dll' > pythonXX.def
 
    Then create a static library (``libpythonXX.a``)::
 
@@ -220,28 +204,20 @@ Linux (and other \*nix)
 Prerequisites
 -------------
 
--  Python 2.2 and 2.3 are supported.
+-  Python 2.3 and later are supported
 
   You will need to have the headers (but not the complete
-  source) to build Gamera from source code.  Some Linux
-  distributions, such as SuSE and RedHat, include these as a
+  source) to build Gamera from source code.  Most Linux
+  distributions include these as a
   separate package (eg. ``python-dev``).
 
-- wxPython 2.4.x
-
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
-
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+- wxPython 2.4.x or later
 
 - ``gcc`` version 3.1 or later.
 
-- libtiff 3.5.x
+- libtiff 3.5.x or later
 
-- libpng 1.2.x
+- libpng 1.2.x or later
 
 Standard Build and Install
 --------------------------
@@ -265,25 +241,19 @@ priviledges (such as your home directory)::
 
 From the Gamera build directory, install Gamera into that directory::
 
-  python setup.py install --home=$HOME/python
+  python setup.py install --home=~/python
 
 Set up an environment variables so Python can find stuff there (you
 may want to add this to your ~/.bash_profile file)::
 
-  export PYTHONPATH=$HOME/python/lib/python
+  export PYTHONPATH=~/python/lib/python
 
 Add the local Python scripts directory to your path::
 
-  export PATH=$HOME/python/bin:$PATH
+  export PATH=~/python/bin:$PATH
 
 Now you should be able to run the ``gamera_gui`` script from the
 command line.
-
-If you wish to build toolkits you will also need to include the Gamera
-include directories (note that abbreviating ``$HOME`` with ``~`` will
-not work)::
-
-  export CFLAGS=-I$HOME/python/include/python2.3/gamera/
 
 Running
 -------
@@ -299,17 +269,14 @@ the Desktop) and double-clicked to run Gamera.
 Mac OS-X
 ========
 
-As wxPython comes in two flavors for OS-X, there are two options to install
-Gamera. On Panther (10.3) you *must* use the wxPython flavor
-built on top of Gtk+/X11. On Tiger (10.4) you can alternatively use
-the native Carbon-based wxPython that follows the look-and-feel of OS-X
-and comes preinstalled with MacOSX.
+.. note:: These installation instructions are probably quite out-of-date.
 
-Using Gtk+/X11 wxPython
------------------------
+OS-X support can be considered working but preliminary at this point.
+Gamera will only run on Panther (10.3).  We do not plan to support
+earlier versions.
 
 Prerequisites
-`````````````
+-------------
 
 - Python 2.3 (the version that comes with OS-X is recommended).
 
@@ -323,34 +290,19 @@ Prerequisites
 
 .. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
 
-  Since there is no official build of the Gtk+/X11 version, a precompiled 
-  package for PPC is made available in the Gamera
-  SourceForge Files section. If you have an Intel Mac, you should not use
-  this package, but rather try the native wxPython that comes preinstalled
-  with your Mac.
+  wxPython comes in two flavors for OS-X: a native Carbon-based one that
+  follows the look-and-feel of OS-X, and a version built on top of
+  Gtk+/X11.  The native Carbon version is currently too incomplete to be
+  usable for Gamera.  Since there is no official build of the
+  Gtk+/X11 version, I have made one available in the Gamera
+  SourceForge Files section.
 
 - ``gcc`` version 3.1 or later
 
-  This is included in the Xcode tools.
-
 - X11
 
-  For Panther (10.3) X11 is available for download from the Apple website.
-  For Tiger (10.4) it is only available from the OS installation disk.
-  If you forgot to select it while installing Tiger, you can install it 
-  later from the "Optional Installs.mpkg" in the Tiger Install DVD.
-
-- Optional: Matplotlib
-
-  Matplotlib can be compiled from source or downloaded as a binary.  We
-  recommend the binary which can be downloaded from the 
-  `Matplotlib homepage`__.
-
-.. __: http://matplotlib.sourceforge.net/
-
-
 Standard Build and Install
-``````````````````````````
+----------------------------
 
 Download and install the unoffical wxPython-Gtk-X11 distribution from
 the Gamera Files section on SourceForge.
@@ -371,81 +323,19 @@ and then to install (you'll need to have admin priviledges)::
  
   sudo python setup.py install
 
-The scripts are by default installed to
-``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-Hence you must add this directory to your search path (environment variable
-PATH) in order to be able to call ``gamera_gui`` from the command line.
-Alternatively you can install the scripts into ``/usr/bin``, which is
-in teh default search path, by::
+The scripts can be installed by::
 
   sudo python setup.py install_scripts -d /usr/bin
 
+.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
+  place on the PATH.  If you do not specify it, the scripts are by
+  default installed to
+  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
 
 Running
-```````
+-------
 
-Start an X11 terminal and run the ``gamera_gui`` script. Starting Gamera
-from an X11 terminal makes sure that both X11 is running and the DISPLAY
-environment variable is set correctly.
-
-.. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the Gamera compiled shared
-  object files.
-
-
-Using the native wxPython (OSX 10.4 only)
------------------------------------------
-
-Prerequisites
-`````````````
-
-- Python 2.3 and wxPython 2.4.x (the versions that come with OS-X).
-
-- ``gcc`` version 3.1 or later
-
-  This is included in the Xcode tools which are provided on the Tiger install
-  disks as an optional install.
-
-- Optional: Matplotlib
-
-  Matplotlib can be compiled from source or downloaded as a binary.  We
-  recommend the binary which can be downloaded from the 
-  `Matplotlib homepage`__.
-
-.. __: http://matplotlib.sourceforge.net/
-
-
-Standard Build and Install
-``````````````````````````
-
-Gamera is built using the Python-standard Distutils system.  
-
-To build Gamera, open a terminal and type (note that you must use ``pythonw``
-rather than ``python``)::
-
-  pythonw setup.py build
-
-and then to install (you'll need to have admin priviledges)::
- 
-  sudo pythonw setup.py install
-
-The scripts are by default installed to
-``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-Hence you must add this directory to your search path (environment variable
-PATH) in order to be able to call ``gamera_gui`` from the command line.
-Alternatively you can install the scripts into ``/usr/bin``, which is
-in the default search path, by::
-
-  sudo pythonw setup.py install_scripts -d /usr/bin
-
-
-Running
-```````
-
-Start a terminal and run the ``gamera_gui`` script. When you get an error
-that you cannot run a GUI program, you have run the build steps described
-above with ``python`` instead of ``pythonw``. To fix this, simply append the
-letter ``w`` to the python shebang line in ``gamera_gui``.
+Start an X11 terminal and run the ``gamera_gui`` script.  
 
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the Gamera compiled shared

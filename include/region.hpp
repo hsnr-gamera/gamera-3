@@ -53,6 +53,10 @@ namespace Gamera {
   class RegionTemplate : public Rect {
   public:
     typedef std::map<std::string, V> map_type;
+#ifndef GAMERA_DEPRECATED
+    RegionTemplate() :
+      Rect() { }
+#endif // !GAMERA_DEPRECATED
     RegionTemplate(const Point& ul, const Point& lr) :
       Rect(ul, lr) { }
     RegionTemplate(const Rect& r) :

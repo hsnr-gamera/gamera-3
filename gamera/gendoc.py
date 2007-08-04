@@ -182,10 +182,23 @@ class DocumentationGenerator:
              os.stat(filename)[ST_MTIME] > os.stat(output_file)[ST_MTIME]):
             print "  Generating " + rootname
             lines = fd.readlines()
-            lines = lines[:3] + ["\n", "**Last modifed**: %s\n\n" % mtime, ".. contents::\n", "\n"] + lines[3:]
+            lines = (lines[:3] + 
+                     ["\n", "**Last modifed**: %s\n\n" % mtime, 
+                      ".. contents::\n\n", 
+                      ".. role:: raw-html(raw)\n   :format: html\n",
+                      '.. footer:: :raw-html:`<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>`\n\n'
+                      ] + 
+                     lines[3:])
             fd = cStringIO.StringIO(''.join(lines))
             try:
-               publish_file(source=fd, destination_path=output_file, writer_name="html")
+               overrides = {'embed_stylesheet': False,
+                            'stylesheet_path': None,
+                            'stylesheet': 'default.css'}
+               try:
+                  publish_file(source=fd, destination_path=output_file, 
+                               writer_name="html", settings_overrides=overrides)
+               except TypeError:
+                  publish_file(source=fd, destination_path=output_file)
             except KeyboardInterrupt, e:
                raise e
             except Exception, e:
@@ -271,6 +284,8 @@ class PluginDocumentationGenerator:
           methods_list = methods.items()
           methods_list.sort()
           for key, val in methods_list:
+             if key.startswith("_"):
+                key = key[1:]
              if type(val) == dict and level == 0:
                  filename = key.lower()
              s.write("  " * level)
@@ -278,7 +293,10 @@ class PluginDocumentationGenerator:
              s.write(key)
              s.write("_")
              s.write("\n\n")
-             href = "%s.html#%s" % (filename, key.lower().replace("_", "-"))
+             bookmark = key.lower().replace("_", "-")
+             if bookmark.startswith("-"):
+                bookmark = bookmark[1:]
+             href = "%s.html#%s" % (filename, bookmark)
              links.append(".. _%s: %s" % (key, href))
              if type(val) == dict:
                  toc_recurse(s, val, level + 1, links, index, filename)
@@ -541,6 +559,8 @@ def copy_images(path_obj):
 def copy_css(path_obj):
     open(os.path.join(path_obj.output_path, "default.css"), "w").write(
        open(os.path.join(path_obj.src_path, "default.css"), "r").read())
+    open(os.path.join(path_obj.output_path, "html4css1.css"), "w").write(
+       open(os.path.join(path_obj.src_path, "html4css1.css"), "r").read())
 
 class Paths:
     def __init__(self, root="."):

@@ -50,6 +50,7 @@ public:
     StringGenome, FloatGenome, IntGenome, DoubleGenome
   };
 
+  virtual ~GAID() { }
   int sameClass(const GAID &b) const {return(classID() == b.classID());} 
   virtual const char * className() const {return "no class";} 
   virtual int classID() const {return 0;}

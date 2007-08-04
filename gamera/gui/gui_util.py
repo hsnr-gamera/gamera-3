@@ -104,7 +104,8 @@ class FileDialog(wx.FileDialog):
       self.extensions = extensions
 
    def show(self):
-      self.SetStyle(self._flags)
+      if wx.VERSION < (2, 8):
+         self.SetStyle(self._flags)
       cls = self.__class__
       result = self.ShowModal()
       self.Destroy()

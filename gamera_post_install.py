@@ -5,7 +5,10 @@ import sys, os.path, os
 
 def install_desktop_icon():
   try:
-    import wxPython.wx
+    try:
+      import wx
+    except:
+      import wxPython.wx
   except ImportError:
     print "wxPython was not found.  Please make sure that wxPython is installed before running Gamera."
 

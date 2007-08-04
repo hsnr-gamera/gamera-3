@@ -21,11 +21,15 @@
 # are imported.
 
 # wxPython
-from wxPython.wx import *
-# Check that the version is correct
-if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 6):
-   raise RuntimeError("""This version of Gamera requires either wxPython 2.4.x or
-wxPython 2.6.x.  However, it seems that you have wxPython %s installed."""
+try:
+   import wxversion
+   wxversion.select(["2.8", "2.6", "2.4"])
+   from wx import *
+except:
+   from wxPython.wx import *
+   # Check that the version is correct
+   if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 8):
+     raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x or 2.8.x.  However, it seems that you have wxPython %s installed."""
                       % ".".join([str(x) for x in wxVERSION]))
 
 import inspect
@@ -188,7 +192,8 @@ class PyShellGameraShell(wx.py.shell.Shell):
          self.update()
 
    def OnKeyDown(self, event):
-      key = event.KeyCode()
+      key = event.GetKeyCode()
+
       if key in (wx.WXK_UP, wx.WXK_DOWN):
          event.m_controlDown = True
       wx.py.shell.Shell.OnKeyDown(self, event)

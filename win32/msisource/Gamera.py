@@ -2,7 +2,12 @@
 print "Loading GAMERA..."
 import sys
 try:
-   import wxPython.wx
+   try:
+      import wxversion
+      wxversion.select(["2.8", "2.6", "2.4"])
+      import wx
+   except:
+      import wxPython.wx
 except ImportError:
    print "Please ensure that wxPython is installed before running Gamera."
    print "Press <ENTER> to exit."

@@ -522,6 +522,8 @@ Use highlight_rectangle(Rect r, color, text) instead.""")
    # CALLBACKS
    #
    def _OnResize(self, event):
+      if not hasattr(self, 'image'):
+         return
       size = self.GetSize()
       if size.x > 0 and size.y > 0:
          event.Skip()

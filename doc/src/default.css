@@ -1,4 +1,5 @@
 @import url(html4css1.css);
+@import url(pygments.css);
 
 body {
   margin: 2em 2em 2em 2em;
@@ -49,7 +50,7 @@ h5 {
   border-top-width: 0.5px
 }
 
-div.code-block{
+div.code-block, div.highlight {
 margin-left: 2em;
 margin-right: 2em;
 background-color: #f0f0e0;
@@ -60,7 +61,6 @@ border-width: 1px;
 font-size: 10pt;
 padding: 1em;
 }
-
 
 /* The following is for SilverCity syntax highlighting */
 

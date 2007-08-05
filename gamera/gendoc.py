@@ -45,30 +45,59 @@ except ImportError, e:
 
 ######################################################################
 # Import SilverCity
+source_highlighter = None
 try:
-   import SilverCity
+   import pygments
+   import pygments.lexers
+   import pygments.formatters
+   source_highlighter = 'pygments'
 except ImportError, e:
-   print "'SilverCity' 0.9 or later must be installed to generate the documentation."
-   print "It can be downloaded at http://silvercity.sf.net"
-   sys.exit(1)
+   try:
+      import SilverCity
+      source_highlighter = 'silvercity'
+   except ImportError, e:
+      print "Either 'pygments' 0.6 or later or 'SilverCity' 0.9 or later"
+      print "must be installed to colorize the sourcecode snippets in the"
+      print "documentation."
+      sys.exit(1)
 
-# SilverCity support
-def code_block(name, arguments, options, content, lineno,
-             content_offset, block_text, state, state_machine ):
-  language = arguments[0]
-  try:
-    module = getattr(SilverCity, language)
-    generator = getattr(module, language+"HTMLGenerator")
-  except AttributeError:
-    error = state_machine.reporter.error( "No SilverCity lexer found "
-      "for language '%s'." % language, 
-      docutils.nodes.literal_block(block_text, block_text), line=lineno )
-    return [error]
-  io = cStringIO.StringIO()
-  generator().generate_html( io, '\n'.join(content) )
-  html = '<div class="code-block">\n%s\n</div>\n' % io.getvalue()
-  raw = docutils.nodes.raw('',html, format = 'html')
-  return [raw]
+# Source code highlighting support
+if source_highlighter == 'pygments':
+   html_formatter = pygments.formatters.HtmlFormatter()
+
+   def code_block(name, arguments, options, content, lineno,
+                  content_offset, block_text, state, state_machine):
+      language = arguments[0].lower()
+      try:
+         lexer = pygments.lexers.get_lexer_by_name(language)
+      except ValueError:
+         # no lexer found - use the text one instead of an exception
+         error = state_machine.reporter.error( "No pygments lexer found "
+                                               "for language '%s'." % language, 
+                                               docutils.nodes.literal_block(block_text, block_text), line=lineno )
+         return [error]
+      parsed = pygments.highlight(
+         u'\n'.join(content), 
+         lexer, 
+         html_formatter)
+      return [docutils.nodes.raw('', parsed, format='html')]
+elif source_highlighter == 'silvercity':
+   def code_block(name, arguments, options, content, lineno,
+                content_offset, block_text, state, state_machine ):
+      language = arguments[0]
+      try:
+         module = getattr(SilverCity, language)
+         generator = getattr(module, language+"HTMLGenerator")
+      except AttributeError:
+         error = state_machine.reporter.error( "No SilverCity lexer found "
+                                               "for language '%s'." % language, 
+                                               docutils.nodes.literal_block(block_text, block_text), line=lineno )
+         return [error]
+      io = cStringIO.StringIO()
+      generator().generate_html( io, '\n'.join(content) )
+      html = '<div class="code-block">\n%s\n</div>\n' % io.getvalue()
+      raw = docutils.nodes.raw('',html, format = 'html')
+      return [raw]
 code_block.arguments = (1,0,0)
 code_block.options = {'language' : docutils.parsers.rst.directives.unchanged }
 code_block.content = 1
@@ -153,10 +182,15 @@ class DocumentationGenerator:
             os.path.join(self.output_images_path,
                          "%s_generic.png" % (pixel_type_name)))
 
-   def copy_css(self, input_path, output_path, css_file="default.css"):
+   def copy_css(self, input_path, output_path):
       print "Copying CSS file"
-      shutil.copyfile(os.path.join(input_path, css_file),
-                      os.path.join(output_path, css_file))
+      for filename in ['default.css', 'html4css1.css']:
+         shutil.copyfile(os.path.join(input_path, filename),
+                         os.path.join(output_path, filename))
+      if source_highlighter == 'pygments':
+         fd = open(os.path.join(output_path, 'pygments.css'), 'w')
+         fd.write(html_formatter.get_style_defs(""))
+         fd.close()
 
    def copy_images(self, src_paths, output_path):
       print "Copying images"
@@ -555,12 +589,6 @@ def copy_images(path_obj):
          path, filename = os.path.split(file)
          open(os.path.join(path_obj.output_images_path, filename), "wb").write(
              open(file, "rb").read())
-
-def copy_css(path_obj):
-    open(os.path.join(path_obj.output_path, "default.css"), "w").write(
-       open(os.path.join(path_obj.src_path, "default.css"), "r").read())
-    open(os.path.join(path_obj.output_path, "html4css1.css"), "w").write(
-       open(os.path.join(path_obj.src_path, "html4css1.css"), "r").read())
 
 class Paths:
     def __init__(self, root="."):

@@ -1,3 +1,3 @@
-- Remove deprecated functions
 - Add numpy support
-- Inherit stylesheet from docutils one, rather than using a copy
+- Write replacements for broken wxPython compositing routines
+- Look into VIGRA convolution problems

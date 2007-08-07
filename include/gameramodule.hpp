@@ -180,53 +180,6 @@ inline PyObject* create_SizeObject(const Size& d) {
 }
 
 /*
-  DIMENSIONS OBJECT
-*/
-#if GAMERA_INCLUDE_DEPRECATED
-struct DimensionsObject {
-  PyObject_HEAD
-  Dimensions* m_x;
-};
-
-#ifndef GAMERACORE_INTERNAL
-inline PyTypeObject* get_DimensionsType() {
-  static PyTypeObject* t = 0;
-  if (t == 0) {
-    PyObject* dict = get_gameracore_dict();
-    if (dict == 0)
-      return 0;
-    t = (PyTypeObject*)PyDict_GetItemString(dict, "Dimensions");
-    if (t == 0) {
-      PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Dimensions type from gamera.gameracore.\n");
-      return 0;
-    }
-  }
-  return t;
-}
-#else
-extern PyTypeObject* get_DimensionsType();
-#endif
-
-inline bool is_DimensionsObject(PyObject* x) {
-  PyTypeObject* t = get_DimensionsType();
-  if (t == 0)
-    return 0;
-  return PyObject_TypeCheck(x, t);
-}
-
-inline PyObject* create_DimensionsObject(const Dimensions& d) {
-  PyTypeObject* t = get_DimensionsType();
-  if (t == 0)
-    return 0;
-  DimensionsObject* so;
-  so = (DimensionsObject*)t->tp_alloc(t, 0);
-  so->m_x = new Dimensions(d);
-  return (PyObject*)so;
-}
-#endif // GAMERA_INCLUDE_DEPRECATED
-
-/*
   DIM OBJECT
 */
 struct DimObject {
@@ -1417,6 +1370,5 @@ inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
 }
 
 #endif
-
-#endif
  
+#endif

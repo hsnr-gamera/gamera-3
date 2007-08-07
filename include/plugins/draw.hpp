@@ -172,24 +172,6 @@ void draw_line(T& image, const P& a, const P& b,
   _draw_line(image, a, b, value);
 }
 
-#ifdef GAMERA_DEPRECATED
-/*
-draw_line(T& image, double y1, double x1, double y2, double x2,
-typename T::value_type value) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use draw_line(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void draw_line(T& image, const double y1, const double x1, const double y2, const double x2,
-	       const typename T::value_type value, const double thickness=1.0) {
-  // TODO: Should be FloatPoint
-  draw_line(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value);
-}
-#endif
-
 template<class T, class P>
 void draw_hollow_rect(T& image, const P& a, const P& b, 
 		      const typename T::value_type value,
@@ -204,25 +186,6 @@ template<class T>
 void draw_hollow_rect(T& image, const Rect& r, const typename T::value_type value) {
   draw_hollow_rect(image, r.ul(), r.lr(), value);
 }
-
-#ifdef GAMERA_DEPRECATED
-/*
-draw_hollow_rect(T& image, double y1, double x1, double y2, double x2,
-typename T::value_type value) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use draw_hollow_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void draw_hollow_rect(T& image, const double y1_, const double x1_, 
-		      const double y2_, const double x2_,
-		      const typename T::value_type value) {
-  // TODO: Should be FloatPoint
-  draw_hollow_rect(image, FloatPoint(x1_, y1_), FloatPoint(x2_, y2_), value);
-}
-#endif
 
 template<class T, class P>
 void draw_filled_rect(T& image, const P& a, const P& b, const typename T::value_type value) {
@@ -253,24 +216,6 @@ template<class T>
 void draw_filled_rect(T& image, const Rect& r, const typename T::value_type value) {
   draw_filled_rect(image, r.ul(), r.lr(), value);
 }
-
-#ifdef GAMERA_DEPRECATED
-/*
-draw_filled_rect(T& image, double y1, double x1, double y2, double x2,
-typename T::value_type value) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use draw_filled_rect(image, FloatPoint(x1, y1), FloatPoint(x2, y2), value) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void draw_filled_rect(T& image, const size_t y1_, const size_t x1_, const size_t y2_, const size_t x2_,
-		      const typename T::value_type value) {
-  // TODO: Should be FloatPoint
-  draw_filled_rect(image, FloatPoint(x1_, y1_), FloatPoint(x2_, y2_), value);
-}
-#endif
 
 template<class T, class P>
 void draw_marker(T& image, const P& p, const size_t size, const size_t style, 
@@ -303,24 +248,6 @@ void draw_marker(T& image, const P& p, const size_t size, const size_t style,
     throw std::runtime_error("Invalid style.");
   }
 }
-
-#ifdef GAMERA_DEPRECATED
-/*
-draw_marker(T& image, double& y1, double& x1, size_t size, size_t
-style, typename T::value_type value) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use draw_marker(image, FloatPoint(x1, y1), size, style, value) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void draw_marker(T& image, const double& y1, const double& x1, const size_t size, 
-		 const size_t style, const typename T::value_type value) {
-  // TODO: Should be FloatPoint
-  draw_marker(image, FloatPoint(x1, y1), size, style, value);
-}
-#endif
 
 inline double square(double a) {
   return a * a;
@@ -362,35 +289,6 @@ void draw_bezier(T& image, const P& start, const P& c1, const P& c2,
   }
   draw_line(image, P(x, y), end, value, thickness);
 }
-
-#ifdef GAMERA_DEPRECATED
-/*
-draw_bezier(T& image, double start_y, double start_x, double c1_y,
-double c1_x, double c2_y, double c2_x, double end_y, double end_x,
-typename T::value_type value, double thickness = 1.0, double accuracy
-= 0.1) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use draw_bezier(image, FloatPoint(start_x, start_y), FloatPoint(c1_x,
-c1_y), FloatPoint(c2_x, c2_y), FloatPoint(end_x, end_y), value,
-thickness, accuracy) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void draw_bezier(T& image, 
-		 const double start_y, const double start_x, 
-		 const double c1_y, const double c1_x, 
-		 const double c2_y, const double c2_x,
-		 const double end_y, const double end_x,
-		 const typename T::value_type value,
-		 const double thickness = 1.0,
-		 const double accuracy = 0.1) {
-  // TODO: Should be FloatPoint
-  draw_bezier(image, FloatPoint(start_x, start_y), FloatPoint(c1_x, c1_y), 
-	      FloatPoint(c2_x, c2_y), FloatPoint(end_x, end_y), value, thickness, accuracy);
-}
-#endif
 
 template<class T, class P>
 void draw_circle(T& image, const P& c, const double r, const typename T::value_type value,
@@ -500,23 +398,6 @@ void flood_fill(T& image, const P& p, const typename T::value_type& color) {
   s.push(Point((size_t)x, (size_t)y));
   FloodFill<T>::fill_seeds(image, s, interior, color);
 }
-
-#ifdef GAMERA_DEPRECATED
-/*
-flood_fill(T& image, size_t y, size_t x, const typename T::value_type&
-color) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use flood_fill(image, Point(x, y), color) instead.
-*/
-template<class T>
-GAMERA_CPP_DEPRECATED
-void flood_fill(T& image, size_t y, size_t x, const typename T::value_type& color) {
-  // TODO: Should be FloatPoint
-  flood_fill(image, Point(x, y), color);
-}
-#endif
 
 template<class T>
 void remove_border(T& image) {

@@ -806,33 +806,6 @@ namespace Gamera {
     typedef typename RleDataDetail::RleVector<T>::iterator iterator;
     typedef typename RleDataDetail::RleVector<T>::const_iterator const_iterator;
 
-#ifdef GAMERA_DEPRECATED
-    /* 
-RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y
-= 0, size_t page_offset_x = 0) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use RleImageData(Dim(ncols, nrows), Point(page_offset_x,
-page_offset_y) = (0, 0)) instead.
-    */
-    RleImageData(size_t nrows = 1, size_t ncols = 1, size_t page_offset_y = 0,
-		 size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
-#endif
-
-#ifdef GAMERA_DEPRECATED
-    /* 
-RleImageData(const Size& size, size_t page_offset_y = 0, size_t
-page_offset_x = 0) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use RleImageData(Size(width, height), Point(page_offset_x,
-page_offset_y) = (0, 0)) instead.
-    */
-    RleImageData(const Size& size, size_t page_offset_y = 0,
-		 size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
-#endif
     RleImageData(const Size& size, const Point& offset)
       : RleDataDetail::RleVector<T>((size.height() + 1) * (size.width() + 1)),
 	ImageDataBase(size, offset) {
@@ -842,20 +815,6 @@ page_offset_y) = (0, 0)) instead.
 	ImageDataBase(size) {
     }
 
-#ifdef GAMERA_DEPRECATED
-    /* 
-RleImageData(const Size& size, size_t page_offset_y = 0, size_t
-page_offset_x = 0) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use RleImageData(Size(width, height), Point(page_offset_x,
-page_offset_y) = (0, 0)) instead.
-    */
-    RleImageData(const Dimensions& dim, size_t page_offset_y = 0,
-		 size_t page_offset_x = 0) GAMERA_CPP_DEPRECATED;
-#endif
     RleImageData(const Dim& dim, const Point& offset)
       : RleDataDetail::RleVector<T>(dim.nrows() * dim.ncols()),
 	ImageDataBase(dim, offset) {
@@ -901,29 +860,6 @@ page_offset_y) = (0, 0)) instead.
       resize(size);
     }
   };
-
-#ifdef GAMERA_DEPRECATED
-  template<class T>
-  RleImageData<T>::RleImageData(size_t nrows, size_t ncols, 
-				size_t page_offset_y, size_t page_offset_x) : 
-    RleDataDetail::RleVector<T>(nrows * ncols),
-    ImageDataBase(Dim(ncols, nrows), Point(page_offset_x, page_offset_y)) { 
-  }
-
-  template<class T>
-  RleImageData<T>::RleImageData(const Size& size, size_t page_offset_y,
-				size_t page_offset_x)
-    : RleDataDetail::RleVector<T>((size.height() + 1) * (size.width() + 1)),
-      ImageDataBase(size, Point(page_offset_x, page_offset_y)) {
-  }
-
-  template<class T>
-  RleImageData<T>::RleImageData(const Dimensions& dim, size_t page_offset_y,
-				size_t page_offset_x)
-    : RleDataDetail::RleVector<T>(dim.nrows() * dim.ncols()),
-      ImageDataBase(Dim(dim.ncols(), dim.nrows()), Point(page_offset_x, page_offset_y)) {
-  }
-#endif
 }
 
 #endif

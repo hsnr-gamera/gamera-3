@@ -56,7 +56,7 @@ from enums import ALL, NONIMAGE
 # import the storage types
 from gameracore import DENSE, RLE
 # import some of the basic types
-from gameracore import ImageData, Size, Dimensions, Dim, Point, \
+from gameracore import ImageData, Size, Dim, Point, \
      FloatPoint, Rect, Region, RegionMap, ImageInfo, RGBPixel
 # import gamera.gameracore for subclassing
 import gameracore
@@ -437,12 +437,6 @@ There are a number of ways to create a subimage:
 
    - subimage(Rect *rectangle*)
 
-**Deprecated forms:**
-
-   - subimage(Point *upper_left*, Dimensions *dimensions*)
-
-   - subimage(Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)
-
 Changes to subimages will affect all other subimages viewing the same data."""
       if hasattr(self, "label"):
          return Cc(self, self.label, *args, **kwargs)
@@ -671,7 +665,7 @@ if __name__ == "__main__":
 
 __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL DENSE RLE "
-           "ImageData Size Dimensions Dim Point FloatPoint Rect Region RegionMap "
+           "ImageData Size Dim Point FloatPoint Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel "
            "save_image").split()

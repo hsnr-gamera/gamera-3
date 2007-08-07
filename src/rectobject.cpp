@@ -40,9 +40,6 @@ extern "C" {
   static PyObject* rect_get_ll(PyObject* self);
   static PyObject* rect_get_ll_x(PyObject* self);
   static PyObject* rect_get_ll_y(PyObject* self);
-#ifdef GAMERA_DEPRECATED
-  static PyObject* rect_get_dimensions(PyObject* self);
-#endif
   static PyObject* rect_get_dim(PyObject* self);
   static PyObject* rect_get_size(PyObject* self);
   static PyObject* rect_get_ncols(PyObject* self);
@@ -67,9 +64,6 @@ extern "C" {
   static int rect_set_ll(PyObject* self, PyObject* value);
   static int rect_set_ll_x(PyObject* self, PyObject* value);
   static int rect_set_ll_y(PyObject* self, PyObject* value);
-#ifdef GAMERA_DEPRECATED
-  static int rect_set_dimensions(PyObject* self, PyObject* value);
-#endif
   static int rect_set_dim(PyObject* self, PyObject* value);
   static int rect_set_size(PyObject* self, PyObject* value);
   static int rect_set_ncols(PyObject* self, PyObject* value);
@@ -130,14 +124,6 @@ static PyGetSetDef rect_getset[] = {
    "(int property)\n\nThe left edge of the rectangle in logical coordinate space."},
   {"ll_y", (getter)rect_get_ll_y, (setter)rect_set_ll_y,
    "(int property)\n\nThe lower edge of the rectangle in logical coordinate space."},
-#ifdef GAMERA_DEPRECATED
-  {"dimensions", (getter)rect_get_dimensions, (setter)rect_set_dimensions,
-"(Dimensions property)\n\nThe dimensions of the rectangle.  Equivalent to ``Dimensions(image.nrows, image.ncols)``.\n\n"
-".. warning::\n\n"
-"  The Dimensions class is deprecated.\n\n"
-"  Reason: (x, y) coordinate consistency.\n\n"
-"  Use Dim(ncols, nrows) instead.\n\n"},
-#endif
   {"dim", (getter)rect_get_dim, (setter)rect_set_dim,
    "(Dim property)\n\nThe dimensions of the rectangle.  Equivalent to ``Dim(image.ncols, image.nrows)``."},
   {"size", (getter)rect_get_size, (setter)rect_set_size,
@@ -234,18 +220,6 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
 	} else if (is_DimObject(b)) {
 	  return _rect_new(pytype, new Rect(point_a, *((DimObject*)b)->m_x));
 	}
-#ifdef GAMERA_DEPRECATED
-	else if (is_DimensionsObject(b)) {
-	  if (send_deprecation_warning(
-"Rect(Point offset, Dimensions dimensions) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
-"in favor of Dim).\n\n"
-"Use Rect((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
-"imageobject.cpp", __LINE__) == 0)
-	    return 0;
-	  return _rect_new(pytype, new Rect(point_a, *((DimensionsObject*)b)->m_x)); // deprecated call
-	}
-#endif
       }
     }
   }
@@ -267,23 +241,6 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
   if (num_args == 0) {
     return _rect_new(pytype, new Rect());
   }
-
-#ifdef GAMERA_DEPRECATED
-  PyErr_Clear();
-  if (num_args == 4) {
-    int offset_y, offset_x, nrows, ncols;
-    if (PyArg_ParseTuple(args, "iiii", &offset_y, &offset_x, &nrows, &ncols)) {
-      if (send_deprecation_warning(
-"Rect(offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use Rect((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
-"imageobject.cpp", __LINE__) == 0)
-	return 0;
-      return _rect_new(pytype, new Rect(Point((size_t)offset_x, (size_t)offset_y), 
-					Dim((size_t)ncols, (size_t)nrows)));
-    }
-  }
-#endif
 
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Incorrect arguments to Rect constructor.  See doc(Rect) for valid arguments.");
@@ -396,19 +353,6 @@ static PyObject* rect_get_size(PyObject* self) {
   return create_SizeObject(x->size());
 }
 
-#ifdef GAMERA_DEPRECATED
-static PyObject* rect_get_dimensions(PyObject* self) {
-  Rect* x = ((RectObject*)self)->m_x;
-  if (send_deprecation_warning(
-"Rect.dimensions property is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use Rect.dim instead.", 
-"imageobject.cpp", __LINE__) == 0)
-    return 0;
-  return create_DimensionsObject(x->dimensions()); // deprecated call
-}
-#endif
-
 static PyObject* rect_get_dim(PyObject* self) {
   Rect* x = ((RectObject*)self)->m_x;
   return create_DimObject(x->dim());
@@ -420,25 +364,6 @@ static int rect_set_size(PyObject* self, PyObject* value) {
   x->size(*size);
   return 0;
 }
-
-#ifdef GAMERA_DEPRECATED
-static int rect_set_dimensions(PyObject* self, PyObject* value) {
-  if (send_deprecation_warning(
-"Rect.dimensions property is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use Rect.dim instead.", 
-"imageobject.cpp", __LINE__) == 0)
-    return 0;
-  if (!is_DimensionsObject(value)) {
-    PyErr_SetString(PyExc_TypeError, "Must be a Dimensions object.");
-    return -1;
-  }
-  Rect* x = ((RectObject*)self)->m_x;
-  Dimensions* dim = ((DimensionsObject*)value)->m_x;
-  x->dimensions(*dim); // deprecated call
-  return 0;
-}
-#endif
 
 static int rect_set_dim(PyObject* self, PyObject* value) {
   if (!is_DimObject(value)) {
@@ -781,9 +706,6 @@ void init_RectType(PyObject* module_dict) {
 "  - **Rect** (Point *upper_left*, Size *size*)\n\n"
 "  - **Rect** (Point *upper_left*, Dim *dim*)\n\n"
 "  - **Rect** (Rect *rectangle*)\n\n"
-"**Deprecated forms:**\n\n"
-"  - **Rect** (Point *upper_left*, Dimensions *dimensions*)\n\n"
-"  - **Rect** (Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n"
 "The ``Rect`` class manages bounding boxes, and has a number of methods "
 "to modify and analyse those bounding boxes.\n\n";
   PyType_Ready(&RectType);

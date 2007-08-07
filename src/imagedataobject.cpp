@@ -115,26 +115,6 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
       }
     }
   }
-
-#ifdef GAMERA_DEPRECATED
-  PyErr_Clear();
-
-  if (num_args == 6) {
-    int nrows, ncols, page_offset_y, page_offset_x, format, pixel;
-    if (PyArg_ParseTuple(args, "iiiiii", &nrows, &ncols, &page_offset_y,
-			 &page_offset_x, &pixel, &format)) {
-      if (send_deprecation_warning(
-"ImageData(nrows, ncols, page_offset_y, page_offset_x, pixel_type, \n"
-"storage_format) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use ImageData(Dim(ncols, nrows), (page_offset_x, page_offset_y),\n"
-"pixel_type, storage_format) instead.", 
-"imagedataobject.cpp", __LINE__) == 0)
-	return 0;
-      return create_ImageDataObject(Dim(ncols, nrows), Point(page_offset_x, page_offset_y), pixel, format);
-    }
-  }
-#endif      
   
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageData constructor.  Valid forms are: (Dim dim, Point p, pixel_type = 0, storage_format = 0), and (Rect rect, pixel_type = 0, storage_format = 0). ");
@@ -197,23 +177,7 @@ static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
       }
     }
   }
-#ifdef GAMERA_DEPRECATED
-  PyErr_Clear();
-  if (num_args == 2) {
-    int nrows, ncols;
-    if (PyArg_ParseTuple(args, "ii", &nrows, &ncols)) {
-      if (send_deprecation_warning(
-"ImageData.dimensions(nrows, ncols) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use ImageData.dimensions(Dim(ncols, nrows)) instead.",
-"imagedataobject.cpp", __LINE__) == 0)
-	return 0;
-      x->dimensions((size_t)nrows, (size_t)ncols); // deprecated call
-      Py_INCREF(Py_None);
-      return Py_None;
-    }
-  }
-#endif
+
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageData.dimensions.  Must be one Dim argument.");
   return 0;
@@ -235,9 +199,6 @@ void init_ImageDataType(PyObject* module_dict) {
 "There are many ways to initialize ImageData:\n\n"
 "  - ImageData(Dim *dim*, Point *offset*, Int *pixel_type*, Int *storage_format*)\n\n"
 "  - ImageData(Rect *rect*, Int *pixel_type*, Int *storage_format*)\n\n"
-"**Deprecated forms:**\n\n"
-"  - ImageData(Int *nrows*, Int *ncols*, Int *page_offset_y*, Int *page_offset_x*, "
-"Int *pixel_type*, Int *storage_format*)\n\n"
 "*pixel_type*\n"
 "  An integer value specifying the type of the pixels in the image.\n"
 "  See `pixel types`__ for more information.\n\n"

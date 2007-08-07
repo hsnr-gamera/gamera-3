@@ -73,41 +73,12 @@ static PyObject* region_new(PyTypeObject* pytype, PyObject* args,
 	} else if (is_DimObject(b)) {
 	  return _region_new(pytype, new Region(point_a, *((DimObject*)b)->m_x));
 	}
-#ifdef GAMERA_DEPRECATED
-	else if (is_DimensionsObject(b)) {
-	  if (send_deprecation_warning(
-"Region(Point offset, Dimensions dimensions) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
-"in favor of Dim).\n\n"
-"Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
-"imageobject.cpp", __LINE__) == 0)
-	    return 0;
-	  Dimensions* dim = ((DimensionsObject*)b)->m_x;
-	  return _region_new(pytype, new Region(point_a, Dim(dim->ncols(), dim->nrows()))); // deprecated call
-	}
-#endif
       }
     }
   }
 
  phase2:
 
-#ifdef GAMERA_DEPRECATED
-  PyErr_Clear();
-  if (num_args == 4) {
-    int offset_x, offset_y, nrows, ncols;
-    if (PyArg_ParseTuple(args, "iiii", &offset_x, &offset_y, &nrows, &ncols)) {
-      if (send_deprecation_warning(
-"Region(offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency.\n\n"
-"Use Region((offset_x, offset_y), Dim(ncols, nrows)) instead.", 
-"imageobject.cpp", __LINE__) == 0)
-	return 0;
-      return _region_new(pytype, new Region(Point(offset_x, offset_y), Dim(ncols, nrows)));
-    }
-  }
-#endif
-  
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Invalid arguments for Region constructor.");
   return 0;

@@ -53,23 +53,6 @@ namespace Gamera {
     return result / area;
   }
 
-#ifdef GAMERA_DEPRECATED
-  /*
-corelation_weighted(const T& a, const U& b, size_t yo, size_t xo,
-double bb, double bw, double wb, double ww, ProgressBar progress_bar =
-ProgressBar()) is deprecated
-
-Reason: (x, y) coordinate consistency.
-
-Use corelation_weighted(a, b, Point(xo, yo), bb, bw, wb, ww,
-progress_bar) instead.
-  */
-  template<class T, class U>
-  GAMERA_CPP_DEPRECATED
-  double corelation_weighted(const T& a, const U& b, size_t yo, size_t xo, double bb, double bw, double wb, double ww, ProgressBar progress_bar = ProgressBar()) {
-    return corelation_weighted(a, b, Point(xo, yo), bb, bw, wb, ww, progress_bar);
-  }
-#endif
 
   inline double corelation_absolute_distance(OneBitPixel a, OneBitPixel b) {
     if (is_black(a) == is_black(b))
@@ -106,23 +89,6 @@ progress_bar) instead.
     }
     return result / area;
   }
-
-#ifdef GAMERA_DEPRECATED
-  /*
-corelation_sum(const T& a, const U& b, size_t yo, size_t xo,
-ProgressBar progress_bar = ProgressBar()) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use corelation_sum(a, b, Point(xo, yo), progress_bar) instead.
-  */
-  template<class T, class U>
-  GAMERA_CPP_DEPRECATED
-  double corelation_sum(const T& a, const U& b, size_t yo, size_t xo, 
-			ProgressBar progress_bar = ProgressBar()) {
-    return corelation_sum(a, b, Point(xo, yo), progress_bar);
-  }
-#endif
 
   inline double corelation_square_absolute_distance(OneBitPixel a, OneBitPixel b) {
     if (is_black(a) == is_black(b))
@@ -162,21 +128,6 @@ Use corelation_sum(a, b, Point(xo, yo), progress_bar) instead.
     return result / area;
   }
 
-#ifdef GAMERA_DEPRECATED
-  /*
-corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo,
-ProgressBar progress_bar = ProgressBar()) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use corelation_sum_squares(a, b, Point(xo, yo), progress_bar) instead.
-  */
-  template<class T, class U>
-  GAMERA_CPP_DEPRECATED
-  double corelation_sum_squares(const T& a, const U& b, size_t yo, size_t xo, ProgressBar progress_bar = ProgressBar()) {
-    return corelation_sum_squares(a, b, Point(xo, yo), progress_bar);
-  }
-#endif
 }
 
 #endif

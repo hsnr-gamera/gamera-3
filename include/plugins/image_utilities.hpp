@@ -269,21 +269,6 @@ namespace Gamera {
     image_copy_attributes(image, *view);
     return view;
   }
-  
-#ifdef GAMERA_DEPRECATED
-  /*
-resize(T& image, int nrows, int ncols, int resize_quality)
-
-Reason: (x, y) coordinate consistency.
-
-Use resize(image, Dim(ncols, nrows), resize_quality) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  Image* resize(T& image, int nrows, int ncols, int resize_quality) {
-    return resize(image, Dim(ncols, nrows), resize_quality);
-  }
-#endif
 
   template<class T>
   Image* scale(T& image, double scaling, int resize_quality) {

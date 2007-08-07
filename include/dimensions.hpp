@@ -187,52 +187,6 @@ namespace Gamera {
     }
   };
 
-#ifdef GAMERA_DEPRECATED
-  /*
-   * Dimensions
-   *
-   * A simple class that holds nrows and ncols. These dimensions are
-   * refer to width or height + 1.
-   */
-
-  /* 
-Dimensions(nrows, ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use Dim(ncols, nrows) instead.
-  */
-  class GAMERA_CPP_DEPRECATED Dimensions {
-  private:
-    coord_t m_ncols, m_nrows;
-  public:
-    Dimensions() GAMERA_CPP_DEPRECATED;
-    Dimensions(coord_t rows, coord_t cols) GAMERA_CPP_DEPRECATED;
-    coord_t ncols() const { return m_ncols; }
-    coord_t nrows() const { return m_nrows; }
-    void ncols(coord_t ncols) { m_ncols = ncols; }
-    void nrows(coord_t nrows) { m_nrows = nrows; }
-    template<class Other>
-    bool operator==(const Other& other) const {
-      if (m_ncols == other.ncols() && m_nrows == other.nrows())
-	return true;
-      else
-	return false;
-    }
-    template<class Other>
-    bool operator!=(const Other& other) const {
-      if (m_ncols != other.ncols() || m_nrows != other.nrows())
-	return true;
-      else
-	return false;
-    }
-  };
-
-  inline Dimensions::Dimensions() : m_ncols(1), m_nrows(1) { }
-  inline Dimensions::Dimensions(coord_t rows, coord_t cols) : m_ncols(cols), m_nrows(rows) {}
-
-#endif /* GAMERA DEPRECATED */
-
   /*
    * Rect
    *
@@ -244,34 +198,11 @@ Use Dim(ncols, nrows) instead.
     typedef Rect self;
 
     Rect() : m_origin(0, 0), m_lr(1, 1) { }
-
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols)
-is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use Rect(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
-    */
-    Rect(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols);
-#endif
     Rect(const Point& upper_left, const Point& lower_right)
       : m_origin(upper_left), m_lr(lower_right) { }
     Rect(const Point& upper_left, const Size& size)
       : m_origin(upper_left), m_lr(upper_left.x() + size.width(),
 				   upper_left.y() + size.height()) { }
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect(const Point& upper_left, const Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use Rect(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
-    */
-    Rect(const Point& upper_left, const Dimensions& dim) GAMERA_CPP_DEPRECATED;
-#endif
     Rect(const Point& upper_left, const Dim& dim)
       : m_origin(upper_left), m_lr(upper_left.x() + dim.ncols() - 1,
 				   upper_left.y() + dim.nrows() - 1) { }
@@ -291,20 +222,6 @@ Use Rect(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
     Point ll() const { return Point(m_origin.x(), m_lr.y()); }
     coord_t ll_x() const { return m_origin.x(); }
     coord_t ll_y() const { return m_lr.y(); }
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect::dimensions() is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use Rect::dim() instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    Dimensions dimensions() const {
-      return Dimensions(nrows(), ncols()); // deprecated call
-    }
-#endif
     Dim dim() const { return Dim(ncols(), nrows()); }
     Size size() const { return Size(width(), height()); }
     coord_t ncols() const { return m_lr.x() - m_origin.x() + 1; }
@@ -336,39 +253,6 @@ Use Rect::dim() instead.
     void ll_x(coord_t v) { m_origin.x(v); dimensions_change(); }
     void ll_y(coord_t v) { m_lr.y(v); dimensions_change(); }
 
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect::dimensions(const Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use Rect::dim(Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    void dimensions(const Dimensions& dim) {
-      nrows(dim.nrows());
-      ncols(dim.ncols());
-      dimensions_change();
-    }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect::dimensions(coord_t nrows, coord_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use Rect::dim(Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    void dimensions(coord_t nrows, coord_t ncols) {
-      this->nrows(nrows);
-      this->ncols(ncols);
-      dimensions_change();
-    }
-#endif
     void dim(const Dim& dim) {
       nrows(dim.nrows());
       ncols(dim.ncols());
@@ -400,24 +284,6 @@ Use Rect::dim(Dim(ncols, nrows)) instead.
       m_lr.y(m_origin.y() + height);
       dimensions_change();
     }
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect::rect_set(coord_t origin_y, coord_t origin_x, coord_t nrows,
-coord_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    void rect_set(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols) {
-      m_origin.x(origin_x);
-      m_origin.y(origin_y);
-      m_lr.x(origin_x + ncols - 1);
-      m_lr.y(origin_y + nrows - 1);
-      dimensions_change();
-    }
-#endif
     void rect_set(const Point& upper_left, const Point& lower_right) {
       m_origin = upper_left;
       m_lr = lower_right;
@@ -428,22 +294,6 @@ Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
       this->size(size);
       dimensions_change();
     }
-#ifdef GAMERA_DEPRECATED
-    /*
-Rect::rect_set(const Point& upper_left, const Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    void rect_set(const Point& upper_left, const Dimensions& dim_) {
-      m_origin = upper_left;
-      dim(Dim(dim_.ncols(), dim_.nrows()));
-      dimensions_change();
-    }
-#endif
     void rect_set(const Point& upper_left, const Dim& dim_) {
       m_origin = upper_left;
       dim(dim_);
@@ -609,18 +459,6 @@ Use Rect::rect_set(Point(origin_x, origin_y), Dim(ncols, nrows)) instead.
   private:
     Point m_origin, m_lr;
   };
-
-#ifdef GAMERA_DEPRECATED
-  // To make gcc < 3.4 happy, we have to define deprecated constructors
-  // outside of the class (don't ask..., I don't know the answer)
-  inline Rect::Rect(coord_t origin_y, coord_t origin_x, coord_t nrows, coord_t ncols)
-    : m_origin(origin_x, origin_y),
-      m_lr(origin_x + ncols - 1, origin_y + nrows - 1) { }
-
-  inline Rect::Rect(const Point& upper_left, const Dimensions& dim)
-    : m_origin(upper_left), m_lr(upper_left.x() + dim.ncols() - 1,
-				 upper_left.y() + dim.nrows() - 1) { }
-#endif
   
 };
 

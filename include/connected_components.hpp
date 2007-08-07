@@ -74,21 +74,6 @@ namespace Gamera {
       m_label = 0;
     }
 
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent(T& image_data, value_type label, size_t offset_y,
-size_t offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use ConnectedComponent(image_data, label, Point(offset_x, offset_y),
-Dim(ncols, nrows)) instead.
-    */
-    ConnectedComponent(T& image_data, value_type label, size_t offset_y,
-		       size_t offset_x, size_t nrows, size_t ncols)
-      GAMERA_CPP_DEPRECATED;
-#endif
-
     ConnectedComponent(T& image_data)
       : base_type(image_data.offset(),
 		  image_data.dim()) {
@@ -120,22 +105,6 @@ Dim(ncols, nrows)) instead.
       calculate_iterators();
     }
 
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent(T& image_data, value_type label, const Point&
-upper_left, const Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use ConnectedComponent(image_data, label, Point(offset_x, offset_y),
-Dim(ncols, nrows)) instead.
-    */
-    ConnectedComponent(T& image_data, value_type label,
-		       const Point& upper_left, const Dimensions& dim)
-      GAMERA_CPP_DEPRECATED;
-#endif 
-
     ConnectedComponent(T& image_data, value_type label,
 		       const Point& upper_left,
 		       const Dim& dim)
@@ -148,20 +117,6 @@ Dim(ncols, nrows)) instead.
     //
     // COPY CONSTRUCTORS
     //
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent(const self& other, size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use ConnectedComponent(other, Point(offset_x, offset_y), Dim(ncols,
-nrows)) instead.
-    */
-    ConnectedComponent(const self& other, size_t offset_y,
-		       size_t offset_x, size_t nrows, size_t ncols)
-      GAMERA_CPP_DEPRECATED;
-#endif
 
     ConnectedComponent(const self& other, const Rect& rect)
       : base_type(rect) {
@@ -186,21 +141,6 @@ nrows)) instead.
       range_check();
       calculate_iterators();
     }
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent(const self& other, const Point& upper_left, const
-Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency.  (Dimensions is now deprecated
-in favor of Dim).
-
-Use ConnectedComponent(other, Point(offset_x, offset_y), Dim(ncols,
-nrows)) instead.
-    */
-    ConnectedComponent(const self& other, const Point& upper_left,
-		       const Dimensions& dim)
-      GAMERA_CPP_DEPRECATED;
-#endif
     ConnectedComponent(const self& other, const Point& upper_left,
 		       const Dim& dim)
       : base_type(upper_left, dim) {
@@ -213,39 +153,6 @@ nrows)) instead.
     //
     //  FUNCTION ACCESS
     //
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent::get(size_t row, size_t col) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use get(Point(col, row)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    value_type get(size_t row, size_t col) const {
-      value_type tmp = *(m_const_begin + (row * m_image_data->stride()) + col);
-      if (tmp == m_label)
-	return tmp;
-      else
-	return 0;
-    }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-    /*
-ConnectedComponent::set(size_t row, size_t col, value_type value) is
-deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use set(Point(col, row), value) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    void set(size_t row, size_t col, value_type value) {
-      if (*(m_begin + (row * m_image_data->stride()) + col) == m_label)
-	*(m_begin + (row * m_image_data->stride()) + col) = m_label;
-    }
-#endif
 
     value_type get(const Point& point) const {
       value_type tmp = *(m_const_begin + (point.y() * m_image_data->stride()) + point.x());
@@ -431,51 +338,6 @@ Use set(Point(col, row), value) instead.
     // The label for this connected-component
     value_type m_label;
   };
-
-#ifdef GAMERA_DEPRECATED
-  template<class T>
-  ConnectedComponent<T>::ConnectedComponent(T& image_data, value_type label, 
-					    size_t offset_y, size_t offset_x, 
-					    size_t nrows, size_t ncols)
-    : base_type(offset_y, offset_x, nrows, ncols), m_label(label) {
-    m_image_data = &image_data;
-    range_check();
-    calculate_iterators();
-  }
-
-  template<class T>
-  ConnectedComponent<T>::ConnectedComponent(T& image_data, value_type label,
-					    const Point& upper_left,
-					    const Dimensions& dim)
-    : base_type(upper_left, Dim(dim.ncols(), dim.nrows())), m_label(label) {
-    m_image_data = &image_data;
-    range_check();
-    calculate_iterators();
-  }
-  
-  template<class T>
-  ConnectedComponent<T>::ConnectedComponent(const self& other, size_t offset_y,
-					    size_t offset_x, size_t nrows, 
-					    size_t ncols)
-    : base_type(Point(offset_x, offset_y), Dim(ncols, nrows)) {
-    m_image_data = other.m_image_data;
-    m_label = other.label();
-    range_check();
-    calculate_iterators();
-  }
-  
-  template<class T>
-  ConnectedComponent<T>::ConnectedComponent(const self& other, 
-					    const Point& upper_left,
-					    const Dimensions& dim)
-    : base_type(upper_left, Dim(dim.ncols(), dim.nrows())) {
-    m_image_data = other.m_image_data;
-    m_label = other.label();
-    range_check();
-    calculate_iterators();
-  }
-#endif
-
 }
 
 #endif

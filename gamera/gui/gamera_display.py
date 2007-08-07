@@ -179,29 +179,9 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          self._boxed_highlight_position -= 1
          self.draw_rubber()
 
-   def highlight_rectangle(self, *args):
-      if len(args) in (5, 6):
-         util.warn_deprecated("""ImageDisplay.highlight_rectangle(y, x, h, w, color, text = '') is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use highlight_rectangle(Rect r, color, text) instead.""")
-         if len(args) == 5:
-            y, x, h, w, color = args
-         else:
-            y, x, h, w, color, text = args
-         cc = self.image.subimage((x, y), Size(w, h))
-         self.add_highlight_cc(cc, color)
-         return
-      elif len(args) in (2, 3):
-         if len(args) == 2:
-            r, color = args
-         else:
-            r, color, text = args
-         cc = self.image.subimage(r)
-         self.add_highlight_cc(cc, color)
-         return
-      raise TypeError("Invalid arguments to ImageDisplay.highlight_rectangle.")
+   def highlight_rectangle(self, r, color, text=None):
+      cc = self.image.subimage(r)
+      self.add_highlight_cc(cc, color)
 
    # Highlights only a particular list of ccs in the display
    def highlight_cc(self, ccs, color=None):

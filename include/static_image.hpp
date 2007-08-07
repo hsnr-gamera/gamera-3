@@ -43,9 +43,6 @@ namespace Gamera {
     typedef Rect rect_type;
     typedef Size size_type;
     typedef Point point_type;
-#if GAMERA_INCLUDE_DEPRECATED
-    typedef Dimensions dimensions_type;
-#endif
     typedef StaticImage self;
     typedef ImageView<ImageData<T> > view_type;
     /*
@@ -61,16 +58,6 @@ namespace Gamera {
       to override the dimensions_changed method (see below).
     */
 
-#ifdef GAMERA_DEPRECATED    
-    /*
-StaticImage(size_t rows = 1, size_t cols = 1) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use StaticImage(Dim(cols, rows)) instead.
-    */
-    StaticImage(size_t rows = 1, size_t cols = 1) GAMERA_CPP_DEPRECATED;
-#endif
     StaticImage(const point_type& lower_right)
       : view_type(m_data, point_type(), lower_right, false) {
       m_data.dimensions(nrows(), ncols());
@@ -83,17 +70,6 @@ Use StaticImage(Dim(cols, rows)) instead.
       range_check();
       calculate_iterators();
     }
-#ifdef GAMERA_DEPRECATED
-    /*
-StaticImage(const Dimensions& dim) is deprecated.
-
-Reason: (x, y) coordinate consistency. (Dimensions is now deprecated
-in favor of Dim).
-
-Use StaticImage(Dim(cols, rows)) instead.
-    */
-    StaticImage(const dimensions_type& dim) GAMERA_CPP_DEPRECATED;
-#endif
     StaticImage(const Dim& dim)
       : view_type(m_data, point_type(), dim, false) {
       m_data.dimensions(nrows(), ncols());
@@ -109,25 +85,6 @@ Use StaticImage(Dim(cols, rows)) instead.
   private:
     ImageData<T> m_data;
   };
-
-#ifdef GAMERA_DEPRECATED
-  template<class T>
-  StaticImage<T>::StaticImage(size_t rows, size_t cols)
-    : view_type(m_data, 0, 0, rows, cols, false) {
-    m_data.dimensions(nrows(), ncols());
-    range_check();
-    calculate_iterators();
-  }
-
-  template<class T>
-  StaticImage<T>::StaticImage(const dimensions_type& dim)
-    : view_type(m_data, point_type(), dim, false) {
-    m_data.dimensions(nrows(), ncols());
-    range_check();
-    calculate_iterators();
-  }
-#endif
-
 };
 
 #endif

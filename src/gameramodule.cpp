@@ -30,7 +30,6 @@ using namespace Gamera;
 void init_SizeType(PyObject* module_dict);
 void init_PointType(PyObject* module_dict);
 void init_FloatPointType(PyObject* module_dict);
-void init_DimensionsType(PyObject* module_dict);
 void init_DimType(PyObject* module_dict);
 void init_RectType(PyObject* module_dict);
 void init_RegionType(PyObject* module_dict);
@@ -58,7 +57,6 @@ initgameracore(void) {
   init_SizeType(d);
   init_PointType(d);
   init_FloatPointType(d);
-  init_DimensionsType(d);
   init_DimType(d);
   init_RectType(d);
   init_RegionType(d);

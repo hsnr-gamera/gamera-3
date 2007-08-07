@@ -135,24 +135,6 @@ namespace Gamera {
 				       view.dim());
       return nview;
     }
-#ifdef GAMERA_DEPRECATED
-    /* 
-ImageFactory<T>::new_view(const T& view, size_t ul_y, size_t ul_x,
-size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use ImageFactory<T>::new_view(view, Point(ul_x, ul_y), Dim(ncols,
-nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static view_type* new_view(const T& view, size_t ul_y, size_t ul_x,
-			       size_t nrows, size_t ncols) {
-      view_type* nview = new view_type(*((data_type*)view.data()),
-				       Point(ul_x, ul_y), Dim(ncols, nrows));
-      return nview;
-    }
-#endif
 
     static view_type* new_view(const T& view, const Point& origin, const Dim& dim) {
       view_type* nview = new view_type(*((data_type*)view.data()),
@@ -192,24 +174,6 @@ nrows)) instead.
 				       view.origin(), view.dim());
       return nview;
     }
-#ifdef GAMERA_DEPRECATED
-    /* 
-ImageFactory<RGBImageView>::new_view(const RGBImageView& view, size_t
-ul_y, size_t ul_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use ImageFactory<RGBImageView>::new_view(view, Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static view_type* new_view(const RGBImageView& view, size_t ul_y,
-			       size_t ul_x, size_t nrows, size_t ncols) {
-      view_type* nview = new view_type(*((data_type*)view.data()),
-				       Point(ul_x, ul_y), Dim(ncols, nrows));
-      return nview;
-    }
-#endif
     static view_type* new_view(const RGBImageView& view, const Point& origin,
 			       const Dim& dim) {
       view_type* nview = new view_type(*((data_type*)view.data()),
@@ -246,24 +210,6 @@ Dim(ncols, nrows)) instead.
 				       view.origin(), view.dim());
       return nview;
     }
-#ifdef GAMERA_DEPRECATED
-    /* 
-ImageFactory<ComplexImageView>::new_view(const ComplexImageView& view, size_t
-ul_y, size_t ul_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use ImageFactory<ComplexImageView>::new_view(view, Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static view_type* new_view(const ComplexImageView& view, size_t ul_y,
-			       size_t ul_x, size_t nrows, size_t ncols) {
-      view_type* nview = new view_type(*((data_type*)view.data()),
-				       Point(ul_x, ul_y), Dim(ncols, nrows));
-      return nview;
-    }
-#endif
     static view_type* new_view(const ComplexImageView& view, const Point& origin, const Dim& dim) {
       view_type* nview = new view_type(*((data_type*)view.data()),
 				       origin, dim);
@@ -292,23 +238,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<ONEBIT, DENSE> {
     typedef OneBitImageData data_type;
     typedef OneBitImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<ONEBIT, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<ONEBIT, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -319,23 +248,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<ONEBIT, RLE> {
     typedef OneBitRleImageData data_type;
     typedef OneBitRleImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<ONEBIT, RLE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<ONEBIT, RLE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif  
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -346,23 +258,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<GREYSCALE, DENSE> {
     typedef GreyScaleImageData data_type;
     typedef GreyScaleImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<GREYSCALE, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<GREYSCALE, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -373,23 +268,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<GREY16, DENSE> {
     typedef Grey16ImageData data_type;
     typedef Grey16ImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<GREY16, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<GREY16, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -400,23 +278,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<RGB, DENSE> {
     typedef RGBImageData data_type;
     typedef RGBImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<RGB, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<RGB, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -428,23 +289,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<COMPLEX, DENSE> {
     typedef ComplexImageData data_type;
     typedef ComplexImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<COMPLEX, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<COMPLEX, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);
@@ -455,23 +299,6 @@ Dim(ncols, nrows)) instead.
   struct TypeIdImageFactory<FLOAT, DENSE> {
     typedef FloatImageData data_type;
     typedef FloatImageView image_type;
-#ifdef GAMERA_DEPRECATED
-    /* 
-TypeIdImageFactory<FLOAT, DENSE>::create(size_t offset_y, size_t
-offset_x, size_t nrows, size_t ncols) is deprecated.
-
-Reason: (x, y) coordinate consistency.
-
-Use TypeIdImageFactory<FLOAT, DENSE>::create(Point(ul_x, ul_y),
-Dim(ncols, nrows)) instead.
-    */
-    GAMERA_CPP_DEPRECATED
-    static image_type* create(size_t offset_y, size_t offset_x,
-			      size_t nrows, size_t ncols) {
-      data_type* data = new data_type(Dim(ncols, nrows), Point(offset_x, offset_y));
-      return new image_type(*data);
-    }
-#endif
     static image_type* create(const Point& origin, const Dim& dim) {
       data_type* data = new data_type(dim, origin);
       return new image_type(*data, origin, dim);

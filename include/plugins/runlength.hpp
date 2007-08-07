@@ -176,36 +176,6 @@ namespace Gamera {
     }
   }
 
-#ifdef GAMERA_DEPRECATED
-  /*
-black_run_end<T>(T& begin, const T end) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_end(runs::Black(), begin, end) instead.
-  */    
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  inline void black_run_end(T& i, const T end) {
-    return run_end(i, end, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-white_run_end<T>(T& begin, const T end) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_end(runs::White(), begin, end) instead.
-  */    
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  inline void white_run_end(T& i, const T end) {
-    return run_end(i, end, runs::White());
-  }
-#endif
-
 ///////////////////////////////////////////////////////////////////////////
 //  Find the length of the largest run in a a row
 //  or column of a image.
@@ -225,35 +195,6 @@ Use run_end(runs::White(), begin, end) instead.
     }
     return max;
   }
-
-#ifdef GAMERA_DEPRECATED
-  /*
-max_black_run<T>(T& begin, const T end) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use max_run(runs::Black(), begin, end) instead.
-  */    
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  inline size_t max_black_run(T i, const T end) {
-    return max_run(i, end, runs::Black());
-  }
-#endif	
-
-#ifdef GAMERA_DEPRECATED
-  /*
-max_white_run<T>(T& begin, const T end) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use max_run(runs::White(), begin, end) instead.
-  */    
-  template<class T>
-  inline size_t max_white_run(T i, const T end) {
-    return max_run(i, end, runs::White());
-  }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////
 // Run-length histograms. These make a histogram of the lenght of the
@@ -313,38 +254,6 @@ Use max_run(runs::White(), begin, end) instead.
       }
     }
   }
-
-#ifdef GAMERA_DEPRECATED
-  /*
-black_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is
-deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(runs::Black(), begin, end, hist) instead.
-  */    
-  template<class T, class Vec>
-  GAMERA_CPP_DEPRECATED
-  inline void black_run_histogram(T i, const T end, Vec& hist) {
-    run_histogram(i, end, hist, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-white_run_histogram<T, Vec>(T begin, const T end, Vec& hist) is
-deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(runs::White(), begin, end, hist) instead.
-  */    
-  template<class T, class Vec>
-  GAMERA_CPP_DEPRECATED
-  inline void white_run_histogram(T i, const T end, Vec& hist) {
-    run_histogram(i, end, hist, runs::White());
-  }
-#endif
 
   /* Horizontal run histograms and vertical run histograms use an entirely
      different algorithm, for efficiency reasons.  These are handled by
@@ -415,62 +324,6 @@ Use run_histogram(runs::White(), begin, end, hist) instead.
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
   } 
 
-#ifdef GAMERA_DEPRECATED
-  /*
-black_horizontal_run_histogram<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(image, runs::Black(), runs::Horizontal()) instead.
-  */    
-  template<class T>
-  IntVector* black_horizontal_run_histogram(const T& image) {
-    return run_histogram(image, runs::Black(), runs::Horizontal());
-  }    
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-white_horizontal_run_histogram<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(image, runs::White(), runs::Horizontal()) instead.
-  */    
-  template<class T>
-  IntVector* white_horizontal_run_histogram(const T& image) {
-    return run_histogram(image, runs::White(), runs::Horizontal());
-  }    
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-black_vertical_run_histogram<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(image, runs::Black(), runs::Vertical()) instead.
-  */    
-  template<class T>
-  IntVector* black_vertical_run_histogram(const T& image) {
-    return run_histogram(image, runs::Black(), runs::Vertical());
-  }    
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-white_vertical_run_histogram<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use run_histogram(image, runs::White(), runs::Vertical()) instead.
-  */    
-  template<class T>
-  IntVector* white_vertical_run_histogram(const T& image) {
-    return run_histogram(image, runs::White(), runs::Vertical());
-  }    
-#endif
-
 ///////////////////////////////////////////////////////////////////////////
 // Most frequent run(s) (basically returning a subset of a sorted histogram)  
 
@@ -508,68 +361,6 @@ Use run_histogram(image, runs::White(), runs::Vertical()) instead.
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
   } 
 
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_horizontal_run<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_run(image, runs::Black(), runs::Horizontal())
-instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  size_t most_frequent_black_horizontal_run(const T& image) {
-    return most_frequent_run(image, runs::Black(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_horizontal_run<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_run(image, runs::White(), runs::Horizontal())
-instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  size_t most_frequent_white_horizontal_run(const T& image) {
-    return most_frequent_run(image, runs::White(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_vertical_run<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_run(image, runs::Black(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  size_t most_frequent_black_vertical_run(const T& image) {
-    return most_frequent_run(image, runs::Black(), runs::Vertical());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_vertical_run<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_run(image, runs::White(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  size_t most_frequent_white_vertical_run(const T& image) {
-    return most_frequent_run(image, runs::White(), runs::Vertical());
-  }
-#endif
-
   template<class T, class Color, class Direction>
   RunVector* most_frequent_runs(const T& image, const Color& color, const Direction& direction) {
     IntVector* hist = run_histogram(image, color, direction);
@@ -603,66 +394,6 @@ Use most_frequent_run(image, runs::White(), runs::Vertical()) instead.
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
   } 
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_horizontal_runs<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, runs::Black(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  RunVector* most_frequent_black_horizontal_runs(const T& image) {
-    return most_frequent_runs(image, runs::Black(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_horizontal_runs<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, runs::White(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  RunVector* most_frequent_white_horizontal_runs(const T& image) {
-    return most_frequent_runs(image, runs::White(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_vertical_runs<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, runs::Black(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  RunVector* most_frequent_black_vertical_runs(const T& image) {
-    return most_frequent_runs(image, runs::Black(), runs::Vertical());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_vertical_runs<T>(const T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, runs::White(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  RunVector* most_frequent_white_vertical_runs(const T& image) {
-    return most_frequent_runs(image, runs::White(), runs::Vertical());
-  }
-#endif
   
   template<class T, class Color, class Direction>
   PyObject* most_frequent_runs(const T& image, long n, const Color& color, const Direction& direction) {
@@ -697,66 +428,6 @@ Use most_frequent_runs(image, runs::White(), runs::Vertical()) instead.
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
   } 
 
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_horizontal_runs<T>(const T& image, long n) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, n, runs::Black(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* most_frequent_black_horizontal_runs(const T& image, long n) {
-    return most_frequent_runs(image, n, runs::Black(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_horizontal_runs<T>(const T& image, long n) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, n, runs::White(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* most_frequent_white_horizontal_runs(const T& image, long n) {
-    return most_frequent_runs(image, n, runs::White(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_black_vertical_runs<T>(const T& image, long n) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, n, runs::Black(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* most_frequent_black_vertical_runs(const T& image, long n) {
-    return most_frequent_runs(image, n, runs::Black(), runs::Vertical());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-most_frequent_white_vertical_runs(const T& image, long n) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use most_frequent_runs(image, n, runs::White(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* most_frequent_white_vertical_runs(const T& image, long n) {
-    return most_frequent_runs(image, n, runs::White(), runs::Vertical());
-  }
-#endif
-
 ///////////////////////////////////////////////////////////////////////////
 // Runlength filtering.
 
@@ -775,38 +446,6 @@ Use most_frequent_runs(image, n, runs::White(), runs::Vertical()) instead.
     }
   }
 
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_black_run<Iter, Functor>(Iter i, const Iter end, const int
-max_length, const Functor& functor) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_run(i, end, max_length, functor, runs::Black()) instead.
-  */
-  template<class Iter, class Functor>
-  GAMERA_CPP_DEPRECATED
-  inline void filter_black_run(Iter i, const Iter end, const int max_length, const Functor& functor) {
-    filter_run(i, end, max_length, functor, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_white_run<Iter, Functor>(Iter i, const Iter end, const int
-max_length, const Functor& functor) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_run(i, end, max_length, functor, runs::White()) instead.
-  */
-  template<class Iter, class Functor>
-  GAMERA_CPP_DEPRECATED
-  inline void filter_white_run(Iter i, const Iter end, const int max_length, const Functor& functor) {
-    filter_run(i, end, max_length, functor, runs::White());
-  }
-#endif
-
   template<class Iter, class Color>
   inline void image_filter_long_run(Iter i, const Iter end, const int min_length, const Color& color) {
     for (; i != end; i++)
@@ -818,96 +457,6 @@ Use filter_run(i, end, max_length, functor, runs::White()) instead.
     for (; i != end; i++)
       filter_run(i.begin(), i.end(), max_length, std::less<size_t>(), color);
   }
-  
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_long_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_long_run(i, end, min_length, runs::Black()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_long_run(Iter i, const Iter end, const int min_length) {
-    image_filter_long_run(i, end, min_length, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_short_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_short_run(i, end, max_length, runs::Black()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_short_run(Iter i, const Iter end, const int max_length) {
-    image_filter_short_run(i, end, max_length, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_long_black_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_long_run(i, end, min_length, runs::Black()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_long_black_run(Iter i, const Iter end, const int min_length) {
-    image_filter_long_run(i, end, min_length, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_short_black_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_short_run(i, end, max_length, runs::Black()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_short_black_run(Iter i, const Iter end, const int max_length) {
-    image_filter_short_run(i, end, max_length, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_long_white_run<Iter>(Iter i, const Iter end, const int min_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_long_run(i, end, min_length, runs::White()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_long_white_run(Iter i, const Iter end, const int min_length) {
-    image_filter_long_run(i, end, min_length, runs::White());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-image_filter_short_white_run<Iter>(Iter i, const Iter end, const int max_length) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use image_filter_short_run(i, end, max_length, runs::White()) instead.
-  */
-  template<class Iter>
-  GAMERA_CPP_DEPRECATED
-  inline void image_filter_short_white_run(Iter i, const Iter end, const int max_length) {
-    image_filter_short_run(i, end, max_length, runs::White());
-  }
-#endif
 
   template<class T, class Color>
   void filter_narrow_runs(T& image, size_t max_width, const Color& color) {
@@ -968,186 +517,6 @@ Use image_filter_short_run(i, end, max_length, runs::White()) instead.
       return filter_wide_runs(image, max_width, runs::White());
     throw std::runtime_error("color must be either \"black\" or \"white\".");
   }
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_narrow_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_narrow_runs(image, max_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_narrow_runs(T& image, size_t max_width) {
-    filter_narrow_runs(image, max_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_short_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_short_runs(image, max_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_short_runs(T& image, size_t max_width) {
-    filter_short_runs(image, max_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_tall_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_tall_runs(image, min_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_tall_runs(T& image, size_t min_width) {
-    filter_tall_runs(image, min_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_wide_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_wide_runs(image, min_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_wide_runs(T& image, size_t min_width) {
-    filter_wide_runs(image, min_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_narrow_black_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_narrow_runs(image, max_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_narrow_black_runs(T& image, size_t max_width) {
-    filter_narrow_runs(image, max_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_short_black_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_short_runs(image, max_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_short_black_runs(T& image, size_t max_width) {
-    filter_short_runs(image, max_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_tall_black_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_tall_runs(image, min_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_tall_black_runs(T& image, size_t min_width) {
-    filter_tall_runs(image, min_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_wide_black_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_wide_runs(image, min_width, runs::Black()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_wide_black_runs(T& image, size_t min_width) {
-    filter_wide_runs(image, min_width, runs::Black());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_narrow_white_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_narrow_runs(image, max_width, runs::White()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_narrow_white_runs(T& image, size_t max_width) {
-    filter_narrow_runs(image, max_width, runs::White());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_short_white_runs<T>(T& image, size_t max_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_short_runs(image, max_width, runs::White()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_short_white_runs(T& image, size_t max_width) {
-    filter_short_runs(image, max_width, runs::White());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_tall_white_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_tall_runs(image, min_width, runs::White()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_tall_white_runs(T& image, size_t min_width) {
-    filter_tall_runs(image, min_width, runs::White());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-filter_wide_white_runs<T>(T& image, size_t min_width) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use filter_wide_runs(image, min_width, runs::White()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  void filter_wide_white_runs(T& image, size_t min_width) {
-    filter_wide_runs(image, min_width, runs::White());
-  }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////
 // TO/FROM RLE
@@ -1357,66 +726,6 @@ Use filter_wide_runs(image, min_width, runs::White()) instead.
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
   } 
-
-#ifdef GAMERA_DEPRECATED
-  /*
-iterate_black_horizontal_runs<T>(T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use iterate_runs(image, runs::Black(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* iterate_black_horizontal_runs(T& image) {
-    return iterate_runs(image, runs::Black(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-iterate_white_horizontal_runs<T>(T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use iterate_runs(image, runs::White(), runs::Horizontal()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* iterate_white_horizontal_runs(T& image) {
-    return iterate_runs(image, runs::White(), runs::Horizontal());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-iterate_black_vertical_runs<T>(T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use iterate_runs(image, runs::Black(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* iterate_black_vertical_runs(T& image) {
-    return iterate_runs(image, runs::Black(), runs::Vertical());
-  }
-#endif
-
-#ifdef GAMERA_DEPRECATED
-  /*
-iterate_white_vertical_runs<T>(T& image) is deprecated.
-
-Reason: Functions parameterized by arguments, not by name.
-
-Use iterate_runs(image, runs::White(), runs::Vertical()) instead.
-  */
-  template<class T>
-  GAMERA_CPP_DEPRECATED
-  PyObject* iterate_white_vertical_runs(T& image) {
-    return iterate_runs(image, runs::White(), runs::Vertical());
-  }
-#endif
 
 #endif // GAMERA_NOPYTHON
 

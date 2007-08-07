@@ -21,7 +21,7 @@ from sys import stderr
 
 try:
    import matplotlib
-   if matplotlib.__version__ not in ("0.73.1", "0.84"):
+   if matplotlib.__version__ not in ("0.73.1", "0.84", "0.90.1"):
       print >>stderr, "WARNING: The version of matplotlib you have installed has not been officially"
       print >>stderr, "tested with Gamera.  It may work fine, or you may experience strange"
       print >>stderr, "problems using the matplotlib functionality.  Please include the"
@@ -42,10 +42,6 @@ try:
    import wx
    from gamera.gui import toolbar, gui_util, gamera_icons
 except ImportError:
-   print >>stderr, "WARNING: matplotlib could not be imported.  Gamera will still"
-   print >>stderr, "work correctly, but plotting functionality will be disabled."
-   print >>stderr, "Download and install matplotlib from matplotlib.sourceforge.net,"
-   print >>stderr, "then restart Gamera to have plotting support.\n"
    def plot(*args, **kwargs):
       raise RuntimeError("Plotting is not supported because the optional matplotlib library\n"
                        "could not be found.\n\n"

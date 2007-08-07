@@ -2,27 +2,27 @@
 Common routines for the image converter utilities.
 """
 import sys, os, glob, getopt, string
-from wxPython.wx import *
+import wx
 
-if wxPlatform == "__WXGTK__":
+if wx.Platform == "__WXGTK__":
     # some bitmap related things need to have a wxApp initialized...
-    app = wxPySimpleApp()
+    app = wx.PySimpleApp()
 
-wxInitAllImageHandlers()
+wx.InitAllImageHandlers()
 
 def convert(file, maskClr, outputDir, outputName, outType, outExt):
     if string.lower(os.path.splitext(file)[1]) == ".ico":
-        icon = wxIcon(file, wxBITMAP_TYPE_ICO)
-        img = wxBitmapFromIcon(icon)
+        icon = wx.Icon(file, wx.BITMAP_TYPE_ICO)
+        img = wx.BitmapFromIcon(icon)
     else:
-        img = wxBitmap(file, wxBITMAP_TYPE_ANY)
+        img = wx.Bitmap(file, wx.BITMAP_TYPE_ANY)
 
     if not img.Ok():
         return 0, file + " failed to load!"
     else:
         if maskClr:
             om = img.GetMask()
-            mask = wxMaskColour(img, maskClr)
+            mask = wx.MaskColour(img, maskClr)
             img.SetMask(mask)
             if om is not None:
                 om.Destroy()
@@ -34,7 +34,7 @@ def convert(file, maskClr, outputDir, outputName, outType, outExt):
         if img.SaveFile(newname, outType):
             return 1, file + " converted to " + newname
         else:
-            img = wxImageFromBitmap(img)
+            img = wx.ImageFromBitmap(img)
             if img.SaveFile(newname, outType):
                 return 1, "ok"
             else:

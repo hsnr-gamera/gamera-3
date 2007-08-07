@@ -221,7 +221,7 @@ class PyCrustGameraShell(wx.py.crust.Crust):
                                         rootLabel=rootLabel, 
                                         rootIsNamespace=rootIsNamespace)
       # Add 'filling' to the interpreter's locals.
-      ## self.shell.interp.locals['filling'] = self.filling
+      self.shell.interp.locals['filling'] = self.filling
       self.calltip = Calltip(parent=self.notebook)
       self.notebook.AddPage(page=self.calltip, text='Documentation', select=True)
       self.notebook.AddPage(page=self.filling, text='Namespace')

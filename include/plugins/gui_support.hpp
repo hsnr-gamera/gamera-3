@@ -190,9 +190,15 @@ namespace {
 template<class T>
 PyObject* to_string(T& m) {
   PyObject* str = PyString_FromStringAndSize(NULL, m.nrows() * m.ncols() * 3);
-  if (m.nrows() == 0 || m.ncols() == 0) 
-    printf("Wha?");
-  char* buffer = PyString_AS_STRING(str);
+  if (!str)
+    throw std::exception();
+  char* buffer;
+  Py_ssize_t length;
+  int error = PyString_AsStringAndSize(str, &buffer, &length);
+  if (error) {
+    Py_DECREF(str);
+    throw std::exception();
+  }
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
   return str;
@@ -201,8 +207,12 @@ PyObject* to_string(T& m) {
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;
-  int buffer_len;
+  Py_ssize_t buffer_len;
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+  if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
+    printf("The image passed to to_buffer is not of the correct size.\n");
+    return;
+  }
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
 }
@@ -232,6 +242,12 @@ Image *color_ccs(T& m) {
   }
   
   return image;
+}
+
+template<class T>
+Image *colorize_to_string(T& m, int fr, int fg, int fb, int br, int bg, int bb) {
+  
+  return NULL;
 }
 
 }

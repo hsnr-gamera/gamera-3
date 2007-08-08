@@ -207,7 +207,11 @@ PyObject* to_string(T& m) {
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;
+#if HAVE_SSIZE_T  
   Py_ssize_t buffer_len;
+#else
+  int buffer_len;
+#endif
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
   if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
     printf("The image passed to to_buffer is not of the correct size.\n");
@@ -244,11 +248,40 @@ Image *color_ccs(T& m) {
   return image;
 }
 
-template<class T>
-Image *colorize_to_string(T& m, int fr, int fg, int fb, int br, int bg, int bb) {
-  
-  return NULL;
-}
+// template<class T>
+// void colorize_to_string(T& m, PyObject* py_buffer, 
+// 			  int fr, int fg, int fb, 
+// 			  int br, int bg, int bb) {
+//   char *buffer;
+//   Py_ssize_t buffer_len;
+
+//   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+//   if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
+//     printf("The image passed to to_buffer is not of the correct size.\n");
+//     return;
+//   }
+
+//       char* i = data;
+//       typename Mat::const_row_iterator row = mat.row_begin();
+//       typename Mat::const_col_iterator col;
+//       ImageAccessor<OneBitPixel> acc;
+//       unsigned char tmp;
+//       for (; row != mat.row_end(); ++row) {
+// 	for (col = row.begin(); col != row.end(); ++col) {
+// 	  if (is_white(acc(col)))
+//  	    tmp = 255;
+//  	  else
+//  	    tmp = 0;
+// 	  *(i++) = tmp;
+// 	  *(i++) = tmp;
+// 	  *(i++) = tmp;
+// 	}
+//       }
+//     }
+//   }
+
+//   return NULL;
+// }
 
 }
 

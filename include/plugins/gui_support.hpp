@@ -193,7 +193,11 @@ PyObject* to_string(T& m) {
   if (!str)
     throw std::exception();
   char* buffer;
+#if HAVE_SSIZE_T
   Py_ssize_t length;
+#else
+  int length;
+#endif
   int error = PyString_AsStringAndSize(str, &buffer, &length);
   if (error) {
     Py_DECREF(str);

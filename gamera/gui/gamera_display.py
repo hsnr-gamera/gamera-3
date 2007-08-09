@@ -946,17 +946,11 @@ class MultiImageGridRenderer(GridCellRenderer):
                # the the logical function is ignored for Windows, so we have
                # to set the Foreground and Background colors manually
                if isSelected:
-                  dc.SetTextForeground(wx.WHITE)
+                  dc.SetTextForeground(color)
                else:
                   dc.SetTextForeground(wx.BLACK)
                label = self.parent.reduce_label_length(dc, rect.width, label)
                dc.DrawText(label, rect.x, rect.y)
-
-         if isSelected:
-            dc.SetLogicalFunction(wx.AND)
-            dc.SetBrush(wx.Brush(color, wx.SOLID))
-            dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
 
       if image is None or hasattr(image, 'dead'):
          # If there's no image in this cell, draw a hatch pattern

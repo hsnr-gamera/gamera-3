@@ -193,7 +193,7 @@ PyObject* to_string(T& m) {
   if (!str)
     throw std::exception();
   char* buffer;
-#if HAVE_SSIZE_T
+#ifdef HAVE_SSIZE_T
   Py_ssize_t length;
 #else
   int length;
@@ -211,7 +211,7 @@ PyObject* to_string(T& m) {
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;
-#if HAVE_SSIZE_T  
+#ifdef HAVE_SSIZE_T  
   Py_ssize_t buffer_len;
 #else
   int buffer_len;
@@ -355,7 +355,7 @@ void to_buffer_colorize(const T& m, PyObject* py_buffer,
 			int red, int green, int blue,
 			bool invert) {
   char *buffer;
-#if HAVE_SSIZE_T
+#ifdef HAVE_SSIZE_T
   Py_ssize_t buffer_len;
 #else
   int buffer_len;

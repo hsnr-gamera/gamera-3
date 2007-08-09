@@ -25,7 +25,7 @@ try:
    import wxversion
    wxversion.select(["2.8", "2.6", "2.4"])
    from wx import *
-except:
+except ImportError:
    from wxPython.wx import *
    # Check that the version is correct
    if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 8):

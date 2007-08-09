@@ -121,12 +121,6 @@ This is equivalent to what the Vigra library calls "Separable Convolution".
 
     def __call__(self, kernel_x, kernel_y=None, border_treatment=1):
         from gamera.gameracore import FLOAT
-        util.warn_deprecated("""convolve_xy now takes a different argument order.
-
-Reason: (x, y) coordinate consistency.
-
-Change the order of the first two arguments to (kernel_x, kernel_y), rather
-than the old way (kernel_y, kernel_x).""")
         if kernel_y is None:
             kernel_y = kernel_x
         if kernel_y == kernel_x:

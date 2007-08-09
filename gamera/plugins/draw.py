@@ -104,6 +104,10 @@ code and can been seen in compiled executable.
   args = Args([FloatPoint("start"), FloatPoint("end"), Pixel("value"), Float("thickness")])
   authors = "Michael Droettboom based on Po-Han Lin's Extremely Fast Line Algorithm"
 
+  def __call__(self, start, end, value, thickness = 1.0):
+    return _draw.draw_line(self, start, end, value, thickness)
+  __call__ = staticmethod(__call__)
+
   def __doc_example1__(images):
     from random import randint
     from gamera.core import Image, Dim
@@ -125,18 +129,33 @@ of the image.
 
 The coordinates can be specified either by four integers, two FloatPoints, or one Rect:
 
-  **draw_hollow_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*, *y2*), *value*)
+  **draw_hollow_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*, *y2*), *value*, *thickness* = 1.0)
 
-  **draw_hollow_rect** (Rect *rect*, *value*)
+  **draw_hollow_rect** (Rect *rect*, *value*, *thickness* = 1.0)
 
 *value*:
   The pixel value to set for the lines.
 
-*thickness*:
+*thickness* = 1.0:
   The thickness of the outline
 """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("ul"), FloatPoint("lr"), Pixel("value"), Float("thickness")])
+
+  def __call__(self, *args):
+    from gamera.gameracore import Rect
+    if len(args) == 4:
+      return _draw.draw_hollow_rect(self, *args)
+    elif len(args) == 3:
+      a, b, c = args
+      if hasattr(a, 'ul') and hasattr(a, 'lr'):
+        return _draw.draw_hollow_rect(self, a.ul, a.lr, b, c)
+      else:
+        return _draw.draw_hollow_rect(self, a, b, c, 1.0)
+    elif len(args) == 2:
+      return _draw.draw_hollow_rect(self, a.ul, a.lr, value, 1.0)
+    raise ValueError("Arguments to draw_hollow_rect are incorrect.")
+  __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
     from random import randint
@@ -161,12 +180,18 @@ The coordinates can be specified either by four integers, two FloatPoints, or on
   **draw_filled_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*, *y2*), *value*)
 
   **draw_filled_rect** (Rect *rect*, *value*)
-
-*value*:
-  The pixel value to set for the rectangle.
 """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("ul"), FloatPoint("lr"), Pixel("value")])
+
+  def __call__(self, *args):
+    if len(args) == 3:
+      return _draw.draw_filled_rect(self, *args)
+    elif len(args) == 2:
+      a, value = args
+      return _draw.draw_filled_rect(self, a.ul, a.lr, value)
+    raise ValueError("Arguments to draw_filled_rect are incorrect.")
+  __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
     from random import randint
@@ -207,11 +232,8 @@ The coordinates can be specified either by eight floats or four FloatPoints:
   args = Args([FloatPoint("start"), FloatPoint("c1"), FloatPoint("c2"), FloatPoint("end"),
                Pixel("value"), Float("accuracy", default=0.1)])
 
-  def __call__(self, *args):
-    if len(args) in (5, 6):
-      if len(args) == 5:
-        args = tuple(list(args) + [0.1])
-      return _draw.draw_bezier(self, *args)
+  def __call__(self, start, c1, c2, end, value, accuracy = 0.1):
+    return _draw.draw_bezier(self, start, c2, c2, end, value, accuracy)
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
@@ -454,8 +476,8 @@ The coordinates can be specified either by two integers or one Point:
   *a*:
     The start ``Point``.
 
-*color*:
-  The pixel value to set for the rectangle.
+  *color*:
+    The pixel value to set for the rectangle.
 """
   self_type = ImageType([GREYSCALE, FLOAT, ONEBIT, RGB])
   args = Args([Point("start"), Pixel("color")])

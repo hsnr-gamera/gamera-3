@@ -566,11 +566,20 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       scaling = self.scaling
       scaling_quality = self.scaling_quality
       image = self.image
-         
-      x1i = floor(x1 / scaling)
-      y1i = floor(y1 / scaling)
-      x2i = floor(x2 / scaling)
-      y2i = floor(y2 / scaling)
+
+      x1 = max(x1 - scaling * 2, 0)
+      y1 = max(y1 - scaling * 2, 0)
+      x2 = min(x2 + scaling * 2, image.width * scaling)
+      y2 = min(y2 + scaling * 2, image.height * scaling)
+
+      x1i = max(floor(x1 / scaling), 0)
+      y1i = max(floor(y1 / scaling), 0)
+      x2i = min(floor(x2 / scaling), image.width)
+      y2i = min(floor(y2 / scaling), image.height)
+
+      # Quantize the origin
+      x = floor((x1 - origin[0]) / scaling) * scaling
+      y = floor((y1 - origin[1]) / scaling) * scaling
 
       if dc is None:
          dc = wx.ClientDC(self)
@@ -582,123 +591,26 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if tmpdc is None:
          tmpdc = wx.MemoryDC()
 
-      # Three cases: Zoomed in, zoomed out, and original scale
-      if scaling > 1.0:
-         # Quantize the origin
-         offset_x = x1 - (int(x1 / scaling) * scaling)
-         offset_y = y1 - (int(y1 / scaling) * scaling)
-         x = x1 - origin[0] - offset_x
-         y = y1 - origin[1] - offset_y
+      subimage = image.subimage(
+         (x1i + image.ul_x, y1i + image.ul_y),
+         (x2i + image.ul_x, y2i + image.ul_y)).to_rgb()
 
-         # If the scaling quality includes linear or spline
-         # interpolation, a little bit of border around the region of
-         # interest needs to be passed in so that the edges will
-         # stitch together nicely
-         if scaling_quality > 0:
-            fudge = 2
-            x1o = max(x1i - fudge, 0)
-            y1o = max(y1i - fudge, 0)
-            x2i = min(x2i, image.width)
-            x2o = min(x2i + fudge + 1, image.width)
-            y2i = min(y2i, image.height)
-            y2o = min(y2i + fudge + 1, image.height)
-         else:
-            fudge = 0
-            x1o = x1i
-            y1o = y1i
-            x2o = x2i = min(x2i + 1, image.width)
-            y2o = y2i = min(y2i + 1, image.height)
+      if len(self.highlights):
+         for highlight, color in self.highlights:
+            subimage.draw_cc(
+               highlight, 
+               color.Red(), color.Green(), color.Blue())
 
-         # For the high quality scalings a greyscale (or rgb) is required
-         # to really realize the increased quality. There is some smoothing
-         # that happens for zooming in, but for zooming out grey pixels are
-         # required for the smoothing. This simply does a conversion on the
-         # fly, which can be very slow, but limits the total memory usage.
-         # The other option is to cache a greyscale copy of the image, but
-         # that could use too much memory.
-         subimage = image.subimage(
-            (x1o + image.ul_x, y1o + image.ul_y),
-            (x2o + image.ul_x, y2o + image.ul_y))
-         if scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
-            subimage = subimage.to_greyscale()
-         scaled_image = subimage.resize(
-            Dim(int((x2o - x1o) * scaling), int((y2o - y1o) * scaling)),
-            scaling_quality)
-         scaled_image = scaled_image.subimage(
-            (scaled_image.ul_x + (x1i - x1o) * scaling,
-             scaled_image.ul_y + (y1i - y1o) * scaling),
-            (scaled_image.lr_x - max((x2o - x2i - 1), 0) * scaling,
-             scaled_image.lr_y - max((y2o - y2i - 1), 0) * scaling))
-      else:
-         x2i = min(x2i, image.width)
-         y2i = min(y2i, image.height)
-         x = x1 - origin[0]
-         y = y1 - origin[1]
-         fudge = 0
-         if scaling < 1.0:
-            subimage = image.subimage(
-               (x1i + image.ul_x, y1i + image.ul_y),
-               (x2i + image.ul_x, y2i + image.ul_y))
-            if scaling_quality > 0 and subimage.data.pixel_type == ONEBIT:
-               subimage = subimage.to_greyscale()
-            scaled_image = subimage.resize(
-               Dim(int((x2i - x1i) * scaling), int((y2i - y1i) * scaling)),
-               scaling_quality)
-         else:
-            subimage = scaled_image = image.subimage(
-               (x1i + image.ul_x, y1i + image.ul_y),
-               (x2i + image.ul_x, y2i + image.ul_y))
+      scaled_image = subimage.scale(scaling, scaling_quality)
 
       image = wx.EmptyImage(scaled_image.ncols, scaled_image.nrows)
       scaled_image.to_buffer(image.GetDataBuffer())
+
       bmp = wx.BitmapFromImage(image)
-      
       tmpdc.SelectObject(bmp)
       dc.Blit(x, y, scaled_image.ncols, scaled_image.nrows,
               tmpdc, 0, 0, wx.COPY, True)
 
-      if len(self.highlights):
-         for highlight, color in self.highlights:
-            if subimage.intersects(highlight):
-               subhighlight = highlight.clip_image(subimage)
-               h = subhighlight.nrows
-               w = subhighlight.ncols
-               if scaling != 1.0:
-                  # If zooming has caused the glyph to shrink into
-                  # nothingness, don't draw it.
-                  if float(h) * scaling <= 1 or float(w) * scaling <= 1:
-                     continue
-                  scaled_highlight = subhighlight.resize(
-                     Dim(int(ceil(subhighlight.ncols * scaling)),
-                         int(ceil(subhighlight.nrows * scaling))),
-                     self.scaling_quality)
-               else:
-                  # Sometimes we get an image with 0 rows or cols - I'm
-                  # not certain the cause, but this will prevent wxPython
-                  # errors. KWM
-                  if h == 0 or w == 0:
-                     continue
-                  scaled_highlight = subhighlight
-               image = wx.EmptyImage(
-                  scaled_highlight.ncols, scaled_highlight.nrows)
-               scaled_highlight.to_buffer(image.GetDataBuffer())
-               bmp = wx.BitmapFromImage(image)
-               tmpdc = wx.MemoryDC()
-               tmpdc.SelectObject(bmp)
-               x_cc = int(x + (subhighlight.ul_x - subimage.ul_x - fudge)
-                          * scaling)
-               y_cc = int(y + (subhighlight.ul_y - subimage.ul_y - fudge)
-                          * scaling)
-               dc.Blit(x_cc, y_cc,
-                       scaled_highlight.ncols, scaled_highlight.nrows,
-                       tmpdc, 0, 0, wx.AND, True)
-               tmpdc.SetBrush(wx.Brush(color, wx.SOLID))
-               tmpdc.SetLogicalFunction(wx.AND_REVERSE)
-               tmpdc.SetPen(wx.TRANSPARENT_PEN)
-               tmpdc.DrawRectangle(0, 0, bmp.GetWidth(), bmp.GetHeight())
-               dc.Blit(x_cc, y_cc,
-                       scaled_highlight.ncols, scaled_highlight.nrows,
-                       tmpdc, 0, 0, wx.OR, True)
       if redraw_rubber:
          self.draw_rubber(dc)
 
@@ -1013,18 +925,16 @@ class MultiImageGridRenderer(GridCellRenderer):
          x = rect.x + (rect.width - width) / 2
          y = rect.y + (rect.height - height) / 2
          wx_image = wx.EmptyImage(width, height)
-         scaled_image.to_buffer(wx_image.GetDataBuffer())
+         scaled_image.to_buffer_colorize(
+            wx_image.GetDataBuffer(),
+            color.Red(), color.Green(), color.Blue(),
+            isSelected)
          bmp = wx_image.ConvertToBitmap()
 
          # Display centered within the cell
          tmp_dc = wx.MemoryDC()
          tmp_dc.SelectObject(bmp)
-         if isSelected:
-            # This used to use dc.DrawBitmap, but the correct logical function
-            # (wxSRC_INVERT) didn't seem to get used under Windows.
-            dc.Blit(x, y, width, height, tmp_dc, 0, 0, wx.SRC_INVERT)
-         else:
-            dc.Blit(x, y, width, height, tmp_dc, 0, 0, wx.AND)
+         dc.Blit(x, y, width, height, tmp_dc, 0, 0, wx.COPY)
 
          if self.parent.display_names:
             label = self.parent.get_label(image)

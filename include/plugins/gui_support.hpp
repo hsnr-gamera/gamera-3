@@ -248,40 +248,159 @@ Image *color_ccs(T& m) {
   return image;
 }
 
-// template<class T>
-// void colorize_to_string(T& m, PyObject* py_buffer, 
-// 			  int fr, int fg, int fb, 
-// 			  int br, int bg, int bb) {
-//   char *buffer;
-//   Py_ssize_t buffer_len;
+template<class P>
+struct to_buffer_colorize_impl {
+  template<class T>
+  void operator()(const T& m, char* buffer,
+		  unsigned char red, unsigned char green, unsigned char blue) {
+    size_t r = (size_t)red;
+    size_t g = (size_t)green;
+    size_t b = (size_t)blue;
 
-//   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-//   if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
-//     printf("The image passed to to_buffer is not of the correct size.\n");
-//     return;
-//   }
+    char* i = buffer;
+    typename T::const_row_iterator row = m.row_begin();
+    typename T::const_col_iterator col;
+    ImageAccessor<GreyScalePixel> acc;
+    for (; row != m.row_end(); ++row) {
+      for (col = row.begin(); col != row.end(); ++col) {
+	GreyScalePixel tmp = acc(col);
+	*(i++) = (r * tmp) >> 8;
+	*(i++) = (g * tmp) >> 8;
+	*(i++) = (b * tmp) >> 8;
+      }
+    }
+  }
+};
 
-//       char* i = data;
-//       typename Mat::const_row_iterator row = mat.row_begin();
-//       typename Mat::const_col_iterator col;
-//       ImageAccessor<OneBitPixel> acc;
-//       unsigned char tmp;
-//       for (; row != mat.row_end(); ++row) {
-// 	for (col = row.begin(); col != row.end(); ++col) {
-// 	  if (is_white(acc(col)))
-//  	    tmp = 255;
-//  	  else
-//  	    tmp = 0;
-// 	  *(i++) = tmp;
-// 	  *(i++) = tmp;
-// 	  *(i++) = tmp;
-// 	}
-//       }
-//     }
-//   }
+template<class P>
+struct to_buffer_colorize_invert_impl {
+  template<class T>
+  void operator()(const T& m, char* buffer,
+		  unsigned char red, unsigned char green, unsigned char blue) {
+    size_t r = (size_t)red;
+    size_t g = (size_t)green;
+    size_t b = (size_t)blue;
 
-//   return NULL;
-// }
+    char* i = buffer;
+    typename T::const_row_iterator row = m.row_begin();
+    typename T::const_col_iterator col;
+    ImageAccessor<GreyScalePixel> acc;
+    for (; row != m.row_end(); ++row) {
+      for (col = row.begin(); col != row.end(); ++col) {
+	GreyScalePixel tmp = 255 - acc(col);
+	*(i++) = (r * tmp) >> 8;
+	*(i++) = (g * tmp) >> 8;
+	*(i++) = (b * tmp) >> 8;
+      }
+    }
+  }
+};
+
+template<>
+struct to_buffer_colorize_impl<OneBitPixel> {
+  template<class T>
+  void operator()(const T& m, char* buffer,
+		  unsigned char red, unsigned char green, unsigned char blue) {
+    char* i = buffer;
+    typename T::const_row_iterator row = m.row_begin();
+    typename T::const_col_iterator col;
+    ImageAccessor<OneBitPixel> acc;
+    for (; row != m.row_end(); ++row) {
+      for (col = row.begin(); col != row.end(); ++col) {
+	if (is_white(acc(col))) {
+	  *(i++) = red;
+	  *(i++) = green;
+	  *(i++) = blue;
+	} else {
+	  *(i++) = 0;
+	  *(i++) = 0;
+	  *(i++) = 0;
+	}
+      }
+    }
+  }
+};
+
+template<>
+struct to_buffer_colorize_invert_impl<OneBitPixel> {
+  template<class T>
+  void operator()(const T& m, char* buffer,
+		  unsigned char red, unsigned char green, unsigned char blue) {
+    char* i = buffer;
+    typename T::const_row_iterator row = m.row_begin();
+    typename T::const_col_iterator col;
+    ImageAccessor<OneBitPixel> acc;
+    for (; row != m.row_end(); ++row) {
+      for (col = row.begin(); col != row.end(); ++col) {
+	if (is_white(acc(col))) {
+	  *(i++) = 0;
+	  *(i++) = 0;
+	  *(i++) = 0;
+	} else {
+	  *(i++) = red;
+	  *(i++) = green;
+	  *(i++) = blue;
+	}
+      }
+    }
+  }
+};
+
+template<class T>
+void to_buffer_colorize(const T& m, PyObject* py_buffer, 
+			int red, int green, int blue,
+			bool invert) {
+  char *buffer;
+#if HAVE_SSIZE_T
+  Py_ssize_t buffer_len;
+#else
+  int buffer_len;
+#endif
+
+  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+  if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
+    printf("The image passed to to_buffer is not of the correct size.\n");
+    return;
+  }
+
+  unsigned char rc = (unsigned char)red;
+  unsigned char gc = (unsigned char)green;
+  unsigned char bc = (unsigned char)blue;
+
+  if (invert) {
+    to_buffer_colorize_invert_impl<typename T::value_type> func;
+    func(m, buffer, rc, gc, bc);
+  } else {
+    to_buffer_colorize_impl<typename T::value_type> func;
+    func(m, buffer, rc, gc, bc);
+  }
+}
+
+template<class T, class U>
+void draw_cc(T& m, const U& cc,
+	     int red, int green, int blue) {
+  if (cc.intersects(m)) {
+    RGBPixel color((unsigned char)red, (unsigned char)green, (unsigned char)blue);
+    Rect intersection = cc.intersection(m);
+    T sub_m(m, intersection);
+    U sub_cc(cc, intersection);
+
+    typename T::row_iterator dst_row = sub_m.row_begin();
+    typename T::col_iterator dst_col;
+    typename U::row_iterator src_row = sub_cc.row_begin();
+    typename U::col_iterator src_col;
+    ImageAccessor<OneBitPixel> acc;
+    for (; dst_row != sub_m.row_end(); ++dst_row, ++src_row) {
+      for (dst_col = dst_row.begin(), src_col = src_row.begin(); 
+	   dst_col != dst_row.end(); 
+	   ++dst_col, ++src_col) {
+	if (is_black(acc(src_col))) {
+	  *dst_col = color;
+	}
+      }
+    }
+  }
+}
 
 }
 

@@ -31,6 +31,20 @@ class to_buffer(PluginFunction):
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX])
     args = Args(Class("Buffer"))
 
+class draw_cc(PluginFunction):
+    """Draws a colored Cc over an already initialized wxImage buffer."""
+    self_type = ImageType([RGB])
+    args = Args([ImageType([ONEBIT]),
+                 Int("red"), Int("green"), Int("blue")])
+
+class to_buffer_colorize(PluginFunction):
+    """Encodes the image into a 'buffer' required by wxImage, and
+applies the given color to the foreground and background."""
+    self_type = ImageType([ONEBIT, GREYSCALE])
+    args = Args([Class("Buffer"),
+                 Int("red"), Int("green"), Int("blue"),
+                 Bool("invert")])
+
 class color_ccs(PluginFunction):
     """Returns an RGB image where each connected component of the
 image is colored one of eight different colors.  This function can
@@ -49,13 +63,13 @@ image.
 
 # By default, the wxPython-devel RPM puts stuff here, but this
 # should be done better
-wxpython_prefix = "/usr/lib/wxPython/"
 class GuiSupportModule(PluginModule):
     """This module provides various functions that support the GUI
     infrastructure."""
     category = None
     cpp_headers = ["gui_support.hpp"]
-    functions = [to_string, to_buffer, color_ccs]
+    functions = [to_string, to_buffer, to_buffer_colorize, color_ccs,
+                 draw_cc]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
     

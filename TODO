@@ -1,3 +1,6 @@
 - Add numpy support
-- Write replacements for broken wxPython compositing routines
+- Write replacements for broken wxPython compositing routines [Done,
+   but not tested on Mac]
 - Look into VIGRA convolution problems
+- Windows issues
+- Add rotation with interpolation (from VIGRA)

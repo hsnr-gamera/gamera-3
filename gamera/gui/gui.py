@@ -108,10 +108,12 @@ class GameraGui:
          from gamera import knn
          classifier = knn.kNNInteractive()
       wx.BeginBusyCursor()
-      class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
-      class_disp.set_image(current_database, image)
-      class_disp.Show(1)
-      wx.EndBusyCursor()
+      try:
+         class_disp = classifier_display.ClassifierFrame(classifier, symbol_table)
+         class_disp.set_image(current_database, image)
+         class_disp.Show(1)
+      finally:
+         wx.EndBusyCursor()
       return class_disp
    ShowClassifier = staticmethod(ShowClassifier)
 

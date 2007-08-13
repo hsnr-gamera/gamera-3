@@ -24,9 +24,8 @@
 try:
    import wxversion
    wxversion.select(["2.8", "2.6", "2.4"])
-   from wx import *
 except ImportError:
-   from wxPython.wx import *
+   from wxPython.wx import wxVERSION
    # Check that the version is correct
    if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 8):
      raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x or 2.8.x.  However, it seems that you have wxPython %s installed."""

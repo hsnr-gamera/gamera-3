@@ -138,6 +138,8 @@ namespace Gamera {
   */
   template<class T>
   Image* image_copy(T &a, int storage_format) {
+    if (a.ul_x() >= a.lr_x() || a.ul_y() >= a.lr_y())
+      throw std::exception();
     if (storage_format == DENSE) {
       typename ImageFactory<T>::dense_data_type* data =
 	new typename ImageFactory<T>::dense_data_type(a.size(), a.origin());

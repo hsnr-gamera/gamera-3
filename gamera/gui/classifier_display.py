@@ -1627,7 +1627,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
    def set_label_display(self, symbol):
       self.toplevel.text.SetValue(symbol)
       self.toplevel.text.SetSelection(0, len(symbol))
-      self.toplevel._OnText(None)
+      # self.toplevel._OnText(None)
       self.toplevel.text.SetFocus()
 
    def symbol_table_add_callback(self, tokens):
@@ -1697,7 +1697,11 @@ class SymbolTreeCtrl(wx.TreeCtrl):
 
    def _OnChanged(self, event):
       item = self.GetSelection()
-      data = self.GetPyData(item)
+      try:
+         data = self.GetPyData(item)
+      except:
+         event.Skip()
+         return
       if data != None:
          self.toplevel.text.SetValue(data)
          self.toplevel.text.SetInsertionPointEnd()
@@ -1715,12 +1719,6 @@ class SymbolTableEditorPanel(wx.Panel):
       txID = wx.NewId()
       self.text = wx.TextCtrl(self, txID,
                              style=wx.TE_PROCESS_ENTER|wx.TE_PROCESS_TAB)
-      wx.EVT_KEY_DOWN(self.text, self._OnKey)
-      wx.EVT_TEXT(self, txID, self._OnText)
-      # On win32, the enter key is only caught by the EVT_TEXT_ENTER
-      # On GTK, the enter key is sent directly to EVT_KEY_DOWN
-      if wx.Platform == '__WXMSW__':
-         wx.EVT_TEXT_ENTER(self, txID, self._OnEnter)
       self.box.Add(self.text, 0, wx.EXPAND|wx.BOTTOM, 5)
       tID = wx.NewId()
       self.tree = SymbolTreeCtrl(self, self, tID, wx.DefaultPosition,
@@ -1729,6 +1727,13 @@ class SymbolTableEditorPanel(wx.Panel):
       self.box.Add(self.tree, 1, wx.EXPAND|wx.ALL)
       self.SetSizer(self.box)
 
+      wx.EVT_KEY_DOWN(self.text, self._OnKey)
+      wx.EVT_TEXT(self, txID, self._OnText)
+      # On win32, the enter key is only caught by the EVT_TEXT_ENTER
+      # On GTK, the enter key is sent directly to EVT_KEY_DOWN
+      if wx.Platform == '__WXMSW__':
+         wx.EVT_TEXT_ENTER(self, txID, self._OnEnter)
+      
    ########################################
    # CALLBACKS
 

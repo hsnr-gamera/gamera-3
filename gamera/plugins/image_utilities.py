@@ -42,6 +42,8 @@ copied, changes to the new image do not affect the original image.
     return_type = ImageType(ALL)
     args = Args([Choice("storage_format", ["DENSE", "RLE"])])
     def __call__(image, storage_format = 0):
+        if image.nrows <= 0 or image.ncols <= 0:
+            return image
         return _image_utilities.image_copy(image, storage_format)
     __call__ = staticmethod(__call__)
 

@@ -562,6 +562,20 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
              x2 < x1 or y2 < y1):
             return
 
+      if dc is None:
+         dc = wx.ClientDC(self)
+         self.draw_rubber(dc)
+         redraw_rubber = True
+      else:
+         redraw_rubber = False
+
+      if tmpdc is None:
+         tmpdc = wx.MemoryDC()
+
+      dc.SetPen(wx.TRANSPARENT_PEN)
+      dc.SetBrush(wx.Brush(wx.WHITE, wx.SOLID))
+      dc.DrawRectangle(x1 - origin[0], y1 - origin[1], x2 - x1, y2 - y1)
+   
       # Localise some member variables
       scaling = self.scaling
       scaling_quality = self.scaling_quality
@@ -580,17 +594,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       # Quantize the origin
       x = floor((x1 - origin[0]) / scaling) * scaling
       y = floor((y1 - origin[1]) / scaling) * scaling
-
-      if dc is None:
-         dc = wx.ClientDC(self)
-         self.draw_rubber(dc)
-         redraw_rubber = True
-      else:
-         redraw_rubber = False
-
-      if tmpdc is None:
-         tmpdc = wx.MemoryDC()
-
+         
+      if x2i <= x1i or y2i <= y1i:
+         return
+         
       subimage = image.subimage(
          (x1i + image.ul_x, y1i + image.ul_y),
          (x2i + image.ul_x, y2i + image.ul_y)).to_rgb()

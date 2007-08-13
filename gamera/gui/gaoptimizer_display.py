@@ -148,13 +148,14 @@ class OptimizerFrame(wx.Frame):
       if self.classifier is not None and self.running:
          self.timer.Stop()
          wx.BeginBusyCursor()
-         self.classifier.stop_optimizing()
-         self.running = False
-         self.enable_controls(True)
-         id = self.optimizer_menu.FindItem("Stop")
-         self.optimizer_menu.Enable(id, False)
-         
-         wx.EndBusyCursor()
+         try:
+            self.classifier.stop_optimizing()
+            self.running = False
+            self.enable_controls(True)
+            id = self.optimizer_menu.FindItem("Stop")
+            self.optimizer_menu.Enable(id, False)
+         finally:
+            wx.EndBusyCursor()
 
    def start(self):
       if self.running:
@@ -183,10 +184,10 @@ class OptimizerFrame(wx.Frame):
          if features == None:
             return
 
-         wx.BeginBusyCursor()
          self.filename = filename
          glyphs = None
          try:
+            wx.BeginBusyCursor()
             try:
                glyphs = gamera_xml.glyphs_from_xml(filename)
                self.set_classifier(kNNNonInteractive(glyphs, features))
@@ -208,8 +209,10 @@ class OptimizerFrame(wx.Frame):
       else:
          if self.settings_filename is not None:
             wx.BeginBusyCursor()
-            self.classifier.save_settings(self.settings_filename)
-            wx.EndBusyCursor()
+            try:
+               self.classifier.save_settings(self.settings_filename)
+            finally:
+               wx.EndBusyCursor()
          else:
             self.save_as_cb(evt)
 
@@ -220,8 +223,10 @@ class OptimizerFrame(wx.Frame):
          self.settings_filename = gui_util.save_file_dialog(self)
          if self.settings_filename is not None:
             wx.BeginBusyCursor()
-            self.classifier.save_settings(self.settings_filename)
-            wx.EndBusyCursor()
+            try:
+               self.classifier.save_settings(self.settings_filename)
+            finally:
+               wx.EndBusyCursor()
 
    def start_cb(self, evt):
       self.start()

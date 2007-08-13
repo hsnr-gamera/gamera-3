@@ -687,23 +687,27 @@ class ClassifierFrame(ImageFrameBase):
 
    def unsplit_editors(self, display):
       wx.BeginBusyCursor()
-      self.splitterhr1.Unsplit(display)
-      display.Show(False)
-      for id in (self.multi_iw, self.class_iw):
-         id.set_close_button(False)
-      wx.EndBusyCursor()
+      try:
+         self.splitterhr1.Unsplit(display)
+         display.Show(False)
+         for id in (self.multi_iw, self.class_iw):
+            id.set_close_button(False)
+      finally:
+         wx.EndBusyCursor()
 
    def split_editors(self):
       wx.BeginBusyCursor()
-      self.splitterhr1.SplitHorizontally(
-         self.class_iw, self.multi_iw,
-         self.splitterhr1.GetSize()[1] / 2)
-      self.class_iw.Show(True)
-      self.class_iw.id.sort_images()
-      self.multi_iw.Show(True)
-      for id in (self.multi_iw, self.class_iw):
-         id.set_close_button(True)
-      wx.EndBusyCursor()
+      try:
+         self.splitterhr1.SplitHorizontally(
+            self.class_iw, self.multi_iw,
+            self.splitterhr1.GetSize()[1] / 2)
+         self.class_iw.Show(True)
+         self.class_iw.id.sort_images()
+         self.multi_iw.Show(True)
+         for id in (self.multi_iw, self.class_iw):
+            id.set_close_button(True)
+      finally:
+         wx.EndBusyCursor()
       
    def update_symbol_table(self):
       for glyph in self._classifier.get_glyphs():
@@ -1263,11 +1267,11 @@ This special directory can be reloaded using **Open all...**.
       try:
          image = load_image(filename)
          self._segment_image(image, segmenters[segmenter])
+         self.multi_iw.id.is_dirty = False
       except Exception, e:
-         gui_util.message(str(e))
          wx.EndBusyCursor()
+         gui_util.message(str(e))
          return
-      self.multi_iw.id.is_dirty = False
       wx.EndBusyCursor()
 
    def _OnSelectAndSegmentImage(self, event):
@@ -1289,11 +1293,11 @@ This special directory can be reloaded using **Open all...**.
       wx.BeginBusyCursor()
       try:
          self._segment_image(image, segmenters[segmenter])
+         self.multi_iw.id.is_dirty = False
       except Exception, e:
-         gui_util.message(str(e))
          wx.EndBusyCursor()
+         gui_util.message(str(e))
          return
-      self.multi_iw.id.is_dirty = False
       wx.EndBusyCursor()
 
    def _OnSelectImage(self, event):
@@ -1739,11 +1743,13 @@ class SymbolTableEditorPanel(wx.Panel):
 
    def _OnEnter(self, evt):
       wx.BeginBusyCursor()
-      find = self.text.GetValue()
-      normalized_symbol = self._symbol_table.add(find)
-      if normalized_symbol != '':
-         self.toplevel.classify_manual(normalized_symbol)
-      wx.EndBusyCursor()
+      try:
+         find = self.text.GetValue()
+         normalized_symbol = self._symbol_table.add(find)
+         if normalized_symbol != '':
+            self.toplevel.classify_manual(normalized_symbol)
+      finally:
+         wx.EndBusyCursor()
 
    def _OnKey(self, evt):
       keycode = evt.GetKeyCode()

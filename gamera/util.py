@@ -336,7 +336,7 @@ def ProgressFactory(message, length=1):
    else:
       return ProgressNothing(message, length)
 
-class CallbackObject(object):
+class CallbackObject:
    def __init__(self):
       self._callbacks = {}
       self.is_dirty = False

@@ -12,7 +12,9 @@
 #include <ga/garandom.h>
 #include <ga/GABaseGA.h>		// for the sake of flaky g++ compiler
 
+#ifndef NOMINMAX
 #define NOMINMAX		// for the sake of window, thanks nick wienholt
+#endif
 
 // This is the default population initializer.  It simply calls the initializer
 // for each member of the population.  Then we touch the population to tell it

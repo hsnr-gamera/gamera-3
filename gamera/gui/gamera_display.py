@@ -55,10 +55,10 @@ def _sort_by_ncols(a, b):
 
 class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    def __init__(self, parent, id = -1, size = wx.DefaultSize):
-      util.CallbackObject.__init__(self)
       wx.ScrolledWindow.__init__(
          self, parent, id, wx.Point(0, 0), size,
          wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
+      util.CallbackObject.__init__(self)
       self.SetBackgroundColour(wx.WHITE)
 
       self.scaling = 1.0
@@ -156,7 +156,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       pen = wx.Pen(wx.Color(0, 0, 255), 2, wx.SOLID)
       dc.SetPen(pen)
       dc.SetBrush(wx.TRANSPARENT_BRUSH)      
-      dc.DrawRectangle(x, y, w, h)
+      dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
    def draw_boxes(self, dc=None):
       for b in self.boxes:
@@ -574,7 +574,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       dc.SetPen(wx.TRANSPARENT_PEN)
       dc.SetBrush(wx.Brush(wx.WHITE, wx.SOLID))
-      dc.DrawRectangle(x1 - origin[0], y1 - origin[1], x2 - x1, y2 - y1)
+      dc.DrawRectangle(int(x1 - origin[0]), int(y1 - origin[1]),
+                       int(x2 - x1), int(y2 - y1))
    
       # Localise some member variables
       scaling = self.scaling
@@ -615,7 +616,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       bmp = wx.BitmapFromImage(image)
       tmpdc.SelectObject(bmp)
-      dc.Blit(x, y, scaled_image.ncols, scaled_image.nrows,
+      dc.Blit(int(x), int(y), scaled_image.ncols, scaled_image.nrows,
               tmpdc, 0, 0, wx.COPY, True)
 
       if redraw_rubber:
@@ -941,7 +942,7 @@ class MultiImageGridRenderer(GridCellRenderer):
          # Display centered within the cell
          tmp_dc = wx.MemoryDC()
          tmp_dc.SelectObject(bmp)
-         dc.Blit(x, y, width, height, tmp_dc, 0, 0, wx.COPY)
+         dc.Blit(int(x), int(y), width, height, tmp_dc, 0, 0, wx.COPY)
 
          if self.parent.display_names:
             label = self.parent.get_label(image)

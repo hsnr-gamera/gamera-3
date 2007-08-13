@@ -38,19 +38,23 @@ except:
 try:
    from docutils.core import publish_file
    import docutils.parsers.rst
+   if docutils.__version__ < '0.4':
+      raise ImportError()
 except ImportError, e:
-   print "'docutils' 0.3 or later must be installed to generate the documentation."
+   print "'docutils' 0.4 or later must be installed to generate the documentation."
    print "It can be downloaded at http://docutils.sf.net"
    sys.exit(1)
 
 ######################################################################
-# Import SilverCity
+# Import pygments or SilverCity
 source_highlighter = None
 try:
    import pygments
    import pygments.lexers
    import pygments.formatters
    source_highlighter = 'pygments'
+   if pygments.__version__ < '0.6':
+      raise ImportError()
 except ImportError, e:
    try:
       import SilverCity

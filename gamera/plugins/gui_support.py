@@ -51,12 +51,15 @@ image is colored one of eight different colors.  This function can
 be used to verify that ``cc_analysis`` is working correctly for your
 image.
 
-.. note: Connected component analysis must already be performed on the image
-   (using cc_analysis_, for example) in order for this to work.
+.. note:: Connected component analysis must already be performed on the image
+          (using cc_analysis_, for example) in order for this to work.
+
+.. _cc_analysis: segmentation.html#cc-analysis
 
 **Example 1:**
 
-.. image:: images/color_ccs.png"""
+.. image:: images/color_ccs.png
+"""
     category = "Color"
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])

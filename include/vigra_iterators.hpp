@@ -103,7 +103,7 @@ namespace Gamera {
         : width_(width), offset_(0) {}
       MoveY(MoveY const & rhs)
         : width_(rhs.width_), offset_(rhs.offset_) {}
-      size_t width_;
+      int width_;
       int offset_;
     };
 

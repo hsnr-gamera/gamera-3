@@ -43,19 +43,6 @@ __init__
 
 .. docstring:: gamera.core Dim ncols nrows
 
-Dimensions
-----------
-
-.. docstring:: gamera.core Dimensions
-   :no_title:
-
-__init__
-''''''''
-
-**Dimensions** (Int *nrows*, Int *ncols*)
-
-.. docstring:: gamera.core Dimensions nrows ncols
-
 Rect
 ----
 

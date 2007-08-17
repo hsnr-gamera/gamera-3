@@ -317,7 +317,6 @@ class CommentTemplateNode(LeafTemplateNode):
 class ExpressionTemplateNode(LeafTemplateNode):
    def execute(self, stream, data):
       try:
-         print type(self.s), type(data), stream
          stream.write(unicode(eval(self.s, globals(), data)).encode("utf-8"))
       except Exception, e:
          self.parent.parser_exception(self.s, e)

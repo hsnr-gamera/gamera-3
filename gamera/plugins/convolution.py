@@ -69,7 +69,7 @@ Example usage:
 
 .. code:: Python
 
-  # Using a custom kernels
+  # Using a custom kernel
   image.convolve([[0.125, 0.0, -0.125],
                   [0.25 , 0.0, -0.25 ],
                   [0.125, 0.0, -0.125]])
@@ -84,7 +84,7 @@ Example usage:
                         default=1)])
     return_type = ImageType(CONVOLUTION_TYPES)
 
-    def __call__(self, kernel, border_treatment=1):
+    def __call__(self, kernel, border_treatment=3):
         from gamera.gameracore import FLOAT
         if type(kernel) == list:
             kernel = image_utilities.nested_list_to_image(kernel, FLOAT)
@@ -136,10 +136,10 @@ This is equivalent to what the Vigra library calls "Separable Convolution".
     __call__ = staticmethod(__call__)
 
 class convolve_x(PluginFunction):
-    """Convolves an image in the X directions with a 1D kernel.
+    u"""Convolves an image in the X directions with a 1D kernel.
 This is equivalent to what the Vigra library calls "Separable Convolution".
 
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich Koethe).
+Uses code from the Vigra library (Copyright 1998-2002 by Ullrich K\u00f6the).
 
 *kernel_x*
    A kernel for the convolution in the *x* direction.  The kernel may either be a FloatImage
@@ -394,7 +394,7 @@ class ConvolutionModule(PluginModule):
                  gaussian_smoothing, simple_sharpen,
                  gaussian_gradient, laplacian_of_gaussian,
                  hessian_matrix_of_gaussian, sobel_edge_detection]
-    author = "Michael Droettboom (With code from VIGRA by Ulrich Koethe)"
+    author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
     url = "http://gamera.dkc.jhu.edu/"
 module = ConvolutionModule()
 

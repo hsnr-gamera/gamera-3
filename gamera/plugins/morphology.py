@@ -128,7 +128,7 @@ as a Float image.
   args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
   return_type = ImageType([FLOAT])
   doc_examples = [(ONEBIT,5),]
-  author = "Ulrich Koethe (wrapped from VIGRA by Michael Droettboom"
+  author = u"Ullrich K\u00f6the (wrapped from VIGRA by Michael Droettboom"
 
 
 class dilate_with_structure(PluginFunction):

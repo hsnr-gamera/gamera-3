@@ -26,11 +26,11 @@ import _edgedetect
 # Edge detection methods
 
 class difference_of_exponential_edge_image(PluginFunction):
-      """EXPERIMENTAL
+      u"""EXPERIMENTAL
 
 Detect and mark edges in an edge image using the Shen/Castan zero-crossing detector.
 
-Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
+Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich K\u00f6the).
 
 *scale*
 	The scale relates to the value b of the exponential filter.
@@ -57,11 +57,11 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
       doc_examples = [(GREYSCALE,)]
 
 class difference_of_exponential_crack_edge_image(PluginFunction):
-      """EXPERIMENTAL
+      u"""EXPERIMENTAL
 
 Detect and mark edges in a crack edge image using the Shen/Castan zero-crossing detector.
 
-Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
+Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich K\u00f6the).
 
 *scale*
 	The scale relates to the value b of the exponential filter.
@@ -98,11 +98,11 @@ Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich
       doc_examples = [(GREYSCALE,)]
 
 class canny_edge_image(PluginFunction):
-      """EXPERIMENTAL
+      u"""EXPERIMENTAL
 
 Detect and mark edges in an edge image using Canny's algorithm.
 
-Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich Koethe).
+Uses code from the VIGRA Computer Vision Library (Copyright 1998-2002 by Ullrich K\u00f6the).
 
 *scale*
 	The scale relates to the value b of the exponential filter.
@@ -128,7 +128,7 @@ class EdgeDetect(PluginModule):
       functions = [difference_of_exponential_edge_image,
                    difference_of_exponential_crack_edge_image,
                    canny_edge_image]
-      author = "Ullrich Koethe (wrapped by Robert Ferguson)"
+      author = u"Ullrich K\u00f6the (wrapped by Robert Ferguson)"
       url = "http://gamera.dkc.jhu.edu"
 module = EdgeDetect()
 

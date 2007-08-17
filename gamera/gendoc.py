@@ -23,7 +23,7 @@
 ######################################################################
 # Import Python stdlib
 from __future__ import generators
-import locale, sys, glob, cStringIO, inspect, getopt, os.path, shutil
+import codecs, locale, sys, glob, cStringIO, inspect, getopt, os.path, shutil
 from stat import ST_MTIME
 from time import strftime, localtime
 import traceback
@@ -76,9 +76,9 @@ if source_highlighter == 'pygments':
          lexer = pygments.lexers.get_lexer_by_name(language)
       except ValueError:
          # no lexer found - use the text one instead of an exception
-         error = state_machine.reporter.error( "No pygments lexer found "
-                                               "for language '%s'." % language, 
-                                               docutils.nodes.literal_block(block_text, block_text), line=lineno )
+         error = state_machine.reporter.error(
+            "No pygments lexer found for language '%s'." % language, 
+            docutils.nodes.literal_block(block_text, block_text), line=lineno)
          return [error]
       parsed = pygments.highlight(
          u'\n'.join(content), 
@@ -87,23 +87,23 @@ if source_highlighter == 'pygments':
       return [docutils.nodes.raw('', parsed, format='html')]
 elif source_highlighter == 'silvercity':
    def code_block(name, arguments, options, content, lineno,
-                content_offset, block_text, state, state_machine ):
+                  content_offset, block_text, state, state_machine):
       language = arguments[0]
       try:
          module = getattr(SilverCity, language)
          generator = getattr(module, language+"HTMLGenerator")
       except AttributeError:
-         error = state_machine.reporter.error( "No SilverCity lexer found "
-                                               "for language '%s'." % language, 
-                                               docutils.nodes.literal_block(block_text, block_text), line=lineno )
+         error = state_machine.reporter.error(
+            "No SilverCity lexer found for language '%s'." % language, 
+            docutils.nodes.literal_block(block_text, block_text), line=lineno)
          return [error]
       io = cStringIO.StringIO()
       generator().generate_html( io, '\n'.join(content) )
-      html = '<div class="code-block">\n%s\n</div>\n' % io.getvalue()
+      html = u'<div class="code-block">\n%s\n</div>\n' % io.getvalue()
       raw = docutils.nodes.raw('',html, format = 'html')
       return [raw]
 code_block.arguments = (1,0,0)
-code_block.options = {'language' : docutils.parsers.rst.directives.unchanged }
+code_block.options = {'language' : docutils.parsers.rst.directives.unchanged}
 code_block.content = 1
 docutils.parsers.rst.directives.register_directive( 'code', code_block )
 
@@ -142,7 +142,7 @@ class DocumentationGenerator:
    def set_paths(self, root):
       def check_path(path):
          if not os.path.exists(path):
-            raise RuntimeError("Documentation directory '%s' does not exist" % os.path.abspath(path))
+            raise RuntimeError(u"Documentation directory '%s' does not exist" % os.path.abspath(path))
          
       join = os.path.join
       self.root_path = root
@@ -209,7 +209,7 @@ class DocumentationGenerator:
          path, filename = os.path.split(file)
          root, ext = os.path.splitext(filename)
          yield (file, root,
-                open(file, 'r'),
+                codecs.open(file, 'r', 'utf-8'),
                 strftime("%B %d, %Y", localtime(os.stat(file)[ST_MTIME])))
 
    def convert_to_html(self):
@@ -221,13 +221,13 @@ class DocumentationGenerator:
             print "  Generating " + rootname
             lines = fd.readlines()
             lines = (lines[:3] + 
-                     ["\n", "**Last modifed**: %s\n\n" % mtime, 
+                     ["\n", u"**Last modifed**: %s\n\n" % mtime, 
                       ".. contents::\n\n", 
                       ".. role:: raw-html(raw)\n   :format: html\n",
                       '.. footer:: :raw-html:`<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>`\n\n'
                       ] + 
                      lines[3:])
-            fd = cStringIO.StringIO(''.join(lines))
+            fd = cStringIO.StringIO((u''.join(lines)).encode("utf-8"))
             try:
                overrides = {'embed_stylesheet': False,
                             'stylesheet_path': None,
@@ -298,7 +298,8 @@ class PluginDocumentationGenerator:
       flat_list = {}
       for pixel_type in ALL + [NONIMAGE]:
          if methods.has_key(pixel_type): 
-             methods_flatten(flat_methods, methods[pixel_type], flat_list, False)
+             methods_flatten(flat_methods, methods[pixel_type],
+                             flat_list, False)
 
       return flat_methods
    get_methods = staticmethod(get_methods)
@@ -310,8 +311,10 @@ class PluginDocumentationGenerator:
          if type(val) == dict:
             if level == 0:
                 filename = key.lower()
-                s = open(os.path.join(self.docgen.src_path, filename + ".txt"), "w")
-            s.write("\n%s\n%s\n\n" % (key, underline(level, key)))
+                s = codecs.open(
+                   os.path.join(self.docgen.src_path, filename + ".txt"),
+                   "w", "utf-8")
+            s.write(u"\n%s\n%s\n\n" % (key, underline(level, key)))
             print "  " * (level + 1) + key
             self.recurse(val, level + 1, images, s)
          else:
@@ -341,7 +344,8 @@ class PluginDocumentationGenerator:
              else:
                  index.append(key)
 
-      s = open(os.path.join(self.docgen.src_path, "plugins.txt"), "w")
+      s = codecs.open(os.path.join(self.docgen.src_path, "plugins.txt"),
+                      "w", "utf-8")
       s.write("=======\nPlugins\n=======\n\nBy categories\n-------------\n\n")
       links = []
       index = []
@@ -366,25 +370,25 @@ class PluginDocumentationGenerator:
       s.write("\n".join(links))
       
    def method_doc(self, func, level, images, s):
-      s.write("``%s``\n" % func.__name__)
+      s.write(u"``%s``\n" % func.__name__)
       s.write(underline(level, func.__name__, 4))
       s.write("\n\n")
       if func.return_type != None:
          s.write(func.return_type.rest_repr() + " ")
-      header = "**%s** (%s)\n" % (func.__name__, ', '.join(
+      header = u"**%s** (%s)\n" % (func.__name__, ', '.join(
           [x.rest_repr(True) for x in func.args.list]))
       s.write(header)
       s.write("\n\n")
       if func.self_type != None:
-         s.write(":Operates on: %s\n" % func.self_type.rest_repr(False))
+         s.write(u":Operates on: %s\n" % func.self_type.rest_repr(False))
       if func.return_type != None:
-         s.write(":Returns: %s\n" % (func.return_type.rest_repr(False)))
+         s.write(u":Returns: %s\n" % (func.return_type.rest_repr(False)))
       if func.category == None:
          category = func.module.category
       else:
          category = func.category
       if category != None:
-         s.write(":Category: %s\n" % category)
+         s.write(u":Category: %s\n" % category)
       file = os.path.split(inspect.getsourcefile(func))[1]
       if file == 'plugin.py':
           file = 'core.py'
@@ -395,15 +399,15 @@ class PluginDocumentationGenerator:
           author = func.author
       if author != None:
          if func.module.url != None and 0:
-            s.write(":Author: `%s`__\n.. __: %s\n" % (author, func.module.url))
+            s.write(u":Author: `%s`__\n.. __: %s\n" % (author, func.module.url))
          else:
-            s.write(":Author: %s\n" % (author,))
+            s.write(u":Author: %s\n" % (author,))
       if func.image_types_must_match:
          s.write("\n*All images passed in (including self) must have the same pixel type.*\n\n")
       if func.__doc__ == None or func.__doc__ == "":
          s.write("\n.. warning:: No documentation written.\n\n")
       else:
-         s.write("\n\n%s\n" % func.__doc__)
+         s.write(u"\n\n%s\n" % func.__doc__)
       self.method_example(func, level, images, s)
 
    def run_example(self, func, images):
@@ -435,9 +439,9 @@ class PluginDocumentationGenerator:
       if len(results):
          s.write("\n----------\n\n")
       for i, (result, src_image, pixel_type, arguments) in enumerate(results):
-         s.write("**Example %d:** %s" % (i + 1, func.__name__))
+         s.write(u"**Example %d:** %s" % (i + 1, func.__name__))
          if not arguments is None:
-            s.write("(%s)" % ", ".join([str(x) for x in arguments]))
+            s.write(u"(%s)" % ", ".join([str(x) for x in arguments]))
          s.write("\n\n")
          if not pixel_type is None:
             pixel_type_name = util.get_pixel_type_name(pixel_type)
@@ -500,14 +504,14 @@ class ClassDocumentationGenerator:
       print "  ", combined_name
       if type(members) in (str, unicode):
          members = members.split()
-      s = open(os.path.join(self.docgen.src_path, combined_name + ".txt"), "w")
-      s.write("class ``%s``\n%s\n\n" % (cls_name, underline(0, cls_name, 10)))
-      s.write("``%s``\n%s\n\nIn module ``%s``\n\n" % (cls_name, underline(1, cls_name, 4), module_name))
-      s.write(".. docstring:: %s %s\n   :no_title:\n\n" % (module_name, cls_name))
-      s.write(".. docstring:: %s %s %s\n\n" % (module_name, cls_name, " ".join(members)))
+      s = codecs.open(os.path.join(self.docgen.src_path, combined_name + ".txt"), "w", "utf-8")
+      s.write(u"class ``%s``\n%s\n\n" % (cls_name, underline(0, cls_name, 10)))
+      s.write(u"``%s``\n%s\n\nIn module ``%s``\n\n" % (cls_name, underline(1, cls_name, 4), module_name))
+      s.write(u".. docstring:: %s %s\n   :no_title:\n\n" % (module_name, cls_name))
+      s.write(u".. docstring:: %s %s %s\n\n" % (module_name, cls_name, " ".join(members)))
 
    def table_of_contents(self, classes):
-      s = open(os.path.join(self.docgen.src_path, "classes.txt"), "w")
+      s = codecs.open(os.path.join(self.docgen.src_path, "classes.txt"), "w", "utf-8")
       s.write("=======\nClasses\n=======\n\n")
       s.write("Alphabetical\n-------------\n")
       self.class_names.sort(sort_firstitem_lowercase)
@@ -523,7 +527,7 @@ class ClassDocumentationGenerator:
               first = True
           if not first:
               s.write(", ")
-          s.write("%s_ (%s)" % (name, combined_name))
+          s.write(u"%s_ (%s)" % (name, combined_name))
           first = False
           links.append(".. _%s: %s.html" % (name, combined_name))
       s.write("\n\n")
@@ -548,16 +552,12 @@ def docstring(name, arguments, options, content, lineno,
          text = doc_string + "\n\n"
       content = docutils.statemachine.string2lines(text, convert_whitespace=1)
       if not options.has_key('no_title'):
-         title_text = "``%s``" % name
+         title_text = u"``%s``" % name
          textnodes, messages = state.inline_text(title_text, lineno)
          titles = [docutils.nodes.title(title_text, '', *textnodes)] + messages
          node = docutils.nodes.section(text, *titles)
-         version = tuple([int(x) for x in docutils.__version__.split(".")])
-         if version >= (0, 3, 9):
-            node['names'] = [name]  # docutils 0.3.9 way
-            node['name'] = name
-         else:
-            node['name'] = name     # docutils 0.3.7 way
+         node['names'] = [name]
+         node['name'] = name
          state_machine.document.note_implicit_target(node)
       else:
          node = docutils.nodes.paragraph(text)

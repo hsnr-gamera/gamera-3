@@ -33,20 +33,23 @@ recursion stops.
 
 Whether the resulting segments represent lines, columns or paragraphs
 depends on the values for *Tx* and *Ty*. The return value is a list of
-'CCs' where each 'CC' represents a found segment. Note that each image
-pixel is set to its CC label.
+'CCs' where each 'CC' represents a found segment. Note that the input image
+is changed such that each pixel is set to its CC label.
 
- *Tx*: minimum 'gap' width in the horizontal direction
-       When set to zero, *Tx* is set to the median height of all
-       connected component * 7, which might be a reasonable assumption for
-       the gap width between adjacent text columns.
+*Tx*:
+  minimum 'gap' width in the horizontal direction.
+  When set to zero, *Tx* is set to the median height of all
+  connected component * 7, which might be a reasonable assumption for
+  the gap width between adjacent text columns.
 
- *Ty*: minimum 'gap' width in the vertical direction
-       When set to zero, *Ty* is set to half the median height of all
-       connected component, which might be a reasonable assumption for
-       the gap width between adjacent text lines.
+*Ty*:
+  minimum 'gap' width in the vertical direction.
+  When set to zero, *Ty* is set to half the median height of all
+  connected component, which might be a reasonable assumption for
+  the gap width between adjacent text lines.
 
- *noise*: maximum projection value still accounting in a 'gap'
+*noise*:
+  maximum projection value still consideread as belonging to a 'gap'.
 """
 	self_type = ImageType([ONEBIT])
 	args = Args([Int('Tx', default = 0), Int('Ty', default = 0), \
@@ -68,23 +71,23 @@ regions. As this typically still consists small white horizontal gaps,
 these gaps narrower than *Csm* are in a final step also filled out.
 
 The return value is a list of
-'CCs' where each 'CC' represents a found segment. Note that each image
-pixel is set to its CC label.
+'CCs' where each 'CC' represents a found segment. Note that the input image
+is changed such that each pixel is set to its CC label.
 
 Arguments:
 
- *Cx*: Minimal length of white runs in the rows.
-       When set to *-1*, it is set to 20 times the median height of all
-	   connected components.
+*Cx*:
+  Minimal length of white runs in the rows. When set to *-1*, it is set
+  to 20 times the median height of all connected components.
 
- *Cy*: Minimal length of white runs in the columns.
-       When set to *-1*, it is set to 20 times the median height of all
-	   connected components.
+*Cy*:
+  Minimal length of white runs in the columns. When set to *-1*, it is
+  set to 20 times the median height of all connected components.
 
- *Csm*: Minimal length of white runs row-wise in the almost final image.
-       When set to *-1*, it is set to 3 times the median height of all
-	   connected components.
-
+*Csm*:
+  Minimal length of white runs row-wise in the almost final image. When
+  set to *-1*, it is set to 3 times the median height of all
+  connected components.
 """
 	self_type = ImageType([ONEBIT])
 	return_type = ImageList("ccs")
@@ -129,7 +132,7 @@ The return value is a tuple with two entries:
 	self_type = ImageType([ONEBIT])
 	return_type = Class("img_ccs", tuple)
 	args = Args([ImageList('cclist')])
-	author = "Stephan Ruloff"
+	author = "Stephan Ruloff and Christoph Dalitz"
 
 
 # module declaration

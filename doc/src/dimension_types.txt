@@ -52,7 +52,7 @@ Rect
 Position and dimensions
 '''''''''''''''''''''''
 
-.. docstring:: gamera.core Rect ul_x ul_y ur ur_x ur_y lr lr_x lr_y ll ll_x ll_y dimensions size nrows ncols width height offset_x offset_y 
+.. docstring:: gamera.core Rect ul_x ul_y ur ur_x ur_y lr lr_x lr_y ll ll_x ll_y size nrows ncols width height offset_x offset_y 
 
 Center
 ''''''

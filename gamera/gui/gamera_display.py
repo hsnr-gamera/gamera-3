@@ -152,7 +152,6 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       w = x2 - x
       h = y2 - y
 
-      dc.SetLogicalFunction(wx.COPY)
       pen = wx.Pen(wx.Color(0, 0, 255), 2, wx.SOLID)
       dc.SetPen(pen)
       dc.SetBrush(wx.TRANSPARENT_BRUSH)      
@@ -171,13 +170,13 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          self._boxed_highlight_position &= 0x7  # mod 8
          highlight = self.highlights[0][0]
          i = (16 + abs(4 - self._boxed_highlight_position)) / self.scaling
-         self.draw_rubber()
+         self.draw_rubber(clear=True)
          self.rubber_origin_x = highlight.ul_x - i
          self.rubber_origin_y = highlight.ul_y - i
          self.rubber_x2 = highlight.lr_x + i
          self.rubber_y2 = highlight.lr_y + i
          self._boxed_highlight_position -= 1
-         self.draw_rubber()
+         self.draw_rubber(clear=False)
 
    def highlight_rectangle(self, r, color, text=None):
       cc = self.image.subimage(r)
@@ -411,7 +410,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    ########################################
    # RUBBER BAND
    #
-   def draw_rubber(self, dc=None):
+   def draw_rubber(self, dc=None, clear=False):
       if dc == None:
          dc = wx.ClientDC(self)
       scaling = self.scaling
@@ -433,10 +432,14 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       dc.SetPen(pen)
       dc.SetBrush(wx.TRANSPARENT_BRUSH)
       dc.DrawRectangle(x, y, w, h)
-      dc.SetPen(wx.TRANSPARENT_PEN)
-      brush = wx.BLUE_BRUSH
-      brush.SetColour(wx.Color(167, 105, 39))
-      dc.SetBrush(brush)
+      if wx.Platform != '__WXMAC__':
+         dc.SetPen(wx.TRANSPARENT_PEN)
+         brush = wx.BLUE_BRUSH
+         brush.SetColour(wx.Color(167, 105, 39))
+         dc.SetBrush(brush)
+      else:
+         pen.SetStyle(wx.SOLID)
+         dc.SetPen(pen)
       self.block_w = block_w = max(min(w / 2 - 1, 8), 0)
       self.block_h = block_h = max(min(h / 2 - 1, 8), 0)
       dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
@@ -541,7 +544,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
                    check=False, dc=dc, tmpdc=tmpdc)
          rects.Next()
 
-      self.draw_rubber(dc)
+      self.draw_rubber(dc, clear=False)
       self.draw_boxes(dc)
       dc.EndDrawing()
 
@@ -564,7 +567,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       if dc is None:
          dc = wx.ClientDC(self)
-         self.draw_rubber(dc)
+         self.draw_rubber(dc, clear=True)
          redraw_rubber = True
       else:
          redraw_rubber = False
@@ -620,7 +623,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
               tmpdc, 0, 0, wx.COPY, True)
 
       if redraw_rubber:
-         self.draw_rubber(dc)
+         self.draw_rubber(dc, clear=False)
 
    def PaintAreaRect(self, rect):
       # When painting a specific area, we have to make it
@@ -639,7 +642,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          return
       self.CaptureMouse()
       self.rubber_on = 1
-      self.draw_rubber()
+      self.draw_rubber(clear=True)
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       x = min((event.GetX() + origin[0]) / self.scaling,
               self.image.ncols - 1)
@@ -653,11 +656,11 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
              y <= self.rubber_origin_y + self.block_h):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
-            self.draw_rubber()
+            self.draw_rubber(clear=False)
             return
          elif (y <= self.rubber_y2 and
                y >= self.rubber_y2 - self.block_h):
-            self.draw_rubber()
+            self.draw_rubber(clear=False)
             return
       elif (x <= self.rubber_x2 and
             x >= self.rubber_x2 - self.block_w):
@@ -665,11 +668,11 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
              y <= self.rubber_origin_y + self.block_h):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
-            self.draw_rubber()
+            self.draw_rubber(clear=False)
             return
          elif (y <= self.rubber_y2 and
                y >= self.rubber_y2 - self.block_h):
-            self.draw_rubber()
+            self.draw_rubber(clear=False)
             return
       self.rubber_origin_x = self.rubber_x2 = int(x)
       self.rubber_origin_y = self.rubber_y2 = int(y)
@@ -678,7 +681,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if self.rubber_on:
          if self.HasCapture():
             self.ReleaseMouse()
-         self.draw_rubber()
+         self.draw_rubber(clear=True)
          origin = [x * self.scroll_amount for x in self.GetViewStart()]
          self.rubber_x2 = int(max(min((event.GetX() + origin[0]) / self.scaling,
                                       self.image.ncols - 1), 0))
@@ -688,7 +691,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
                                self.rubber_y2 + self.original_image.ul_y,
                                self.rubber_x2 + self.original_image.ul_x,
                                event.ShiftDown(), event.ControlDown())
-         self.draw_rubber()
+         self.draw_rubber(clear=False)
          if self.rubber_origin_x > self.rubber_x2:
             self.rubber_origin_x, self.rubber_x2 = \
                                   self.rubber_x2, self.rubber_origin_x
@@ -745,10 +748,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       x2 = int(max(min((event.GetX() + origin[0] - 1) / scaling, image.ncols - 1), 0))
       y2 = int(max(min((event.GetY() + origin[1] - 1) / scaling, image.nrows - 1), 0))
       if self.rubber_on:
-         self.draw_rubber()
+         self.draw_rubber(clear=True)
          self.rubber_x2 = x2
          self.rubber_y2 = y2
-         self.draw_rubber()
+         self.draw_rubber(clear=False)
       if self.dragging:
          self.Scroll(
             (self.dragging_origin_x - (event.GetX() - self.dragging_x)) /
@@ -962,7 +965,6 @@ class MultiImageGridRenderer(GridCellRenderer):
 
       if image is None or hasattr(image, 'dead'):
          # If there's no image in this cell, draw a hatch pattern
-         dc.SetLogicalFunction(wx.COPY)
          dc.SetBackgroundMode(wx.SOLID)
          dc.SetPen(wx.TRANSPARENT_PEN)
          if image is None:
@@ -972,7 +974,6 @@ class MultiImageGridRenderer(GridCellRenderer):
          else:
             dc.SetBrush(wx.Brush(wx.RED, wx.FDIAGONAL_HATCH))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-      dc.SetLogicalFunction(wx.COPY)
       dc.EndDrawing()
 
    # The images should be a little padded within the cells

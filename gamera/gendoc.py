@@ -28,6 +28,7 @@ from stat import ST_MTIME
 from time import strftime, localtime
 import traceback
 import warnings
+from gamera.util import dedent
 try:
    locale.setlocale(locale.LC_ALL, '')
 except:
@@ -404,10 +405,12 @@ class PluginDocumentationGenerator:
             s.write(u":Author: %s\n" % (author,))
       if func.image_types_must_match:
          s.write("\n*All images passed in (including self) must have the same pixel type.*\n\n")
-      if func.__doc__ == None or func.__doc__ == "":
+      doc = func.__doc__
+      if doc is None or doc == "":
          s.write("\n.. warning:: No documentation written.\n\n")
       else:
-         s.write(u"\n\n%s\n" % func.__doc__)
+         doc = util.dedent(doc)
+         s.write(u"\n\n%s\n" % doc)
       self.method_example(func, level, images, s)
 
    def run_example(self, func, images):

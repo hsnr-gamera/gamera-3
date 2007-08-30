@@ -19,24 +19,25 @@
 from gamera.plugin import *
 
 class permute_list(PluginFunction):
-   """Permutes the given list (in place) one step.
+   """
+   Permutes the given list (in place) one step.
 
-Returns ``True`` if there are more permutations to go.  Returns ``False`` if
-permutations are done.
+   Returns ``True`` if there are more permutations to go.  Returns
+   ``False`` if permutations are done.
 
-Example usage::
+   Example usage::
 
-   >>>from gamera.plugins import listutilities
-   >>>a = [1,2,3]
-   >>>while listutilities.permute_list(a):
-   ...    print a
-   ...
-   [2, 1, 3]
-   [1, 3, 2]
-   [3, 1, 2]
-   [2, 3, 1]
-   [3, 2, 1]
-"""
+     >>>from gamera.plugins import listutilities
+     >>>a = [1,2,3]
+     >>>while listutilities.permute_list(a):
+     ...    print a
+     ...
+     [2, 1, 3]
+     [1, 3, 2]
+     [3, 1, 2]
+     [2, 3, 1]
+     [3, 2, 1]
+   """
    self_type = None
    args = Args([Class("list")])
    return_type = Int("continuaton")
@@ -47,11 +48,11 @@ class all_subsets(PluginFunction):
    return_type = Class("subsets")
 
 class ListUtilitiesModule(PluginModule):
-    category = "List"
-    cpp_headers=["listutilities.hpp"]
-    functions = [permute_list, all_subsets]
-    author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+   category = "List"
+   cpp_headers=["listutilities.hpp"]
+   functions = [permute_list, all_subsets]
+   author = "Michael Droettboom and Karl MacMillan"
+   url = "http://gamera.dkc.jhu.edu/"
 module = ListUtilitiesModule()
 
 permute_list = permute_list()

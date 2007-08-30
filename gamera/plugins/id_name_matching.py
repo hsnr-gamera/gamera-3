@@ -63,40 +63,43 @@ regex_cache = {}
 dummy_regex = re.compile('')
 type_dummy_regex = type(dummy_regex)
 class match_id_name(PluginFunction):
-    r"""Returns true if the image's ``id_name`` matches the given regular expression.
+    r"""
+    Returns true if the image's ``id_name`` matches the given regular
+    expression.
 
-*regex*
-    A special-purpose regular expression as defined below.
+    *regex*
+      A special-purpose regular expression as defined below.
 
-A special-purpose regular expression language designed for convenience on
-Gamera symbol names is used here.  It has limited flexibility relative to Python regular
-expressions, and is more akin to wildcards in command-line shells.  This
-language is converted to standard Python regular expressions (``re`` module) for
-efficiency.
+    A special-purpose regular expression language designed for
+    convenience on Gamera symbol names is used here.  It has limited
+    flexibility relative to Python regular expressions, and is more
+    akin to wildcards in command-line shells.  This language is
+    converted to standard Python regular expressions (``re`` module)
+    for efficiency.
 
-**Informal syntax definition:**
+    **Informal syntax definition:**
 
-====================  =============================================
-Regular expression    Description
-====================  =============================================
-``A|B``               matches ``A`` or ``B``
-``A.B|C``             matches ``A.B`` or ``A.C``
-``*``                 multiple-character wildcard
-``?``                 single character wildcard
-``()``                grouping can be performed with parentheses
-``[a-z]``             matches any character a-z
-====================  =============================================
-
-**Example expressions:**
-
-========================  ====================================================  
-``(upper.x)|(lower.y)``   match either ``upper.x`` or ``lower.y``
-``upper.x|upper.y``       careful! matches ``upper.x.y`` or ``upper.upper.y``
-``upper.*``               match anything in the ``upper`` category
-``upper.a|b|c``           matches ``upper.a``, ``upper.b`` or ``upper.c``
-``upper.capital_?``       ``?`` is a single character wildcard
-========================  ====================================================
-"""
+    ====================  =============================================
+    Regular expression    Description
+    ====================  =============================================
+    ``A|B``               matches ``A`` or ``B``
+    ``A.B|C``             matches ``A.B`` or ``A.C``
+    ``*``                 multiple-character wildcard
+    ``?``                 single character wildcard
+    ``()``                grouping can be performed with parentheses
+    ``[a-z]``             matches any character a-z
+    ====================  =============================================
+    
+    **Example expressions:**
+    
+    ========================  ====================================================  
+    ``(upper.x)|(lower.y)``   match either ``upper.x`` or ``lower.y``
+    ``upper.x|upper.y``       careful! matches ``upper.x.y`` or ``upper.upper.y``
+    ``upper.*``               match anything in the ``upper`` category
+    ``upper.a|b|c``           matches ``upper.a``, ``upper.b`` or ``upper.c``
+    ``upper.capital_?``       ``?`` is a single character wildcard
+    ========================  ====================================================
+    """
     args = Args([String('regex')])
     def __call__(self, regex):
         global regex_cache

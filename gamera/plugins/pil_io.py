@@ -35,13 +35,14 @@ else:
     ## also boolean mode '1' --- I think this is 8 bits per pixel
 
     class from_pil(PluginFunction):
-        '''Instantiates a Gamera image from a Python Imaging Library
-image *image*.
+        """
+        Instantiates a Gamera image from a Python Imaging Library
+        image *image*.
 
-Only RGB or 8-bit greyscale mode PIL images are supported
-
-Requires a copying operation;  may fail for very large images.
-'''
+        Only RGB or 8-bit greyscale mode PIL images are supported
+        
+        Requires a copying operation;  may fail for very large images.
+        """
         self_type = None
         return_type = ImageType([GREYSCALE, RGB, FLOAT])
         args = Args([Class("image")])
@@ -65,13 +66,14 @@ Requires a copying operation;  may fail for very large images.
         __call__ = staticmethod(__call__)
 
     class to_pil(PluginFunction):
-        """Returns a Python Imaging Library image containing a copy
-of image's data.
+        """
+        Returns a Python Imaging Library image containing a copy of
+        image's data.
 
-Only RGB and Greyscale images are supported.
+        Only RGB and Greyscale images are supported.
 
-May fail for very large images.
-"""
+        May fail for very large images.
+        """
         self_type = ImageType([RGB, GREYSCALE])
         return_type = Class("pil_image")
         def __call__(image):

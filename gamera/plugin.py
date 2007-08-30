@@ -21,6 +21,7 @@
 
 from gamera.args import *
 from gamera import paths
+from gamera import util
 import new, os, os.path, imp, inspect, sys, copy, sets
 from types import *
 from enums import *
@@ -84,6 +85,7 @@ class PluginFunction:
    def escape_docstring(cls):
       if cls.__doc__ is None:
          return '""'
+      doc = util.dedent(cls.__doc__)
       doc = cls.__doc__.replace("\n", r"\n").replace('"', r'\"')
       return r'"%s\n\n%s"' % (cls.get_formatted_argument_list(), doc)
    escape_docstring = classmethod(escape_docstring)

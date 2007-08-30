@@ -27,7 +27,9 @@ from gamera.plugin import *
 import _binarization
 
 class image_mean(PluginFunction):
-    """Returns the mean over all pixels of an image as a FLOAT."""
+    """
+    Returns the mean over all pixels of an image as a FLOAT.
+    """
     return_type = Real("output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     def __call__(self):
@@ -36,7 +38,9 @@ class image_mean(PluginFunction):
 
 
 class image_variance(PluginFunction):
-    """Returns the variance over all pixels of an image as a FLOAT."""
+    """
+    Returns the variance over all pixels of an image as a FLOAT.
+    """
     return_type = Real("output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     def __call__(self):
@@ -45,11 +49,12 @@ class image_variance(PluginFunction):
 
 
 class mean_filter(PluginFunction):
-    """Returns the regional mean of an image as a FLOAT.
+    """
+    Returns the regional mean of an image as a FLOAT.
 
-*region_size*
-  The size of the region in which to calculate a mean.
-"""
+    *region_size*
+      The size of the region in which to calculate a mean.
+    """
     return_type = ImageType([FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([Int("region size", default=5)])
@@ -60,14 +65,15 @@ class mean_filter(PluginFunction):
 
 
 class variance_filter(PluginFunction):
-    """Returns the regional variance of an image as a FLOAT.
+    """
+    Returns the regional variance of an image as a FLOAT.
 
-*means*
-  Pre-calculated means for each region.
+    *means*
+      Pre-calculated means for each region.
 
-*region_size*
-  The size of the region in which to calculate the variance.
-"""
+    *region_size*
+      The size of the region in which to calculate the variance.
+    """
     return_type = ImageType([FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([ImageType([FLOAT], "means"),
@@ -78,17 +84,22 @@ class variance_filter(PluginFunction):
 
 
 class wiener_filter(PluginFunction):
-    """Adaptive Wiener filter for de-noising. See:
+    """
+    Adaptive Wiener filter for de-noising.
+
+    See:
     
-J. Lim. 2001. Two-Dimensional Signal Processing. Englewood Cliffs: Prentice Hall.
+    J. Lim. 2001. *Two-Dimensional Signal Processing.* Englewood
+    Cliffs: Prentice Hall.
 
-*region_size*
-  The size of the region within which to calculate the filter coefficients.
+    *region_size*
+      The size of the region within which to calculate the filter
+      coefficients.
 
-*noise_variance* 
-  Variance of the noise in the image. If negative, estimated
-  automatically as the median of local variances.
-"""
+    *noise_variance* 
+      Variance of the noise in the image. If negative, estimated
+      automatically as the median of local variances.
+    """
     return_type = ImageType([GREYSCALE,GREY16,FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([Int("region size", default=5),
@@ -100,26 +111,27 @@ J. Lim. 2001. Two-Dimensional Signal Processing. Englewood Cliffs: Prentice Hall
 
 
 class niblack_threshold(PluginFunction):
-    """Creates a binary image using Niblack's adaptive algorithm.
+    """
+    Creates a binary image using Niblack's adaptive algorithm.
 
-Niblack, W. 1986. An Introduction to Digital Image Processing. Englewood
-Cliffs, NJ: Prentice Hall.
+    Niblack, W. 1986. *An Introduction to Digital Image Processing.* Englewood
+    Cliffs, NJ: Prentice Hall.
 
-Like the QGAR library, there are two extra global thresholds for the lightest
-and darkest regions.
+    Like the QGAR library, there are two extra global thresholds for
+    the lightest and darkest regions.
 
-*region_size*
-  The size of the region in which to calculate a threshold.
+    *region_size*
+      The size of the region in which to calculate a threshold.
 
-*sensitivity*
-  The sensitivity weight on the variance.
+    *sensitivity*
+      The sensitivity weight on the variance.
 
-*lower bound*
-  A global threshold beneath which all pixels are considered black.
+    *lower bound*
+      A global threshold beneath which all pixels are considered black.
 
-*upper bound*
-  A global threshold above which all pixels are considered white.
-"""
+    *upper bound*
+      A global threshold above which all pixels are considered white.
+    """
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([Int("region size", default=15),
@@ -141,29 +153,30 @@ and darkest regions.
 
    
 class sauvola_threshold(PluginFunction):
-    """Creates a binary image using Sauvola's adaptive algorithm.
+    """
+    Creates a binary image using Sauvola's adaptive algorithm.
 
-Sauvola, J. and M. Pietikainen. 2000. Adaptive document image binarization.
-Pattern Recognition 33: 225-236.
+    Sauvola, J. and M. Pietikainen. 2000. Adaptive document image
+    binarization.  *Pattern Recognition* 33: 225--236.
 
-Like the QGAR library, there are two extra global thresholds for the lightest
-and darkest regions.
+    Like the QGAR library, there are two extra global thresholds for
+    the lightest and darkest regions.
 
-*region_size*
-  The size of the region in which to calculate a threshold.
+    *region_size*
+      The size of the region in which to calculate a threshold.
 
-*sensitivity*
-  The sensitivity weight on the adjusted variance.
+    *sensitivity*
+      The sensitivity weight on the adjusted variance.
 
-*dynamic_range*
-  The dynamic range of the variance.
+    *dynamic_range*
+      The dynamic range of the variance.
 
-*lower bound*
-  A global threshold beneath which all pixels are considered black.
+    *lower bound*
+      A global threshold beneath which all pixels are considered black.
 
-*upper bound*
-  A global threshold above which all pixels are considered white.
-"""
+    *upper bound*
+      A global threshold above which all pixels are considered white.
+    """
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([Int("region size", default=15),
@@ -187,18 +200,21 @@ and darkest regions.
     __call__ = staticmethod(__call__)
 
 class gatos_background(PluginFunction):
-    """Estimates the background of an image according to Gatos et al.'s method. See:
+    """
+    Estimates the background of an image according to Gatos et al.'s
+    method. See:
 
-Gatos, Basilios, Ioannis Pratikakis, and Stavros J. Perantonis. 2004. An
-adaptive binarization technique for low quality historical documents. Lecture
-Notes in Computer Science 3163: 102-113.
+    Gatos, Basilios, Ioannis Pratikakis, and Stavros
+    J. Perantonis. 2004. An adaptive binarization technique for low
+    quality historical documents. *Lecture Notes in Computer
+    Science* 3163: 102--113.
 
-*region_size* 
-  Region size for interpolation.
+    *region_size* 
+      Region size for interpolation.
 
-*binarization*
-  A preliminary binarization of the image.
-"""
+    *binarization*
+      A preliminary binarization of the image.
+    """
     return_type = ImageType([GREYSCALE], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([ImageType([ONEBIT], "binarization"),
@@ -209,21 +225,23 @@ Notes in Computer Science 3163: 102-113.
         
 
 class gatos_threshold(PluginFunction):
-    """Thresholds an image according to Gatos et al.'s method. See:
+    """
+    Thresholds an image according to Gatos et al.'s method. See:
 
-Gatos, Basilios, Ioannis Pratikakis, and Stavros J. Perantonis. 2004. An
-adaptive binarization technique for low quality historical documents. Lecture
-Notes in Computer Science 3163: 102-113.
+    Gatos, Basilios, Ioannis Pratikakis, and Stavros
+    J. Perantonis. 2004. An adaptive binarization technique for low
+    quality historical documents. *Lecture Notes in Computer
+    Science* 3163: 102-113.
 
-*background*
-  Estimated background of the image.
+    *background*
+      Estimated background of the image.
 
-*binarization*
-  A preliminary binarization of the image.
+    *binarization*
+      A preliminary binarization of the image.
 
-Use the default settings for the other parameters unless you know what you are 
-doing.
-"""
+    Use the default settings for the other parameters unless you know
+    what you are doing.
+    """
     return_type = ImageType([ONEBIT], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([ImageType([GREYSCALE], "background"),
@@ -242,38 +260,57 @@ doing.
 
 
 class white_rohrer_threshold(PluginFunction):
-    """Creates a binary image using White and Rohrer's dynamic thresholding
-algorithm. It is the first of the two algorithms described in:
+    """
+    Creates a binary image using White and Rohrer's dynamic thresholding
+    algorithm. It is the first of the two algorithms described in:
 
-J. M. White and G. D. Rohrer. 1983. Image thresholding for optical character
-recognition and other applications requiring character image extraction.
-IBM J. Res. Dev. 27(4), pp. 400-411
+    J. M. White and G. D. Rohrer. 1983. Image thresholding for optical
+    character recognition and other applications requiring character
+    image extraction.  *IBM J. Res. Dev.* 27(4), pp. 400-411
 
-The algorithm uses a 'running' average instead of true
-average of the gray values in the neighborhood.
-The lookahead parameter gives the number of lookahead
-pixels used in the biased running average that is used
-in deciding the threshold at each pixel location.
+    The algorithm uses a 'running' average instead of true average of
+    the gray values in the neighborhood.  The lookahead parameter
+    gives the number of lookahead pixels used in the biased running
+    average that is used in deciding the threshold at each pixel
+    location.
 
-Parameters:
+    *x_lookahead*
+      the number of lookahead pixels in the horizontal direction for
+      computing the running average. White and Rohrer suggest a value
+      of 8 for a 240 dpi scanning resolution.
 
- *x_lookahead*
-   the number of lookahead pixels in the horizontal direction
-   for computing the running average. White and Rohrer suggest a value
-   of 8 for a 240 dpi scanning resolution.
+    *y_lookahead*
+      number of lines used for further averaging from the horizontal
+      averages.
 
- *y_lookahead*
-   no of lines used for further averaging from the horizontal averages
+    The other parameters are for calculating biased running average.
+    Without bias the thresholding decision would be determined by
+    noise fluctuations in uniform areas.
 
-The other parameters are for calculating biased running average.
-Without bias the thresholding decision would be determined by noise
-fluctuations in uniform areas.
+    This implementation uses code from XITE__.
 
-This implementation uses code from XITE__. See the corresponding header
-source file for details.
+    .. __: http://www.ifi.uio.no/forskning/grupper/dsb/Software/Xite/
 
-.. __: http://www.ifi.uio.no/forskning/grupper/dsb/Software/Xite/
-"""
+    .. note::
+
+       Permission to use, copy, modify and distribute this software
+       and its documentation for any purpose and without fee is hereby
+       granted, provided that this copyright notice appear in all
+       copies and that both that copyright notice and this permission
+       notice appear in supporting documentation and that the name of
+       B-lab, Department of Informatics or University of Oslo not be
+       used in advertising or publicity pertaining to distribution of
+       the software without specific, written prior permission.
+
+       B-LAB DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+       INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+       FITNESS, IN NO EVENT SHALL B-LAB BE LIABLE FOR ANY SPECIAL,
+       INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+       RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+       ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+       ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+       THIS SOFTWARE.
+    """
     return_type = ImageType([ONEBIT], "onebit")
     self_type = ImageType([GREYSCALE])
     args = Args([Int("x lookahead", default=8),
@@ -286,14 +323,15 @@ source file for details.
     doc_examples = [(GREYSCALE,)]
 
     def __call__(self, x_lookahead=8, y_lookahead=1, bias_mode=0,
-				 bias_factor=100, f_factor=100, g_factor=100):
-        return _binarization.white_rohrer_threshold(self, 
-											   x_lookahead, 
-                                               y_lookahead,
-                                               bias_mode,
-                                               bias_factor,
-                                               f_factor,
-                                               g_factor)
+                 bias_factor=100, f_factor=100, g_factor=100):
+        return _binarization.white_rohrer_threshold(
+            self, 
+            x_lookahead, 
+            y_lookahead,
+            bias_mode,
+            bias_factor,
+            f_factor,
+            g_factor)
     __call__ = staticmethod(__call__)
 
 
@@ -309,7 +347,7 @@ class BinarizationGenerator(PluginModule):
                  sauvola_threshold,
                  gatos_background,
                  gatos_threshold,
-				 white_rohrer_threshold]
+                 white_rohrer_threshold]
     author = "John Ashley Burgoyne and Ichiro Fujinaga"
     url = "http://gamera.dkc.jhu.edu/"
 

@@ -35,16 +35,31 @@ except:
 import _deformation
 
 class rotate(PluginFunction):
-    """Rotates an image by skew method"""
+    """
+    Rotates an image.
+
+    *angle*
+      The angle of rotation (in degrees)
+
+    *order*
+      The order of the spline used for interpolation.  Must be between 1 - 3.
+
+    *bgcolor*
+      The color to use for pixels outside of the original image bounds.
+    """
     self_type = ImageType(ALL)    
     return_type = ImageType(ALL)
-    args = Args([Float("angle"), Pixel("bgcolor")])
+    args = Args([Float("angle"), Int("order", (1, 3)), Pixel("bgcolor")])
     args.list[0].rng = (-180,180)
-    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255)), (COMPLEX, 15.0, 0.0j)]
-
+    doc_examples = [(RGB, 32.0, 3, RGBPixel(255, 255, 255)), (COMPLEX, 15.0, 3, 0.0j)]
+    author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
+    
 class wave(PluginFunction):
-    """Causes periodic disturbance of user-defined frequency, amplitude, and direction.
-Turbulence specifies the amount of random variation from that line."""
+    """
+    Causes periodic disturbance of user-defined frequency, amplitude,
+    and direction.  Turbulence specifies the amount of random
+    variation from that line.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("amplitude"),
@@ -64,7 +79,10 @@ Turbulence specifies the amount of random variation from that line."""
     doc_examples = [(RGB, 5, 10, 0, 0, 0), (RGB, 10, 5, 1, 2, 0)]
 
 class noise(PluginFunction):
-    """Causes random shifting of pixels within a user-specified range, in a user-specified direction"""
+    """
+    Causes random shifting of pixels within a user-specified range, in
+    a user-specified direction.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("amplitude", range=(0, 500)),
@@ -77,7 +95,9 @@ class noise(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class inkrub(PluginFunction):
-    """Simulates rubbing off of ink from another page"""
+    """
+    Simulates rubbing off of ink from another page.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     args = Args([Int("transcription_prob", range=(0, 500)),
@@ -88,10 +108,13 @@ class inkrub(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class ink_diffuse(PluginFunction):
-    """Simulates water-driven diffusion of ink in paper"""
+    """
+    Simulates water-driven diffusion of ink in paper.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
-    args = Args([Choice('diffusion_type',["Linear Horizontal","Linear Vertical","Brownian"]),
+    args = Args([Choice('diffusion_type',
+                        ["Linear Horizontal","Linear Vertical","Brownian"]),
                  Float("exponential_decay_constant"),
                  Int("random_seed", default=-1)])
     doc_examples = [(GREYSCALE, 0, 20)]
@@ -100,7 +123,9 @@ class ink_diffuse(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class batch_deform(PluginFunction):
-    """Performs all possible deformations over given range of arguments"""
+    """
+    Performs all possible deformations over given range of arguments.
+    """
     pure_python = 1
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
     return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])

@@ -39,39 +39,41 @@ else:
                            n.Complex64 : COMPLEX } 
         
     class from_numeric(PluginFunction):
-        '''Instantiates a Gamera image from a Numeric
-multi-dimensional array *array*.
+        """
+        Instantiates a Gamera image from a Numeric multi-dimensional
+        array *array*.
             
-The array must be one of the following types and will map to
-the corresponding Gamera image type:
+        The array must be one of the following types and will map to
+        the corresponding Gamera image type:
 
-  +------------+------------------+
-  | Gamera     | Numeric          |
-  | type       | type             |
-  +============+==================+
-  | RGB        | UInt8 (on 3      |
-  |            | planes)          |
-  +------------+------------------+
-  | GREYSCALE  | UInt8            |
-  +------------+------------------+
-  | GREY16     | UInt32           |
-  +------------+------------------+
-  | ONEBIT     | UInt16           |
-  +------------+------------------+
-  | FLOAT      | Float64          |
-  +------------+------------------+
-  | COMPLEX    | Complex64        |
-  +------------+------------------+
+        +------------+------------------+
+        | Gamera     | Numeric          |
+        | type       | type             |
+        +============+==================+
+        | RGB        | UInt8 (on 3      |
+        |            | planes)          |
+        +------------+------------------+
+        | GREYSCALE  | UInt8            |
+        +------------+------------------+
+        | GREY16     | UInt32           |
+        +------------+------------------+
+        | ONEBIT     | UInt16           |
+        +------------+------------------+
+        | FLOAT      | Float64          |
+        +------------+------------------+
+        | COMPLEX    | Complex64        |
+        +------------+------------------+
 
-Requires two copying operations;  may fail for very large images.
+        Requires two copying operations;  may fail for very large images.
 
-To use this function, which is not a method on images, do the following:
+        To use this function, which is not a method on images, do the
+        following:
 
-.. code:: Python
-
-  from gamera.plugins import numeric_io
-  image = numeric_io.from_numeric(array)
-'''
+        .. code:: Python
+        
+          from gamera.plugins import numeric_io
+          image = numeric_io.from_numeric(array)
+        """
         self_type = None
         args = Args([Class("array")])
         return_type = ImageType(ALL)
@@ -100,31 +102,32 @@ To use this function, which is not a method on images, do the following:
         _check_input = staticmethod(_check_input)
 
     class to_numeric(PluginFunction):
-        """Returns an ``Numeric`` array containing a copy of the image's data.
+        """
+        Returns an ``Numeric`` array containing a copy of the image's data.
 
-The array will be one of the following types corresponding
-to each of the Gamera image types:
+        The array will be one of the following types corresponding to
+        each of the Gamera image types:
 
-  +------------+-----------------+
-  | Gamera     | Numeric         |
-  | type       | type            |
-  +============+=================+
-  | RGB        | UInt8 (on 3     |
-  |            | planes)         |
-  +------------+-----------------+
-  | GREYSCALE  | UInt8           |
-  +------------+-----------------+
-  | GREY16     | UInt32          |
-  +------------+-----------------+
-  | ONEBIT     | UInt16          |
-  +------------+-----------------+
-  | FLOAT      | Float64         |
-  +------------+-----------------+
-  | COMPLEX    | Complex64       |
-  +------------+-----------------+
+        +------------+-----------------+
+        | Gamera     | Numeric         |
+        | type       | type            |
+        +============+=================+
+        | RGB        | UInt8 (on 3     |
+        |            | planes)         |
+        +------------+-----------------+
+        | GREYSCALE  | UInt8           |
+        +------------+-----------------+
+        | GREY16     | UInt32          |
+        +------------+-----------------+
+        | ONEBIT     | UInt16          |
+        +------------+-----------------+
+        | FLOAT      | Float64         |
+        +------------+-----------------+
+        | COMPLEX    | Complex64       |
+        +------------+-----------------+
 
-Requires *three* copies, and may fail for very large images.
-"""
+        Requires *three* copies, and may fail for very large images.
+        """
         self_type = ImageType(ALL)
         return_type = Class("array")
         pure_python = True

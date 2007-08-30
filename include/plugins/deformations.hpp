@@ -20,6 +20,7 @@
 
 #include "plugins/image_utilities.hpp"
 #include "vigra/resizeimage.hxx"
+#include "vigra/affinegeometry.hxx"
 #include "plugins/logical.hpp"
 
 #include <exception>
@@ -41,225 +42,65 @@
  *
  */
 template<class T>
-typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename T::value_type bgcolor)
+typename ImageFactory<T>::view_type* rotate(const T &src, double angle, int order, typename T::value_type bgcolor)
 {
+  if (order < 1 || order > 3) {
+    throw std::range_error("Order must be between 1 and 3");
+  }
   
   // Adjust angle to a positve double between 0-360
   while(angle<=0.0) angle+=360;
   while(angle>=360.0) angle-=360;
 
-  // Image initialization
-  typedef typename ImageFactory<T>::data_type data_type;
-  typedef typename ImageFactory<T>::view_type view_type;
+  double rad = (angle / 180.0) * M_PI;
 
-  data_type* new_data = NULL;
-  view_type* new_view = NULL;
+  size_t new_width = size_t(abs(cos(rad) * (double)src.width() + 
+				sin(rad) * (double)src.height()));
+  size_t new_height = size_t(abs(sin(rad) * (double)src.width() + 
+				 cos(rad) * (double)src.height()));
+  size_t pad_width = 0;
+  if (new_width > src.width())
+    pad_width = (new_width - src.width()) / 2 + 2;
+  size_t pad_height = 0;
+  if (new_height > src.height())
+    pad_height = (new_height - src.height()) / 2 + 2;
 
-  // Rotate 90, 180, or 270 degrees (no interpolation required)
+  typename ImageFactory<T>::view_type* tmp =
+    pad_image(src, pad_height, pad_width, pad_height, pad_width, bgcolor);
+
+  typename ImageFactory<T>::data_type* dest_data =
+    new typename ImageFactory<T>::data_type(tmp->size(), src.origin());
+  typename ImageFactory<T>::view_type* dest =
+    new typename ImageFactory<T>::view_type(*dest_data);
 
   try {
-    if ((angle>45.0) && (angle<=135.0)) {
-      // Rotate 90 degrees by coping to a cols/rows view.
-      // Inverting dimensions!!!
-      new_data = new data_type(Dim(src.nrows(), src.ncols()));
-      new_view = new view_type(*new_data);
-      
-      for (size_t i=0; i < src.nrows(); i++) {
-	for (size_t j=0; j < src.ncols(); j++) {
-	  new_view->set(Point(new_view->width()-i, j), src.get(Point(j, i)));
-	}
-      }
-      angle-=90.0;  // Angle is now between 0.0-45.0 degrees
-    }
-    else if ((angle>135.0) && (angle<=225.0)) {
-      // Rotate 180 degrees with a reverse iteration
-      new_data = new data_type(src.dim());
-      new_view = new view_type(*new_data);
-      typename T::const_vec_iterator sourceIter = src.vec_begin();
-      typename view_type::vec_iterator destIter = new_view->vec_end();
-      
-      for(; sourceIter != src.vec_end(); ++sourceIter) {
-	destIter--;
-	*destIter = *sourceIter;
-      }
-      
-      angle-=180.0;  // Angle is now between 0.0-45.0 degrees
-    }
-    else if((angle>225.0) && (angle<=315.0)) {
-      // Rotate 270 degrees
-      new_data = new data_type(Dim(src.nrows(), src.ncols()));
-      new_view = new view_type(*new_data);
-      
-      for (size_t i=0; i < src.nrows(); i++) {
-	for (size_t j=0; j < src.ncols(); j++) {
-	  new_view->set(Point(i, new_view->height()-j),  src.get(Point(j, i)));
-	}
-      }
-      angle-=270.0; // Angle is now between 0.0-45.0 degrees
-    }
-    else {
-      // Angle is within 0-45.0 degrees already, send a copy to rot45
-      new_data = new data_type(src.dim(), src.origin());
-      new_view = new view_type(*new_data);
-      typename T::const_vec_iterator sourceIter = src.vec_begin();
-      typename view_type::vec_iterator destIter = new_view->vec_begin();
-      
-      for(; sourceIter != src.vec_end(); ++sourceIter, ++destIter) {
-	*destIter = *sourceIter;
-      }
+    fill(*dest, bgcolor);
+
+    if (order == 1) {
+      vigra::SplineImageView<1, typename T::value_type> 
+	spline(src_image_range(*tmp));
+      vigra::rotateImage(spline, dest_image(*dest), -angle);
+    } else if (order == 2) {
+      vigra::SplineImageView<2, typename T::value_type> 
+	spline(src_image_range(*tmp));
+      vigra::rotateImage(spline, dest_image(*dest), -angle);
+    } else if (order == 3) {
+      vigra::SplineImageView<3, typename T::value_type> 
+	spline(src_image_range(*tmp));
+      vigra::rotateImage(spline, dest_image(*dest), -angle);
     }
   } catch (std::exception e) {
-    if (new_data) delete new_data;
-    if (new_view) delete new_view;
+    delete tmp->data();
+    delete tmp;
+    delete dest;
+    delete dest_data;
     throw;
   }
 
-  // MGD: Changed to fix memory leak.  If rot45 will do nothing,
-  // we can just return new_view, otherwise, we have to delete new_view/new_data
-  // before returning.
+  delete tmp->data();
+  delete tmp;
 
-  double epsilon = 1e-5;
-
-  if (abs(angle) <= epsilon) {
-    return new_view;
-  } else {
-    view_type* result = rot45(*new_view, angle, bgcolor);
-    delete new_view;
-    delete new_data;
-    return result;
-  }
-}
-
-/*
- * Performs rotation within -45 and +45 degree angles by applying three shears to the
- * image.  The first is a horizontal shear defined by tan(angle/2), the second is a vertical
- * shear by sin(angle), and the third is a repetition of the first horizontal shear.
- */
-
-template<class T>
-typename ImageFactory<T>::view_type* rot45(T &src, float angle, typename T::value_type bgcolor)
-{
-  //------------------------------------------------------------------------------------
-  // Declarations/Initialization
-  //------------------------------------------------------------------------------------
- 
-  typedef typename ImageFactory<T>::data_type data_type;
-  typedef typename ImageFactory<T>::view_type view_type;  
-  
-  typedef typename ImageFactory<T>::view_type::value_type pixelFormat;
-  
-  pixelFormat background = bgcolor;
-
-  size_t i;
-  
-  double dRadAngle = angle * M_PI / double(180.0);
-  double dSinE = sin(dRadAngle);
-  double dTan = tan(dRadAngle / 2.0);
-  double dCosE = cos(dRadAngle);
-  
-  //------------------------------------------------------------------------------------
-  // First shear--horizontal
-  //------------------------------------------------------------------------------------
-  size_t width1 = src.ncols() + size_t( double(src.nrows()) * fabs(dTan) );
-  size_t height1 = src.nrows();
-
-  data_type* shear1_data = new data_type(Dim(width1, height1), src.origin());
-  view_type* shear1_view = new view_type(*shear1_data);
-  data_type* shear2_data = NULL;
-  view_type* shear2_view = NULL;
-  data_type* shear3_data = NULL;
-  view_type* shear3_view = NULL;
-  
-  try {
-    double d;
-    if (dTan >= 0.0) // Positive Angle
-      d = dTan * (height1 + 0.5);
-    else // Negative Angle
-      d = 0;
-    
-    for(i = 0; i<height1; i++) {
-      size_t in = size_t(floor(d));
-      double weight = d - in;
-      shear_x(src, *shear1_view, i, (size_t)(in), background, (double)(weight));
-      d -= dTan;
-    }
-    
-    //------------------------------------------------------------------------------------
-    // Second shear--vertical
-    //------------------------------------------------------------------------------------
-    size_t width2 = width1;
-    size_t height2 = size_t( double(src.ncols()) * fabs(dSinE) + (dCosE*src.nrows()) ) + 1;
-    
-    // Allocate image for 2nd shear
-    size_t diff = size_t( fabs(dSinE * dTan * src.nrows()) );
-    shear2_data = new data_type(Dim(width2, height2), src.origin());
-    shear2_view = new view_type(*shear2_data);
-    
-    try {
-      
-      if (dSinE >= 0.0) // Positive angle
-	d = 0;
-      else // Negative angle
-	d = -dSinE * (width2);
-      
-      for (i = 0; i < width2; i++) {
-	size_t in = size_t(floor(d));
-	double weight = d - in;
-	if(in < shear2_view->nrows()) {
-	  shear_y(*shear1_view, *shear2_view, i, in, background, weight, diff);
-	}
-	d += dSinE;
-      }
-      
-      //------------------------------------------------------------------------------------
-      // Third shear--horizontal
-      //------------------------------------------------------------------------------------
-      double abstan = fabs(dTan);
-      
-      diff = size_t(abstan * (height2 - src.nrows() + diff));
-      size_t width3 = size_t( src.ncols()*fabs(dCosE) + src.nrows()*fabs(dSinE) ) + 1;
-      size_t height3 = height2;
-      
-
-      shear3_data = new data_type(Dim(width3, height3), src.origin());
-      shear3_view = new view_type(*shear3_data);
-
-      try {
-	
-	if (dSinE >= 0.0) // Positive Angle
-	  d = dTan * height3;
-	else // Negative angle
-	  d = 0;
-	
-	for(i=0; i<height3; i++) {
-	  size_t in = size_t(floor(d));
-	  double weight = d - in;
-	  if (in < shear3_view->ncols()) {
-	    shear_x(*shear2_view, *shear3_view, i, in, background, weight, diff);
-	  }
-	  d -= dTan;
-	}
-      } catch (std::exception e) {
-	delete shear3_view;
-	delete shear3_data;
-	throw;
-      } 
-    } catch (std::exception e) {
-      delete shear2_view;
-      delete shear2_data;
-      throw;
-    }
-  } catch (std::exception e) {
-    delete shear1_view;
-    delete shear1_data;
-    throw;
-  }
-      
-  delete shear1_view;
-  delete shear1_data;
-  delete shear2_view;
-  delete shear2_data;
-  return shear3_view;
+  return dest;
 }
 
 /*

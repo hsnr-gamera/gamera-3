@@ -24,18 +24,20 @@ from gamera.plugin import *
 import _threshold
 
 class threshold(PluginFunction):
-    """Creates a binary image by splitting along a given threshold value.
+    """
+    Creates a binary image by splitting along a given threshold value.
 
-Pixels that are greater than the given value become white.
-Pixels less than the given value become black.
+    Pixels that are greater than the given value become white.
+    Pixels less than the given value become black.
 
-*storage_format* (optional)
-  specifies the compression type for the result:
+    *storage_format* (optional)
+      specifies the compression type for the result:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression"""
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression.
+    """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Int("threshold"), Choice("storage format", ['dense', 'rle'])])
     return_type = ImageType([ONEBIT], "output")
@@ -45,28 +47,32 @@ Pixels less than the given value become black.
     __call__ = staticmethod(__call__)
 
 class otsu_find_threshold(PluginFunction):
-    """Finds a threshold point using the Otsu algorithm. Reference:
+    """
+    Finds a threshold point using the Otsu algorithm. Reference:
 
-N. Otsu: *A Threshold Selection Method from Grey-Level Histograms.*
-IEEE Transactions on Systems, Man, and Cybernetics (9), pp. 62-66 (1979)
-"""
+    N. Otsu: *A Threshold Selection Method from Grey-Level
+    Histograms.* IEEE Transactions on Systems, Man, and Cybernetics
+    (9), pp. 62-66 (1979)
+    """
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")
     doc_examples = [(GREYSCALE,)]
 
 class otsu_threshold(PluginFunction):
-    """Creates a binary image by splitting along a threshold value determined
-using the Otsu algorithm.
+    """
+    Creates a binary image by splitting along a threshold value
+    determined using the Otsu algorithm.
 
-Equivalent to ``image.threshold(image.otsu_find_threshold())``.
+    Equivalent to ``image.threshold(image.otsu_find_threshold())``.
 
-*storage_format* (optional)
-  specifies the compression type for the result:
-
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression"""
+    *storage_format* (optional)
+      specifies the compression type for the result:
+      
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression
+    """
     self_type = ImageType([GREYSCALE])
     args = Args(Choice("storage format", ['dense', 'rle']))
     return_type = ImageType([ONEBIT], "output")
@@ -76,30 +82,35 @@ Equivalent to ``image.threshold(image.otsu_find_threshold())``.
     __call__ = staticmethod(__call__)
 
 class tsai_moment_preserving_find_threshold(PluginFunction):
-    """Finds a threshold point using the Tsai Moment Preserving threshold algorithm. Reference:
+    """
+    Finds a threshold point using the Tsai Moment Preserving threshold
+    algorithm. Reference:
 
-W.H. Tsai: *Moment-Preserving Thresholding: A New Approach.*
-Computer Vision Graphics and Image Processing (29), pp. 377-393 (1985)
-"""
+    W.H. Tsai: *Moment-Preserving Thresholding: A New Approach.*
+    Computer Vision Graphics and Image Processing (29), pp. 377-393
+    (1985)
+    """
     self_type = ImageType([GREYSCALE])
     return_type = Int("threshold_point")
     doc_examples = [(GREYSCALE,)]
     author = "Uma Kompella"
 
 class tsai_moment_preserving_threshold(PluginFunction):
-    """Creates a binary image by splitting along a threshold value determined
-using the Tsai Moment Preserving Threshold algorithm.
+    """
+    Creates a binary image by splitting along a threshold value
+    determined using the Tsai Moment Preserving Threshold algorithm.
 
-Equivalent to ``image.threshold(image.tsai_moment_preserving_find_threshold())``.
+    Equivalent to
+    ``image.threshold(image.tsai_moment_preserving_find_threshold())``.
 
-*storage_format* (optional)
-  specifies the compression type for the result:
+    *storage_format* (optional)
+      specifies the compression type for the result:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
-"""
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression
+    """
     self_type = ImageType([GREYSCALE])
     args = Args(Choice("storage format", ['dense', 'rle']))
     return_type = ImageType([ONEBIT], "output")
@@ -113,16 +124,18 @@ Equivalent to ``image.threshold(image.tsai_moment_preserving_find_threshold())``
 
 
 class abutaleb_threshold(PluginFunction):
-    """Creates a binary image by using the Abutaleb locally-adaptive thresholding
-algorithm.
+    """
+    Creates a binary image by using the Abutaleb locally-adaptive
+    thresholding algorithm.
 
-*storage_format* (optional)
-  specifies the compression type for the result:
+    *storage_format* (optional)
+      specifies the compression type for the result:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression"""
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression
+    """
     self_type = ImageType([GREYSCALE])
     args = Args(Choice("storage format", ['dense', 'rle']))
     return_type = ImageType([ONEBIT], "output")
@@ -132,25 +145,26 @@ algorithm.
     __call__ = staticmethod(__call__)
 
 class bernsen_threshold(PluginFunction):
-    """Creates a binary image by using the Bernsen algorithm.
+    """
+    Creates a binary image by using the Bernsen algorithm.
 
-*storage_format*
-  specifies the compression type for the result:
+    *storage_format*
+      specifies the compression type for the result:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression
 
-*region_size*
-  The size of each region in which to calculate a threshold
+    *region_size*
+      The size of each region in which to calculate a threshold
 
-*contrast_limit*
-  The minimum amount of contrast required to threshold.
+    *contrast_limit*
+      The minimum amount of contrast required to threshold.
 
-*doubt*
-  When True, *doubt* is low.
-"""
+    *doubt*
+      When True, *doubt* is low.
+    """
     self_type = ImageType([GREYSCALE])
     args = Args([Choice("storage format", ['dense', 'rle']),
                  Int("region size", range=(1, 50), default=20),
@@ -164,38 +178,40 @@ class bernsen_threshold(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class djvu_threshold(PluginFunction):
-    """Creates a binary image by using the DjVu thresholding algorithm.
+    """
+    Creates a binary image by using the DjVu thresholding algorithm.
 
-See Section 5.1 in:
+    See Section 5.1 in:
 
-Bottou, L., P. Haffner, P. G. Howard, P. Simard, Y. Bengio and
-Y. LeCun.  1998.  High Quality Document Image Compression with DjVu.  AT&T
-Labs, Lincroft, NJ.
+      Bottou, L., P. Haffner, P. G. Howard, P. Simard, Y. Bengio and
+      Y. LeCun.  1998.  High Quality Document Image Compression with
+      DjVu.  AT&T Labs, Lincroft, NJ.
 
-http://research.microsoft.com/~patrice/PDF/jei.pdf
+      http://research.microsoft.com/~patrice/PDF/jei.pdf
 
-This implementation features an additional extension to the algorithm
-described above.  Once the background and foreground colors are
-determined for each block, the image is thresholded by interpolating
-the foreground and background colors between the blocks.  This
-prevents "blockiness" along boundaries of strong color change.
+    This implementation features an additional extension to the
+    algorithm described above.  Once the background and foreground
+    colors are determined for each block, the image is thresholded by
+    interpolating the foreground and background colors between the
+    blocks.  This prevents "blockiness" along boundaries of strong
+    color change.
 
-*smoothness*
-   The amount of effect that parent blocks have on their children
-   blocks.  Higher values will result in more smoothness between
-   blocks.  Expressed as a percentage between 0.0 and 1.0.
+    *smoothness*
+      The amount of effect that parent blocks have on their children
+      blocks.  Higher values will result in more smoothness between
+      blocks.  Expressed as a percentage between 0.0 and 1.0.
 
-*max_block_size*
-   The size of the largest block to determine a threshold.
+    *max_block_size*
+      The size of the largest block to determine a threshold.
 
-*min_block_size*
-   The size of the smallest block to determine a threshold.
+    *min_block_size*
+      The size of the smallest block to determine a threshold.
 
-*block_factor*
-   The number of child blocks (in each direction) per parent block.
-   For instance, a *block_factor* of 2 results in 4 children per
-   parent.
-"""
+    *block_factor*
+      The number of child blocks (in each direction) per parent block.
+      For instance, a *block_factor* of 2 results in 4 children per
+      parent.
+    """
     self_type = ImageType([RGB])
     args = Args([Float("smoothness", default=0.2, range=(0.0, 1.0)),
                  Int("max_block_size", default=512),
@@ -210,7 +226,8 @@ prevents "blockiness" along boundaries of strong color change.
     doc_examples = [(RGB, 0.5, 512, 64, 2)]
 
 class ThresholdModule(PluginModule):
-    """This module provides functions that convert images between different
+    """
+    This module provides functions that convert images between different
     pixel types.
     """
     category = "Thresholding"

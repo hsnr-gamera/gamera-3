@@ -24,29 +24,35 @@ import _projections
 from math import pi
 
 class projection_rows(PluginFunction):
-    """Compute the horizontal projections of an image.  This computes the
-number of pixels in each row."""
+    """
+    Compute the horizontal projections of an image.  This computes the
+    number of pixels in each row.
+    """
     self_type = ImageType([ONEBIT])
     return_type = IntVector()
     doc_examples = [(ONEBIT,)]
 
 class projection_cols(PluginFunction):
-    """Compute the vertical projections of an image.  This computes the
-number of pixels in each column."""
+    """
+    Compute the vertical projections of an image.  This computes the
+    number of pixels in each column.
+    """
     self_type = ImageType([ONEBIT])
     return_type = IntVector()
     doc_examples = [(ONEBIT,)]
 
 class projections(PluginFunction):
-    """Computes the projections in both the *row*- and *column*- directions.
-This is returned as a tuple (*rows*, *columns*), where each element is an
-``IntVector`` of projections.
-(Equivalent to ``(image.projections_rows(), image.projections_cols())``).
+    """
+    Computes the projections in both the *row*- and *column*-
+    directions.  This is returned as a tuple (*rows*, *columns*),
+    where each element is an ``IntVector`` of projections.
+    (Equivalent to ``(image.projections_rows(),
+    image.projections_cols())``).
 
-If the GUI is being used, the result is displayed in a window:
+    If the GUI is being used, the result is displayed in a window:
 
-.. image:: images/projections.png
-"""
+    .. image:: images/projections.png
+    """
     self_type = ImageType([ONEBIT])
     return_type = Class()
     pure_python = 1
@@ -60,33 +66,34 @@ If the GUI is being used, the result is displayed in a window:
     __call__ = staticmethod(__call__)
 
 class projection_skewed_cols(PluginFunction):
-    """Computes all vertical projections of an image skewed by a list of
-angles. As in rotate_, angles are measured clockwise and in degrees.
-Thus a rotate followed by a projection_cols would be conceptually the
-same, albeit considerably slower.
+    """
+    Computes all vertical projections of an image skewed by a list of
+    angles. As in rotate_, angles are measured clockwise and in
+    degrees.  Thus a rotate followed by a projection_cols would be
+    conceptually the same, albeit considerably slower.
 
-This function is overloaded to work both with a single angle and a list
-of angles as input. In the first case a single projection vector is
-returned, in the second a list of projections vectors. This is explained
-in the following example:
+    This function is overloaded to work both with a single angle and a
+    list of angles as input. In the first case a single projection
+    vector is returned, in the second a list of projections
+    vectors. This is explained in the following example:
 
-.. code:: Python
+    .. code:: Python
 
-   # called twice with a single angle as input
-   proj1 = img.projection_skewed_cols(0.5)
-   proj2 = img.projection_skewed_cols(1.0)
+      # called twice with a single angle as input
+      proj1 = img.projection_skewed_cols(0.5)
+      proj2 = img.projection_skewed_cols(1.0)
    
-   # the same result with one function call
-   projlist = img.projection_skewed_cols([0.5,1.0])
-   proj1 = projlist[0]
-   proj2 = projlist[1]
+      # the same result with one function call
+      projlist = img.projection_skewed_cols([0.5,1.0])
+      proj1 = projlist[0]
+      proj2 = projlist[1]
 
-Note that unlike rotate_ the image size is not extended. Image regions
-moved outside the original image size are simply clipped, which restricts
-this method to small angles.
+    Note that unlike rotate_ the image size is not extended. Image
+    regions moved outside the original image size are simply clipped,
+    which restricts this method to small angles.
 
-.. _rotate: deformations.html#rotate
-"""
+    .. _rotate: deformations.html#rotate
+    """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     args = Args([FloatVector("Rotation angles")])
@@ -102,15 +109,17 @@ this method to small angles.
     doc_examples = [(ONEBIT, 15.0)]
 
 class projection_skewed_rows(PluginFunction):
-    """Computes all horizontal projections of an image skewed by a list of
-angles. For more details and an example see projection_skewed_cols_.
+    """
+    Computes all horizontal projections of an image skewed by a list
+    of angles. For more details and an example see
+    projection_skewed_cols_.
 
-Note that unlike rotate_ the image size is not extended. Image regions
-moved outside the original image size are simply clipped, which restricts
-this method to small angles.
+    Note that unlike rotate_ the image size is not extended. Image
+    regions moved outside the original image size are simply clipped,
+    which restricts this method to small angles.
 
-.. _rotate: deformations.html#rotate
-"""
+    .. _rotate: deformations.html#rotate
+    """
     self_type = ImageType([ONEBIT])
     args = Args([FloatVector("Rotation angles")])
     return_type = Class("nested_list")
@@ -125,42 +134,43 @@ this method to small angles.
     doc_examples = [(ONEBIT, 15.0)]
 
 class rotation_angle_projections(PluginFunction):
-    """Estimates the rotation angle of a document with the aid of skewed
-projections (see Ha, Bunke: 'Image Processing Methods for Document Image
-Analysis' in 'Handbook of Character Recognition and Document Image Analysis'
-edited by Bunke and Wang, World Scientific 1997).
+    """
+    Estimates the rotation angle of a document with the aid of skewed
+    projections (see Ha, Bunke: 'Image Processing Methods for Document
+    Image Analysis' in 'Handbook of Character Recognition and Document
+    Image Analysis' edited by Bunke and Wang, World Scientific 1997).
 
-This method works for a wide range of documents (text, music, forms), but
-can become slow for large images. This particular implementation can be
-accelerated by reducing the number of black pixels in the image, eg. by
-scaling it down, only considering a fraction of the image or by removing
-'uninteresting' pixels.
+    This method works for a wide range of documents (text, music,
+    forms), but can become slow for large images. This particular
+    implementation can be accelerated by reducing the number of black
+    pixels in the image, eg. by scaling it down, only considering a
+    fraction of the image or by removing 'uninteresting' pixels.
 
-Arguments:
+    Arguments:
 
-*minangle*, *maxangle* (optional):
-  angle interval that is searched for the skew angle;
-  default values are -2.5 and +2.5
+    *minangle*, *maxangle* (optional):
+      angle interval that is searched for the skew angle;
+      default values are -2.5 and +2.5
 
-*accuracy* (optional):
-  error bound for the skew angle estimate;
-  default value is zero
+    *accuracy* (optional):
+      error bound for the skew angle estimate;
+      default value is zero
 
-When *accuracy* is set to zero, a default value of *180\*0.5/(image.ncols\*pi)*
-is used, which is only a heuristic formula for little changes in the projection
-profile.
+    When *accuracy* is set to zero, a default value of
+    *180\*0.5/(image.ncols\*pi)* is used, which is only a heuristic
+    formula for little changes in the projection profile.
 
-Return Values:
+    Return Values:
 
-*rotation angle*:
-  The rotation angle necessary to deskew the image.
-  Can be used directly as input to rotate_
+    *rotation angle*:
+      The rotation angle necessary to deskew the image.
+      Can be used directly as input to rotate_
 
-*accuracy*:
-  Accuracy of the returned angle.
+    *accuracy*:
+      Accuracy of the returned angle.
 
-.. _rotate: deformations.html#rotate
-"""
+    .. _rotate: deformations.html#rotate
+    """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
     args = Args([Float("minangle", default=-2.5), Float("maxangle", default=2.5), Float("accuracy", default=0.0)])

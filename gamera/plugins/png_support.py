@@ -32,42 +32,48 @@
 from gamera.plugin import *
 
 class PNG_info(PluginFunction):
-    """Returns an ``ImageInfo`` object describing a PNG file.
+    """
+    Returns an ``ImageInfo`` object describing a PNG file.
 
-*image_file_name*
-  A PNG image filename"""
+    *image_file_name*
+      A PNG image filename
+    """
     self_type = None
     args = Args([String("image_file_name")])
     return_type = ImageInfo("PNG_info")
 
 class load_PNG(PluginFunction):
-   """Loads a PNG format image file.
+    """
+    Loads a PNG format image file.
 
-*image_file_name*
-  A PNG image filename
+    *image_file_name*
+      A PNG image filename
 
-*storage_format* (optional)
-  specifies the compression type for the result:
+    *storage_format* (optional)
+      specifies the compression type for the result:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression"""
-   self_type = None
-   args = Args([FileOpen("image_file_name", "", "*.png"),
-                Choice("storage format", ["DENSE", "RLE"])])
-   return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
-   def __call__(filename, compression = 0):
-      from gamera.plugins import _png_support
-      return _png_support.load_PNG(filename, compression)
-   __call__ = staticmethod(__call__)
-   exts = ['png']
+      DENSE (0)
+        no compression
+      RLE (1)
+        run-length encoding compression
+    """
+    self_type = None
+    args = Args([FileOpen("image_file_name", "", "*.png"),
+                 Choice("storage format", ["DENSE", "RLE"])])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
+    def __call__(filename, compression = 0):
+        from gamera.plugins import _png_support
+        return _png_support.load_PNG(filename, compression)
+    __call__ = staticmethod(__call__)
+    exts = ['png']
 
 class save_PNG(PluginFunction):
-   """Saves the image to a PNG format file."""
-   self_type = ImageType(ALL)
-   args = Args([FileSave("image_file_name", "image.png", "*.png")])
-   exts = ['png']
+    """
+    Saves the image to a PNG format file.
+    """
+    self_type = ImageType(ALL)
+    args = Args([FileSave("image_file_name", "image.png", "*.png")])
+    exts = ['png']
 
 class PngSupportModule(PluginModule):
     import sys

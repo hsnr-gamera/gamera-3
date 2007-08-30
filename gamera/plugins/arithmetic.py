@@ -33,18 +33,20 @@ class ArithmeticCombine(PluginFunction):
     image_types_must_match = True
 
 class add_images(ArithmeticCombine):
-    """Adds the corresponding pixels of two images together.
+    """
+    Adds the corresponding pixels of two images together.
 
-The two images must be the same type.
+    The two images must be the same type.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.  Use .subimage
-on either image to crop appropriately if necessary for your specific case.
+    Since it would be difficult to determine what exactly to do if the
+    images are a different size, the two images must be the same size.
+    Use .subimage on either image to crop appropriately if necessary
+    for your specific case.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
-"""
+    *in_place*
+      If true, the operation will be performed in-place, changing the
+      contents of the current image.
+    """
     def __call__(self, other, in_place=False):
        if self.data.pixel_type == ONEBIT:
            return _logical.or_image(self, other, in_place)
@@ -59,18 +61,20 @@ on either image to crop appropriately if necessary for your specific case.
     doc_examples = [__doc_example1__]
 
 class subtract_images(ArithmeticCombine):
-    """Adds the pixels of another image from the current image.
+    """
+    Adds the pixels of another image from the current image.
 
-The two images must be the same type.
+    The two images must be the same type.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.  Use .subimage
-on either image to crop appropriately if necessary for your specific case.
+    Since it would be difficult to determine what exactly to do if the
+    images are a different size, the two images must be the same size.
+    Use .subimage on either image to crop appropriately if necessary
+    for your specific case.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
-"""
+    *in_place*
+      If true, the operation will be performed in-place, changing the
+      contents of the current image.
+    """
     self_type = ImageType(ALL)
     args = Args([ImageType(ALL, 'other'), Check('in_place', default=False)])
     return_type = ImageType(ALL)
@@ -87,19 +91,21 @@ on either image to crop appropriately if necessary for your specific case.
     doc_examples = [__doc_example1__]
 
 class divide_images(ArithmeticCombine):
-    """Divides the pixels of the current image by the pixels of
-another image.
+    """
+    Divides the pixels of the current image by the pixels of another
+    image.
 
-The two images must be the same type.
+    The two images must be the same type.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.  Use .subimage
-on either image to crop appropriately if necessary for your specific case.
+    Since it would be difficult to determine what exactly to do if the
+    images are a different size, the two images must be the same size.
+    Use .subimage on either image to crop appropriately if necessary
+    for your specific case.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
-"""
+    *in_place*
+      If true, the operation will be performed in-place, changing the
+      contents of the current image.
+    """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([ImageType([GREYSCALE, GREY16, FLOAT], 'other'),
                  Check("in_place", default=False)])
@@ -110,18 +116,20 @@ on either image to crop appropriately if necessary for your specific case.
     __call__ = staticmethod(__call__)
 
 class multiply_images(ArithmeticCombine):
-    """Multiplies the corresponding pixels of two images together.
+    """
+    Multiplies the corresponding pixels of two images together.
 
-The two images must be the same type.
+    The two images must be the same type.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.  Use .subimage
-on either image to crop appropriately if necessary for your specific case.
+    Since it would be difficult to determine what exactly to do if the
+    images are a different size, the two images must be the same size.
+    Use .subimage on either image to crop appropriately if necessary
+    for your specific case.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
-"""
+    *in_place*
+      If true, the operation will be performed in-place, changing the
+      contents of the current image.
+    """
     def __call__(self, other, in_place=False):
        if self.data.pixel_type == ONEBIT:
            return _logical.and_image(self, other, in_place)

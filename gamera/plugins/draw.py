@@ -27,32 +27,31 @@ except:
     pass
 
 class draw_marker(PluginFunction):
-  """Draws a marker at a given point.
+  """
+  Draws a marker at a given point.
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a marker at (5, 5) will be in the upper left hand corner
-of the image.
+  Coordinates are relative to the offset of the image.  Therefore, if
+  the image offset is (5, 5), a marker at (5, 5) will be in the upper
+  left hand corner of the image.
 
-The coordinates can be specified either by two floats or one FloatPoint:
-
-  *a*:
+  *a*
     The position of the marker.
 
-*size*
-  The size of the marker (number of pixels)
+  *size*
+    The size of the marker (number of pixels)
 
-*style*
-  PLUS + (0)
+  *style*
+    PLUS + (0)
 
-  X + (1)
+    X + (1)
 
-  HOLLOW_SQUARE (2)
+    HOLLOW_SQUARE (2)
 
-  FILLED_SQUARE (3)
+    FILLED_SQUARE (3)
 
-*value*:
-  The pixel value to set for the line.
-"""
+  *value*
+    The pixel value to set for the line.
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("location"), Int("size", default=5),
                Choice("style", "+ x hollow_square filled_square".split(),
@@ -74,32 +73,32 @@ The coordinates can be specified either by two floats or one FloatPoint:
   doc_examples = [__doc_example1__]
 
 class draw_line(PluginFunction):
-  """Draws a straight line between two points.
+  """
+  Draws a straight line between two points.
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a line at (5, 5) will be in the upper left hand corner
-of the image.
-
-The coordinates can be specified either by four floats or two FloatPoints:
+  Coordinates are relative to the offset of the image.  Therefore, if
+  the image offset is (5, 5), a line at (5, 5) will be in the upper
+  left hand corner of the image.
 
   *a*:
     The start ``FloatPoint``.
+
   *b*:
     The end ``FloatPoint``.
 
-*value*:
-  The pixel value to set for the line.
+  *value*:
+    The pixel value to set for the line.
 
-*thickness* = 1.0:
-  The thickness of the line (in pixels)
+  *thickness* = 1.0:
+    The thickness of the line (in pixels)
 
-Based on Po-Han Lin's "Extremely Fast Line Algorithm", which is based
-on the classical Breshenham's algorithm.
+  Based on Po-Han Lin's "Extremely Fast Line Algorithm", which is
+  based on the classical Breshenham's algorithm.
 
-Freely useable in non-commercial applications as long as credits to
-Po-Han Lin and link to http://www.edepot.com is provided in source
-code and can been seen in compiled executable.
-"""
+  Freely useable in non-commercial applications as long as credits to
+  Po-Han Lin and link to http://www.edepot.com is provided in source
+  code and can been seen in compiled executable.
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("start"), FloatPoint("end"), Pixel("value"), Float("thickness")])
   authors = "Michael Droettboom based on Po-Han Lin's Extremely Fast Line Algorithm"
@@ -121,24 +120,27 @@ code and can been seen in compiled executable.
   doc_examples = [__doc_example1__]
 
 class draw_hollow_rect(PluginFunction):
-  """Draws a hollow rectangle.
+  """
+  Draws a hollow rectangle.
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
-of the image.
+  Coordinates are relative to the offset of the image.  Therefore, if
+  the image offset is (5, 5), a rectangle at (5, 5) will be in the
+  upper left hand corner of the image.
 
-The coordinates can be specified either by four integers, two FloatPoints, or one Rect:
+  The coordinates can be specified either by two FloatPoints or one
+  Rect:
 
-  **draw_hollow_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*, *y2*), *value*, *thickness* = 1.0)
+    **draw_hollow_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*,
+    *y2*), *value*, *thickness* = 1.0)
 
-  **draw_hollow_rect** (Rect *rect*, *value*, *thickness* = 1.0)
+    **draw_hollow_rect** (Rect *rect*, *value*, *thickness* = 1.0)
 
-*value*:
-  The pixel value to set for the lines.
+  *value*:
+    The pixel value to set for the lines.
 
-*thickness* = 1.0:
-  The thickness of the outline
-"""
+  *thickness* = 1.0:
+    The thickness of the outline
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("ul"), FloatPoint("lr"), Pixel("value"), Float("thickness")])
 
@@ -169,18 +171,21 @@ The coordinates can be specified either by four integers, two FloatPoints, or on
   doc_examples = [__doc_example1__]
 
 class draw_filled_rect(PluginFunction):
-  """Draws a filled rectangle.
+  """
+  Draws a filled rectangle.
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a rectangle at (5, 5) will be in the upper left hand corner
-of the image.
+  Coordinates are relative to the offset of the image.  Therefore, if
+  the image offset is (5, 5), a rectangle at (5, 5) will be in the
+  upper left hand corner of the image.
 
-The coordinates can be specified either by four integers, two FloatPoints, or one Rect:
+  The coordinates can be specified either by four integers, two
+  FloatPoints, or one Rect:
 
-  **draw_filled_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*, *y2*), *value*)
+  **draw_filled_rect** (FloatPoint(*x1*, *y1*), FloatPoint(*x2*,
+  *y2*), *value*)
 
   **draw_filled_rect** (Rect *rect*, *value*)
-"""
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("ul"), FloatPoint("lr"), Pixel("value")])
 
@@ -205,29 +210,31 @@ The coordinates can be specified either by four integers, two FloatPoints, or on
   doc_examples = [__doc_example1__]
 
 class draw_bezier(PluginFunction):
-  """Draws a cubic bezier curve
+  """
+  Draws a cubic bezier curve
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a curve at (5, 5) will be in the upper left hand corner
-of the image.
-
-The coordinates can be specified either by eight floats or four FloatPoints:
+  Coordinates are relative to the offset of the image.  Therefore, if the image
+  offset is (5, 5), a curve at (5, 5) will be in the upper left hand corner
+  of the image.
 
   *start*:
     The start ``FloatPoint``.
+
   *c1*:
     The control point associated with the start point.
+
   *c2*
     The control point associated with the end point.
+
   *end*
     The end ``FloatPoint``.
 
-*value*:
-  The pixel value to set for the curve.
+  *value*:
+    The pixel value to set for the curve.
 
-*accuracy* = ``0.1``:
-  The rendering accuracy (in pixels)
-"""
+  *accuracy* = ``0.1``:
+    The rendering accuracy (in pixels)
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("start"), FloatPoint("c1"), FloatPoint("c2"), FloatPoint("end"),
                Pixel("value"), Float("accuracy", default=0.1)])
@@ -251,30 +258,31 @@ The coordinates can be specified either by eight floats or four FloatPoints:
   doc_examples = [__doc_example1__]
 
 class draw_circle(PluginFunction):
-  """Draws a center centered at *c* with radius *r*.
+  """
+  Draws a center centered at *c* with radius *r*.
 
-Coordinates are relative to the offset of the image.  Therefore, if the image
-offset is (5, 5), a line at (5, 5) will be in the upper left hand corner
-of the image.
+  Coordinates are relative to the offset of the image.  Therefore, if
+  the image offset is (5, 5), a line at (5, 5) will be in the upper
+  left hand corner of the image.
 
-*c*:
-  The center of the circle
+  *c*:
+    The center of the circle
 
-*r*:
-  The radius of the circle
+  *r*:
+    The radius of the circle
 
-*value*:
-  The pixel value to set for the line.
+  *value*:
+    The pixel value to set for the line.
 
-*thickness* = 1.0:
-  The thickness of the circle (in pixels)
+  *thickness* = 1.0:
+    The thickness of the circle (in pixels)
 
-*accuracy* = 0.1:
-  The accuracy of the circle drawing
+  *accuracy* = 0.1:
+    The accuracy of the circle drawing
 
-Based on the "approximating a circle with Bezier curves" approach.
-http://www.whizkidtech.redprince.net/bezier/circle/
-"""
+    Based on the "approximating a circle with Bezier curves" approach.
+    http://www.whizkidtech.redprince.net/bezier/circle/
+  """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("c"), Float("r"), Pixel("value"), Float("thickness"), Float("accuracy")])
   authors = "Michael Droettboom with the help of Christoph Dalitz"
@@ -296,62 +304,63 @@ http://www.whizkidtech.redprince.net/bezier/circle/
   doc_examples = [__doc_example1__]
 
 class draw_text(PluginFunction):
-  """Draws text onto the image.  The results are fairly primitive.
-The text is not anti-aliased, but should be adequate for marking up
-the image for debugging purposes.
+  """
+  Draws text onto the image.  The results are fairly primitive.  The
+  text is not anti-aliased, but should be adequate for marking up the
+  image for debugging purposes.
 
-This function relies on wxPython for font rendering.  Therefore,
-wxPython must be installed, and it must be runnable in the current
-environment, for example, a connection to a display or X server must
-be available.  This may not be the case when running over a remote
-terminal, for example.
+  This function relies on wxPython for font rendering.  Therefore,
+  wxPython must be installed, and it must be runnable in the current
+  environment, for example, a connection to a display or X server must
+  be available.  This may not be the case when running over a remote
+  terminal, for example.
 
-*p*
-   The position of the text.  The *x* component will be either at the
-   left, center, or right of the text, depending on the value of
-   *halign*.  The *y* component specifies the top of the text.
+  *p*
+    The position of the text.  The *x* component will be either at the
+    left, center, or right of the text, depending on the value of
+    *halign*.  The *y* component specifies the top of the text.
 
-*text*
-   The string to be drawn on the image.  If this is an 8-bit string the string
-   should be encoded in the default encoding for your system.  If a Unicode
-   string, the text will be rendered using a Unicode font.  This requires
-   that your wxPython version is compiled with Unicode support.
+  *text*
+    The string to be drawn on the image.  If this is an 8-bit string the string
+    should be encoded in the default encoding for your system.  If a Unicode
+    string, the text will be rendered using a Unicode font.  This requires
+    that your wxPython version is compiled with Unicode support.
 
-*color*
-   The color of the text to be drawn.  Note that there are some peculiarities
-   for **ONEBIT** images:
+  *color*
+    The color of the text to be drawn.  Note that there are some peculiarities
+    for **ONEBIT** images:
 
-     If *color* is zero, the text will be white.  If non-zero, the
-     text will be black.  It is not possible to set different values
-     for the text.
+      If *color* is zero, the text will be white.  If non-zero, the
+      text will be black.  It is not possible to set different values
+      for the text.
 
-*family*
-   The font family to be used.  For platform independence, this argument
-   takes a general typeface style which will be mapped to an appropriate
-   typeface on each platform.
+  *family*
+    The font family to be used.  For platform independence, this argument
+    takes a general typeface style which will be mapped to an appropriate
+    typeface on each platform.
 
-   SERIF (0)
+      SERIF (0)
 
-   SANS-SERIF (1)
+      SANS-SERIF (1)
 
-   MONOSPACE (2)
+      MONOSPACE (2)
 
-*pixel_size* = 10
-   The font size **in pixels** (i.e. not in "points")
+  *pixel_size* = 10
+    The font size **in pixels** (i.e. not in "points")
 
-*italic* = ``False``
-   If ``True``, the text will be italic.
+  *italic* = ``False``
+    If ``True``, the text will be italic.
 
-*bold* = ``False``
-   If ``True``, the text will be bold.
+  *bold* = ``False``
+    If ``True``, the text will be bold.
 
-*halign*
-   LEFT JUSTIFIED (0):  The text is left-justified to the point *p*.
+  *halign*
+    LEFT JUSTIFIED (0):  The text is left-justified to the point *p*.
 
-   CENTERED (1):  The text is centered horizontally to the point *p*.
+    CENTERED (1):  The text is centered horizontally to the point *p*.
 
-   RIGHT JUSTIFIED (2):  The text is right-justified to the point *p*.
-"""
+    RIGHT JUSTIFIED (2):  The text is right-justified to the point *p*.
+  """
   self_type = ImageType([ONEBIT, RGB])
   args = Args([FloatPoint("p"), String("text"), Pixel("color"),
                Int("pixel_size", default=10, range=(3, 512)),
@@ -467,37 +476,41 @@ terminal, for example.
   doc_examples = [__doc_example1__]
 
 class flood_fill(PluginFunction):
-  """Flood fills from the given point using the given color.  This is similar
-to the "bucket" tool found in many paint programs.
+  """
+  Flood fills from the given point using the given color.  This is similar
+  to the "bucket" tool found in many paint programs.
 
-The coordinates can be specified either by two integers or one Point:
-
+  The coordinates can be specified either by two integers or one Point:
 
   *a*:
     The start ``Point``.
 
   *color*:
     The pixel value to set for the rectangle.
-"""
+  """
   self_type = ImageType([GREYSCALE, FLOAT, ONEBIT, RGB])
   args = Args([Point("start"), Pixel("color")])
   doc_examples = [(ONEBIT, (10, 58), 0)]
 
 class remove_border(PluginFunction):
-  """This is a special case of the flood_fill algorithm that is designed to
-remove dark borders produced by photocopiers or flatbed scanners around the
-border of the image."""
+  """
+  This is a special case of the flood_fill algorithm that is designed
+  to remove dark borders produced by photocopiers or flatbed scanners
+  around the border of the image.
+  """
   self_type = ImageType([ONEBIT])
 
 class highlight(PluginFunction):
-  """Highlights a connected component on a given image using the given color.
-Self must be an RGB image (usually the original image.)
+  """
+  Highlights a connected component on a given image using the given color.
+  Self must be an RGB image (usually the original image.)
 
-*cc*
-   A one-bit connected component from the image
+  *cc*
+    A one-bit connected component from the image
 
-*color*
-   An RGBPixel color value used to color the *cc*."""
+  *color*
+    An RGBPixel color value used to color the *cc*.
+  """
   self_type = ImageType([RGB])
   args = Args([ImageType([ONEBIT], "cc"), Pixel("color")])
 

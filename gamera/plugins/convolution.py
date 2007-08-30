@@ -36,47 +36,53 @@ CONVOLUTION_TYPES = [GREYSCALE, GREY16, FLOAT, RGB, COMPLEX]
 # Convolution methods
 
 class convolve(PluginFunction):
-    """Convolves an image with a given kernel.
+    u"""
+    Convolves an image with a given kernel.
 
-*kernel*
-   A kernel for the convolution.  The kernel may either be a FloatImage
-   or a nested Python list of floats.
+    Uses code from the Vigra library (Copyright 1998-2007 by Ullrich
+    K\u00f6the).
+    
+    *kernel*
+      A kernel for the convolution.  The kernel may either be a FloatImage
+      or a nested Python list of floats.
 
-*border_treatment*
-   Specifies how to treat the borders of the image.  Must be one of the following:
+    *border_treatment*
+      Specifies how to treat the borders of the image.  Must be one of
+      the following:
 
-   - BORDER_TREATMENT_AVOID (0)
+      - BORDER_TREATMENT_AVOID (0)
 
-       do not operate on a pixel where the kernel does not fit in the image
+        do not operate on a pixel where the kernel does not fit in the image
 
-   - BORDER_TREATMENT_CLIP (1)
+      - BORDER_TREATMENT_CLIP (1)
 
-       clip kernel at image border (this is only useful if the kernel is >= 0 everywhere)
+        clip kernel at image border (this is only useful if the kernel
+        is >= 0 everywhere)
 
-   - BORDER_TREATMENT_REPEAT (2)
+      - BORDER_TREATMENT_REPEAT (2)
 
-       repeat the nearest valid pixel
+        repeat the nearest valid pixel
 
-   - BORDER_TREATMENT_REFLECT (3)
+      - BORDER_TREATMENT_REFLECT (3)
+      
+        reflect image at last row/column
 
-       reflect image at last row/column
+      - BORDER_TREATMENT_WRAP (4)
 
-   - BORDER_TREATMENT_WRAP (4)
+        wrap image around (periodic boundary conditions)
 
-       wrap image around (periodic boundary conditions)
+    Example usage:
 
-Example usage:
+    .. code:: Python
 
-.. code:: Python
+      # Using a custom kernel
+      image.convolve([[0.125, 0.0, -0.125],
+                      [0.25 , 0.0, -0.25 ],
+                      [0.125, 0.0, -0.125]])
 
-  # Using a custom kernel
-  image.convolve([[0.125, 0.0, -0.125],
-                  [0.25 , 0.0, -0.25 ],
-                  [0.125, 0.0, -0.125]])
-
-  # Using one of the included kernel generators
-  image.convolve(GaussianKernel(3.0))
-"""
+      # Using one of the included kernel generators
+      image.convolve(GaussianKernel(3.0))
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel'),
                  Choice('border_treatment',
@@ -92,24 +98,28 @@ Example usage:
     __call__ = staticmethod(__call__)
 
 class convolve_xy(PluginFunction):
-    """Convolves an image in both X and Y directions with 1D kernels.
-This is equivalent to what the Vigra library calls "Separable Convolution".
+    u"""
+    Convolves an image in both X and Y directions with 1D kernels.
+    This is equivalent to what the Vigra library calls "Separable
+    Convolution".
 
-*kernel_y*
-   A kernel for the convolution in the *y* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.
+    Uses code from the Vigra library (Copyright 1998-2007 by Ullrich
+    K\u00f6the).
+    
+    *kernel_y*
+      A kernel for the convolution in the *y* direction.  The kernel
+      may either be a FloatImage or a nested Python list of floats.
 
-*kernel_x*
-   A kernel for the convolution in the *x* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.  If *kernel_x* is omitted, *kernel_y* will be used in the
-   *x* direction.
+    *kernel_x*
+      A kernel for the convolution in the *x* direction.  The kernel
+      may either be a FloatImage or a nested Python list of floats.
+      If *kernel_x* is omitted, *kernel_y* will be used in the *x*
+      direction.
 
-*border_treatment*
-   Specifies how to treat the borders of the image.
-   See ``convolve`` for information about *border_treatment*
-   values."""
+    *border_treatment*
+      Specifies how to treat the borders of the image.  See
+      ``convolve`` for information about *border_treatment* values.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_x'),
                  ImageType([FLOAT], 'kernel_y'),
@@ -136,18 +146,23 @@ This is equivalent to what the Vigra library calls "Separable Convolution".
     __call__ = staticmethod(__call__)
 
 class convolve_x(PluginFunction):
-    u"""Convolves an image in the X directions with a 1D kernel.
-This is equivalent to what the Vigra library calls "Separable Convolution".
+    u"""
+    Convolves an image in the X directions with a 1D kernel.  This is
+    equivalent to what the Vigra library calls "Separable
+    Convolution".
 
-Uses code from the Vigra library (Copyright 1998-2002 by Ullrich K\u00f6the).
+    Uses code from the Vigra library (Copyright 1998-2007 by Ullrich
+    K\u00f6the).
 
-*kernel_x*
-   A kernel for the convolution in the *x* direction.  The kernel may either be a FloatImage
-   or a nested Python list of floats.  It must consist of only a single row.
+    *kernel_x*
+      A kernel for the convolution in the *x* direction.  The kernel
+      may either be a FloatImage or a nested Python list of floats.
+      It must consist of only a single row.
 
-*border_treatment*
-   Specifies how to treat the borders of the image.  See ``convolve`` for information
-   about *border_treatment* values."""
+    *border_treatment*
+      Specifies how to treat the borders of the image.  See
+      ``convolve`` for information about *border_treatment* values.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_x'),
                  Choice('border_treatment',
@@ -163,18 +178,22 @@ Uses code from the Vigra library (Copyright 1998-2002 by Ullrich K\u00f6the).
     __call__ = staticmethod(__call__)
 
 class convolve_y(PluginFunction):
-    """Convolves an image in the X directions with a 1D kernel.  This
-is equivalent to what the Vigra library calls "Separable Convolution".
+    u"""
+    Convolves an image in the X directions with a 1D kernel.  This is
+    equivalent to what the Vigra library calls "Separable Convolution".
 
-*kernel_y*
-   A kernel for the convolution in the *x* direction.  The
-   kernel may either be a FloatImage or a nested Python list of
-   floats.  It must consist of only a single row.
+    Uses code from the Vigra library (Copyright 1998-2007 by Ullrich
+    K\u00f6the).
 
-*border_treatment*
-   Specifies how to treat the borders of the image.
-   See ``convolve`` for information about *border_treatment*
-   values."""
+    *kernel_y*
+      A kernel for the convolution in the *x* direction.  The kernel
+      may either be a FloatImage or a nested Python list of floats.
+      It must consist of only a single row.
+
+    *border_treatment*
+      Specifies how to treat the borders of the image.  See
+      ``convolve`` for information about *border_treatment* values.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_y'),
                  Choice('border_treatment',
@@ -198,55 +217,60 @@ class ConvolutionKernel(PluginFunction):
     category = "Convolution/Kernels"
 
 class GaussianKernel(ConvolutionKernel):
-    """Init as a Gaussian function. The radius of the kernel is 
-always 3*standard_deviation.
+    """
+    Init as a Gaussian function. The radius of the kernel is always
+    3*standard_deviation.
 
-*standard_deviation*
-   The standard deviation of the Gaussian kernel.
-"""
+    *standard_deviation*
+      The standard deviation of the Gaussian kernel.
+    """
     args = Args([Float("standard_deviation", default=1.0)])
     
 class GaussianDerivativeKernel(ConvolutionKernel):
-    """Init as a Gaussian derivative of order 'order'.  The radius of
-the kernel is always 3*std_dev.
+    """
+    Init as a Gaussian derivative of order 'order'.  The radius of the
+    kernel is always 3*std_dev.
 
-*standard_deviation*
-   The standard deviation of the Gaussian kernel.
+    *standard_deviation*
+      The standard deviation of the Gaussian kernel.
 
-*order*
-   The order of the Gaussian kernel.
-"""
+    *order*
+      The order of the Gaussian kernel.
+    """
     args = Args([Float("standard_deviation", default=1.0),
                  Int("order", default=1)])
 
 class BinomialKernel(ConvolutionKernel):
-    """Creates a binomial filter kernel for use with separable
+    """
+    Creates a binomial filter kernel for use with separable
     convolution of a given radius.
 
-*radius*
-   The radius of the kernel.
-"""
+    *radius*
+      The radius of the kernel.
+    """
     args = Args([Int("radius", default=3)])
 
 class AveragingKernel(ConvolutionKernel):
-    """Creates an Averaging filter kernel for use with separable
-convolution.  The window size is (2*radius+1) * (2*radius+1).
+    """
+    Creates an Averaging filter kernel for use with separable
+    convolution.  The window size is (2*radius+1) * (2*radius+1).
 
-*radius*
-   The radius of the kernel.
-"""
+    *radius*
+      The radius of the kernel.
+    """
     args = Args([Int("radius", default=3)])
 
 class SymmetricGradientKernel(ConvolutionKernel):
-    """Init as a symmetric gradient filter of the form
-       [ 0.5, 0.0, -0.5]
-"""
+    """
+    Init as a symmetric gradient filter of the form [ 0.5, 0.0, -0.5]
+    """
     args = Args([])
 
 class SimpleSharpeningKernel(ConvolutionKernel):
-    """Creates a kernel for simple sharpening.
+    """
+    Creates a kernel for simple sharpening.
 
-"""
+    """
     args = Args([Float('sharpening_factor', default=0.5)])
 
 ########################################
@@ -260,11 +284,12 @@ class SimpleSharpeningKernel(ConvolutionKernel):
 # not have a significant impact. MGD
 
 class gaussian_smoothing(PluginFunction):
-    """Performs gaussian smoothing on an image.
+    """
+    Performs gaussian smoothing on an image.
 
-*standard_deviation*
-   The standard deviation of the Gaussian kernel.
-"""
+    *standard_deviation*
+      The standard deviation of the Gaussian kernel.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("standard_deviation", default=1.0)])
     return_type = ImageType(CONVOLUTION_TYPES)
@@ -277,11 +302,12 @@ class gaussian_smoothing(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class simple_sharpen(PluginFunction):
-    """Perform simple sharpening.
+    """
+    Perform simple sharpening.
 
-*sharpening_factor*
-   The amount of sharpening to perform.
-"""
+    *sharpening_factor*
+      The amount of sharpening to perform.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("sharpening_factor", default=0.5)])
     return_type = ImageType(CONVOLUTION_TYPES)
@@ -294,13 +320,14 @@ class simple_sharpen(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class gaussian_gradient(PluginFunction):
-    """Calculate the gradient vector by means of a 1st derivatives of
+    """
+    Calculate the gradient vector by means of a 1st derivatives of
     Gaussian filter.
 
-*scale*
+    *scale*
 
-Returns a tuple of (*x_gradient*, *y_gradient*).
-"""
+      Returns a tuple of (*x_gradient*, *y_gradient*).
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([Float("scale", default=0.5)])
     return_type = ImageList("gradients")
@@ -317,11 +344,12 @@ Returns a tuple of (*x_gradient*, *y_gradient*).
     __call__ = staticmethod(__call__)
 
 class laplacian_of_gaussian(PluginFunction):
-    """Filter image with the Laplacian of Gaussian operator
-at the given scale.
+    """
+    Filter image with the Laplacian of Gaussian operator at the given
+    scale.
 
-*scale*
-"""
+    *scale*
+    """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Float("scale", default=0.5)])
     return_type = ImageType([GREYSCALE, GREY16, FLOAT])
@@ -344,11 +372,12 @@ at the given scale.
     __call__ = staticmethod(__call__)
 
 class hessian_matrix_of_gaussian(PluginFunction):
-    """ Filter image with the 2nd derivatives of the Gaussian
-    at the given scale to get the Hessian matrix.
+    """
+    Filter image with the 2nd derivatives of the Gaussian at the given
+    scale to get the Hessian matrix.
 
-*scale*
-"""
+    *scale*
+    """
     self_type = ImageType([GREYSCALE, GREY16, FLOAT])
     args = Args([Float("scale", default=0.5)])
     return_type = ImageList("hessian_matrix")
@@ -373,7 +402,9 @@ class hessian_matrix_of_gaussian(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class sobel_edge_detection(PluginFunction):
-    """Performs simple Sobel edge detection on the image."""
+    """
+    Performs simple Sobel edge detection on the image.
+    """
     self_type = ImageType(CONVOLUTION_TYPES)
     return_type = ImageType(CONVOLUTION_TYPES)
     pure_python = True

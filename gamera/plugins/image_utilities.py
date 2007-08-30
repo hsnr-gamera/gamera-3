@@ -27,16 +27,18 @@ import sys
 import _image_utilities 
 
 class image_copy(PluginFunction):
-    """Copies an image along with all of its underlying data.  Since the data is
-copied, changes to the new image do not affect the original image.
+    """
+    Copies an image along with all of its underlying data.  Since the data is
+    copied, changes to the new image do not affect the original image.
 
-*storage_format*
-  specifies the compression type for the returned copy:
+    *storage_format*
+      specifies the compression type for the returned copy:
 
-  DENSE (0)
-    no compression
-  RLE (1)
-    run-length encoding compression"""
+    DENSE (0)
+      no compression
+    RLE (1)
+      run-length encoding compression
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     return_type = ImageType(ALL)
@@ -48,7 +50,9 @@ copied, changes to the new image do not affect the original image.
     __call__ = staticmethod(__call__)
 
 class image_save(PluginFunction):
-    """Saves an image to file with specified name and format"""
+    """
+    Saves an image to file with specified name and format.
+    """
     pure_python = 1
     category = "Utility"
     self_type = ImageType(ALL)
@@ -71,40 +75,43 @@ class image_save(PluginFunction):
     __call__ = staticmethod(__call__)
 
 class resize(PluginFunction):
-    """Returns a resized copy of an image. In addition to size, the type of
-interpolation can be specified, with a tradeoff between speed
-and quality.
+    """
+    Returns a resized copy of an image. In addition to size, the type
+    of interpolation can be specified, with a tradeoff between speed
+    and quality.
 
-If you need to maintain the aspect ratio of the original image,
-consider using scale_ instead.
+    If you need to maintain the aspect ratio of the original image,
+    consider using scale_ instead.
 
-*dim*
-   The size of the resulting image.
+    *dim*
+      The size of the resulting image.
 
-*interp_type* [None|Linear|Spline]
-   The type of interpolation used to resize the image.  Each option is
-   progressively higher quality, yet slower.
-"""
+    *interp_type* [None|Linear|Spline]
+      The type of interpolation used to resize the image.  Each option
+      is progressively higher quality, yet slower.
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     args = Args([Dim("dim"), Choice("interp_type", ["None", "Linear", "Spline"])])
     return_type = ImageType(ALL)
 
 class scale(PluginFunction):
-    """Returns a scaled copy of the image. In addition to scale, the type of
-interpolation can be specified, with a tradeoff between speed
-and quality.
+    """
+    Returns a scaled copy of the image. In addition to scale, the type
+    of interpolation can be specified, with a tradeoff between speed
+    and quality.
 
-If you need to change the aspect ratio of the original image,
-consider using resize_ instead.
+    If you need to change the aspect ratio of the original image,
+    consider using resize_ instead.
 
-*scale*
-   A scaling factor.  Values greater than 1 will result in a larger image.
-   Values less than 1 will result in a smaller image.
-*interp_type* [None|Linear|Spline]
-   The type of interpolation used to resize the image.  Each option is
-   progressively higher quality, yet slower.
-"""
+    *scale*
+      A scaling factor.  Values greater than 1 will result in a larger image.
+      Values less than 1 will result in a smaller image.
+
+    *interp_type* [None|Linear|Spline]
+      The type of interpolation used to resize the image.  Each option is
+      progressively higher quality, yet slower.
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     args= Args([Real("scaling"),
@@ -113,12 +120,15 @@ consider using resize_ instead.
     doc_examples = [(RGB, 0.5, 2), (RGB, 2.0, 2)]
 
 class histogram(PluginFunction):
-    """Compute the histogram of the pixel values in the given image.
-Returns a Python array of doubles, with each value being a percentage.
+    """
+    Compute the histogram of the pixel values in the given image.
+    Returns a Python array of doubles, with each value being a
+    percentage.
 
-If the GUI is being used, the histogram is displayed.
+    If the GUI is being used, the histogram is displayed.
 
-.. image:: images/histogram.png"""
+    .. image:: images/histogram.png
+    """
     category = "Analysis"
     self_type = ImageType([GREYSCALE, GREY16])
     return_type = FloatVector()
@@ -131,23 +141,29 @@ If the GUI is being used, the histogram is displayed.
     __call__ = staticmethod(__call__)
 
 class union_images(PluginFunction):
-    """Returns an image that is the union of the given list of connected components."""
+    """
+    Returns an image that is the union of the given list of connected
+    components.
+    """
     category = "Combine"
     self_type = None
     args = Args([ImageList('list_of_images')])
     return_type = ImageType([ONEBIT])
 
 class fill_white(PluginFunction):
-    """Fills the entire image with white."""
+    """
+    Fills the entire image with white.
+    """
     category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
 
 class fill(PluginFunction):
-    """Fills the entire image with value.
+    """
+    Fills the entire image with value.
 
-*value*
-   A pixel value.  This value may be any value the pixel type can support.
-"""
+    *value*
+      A pixel value.  This value may be any value the pixel type can support.
+    """
     category = "Draw"
     self_type = ImageType(ALL)
     args = Args([Pixel("value")])
@@ -161,24 +177,25 @@ class pad_image_default(PluginFunction):
     return_type = ImageType(ALL)
 
 class pad_image(PluginFunction):
-    """Pads an image with any value.
+    """
+    Pads an image with any value.
 
-*top*
-   Padding on the top.
+    *top*
+      Padding on the top.
 
-*right*
-   Padding on the right.
+    *right*
+      Padding on the right.
 
-*bottom*
-   Padding on the bottom.
+    *bottom*
+      Padding on the bottom.
 
-*left*
-   Padding on the left.
+    *left*
+      Padding on the left.
 
-*value*
-   A pixel value.  This value may be any value the pixel type can support.
+    *value*
+      A pixel value.  This value may be any value the pixel type can support.
 
-"""
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     args = Args([Int("top"), Int("right"), Int("bottom"), Int("left"), Pixel("value")])
@@ -192,91 +209,99 @@ class pad_image(PluginFunction):
     doc_examples = [(RGB, 5, 10, 15, 20)]
 
 class invert(PluginFunction):
-    """Inverts the image."""
+    """
+    Inverts the image.
+    """
     category = "Draw"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
     doc_examples = [(RGB,), (GREYSCALE,), (ONEBIT,)]
 
 class clip_image(PluginFunction):
-    """Crops an image so that the bounding box includes only the intersection of
-it and another image.  Returns a zero-sized image if the two images do
-not intersect."""
+    """
+    Crops an image so that the bounding box includes only the
+    intersection of it and another image.  Returns a zero-sized image
+    if the two images do not intersect.
+    """
     category = "Utility"
     return_type = ImageType(ALL)
     self_type = ImageType(ALL)
     args = Args(Rect("other"))
 
 class mask(PluginFunction):
-    """Masks an image using the given ONEBIT image.  Parts of the ONEBIT
-image that are white will be changed to white in the resulting image.
+    """
+    Masks an image using the given ONEBIT image.  Parts of the ONEBIT
+    image that are white will be changed to white in the resulting
+    image.
 
-The images must be the same size.
-"""
+    The images must be the same size.
+    """
     category = "Combine"
     return_type = ImageType([GREYSCALE, RGB])
     self_type = ImageType([GREYSCALE, RGB])
     args = Args(ImageType([ONEBIT], "mask"))
 
 class to_nested_list(PluginFunction):
-    """Converts an image to a nested Python list.
-This method is the inverse of ``nested_list_to_image``.
+    """
+    Converts an image to a nested Python list.
+    This method is the inverse of ``nested_list_to_image``.
 
-The following table describes how each image type is converted to
-Python types:
+    The following table describes how each image type is converted to
+    Python types:
 
-  - ONEBIT -> int
-  - GREYSCALE -> int
-  - GREY16 -> int
-  - RGB -> RGBPixel
-  - FLOAT -> float
+      - ONEBIT -> int
+      - GREYSCALE -> int
+      - GREY16 -> int
+      - RGB -> RGBPixel
+      - FLOAT -> float
 
-NOTE: This will not scale very well and should only be used
-for small images, such as convolution kernels.
-"""
+    NOTE: This will not scale very well and should only be used for
+    small images, such as convolution kernels.
+    """
     category = "Utility/NestedLists"
     self_type = ImageType(ALL)
     return_type = Class("nested_list")
     doc_examples = [(ONEBIT,)]
 
 class nested_list_to_image(PluginFunction):
-    """Converts a nested Python list to an Image.  Is the inverse of ``to_nested_list``.
-
-*nested_list*
-  A nested Python list in row-major order.  If the list is a flat list,
-  an image with a single row will be created.
+    """
+    Converts a nested Python list to an Image.  Is the inverse of
+    ``to_nested_list``.
+    
+    *nested_list*
+      A nested Python list in row-major order.  If the list is a flat list,
+      an image with a single row will be created.
   
-*image_type*
-  The resulting image type.  Should be one of the integer Image type
-  constants (ONEBIT, GREYSCALE, GREY16, RGB, FLOAT).  If image_type
-  is not provided or less than 0, the image type will be determined
-  by auto-detection from the list.  The following list shows the mapping
-  from Python type to image type:
+    *image_type*
+      The resulting image type.  Should be one of the integer Image type
+      constants (ONEBIT, GREYSCALE, GREY16, RGB, FLOAT).  If image_type
+      is not provided or less than 0, the image type will be determined
+      by auto-detection from the list.  The following list shows the mapping
+      from Python type to image type:
 
-    - int -> GREYSCALE
-    - float -> FLOAT
-    - RGBPixel -> RGB
+      - int -> GREYSCALE
+      - float -> FLOAT
+      - RGBPixel -> RGB
 
-  To obtain other image types, the type number must be explicitly passed.
+    To obtain other image types, the type number must be explicitly passed.
 
-NOTE: This will not scale very well and should only be used
-for small images, such as convolution kernels.
+    NOTE: This will not scale very well and should only be used
+    for small images, such as convolution kernels.
 
-Examples:
+    Examples:
 
-.. code:: Python
+    .. code:: Python
 
-   # Sobel kernel (implicitly will be a FLOAT image)
-   kernel = nested_list_to_image([[0.125, 0.0, -0.125],
-                                  [0.25 , 0.0, -0.25 ],
-                                  [0.125, 0.0, -0.125]])
+      # Sobel kernel (implicitly will be a FLOAT image)
+      kernel = nested_list_to_image([[0.125, 0.0, -0.125],
+                                     [0.25 , 0.0, -0.25 ],
+                                     [0.125, 0.0, -0.125]])
 
-   # Single row image (note that nesting is optional)
-   image = nested_list_to_image([RGBPixel(255, 0, 0),
-                                 RGBPixel(0, 255, 0),
-                                 RGBPixel(0, 0, 255)])
+      # Single row image (note that nesting is optional)
+      image = nested_list_to_image([RGBPixel(255, 0, 0),
+                                    RGBPixel(0, 255, 0),
+                                    RGBPixel(0, 0, 255)])
 
-TODO: Handle Python arrays.  This is difficult without a proper C API.
-"""
+    """
     category = "Utility/NestedLists"
     self_type = None
     args = Args([Class('nested_list'),
@@ -288,56 +313,64 @@ TODO: Handle Python arrays.  This is difficult without a proper C API.
     __call__ = staticmethod(__call__)
 
 class shear_row(PluginFunction):
-    """Shears a given row by a given amount.
+    """
+    Shears a given row by a given amount.
 
-*row*
-   The row number to shear.
+    *row*
+      The row number to shear.
 
-*distance*
-   The number of pixels to move the row.  Positive values
-   move the row to the right.  Negative values move the row
-   to the left.
-   """
+    *distance*
+      The number of pixels to move the row.  Positive values
+      move the row to the right.  Negative values move the row
+      to the left.
+    """
     category = "Shearing"
     self_type = ImageType(ALL)
     args = Args([Int('row'), Int('distance')])
     doc_examples = [(ONEBIT, 50, 10)]
 
 class shear_column(PluginFunction):
-    """Shears a given column by a given amount.
+    """
+    Shears a given column by a given amount.
 
-*column*
-   The column number to shear.
+    *column*
+      The column number to shear.
 
-*distance*
-   The number of pixels to move the column.  Positive values
-   move the column downward.  Negative values move the column
-   upward.
-   """
+    *distance*
+      The number of pixels to move the column.  Positive values
+      move the column downward.  Negative values move the column
+      upward.
+    """
     category = "Shearing"
     self_type = ImageType(ALL)
     args = Args([Int('column'), Int('distance')])
     doc_examples = [(ONEBIT, 50, 10)]
 
 class mirror_horizontal(PluginFunction):
-    """Flips the image across the horizontal (*x*) axis."""
+    """
+    Flips the image across the horizontal (*x*) axis.
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
 class mirror_vertical(PluginFunction):
-    """Flips the image across the vertical (*y*) axis."""
+    """
+    Flips the image across the vertical (*y*) axis.
+    """
     category = "Utility"
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
 class diff_images(PluginFunction):
-    """Returns a color image representing the difference of two images
-following the conventions of a number of Unix diff visualization
-tools, such as CVS web.  Pixels in both images are black.  Pixels in
-'self' but not in the given image (\"deleted\" pixels) are red.
-Pixels in the given image but not in self (\"inserted\" pixels) are
-green."""
+    """
+    Returns a color image representing the difference of two images
+    following the conventions of a number of Unix diff visualization
+    tools, such as CVS web.  Pixels in both images are black.  Pixels
+    in 'self' but not in the given image (\"deleted\" pixels) are red.
+    Pixels in the given image but not in self (\"inserted\" pixels)
+    are green.
+    """
     category = "Utility"
     self_type = ImageType(ONEBIT)
     args = Args([ImageType(ONEBIT)])
@@ -354,20 +387,23 @@ green."""
     __call__ = staticmethod(__call__)
 
 class mse(PluginFunction):
-    """Calculates the mean square error between two images"""
+    """
+    Calculates the mean square error between two images.
+    """
     category = "Utility"
     self_type = ImageType([RGB])
     args = Args([ImageType([RGB])])
     return_type = Float()
 
 class reset_onebit_image(PluginFunction):
-      """Resets all black pixel values in a onebit image to one.
-This can be necessary e.g. after a CC analysis which sets black
-pixels to some other label value.
-"""
-      category="Utility"
-      self_type = ImageType([ONEBIT])
-      author = "Christoph Dalitz"
+    """
+    Resets all black pixel values in a onebit image to one.  This
+    can be necessary e.g. after a CC analysis which sets black
+    pixels to some other label value.
+    """
+    category="Utility"
+    self_type = ImageType([ONEBIT])
+    author = "Christoph Dalitz"
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]

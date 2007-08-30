@@ -502,16 +502,18 @@ Changes to subimages will affect all other subimages viewing the same data."""
    get_feature_functions = classmethod(get_feature_functions)
 
    def to_xml(self, stream=None):
-      """Returns a string containing the Gamera XML representation of the image.
-(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
-"""
+      """
+      Returns a string containing the Gamera XML representation of the image.
+      (See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
+      """
       import gamera_xml
       return gamera_xml.WriteXML(glyphs=[self]).write_stream(stream)
 
    def to_xml_filename(self, filename):
-      """Saves the Gamera XML representation of the image to the given *filename*.
-(See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
-"""
+      """
+      Saves the Gamera XML representation of the image to the given *filename*.
+      (See the Gamera XML DTD in ``misc/gamera.dtd`` in the source distribution.)
+      """
       import gamera_xml
       return gamera_xml.WriteXML(glyphs=[self]).write_filename(filename)
 

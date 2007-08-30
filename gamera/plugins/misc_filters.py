@@ -22,22 +22,25 @@ from gamera.plugin import *
 import _misc_filters
 
 class outline(PluginFunction):
-    """Traces the outline of the image.  This result is obtained by
-dilating the image and then XOR'ing the result with the original."""
+    """
+    Traces the outline of the image.  This result is obtained by
+    dilating the image and then XOR'ing the result with the original.
+    """
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
     doc_examples = [(ONEBIT,)]
 
 class create_gabor_filter(PluginFunction):
-    """Computes the convolution of an image with a two dimensional
-Gabor function. The result is returned as a float image.
+    """
+    Computes the convolution of an image with a two dimensional Gabor
+    function. The result is returned as a float image.
 
-The *orientation* is given in radians, the other parameters are the
-center *frequency* (for example 0.375 or smaller) and the two
-angular and radial sigmas of the gabor filter.
-
-The energy of the filter is explicitely normalized to 1.0.
-"""
+    The *orientation* is given in radians, the other parameters are
+    the center *frequency* (for example 0.375 or smaller) and the two
+    angular and radial sigmas of the gabor filter.
+    
+    The energy of the filter is explicitely normalized to 1.0.
+    """
     self_type = ImageType([GREYSCALE])
     return_type = ImageType([FLOAT])
     args = Args([Float("orientation", default=45.0),

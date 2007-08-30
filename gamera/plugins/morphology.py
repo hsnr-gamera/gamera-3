@@ -23,8 +23,9 @@ import _morphology
 #TODO: Change these to out-of-place
 
 class erode(PluginFunction):
-  """Erodes the image by the image morphology method.
-"""
+  """
+  Erodes the image by the image morphology method.
+  """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
@@ -34,8 +35,9 @@ class erode(PluginFunction):
   __call__ = staticmethod(__call__)
 
 class dilate(PluginFunction):
-  """Dilates the image by the image morphology method.
-"""
+  """
+  Dilates the image by the image morphology method.
+  """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
@@ -45,24 +47,25 @@ class dilate(PluginFunction):
   __call__ = staticmethod(__call__)
 
 class erode_dilate(PluginFunction):
-  """Erodes or dilates the image by the image morphology method.
-     In case of calling with onebit images and shape is set to
-     rectangular erode_with_structure/dilate_with_structure is used.
+  """
+  Erodes or dilates the image by the image morphology method.  In case
+  of calling with onebit images and shape is set to rectangular
+  erode_with_structure/dilate_with_structure is used.
 
-*ntimes*
-  The number of times to perform the operation.
-*direction*
-  dilate (0)
-    increase the presence of black
-  erode (1)
-    decrease the presence of black
-*shape*
-  rectangular (0)
-    use a 3x3 rectangular morphology operator
-  octagonal (1)
-    use octagonal morphology operator by alternately using
-    a 3x3 cross and a 3x3 square structuring element
-"""
+  *ntimes*
+    The number of times to perform the operation.
+  *direction*
+    dilate (0)
+      increase the presence of black
+    erode (1)
+      decrease the presence of black
+  *shape*
+    rectangular (0)
+      use a 3x3 rectangular morphology operator
+    octagonal (1)
+      use octagonal morphology operator by alternately using
+      a 3x3 cross and a 3x3 square structuring element
+  """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('ntimes', range=(0, 10), default=1), \
                Choice('direction', ['dilate', 'erode']), \
@@ -71,59 +74,65 @@ class erode_dilate(PluginFunction):
   doc_examples = [(GREYSCALE, 10, 0, 1)]
 
 class rank(PluginFunction):
-  """Within each 3x3 window, set the center pixel to the *n*-th ranked
-value.
+  """
+  Within each 3x3 window, set the center pixel to the *n*-th ranked
+  value.
 
-*rank* (1 - 9)
-  The rank of the 9 pixels to select for the center.  5 is equivalent to
-  the median."""
+  *rank* (1 - 9)
+    The rank of the 9 pixels to select for the center.  5 is equivalent to
+    the median.
+  """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('rank', range=(1, 9))])
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
 
 class mean(PluginFunction):
-  """Within each 3x3 window, set the center pixel to the mean value of
-all 9 pixels."""
+  """
+  Within each 3x3 window, set the center pixel to the mean value of
+  all 9 pixels.
+  """
   self_type = ImageType([GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,)]
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
 
 class despeckle(PluginFunction):
-  """Removes connected components that are smaller than the given size.
+  """
+  Removes connected components that are smaller than the given size.
 
-*size*
-  The maximum number of pixels in each connected component that
-  will be removed.
+  *size*
+    The maximum number of pixels in each connected component that
+    will be removed.
 
-This approach to finding connected components uses a pseudo-recursive
-descent, which gets around the hard limit of ~64k connected components
-per page in ``cc_analysis``.  Unfortunately, this approach is much
-slower as the connected components get large, so *size* should be
-kept relatively small.
+  This approach to finding connected components uses a pseudo-recursive
+  descent, which gets around the hard limit of ~64k connected components
+  per page in ``cc_analysis``.  Unfortunately, this approach is much
+  slower as the connected components get large, so *size* should be
+  kept relatively small.
 
-*size* == 1 is a special case and runs much faster, since it does not
-require recursion.
+  *size* == 1 is a special case and runs much faster, since it does not
+  require recursion.
   """
   self_type = ImageType([ONEBIT])
   args = Args([Int('cc_size', range=(1, 100))])
   doc_examples = [(ONEBIT,5), (ONEBIT,15)]
 
 class distance_transform(PluginFunction):
-  """For all background pixels, calculate the distance to the nearest
-object or contour. In the destination image, all pixels corresponding to
-background will be assigned the their distance value, all pixels
-corresponding to objects will be assigned 0.  The result is returned
-as a Float image.
+  """
+  For all background pixels, calculate the distance to the nearest
+  object or contour. In the destination image, all pixels corresponding to
+  background will be assigned the their distance value, all pixels
+  corresponding to objects will be assigned 0.  The result is returned
+  as a Float image.
 
-*norm*:
+  *norm*:
 
     0: use chessboard distance (L-infinity norm)
 
     1: use Manhattan distance (L1 norm)
 
     2: use Euclidean distance (L2 norm)
-"""
+  """
   self_type = ImageType([ONEBIT])
   args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
   return_type = ImageType([FLOAT])
@@ -132,40 +141,41 @@ as a Float image.
 
 
 class dilate_with_structure(PluginFunction):
-    """Performs a binary morphological dilation with the given structuring
-element.
+    """
+    Performs a binary morphological dilation with the given structuring
+    element.
 
-Note that it is necessary to specify which point in the structuring
-element shall be treated as origin. This allows for arbitrary structuring
-elements. Examples:
+    Note that it is necessary to specify which point in the
+    structuring element shall be treated as origin. This allows for
+    arbitrary structuring elements. Examples:
 
-.. code:: Python
+    .. code:: Python
 
-   # same as image.dilate()
-   structure = Image(Point(0,0), Point(2,2), ONEBIT)
-   structure.fill(1)
-   image = image.dilate_with_structure(structure, Point(1,1))
+      # same as image.dilate()
+      structure = Image(Point(0,0), Point(2,2), ONEBIT)
+      structure.fill(1)
+      image = image.dilate_with_structure(structure, Point(1,1))
 
-   # same as image.erode_dilate(3,0,0)
-   structure = Image(Point(0,0), Point(6,6), ONEBIT)
-   structure.fill(1)
-   image = image.dilate_with_structure(structure, Point(3,3))
+      # same as image.erode_dilate(3,0,0)
+      structure = Image(Point(0,0), Point(6,6), ONEBIT)
+      structure.fill(1)
+      image = image.dilate_with_structure(structure, Point(3,3))
 
-The implementation is straightforward and can be slow for large
-structuring elements. If you know that your structuring element is
-connected and its origin is black, you can set *only_border* to ``True``,
-because in this case only the border pixels in the image need to be
-considered which can speed up the dilation for some images
-(though not for all).
+    The implementation is straightforward and can be slow for large
+    structuring elements. If you know that your structuring element is
+    connected and its origin is black, you can set *only_border* to
+    ``True``, because in this case only the border pixels in the image
+    need to be considered which can speed up the dilation for some
+    images (though not for all).
 
-References:
+    References:
 
-  A proof that only the contour pixels need to be dilated for connected
-  structuring elements containing their origin is given by Luc Vincent in
-  *Morphological Transformations of Binary Images with Arbitrary
-  Structuring Elements*, Signal Processing, Vol. 22, No. 1, pp. 3-23,
-  January 1991 (see theorem 2.13)
-"""
+      A proof that only the contour pixels need to be dilated for
+      connected structuring elements containing their origin is given
+      by Luc Vincent in *Morphological Transformations of Binary
+      Images with Arbitrary Structuring Elements*, Signal Processing,
+      Vol. 22, No. 1, pp. 3-23, January 1991 (see theorem 2.13)
+    """
     self_type = ImageType([ONEBIT])
     args = Args([ImageType([ONEBIT],'structuring_element'),
                  Point('origin'),
@@ -179,26 +189,27 @@ References:
     __call__ = staticmethod(__call__)
 
 class erode_with_structure(PluginFunction):
-    """Performs a binary morphological erosion with the given structuring
-element.
+    """
+    Performs a binary morphological erosion with the given structuring
+    element.
 
-Note that it is necessary to specify which point in the structuring
-element shall be treated as origin. This allows for arbitrary structuring
-elements.
+    Note that it is necessary to specify which point in the
+    structuring element shall be treated as origin. This allows for
+    arbitrary structuring elements.
+    
+    Border pixels at which the structuring element extends beyond the
+    image dimensions are whitened. In other words the image is padded
+    with white pixels before erosion.
 
-Border pixels at which the structuring element extends beyond the image
-dimensions are whitened. In other words the image is padded with white
-pixels before erosion.
+    Example:
 
-Example:
+    .. code:: Python
 
-.. code:: Python
-
-   # same as image.erode()
-   structure = Image(Point(0,0), Point(2,2), ONEBIT)
-   structure.fill(1)
-   image = image.erode_with_structure(structure, Point(1,1))
-"""
+      # same as image.erode()
+      structure = Image(Point(0,0), Point(2,2), ONEBIT)
+      structure.fill(1)
+      image = image.erode_with_structure(structure, Point(1,1))
+    """
     self_type = ImageType([ONEBIT])
     args = Args([ImageType([ONEBIT],'structuring_element'),
                  Point('origin')])

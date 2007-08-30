@@ -22,26 +22,28 @@
 from gamera.plugin import *
 
 class _to_raw_string(PluginFunction):
-    """Returns the image's binary data as a Python string.
+    """
+    Returns the image's binary data as a Python string.
 
-Requires a copying operation;  may fail for very large images.
+    Requires a copying operation;  may fail for very large images.
 
-This function is not intended to be used directly.  To move
-data to/from Numeric/numarray/PIL, use the functions in
-numeric_io.py, numarray_io.py and pil_io.py respectively.
-"""
+    This function is not intended to be used directly.  To move data
+    to/from Numeric/numarray/PIL, use the functions in numeric_io.py,
+    numarray_io.py and pil_io.py respectively.
+    """
     self_type = ImageType(ALL)
     return_type = Class("string_from_image")
 
 class _from_raw_string(PluginFunction):
-    """Instantiates an image from binary data in a Python string.
+    """
+    Instantiates an image from binary data in a Python string.
 
-Requires a copying operation;  may fail for very large images.
-
-This function is not intended to be used directly.  To move
-data to/from Numeric/numarray/PIL, use the functions in
-numeric_io.py, numarray_io.py and pil_io.py respectively.
-"""
+    Requires a copying operation;  may fail for very large images.
+    
+    This function is not intended to be used directly.  To move data
+    to/from Numeric/numarray/PIL, use the functions in numeric_io.py,
+    numarray_io.py and pil_io.py respectively.
+    """
     self_type = None
     ## Image constructor uses:
     ##   page_offset_y, page_offset_x,

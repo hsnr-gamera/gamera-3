@@ -1,21 +1,22 @@
-=============================
+======================
 Writing Gamera Plugins
-=============================
+======================
 
 Introduction
 ============
 
 The functionality of Gamera can be extended by writing plugins in
 either C++ or Python.  A plugin is simply a set of methods (which are
-automagically added to the ``Image`` class) or free-standing functions.
-Plugins are technially just Python modules, but with more 
-information that allows for easier wrapping and compilation of C++ methods
-and to support all kinds of automatic things in the graphical user interface.
+automagically added to the ``Image`` class) or free-standing
+functions.  Plugins are technially just Python modules, but with more
+information that allows for easier wrapping and compilation of C++
+methods and to support all kinds of automatic things in the graphical
+user interface.
 
 Plugins can also be grouped together, with other tools, into toolkits.
-Toolkits provide higher-level workflow framework for end-to-end document
-recognition by joining together a number of steps from various
-plugins.  Toolkits are a whole other discussion, so see the
+Toolkits provide higher-level workflow framework for end-to-end
+document recognition by joining together a number of steps from
+various plugins.  Toolkits are a whole other discussion, so see the
 `writing Gamera toolkits`__ for more information.
 
 .. __: writing_toolkits.html
@@ -28,12 +29,6 @@ included with Gamera`__.
 
 The files involved
 ------------------
-
-You first need to decide whether your plugin will reside in the Gamera
-core or in an external toolkit.  See `Writing toolkits`__ for more
-information about creating a Gamera toolkit.
-
-.. __: writing_toolkits.html
 
 Each plugin is made up of two files: 
 
@@ -90,8 +85,10 @@ members.  The whole plugin is described by a class that inherits from
 
   # C++ method
   class volume(PluginFunction):
-      """Returns the ratio of black pixels to white pixels within the
-      bounding box of the image."""
+      """
+      Returns the ratio of black pixels to white pixels within the
+      bounding box of the image.
+      """
       self_type = ImageType([ONEBIT])
       return_type = Float("volume")
       doc_examples = [(ONEBIT,)]
@@ -135,8 +132,10 @@ docstring`__ way:
 
 .. code:: Python
 
-      """Returns the ratio of black pixels to white pixels within the
-      bounding box of the image."""
+      """
+      Returns the ratio of black pixels to white pixels within the
+      bounding box of the image.
+      """
 
 .. __: http://www.python.org/doc/current/tut/node6.html
 
@@ -144,30 +143,32 @@ On a related note, you can also have the documentation system
 (``doc/gendoc.py``) generate an example automatically.  See
 `documenting and unit-testing Plugin functions`_. 
 
-Next, we define ``self_type``, which is the type of object this
-method can be called on.  If ``self_type`` is an ``ImageType``, the method
-will automatically be added to all ``Image`` objects in Gamera whenever
-the plugin is imported.  Within the ``ImageType`` specifier, you can
-choose which types of pixels are supported using a list of pixel type
-names. Valid options are ``ONEBIT``, ``GREYSCALE``, ``GREY16``, ``FLOAT`` and ``RGB``
-(these are all constants imported from the ``gamera.plugin module``):
+Next, we define ``self_type``, which is the type of object this method
+can be called on.  If ``self_type`` is an ``ImageType``, the method
+will automatically be added to all ``Image`` objects in Gamera
+whenever the plugin is imported.  Within the ``ImageType`` specifier,
+you can choose which types of pixels are supported using a list of
+pixel type names. Valid options are ``ONEBIT``, ``GREYSCALE``,
+``GREY16``, ``FLOAT`` and ``RGB`` (these are all constants imported
+from the ``gamera.plugin module``):
 
 .. code:: Python
 
       self_type = ImageType([ONEBIT])
 
-You can also optionally define ``return_type``.  This specifier is used to generate
-a variable name for the result in the GUI, and so the C++ wrapping
-machanism knows how to return the result to Python.  If you don't specify a
-return type, Gamera assumes there is no return result:
+You can also optionally define ``return_type``.  This specifier is
+used to generate a variable name for the result in the GUI, and so the
+C++ wrapping machanism knows how to return the result to Python.  If
+you don't specify a return type, Gamera assumes there is no return
+result:
 
 .. code:: Python
 
       return_type = Float("volume")
 
-Obviously, this is a very simple plugin method with no arguments.  Some more
-involved examples are given below.  In the meantime, let's look at how
-this method is contained in a plugin module.
+Obviously, this is a very simple plugin method with no arguments.
+Some more involved examples are given below.  In the meantime, let's
+look at how this method is contained in a plugin module.
 
 For each plugin module, you also need a class to describe the entire
 plugin.  There may be *only one* of these classes per plugin.  This is
@@ -209,7 +210,8 @@ specified:
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://dkc.jhu.edu/gamera/"
 
-Lastly, we create an instance of this class so the module loader can do its work:
+Lastly, we create an instance of this class so the module loader can
+do its work:
 
 .. code:: Python
 
@@ -218,9 +220,9 @@ Lastly, we create an instance of this class so the module loader can do its work
 C++ code
 --------
 
-Since the ``volume`` method needs to look at individual pixels, it
-is likely going to be much faster written in C++ than in Python.  Below is
-the corresponding ``example.hpp`` that contains the C++
+Since the ``volume`` method needs to look at individual pixels, it is
+likely going to be much faster written in C++ than in Python.  Below
+is the corresponding ``example.hpp`` that contains the C++
 implementation:
 
 .. code:: CPP
@@ -256,10 +258,10 @@ Since it is our goal to write a single algorithm that may work on
 multiple image types, *all* plugin methods are templatized, and the
 instantiations of these templates are generated by the Gamera build
 system at compile-time based on the ``self_type`` specifier in the
-method metadata class (that we specified in ``example.py``).  See how the first argument
-``self`` is templatized as ``T`` so that any (image) type can be passed
-in.  The body of the function used the `Gamera C++ Image API`__ to access
-and examine the individual pixels:
+method metadata class (that we specified in ``example.py``).  See how
+the first argument ``self`` is templatized as ``T`` so that any
+(image) type can be passed in.  The body of the function used the
+`Gamera C++ Image API`__ to access and examine the individual pixels:
 
 .. code:: CPP
 
@@ -290,8 +292,8 @@ about the intricacies of the `Python/C API`__.
 
 .. __: http://www.python.org/doc/current/api/api.html
 
-But, for the sake of some sick curiosity, the 
-generated code looks something like:
+But, for the sake of some sick curiosity, the generated code looks
+something like:
 
 .. code:: CPP
 
@@ -388,9 +390,11 @@ Of course, many plugin methods will need to have arguments.  See this
 
   # C++ image method with some arguments
   class resize_copy(PluginFunction):
-      """Copies and resizes an image. In addition to size the type of
+      """
+      Copies and resizes an image. In addition to size the type of
       interpolation can be specified to allow tradeoffs between speed
-      and quality."""
+      and quality.
+      """
       category = "Utility/Copy"
       self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
       args = Args([Int("nrows"), Int("ncols"),
@@ -431,18 +435,21 @@ a leading underscore.
 Free functions
 --------------
 
-It doesn't always make sense to have everything be a method of
-images.  For example, you may want to create a function that requires
-a list of images as input.  Fortunately, you can still use the plugin
-system to automate the wrapping/building process, while foregoing the
-automatic inclusion of the method in the Image class and on the right-click context
-menu. It's as simple as setting ``self_type`` to ``None`` in the metadata object:
+It doesn't always make sense to have everything be a method of images.
+For example, you may want to create a function that requires a list of
+images as input.  Fortunately, you can still use the plugin system to
+automate the wrapping/building process, while foregoing the automatic
+inclusion of the method in the Image class and on the right-click
+context menu. It's as simple as setting ``self_type`` to ``None`` in
+the metadata object:
 
 .. code:: Python
 
   # C++ free function
   class union_images(PluginFunction):
-      """Creates a new image by overlaying all the images in the given list."""
+      """
+      Creates a new image by overlaying all the images in the given list.
+      """
       self_type = None
       args = Args([ImageList('list_of_images')])
       return_type = ImageType([ONEBIT])
@@ -461,16 +468,18 @@ Pure Python methods
 Sometimes there is not much efficiency to be gained by writing the
 plugin method in C++, or you want the flexibility of Python for
 experimentation.  In that case you can implement the method in pure
-Python.  Everything else is the same, except you add a ``__call__`` method
-with the Python implementation.  It is important that this method is a
-``staticmethod``, since the first ``self`` argument is going to be an ``Image``
-object and not a ``PluginFunction`` object:
+Python.  Everything else is the same, except you add a ``__call__``
+method with the Python implementation.  It is important that this
+method is a ``staticmethod``, since the first ``self`` argument is
+going to be an ``Image`` object and not a ``PluginFunction`` object:
 
 .. code:: Python
 
   # Python image method
   class area(PluginFunction):
-      """Returns the aspect ratio of the bounding box of the image"""
+      """
+      Returns the aspect ratio of the bounding box of the image.
+      """
       self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
       return_type = Float("area")
       def __call__(self):
@@ -480,8 +489,8 @@ object and not a ``PluginFunction`` object:
 Free pure Python functions
 --------------------------
 
-Since the plugin modules are also just regular Python modules under
-the hood, it is of course possible to just add ordinary Python
+Since the plugin modules are also just regular Python modules
+underneath, it is of course possible to just add ordinary Python
 functions as well:
 
 .. code:: Python
@@ -636,7 +645,8 @@ The ``doc_examples`` member is a list of tuples or functions:
         rgb = images[RGB]
         greyscale = images[GREYSCALE]
         clipped = rgb.clip_image(greyscale)
-        return [clipped, greyscale, clipped.add_images(greyscale.to_rgb(), False)]
+        return [clipped, greyscale, 
+	        clipped.add_images(greyscale.to_rgb(), False)]
     doc_examples = [__doc_example1__]
 
 
@@ -660,16 +670,18 @@ not load a standard image.
 .. code:: Python
 
   def __doc_example1__(images):
-    from random import randint
-    from gamera.core import Image, Dim
-    image = Image((0, 0), Dim(100, 100), RGB, DENSE)
-    for i in range(10):
-      image.draw_bezier((randint(0, 100), randint(0, 100)),
-                        (randint(0, 100), randint(0, 100)),
-                        (randint(0, 100), randint(0, 100)),
-                        (randint(0, 100), randint(0, 100)),
-                        RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)))
-    return image
+      from random import randint
+      from gamera.core import Image, Dim
+      image = Image((0, 0), Dim(100, 100), RGB, DENSE)
+      for i in range(10):
+          image.draw_bezier((randint(0, 100), randint(0, 100)),
+                            (randint(0, 100), randint(0, 100)),
+                            (randint(0, 100), randint(0, 100)),
+                            (randint(0, 100), randint(0, 100)),
+                            RGBPixel(randint(0, 255), 
+              	            randint(0,255), 
+ 			    randint(0, 255)))
+      return image
   doc_examples = [__doc_example1__]
 
 .. _draw_bezier: draw.html#draw-bezier
@@ -685,31 +697,31 @@ floating point features are used by the classifier to classify images.
 For efficiency reasons, feature generator functions are implemented
 slightly differently from a regular ``PluginFunction``.  Rather than
 returning the features as a return value, which would require a memory
-copy into the image's feature vector, feature
-generators write directly to a buffer that is passed in as an
-argument.
+copy into the image's feature vector, feature generators write
+directly to a buffer that is passed in as an argument.
 
 As an example, let's look at the ``nholes`` feature generator.  The
 Python metadata is the same as you would expect, except the member
 ``feature_function`` is set to ``True``.  This will tell the build
 system to treat this plugin method as a feature generator with the
-different return value behavior.  The
-``return_type`` must be a ``FloatVector``, where ``length`` indicates
-the number of feature values that are generated.
+different return value behavior.  The ``return_type`` must be a
+``FloatVector``, where ``length`` indicates the number of feature
+values that are generated.
 
 .. code:: Python
 
    class nholes(PluginFunction):
-       """Returns the average number of transitions from white to black in each
-   row or column.
+       """
+       Returns the average number of transitions from white to black
+       in each row or column.
    
-   The elements of the returned ``FloatVector`` are:
+       The elements of the returned ``FloatVector`` are:
 
-   0. vertical
-   1. horizontal
-
-   These features are scale invariant.
-   """
+       0. vertical
+       1. horizontal
+       
+       These features are scale invariant.
+       """
        self_type = ImageType([ONEBIT])
        return_type = FloatVector(length=2)
        feature_function = True
@@ -736,9 +748,8 @@ and is not important for this illustration.)  Note how the result of the
 function is copied directly into the buffer.  
 
 .. note:: It is extrememly important not to write more values to the
-  buffer than is
-  defined in the metadata ``return_value``.  Doing so could cause
-  Python/Gamera to behave erratically or segfault.
+  buffer than is defined in the metadata ``return_value``.  Doing so
+  could cause Python/Gamera to behave erratically or segfault.
 
 It is also possible to write a feature generator in pure Python.
 
@@ -750,14 +761,14 @@ It is also possible to write a feature generator in pure Python.
        feature_function = True
        doc_examples = [(ONEBIT,)]
 
-   def __call__(self, index):
-       buffer = self.features
+       def __call__(self, index):
+           buffer = self.features
        
-       # Do some processing to get values...
-              
-       buffer[index] = result1
-       buffer[index + 1] = result2  
-   __call__ = staticmethod(__call__)
+           # Do some processing to get values...
+	                 
+	   buffer[index] = result1
+           buffer[index + 1] = result2  
+       __call__ = staticmethod(__call__)
 
 
 Further reading

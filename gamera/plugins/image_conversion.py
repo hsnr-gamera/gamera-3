@@ -21,10 +21,11 @@ from gamera.plugin import *
 import image_utilities, _image_conversion
 
 class to_rgb(PluginFunction):
-    """Converts the given image to an RGB image.
+    """
+    Converts the given image to an RGB image.
 
-Note, converting an image to one of the same type performs a copy operation.
-"""
+    Note, converting an image to one of the same type performs a copy operation.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16, COMPLEX])
     return_type = ImageType([RGB], "rgb")
 
@@ -35,10 +36,11 @@ Note, converting an image to one of the same type performs a copy operation.
     __call__ = staticmethod(__call__)
 
 class to_greyscale(PluginFunction):
-    """Converts the given image to a GREYSCALE image.
+    """
+    Converts the given image to a GREYSCALE image.
 
-Note, converting an image to one of the same type performs a copy operation.
-"""
+    Note, converting an image to one of the same type performs a copy operation.
+    """
     self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB, COMPLEX])
     return_type = ImageType([GREYSCALE], "greyscale")
     doc_examples = [(RGB,)]
@@ -50,10 +52,11 @@ Note, converting an image to one of the same type performs a copy operation.
     __call__ = staticmethod(__call__)
 
 class to_grey16(PluginFunction):
-    """Converts the given image to a GREY16 image.
+    """
+    Converts the given image to a GREY16 image.
 
-Note, converting an image to one of the same type performs a copy operation.
-"""
+    Note, converting an image to one of the same type performs a copy operation.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB, COMPLEX])
     return_type = ImageType([GREY16], "grey16")
 
@@ -64,10 +67,11 @@ Note, converting an image to one of the same type performs a copy operation.
     __call__ = staticmethod(__call__)
 
 class to_float(PluginFunction):
-    """Converts the given image to a FLOAT image.
+    """
+    Converts the given image to a FLOAT image.
 
-Note, converting an image to one of the same type performs a copy operation.
-"""
+    Note, converting an image to one of the same type performs a copy operation.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, COMPLEX])
     return_type = ImageType([FLOAT], "float")
 
@@ -78,10 +82,11 @@ Note, converting an image to one of the same type performs a copy operation.
     __call__ = staticmethod(__call__)
 
 class to_complex(PluginFunction):
-    """Converts the given image to a COMPLEX image.
+    """
+    Converts the given image to a COMPLEX image.
 
-Note, converting an image to one of the same type performs a copy operation.
-"""
+    Note, converting an image to one of the same type performs a copy operation.
+    """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT])
     return_type = ImageType([COMPLEX], "complex")
 
@@ -92,15 +97,17 @@ Note, converting an image to one of the same type performs a copy operation.
     __call__ = staticmethod(__call__)
 
 class to_onebit(PluginFunction):
-    """Converts the given image to a ONEBIT image.  Uses the
-otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
-see the Thresholding_ category.
+    """
+    Converts the given image to a ONEBIT image.  Uses the
+    otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
+    see the Thresholding_ and Binarization_ categories.
 
-Note, converting an image to one of the same type performs a copy operation.
+    Note, converting an image to one of the same type performs a copy operation.
 
-.. _otsu_threshold: thresholding.html#otsu-threshold
-.. _Thresholding: thresholding.html
-"""
+    .. _otsu_threshold: thresholding.html#otsu-threshold
+    .. _Thresholding: thresholding.html
+    .. _Binarization: binarization.html
+    """
     pure_python = True
     self_type = ImageType([FLOAT, GREYSCALE, GREY16, RGB, COMPLEX])
     return_type = ImageType([ONEBIT], "onebit")
@@ -115,16 +122,18 @@ Note, converting an image to one of the same type performs a copy operation.
 to_onebit = to_onebit
 
 class extract_real(PluginFunction):
-    """Returns a Float image containing only the real values in the
-given complex image.
-"""
+    """
+    Returns a Float image containing only the real values in the given
+    complex image.
+    """
     self_type = ImageType([COMPLEX])
     return_type = ImageType([FLOAT], "float")
 
 class extract_imaginary(PluginFunction):
-    """Returns a Float image containing only the imaginary values in the
-given complex image.
-"""
+    """
+    Returns a Float image containing only the imaginary values in the
+    given complex image.
+    """
     self_type = ImageType([COMPLEX])
     return_type = ImageType([FLOAT], "float")
 

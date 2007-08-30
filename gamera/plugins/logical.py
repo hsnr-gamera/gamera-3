@@ -26,17 +26,18 @@ class LogicalCombine(PluginFunction):
   args = Args([ImageType([ONEBIT], "other"), Check("in_place", default=False)])
 
 class and_image(LogicalCombine):
-  """Perform the AND operation on two images.
+  """
+  Perform the AND operation on two images.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.
+  Since it would be difficult to determine what exactly to do if the images
+  are a different size, the two images must be the same size.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
+  *in_place*
+    If true, the operation will be performed in-place, changing the
+    contents of the current image.
 
-See or_image_ for some usage examples.
-"""
+  See or_image_ for some usage examples.
+  """
   def __call__(self, other, in_place=False):
     return _logical.and_image(self, other, in_place)
   __call__ = staticmethod(__call__)
@@ -49,59 +50,63 @@ See or_image_ for some usage examples.
   doc_examples = [__doc_example1__]
 
 class or_image(LogicalCombine):
-  """Perform the OR operation on two images.
+  """
+  Perform the OR operation on two images.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.
+  Since it would be difficult to determine what exactly to do if the
+  images are a different size, the two images must be the same size.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
+  *in_place*
+    If true, the operation will be performed in-place, changing the
+    contents of the current image.
 
-Usage examples:
+  Usage examples:
 
-Using logical functions in different ways will generally involve creating
-temporary subimages for regions of interest.  Subimages are very lightweight
-objects that keep track of a bounding box and refer to the underlying data,
-therefore creating/destroying a number of these on the fly should not have
-a significant impact on performance.
+  Using logical functions in different ways will generally involve
+  creating temporary subimages for regions of interest.  Subimages are
+  very lightweight objects that keep track of a bounding box and refer
+  to the underlying data, therefore creating/destroying a number of
+  these on the fly should not have a significant impact on
+  performance.
 
-Padding an image.
+  Padding an image.
 
-.. code:: Python
+  .. code:: Python
 
-  def pad_image(image, padding):
-    new_image = Image(0, 0, image.nrows + padding * 2, image.ncols + padding * 2,
-                      ONEBIT, DENSE)
-    new_image.subimage(padding, padding, image.nrows, image.ncols).or_image(image, True)
-    return new_image
+    def pad_image(image, padding):
+      new_image = Image(0, 0,
+                        image.nrows + padding * 2, image.ncols + padding * 2,
+                        ONEBIT, DENSE)
+      new_image.subimage(padding, padding, image.nrows, image.ncols).or_image(image, True)
+      return new_image
 
-Stamping an image over a larger image.  Use subimage to change the
-destination of the stamp.
+  Stamping an image over a larger image.  Use subimage to change the
+  destination of the stamp.
 
-.. code:: Python
+  .. code:: Python
 
-  # stamp: a small stamp image
-  # paper: a larger destination image
-  for x in range(0, 100, 10):
-    paper.subimage(0, x, stamp.nrows, stamp.ncols).or_image(stamp, True)
+    # stamp: a small stamp image
+    # paper: a larger destination image
+    for x in range(0, 100, 10):
+      paper.subimage(0, x, stamp.nrows, stamp.ncols).or_image(stamp, True)
 
-Putting part of a source image on the upper-left corner of a
-destination image.
+  Putting part of a source image on the upper-left corner of a
+  destination image.
 
-.. code:: Python
+  .. code:: Python
 
-  # src: a source image
-  # dest: a destination image
-  dest.or_image(src.subimage(50, 50, 25, 25), True)
+    # src: a source image
+    # dest: a destination image
+    dest.or_image(src.subimage(50, 50, 25, 25), True)
 
-Removing a connected component from its original image.
+  Removing a connected component from its original image.
 
-.. code:: Python
+  .. code:: Python
 
-  # src: the original image
-  # cc: a cc on that image
-  src.clip_image(cc).xor_image(cc, True)"""
+    # src: the original image
+    # cc: a cc on that image
+    src.clip_image(cc).xor_image(cc, True)
+  """
   def __call__(self, other, in_place=False):
     return _logical.or_image(self, other, in_place)
   __call__ = staticmethod(__call__)
@@ -114,17 +119,18 @@ Removing a connected component from its original image.
   doc_examples = [__doc_example1__]
 
 class xor_image(LogicalCombine):
-  """Perform the XOR operation on two images.
+  """
+  Perform the XOR operation on two images.
 
-Since it would be difficult to determine what exactly to do if the images
-are a different size, the two images must be the same size.
+  Since it would be difficult to determine what exactly to do if the images
+  are a different size, the two images must be the same size.
 
-*in_place*
-   If true, the operation will be performed in-place, changing the
-   contents of the current image.
+  *in_place*
+    If true, the operation will be performed in-place, changing the
+    contents of the current image.
 
-See or_image_ for some usage examples.
-"""
+  See or_image_ for some usage examples.
+  """
   def __call__(self, other, in_place=False):
     return _logical.xor_image(self, other, in_place)
   __call__ = staticmethod(__call__)
@@ -137,7 +143,10 @@ See or_image_ for some usage examples.
   doc_examples = [__doc_example1__]
 
 class LogicalModule(PluginModule):
-  """This module provides methods to perform basic logical (bitwise) operations on images."""
+  """
+  This module provides methods to perform basic logical (bitwise)
+  operations on images.
+  """
   category = "Combine/Logical"
   cpp_headers = ["logical.hpp"]
   functions = [and_image, or_image, xor_image]

@@ -26,31 +26,43 @@ class Contour(PluginFunction):
   doc_examples = [(ONEBIT,)]
 
 class contour_top(Contour):
-  """Returns a float vector containing the contour at the top of the image.
+  """
+  Returns a float vector containing the contour at the top of the
+  image.
 
-If there are no black pixels in a given column, the value is set to inf.
-"""
+  If there are no black pixels in a given column, the value is set to
+  inf.
+  """
   pass
 
 class contour_bottom(Contour):
-  """Returns a float vector containing the contour at the bottom of the image.
+  """
+  Returns a float vector containing the contour at the bottom of the
+  image.
 
-If there are no black pixels in a given column, the value is set to inf.
-"""
+  If there are no black pixels in a given column, the value is set to
+  inf.
+  """
   pass
 
 class contour_left(Contour):
-  """Returns a float vector containing the contour at the left of the image.
+  """
+  Returns a float vector containing the contour at the left of the
+  image.
 
-If there are no black pixels in a given row, the value is set to inf.
-"""
+  If there are no black pixels in a given row, the value is set to
+  inf.
+  """
   pass
 
 class contour_right(Contour):
-  """Returns a float vector containing the contour at the right of the image.
+  """
+  Returns a float vector containing the contour at the right of the
+  image.
 
-If there are no black pixels in a given row, the value is set to inf.
-"""
+  If there are no black pixels in a given row, the value is set to
+  inf.
+  """
   pass
 
 class ContourModule(PluginModule):

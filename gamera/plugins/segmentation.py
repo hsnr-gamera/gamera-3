@@ -27,31 +27,37 @@ class Segmenter(PluginFunction):
     doc_examples = [(ONEBIT,)]
 
 class cc_analysis(Segmenter):
-    """Performs connected component analysis on the image.
+    """
+    Performs connected component analysis on the image.
 
-This algorithm assumes 8-connected components, meaning any two pixels are
-considered "connected" if they are adjacent in any direction, including
-diagonally.
+    This algorithm assumes 8-connected components, meaning any two
+    pixels are considered "connected" if they are adjacent in any
+    direction, including diagonally.
 
-The original image will have all of its pixels "labeled" with a number
-representing each connected component.  This is so the connected components
-can share data with their source image and makes things much more efficient.
+    The original image will have all of its pixels "labeled" with a
+    number representing each connected component.  This is so the
+    connected components can share data with their source image and
+    makes things much more efficient.
 
-Returns a list of ccs found in the image.  Since all the CC's share the same
-data with the original image, changing the CC's will affect the original.  If
-you do not want this behavior, use the image_copy_ function on each of the CCs::
+    Returns a list of ccs found in the image.  Since all the CC's
+    share the same data with the original image, changing the CC's
+    will affect the original.  If you do not want this behavior, use
+    the image_copy_ function on each of the CCs::
 
-   ccs = [x.image_copy() for x in ccs]
+      ccs = [x.image_copy() for x in ccs]
 
-.. _image_copy: utility.html#image-copy"""
+    .. _image_copy: utility.html#image-copy
+    """
     pass
 
 
 class cc_and_cluster(Segmenter):
-    """Performs connected component analysis using cc_analysis_ and then
-clusters the CC's according to their similarity.
+    """
+    Performs connected component analysis using cc_analysis_ and then
+    clusters the CC's according to their similarity.
 
-TODO: We need some more detailed documentation here."""
+    TODO: We need some more detailed documentation here.
+    """
     pure_python = True
     args = Args([Float('ratio', default = 1.0), Int('distance', default=2)])
     return_type = ImageList("ccs")
@@ -63,14 +69,15 @@ TODO: We need some more detailed documentation here."""
     doc_examples = [(ONEBIT,)]
 
 class splitx(Segmenter):
-    """Splits an image vertically.
+    """
+    Splits an image vertically.
 
-The split point is determined automatically
-by finding a valley in the projections near *center*.
+    The split point is determined automatically by finding a valley in
+    the projections near *center*.
 
-This function is overloaded to work both with a single value
-and a list of splitting point canidates as input.
-"""
+    This function is overloaded to work both with a single value
+    and a list of splitting point candidates as input.
+    """
     args = Args([FloatVector("center", default=[0.5])])
     doc_examples = [(ONEBIT,)]
     def __call__(self, center=0.5):
@@ -84,12 +91,12 @@ and a list of splitting point canidates as input.
 class splitx_max(Segmenter):
     """Splits an image vertically.
 
-The split point is determined automatically
-by finding a peak in the projections near *center*.
+    The split point is determined automatically by finding a peak in
+    the projections near *center*.
 
-This function is overloaded to work both with a single value
-and a list of splitting point canidates as input.
-"""
+    This function is overloaded to work both with a single value and a
+    list of splitting point canidates as input.
+    """
     args = Args([FloatVector("center", default=[0.5])])
     def __call__(self, center=0.5):
        if not util.is_sequence(center):
@@ -100,14 +107,15 @@ and a list of splitting point canidates as input.
     author = "Michael Droettboom, Karl MacMillan and Christoph Dalitz"
 
 class splity(Segmenter):
-    """Splits an image horizontally.
+    """
+    Splits an image horizontally.
 
-The split point is determined automatically
-by finding a valley in the projections near *center*.
+    The split point is determined automatically by finding a valley in
+    the projections near *center*.
 
-This function is overloaded to work both with a single value
-and a list of splitting point canidates as input.
-"""
+    This function is overloaded to work both with a single value and a
+    list of splitting point canidates as input.
+    """
     args = Args([FloatVector("center", default=[0.5])])
     def __call__(self, center=[0.5]):
        if not util.is_sequence(center):
@@ -122,20 +130,24 @@ class splitx_base(Segmenter):
     return_type = ImageList("splits")
     
 class splitx_left(splitx_base):
-    """Splits an image vertically.
+    """
+    Splits an image vertically.
 
-The split point is determined automatically
-by finding a valley in the projections near the left of the image."""
+    The split point is determined automatically by finding a valley in
+    the projections near the left of the image.
+    """
     _center = 0.25
     def __call__(self):
         return self.splitx(0.25)
     __call__ = staticmethod(__call__)
 
 class splitx_right(splitx_base):
-    """Splits an image vertically.
+    """
+    Splits an image vertically.
 
-The split point is determined automatically
-by finding a valley in the projections near the right of the image."""
+    The split point is determined automatically by finding a valley in
+    the projections near the right of the image.
+    """
     _center = 0.75
     def __call__(self):
         return self.splitx(0.75)
@@ -146,20 +158,24 @@ class splity_base(Segmenter):
     return_type = ImageList("splits")
     
 class splity_top(splity_base):
-    """Splits an image horizontally.
+    """
+    Splits an image horizontally.
 
-The split point is determined automatically
-by finding a valley in the projections near the top of the image."""
+    The split point is determined automatically by finding a valley in
+    the projections near the top of the image.
+    """
     _center = 0.25
     def __call__(self):
         return self.splity(0.25)
     __call__ = staticmethod(__call__)
 
 class splity_bottom(splity_base):
-    """Splits an image horizontally.
+    """
+    Splits an image horizontally.
 
-The split point is determined automatically
-by finding a valley in the projections near the bottom of the image."""
+    The split point is determined automatically by finding a valley in
+    the projections near the bottom of the image.
+    """
     _center = 0.75
     def __call__(self):
         return self.splity(0.75)

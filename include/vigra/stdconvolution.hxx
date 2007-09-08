@@ -559,14 +559,13 @@ void convolveImage(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
         return; // skip processing near the border
 
     int interiorskip = w + kul.x - klr.x - 1;
-    int borderskipx;
-    int borderskipy;
-    int borderinc;
+    // To appease gcc warnings gods
+    int borderskipx = 0;
+    int borderskipy = 0;
+    int borderinc = 0;
     if(border == BORDER_TREATMENT_REPEAT)
     {
-        borderskipx = 0;
-        borderskipy = 0;
-        borderinc = 0;
+
     }
     else if(border == BORDER_TREATMENT_REFLECT)
     {

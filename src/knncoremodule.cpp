@@ -368,7 +368,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     Copy the id_names and the features to the internal data structures.
   */
   double* tmp_fv;
-  int tmp_fv_len;
+  Py_ssize_t tmp_fv_len;
 
   std::map<char*, int, ltstr> id_name_histogram;
   double* current_features = o->feature_vectors;
@@ -443,7 +443,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     return 0;
   }
   double* fv;
-  int fv_len;
+  Py_ssize_t fv_len;
   if (image_get_fv(unknown, &fv, &fv_len) < 0) {
     PyErr_SetString(PyExc_ValueError, "knn: could not get features");
     return 0;
@@ -515,7 +515,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   }
 
   double* unknown_buf;
-  int unknown_len;
+  Py_ssize_t unknown_len;
   if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
 		      "knn: error getting feature vector \
@@ -595,7 +595,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   }
   
   double* unknown_buf, *weights;
-  int unknown_len;
+  Py_ssize_t unknown_len;
   if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError, 
 		      "knn: error getting feature vector \
@@ -680,7 +680,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
 
   // Check the number of features
   double* buf_a, *buf_b;
-  int len_a, len_b;
+  Py_ssize_t len_a, len_b;
   PyObject* cur_a, *cur_b;
   cur_a = PySequence_Fast_GET_ITEM(images_seq, 0);
   if (!is_ImageObject(cur_a)) {
@@ -797,7 +797,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 
   // create a default set of weights for the distance calculation.
   double* buf_a, *buf_b;
-  int len_a, len_b;
+  Py_ssize_t len_a, len_b;
   PyObject* cur_a, *cur_b;
   cur_a = PySequence_Fast_GET_ITEM(images_seq, 0);
   if (!is_ImageObject(cur_a)) {
@@ -1327,7 +1327,7 @@ static PyObject* knn_set_weights(PyObject* self, PyObject* args) {
   if (PyArg_ParseTuple(args, "O", &array) <= 0) {
     return 0;
   }
-  int len;
+  Py_ssize_t len;
   double* weights;
   if (!PyObject_CheckReadBuffer(array)) {
     PyErr_SetString(PyExc_RuntimeError, "knn: Error getting weight array buffer.");

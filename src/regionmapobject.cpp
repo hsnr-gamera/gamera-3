@@ -28,8 +28,8 @@ extern "C" {
   static void regionmap_dealloc(PyObject* self);
   static PyObject* regionmap_lookup(PyObject* self, PyObject* args);
   static PyObject* regionmap_add_region(PyObject* self, PyObject* args);
-  static PyObject* regionmap___getitem__(PyObject* self, int index);
-  static int regionmap___len__(PyObject* self);
+  static PyObject* regionmap___getitem__(PyObject* self, Py_ssize_t index);
+  static Py_ssize_t regionmap___len__(PyObject* self);
 }
 
 static PyTypeObject RegionMapType = {
@@ -98,7 +98,7 @@ static PyObject* regionmap_add_region(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
-static PyObject* regionmap___getitem__(PyObject* self, int index) {
+static PyObject* regionmap___getitem__(PyObject* self, Py_ssize_t index) {
   RegionMap* r = ((RegionMapObject*)self)->m_x;
   if (index < 0 || (unsigned int)(index) >= r->size()) {
     PyErr_SetString(PyExc_IndexError, "Index out of range");
@@ -110,7 +110,7 @@ static PyObject* regionmap___getitem__(PyObject* self, int index) {
   return create_RegionObject(*it);
 }
 
-static int regionmap___len__(PyObject* self) {
+static Py_ssize_t regionmap___len__(PyObject* self) {
   return (((RegionMapObject*)self)->m_x->size());
 }
 

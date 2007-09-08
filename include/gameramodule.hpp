@@ -40,6 +40,10 @@
   runtime.
 */
 
+#ifndef HAVE_SSIZE_T
+  typedef int Py_ssize_t
+#endif
+
 /*
   Utilities
 */

@@ -186,7 +186,7 @@ template = Template("""
            feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
            if (self_arg->features_len < offset + [[function.return_type.length]]) {
-             PyErr_Format(PyExc_ValueError, \"Offset as given (%d) will cause data to be written outside of array of length (%d).  Perhaps the feature array is not initialised?\", offset, self_arg->features_len);
+             PyErr_Format(PyExc_ValueError, \"Offset as given (%d) will cause data to be written outside of array of length (%d).  Perhaps the feature array is not initialised?\", offset, (int)self_arg->features_len);
              return 0;
            }
            feature_buffer = self_arg->features + offset;

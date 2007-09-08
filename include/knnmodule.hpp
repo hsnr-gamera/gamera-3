@@ -45,7 +45,7 @@ enum DistanceType {
   get the feature vector from an image. image argument _must_ an image - no
   type checking is performed.
 */
-inline int image_get_fv(PyObject* image, double** buf, int* len) {
+inline int image_get_fv(PyObject* image, double** buf, Py_ssize_t* len) {
   ImageObject* x = (ImageObject*)image;
 
   if (PyObject_CheckReadBuffer(x->m_features) < 0) {
@@ -115,9 +115,9 @@ inline void compute_distance(DistanceType distance_type, const double* known_buf
   for the unknown image.
 */
 inline int compute_distance(DistanceType distance_type, PyObject* known, double* unknown_buf,
-			    double* distance, double* weights, int unknown_len) {
+			    double* distance, double* weights, Py_ssize_t unknown_len) {
   double* known_buf;
-  int known_len;
+  Py_ssize_t known_len;
 
   if (image_get_fv(known, &known_buf, &known_len) < 0)
     return -1;
@@ -140,7 +140,7 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, double*
 inline int compute_distance(DistanceType distance_type, PyObject* known, PyObject* unknown,
 			    double* distance, double* weights, int weights_len) {
   double *known_buf, *unknown_buf;
-  int known_len, unknown_len;
+  Py_ssize_t known_len, unknown_len;
 
   if (image_get_fv(known, &known_buf, &known_len) < 0)
     return -1;

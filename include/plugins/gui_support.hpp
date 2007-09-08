@@ -193,11 +193,7 @@ PyObject* to_string(T& m) {
   if (!str)
     throw std::exception();
   char* buffer;
-#ifdef HAVE_SSIZE_T
   Py_ssize_t length;
-#else
-  int length;
-#endif
   int error = PyString_AsStringAndSize(str, &buffer, &length);
   if (error) {
     Py_DECREF(str);
@@ -211,13 +207,9 @@ PyObject* to_string(T& m) {
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
   char *buffer;
-#ifdef HAVE_SSIZE_T  
   Py_ssize_t buffer_len;
-#else
-  int buffer_len;
-#endif
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-  if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
+  if ((size_t)buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
     printf("The image passed to to_buffer is not of the correct size.\n");
     return;
   }
@@ -355,14 +347,10 @@ void to_buffer_colorize(const T& m, PyObject* py_buffer,
 			int red, int green, int blue,
 			bool invert) {
   char *buffer;
-#ifdef HAVE_SSIZE_T
   Py_ssize_t buffer_len;
-#else
-  int buffer_len;
-#endif
 
   PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-  if (buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
+  if ((size_t)buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
     printf("The image passed to to_buffer is not of the correct size.\n");
     return;
   }

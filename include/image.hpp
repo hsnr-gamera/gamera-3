@@ -23,6 +23,7 @@
 #include "pixel.hpp"
 #include "image_data.hpp"
 #include <stddef.h>
+#include "gameramodule.hpp"
 
 namespace Gamera {
 
@@ -69,7 +70,7 @@ namespace Gamera {
     virtual ImageDataBase* data() const = 0;
   public:
     double* features;
-    int features_len;
+    Py_ssize_t features_len;
   protected:
     double m_resolution;
     double m_scaling;

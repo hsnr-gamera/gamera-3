@@ -20,10 +20,10 @@
 #ifndef kwm11162001_image_hpp
 #define kwm11162001_image_hpp
 
+#include "gameramodule.hpp"
 #include "pixel.hpp"
 #include "image_data.hpp"
 #include <stddef.h>
-#include "gameramodule.hpp"
 
 namespace Gamera {
 

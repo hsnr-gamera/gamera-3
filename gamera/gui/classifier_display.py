@@ -150,25 +150,32 @@ class ExtendedMultiImageWindow(MultiImageWindow):
          "Delete selected glyphs",
          self.id._OnDelete)
 
-      self.titlebar = wx.Panel(self, -1)
       self.titlebar.SetBackgroundColour(wx.Color(128,128,128))
-      self.titlebar_text = wx.StaticText(self.titlebar, -1, self.pane_name)
+      self.titlebar_text = wx.StaticText(self, -1, self.pane_name,
+                                         style = wx.ALIGN_CENTRE)
       # self.titlebar.SetClientSize(self.titlebar_text.GetSize())
-      self.titlebar.Fit()
+      # self.titlebar.Fit()
       font = self.titlebar_text.GetFont()
       font.SetWeight(wx.BOLD)
       self.titlebar_text.SetFont(font)
       self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
-      self.titlebar_button = wx.BitmapButton(self, -1,
-                                             gamera_icons.getPlusBitmap(),
-                                             style=wx.BU_AUTODRAW|wx.BU_EXACTFIT)
+      self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
+      if wx.Platform == '__WXMAC__':
+         from wx.lib import buttons
+         TitleBarButtonClass = buttons.ThemedGenBitmapButton
+      else:
+         TitleBarButtonClass = wx.BitmapButton
+      self.titlebar_button = TitleBarButtonClass(
+         self, -1,
+         gamera_icons.getPlusBitmap(),
+         style=wx.BU_AUTODRAW|wx.BU_EXACTFIT)
 ##       font = self.titlebar_button.GetFont()
 ##       font.SetPointSize(font.GetPointSize() / 2)
       wx.EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
       self._split_button_mode = False
 
       title_sizer = wx.BoxSizer(wx.HORIZONTAL)
-      title_sizer.Add(self.titlebar, 1, wx.EXPAND)
+      title_sizer.Add(self.titlebar_text, 1, wx.EXPAND)
       title_sizer.Add(self.titlebar_button, 0, wx.EXPAND)
       self.box_sizer.Insert(0, title_sizer, 0, wx.EXPAND)
 

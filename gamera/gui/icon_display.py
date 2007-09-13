@@ -55,7 +55,10 @@ class IconDisplayDropTarget(wx.FileDropTarget, wx.PyDropTarget):
 
 class IconDisplay(wx.ListCtrl):
    def __init__(self, parent, main_win):
-      style = wx.LC_LIST|wx.LC_SINGLE_SEL
+      if wx.Platform == '__WXMAC__':
+         style = wx.LC_ICON|wx.LC_SINGLE_SEL
+      else:
+         style = wx.LC_LIST|wx.LC_SINGLE_SEL
       if not (wx.VERSION >= (2, 5) and wx.Platform == '__WXGTK__'):
          style |= wx.LC_ALIGN_TOP
       wx.ListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), style)
@@ -77,7 +80,10 @@ class IconDisplay(wx.ListCtrl):
       self.classes = []
       for klass in builtin_icon_types:
          self.add_class(klass)
-      self.AssignImageList(self.il, wx.IMAGE_LIST_SMALL)
+      if wx.Platform == '__WXMAC__':
+         self.AssignImageList(self.il, wx.IMAGE_LIST_NORMAL)
+      else:
+         self.AssignImageList(self.il, wx.IMAGE_LIST_SMALL)
 
    def add_class(self, icon_description):
       add_it = 1

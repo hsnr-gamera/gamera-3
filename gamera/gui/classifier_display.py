@@ -150,7 +150,6 @@ class ExtendedMultiImageWindow(MultiImageWindow):
          "Delete selected glyphs",
          self.id._OnDelete)
 
-      self.titlebar.SetBackgroundColour(wx.Color(128,128,128))
       self.titlebar_text = wx.StaticText(self, -1, self.pane_name,
                                          style = wx.ALIGN_CENTRE)
       # self.titlebar.SetClientSize(self.titlebar_text.GetSize())

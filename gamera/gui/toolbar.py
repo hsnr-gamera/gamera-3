@@ -29,6 +29,13 @@ from gamera.gui import gamera_icons
 # independent toolbars in the classifier window, we have to create our
 # own toolbar using a wxPanel and a wxBoxSizer.
 
+if wx.Platform == '__WXMAC__':
+   ButtonClass = buttons.ThemedGenBitmapButton
+   ToggleButtonClass = buttons.ThemedGenBitmapToggleButton
+else:
+   ButtonClass = buttons.GenBitmapButton
+   ToggleButtonClass = buttons.GetBitmapToggleButton
+
 class ToolBar(wx.Panel):
    def __init__(self, parent, id=-1, hideable=1):
       self._close_toolbar_bitmap = gamera_icons.getToolbarCloseBitmap()
@@ -39,7 +46,7 @@ class ToolBar(wx.Panel):
       wx.Panel.__init__(
           self, parent, id,
           style=wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
-      if hideable:
+      if hideable and wx.Platform != '__WXMAC__':
          self.close_button = buttons.GenBitmapButton(
              self, 1000,
              self._close_toolbar_bitmap,
@@ -67,9 +74,9 @@ class ToolBar(wx.Panel):
 
    def AddSimpleTool(self, id, bitmap, help_string, callback=None, toggle=0):
       if not toggle:
-         button = buttons.GenBitmapButton(self, id, bitmap, size=wx.Size(28,28))
+         button = ButtonClass(self, id, bitmap, size=wx.Size(28,28))
       else:
-         button = buttons.GenBitmapToggleButton(self, id, bitmap, size=wx.Size(28,28))
+         button = ToggleButtonClass(self, id, bitmap, size=wx.Size(28,28))
       button.SetBezelWidth(1)
       button.SetUseFocusIndicator(False)
       button.SetToolTipString(help_string)

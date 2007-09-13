@@ -411,8 +411,6 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    # RUBBER BAND
    #
    def draw_rubber(self, dc=None, clear=False):
-      if dc == None:
-         dc = wx.ClientDC(self)
       scaling = self.scaling
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       x = min(self.rubber_origin_x, self.rubber_x2)
@@ -426,27 +424,34 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       y2 -= origin[1]
       w = x2 - x
       h = y2 - y
-      dc.SetLogicalFunction(wx.XOR)
-      pen = wx.GREY_PEN
-      pen.SetStyle(wx.DOT)
-      dc.SetPen(pen)
-      dc.SetBrush(wx.TRANSPARENT_BRUSH)
-      dc.DrawRectangle(x, y, w, h)
-      if wx.Platform != '__WXMAC__':
+      if dc is None:
+         dc = wx.ClientDC(self)
+      
+      def _draw_rubber_inner():
+         pen = wx.GREY_PEN
+         pen.SetStyle(wx.DOT)
+         dc.SetPen(pen)
+         dc.SetBrush(wx.TRANSPARENT_BRUSH)
+         dc.DrawRectangle(x, y, w, h)
          dc.SetPen(wx.TRANSPARENT_PEN)
          brush = wx.BLUE_BRUSH
-         brush.SetColour(wx.Color(167, 105, 39))
          dc.SetBrush(brush)
+         self.block_w = block_w = max(min(w / 2 - 1, 8), 0)
+         self.block_h = block_h = max(min(h / 2 - 1, 8), 0)
+         dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
+         dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
+         dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
+         dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
+
+      if wx.Platform == '__WXMAC__':
+         if clear:
+            self.RefreshRect(wx.Rect(x, y, w, h))
+         else:
+            _draw_rubber_inner()
       else:
-         pen.SetStyle(wx.SOLID)
-         dc.SetPen(pen)
-      self.block_w = block_w = max(min(w / 2 - 1, 8), 0)
-      self.block_h = block_h = max(min(h / 2 - 1, 8), 0)
-      dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
-      dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
-      dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
-      dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
-      dc.SetLogicalFunction(wx.COPY)
+         dc.SetLogicalFunction(wx.XOR)
+         _draw_rubber_inner()
+         dc.SetLogicalFunction(wx.COPY)
 
    ########################################
    # UTILITY

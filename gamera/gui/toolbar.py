@@ -34,7 +34,7 @@ if wx.Platform == '__WXMAC__':
    ToggleButtonClass = buttons.ThemedGenBitmapToggleButton
 else:
    ButtonClass = buttons.GenBitmapButton
-   ToggleButtonClass = buttons.GetBitmapToggleButton
+   ToggleButtonClass = buttons.GenBitmapToggleButton
 
 class ToolBar(wx.Panel):
    def __init__(self, parent, id=-1, hideable=1):

@@ -21,7 +21,8 @@ from sys import stderr
 
 try:
    import matplotlib
-   if matplotlib.__version__ not in ("0.73.1", "0.84", "0.90.1"):
+   if (not hasattr(matplotlib, '__version__') or
+       matplotlib.__version__ not in ("0.73.1", "0.84", "0.90.1")):
       print >>stderr, "WARNING: The version of matplotlib you have installed has not been officially"
       print >>stderr, "tested with Gamera.  It may work fine, or you may experience strange"
       print >>stderr, "problems using the matplotlib functionality.  Please include the"

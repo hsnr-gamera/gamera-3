@@ -443,15 +443,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
          dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
 
-      if wx.Platform == '__WXMAC__':
-         if clear:
-            self.RefreshRect(wx.Rect(x, y, w, h))
-         else:
-            _draw_rubber_inner()
+      if clear:
+         self.RefreshRect(wx.Rect(x, y, w, h))
       else:
-         dc.SetLogicalFunction(wx.XOR)
          _draw_rubber_inner()
-         dc.SetLogicalFunction(wx.COPY)
 
    ########################################
    # UTILITY

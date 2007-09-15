@@ -1596,16 +1596,16 @@ class MultiImageWindow(wx.Panel):
          22, gamera_icons.getIconZoomOutBitmap(),
          "Zoom out", self._OnZoomOutClick)
       self.toolbar.AddSeparator()
-      self.display_text_combo = wx.ComboBox(self.toolbar, 50, choices=[],
-                                     size = wx.Size(200, 20))
+      self.display_text_combo = wx.ComboBox(self.toolbar, 50, choices=[])
+      self.display_text_combo.SetMinSize(wx.Size(200, -1))
       wx.EVT_COMBOBOX(self.display_text_combo, 50, self._OnChangeDisplayText)
       self.toolbar.AddControl(self.display_text_combo)
       self.toolbar.AddSimpleTool(
          24, gamera_icons.getIconShowNameBitmap(),
          "Display classes on grid", self._OnDisplayClasses, 1)
       self.toolbar2 = toolbar.ToolBar(self, -1)
-      self.sort_combo = wx.ComboBox(self.toolbar2, 100, choices=[],
-                                   size=wx.Size(200, 20))
+      self.sort_combo = wx.ComboBox(self.toolbar2, 100, choices=[])
+      self.sort_combo.SetMinSize(wx.Size(200, -1))
       self.toolbar2.AddControl(self.sort_combo)
       self.toolbar2.AddSimpleTool(
          101, gamera_icons.getIconSortAscBitmap(),
@@ -1614,8 +1614,8 @@ class MultiImageWindow(wx.Panel):
          102, gamera_icons.getIconSortDecBitmap(),
          "Sort Descending", self._OnSortDescending)
       self.toolbar2.AddSeparator()
-      self.select_combo = wx.ComboBox(self.toolbar2, 103, choices=[],
-                                     size=wx.Size(200, 20))
+      self.select_combo = wx.ComboBox(self.toolbar2, 103, choices=[])
+      self.select_combo.SetMinSize(wx.Size(200, -1))
       self.toolbar2.AddControl(self.select_combo)
       self.toolbar2.AddSimpleTool(
          104, gamera_icons.getIconSelectBitmap(),

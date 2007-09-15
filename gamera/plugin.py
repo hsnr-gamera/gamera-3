@@ -84,9 +84,9 @@ class PluginFunction:
 
    def escape_docstring(cls):
       if cls.__doc__ is None:
-         return '""'
+         doc = ''
       doc = util.dedent(cls.__doc__)
-      doc = cls.__doc__.replace("\n", r"\n").replace('"', r'\"')
+      doc = doc.replace("\n", r"\n").replace('"', r'\"')
       return r'"%s\n\n%s"' % (cls.get_formatted_argument_list(), doc)
    escape_docstring = classmethod(escape_docstring)
 
@@ -119,7 +119,7 @@ class PluginFunction:
             func = cls.__call__.im_func
          func.func_doc = ("%s\n\n%s" %
                           (cls.get_formatted_argument_list(),
-                           cls.__doc__))
+                           util.dedent(cls.__doc__)))
       cls.__call__ = staticmethod(func)
 
       if cls.category == None:
@@ -162,7 +162,7 @@ def PluginFactory(name, category=None,
       cls.args = args
    func = getattr(core.ImageBase, name)
    cls.__call__ = func
-   cls.__doc__ = func.__doc__
+   cls.__doc__ = util.dedent(func.__doc__)
    cls.module = Builtin
    return cls
 

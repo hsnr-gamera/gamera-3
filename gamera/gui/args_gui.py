@@ -20,6 +20,7 @@
 #
 
 import wx
+from wx.lib import buttons
 import array
 import os.path
 import string
@@ -119,6 +120,7 @@ class Args:
       import wx.html
       def _create_help_display(self, docstring):
          try:
+            docstring = util.dedent(docstring)
             html = gui_util.docstring_to_html(docstring)
             window = wx.html.HtmlWindow(self.window, -1, size=wx.Size(50, 100))
             if wx.VERSION >= (2, 5) and "gtk2" in wx.PlatformInfo:
@@ -134,6 +136,7 @@ class Args:
             print e
    else:
       def _create_help_display(self, docstring):
+         docstring = util.dedent(docstring)
          style = (wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
          window = wx.TextCtrl(self.window, -1, style=style, size=wx.Size(50, 100))
          window.SetValue(docstring)
@@ -141,8 +144,8 @@ class Args:
          return window
 
    # generates the dialog box
-   def setup(self, parent, locals, docstring = ""):
-      self.window = wx.Dialog(parent, -1, self.name,
+   def setup(self, parent, locals, docstring = "", function = "Arguments"):
+      self.window = wx.Dialog(parent, -1, function,
                               style=wx.CAPTION|wx.RESIZE_BORDER)
       self.window.SetAutoLayout(1)
       if self.wizard:
@@ -202,7 +205,7 @@ class Args:
       self.wizard = wizard
       if function != None:
          self.function = function
-      self.setup(parent, locals, docstring)
+      self.setup(parent, locals, docstring, function)
       while 1:
          result = wx.Dialog.ShowModal(self.window)
          try:
@@ -543,10 +546,15 @@ class _Filename:
       self.control = wx.BoxSizer(wx.HORIZONTAL)
       self.text = wx.TextCtrl(parent, -1, text, size=wx.Size(200, 24))
       browseID = wx.NewId()
-      browse = wx.Button(
-         parent, browseID, "...", size=wx.Size(24, 24))
+      if wx.Platform == '__WXMAC__':
+         browse = buttons.ThemedGenButton(
+            parent, browseID, "...", size=wx.Size(24, 24))
+      else:
+         browse = wx.Button(
+            parent, browseID, "...", size=wx.Size(24, 24))
       wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
       self.control.Add(self.text, 1, wx.EXPAND)
+      self.control.AddSpacer(4)
       self.control.Add(browse, 0)
       return self
 

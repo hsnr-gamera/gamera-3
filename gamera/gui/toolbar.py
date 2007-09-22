@@ -29,7 +29,7 @@ from gamera.gui import gamera_icons
 # independent toolbars in the classifier window, we have to create our
 # own toolbar using a wxPanel and a wxBoxSizer.
 
-if wx.Platform == '__WXMAC__':
+if hasattr(buttons, 'ThemedGenBitmapButton'):
    ButtonClass = buttons.ThemedGenBitmapButton
    ToggleButtonClass = buttons.ThemedGenBitmapToggleButton
 else:

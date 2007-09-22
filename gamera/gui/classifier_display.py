@@ -22,6 +22,7 @@
 import os.path
 import wx
 from wx import grid
+from wx.lib import buttons
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
@@ -159,8 +160,7 @@ class ExtendedMultiImageWindow(MultiImageWindow):
       self.titlebar_text.SetFont(font)
       self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
       self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
-      if wx.Platform == '__WXMAC__':
-         from wx.lib import buttons
+      if hasattr(buttons, 'ThemedGenBitmapButton'):
          TitleBarButtonClass = buttons.ThemedGenBitmapButton
       else:
          TitleBarButtonClass = wx.BitmapButton

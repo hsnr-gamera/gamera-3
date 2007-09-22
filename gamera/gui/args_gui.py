@@ -145,7 +145,6 @@ class Args:
 
    # generates the dialog box
    def setup(self, parent, locals, docstring = "", function = None):
-      print function, type(function)
       if function is not None:
          name = function
       else:

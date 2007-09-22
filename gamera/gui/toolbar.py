@@ -51,9 +51,9 @@ class ToolBar(wx.Panel):
 
    def AddSimpleTool(self, id, bitmap, help_string, callback=None, toggle=0):
       if not toggle:
-         button = ButtonClass(self, id, bitmap, size=wx.Size(28,28))
+         button = ButtonClass(self, id, bitmap, size=wx.Size(30,30))
       else:
-         button = ToggleButtonClass(self, id, bitmap, size=wx.Size(28,28))
+         button = ToggleButtonClass(self, id, bitmap, size=wx.Size(30,30))
       button.SetBezelWidth(1)
       button.SetUseFocusIndicator(False)
       button.SetToolTipString(help_string)

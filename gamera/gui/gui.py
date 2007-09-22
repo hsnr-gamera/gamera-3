@@ -30,6 +30,11 @@ except ImportError:
    if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 8):
      raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x or 2.8.x.  However, it seems that you have wxPython %s installed."""
                       % ".".join([str(x) for x in wxVERSION]))
+
+try:
+   from wx import aui
+except ImportError:
+   aui = None
    
 import inspect
 from gamera.core import *
@@ -201,35 +206,36 @@ class PyShellGameraShell(wx.py.shell.Shell):
 
    def GetLocals(self):
       return self.locals
-      
-class PyCrustGameraShell(wx.py.crust.Crust):
-   def __init__(self, parent, id=-1, pos=wx.DefaultPosition, 
-                size=wx.DefaultSize, style=0,
-                name='Crust Window', rootObject=None, rootLabel=None,
-                rootIsNamespace=True, intro='', locals=None, 
-                InterpClass=None, *args, **kwds):
-      wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
-      self.shell = PyShellGameraShell(parent=self, introText=intro, 
-                                      locals=locals, InterpClass=InterpClass, 
-                                      *args, **kwds)
-      self.editor = self.shell
-      if rootObject is None:
-         rootObject = self.shell.interp.locals
-      self.notebook = wx.Notebook(parent=self, id=-1, style=wx.NB_BOTTOM)
-      self.shell.interp.locals['notebook'] = self.notebook
-      self.filling = wx.py.filling.Filling(parent=self.notebook, 
-                                        rootObject=rootObject, 
-                                        rootLabel=rootLabel, 
-                                        rootIsNamespace=rootIsNamespace)
-      # Add 'filling' to the interpreter's locals.
-      self.shell.interp.locals['filling'] = self.filling
-      self.calltip = Calltip(parent=self.notebook)
-      self.notebook.AddPage(page=self.calltip, text='Documentation', select=True)
-      self.notebook.AddPage(page=self.filling, text='Namespace')
-      self.sessionlisting = wx.py.crust.SessionListing(parent=self.notebook)
-      self.notebook.AddPage(page=self.sessionlisting, text='History')
-      self.SplitHorizontally(self.shell, self.notebook, parent.GetClientSize()[1] - 200)
-      self.SetMinimumPaneSize(1)
+
+if not aui:
+   class PyCrustGameraShell(wx.py.crust.Crust):
+      def __init__(self, parent, id=-1, pos=wx.DefaultPosition, 
+                   size=wx.DefaultSize, style=0,
+                   name='Crust Window', rootObject=None, rootLabel=None,
+                   rootIsNamespace=True, intro='', locals=None, 
+                   InterpClass=None, *args, **kwds):
+         wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
+         self.shell = PyShellGameraShell(parent=self, introText=intro, 
+                                         locals=locals, InterpClass=InterpClass, 
+                                         *args, **kwds)
+         self.editor = self.shell
+         if rootObject is None:
+            rootObject = self.shell.interp.locals
+         self.notebook = wx.Notebook(parent=self, id=-1, style=wx.NB_BOTTOM)
+         self.shell.interp.locals['notebook'] = self.notebook
+         self.filling = wx.py.filling.Filling(parent=self.notebook, 
+                                           rootObject=rootObject, 
+                                           rootLabel=rootLabel, 
+                                           rootIsNamespace=rootIsNamespace)
+         # Add 'filling' to the interpreter's locals.
+         self.shell.interp.locals['filling'] = self.filling
+         self.calltip = Calltip(parent=self.notebook)
+         self.notebook.AddPage(page=self.calltip, text='Documentation', select=True)
+         self.notebook.AddPage(page=self.filling, text='Namespace')
+         self.sessionlisting = wx.py.crust.SessionListing(parent=self.notebook)
+         self.notebook.AddPage(page=self.sessionlisting, text='History')
+         self.SplitHorizontally(self.shell, self.notebook, parent.GetClientSize()[1] - 200)
+         self.SetMinimumPaneSize(1)
       
 class ShellFrame(wx.Frame):
    def __init__(self, parent, id, title):
@@ -245,14 +251,30 @@ class ShellFrame(wx.Frame):
       self.menu = self.make_menu()
       self.SetMenuBar(self.menu)
 
-      self.splitter = wx.SplitterWindow(
-         self, -1,
-         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
-         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+      if aui:
+         self._aui = aui.AuiManager(self)
+         nb = aui.AuiNotebook(self)
+         control_parent = self
+      else:
+         splitter = wx.SplitterWindow(
+            self, -1,
+            style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+            wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+         control_parent = self.splitter
 
-      self.icon_display = icon_display.IconDisplay(self.splitter, self)
-      self.crust = PyCrustGameraShell(self.splitter, -1)
-      self.shell = self.crust.shell
+      self.icon_display = icon_display.IconDisplay(control_parent, self)
+      if aui:
+         self.shell = PyShellGameraShell(parent=self)
+         rootObject = self.shell.interp.locals
+         self.filling = wx.py.filling.Filling(parent=nb, 
+                                              rootObject=rootObject, 
+                                              rootIsNamespace=True)
+         # Add 'filling' to the interpreter's locals.
+         self.calltip = Calltip(parent=nb)
+         self.sessionlisting = wx.py.crust.SessionListing(parent=nb)
+      else:
+         crust = PyCrustGameraShell(control_parent, -1)
+         self.shell = crust.shell
       self.shell.main_win = self
       self.shell.update = self.Update
       image_menu.set_shell(self.shell)
@@ -262,17 +284,52 @@ class ShellFrame(wx.Frame):
       self.shell.push("from gamera.core import *")
       self.shell.push("init_gamera()")
 
-      self.Update()
-
       self.shell.update = self.Update
       self.icon_display.shell = self.shell
       self.icon_display.main = self
       self.Update()
       self.shell.SetFocus()
 
-      self.splitter.SetMinimumPaneSize(20)
-      self.splitter.SplitVertically(self.icon_display, self.crust, 120)
-      self.splitter.SetSashPosition(120)
+      if aui:
+         self._aui.AddPane(
+            self.icon_display,
+            aui.AuiPaneInfo()
+            .Name("icon_display")
+            .CenterPane()
+            .MinSize(wx.Size(96, 96))
+            .CloseButton(False)
+            .CaptionVisible(True)
+            .Caption("Objects")
+            .Dockable(True))
+         self._aui.AddPane(
+            self.shell,
+            aui.AuiPaneInfo()
+            .Name("shell")
+            .CenterPane()
+            .MinSize(wx.Size(200,200))
+            .CloseButton(False)
+            .CaptionVisible(True)
+            .MaximizeButton(True)
+            .Caption("Interactive Python Shell")
+            .Dockable(True))
+         nb.AddPage(self.calltip, "Documentation")
+         nb.AddPage(self.filling, "Namespace")
+         nb.AddPage(self.sessionlisting, "History")
+         self._aui.AddPane(
+            nb,
+            aui.AuiPaneInfo()
+            .Name("notebook")
+            .CenterPane()
+            .MinSize(wx.Size(200, 100))
+            .MaximizeButton(True))
+         
+         self._aui.GetPane("notebook").Show().Bottom()
+         self._aui.GetPane("icon_display").Show().Left()
+         self._aui.Update()
+      else:
+         splitter.SetMinimumPaneSize(20)
+         splitter.SplitVertically(self.icon_display, crust, 120)
+         splitter.SetSashPosition(120)
 
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)

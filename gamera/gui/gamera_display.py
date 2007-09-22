@@ -1952,8 +1952,11 @@ HISTOGRAM_PAD = 10
 class HistogramDisplay(wx.Frame):
    def __init__(self, data=None, mark=None, parent=None,
                 title="Histogram"):
+      style = wx.DEFAULT_FRAME_STYLE
+      if hasattr(wx, 'FULL_REPAINT_ON_RESIZE'):
+         style |= wx.FULL_REPAINT_ON_RESIZE
       wx.Frame.__init__(self, parent, -1, title,
-                       style=wx.RESIZE_BORDER|wx.CAPTION)
+                        style=style)
       m = max(data)
       new_data = []
       for datum in data:
@@ -1979,9 +1982,11 @@ class ProjectionsDisplay(wx.Frame):
    def __init__(self, x_data=None, y_data=None, image=None, parent=None, title="Projections"):
       size = (image.ncols + max(x_data) + (HISTOGRAM_PAD * 3),
               image.nrows + max(y_data) + (HISTOGRAM_PAD * 3))
+      style = wx.DEFAULT_FRAME_STYLE
+      if hasattr(wx, 'FULL_REPAINT_ON_RESIZE'):
+         style |= wx.FULL_REPAINT_ON_RESIZE
       wx.Frame.__init__(self, parent, -1, title,
-                       style=wx.CAPTION,
-                       size=size)
+                        style=style, size=size)
       self.x_data = x_data
       self.y_data = y_data
       self.image = image
@@ -2009,8 +2014,11 @@ class ProjectionsDisplay(wx.Frame):
 
 class ProjectionDisplay(wx.Frame):
    def __init__(self, data, title="Projection"):
+      style = wx.DEFAULT_FRAME_STYLE
+      if hasattr(wx, 'FULL_REPAINT_ON_RESIZE'):
+         style |= wx.FULL_REPAINT_ON_RESIZE
       wx.Frame.__init__(self, -1, -1, title,
-                       style=wx.CAPTION,
+                       style=style,
                        size=((len(data) * 2) + (HISTOGRAM_PAD * 3),
                              max(data) + (HISTOGRAM_PAD * 3)))
       self.data = data

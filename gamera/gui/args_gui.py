@@ -144,8 +144,13 @@ class Args:
          return window
 
    # generates the dialog box
-   def setup(self, parent, locals, docstring = "", function = "Arguments"):
-      self.window = wx.Dialog(parent, -1, function,
+   def setup(self, parent, locals, docstring = "", function = None):
+      print function, type(function)
+      if function is not None:
+         name = function
+      else:
+         name = self.name
+      self.window = wx.Dialog(parent, -1, name,
                               style=wx.CAPTION|wx.RESIZE_BORDER)
       self.window.SetAutoLayout(1)
       if self.wizard:
@@ -202,6 +207,7 @@ class Args:
       return [control.get() for control in self.controls]
 
    def show(self, parent=None, locals={}, function=None, wizard=0, docstring=""):
+      docstring = util.dedent(docstring)
       self.wizard = wizard
       if function != None:
          self.function = function

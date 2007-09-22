@@ -46,29 +46,6 @@ class ToolBar(wx.Panel):
       wx.Panel.__init__(
           self, parent, id,
           style=wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
-      if hideable and wx.Platform != '__WXMAC__':
-         self.close_button = buttons.GenBitmapButton(
-             self, 1000,
-             self._close_toolbar_bitmap,
-             size=wx.Size(11, 28))
-         self.close_button.SetBezelWidth(1)
-         self.close_button.SetUseFocusIndicator(False)
-         self.close_button.SetToolTipString("Hide Toolbar")
-         self.sizer.Add(self.close_button)
-         wx.EVT_BUTTON(self, 1000, self.OnHideToolbar)
-         self.close_button.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-         self.open_button = buttons.GenBitmapButton(
-             self, 1001,
-             self._open_toolbar_bitmap,
-             pos=wx.Point(0,0),
-             size=wx.Size(28, 11))
-         self.open_button.Hide()
-         self.open_button.SetBezelWidth(1)
-         self.open_button.SetUseFocusIndicator(False)
-         self.open_button.SetToolTipString("Show Toolbar")
-         wx.EVT_BUTTON(self, 1001, self.OnShowToolbar)
-         self.open_button.SetCursor(wx.StockCursor(wx.CURSOR_HAND))
-         self.AddSeparator()
       self.SetSizer(self.sizer)
       self._closed = 0
 

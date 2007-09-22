@@ -158,16 +158,16 @@ class ExtendedMultiImageWindow(MultiImageWindow):
       font = self.titlebar_text.GetFont()
       font.SetWeight(wx.BOLD)
       self.titlebar_text.SetFont(font)
-      self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
-      self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
+      if wx.Platform != '__WXGTK__':
+         self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
+         self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
       if hasattr(buttons, 'ThemedGenBitmapButton'):
          TitleBarButtonClass = buttons.ThemedGenBitmapButton
       else:
          TitleBarButtonClass = wx.BitmapButton
       self.titlebar_button = TitleBarButtonClass(
          self, -1,
-         gamera_icons.getPlusBitmap(),
-         style=wx.BU_AUTODRAW|wx.BU_EXACTFIT)
+         gamera_icons.getPlusBitmap())
 ##       font = self.titlebar_button.GetFont()
 ##       font.SetPointSize(font.GetPointSize() / 2)
       wx.EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
@@ -841,28 +841,33 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Symbol table', self._save_state_dialog[3]),
           Check('', 'Source image', self._save_state_dialog[4]),
           Directory('Open directory')], name="Open classifier window")
-      results = dialog.show(self._frame, docstring = """
-This dialog opens a special directory of files containing an original
-image, and contents of the editor and the classifier.  This directory
-should be one created by **Save all...**
+      results = dialog.show(
+         self._frame, 
+         docstring = """
+           This dialog opens a special directory of files containing
+           an original image, and contents of the editor and the
+           classifier.  This directory should be one created by **Save
+           all...**
 
-*Classifier settings*
-  When checked, load the classifier settings.  This is things like the
-  number of *k* and distance function.
+           *Classifier settings*
+             When checked, load the classifier settings.  This is
+             things like the number of *k* and distance function.
 
-*Page glyphs*
-  When checked, load the page glyphs from the directory.
+           *Page glyphs*
+             When checked, load the page glyphs from the directory.
 
-*Classifier glyphs*
-  When checked, load the classifier glyphs from the directory.
+           *Classifier glyphs*
+             When checked, load the classifier glyphs from the
+             directory.
 
-*Symbol table*
-  When checked, load the table of symbol names from the directory.
+           *Symbol table*
+             When checked, load the table of symbol names from the
+             directory.
 
-*Source image*
-  When checked, load the source image from the directory into the
-  context pane.
-""")
+           *Source image*
+             When checked, load the source image from the directory
+             into the context pane.
+           """)
       if results == None:
          return
       self._save_state_dialog = results
@@ -907,27 +912,31 @@ should be one created by **Save all...**
                 enabled=self.splitterhr0.IsSplit()),
           Check('', 'With features', self._save_state_dialog[5]),
           Directory('Save directory')], name="Save classifier window")
-      results = dialog.show(self._frame, docstring = """
-This dialog saves all of the data necessary to restore the
-classifier's state into a special directory.  This includes the
-original image and the contents of the editor and the classifier.
-This special directory can be reloaded using **Open all...**.
+      results = dialog.show(
+         self._frame, 
+         docstring = """
+           This dialog saves all of the data necessary to restore the
+           classifier's state into a special directory.  This includes
+           the original image and the contents of the editor and the
+           classifier.  This special directory can be reloaded using
+           **Open all...**.
 
-*Classifier settings*
-  When checked, save the classifier settings.  This is things like the
-  number of *k* and distance function.
+           *Classifier settings*
+             When checked, save the classifier settings.  This is
+             things like the number of *k* and distance function.
 
-*Page glyphs*
-  When checked, save the page glyphs.
+           *Page glyphs*
+             When checked, save the page glyphs.
 
-*Classifier glyphs*
-  When checked, save the classifier glyphs.
+           *Classifier glyphs*
+             When checked, save the classifier glyphs.
 
-*Symbol table*
-  When checked, save the table of symbol names.
+           *Symbol table*
+             When checked, save the table of symbol names.
 
-*Source image*
-  When checked, save the source image.""")
+           *Source image*
+             When checked, save the source image.
+           """)
       if results == None:
          return
       self._save_state_dialog = results
@@ -988,7 +997,36 @@ This special directory can be reloaded using **Open all...**.
          name = 'Save by criteria...')
       verified = False
       while not verified:
-         results = dialog.show(self._frame)
+         results = dialog.show(
+            self._frame,
+            docstring = """
+              Choose a set of glyphs to save to an XML file.
+
+              *Classifier glyphs*
+                Include glyphs from the classifier glyphs database.
+
+              *Page glyphs*
+                Include glyphs from the current page.
+
+              *Unclassified*
+                Include glyphs that have not yet be classified.
+
+              *Automatically classified*
+                Include glyphs that have been automatically classified.
+
+              *Heuristically classified*
+                Include glyphs that have been heuristically classified.
+
+              *Manually classified*
+                Include glyphs that have been manually classified.
+
+              *Save with features*
+                Include the actual computed features of the glyphs in the
+                XML file (instead of only the image data.)
+
+              *Save glyphs to file*
+                Choose an XML to save the glyphs to.
+            """)
          if results is None:
             return
          skip, classifier, page, skip, un, auto, heur, man, skip2, with_features, filename = results
@@ -1261,7 +1299,9 @@ This special directory can be reloaded using **Open all...**.
          name="Open and segment image...")
       filename = None
       while filename is None:
-         results = dialog.show(self._frame, docstring="""Choose a file to open and a segmentation method.""")
+         results = dialog.show(
+            self._frame,
+            docstring="""Choose a file to open and a segmentation method.""")
          if results is None:
             return
          filename, segmenter = results
@@ -1292,7 +1332,9 @@ This special directory can be reloaded using **Open all...**.
          [Class("Image", ImageBase),
           Choice("Segmentation algorithm", segmenters, self.default_segmenter)],
          name="Select and segment image...")
-      results = dialog.show(self._frame, image_menu.shell.locals, docstring="""Choose an already opened image to use, and a segmentation method.""")
+      results = dialog.show(
+         self._frame, image_menu.shell.locals,
+         docstring="""Choose an already opened image to use, and a segmentation method.""")
       if results is None:
          return
       image, segmenter = results
@@ -1310,7 +1352,9 @@ This special directory can be reloaded using **Open all...**.
       dialog = Args(
          [Class("Image", ImageBase)],
          name="Select image...")
-      results = dialog.show(self._frame, image_menu.shell.locals)
+      results = dialog.show(
+         self._frame, image_menu.shell.locals,
+         docstring = "Select an image to display in the context pane")
       if results is None:
          return
       (image,) = results
@@ -1465,7 +1509,9 @@ This special directory can be reloaded using **Open all...**.
          feature_controls,
          name='Feature selection', 
          title='Select the features you want to use for classification')
-      result = dialog.show(self._frame)
+      result = dialog.show(
+         self._frame,
+         docstring="""Select the features you want to use for classification""")
       if result is None:
          return
       selected_features = [name for check, name in

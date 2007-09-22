@@ -177,9 +177,10 @@ Prerequisites
   OS-X, I have made one available in the Gamera SourceForge Files
   section.
 
-- XCode 2.4.1, downloaded from
-  http://developer.apple.com/tools/xcode .  The version that shipped
-  on the Tiger installation DVD will not work.
+- XCode.  The version of XCode that shipped on the Tiger installation
+  DVD will not work if you plan to use a newer version of Python
+  downloaded from python.org.  XCode 2.4.1, may be downloaded from
+  http://developer.apple.com/tools/xcode .
 
 - X11.  This is available on the Tiger installation DVD.  You should
   also use Software Update to update X11 to the latest version.
@@ -244,7 +245,7 @@ Prerequisites
 - Python 2.5 downloaded from http://www.python.org/ .  The Python 2.3
   included with OS-X Tiger will not work.
 
-- wxPython-GTK 2.8.x or later, downloaded from
+- wxPython 2.8.x or later, downloaded from
   http://www.wxpython.org/ .
 
 - XCode 2.4.1, downloaded from

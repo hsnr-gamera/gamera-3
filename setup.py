@@ -143,7 +143,7 @@ extensions.extend(plugin_extensions)
 # Here's the basic distutils stuff
 
 description = ("This is the Gamera installer. " +
-               "Please ensure that Python and wxPython 2.4.0 " +
+               "Please ensure that Python 2.4 and wxPython 2.6.x " +
                "(or later) are installed before proceeding.")
 
 includes = [(os.path.join(gamera_setup.include_path, path),
@@ -158,21 +158,6 @@ packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
 
 if sys.platform == 'darwin':
    packages.append("gamera.mac")
-elif sys.platform == 'win32':
-   if '--compiler=icl' in sys.argv:
-       from distutils import ccompiler
-       from win32.iclcompiler import ICLCompiler
-       ccompiler.compiler_class['icl'] = ('win32.iclcompiler',
-                                          'ICLCompiler',
-                                          'Intel Compiler Library for Windows')
-       ccompiler.new_compiler = ICLCompiler.ret_icl
-   elif '--compiler=freevc' in sys.argv:
-       from distutils import ccompiler
-       from win32.freevccompiler import FreeVCCompiler
-       ccompiler.compiler_class['freevc'] = ('win32.freevccompiler',
-                                          'FreeVCCompiler',
-                                          'Visual C++ 2003 Toolkit')
-       ccompiler.new_compiler = FreeVCCompiler.ret_freevc
        
 setup(cmdclass = gamera_setup.cmdclass,
       name = "gamera",

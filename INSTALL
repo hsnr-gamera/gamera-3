@@ -5,198 +5,72 @@ Building and installing Gamera
 Microsoft Windows
 =================
 
-.. note:: These Windows installation instructions are probably quite
-   out of date.
-
-Installing using the Windows installer
---------------------------------------
-
-Prerequisites
-`````````````
-
-- Python 2.3.x or later (only the distribution from python.org has been tested)
-
-- wxPython 2.4.x or later
-
-Installation
-````````````
-
-If you downloaded the Windows installer, simply run it to
-install Gamera.
-
-.. note:: Windows is not our primary development environment, and the
-   Windows installer tends to lag a version or two behind and may not
-   be as thoroughly tested.  Anyone want to become the official
-   Windows builder/tester?
-
 Installing from source
 ----------------------
 
-Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset or 
-Microsoft Visual Studio 6 or 7.
+Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset.
+
+The "officially supported" configuration, (i.e. the one that the
+Gamera developers use) is to use the MingW32 compiler installed inside
+of Cygwin to build for the official Python.org Python.  Other
+configurations are possible, such as Microsoft Visual Studio or the
+standalone Mingw32 toolchain, but they are not tested on a regular
+basis.  If you have success with other configurations, please consider
+contributing your experiences to this documentation.
 
 Prerequisites
 `````````````
 
-- Python 2.3.x or later (only the distribution from python.org has been tested)
+- Python 2.4.x or later (only the distribution from python.org has been tested)
 
-- wxPython 2.4.x or later
+- wxPython 2.6.x or later (wxPython 2.8.x or later recommended for
+  full functionality)
 
 Cygwin/Mingw32
 ``````````````
 
 Use the installer from http://www.cygwin.com/ to install Cygwin,
-including the ``g++`` compiler and the ``MingW32`` libraries.
-Compiling Gamera against the Cygwin DLL is theoretically possible, but
-not supported.  However, you can compile Gamera using ``MingW32``, which
-means there will be no non-standard Windows runtime dependencies.
-
-You must have ``gcc`` version 3.1 or later.
-
-Python
-''''''
-
-You have two options here
-
-Use the Cygwin version Python that is distributed with Cygwin:
-   This is the easiest approach, since it behaves most like a Unix
-   system.  Skip to the next section for further instructions.
-
-Use the MSVC-built Python from python.org:
-   The advantage of this approach is that you can build an installer
-   that will work with the "canonical" distribution of Python.
-   However, you'll have to do a few preparation steps first.
-
-   Go to the Python/libs directory::
-	
-	cd [PATH_TO_PYTHON]/libs
-
-   Find your ``pythonXX.dll`` file, where ``XX`` is the version of
-   Python you have installed.  This is normally in
-   ``C:\WINDOWS\system32\`` or ``C:\winnt\system32\``.
-
-   Make a ``.def`` file from your ``pythonXX.dll``.  (You will need to
-   install ``pexports.exe`` from the Cygwin installer)::
-
-  	pexports 'C:\WINDOWS\system32\pythonXX.dll' > pythonXX.def
-
-   Then create a static library (``libpythonXX.a``)::
-
-	dlltool --dllname pythonXX.dll --def
-                pythonXX.def --output-lib libpythonXX.a
-	
-   Now you should be ready to continue below.
+including the ``g++-mingw32`` compiler and the ``MingW32`` libraries.
+If you plan to track development of Gamera, you will probably also
+want to install ``subversion``.
 
 Standard Build and Install
-''''''''''''''''''''''''''
+``````````````````````````
+
+The important thing to note here is that we are using Cygwin's Mingw32
+compiler to build for the standard (non-Cygwin) Python from
+python.org.  After a clean install of Cygwin, typing 'python' will
+start up Cygwin's version of Python, not the one from python.org.
+Therefore, you will want to add the standard Python to your Cygwin
+PATH using the command (assuming you installed Python in standard location)::
+
+  export PATH=/cygdrive/c/Python25/:$PATH
+
+Ensure you are using the correct Python by typing::
+
+  which python
+
+The result should be ``/cygdrive/c/Python25/python.exe``, not
+``/usr/bin/python``.
 
 Gamera is built using the Python-standard Distutils system.  Open a
 Cygwin command prompt and type::
 
   python setup.py build --compiler=mingw32
 
-If you receive the following error (only exhibited under Python 2.3),
-distutils is having trouble traversing the Cygwin-based symlink from
-``/bin/cc.exe`` to ``/bin/gcc.exe``.  The hacky solution to this
-(until this bugfix in distutils is fixed) is to delete the symlink and
-make a real copy (at the expense of a little disk space)::
-
-  rm /bin/cc.exe
-  cp /bin/gcc.exe /bin/cc.exe
-
 If you just want to install Gamera without the ability to uninstall::
 
-  python setup.py install
+  python setup.py build --compiler=mingw32 install
 
 If you'd like a real Windows installer, including uninstallation
-support, you have two options:
-
-Use the Python Distutils Installer Maker::
+support, use the Python Distutils installer generator::
 
   python setup.py build --compiler=mingw32 bdist_wininst
+
+Then run::
+
   dist/gamera-X.X.X-win32.exe
 
-Or, use the (currently experimental) MSI creation support provided in 
-the Gamera source tree (see MSI section).
-
-Microsoft Visual Studio
-```````````````````````
-
-Compiling Gamera with MS Visual Studio should be considered
-preliminary and non-preferred.  Particularly in light of all of the
-backwardly-incompatible things in Visual Studio .NET, it is a bit of a
-pain.
-
-First and foremost, you will need to ensure that Python was compiled
-with the same version of Visual Studio as you use to compile Gamera.
-At the time of this writing, the "official" distribution of Python was
-compiled with Visual Studio 6.  If the compilers so not match, you may
-need to recompile Python, which is a daunting task beyond the scope of
-this document.
-
-Standard Build and Install
-''''''''''''''''''''''''''
-
-Gamera is built using the Python-standard Distutils system.  Open a
-Microsoft Visual Studio Command Prompt (this should have been added to
-the Start Menu when you installed Visual Studio).  Change to the
-directory where the Gamera source is installed and type::
-
-  python setup.py build
-
-If you just want to install Gamera without the ability to uninstall::
-
-  python setup.py install
-
-If you'd like a real Windows installer, including uninstallation
-support, you have two options:
-
-Use the Python Distutils Installer Maker::
-
-  python setup.py build --compiler=mingw32 bdist_wininst
-  dist/gamera-X.X.X-win32.exe
-
-Or, use the (currently experimental) MSI creation support provided in 
-the Gamera source tree (see MSI section).
-
-MSI (Windows Installer Package)
-```````````````````````````````
-
-If you would like to create a Windows Installer package to install
-Gamera, the Gamera source tree currently includes experimental support
-to do so. The most straightforward way to build the MSI is to issue the
-command "bdist_msi" to setup.py after building Gamera from source.  
-Successful execution of this command depends on having the latest versions 
-of MakeMSI (http://www.labyrinth.net.au/~dbareis/makemsi.htm) and the 
-Microsoft Platform SDK (http://www.microsoft.com/msdownload/platformsdk/sdkupdate) 
-installed.  For example, if you are using the MSVC compiler::
-
-    python setup.py build bdist_msi
-
-will create a Windows Installer package in the dist/ directory. Or if 
-you have already built Gamera::
-
-    python setup.py bdist_msi
-
-will suffice.
-
-If you would like to include multiple Gamera binaries in one MSI (to 
-aid in delivering targeted optimized binaries, for instance), the 
-appropriate tools are located in win32/msisource. Please consult 
-README.txt in that directory for more details.
-
-Running
-```````
-
-If you chose to build the installer, double-click on the Gamera icon
-on your desktop to run Gamera.
-
-.. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the Gamera compiled shared
-  object files.
-
-This file can be copied anywhere (such as the Desktop or the
-Start Menu) and double-clicked to run Gamera.
 
 Linux (and other \*nix)
 =======================
@@ -206,12 +80,12 @@ Prerequisites
 
 -  Python 2.3 and later are supported
 
-  You will need to have the headers (but not the complete
-  source) to build Gamera from source code.  Most Linux
-  distributions include these as a
-  separate package (eg. ``python-dev``).
+   You will need to have the headers (but not the complete source) to
+   build Gamera from source code.  Most Linux distributions include
+   these as a separate package (eg. ``python-dev`` or ``python-devel``).
 
-- wxPython 2.4.x or later
+- wxPython 2.4.x or later (wxPython 2.8.x or later recommended for
+  full functionality).
 
 - ``gcc`` version 3.1 or later.
 
@@ -231,8 +105,21 @@ terminal and type::
 Installing without root priviledges
 -----------------------------------
 
+.. _without_root:
+
 If you do not have root access to your machine, you can make a local
 installation of Gamera.
+
+A quick-and-easy way to do this is to use the ``virtual_python.py``
+script available here__, and then follow the standard installation
+instructions (without using sudo)::
+
+  python setup.py build
+  python setup.py install
+
+.. __: http://peak.telecommunity.com/DevCenter/EasyInstall#creating-a-virtual-python
+
+Alternatively, you can set up a local installation by hand.
 
 Make a local python module directory somewhere that you have write
 priviledges (such as your home directory)::
@@ -263,46 +150,42 @@ Run the ``gamera_gui`` script, which should have installed to
 the Desktop) and double-clicked to run Gamera.
 
 .. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the Gamera compiled shared
-  object files.
+  work, since it will not be able to find the compiled version of Gamera.
 
 Mac OS-X
 ========
 
-.. note:: These installation instructions are probably quite out-of-date.
+Earlier versions of Gamera ran on OS-X by using X11 as an emulation of
+a standard Unix environment.  The current SVN version of Gamera now
+uses Cocoa, and feels much more like a standard Macintosh
+application.  Please follow the instructions for *either* X11 or Cocoa
+install below.
 
-OS-X support can be considered working but preliminary at this point.
-Gamera will only run on Panther (10.3).  We do not plan to support
-earlier versions.
+X11 build
+---------
 
 Prerequisites
--------------
+`````````````
 
-- Python 2.3 (the version that comes with OS-X is recommended).
+- Mac OS-X 10.4 (Tiger) or presumably later
 
-- wxPython 2.4.x
+- Python 2.3 (including the version included).
 
-  **You must use wxPython version 2.4.x.** 2.3.x is no longer
-  supported, and 2.5.x, being an unstable branch, will not be
-  supported for some time to come.  The stable branch is a
-  little hidden on the wxPython website.  It can be downloaded
-  here__.
+- wxPython-GTK 2.4.x or later
 
-.. __: https://sourceforge.net/project/showfiles.php?group_id=10718&package_id=10559&release_id=188259
+  Since there is no official build of the Gtk+/X11 version for Mac
+  OS-X, I have made one available in the Gamera SourceForge Files
+  section.
 
-  wxPython comes in two flavors for OS-X: a native Carbon-based one that
-  follows the look-and-feel of OS-X, and a version built on top of
-  Gtk+/X11.  The native Carbon version is currently too incomplete to be
-  usable for Gamera.  Since there is no official build of the
-  Gtk+/X11 version, I have made one available in the Gamera
-  SourceForge Files section.
+- XCode 2.4.1, downloaded from
+  http://developer.apple.com/tools/xcode .  The version that shipped
+  on the Tiger installation DVD will not work.
 
-- ``gcc`` version 3.1 or later
-
-- X11
+- X11.  This is available on the Tiger installation DVD.  You should
+  also use Software Update to update X11 to the latest version.
 
 Standard Build and Install
-----------------------------
+``````````````````````````
 
 Download and install the unoffical wxPython-Gtk-X11 distribution from
 the Gamera Files section on SourceForge.
@@ -332,12 +215,78 @@ The scripts can be installed by::
   default installed to
   ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
 
+Installing without root priviledges
+```````````````````````````````````
+
+The instructions for `installing without root (administrator)
+priviledges`__ can also be used on Mac OS-X.
+
+__ without_root_
+
 Running
--------
+```````
 
 Start an X11 terminal and run the ``gamera_gui`` script.  
 
 .. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the Gamera compiled shared
-  object files.
+  work, since it will not be able to find the compiled version of
+  Gamera.
+
+
+Native (Cocoa) build
+--------------------
+
+Prerequisites
+`````````````
+
+- Mac OS-X 10.4 (Tiger) or presumably later
+
+- Python 2.5 downloaded from http://www.python.org/ .  The Python 2.3
+  included with OS-X Tiger will not work.
+
+- wxPython-GTK 2.8.x or later, downloaded from
+  http://www.wxpython.org/ .
+
+- XCode 2.4.1, downloaded from
+  http://developer.apple.com/tools/xcode .  The version that shipped
+  on the Tiger installation DVD will not work.
+
+Standard Build and Install
+``````````````````````````
+
+Gamera is built using the Python-standard Distutils system.  
+
+To build Gamera, open a X11 terminal and type::
+
+  python setup.py build
+
+and then to install (you'll need to have admin priviledges)::
+ 
+  sudo python setup.py install
+
+The scripts can be installed by::
+
+  sudo python setup.py install_scripts -d /usr/bin
+
+.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
+  place on the PATH.  If you do not specify it, the scripts are by
+  default installed to
+  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
+
+Installing without root priviledges
+```````````````````````````````````
+
+The instructions for `installing without root (administrator)
+priviledges`__ can also be used on Mac OS-X.
+
+__ without_root_
+
+Running
+```````
+
+Start the Terminal application and run the ``gamera_gui`` script.  
+
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the compiled version of
+  Gamera.
 

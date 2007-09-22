@@ -9,8 +9,11 @@
 
 import sys, glob, os
 import img2py
+import wx
 
 if __name__ == "__main__":
+    app = wx.App()
+
     files = glob.glob('*.png')
     first = 1
     for x in files:

@@ -516,7 +516,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
    def _OnPaint(self, event):
       # If there's no image, draw the hatch pattern
-      if not self.image:
+      if not hasattr(self, 'image') or not self.image:
          dc = wx.PaintDC(self)
          dc.SetPen(wx.TRANSPARENT_PEN)
          dc.SetBrush(wx.WHITE_BRUSH)

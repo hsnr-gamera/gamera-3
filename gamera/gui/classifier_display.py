@@ -23,6 +23,10 @@ import os.path
 import wx
 from wx import grid
 from wx.lib import buttons
+try:
+   from wx import aui
+except ImportError:
+   aui = None
 from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
@@ -151,56 +155,54 @@ class ExtendedMultiImageWindow(MultiImageWindow):
          "Delete selected glyphs",
          self.id._OnDelete)
 
-      self.titlebar_text = wx.StaticText(self, -1, self.pane_name,
-                                         style = wx.ALIGN_CENTRE)
-      # self.titlebar.SetClientSize(self.titlebar_text.GetSize())
-      # self.titlebar.Fit()
-      font = self.titlebar_text.GetFont()
-      font.SetWeight(wx.BOLD)
-      self.titlebar_text.SetFont(font)
-      if wx.Platform != '__WXGTK__':
-         self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
-         self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
-      if hasattr(buttons, 'ThemedGenBitmapButton'):
-         TitleBarButtonClass = buttons.ThemedGenBitmapButton
-      else:
-         TitleBarButtonClass = wx.BitmapButton
-      self.titlebar_button = TitleBarButtonClass(
-         self, -1,
-         gamera_icons.getPlusBitmap())
-##       font = self.titlebar_button.GetFont()
-##       font.SetPointSize(font.GetPointSize() / 2)
-      wx.EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
-      self._split_button_mode = False
+      if not aui:
+         self.titlebar_text = wx.StaticText(self, -1, self.pane_name,
+                                            style = wx.ALIGN_CENTRE)
+         font = self.titlebar_text.GetFont()
+         font.SetWeight(wx.BOLD)
+         self.titlebar_text.SetFont(font)
+         if wx.Platform != '__WXGTK__':
+            self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
+            self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
+         if hasattr(buttons, 'ThemedGenBitmapButton'):
+            TitleBarButtonClass = buttons.ThemedGenBitmapButton
+         else:
+            TitleBarButtonClass = wx.BitmapButton
+         self.titlebar_button = TitleBarButtonClass(
+            self, -1,
+            gamera_icons.getPlusBitmap())
+         wx.EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
+         self._split_button_mode = False
 
-      title_sizer = wx.BoxSizer(wx.HORIZONTAL)
-      title_sizer.Add(self.titlebar_text, 1, wx.EXPAND)
-      title_sizer.Add(self.titlebar_button, 0, wx.EXPAND)
-      self.box_sizer.Insert(0, title_sizer, 0, wx.EXPAND)
+         title_sizer = wx.BoxSizer(wx.HORIZONTAL)
+         title_sizer.Add(self.titlebar_text, 1, wx.EXPAND)
+         title_sizer.Add(self.titlebar_button, 0, wx.EXPAND)
+         self.box_sizer.Insert(0, title_sizer, 0, wx.EXPAND)
 
-   def set_close_button(self, mode):
-      from gamera.gui import gamera_icons
+   if not aui:
+      def set_close_button(self, mode):
+         from gamera.gui import gamera_icons
 
-      if mode:
-         bitmap = gamera_icons.getXBitmap()
-         self.titlebar_button.SetToolTipString(
-            "Close this pane")
-      else:
-         bitmap = gamera_icons.getPlusBitmap()
-         self.titlebar_button.SetToolTipString(
-            "Split this pane to show classifier and page glyphs.")
-      self.titlebar_button.SetBitmapLabel(bitmap)
-      self.titlebar_button.SetBitmapDisabled(bitmap)
-      self.titlebar_button.SetBitmapFocus(bitmap)
-      self.titlebar_button.SetBitmapSelected(bitmap)
-      self.titlebar_button.Refresh()
-      self._split_button_mode = mode
+         if mode:
+            bitmap = gamera_icons.getXBitmap()
+            self.titlebar_button.SetToolTipString(
+               "Close this pane")
+         else:
+            bitmap = gamera_icons.getPlusBitmap()
+            self.titlebar_button.SetToolTipString(
+               "Split this pane to show classifier and page glyphs.")
+         self.titlebar_button.SetBitmapLabel(bitmap)
+         self.titlebar_button.SetBitmapDisabled(bitmap)
+         self.titlebar_button.SetBitmapFocus(bitmap)
+         self.titlebar_button.SetBitmapSelected(bitmap)
+         self.titlebar_button.Refresh()
+         self._split_button_mode = mode
 
-   def _OnClose(self, event):
-      if self._split_button_mode:
-         self.toplevel.unsplit_editors(self)
-      else:
-         self.toplevel.split_editors()
+      def _OnClose(self, event):
+         if self._split_button_mode:
+            self.toplevel.unsplit_editors(self)
+         else:
+            self.toplevel.split_editors()
 
 ###############################################################################
 # CLASSIFIER DISPLAY
@@ -513,40 +515,70 @@ class ClassifierFrame(ImageFrameBase):
       status_bar.SetStatusWidths([x[2] for x in self.status_bar_description])
       
       self._frame.SetSize((800, 600))
-      self.splitterv = wx.SplitterWindow(
-         self._frame, -1,
-         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
-         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
-      self.splitterhr0 = wx.SplitterWindow(
-         self.splitterv, -1,
-         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
-         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
-      self.splitterhr1 = wx.SplitterWindow(
-         self.splitterhr0, -1,
-         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
-         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
-      self.splitterhl = wx.SplitterWindow(
-         self.splitterv, -1,
-         style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
-         wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
-      self.single_iw = ClassifierImageWindow(self, self.splitterhr0)
-      self.multi_iw = PageMultiImageWindow(self, self.splitterhr1, id=2001)
-      self.class_iw = ClassifierMultiImageWindow(self, self.splitterhr1, id=2000)
-      self.splitterhr1.SetMinimumPaneSize(3)
-      self.split_editors()
-      self.unsplit_editors(self.class_iw)
-      self.splitterhr0.SetMinimumPaneSize(3)
-      self.splitterhr0.SplitHorizontally(self.splitterhr1, self.single_iw, 300)
+      if aui:
+         self._aui = aui.AuiManager(self._frame)
+         nb_style = (aui.AUI_NB_TAB_SPLIT|aui.AUI_NB_TAB_MOVE|
+                     aui.AUI_NB_SCROLL_BUTTONS)
+
+         splitterhl_parent = splitterhr0_parent = \
+             splitterhr1_parent = splitterv_parent = self.nb = \
+             aui.AuiNotebook(self._frame, style=nb_style)
+      else:
+         self.splitterv = wx.SplitterWindow(
+            self._frame, -1,
+            style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+            wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+         splitterv_parent = self.splitterv
+         self.splitterhr0 = wx.SplitterWindow(
+            self.splitterv, -1,
+            style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+            wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+         splitterhr0_parent = self.splitterhr0
+         self.splitterhr1 = wx.SplitterWindow(
+            self.splitterhr0, -1,
+            style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+            wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+         splitterhr1_parent = self.splitterhr1
+         self.splitterhl = wx.SplitterWindow(
+            self.splitterv, -1,
+            style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
+            wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
+         splitterhl_parent = self.splitterhl
+
+      self.single_iw = ClassifierImageWindow(self, splitterhr0_parent)
+      self.multi_iw = PageMultiImageWindow(self, splitterhr1_parent, id=2001)
+      self.class_iw = ClassifierMultiImageWindow(self, splitterhr1_parent, id=2000)
+      self.class_iw.id.sort_images()
       self.symbol_editor = SymbolTableEditorPanel(
-         self._symbol_table, self, self.splitterhl)
+         self._symbol_table, self, splitterhl_parent)
       self.rule_engine_runner = rule_engine_runner.RuleEngineRunnerPanel(
-         self, self.splitterhl)
-      self.splitterhl.SetMinimumPaneSize(3)
-      self.splitterhl.SplitHorizontally(
-         self.symbol_editor, self.rule_engine_runner, 300)
-      self.splitterhl.Unsplit()
-      self.splitterv.SetMinimumPaneSize(3)
-      self.splitterv.SplitVertically(self.splitterhl, self.splitterhr0, 160)
+         self, splitterhl_parent)
+
+      if aui:
+         self._aui.AddPane(self.nb)
+         self.nb.AddPage(self.symbol_editor, "Symbol Name Editor")
+         self.nb.AddPage(self.multi_iw, "Page glyphs")
+         self.nb.AddPage(self.class_iw, "Classifier glyphs")
+         self.nb.AddPage(self.single_iw, "Source image display")
+         self.nb.Split(3, wx.BOTTOM)
+         self.nb.Split(0, wx.LEFT)
+         self.nb.InsertPage(1, self.rule_engine_runner, "Rule Engine Runner")
+         for pane in self.nb.GetAuiManager().GetAllPanes():
+            pane.MinSize(wx.Size(150, 200))
+         self.nb.GetAuiManager().Update()
+      else:
+         self.splitterhr1.SetMinimumPaneSize(3)
+         self.split_editors()
+         self.unsplit_editors(self.class_iw)
+         self.splitterhr0.SetMinimumPaneSize(3)
+         self.splitterhr0.SplitHorizontally(self.splitterhr1, self.single_iw, 300)
+         self.splitterhl.SetMinimumPaneSize(3)
+         self.splitterhl.SplitHorizontally(
+            self.symbol_editor, self.rule_engine_runner, 300)
+         self.splitterhl.Unsplit()
+         self.splitterv.SetMinimumPaneSize(3)
+         self.splitterv.SplitVertically(self.splitterhl, self.splitterhr0, 160)
+
       self.create_menus()
       self._classifier.database.add_callback(
          'length_change',
@@ -591,7 +623,8 @@ class ClassifierFrame(ImageFrameBase):
           (None, None),
           ("&Symbol names",
            (("&Import...", self._OnImportSymbolTable),
-            ("&Export...", self._OnExportSymbolTable)))))
+            ("&Export...", self._OnExportSymbolTable)))
+         ))
       image_menu = gui_util.build_menu(
          self._frame,
          (("&Open and segment image...", self._OnOpenAndSegmentImage),
@@ -620,9 +653,15 @@ class ClassifierFrame(ImageFrameBase):
          ("Confirm all", self._OnConfirmAll),
          ("&Confirm selected", self._OnConfirmSelected),
          (None, None),
-         ("Display/Hide classifier glyphs", self._OnDisplayContents),
-         (None, None),
          ("Change set of &features...", self._OnChangeSetOfFeatures)]
+      if not aui:
+         classifer_menu_spec = (
+            classifier_menu_spec[:-1] +
+            [("Display/Hide classifier glyphs", self._OnDisplayContents),
+             (None, None),
+             classifier_menu_spec[-1]]
+            )
+
       if classifier_settings != []:
          classifier_menu_spec.extend([
             (None, None),
@@ -638,11 +677,15 @@ class ClassifierFrame(ImageFrameBase):
          self._frame,
          classifier_menu_spec)
 
+      rules_menu_spec = []
+      if not aui:
+         rules_menu_spec.extend(
+            [("Show rule testing panel", self._OnShowRuleTestingPanel),
+             (None, None)])
+      rules_menu_spec.append(("Open rule module", self._OnOpenRuleModule))
       rules_menu = gui_util.build_menu(
          self._frame,
-         (("Show rule testing panel", self._OnShowRuleTestingPanel),
-          (None, None),
-          ("Open rule module", self._OnOpenRuleModule)))
+         rules_menu_spec)
          
       menubar = wx.MenuBar()
       menubar.Append(file_menu, "&File")
@@ -677,43 +720,46 @@ class ClassifierFrame(ImageFrameBase):
 
    def set_single_image(self, image=None, weak=True):
       if image == None:
-         if self.splitterhr0.IsSplit():
-            self.splitterhr0.Unsplit()
-            self.single_iw.Hide()
-            del self.single_iw.id.image
-            del self.single_iw.id.original_image
+         if not aui:
+            if self.splitterhr0.IsSplit():
+               self.splitterhr0.Unsplit()
+               self.single_iw.Hide()
+         self.single_iw.id.image = None
+         self.single_iw.id.original_image = None
       else:
          self.single_iw.id.set_image(image, weak=weak)
-         if not self.splitterhr0.IsSplit():
-            self.splitterhr0.SplitHorizontally(
-               self.splitterhr1, self.single_iw, self._frame.GetSize()[1] / 2)
-            if self.splitterhr1.IsSplit():
-               self.splitterhr1.SetSashPosition(self._frame.GetSize()[1] / 4)
-            self.single_iw.Show()
+         if not aui:
+            if not self.splitterhr0.IsSplit():
+               self.splitterhr0.SplitHorizontally(
+                  self.splitterhr1, self.single_iw, self._frame.GetSize()[1] / 2)
+               if self.splitterhr1.IsSplit():
+                  self.splitterhr1.SetSashPosition(self._frame.GetSize()[1] / 4)
+               self.single_iw.Show()
 
-   def unsplit_editors(self, display):
-      wx.BeginBusyCursor()
-      try:
-         self.splitterhr1.Unsplit(display)
-         display.Show(False)
-         for id in (self.multi_iw, self.class_iw):
-            id.set_close_button(False)
-      finally:
-         wx.EndBusyCursor()
+   if not aui:
+      def unsplit_editors(self, display):
+         wx.BeginBusyCursor()
+         try:
+            self.splitterhr1.Unsplit(display)
+            display.Show(False)
+            for id in (self.multi_iw, self.class_iw):
+               id.set_close_button(False)
+         finally:
+            wx.EndBusyCursor()
 
-   def split_editors(self):
-      wx.BeginBusyCursor()
-      try:
-         self.splitterhr1.SplitHorizontally(
-            self.class_iw, self.multi_iw,
-            self.splitterhr1.GetSize()[1] / 2)
-         self.class_iw.Show(True)
-         self.class_iw.id.sort_images()
-         self.multi_iw.Show(True)
-         for id in (self.multi_iw, self.class_iw):
-            id.set_close_button(True)
-      finally:
-         wx.EndBusyCursor()
+      def split_editors(self):
+         wx.BeginBusyCursor()
+         try:
+            self.splitterhr1.SplitHorizontally(
+               self.class_iw, self.multi_iw,
+               self.splitterhr1.GetSize()[1] / 2)
+            self.class_iw.Show(True)
+            self.class_iw.id.sort_images()
+            self.multi_iw.Show(True)
+            for id in (self.multi_iw, self.class_iw):
+               id.set_close_button(True)
+         finally:
+            wx.EndBusyCursor()
       
    def update_symbol_table(self):
       for glyph in self._classifier.get_glyphs():
@@ -745,7 +791,7 @@ class ClassifierFrame(ImageFrameBase):
       return [], self.multi_iw.id, self.class_iw.id
 
    def display_cc(self, cc):
-      if self.splitterhr0.IsSplit():
+      if self.single_iw.id.image is not None:
          self.single_iw.id.highlight_cc(cc)
          self.single_iw.id.focus_glyphs(cc)
 
@@ -909,7 +955,8 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Classifier glyphs', self._save_state_dialog[2]),
           Check('', 'Symbol table', self._save_state_dialog[3]),
           Check('', 'Source image', self._save_state_dialog[4],
-                enabled=self.splitterhr0.IsSplit()),
+                enabled=hasattr(self.single_iw.id, 'image') and
+                self.single_iw.id.image is not None),
           Check('', 'With features', self._save_state_dialog[5]),
           Directory('Save directory')], name="Save classifier window")
       results = dialog.show(
@@ -970,7 +1017,7 @@ class ClassifierFrame(ImageFrameBase):
             self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
          except:
             error_messages.add(str(e))
-      if source and self.splitterhr0.IsSplit():
+      if source and self.single_iw.id is not None:
          try:
             self.single_iw.id.image.save_tiff(
                os.path.join(directory, "source_image.tiff"))
@@ -1281,7 +1328,7 @@ class ClassifierFrame(ImageFrameBase):
             gui_util.message("Exporting symbol table: " + str(e))
       finally:
          wx.EndBusyCursor()
-
+      
    ########################################
    # IMAGE MENU
 
@@ -1557,11 +1604,12 @@ class ClassifierFrame(ImageFrameBase):
       except ClassifierError, e:
          gui_util.message(str(e))
 
-   def _OnDisplayContents(self, event):
-      if self.splitterhr1.IsSplit():
-         self.unsplit_editors(self.class_iw)
-      else:
-         self.split_editors()
+   if not aui:
+      def _OnDisplayContents(self, event):
+         if self.splitterhr1.IsSplit():
+            self.unsplit_editors(self.class_iw)
+         else:
+            self.split_editors()
 
    def _OnGenerateClassifierStats(self, event):
       from gamera import classifier_stats
@@ -1592,22 +1640,23 @@ class ClassifierFrame(ImageFrameBase):
    ########################################
    # RULES MENU
 
-   def _OnShowRuleTestingPanel(self, event, show=1):
-      if self.splitterhl.IsSplit():
-         self.splitterhl.Unsplit()
-         self.rule_engine_runner.Hide()
-      else:
-         self.splitterhl.SplitHorizontally(
-            self.symbol_editor, self.rule_engine_runner,
-            self._frame.GetSize()[1] / 2)
-         self.rule_engine_runner.Show()
+   if not aui:
+      def _OnShowRuleTestingPanel(self, event, show=1):
+         if self.splitterhl.IsSplit():
+            self.splitterhl.Unsplit()
+            self.rule_engine_runner.Hide()
+         else:
+            self.splitterhl.SplitHorizontally(
+               self.symbol_editor, self.rule_engine_runner,
+               self._frame.GetSize()[1] / 2)
+            self.rule_engine_runner.Show()
 
    def _OnOpenRuleModule(self, event):
       filename = gui_util.open_file_dialog(self._frame, "*.py")
       if not filename is None:
          self.rule_engine_runner.open_module(filename)
       
-      if not self.splitterhl.IsSplit():
+      if not aui and not self.splitterhl.IsSplit():
          self.splitterhl.SplitHorizontally(
             self.symbol_editor, self.rule_engine_runner,
             self._frame.GetSize()[1] / 2)
@@ -1625,10 +1674,11 @@ class ClassifierFrame(ImageFrameBase):
       self._classifier.set_display(None)
       self.multi_iw.Destroy()
       self.single_iw.Destroy()
-      self.splitterhr1.Destroy()
-      self.splitterhr0.Destroy()
-      self.splitterhl.Destroy()
-      self.splitterv.Destroy()
+      if not aui:
+         self.splitterhr1.Destroy()
+         self.splitterhr0.Destroy()
+         self.splitterhl.Destroy()
+         self.splitterv.Destroy()
       self._frame.Destroy()
       del self._frame
 
@@ -1768,6 +1818,7 @@ class SymbolTableEditorPanel(wx.Panel):
       wx.Panel.__init__(
          self, parent, id,
          style=wx.WANTS_CHARS|wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
+      self.SetMinSize(wx.Size(200, 200))
       self.toplevel = toplevel
       self._symbol_table = symbol_table
       self.SetAutoLayout(True)

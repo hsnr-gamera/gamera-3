@@ -253,7 +253,9 @@ class ShellFrame(wx.Frame):
 
       if aui:
          self._aui = aui.AuiManager(self)
-         nb = aui.AuiNotebook(self)
+         nb_style = (aui.AUI_NB_TAB_SPLIT|aui.AUI_NB_TAB_MOVE|
+                     aui.AUI_NB_TAB_EXTERNAL_MOVE|aui.AUI_NB_SCROLL_BUTTONS)
+         nb = aui.AuiNotebook(self, style=nb_style)
          control_parent = self
       else:
          splitter = wx.SplitterWindow(

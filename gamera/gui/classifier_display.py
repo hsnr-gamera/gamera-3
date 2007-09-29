@@ -1818,7 +1818,6 @@ class SymbolTableEditorPanel(wx.Panel):
       wx.Panel.__init__(
          self, parent, id,
          style=wx.WANTS_CHARS|wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
-      self.SetMinSize(wx.Size(200, 200))
       self.toplevel = toplevel
       self._symbol_table = symbol_table
       self.SetAutoLayout(True)

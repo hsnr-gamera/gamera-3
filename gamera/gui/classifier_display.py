@@ -25,6 +25,8 @@ from wx import grid
 from wx.lib import buttons
 try:
    from wx import aui
+   # AUI has too many problems for now
+   aui = None
 except ImportError:
    aui = None
 from gamera.core import *

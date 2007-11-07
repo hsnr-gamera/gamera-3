@@ -262,7 +262,7 @@ class ShellFrame(wx.Frame):
             self, -1,
             style=wx.SP_3DSASH|wx.CLIP_CHILDREN|
             wx.NO_FULL_REPAINT_ON_RESIZE|wx.SP_LIVE_UPDATE)
-         control_parent = self.splitter
+         control_parent = splitter
 
       self.icon_display = icon_display.IconDisplay(control_parent, self)
       if aui:

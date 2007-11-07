@@ -41,18 +41,21 @@ class rotate(PluginFunction):
     *angle*
       The angle of rotation (in degrees)
 
-    *order*
-      The order of the spline used for interpolation.  Must be between 1 - 3.
-
     *bgcolor*
       The color to use for pixels outside of the original image bounds.
+
+    *order*
+      The order of the spline used for interpolation.  Must be between 1 - 3.
     """
     self_type = ImageType(ALL)    
     return_type = ImageType(ALL)
-    args = Args([Float("angle"), Int("order", (1, 3)), Pixel("bgcolor")])
+    args = Args([Float("angle"), Pixel("bgcolor"), Int("order", (1, 3), default=1)])
     args.list[0].rng = (-180,180)
-    doc_examples = [(RGB, 32.0, 3, RGBPixel(255, 255, 255)), (COMPLEX, 15.0, 3, 0.0j)]
+    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255), 3), (COMPLEX, 15.0, 0.0j, 3)]
     author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
+    def __call__(self, angle, bgcolor, order=1):
+      return _deformation.rotate(self, angle, bgcolor, order)
+    __call__ = staticmethod(__call__)
     
 class wave(PluginFunction):
     """

@@ -42,7 +42,7 @@
  *
  */
 template<class T>
-typename ImageFactory<T>::view_type* rotate(const T &src, double angle, int order, typename T::value_type bgcolor)
+typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename T::value_type bgcolor, int order)
 {
   if (order < 1 || order > 3) {
     throw std::range_error("Order must be between 1 and 3");

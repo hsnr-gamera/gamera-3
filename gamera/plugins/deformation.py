@@ -49,7 +49,7 @@ class rotate(PluginFunction):
     """
     self_type = ImageType(ALL)    
     return_type = ImageType(ALL)
-    args = Args([Float("angle"), Pixel("bgcolor"), Int("order", (1, 3), default=1)])
+    args = Args([Float("angle"), Pixel("bgcolor"), Int("order", range=(1,3), default=1)])
     args.list[0].rng = (-180,180)
     doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255), 3), (COMPLEX, 15.0, 0.0j, 3)]
     author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"

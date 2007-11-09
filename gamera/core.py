@@ -127,8 +127,9 @@ determined from the extension.
 
    for method in methods:
       for ext in method.exts:
-         if os.path.splitext(filename)[1].lower() == ext.lower():
+         if os.path.splitext(filename)[1][1:].lower() == ext.lower():
             method.__call__(image, filename)
+            return
               
    # For backward compatibility, fall back to tiff if
    # we can't automatically determine the filetype by

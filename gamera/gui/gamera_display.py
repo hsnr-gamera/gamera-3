@@ -483,7 +483,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
    def _OnSave(self, *args):
       filename = gui_util.save_file_dialog(self, util.get_file_extensions("save"))
-      self.original_image.save_image(filename)
+      if filename is not None:
+         self.original_image.save_image(filename)
 
    def _OnPrint(self, *args):
       dialog_data = wx.PrintDialogData()

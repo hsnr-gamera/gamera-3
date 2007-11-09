@@ -209,12 +209,9 @@ class ImageMenu:
          # if not, we can just use empty parentheses
          return function.__name__ + "()"
       # else, display the argument gui and use what it returns
-      try:
-         result = function.args.show(
-            self.parent, sh.GetLocals(),
-            function.__name__, docstring=function.__call__.__doc__)
-      except Exception, e:
-         print e
+      result = function.args.show(
+         self.parent, sh.GetLocals(),
+         function.__name__, docstring=function.__call__.__doc__)
       return result
 
    def get_result_name(self, function, dict):

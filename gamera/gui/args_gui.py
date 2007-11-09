@@ -225,6 +225,8 @@ class Args:
                return self.function + self.get_args_string()
          except ArgInvalidException, e:
             gui_util.message(str(e))
+         except Exception:
+            throw
          else:
             break
       self.window.Destroy()
@@ -551,7 +553,7 @@ class _Filename:
       self.control = wx.BoxSizer(wx.HORIZONTAL)
       self.text = wx.TextCtrl(parent, -1, text, size=wx.Size(200, 24))
       browseID = wx.NewId()
-      if wx.Platform == '__WXMAC__':
+      if wx.Platform == '__WXMAC__' and hasattr(buttons, 'ThemedGenButton'):
          browse = buttons.ThemedGenButton(
             parent, browseID, "...", size=wx.Size(24, 24))
       else:
@@ -559,7 +561,7 @@ class _Filename:
             parent, browseID, "...", size=wx.Size(24, 24))
       wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
       self.control.Add(self.text, 1, wx.EXPAND)
-      self.control.AddSpacer(4)
+      self.control.Add((4, 4), 0)
       self.control.Add(browse, 0)
       return self
 

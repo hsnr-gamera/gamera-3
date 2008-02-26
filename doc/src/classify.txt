@@ -303,6 +303,70 @@ genetic algorithm.
 
 .. docstring:: gamera.knn kNNNonInteractive start_optimizing stop_optimizing add_optimization_callback remove_optimization_callback
 
+Improving kNN Classifiers using Editing
+'''''''''''''''''''''''''''''''''''''''
+
+Gamera provides a way to improve kNN classifiers by modifying the underlying
+set of glyphs (training-set). This class of algorithms either removes bad or 
+redundant glyphs or even creates new *optimal* glyphs from the training-set.
+
+Besides the graphical user interface in the `Classifier Display`__, it is also
+possible to invoke the algorithms from your script.
+
+.. __: gui.html#classifier-menu
+
+Each editing algorithm is a function, that takes at least one parameter, a 
+*kNNInteractive* classifier - and returns a new edited *kNNInteractive* 
+classifier. Any additional parameters depend on the effective algorithm, but are
+optional by convention.
+
+Currently the following editing algorithms are included with Gamera:
+
+.. docstring:: gamera.knn_editing edit_mnn
+ 
+.. docstring:: gamera.knn_editing edit_cnn 
+
+.. docstring:: gamera.knn_editing edit_mnn_cnn
+
+
+Usage Example
+`````````````
+
+The algorithms are located in the *gamera.knn_editing* package. So a typical 
+usage example employing Wilson's *Modified Nearest Neighbour* (edit_mnn) would 
+look like this:
+
+.. code:: Python
+
+  from gamera.core import init_gamera
+  init_gamera()
+  
+  from gamera.knn import kNNInteractive
+  classifier = kNNInteractive()
+  classifier.from_xml_filename("training-set.xml")
+  
+  from gamera.knn_editing import edit_mnn
+  editedClassifier = edit_mnn(classifier)
+
+To display the glyphs removed by the editing algorithm, you can use
+the following code in the Gamera GUI:
+
+.. code:: Python
+
+   set1 = classifier.get_glyphs()
+   set2 = editedClassifier.get_glyphs()
+   imagelist = list(set1.difference(set2))
+   display_multi(imagelist)
+
+
+Integrating your own editing algorithm
+``````````````````````````````````````
+
+If you have written your own editing algorithm and want to make it available in
+the Classifier GUI, refer to the documentation of the class 
+**gamera.knn_editing.AlgoRegistry**.  
+
+
 References
 ----------
 

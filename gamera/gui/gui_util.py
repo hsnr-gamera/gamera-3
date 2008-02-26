@@ -92,7 +92,7 @@ class FileDialog(wx.FileDialog):
    def __init__(self, parent, extensions="*.*", multiple=0):
       cls = self.__class__
       if cls.last_directory is None:
-         cls.last_directory = config.get("default_dir")
+         cls.last_directory = path.abspath(config.get("default_dir"))
       if multiple:
          self._flags |= wx.MULTIPLE
          self._multiple = True

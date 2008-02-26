@@ -656,6 +656,27 @@ Classifier menu
   will create a noninteractive copy, which is likely more optimized
   than the interactive version (depending on the classifier type).
 
+**Create edited classifier**
+  This option will show a dialog to create a new classifier with a modified 
+  training-set based on the current classifer. This modified classifier is 
+  produced by one of several kNN-editing algorithms which the user can chose
+  from. Depending on the chosen algorithm a set of parameters is displayed which
+  can be changed by the user to tune the algorithm's results. Additionally the 
+  documentation for this algorithm and its parameters is displayed.
+  
+  .. image:: images/knn_editing.png
+  
+  After confirming this dialog, the user is prompted to select a name for the 
+  new classifier. The classifier will then be added to the icon display in the 
+  console under this name.
+  
+  The produced classifier is usually improved either in terms of speed or 
+  classification accuracy, depending on the chosen algorithms and its 
+  parameters. For details about the algorithms, their parameters and how to 
+  include your own editing algorithms see the `classifier documentation`__.
+
+.. __: classify.html#improving-knn-classifiers-using-editing
+
 Rules menu
 ''''''''''
 

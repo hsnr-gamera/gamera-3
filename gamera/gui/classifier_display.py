@@ -588,7 +588,7 @@ class ClassifierFrame(ImageFrameBase):
       self.multi_iw.id.glyphs.add_callback(
          'length_change',
          self.page_collection_length_change_callback)
-      self.class_iw.id.set_image([])
+      self.class_iw.id.set_image(self._classifier.get_glyphs())
 
    def __del__(self):
       self._classifier.database.remove_callback(
@@ -673,6 +673,7 @@ class ClassifierFrame(ImageFrameBase):
             (None, None),
             ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)])
       classifier_menu_spec.extend([
+         ("Create &edited classifier...", self._OnCreateEditedClassifier),                                 
          (None, None),
          ("Generate classifier stats...", self._OnGenerateClassifierStats)])
       classifier_menu = gui_util.build_menu(
@@ -1559,8 +1560,7 @@ class ClassifierFrame(ImageFrameBase):
          name='Feature selection', 
          title='Select the features you want to use for classification')
       result = dialog.show(
-         self._frame,
-         docstring="""Select the features you want to use for classification""")
+         self._frame)
       if result is None:
          return
       selected_features = [name for check, name in
@@ -1606,6 +1606,16 @@ class ClassifierFrame(ImageFrameBase):
       except ClassifierError, e:
          gui_util.message(str(e))
 
+   def _OnCreateEditedClassifier(self, event):
+      from gamera.gui.knn_editing_display import EditingDialog
+      editedClassifier = EditingDialog().show(self._classifier)
+
+      if not editedClassifier is None:
+         from gamera.gui import var_name
+         classifierName = var_name.get("classifier", image_menu.shell.locals)
+         image_menu.shell.locals[classifierName] = editedClassifier
+         image_menu.shell.update()
+          
    if not aui:
       def _OnDisplayContents(self, event):
          if self.splitterhr1.IsSplit():

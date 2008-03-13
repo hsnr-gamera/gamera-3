@@ -19,15 +19,7 @@
 from random import randint
 from gamera.args import Args, Int, Check
 from gamera.knn import kNNInteractive
-
-def show(classifier):
-    """Workaround for classifier.display() - as it doesn't show the 
-classifier's own glyphs in the *classifier glyphs* frame. So instead load the 
-glyphs into its *page glyphs* frame 
-
-    *classifier*
-       the classifier to be displayed"""
-    classifier.display(classifier.get_glyphs())
+from gamera.util import ProgressFactory
 
 def _randomSetElement(set):
     """Retrieve a random element from the given set
@@ -40,56 +32,55 @@ def _randomSetElement(set):
             return elem
 
 def _copyClassifier(original, k = 0):
-    """Copy a given kNNClassifer by constructing a new one with identical 
+    """Copy a given kNNClassifer by constructing a new one with identical
 parameters.
 
     *original*
       The classifier to be copied
-      
+
     *k*
       If the copy shall have another k-value as the original, set k accordingly.
       k = 0 means, that the original's k-value will be used"""
     if k == 0:
         k = original.num_k
     return kNNInteractive(
-                list(original.get_glyphs()), original.features, 
+                list(original.get_glyphs()), original.features,
                 original._perform_splits,
                 k)
 
 def _getMainId(classificationResult):
-    """Classification results returned from a kNN Classifier are in a list 
+    """Classification results returned from a kNN Classifier are in a list
 containing '(confidence, className)' tuples. So to determine the 'main class',
 the classname with the highest confidence has to be returned.
 !TODO: Currently assumes, that there is just one result"""
     return classificationResult[0][1]
 
 class AlgoRegistry(object):
-    """Registry containing a list of all available editing algorithms. Besides 
-the callable itself, the registry also stores its docstring, a displayname and 
-type-information about any additionally required arguments. This information 
-will be used by the gui to show a dialog to execute any of the available 
+    """Registry containing a list of all available editing algorithms. Besides
+the callable itself, the registry also stores its docstring, a displayname and
+type-information about any additionally required arguments. This information
+will be used by the gui to show a dialog to execute any of the available
 algorithms on a classifier.
-    
-An editing algorithm is any callable object, that takes at least one parameter 
--  a *gamera.knn.kNNInteractive* classifier - and returns a new edited 
+
+An editing algorithm is any callable object, that takes at least one parameter
+-  a *gamera.knn.kNNInteractive* classifier - and returns a new edited
 *kNNInteractive* classifier.
- 
-To add your own algorithm, use one of the *register()* methods or alternatively, 
-let your callable inherit from *EditingAlgorithm* to register your algorithm,""" 
+
+To add your own algorithm, use one of the *register()* methods or alternatively,
+let your callable inherit from *EditingAlgorithm* to register your algorithm,"""
     algorithms = []
 
     @staticmethod
     def registerData(algoData):
-        """Register a new editing Algorithm using metadata from an 
+        """Register a new editing Algorithm using metadata from an
 *AlgoData* object"""
         AlgoRegistry.algorithms.append(algoData)
 
-    @staticmethod    
+    @staticmethod
     def register(name, callable, args = Args(), doc = ""):
         """Register a new editing Algorithm: The parameters are the same as in
-*AlgoData.__init__*, so see its doc for an explanation of the parameters.""" 
+*AlgoData.__init__*, so see its doc for an explanation of the parameters."""
         AlgoRegistry.registerData(AlgoData(name, callable, args, doc))
-
 
 class AlgoData(object):
     """Class holding all metadata about an editing algorithm, that is required by
@@ -97,21 +88,21 @@ class AlgoData(object):
 
 *name*
     Name of the algorithm
- 
+
 *callable*
-    The callable object implementing the algorithm. Its first parameter has to 
+    The callable object implementing the algorithm. Its first parameter has to
     be a *kNNInteractive* Classifier and it has to return a new *kNNInteractive*
-    classifier. If the algorithm requires any additional parameters, they have 
+    classifier. If the algorithm requires any additional parameters, they have
     to be specified in the *args* parameter
-    
+
 *args*
     A *gamera.args.Args* object specifying any additional parameters required by
     the algorithm
-    
+
 *doc*
-    A docstring in reStructured Text format, describing the algorithm and its 
+    A docstring in reStructured Text format, describing the algorithm and its
     parameters"""
-    def __init__(self, name, callable, args = Args(), doc = ""): 
+    def __init__(self, name, callable, args = Args(), doc = ""):
         self.name = name
         self.callable = callable
         self.args = args
@@ -121,14 +112,14 @@ class AlgoData(object):
 class EditingAlgorithm(object):
     """Convenience class to automatically register editing algorithms with the
 *AlgoRegistry*. If you implement your algorithm as a callable class, you can
-just inherit from this class to let it automatically be registered. Just add 
+just inherit from this class to let it automatically be registered. Just add
 two properties to the class:
 
 *name*
     The name of your algorithm
 *args*
     Type info about any additional required arguments (a *gamera.args.Args* object)
-""" 
+"""
     def __init__(self):
         AlgoRegistry.register(self.name, self, self.args, self.__doc__)
 
@@ -162,23 +153,26 @@ Reference: D. Wilson: 'Asymptotic Properties of NN Rules Using Edited Data'.
                  Check("Protect rare classes", default = True),
                  Int("Rare class threshold", default = 3)])
 
-    def __call__(self, classifier, k = 0, protectRare = True, 
+    def __call__(self, classifier, k = 0, protectRare = True,
                  rareThreshold = 3):
-        
+
         editedClassifier = _copyClassifier(classifier, k)
         toBeRemoved = set()
+        progress = ProgressFactory("Generating edited MNN classifier...",
+                                      len(classifier.get_glyphs()))
 
         # classify each glyph with its leave-one-out classifier
-        for glyph in classifier.get_glyphs():
+        for i, glyph in enumerate(classifier.get_glyphs()):
             editedClassifier.get_glyphs().remove(glyph)
             detectedClass = _getMainId(
-                                editedClassifier.guess_glyph_automatic(glyph))            
+                                editedClassifier.guess_glyph_automatic(glyph))
             # check if recognized class complies with the true class
             if glyph.get_main_id() != detectedClass:
-                toBeRemoved.add(glyph)                
+                toBeRemoved.add(glyph)
             editedClassifier.get_glyphs().add(glyph)
+            progress.step()
 
-        rareClasses = self._getRareClasses(classifier.get_glyphs(), 
+        rareClasses = self._getRareClasses(classifier.get_glyphs(),
                                            protectRare, rareThreshold)
         
         # remove 'bad' glyphs, if they are not in a rare class
@@ -186,6 +180,8 @@ Reference: D. Wilson: 'Asymptotic Properties of NN Rules Using Edited Data'.
             if glyph.get_main_id() in rareClasses:
                 continue
             editedClassifier.get_glyphs().remove(glyph)
+            
+        progress.kill()
         return editedClassifier
     
     def _getRareClasses(self, glyphs, protectRare, rareThreshold):
@@ -240,7 +236,10 @@ Reference: P.E. Hart: 'The Condensed Nearest Neighbor rule'. *IEEE Transactions 
             return _copyClassifier(classifier)
 
         if k == 0:
-            k = classifier.num_k            
+            k = classifier.num_k
+        
+        progress = ProgressFactory("Generating edited CNN classifier...",
+                                      len(classifier.get_glyphs()))
 
         # initialize Store (a) with a single element
         if randomize:
@@ -251,6 +250,7 @@ Reference: P.E. Hart: 'The Condensed Nearest Neighbor rule'. *IEEE Transactions 
         aGlyphs = [elem]
         a = kNNInteractive(aGlyphs, classifier.features, 
                            classifier._perform_splits, k)
+        progress.step()
         
         # initialize Grabbag (b) with all other
         b = classifier.get_glyphs().copy()
@@ -269,14 +269,17 @@ Reference: P.E. Hart: 'The Condensed Nearest Neighbor rule'. *IEEE Transactions 
                 if glyph.get_main_id() != _getMainId(a.guess_glyph_automatic(glyph)):
                     b.remove(glyph)
                     a.get_glyphs().add(glyph)
+                    progress.step()
                     changed = True
+        progress.kill()
+        a.num_k = 1
         return a
 
 edit_cnn = EditCnn()
 
 class EditMnnCnn(EditingAlgorithm):
     """**edit_mnn_cnn** (kNNInteractive *classifier*, int *k* = 0, bool *protectRare*, int *rareThreshold*, bool *randomize*)
-    
+
 Combined execution of Wilson's Modified Nearest Neighbour and Hart's
 Condensed Nearest Neighbour. Combining the algorithms in this order is 
 recommended, because first bad samples are removed to improve the classifiers 
@@ -288,8 +291,8 @@ For documentation of the parameters see the independent algorithms"""
                  Check("Protect rare classes", default = True),
                  Int("Rare class threshold", default = 3),
                  Check("Randomize", default = True)])
-    
-    def __call__(self, classifier, k = 0, protectRare = True, 
+
+    def __call__(self, classifier, k = 0, protectRare = True,
                  rareThreshold = 3, randomize = True):
         return edit_cnn(edit_mnn(classifier, k, protectRare, rareThreshold),
                    randomize)

@@ -130,8 +130,6 @@ class OptimizerFrame(wx.Frame):
       self.optimizer_menu.Enable(id, enable)
       id = self.optimizer_menu.FindItem("Features...")
       self.optimizer_menu.Enable(id, enable)
-      id = self.optimizer_menu.FindItem("Open")
-      self.optimizer_menu.Enable(id, enable)
       id = self.file_menu.FindItem("Save settings")
       self.file_menu.Enable(id, True)
       id = self.file_menu.FindItem("Save settings as...")

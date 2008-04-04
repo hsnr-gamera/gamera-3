@@ -62,7 +62,7 @@ The pixel type of an image can be retrieved in two ways.
 
 .. code:: Python
 
-  image.pixel_type_name()
+  image.pixel_type_name
 
 returns a string which is one of ``RGB``, ``GreyScale``, ``Grey16``,
 ``OneBit`` or ``Float``.

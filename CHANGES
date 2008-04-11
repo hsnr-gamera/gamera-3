@@ -1,0 +1,16 @@
+Changes made between Gamera File Releases
+=========================================
+
+Version 3.1.0, April xy, 2008
+-----------------------------
+
+ - added automatic editing algorithms for removing outliers and superfluos
+   samples to kNN classifiers
+   see the classifier API documentation for details
+   (thanks to Colin Baumgarten)
+
+ - new plugin category "Page Segmentation"
+   with two basic algorithms based on runlength smearing and projections
+   see the plugin documentation for details
+
+ - ported to wxPython 2.8

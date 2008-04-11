@@ -473,7 +473,8 @@ class draw_text(PluginFunction):
     except:
       pass
     return image
-  doc_examples = [__doc_example1__]
+  if sys.platform != 'darwin':
+    doc_examples = [__doc_example1__]
 
 class flood_fill(PluginFunction):
   """

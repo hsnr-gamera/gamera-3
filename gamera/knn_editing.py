@@ -70,17 +70,17 @@ To add your own algorithm, use one of the *register()* methods or alternatively,
 let your callable inherit from *EditingAlgorithm* to register your algorithm,"""
     algorithms = []
 
-    @staticmethod
     def registerData(algoData):
         """Register a new editing Algorithm using metadata from an
 *AlgoData* object"""
         AlgoRegistry.algorithms.append(algoData)
+    registerData = staticmethod(registerData)
 
-    @staticmethod
     def register(name, callable, args = Args(), doc = ""):
         """Register a new editing Algorithm: The parameters are the same as in
 *AlgoData.__init__*, so see its doc for an explanation of the parameters."""
         AlgoRegistry.registerData(AlgoData(name, callable, args, doc))
+    register = staticmethod(register)
 
 class AlgoData(object):
     """Class holding all metadata about an editing algorithm, that is required by

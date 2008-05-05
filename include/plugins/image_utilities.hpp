@@ -412,43 +412,55 @@ namespace Gamera {
     data_type* dest_data = new data_type
       (Dim(src.ncols()+right+left, src.nrows()+top+bottom), 
        src.origin());
-    view_type* top_pad = new view_type
-      (*dest_data, Point(src.ul_x() + left, src.ul_y()),
-       Dim(src.ncols() + right, top));
-    view_type* right_pad = new view_type
-      (*dest_data, Point(src.ul_x()+src.ncols()+left, src.ul_y()+top),
-       Dim(right, src.nrows()+bottom));
-    view_type* bottom_pad = new view_type
-      (*dest_data, Point(src.ul_x(), src.ul_y()+src.nrows()+top), 
-       Dim(src.ncols()+left, bottom));
-    view_type* left_pad = new view_type
-      (*dest_data, src.origin(), 
-       Dim(left, src.nrows()+top));
+    view_type* top_pad = NULL;
+    if (top > 0)
+      top_pad = new view_type
+        (*dest_data, Point(src.ul_x() + left, src.ul_y()),
+         Dim(src.ncols() + right, top));
+    view_type* right_pad = NULL;
+    if (right > 0)
+      right_pad = new view_type
+        (*dest_data, Point(src.ul_x()+src.ncols()+left, src.ul_y()+top),
+         Dim(right, src.nrows()+bottom));
+    view_type* bottom_pad = NULL;
+    if (bottom > 0)
+      bottom_pad = new view_type
+        (*dest_data, Point(src.ul_x(), src.ul_y()+src.nrows()+top), 
+         Dim(src.ncols()+left, bottom));
+    view_type* left_pad = NULL;
+    if (left > 0)
+      left_pad = new view_type
+        (*dest_data, src.origin(), 
+         Dim(left, src.nrows()+top));
     view_type* dest_srcpart = new view_type
       (*dest_data, Point(src.offset_x()+left, src.offset_y()+top), 
        src.dim());
     view_type* dest = new view_type(*dest_data);
     
     try {
-      fill(*top_pad, value);
-      fill(*right_pad, value);
-      fill(*bottom_pad, value);
-      fill(*left_pad, value);
+      if (top_pad)
+        fill(*top_pad, value);
+      if (right_pad)
+        fill(*right_pad, value);
+      if (bottom_pad)
+        fill(*bottom_pad, value);
+      if (left_pad)
+        fill(*left_pad, value);
       image_copy_fill(src, *dest_srcpart);
     } catch (std::exception e) {
-      delete top_pad;
-      delete right_pad;
-      delete bottom_pad;
-      delete left_pad;
+      if (top_pad) delete top_pad;
+      if (right_pad) delete right_pad;
+      if (bottom_pad) delete bottom_pad;
+      if (left_pad) delete left_pad;
       delete dest_srcpart;
       delete dest;
       delete dest_data;
     }
 
-    delete top_pad;
-    delete right_pad;
-    delete bottom_pad;
-    delete left_pad;
+    if (top_pad) delete top_pad;
+    if (right_pad) delete right_pad;
+    if (bottom_pad) delete bottom_pad;
+    if (left_pad) delete left_pad;
     delete dest_srcpart;
 
     return(dest);

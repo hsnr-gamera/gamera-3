@@ -49,27 +49,60 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
   }
   
   // Adjust angle to a positve double between 0-360
-  while(angle<=0.0) angle+=360;
+  while(angle<0.0) angle+=360;
   while(angle>=360.0) angle-=360;
+
+  // some angle ranges flip width and height
+  // as VIGRA requires source and destination to be of the same
+  // size, it cannot handle a reduce in one image dimension.
+  // Hence we must rotate by 90 degrees, if necessary
+  bool rot90done = false;
+  typename ImageFactory<T>::view_type* prep4vigra = (typename ImageFactory<T>::view_type*) &src;
+  if ((45 < angle && angle < 135) ||
+      (225 < angle && angle < 315)) {
+     typename ImageFactory<T>::data_type* prep4vigra_data =
+       new typename ImageFactory<T>::data_type(Size(src.height(),src.width()));
+     prep4vigra = new typename ImageFactory<T>::view_type(*prep4vigra_data);
+     size_t ymax = src.nrows() - 1;
+     for (size_t y = 0; y < src.nrows(); ++y) {
+       for (size_t x = 0; x < src.ncols(); ++x) {
+         prep4vigra->set(Point(ymax-y,x), src.get(Point(x,y)));
+       }
+     }
+     rot90done = true;
+     // recompute rotation angle, because partial rotation already done
+     angle -= 90.0;
+     if (angle < 0.0) angle +=360;
+  }
 
   double rad = (angle / 180.0) * M_PI;
 
-  size_t new_width = size_t(abs(cos(rad) * (double)src.width() + 
-				sin(rad) * (double)src.height()));
-  size_t new_height = size_t(abs(sin(rad) * (double)src.width() + 
-				 cos(rad) * (double)src.height()));
+  // new width/height depending on angle
+  size_t new_width, new_height;
+  if ((0 <= angle && angle <= 90) ||
+      (180 <= angle && angle <= 270)) {
+    new_width = size_t(0.5+abs(cos(rad) * (double)prep4vigra->width() + 
+                           sin(rad) * (double)prep4vigra->height()));
+    new_height = size_t(0.5+abs(sin(rad) * (double)prep4vigra->width() + 
+                            cos(rad) * (double)prep4vigra->height()));
+  } else {
+    new_width = size_t(0.5+abs(cos(rad) * (double)prep4vigra->width() - 
+                           sin(rad) * (double)prep4vigra->height()));
+    new_height = size_t(0.5+abs(sin(rad) * (double)prep4vigra->width() - 
+                            cos(rad) * (double)prep4vigra->height()));
+  }
   size_t pad_width = 0;
-  if (new_width > src.width())
-    pad_width = (new_width - src.width()) / 2 + 2;
+  if (new_width > prep4vigra->width())
+    pad_width = (new_width - prep4vigra->width()) / 2 + 2;
   size_t pad_height = 0;
-  if (new_height > src.height())
-    pad_height = (new_height - src.height()) / 2 + 2;
+  if (new_height > prep4vigra->height())
+    pad_height = (new_height - prep4vigra->height()) / 2 + 2;
 
   typename ImageFactory<T>::view_type* tmp =
-    pad_image(src, pad_height, pad_width, pad_height, pad_width, bgcolor);
+    pad_image(*prep4vigra, pad_height, pad_width, pad_height, pad_width, bgcolor);
 
   typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(tmp->size(), src.origin());
+    new typename ImageFactory<T>::data_type(tmp->size());
   typename ImageFactory<T>::view_type* dest =
     new typename ImageFactory<T>::view_type(*dest_data);
 
@@ -94,9 +127,17 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
     delete tmp;
     delete dest;
     delete dest_data;
+    if (rot90done) {
+      delete prep4vigra->data();
+      delete prep4vigra;
+    }
     throw;
   }
 
+  if (rot90done) {
+    delete prep4vigra->data();
+    delete prep4vigra;
+  }
   delete tmp->data();
   delete tmp;
 

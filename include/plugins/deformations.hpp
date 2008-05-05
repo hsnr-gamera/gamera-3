@@ -33,8 +33,10 @@
 /*
  * Rotate at an arbitrary angle.
  *
- * This algorithm works by first rotating the image within 45 degrees of the desired
- * angle, and then using 'rot45' to do a multipass (3 shear) rotation.
+ * This algorithm works by first rotating for 90 degrees, depending whether
+ * height and width are exchanged by rotation or not.
+ * Afterwards VIGRA's rotation algorithm is called, which allows
+ * for different types of interpolation.
  *
  * src - A view of of the source image
  * angle - Degree of rotation
@@ -48,7 +50,7 @@ typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename
     throw std::range_error("Order must be between 1 and 3");
   }
   
-  // Adjust angle to a positve double between 0-360
+  // Adjust angle to a positive double between 0-360
   while(angle<0.0) angle+=360;
   while(angle>=360.0) angle-=360;
 

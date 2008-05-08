@@ -76,12 +76,12 @@ class convolve(PluginFunction):
     .. code:: Python
 
       # Using a custom kernel
-      image.convolve([[0.125, 0.0, -0.125],
-                      [0.25 , 0.0, -0.25 ],
-                      [0.125, 0.0, -0.125]])
+      img2 = image.convolve([[0.125, 0.0, -0.125],
+                             [0.25 , 0.0, -0.25 ],
+                             [0.125, 0.0, -0.125]])
 
       # Using one of the included kernel generators
-      image.convolve(GaussianKernel(3.0))
+      img2 = image.convolve(GaussianKernel(3.0))
     """
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel'),

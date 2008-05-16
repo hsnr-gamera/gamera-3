@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed a severe bug in the rotate() function
+
+
 Version 3.1.0, April 14, 2008
 -----------------------------
 

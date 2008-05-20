@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -37,7 +37,7 @@ class Arg:
 
    def __iter__(self):
       raise RuntimeError()
-   
+
    def _get_symbol(self):
       return re.sub(r"\s", "_", self.name) + '_arg'
    symbol = property(_get_symbol)
@@ -66,7 +66,7 @@ class Arg:
 
    def _do_call(self, function, output_args):
       if function.progress_bar:
-         output_args.append('ProgressBar("%s")' % function.progress_bar);
+         output_args.append('ProgressBar((char *)"%s")' % function.progress_bar);
       if function.feature_function:
          return "%s(%s, feature_buffer);" % (function.__name__, ", ".join(output_args))
       else:
@@ -90,7 +90,7 @@ class Arg:
          return "delete %(symbol)s;" % self
       else:
          return ""
-      
+
 class Int(Arg):
    arg_format = 'i'
    c_type = 'int'
@@ -208,7 +208,7 @@ class Rect(Arg):
 
    def to_python(self):
       return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
-            
+
 class Region(Arg):
    c_type = 'Region*'
    convert_from_PyObject = True
@@ -247,7 +247,7 @@ class ImageList(Arg):
    c_type = 'ImageVector'
    return_type = 'std::list<Image*>*'
    convert_from_PyObject = True
-   
+
    def from_python(self):
       return """
           const char* type_error_%(name)s = "Argument '%(name)s' must be an iterable of images.";

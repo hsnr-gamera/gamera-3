@@ -25,7 +25,7 @@ def install_desktop_icon():
 print "Loading GAMERA..."
 import sys
 try:
-   import wxPython.wx
+   import wxversion
 except ImportError:
    print "Please ensure that wxPython is installed before running Gamera."
    print "Press <ENTER> to exit."

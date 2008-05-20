@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -49,10 +49,10 @@ static PyTypeObject FloatPointType = {
 static PyNumberMethods floatpoint_number_methods;
 
 static PyGetSetDef floatpoint_getset[] = {
-  { "x", (getter)floatpoint_get_x, NULL, 
-    "(float property)\n\nGet the current x value", 0},
-  { "y", (getter)floatpoint_get_y, NULL, 
-    "(float property)\n\nGet the current y value", 0},
+  { (char *)"x", (getter)floatpoint_get_x, NULL,
+    (char *)"(float property)\n\nGet the current x value", 0},
+  { (char *)"y", (getter)floatpoint_get_y, NULL,
+    (char *)"(float property)\n\nGet the current y value", 0},
   { NULL }
 };
 
@@ -93,7 +93,7 @@ static PyObject* floatpoint_new(PyTypeObject* pytype, PyObject* args,
 	;
       }
     }
-  } 
+  }
 
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to FloatPoint constructor.  Valid forms are: (x, y), (Point p), and ((x, y)).");
@@ -116,7 +116,7 @@ CREATE_GET_FUNC(y)
 
 static PyObject* floatpoint_distance(PyObject* self, PyObject* point) {
   FloatPoint* x = ((FloatPointObject*)self)->m_x;
-    
+
   try {
     FloatPoint fp = coerce_FloatPoint(point);
     double distance = x->distance(fp);
@@ -240,7 +240,7 @@ void init_FloatPointType(PyObject* module_dict) {
   FloatPointType.tp_free = NULL; // _PyObject_Del;
   FloatPointType.tp_methods = floatpoint_methods;
   FloatPointType.tp_repr = floatpoint_repr;
-  FloatPointType.tp_doc = 
+  FloatPointType.tp_doc =
 "**FloatPoint** (*x*, *y*)\n\n"
 "   *or*\n\n"
 "**FloatPoint** (Point *p*)\n\n"

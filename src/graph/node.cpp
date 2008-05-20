@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -19,7 +19,7 @@
 #include "node.hpp"
 #include "iterator.hpp"
 
-Node::Node(GraphObject* graph, PyObject* data) : 
+Node::Node(GraphObject* graph, PyObject* data) :
   m_graph(graph), m_data(data) {
   Py_INCREF(data);
 }
@@ -44,14 +44,14 @@ PyMethodDef node_methods[] = {
 };
 
 PyGetSetDef node_getset[] = {
-  { "data", (getter)node_get_data, (setter)node_set_data,
-    "The value the identified with this node. (get/set)", 0 },
-  { "edges", (getter)node_get_out_edges, 0,
-    "An iterator over edges pointing out from node (get)", 0 },
-  { "nodes", (getter)node_get_nodes, 0,
-    "An iterator over nodes that can be reached directly (through a single edge) from this node (get)", 0 },
-  { "nedges", (getter)node_get_nedges, 0,
-    "The number of edges pointing out of this node (get)", 0 },
+  { (char *)"data", (getter)node_get_data, (setter)node_set_data,
+    (char *)"The value the identified with this node. (get/set)", 0 },
+  { (char *)"edges", (getter)node_get_out_edges, 0,
+    (char *)"An iterator over edges pointing out from node (get)", 0 },
+  { (char *)"nodes", (getter)node_get_nodes, 0,
+    (char *)"An iterator over nodes that can be reached directly (through a single edge) from this node (get)", 0 },
+  { (char *)"nedges", (getter)node_get_nedges, 0,
+    (char *)"The number of edges pointing out of this node (get)", 0 },
   { NULL }
 };
 
@@ -89,7 +89,7 @@ void nodeobject_dealloc(PyObject* self) {
 
 PyObject* node___repr__(PyObject* self) {
   Node* so = ((NodeObject*)self)->m_x;
-  return PyString_FromFormat("<Node of %s>", 
+  return PyString_FromFormat("<Node of %s>",
 			     PyString_AsString(PyObject_Repr(so->m_data)));
 }
 
@@ -102,7 +102,7 @@ PyObject* node___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   node_set_data(self, data);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* node_get_data(PyObject* self) {
   Node* so = ((NodeObject*)self)->m_x;

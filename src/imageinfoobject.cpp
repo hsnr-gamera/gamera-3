@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -46,18 +46,18 @@ static PyTypeObject ImageInfoType = {
 };
 
 static PyGetSetDef imageinfo_getset[] = {
-  { "x_resolution", (getter)imageinfo_get_x_resolution,
-    (setter)imageinfo_set_x_resolution, "The x resolution of the image." },
-  { "y_resolution", (getter)imageinfo_get_y_resolution,
-    (setter)imageinfo_set_y_resolution, "The y resolution of the image." },
-  { "ncols", (getter)imageinfo_get_ncols,
-    (setter)imageinfo_set_ncols, "The number of columns of the image." },
-  { "nrows", (getter)imageinfo_get_nrows,
-    (setter)imageinfo_set_nrows, "The number of rows of the image." },
-  { "depth", (getter)imageinfo_get_depth,
-    (setter)imageinfo_set_depth, "The bit depth of the image (in bits)." },
-  { "ncolors", (getter)imageinfo_get_ncolors,
-    (setter)imageinfo_set_ncolors, "The number of colors in the image." },
+  { (char *)"x_resolution", (getter)imageinfo_get_x_resolution,
+    (setter)imageinfo_set_x_resolution, (char *)"The x resolution of the image." },
+  { (char *)"y_resolution", (getter)imageinfo_get_y_resolution,
+    (setter)imageinfo_set_y_resolution, (char *)"The y resolution of the image." },
+  { (char *)"ncols", (getter)imageinfo_get_ncols,
+    (setter)imageinfo_set_ncols, (char *)"The number of columns of the image." },
+  { (char *)"nrows", (getter)imageinfo_get_nrows,
+    (setter)imageinfo_set_nrows, (char *)"The number of rows of the image." },
+  { (char *)"depth", (getter)imageinfo_get_depth,
+    (setter)imageinfo_set_depth, (char *)"The bit depth of the image (in bits)." },
+  { (char *)"ncolors", (getter)imageinfo_get_ncolors,
+    (setter)imageinfo_set_ncolors, (char *)"The number of colors in the image." },
   { NULL }
 };
 
@@ -129,7 +129,7 @@ void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageInfoType.tp_getset = imageinfo_getset;
   ImageInfoType.tp_free = NULL; // _PyObject_Del;
-  ImageInfoType.tp_doc = 
+  ImageInfoType.tp_doc =
 "__init__()\n\n"
 "The ImageInfo class allows the properties of a disk-based image file "
 "to be examined without loading it.\n\n"

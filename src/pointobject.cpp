@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -43,14 +43,14 @@ static PyTypeObject PointType = {
 };
 
 static PyGetSetDef point_getset[] = {
-  { "x", (getter)point_get_x, (setter)point_set_x, "(int property)\n\nThe current x value", 0},
-  { "y", (getter)point_get_y, (setter)point_set_y, "(int property)\n\nThe current y value", 0},
+  { (char *)"x", (getter)point_get_x, (setter)point_set_x, (char *)"(int property)\n\nThe current x value", 0},
+  { (char *)"y", (getter)point_get_y, (setter)point_set_y, (char *)"(int property)\n\nThe current y value", 0},
   { NULL }
 };
 
 static PyMethodDef point_methods[] = {
-  { "move", point_move, METH_VARARGS,
-    "**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
+  { (char *)"move", point_move, METH_VARARGS,
+    (char *)"**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
   { NULL }
 };
 
@@ -202,7 +202,7 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
   PointType.tp_hash = point_hash;
-  PointType.tp_doc = 
+  PointType.tp_doc =
 "__init__(Int *x*, Int *y*)\n\n"
 "Point stores an (*x*, *y*) coordinate point.\n\n"
 "Most functions that take a Point as an argument can also take a\n"

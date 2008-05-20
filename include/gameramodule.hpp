@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -56,7 +56,7 @@ typedef int Py_ssize_t;
   handling for you to get the dictionary for a module. Returns the module
   on success of NULL on failure with the error set.
 */
-inline PyObject* get_module_dict(char* module_name) {
+inline PyObject* get_module_dict(const char* module_name) {
   PyObject* mod = PyImport_ImportModule(module_name);
   if (mod == 0)
     return PyErr_Format(PyExc_ImportError, "Unable to load module '%s'.\n", module_name);
@@ -69,17 +69,17 @@ inline PyObject* get_module_dict(char* module_name) {
   return dict;
 }
 
-/* 
+/*
   Sends a DeprecationWarning
 */
-inline int send_deprecation_warning(char* message, char* filename, int lineno) {
+inline int send_deprecation_warning(const char* message, const char* filename, int lineno) {
   static PyObject* dict = 0;
   if (dict == 0)
     dict = get_module_dict("gamera.util");
   static PyObject* py_warning_func = 0;
   if (py_warning_func == 0)
     py_warning_func = PyDict_GetItemString(dict, "warn_deprecated");
-  PyObject* result = PyObject_CallFunction(py_warning_func, "ssii", message, filename, lineno, 1);
+  PyObject* result = PyObject_CallFunction(py_warning_func, (char *)"ssii", message, filename, lineno, 1);
   if (result == 0)
     return 0;
   Py_DECREF(result);
@@ -645,15 +645,15 @@ inline PyObject* create_ImageDataObject(const Dim& dim, const Point& offset,
     if (pixel_type == ONEBIT)
       o->m_x = new ImageData<OneBitPixel>(dim, offset);
     else if (pixel_type == GREYSCALE)
-      o->m_x = new ImageData<GreyScalePixel>(dim, offset);      
+      o->m_x = new ImageData<GreyScalePixel>(dim, offset);
     else if (pixel_type == GREY16)
-      o->m_x = new ImageData<Grey16Pixel>(dim, offset);      
+      o->m_x = new ImageData<Grey16Pixel>(dim, offset);
     // We have to explicity declare which FLOAT we want here, since there
     // is a name clash on Mingw32 with a typedef in windef.h
     else if (pixel_type == Gamera::FLOAT)
-      o->m_x = new ImageData<FloatPixel>(dim, offset);      
+      o->m_x = new ImageData<FloatPixel>(dim, offset);
     else if (pixel_type == RGB)
-      o->m_x = new ImageData<RGBPixel>(dim, offset);      
+      o->m_x = new ImageData<RGBPixel>(dim, offset);
     else if (pixel_type == Gamera::COMPLEX)
       o->m_x = new ImageData<ComplexPixel>(dim, offset);
     else {
@@ -930,7 +930,7 @@ inline PyObject* create_ImageObject(Image* image) {
     image_data = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
     initialized = true;
   }
-  
+
   int pixel_type;
   int storage_type;
   bool cc = false;
@@ -1065,7 +1065,7 @@ inline PyObject* FloatVector_to_python(FloatVector* cpp) {
     return 0;
   PyObject* str = PyString_FromStringAndSize((char*)(&((*cpp)[0])),
         cpp->size() * sizeof(double));
-  PyObject* py = PyObject_CallFunction(array_init, "sO", "d", str);
+  PyObject* py = PyObject_CallFunction(array_init, (char *)"sO", (char *)"d", str);
   Py_DECREF(str);
   return py;
 }
@@ -1086,7 +1086,7 @@ inline PyObject* IntVector_to_python(IntVector* cpp) {
     return 0;
   PyObject* str = PyString_FromStringAndSize((char*)(&((*cpp)[0])),
         cpp->size() * sizeof(int));
-  PyObject* py = PyObject_CallFunction(array_init, "sO", "i", str);
+  PyObject* py = PyObject_CallFunction(array_init, (char *)"sO", (char *)"i", str);
   Py_DECREF(str);
   return py;
 }
@@ -1116,7 +1116,7 @@ inline FloatVector* FloatVector_from_python(PyObject* py) {
 			"Argument must be a sequence of floats.");
 	Py_DECREF(seq);
 	return 0;
-      }      
+      }
       (*cpp)[i] = (double)PyFloat_AsDouble(number);
     }
   } catch (std::exception e) {
@@ -1172,7 +1172,7 @@ inline IntVector* IntVector_from_python(PyObject* py) {
 	delete cpp;
 	Py_DECREF(seq);
 	return 0;
-      }      
+      }
       (*cpp)[i] = (int)PyInt_AsLong(number);
     }
   } catch (std::exception e) {
@@ -1229,13 +1229,13 @@ inline PyTypeObject* get_IteratorType() {
 class ProgressBar {
 public:
   inline ProgressBar(char* message) {
-    PyObject* dict = get_module_dict("gamera.util"); 
+    PyObject* dict = get_module_dict("gamera.util");
     if (!dict)
       throw std::runtime_error("Couldn't get gamera.util module");
     PyObject* progress_factory = PyDict_GetItemString(dict, "ProgressFactory");
     if (!progress_factory)
       throw std::runtime_error("Couldn't get ProgressFactory function");
-    m_progress_bar = PyObject_CallFunction(progress_factory, "s", message);
+    m_progress_bar = PyObject_CallFunction(progress_factory, (char *)"s", message);
     if (!m_progress_bar)
       throw std::runtime_error("Error getting progress bar");
   }
@@ -1254,35 +1254,35 @@ public:
   }
   inline void add_length(int l) {
     if (m_progress_bar) {
-      PyObject* result = PyObject_CallMethod(m_progress_bar, "add_length", "i", l);
+      PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"add_length", (char *)"i", l);
       if (!result)
 	throw std::runtime_error("Error calling add_length on ProgressBar instance");
     }
   }
   inline void set_length(int l) {
     if (m_progress_bar) {
-      PyObject* result = PyObject_CallMethod(m_progress_bar, "set_length", "i", l);
+      PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"set_length", (char *)"i", l);
       if (!result)
 	throw std::runtime_error("Error calling set_length on ProgressBar instance");
     }
   }
   inline void step() {
     if (m_progress_bar) {
-      PyObject* result = PyObject_CallMethod(m_progress_bar, "step", NULL);
+      PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"step", NULL);
       if (!result)
 	throw std::runtime_error("Error calling step on ProgressBar instance");
     }
   }
   inline void update(int num, int den) {
     if (m_progress_bar) {
-      PyObject* result = PyObject_CallMethod(m_progress_bar, "update", "ii", num, den);
+      PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"update", (char *)"ii", num, den);
       if (!result)
 	throw std::runtime_error("Error calling update on ProgressBar instance");
     }
   }
   inline void kill() {
     if (m_progress_bar) {
-      PyObject* result = PyObject_CallMethod(m_progress_bar, "kill", NULL);
+      PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"kill", NULL);
       if (!result)
 	throw std::runtime_error("Error calling kill on ProgressBar instance");
     }
@@ -1377,5 +1377,5 @@ inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
 }
 
 #endif
- 
+
 #endif

@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -52,14 +52,14 @@ PyMethodDef edge_methods[] = {
 };
 
 PyGetSetDef edge_getset[] = {
-  { "from_node", (getter)edge_get_from_node, 0,
-    "Node this edge starts from (get)", 0 },
-  { "to_node", (getter)edge_get_to_node, 0,
-    "Node this edge goes to (get)", 0 },
-  { "cost", (getter)edge_get_cost, (setter)edge_set_cost,
-    "The cost of traversing this node (get/set) (float value)", 0 },
-  { "label", (getter)edge_get_label, (setter)edge_set_label,
-    "An arbitrary label value attached to the edge (get/set)", 0 },
+  { (char *)"from_node", (getter)edge_get_from_node, 0,
+    (char *)"Node this edge starts from (get)", 0 },
+  { (char *)"to_node", (getter)edge_get_to_node, 0,
+    (char *)"Node this edge goes to (get)", 0 },
+  { (char *)"cost", (getter)edge_get_cost, (setter)edge_set_cost,
+    (char *)"The cost of traversing this node (get/set) (float value)", 0 },
+  { (char *)"label", (getter)edge_get_label, (setter)edge_set_label,
+    (char *)"An arbitrary label value attached to the edge (get/set)", 0 },
   { NULL }
 };
 
@@ -70,7 +70,7 @@ PyObject* edgeobject_new(Edge* edge) {
   so->m_graph = edge->m_graph;
   Py_INCREF(edge->m_graph);
   return (PyObject*)so;
-}  
+}
 
 PyObject* edgeobject_new(GraphObject* graph, Node* from_node,
 			 Node* to_node, CostType cost, PyObject* label) {
@@ -80,7 +80,7 @@ PyObject* edgeobject_new(GraphObject* graph, Node* from_node,
   so->m_graph = graph;
   Py_INCREF(graph);
   return (PyObject*)so;
-}  
+}
 
 bool is_EdgeObject(PyObject* self) {
   return PyObject_TypeCheck(self, &EdgeType);
@@ -99,7 +99,7 @@ void edgeobject_dealloc(PyObject* self) {
 PyObject* edge___repr__(PyObject* self) {
   Edge* so = ((EdgeObject*)self)->m_x;
   PyObject* cost = PyFloat_FromDouble(so->m_cost);
-  return PyString_FromFormat("<Edge from %s to %s (%s)>", 
+  return PyString_FromFormat("<Edge from %s to %s (%s)>",
 			     PyString_AsString(PyObject_Repr((PyObject*)so->m_from_node->m_data)),
 			     PyString_AsString(PyObject_Repr((PyObject*)so->m_to_node->m_data)),
 			     PyString_AsString(PyObject_Repr(cost)));
@@ -114,7 +114,7 @@ PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   edge_set_cost(self, data);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* edge_traverse(PyObject* self, PyObject* node_object) {
   Edge* so = ((EdgeObject*)self)->m_x;

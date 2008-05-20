@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -140,7 +140,7 @@ template = Template("""
       [[else]]
         [[exec args = [function.self_type] + function.args.list]]
         [[exec function.self_type.name = 'self']]
-      [[end]]  
+      [[end]]
       [[# for each argument insert the appropriate conversion code into the string that will #]]
       [[# be passed to PyArg_ParseTuple and create a variable to hold the result. #]]
       [[if function.return_type != None]]
@@ -177,7 +177,7 @@ template = Template("""
       [[for arg in args]]
         [[arg.from_python()]]
       [[end]]
-      
+
       [[if function.feature_function]]
          feature_t* feature_buffer = 0;
          PyObject* str = 0;
@@ -199,7 +199,7 @@ template = Template("""
           [[else]]
             [[if function.return_type != None]]
               [[function.return_type.symbol]] =
-            [[end]]  
+            [[end]]
             [[function.__name__]]([[if function.progress_bar]]ProgressBar("[[function.progress_bar]]")[[else]][[end]]);
           [[end]]
         } catch (std::exception& e) {
@@ -215,7 +215,7 @@ template = Template("""
             if (array_init == 0)
               return 0;
             PyObject* array = PyObject_CallFunction(
-                  array_init, \"sO\", \"d\", str);
+                  array_init, (char *)\"sO\", (char *)\"d\", str);
             Py_DECREF(str);
             return array;
          } else {
@@ -225,7 +225,7 @@ template = Template("""
       [[else]]
         [[for arg in function.args]]
           [[arg.delete()]]
-        [[end]]  
+        [[end]]
         [[if function.return_type == None]]
           Py_INCREF(Py_None);
           return Py_None;
@@ -237,15 +237,15 @@ template = Template("""
                 return Py_None;
                } else
                 return NULL;
-            } else {  
+            } else {
               [[function.return_type.to_python()]]
               return return_pyarg;
             }
           [[else]]
             [[function.return_type.to_python()]]
             return return_pyarg;
-          [[end]]  
-        [[end]]  
+          [[end]]
+        [[end]]
       [[end]]
       }
     [[end]]
@@ -255,7 +255,7 @@ template = Template("""
     Py_InitModule(\"[[module_name]]\", [[module_name]]_methods);
   }
   """)
-  
+
 def generate_plugin(plugin_filename, location, compiling_gamera,
                     extra_compile_args=[], extra_link_args=[], libraries=[],
                     define_macros=[]):
@@ -308,7 +308,7 @@ def generate_plugin(plugin_filename, location, compiling_gamera,
   cpp_files = [cpp_filename]
   for file in plugin_module.module.cpp_sources:
     cpp_files.append(file)
-  
+
   extra_libraries = plugin_module.module.extra_libraries
   # This is to make up for a bug in distutils.
   if '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':

@@ -11,7 +11,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -103,7 +103,7 @@ class PngSupportModule(PluginModule):
             cpp_include_dirs = [internal_png_dir]
             # zlib, which apparently is included in OS-X 10.3 by default
             extra_libraries = ["z"]
-    elif sys.platform == 'win32':
+    elif sys.platform in ('win32', 'cygwin'):
         cpp_sources = [os.path.join(internal_png_dir, x) for x in
                        ['png.c', 'pngset.c', 'pngget.c', 'pngrutil.c',
                         'pngtrans.c', 'pngwutil.c', 'pngread.c', 'pngrio.c',

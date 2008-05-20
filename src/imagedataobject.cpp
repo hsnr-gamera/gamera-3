@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -51,28 +51,28 @@ static PyTypeObject ImageDataType = {
 };
 
 static PyGetSetDef imagedata_getset[] = {
-  { "nrows", (getter)imagedata_get_nrows, (setter)imagedata_set_nrows,
-    "(int property get/set)\n\nThe number of rows", 0 },
-  { "ncols", (getter)imagedata_get_ncols, (setter)imagedata_set_ncols,
-    "(int property get/set)\n\nThe number of columns", 0 },
-  { "page_offset_x", (getter)imagedata_get_page_offset_x,
+  { (char *)"nrows", (getter)imagedata_get_nrows, (setter)imagedata_set_nrows,
+    (char *)"(int property get/set)\n\nThe number of rows", 0 },
+  { (char *)"ncols", (getter)imagedata_get_ncols, (setter)imagedata_set_ncols,
+    (char *)"(int property get/set)\n\nThe number of columns", 0 },
+  { (char *)"page_offset_x", (getter)imagedata_get_page_offset_x,
     (setter)imagedata_set_page_offset_x,
-    "(int property get/set)\n\nThe *x* offset in the page for the data", 0 },
-  { "page_offset_y", (getter)imagedata_get_page_offset_y,
+    (char *)"(int property get/set)\n\nThe *x* offset in the page for the data", 0 },
+  { (char *)"page_offset_y", (getter)imagedata_get_page_offset_y,
     (setter)imagedata_set_page_offset_y,
-    "(int property get/set)\n\nThe *y* offset in the page for the data", 0 },
-  { "stride", (getter)imagedata_get_stride, 0,
-    "(int property get/set)\n\nThe length of the data stride", 0 },
-  { "size", (getter)imagedata_get_size, 0,
-    "(Size property get/set)\n\nThe size of the image data", 0 },
-  { "bytes", (getter)imagedata_get_bytes, 0,
-    "(int property get/set)\n\nThe size of the data in bytes", 0 },
-  { "mbytes", (getter)imagedata_get_mbytes, 0,
-    "(int property get/set)\n\nThe size of the data in megabytes", 0 },
-  { "pixel_type", (getter)imagedata_get_pixel_type, 0,
-    "(int property get/set)\n\nThe type of the pixels.  See `pixel types`__ for more info.\n\n.. __: image_types.html#pixel-types", 0 },
-  { "storage_format", (getter)imagedata_get_storage_format, 0,
-    "(int property get/set)\n\nThe format of the storage.  See `storage formats`__ for more info.\n\n.. __: image_types.html#storage-formats", 0 },
+    (char *)"(int property get/set)\n\nThe *y* offset in the page for the data", 0 },
+  { (char *)"stride", (getter)imagedata_get_stride, 0,
+    (char *)"(int property get/set)\n\nThe length of the data stride", 0 },
+  { (char *)"size", (getter)imagedata_get_size, 0,
+    (char *)"(Size property get/set)\n\nThe size of the image data", 0 },
+  { (char *)"bytes", (getter)imagedata_get_bytes, 0,
+    (char *)"(int property get/set)\n\nThe size of the data in bytes", 0 },
+  { (char *)"mbytes", (getter)imagedata_get_mbytes, 0,
+    (char *)"(int property get/set)\n\nThe size of the data in megabytes", 0 },
+  { (char *)"pixel_type", (getter)imagedata_get_pixel_type, 0,
+    (char *)"(int property get/set)\n\nThe type of the pixels.  See `pixel types`__ for more info.\n\n.. __: image_types.html#pixel-types", 0 },
+  { (char *)"storage_format", (getter)imagedata_get_storage_format, 0,
+    (char *)"(int property get/set)\n\nThe format of the storage.  See `storage formats`__ for more info.\n\n.. __: image_types.html#storage-formats", 0 },
   { NULL }
 };
 
@@ -105,7 +105,7 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
   }
 
   PyErr_Clear();
-  
+
   if (num_args == 1) {
     PyObject* py_rect;
     if (PyArg_ParseTuple(args, "O", &py_rect)) {
@@ -115,12 +115,12 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
       }
     }
   }
-  
+
   PyErr_Clear();
   PyErr_SetString(PyExc_TypeError, "Invalid arguments to ImageData constructor.  Valid forms are: (Dim dim, Point p, pixel_type = 0, storage_format = 0), and (Rect rect, pixel_type = 0, storage_format = 0). ");
   return 0;
 }
- 
+
 static void imagedata_dealloc(PyObject* self) {
   ImageDataObject* x = (ImageDataObject*)self;
   delete x->m_x;
@@ -195,7 +195,7 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
   ImageDataType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageDataType.tp_free = NULL; // _PyObject_Del;
-  ImageDataType.tp_doc = 
+  ImageDataType.tp_doc =
 "There are many ways to initialize ImageData:\n\n"
 "  - ImageData(Dim *dim*, Point *offset*, Int *pixel_type*, Int *storage_format*)\n\n"
 "  - ImageData(Rect *rect*, Int *pixel_type*, Int *storage_format*)\n\n"

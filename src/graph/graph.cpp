@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -86,7 +86,7 @@ GraphObject* graph_new(size_t flags) {
   return so;
 }
 
-PyObject* graph_new(PyTypeObject* pytype, PyObject* args, 
+PyObject* graph_new(PyTypeObject* pytype, PyObject* args,
 		    PyObject* kwds) {
   long flags = FLAG_DEFAULT;
   if (PyArg_ParseTuple(args, "|i:Graph.__init__", &flags) <= 0)
@@ -265,7 +265,7 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
 	PyErr_SetString(PyExc_RuntimeError, "Given 'from' node is not is the graph");
 	return 0;
       }
-    } else { 
+    } else {
       Node *from_node, *to_node;
       from_node = graph_find_node(so, a);
       if (from_node == 0)
@@ -343,12 +343,12 @@ void graph_make_directed(GraphObject* so) {
 void graph_make_undirected(GraphObject* so) {
   if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
     UNSET_FLAG(so->m_flags, FLAG_DIRECTED);
-    
+
     EdgeList edges;
     for (NodeVector::iterator i = so->m_nodes->begin();
 	 i != so->m_nodes->end(); ++i) {
       for (EdgeList::iterator j = (*i)->m_edges.begin();
-	   j != (*i)->m_edges.end(); ++j) 
+	   j != (*i)->m_edges.end(); ++j)
 	edges.push_back(*j);
       (*i)->m_disj_set = 0;
     }
@@ -416,7 +416,7 @@ void graph_make_acyclic(GraphObject* so) {
     NodeStack node_stack;
     if (so->m_edges->size()) {
       for (NodeVector::iterator i = so->m_nodes->begin();
-	   i != so->m_nodes->end(); ++i) 
+	   i != so->m_nodes->end(); ++i)
 	NP_VISITED(*i) = false;
       for (NodeVector::iterator i = so->m_nodes->begin();
 	   i != so->m_nodes->end(); ++i) {
@@ -466,7 +466,7 @@ PyObject* graph_make_acyclic(PyObject* self, PyObject* args) {
   graph_make_acyclic(so);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* graph_is_tree(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
@@ -511,7 +511,7 @@ PyObject* graph_make_blob(PyObject* self, PyObject* args) {
   graph_make_blob(so);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* graph_is_multi_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
@@ -589,7 +589,7 @@ PyObject* graph_make_singly_connected(PyObject* self, PyObject* args) {
   graph_make_singly_connected(so, maximum != 0);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* graph_is_self_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
@@ -640,7 +640,7 @@ PyObject* graph_make_not_self_connected(PyObject* self, PyObject* args) {
   graph_make_not_self_connected(so);
   Py_INCREF(Py_None);
   return Py_None;
-}  
+}
 
 PyObject* graph_get_nodes(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
@@ -705,7 +705,7 @@ PyObject* graph_has_edge(PyObject* self, PyObject* args) {
       return PyInt_FromLong(0);
     return PyInt_FromLong
       ((long)graph_has_edge(so, from_node, to_node));
-  }    
+  }
   PyErr_SetString(PyExc_TypeError, "Invalid argument types");
   return 0;
 }
@@ -789,7 +789,7 @@ PyObject* graph_size_of_subgraph(PyObject* self, PyObject* pyobject) {
 
 PyObject* graph_get_nsubgraphs(PyObject* self, PyObject* _) {
   GraphObject* so = ((GraphObject*)self);
-  size_t count = 0; 
+  size_t count = 0;
   if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
     for (NodeVector::iterator i = so->m_nodes->begin();
 	 i != so->m_nodes->end(); ++i)
@@ -800,13 +800,13 @@ PyObject* graph_get_nsubgraphs(PyObject* self, PyObject* _) {
 	 i != so->m_nodes->end(); ++i)
       if ((*i)->m_disj_set <= 0)
 	++count;
-  }    
+  }
   return PyInt_FromLong((long)count);
 }
 
 PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
   GraphObject* so = ((GraphObject*)self);
-  size_t count = 0; 
+  size_t count = 0;
   if (HAS_FLAG(so->m_flags, FLAG_DIRECTED)) {
     for (NodeVector::iterator i = so->m_nodes->begin();
 	 i != so->m_nodes->end(); ++i)
@@ -817,7 +817,7 @@ PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
 	 i != so->m_nodes->end(); ++i)
       if ((*i)->m_disj_set <= 0)
 	++count;
-  }    
+  }
   return PyInt_FromLong((long)count <= 1);
 }
 
@@ -896,15 +896,15 @@ PyMethodDef graph_methods[] = {
   { "remove_all_edges", graph_remove_all_edges, METH_NOARGS,
     "**remove_all_edges** ()\n\n" \
     "Remove all the edges in the graph, leaving all nodes as islands.\n\n" \
-    "**Complexity**: ``remove_all_edges`` takes *O* ( *n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph." 
+    "**Complexity**: ``remove_all_edges`` takes *O* ( *n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph."
   },
   { "is_directed", graph_is_directed, METH_NOARGS,
     "**is_directed** ()\n\n" \
-    "Return ``True`` if the graph is defined as directed." 
+    "Return ``True`` if the graph is defined as directed."
   },
   { "is_undirected", graph_is_undirected, METH_NOARGS,
     "**is_undirected** ()\n\n" \
-    "Return ``True`` if the graph is defined as undirected." 
+    "Return ``True`` if the graph is defined as undirected."
   },
   { "make_directed", graph_make_directed, METH_VARARGS,
     "**make_directed** ()\n\n" \
@@ -914,7 +914,7 @@ PyMethodDef graph_methods[] = {
   { "make_undirected", graph_make_undirected, METH_NOARGS,
     "**make_undirected** ()\n\n" \
     "If the graph is directed, converts it into an undirected graph.  Each edge in the existing graph\n" \
-    "will become a non-directional edge in the resulting graph." 
+    "will become a non-directional edge in the resulting graph."
   },
   { "is_cyclic", graph_is_cyclic, METH_NOARGS,
     "**is_cyclic** ()\n\n" \
@@ -927,7 +927,7 @@ PyMethodDef graph_methods[] = {
   },
   { "make_cyclic", graph_make_cyclic, METH_VARARGS,
     "**make_cyclic** ()\n\n" \
-    "Allow the graph to include cycles from this point on.  This does nothing except set the ``CYCLIC`` flag." 
+    "Allow the graph to include cycles from this point on.  This does nothing except set the ``CYCLIC`` flag."
   },
   { "make_acyclic", graph_make_acyclic, METH_NOARGS,
     "**make_acyclic** ()\n\n" \
@@ -958,16 +958,16 @@ PyMethodDef graph_methods[] = {
   { "is_singly_connected", graph_is_singly_connected, METH_NOARGS,
     "**is_singly_connected** ()\n\n" \
     "Returns ``True`` if the graph is defined as being singly-connected (i.e. at most one edge between a single pair of nodes).\n" \
-    "Note that this will return ``False`` if the graph is defined as multi-connected, even if it contains no multi-connections.\n\n" 
+    "Note that this will return ``False`` if the graph is defined as multi-connected, even if it contains no multi-connections.\n\n"
   },
   { "make_multi_connected", graph_make_multi_connected, METH_NOARGS,
     "**make_multi_connected** ()\n\n" \
-    "Allow the graph to be multi-connected from this point on.  This does nothing except set the ``MULTI_CONNECTED`` flag." 
+    "Allow the graph to be multi-connected from this point on.  This does nothing except set the ``MULTI_CONNECTED`` flag."
   },
   { "make_singly_connected", graph_make_singly_connected, METH_VARARGS,
     "**make_singly_connected** ()\n\n" \
     "For each pair of nodes, leave only one remaining edge in either direction.\n" \
-    "Restrict the graph to being singly-connected from this point on." 
+    "Restrict the graph to being singly-connected from this point on."
   },
   { "is_self_connected", graph_is_self_connected, METH_NOARGS,
     "**is_self_connected** ()\n\n" \
@@ -980,7 +980,7 @@ PyMethodDef graph_methods[] = {
   },
   { "make_not_self_connected", graph_make_not_self_connected, METH_NOARGS,
     "**make_not_self_connected** ()\n\n" \
-    "Remove all self-connections and restrict the graph to have no self-connections from this point on." 
+    "Remove all self-connections and restrict the graph to have no self-connections from this point on."
   },
   { "get_node", graph_get_node, METH_O,
     "**get_node** (*value*)\n\n" \
@@ -998,11 +998,11 @@ PyMethodDef graph_methods[] = {
   },
   { "has_node", graph_has_node, METH_O,
     "**has_node** (*value*)\n\n" \
-    "Returns ``True`` if graph has a node identified by *value*.\n\n" 
+    "Returns ``True`` if graph has a node identified by *value*.\n\n"
   },
   { "get_edges", graph_get_edges, METH_NOARGS,
     "**get_edges** ()\n\n" \
-    "Returns an iterator over all edges in the graph.  The ordering of the edges is undefined.\n\n" 
+    "Returns an iterator over all edges in the graph.  The ordering of the edges is undefined.\n\n"
   },
   { "has_edge", graph_has_edge, METH_VARARGS,
     "**has_edge** (*from_value*, *to_value*)\n\n" \
@@ -1018,7 +1018,7 @@ PyMethodDef graph_methods[] = {
   },
   { "is_fully_connected", graph_is_fully_connected, METH_NOARGS,
     "**is_fully_connected** ()\n\n" \
-    "Returns ``True`` if there is only one subgraph in the graph." 
+    "Returns ``True`` if there is only one subgraph in the graph."
   },
   SEARCH_METHODS
   SHORTEST_PATH_METHODS
@@ -1028,12 +1028,12 @@ PyMethodDef graph_methods[] = {
 };
 
 PyGetSetDef graph_getset[] = {
-  { "nnodes", (getter)graph_get_nnodes, 0,
-    "Number of nodes in the graph", 0 },
-  { "nedges", (getter)graph_get_nedges, 0,
-    "Number of edges in the graph", 0 },
-  { "nsubgraphs", (getter)graph_get_nsubgraphs, 0,
-    "Number of edges in the graph", 0 },
+  { (char *)"nnodes", (getter)graph_get_nnodes, 0,
+    (char *)"Number of nodes in the graph", 0 },
+  { (char *)"nedges", (getter)graph_get_nedges, 0,
+    (char *)"Number of edges in the graph", 0 },
+  { (char *)"nsubgraphs", (getter)graph_get_nsubgraphs, 0,
+    (char *)"Number of edges in the graph", 0 },
   { NULL }
 };
 

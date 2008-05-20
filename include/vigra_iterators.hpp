@@ -19,8 +19,8 @@
 /*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
 /*                                                                      */
 /************************************************************************/
- 
- 
+
+
 #ifndef kwm05192002_vigra_iterator
 #define kwm05192002_vigra_iterator
 
@@ -30,14 +30,14 @@
 #include "image_view_iterators.hpp"
 #include "iterator_base.hpp"
 
-namespace Gamera { 
+namespace Gamera {
 
   template <class ValueType, class Iterator>
   class ImageIteratorBase {
   public:
     typedef ValueType PixelType;
     typedef ValueType value_type;
-    
+
     class MoveX {
     public:
       MoveX & operator=(MoveX const & rhs) {
@@ -144,8 +144,8 @@ namespace Gamera {
       return *this;
     }
     int width() const { return y.width_; }
-  }; 
-    
+  };
+
   template <class Image, class I>
   class ImageIterator : public ImageIteratorBase<typename Image::value_type, I> {
   public:
@@ -167,12 +167,12 @@ namespace Gamera {
     ImageIterator(Image* mat, I base, size_t offset)
       : ImageIteratorBase<value_type, I>(base, offset), m_mat(mat) { }
     ImageIterator(const ImageIterator & rhs)
-      : ImageIteratorBase<value_type, I>(rhs) {
+      : ImageIteratorBase<value_type, I>(rhs), m_mat(NULL) {
       m_mat = rhs.m_mat;
-    }    
+    }
     ImageIterator()
-      : ImageIteratorBase<value_type, I>() {}    
-    
+      : ImageIteratorBase<value_type, I>(), m_mat(NULL) {}
+
     ImageIterator & operator=(const ImageIterator & rhs) {
       if(this != &rhs) {
 	ImageIteratorBase<value_type, I>::operator=(rhs);
@@ -220,7 +220,7 @@ namespace Gamera {
     {
       return x.current_ + y.offset_;
     }
-    column_iterator columnIterator() const { 
+    column_iterator columnIterator() const {
       return column_iterator(m_mat, x.current_ + y.offset_);
     }
     value_type get() const {
@@ -258,10 +258,10 @@ namespace Gamera {
     ConstImageIterator(const ConstImageIterator & rhs)
       : ImageIteratorBase<value_type, I>(rhs) {
       m_mat = rhs.m_mat;
-    }    
+    }
     ConstImageIterator()
-      : ImageIteratorBase<value_type, I>() {}    
-    
+      : ImageIteratorBase<value_type, I>() {}
+
     ConstImageIterator & operator=(const ConstImageIterator & rhs) {
       if(this != &rhs) {
 	ImageIteratorBase<value_type, I>::operator=(rhs);
@@ -309,7 +309,7 @@ namespace Gamera {
     {
       return x.current_ + y.offset_;
     }
-    column_iterator columnIterator() const { 
+    column_iterator columnIterator() const {
       return column_iterator(m_mat, x.current_ + y.offset_);
     }
     value_type get() const {

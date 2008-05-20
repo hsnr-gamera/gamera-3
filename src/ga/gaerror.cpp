@@ -22,56 +22,56 @@ static ostream *__gaErrStream = &cerr;
 #endif
 static GABoolean __gaErrFlag = gaTrue;
 static char *__gaErrStr[] = {
-  "error reading from file: ",
-  "error writing to file: ",
-  "unexpected EOF encountered during read.",
-  "bad probability value.  Must be between 0.0 and 1.0, inclusive.",
-  "objects are different types.",
-  "this method has not been defined.",
-  "core deleted with references remaining.",
+  (char *)"error reading from file: ",
+  (char *)"error writing to file: ",
+  (char *)"unexpected EOF encountered during read.",
+  (char *)"bad probability value.  Must be between 0.0 and 1.0, inclusive.",
+  (char *)"objects are different types.",
+  (char *)"this method has not been defined.",
+  (char *)"core deleted with references remaining.",
 
-  "the custom replacement strategy requires a replacement function",
-  "unknown replacement strategy",
-  "number of children must be greater than 0",
-  "replacement percentage must be between 0.0 and 1.0, inclusive",
-  "number of indiv for replacement must be less than pop size",
-  "index of individual is out-of-bounds",
-  "population contains no individuals from which to clone new individuals",
-  "there must be at least one individual in each population",
-  "no sexual crossover has been defined.  no mating can occur.",
-  "no asexual crossover has been defined.  no mating can occur.",
+  (char *)"the custom replacement strategy requires a replacement function",
+  (char *)"unknown replacement strategy",
+  (char *)"number of children must be greater than 0",
+  (char *)"replacement percentage must be between 0.0 and 1.0, inclusive",
+  (char *)"number of indiv for replacement must be less than pop size",
+  (char *)"index of individual is out-of-bounds",
+  (char *)"population contains no individuals from which to clone new individuals",
+  (char *)"there must be at least one individual in each population",
+  (char *)"no sexual crossover has been defined.  no mating can occur.",
+  (char *)"no asexual crossover has been defined.  no mating can occur.",
 
-  "children must have same resize behaviour for any given dimension",
-  "parents and children must have the same dimensions",
-  "parents must be the same length",
-  "upper limit must be greater than lower limit.",
-  "bad phenotype - ID is out of bounds.",
-  "bad phenotype - value is less than min or greater than max.",
-  "dimensions of bounds set do not match dimensions of the genome",
+  (char *)"children must have same resize behaviour for any given dimension",
+  (char *)"parents and children must have the same dimensions",
+  (char *)"parents must be the same length",
+  (char *)"upper limit must be greater than lower limit.",
+  (char *)"bad phenotype - ID is out of bounds.",
+  (char *)"bad phenotype - value is less than min or greater than max.",
+  (char *)"dimensions of bounds set do not match dimensions of the genome",
 
-  "linear scaling multiplier must be greater than 1.0",
-  "sigma truncation multiplier must be greater than 0.0",
-  "negative objective function score!\n\
+  (char *)"linear scaling multiplier must be greater than 1.0",
+  (char *)"sigma truncation multiplier must be greater than 0.0",
+  (char *)"negative objective function score!\n\
     all raw objective scores must be positive for linear scaling.",
-  "negative objective function score!\n\
+  (char *)"negative objective function score!\n\
     all raw objective scores must be positive for power law scaling.",
-  "the cutoff for triangular sharing must be greater than 0.0",
+  (char *)"the cutoff for triangular sharing must be greater than 0.0",
 
-  "cannot index an allele in a bounded, non-discretized set of alleles",
-  "length of binary string exceeds maximum for this computer/OS type.",
-  "specified value cannot be exactly represented with these bits.",
-  "bad 'where' indicator",
-  "bogus type, data may be corrupt",
-  "bad links in tree.  operation aborted.",
-  "cannot swap a node with its ancestor",
-  "cannot insert this object into itself",
-  "node relative to which insertion is made must be non-NULL.",
-  "root node must have no siblings.  insertion aborted.",
-  "cannot insert before a root node (only below).",
-  "cannot insert after a root node (only below)."  
+  (char *)"cannot index an allele in a bounded, non-discretized set of alleles",
+  (char *)"length of binary string exceeds maximum for this computer/OS type.",
+  (char *)"specified value cannot be exactly represented with these bits.",
+  (char *)"bad 'where' indicator",
+  (char *)"bogus type, data may be corrupt",
+  (char *)"bad links in tree.  operation aborted.",
+  (char *)"cannot swap a node with its ancestor",
+  (char *)"cannot insert this object into itself",
+  (char *)"node relative to which insertion is made must be non-NULL.",
+  (char *)"root node must have no siblings.  insertion aborted.",
+  (char *)"cannot insert before a root node (only below).",
+  (char *)"cannot insert after a root node (only below)."
 };
 
-void 
+void
 GAErr(const GASourceLocator loc, const char *clss, const char *func,
       const char *msg1, const char *msg2, const char *msg3){
   gaErrMsg[0] = '\0';
@@ -98,7 +98,7 @@ GAErr(const GASourceLocator loc, const char *clss, const char *func,
 #endif
 }
 
-void 
+void
 GAErr(const GASourceLocator loc, const char *clss, const char *func,
       GAErrorIndex i, const char *msg2, const char *msg3){
   gaErrMsg[0] = '\0';
@@ -125,8 +125,8 @@ GAErr(const GASourceLocator loc, const char *clss, const char *func,
 #endif
 }
 
-void 
-GAErr(const GASourceLocator loc, const char *func, 
+void
+GAErr(const GASourceLocator loc, const char *func,
       GAErrorIndex i, const char *msg2, const char *msg3){
   gaErrMsg[0] = '\0';
   strcat(gaErrMsg, func);

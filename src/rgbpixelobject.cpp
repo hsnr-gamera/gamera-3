@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -54,30 +54,30 @@ PyTypeObject* get_RGBPixelType() {
 }
 
 static PyGetSetDef rgbpixel_getset[] = {
-  { "red", (getter)rgbpixel_get_red, (setter)rgbpixel_set_red,
-    "(int property)\n\nThe current red value [0,255]", 0 },
-  { "green", (getter)rgbpixel_get_green, (setter)rgbpixel_set_green,
-    "(int property)\n\nThe current green value [0, 255]", 0 },
-  { "blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
-    "(int property)\n\nThe current blue value [0, 255]", 0 },
-  { "hue", (getter)rgbpixel_get_hue, 0,
-    "(float property)\n\nThe hue [0, 1.0]", 0 },
-  { "saturation", (getter)rgbpixel_get_saturation, 0,
-    "(float property)\n\nThe saturation [0, 1.0]", 0 },
-  { "value", (getter)rgbpixel_get_value, 0,
-    "(float property)\n\nThe value [0, 1.0]", 0 },
-  { "cie_x", (getter)rgbpixel_get_cie_x, 0,
-    "(float property)\n\nThe cie_x value [0, 1.0]", 0 },
-  { "cie_y", (getter)rgbpixel_get_cie_y, 0,
-    "(float property)\n\nThe cie_y value [0, 1.0]", 0 },
-  { "cie_z", (getter)rgbpixel_get_cie_z, 0,
-    "(float property)\n\nThe cie_z value [0, 1.0]", 0 },
-  { "cyan", (getter)rgbpixel_get_cyan, 0,
-    "(int property)\n\nThe cyan value [0, 255]", 0 },
-  { "magenta", (getter)rgbpixel_get_magenta, 0,
-    "(int property)\n\nThe cyan value [0, 255]", 0 },
-  { "yellow", (getter)rgbpixel_get_yellow, 0,
-    "(int property)\n\nThe cyan value [0, 255]", 0 },
+  { (char *)"red", (getter)rgbpixel_get_red, (setter)rgbpixel_set_red,
+    (char *)"(int property)\n\nThe current red value [0,255]", 0 },
+  { (char *)"green", (getter)rgbpixel_get_green, (setter)rgbpixel_set_green,
+    (char *)"(int property)\n\nThe current green value [0, 255]", 0 },
+  { (char *)"blue", (getter)rgbpixel_get_blue, (setter)rgbpixel_set_blue,
+    (char *)"(int property)\n\nThe current blue value [0, 255]", 0 },
+  { (char *)"hue", (getter)rgbpixel_get_hue, 0,
+    (char *)"(float property)\n\nThe hue [0, 1.0]", 0 },
+  { (char *)"saturation", (getter)rgbpixel_get_saturation, 0,
+    (char *)"(float property)\n\nThe saturation [0, 1.0]", 0 },
+  { (char *)"value", (getter)rgbpixel_get_value, 0,
+    (char *)"(float property)\n\nThe value [0, 1.0]", 0 },
+  { (char *)"cie_x", (getter)rgbpixel_get_cie_x, 0,
+    (char *)"(float property)\n\nThe cie_x value [0, 1.0]", 0 },
+  { (char *)"cie_y", (getter)rgbpixel_get_cie_y, 0,
+    (char *)"(float property)\n\nThe cie_y value [0, 1.0]", 0 },
+  { (char *)"cie_z", (getter)rgbpixel_get_cie_z, 0,
+    (char *)"(float property)\n\nThe cie_z value [0, 1.0]", 0 },
+  { (char *)"cyan", (getter)rgbpixel_get_cyan, 0,
+    (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
+  { (char *)"magenta", (getter)rgbpixel_get_magenta, 0,
+    (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
+  { (char *)"yellow", (getter)rgbpixel_get_yellow, 0,
+    (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
   { NULL }
 };
 

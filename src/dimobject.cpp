@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -40,10 +40,10 @@ static PyTypeObject DimType = {
 };
 
 static PyGetSetDef dim_getset[] = {
-  { "nrows", (getter)dim_get_nrows, (setter)dim_set_nrows,
-    "(int property get/set)\n\nThe current number of rows", 0},
-  { "ncols", (getter)dim_get_ncols, (setter)dim_set_ncols,
-    "(int property get/set)\n\nthe current number of columns", 0},
+  { (char *)"nrows", (getter)dim_get_nrows, (setter)dim_set_nrows,
+    (char *)"(int property get/set)\n\nThe current number of rows", 0},
+  { (char *)"ncols", (getter)dim_get_ncols, (setter)dim_set_ncols,
+    (char *)"(int property get/set)\n\nthe current number of columns", 0},
   { NULL }
 };
 
@@ -147,7 +147,7 @@ void init_DimType(PyObject* module_dict) {
   DimType.tp_getset = dim_getset;
   DimType.tp_free = NULL; // _PyObject_Del;
   DimType.tp_repr = dim_repr;
-  DimType.tp_doc = 
+  DimType.tp_doc =
 "__init__(Int *ncols*, Int *nrows*)\n\n"
 "Dim stores a dimension (*ncols*, *nrows*)\n\n";
   PyType_Ready(&DimType);

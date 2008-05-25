@@ -78,11 +78,12 @@ Linux (and other \*nix)
 Prerequisites
 -------------
 
--  Python 2.3 and later are supported
+- Python 2.3 and later are supported, though Python 2.4 or later is
+  recommended.
 
-   You will need to have the headers (but not the complete source) to
-   build Gamera from source code.  Most Linux distributions include
-   these as a separate package (eg. ``python-dev`` or ``python-devel``).
+  You will need to have the headers (but not the complete source) to
+  build Gamera from source code.  Most Linux distributions include
+  these as a separate package (eg. ``python-dev`` or ``python-devel``).
 
 - wxPython 2.4.x or later (wxPython 2.8.x or later recommended for
   full functionality).
@@ -123,7 +124,7 @@ Alternatively, you can set up a local installation by hand.
 
 Make a local python module directory somewhere that you have write
 priviledges (such as your home directory)::
-  
+
   mkdir ~/python
 
 From the Gamera build directory, install Gamera into that directory::
@@ -197,14 +198,14 @@ the Gamera Files section on SourceForge.
   version of Python (not the one that Apple provides) to carry out the
   instructions below.
 
-Gamera is built using the Python-standard Distutils system.  
+Gamera is built using the Python-standard Distutils system.
 
 To build Gamera, open a X11 terminal and type::
 
   python setup.py build
 
 and then to install (you'll need to have admin priviledges)::
- 
+
   sudo python setup.py install
 
 The scripts can be installed by::
@@ -227,7 +228,7 @@ __ without_root_
 Running
 ```````
 
-Start an X11 terminal and run the ``gamera_gui`` script.  
+Start an X11 terminal and run the ``gamera_gui`` script.
 
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of
@@ -255,14 +256,14 @@ Prerequisites
 Standard Build and Install
 ``````````````````````````
 
-Gamera is built using the Python-standard Distutils system.  
+Gamera is built using the Python-standard Distutils system.
 
 To build Gamera, open a X11 terminal and type::
 
   python setup.py build
 
 and then to install (you'll need to have admin priviledges)::
- 
+
   sudo python setup.py install
 
 The scripts can be installed by::
@@ -285,7 +286,7 @@ __ without_root_
 Running
 ```````
 
-Start the Terminal application and run the ``gamera_gui`` script.  
+Start the Terminal application and run the ``gamera_gui`` script.
 
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of

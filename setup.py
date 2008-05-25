@@ -21,6 +21,11 @@
 #
 import sys, os, glob, datetime
 
+if sys.hexversion < 0x02030000:
+   print "At least Python 2.3 is required to build Gamera.  You have"
+   print sys.version
+   sys.exit(1)
+
 cross_compiling = False
 
 # We do this first, so that when gamera.__init__ loads gamera.__version__,
@@ -163,6 +168,14 @@ includes = [(os.path.join(gamera_setup.include_path, path),
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']
 
+if sys.hexversion >= 0x02040000:
+   data_files = includes
+   package_data = {"gamera": ["test/*.tiff"]}
+else:
+   data_files = [(os.path.join(gamera_setup.lib_path, "$LIB/test"),
+                  glob.glob("gamera/test/*.tiff"))] + includes
+   package_data = {}
+
 if sys.platform == 'darwin':
    packages.append("gamera.mac")
 
@@ -176,6 +189,7 @@ setup(cmdclass = gamera_setup.cmdclass,
       description = description,
       packages = packages,
       scripts = scripts,
-      data_files=[(os.path.join(gamera_setup.lib_path, "$LIB/test"),
-                   glob.glob("gamera/test/*.tiff"))] + includes)
+      package_data = package_data,
+      data_files = data_files
+      )
 

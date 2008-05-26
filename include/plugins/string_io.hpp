@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -29,7 +29,7 @@ PyObject* _to_raw_string(const T &image) {
   typedef typename T::value_type value_type;
   typename T::const_vec_iterator j = image.vec_begin();
   size_t image_size = image.ncols() * image.nrows() * sizeof(value_type);
-  PyObject* pystring = PyString_FromStringAndSize((char *)NULL, 
+  PyObject* pystring = PyString_FromStringAndSize((char *)NULL,
 						  (int)image_size);
   if (pystring == NULL)
     return NULL;
@@ -37,13 +37,13 @@ PyObject* _to_raw_string(const T &image) {
   for (; j != image.vec_end(); ++i, ++j) {
     *i = *j;
   }
-  return Py_BuildValue("O", pystring);
+  return Py_BuildValue(CHAR_PTR_CAST "O", pystring);
 };
 
 template <class T>
 bool fill_image_from_string(T &image, PyObject* data_string) {
   if (!PyString_CheckExact(data_string)) {
-    PyErr_SetString(PyExc_TypeError, 
+    PyErr_SetString(PyExc_TypeError,
 		    "data_string must be a Python string");
     return false;
   }
@@ -69,8 +69,8 @@ bool fill_image_from_string(T &image, PyObject* data_string) {
   return true;
 }
 
-Image* _from_raw_string(Point offset, Dim size, 
-			int pixel_type, int storage_format, 
+Image* _from_raw_string(Point offset, Dim size,
+			int pixel_type, int storage_format,
 			PyObject* data_string) {
   if (pixel_type == ONEBIT && storage_format == RLE) {
     typedef TypeIdImageFactory<ONEBIT, RLE> factory;

@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -51,9 +51,9 @@ PyMethodDef gamera_module_methods[] = {
 
 DL_EXPORT(void)
 initgameracore(void) {
-  PyObject* m = Py_InitModule("gameracore", gamera_module_methods);
+  PyObject* m = Py_InitModule(CHAR_PTR_CAST "gameracore", gamera_module_methods);
   PyObject* d = PyModule_GetDict(m);
-  
+
   init_SizeType(d);
   init_PointType(d);
   init_FloatPointType(d);

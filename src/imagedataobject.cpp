@@ -77,7 +77,7 @@ static PyGetSetDef imagedata_getset[] = {
 };
 
 static PyMethodDef imagedata_methods[] = {
-  { "dimensions", imagedata_dimensions, METH_VARARGS },
+  { CHAR_PTR_CAST "dimensions", imagedata_dimensions, METH_VARARGS },
   { NULL }
 };
 
@@ -93,7 +93,7 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
   if (num_args == 4) {
     PyObject* py_point = NULL;
     PyObject* py_dim = NULL;
-    if (PyArg_ParseTuple(args, "OOii", &py_dim, &py_point, &pixel, &format)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OOii", &py_dim, &py_point, &pixel, &format)) {
       if (is_DimObject(py_dim)) {
 	try {
 	  return create_ImageDataObject(*(((DimObject*)py_dim)->m_x), coerce_Point(py_point), pixel, format);
@@ -108,7 +108,7 @@ static PyObject* imagedata_new(PyTypeObject* pytype, PyObject* args,
 
   if (num_args == 1) {
     PyObject* py_rect;
-    if (PyArg_ParseTuple(args, "O", &py_rect)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &py_rect)) {
       if (is_RectObject(py_rect)) {
 	Rect* rect = ((RectObject*)py_rect)->m_x;
 	return create_ImageDataObject(rect->dim(), rect->origin(), pixel, format);
@@ -153,15 +153,15 @@ CREATE_SET_FUNC(ncols)
 
 static PyObject* imagedata_get_mbytes(PyObject* self) {
   ImageDataBase* x = ((ImageDataObject*)self)->m_x;
-  return Py_BuildValue("d", x->mbytes());
+  return Py_BuildValue(CHAR_PTR_CAST "d", x->mbytes());
 }
 
 static PyObject* imagedata_get_pixel_type(PyObject* self) {
-  return Py_BuildValue("i", ((ImageDataObject*)self)->m_pixel_type);
+  return Py_BuildValue(CHAR_PTR_CAST "i", ((ImageDataObject*)self)->m_pixel_type);
 }
 
 static PyObject* imagedata_get_storage_format(PyObject* self) {
-  return Py_BuildValue("i", ((ImageDataObject*)self)->m_storage_format);
+  return Py_BuildValue(CHAR_PTR_CAST "i", ((ImageDataObject*)self)->m_storage_format);
 }
 
 static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
@@ -169,7 +169,7 @@ static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 1) {
     PyObject* py_dim;
-    if (PyArg_ParseTuple(args, "O", &py_dim)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &py_dim)) {
       if (is_DimObject(py_dim)) {
 	x->dim(*(((DimObject*)py_dim)->m_x));
 	Py_INCREF(Py_None);
@@ -185,7 +185,7 @@ static PyObject* imagedata_dimensions(PyObject* self, PyObject* args) {
 
 void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.ob_type = &PyType_Type;
-  ImageDataType.tp_name = "gameracore.ImageData";
+  ImageDataType.tp_name = CHAR_PTR_CAST "gameracore.ImageData";
   ImageDataType.tp_basicsize = sizeof(ImageDataObject);
   ImageDataType.tp_dealloc = imagedata_dealloc;
   ImageDataType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -195,7 +195,7 @@ void init_ImageDataType(PyObject* module_dict) {
   ImageDataType.tp_getattro = PyObject_GenericGetAttr;
   ImageDataType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageDataType.tp_free = NULL; // _PyObject_Del;
-  ImageDataType.tp_doc =
+  ImageDataType.tp_doc = CHAR_PTR_CAST
 "There are many ways to initialize ImageData:\n\n"
 "  - ImageData(Dim *dim*, Point *offset*, Int *pixel_type*, Int *storage_format*)\n\n"
 "  - ImageData(Rect *rect*, Int *pixel_type*, Int *storage_format*)\n\n"
@@ -211,21 +211,21 @@ void init_ImageDataType(PyObject* module_dict) {
   PyDict_SetItemString(module_dict, "ImageData", (PyObject*)&ImageDataType);
   // Some constants
   PyDict_SetItemString(module_dict, "FLOAT",
-		       Py_BuildValue("i", Gamera::FLOAT));
+		       Py_BuildValue(CHAR_PTR_CAST "i", Gamera::FLOAT));
   PyDict_SetItemString(module_dict, "COMPLEX",
-		       Py_BuildValue("i", Gamera::COMPLEX));
+		       Py_BuildValue(CHAR_PTR_CAST "i", Gamera::COMPLEX));
   PyDict_SetItemString(module_dict, "ONEBIT",
-		       Py_BuildValue("i", ONEBIT));
+		       Py_BuildValue(CHAR_PTR_CAST "i", ONEBIT));
   PyDict_SetItemString(module_dict, "GREYSCALE",
-		       Py_BuildValue("i", GREYSCALE));
+		       Py_BuildValue(CHAR_PTR_CAST "i", GREYSCALE));
   PyDict_SetItemString(module_dict, "GREY16",
-		       Py_BuildValue("i", GREY16));
+		       Py_BuildValue(CHAR_PTR_CAST "i", GREY16));
   PyDict_SetItemString(module_dict, "RGB",
-		       Py_BuildValue("i", RGB));
+		       Py_BuildValue(CHAR_PTR_CAST "i", RGB));
   PyDict_SetItemString(module_dict, "DENSE",
-		       Py_BuildValue("i", DENSE));
+		       Py_BuildValue(CHAR_PTR_CAST "i", DENSE));
   PyDict_SetItemString(module_dict, "RLE",
-		       Py_BuildValue("i", RLE));
+		       Py_BuildValue(CHAR_PTR_CAST "i", RLE));
 }
 
 

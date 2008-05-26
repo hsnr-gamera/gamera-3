@@ -331,7 +331,7 @@ static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args) {
     PyErr_SetString(PyExc_RuntimeError, "knn: cannot call while ga is active.");
     return 0;
   }
-  if (PyArg_ParseTuple(args, "O", &images) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &images) <= 0) {
     return 0;
   }
   /*
@@ -434,7 +434,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
       return 0;
   }
   PyObject* unknown;
-  if (PyArg_ParseTuple(args, "O", &unknown) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &unknown) <= 0) {
     return 0;
   }
 
@@ -498,7 +498,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   PyObject* unknown, *iterator, *container;
   int cross_validation_mode = 0;
   int do_confidence = 1;
-  if (PyArg_ParseTuple(args, "OO|ii", &container, &unknown, &cross_validation_mode, &do_confidence) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO|ii", &container, &unknown, &cross_validation_mode, &do_confidence) <= 0) {
     return 0;
   }
 
@@ -580,7 +580,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   PyObject* unknown, *iterator;
   double maximum_distance = std::numeric_limits<double>::max();
 
-  if (PyArg_ParseTuple(args, "OO|d", &iterator, &unknown, &maximum_distance) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO|d", &iterator, &unknown, &maximum_distance) <= 0) {
     return 0;
   }
 
@@ -620,7 +620,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
                        (This is most likely because features have not been generated.)");
       return 0;
     }
-    tmp_val = Py_BuildValue("(fO)", distance, cur);
+    tmp_val = Py_BuildValue(CHAR_PTR_CAST "(fO)", distance, cur);
     if (distance < maximum_distance)
       if (PyList_Append(distance_list, tmp_val) < 0)
 	return 0;
@@ -634,7 +634,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
 static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* imagea, *imageb;
-  PyArg_ParseTuple(args, "OO", &imagea, &imageb);
+  PyArg_ParseTuple(args, CHAR_PTR_CAST "OO", &imagea, &imageb);
 
   if (!is_ImageObject(imagea)) {
     PyErr_SetString(PyExc_TypeError, "knn: unknown must be an image");
@@ -649,7 +649,7 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
   double distance = 0.0;
   compute_distance(o->distance_type, imagea, imageb, &distance, o->weight_vector,
 		   o->num_features);
-  return Py_BuildValue("f", distance);
+  return Py_BuildValue(CHAR_PTR_CAST "f", distance);
 }
 
 /*
@@ -664,7 +664,7 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
   PyObject* images;
   PyObject* progress = 0;
   long normalize = 1;
-  if (PyArg_ParseTuple(args, "O|Oi", &images, &progress, &normalize) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O|Oi", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   PyObject* images_seq = PySequence_Fast(images, "First argument must be iterable.");
@@ -777,7 +777,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
   PyObject* images;
   PyObject* progress;
   long normalize = 1;
-  if (PyArg_ParseTuple(args, "OO|i", &images, &progress, &normalize) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO|i", &images, &progress, &normalize) <= 0)
     return 0;
   // images is a list of Gamera/Python ImageObjects
   PyObject* images_seq = PySequence_Fast(images, "First argument must be iterable.");
@@ -887,7 +887,7 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
 }
 
 static PyObject* knn_get_num_k(PyObject* self) {
-  return Py_BuildValue("i", ((KnnObject*)self)->num_k);
+  return Py_BuildValue(CHAR_PTR_CAST "i", ((KnnObject*)self)->num_k);
 }
 
 static int knn_set_num_k(PyObject* self, PyObject* v) {
@@ -900,7 +900,7 @@ static int knn_set_num_k(PyObject* self, PyObject* v) {
 }
 
 static PyObject* knn_get_distance_type(PyObject* self) {
-  return Py_BuildValue("i", ((KnnObject*)self)->distance_type);
+  return Py_BuildValue(CHAR_PTR_CAST "i", ((KnnObject*)self)->distance_type);
 }
 
 static int knn_set_distance_type(PyObject* self, PyObject* v) {
@@ -1002,7 +1002,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* indexes = 0;
   int stop_threshold = std::numeric_limits<int>::max();
-  if (PyArg_ParseTuple(args, "|Oi", &indexes, &stop_threshold) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|Oi", &indexes, &stop_threshold) <= 0)
     return 0;
   if (o->feature_vectors == 0) {
     PyErr_SetString(PyExc_RuntimeError,
@@ -1012,7 +1012,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   if (indexes == 0) {
     // If we don't have a list of indexes, just do the leave_one_out
     std::pair<int, int> ans = leave_one_out(o, std::numeric_limits<int>::max());
-    return Py_BuildValue("(ii)", ans.first, ans.second);
+    return Py_BuildValue(CHAR_PTR_CAST "(ii)", ans.first, ans.second);
   } else {
     // Get the list of indexes
     PyObject* indexes_seq = PySequence_Fast(indexes, "Indexes must be an iterable list of indexes.");
@@ -1047,7 +1047,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     }
     // do the leave-one-out
     std::pair<int, int> ans = leave_one_out(o, stop_threshold, o->weight_vector, &idx);
-    return Py_BuildValue("(ii)", ans.first, ans.second);
+    return Py_BuildValue(CHAR_PTR_CAST "(ii)", ans.first, ans.second);
   }
 }
 
@@ -1099,7 +1099,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   char* filename;
   PyObject* features;
-  if (PyArg_ParseTuple(args, "sO", &filename, &features) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "sO", &filename, &features) <= 0) {
     return 0;
   }
 
@@ -1205,7 +1205,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
 static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   char* filename;
-  if (PyArg_ParseTuple(args, "s", &filename) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "s", &filename) <= 0)
     return 0;
 
   FILE* file = fopen(filename, "rb");
@@ -1303,7 +1303,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
 
 static PyObject* knn_get_weights(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
-  PyObject* arglist = Py_BuildValue("(s)", "d");
+  PyObject* arglist = Py_BuildValue(CHAR_PTR_CAST "(s)", "d");
   PyObject* array = PyEval_CallObject(array_init, arglist);
   if (array == 0) {
     PyErr_SetString(PyExc_IOError, "knn: Error creating array.");
@@ -1324,7 +1324,7 @@ static PyObject* knn_get_weights(PyObject* self, PyObject* args) {
 static PyObject* knn_set_weights(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   PyObject* array;
-  if (PyArg_ParseTuple(args, "O", &array) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &array) <= 0) {
     return 0;
   }
   Py_ssize_t len;
@@ -1389,7 +1389,7 @@ static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
   o->ga->pCrossover(o->ga_crossover);
   o->ga->initialize();
   Py_END_ALLOW_THREADS
-  return Py_BuildValue("f", o->ga->statistics().initial());
+  return Py_BuildValue(CHAR_PTR_CAST "f", o->ga->statistics().initial());
 }
 
 static PyObject* knn_ga_destroy(PyObject* self, PyObject* args) {
@@ -1418,12 +1418,12 @@ static PyObject* knn_ga_step(PyObject* self, PyObject* args) {
   GA1DArrayGenome<double>& g =(GA1DArrayGenome<double>&)o->ga->statistics().bestIndividual();
   for (size_t i = 0; i < o->num_features; i++)
     o->weight_vector[i] = g.gene(i);
-  return Py_BuildValue("f", o->ga->statistics().maxEver());
+  return Py_BuildValue(CHAR_PTR_CAST "f", o->ga->statistics().maxEver());
 }
 
 static PyObject* knn_get_ga_mutation(PyObject* self) {
   KnnObject* o = (KnnObject*)self;
-  return Py_BuildValue("f", o->ga_mutation);
+  return Py_BuildValue(CHAR_PTR_CAST "f", o->ga_mutation);
 }
 
 static int knn_set_ga_mutation(PyObject* self, PyObject* v) {
@@ -1438,7 +1438,7 @@ static int knn_set_ga_mutation(PyObject* self, PyObject* v) {
 
 static PyObject* knn_get_ga_crossover(PyObject* self) {
   KnnObject* o = (KnnObject*)self;
-  return Py_BuildValue("f", o->ga_crossover);
+  return Py_BuildValue(CHAR_PTR_CAST "f", o->ga_crossover);
 }
 
 static int knn_set_ga_crossover(PyObject* self, PyObject* v) {
@@ -1453,7 +1453,7 @@ static int knn_set_ga_crossover(PyObject* self, PyObject* v) {
 
 static PyObject* knn_get_ga_population(PyObject* self) {
   KnnObject* o = (KnnObject*)self;
-  return Py_BuildValue("i", o->ga_population);
+  return Py_BuildValue(CHAR_PTR_CAST "i", o->ga_population);
 }
 
 static int knn_set_ga_population(PyObject* self, PyObject* v) {
@@ -1468,7 +1468,7 @@ static int knn_set_ga_population(PyObject* self, PyObject* v) {
 
 static PyObject* knn_get_num_features(PyObject* self) {
   KnnObject* o = (KnnObject*)self;
-  return Py_BuildValue("i", o->num_features);
+  return Py_BuildValue(CHAR_PTR_CAST "i", o->num_features);
 }
 
 static int knn_set_num_features(PyObject* self, PyObject* v) {
@@ -1486,11 +1486,11 @@ PyMethodDef knn_module_methods[] = {
 };
 
 DL_EXPORT(void) initknncore(void) {
-  PyObject* m = Py_InitModule("gamera.knncore", knn_module_methods);
+  PyObject* m = Py_InitModule(CHAR_PTR_CAST "gamera.knncore", knn_module_methods);
   PyObject* d = PyModule_GetDict(m);
 
   KnnType.ob_type = &PyType_Type;
-  KnnType.tp_name = "gamera.knncore.kNN";
+  KnnType.tp_name = CHAR_PTR_CAST "gamera.knncore.kNN";
   KnnType.tp_basicsize = sizeof(KnnObject);
   KnnType.tp_dealloc = knn_dealloc;
   KnnType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -1503,11 +1503,11 @@ DL_EXPORT(void) initknncore(void) {
   PyType_Ready(&KnnType);
   PyDict_SetItemString(d, "kNN", (PyObject*)&KnnType);
   PyDict_SetItemString(d, "CITY_BLOCK",
-		       Py_BuildValue("i", CITY_BLOCK));
+		       Py_BuildValue(CHAR_PTR_CAST "i", CITY_BLOCK));
   PyDict_SetItemString(d, "EUCLIDEAN",
-		       Py_BuildValue("i", EUCLIDEAN));
+		       Py_BuildValue(CHAR_PTR_CAST "i", EUCLIDEAN));
   PyDict_SetItemString(d, "FAST_EUCLIDEAN",
-		       Py_BuildValue("i", FAST_EUCLIDEAN));
+		       Py_BuildValue(CHAR_PTR_CAST "i", FAST_EUCLIDEAN));
 
   PyObject* array_dict = get_module_dict("array");
   if (array_dict == 0) {

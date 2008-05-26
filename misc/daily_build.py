@@ -4,6 +4,20 @@
 # Nothing about this file should be expected to be portable between
 # machines.
 
+# This script runs successfully on an Ubuntu 8.04 LTS system with
+# (at least) the following packages installed:
+#     python-dev
+#     python2.4
+#     python2.4-dev
+#     mingw32
+#     g++
+#     libpng12-dev
+#     libtiff4-dev
+#     python-docutils
+#     python-pygments
+#     openssh-client
+#     rsync
+
 import datetime
 import os
 import shutil
@@ -54,7 +68,7 @@ def update_working_copy():
         for rev in client.update(WORKING_PATH):
             current_remote = max(current_remote, rev.number)
         if current_remote > current_working:
-            print "Updates in CVS"
+            print "Updates in SVN"
             push_update = True
     else:
         print "Checking out clean"
@@ -78,7 +92,8 @@ def build(version):
         myrmtree(os.path.join(WORKING_PATH, "dist"))
     myrmtree(os.path.join(WORKING_PATH, "doc/html"))
     os.chdir(WORKING_PATH)
-    mysystem("Building for Linux...", "python setup.py build")
+    mysystem("Building for Linux (Python 2.5)...", "python setup.py build")
+    mysystem("Building for Linux (Python 2.4)...", "python2.4 setup.py build")
     mysystem("Building source distribution...", "python setup.py sdist")
     mysystem("Building for Windows...", "python setup.py build --compiler=mingw32_cross bdist_wininst")
     os.chdir("doc")

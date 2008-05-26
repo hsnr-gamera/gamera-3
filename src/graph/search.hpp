@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -29,11 +29,11 @@ extern "C" {
 }
 
 #define SEARCH_METHODS \
-  { "BFS", graph_BFS, METH_O, \
-    "**BFS** (*value* or *node*)\n\n" \
+  { CHAR_PTR_CAST "BFS", graph_BFS, METH_O, \
+    CHAR_PTR_CAST "**BFS** (*value* or *node*)\n\n" \
     "A lazy iterator that returns the nodes in breadth-first order starting from the given *value* or *node*." }, \
-  { "DFS", graph_DFS, METH_O, \
-    "**DFS** (*value* or *node*)\n\n" \
+  { CHAR_PTR_CAST "DFS", graph_DFS, METH_O, \
+    CHAR_PTR_CAST "**DFS** (*value* or *node*)\n\n" \
     "A lazy iterator that returns the nodes in depth-first order starting from the given *value* or *node*." }, \
 
 #endif

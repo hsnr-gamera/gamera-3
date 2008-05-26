@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -61,7 +61,7 @@ PyObject* graph_create_spanning_tree(PyObject* self, PyObject* pyobject) {
 
 struct minimum_spanning_queue_comp_func
 {
-  bool operator()(Edge* const& a, Edge* const& b) const { 
+  bool operator()(Edge* const& a, Edge* const& b) const {
     return a->m_cost > b->m_cost;
   }
 };
@@ -79,7 +79,7 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
 	   edge_queue.push(*j);
 	 }
   }
-  
+
   size_t flags = so->m_flags;
   UNSET_FLAG(flags, FLAG_CYCLIC);
   GraphObject* tree = graph_new(flags);
@@ -88,7 +88,7 @@ GraphObject* graph_create_minimum_spanning_tree(GraphObject* so) {
        i != so->m_nodes->end(); ++i) {
     graph_add_node(tree, (*i)->m_data);
   }
-  
+
   while (!edge_queue.empty() && tree->m_edges->size() < tree->m_nodes->size() - 1) {
     Edge* edge = edge_queue.top();
     edge_queue.pop();
@@ -112,12 +112,12 @@ namespace {
 PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject* images,
 						       PyObject* uniq_dists) {
   PyObject* images_seq = PySequence_Fast(images, "images must be iteratable");
-  if (images_seq == NULL) 
+  if (images_seq == NULL)
     return 0;
-  
+
   static PyTypeObject* imagebase = 0;
   if (imagebase == 0) {
-    PyObject* mod = PyImport_ImportModule("gamera.gameracore");
+    PyObject* mod = PyImport_ImportModule(CHAR_PTR_CAST "gamera.gameracore");
     if (mod == 0) {
       PyErr_SetString(PyExc_RuntimeError, "Unable to load gameracore.\n");
       Py_DECREF(images_seq);
@@ -144,11 +144,11 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
     Py_DECREF(images_seq);
     return 0;
   }
-  
+
   // get the graph ready
   graph_remove_all_edges(so);
   graph_make_acyclic(so);
-  
+
   // make the list for sorting
   typedef std::vector<std::pair<size_t, size_t> > index_vec_type;
   index_vec_type indexes(((dists->nrows() * dists->nrows()) - dists->nrows()) / 2);
@@ -169,7 +169,7 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
     nodes[i] = graph_add_node(so, PySequence_Fast_GET_ITEM(images_seq, i));
   }
   Py_DECREF(images_seq);
-  
+
   // create the mst using kruskal
   i = 0;
   while (i < int(indexes.size()) && (int(so->m_edges->size()) < (images_len - 1))) {
@@ -185,7 +185,7 @@ PyObject* graph_minimum_spanning_tree_unique_distances(GraphObject* so, PyObject
 PyObject* graph_create_minimum_spanning_tree(PyObject* self, PyObject* args) {
   PyObject* images = 0;
   PyObject* uniq_dists = 0;
-  if (PyArg_ParseTuple(args, "|OO:create_minimum_spanning_tree", &images, &uniq_dists) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|OO:create_minimum_spanning_tree", &images, &uniq_dists) <= 0)
 	 return 0;
   GraphObject* so = ((GraphObject*)self);
   if (images == 0 || uniq_dists == 0)

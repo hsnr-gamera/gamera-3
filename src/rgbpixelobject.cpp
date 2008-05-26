@@ -84,7 +84,7 @@ static PyGetSetDef rgbpixel_getset[] = {
 static PyObject* rgbpixel_new(PyTypeObject* pytype, PyObject* args,
 			     PyObject* kwds) {
   int red, green, blue;
-  if (PyArg_ParseTuple(args, "iii", &red, &green, &blue) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "iii", &red, &green, &blue) <= 0)
     return 0;
   if (red < 0 || red > 255) {
     PyErr_Format(PyExc_ValueError, "'red' value '%d' is out of range (0, 255)", red);
@@ -205,7 +205,7 @@ static long rgbpixel_hash(PyObject* self) {
 
 void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.ob_type = &PyType_Type;
-  RGBPixelType.tp_name = "gameracore.RGBPixel";
+  RGBPixelType.tp_name = CHAR_PTR_CAST "gameracore.RGBPixel";
   RGBPixelType.tp_basicsize = sizeof(RGBPixelObject);
   RGBPixelType.tp_dealloc = rgbpixel_dealloc;
   RGBPixelType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -218,7 +218,8 @@ void init_RGBPixelType(PyObject* module_dict) {
   RGBPixelType.tp_repr = rgbpixel_repr;
   RGBPixelType.tp_str = rgbpixel_str;
   RGBPixelType.tp_hash = rgbpixel_hash;
-  RGBPixelType.tp_doc = "__init__(*red*, *green*, *blue*).\n\n"
+  RGBPixelType.tp_doc = CHAR_PTR_CAST
+    "__init__(*red*, *green*, *blue*).\n\n"
     "Example: ``RGBPixel(255, 0, 0)``.\n\n"
     "Each color value is in the range 0-255 (8 bits).\n\n"
     "For more information about color operations, see the `Color plugin docs`__.\n\n"

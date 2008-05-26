@@ -45,8 +45,8 @@ static PyTypeObject EdgeType = {
 };
 
 PyMethodDef edge_methods[] = {
-  { "traverse", edge_traverse, METH_O,
-    "**traverse** (*node*)\n\n"
+  { CHAR_PTR_CAST "traverse", edge_traverse, METH_O,
+    CHAR_PTR_CAST "**traverse** (*node*)\n\n"
     "Get the 'other' node in an edge." },
   { NULL }
 };
@@ -107,7 +107,7 @@ PyObject* edge___repr__(PyObject* self) {
 
 PyObject* edge___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   PyObject* data = NULL;
-  if (PyArg_ParseTuple(args, "|O:Edge.__call__", &data) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|O:Edge.__call__", &data) <= 0)
     return 0;
   if (data == NULL)
     return edge_get_cost(self);
@@ -173,7 +173,7 @@ int edge_set_label(PyObject* self, PyObject* data) {
 
 void init_EdgeType() {
   EdgeType.ob_type = &PyType_Type;
-  EdgeType.tp_name = "gamera.graph.Edge";
+  EdgeType.tp_name = CHAR_PTR_CAST "gamera.graph.Edge";
   EdgeType.tp_basicsize = sizeof(EdgeObject);
   EdgeType.tp_dealloc = edgeobject_dealloc;
   EdgeType.tp_repr = edge___repr__;

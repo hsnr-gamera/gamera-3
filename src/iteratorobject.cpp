@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -54,7 +54,7 @@ PyObject* iterator_next(PyObject* self) {
 
 void init_IteratorType(PyObject* module_dict) {
   IteratorType.ob_type = &PyType_Type;
-  IteratorType.tp_name = "gamera.Iterator";
+  IteratorType.tp_name = CHAR_PTR_CAST "gamera.Iterator";
   IteratorType.tp_basicsize = sizeof(IteratorObject);
   IteratorType.tp_dealloc = iterator_dealloc;
   IteratorType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -28,8 +28,8 @@ extern "C" {
 }
 
 #define PARTITIONS_METHODS \
-  { "optimize_partitions", graph_optimize_partitions, METH_VARARGS, \
-    "**optimize_partitions** (*root_node*, *fittness_func*, *max_parts_per_group* = 5, *max_subgraph_size* = 16)\n\n" \
+  { CHAR_PTR_CAST "optimize_partitions", graph_optimize_partitions, METH_VARARGS, \
+    CHAR_PTR_CAST "**optimize_partitions** (*root_node*, *fittness_func*, *max_parts_per_group* = 5, *max_subgraph_size* = 16)\n\n" \
     "A partition is defined as a way to divide a subgraph into groups.  This algorithm finds an optimal\n" \
     "partition according to the given fitness function.\n\n" \
     "  *root_node*\n" \

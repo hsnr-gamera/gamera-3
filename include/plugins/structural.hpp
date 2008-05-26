@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -74,7 +74,7 @@ namespace Gamera {
       end_c = a_roi.ncols();
       dir_c = 1;
     }
-      
+
     // Yes, that's right: a goto statement.
     // According to Stroustrup "C++ Programming Language, 3rd ed.":
     //   "One of the few sensible uses of goto in ordinary code is to
@@ -84,7 +84,7 @@ namespace Gamera {
       for (long c = start_c; c != end_c; c += dir_c) {
 	if (is_black(a_roi.get(Point(c, r)))) {
 	  bool is_edge = false;
-	  if (r == 0l || (size_t)r == a_roi.nrows() - 1 || 
+	  if (r == 0l || (size_t)r == a_roi.nrows() - 1 ||
 	      c == 0l || (size_t)c == a_roi.ncols() - 1) {
 	    is_edge = true;
 	    goto edge_found;
@@ -118,7 +118,7 @@ namespace Gamera {
     }
     return false;
   }
-  
+
   template<class T, class U>
   FloatVector *polar_distance(T &a, U &b) {
     double x = (double)a.center_x() - (double)b.center_x();
@@ -139,7 +139,7 @@ namespace Gamera {
     (*result)[2] = r;
     return result;
   }
-  
+
   int polar_match(double r1, double q1, double r2, double q2) {
     static const double ANGULAR_THRESHOLD = M_PI / 6.0;
     static const double DISTANCE_THRESHOLD = 1.6;
@@ -162,7 +162,7 @@ namespace Gamera {
 #define ITMAX 100
 #define EPS 3.0e-7
 #define FPMIN 1.0e-30
-  
+
   // From Numerical Recipes in C
   double gammln(const double xx) {
     static double cof[6] = {76.18009172947146,-86.50532032941677,
@@ -236,7 +236,7 @@ namespace Gamera {
       gammcf = std::numeric_limits<double>::max();
     }
   }
-  
+
   // From Numerical Recipes in C
   double gammq(const double a, const double x) {
     double gamser, gln;
@@ -259,10 +259,10 @@ namespace Gamera {
       q = 1.0;
       return;
     }
-    
+
     double sx, sy, st2, sxoss, chi2;
     sx = sy = st2 = a = b = chi2 = 0.0;
-  
+
     for (PointVector::const_iterator i = points.begin(); i != points.end(); ++i) {
       sx += double((*i).x());
       sy += double((*i).y());
@@ -275,17 +275,17 @@ namespace Gamera {
       st2 += t * t;
       b += t * double((*i).y());
     }
-  
+
     b /= st2;
     a = (sy - sx * b) / points.size();
-  
+
     for (PointVector::const_iterator i = points.begin(); i != points.end(); ++i) {
       double tmp = (double((*i).y()) - a - b * double((*i).x()));
       chi2 += tmp * tmp;
     }
 
     q = 1.0;
-    
+
     if (points.size() >= 3) {
       try {
 	q = gammq(0.5 * (points.size() - 2), 0.5 * chi2);
@@ -298,7 +298,7 @@ namespace Gamera {
   PyObject* least_squares_fit(const PointVector* points) {
     double a, b, q;
     least_squares_fit(*points, a, b, q);
-    return Py_BuildValue("fff", b, a, q);
+    return Py_BuildValue(CHAR_PTR_CAST "fff", b, a, q);
   }
 
   PyObject* least_squares_fit_xy(const PointVector* points) {
@@ -327,8 +327,8 @@ namespace Gamera {
       x_of_y = 1;
     }
 
-    return Py_BuildValue("fffi", b, a, q, x_of_y);
+    return Py_BuildValue(CHAR_PTR_CAST "fffi", b, a, q, x_of_y);
   }
-  
+
 }
 #endif

@@ -95,7 +95,7 @@ PyObject* node___repr__(PyObject* self) {
 
 PyObject* node___call__(PyObject* self, PyObject* args, PyObject* kwds) {
   PyObject* data = NULL;
-  if (PyArg_ParseTuple(args, "|O:Node.__call__", &data) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|O:Node.__call__", &data) <= 0)
     return 0;
   if (data == NULL)
     return node_get_data(self);
@@ -142,7 +142,7 @@ PyObject* node_get_nedges(PyObject* self) {
 
 void init_NodeType() {
   NodeType.ob_type = &PyType_Type;
-  NodeType.tp_name = "gamera.graph.Node";
+  NodeType.tp_name = CHAR_PTR_CAST "gamera.graph.Node";
   NodeType.tp_basicsize = sizeof(NodeObject);
   NodeType.tp_dealloc = nodeobject_dealloc;
   NodeType.tp_repr = node___repr__;

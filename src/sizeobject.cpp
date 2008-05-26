@@ -54,7 +54,7 @@ PyTypeObject* get_SizeType() {
 static PyObject* size_new(PyTypeObject* pytype, PyObject* args,
 			  PyObject* kwds) {
   int width, height;
-  if (PyArg_ParseTuple(args, "ii:Size.__init__", &width, &height) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "ii:Size.__init__", &width, &height) <= 0)
     return 0;
   SizeObject* so;
   so = (SizeObject*)pytype->tp_alloc(pytype, 0);
@@ -70,7 +70,7 @@ static void size_dealloc(PyObject* self) {
 
 #define CREATE_GET_FUNC(name) static PyObject* size_get_##name(PyObject* self) {\
   Size* x = ((SizeObject*)self)->m_x; \
-  return Py_BuildValue("i", (int)x->name()); \
+  return Py_BuildValue(CHAR_PTR_CAST "i", (int)x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int size_set_##name(PyObject* self, PyObject* value) {\
@@ -136,7 +136,7 @@ static PyObject* size_repr(PyObject* self) {
 
 void init_SizeType(PyObject* module_dict) {
   SizeType.ob_type = &PyType_Type;
-  SizeType.tp_name = "gameracore.Size";
+  SizeType.tp_name = CHAR_PTR_CAST "gameracore.Size";
   SizeType.tp_basicsize = sizeof(SizeObject);
   SizeType.tp_dealloc = size_dealloc;
   SizeType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -147,7 +147,7 @@ void init_SizeType(PyObject* module_dict) {
   SizeType.tp_richcompare = size_richcompare;
   SizeType.tp_free = NULL; // _PyObject_Del;
   SizeType.tp_repr = size_repr;
-  SizeType.tp_doc = "Size stores a size (*width*, *height*)";
+  SizeType.tp_doc = CHAR_PTR_CAST "Size stores a size (*width*, *height*)";
   PyType_Ready(&SizeType);
   PyDict_SetItemString(module_dict, "Size", (PyObject*)&SizeType);
 }

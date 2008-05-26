@@ -57,8 +57,8 @@ static PyGetSetDef floatpoint_getset[] = {
 };
 
 static PyMethodDef floatpoint_methods[] = {
-  { "distance", floatpoint_distance, METH_O,
-    "**distance** (POINT *p*)\n\nCalculates the Euclidean distance from this point to another point."},
+  { CHAR_PTR_CAST "distance", floatpoint_distance, METH_O,
+    CHAR_PTR_CAST "**distance** (POINT *p*)\n\nCalculates the Euclidean distance from this point to another point."},
   { NULL }
 };
 
@@ -78,7 +78,7 @@ static PyObject* floatpoint_new(PyTypeObject* pytype, PyObject* args,
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 2) {
     double x, y;
-    if (PyArg_ParseTuple(args, "dd:FloatPoint.__init__", &x, &y))
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "dd:FloatPoint.__init__", &x, &y))
       return _floatpoint_new(pytype, new FloatPoint(x, y));
   }
 
@@ -86,7 +86,7 @@ static PyObject* floatpoint_new(PyTypeObject* pytype, PyObject* args,
 
   if (num_args == 1) {
     PyObject* p;
-    if (PyArg_ParseTuple(args, "O", &p)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &p)) {
       try {
 	return _floatpoint_new(pytype, new FloatPoint(coerce_FloatPoint(p)));
       } catch (std::exception e) {
@@ -228,7 +228,7 @@ void init_FloatPointType(PyObject* module_dict) {
   floatpoint_number_methods.nb_absolute = floatpoint_absolute;
 
   FloatPointType.ob_type = &PyType_Type;
-  FloatPointType.tp_name = "gameracore.FloatPoint";
+  FloatPointType.tp_name = CHAR_PTR_CAST "gameracore.FloatPoint";
   FloatPointType.tp_basicsize = sizeof(FloatPointObject);
   FloatPointType.tp_dealloc = floatpoint_dealloc;
   FloatPointType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -240,7 +240,7 @@ void init_FloatPointType(PyObject* module_dict) {
   FloatPointType.tp_free = NULL; // _PyObject_Del;
   FloatPointType.tp_methods = floatpoint_methods;
   FloatPointType.tp_repr = floatpoint_repr;
-  FloatPointType.tp_doc =
+  FloatPointType.tp_doc = CHAR_PTR_CAST
 "**FloatPoint** (*x*, *y*)\n\n"
 "   *or*\n\n"
 "**FloatPoint** (Point *p*)\n\n"

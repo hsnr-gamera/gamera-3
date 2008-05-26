@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -165,7 +165,7 @@ namespace Gamera {
       typedef typename T::const_row_iterator const_iterator;
     };
   }
-  
+
 ///////////////////////////////////////////////////////////////////////////
 // Finding the end of runs
   template<class T, class Color>
@@ -203,7 +203,7 @@ namespace Gamera {
 // histogram vector is not filled with zeros so that successive calls
 // can be made to this algorithm with the same vector to do the
 // histogram of an entire image. KWM
-  
+
   template<class T>
   struct SortBySecondFunctor {
     bool operator()(const T& a, const T& b) {
@@ -234,7 +234,7 @@ namespace Gamera {
       n = (long)runs->size();
     PyObject* result = PyList_New(n);
     for (long i = 0; i < n; ++i) {
-      PyObject* tuple = Py_BuildValue("ii", (*runs)[i].first, (*runs)[i].second);
+      PyObject* tuple = Py_BuildValue(CHAR_PTR_CAST "ii", (*runs)[i].first, (*runs)[i].second);
       PyList_SET_ITEM(result, i, tuple);
     }
     delete runs;
@@ -263,7 +263,7 @@ namespace Gamera {
   IntVector* run_histogram(const T& image, const Color& color, const runs::Horizontal& direction) {
     typedef typename runs::GetIterator<T, runs::Horizontal>::const_iterator iterator;
     IntVector* hist = new IntVector(image.ncols() + 1, 0);
-  
+
     try {
       iterator end = direction.end(image);
       for (iterator i = direction.begin(image); i != end; ++i)
@@ -322,10 +322,10 @@ namespace Gamera {
       }
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
-  } 
+  }
 
 ///////////////////////////////////////////////////////////////////////////
-// Most frequent run(s) (basically returning a subset of a sorted histogram)  
+// Most frequent run(s) (basically returning a subset of a sorted histogram)
 
   template<class T, class Color, class Direction>
   size_t most_frequent_run(const T& image, const Color& color, const Direction& direction) {
@@ -340,7 +340,7 @@ namespace Gamera {
     delete hist;
     return result;
   }
-  
+
   template<class T>
   size_t most_frequent_run(const T& image, char* const& color_, char* const& direction_) {
     std::string color(color_);
@@ -359,7 +359,7 @@ namespace Gamera {
       }
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
-  } 
+  }
 
   template<class T, class Color, class Direction>
   RunVector* most_frequent_runs(const T& image, const Color& color, const Direction& direction) {
@@ -393,8 +393,8 @@ namespace Gamera {
       }
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
-  } 
-  
+  }
+
   template<class T, class Color, class Direction>
   PyObject* most_frequent_runs(const T& image, long n, const Color& color, const Direction& direction) {
     RunVector* runs = most_frequent_runs(image, color, direction);
@@ -426,7 +426,7 @@ namespace Gamera {
       }
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
-  } 
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 // Runlength filtering.
@@ -550,7 +550,7 @@ namespace Gamera {
     while (true) {
       if ((*s >= 9 && *s <= 13) || *s == 32)
 	++s;
-      else { 
+      else {
 	if (*s >= '0' && *s <= '9')
 	  break;
 	if (*s == '\0')
@@ -565,7 +565,7 @@ namespace Gamera {
       number *= 10;
       number += *s - '0';
     }
-    
+
     return number;
   }
 
@@ -685,7 +685,7 @@ namespace Gamera {
       }
       return result;
     }
-    
+
     Iterator m_begin, m_it, m_end;
     int m_sequence;
     size_t m_offset;
@@ -725,7 +725,7 @@ namespace Gamera {
       }
     }
     throw std::runtime_error("color must be either \"black\" or \"white\" and direction must be either \"horizontal\" or \"vertical\".");
-  } 
+  }
 
 #endif // GAMERA_NOPYTHON
 

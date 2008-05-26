@@ -202,7 +202,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 2) {
     PyObject *a, *b;
-    if (PyArg_ParseTuple(args, "OO", &a, &b)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO", &a, &b)) {
       Point point_a;
       try {
 	point_a = coerce_Point(a);
@@ -229,7 +229,7 @@ static PyObject* rect_new(PyTypeObject* pytype, PyObject* args,
 
   if (num_args == 1) {
     PyObject* other;
-    if (PyArg_ParseTuple(args, "O", &other)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &other)) {
       if (is_RectObject(other)) {
 	return _rect_new(pytype, new Rect(*((RectObject*)other)->m_x));
       }
@@ -397,7 +397,7 @@ static PyObject* rect_set(PyObject* self, PyObject* args) {
 static PyObject* rect_move(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   int xv, y;
-  if (PyArg_ParseTuple(args, "ii:move", &xv, &y) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "ii:move", &xv, &y) <= 0) {
     return 0;
   }
   x->move(xv, y);
@@ -408,7 +408,7 @@ static PyObject* rect_move(PyObject* self, PyObject* args) {
 static PyObject* rect_contains_x(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   int xv;
-  if (PyArg_ParseTuple(args, "i:contains_x", &xv) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "i:contains_x", &xv) <= 0)
     return 0;
   if (x->contains_x(xv)) {
     Py_INCREF(Py_True);
@@ -422,7 +422,7 @@ static PyObject* rect_contains_x(PyObject* self, PyObject* args) {
 static PyObject* rect_contains_y(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   int y;
-  if (PyArg_ParseTuple(args, "i:contains_y", &y) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "i:contains_y", &y) <= 0)
     return 0;
   if (x->contains_y(y)) {
     Py_INCREF(Py_True);
@@ -436,7 +436,7 @@ static PyObject* rect_contains_y(PyObject* self, PyObject* args) {
 static PyObject* rect_contains_point(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* py_point;
-  if (PyArg_ParseTuple(args, "O:contains_point", &py_point)) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:contains_point", &py_point)) {
     try {
       Point point = coerce_Point(py_point);
       if (x->contains_point(point)) {
@@ -456,7 +456,7 @@ static PyObject* rect_contains_point(PyObject* self, PyObject* args) {
 static PyObject* rect_contains_rect(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:contains_rect", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:contains_rect", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -474,7 +474,7 @@ static PyObject* rect_contains_rect(PyObject* self, PyObject* args) {
 static PyObject* rect_expand(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   long size;
-  if (PyArg_ParseTuple(args, "i:expand", &size) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "i:expand", &size) <= 0)
     return 0;
   PyTypeObject* pytype = get_RectType();
   RectObject* so = (RectObject*)pytype->tp_alloc(pytype, 0);
@@ -485,7 +485,7 @@ static PyObject* rect_expand(PyObject* self, PyObject* args) {
 static PyObject* rect_intersects_x(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:intersects_x", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:intersects_x", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -503,7 +503,7 @@ static PyObject* rect_intersects_x(PyObject* self, PyObject* args) {
 static PyObject* rect_intersects_y(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:intersects_y", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:intersects_y", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -521,7 +521,7 @@ static PyObject* rect_intersects_y(PyObject* self, PyObject* args) {
 static PyObject* rect_intersects(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:intersects", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:intersects", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -539,7 +539,7 @@ static PyObject* rect_intersects(PyObject* self, PyObject* args) {
 static PyObject* rect_intersection (PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:intersection", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:intersection", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -576,7 +576,7 @@ static PyObject* rect_union_rects(PyObject* _ /* staticmethod */, PyObject* l) {
 static PyObject* rect_union(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:union", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:union", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -590,7 +590,7 @@ static PyObject* rect_union(PyObject* self, PyObject* args) {
 static PyObject* rect_distance_euclid(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:distance_euclid", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:distance_euclid", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -602,7 +602,7 @@ static PyObject* rect_distance_euclid(PyObject* self, PyObject* args) {
 static PyObject* rect_distance_bb(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:distance_bb", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:distance_bb", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -614,7 +614,7 @@ static PyObject* rect_distance_bb(PyObject* self, PyObject* args) {
 static PyObject* rect_distance_cx(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:distance_cx", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:distance_cx", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -626,7 +626,7 @@ static PyObject* rect_distance_cx(PyObject* self, PyObject* args) {
 static PyObject* rect_distance_cy(PyObject* self, PyObject* args) {
   Rect* x = ((RectObject*)self)->m_x;
   PyObject* rect;
-  if (PyArg_ParseTuple(args, "O:distance_cy", &rect) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:distance_cy", &rect) <= 0)
     return 0;
   if (!is_RectObject(rect)) {
     PyErr_SetString(PyExc_TypeError, "Argument must be a Rect object.");
@@ -687,7 +687,7 @@ static long rect_hash(PyObject* self) {
 
 void init_RectType(PyObject* module_dict) {
   RectType.ob_type = &PyType_Type;
-  RectType.tp_name = "gameracore.Rect";
+  RectType.tp_name = CHAR_PTR_CAST "gameracore.Rect";
   RectType.tp_basicsize = sizeof(RectObject);
   RectType.tp_dealloc = rect_dealloc;
   RectType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -700,7 +700,7 @@ void init_RectType(PyObject* module_dict) {
   RectType.tp_free = NULL;
   RectType.tp_repr = rect_repr;
   RectType.tp_hash = rect_hash;
-  RectType.tp_doc =
+  RectType.tp_doc = CHAR_PTR_CAST
 "There are a number of ways to initialize a ``Rect`` object:\n\n"
 "  - **Rect** (Point *upper_left*, Point *lower_right*)\n\n"
 "  - **Rect** (Point *upper_left*, Size *size*)\n\n"

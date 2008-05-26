@@ -96,7 +96,7 @@ static void imageinfo_dealloc(PyObject* self) {
 
 #define CREATE_GET_FLOAT_FUNC(name) static PyObject* imageinfo_get_##name(PyObject* self) {\
   ImageInfo* x = ((ImageInfoObject*)self)->m_x; \
-  return Py_BuildValue("f", x->name()); \
+  return Py_BuildValue(CHAR_PTR_CAST "f", x->name()); \
 }
 
 #define CREATE_SET_FLOAT_FUNC(name) static int imageinfo_set_##name(PyObject* self, PyObject* value) {\
@@ -120,7 +120,7 @@ CREATE_SET_FUNC(ncolors)
 
 void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.ob_type = &PyType_Type;
-  ImageInfoType.tp_name = "gameracore.ImageInfo";
+  ImageInfoType.tp_name = CHAR_PTR_CAST "gameracore.ImageInfo";
   ImageInfoType.tp_basicsize = sizeof(ImageInfoObject);
   ImageInfoType.tp_dealloc = imageinfo_dealloc;
   ImageInfoType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -129,7 +129,7 @@ void init_ImageInfoType(PyObject* module_dict) {
   ImageInfoType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageInfoType.tp_getset = imageinfo_getset;
   ImageInfoType.tp_free = NULL; // _PyObject_Del;
-  ImageInfoType.tp_doc =
+  ImageInfoType.tp_doc = CHAR_PTR_CAST
 "__init__()\n\n"
 "The ImageInfo class allows the properties of a disk-based image file "
 "to be examined without loading it.\n\n"

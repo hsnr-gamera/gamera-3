@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -31,11 +31,11 @@ GraphObject* graph_create_spanning_tree(GraphObject* so, Node* root);
 GraphObject* graph_create_minimum_spanning_tree(GraphObject* so);
 
 #define SPANNING_TREE_METHODS \
-  { "create_spanning_tree", graph_create_spanning_tree, METH_O, \
-    "**create_spanning_tree** (*value* or *node*)\n\n" \
+  { CHAR_PTR_CAST "create_spanning_tree", graph_create_spanning_tree, METH_O, \
+    CHAR_PTR_CAST "**create_spanning_tree** (*value* or *node*)\n\n" \
     "Returns a new graph which is a (probably non-optimal) spanning tree of all nodes reachable from the given node." }, \
-  { "create_minimum_spanning_tree", graph_create_minimum_spanning_tree, METH_VARARGS, \
-    "**create_minimum_spanning_tree** ()\n\n" \
+  { CHAR_PTR_CAST "create_minimum_spanning_tree", graph_create_minimum_spanning_tree, METH_VARARGS, \
+    CHAR_PTR_CAST "**create_minimum_spanning_tree** ()\n\n" \
     "Creates a minimum spanning tree of the entire graph in place using Kruskal's algorithm.\n" \
     "A minimum spanning tree connects all nodes using the minimum total edge cost.\n" \
   }, \

@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -36,8 +36,8 @@ static PyTypeObject RegionType = {
 };
 
 static PyMethodDef region_methods[] = {
-  { "get", region_get, METH_VARARGS },
-  { "add", region_add, METH_VARARGS },
+  { CHAR_PTR_CAST "get", region_get, METH_VARARGS },
+  { CHAR_PTR_CAST "add", region_add, METH_VARARGS },
   { NULL }
 };
 
@@ -57,7 +57,7 @@ static PyObject* region_new(PyTypeObject* pytype, PyObject* args,
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 2) {
     PyObject *a, *b;
-    if (PyArg_ParseTuple(args, "OO", &a, &b)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO", &a, &b)) {
       Point point_a;
       try {
 	point_a = coerce_Point(a);
@@ -92,17 +92,17 @@ static void region_dealloc(PyObject* self) {
 
 static PyObject* region_get(PyObject* self, PyObject* args) {
   char* key;
-  if (PyArg_ParseTuple(args, "s", &key) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "s", &key) <= 0)
     return 0;
   RectObject* r = (RectObject*)self;
   Region* region = (Region*)r->m_x;
-  return Py_BuildValue("d", region->get(key));
+  return Py_BuildValue(CHAR_PTR_CAST "d", region->get(key));
 }
 
 static PyObject* region_add(PyObject* self, PyObject* args) {
   char* key;
   double value;
-  if (PyArg_ParseTuple(args, "sd", &key, &value) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "sd", &key, &value) <= 0)
     return 0;
   RectObject* r = (RectObject*)self;
   Region* region = (Region*)r->m_x;
@@ -113,7 +113,7 @@ static PyObject* region_add(PyObject* self, PyObject* args) {
 
 void init_RegionType(PyObject* module_dict) {
   RegionType.ob_type = &PyType_Type;
-  RegionType.tp_name = "gameracore.Region";
+  RegionType.tp_name = CHAR_PTR_CAST "gameracore.Region";
   RegionType.tp_basicsize = sizeof(RegionObject);
   RegionType.tp_dealloc = region_dealloc;
   RegionType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;

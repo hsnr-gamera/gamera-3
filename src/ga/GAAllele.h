@@ -38,25 +38,25 @@ each genome does not have to make its own copy.  And we don't have to worry
 about an allele set going out of scope then leaving genomes hanging (a problem
 if we just used a pointer to a single alleleset with no reference counting).
   You can link an allele set to another so that they share the same core.  Use
-the 'link' member function (this is typically used within the GAlib to reduce 
+the 'link' member function (this is typically used within the GAlib to reduce
 the number of actual alleleset instances when cloning populations of genomes).
   There is no way to 'resize' an allele set.  You must add to it or remove
 elements from it.
-  The base template class assumes that the objects in the allele set are 
-complex, i.e. it is not OK to do a bit-copy of each object.  We should do 
+  The base template class assumes that the objects in the allele set are
+complex, i.e. it is not OK to do a bit-copy of each object.  We should do
 specializations for non-complex objects (or perhaps a separate class that does
 bit-copies rather than logical-copies?)
   When you clone an allele set, the new one has its own core.
-  Why didn't I do this as a couple of objects (enumerated set, bounded set, 
+  Why didn't I do this as a couple of objects (enumerated set, bounded set,
 discretized set, etc)?  I wanted to be able to have an array that uses sets of
-many different types.  I suppose the allele set should be completely 
+many different types.  I suppose the allele set should be completely
 polymorphic like the rest of the GAlib objects, but for now we'll do it as
 a single object with multiple personalities (and a state).
   There is no error checking.  You should check the type before you try to
 call any of the member functions.  In particular, if you try to get the
 bounds on an enumerated set of one element, it will break.
 
-*** should the assignment operator check to be sure that no allele is 
+*** should the assignment operator check to be sure that no allele is
     duplicated, or is it OK to have duplicate alleles in a set?  For now we
     allow duplicates (via either the add or assignemnt ops).
 ---------------------------------------------------------------------------- */
@@ -65,11 +65,11 @@ class GAAlleleSetCore {
 public:
   GAAlleleSetCore();
   GAAlleleSetCore(unsigned int n, const T array []);
-  GAAlleleSetCore(const T& lower, const T& upper, 
-		  GAAllele::BoundType lb=GAAllele::INCLUSIVE, 
+  GAAlleleSetCore(const T& lower, const T& upper,
+		  GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 		  GAAllele::BoundType ub=GAAllele::INCLUSIVE);
-  GAAlleleSetCore(const T& lower, const T& upper, const T& increment, 
-		  GAAllele::BoundType lb=GAAllele::INCLUSIVE, 
+  GAAlleleSetCore(const T& lower, const T& upper, const T& increment,
+		  GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 		  GAAllele::BoundType ub=GAAllele::INCLUSIVE);
   GAAlleleSetCore(const GAAlleleSetCore<T>&);
   virtual ~GAAlleleSetCore();
@@ -95,17 +95,17 @@ template <class T>
 class GAAlleleSet {
 public:
   GAAlleleSet() : core(0) {}
-  GAAlleleSet(unsigned int n, const T a[]) : 
+  GAAlleleSet(unsigned int n, const T a[]) :
   core(new GAAlleleSetCore<T>(n,a)) {}
-  GAAlleleSet(const T& lower, const T& upper, 
-	      GAAllele::BoundType lb=GAAllele::INCLUSIVE, 
+  GAAlleleSet(const T& lower, const T& upper,
+	      GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 	      GAAllele::BoundType ub=GAAllele::INCLUSIVE) :
   core(new GAAlleleSetCore<T>(lower, upper, lb, ub)) {}
   GAAlleleSet(const T& lower, const T& upper, const T& increment,
-	      GAAllele::BoundType lb=GAAllele::INCLUSIVE, 
+	      GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 	      GAAllele::BoundType ub=GAAllele::INCLUSIVE) :
   core(new GAAlleleSetCore<T>(lower, upper, increment, lb, ub)) {}
-  GAAlleleSet(const GAAlleleSet<T>& set) : 
+  GAAlleleSet(const GAAlleleSet<T>& set) :
   core(new GAAlleleSetCore<T>(*(set.core))) {}
   virtual ~GAAlleleSet(){
     if(core != 0){
@@ -118,7 +118,7 @@ public:
     if(core) *core = *set.core;
     else core = new GAAlleleSetCore<T>(*(set.core));
     return *this;
-  } 
+  }
   GAAlleleSet<T> * clone() const {return new GAAlleleSet<T>(*this);}
   void link(GAAlleleSet<T>& set);
   void unlink();
@@ -156,7 +156,7 @@ protected:
 };
 
 
-template <class T> 
+template <class T>
 class GAAlleleSetArray {
 public:
   GAAlleleSetArray();
@@ -173,7 +173,7 @@ public:
 	  GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 	  GAAllele::BoundType ub=GAAllele::INCLUSIVE);
   int add(const T& lower, const T& upper, const T& increment,
-	  GAAllele::BoundType lb=GAAllele::INCLUSIVE, 
+	  GAAllele::BoundType lb=GAAllele::INCLUSIVE,
 	  GAAllele::BoundType ub=GAAllele::INCLUSIVE);
   int remove(unsigned int);
 
@@ -187,10 +187,10 @@ protected:
 
 
 #ifndef NO_STREAMS
-template <class T> ostream& 
+template <class T> ostream&
 operator<< (ostream& os, const GAAlleleSet<T> & arg)
 { arg.write(os); return os; }
-template <class T> istream& 
+template <class T> istream&
 operator>> (istream& is, GAAlleleSet<T> & arg)
 { arg.read(is); return is; }
 #endif

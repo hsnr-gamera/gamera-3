@@ -28,6 +28,12 @@ typedef int Py_ssize_t;
 #define PY_SSIZE_T_MIN INT_MIN
 #endif
 
+#if PY_VERSION_HEX < 0x02050000
+#define CHAR_PTR_CAST (char *)
+#else
+#define CHAR_PTR_CAST
+#endif
+
 #include "gamera.hpp"
 
 /*
@@ -57,7 +63,7 @@ typedef int Py_ssize_t;
   on success of NULL on failure with the error set.
 */
 inline PyObject* get_module_dict(const char* module_name) {
-  PyObject* mod = PyImport_ImportModule(module_name);
+  PyObject* mod = PyImport_ImportModule(CHAR_PTR_CAST module_name);
   if (mod == 0)
     return PyErr_Format(PyExc_ImportError, "Unable to load module '%s'.\n", module_name);
   PyObject* dict = PyModule_GetDict(mod);
@@ -101,7 +107,7 @@ inline PyObject* get_gameracore_dict() {
 inline PyObject* get_ArrayInit() {
   static PyObject* t = 0;
   if (t == 0) {
-    PyObject* array_module = PyImport_ImportModule("array");
+    PyObject* array_module = PyImport_ImportModule(CHAR_PTR_CAST "array");
     if (array_module == 0) {
       PyErr_SetString(PyExc_ImportError,
 		      "Unable to get 'array' module.\n");
@@ -130,7 +136,7 @@ inline PyObject* get_ArrayAppend() {
     PyObject* array_init = get_ArrayInit();
     if (array_init == 0)
       return 0;
-    t = PyObject_GetAttrString(array_init, "append");
+    t = PyObject_GetAttrString(array_init, CHAR_PTR_CAST "append");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
 		      "Unable to get 'array' append method.\n");
@@ -868,7 +874,7 @@ inline PyObject* init_image_members(ImageObject* o) {
   */
   static PyObject* array_func = 0;
   if (array_func == 0) {
-    PyObject* array_module = PyImport_ImportModule("array");
+    PyObject* array_module = PyImport_ImportModule(CHAR_PTR_CAST "array");
     if (array_module == 0)
       return 0;
     PyObject* array_dict = PyModule_GetDict(array_module);
@@ -879,7 +885,7 @@ inline PyObject* init_image_members(ImageObject* o) {
       return 0;
     Py_DECREF(array_module);
   }
-  PyObject* arglist = Py_BuildValue("(s)", "d");
+  PyObject* arglist = Py_BuildValue(CHAR_PTR_CAST "(s)", CHAR_PTR_CAST "d");
   o->m_features = PyObject_CallObject(array_func, arglist);
   Py_DECREF(arglist);
   if (o->m_features == 0)
@@ -923,7 +929,7 @@ inline PyObject* create_ImageObject(Image* image) {
     if (dict == 0)
       return 0;
     pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, "ImageBase"),
-					 "__init__");
+					 CHAR_PTR_CAST "__init__");
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
     cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
@@ -991,7 +997,7 @@ inline PyObject* create_ImageObject(Image* image) {
   }
   i->m_data = (PyObject*)d;
   ((RectObject*)i)->m_x = image;
-  PyObject* args = Py_BuildValue("(O)", (PyObject*)i);
+  PyObject* args = Py_BuildValue(CHAR_PTR_CAST "(O)", (PyObject*)i);
   PyObject* result = PyObject_CallObject(pybase_init, args);
   Py_DECREF(args);
   if (result == 0)

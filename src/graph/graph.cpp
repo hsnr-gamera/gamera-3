@@ -89,7 +89,7 @@ GraphObject* graph_new(size_t flags) {
 PyObject* graph_new(PyTypeObject* pytype, PyObject* args,
 		    PyObject* kwds) {
   long flags = FLAG_DEFAULT;
-  if (PyArg_ParseTuple(args, "|i:Graph.__init__", &flags) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:Graph.__init__", &flags) <= 0)
     return 0;
   return (PyObject*)graph_new((size_t)flags);
 }
@@ -140,7 +140,7 @@ GraphObject* graph_copy(GraphObject* so, size_t flags) {
 PyObject* graph_copy(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   long flags = so->m_flags;
-  if (PyArg_ParseTuple(args, "|i:copy", &flags) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:copy", &flags) <= 0)
     return 0;
   return (PyObject*)graph_copy(so, (size_t)flags);
 }
@@ -198,7 +198,7 @@ PyObject* graph_add_edge(PyObject* self, PyObject* args) {
   CostType cost = 1.0;
   PyObject* label = NULL;
   if (PyArg_ParseTuple
-      (args, "OO|dO:add_edge", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
+      (args, CHAR_PTR_CAST "OO|dO:add_edge", &from_pyobject, &to_pyobject, &cost, &label) <= 0)
     return 0;
   return PyInt_FromLong((long)graph_add_edge(so, from_pyobject, to_pyobject, cost, label) != 0);
 }
@@ -206,7 +206,7 @@ PyObject* graph_add_edge(PyObject* self, PyObject* args) {
 PyObject* graph_add_edges(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   PyObject* a;
-  if (PyArg_ParseTuple(args, "O:add_edges", &a) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O:add_edges", &a) <= 0)
     return 0;
   PyObject* seq = PySequence_Fast(a, "Input must be an iterable of edge tuples");
   if (seq == NULL)
@@ -217,7 +217,7 @@ PyObject* graph_add_edges(PyObject* self, PyObject* args) {
     PyObject* from_node, *to_node;
     CostType cost = 1;
     PyObject* label = NULL;
-    if (PyArg_ParseTuple(tuple, "OO|dO:add_edges sequence element", &from_node, &to_node, &cost, &label) <= 0) {
+    if (PyArg_ParseTuple(tuple, CHAR_PTR_CAST "OO|dO:add_edges sequence element", &from_node, &to_node, &cost, &label) <= 0) {
       Py_DECREF(seq);
       return 0;
     }
@@ -233,7 +233,7 @@ PyObject* graph_remove_edge(PyObject* self, PyObject* args) {
   PyObject* a = NULL;
   PyObject* b = NULL;
   bool result = false;
-  if (PyArg_ParseTuple(args, "O|O:remove_edge", &a, &b) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O|O:remove_edge", &a, &b) <= 0)
     return 0;
   if (b == NULL) {
     if (is_EdgeObject(a)) {
@@ -369,7 +369,7 @@ void graph_make_undirected(GraphObject* so) {
 PyObject* graph_make_directed(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int directed = 1;
-  if (PyArg_ParseTuple(args, "|i:make_directed", &directed) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:make_directed", &directed) <= 0)
     return 0;
   if (directed)
     graph_make_directed(so);
@@ -451,7 +451,7 @@ void graph_make_acyclic(GraphObject* so) {
 PyObject* graph_make_cyclic(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int cyclic = 1;
-  if (PyArg_ParseTuple(args, "|i:make_cyclic", &cyclic) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:make_cyclic", &cyclic) <= 0)
     return 0;
   if (cyclic)
     graph_make_cyclic(so);
@@ -584,7 +584,7 @@ PyObject* graph_make_multi_connected(PyObject* self, PyObject* args) {
 PyObject* graph_make_singly_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int maximum = 1;
-  if (PyArg_ParseTuple(args, "|i:make_singly_connected", &maximum) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:make_singly_connected", &maximum) <= 0)
     return 0;
   graph_make_singly_connected(so, maximum != 0);
   Py_INCREF(Py_None);
@@ -625,7 +625,7 @@ void graph_make_not_self_connected(GraphObject* so) {
 PyObject* graph_make_self_connected(PyObject* self, PyObject* args) {
   GraphObject* so = ((GraphObject*)self);
   int self_connected = 1;
-  if (PyArg_ParseTuple(args, "|i:make_self_connected", &self_connected) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:make_self_connected", &self_connected) <= 0)
     return 0;
   if (self_connected)
     graph_make_self_connected(so);
@@ -683,7 +683,7 @@ PyObject* graph_get_edges(PyObject* self, PyObject* args) {
 PyObject* graph_has_edge(PyObject* self, PyObject* args) {
   GraphObject* so = (GraphObject*)self;
   PyObject *a = NULL, *b = NULL;
-  if (PyArg_ParseTuple(args, "O|O:has_edge", &a, &b) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O|O:has_edge", &a, &b) <= 0)
     return 0;
   if (is_EdgeObject(a) && b == NULL) {
     Edge *edge = ((EdgeObject*)a)->m_x;
@@ -822,31 +822,31 @@ PyObject* graph_is_fully_connected(PyObject* self, PyObject* _) {
 }
 
 PyMethodDef graph_methods[] = {
-  { "copy", graph_copy, METH_VARARGS,
-    "**copy** (*flags* = ``FREE``)\n\n" \
+  { CHAR_PTR_CAST "copy", graph_copy, METH_VARARGS,
+    CHAR_PTR_CAST "**copy** (*flags* = ``FREE``)\n\n" \
     "Copies a graph (optionally specifying new flags for the new graph).\n\n" \
     "In some cases, copying the graph to a new graph type may be faster\n" \
     "than using one of the in-place conversion functions.\n\n" \
     "See `Graph constructor`_ for a definition of *flags*.\n\n"
   },
-  { "add_node", graph_add_node, METH_O,
-    "**add_node** (*value*)\n\n" \
+  { CHAR_PTR_CAST "add_node", graph_add_node, METH_O,
+    CHAR_PTR_CAST "**add_node** (*value*)\n\n" \
     "Add a node identified by the given *value*. " \
     "The newly-created node has no edges.\n\n" \
     "Returns 1 if a new node was created.\n" \
     "Returns 0 if a node already exists with the associated *value*.\n\n" \
     "**Complexity**: Nodes are added in constant time, except when requiring a reallocation of the node vector.\n\n"
   },
-  { "add_nodes", graph_add_nodes, METH_O,
-    "**add_nodes** (*list_of_values*)\n\n" \
+  { CHAR_PTR_CAST "add_nodes", graph_add_nodes, METH_O,
+    CHAR_PTR_CAST "**add_nodes** (*list_of_values*)\n\n" \
     "Add nodes identified by each value in a list. " \
     "The newly-created nodes have no edges.\n\n" \
     "Returns the number of new nodes that were created.\n\n" \
     "**Complexity**: `add_nodes` is moderately faster than multiple calls to add_node_.\n" \
     "Nodes are added in constant time, except when requiring a reallocation of the node vector.\n\n"
   },
-  { "remove_node_and_edges", graph_remove_node_and_edges, METH_O,
-    "**remove_node_and_edges** (*value*)\n\n" \
+  { CHAR_PTR_CAST "remove_node_and_edges", graph_remove_node_and_edges, METH_O,
+    CHAR_PTR_CAST "**remove_node_and_edges** (*value*)\n\n" \
     "Remove the node identifed by *value* from the graph, and remove all edges pointing inward or outward from that node.\n\n" \
     "For instance, given the graph::\n\n" \
     "  a -> b -> c\n\n" \
@@ -854,8 +854,8 @@ PyMethodDef graph_methods[] = {
     "  a         c\n\n" \
     "**Complexity**: Removing a node takes *O* (*n* + *e*) where *n* is the number of nodes in the graph and *e* is the number of edges attached to the given node.\n\n"
   },
-  { "remove_node", graph_remove_node, METH_O,
-    "**remove_node** (*value*)\n\n" \
+  { CHAR_PTR_CAST "remove_node", graph_remove_node, METH_O,
+    CHAR_PTR_CAST "**remove_node** (*value*)\n\n" \
     "Remove a node identified by *value* from the graph, stitching together the broken edges.\n\n" \
     "For instance, given the graph::\n\n" \
     "  a -> b -> c\n\n" \
@@ -863,8 +863,8 @@ PyMethodDef graph_methods[] = {
     "  a -> c\n\n" \
     "**Complexity**: Removing a node takes *O* (*n* + *e*) where *n* is the number of nodes in the graph and *e* is the number of edges attached to the given node.\n\n"
   },
-  { "add_edge", graph_add_edge, METH_VARARGS,
-    "**add_edge** (*from_value*, *to_value*, *cost* = 1.0, *label* = None)\n\n" \
+  { CHAR_PTR_CAST "add_edge", graph_add_edge, METH_VARARGS,
+    CHAR_PTR_CAST "**add_edge** (*from_value*, *to_value*, *cost* = 1.0, *label* = None)\n\n" \
     "Add an edge between the two nodes identified by *from_value* and *to_value*.\n\n" \
     "The return value is the number of edges created.  If the edge violates any of the restrictions specified\n" \
     "by the flags to the graph's constructor, the edge will not be created.\n\n"
@@ -885,139 +885,139 @@ PyMethodDef graph_methods[] = {
     "**Complexity:** ``add_edges`` is moderately faster than multiple calls to add_edge_.\n" \
     "Edges are added in constant time, except when requiring a reallocation of the edge vector, or when ``CYCLIC`` is ``False``.\n\n"
   },
-  { "remove_edge", graph_remove_edge, METH_VARARGS,
-    "**remove_edge** (*from_value*, *to_value*)\n\n" \
+  { CHAR_PTR_CAST "remove_edge", graph_remove_edge, METH_VARARGS,
+    CHAR_PTR_CAST "**remove_edge** (*from_value*, *to_value*)\n\n" \
     "Remove an edge between two nodes identified by *from_value* and *to_value*.\n\n" \
     "If the edge does not exist in the graph, a ``RuntimeError`` exception is raised.\n\n" \
     "When the graph is ``DIRECTED``, only the edge going from *from_value* to *to_value* is removed.\n\n" \
     "If the graph is ``MULTI_CONNECTED``, **all** edges from *from_value* to *to_value* are removed.\n\n" \
     "**Complexity**: Edges can be removed in *O*(*e*) time where *e* is the number of edges in the graph.\n\n"
   },
-  { "remove_all_edges", graph_remove_all_edges, METH_NOARGS,
-    "**remove_all_edges** ()\n\n" \
+  { CHAR_PTR_CAST "remove_all_edges", graph_remove_all_edges, METH_NOARGS,
+    CHAR_PTR_CAST "**remove_all_edges** ()\n\n" \
     "Remove all the edges in the graph, leaving all nodes as islands.\n\n" \
     "**Complexity**: ``remove_all_edges`` takes *O* ( *n* + *e*) time where *n* is the number of nodes in the graph and *e* is the number of edges in the graph."
   },
-  { "is_directed", graph_is_directed, METH_NOARGS,
-    "**is_directed** ()\n\n" \
+  { CHAR_PTR_CAST "is_directed", graph_is_directed, METH_NOARGS,
+    CHAR_PTR_CAST "**is_directed** ()\n\n" \
     "Return ``True`` if the graph is defined as directed."
   },
-  { "is_undirected", graph_is_undirected, METH_NOARGS,
-    "**is_undirected** ()\n\n" \
+  { CHAR_PTR_CAST "is_undirected", graph_is_undirected, METH_NOARGS,
+    CHAR_PTR_CAST "**is_undirected** ()\n\n" \
     "Return ``True`` if the graph is defined as undirected."
   },
-  { "make_directed", graph_make_directed, METH_VARARGS,
-    "**make_directed** ()\n\n" \
+  { CHAR_PTR_CAST "make_directed", graph_make_directed, METH_VARARGS,
+    CHAR_PTR_CAST "**make_directed** ()\n\n" \
     "If the graph is undirected, converts it into an undirected graph by adding a complementary edge for\n" \
     "each existing edge."
   },
-  { "make_undirected", graph_make_undirected, METH_NOARGS,
-    "**make_undirected** ()\n\n" \
+  { CHAR_PTR_CAST "make_undirected", graph_make_undirected, METH_NOARGS,
+    CHAR_PTR_CAST "**make_undirected** ()\n\n" \
     "If the graph is directed, converts it into an undirected graph.  Each edge in the existing graph\n" \
     "will become a non-directional edge in the resulting graph."
   },
-  { "is_cyclic", graph_is_cyclic, METH_NOARGS,
-    "**is_cyclic** ()\n\n" \
+  { CHAR_PTR_CAST "is_cyclic", graph_is_cyclic, METH_NOARGS,
+    CHAR_PTR_CAST "**is_cyclic** ()\n\n" \
     "Returns ``True`` if the graph is defined as cyclic.  Note that this is ``True`` even if the graph does\n" \
     "not currently have any cycles."
   },
-  { "is_acyclic", graph_is_acyclic, METH_NOARGS,
-    "**is_acyclic** ()\n\n" \
+  { CHAR_PTR_CAST "is_acyclic", graph_is_acyclic, METH_NOARGS,
+    CHAR_PTR_CAST "**is_acyclic** ()\n\n" \
     "Returns ``True`` is the graph is defined as acyclic."
   },
-  { "make_cyclic", graph_make_cyclic, METH_VARARGS,
-    "**make_cyclic** ()\n\n" \
+  { CHAR_PTR_CAST "make_cyclic", graph_make_cyclic, METH_VARARGS,
+    CHAR_PTR_CAST "**make_cyclic** ()\n\n" \
     "Allow the graph to include cycles from this point on.  This does nothing except set the ``CYCLIC`` flag."
   },
-  { "make_acyclic", graph_make_acyclic, METH_NOARGS,
-    "**make_acyclic** ()\n\n" \
+  { CHAR_PTR_CAST "make_acyclic", graph_make_acyclic, METH_NOARGS,
+    CHAR_PTR_CAST "**make_acyclic** ()\n\n" \
     "Remove any cycles (using a depth-first search technique) and disallow cycles from this point on.\n\n" \
     "This may not be the most appropriate cycle-removing technique for all applications.\n\n" \
     "See create_spanning_tree_ for other ways to do this.\n\n"
   },
-  { "is_tree", graph_is_tree, METH_NOARGS,
-    "**is_tree** ()\n\n" \
+  { CHAR_PTR_CAST "is_tree", graph_is_tree, METH_NOARGS,
+    CHAR_PTR_CAST "**is_tree** ()\n\n" \
     "Returns ``True`` if the graph is defined as being a tree." },
-  { "is_blob", graph_is_blob, METH_NOARGS,
-    "**is_blob** ()\n\n" \
+  { CHAR_PTR_CAST "is_blob", graph_is_blob, METH_NOARGS,
+    CHAR_PTR_CAST "**is_blob** ()\n\n" \
     "Returns ``True`` if the graph is defined as being a blob (the opposite of a tree).  Note that this will return ``True``\n" \
     "even if the graph currently conforms to the restrictions of a tree."},
-  { "make_tree", graph_make_tree, METH_NOARGS,
-    "**make_tree** ()\n\n" \
+  { CHAR_PTR_CAST "make_tree", graph_make_tree, METH_NOARGS,
+    CHAR_PTR_CAST "**make_tree** ()\n\n" \
     "Turns the graph into a tree by calling make_acyclic_ followed by make_undirected_.  Sets the ``BLOB`` flag to ``False``.\n\n" \
     "This approach may not be reasonable for all applications.  For other ways to convert blobs to trees, see `spanning trees`_.\n\n"
   },
-  { "make_blob", graph_make_blob, METH_NOARGS,
-    "**make_blob** ()\n\n" \
+  { CHAR_PTR_CAST "make_blob", graph_make_blob, METH_NOARGS,
+    CHAR_PTR_CAST "**make_blob** ()\n\n" \
     "Make the graph into a blob (the opposite of a tree).  This does nothing except set the ``BLOB`` flag.\n" },
-  { "is_multi_connected", graph_is_multi_connected, METH_NOARGS,
-    "**is_multi_connected** ()\n\n" \
+  { CHAR_PTR_CAST "is_multi_connected", graph_is_multi_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**is_multi_connected** ()\n\n" \
     "Returns ``True`` if the graph is defined as being multi-connected (i.e. multiple edges between a single pair of nodes).\n" \
     "Note that this returns ``True`` even if there are no multi-connections in the graph."
   },
-  { "is_singly_connected", graph_is_singly_connected, METH_NOARGS,
-    "**is_singly_connected** ()\n\n" \
+  { CHAR_PTR_CAST "is_singly_connected", graph_is_singly_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**is_singly_connected** ()\n\n" \
     "Returns ``True`` if the graph is defined as being singly-connected (i.e. at most one edge between a single pair of nodes).\n" \
     "Note that this will return ``False`` if the graph is defined as multi-connected, even if it contains no multi-connections.\n\n"
   },
-  { "make_multi_connected", graph_make_multi_connected, METH_NOARGS,
-    "**make_multi_connected** ()\n\n" \
+  { CHAR_PTR_CAST "make_multi_connected", graph_make_multi_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**make_multi_connected** ()\n\n" \
     "Allow the graph to be multi-connected from this point on.  This does nothing except set the ``MULTI_CONNECTED`` flag."
   },
-  { "make_singly_connected", graph_make_singly_connected, METH_VARARGS,
-    "**make_singly_connected** ()\n\n" \
+  { CHAR_PTR_CAST "make_singly_connected", graph_make_singly_connected, METH_VARARGS,
+    CHAR_PTR_CAST "**make_singly_connected** ()\n\n" \
     "For each pair of nodes, leave only one remaining edge in either direction.\n" \
     "Restrict the graph to being singly-connected from this point on."
   },
-  { "is_self_connected", graph_is_self_connected, METH_NOARGS,
-    "**is_self_connected** ()\n\n" \
+  { CHAR_PTR_CAST "is_self_connected", graph_is_self_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**is_self_connected** ()\n\n" \
     "Returns ``True`` if the graph is defined as self-connected (having edges that point from one node to that same node.)\n" \
     "Note that this returns ``True`` even if the graph does not have any self-connections.\n"
   },
-  { "make_self_connected", graph_make_self_connected, METH_VARARGS,
-    "**make_self_connected** ()\n\n" \
+  { CHAR_PTR_CAST "make_self_connected", graph_make_self_connected, METH_VARARGS,
+    CHAR_PTR_CAST "**make_self_connected** ()\n\n" \
     "Allow the graph to be self-conncted from this point on.  This does nothing except set the ``SELF_CONNECTED`` flag.\n"
   },
-  { "make_not_self_connected", graph_make_not_self_connected, METH_NOARGS,
-    "**make_not_self_connected** ()\n\n" \
+  { CHAR_PTR_CAST "make_not_self_connected", graph_make_not_self_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**make_not_self_connected** ()\n\n" \
     "Remove all self-connections and restrict the graph to have no self-connections from this point on."
   },
-  { "get_node", graph_get_node, METH_O,
-    "**get_node** (*value*)\n\n" \
+  { CHAR_PTR_CAST "get_node", graph_get_node, METH_O,
+    CHAR_PTR_CAST "**get_node** (*value*)\n\n" \
     "Returns the ``Node`` object identified by the given *value*.\n\n"
     "Raises a ``ValueError`` exception if there is no node associated with the given *value*.\n\n"
   },
-  { "get_nodes", graph_get_nodes, METH_NOARGS,
-    "**get_nodes** ()\n\n" \
+  { CHAR_PTR_CAST "get_nodes", graph_get_nodes, METH_NOARGS,
+    CHAR_PTR_CAST "**get_nodes** ()\n\n" \
     "Returns a lazy iterator over all nodes in the graph.  The ordering of the nodes is undefined.\n" \
   },
-  { "get_subgraph_roots", graph_get_subgraph_roots, METH_NOARGS,
-    "**get_subgraph_roots** ()\n\n" \
+  { CHAR_PTR_CAST "get_subgraph_roots", graph_get_subgraph_roots, METH_NOARGS,
+    CHAR_PTR_CAST "**get_subgraph_roots** ()\n\n" \
     "Returns a lazy iterator over each of the subgraph roots.  Performing a breadth-first or depth-first search\n" \
     "from each of this notes will visit every node in the graph.\n\n"
   },
-  { "has_node", graph_has_node, METH_O,
-    "**has_node** (*value*)\n\n" \
+  { CHAR_PTR_CAST "has_node", graph_has_node, METH_O,
+    CHAR_PTR_CAST "**has_node** (*value*)\n\n" \
     "Returns ``True`` if graph has a node identified by *value*.\n\n"
   },
-  { "get_edges", graph_get_edges, METH_NOARGS,
-    "**get_edges** ()\n\n" \
+  { CHAR_PTR_CAST "get_edges", graph_get_edges, METH_NOARGS,
+    CHAR_PTR_CAST "**get_edges** ()\n\n" \
     "Returns an iterator over all edges in the graph.  The ordering of the edges is undefined.\n\n"
   },
-  { "has_edge", graph_has_edge, METH_VARARGS,
-    "**has_edge** (*from_value*, *to_value*)\n\n" \
+  { CHAR_PTR_CAST "has_edge", graph_has_edge, METH_VARARGS,
+    CHAR_PTR_CAST "**has_edge** (*from_value*, *to_value*)\n\n" \
     "  *or*\n\n**has_edge** (*from_node*, *to_node*)\n\n" \
     "  *or*\n\n**has_edge** (*edge*)\n\n" \
     "Returns ``True`` if graph contains the given edge.  The edge can be specified as either a pair of values identifying nodes,\n" \
     "a pair of ``Node`` objects, or a single ``Edge`` object."
   },
-  { "size_of_subgraph", graph_size_of_subgraph, METH_O,
-    "**size_of_subgraph** (*value*)\n\n  *or*\n\n**size_of_subgraph** (*node*)\n\n" \
+  { CHAR_PTR_CAST "size_of_subgraph", graph_size_of_subgraph, METH_O,
+    CHAR_PTR_CAST "**size_of_subgraph** (*value*)\n\n  *or*\n\n**size_of_subgraph** (*node*)\n\n" \
     "Returns the size of the subgraph rooted at the given node.  In other words, this returns the\n" \
     "number of nodes reachable from the given node."
   },
-  { "is_fully_connected", graph_is_fully_connected, METH_NOARGS,
-    "**is_fully_connected** ()\n\n" \
+  { CHAR_PTR_CAST "is_fully_connected", graph_is_fully_connected, METH_NOARGS,
+    CHAR_PTR_CAST "**is_fully_connected** ()\n\n" \
     "Returns ``True`` if there is only one subgraph in the graph."
   },
   SEARCH_METHODS
@@ -1039,7 +1039,7 @@ PyGetSetDef graph_getset[] = {
 
 void init_GraphType(PyObject* d) {
   GraphType.ob_type = &PyType_Type;
-  GraphType.tp_name = "gamera.graph.Graph";
+  GraphType.tp_name = CHAR_PTR_CAST "gamera.graph.Graph";
   GraphType.tp_basicsize = sizeof(GraphObject);
   GraphType.tp_dealloc = graph_dealloc;
   GraphType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -1050,7 +1050,8 @@ void init_GraphType(PyObject* d) {
   GraphType.tp_methods = graph_methods;
   GraphType.tp_getset = graph_getset;
   GraphType.tp_weaklistoffset = 0;
-  GraphType.tp_doc = "**Graph** (*flags* = ``FREE``)\n\n" \
+  GraphType.tp_doc = CHAR_PTR_CAST
+    "**Graph** (*flags* = ``FREE``)\n\n"        \
     "Construct a new graph.\n\n" \
     "The *flags* are used to set certain restrictions on the graph.  When adding an edge\n" \
     "violates one of these restrictions, the edge is not added and ``None`` is returned.  Note\n" \

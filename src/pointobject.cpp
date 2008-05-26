@@ -71,7 +71,7 @@ static PyObject* point_new(PyTypeObject* pytype, PyObject* args,
   int num_args = PyTuple_GET_SIZE(args);
   if (num_args == 2) {
     int x, y;
-    if (PyArg_ParseTuple(args, "ii", &x, &y))
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "ii", &x, &y))
       return _point_new(pytype, new Point((size_t)x, (size_t)y));
   }
 
@@ -79,7 +79,7 @@ static PyObject* point_new(PyTypeObject* pytype, PyObject* args,
 
   if (num_args == 1) {
     PyObject* py_point;
-    if (PyArg_ParseTuple(args, "O", &py_point)) {
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &py_point)) {
       try {
 	return _point_new(pytype, new Point(coerce_Point(py_point)));
       } catch (std::invalid_argument e) {
@@ -118,7 +118,7 @@ CREATE_SET_FUNC(y)
 static PyObject* point_move(PyObject* self, PyObject* args) {
   Point* x = ((PointObject*)self)->m_x;
   int xv, y;
-  if (PyArg_ParseTuple(args, "ii:move", &xv, &y) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "ii:move", &xv, &y) <= 0)
     return 0;
   x->move(xv, y);
   Py_INCREF(Py_None);
@@ -189,7 +189,7 @@ static long point_hash(PyObject* self) {
 
 void init_PointType(PyObject* module_dict) {
   PointType.ob_type = &PyType_Type;
-  PointType.tp_name = "gameracore.Point";
+  PointType.tp_name = CHAR_PTR_CAST "gameracore.Point";
   PointType.tp_basicsize = sizeof(PointObject);
   PointType.tp_dealloc = point_dealloc;
   PointType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
@@ -202,7 +202,7 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_methods = point_methods;
   PointType.tp_repr = point_repr;
   PointType.tp_hash = point_hash;
-  PointType.tp_doc =
+  PointType.tp_doc = CHAR_PTR_CAST
 "__init__(Int *x*, Int *y*)\n\n"
 "Point stores an (*x*, *y*) coordinate point.\n\n"
 "Most functions that take a Point as an argument can also take a\n"

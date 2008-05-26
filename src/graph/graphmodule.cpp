@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -26,7 +26,7 @@ extern "C" {
 template<size_t F>
 static PyObject* Factory(PyObject* self, PyObject* args) {
   PyObject *a = NULL;
-  if (PyArg_ParseTuple(args, "|O", &a) <= 0)
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|O", &a) <= 0)
     return 0;
   if (a == NULL)
     return (PyObject*)graph_new(F);
@@ -37,21 +37,21 @@ static PyObject* Factory(PyObject* self, PyObject* args) {
 }
 
 PyMethodDef graph_module_methods[] = {
-  { "Tree", Factory<FLAG_TREE>, METH_VARARGS,
-    "Create a new Tree" },
-  { "FreeGraph", Factory<FLAG_DEFAULT>, METH_VARARGS,
-    "Create a new freeform Graph" },
-  { "Free", Factory<FLAG_DEFAULT>, METH_VARARGS,
-    "Create a new freeform Graph" },
-  { "DAG", Factory<FLAG_DAG>, METH_VARARGS,
-    "Create a new directed acyclic graph" },
-  { "Undirected", Factory<FLAG_UNDIRECTED>, METH_VARARGS,
-    "Create a new undirected (cyclic) graph" },
+  { CHAR_PTR_CAST "Tree", Factory<FLAG_TREE>, METH_VARARGS,
+    CHAR_PTR_CAST "Create a new Tree" },
+  { CHAR_PTR_CAST "FreeGraph", Factory<FLAG_DEFAULT>, METH_VARARGS,
+    CHAR_PTR_CAST "Create a new freeform Graph" },
+  { CHAR_PTR_CAST "Free", Factory<FLAG_DEFAULT>, METH_VARARGS,
+    CHAR_PTR_CAST "Create a new freeform Graph" },
+  { CHAR_PTR_CAST "DAG", Factory<FLAG_DAG>, METH_VARARGS,
+    CHAR_PTR_CAST "Create a new directed acyclic graph" },
+  { CHAR_PTR_CAST "Undirected", Factory<FLAG_UNDIRECTED>, METH_VARARGS,
+    CHAR_PTR_CAST "Create a new undirected (cyclic) graph" },
   {NULL}
-}; 
+};
 
 DL_EXPORT(void) initgraph(void) {
-  PyObject* m = Py_InitModule("gamera.graph", graph_module_methods);
+  PyObject* m = Py_InitModule(CHAR_PTR_CAST "gamera.graph", graph_module_methods);
   PyObject* d = PyModule_GetDict(m);
 
   init_NodeType();
@@ -69,4 +69,4 @@ DL_EXPORT(void) initgraph(void) {
   PyDict_SetItemString(d, "FREE", PyInt_FromLong(FLAG_FREE));
   PyDict_SetItemString(d, "FLAG_DAG", PyInt_FromLong(FLAG_DAG));
 }
- 
+

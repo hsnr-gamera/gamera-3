@@ -224,9 +224,10 @@ letter ``N`` are selected, and then trained as
 
   .. image:: images/tutorial_grouping.png
 
-Now, when a Gamera-based application uses the ``group_list_automatic``
-classifier method, the training data will have the information necessary to
-reconstruct the characters from their constituent parts.
+The union of the parts will be stored as a single glyph in the training 
+dataset. Note that when you later in the recognition stage want to recognize
+glyphs that are broken, intentionally like the letter "i" or unintentionally,
+you must use the ``group_list_automatic`` classifier method.
 
 Saving the training data
 ------------------------

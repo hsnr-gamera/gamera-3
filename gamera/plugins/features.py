@@ -39,7 +39,7 @@ class black_area(Feature):
     |       |     X    |   X    |
     +-------+----------+--------+
     
-    .. warning: This feature is not scale invariant.
+    .. warning:: This feature is not scale invariant.
     """
     pass
 
@@ -47,15 +47,18 @@ class moments(Feature):
     """
     Returns *moments* of the image.
 
-    The elements of the returned ``FloatVector`` are:
+    The first two elements of the returned ``FloatVector`` are the 
+    center of gravity on *x* and *y* axis normalized by width and height,
+    respectively. The following seven entries are the 
+    *normalized central moments* (*u20,u02,u11,u30,u12,u21,u03*). For their
+    definition, see Gonzalez, Woods: \"Digital Image Processing\",
+    Prentice Hall, second edition (2002).
 
-    0. center of gravity on *x* axis
-    1. center of gravity on *y* axis
-    2. second order moment on *x* axis
-    3. second order moment on *y* axis
-    4. first order moment on both axes
-
-    The rest of these I'm not so sure about anymore.
+    .. warning:: The normalization is done with *nrows* * *ncols* rather
+       than with *m00*. Hence these are not exactly the normalized
+       moments, but only an approximation. While this is no
+       drawback for classification, it means that you cannot rely
+       on the result as the acutal values for the moments.
 
     +---------------------------+
     | **Invariant to:**         |  
@@ -69,7 +72,7 @@ class moments(Feature):
 
 class nholes(Feature):
     """
-    Returns the average number of transitions from white to black in each
+    Returns the average number of white runs not touching the border in each
     row or column.
 
     The elements of the returned ``FloatVector`` are:
@@ -260,7 +263,7 @@ class zernike_moments(Feature):
     +-------+----------+--------+
     | scale | rotation | mirror | 
     +-------+----------+--------+
-    |       |          |        |
+    |   X   |    X     |   X    |
     +-------+----------+--------+
     """
     return_type = FloatVector(length=26)
@@ -275,7 +278,7 @@ class skeleton_features(Feature):
     
     0. Number of X joints (4-connected pixels)
     1. Number of T joints (3-connected pixels)
-    2. Average bumber of bend points (pixels which do not form a horizontal or
+    2. Average number of bend points (pixels which do not form a horizontal or
        vertical line with its neighbors)
     3. Number of end points (1-connected pixels)
     4. Number of *x*-axis crossings
@@ -286,7 +289,7 @@ class skeleton_features(Feature):
     +-------+----------+--------+
     | scale | rotation | mirror | 
     +-------+----------+--------+
-    |       |          |        |
+    |   X   |          |   X    |
     +-------+----------+--------+
     """
     return_type = FloatVector(length=6)
@@ -320,7 +323,7 @@ class generate_features(PluginFunction):
       Using all feature functions can also be forced by passing
       ``'all'``.
 
-    .. warning: For efficiency, if the given feature functions match
+    .. warning:: For efficiency, if the given feature functions match
        those that have been already generated for the image, the
        features are *not* recalculated.  If you want to force
        recalculation, pass the optional argument ``force=True``.

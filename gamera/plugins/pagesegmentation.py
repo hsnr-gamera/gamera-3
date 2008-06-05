@@ -144,11 +144,100 @@ class sub_cc_analysis(PluginFunction):
     args = Args([ImageList('cclist')])
     author = "Stephan Ruloff and Christoph Dalitz"
 
+
+class textline_reading_order(PluginFunction):
+    """
+    Sorts a list of Images (CCs) representing textlines by reading order and
+    returns the sorted list. Incidentally, this will not only work on
+    textlines, but also on paragraphs, but *not* on actual Connected 
+    Components.
+
+    The algorithm sorts all lines in topological order, based on
+    the following criteria for the pairwise order of two lines:
+
+    - line *a* comes before line *b* when *a* is totally to the left
+      of *b* (order \"column before row\")
+
+    - line *a* comes before *b* when both overlap horizontally and
+      *a* is above *b* (order within a column)
+
+    In the reference paper `\"High Performance Document Analysis\"`__
+    by T.M. Breuel (2003 Symposium on Document Image Understanding, USA),
+    an additional constraint is made for the first criteria by demanding
+    that no other segment may be between *a* and *b* that opverlaps
+    horizontally with both. This constraint for taking multi column
+    headings into account that interrupt columns is replaced here
+    with an a priori sort of all textlines by *y*-position. This results
+    in a preference of rows over columns (in case of ambiguity) in the
+    depth-first-search utilized in the topological sorting.
+
+    .. __: http://pubs.iupr.org/DATA/2003-breuel-sdiut.pdf
+
+    As this function is not an image method, but a free function, it
+    is not automatically imported with all plugins and you must import
+    it explicitly with
+
+    .. code:: Python
+
+      from gamera.plugins.pagesegmentation import textline_reading_order
+
+    """
+    self_type = None
+    return_type = ImageList("orderedccs")
+    args = Args([ImageList("lineccs")])
+    pure_python = True
+    author = "Christoph Dalitz"
+    def __call__(lineccs):
+        # utilities for Gamera's graph API
+        from gamera import graph
+        from gamera import graph_util
+        class SegForGraph:
+            def __init__(self,seg):
+                self.segment = seg
+                self.label = 0
+        #
+        # build directed graph of all lines
+        #
+        G = graph.Graph(graph.FLAG_DAG)
+        seg_data = [SegForGraph(s) for s in lineccs]
+        # sort by y-position for row over column preference in ambiguities
+        seg_data.sort(lambda s,t: s.segment.offset_y - t.segment.offset_y)
+        G.add_nodes(seg_data)
+        for s in seg_data:
+            for t in seg_data:
+                if s.segment.offset_x <= t.segment.offset_x + t.segment.ncols and \
+                        s.segment.offset_x + s.segment.ncols >= t.segment.offset_x:
+                    if s.segment.offset_y < t.segment.offset_y:
+                        G.add_edge(s,t)
+                elif s.segment.offset_x < t.segment.offset_x:
+                        G.add_edge(s,t)
+        #
+        # compute topoligical sorting by depth-first-search
+        #
+        segs_sorted = [] # topologically sorted list
+        def dfs_visit(node):
+            node.data.label = 1
+            for nextnode in node.nodes:
+                if nextnode.data.label == 0:
+                    dfs_visit(nextnode)
+            segs_sorted.append(node.data.segment)
+        for node in G.get_nodes():
+            if node.data.label == 0:
+                dfs_visit(node)
+        segs_sorted.reverse() # correct that we always appended to the back
+        return segs_sorted
+
+    __call__ = staticmethod(__call__)
+
+
 # module declaration
 class PageSegmentationModule(PluginModule):
     cpp_headers = ["pagesegmentation.hpp"]
     cpp_namespace = ["Gamera"]
     category = "PageSegmentation"
-    functions = [projection_cutting, runlength_smearing, sub_cc_analysis]
+    functions = [projection_cutting, runlength_smearing, sub_cc_analysis, textline_reading_order]
 module = PageSegmentationModule() # create an instance of the module
+
+# free function instances
+textline_reading_order = textline_reading_order()
 

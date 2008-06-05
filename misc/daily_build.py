@@ -31,7 +31,7 @@ ROOT_PATH = "/home/mdboom/JHU/builds/"
 WORKING_PATH = "gamera-daily-build"
 REPOS_PATH = "https://gamera.svn.sf.net/svnroot/gamera/trunk/gamera"
 STAGING_PATH = "gamera-daily"
-RSYNC_TARGET = "foo"
+RSYNC_TARGET = "mdboom@shadowfax.mse.jhu.edu:/mnt/gamera-builds/"
 KEEP = 10
 
 def mysystem(message, command):
@@ -134,7 +134,9 @@ def stage(version):
     rotate(os.path.join(STAGING_PATH, "doc"), 2)
 
 def rsync():
-    mysystem("rsync -e ssh -arvz --delete %s %s" % (STAGING_PATH, RSYNC_TARGET))
+    #mysystem("rsync -e ssh -arvz --delete %s/* %s" %
+    #         (STAGING_PATH, RSYNC_TARGET))
+    pass
 
 def main():
     os.chdir(ROOT_PATH)
@@ -150,12 +152,12 @@ def main():
         push_update = True
     if not push_update:
         print "No updates today."
-        return
-    version = get_version(now, current_working)
-    update_version(version)
-    build(version)
-    stage(version)
-    # rsync()
+    else:
+        version = get_version(now, current_working)
+        update_version(version)
+        build(version)
+        stage(version)
+    rsync()
 
 if __name__ == '__main__':
     main()

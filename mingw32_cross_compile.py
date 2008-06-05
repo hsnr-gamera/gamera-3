@@ -5,6 +5,10 @@
 # since all of this is just monkey-patched in.  Here's hoping that
 # someday distutils will be replaced.
 
+# To use, specify the mingw32_cross compiler to distutils:
+#
+#    python setup.py --compiler=mingw32_cross
+
 import os
 import sys
 
@@ -185,7 +189,6 @@ def monkey_patch_bdist_wininst_run(self):
     real_os_name = os.name
     sys.platform = 'win32'
     os.name = 'nt'
-    print "Fake platform", sys.platform
     _bdist_wininst_run(self)
     sys.platform = real_platform
     os.name = real_os_name

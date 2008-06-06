@@ -161,15 +161,15 @@ class textline_reading_order(PluginFunction):
     - line *a* comes before *b* when both overlap horizontally and
       *a* is above *b* (order within a column)
 
-    In the reference paper `\"High Performance Document Analysis\"`__
+    In the reference `\"High Performance Document Analysis\"`__
     by T.M. Breuel (2003 Symposium on Document Image Understanding, USA),
     an additional constraint is made for the first criteria by demanding
     that no other segment may be between *a* and *b* that opverlaps
     horizontally with both. This constraint for taking multi column
-    headings into account that interrupt columns is replaced here
-    with an a priori sort of all textlines by *y*-position. This results
-    in a preference of rows over columns (in case of ambiguity) in the
-    depth-first-search utilized in the topological sorting.
+    headings that interrupt columns into account is replaced in this
+    implementation with an a priori sort of all textlines by *y*-position.
+    This results in a preference of rows over columns (in case of ambiguity)
+    in the depth-first-search utilized in the topological sorting.
 
     .. __: http://pubs.iupr.org/DATA/2003-breuel-sdiut.pdf
 

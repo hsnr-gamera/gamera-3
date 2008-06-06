@@ -41,9 +41,9 @@ namespace Gamera {
   void black_area(const T& mat, feature_t* buf) {
     *buf = 0;
     for (typename T::const_vec_iterator i = mat.vec_begin();
-	 i != mat.vec_end(); ++i) {
+         i != mat.vec_end(); ++i) {
       if (is_black(*i))
-	(*buf)++;
+        (*buf)++;
     }
   }
 
@@ -53,9 +53,9 @@ namespace Gamera {
   feature_t black_area(const T& mat) {
     int black_pixels = 0;
     for (typename T::const_vec_iterator i = mat.vec_begin();
-	 i != mat.vec_end(); ++i) {
+         i != mat.vec_end(); ++i) {
       if (is_black(*i))
-	black_pixels++;
+        black_pixels++;
     }
     return (feature_t)black_pixels;
   }
@@ -68,7 +68,7 @@ namespace Gamera {
     typename T::const_vec_iterator i = m.vec_begin();
     for (; i != m.vec_end(); i++)
       if (is_black(*i))
-	count++;
+        count++;
     return (feature_t(count) / (m.nrows() * m.ncols()));
   }
   
@@ -86,9 +86,9 @@ namespace Gamera {
   */
 
   template<class Iterator>
-  void moments_1d(Iterator begin, Iterator end, size_t& m1, size_t& m2,
-		  size_t& m3) {
-    // first, second, third order on one axis
+  void moments_1d(Iterator begin, Iterator end, size_t& m0, size_t& m1,
+                  size_t& m2, size_t& m3) {
+    // zeroeth, first, second, third order on one axis
     size_t tmp = 0;
     size_t x = 0;
     Iterator itx = begin;
@@ -96,8 +96,9 @@ namespace Gamera {
       size_t y = 0, proj = 0;
       typename Iterator::iterator ity = itx.begin();
       for (; ity != itx.end(); ++ity, ++y)
-	if (is_black(*ity))
-	  proj++;
+        if (is_black(*ity))
+          proj++;
+      m0 += proj;
       m1 += (tmp = x * proj);
       m2 += (tmp *= x);
       m3 += (tmp * x);
@@ -106,7 +107,7 @@ namespace Gamera {
 
   template<class Iterator>
   void moments_2d(Iterator begin, Iterator end, size_t& m11, size_t& m12,
-		  size_t& m21) {
+                  size_t& m21) {
     size_t tmp = 0;
     size_t x = 0;
     Iterator itx = begin;
@@ -114,21 +115,20 @@ namespace Gamera {
       size_t y = 0;
       typename Iterator::iterator ity = itx.begin();
       for (; ity != itx.end(); ity++, y++)
-	if (is_black(*ity)) {
-	  m11 += (tmp = x * y);
-	  m21 += (tmp * x);
-	  m12 += (tmp * y);
-	}
+        if (is_black(*ity)) {
+          m11 += (tmp = x * y);
+          m21 += (tmp * x);
+          m12 += (tmp * y);
+        }
     }
   }
 
   template<class T>
   void moments(T &m, feature_t* buf) {
     size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
-      m01 = 0, m02 = 0, m30 = 0, m03 = 0;
-    size_t m00 = (unsigned int)(m.nrows() * m.ncols());
-    moments_1d(m.row_begin(), m.row_end(), m01, m02, m03);
-    moments_1d(m.col_begin(), m.col_end(), m10, m20, m30);
+      m01 = 0, m02 = 0, m30 = 0, m03 = 0, m00 = 0, dummy = 0;
+    moments_1d(m.row_begin(), m.row_end(), m00, m01, m02, m03);
+    moments_1d(m.col_begin(), m.col_end(), dummy, m10, m20, m30);
     moments_2d(m.col_begin(), m.col_end(), m11, m12, m21);
 
     feature_t x, y, x2, y2, div;
@@ -137,9 +137,15 @@ namespace Gamera {
     y = (feature_t)m01 / m00;
     y2 = 2 * y * y;
 
-    // This is just for convenience below
-    *(buf++) = x / m.ncols(); // normalized center of gravity [0,1] 
-    *(buf++) = y / m.nrows(); // normalized center of gravity [0,1] 
+    // normalized center of gravity [0,1]
+    if (m.ncols() > 1)
+      *(buf++) = x / (m.ncols()-1);
+    else
+      *(buf++) = 0.5; // only one pixel wide
+    if (m.nrows() > 1)
+      *(buf++) = y / (m.nrows()-1);
+    else
+      *(buf++) = 0.5; // only one pixel high
   
     div = (feature_t)m00 * m00; // common normalization divisor 
     *(buf++) = (m20 - (x * m10)) / div; // u20 
@@ -150,7 +156,7 @@ namespace Gamera {
     *(buf++) = (m30 - (3 * x * m20) + (x2 * m10)) / div;                // u30
     *(buf++) = (m12 - (2 * y * m11) - (x * m02) + (y2 * m10)) / div;    // u12
     *(buf++) = (m21 - (2 * x * m11) - (y * m20) + (x2 * m01)) / div;    // u21
-    *buf = (m03 - (3 * y * m02) + (y2 + m01)) / div;                // u03
+    *buf = (m03 - (3 * y * m02) + (y2 * m01)) / div;                // u03
   }
  
   // Number of holes in x and y direction

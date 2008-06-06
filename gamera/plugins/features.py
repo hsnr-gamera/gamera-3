@@ -54,12 +54,6 @@ class moments(Feature):
     definition, see Gonzalez, Woods: \"Digital Image Processing\",
     Prentice Hall, second edition (2002).
 
-    .. warning:: The normalization is done with *nrows* * *ncols* rather
-       than with *m00*. Hence these are not exactly the normalized
-       moments, but only an approximation. While this is no
-       drawback for classification, it means that you cannot rely
-       on the result as the acutal values for the moments.
-
     +---------------------------+
     | **Invariant to:**         |  
     +-------+----------+--------+
@@ -72,8 +66,9 @@ class moments(Feature):
 
 class nholes(Feature):
     """
-    Returns the average number of white runs not touching the border in each
-    row or column.
+    Computes for each row or column the average number of white runs not
+	touching the border. From these values, the average over all rows and
+	all columns is returned.
 
     The elements of the returned ``FloatVector`` are:
 

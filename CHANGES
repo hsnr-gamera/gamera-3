@@ -1,11 +1,19 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.1.1, Jun 09, 2008
+---------------------------
+
+ - new plugin textline_reading_order() in category "Page Segmentation"
+
+ - corrected the moments() feature to actually return 
+   the normalized central moments
+
  - fixed a severe bug in the rotate() function
 
 
-Version 3.1.0, April 14, 2008
------------------------------
+Version 3.1.0, Apr 14, 2008
+---------------------------
 
  - added automatic editing algorithms for removing outliers and superfluos
    samples to kNN classifiers

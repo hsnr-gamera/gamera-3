@@ -134,9 +134,8 @@ def stage(version):
     rotate(os.path.join(STAGING_PATH, "doc"), 2)
 
 def rsync():
-    #mysystem("rsync -e ssh -arvz --delete %s/* %s" %
-    #         (STAGING_PATH, RSYNC_TARGET))
-    pass
+    mysystem("uploading", "rsync -e ssh -arvz --delete %s/* %s" %
+             (STAGING_PATH, RSYNC_TARGET))
 
 def main():
     os.chdir(ROOT_PATH)

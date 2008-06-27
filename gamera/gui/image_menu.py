@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -29,6 +29,7 @@ from gamera.args import *
 EXECUTE_MODE = 0
 HELP_MODE = 1
 
+shell = None
 def set_shell(sh):
    global shell
    shell = sh
@@ -42,7 +43,7 @@ def set_shell_frame(sf):
 _members_for_menu = ('pixel_type_name',
                      'storage_format_name',
                      'ul_x', 'ul_y', 'nrows', 'ncols',
-                     'resolution', 'memory_size', 'label', 
+                     'resolution', 'memory_size', 'label',
                      'classification_state', 'properties')
 def members_for_menu(self):
    return ["%s: %s" % (x, getattr(self, x))
@@ -202,7 +203,7 @@ class ImageMenu:
        sh = self.get_shell()
        sh.run("del " + self.image_name)
        sh.Update()
-   
+
    def get_function_call(self, sh, function):
       # determine if the function requires an argument gui
       if function.args.list in ('', None, (), []):

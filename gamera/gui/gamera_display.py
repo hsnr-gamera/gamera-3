@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -154,7 +154,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       pen = wx.Pen(wx.Color(0, 0, 255), 2, wx.SOLID)
       dc.SetPen(pen)
-      dc.SetBrush(wx.TRANSPARENT_BRUSH)      
+      dc.SetBrush(wx.TRANSPARENT_BRUSH)
       dc.DrawRectangle(int(x), int(y), int(w), int(h))
 
    def draw_boxes(self, dc=None):
@@ -252,8 +252,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if refresh_at_once:
          self.RefreshAll()
    unhighlight_ccs = unhighlight_cc
-      
-   # Clears all of the highlighted CCs in the display   
+
+   # Clears all of the highlighted CCs in the display
    def clear_all_highlights(self):
       old_highlights = self.highlights[:]
       refresh_at_once = len(old_highlights) > 10
@@ -334,7 +334,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          self.RefreshAll()
       if new_scale == None or new_scale <= 0:
          new_scale = old_scale
-         
+
       # Clamp scaling to a reasonable range
       # Going outside of this range has been known to cause segfaults
       new_scale = min(max(new_scale, 0.1), 16)
@@ -369,7 +369,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       finally:
          self.RefreshAll()
          wx.EndBusyCursor()
-         
+
    def ZoomOut(self, *args):
       if self.scaling > 0.125:
          self.scale(self.scaling * 0.5)
@@ -426,7 +426,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       h = y2 - y
       if dc is None:
          dc = wx.ClientDC(self)
-      
+
       def _draw_rubber_inner():
          pen = wx.GREY_PEN
          pen.SetStyle(wx.DOT)
@@ -580,7 +580,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       dc.SetBrush(wx.Brush(wx.WHITE, wx.SOLID))
       dc.DrawRectangle(int(x1 - origin[0]), int(y1 - origin[1]),
                        int(x2 - x1), int(y2 - y1))
-   
+
       # Localise some member variables
       scaling = self.scaling
       scaling_quality = self.scaling_quality
@@ -599,10 +599,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       # Quantize the origin
       x = floor((x1 - origin[0]) / scaling) * scaling
       y = floor((y1 - origin[1]) / scaling) * scaling
-         
+
       if x2i <= x1i or y2i <= y1i:
          return
-         
+
       subimage = image.subimage(
          (x1i + image.ul_x, y1i + image.ul_y),
          (x2i + image.ul_x, y2i + image.ul_y)).to_rgb()
@@ -610,7 +610,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if len(self.highlights):
          for highlight, color in self.highlights:
             subimage.draw_cc(
-               highlight, 
+               highlight,
                color.Red(), color.Green(), color.Blue())
 
       scaled_image = subimage.scale(scaling, scaling_quality)
@@ -633,7 +633,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       adjust = self.scaling * 2
       self.PaintArea(rect.ul_x * scaling, rect.ul_y * scaling,
                      (rect.lr_x + 1) * scaling, (rect.lr_y + 1) * scaling, 1)
-            
+
    def RefreshAll(self):
       size = self.GetSize()
       self.Refresh(0, rect=wx.Rect(0, 0, size.x, size.y))
@@ -725,6 +725,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if not self.image:
          return
       from gamera.gui import image_menu
+      if image_menu.shell is None:
+         return
       menu = image_menu.ImageMenu(
          self, event.GetX(), event.GetY(),
          self.image)
@@ -773,7 +775,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          self.trigger_callback("rubber", self.rubber_origin_y, self.rubber_origin_x, self.rubber_y2, self.rubber_x2, event.ShiftDown(), event.ControlDown())
       if self.dragging:
          self.dragging = 0
-         
+
 class ImageWindow(wx.Panel):
    def __init__(self, parent = None, id = -1):
       wx.Panel.__init__(self, parent, id, style=
@@ -1082,7 +1084,7 @@ class MultiImageDisplay(gridlib.Grid):
 
    ########################################
    # BASIC UTILITY
-   
+
    def set_image(self, list, view_function=None):
       wx.BeginBusyCursor()
       self.BeginBatch()
@@ -1131,7 +1133,7 @@ class MultiImageDisplay(gridlib.Grid):
          self.rows = rows
          self.cols = cols
          row_size = 1
-         
+
          width = self.set_labels()
          self.SetRowLabelSize(width + 20)
          self.SetColLabelSize(20)
@@ -1180,7 +1182,7 @@ class MultiImageDisplay(gridlib.Grid):
       if len(remove):
          self.remove_glyphs(remove, False)
       self.resize_grid(False)
-      
+
    def scale(self, scaling):
       if self.scaling != scaling:
          original_scaling = self.scaling
@@ -1197,7 +1199,7 @@ class MultiImageDisplay(gridlib.Grid):
          rect = self.CellToRect(original_row, original_col)
          if rect.x != -1 and rect.y != -1:
             self.Scroll(int(rect.x / units[0]), int(rect.y / units[1]))
-         
+
    def get_glyphs(self):
       return list(self.glyphs)
 
@@ -1428,7 +1430,7 @@ class MultiImageDisplay(gridlib.Grid):
       for r, c, index, image in self.GetSelectedValidImages(row, col):
          images.append(image)
       return images
-      
+
    def RefreshSelected(self, row=None, col=None):
       for r, c, index, image in self.GetSelectedValidImages(row, col):
          self.SetCellValue(r, c, "")
@@ -1469,7 +1471,7 @@ class MultiImageDisplay(gridlib.Grid):
    def ZoomIn(self):
       if self.scaling < pow(2, 4):
          self.scale(self.scaling * 2.0)
-   
+
    def _OnSelectImpl(self):
       pass
 
@@ -1530,7 +1532,7 @@ class MultiImageDisplay(gridlib.Grid):
       self.tooltip.SetLabel(label)
       dc = wx.ClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
-	
+
       self.tooltip.SetDimensions(
          -1,-1,extent[0]+self._tooltip_extra,extent[1]+self._tooltip_extra,
          wx.SIZE_AUTO)
@@ -1567,7 +1569,7 @@ class MultiImageDisplay(gridlib.Grid):
       self.set_tooltip(label)
       self.tooltip.Move(wx.Point(rect.GetLeft() - origin[0] * units[0],
                                 rect.GetBottom() - origin[1] * units[1] + 1))
- 
+
    def _OnLeave(self, event):
       x, y = event.GetX(), event.GetY()
       w, h = self.GetSizeTuple()
@@ -1916,7 +1918,7 @@ def graph_vert(data, dc, x1, y1, x2, y2, mark=None, border=1):
    for i in range(len(data)):
       datum = data[i] * scale_x
       dc.SetBrush(wx.WHITE_BRUSH)
-      dc.DrawRectangle(x1, y1 + i * scale_y, 
+      dc.DrawRectangle(x1, y1 + i * scale_y,
                        x2 - x1, scale_y + 1)
       dc.SetBrush(wx.Brush(light_blue, wx.SOLID))
       dc.DrawRectangle(x1, y1 + i * scale_y,

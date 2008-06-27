@@ -8,7 +8,7 @@ Overview
 While the GUI is great for experimentation, the ultimate goal of any
 Gamera application is usually an automated application, or script.
 This provides, among other things, the ability to run unattended in
-batch mode.  
+batch mode.
 
 Gamera scripts are merely Python scripts (modules) that use Gamera
 objects and call Gamera functions.  The Python language, being a
@@ -74,8 +74,11 @@ Using the GUI from your scripts
 -------------------------------
 
 For interactive use, it may be desirable to have the results of a
-script displayed in a window, rather than saved to a file.  (If you 
-do not wish to do this, you can safely skip this section.)
+script displayed in a window, rather than saved to a file.  (If you do
+not wish to do this, you can safely skip this section.)  This image
+window will have all of the panning and zooming functionality of the
+regular Gamera image window, but it will not be possible to use the
+right-click menu to perform further updates to the image.
 
 Using the GUI for a script is convenient, though slightly tricky for
 two reasons:
@@ -111,13 +114,13 @@ saving the result to disk, it is displayed in a Gamera display window.
       image = load_image(sys.argv[-1])
 
       # Display the image in a window
-      image.display()	       
+      image.display()
 
    # Import the Gamera core and initialize it
    from gamera.core import *
    init_gamera()
 
-   # Import the Gamera GUI and start it   
+   # Import the Gamera GUI and start it
    from gamera.gui import gui
    gui.run(my_application)
 
@@ -140,7 +143,7 @@ data for what is expected in the image is required in order for this
 example to work correctly.
 
 .. code:: Python
-   
+
    import sys
 
    def my_application():
@@ -170,7 +173,7 @@ example to work correctly.
    # Load some training data
    classifier.from_xml_filename("training.xml")
 
-   # Import the Gamera GUI and start it   
+   # Import the Gamera GUI and start it
    from gamera.gui import gui
    gui.run(my_application)
 
@@ -196,7 +199,7 @@ also a `GUI interface to the GA optimizer available`__.)
 
 .. __: gui.html#classifier-optimization-biollante
 
-.. note:: 
+.. note::
    It is good practice to retain the XML
    file, since it is portable across platforms and to future versions of
    Gamera.  The binary format is not guaranteed to be portable.
@@ -262,13 +265,13 @@ loaded easily from your production script:
 
    from gamera.core import *
    init_gamera()
-   
+
    from gamera import knn
 
    # Load the classifier from the binary format
    classifier = knn.kNNNonInteractive("training.knn")
-   
-   # Then, we can use the classifier as we otherwise would...   
+
+   # Then, we can use the classifier as we otherwise would...
 
    # Load the image, and convert it to onebit
    image = load_image(sys.argv[-1])

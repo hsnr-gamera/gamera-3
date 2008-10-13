@@ -158,8 +158,6 @@ class nrows_feature(Feature):
     invariant, it is helpful for distinguishing similar symbols of
     different size.
 
-    This feature is scale invariant.
-    
     +---------------------------+
     | **Invariant to:**         |  
     +-------+----------+--------+
@@ -176,8 +174,6 @@ class ncols_feature(Feature):
     invariant, it is helpful for distinguishing similar symbols of
     different size.
 
-    This feature is scale invariant.
-    
     +---------------------------+
     | **Invariant to:**         |  
     +-------+----------+--------+

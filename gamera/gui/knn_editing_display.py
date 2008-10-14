@@ -49,7 +49,7 @@ edited result"""
         self._replaceArgs()
         
         buttons = self.dlg.CreateButtonSizer(wx.OK | wx.CANCEL)
-        buttons.Realize()
+        #buttons.Realize() # does not work on Windows
         self.sizer.Add(buttons, flag = wx.ALL, border = 10)
 
         self.sizer.Fit(self.dlg)

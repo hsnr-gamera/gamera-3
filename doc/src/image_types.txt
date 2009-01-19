@@ -2,7 +2,7 @@
 Image types
 ===========
 
-(c) 2004 Michael Droettboom
+:Editors: Michael Droettboom, Christoph Dalitz
 
 There are a number of different image types in Gamera that serve
 different purposes.  Fortunately, they all share a common interface,
@@ -150,10 +150,10 @@ Informational
 
 These methods provide information about the image.
 
-.. docstring:: gamera.core Image data
 .. docstring:: gamera.core ImageBase pixel_type_name storage_format_name memory_size 
 .. docstring:: gamera.core Image resolution
 .. docstring:: gamera.core Cc label
+.. docstring:: gamera.core Image data ncols nrows offset_x offset_y ul ur ll lr
 
 Bounding box
 ------------

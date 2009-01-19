@@ -2,7 +2,7 @@
 Gamera 3.x documentation
 ========================
 
-:Editor: Michael Droettboom
+:Editors: Michael Droettboom, Christoph Dalitz
 
 Introduction
 ============
@@ -11,7 +11,7 @@ This documentation consists of some HOW TO documentation and some
 reference documentation.  In addition, there are some more formal
 published papers available from the `Gamera website`__.
 
-.. __: http://dkc.jhu.edu/gamera/
+.. __: http://gamera.informatik.hsnr.de/
 
 Overview
 ========
@@ -61,7 +61,7 @@ How To
 
 .. __: gui.html
 
-  - `matplotlib support`__: Using Gamera support for the popular matplotlib_ plotting library.
+- `matplotlib support`__: Using Gamera support for the popular matplotlib_ plotting library.
 
 .. __: matplotlib_support.html
 .. _matplotlib: http://matplotlib.sourceforge.net/
@@ -89,7 +89,7 @@ Reference
 
 .. __: image_types.html
 
-   - `Dimension types`__: The various classes to manage bounding boxes and geometry.
+- `Dimension types`__: The various classes to manage bounding boxes and geometry.
    
 .. __: dimension_types.html
 
@@ -132,7 +132,7 @@ hideous jargon of these documents.
 Some of the material presented here is based on documentation or
 papers by Karl MacMillan and Ichiro Fujinaga.
 
-Gamera is funded through the National
+Gamera was initially funded through the National
 Science Foundation's Digital Library Initiative 2 (Award \#9817430),
 an Institute of Museum and Library Services National Leadership Grant,
 and support from the Lester S. Levy Estate.

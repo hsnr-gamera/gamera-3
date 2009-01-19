@@ -173,7 +173,7 @@ a single image and then add it to the database.
 The algorithm is described in more detail in our paper on `correcting
 broken characters`__ (PDF).
 
-.. __: http://dkc.jhu.edu/gamera/papers/droettboom_broken_characters.pdf
+.. __: http://gamera.informatik.hsnr.de/publications/droettboom_broken_03.pdf
 
 .. docstring:: gamera.classify NonInteractiveClassifier group_list_automatic group_and_update_list_automatic
 

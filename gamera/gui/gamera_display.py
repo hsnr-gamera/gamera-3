@@ -27,6 +27,7 @@ import wx.grid as gridlib
 from math import sqrt, ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, weakref
+import warnings
 
 from gamera.core import *          # Gamera specific
 from gamera.config import config
@@ -129,8 +130,31 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    ########################################
    # BOXES
 
-   def add_box(self, y, x, h, w):
-      self.boxes.append(Rect(y, x, h, w))
+   def add_box(self, *args):
+      """*args* must be of type ``core.Rect``"""
+      box = None
+      errmsg = None
+      try:
+         if len(args) == 4:
+            # y, x, r, c (only for backwards compatibility, maybe dropped some day)
+            warnings.warn("This signature is deprecated because of x y inconsistency."
+                          +"Please use a form analogous to core.Rect", DeprecationWarning)
+            box = Rect(Point(args[1], args[0]), Dim(args[3], args[2]))
+         #elif len(args) == 2:
+         #   # ul, extent
+         #   box = Rect(args[0], args[1])
+         elif len(args) == 1:
+            # rect
+            box = args[0]
+         else:
+            raise TypeError("Wrong number of arguments. See core.Rect for possible arguments.")
+      except Exception, e:
+         errmsg = "("+e.__class__.__name__+") "+e.message
+      if not isinstance(box, Rect):
+         raise TypeError("Could not construct a core.Rect object from arguments."
+                         +"See core.Rect for possible arguments."
+                         +(errmsg and "\nAdditionally, an exception was caught: "+errmsg or ""))
+      self.boxes.append(box)
       self.RefreshAll()
 
    def clear_all_boxes(self):
@@ -1821,8 +1845,9 @@ class ImageFrame(ImageFrameBase):
    def highlight_rectangle(self, *args):
       self._iw.id.highlight_rectangle(*args)
 
-   def add_box(self, y, x, h, w):
-      self._iw.id.add_box(y, x, h, w)
+   def add_box(self, *args):
+      """*args* should be of type ``core.Rect``"""
+      self._iw.id.add_box(*args)
 
    def clear_all_boxes(self):
       self._iw.id.clear_all_boxes()

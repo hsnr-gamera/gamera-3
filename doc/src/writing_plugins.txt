@@ -98,7 +98,7 @@ members.  The whole plugin is described by a class that inherits from
       cpp_headers=["example.hpp"]
       functions = [volume]
       author = "Michael Droettboom and Karl MacMillan"
-      url = "http://gamera.dkc.jhu.edu/"
+      url = "http://gamera.informatik.hsnr.de/"
   module = ExampleModule()
 
 Okay, now let's break it down.
@@ -208,7 +208,7 @@ specified:
 .. code:: Python
 
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://dkc.jhu.edu/gamera/"
+    url = "http://gamera.informatik.hsnr.de/"
 
 Lastly, we create an instance of this class so the module loader can
 do its work:

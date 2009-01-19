@@ -164,7 +164,7 @@ class Page:
             lr_x = min(self.image.lr_x, g.lr_x + FUDGE)
             nrows = lr_y - ul_y + 1
             ncols = lr_x - ul_x + 1
-            big_rects.append(core.Rect(ul_y, ul_x, nrows, ncols))
+            big_rects.append(core.Rect(core.Point(ul_x, ul_y), core.Dim(ncols, nrows)))
 
         # Search for intersecting glyphs and merge them. This is
         # harder than it seems at first because we want everything
@@ -233,7 +233,7 @@ class Page:
             display.clear_all_boxes()
         for rect in result:
             b = rect.bbox
-            display.add_box(b.ul_y, b.ul_x, b.nrows, b.ncols)
+            display.add_box(core.Rect(core.Point(b.ul_x, b.ul_y), core.Dim(b.ncols, b.nrows)))
 
     def display_lines(self, clear=1):
         """Display the lines found by placing a box around them
@@ -247,7 +247,7 @@ class Page:
         for s in self.sections:
             for line in s.lines:
                 b = line.bbox
-                display.add_box(b.ul_y, b.ul_x, b.nrows, b.ncols)
+                display.add_box(core.Rect(core.Point(b.ul_x, b.ul_y), core.Dim(b.ncols, b.nrows)))
 
     def display_glyphs(self, clear=1):
         if self.image._display == None:
@@ -407,7 +407,7 @@ class Section:
 class Line:
     def __init__(self, glyph):
         self.center = 0
-        self.bbox = core.Rect(glyph.ul_y, glyph.ul_x, glyph.nrows, glyph.ncols)
+        self.bbox = core.Rect(core.Point(glyph.ul_x, glyph.ul_y), core.Dim(glyph.ncols, glyph.nrows))
         self.glyphs = []
         self.add_glyph(glyph)
 

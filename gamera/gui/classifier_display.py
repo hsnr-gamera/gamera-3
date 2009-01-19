@@ -707,7 +707,7 @@ class ClassifierFrame(ImageFrameBase):
       else:
          return self.multi_iw.id
 
-   def set_image(self, page_collection, image=None, weak=True):
+   def set_image(self, page_collection, image=None, weak=False):
       self.set_multi_image(page_collection)
       self.set_single_image(image, weak=weak)
 
@@ -721,7 +721,7 @@ class ClassifierFrame(ImageFrameBase):
       finally:
          wx.EndBusyCursor()
 
-   def set_single_image(self, image=None, weak=True):
+   def set_single_image(self, image=None, weak=False):
       if image == None:
          if not aui:
             if self.splitterhr0.IsSplit():
@@ -730,7 +730,7 @@ class ClassifierFrame(ImageFrameBase):
          self.single_iw.id.image = None
          self.single_iw.id.original_image = None
       else:
-         self.single_iw.id.set_image(image, weak=weak)
+         self.single_iw.id.set_image(image, weak=False)
          if not aui:
             if not self.splitterhr0.IsSplit():
                self.splitterhr0.SplitHorizontally(

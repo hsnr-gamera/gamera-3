@@ -107,7 +107,9 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
    # Sets the image being displayed
    # Returns the size of the image
-   def set_image(self, image, view_function=None, weak=True):
+   # Warning: setting weak=True may destroy image before displaying
+   #          => use only when you exactly know what you are doing
+   def set_image(self, image, view_function=None, weak=False):
       if weak:
          self.original_image = weakref.proxy(image)
          self.image = weakref.proxy(image)

@@ -298,8 +298,9 @@ Evaluation
 Optimization
 ````````````
 
-These methods pertain to optimizing the feature weights of the classifier using a
-genetic algorithm.
+These methods pertain to optimizing the feature weights of the classifier
+using a genetic algorithm (GA). For information about genetic algorithms,
+see [Holland1975]_. The GA implementation in Gamera is based on [GAlib]_.
 
 .. docstring:: gamera.knn kNNNonInteractive start_optimizing stop_optimizing add_optimization_callback remove_optimization_callback
 
@@ -372,3 +373,8 @@ References
 
 .. [Holland1975] Holland, J. H. 1975. *Adaptation in natural and
    artifical systems.*  University of Michigan Press, Ann Arbor.
+
+.. [GAlib] Wall, M. 1999. `GAlib. A C++ Library of Genetic Algorithm
+    Components.`__
+
+.. __:  http://lancet.mit.edu/ga/

@@ -1,7 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed problem with weak image references in classifier dialog
+
  - Don't show right-click menu when there is no shell
+
 
 Version 3.1.1, Jun 09, 2008
 ---------------------------

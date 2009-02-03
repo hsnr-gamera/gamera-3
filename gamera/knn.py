@@ -506,8 +506,6 @@ Changes the set of features used in the classifier to the given list of feature 
 Starts the genetic algorithm optimization of the weights of the
 features.  The optimization is run in a background thread.
 
-For information about genetic algorithms, see [Holland1975]_.
-
 In the genetic algorithm, the population consists of vectors of
 feature weights.  The vectors are evaluated using the
 leave_one_out algorithm.  The vectors that perform well are

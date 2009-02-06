@@ -69,8 +69,8 @@ inline PyObject* get_module_dict(const char* module_name) {
   PyObject* dict = PyModule_GetDict(mod);
   if (dict == 0)
     return PyErr_Format(PyExc_RuntimeError,
-			"Unable to get dict for module '%s'.\n",
-			module_name);
+                        "Unable to get dict for module '%s'.\n",
+                        module_name);
   Py_DECREF(mod);
   return dict;
 }
@@ -110,19 +110,19 @@ inline PyObject* get_ArrayInit() {
     PyObject* array_module = PyImport_ImportModule(CHAR_PTR_CAST "array");
     if (array_module == 0) {
       PyErr_SetString(PyExc_ImportError,
-		      "Unable to get 'array' module.\n");
+                      "Unable to get 'array' module.\n");
       return 0;
     }
     PyObject* array_dict = PyModule_GetDict(array_module);
     if (array_dict == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get 'array' module dictionary.\n");
+                      "Unable to get 'array' module dictionary.\n");
       return 0;
     }
     t = PyDict_GetItemString(array_dict, "array");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get 'array' object.\n");
+                      "Unable to get 'array' object.\n");
       return 0;
     }
     Py_DECREF(array_module);
@@ -139,7 +139,7 @@ inline PyObject* get_ArrayAppend() {
     t = PyObject_GetAttrString(array_init, CHAR_PTR_CAST "append");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get 'array' append method.\n");
+                      "Unable to get 'array' append method.\n");
       return 0;
     }
   }
@@ -165,7 +165,7 @@ inline PyTypeObject* get_SizeType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Size");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Size type from gamera.gameracore.\n");
+                      "Unable to get Size type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -210,7 +210,7 @@ inline PyTypeObject* get_DimType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Dim");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Dim type from gamera.gameracore.\n");
+                      "Unable to get Dim type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -260,7 +260,7 @@ inline PyTypeObject* get_PointType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Point");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Point type from gamera.gameracore.\n");
+                      "Unable to get Point type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -280,7 +280,7 @@ inline PyTypeObject* get_FloatPointType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "FloatPoint");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get FloatPoint type from gamera.gameracore.\n");
+                      "Unable to get FloatPoint type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -338,15 +338,15 @@ inline Point coerce_Point(PyObject* obj) {
       py_x0 = PySequence_GetItem(obj, 0);
       py_x1 = PyNumber_Int(py_x0);
       if (py_x1 != NULL) {
-	long x = PyInt_AsLong(py_x1);
-	Py_DECREF(py_x1);
-	py_y0 = PySequence_GetItem(obj, 1);
-	py_y1 = PyNumber_Int(py_y0);
-	if (py_y1 != NULL) {
-	  long y = PyInt_AsLong(py_y1);
-	  Py_DECREF(py_y1);
-	  return Point((size_t)x, (size_t)y);
-	}
+        long x = PyInt_AsLong(py_x1);
+        Py_DECREF(py_x1);
+        py_y0 = PySequence_GetItem(obj, 1);
+        py_y1 = PyNumber_Int(py_y0);
+        if (py_y1 != NULL) {
+          long y = PyInt_AsLong(py_y1);
+          Py_DECREF(py_y1);
+          return Point((size_t)x, (size_t)y);
+        }
       }
     }
   }
@@ -390,15 +390,15 @@ inline FloatPoint coerce_FloatPoint(PyObject* obj) {
       py_x0 = PySequence_GetItem(obj, 0);
       py_x1 = PyNumber_Float(py_x0);
       if (py_x1 != NULL) {
-	double x = PyFloat_AsDouble(py_x1);
-	Py_DECREF(py_x1);
-	py_y0 = PySequence_GetItem(obj, 1);
-	py_y1 = PyNumber_Float(py_y0);
-	if (py_y1 != NULL) {
-	  double y = PyFloat_AsDouble(py_y1);
-	  Py_DECREF(py_y1);
-	  return FloatPoint(x, y);
-	}
+        double x = PyFloat_AsDouble(py_x1);
+        Py_DECREF(py_x1);
+        py_y0 = PySequence_GetItem(obj, 1);
+        py_y1 = PyNumber_Float(py_y0);
+        if (py_y1 != NULL) {
+          double y = PyFloat_AsDouble(py_y1);
+          Py_DECREF(py_y1);
+          return FloatPoint(x, y);
+        }
       }
     }
   }
@@ -436,7 +436,7 @@ inline PyTypeObject* get_RectType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Rect");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Rect type from gamera.gameracore.\n");
+                      "Unable to get Rect type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -482,7 +482,7 @@ inline PyTypeObject* get_RGBPixelType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "RGBPixel");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get RGBPixel type from gamera.gameracore.\n");
+                      "Unable to get RGBPixel type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -528,7 +528,7 @@ inline PyTypeObject* get_RegionType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Region");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Region type from gamera.gameracore.\n");
+                      "Unable to get Region type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -574,7 +574,7 @@ inline PyTypeObject* get_RegionMapType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "RegionMap");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get RegionMap type from gamera.gameracore.\n");
+                      "Unable to get RegionMap type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -621,7 +621,7 @@ inline PyTypeObject* get_ImageDataType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get ImageData type from gamera.gameracore.\n");
+                      "Unable to get ImageData type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -639,7 +639,7 @@ inline bool is_ImageDataObject(PyObject* x) {
 }
 
 inline PyObject* create_ImageDataObject(const Dim& dim, const Point& offset,
-					int pixel_type, int storage_format) {
+                                        int pixel_type, int storage_format) {
   ImageDataObject* o;
   PyTypeObject* id_type = get_ImageDataType();
   if (id_type == 0)
@@ -671,7 +671,7 @@ inline PyObject* create_ImageDataObject(const Dim& dim, const Point& offset,
       o->m_x = new RleImageData<OneBitPixel>(dim, offset);
     else {
       PyErr_SetString(PyExc_TypeError,
-		      "Pixel type must be ONEBIT when storage format is RLE.");
+                      "Pixel type must be ONEBIT when storage format is RLE.");
       return 0;
     }
   } else {
@@ -694,8 +694,8 @@ page_offset_y), pixel_type, storage_format) instead.
 */
 GAMERA_CPP_DEPRECATED
 inline PyObject* create_ImageDataObject(int nrows, int ncols,
-					int page_offset_y, int page_offset_x,
-					int pixel_type, int storage_format) {
+                                        int page_offset_y, int page_offset_x,
+                                        int pixel_type, int storage_format) {
   return create_ImageDataObject(Dim(ncols, nrows), Point(page_offset_x, page_offset_y), pixel_type, storage_format);
 }
 #endif
@@ -729,7 +729,7 @@ inline PyTypeObject* get_ImageType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Image type from gamera.gameracore.\n");
+                      "Unable to get Image type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -767,7 +767,7 @@ inline PyTypeObject* get_SubImageType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get SubImage type from gamera.gameracore.\n");
+                      "Unable to get SubImage type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -805,7 +805,7 @@ inline PyTypeObject* get_CCType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get CC type from gamera.gameracore.\n");
+                      "Unable to get CC type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -929,7 +929,7 @@ inline PyObject* create_ImageObject(Image* image) {
     if (dict == 0)
       return 0;
     pybase_init = PyObject_GetAttrString(PyDict_GetItemString(dict, "ImageBase"),
-					 CHAR_PTR_CAST "__init__");
+                                         CHAR_PTR_CAST "__init__");
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
     cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
@@ -990,7 +990,7 @@ inline PyObject* create_ImageObject(Image* image) {
   if (cc) {
     i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);
   } else if (image->nrows() < image->data()->nrows()
-	     || image->ncols() < image->data()->ncols()) {
+             || image->ncols() < image->data()->ncols()) {
     i = (ImageObject*)subimage_type->tp_alloc(subimage_type, 0);
   } else {
     i = (ImageObject*)image_type->tp_alloc(image_type, 0);
@@ -1027,7 +1027,7 @@ static PyTypeObject* t = 0;
     t = (PyTypeObject*)PyDict_GetItemString(dict, "ImageInfo");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get ImageInfo type from gamera.gameracore.\n");
+                      "Unable to get ImageInfo type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -1117,11 +1117,11 @@ inline FloatVector* FloatVector_from_python(PyObject* py) {
     for (int i = 0; i < size; ++i) {
       PyObject* number = PySequence_Fast_GET_ITEM(seq, i);
       if (!PyFloat_Check(number)) {
-	delete cpp;
-	PyErr_SetString(PyExc_TypeError,
-			"Argument must be a sequence of floats.");
-	Py_DECREF(seq);
-	return 0;
+        delete cpp;
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a sequence of floats.");
+        Py_DECREF(seq);
+        return 0;
       }
       (*cpp)[i] = (double)PyFloat_AsDouble(number);
     }
@@ -1145,10 +1145,10 @@ inline ComplexVector* ComplexVector_from_python(PyObject* py) {
     for (int i = 0; i < size; ++i) {
       PyObject* value = PySequence_Fast_GET_ITEM(seq, i);
       if (!PyComplex_Check(value)) {
-	delete cpp;
-	Py_DECREF(seq);
-	PyErr_SetString(PyExc_TypeError, "Argument must be a sequence of complex numbers.");
-	return 0;
+        delete cpp;
+        Py_DECREF(seq);
+        PyErr_SetString(PyExc_TypeError, "Argument must be a sequence of complex numbers.");
+        return 0;
       }
       Py_complex temp = PyComplex_AsCComplex(value);
       (*cpp)[i] = ComplexPixel(temp.real, temp.imag);
@@ -1173,11 +1173,11 @@ inline IntVector* IntVector_from_python(PyObject* py) {
     for (int i = 0; i < size; ++i) {
       PyObject* number = PySequence_Fast_GET_ITEM(seq, i);
       if (!PyInt_Check(number)) {
-	PyErr_SetString(PyExc_TypeError,
-			"Argument must be a sequence of ints.");
-	delete cpp;
-	Py_DECREF(seq);
-	return 0;
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument must be a sequence of ints.");
+        delete cpp;
+        Py_DECREF(seq);
+        return 0;
       }
       (*cpp)[i] = (int)PyInt_AsLong(number);
     }
@@ -1187,6 +1187,8 @@ inline IntVector* IntVector_from_python(PyObject* py) {
     PyErr_SetString(PyExc_RuntimeError, e.what());
     return 0;
   }
+  Py_DECREF(seq);
+  return cpp;
 }
 
 inline PointVector* PointVector_from_python(PyObject* py) {
@@ -1223,7 +1225,7 @@ inline PyTypeObject* get_IteratorType() {
     t = (PyTypeObject*)PyDict_GetItemString(dict, "Iterator");
     if (t == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "Unable to get Iterator type from gamera.gameracore.\n");
+                      "Unable to get Iterator type from gamera.gameracore.\n");
       return 0;
     }
   }
@@ -1262,35 +1264,35 @@ public:
     if (m_progress_bar) {
       PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"add_length", (char *)"i", l);
       if (!result)
-	throw std::runtime_error("Error calling add_length on ProgressBar instance");
+        throw std::runtime_error("Error calling add_length on ProgressBar instance");
     }
   }
   inline void set_length(int l) {
     if (m_progress_bar) {
       PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"set_length", (char *)"i", l);
       if (!result)
-	throw std::runtime_error("Error calling set_length on ProgressBar instance");
+        throw std::runtime_error("Error calling set_length on ProgressBar instance");
     }
   }
   inline void step() {
     if (m_progress_bar) {
       PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"step", NULL);
       if (!result)
-	throw std::runtime_error("Error calling step on ProgressBar instance");
+        throw std::runtime_error("Error calling step on ProgressBar instance");
     }
   }
   inline void update(int num, int den) {
     if (m_progress_bar) {
       PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"update", (char *)"ii", num, den);
       if (!result)
-	throw std::runtime_error("Error calling update on ProgressBar instance");
+        throw std::runtime_error("Error calling update on ProgressBar instance");
     }
   }
   inline void kill() {
     if (m_progress_bar) {
       PyObject* result = PyObject_CallMethod(m_progress_bar, (char *)"kill", NULL);
       if (!result)
-	throw std::runtime_error("Error calling kill on ProgressBar instance");
+        throw std::runtime_error("Error calling kill on ProgressBar instance");
     }
   }
 protected:
@@ -1333,11 +1335,11 @@ inline T pixel_from_python<T>::convert(PyObject* obj) {
   if (!PyFloat_Check(obj)) {
     if (!PyInt_Check(obj)) {
       if (!is_RGBPixelObject(obj)) {
-	if (!PyComplex_Check(obj)) {
-	  throw std::runtime_error("Pixel value is not valid");
-	}
-	Py_complex temp = PyComplex_AsCComplex(obj);
-	return (T)temp.real;
+        if (!PyComplex_Check(obj)) {
+          throw std::runtime_error("Pixel value is not valid");
+        }
+        Py_complex temp = PyComplex_AsCComplex(obj);
+        return (T)temp.real;
       }
       return T((*(((RGBPixelObject*)obj)->m_x)).luminance());
     }
@@ -1351,11 +1353,11 @@ inline RGBPixel pixel_from_python<RGBPixel>::convert(PyObject* obj) {
   if (!is_RGBPixelObject(obj)) {
     if (!PyFloat_Check(obj)) {
       if (!PyInt_Check(obj)) {
-	if (!PyComplex_Check(obj)) {
-	  throw std::runtime_error("Pixel value is not convertible to an RGBPixel");
-	}
-	Py_complex temp = PyComplex_AsCComplex(obj);
-	return RGBPixel(ComplexPixel(temp.real, temp.imag));
+        if (!PyComplex_Check(obj)) {
+          throw std::runtime_error("Pixel value is not convertible to an RGBPixel");
+        }
+        Py_complex temp = PyComplex_AsCComplex(obj);
+        return RGBPixel(ComplexPixel(temp.real, temp.imag));
       }
       return RGBPixel((GreyScalePixel)PyInt_AsLong(obj));
     }
@@ -1369,10 +1371,10 @@ inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
   if (!PyComplex_Check(obj)) {
     if (!is_RGBPixelObject(obj)) {
       if (!PyFloat_Check(obj)) {
-	if (!PyInt_Check(obj)) {
-	  throw std::runtime_error("Pixel value is not convertible to a ComplexPixel");
-	}
-	return ComplexPixel((double)PyInt_AsLong(obj), 0.0);
+        if (!PyInt_Check(obj)) {
+          throw std::runtime_error("Pixel value is not convertible to a ComplexPixel");
+        }
+        return ComplexPixel((double)PyInt_AsLong(obj), 0.0);
       }
       return ComplexPixel(PyFloat_AsDouble(obj), 0.0);
     }

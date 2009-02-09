@@ -1,6 +1,7 @@
 /*
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ *               2009      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -1384,6 +1385,33 @@ inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
   return ComplexPixel(temp.real, temp.imag);
 }
 
+
 #endif
+
+
+namespace Gamera {
+
+  /* CANONICPYOBJECT TYPE */
+
+  // A "canonic" wrapper class around PyObject*, to make PyObjects
+  // usable in STL containers, e.g. vector<canonicPyObject>
+  // It is meant to be used on the C++ side only
+  class canonicPyObject {
+  public:
+    PyObject* value;
+    inline canonicPyObject(PyObject* c2) {value = c2;}
+    inline canonicPyObject& operator=(const PyObject* c2) {
+      value = (PyObject*)c2;
+      return *this;
+    }
+    inline int operator<(const canonicPyObject& c2) const { 
+      return PyObject_RichCompareBool(value,c2.value,Py_LT);
+    }
+    inline int operator==(const canonicPyObject& c2) const { 
+      return PyObject_RichCompareBool(value,c2.value,Py_EQ);
+    }
+  };
+
+}
 
 #endif

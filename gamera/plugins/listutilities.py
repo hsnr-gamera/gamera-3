@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+#               2009      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,6 +18,7 @@
 #
 
 from gamera.plugin import *
+import _listutilities
 
 class permute_list(PluginFunction):
    """
@@ -38,22 +40,70 @@ class permute_list(PluginFunction):
      [2, 3, 1]
      [3, 2, 1]
    """
+   category = "List"
    self_type = None
    args = Args([Class("list")])
    return_type = Int("continuaton")
 
 class all_subsets(PluginFunction):
+   category = "List"
    self_type = None
    args = Args([Class("list"), Int("size")])
    return_type = Class("subsets")
 
+class median(PluginFunction):
+    """Compute the median in linear time.
+
+This implementation works both with builtin numeric types like *int* or
+*float*, and with user defined types. For user defined type, you
+must implement the "less than" operator (`__lt__`), as in the following
+example:
+
+.. code:: Python
+
+   class P:
+      x = 0; y = 0
+      def __init__(self, x, y):
+          self.x = x; self.y = y
+      def __lt__(self, other):
+          return (self.x < other.x)
+      def __eq__(self, other):
+          return (self.x == other.x)
+
+   a = [P(0,0), P(1,1), P(2,0)]
+   p = median(a)
+
+When the list entries are of type *int* or *float*, the median is for an
+even list size the mean between the two middle values. For user defined
+types, the returned median is always a list entry, because arithmetic
+computations do not make sense in this case.
+"""
+    category = "List"
+    pure_python = 1
+    self_type = None
+    return_type = Class("m")
+    args = Args([Class("list")])
+    author = "Christoph Dalitz"
+    def __call__(list):
+        return _listutilities.median_py(list)
+    __call__ = staticmethod(__call__)
+
+class median_py(PluginFunction):
+    """This is only for Gamera's Python-C++ interface."""
+    category = None
+    self_type = None
+    return_type = Class("m")
+    args = Args([Class("list")])
+    author = "Christoph Dalitz"
+
 class ListUtilitiesModule(PluginModule):
-   category = "List"
+   category = None
    cpp_headers=["listutilities.hpp"]
-   functions = [permute_list, all_subsets]
+   functions = [permute_list, all_subsets, median, median_py]
    author = "Michael Droettboom and Karl MacMillan"
-   url = "http://gamera.dkc.jhu.edu/"
+   url = "http://gamera.informatik.hsnr.de/"
 module = ListUtilitiesModule()
 
 permute_list = permute_list()
 all_subsets = all_subsets()
+median = median()

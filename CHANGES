@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin median() in category "List"
+   also available on the C++ side as a template in listutilities.hpp
+
+ - new C++ wrapper class canonicPyObject in gameramodule.hpp to make
+   PyObject* usable in STL containerclasses, e.g. vector<canonicPyObject>
+
  - fixed problem with weak image references in classifier dialog
 
  - Don't show right-click menu when there is no shell

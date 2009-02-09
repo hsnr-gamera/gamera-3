@@ -1,6 +1,28 @@
-- Add numpy support
-- Write replacements for broken wxPython compositing routines [Done,
-   but not tested on Mac]
-- Windows issues
-- Add rotation with interpolation (from VIGRA)
-- Improve documentation (particularly on wrapped Vigra functions)
+ToDo list for Gamera
+====================
+
+ - Porting to Python 2.6
+ - Windows issue: training dialog currently broken
+ - Replace the deprecated Numeric/Numarray with NumPy.
+ - More documentation of wrapped Vigra functions
+ - More page layout analysis resp. page segmentation methods.
+   E.g. text/graphics separation and more text line finding
+   algorithms. Maybe some parts of Leptonica could be useful?
+ - Add some preprocessing operations like kfill or other local
+   thresholding methods and multilevel thresholding.
+ - Feature selection via genetic algorithms (GA) as an alternative
+   to the currently implemented GA based feature weighting.
+ - A new menu function in the interactive classifier dialog for
+   highlighting outliers, i.e. possible manual misclassifications.
+   Can be based on MNN editing.
+ - Add automatic clustering algorithms for training data.
+ - Adding more classifiers like Gaussian mixture models, support
+   vector machines, or hidden Markov models.
+ - Add support for the hOCR exchange format in the form of a general
+   writing and parsing library.
+ - Write a toolkit for standard text document recognition, i.e. a
+   more complete version of roman.py.
+ - Write wrappers for external OCR engines like Tesseract OCR as
+   optional plugins.
+ - Add more image formats: JPEG (reading/writing), PDF (writing),
+   NIST special database 19 (reading)...

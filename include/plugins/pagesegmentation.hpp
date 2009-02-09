@@ -32,6 +32,7 @@
 #include "gameramodule.hpp"
 #include "gamera_limits.hpp"
 #include "connected_components.hpp"
+#include "plugins/listutilities.hpp"
 #include "plugins/projections.hpp"
 #include "plugins/segmentation.hpp"
 #include "plugins/image_utilities.hpp"
@@ -51,13 +52,7 @@ int pagesegmentation_median_height(ImageList* ccs) {
   for (i = ccs->begin(); i != ccs->end(); ++i) {
     ccs_heights.push_back( (*i)->nrows() );
   }
-  std::sort(ccs_heights.begin(), ccs_heights.end());
-
-  if (ccs_heights.size() % 2 == 1)
-    return ccs_heights[(ccs_heights.size() / 2)];
-  else
-    return (ccs_heights[(ccs_heights.size() / 2) - 1] + 
-            ccs_heights[(ccs_heights.size() / 2)]) / 2;
+  return median(&ccs_heights);
 }
 
 

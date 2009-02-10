@@ -52,7 +52,7 @@ class all_subsets(PluginFunction):
    return_type = Class("subsets")
 
 class median(PluginFunction):
-    """Compute the median in linear time.
+    """Compute the median from a list of values in linear time.
 
 This implementation works both with builtin numeric types like *int* or
 *float*, and with user defined types. For user defined type, you
@@ -77,6 +77,14 @@ When the list entries are of type *int* or *float*, the median is for an
 even list size the mean between the two middle values. For user defined
 types, the returned median is always a list entry, because arithmetic
 computations do not make sense in this case.
+
+.. note::
+
+   This is *not* the median image filter that replaces each pixel value
+   with the median of its neighborhood. For this purpose, see the
+   rank__ plugin.
+
+.. __: morphology.html#rank
 """
     category = "List"
     pure_python = 1

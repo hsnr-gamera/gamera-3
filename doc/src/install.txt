@@ -94,6 +94,15 @@ Prerequisites
 
 - libpng 1.2.x or later
 
+If any of these prerequisites is installed in a non standard directory,
+you can use the environment variables ``CFLAGS`` and ``LDFLAGS`` to
+pass its locations to the build script, e.g.::
+
+  CFLAGS=-I/usr/local/include
+  LDFLAGS=-L/usr/local/lib
+  export CFLAGS LDFLAGS
+
+
 Standard Build and Install
 --------------------------
 

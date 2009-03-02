@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - now also builds out-of-the box on FreeBSD (thanks to David Blewett)
+
  - new plugin median() in category "List"
    also available on the C++ side as a template in listutilities.hpp
 

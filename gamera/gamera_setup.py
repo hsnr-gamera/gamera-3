@@ -87,9 +87,10 @@ elif '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
 
 # Check that we are running a recent enough version of Python.
 # This depends on the platform.
-required_versions = {'posix':  222, 'linux2': 222, 'win32':  231, 'darwin': 230, 'cygwin': 222}
+default_required_version = 222
+required_versions = {'linux2': 222, 'win32':  231, 'darwin': 230, 'cygwin': 222}
 version = float(''.join([str(x) for x in sys.version_info[0:3]]))
-required_version = required_versions[sys.platform]
+required_version = required_versions.setdefault(sys.platform, default_required_version)
 if version < required_version:
    print "Gamera requires Python version %s or later." % '.'.join(list(str(required_version)))
    print "You are running the following Python version:"

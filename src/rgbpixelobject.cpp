@@ -75,9 +75,9 @@ static PyGetSetDef rgbpixel_getset[] = {
   { (char *)"cyan", (getter)rgbpixel_get_cyan, 0,
     (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
   { (char *)"magenta", (getter)rgbpixel_get_magenta, 0,
-    (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
+    (char *)"(int property)\n\nThe magenta value [0, 255]", 0 },
   { (char *)"yellow", (getter)rgbpixel_get_yellow, 0,
-    (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
+    (char *)"(int property)\n\nThe yellow value [0, 255]", 0 },
   { NULL }
 };
 

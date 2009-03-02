@@ -26,6 +26,7 @@ from __future__ import generators
 import codecs, locale, sys, glob, cStringIO, inspect, getopt, os.path, shutil
 from stat import ST_MTIME
 from time import strftime, localtime
+import locale
 import traceback
 import warnings
 from gamera.util import dedent
@@ -206,6 +207,7 @@ class DocumentationGenerator:
                shutil.copyfile(file, os.path.join(output_path, filename))
 
    def get_rest_docs(self):
+      locale.setlocale(locale.LC_TIME, 'C')
       for file in glob.glob(self.src_path + "*.txt"):
          path, filename = os.path.split(file)
          root, ext = os.path.splitext(filename)
@@ -222,7 +224,7 @@ class DocumentationGenerator:
             print "  Generating " + rootname
             lines = fd.readlines()
             lines = (lines[:3] + 
-                     ["\n", u"**Last modifed**: %s\n\n" % mtime, 
+                     ["\n", u"**Last modified**: %s\n\n" % mtime, 
                       ".. contents::\n\n", 
                       ".. role:: raw-html(raw)\n   :format: html\n",
                       '.. footer:: :raw-html:`<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>`\n\n'

@@ -134,12 +134,13 @@ Class
 **Class** (string *name*, PyObject *klass*, bool *list_of* = ``False``)
 
 Class is a general purpose argument type.  Corresponds to the C
-``PyObject *`` type.
+``PyObject *`` type. See `Custom data types in plugins`__ for details
+how to pass generic ``PyObject*`` data types to and from C++ plugins.
+
+.. __: plugins_custom_types.html
 
 The given *klass* is any Python type (built-in or otherwise) that is to be accepted as an
-argument.
-
-For example, to accept any Python dictionary, use::
+argument. For example, to accept any Python dictionary, use::
 
   Class("dict", dict)
 

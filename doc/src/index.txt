@@ -51,6 +51,11 @@ How To
 
    .. __: image_api.html
 
+   - `Custom data types in plugins`__: How to pass, access and return
+     custom data types between C++ and Python.
+
+   .. __: plugins_custom_types.html
+
    - `Writing Gamera toolkits`__: How to package your code in a
      redistributable package that is easier to build. 
 

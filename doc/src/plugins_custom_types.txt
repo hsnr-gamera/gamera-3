@@ -1,0 +1,266 @@
+============================
+Custom data types in plugins
+============================
+
+Introduction
+============
+
+For common datatypes like *Float* or *PointVector*, the Gamera
+C++/Python argument passing interface provides an automatic wrapping
+mechanism that is described in `Specifying arguments for plugin
+generation and dialog boxes`__.
+
+.. __: args.html
+
+Occasionally, these built in data types are not sufficient, and you
+need to pass custom types. A typical situation is that your return
+type is a tuple.
+
+
+An example
+==========
+
+Assume we need a plugin *grey_stats* that return both the mean grey value
+and its variance on a greyscale image. As the return value is a tuple
+of two values, we cannot use one of the built in data types.
+
+We therefore use the generic argument type ``Class`` in the
+Python wrapper for our plugin. Note that it is a good idea to
+give more information about the actual return value(s) in the
+documentation string:
+
+.. code:: Python
+
+  class grey_stats(PluginFunction):
+     """Returns mean and variance of the grey values as a tuple *(m,var)*"""
+     self_type = ImageType([GREYSCALE])
+     return_type = Class("m_var")
+
+On the C++ side, the return type is ``PyObject*`` and can be constructed
+with any of the conversion functions from the Python C API, e.g. 
+``Py_BuildValue``:
+
+.. code:: C++
+
+  template<class T>
+    PyObject* grey_stats(const T &img) {
+    size_t i;
+    double Ex = 0.0;  // E(X)
+    double Ex2 = 0.0; // E(X^2)
+    FloatVector* hist = histogram(img);
+    for (i=0; i < hist->size(); i++) {
+      Ex  += i * (*hist)[i];
+      Ex2 += i*i * (*hist)[i];
+    }
+    delete hist;
+    return Py_BuildValue("ff", Ex, Ex2 - Ex*Ex);
+  }
+
+In a Python script, the plugin can be called with
+
+.. code:: Python
+
+  (m,v) = img.grey_stats()
+  # or:
+  m,v = img.grey_stats()
+
+It is also possible to call the plugin from the C++ side, by simply
+converting the ``PyObject*`` return value back to C++ data types:
+
+.. code:: C++
+
+  double m,v;
+  PyObject* obj;
+  obj = grey_stats(img);
+  PyArg_ParseTuple(obj, "ff", &m, &v);
+  Py_DECREF(obj);
+
+The last line is necessary to avoid a memory leak. The ``Py_BuildValue``
+function returns an `"owned reference"`__ (in Python lingo), which means that
+it has increased its reference count. To allow the PyObject to be deleted
+by the Python runtime library, its reference count must be decreased
+again. The actual deletion of the PyObject will then occur at some point
+in the future by the Python garbage collector.
+
+.. __: http://docs.python.org/extending/extending.html#ownership-rules
+
+
+Receiving a custom type in C++
+==============================
+
+When you have a ``PyObject*`` as an input argument of a plugin function,
+you can convert it to C++ data types with the conversion functions from
+the `Python C API`__. These are
+
+ * ``PyInt_AsLong`` and colleagues for ordinary scalar data types
+
+ * ``PyArg_ParseTuple`` for tuples
+
+ * ``PyList_GetItem`` for lists
+
+ * ``PyObject_GetAttrString`` for properties of arbitrary classes
+
+.. __: http://docs.python.org/c-api/
+
+A fundamental problem with the conversion from PyObjects is that you
+can never be sure what actually is in the ``PyObject*``. For instance,
+when you expect a list and apply ``PyList_GetItem``, you cannot be sure
+that the ``PyObject*`` actually is a list. Nor can you safely assume that
+the list entries are of the datat type you belive them to be. It is thus
+generally a good idea to check data types with ``PyList_Check`` and 
+colleagues, and to throw an exception when the wrong data type enters
+your function, e.g.
+
+.. code:: C++
+
+  PyObject* myplugin(PyObject* list) {
+    if(!PyList_Check(list))
+      throw std::runtime_error("myplugin: Input argument is no list.");
+    // ...
+  }
+
+
+Returning a custom type from C++
+================================
+
+To return a ``PyObject*`` from a plugin function,
+you can use the conversion functions from
+the `Python C API`__. These are
+
+ * ``Py_BuildValue`` for tuples or ordinary scalar values;
+   as for all common scalar data types the Gamera argument wrapping
+   can be used, calling Py_BuildValue for scalar types is usually
+   only necessary for creating PyObjects for passing to
+   returned lists or custom class properties.
+
+ * ``PyList_New`` and ``PyList_SetItem`` for lists
+
+ * ``PyInstance_New`` and ``PyObject_SetAttrString`` for arbitrary classes
+
+.. __: http://docs.python.org/c-api/
+
+PyObjects returned from a plugin function must always be 
+`"owned references"`__. As both ``Py_Build_Value`` and ``PyList_New``
+create owned references, this is usually automatically fulfilled.
+There is however one special case when you read a list entry from
+an input list with ``PyList_GetItem`` and write it to a return list
+with ``PyList_SetItem``. As ``PyList_GetItem`` yields a "borrowed
+reference", its reference count must be increased if it is to be
+returned to Python. Here is an example that returns half of the input
+sequence and fills the rest with zeros:
+
+.. __: http://docs.python.org/extending/extending.html#ownership-rules
+
+.. code:: C++
+
+  PyObject* myplugin(PyObject* list) {
+    size_t n,i;
+    PyObject *retval, *entry;
+    n = PyList_Size(list);
+    retval = PyList_New(n);
+    for (i=0; i<n/2; i++) {
+      // PyList_GetItem returns a borrowed reference
+      // => reference count must be manually increased (Py_SetItem does not do so)
+      entry = PyList_GetItem(list, i);
+      Py_INCREF(entry);
+      PyList_SetItem(retval, i, entry);
+    }
+    for (i=n/2; i<n; i++) {
+      // Py_BuildValue returns an "owned reference"
+      // => no Py_INCREF necessary
+      entry = Py_BuildValue("i", 0);
+      PyList_SetItem(retval, i, entry);
+    }
+    return retval;
+  }
+
+It is important to note that, unlike ``PyList_SetItem``, ``PyList_Append``
+adds a reference to the added item, so that ``Py_INCREF`` must not be
+called in this case. In contrast, when you add an already owned reference
+to a list with ``PyList_Append``, you must insted decrease its reference
+count with ``Py_DECREF``:
+
+.. code:: C++
+
+  PyObject* myplugin(PyObject* list) {
+    size_t n,i;
+    PyObject *retval, *entry;
+    n = PyList_Size(list);
+    retval = PyList_New(0);
+    for (i=0; i<n/2; i++) {
+      // PyList_Append already adds a reference to the added item
+      PyList_Append(retval, PyList_GetItem(list, i));
+    }
+    for (i=n/2; i<n; i++) {
+      // Py_BuildValue returns an "owned reference" whose reference count
+      // is again increased by PyList_Append => Py_DECREF necessary
+      entry = Py_BuildValue("i", 0);
+      PyList_Append(retval, entry);
+      Py_DECREF(entry);
+    }
+    return retval;
+  }
+
+
+
+Implementing a Python class in C++
+==================================
+
+Occasionally it can become necessary to write some methods of a custom
+Python class in C++. Let us assume, you want to implement the constructor
+of a custom class *MyClass* in C++.
+
+The basic idea is to write a plugin function *create_myclass* that returns
+an object of type *MyClass* and to call this function in the Python
+constructor, i.e. in the ``__init__`` method. This requires a Python
+wrapper of the form:
+
+.. code:: Python
+
+  # the class definition
+  class MyClass:
+    def __init__(self, arg1, arg2):
+      mc = _myplugins.create_myclass(arg1, arg2)
+      # copy over properties from mc to self
+      self.property1 = mc.property1
+      self.property2 = mc.property2
+      # ...
+
+  # the plugin implementing the actual contructor of MyClass
+  class create_myclass(PluginFunction):
+    self_type = None
+    args = Args([Int("arg1"), Real("arg2")])
+    return_type = Class('myclass', MyClass)
+
+The C++ side of the *create_myclass* plugin will then be of the form (this
+primitive example simply passes the input arguments unaltered to the
+new class as properties, so it is not very useful, but nevertheless a nice
+demonstartion of the main ideas):
+
+.. code:: C++
+
+  PyObject* create_myclass(int arg1, double arg2) {
+    // helper variable for temporary property storage
+    PyObject* prop;
+    // helper object for creating class instances (see below)
+    // declared static so this is initialized only once
+    static PyObject* my_class = NULL;
+
+    // create a dictionary and store the properties therein
+    // Note that PyDict_SetItemString (unlike PyList_SetItem) INCREFs the passed object
+    // => the no longer needed reference returned by Py_BuildValue must be DECREFed
+    PyObject* class_dict = PyDict_New();
+    prop = Py_BuildValue("i", arg1);
+    PyDict_SetItemString(class_dict, "property1", prop);
+    Py_DECREF(prop);
+    prop = Py_BuildValue("f", arg2);
+    PyDict_SetItemString(class_dict, "property2", prop);
+    Py_DECREF(prop);
+
+    // create an instance of MyClass from the dictionary
+    if (my_class == NULL) {
+      my_class = PyClass_New(NULL, PyDict_New(), PyString_FromString("MyClass"));
+    }
+    return PyInstance_NewRaw(my_class, class_dict);
+  }
+

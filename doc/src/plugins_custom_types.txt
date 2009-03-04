@@ -106,7 +106,7 @@ A fundamental problem with the conversion from PyObjects is that you
 can never be sure what actually is in the ``PyObject*``. For instance,
 when you expect a list and apply ``PyList_GetItem``, you cannot be sure
 that the ``PyObject*`` actually is a list. Nor can you safely assume that
-the list entries are of the datat type you belive them to be. It is thus
+the list entries are of the data type you belive them to be. It is thus
 generally a good idea to check data types with ``PyList_Check`` and 
 colleagues, and to throw an exception when the wrong data type enters
 your function, e.g.
@@ -177,7 +177,7 @@ sequence and fills the rest with zeros:
 It is important to note that, unlike ``PyList_SetItem``, ``PyList_Append``
 adds a reference to the added item, so that ``Py_INCREF`` must not be
 called in this case. In contrast, when you add an already owned reference
-to a list with ``PyList_Append``, you must insted decrease its reference
+to a list with ``PyList_Append``, you must instead decrease its reference
 count with ``Py_DECREF``:
 
 .. code:: C++
@@ -235,7 +235,7 @@ wrapper of the form:
 The C++ side of the *create_myclass* plugin will then be of the form (this
 primitive example simply passes the input arguments unaltered to the
 new class as properties, so it is not very useful, but nevertheless a nice
-demonstartion of the main ideas):
+demonstration of the main ideas):
 
 .. code:: C++
 

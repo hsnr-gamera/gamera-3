@@ -782,6 +782,10 @@ Further reading
 
 .. __: args.html
 
+- `Passing/returning custom data types to/from plugins`__
+
+.. __: plugins_custom_types.html
+
 - `Grouping plugins together into toolkits`__
 
 .. __: writing_toolkits.html

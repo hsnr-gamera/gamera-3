@@ -46,6 +46,7 @@ class permute_list(PluginFunction):
    return_type = Int("continuaton")
 
 class all_subsets(PluginFunction):
+   """Returns all subsets of size *size* of the given list."""
    category = "List"
    self_type = None
    args = Args([Class("list"), Int("size")])

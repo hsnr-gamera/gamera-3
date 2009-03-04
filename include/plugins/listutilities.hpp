@@ -119,6 +119,14 @@ namespace Gamera {
   }
 
   PyObject* all_subsets(PyObject* a_input, int k) {
+
+    // special treatment for k=0: only one set (the empty set)
+    if (k==0) {
+      PyObject* result = PyList_New(1);
+      PyList_SetItem(result, 0, PyList_New(0));
+      return result;
+    }
+
     PyObject* a = PySequence_Fast(a_input, "First argument must be iterable");
     if (a == NULL)
       return 0;

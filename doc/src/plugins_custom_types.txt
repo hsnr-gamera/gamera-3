@@ -20,7 +20,7 @@ type is a tuple.
 An example
 ==========
 
-Assume we need a plugin *grey_stats* that return both the mean grey value
+Assume we need a plugin *grey_stats* that returns both the mean grey value
 and its variance on a greyscale image. As the return value is a tuple
 of two values, we cannot use one of the built in data types.
 
@@ -40,7 +40,7 @@ On the C++ side, the return type is ``PyObject*`` and can be constructed
 with any of the conversion functions from the Python C API, e.g. 
 ``Py_BuildValue``:
 
-.. code:: C++
+.. code:: CPP
 
   template<class T>
     PyObject* grey_stats(const T &img) {
@@ -67,7 +67,7 @@ In a Python script, the plugin can be called with
 It is also possible to call the plugin from the C++ side, by simply
 converting the ``PyObject*`` return value back to C++ data types:
 
-.. code:: C++
+.. code:: CPP
 
   double m,v;
   PyObject* obj;
@@ -111,7 +111,7 @@ generally a good idea to check data types with ``PyList_Check`` and
 colleagues, and to throw an exception when the wrong data type enters
 your function, e.g.
 
-.. code:: C++
+.. code:: CPP
 
   PyObject* myplugin(PyObject* list) {
     if(!PyList_Check(list))
@@ -151,7 +151,7 @@ sequence and fills the rest with zeros:
 
 .. __: http://docs.python.org/extending/extending.html#ownership-rules
 
-.. code:: C++
+.. code:: CPP
 
   PyObject* myplugin(PyObject* list) {
     size_t n,i;
@@ -180,7 +180,7 @@ called in this case. In contrast, when you add an already owned reference
 to a list with ``PyList_Append``, you must instead decrease its reference
 count with ``Py_DECREF``:
 
-.. code:: C++
+.. code:: CPP
 
   PyObject* myplugin(PyObject* list) {
     size_t n,i;
@@ -237,7 +237,7 @@ primitive example simply passes the input arguments unaltered to the
 new class as properties, so it is not very useful, but nevertheless a nice
 demonstration of the main ideas):
 
-.. code:: C++
+.. code:: CPP
 
   PyObject* create_myclass(int arg1, double arg2) {
     // helper variable for temporary property storage

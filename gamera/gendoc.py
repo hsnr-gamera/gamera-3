@@ -227,7 +227,7 @@ class DocumentationGenerator:
                      ["\n", u"**Last modified**: %s\n\n" % mtime, 
                       ".. contents::\n\n", 
                       ".. role:: raw-html(raw)\n   :format: html\n",
-                      '.. footer:: :raw-html:`<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>`\n\n'
+                      '.. footer:: :raw-html:`<a href="http://sourceforge.net/projects/gamera"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&type=13" width="120" height="30" border="0" alt="Get Gamera at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>`\n\n'
                       ] + 
                      lines[3:])
             fd = cStringIO.StringIO((u''.join(lines)).encode("utf-8"))

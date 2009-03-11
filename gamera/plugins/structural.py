@@ -92,13 +92,30 @@ class least_squares_fit_xy(PluginFunction):
     args = Args([PointVector("points")])
     author = "Christoph Dalitz"
 
+class edit_distance(PluginFunction):
+    """
+    Computes the edit distance (also known as *Levenshtein distance*) between
+    two strings.
+
+    This counts the number of character substitutions, additions and deletions
+    necessary to transform one string into another. This plugin is a 
+    straightforward implementation of Levenshtein's classic algorithm from
+    1965, which has runtime complexity *O(m*n)*, where *m* and *n* are the
+    lengths of the two strings.
+    """
+    self_type = None
+    args = Args([String("s1"), String("s2")])
+    return_type = Int("distance")
+    author = "Christoph Dalitz"
+
 class RelationalModule(PluginModule):
     cpp_headers = ["structural.hpp"]
     category = "Relational"
     functions = [polar_distance, polar_match,
                  bounding_box_grouping_function,
                  shaped_grouping_function,
-                 least_squares_fit, least_squares_fit_xy]
+                 least_squares_fit, least_squares_fit_xy,
+                 edit_distance]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.dkc.jhu.edu/"
 
@@ -108,3 +125,4 @@ bounding_box_grouping_function = bounding_box_grouping_function()
 shaped_grouping_function = shaped_grouping_function()
 least_squares_fit = least_squares_fit()
 least_squares_fit_xy = least_squares_fit_xy()
+edit_distance = edit_distance()

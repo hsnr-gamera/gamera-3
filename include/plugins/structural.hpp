@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2001-2005
- * Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2009
+ * Ichiro Fujinaga, Michael Droettboom, Karl MacMillan,
+ * and Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -328,6 +329,48 @@ namespace Gamera {
     }
 
     return Py_BuildValue(CHAR_PTR_CAST "fffi", b, a, q, x_of_y);
+  }
+
+  // straightforward implementation of Levenshtein's classic algorithm
+  int edit_distance(std::string s1, std::string s2)
+  {
+    size_t s1len, s2len;       // length of the two strings
+    IntVector *prev, *curr;    // previous and current matrix column
+    IntVector *tmp;
+    size_t result, add, del, sub;
+    size_t i,j;
+  
+    s1len = s1.size(); s2len = s2.size();
+    if (s1len == 0) return s2len;
+    if (s2len == 0) return s1len;
+
+    prev = new IntVector(s1len+1);
+    curr = new IntVector(s2len+1);
+    for (i=0; i<s1len+1; i++) (*prev)[i] = i;
+
+    for (j=1; j<s2len+1; j++) {
+      if (j>1) {
+        // move one column further in evaluation matrix
+        tmp = prev;
+        prev = curr;
+        curr = tmp;
+      }
+      (*curr)[0] = j;
+      for (i=1; i<s1len+1; i++) {
+        // cost of different transformation operations
+        if (s1[i-1] == s2[j-1])
+          sub = (*prev)[i-1];
+        else
+          sub = (*prev)[i-1] + 1;
+        add = (*prev)[i] + 1;
+        del = (*curr)[i-1] + 1;
+        (*curr)[i] = std::min(sub, std::min(add,del));
+      }
+    }
+
+    result = (*curr)[s1len];
+    delete prev; delete curr;
+    return result;
   }
 
 }

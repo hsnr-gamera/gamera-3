@@ -30,12 +30,12 @@ namespace Gamera {
 
   // linear time median implementation for vectors of arithmetic objects
   template<class T>
-  T median(std::vector<T>* v) {
+  T median(std::vector<T>* v, bool inlist) {
     T m;
     size_t n = v->size();
     std::nth_element(v->begin(), v->begin() + n/2, v->end());
     m = *(v->begin() + n/2);
-    if (0 == n % 2) {
+    if (!inlist && (0 == n % 2)) {
       std::nth_element(v->begin(), v->begin() + n/2 - 1, v->end());
       m = (m + *(v->begin()+n/2-1)) / 2;
     }
@@ -43,7 +43,7 @@ namespace Gamera {
   }
 
   // specialized median implementation for arbitrary Python lists
-  PyObject* median_py(PyObject* list) {
+  PyObject* median_py(PyObject* list, bool inlist) {
     size_t n,i;
     PyObject *entry, *retval;
     if(!PyList_Check(list))
@@ -57,7 +57,7 @@ namespace Gamera {
       FloatVector* v = FloatVector_from_python(list);
       if (!v)
         throw std::runtime_error("median: Cannot convert list to float type. Is the list inhomogeneous?");
-      double m = median(v);
+      double m = median(v, inlist);
       delete v;
       return Py_BuildValue("f",m);
     }
@@ -65,7 +65,7 @@ namespace Gamera {
       IntVector* v = IntVector_from_python(list);
       if (!v)
         throw std::runtime_error("median: Cannot convert list to int type. Is the list inhomogeneous?");
-      int m = median(v);
+      int m = median(v, inlist);
       delete v;
       return Py_BuildValue("i",m);
     }

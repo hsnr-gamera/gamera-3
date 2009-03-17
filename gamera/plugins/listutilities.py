@@ -74,10 +74,14 @@ example:
    a = [P(0,0), P(1,1), P(2,0)]
    p = median(a)
 
-When the list entries are of type *int* or *float*, the median is for an
-even list size the mean between the two middle values. For user defined
-types, the returned median is always a list entry, because arithmetic
-computations do not make sense in this case.
+When the parameter *inlist* is ``True``, the median is always a list entry,
+even for lists of even size. Otherwise, the median is for an
+even size list of *int* or *float* values the mean between the two middle
+values. So if you need the median for a pivot element, set *inlist* to
+``True``.
+
+For user defined types, the returned median is always a list
+entry, because arithmetic computations do not make sense in this case.
 
 .. note::
 
@@ -91,10 +95,11 @@ computations do not make sense in this case.
     pure_python = 1
     self_type = None
     return_type = Class("m")
-    args = Args([Class("list")])
+    args = Args([Class("list"),
+                 Check("inlist", check_box="always from list", default=False)])
     author = "Christoph Dalitz"
-    def __call__(list):
-        return _listutilities.median_py(list)
+    def __call__(list, inlist=False):
+        return _listutilities.median_py(list, inlist)
     __call__ = staticmethod(__call__)
 
 class median_py(PluginFunction):
@@ -102,7 +107,7 @@ class median_py(PluginFunction):
     category = None
     self_type = None
     return_type = Class("m")
-    args = Args([Class("list")])
+    args = Args([Class("list"), Check("inlist")])
     author = "Christoph Dalitz"
 
 class ListUtilitiesModule(PluginModule):

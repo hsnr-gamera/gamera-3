@@ -272,7 +272,16 @@ Settings
 ````````
 
 Settings are various parameters that control the behavior of the
-classifier.
+classifier. While some are only accessible through the methods given below,
+the following settings are plain properties of all kNN classifier classes:
+
+*num_k*
+    the number *k* of neighbors to be considered
+
+*distance_type*
+    the distance measure for neighborhood. Can be one of
+    ``CITY_BLOCK`` (default), ``EUCLIDEAN`` or ``FAST_EUCLIDEAN``
+
 
 .. docstring:: gamera.knn kNNInteractive change_feature_set
 
@@ -289,6 +298,8 @@ Evaluation
 
 ``kNNInteractive``
 ''''''''''''''''''
+
+.. docstring:: gamera.knn kNNInteractive __init__
 
 .. docstring:: gamera.knn kNNInteractive noninteractive_copy
 

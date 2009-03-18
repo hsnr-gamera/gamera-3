@@ -329,7 +329,7 @@ Generates features for the given glyph.
 
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
    def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
-      """**kNNInteractive** (ImageList *database* = ``[]``, *features* = 'all', bool *perform_splits* = ``True``)
+      """**kNNInteractive** (ImageList *database* = ``[]``, *features* = 'all', bool *perform_splits* = ``True``, int *num_k* = 1)
 
 Creates a new kNN interactive classifier instance.
 

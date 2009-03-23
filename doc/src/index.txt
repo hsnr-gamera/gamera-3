@@ -111,6 +111,11 @@ Reference
 
 .. __: graph.html
 
+- `KdTree objects`__: A simple library for speeding up two (or higher) 
+  dimensional search operations.
+
+.. __: kdtree.html
+
 - `XML format`__: The XML files that Gamera uses to store training data.
 
 .. __: xml_format.html

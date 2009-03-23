@@ -124,6 +124,7 @@ plugin_extensions = gamera_setup.generate_plugins(
 ga_files = glob.glob("src/ga/*.cpp")
 ga_files.append("src/knncoremodule.cpp")
 graph_files = glob.glob("src/graph/*.cpp")
+kdtree_files = glob.glob("src/kdtree/*.cpp")
 
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
@@ -148,6 +149,9 @@ extensions = [Extension("gamera.gameracore",
                         **gamera_setup.extras),
               Extension("gamera.graph", graph_files,
                         include_dirs=["include", "src", "src/graph"],
+                        **gamera_setup.extras),
+              Extension("gamera.kdtree", kdtree_files,
+                        include_dirs=["include", "src", "src/kdtree"],
                         **gamera_setup.extras)]
 extensions.extend(plugin_extensions)
 

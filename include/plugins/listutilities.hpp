@@ -30,7 +30,7 @@ namespace Gamera {
 
   // linear time median implementation for vectors of arithmetic objects
   template<class T>
-  T median(std::vector<T>* v, bool inlist) {
+  T median(std::vector<T>* v, bool inlist=false) {
     T m;
     size_t n = v->size();
     std::nth_element(v->begin(), v->begin() + n/2, v->end());
@@ -43,7 +43,7 @@ namespace Gamera {
   }
 
   // specialized median implementation for arbitrary Python lists
-  PyObject* median_py(PyObject* list, bool inlist) {
+  PyObject* median_py(PyObject* list, bool inlist=false) {
     size_t n,i;
     PyObject *entry, *retval;
     if(!PyList_Check(list))

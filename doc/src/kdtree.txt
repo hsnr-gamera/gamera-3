@@ -1,0 +1,208 @@
+======================
+Gamera kd-tree library
+======================
+
+Introduction
+------------
+
+A *kd-tree* is multidimensional generalization of a binary
+search tree. It can be used efficiently for range queries and nearest
+neighbor searches, provided the dimension is not to high. In document
+analysis problems, the dimension is typically two, so that kd-trees
+can be a powerful utility for layout analysis problems.
+
+A detailed introduction to kd-trees can be found in the literature:
+
+- for an introduction to kd-trees and basic properties, see [deBerg2000]_
+- more algorithms for kd-trees can be found in the original article 
+  [Bentley1975]_
+- none of the above references covers nearest neighbor
+  searches in kd-trees; these are coverd in [Friedman1977]_
+
+
+Examples
+--------
+
+Here is an example for looking up the three nearest neighbors to
+a given point from a set of sample points:
+
+.. code:: Python
+
+   from gamera.kdtree import *
+
+   points = [(1,4), (2,4), (1,5), (3,6), (8,9),
+             (2,7), (4,4), (5,5), (4,6), (8,3)]
+   nodes = [KdNode(p) for p in points]
+   tree = KdTree(nodes)
+
+   # neighbors to a sample point not from the set
+   point = [5,6]
+   k = 3
+   knn = tree.k_nearest_neighbors(point, k)
+   print "%i neighbors of (%i,%i):" % (k,point[0], point[1]),
+   for node in knn:
+       print "(%i,%i)" % (node.point[0], node.point[1]),
+   print "" # final newline
+
+   # neighbors to a sample point from the set
+   # we must query k+1 neighbors, because one of them is
+   # the sample point (the first entry in the returned list)
+   point = [5,5]
+   k = 3
+   knn = tree.k_nearest_neighbors(point, k+1)
+   print "%i neighbors of (%i,%i):" % (k,point[0], point[1]),
+   for node in knn[1:]:
+       print "(%i,%i)" % (node.point[0], node.point[1]),
+   print "" # final newline
+
+The property *KdNode.data* can store an arbitrary Python object
+associated with the point. The following example represents each
+connected component by its middle point and stores the actual
+CC with the point in the node:
+
+.. code:: Python
+
+   ccs = image.cc_analysis()
+   nodes = [KdNode([(cc.offset_x+cc.ncols)/2, (cc.offset_y+cc.nrows)/2], cc) \
+            for cc in ccs]
+
+
+The Kd-Tree Python API
+----------------------
+
+
+``KdNode`` objects
+''''''''''''''''''
+
+Each ``KdNode`` has two properties:
+
+ *point*
+   The geometric location of the node as a sequence of coordinate
+   numbers. The coordinate numbers can be floats or ints.
+   This is an immutable property, because changing the geometric
+   location of nodes belonging to an already built kd-tree obviously
+   breaks subsequent search operations.
+
+ *data*
+   An arbitrary Python object connected to the location *point*.
+
+.. docstring:: gamera.kdtree KdNode
+
+``KdTree`` objects
+''''''''''''''''''
+
+Each kd-tree is represented by instances of the ``KdTree`` class.
+Even though there are general kd-tree algorithms to add and remove
+nodes dynamically (see [Bentley1975]_), the present implementation
+does not support alteration of a once built tree. This has the
+consequence that tree nodes must be passed to the contructor of
+``KdTree``.
+
+A ``KdTree`` has the following (read only) properties:
+
+ *dimension*
+   The dimension of the kd-tree. This is automatically determined
+   by the constructor.
+
+.. docstring:: gamera.kdtree KdTree
+
+.. docstring:: gamera.kdtree KdTree k_nearest_neighbors
+
+
+The Kd-Tree C++ API
+-------------------
+
+The module ``gamera.kdtree`` is only a thin Python wrapper around
+a C++ class ``kdtree``. This can also be used directly in C++ plugins.
+
+Compilation and linkage
+'''''''''''''''''''''''
+
+The header file *kdtree.hpp* declares the necessary structures in
+the namespace ``Gamera::Kdtree``. It is installed with the other gamera
+header files, and can thus be included with
+
+.. code:: CPP
+
+   #include "kdtree.hpp"
+   using namespace Gamera::Kdtree;
+
+The tricky part is getting your plugin module to be linked with the
+actual kdtree implementation. There are two ways, depending whether
+you are working on the gamera core code or on a separate toolkit.
+
+In the gamera core code, you can simply add the file ``kdtree.cpp``
+to the ``cpp_sources`` property in the plugin Python interface:
+
+.. code:: Python
+
+   class ExampleModule(PluginModule):
+       category = "MyPlugins"
+       cpp_headers=["myplugins.hpp"]
+       cpp_sources=["src/kdtree.cpp"]
+       functions = [myplugin1, myplugin2]
+   module = ExampleModule()
+
+In a toolkit, you can theoretically specify the absolute path to the location
+of *kdtree.cpp* in ``cpp_cources``, but this would not be portable because
+it depends on the path of your local copy of the gamera source code. In
+this case, it is therefore better to include copies of the files 
+*kdtree.hpp* and *kdtree.cpp* from the gamera sources in your toolkit
+and set ``cpp_sources`` to the relative path in your toolkit.
+
+
+Usage
+'''''
+
+For normal use of the kdtree, you will need the classes 
+``CoordPoint`` (a typedef for ``vector<double>``), ``kdnode``, 
+``KdNodeVector``, and ``kdtree``. Beside the property ``point``, a
+``kdnode`` can also store an arbitrary pointer as ``data``. See
+the header file *kdtree.hpp* for details.
+
+Here is a usage example for a nearest neighbor search:
+
+.. code:: CPP
+
+   // set points for building the tree
+   KdnodeVector nodes;
+   double points[][2] = {
+     {1,4}, {2,4}, {1,5}, {3,6}, {8,9},
+     {2,7}, {4,4}, {5,5}, {4,6}, {8,3},
+     {-20,-20} // array terminator
+   };
+   size_t i;
+   for (i=0; points[i][0]>=-1.0; i++) {
+     CoordPoint p;
+     p.push_back(points[i][0]);
+     p.push_back(points[i][1]);
+     nodes.push_back(kdnode(p));
+   }
+
+   // build the tree
+   kdtree tree(&nodes);
+
+   // find the three nearest neighbors to (5,6)
+   KdnodeVector neighbors;
+   CoordPoint point(2);
+   point[0] = 5;
+   point[1] = 6;
+   tree.k_nearest_neighbors(point, 3, &neighbors);
+
+
+
+References
+----------
+
+.. [deBerg2000] M. de Berg, M. van Kreveld, M. Overmars, O. Schwarzkopf:
+   *Computational Geometry.* Second edition, Springer (2000)
+
+.. [Bentley1975] J.L. Bentley: *Multidimensional Binary Search Trees Used
+   for Associative Searching.* Communications of the ACM 18,
+   pp. 509-517 (1975)
+
+.. [Friedman1977] J.H. Friedman, J.L. Bentley, R.A. Finkel:
+   *An Algorithm for Finding Best Matches in Logarithmic Expected Time.*
+   ACM Transcations on Mathematical Software 3, pp. 209-226 (1977)
+
+

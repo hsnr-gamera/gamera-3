@@ -8,15 +8,22 @@ Microsoft Windows
 Installing from source
 ----------------------
 
-Currently, Gamera can be built using the Cygwin/MingW32/GNU toolset.
-
+Currently, Gamera can be built using the MingW32/GNU toolset.
 The "officially supported" configuration, (i.e. the one that the
-Gamera developers use) is to use the MingW32 compiler installed inside
-of Cygwin to build for the official Python.org Python.  Other
-configurations are possible, such as Microsoft Visual Studio or the
-standalone Mingw32 toolchain, but they are not tested on a regular
-basis.  If you have success with other configurations, please consider
-contributing your experiences to this documentation.
+Gamera developers use) is to use the MingW32 compiler
+to build for the official Python.org Python. This can be done in
+one of the following two ways:
+
+- with the `standalone Mingw32`__ toolchain (easiest solution)
+
+.. __: #mingw32
+
+- or with the MingW32 compiler installed `inside of Cygwin`__
+
+.. __: #cygwin
+
+If you have success with other compilers and configurations,
+please consider contributing your experiences to this documentation.
 
 Prerequisites
 `````````````
@@ -26,16 +33,38 @@ Prerequisites
 - wxPython 2.6.x or later (wxPython 2.8.x or later recommended for
   full functionality)
 
-Cygwin/Mingw32
-``````````````
+.. _mingw32:
+
+Standalone Mingw32
+``````````````````
+
+Install the Mingw32 port of gcc from http://mingw.org/. Make sure
+that you do not only install *gcc-core*, but also *g++* and *make*.
+Add the *bin* subdirectory of your Mingw32 installation to
+the environment variable ``PATH``.
+
+Assuming you have installed Python to ``C:\Python25``, you can
+then compile gamera at a DOS command prompt from the root directory
+of the gamera source code with::
+
+  python setup.py build --compiler=mingw32 bdist_wininst
+
+This will create a Windows installer, including uninstallation support,
+in the *dist* subdirectory. It can be started with a double click
+in the Explorer, or from the DOS command prompt with::
+
+  start dist\gamera-X.X.X-win32.exe
+
+
+.. _cygwin:
+
+Mingw32 inside Cygwin
+`````````````````````
 
 Use the installer from http://www.cygwin.com/ to install Cygwin,
 including the ``g++-mingw32`` compiler and the ``MingW32`` libraries.
 If you plan to track development of Gamera, you will probably also
 want to install ``subversion``.
-
-Standard Build and Install
-``````````````````````````
 
 The important thing to note here is that we are using Cygwin's Mingw32
 compiler to build for the standard (non-Cygwin) Python from
@@ -63,22 +92,10 @@ replace the symbolic link with the actual compiler executable::
   mv /usr/bin/gcc-3 /usr/bin/gcc
   mv /usr/bin/g++-3 /usr/bin/g++
 
-Gamera is built using the Python-standard Distutils system. Open a
-Cygwin command prompt and type::
-
-  python setup.py build --compiler=mingw32
-
-If you just want to install Gamera without the ability to uninstall::
-
-  python setup.py build --compiler=mingw32 install
-
-If you'd like a real Windows installer, including uninstallation
-support, use the Python Distutils installer generator::
+From here on, you can proceed as for the standalone Mingw32 toolchain,
+i.e.::
 
   python setup.py build --compiler=mingw32 bdist_wininst
-
-Then run::
-
   dist/gamera-X.X.X-win32.exe
 
 

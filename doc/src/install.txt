@@ -53,7 +53,17 @@ Ensure you are using the correct Python by typing::
 The result should be ``/cygdrive/c/Python25/python.exe``, not
 ``/usr/bin/python``.
 
-Gamera is built using the Python-standard Distutils system.  Open a
+Beware that the file ``/usr/bin/gcc`` installed by Cygwin actually
+is *not* the compiler executable, but a symbolic link. Symbolic
+links are not supported by MS Windows, but are a Cygwin-only
+feature. This means that the Python Distutils system cannot execute
+``/usr/bin/gcc`` and the build command will fail. To fix this,
+replace the symbolic link with the actual compiler executable::
+
+  mv /usr/bin/gcc-3 /usr/bin/gcc
+  mv /usr/bin/g++-3 /usr/bin/g++
+
+Gamera is built using the Python-standard Distutils system. Open a
 Cygwin command prompt and type::
 
   python setup.py build --compiler=mingw32

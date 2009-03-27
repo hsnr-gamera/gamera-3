@@ -84,15 +84,14 @@ kdtree_node* kdtree::build_tree(size_t depth, size_t a, size_t b)
   kdtree_node* node = new kdtree_node();
   node->lobound = lobound;
   node->upbound = upbound;
+  node->cutdim = depth % dimension;
   if (b-a <= 1) {
     node->dataindex = a;
     node->point = allnodes[a].point;
-    // node->cutdim not necessary: no further cutting
   } else {
-    node->cutdim = depth % dimension;
-    std::sort(allnodes.begin()+a, allnodes.begin()+b,
-              compare_dimension(node->cutdim));
     m = (a+b)/2;
+    std::nth_element(allnodes.begin()+a, allnodes.begin()+m,
+                     allnodes.begin()+b, compare_dimension(node->cutdim));
     node->point = allnodes[m].point;
     cutval = allnodes[m].point[node->cutdim];
     node->dataindex = m;

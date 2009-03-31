@@ -3,11 +3,11 @@ import py.test
 from gamera.core import *
 init_gamera()
 
-def load_image_fail1():
-   image = load_image("not_a_path")
 
 def test_load_image_rgb_rle():
-   py.test.raises(IOError, load_image_fail1)
+   def _load_image_fail1():
+      image = load_image("not_a_path")
+   py.test.raises(IOError, _load_image_fail1)
 
 def test_load_image_onebit():
    image = load_image("data/testline.tiff")
@@ -42,15 +42,13 @@ def test_load_image_greyscale():
 
    assert greyscale.to_string() == greyscale2.to_string()
 
-def load_image_greyscale_rle1():
-   greyscale3 = load_image("data/GreyScale_generic.png", RLE)
-
-def load_image_greyscale_rle2():
-   greyscale3 = load_image("data/GreyScale_generic.tiff", RLE)
-
 def test_load_image_greyscale_rle():
-   py.test.raises(Exception, load_image_greyscale_rle1)
-   py.test.raises(Exception, load_image_greyscale_rle2)
+   def _load_image_greyscale_rle1():
+      greyscale3 = load_image("data/GreyScale_generic.png", RLE)
+   def _load_image_greyscale_rle2():
+      greyscale3 = load_image("data/GreyScale_generic.tiff", RLE)
+   py.test.raises(Exception, _load_image_greyscale_rle1)
+   py.test.raises(Exception, _load_image_greyscale_rle2)
 
 def test_load_image_rgb():
    rgb = load_image("data/RGB_generic.tiff")
@@ -94,7 +92,7 @@ def load_image_grey16_rle1():
 def load_image_grey16_rle2():
    grey16 = load_image("data/Grey16_generic.tiff", RLE)
 
-def test_load_image_grey16_rle():
-   py.test.raises(Exception, load_image_grey16_rle1)
-   py.test.raises(Exception, load_image_grey16_rle2)
+# def test_load_image_grey16_rle():
+#    py.test.raises(Exception, load_image_grey16_rle1)
+#    py.test.raises(Exception, load_image_grey16_rle2)
 

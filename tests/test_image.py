@@ -25,20 +25,23 @@ def make_test(inner):
 def _test_image_constructors(type, value, storage):
    def _fail1():
       Image(Size(50, 50), Point(25, 25), type, storage)
-   image = Image(25, 25, 50, 50, type, storage) # deprecated call
+   #image = Image(25, 25, 50, 50, type, storage) # deprecated call
+   image = Image(Point(25,25), Dim(50,50), type, storage) 
    assert image.data.storage_format == storage
    assert image.data.pixel_type == type
    assert image.ul == Point(25, 25)
    assert image.size == Size(49, 49)
-   assert image.dimensions == Dimensions(50, 50) # deprecated call
+   #assert image.dimensions == Dimensions(50, 50) # deprecated call
    assert image.dim == Dim(50, 50)
    image2 = Image(Point(25, 25), Point(74, 74), type, storage)
    assert Rect(image) == Rect(image2)
    image3 = Image(Point(25, 25), Size(49, 49), type, storage)
    assert Rect(image) == Rect(image3)
-   image4 = Image(Point(25, 25), Dimensions(50, 50), type, storage) # deprecated call
+   #image4 = Image(Point(25, 25), Dimensions(50, 50), type, storage) # deprecated call
+   image4 = Image(Point(25, 25), Dim(50, 50), type, storage)
    assert Rect(image) == Rect(image4)
-   image5 = Image(Rect(25, 25, 50, 50), type, storage) # deprecated call
+   #image5 = Image(Rect(25, 25, 50, 50), type, storage) # deprecated call
+   image5 = Image(Rect(Point(25,25), Point(74,74)), type, storage)
    assert Rect(image) == Rect(image5)
    image6 = Image(Point(25, 25), Dim(50, 50), type, storage)
    assert Rect(image) == Rect(image6)
@@ -48,11 +51,13 @@ test_image_constructors = make_test(_test_image_constructors)
 
 def _test_subimage(type, value, storage):
    def _fail1():
-      image.subimage(20, 20, 10, 10)
+      image.subimage(Point(20,20), Dim(10,10))
    def _fail2():
-      image.subimage(30, 30, 50, 50)
-   image = Image(25, 25, 50, 50, type, storage) # deprecated call
-   image2 = image.subimage(30, 30, 40, 40) # deprecated call
+      image.subimage(Point(30,30), Dim(50,50))
+   #image = Image(25, 25, 50, 50, type, storage) # deprecated call
+   image = Image(Point(25,25), Dim(50,50), type, storage)
+   #image2 = image.subimage(30, 30, 40, 40) # deprecated call
+   image2 = image.subimage(Point(30,30), Dim(40,40))
    assert image2.ul == Point(30, 30)
    assert image2.data == image.data
    image3 = image.subimage(Point(30, 30), Point(69, 69))
@@ -61,10 +66,11 @@ def _test_subimage(type, value, storage):
    image4 = image.subimage(Point(30, 30), Size(39, 39))
    assert Rect(image4) == Rect(image2)
    assert image4.data == image.data
-   image5 = image.subimage(Point(30, 30), Dimensions(40, 40)) # deprecated call
+   #image5 = image.subimage(Point(30, 30), Dimensions(40, 40)) # deprecated call
+   image5 = image.subimage(Point(30, 30), Point(69, 69))
    assert Rect(image5) == Rect(image2)
    assert image5.data == image.data
-   image6 = image.subimage(Rect(30, 30, 40, 40))
+   image6 = image.subimage(Rect(Point(30,30), Dim(40,40)))
    assert Rect(image6) == Rect(image2)
    assert image6.data == image.data
    image7 = image.subimage(Point(30, 30), Dim(40, 40))
@@ -72,9 +78,11 @@ def _test_subimage(type, value, storage):
    assert image7.data == image.data
    py.test.raises(RuntimeError, _fail1)
    py.test.raises(RuntimeError, _fail2)
-   image7 = image2.subimage(35, 35, 20, 20) # deprecated call
+   #image7 = image2.subimage(35, 35, 20, 20) # deprecated call
+   image7 = image2.subimage(Point(35,35), Dim(20,20))
    assert image7.data == image.data
-   image8 = image7.subimage(32, 32, 25, 25) # deprecated call
+   #image8 = image7.subimage(32, 32, 25, 25) # deprecated call
+   image8 = image7.subimage(Point(32,32), Dim(25,25))
    assert image8.ul == Point(32, 32)
    assert image8.data == image.data
 test_subimage = make_test(_test_subimage)

@@ -98,7 +98,11 @@ void PNG_info_specific(const char* filename, FILE* & fp, png_structp& png_ptr, p
 }
 
 void PNG_close(FILE* fp, png_structp png_ptr, png_infop info_ptr, png_infop end_info) {
-  png_read_end(png_ptr, end_info);
+  // As PNG_close() might be called when png_read_image() has not yet been
+  // used (premature termination), png_read_end() might crash.
+  // We therefore omit the call to png_read_end(), as we are not
+  // interested in the comment texts following the image data anyway.
+  //png_read_end(png_ptr, end_info);
   png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
   fclose(fp);
 }

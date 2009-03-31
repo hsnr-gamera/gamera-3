@@ -41,9 +41,9 @@ static PyTypeObject SizeType = {
 
 static PyGetSetDef size_getset[] = {
   { (char *)"width", (getter)size_get_width, (setter)size_set_width,
-    (char *)"(int property)\n\nThe current width", 0 },
+    (char *)"(int property)\n\nThe width of an object is the right boundary minus the left. This is the same as the number of columns *minus one.*", 0 },
   { (char *)"height", (getter)size_get_height, (setter)size_set_height,
-    (char *)"(int property)\n\nThe current height", 0 },
+    (char *)"(int property)\n\nThe height of an object is the lower boundary minus the upper boundary (remember that *y* is counted in the negative direction). This is the same as the number of rows *minus one*.", 0 },
   { NULL }
 };
 
@@ -147,7 +147,7 @@ void init_SizeType(PyObject* module_dict) {
   SizeType.tp_richcompare = size_richcompare;
   SizeType.tp_free = NULL; // _PyObject_Del;
   SizeType.tp_repr = size_repr;
-  SizeType.tp_doc = CHAR_PTR_CAST "Size stores a size (*width*, *height*)";
+  SizeType.tp_doc = CHAR_PTR_CAST "Size stores a size (*width*, *height*). This is almost the same as ``Dim``, but stores the number of columns/rows minus one:\n\n  *width* == *ncols* - 1\n\n  *height* == *nrows* - 1";
   PyType_Ready(&SizeType);
   PyDict_SetItemString(module_dict, "Size", (PyObject*)&SizeType);
 }

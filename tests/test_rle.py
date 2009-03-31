@@ -27,7 +27,7 @@ def test_rle1():
    # use iterators in unusual ways
    assert image1.projection_rows() == image2.projection_rows()
    assert image1.projection_cols() == image2.projection_cols()
-   assert image1.most_frequent_black_vertical_run() == image2.most_frequent_black_vertical_run()
-   assert image1.most_frequent_black_horizontal_run() == image2.most_frequent_black_horizontal_run()
+   assert image1.most_frequent_run("black","vertical") == image2.most_frequent_run("black","vertical")
+   assert image1.most_frequent_run("black","horizontal") == image2.most_frequent_run("black","horizontal")
 
    

@@ -16,27 +16,78 @@ uses the great `py.test`__ framework.
   only needed for those developers who wish to port Gamera to new
   platforms or write unit tests for new code.
 
-.. __: http://codespeak.net/py/current/doc/
+.. __: http://codespeak.net/py/dist/test.html
 
 This document does not attempt to replicate the `py.test`__
 documentation, and will only discuss Gamera-specific additions.
 
-.. __: http://codespeak.net/py/current/doc/
+.. __: http://codespeak.net/py/dist/test.html
 
-Mile-high view
-==============
+
+Running the provided unit tests
+===============================
 
 1. Install and test `py.test` using the instructions here__.
 
-.. __: http://codespeak.net/py/current/doc/
+.. __: http://codespeak.net/py/dist/test.html
 
-2. From the gamera/tests directory, run all the unit tests with the
+2. From the *gamera/tests* directory, run all the unit tests with the
    command::
 
-     py.test
+     py.test --tb=no
 
-3. New unit tests can be added following the instructions in the
-   py.test documentation.
+   Alternatively, you can run an individual test, say *test_graph.py* with::
+
+     py.test --tb=no test_graph.py
+
+   In case of failures you can obtain more information
+   by omitting the option "--tb=no".
+
+3. If you only want to run a single test function from a unit test
+   script, use the "keyword" option "-k", e.g.::
+
+     py.test -k test_glyphs_from_xml_gz test_xml.py
+
+
+Adding new unit tests
+=====================
+
+A new unit test, say *test_mystuff.py*, is added by the following steps:
+
+1. Create a new test script *test_mystuff.py* which imports gamera
+   and py.test:
+
+.. code:: Python
+
+   import py.test
+   from gamera.core import *
+   init_gamera()
+
+2. Define for each test a function with the prefix ``test_``. py.test
+   will run all these functions. To verify certain results, use the
+   ``assert`` statement, e.g.:
+
+.. code:: Python
+
+   def test_something:
+       img = load_image("data/OneBit_generic.png")
+	   assert img.myplugin(3) == 42
+
+3. To verify that certain circumstances (e.g., wrong input data) lead
+   to an exception, use ``py.test.raises``:
+
+.. code:: Python
+
+   def test_wronginput:
+       def _fail(img):
+           img.myplugin("should only be numeric")
+       img = load_image("data/OneBit_generic.png")
+       py.test.raises(Exception, _fail, img)
+
+For more details, see the `py.test documentation`__.
+
+.. __: http://codespeak.net/py/dist/test.html
+
 
 Testing Gamera plugins
 ======================

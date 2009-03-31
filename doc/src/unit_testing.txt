@@ -69,7 +69,7 @@ A new unit test, say *test_mystuff.py*, is added by the following steps:
 
 .. code:: Python
 
-   def test_something:
+   def test_something():
        img = load_image("data/OneBit_generic.png")
 	   assert img.myplugin(3) == 42
 
@@ -78,7 +78,7 @@ A new unit test, say *test_mystuff.py*, is added by the following steps:
 
 .. code:: Python
 
-   def test_wronginput:
+   def test_wronginput():
        def _fail(img):
            img.myplugin("should only be numeric")
        img = load_image("data/OneBit_generic.png")

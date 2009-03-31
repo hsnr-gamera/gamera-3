@@ -205,6 +205,10 @@ PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   Kdtree::CoordPoint p(dimension);
   for (i=0; i<n; i++) {
     obj1 = PyList_GetItem(list,i);
+    if (!PyObject_TypeCheck(obj1, &KdNodeType)) {
+      PyErr_SetString(PyExc_RuntimeError, "KdTree: given nodes must be list of KdNode's");
+      return 0;
+    }
     obj2 = PyObject_GetAttrString(obj1,"point"); // beware: INCREF
     if (PyList_Size(obj2) != (int)dimension) {
       Py_DECREF(obj2);

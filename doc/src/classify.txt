@@ -74,7 +74,12 @@ automatic classifier, its classification is stored in the member variable
 classifications, so that a classifier can return a number of different
 possibilities with different confidences.  Each classification entry
 is a tuple of the form (float *confidence*, string *name*).  The
-confidence value is in the range 0.0 - 1.0, where 1.0 is most confident.
+"confidence" value is set to (1-*dist*/*max_dist*)^10, where 
+*dist* is the distance to the closest prototype of this class, and
+*max_dist* is the distance to the farthest prototype of the entire
+training population. Thus the "confidence" is always between 0.0 and
+1.0, where 1.0 only occurs for feature values that exactly match a training
+sample.
 
 For example, if a symbol is most likely a lower-case *b*, but might
 also be a lower-case *d*, its ``id_name`` variable might be:

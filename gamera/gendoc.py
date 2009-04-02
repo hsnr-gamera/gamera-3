@@ -436,7 +436,16 @@ class PluginDocumentationGenerator:
             else:
                display_arguments = arguments = []
             result = func.__call__(*tuple(arguments))
-         results.append((result, src_image, pixel_type, display_arguments))
+         displayargs = None
+         if display_arguments != None:
+            displayargs = []
+            for da in display_arguments:
+               if isinstance(da,str):
+                  # string args must be displayed with quotes
+                  displayargs.append("\"" + da + "\"")
+               else:
+                  displayargs.append(da)
+         results.append((result, src_image, pixel_type, displayargs))
       return results
 
    def method_example(self, func, level, images, s):

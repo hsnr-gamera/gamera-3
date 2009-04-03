@@ -47,7 +47,7 @@ Assuming you have installed Python to ``C:\Python25``, you can
 then compile gamera at a DOS command prompt from the root directory
 of the gamera source code with::
 
-  python setup.py build --compiler=mingw32 bdist_wininst
+  C:\Python25\python setup.py build --compiler=mingw32 bdist_wininst
 
 This will create a Windows installer, including uninstallation support,
 in the *dist* subdirectory. It can be started with a double click

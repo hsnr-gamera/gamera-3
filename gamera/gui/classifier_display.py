@@ -1820,7 +1820,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       except:
          event.Skip()
          return
-      if data != None:
+      if data != None and self.toplevel.text.GetValue() != data:
          self.toplevel.text.SetValue(data)
          self.toplevel.text.SetInsertionPointEnd()
       event.Skip()

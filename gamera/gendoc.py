@@ -436,12 +436,12 @@ class PluginDocumentationGenerator:
             else:
                display_arguments = arguments = []
             result = func.__call__(*tuple(arguments))
+         # add quotes around string args for display
          displayargs = None
          if display_arguments != None:
             displayargs = []
             for da in display_arguments:
                if isinstance(da,str):
-                  # string args must be displayed with quotes
                   displayargs.append("\"" + da + "\"")
                else:
                   displayargs.append(da)

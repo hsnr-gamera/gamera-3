@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.1.2, Apr 07, 2009
+---------------------------
+
+ - fixed an infinite loop in classifier dialog on Windows
+
  - new module KdTree for fast two dimensional searches
 
  - now also builds out-of-the box on FreeBSD (thanks to David Blewett)

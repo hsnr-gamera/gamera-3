@@ -1,8 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
-Version 3.1.2, Apr 07, 2009
----------------------------
+Version 3.1.2a, Apr 09, 2009
+----------------------------
+
+TODO - Windows only: dots cannot be entered in class names in classifier GUI
 
  - fixed an infinite loop in classifier dialog on Windows
 

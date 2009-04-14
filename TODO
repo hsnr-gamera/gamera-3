@@ -2,7 +2,6 @@ ToDo list for Gamera
 ====================
 
  - Porting to Python 2.6
- - Windows issue: training dialog currently broken
  - Replace the deprecated Numeric/Numarray with NumPy.
  - More documentation of wrapped Vigra functions
  - More page layout analysis resp. page segmentation methods.

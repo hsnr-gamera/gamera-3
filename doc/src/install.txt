@@ -198,8 +198,75 @@ uses Cocoa, and feels much more like a standard Macintosh
 application.  Please follow the instructions for *either* X11 or Cocoa
 install below.
 
+
+Native (Cocoa) build
+--------------------
+
+Prerequisites
+`````````````
+
+Gamera installs out of the box on Mac OS-X 10.4 (Tiger) and 10.5 (Leopard).
+The only prerequisite is to install XCode, which is shipped with the
+OS-X installation DVD, but is not installed by default.
+
+It should be noted that OS-X 10.4 comes with the unstable branch 2.5 of
+wxPython. So far we have not yet encountered any problems with this
+version, but if you have any problems, please consider to install
+wxPython 2.6 instead. This is *not* possible from the binary
+installers from http://www.wxpython.org/, because there is none for
+Python 2.3, and the other Python versions require a particular prerelease
+of Xcode to build extensions, that is no longer available.
+So if you decide to upgrade wxPython on OS-X 10.4, you must do it from
+the source release of wxPython 2.6.
+
+Standard Build and Install
+``````````````````````````
+
+Gamera is built using the Python-standard Distutils system.
+
+To build Gamera, open a X11 terminal and type::
+
+  python setup.py build
+
+and then to install (you'll need to have admin priviledges)::
+
+  sudo python setup.py install
+
+The scripts can be installed by::
+
+  sudo python setup.py install_scripts -d /usr/bin
+
+.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
+  place on the PATH.  If you do not specify it, the scripts are by
+  default installed to
+  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
+  So you can also simply add this directory to your PATH environment
+  variable and forget about the *install_scripts* step.
+
+Installing without root priviledges
+```````````````````````````````````
+
+The instructions for `installing without root (administrator)
+priviledges`__ can also be used on Mac OS-X.
+
+__ without_root_
+
+Running
+```````
+
+Start the Terminal application and run the ``gamera_gui`` script.
+
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the compiled version of
+  Gamera.
+
+
 X11 build
 ---------
+
+Please note that this build is no longer maintained by the Gamera developers.
+So use it only when the Cocoa is not possible for some reason (e.g. on a 
+legacy OS-X 10.3 system).
 
 Prerequisites
 `````````````
@@ -269,62 +336,3 @@ Start an X11 terminal and run the ``gamera_gui`` script.
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of
   Gamera.
-
-
-Native (Cocoa) build
---------------------
-
-Prerequisites
-`````````````
-
-- Mac OS-X 10.4 (Tiger) or presumably later
-
-- Python 2.5 downloaded from http://www.python.org/ .  The Python 2.3
-  included with OS-X Tiger will not work.
-
-- wxPython 2.8.x or later, downloaded from
-  http://www.wxpython.org/ .
-
-- XCode 2.4.1, downloaded from
-  http://developer.apple.com/tools/xcode .  The version that shipped
-  on the Tiger installation DVD will not work.
-
-Standard Build and Install
-``````````````````````````
-
-Gamera is built using the Python-standard Distutils system.
-
-To build Gamera, open a X11 terminal and type::
-
-  python setup.py build
-
-and then to install (you'll need to have admin priviledges)::
-
-  sudo python setup.py install
-
-The scripts can be installed by::
-
-  sudo python setup.py install_scripts -d /usr/bin
-
-.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
-  place on the PATH.  If you do not specify it, the scripts are by
-  default installed to
-  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-
-Installing without root priviledges
-```````````````````````````````````
-
-The instructions for `installing without root (administrator)
-priviledges`__ can also be used on Mac OS-X.
-
-__ without_root_
-
-Running
-```````
-
-Start the Terminal application and run the ``gamera_gui`` script.
-
-.. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the compiled version of
-  Gamera.
-

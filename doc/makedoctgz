@@ -1,0 +1,11 @@
+#!/bin/sh
+
+#
+# makedoctgz - makes tar archive from current Gamera docs
+#
+
+NAME="gamera-docs"
+
+ln -s html $NAME
+tar cvzf $NAME.tar.gz $NAME/*
+rm $NAME

@@ -3,6 +3,7 @@ ToDo list for Gamera
 
  - Porting to Python 2.6
  - Replace the deprecated Numeric/Numarray with NumPy.
+ - fix error in image display: after resizing the last row/column is cropped off
  - More documentation of wrapped Vigra functions
  - More page layout analysis resp. page segmentation methods.
    E.g. text/graphics separation and more text line finding

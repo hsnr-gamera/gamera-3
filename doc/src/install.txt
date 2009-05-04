@@ -265,7 +265,7 @@ X11 build
 ---------
 
 Please note that this build is no longer maintained by the Gamera developers.
-So use it only when the Cocoa is not possible for some reason (e.g. on a 
+So use it only when the Cocoa build is not possible for some reason (e.g. on a 
 legacy OS-X 10.3 system).
 
 Prerequisites

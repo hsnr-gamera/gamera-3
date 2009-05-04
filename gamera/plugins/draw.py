@@ -92,9 +92,7 @@ class draw_line(PluginFunction):
   *thickness* = 1.0:
     The thickness of the line (in pixels)
 
-  Based on Po-Han Lin's "Extremely Fast Line Algorithm", which is
-  based on the classical Breshenham's algorithm.
-
+  Based on Po-Han Lin's "Extremely Fast Line Algorithm".
   Freely useable in non-commercial applications as long as credits to
   Po-Han Lin and link to http://www.edepot.com is provided in source
   code and can been seen in compiled executable.

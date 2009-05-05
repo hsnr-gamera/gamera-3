@@ -38,7 +38,7 @@ Prerequisites
 
    The Python 2.6 binary from python.org has been built with
    a version of MS Visual Studio that causes problems when extensions
-   are compiled with Mingw32. The reason is an errenous file
+   are compiled with Mingw32. The reason is an errenous
    file ``libmsvcr90.a`` coming with Mingw32. To fix it, you can
    recreate the file from the DLL ``msvcr90.dll`` that comes with
    Python 2.6 with pexports__ and *dlltool* (the latter is part of Mingw32)::

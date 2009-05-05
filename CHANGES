@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - now compiles with Python 2.6 (thanks to Prapat Suriyaphol)
+
+
 Version 3.1.2, Apr 14, 2009
 ----------------------------
 

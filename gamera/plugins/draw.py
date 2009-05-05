@@ -94,8 +94,8 @@ class draw_line(PluginFunction):
 
   Based on Po-Han Lin's "Extremely Fast Line Algorithm".
   Freely useable in non-commercial applications as long as credits to
-  Po-Han Lin and link to http://www.edepot.com is provided in source
-  code and can been seen in compiled executable.
+  Po-Han Lin and link to http://www.edepot.com/algorithm.html is provided
+  in source code and can been seen in compiled executable.
   """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("start"), FloatPoint("end"), Pixel("value"), Float("thickness")])

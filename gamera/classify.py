@@ -99,12 +99,19 @@ of a joined glyph is classified as HEURISTIC with the prefix
    the given number of nodes will be ignored.  This is a hack to
    prevent the runtime of the algorithm from exploding.
 
-The list *glyphs* is never modified.  Instead, the function returns a
-2-tuple (pair) of lists: (*add*, *remove*).  *add* is a list of glyphs
-that were created by classifying any glyphs as a split (See
-Initialization_) or grouping.  *remove* is a list of glyphs that are
-no longer valid due to reclassifying glyphs from a split to something
-else.
+The function returns a 2-tuple (pair) of lists: (*add*, *remove*).
+*add* is a list of glyphs that were created by classifying any glyphs
+as a split (See Initialization_) or grouping.  *remove* is a list of
+glyphs that are no longer valid due to reclassifying glyphs from a
+split to something else.
+
+The list *glyphs* is never modified.  Instead, detected parts of groups
+are classified as ``_group._part.*``, where ``*`` stands for the class
+name of the grouped glyph. This means that after calling this function,
+you must remove the *remove* CCs and all CCs with a class name beginning with
+```_group._part`` from *glyph*, and you must add all glyphs from *add*
+to it. Or you can instead call group_and_update_list_automatic_, which does 
+this automatically for you.
 """
       glyphs = [x for x in glyphs if x.classification_state != 3]
       if len(glyphs) == 0:

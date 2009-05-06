@@ -27,7 +27,7 @@
 FUDGE_AMOUNT = 3
 FUDGE_AMOUNT_2 = 6
 
-from gamera.core import Rect
+from gamera.core import Rect, Point, Dim
 
 # This is a factory function that looks like a constructor
 def Fudge(o, amount = FUDGE_AMOUNT):

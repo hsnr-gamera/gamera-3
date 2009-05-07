@@ -23,12 +23,22 @@
 using namespace Gamera;
 
 extern "C" {
+  // we use __new__ instead of __init__ as constructor...
   static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
 			     PyObject* kwds);
   static PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
   static PyObject* cc_new(PyTypeObject* pytype, PyObject* args,
 				 PyObject* kwds);
+  // ...but we must implement dummy __init__ functions
+  // to suppress deprecation warnings in python 2.6
+  static int image_init(PyObject* self, PyObject* args, PyObject* kwds)
+  { return 0; };
+  static int sub_image_init(PyObject* self, PyObject* args, PyObject* kwds)
+  { return 0; };
+  static int cc_init(PyObject* self, PyObject* args, PyObject* kwds)
+  { return 0; };
+  // more useful stuff...
   static void image_dealloc(PyObject* self);
   static int image_traverse(PyObject* self, visitproc visit, void* arg);
   static int image_clear(PyObject* self);
@@ -417,7 +427,6 @@ static PyObject* _sub_image_new(PyTypeObject* pytype, PyObject* py_src, const Po
   ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)py_src)->m_x)->resolution());
   return init_image_members(o);
 }
-
 
 PyObject* sub_image_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);
@@ -1110,6 +1119,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_getset = image_getset;
   ImageType.tp_methods = image_methods;
   ImageType.tp_new = image_new;
+  ImageType.tp_init = (initproc)image_init;
   ImageType.tp_getattro = PyObject_GenericGetAttr;
   ImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   ImageType.tp_free = NULL; //_PyObject_Del;
@@ -1150,6 +1160,7 @@ void init_ImageType(PyObject* module_dict) {
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   SubImageType.tp_base = &ImageType;
   SubImageType.tp_new = sub_image_new;
+  SubImageType.tp_init = (initproc)sub_image_init;
   SubImageType.tp_getattro = PyObject_GenericGetAttr;
   SubImageType.tp_alloc = NULL; // PyType_GenericAlloc;
   SubImageType.tp_free = NULL; // _PyObject_Del;
@@ -1174,6 +1185,7 @@ void init_ImageType(PyObject* module_dict) {
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
   CCType.tp_base = &ImageType;
   CCType.tp_new = cc_new;
+  CCType.tp_init = (initproc)cc_init;
   CCType.tp_getset = cc_getset;
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = NULL;

@@ -47,7 +47,10 @@ def magic_import(name, globals_={}, locals_={}, fromlist=[], level=-1):
       if name == x:
          return None
 
-   return std_import(name, globals_, locals_, fromlist, level)
+   if float(sys.version[0:3]) < 2.45:
+      return std_import(name, globals_, locals_, fromlist)
+   else:
+      return std_import(name, globals_, locals_, fromlist, level)
 
 def magic_import_setup(ignore):
    global plugins_to_ignore

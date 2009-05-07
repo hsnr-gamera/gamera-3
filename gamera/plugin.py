@@ -26,6 +26,7 @@ import new, os, os.path, imp, inspect, sys, copy, sets
 from types import *
 from enums import *
 
+
 plugin_methods = {}
 
 class PluginModule:

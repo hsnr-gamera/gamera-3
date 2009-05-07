@@ -56,7 +56,7 @@ _saveable_types = {
    'str':   str,
    'float': float }
 
-extensions = "XML files (*.xml;*.xml.gz)|*.xml;*.xml.gz"
+extensions = "XML files (*.xml;*.xml.gz)|*.xml;*.xml.gz|All files|*"
 
 class XMLError(Exception):
    pass

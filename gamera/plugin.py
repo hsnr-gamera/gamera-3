@@ -1,8 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+#                         Karl MacMillan, and Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,7 +22,8 @@
 from gamera.args import *
 from gamera import paths
 from gamera import util
-import new, os, os.path, imp, inspect, sys, copy, sets
+import new, os, os.path, imp, inspect, sys, copy
+from gamera.backport import sets
 from types import *
 from enums import *
 
@@ -175,7 +176,7 @@ def methods_flat_category(category, pixel_type=None):
       methods = sets.Set()
       for pixel_type in ALL + [NONIMAGE]:
          # We have to cast the lists to sets here to make Python 2.3.0 happy.
-         methods.union_update(sets.Set(methods_flat_category(category, pixel_type)))
+         methods.update(sets.Set(methods_flat_category(category, pixel_type)))
       return list(methods)
    elif plugin_methods.has_key(pixel_type):
       methods = plugin_methods[pixel_type]

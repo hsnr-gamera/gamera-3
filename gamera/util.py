@@ -571,7 +571,7 @@ class CallbackSet(sets.Set, CallbackObject):
 def get_file_extensions(mode):
    from gamera import plugin
    import os.path
-   import sets
+   from gamera.backport import sets
    methods = plugin.methods_flat_category("File")
    methods = [y for x, y in methods if x.startswith(mode) and not x.endswith("image")]
 
@@ -585,8 +585,8 @@ def get_file_extensions(mode):
       type = "%s Files (%s)|%s" % (method.exts[0].upper(), wildcards, wildcards)
       types.append(type)
       # We have to cast the lists to sets here to make Python 2.3.0 happy.
-      extensions.union_update(sets.Set(method.exts))
-      extensions.union_update(sets.Set([x.upper() for x in method.exts]))
+      extensions.update(sets.Set(method.exts))
+      extensions.update(sets.Set([x.upper() for x in method.exts]))
    all_extensions = ";".join(["*.%s" % x for x in extensions])
    types.insert(0, "All images (%s)|%s" % (all_extensions, all_extensions))
    types.append("All files (*.*)|*.*")

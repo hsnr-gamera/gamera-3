@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+#                         Karl MacMillan, and Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,9 +31,9 @@ class draw_marker(PluginFunction):
   """
   Draws a marker at a given point.
 
-  Coordinates are relative to the offset of the image.  Therefore, if
-  the image offset is (5, 5), a marker at (5, 5) will be in the upper
-  left hand corner of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a marker at (5, 5)
+  will be in the upper left hand corner of the image.
 
   *a*
     The position of the marker.
@@ -57,7 +58,7 @@ class draw_marker(PluginFunction):
                Choice("style", "+ x hollow_square filled_square".split(),
                       default=0),
                Pixel("value")])
-  authors = "Michael Droettboom"
+  author = "Michael Droettboom"
 
   def __doc_example1__(images):
     from random import randint
@@ -76,9 +77,9 @@ class draw_line(PluginFunction):
   """
   Draws a straight line between two points.
 
-  Coordinates are relative to the offset of the image.  Therefore, if
-  the image offset is (5, 5), a line at (5, 5) will be in the upper
-  left hand corner of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a line at (5, 5) will be
+  in the upper left hand corner of the image.
 
   *a*:
     The start ``FloatPoint``.
@@ -92,14 +93,13 @@ class draw_line(PluginFunction):
   *thickness* = 1.0:
     The thickness of the line (in pixels)
 
-  Based on Po-Han Lin's "Extremely Fast Line Algorithm".
-  Freely useable in non-commercial applications as long as credits to
-  Po-Han Lin and link to http://www.edepot.com/algorithm.html is provided
-  in source code and can been seen in compiled executable.
+  The implementation is based on the classic Bresenham algorithm, as described
+  in J. E. Bresenham: *Algorithm for computer control of a digital plotter.*
+  IBM Systems Journal 4, pp. 25-30 (1965).
   """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("start"), FloatPoint("end"), Pixel("value"), Float("thickness")])
-  authors = "Michael Droettboom based on Po-Han Lin's Extremely Fast Line Algorithm"
+  author = "Michael Droettboom and Christoph Dalitz"
 
   def __call__(self, start, end, value, thickness = 1.0):
     return _draw.draw_line(self, start, end, value, thickness)
@@ -121,9 +121,9 @@ class draw_hollow_rect(PluginFunction):
   """
   Draws a hollow rectangle.
 
-  Coordinates are relative to the offset of the image.  Therefore, if
-  the image offset is (5, 5), a rectangle at (5, 5) will be in the
-  upper left hand corner of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a rectangle at (5, 5) will be
+  in the upper left hand corner of the image.
 
   The coordinates can be specified either by two FloatPoints or one
   Rect:
@@ -172,9 +172,9 @@ class draw_filled_rect(PluginFunction):
   """
   Draws a filled rectangle.
 
-  Coordinates are relative to the offset of the image.  Therefore, if
-  the image offset is (5, 5), a rectangle at (5, 5) will be in the
-  upper left hand corner of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a rectangle at (5, 5) will
+  be in the upper left hand corner of the image.
 
   The coordinates can be specified either by four integers, two
   FloatPoints, or one Rect:
@@ -211,9 +211,9 @@ class draw_bezier(PluginFunction):
   """
   Draws a cubic bezier curve
 
-  Coordinates are relative to the offset of the image.  Therefore, if the image
-  offset is (5, 5), a curve at (5, 5) will be in the upper left hand corner
-  of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a curve at (5, 5) will be in
+  the upper left hand corner of the image.
 
   *start*:
     The start ``FloatPoint``.
@@ -259,9 +259,9 @@ class draw_circle(PluginFunction):
   """
   Draws a center centered at *c* with radius *r*.
 
-  Coordinates are relative to the offset of the image.  Therefore, if
-  the image offset is (5, 5), a line at (5, 5) will be in the upper
-  left hand corner of the image.
+  Coordinates are absolute and *not* relative to the offset of the image.
+  Therefore, if the image offset is (5, 5), a line at (5, 5) will be
+  in the upper left hand corner of the image.
 
   *c*:
     The center of the circle
@@ -283,7 +283,7 @@ class draw_circle(PluginFunction):
   """
   self_type = ImageType(ALL)
   args = Args([FloatPoint("c"), Float("r"), Pixel("value"), Float("thickness"), Float("accuracy")])
-  authors = "Michael Droettboom with the help of Christoph Dalitz"
+  author = "Michael Droettboom with the help of Christoph Dalitz"
 
   def __call__(self, c, r, value, thickness = 1.0, accuracy = 0.1):
     return _draw.draw_circle(self, c, r, value, thickness, accuracy)
@@ -367,7 +367,7 @@ class draw_text(PluginFunction):
                Check("bold", default=False),
                Choice("halign", ["left", "center", "right"])
                ])
-  authors = "Michael Droettboom"
+  author = "Michael Droettboom"
   pure_python = True
 
   def __call__(self, p, text, color, size=10, font_family=0,

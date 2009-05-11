@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005
- * Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2009
+ * Ichiro Fujinaga, Michael Droettboom, Karl MacMillan, and Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
 
 #include <stack>
 
+
 template<class T>
 inline void _clip_points(T& image, size_t& x1, size_t& y1, size_t& x2, size_t& y2) {
   x1 -= image.ul_x();
@@ -35,14 +36,9 @@ inline void _clip_points(T& image, size_t& x1, size_t& y1, size_t& x2, size_t& y
   y2 = std::min(y2, image.nrows() - 1);
 }
 
-/* 
-Po-Han Lin's "Extremely Fast Line Algorithm"
-
-Freely useable in non-commercial applications as long as credits to Po-Han Lin and link to http://www.edepot.com is provided in source code and can been seen in compiled executable. 
-*/
-
+// computation entry point of line in image
 inline void _cut_line(double &x1, double &y1, double &x2, double &y2, 
-		      double x_len, double y_len, double lower, double upper) {
+                      double x_len, double y_len, double lower, double upper) {
   if (y1 < lower) {
     x1 += (-y1 * x_len) / y_len;
     y1 = 0;
@@ -54,9 +50,10 @@ inline void _cut_line(double &x1, double &y1, double &x2, double &y2,
   }
 }
 
+// straightforward implementation of Bresenham's line drawing algorithm
 template<class T, class P>
 void _draw_line(T& image, const P& a, const P& b, 
-	       const typename T::value_type value) {
+               const typename T::value_type value) {
   double x1 = double(a.x());
   double y1 = double(a.y());
   double x2 = double(b.x());
@@ -67,16 +64,14 @@ void _draw_line(T& image, const P& a, const P& b,
   x1 -= (double)image.ul_x();
   x2 -= (double)image.ul_x();
 
-  bool y_longer = false;
-  double end_val;
   double y_len = y2 - y1;
   double x_len = x2 - x1;
 
   // Short circuit for a single pixel.  This speeds up
   // drawing Bezier curves a little bit
-  if (y_len == 0 && x_len == 0) {
+  if (((int)y_len) == 0 && ((int)x_len) == 0) {
     if (y1 >= 0 && y1 < image.nrows() &&
-	x1 >= 0 && x1 < image.ncols())
+        x1 >= 0 && x1 < image.ncols())
       image.set(Point((size_t)x1, (size_t)y1), value);
     return;
   }
@@ -86,80 +81,67 @@ void _draw_line(T& image, const P& a, const P& b,
   // writing each pixel.
   if (y_len > 0)
     _cut_line(x1, y1, x2, y2, x_len, y_len, 
-	      0.0, (double)image.nrows() - 1);
+              0.0, (double)image.nrows() - 1);
   else
     _cut_line(x2, y2, x1, y1, x_len, y_len, 
-	      0.0, (double)image.nrows() - 1);
+              0.0, (double)image.nrows() - 1);
 
   if (x_len > 0)
     _cut_line(y1, x1, y2, x2, y_len, x_len, 
-	      0.0, (double)image.ncols() - 1);
+              0.0, (double)image.ncols() - 1);
   else
     _cut_line(y2, x2, y1, x1, y_len, x_len, 
-	      0.0, (double)image.ncols() - 1);
+              0.0, (double)image.ncols() - 1);
 
   if (!(y1 >= 0 && y1 < image.nrows() &&
-	x1 >= 0 && x1 < image.ncols() &&
-	y2 >= 0 && y2 < image.nrows() &&
-	x2 >= 0 && x2 < image.ncols()))
+        x1 >= 0 && x1 < image.ncols() &&
+        y2 >= 0 && y2 < image.nrows() &&
+        x2 >= 0 && x2 < image.ncols())) {
     return;
-
-  double short_len = y2 - y1;
-  double long_len = x2 - x1;
-  if (abs(short_len) > abs(long_len)) {
-    std::swap(short_len, long_len);
-    y_longer = true;
   }
 
-  double dec_inc;
-  if (long_len < 0) {
-    end_val = long_len - 1;
-    long_len = -long_len;
-    dec_inc = short_len / long_len;
-    double j = 0.0;
-    if (y_longer) {
-      for (double i = 0; i > end_val; --i) {
-	size_t y = size_t(y1 + i);
-	size_t x = size_t(x1 + j);
-	image.set(Point((size_t)x, (size_t)y), value);
-	j += dec_inc;
+  int x_dist = int(x2) - int(x1);
+  int y_dist = int(y2) - int(y1);
+  int x_dist_abs = abs(x_dist);
+  int y_dist_abs = abs(y_dist);
+
+  if (x_dist_abs > y_dist_abs) { // x is controlling axis
+    if (x1 > x2) {
+      std::swap(x1, x2);
+      std::swap(y1, y2);
+    }
+    int y_sign = Gamera::sign((int)y2 - (int)y1);
+    int e = y_dist_abs - x_dist_abs;
+    int y = y1;
+    for (int x = x1; x <= (int)x2; ++x, e += y_dist_abs) {
+      image.set(Point(x, y), value);
+      if (e >= 0.0) {
+        y += y_sign;
+        e -= x_dist_abs;
       }
-    } else {
-      for (double i = 0; i > end_val; --i) {
-	size_t y = size_t(y1 + j);
-	size_t x = size_t(x1 + i);
-	image.set(Point((size_t)x, (size_t)y), value);
-	j += dec_inc;
-      }
-    }      
+    }
   } else {
-    end_val = long_len + 1;
-    if (long_len == 0)
-      dec_inc = short_len;
-    else
-      dec_inc = short_len / long_len;
-    double j = 0.0;
-    if (y_longer) {
-      for (double i = 0; i < end_val; ++i) {
-	size_t y = size_t(y1 + i);
-	size_t x = size_t(x1 + j);
-	image.set(Point((size_t)x, (size_t)y), value);
-	j += dec_inc;
+    if (y1 > y2) {
+      std::swap(x1, x2);
+      std::swap(y1, y2);
+    }
+    int x_sign = Gamera::sign(int(x2) - int(x1));
+    int e = x_dist_abs - y_dist_abs;
+    int x = x1;
+    for (int y = y1; y <= (int)y2; ++y, e += x_dist_abs) {
+      image.set(Point(x, y), value);
+      if (e >= 0.0) {
+        x += x_sign;
+        e -= y_dist_abs;
       }
-    } else {
-      for (double i = 0; i < end_val; ++i) {
-	size_t y = size_t(y1 + j);
-	size_t x = size_t(x1 + i);
-	image.set(Point((size_t)x, (size_t)y), value);
-	j += dec_inc;
-      }
-    }      
+    }
   }
+
 }
 
 template<class T, class P>
 void draw_line(T& image, const P& a, const P& b, 
-	       const typename T::value_type value, const double thickness=1.0) {
+               const typename T::value_type value, const double thickness=1.0) {
   const double half_thickness = (thickness - 1.0) / 2.0;
   for (double x = -half_thickness; x <= 0.0; x += 1.0) 
     for (double y = -half_thickness; y <= 0.0; y += 1.0) 
@@ -174,8 +156,8 @@ void draw_line(T& image, const P& a, const P& b,
 
 template<class T, class P>
 void draw_hollow_rect(T& image, const P& a, const P& b, 
-		      const typename T::value_type value,
-		      const double thickness = 1.0) {
+                      const typename T::value_type value,
+                      const double thickness = 1.0) {
   draw_line(image, a, P(a.x(), b.y()), value, thickness);
   draw_line(image, a, P(b.x(), a.y()), value, thickness);
   draw_line(image, b, P(b.x(), a.y()), value, thickness);
@@ -219,7 +201,7 @@ void draw_filled_rect(T& image, const Rect& r, const typename T::value_type valu
 
 template<class T, class P>
 void draw_marker(T& image, const P& p, const size_t size, const size_t style, 
-		 const typename T::value_type value) {
+                 const typename T::value_type value) {
   int half_size = (int)ceil(double(size) / 2.0);
   switch (style) {
   case 0:
@@ -228,13 +210,13 @@ void draw_marker(T& image, const P& p, const size_t size, const size_t style,
     break;
   case 1:
     draw_line(image, P(p.x() - half_size, p.y() - half_size), 
-	      P(p.x() + half_size, p.y() + half_size), value);
+              P(p.x() + half_size, p.y() + half_size), value);
     draw_line(image, P(p.x() + half_size, p.y() - half_size), 
-	      P(p.x() - half_size, p.y() + half_size), value);
+              P(p.x() - half_size, p.y() + half_size), value);
     break;
   case 2:
     draw_hollow_rect(image, P(p.x() - half_size, p.y() - half_size), 
-		     P(p.x() + half_size, p.y() + half_size), value);
+                     P(p.x() + half_size, p.y() + half_size), value);
     break;
   case 3: {
     int leftx = std::max((int)p.x() - half_size, 0);
@@ -255,8 +237,8 @@ inline double square(double a) {
 
 template<class T, class P>
 void draw_bezier(T& image, const P& start, const P& c1, const P& c2, 
-		 const P& end, const typename T::value_type value,
-		 const double thickness = 1.0, const double accuracy = 0.1) {
+                 const P& end, const typename T::value_type value,
+                 const double thickness = 1.0, const double accuracy = 0.1) {
   double start_x = double(start.x());
   double start_y = double(start.y());
   double c1_x = double(c1.x());
@@ -292,7 +274,7 @@ void draw_bezier(T& image, const P& start, const P& c1, const P& c2,
 
 template<class T, class P>
 void draw_circle(T& image, const P& c, const double r, const typename T::value_type value,
-		 const double thickness = 1.0, const double accuracy = 0.1) {
+                 const double thickness = 1.0, const double accuracy = 0.1) {
   static const double kappa = 4.0 * ((sqrt(2.0) - 1.0) / 3.0);
   
   // Bezier circle approximation from 
@@ -300,17 +282,17 @@ void draw_circle(T& image, const P& c, const double r, const typename T::value_t
   const double z = kappa * r;
 
   draw_bezier(image, P(c.x(), c.y() - r), P(c.x() + z, c.y() - r),
-	      P(c.x() + r, c.y() - z), P(c.x() + r, c.y()), 
-	      value, thickness, accuracy);
+              P(c.x() + r, c.y() - z), P(c.x() + r, c.y()), 
+              value, thickness, accuracy);
   draw_bezier(image, P(c.x() + r, c.y()), P(c.x() + r, c.y() + z),
-	      P(c.x() + z, c.y() + r), P(c.x(), c.y() + r),
-	      value, thickness, accuracy);
+              P(c.x() + z, c.y() + r), P(c.x(), c.y() + r),
+              value, thickness, accuracy);
   draw_bezier(image, P(c.x(), c.y() + r), P(c.x() - z, c.y() + r),
-	      P(c.x() - r, c.y() + z), P(c.x() - r, c.y()),
-	      value, thickness, accuracy);
+              P(c.x() - r, c.y() + z), P(c.x() - r, c.y()),
+              value, thickness, accuracy);
   draw_bezier(image, P(c.x() - r, c.y()), P(c.x() - r, c.y() - z),
-	      P(c.x() - z, c.y() - r), P(c.x(), c.y() - r),
-	      value, thickness, accuracy);
+              P(c.x() - z, c.y() - r), P(c.x(), c.y() - r),
+              value, thickness, accuracy);
 }
 
 /* From John R. Shaw's QuickFill code which is based on
@@ -322,64 +304,64 @@ struct FloodFill {
   typedef std::stack<Point> Stack;
 
   inline static void travel(T& image, Stack& s,
-			    const typename T::value_type& interior, 
-			    const typename T::value_type& color,
-			    const size_t left, const size_t right,
-			    const size_t y) {
+                            const typename T::value_type& interior, 
+                            const typename T::value_type& color,
+                            const size_t left, const size_t right,
+                            const size_t y) {
     if (left + 1 <= right) {
       typename T::value_type col1, col2;
       for (size_t x = left + 1; x <= right; ++x) {
-	col1 = image.get(Point(x-1, y));
-	col2 = image.get(Point(x, y));
-	if (col1 == interior && col2 != interior) {
-	  s.push(Point(x-1, y));
-	}
+        col1 = image.get(Point(x-1, y));
+        col2 = image.get(Point(x, y));
+        if (col1 == interior && col2 != interior) {
+          s.push(Point(x-1, y));
+        }
       }
       if (col2 == interior) {
-	s.push(Point(right, y));
+        s.push(Point(right, y));
       }
     }
   }
 
   static void fill_seeds(T& image, Stack& s, 
-			 const typename T::value_type& interior, 
-			 const typename T::value_type& color) {
+                         const typename T::value_type& interior, 
+                         const typename T::value_type& color) {
     typedef typename T::value_type pixel_t;
     size_t left, right;
     while (!s.empty()) {
       Point p = s.top();
       s.pop();
       if (image.get(p) == interior) {
-	for (right = p.x();
-	     right < image.ncols();
-	     ++right) {
-	  if (image.get(Point(right, p.y())) != interior)
-	    break;
-	  image.set(Point(right, p.y()), color);
-	}
-	--right;
+        for (right = p.x();
+             right < image.ncols();
+             ++right) {
+          if (image.get(Point(right, p.y())) != interior)
+            break;
+          image.set(Point(right, p.y()), color);
+        }
+        --right;
 
-	long int l = p.x() - 1;
-	for (; l >= 0; --l) {
-	  if (image.get(Point(l, p.y())) != interior)
-	    break;
-	  image.set(Point(l, p.y()), color);
-	}
-	left = (size_t)l + 1;
+        long int l = p.x() - 1;
+        for (; l >= 0; --l) {
+          if (image.get(Point(l, p.y())) != interior)
+            break;
+          image.set(Point(l, p.y()), color);
+        }
+        left = (size_t)l + 1;
 
-	if (left != right) {
-	  if (p.y() < image.nrows() - 1)
-	    travel(image, s, interior, color, left, right, p.y() + 1);
-	  if (p.y() > 0)
-	    travel(image, s, interior, color, left, right, p.y() - 1);
-	} else {
-	  if (p.y() < image.nrows() - 1)
-	    if (image.get(Point(left, p.y() + 1)) != color)
-	      s.push(Point(left, p.y() + 1));
-	  if (p.y() > 1)
-	    if (image.get(Point(left, p.y() - 1)) != color)
-	      s.push(Point(left, p.y() - 1));
-	}
+        if (left != right) {
+          if (p.y() < image.nrows() - 1)
+            travel(image, s, interior, color, left, right, p.y() + 1);
+          if (p.y() > 0)
+            travel(image, s, interior, color, left, right, p.y() - 1);
+        } else {
+          if (p.y() < image.nrows() - 1)
+            if (image.get(Point(left, p.y() + 1)) != color)
+              s.push(Point(left, p.y() + 1));
+          if (p.y() > 1)
+            if (image.get(Point(left, p.y() - 1)) != color)
+              s.push(Point(left, p.y() - 1));
+        }
       }
     }
   }
@@ -429,9 +411,9 @@ void highlight(T& a, const U& b, const typename T::value_type& color) {
   for (size_t y = ul_y, ya = y-a.ul_y(), yb=y-b.ul_y(); 
        y <= lr_y; ++y, ++ya, ++yb)
     for (size_t x = ul_x, xa = x-a.ul_x(), xb=x-b.ul_x(); 
-	 x <= lr_x; ++x, ++xa, ++xb) {
+         x <= lr_x; ++x, ++xa, ++xb) {
       if (is_black(b.get(Point(xb, yb)))) 
-	a.set(Point(xa, ya), color);
+        a.set(Point(xa, ya), color);
     }
 }
 

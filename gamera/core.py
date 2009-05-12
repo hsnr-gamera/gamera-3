@@ -343,9 +343,7 @@ to MANUAL.  Use this method when an end user has classified this glyph.
          A ``.``-delimited class name."""
       if util.is_string_or_unicode(id_name):
          id_name = [(1.0, id_name)]
-      elif type(id_name) == ListType:
-         id_name.sort()
-      else:
+      elif type(id_name) != ListType:
          raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = MANUAL
@@ -368,9 +366,7 @@ to AUTOMATIC.  Use this method when an automatic classifier has classified this 
          A ``.``-delimited class name."""
       if util.is_string_or_unicode(id_name):
          id_name = [(0.0, id_name)]
-      elif type(id_name) == ListType:
-         id_name.sort()
-      else:
+      elif type(id_name) != ListType:
          raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = AUTOMATIC
@@ -393,9 +389,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
          A ``.``-delimited class name."""
       if util.is_string_or_unicode(id_name):
          id_name = [(0.5, id_name)]
-      elif type(id_name) == ListType:
-         id_name.sort()
-      else:
+      elif type(id_name) != ListType:
          raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
       self.classification_state = HEURISTIC

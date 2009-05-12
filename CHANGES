@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - knn classifier now works as expected when k > 1;
+   up to now, id_name was sorted by confidence, which meant
+   that always the farthest among the k nearest neighbors
+   was returned as main_id
+
  - now compiles with Python 2.6 (thanks to Prapat Suriyaphol)
 
 

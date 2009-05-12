@@ -106,8 +106,8 @@ feature. This means that the Python Distutils system cannot execute
 ``/usr/bin/gcc`` and the build command will fail. To fix this,
 replace the symbolic link with the actual compiler executable::
 
-  mv /usr/bin/gcc-3 /usr/bin/gcc
-  mv /usr/bin/g++-3 /usr/bin/g++
+  cp /usr/bin/gcc-3 /usr/bin/gcc
+  cp /usr/bin/g++-3 /usr/bin/g++
 
 From here on, you can proceed as for the standalone Mingw32 toolchain,
 i.e.::

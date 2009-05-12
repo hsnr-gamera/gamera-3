@@ -241,17 +241,20 @@ Standard Build and Install
 
 Gamera is built using the Python-standard Distutils system.
 
-To build Gamera, open a X11 terminal and type::
+To build Gamera, open a terminal and type::
 
   python setup.py build
 
 and then to install (you'll need to have admin priviledges)::
 
-  sudo python setup.py install
+  sudo pythonw setup.py install
 
+On OS-X 10.4, you must do the installation with ``pythonw`` rather than
+with ``python``, because ``gamera_gui`` is a GUI application. On OS-X 10.5
+this distinction is no longer necessary, but using ``pythonw`` also works.
 The scripts can be installed by::
 
-  sudo python setup.py install_scripts -d /usr/bin
+  sudo pythonw setup.py install_scripts -d /usr/bin
 
 .. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
   place on the PATH.  If you do not specify it, the scripts are by

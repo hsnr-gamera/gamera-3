@@ -334,6 +334,7 @@ to MANUAL.  Use this method when an end user has classified this glyph.
 
     **string**
        image is classified using the given ``.``-delimited class name.
+       As in this case no confidence is provided, it is set to one.
     **list of tuples**
        A list of tuples where each tuple is the pair (*confidence*, *class_name*).
 
@@ -357,6 +358,7 @@ to AUTOMATIC.  Use this method when an automatic classifier has classified this 
 
     **string**
        image is classified using the given ``.``-delimited class name.
+       As in this case no confidence is provided, it is set to zero.
     **list of tuples**
        A list of tuples where each tuple is the pair (*confidence*, *class_name*).
 
@@ -380,6 +382,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
 
     **string**
        image is classified using the given ``.``-delimited class name.
+       As in this case no confidence is provided, it is set to 0.5.
     **list of tuples**
        A list of tuples where each tuple is the pair (*confidence*, *class_name*).
 
@@ -395,7 +398,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
       self.classification_state = HEURISTIC
 
    def get_main_id(self):
-      """Returns the classification of the image with the highest likelihood.
+      """Returns the primary class name assigned to the image.
 
 If the image is unclassified, the result is 'UNCLASSIFIED'.
 """
@@ -404,7 +407,7 @@ If the image is unclassified, the result is 'UNCLASSIFIED'.
       return self.id_name[0][1]
 
    def get_confidence(self):
-      """Returns the confidence of the classification with the highest likelihood.
+      """Returns the confidence of the primary class assigned to the image.
 
 If the image is unclassified, returns -1.0.
 """

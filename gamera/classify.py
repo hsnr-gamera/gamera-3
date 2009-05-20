@@ -22,6 +22,7 @@ import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 from fudge import Fudge
 from gamera.gui import has_gui
+from gamera.gameracore import CONFIDENCE_DEFAULT
 
 """This file defines the Python part of classifiers.  These wrapper classes
 contain a reference to a core classifier class (unusally written in C++).
@@ -159,7 +160,7 @@ a list of glyphs that is already updated for splitting and grouping."""
       import image_utilities
       if len(subgroup) > 1:
          union = image_utilities.union_images(subgroup)
-         classification = self.guess_glyph_automatic(union)
+         classification, confidence = self.guess_glyph_automatic(union)
          classification_name = classification[0][1]
          if (classification_name.startswith("_split") or
              classification_name.startswith("skip")):
@@ -189,7 +190,7 @@ a list of glyphs that is already updated for splitting and grouping."""
                   if len(subgroup) > 1:
                      union = image_utilities.union_images(subgroup)
                      found_unions.append(union)
-                     classification = self.guess_glyph_automatic(union)
+                     classification, confidence = self.guess_glyph_automatic(union)
                      union.classify_heuristic(classification)
                      part_name = "_group._part." + classification[0][1]
                      for glyph in subgroup:
@@ -228,8 +229,9 @@ page."""
           glyph.classification_state in (core.UNCLASSIFIED, core.AUTOMATIC)):
          self.generate_features(glyph)
          removed = glyph.children_images
-         id = self._classify_automatic_impl(glyph)
+         (id, conf) = self._classify_automatic_impl(glyph)
          glyph.classify_automatic(id)
+         glyph.confidence = conf
          splits = self._do_splits(self, glyph)
          all_splits = splits[:]
          for g2 in splits:
@@ -260,8 +262,9 @@ page."""
                self.generate_features(glyph)
                if (glyph.classification_state in
                    (core.UNCLASSIFIED, core.AUTOMATIC)):
-                  id = self._classify_automatic_impl(glyph)
+                  (id, conf) = self._classify_automatic_impl(glyph)
                   glyph.classify_automatic(id)
+                  glyph.confidence = conf
                   adds = self._do_splits(self, glyph)
                   progress.add_length(len(adds))
                   added.extend(adds)
@@ -484,6 +487,8 @@ Creates a new classifier instance.
          self._do_splits = self.__class__._do_splits_null
       self._perform_splits = perform_splits
 
+      self.confidence_types = [CONFIDENCE_DEFAULT]
+
    def __del__(self):
       # Seems redundant, but this triggers a callback to the GUI, if running.
       del self._database
@@ -607,6 +612,7 @@ Creates a new classifier instance.
          self._do_splits = self.__class__._do_splits_null
       self._perform_splits = perform_splits
       self._display = None
+      self.confidence_types = [CONFIDENCE_DEFAULT]
 
    def __del__(self):
       # Seems redundant, but this triggers a callback to the GUI, if running.
@@ -651,7 +657,7 @@ Creates a new classifier instance.
          self.generate_features(glyph)
          return self.classify_with_images(self.database, glyph)
       else:
-         return [(0.0, 'unknown')]
+         return ([(0.0, 'unknown')], {})
 
    ########################################
    # MANUAL CLASSIFICATION

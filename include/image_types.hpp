@@ -106,6 +106,16 @@ namespace Gamera {
     MANUAL
   };
 
+  enum ConfidenceTypes {
+    CONFIDENCE_DEFAULT,
+    CONFIDENCE_KNNFRACTION,
+    CONFIDENCE_INVERSEWEIGHT,
+    CONFIDENCE_LINEARWEIGHT,
+    CONFIDENCE_NUN,
+    CONFIDENCE_NNDISTANCE,
+    CONFIDENCE_AVGDISTANCE
+  };
+
   /*
     Factory for types based on an existing image. This makes it easier
     to make a new view from an existing type without worrying whether

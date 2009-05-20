@@ -62,31 +62,44 @@ as needed.
 
 .. _Biollante: gui.html#classifier-optimization-biollante
 
-Classifying images without a classifier
----------------------------------------
+Image properties related to classification
+------------------------------------------
+
+Classification result are stored with the image. Some interface functions
+for storing and querying the classification result are described
+in the `classification plugin documentation`__.
+
+.. __: plugins.html#classification
+
 
 ``id_name``
 '''''''''''
 
-When a glyph is classified, either by a manual classification or an
-automatic classifier, its classification is stored in the member variable
+The class name of a glyph is stored in the member variable
 ``id_name``.  This variable is actually a list of possible
 classifications, so that a classifier can return a number of different
-possibilities with different confidences.  Each classification entry
-is a tuple of the form (float *confidence*, string *name*).  The
-"confidence" value is set to (1-*dist*/*max_dist*)^10, where 
-*dist* is the distance to the closest prototype of this class, and
-*max_dist* is the distance to the farthest prototype of the entire
-training population. Thus the "confidence" is always between 0.0 and
-1.0, where 1.0 only occurs for feature values that exactly match a training
-sample.
+possibilities with different confidences. Each classification entry
+is a tuple of the form (float *confidence*, string *name*), where
+the "confidence" measure is of the type CONFIDENCE_DEFAULT
+(see the `confidence property`__ below).
 
-For example, if a symbol is most likely a lower-case *b*, but might
-also be a lower-case *d*, its ``id_name`` variable might be:
+.. __: #confidence
+
+For example, if among the k nearest neighbor of the image
+there are training samples both from class 'lower.b' and
+'lower.d', its ``id_name`` variable might be:
 
 .. code:: Python
   
-  [(0.8, 'lower.b'), (0.2, 'lower.d')]
+  [(0.0879, 'lower.b'), (0.0012, 'lower.d')]
+
+The first entry in ``id_name`` is always the class decision made
+by the classifier, so the other entries can (and should) generally
+be ignored. Due to the simplistic definition of the 
+CONFIDENCE_DEFAULT measure, the decision made by the classifier
+must not necessarily have the highest "confidence", nor do
+the values of all "confidences" add to one.
+
 
 ``classification_state``
 ''''''''''''''''''''''''
@@ -115,6 +128,80 @@ member variable.  It can be one of the following values:
 .. |HColor| image:: images/heuristicclassified_color.png
 .. |MColor| image:: images/manualclassified_color.png
 
+
+``confidence``
+''''''''''''''
+
+Different confidence measures for the main class id are stored
+in the member variable ``confidence``. This is a map ('dictionary' in
+python lingo) with a confidence type as key. The possible confidence
+type constants are defined in ``gamera.gameracore`` and have the 
+following meaning:
+
+  ``CONFIDENCE_DEFAULT``
+
+     (1-*dist*/*max_dist*)^10, where *dist* is the distance to 
+     the closest prototype of the main class, and *max_dist* is
+     the distance to the farthest prototype of the entire training
+     population. This "confidence" is always between 0.0 and 1.0,
+     where 1.0 only occurs for feature values that exactly match a
+     training sample.
+
+  ``CONFIDENCE_KNNFRACTION``
+
+     Fraction of samples belonging to main class among the k
+     nearest neighbors. Makes only sense for k > 1.
+
+  ``CONFIDENCE_INVERSEWEIGHT``
+
+     Dudani's weighted average distance to the main class with
+     each distance weighted inversely. Makes only sense for k > 1.
+
+  ``CONFIDENCE_LINEARWEIGHT``
+
+     Dudani's weighted average distance to the main class with
+     each distance weighted linearly between the closest neighbor
+     (weight one) and the k-th nearest neighbor (weight zero).
+     Makes only sense for k > 1.
+
+  ``CONFIDENCE_NUN``
+
+     Dasarathy's "nearest unlike neighbor" measure. Let *dnn* denote
+     the distance to the closest prototype of the
+     main class (nearest neighbor) and *dnun* the distance to
+     the closest prototype of the remaining classes (nearest unlike
+     neighbor). Then the NUN confidence measure is (1-*dnn*/*dnun*).
+
+  ``CONFIDENCE_NNDISTANCE``
+
+     Absolute distance to the nearest neighbor. This can take
+     arbitrary values and is in itself meaningless, but can be useful
+     for distance rejection.
+
+  ``CONFIDENCE_AVGDISTANCE``
+
+     Average distance to the k nearest neighbors. This can take
+     arbitrary values and is in itself meaningless, but can be useful
+     for distance rejection. For k = 1, this is identical to
+     CONFIDENCE_NNDISTANCE.
+
+The ``confidence`` map is only filled for automatically classified
+glyphs. Which confidence types are actually written to the confidence
+map depends on the ``confidence_types`` property of the classifier.
+So when the list ``Classifier.confidence_types`` is empty, no
+confidence values will be written to ``Image.confidence``.
+
+References:
+
+  - B.V. Dasarathy: *Nearest unlike neighbor (NUN): an aid to decision
+    confidence estimation.* Optical Engineering 34, pp. 2785-2792
+    (1995)
+
+  - S.A. Dudani: *The Distance-Eighted k-Nearest Neighbor Rule.*
+    IEEE Transactions on Systems, Man, and Cybernetics 6, 
+    pp. 325-327 (1976)
+
+
 Methods
 '''''''
 
@@ -129,7 +216,10 @@ The classifier interface
 ------------------------
 
 This section describes each method of the classifier interface.
-They are divided into two categories:
+The base class for all classifiers is ``Classifier``, from which
+two classes ``NonInteractiveClassifier`` and ``InteractiveClassifier``
+are derived. As noninteractive classifiers are more limited
+in their interface, this divides the methods into two categories:
 
 Core
   Methods available to all classifiers
@@ -140,12 +230,32 @@ Interactive
 Core
 ''''
 
-The following methods are available to all classifiers.
+The following methods and properties are available to all classifiers.
+
+Properties
+``````````
+
+Each classifier has the following member variables:
+
+  ``_database``
+    List of glyphs used as training data. This is a private property
+    that can only be accessed through the methods ``get_database`` 
+    and ``set_glyphs``, or it is set in the constructor or with
+    ``from_xml_filename``
+
+  ``confidence_types``
+    List of confidence types tht are to be computed during 
+    classification. The confidence types must be from the
+    predefined `confidence constants`__.
+    
+.. __: #confidence
+
 
 Initialization
 ``````````````
 
-This describes constructing a classifier.
+As the base class ``Classifier`` does not have an explicit constructor,
+the constructor of ``NonInteractiveClassifier`` is described here.
 
 .. docstring:: gamera.classify NonInteractiveClassifier __init__ 
 

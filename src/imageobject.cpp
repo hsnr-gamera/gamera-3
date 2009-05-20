@@ -54,12 +54,14 @@ extern "C" {
   static PyObject* image_get_data(PyObject* self);
   static PyObject* image_get_features(PyObject* self);
   static PyObject* image_get_id_name(PyObject* self);
+  static PyObject* image_get_confidence(PyObject* self);
   static PyObject* image_get_children_images(PyObject* self);
   static PyObject* image_get_classification_state(PyObject* self);
   static PyObject* image_get_scaling(PyObject* self);
   static PyObject* image_get_resolution(PyObject* self);
   static int image_set_features(PyObject* self, PyObject* v);
   static int image_set_id_name(PyObject* self, PyObject* v);
+  static int image_set_confidence(PyObject* self, PyObject* v);
   static int image_set_children_images(PyObject* self, PyObject* v);
   static int image_set_classification_state(PyObject* self, PyObject* v);
   static int image_set_scaling(PyObject* self, PyObject* v);
@@ -107,6 +109,10 @@ static PyGetSetDef image_getset[] = {
   { (char *)"id_name", (getter)image_get_id_name, (setter)image_set_id_name,
     (char *)"(read/write property)\n\n"
     "A list of strings representing the classifications of the image.",
+    0 },
+  { (char *)"confidence", (getter)image_get_confidence, (setter)image_set_confidence,
+    (char *)"(read/write property)\n\n"
+    "A mapping of confidence values for the main id (id_name[0]).",
     0 },
   { (char *)"children_images", (getter)image_get_children_images,
     (setter)image_set_children_images,
@@ -683,6 +689,10 @@ static int image_clear(PyObject* self) {
   o->m_id_name = NULL;
   Py_XDECREF(tmp);
 
+  tmp = o->m_confidence;
+  o->m_confidence = NULL;
+  Py_XDECREF(tmp);
+
   tmp = o->m_children_images;
   o->m_children_images = NULL;
   Py_XDECREF(tmp);
@@ -969,6 +979,8 @@ CREATE_GET_FUNC(features)
 CREATE_SET_FUNC(features)
 CREATE_SET_FUNC(id_name)
 CREATE_GET_FUNC(id_name)
+CREATE_SET_FUNC(confidence)
+CREATE_GET_FUNC(confidence)
 CREATE_GET_FUNC(children_images)
 CREATE_SET_FUNC(children_images)
 CREATE_GET_FUNC(classification_state)
@@ -1208,6 +1220,8 @@ void init_ImageType(PyObject* module_dict) {
   PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
 
   // some constants
+  //-------------------------------
+  // classification states
   PyDict_SetItemString(module_dict, "UNCLASSIFIED",
 		       Py_BuildValue(CHAR_PTR_CAST "i", UNCLASSIFIED));
   PyDict_SetItemString(module_dict, "AUTOMATIC",
@@ -1216,5 +1230,20 @@ void init_ImageType(PyObject* module_dict) {
 		       Py_BuildValue(CHAR_PTR_CAST "i", HEURISTIC));
   PyDict_SetItemString(module_dict, "MANUAL",
 		       Py_BuildValue(CHAR_PTR_CAST "i", MANUAL));
+  // confidence types
+  PyDict_SetItemString(module_dict, "CONFIDENCE_DEFAULT",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_DEFAULT));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_KNNFRACTION",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_KNNFRACTION));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_INVERSEWEIGHT",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_INVERSEWEIGHT));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_LINEARWEIGHT",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_LINEARWEIGHT));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_NUN",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_NUN));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_NNDISTANCE",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_NNDISTANCE));
+  PyDict_SetItemString(module_dict, "CONFIDENCE_AVGDISTANCE",
+		       Py_BuildValue(CHAR_PTR_CAST "i", CONFIDENCE_AVGDISTANCE));
 }
 

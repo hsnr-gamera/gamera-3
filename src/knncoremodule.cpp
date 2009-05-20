@@ -53,6 +53,7 @@ extern "C" {
   // classification
   static PyObject* knn_classify(PyObject* self, PyObject* args);
   static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
+  static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
   // distance
   static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
   static PyObject* knn_distance_between_images(PyObject* self, PyObject* args);
@@ -63,7 +64,8 @@ extern "C" {
   static int knn_set_num_k(PyObject* self, PyObject* v);
   static PyObject* knn_get_distance_type(PyObject* self);
   static int knn_set_distance_type(PyObject* self, PyObject* v);
-  static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
+  static PyObject* knn_get_confidence_types(PyObject* self);
+  static int knn_set_confidence_types(PyObject* self, PyObject* v);
   static PyObject* knn_get_weights(PyObject* self, PyObject* args);
   static PyObject* knn_set_weights(PyObject* self, PyObject* args);
   static PyObject* knn_get_num_features(PyObject* self);
@@ -111,6 +113,8 @@ struct KnnObject {
   double* feature_vectors;
   // The id_names for the feature vectors
   char** id_names;
+  // confidence types to be computed during classification
+  std::vector<int> confidence_types;
   // The current weights applied to the distance calculation
   double* weight_vector;
   // a histogram of the id_names for use in leave-one-out
@@ -172,6 +176,8 @@ PyGetSetDef knn_getset[] = {
     (char *)"The value of k used for classification.", 0 },
   { (char *)"distance_type", (getter)knn_get_distance_type, (setter)knn_set_distance_type,
     (char *)"The type of distance calculation used.", 0 },
+  { (char *)"confidence_types", (getter)knn_get_confidence_types, (setter)knn_set_confidence_types,
+    (char *)"The types of confidences computed during classification.", 0 },
   { (char *)"ga_mutation", (getter)knn_get_ga_mutation, (setter)knn_set_ga_mutation,
     (char *)"The mutation rate for GA optimization.", 0 },
   { (char *)"ga_crossover", (getter)knn_get_ga_crossover, (setter)knn_set_ga_crossover,
@@ -250,6 +256,7 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->normalized_unknown = 0;
   o->num_k = 1;
   o->distance_type = CITY_BLOCK;
+  o->confidence_types.push_back(CONFIDENCE_DEFAULT);
 
   /*
     Initialize the ga
@@ -306,12 +313,16 @@ static void knn_dealloc(PyObject* self) {
 }
 
 /*
-  A string comparison functor used by the kNearestNeighbors
-  object.
+  String comparison functors used by the kNearestNeighbors object
 */
 struct ltstr {
   bool operator()(const char* s1, const char* s2) const {
     return strcmp(s1, s2) < 0;
+  }
+};
+struct eqstr {
+  bool operator()(const char* s1, const char* s2) const {
+    return strcmp(s1, s2) == 0;
   }
 };
 
@@ -456,7 +467,8 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   // normalize the unknown
   o->normalize->apply(fv, fv + o->num_features, o->normalized_unknown);
   // create the kNN object
-  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  kNearestNeighbors<char*, ltstr, eqstr> knn(o->num_k);
+  knn.confidence_types = o->confidence_types;
 
   double* current_known = o->feature_vectors;
 
@@ -476,7 +488,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     knn.add(o->id_names[i], distance);
   }
   knn.majority();
-  knn.calculate_simple_confidences();
+  knn.calculate_confidences();
   PyObject* ans_list = PyList_New(knn.answer.size());
   for (size_t i = 0; i < knn.answer.size(); ++i) {
     // PyList_SET_ITEM steals references so this code only looks
@@ -486,7 +498,18 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     PyTuple_SET_ITEM(ans, 1, PyString_FromString(knn.answer[i].first));
     PyList_SET_ITEM(ans_list, i, ans);
   }
-  return ans_list;
+  PyObject* conf_dict = PyDict_New();
+  for (size_t i = 0; i < knn.confidence_types.size(); ++i) {
+    PyObject* o1 = PyInt_FromLong(knn.confidence_types[i]);
+    PyObject* o2 = PyFloat_FromDouble(knn.confidence[i]);
+    PyDict_SetItem(conf_dict, o1, o2);
+    Py_DECREF(o1);
+    Py_DECREF(o2);
+  }
+  PyObject* result = PyTuple_New(2);
+  PyTuple_SET_ITEM(result, 0, ans_list);
+  PyTuple_SET_ITEM(result, 1, conf_dict);
+  return result;
 }
 
 static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
@@ -528,7 +551,8 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     return 0;
   }
 
-  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  kNearestNeighbors<char*, ltstr, eqstr> knn(o->num_k);
+  knn.confidence_types = o->confidence_types;
 
   PyObject* cur;
   while ((cur = PyIter_Next(iterator))) {
@@ -557,7 +581,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
 
   knn.majority();
   if (do_confidence)
-    knn.calculate_simple_confidences();
+    knn.calculate_confidences();
   PyObject* ans_list = PyList_New(knn.answer.size());
   for (size_t i = 0; i < knn.answer.size(); ++i) {
     // PyList_SET_ITEM steal references so this code only looks
@@ -567,7 +591,20 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     PyTuple_SET_ITEM(ans, 1, PyString_FromString(knn.answer[i].first));
     PyList_SET_ITEM(ans_list, i, ans);
   }
-  return ans_list;
+  PyObject* conf_dict = PyDict_New();
+  if (do_confidence) {
+    for (size_t i = 0; i < knn.confidence_types.size(); ++i) {
+      PyObject* o1 = PyInt_FromLong(knn.confidence_types[i]);
+      PyObject* o2 = PyFloat_FromDouble(knn.confidence[i]);
+      PyDict_SetItem(conf_dict, o1, o2);
+      Py_DECREF(o1);
+      Py_DECREF(o2);
+    }
+  }
+  PyObject* result = PyTuple_New(2);
+  PyTuple_SET_ITEM(result, 0, ans_list);
+  PyTuple_SET_ITEM(result, 1, conf_dict);
+  return result;
 }
 
 static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
@@ -912,6 +949,42 @@ static int knn_set_distance_type(PyObject* self, PyObject* v) {
   return 0;
 }
 
+static PyObject* knn_get_confidence_types(PyObject* self) {
+  size_t n,i;
+  PyObject* entry;
+  KnnObject* o = ((KnnObject*)self);
+  n = o->confidence_types.size();
+  PyObject* result = PyList_New(n);
+  for (i=0; i<n; i++) {
+    entry = PyInt_FromLong(o->confidence_types[i]);
+    PyList_SetItem(result, i, entry);
+  }
+  return result;
+}
+
+static int knn_set_confidence_types(PyObject* self, PyObject* list) {
+  if(!PyList_Check(list)) {
+    PyErr_SetString(PyExc_TypeError, "knn: confidence_types must be list.");
+    return -1;
+  }
+  size_t n,i;
+  int ct;
+  PyObject* entry;
+  KnnObject* o = ((KnnObject*)self);
+  o->confidence_types.clear();
+  n = PyList_Size(list);
+  for (i=0; i<n; i++) {
+    entry = PyList_GetItem(list, i);
+    if (!PyInt_Check(entry)) {
+      PyErr_SetString(PyExc_TypeError, "knn: each confidence_type must be int.");
+      return -1;
+    }
+    ct = (ConfidenceTypes)PyInt_AsLong(entry);
+    o->confidence_types.push_back(ct);
+  }
+  return 0;
+}
+
 static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
 					double* weight_vector = 0,
 					std::vector<long>* indexes = 0) {
@@ -920,7 +993,7 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
     weights = o->weight_vector;
 
   assert(o->feature_vectors != 0);
-  kNearestNeighbors<char*, ltstr> knn(o->num_k);
+  kNearestNeighbors<char*, ltstr, eqstr> knn(o->num_k);
 
   int total_correct = 0;
   int total_queries = 0;

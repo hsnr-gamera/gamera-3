@@ -29,3 +29,4 @@ NONIMAGE = -1
 
 DENSE = 0
 RLE = 1
+

@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - the knn classifier can now return different confidence
+   measures for the main id that are selectable by the
+   user. See the classifier API documentation for details.
+
  - knn classifier now works as expected when k > 1;
    up to now, id_name was sorted by confidence, which meant
    that always the farthest among the k nearest neighbors

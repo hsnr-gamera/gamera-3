@@ -718,6 +718,7 @@ struct ImageObject {
 //   PyObject* m_region_map; // Current global region map
 //   PyObject* m_action_depth; // for limiting recursions for "actions"
   PyObject* m_weakreflist; // for Python weak references
+  PyObject* m_confidence; // mapping of confidence values for id_name[0]
 };
 
 #ifndef GAMERACORE_INTERNAL
@@ -904,6 +905,10 @@ inline PyObject* init_image_members(ImageObject* o) {
   o->m_classification_state = PyInt_FromLong(UNCLASSIFIED);
   if (o->m_classification_state == 0)
     return 0;
+  // confidence
+  o->m_confidence = PyDict_New();
+  if (o->m_confidence == 0)
+    return 0;  
   return (PyObject*)o;
 }
 

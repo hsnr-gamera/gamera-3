@@ -58,6 +58,8 @@ from gameracore import DENSE, RLE
 # import some of the basic types
 from gameracore import ImageData, Size, Dim, Point, \
      FloatPoint, Rect, Region, RegionMap, ImageInfo, RGBPixel
+# import confidence types
+from gameracore import CONFIDENCE_DEFAULT, CONFIDENCE_KNNFRACTION, CONFIDENCE_LINEARWEIGHT, CONFIDENCE_INVERSEWEIGHT, CONFIDENCE_NUN, CONFIDENCE_NNDISTANCE, CONFIDENCE_AVGDISTANCE
 # import gamera.gameracore for subclassing
 import gameracore
 from gamera.gui import has_gui
@@ -323,11 +325,13 @@ on a given image.  Uses color_ccs_ under the hood.
 when you are not longer sure of the identity of the image and you
 want an automatic classifier to reclassify."""
       self.id_name = []
+      self.confidence = {}
       self.classification_state = UNCLASSIFIED
 
    def classify_manual(self, id_name):
       """Classifies the image as the value *id_name* and sets the state
 to MANUAL.  Use this method when an end user has classified this glyph.
+This method also unsets the *confidence* map.
 
 *id_name*
   Can come in one of two forms:
@@ -347,11 +351,14 @@ to MANUAL.  Use this method when an end user has classified this glyph.
       elif type(id_name) != ListType:
          raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
+      self.confidence = {}
       self.classification_state = MANUAL
 
    def classify_automatic(self, id_name):
       """Classifies the image as the value *id_name* and sets the state
-to AUTOMATIC.  Use this method when an automatic classifier has classified this glyph.
+to AUTOMATIC.  Use this method when an automatic classifier has classified
+this glyph. Note that this method does not the *confidence* map for
+the main id; this must be set separately.
 
 *id_name*
   Can come in one of two forms:
@@ -375,7 +382,8 @@ to AUTOMATIC.  Use this method when an automatic classifier has classified this 
 
    def classify_heuristic(self, id_name):
       """Classifies the image as the value *id_name* and sets the state
-to AUTOMATIC.  Use this method when a heuristic process has classified this glyph.
+to AUTOMATIC.  Use this method when a heuristic process has classified
+this glyph. This method also unsets the *confidence* map.
 
 *id_name*
   Can come in one of two forms:
@@ -395,6 +403,7 @@ to AUTOMATIC.  Use this method when a heuristic process has classified this glyp
       elif type(id_name) != ListType:
          raise TypeError("id_name must be a string or a list")
       self.id_name = id_name
+      self.confidence = {}
       self.classification_state = HEURISTIC
 
    def get_main_id(self):
@@ -406,14 +415,29 @@ If the image is unclassified, the result is 'UNCLASSIFIED'.
          return 'UNCLASSIFIED'
       return self.id_name[0][1]
 
-   def get_confidence(self):
+   def get_confidence(self, confidence_type=None):
       """Returns the confidence of the primary class assigned to the image.
+*confidence_type* can be one of the predefined `confidence measures`__, e.g.
 
-If the image is unclassified, returns -1.0.
+.. __: classify.html#confidence
+
+.. code:: Python
+
+   from gamera.gameracore import CONFIDENCE_KNNFRACTION
+   glyph.get_confidence(CONFIDENCE_KNNFRACTION)
+
+When no *confidence_type* is given, the default confidence stored with
+``id_name[0]`` is returned. If the image is unclassified, -1.0 is returned.
 """
       if self.classification_state == UNCLASSIFIED:
          return -1.0
-      return self.id_name[0][0]
+      if not confidence_type:
+         return self.id_name[0][0]
+      else:
+         if self.confidence.has_key(confidence_type):
+            return self.confidence[confidence_type]
+         else:
+            raise ValueError("Given confidence %i not stored in confidence map of image" % confidence_type)
 
    def has_id_name(self, name):
       """Returns ``True`` if the image has the given classification ``name``."""
@@ -585,6 +609,7 @@ def _init_gamera():
       return
    _gamera_initialised = True
    import plugin, gamera_xml, sys
+   from gamera.args import NoneDefault
    # Create the default functions for the menupl
    for method in (
       plugin.PluginFactory(
@@ -619,7 +644,7 @@ def _init_gamera():
          plugin.ImageType([ONEBIT]), None),
       plugin.PluginFactory(
          "get_confidence", "Classification", plugin.Float("confidence"),
-         plugin.ImageType([ONEBIT]), None),
+         plugin.ImageType([ONEBIT]), plugin.Args([plugin.Choice("confidence_type", default=NoneDefault)])),
       plugin.PluginFactory(
          "has_id_name", "Classification", plugin.Check("result"),
          plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
@@ -665,6 +690,9 @@ if __name__ == "__main__":
 
 __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "ONEBIT GREYSCALE GREY16 RGB FLOAT COMPLEX ALL DENSE RLE "
+           "CONFIDENCE_DEFAULT CONFIDENCE_KNNFRACTION "
+           "CONFIDENCE_LINEARWEIGHT CONFIDENCE_INVERSEWEIGHT "
+           "CONFIDENCE_NUN CONFIDENCE_NNDISTANCE CONFIDENCE_AVGDISTANCE "
            "ImageData Size Dim Point FloatPoint Rect Region RegionMap "
            "ImageInfo Image SubImage Cc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel "

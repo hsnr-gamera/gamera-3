@@ -1,8 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+#                         Karl MacMillan, and Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -58,6 +58,12 @@ class Args(NoGUIArgs):
 ######################################################################
 
 # ARGUMENT TYPES
+
+# for allowing None as default argument
+class CNoneDefault:
+   def __str__(self):
+      return "None"
+NoneDefault = CNoneDefault()
 
 class Arg:
    default = 0
@@ -248,7 +254,7 @@ class Choice(Arg):
       else:
          self.has_default = True
          self.default = default
-      if type(self.default) != int:
+      if not isinstance(self.default,CNoneDefault) and type(self.default) != int:
          raise TypeError("'default' must be an int")
 
    def rest_repr(self, name = False):
@@ -256,7 +262,10 @@ class Choice(Arg):
       if name:
          result += " *%s*" % self.name
          if self.has_default:
-            result += " = %s" % self.choices[self.default]
+            if isinstance(self.default,CNoneDefault):
+               result += " = %s" % str(self.default)
+            else:
+               result += " = %s" % self.choices[self.default]
       return result
 
 class ChoiceString(Arg):

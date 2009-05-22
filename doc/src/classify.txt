@@ -183,7 +183,7 @@ following meaning:
      Average distance to the k nearest neighbors. This can take
      arbitrary values and is in itself meaningless, but can be useful
      for distance rejection. For k = 1, this is identical to
-     CONFIDENCE_NNDISTANCE.
+     ``CONFIDENCE_NNDISTANCE``.
 
 The ``confidence`` map is only filled for automatically classified
 glyphs. Which confidence types are actually written to the confidence
@@ -197,7 +197,7 @@ References:
     confidence estimation.* Optical Engineering 34, pp. 2785-2792
     (1995)
 
-  - S.A. Dudani: *The Distance-Eighted k-Nearest Neighbor Rule.*
+  - S.A. Dudani: *The Distance-Weighted k-Nearest Neighbor Rule.*
     IEEE Transactions on Systems, Man, and Cybernetics 6, 
     pp. 325-327 (1976)
 

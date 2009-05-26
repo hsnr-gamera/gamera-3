@@ -277,8 +277,8 @@ namespace Gamera {
     // nrows, ncols are cast to a double so that the multiplication happens
     // exactly as it does in Python
     return resize(image, 
-		  Dim(size_t(double(image.width()) * scaling),
-		      size_t(double(image.height()) * scaling)),
+		  Dim(size_t(double(image.ncols()) * scaling),
+		      size_t(double(image.nrows()) * scaling)),
 		  resize_quality);
   }
 

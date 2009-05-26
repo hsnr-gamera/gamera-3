@@ -173,10 +173,12 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     ad.set(as(i1), id);
     ++id;
 
-    --iend, --idend;
-    ad.set(as(iend), idend);
+    // changes with respect to original VIGRA 1.5
+    //--iend, --idend;
+    //ad.set(as(iend), idend);
 
-    double dx = (double)(wold - 1) / (wnew - 1);
+    //double dx = (double)(wold - 1) / (wnew - 1);
+    double dx = (double)wold / wnew;
     double x = dx;
 
     for(; id != idend; ++id, x += dx)

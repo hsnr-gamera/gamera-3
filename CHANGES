@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - corrected resize function in VIGRA
+
  - the knn classifier can now return different confidence
    measures for the main id that are selectable by the
    user. See the classifier API documentation for details.

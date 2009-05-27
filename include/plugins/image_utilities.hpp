@@ -25,6 +25,7 @@
 #include "gameramodule.hpp"
 #include "gamera_limits.hpp"
 #include "vigra/resizeimage.hxx"
+#include "vigra/basicgeometry.hxx"
 #include "plugins/logical.hpp"
 #include <exception>
 #include <math.h>
@@ -264,21 +265,12 @@ namespace Gamera {
     }
     if (resize_quality == 0) {
       // for straight scaling, resampleImage must be used in VIGRA
-      int a,b;
-      double factor;
-      if (image.ncols() > view->ncols()) {
-        a = image.ncols()/view->ncols();
-        b = image.nrows()/view->nrows();
-        factor = (double)image.ncols()/view->ncols();
-      } else {
-        a = view->ncols()/image.ncols();
-        b = view->nrows()/image.nrows();
-        factor = (double)view->ncols()/image.ncols();
-      }
-      if (a == b)
-        resampleImage(src_image_range(image), dest_image(*view), factor);
-      else
-        resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
+      double xfactor = (double)view->ncols()/image.ncols();
+      double yfactor = (double)view->nrows()/image.nrows();
+      //resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
+      // requires extension of VIGRA (see basicgeometry.hxx)
+      // that are not yet merged into VIGRA 1.6.0
+      resampleImage(src_image_range(image), dest_image(*view), xfactor, yfactor);
     } else if (resize_quality == 1) {
       resizeImageLinearInterpolation(src_image_range(image), dest_image_range(*view));
     } else {

@@ -42,6 +42,7 @@ extern "C" {
   static void image_dealloc(PyObject* self);
   static int image_traverse(PyObject* self, visitproc visit, void* arg);
   static int image_clear(PyObject* self);
+  static PyObject* image_repr(PyObject* self);
   // methods
   static PyObject* image_get(PyObject* self, PyObject* args);
   static PyObject* image_set(PyObject* self, PyObject* args);
@@ -700,6 +701,13 @@ static int image_clear(PyObject* self) {
   return 0;
 }
 
+static PyObject* image_repr(PyObject* self) {
+  Rect* x = ((RectObject*)self)->m_x;
+  return PyString_FromFormat("<gameracore.Image: offset_x = %i, offset_y = %i, ncols = %i, nrows = %i>",
+			     (int)x->offset_x(), (int)x->offset_y(),
+			     (int)x->ncols(), (int)x->nrows());
+}
+
 static PyObject* image_get(PyObject* self, const Point& point) {
   RectObject* o = (RectObject*)self;
   ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
@@ -1139,6 +1147,7 @@ void init_ImageType(PyObject* module_dict) {
   ImageType.tp_weaklistoffset = offsetof(ImageObject, m_weakreflist);
   ImageType.tp_traverse = image_traverse;
   ImageType.tp_clear = image_clear;
+  ImageType.tp_repr = image_repr;
   ImageType.tp_doc = CHAR_PTR_CAST
 "The Image constructor creates a new image with newly allocated underlying data.\n\n"
 "There are multiple ways to create an Image:\n\n"

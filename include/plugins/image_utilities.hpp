@@ -253,8 +253,9 @@ namespace Gamera {
     ImageView<typename T::data_type>* view = 
       new ImageView<typename T::data_type>(*data);
     /*
-      Images with nrows or ncols == 1 cannot be scaled. This is a hack that
-      just returns an image with the same color as the upper-left pixel
+      Images with nrows or ncols == 1 cannot be scaled by VIGRA.
+      This is a hack that just returns an image with the same 
+      color as the upper-left pixel
     */
     if (image.nrows() <= 1 || image.ncols() <= 1 || 
 	view->nrows() <= 1 || view->ncols() <= 1) {
@@ -262,7 +263,22 @@ namespace Gamera {
       return view;
     }
     if (resize_quality == 0) {
-      resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
+      // for straight scaling, resampleImage must be used in VIGRA
+      int a,b;
+      double factor;
+      if (image.ncols() > view->ncols()) {
+        a = image.ncols()/view->ncols();
+        b = image.nrows()/view->nrows();
+        factor = (double)image.ncols()/view->ncols();
+      } else {
+        a = view->ncols()/image.ncols();
+        b = view->nrows()/image.nrows();
+        factor = (double)view->ncols()/image.ncols();
+      }
+      if (a == b)
+        resampleImage(src_image_range(image), dest_image(*view), factor);
+      else
+        resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
     } else if (resize_quality == 1) {
       resizeImageLinearInterpolation(src_image_range(image), dest_image_range(*view));
     } else {

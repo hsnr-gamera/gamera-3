@@ -47,6 +47,7 @@
 #include "separableconvolution.hxx"
 #include "resampling_convolution.hxx"
 #include "splines.hxx"
+#include "basicgeometry.hxx"
 
 namespace vigra {
 
@@ -173,12 +174,14 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     ad.set(as(i1), id);
     ++id;
 
-    // changes with respect to original VIGRA 1.5
-    //--iend, --idend;
-    //ad.set(as(iend), idend);
+    // this looks suspicious and makes the function useless
+    // use resampleImage instead!
+    // fixed with respect to VIGRA main branch
+    //--iend, --idend;          // changed
+    //ad.set(as(iend), idend);  // changed
 
-    //double dx = (double)(wold - 1) / (wnew - 1);
-    double dx = (double)wold / wnew;
+    //double dx = (double)(wold - 1) / (wnew - 1);  // changed
+    double dx = (double)wold / wnew;  // changed
     double x = dx;
 
     for(; id != idend; ++id, x += dx)

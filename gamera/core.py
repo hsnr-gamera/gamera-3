@@ -650,8 +650,8 @@ def _init_gamera():
          plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
       plugin.PluginFactory(
          "subimage", "Utility", plugin.Check("result"),
-         plugin.ImageType(ALL), plugin.Args([plugin.Int("offset_y"), plugin.Int("offset_x"),
-                                             plugin.Int("nrows"), plugin.Int("ncols")])),
+         plugin.ImageType(ALL), plugin.Args([plugin.Point("upper_left"),
+                                             plugin.Point("lower_right")])),
       plugin.PluginFactory(
          "to_xml", "XML", plugin.String('xml'),
          plugin.ImageType([ONEBIT]), None),

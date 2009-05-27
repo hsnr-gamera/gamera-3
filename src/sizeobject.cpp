@@ -130,7 +130,7 @@ static PyObject* size_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* size_repr(PyObject* self) {
   Size* x = ((SizeObject*)self)->m_x;
-  return PyString_FromFormat("<gameracore.Size width: %i height: %i>",
+  return PyString_FromFormat("Size(%i, %i)",
 			     (int)x->width(), (int)x->height());
 }
 

@@ -77,7 +77,7 @@ class or_image(LogicalCombine):
       new_image = Image(0, 0,
                         image.nrows + padding * 2, image.ncols + padding * 2,
                         ONEBIT, DENSE)
-      new_image.subimage(padding, padding, image.nrows, image.ncols).or_image(image, True)
+      new_image.subimage((padding, padding), Dim(image.nrows, image.ncols)).or_image(image, True)
       return new_image
 
   Stamping an image over a larger image.  Use subimage to change the

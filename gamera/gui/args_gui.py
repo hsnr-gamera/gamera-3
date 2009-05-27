@@ -225,8 +225,8 @@ class Args:
                return self.function + self.get_args_string()
          except ArgInvalidException, e:
             gui_util.message(str(e))
-         except Exception:
-            throw
+         #except Exception:
+         #   throw
          else:
             break
       self.window.Destroy()
@@ -774,7 +774,7 @@ class Point:
 
 class Dim(Point):
    def get(self):
-      from gamera.core import Point
+      from gamera.core import Dim
       return Dim(int(self.control_x.GetValue()),
                    int(self.control_y.GetValue()))
    

@@ -130,7 +130,7 @@ static PyObject* dim_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* dim_repr(PyObject* self) {
   Dim* x = ((DimObject*)self)->m_x;
-  return PyString_FromFormat("<gameracore.Dim ncols: %i nrows: %i>",
+  return PyString_FromFormat("Dim(%i, %i)",
 			     (int)x->ncols(), (int)x->nrows());
 }
 

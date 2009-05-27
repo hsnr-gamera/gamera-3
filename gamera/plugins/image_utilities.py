@@ -89,6 +89,8 @@ class resize(PluginFunction):
     *interp_type* [None|Linear|Spline]
       The type of interpolation used to resize the image.  Each option
       is progressively higher quality, yet slower.
+
+    .. _scale: #scale
     """
     category = "Utility"
     self_type = ImageType(ALL)
@@ -111,6 +113,8 @@ class scale(PluginFunction):
     *interp_type* [None|Linear|Spline]
       The type of interpolation used to resize the image.  Each option is
       progressively higher quality, yet slower.
+
+    .. _resize: #resize
     """
     category = "Utility"
     self_type = ImageType(ALL)

@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+#                         Karl MacMillan, and Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -118,7 +119,7 @@ class projection_skewed_rows(PluginFunction):
     regions moved outside the original image size are simply clipped,
     which restricts this method to small angles.
 
-    .. _rotate: deformations.html#rotate
+    .. _projection_skewed_cols: #projection_skewed_cols
     """
     self_type = ImageType([ONEBIT])
     args = Args([FloatVector("Rotation angles")])
@@ -246,8 +247,8 @@ class rotation_angle_projections(PluginFunction):
 
         #
         # fine tuning with golden section search
-		# see Press at al: "Numerical Recipes",
-		# Cambridge University Press (1986)
+        # see Press at al: "Numerical Recipes",
+        # Cambridge University Press (1986)
         #
         golden = 0.38197  # (3 - sqrt(2)) / 2
         x = 500   # dummy value for recognition of first iteration

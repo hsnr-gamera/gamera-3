@@ -675,7 +675,7 @@ static PyObject* rect_richcompare(PyObject* a, PyObject* b, int op) {
 
 static PyObject* rect_repr(PyObject* self) {
   Rect* x = ((RectObject*)self)->m_x;
-  return PyString_FromFormat("<gameracore.Rect((%i, %i), Dim(%i, %i))>",
+  return PyString_FromFormat("Rect(Point(%i, %i), Dim(%i, %i))",
 			     (int)x->offset_x(), (int)x->offset_y(),
 			     (int)x->ncols(), (int)x->nrows());
 }

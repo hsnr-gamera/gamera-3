@@ -1,6 +1,8 @@
+//-*- indent-tabs-mode: nil; -*-
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+ *                         Karl MacMillan, and Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,7 +49,7 @@ extern "C" {
   DL_EXPORT(void) initknncore(void);
   // Construction/destruction
   static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
-			   PyObject* kwds);
+                           PyObject* kwds);
   static void knn_dealloc(PyObject* self);
   static PyObject* knn_instantiate_from_images(PyObject* self, PyObject* args);
   // classification
@@ -55,6 +57,7 @@ extern "C" {
   static PyObject* knn_classify_with_images(PyObject* self, PyObject* args);
   static PyObject* knn_leave_one_out(PyObject* self, PyObject* args);
   // distance
+  static PyObject* knn_knndistance_statistics(PyObject* self, PyObject* args);
   static PyObject* knn_distance_from_images(PyObject* self, PyObject* args);
   static PyObject* knn_distance_between_images(PyObject* self, PyObject* args);
   static PyObject* knn_distance_matrix(PyObject* self, PyObject* args);
@@ -163,6 +166,8 @@ PyMethodDef knn_methods[] = {
   { (char *)"classify", knn_classify, METH_VARARGS,
     (char *)"" },
   { (char *)"leave_one_out", knn_leave_one_out, METH_VARARGS, (char *)"" },
+  { (char *)"_knndistance_statistics", knn_knndistance_statistics, METH_VARARGS,
+    (char *)"" },
   { (char *)"serialize", knn_serialize, METH_VARARGS, (char *)"" },
   { (char *)"unserialize", knn_unserialize, METH_VARARGS, (char *)"" },
   { (char *)"_ga_create", knn_ga_create, METH_VARARGS, (char *)"" },
@@ -203,7 +208,7 @@ static void knn_delete_feature_data(KnnObject* o) {
   if (o->id_names != 0) {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
       if (o->id_names[i] != 0)
-	delete[] o->id_names[i];
+        delete[] o->id_names[i];
     }
     delete[] o->id_names;
     o->id_names = 0;
@@ -240,7 +245,7 @@ static void set_num_features(KnnObject* o, size_t num_features) {
   Create a new kNN object and initialize all of the data.
 */
 static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
-			 PyObject* kwds) {
+                         PyObject* kwds) {
   KnnObject* o;
   o = (KnnObject*)pytype->tp_alloc(pytype, 0);
   /*
@@ -441,7 +446,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
   }
   if (o->feature_vectors == 0) {
       PyErr_SetString(PyExc_RuntimeError,
-		      "knn: classify called before instantiate from images");
+                      "knn: classify called before instantiate from images");
       return 0;
   }
   PyObject* unknown;
@@ -476,13 +481,13 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
     double distance;
     if (o->distance_type == CITY_BLOCK) {
       distance = city_block_distance(current_known, current_known + o->num_features,
-				     o->normalized_unknown, o->weight_vector);
+                                     o->normalized_unknown, o->weight_vector);
     } else if (o->distance_type == FAST_EUCLIDEAN) {
       distance = fast_euclidean_distance(current_known, current_known + o->num_features,
-					 o->normalized_unknown, o->weight_vector);
+                                         o->normalized_unknown, o->weight_vector);
     } else {
       distance = euclidean_distance(current_known, current_known + o->num_features,
-				    o->normalized_unknown, o->weight_vector);
+                                    o->normalized_unknown, o->weight_vector);
     }
 
     knn.add(o->id_names[i], distance);
@@ -541,7 +546,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   Py_ssize_t unknown_len;
   if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError,
-		      "knn: error getting feature vector \
+                      "knn: error getting feature vector \
                        (This is most likely because features have not been generated.)");
       return 0;
   }
@@ -566,7 +571,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
     double distance;
     if (compute_distance(o->distance_type, cur, unknown_buf, &distance, o->weight_vector, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError,
-		      "knn: error in distance calculation \
+                      "knn: error in distance calculation \
                        (This is most likely because features have not been generated.)");
       return 0;
     }
@@ -635,7 +640,7 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
   Py_ssize_t unknown_len;
   if (image_get_fv(unknown, &unknown_buf, &unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError,
-		      "knn: error getting feature vector \
+                      "knn: error getting feature vector \
                        (This is most likely because features have not been generated.)");
       return 0;
   }
@@ -653,14 +658,14 @@ static PyObject* knn_distance_from_images(PyObject* self, PyObject* args) {
     double distance;
     if (compute_distance(o->distance_type, cur, unknown_buf, &distance, weights, unknown_len) < 0) {
       PyErr_SetString(PyExc_ValueError,
-		      "knn: error in distance calculation \
+                      "knn: error in distance calculation \
                        (This is most likely because features have not been generated.)");
       return 0;
     }
     tmp_val = Py_BuildValue(CHAR_PTR_CAST "(fO)", distance, cur);
     if (distance < maximum_distance)
       if (PyList_Append(distance_list, tmp_val) < 0)
-	return 0;
+        return 0;
     Py_DECREF(tmp_val);
     Py_DECREF(cur);
   }
@@ -685,7 +690,7 @@ static PyObject* knn_distance_between_images(PyObject* self, PyObject* args) {
 
   double distance = 0.0;
   compute_distance(o->distance_type, imagea, imageb, &distance, o->weight_vector,
-		   o->num_features);
+                   o->num_features);
   return Py_BuildValue(CHAR_PTR_CAST "f", distance);
 }
 
@@ -776,16 +781,16 @@ PyObject* knn_distance_matrix(PyObject* self, PyObject* args) {
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PySequence_Fast_GET_ITEM(images_seq, j);
       if (cur_b == NULL)
-	goto mat_error;
+        goto mat_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
-	goto mat_error;
+        goto mat_error;
       if (normalize)
-	norm.apply(buf_b, buf_b + len_b, tmp_b);
+        norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
       if (normalize)
-	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+        compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
-	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
+        compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
       mat->set(Point(j, i), distance);
       mat->set(Point(i, j), distance);
     }
@@ -891,21 +896,21 @@ PyObject* knn_unique_distances(PyObject* self, PyObject* args) {
     for (int j = i + 1; j < images_len; ++j) {
       cur_b = PySequence_Fast_GET_ITEM(images_seq, j);
       if (cur_b == NULL)
-	goto uniq_error;
+        goto uniq_error;
       if (image_get_fv(cur_b, &buf_b, &len_b) < 0)
-	goto uniq_error;
+        goto uniq_error;
 
       if (len_a != len_b) {
-	PyErr_SetString(PyExc_ValueError, "Feature vector lengths do not match!");
-	goto uniq_error;
+        PyErr_SetString(PyExc_ValueError, "Feature vector lengths do not match!");
+        goto uniq_error;
       }
       if (normalize)
-	norm.apply(buf_b, buf_b + len_b, tmp_b);
+        norm.apply(buf_b, buf_b + len_b, tmp_b);
       double distance;
       if (normalize)
-	compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
+        compute_distance(o->distance_type, tmp_a, len_a, tmp_b, &distance, weights);
       else
-	compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
+        compute_distance(o->distance_type, buf_a, len_a, buf_b, &distance, weights);
       list->set(Point(index, 0), distance);
       index++;
     }
@@ -986,8 +991,8 @@ static int knn_set_confidence_types(PyObject* self, PyObject* list) {
 }
 
 static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
-					double* weight_vector = 0,
-					std::vector<long>* indexes = 0) {
+                                        double* weight_vector = 0,
+                                        std::vector<long>* indexes = 0) {
   double* weights = weight_vector;
   if (weights == 0)
     weights = o->weight_vector;
@@ -1003,66 +1008,66 @@ static std::pair<int,int> leave_one_out(KnnObject* o, int stop_threshold,
       // hope that kNN will return the correct answer (because
       // there aren't enough examples in the database).
       if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2)) {
-	continue;
+        continue;
       }
       double* current_known = o->feature_vectors;
       double* unknown = &o->feature_vectors[i * o->num_features];
       for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
-	if (i == j)
-	  continue;
-	double distance;
-	if (o->distance_type == CITY_BLOCK) {
-	  distance = city_block_distance(current_known, current_known + o->num_features,
-					 unknown, weights);
-	} else if (o->distance_type == FAST_EUCLIDEAN) {
-	  distance = fast_euclidean_distance(current_known, current_known + o->num_features,
-					     unknown, weights);
-	} else {
-	  distance = euclidean_distance(current_known, current_known + o->num_features,
-					unknown, weights);
-	}
-	knn.add(o->id_names[j], distance);
+        if (i == j)
+          continue;
+        double distance;
+        if (o->distance_type == CITY_BLOCK) {
+          distance = city_block_distance(current_known, current_known + o->num_features,
+                                         unknown, weights);
+        } else if (o->distance_type == FAST_EUCLIDEAN) {
+          distance = fast_euclidean_distance(current_known, current_known + o->num_features,
+                                             unknown, weights);
+        } else {
+          distance = euclidean_distance(current_known, current_known + o->num_features,
+                                        unknown, weights);
+        }
+        knn.add(o->id_names[j], distance);
       }
       knn.majority();
       if (strcmp(knn.answer[0].first, o->id_names[i]) == 0) {
-	total_correct++;
+        total_correct++;
       }
       knn.reset();
       total_queries++;
       if (total_queries - total_correct > stop_threshold)
-	return std::make_pair(total_correct, total_queries);
+        return std::make_pair(total_correct, total_queries);
     }
   } else {
     for (size_t i = 0; i < o->num_feature_vectors; ++i) {
       if (o->id_name_histogram[i] < int((o->num_k + 0.5) / 2))
-	continue;
+        continue;
       double* current_known = o->feature_vectors;
       double* unknown = &o->feature_vectors[i * o->num_features];
       for (size_t j = 0; j < o->num_feature_vectors; ++j, current_known += o->num_features) {
-	if (i == j)
-	  continue;
-	double distance;
-	if (o->distance_type == CITY_BLOCK) {
-	  distance = city_block_distance_skip(current_known, unknown, weights,
-					      indexes->begin(), indexes->end());
-	} else if (o->distance_type == FAST_EUCLIDEAN) {
-	  distance = fast_euclidean_distance_skip(current_known, unknown, weights,
-						  indexes->begin(), indexes->end());
-	} else {
-	  distance = euclidean_distance_skip(current_known, unknown, weights,
-					     indexes->begin(), indexes->end());
-	}
+        if (i == j)
+          continue;
+        double distance;
+        if (o->distance_type == CITY_BLOCK) {
+          distance = city_block_distance_skip(current_known, unknown, weights,
+                                              indexes->begin(), indexes->end());
+        } else if (o->distance_type == FAST_EUCLIDEAN) {
+          distance = fast_euclidean_distance_skip(current_known, unknown, weights,
+                                                  indexes->begin(), indexes->end());
+        } else {
+          distance = euclidean_distance_skip(current_known, unknown, weights,
+                                             indexes->begin(), indexes->end());
+        }
 
-	knn.add(o->id_names[j], distance);
+        knn.add(o->id_names[j], distance);
       }
       knn.majority();
       if (strcmp(knn.answer[0].first, o->id_names[i]) == 0) {
-	total_correct++;
+        total_correct++;
       }
       knn.reset();
       total_queries++;
       if (total_queries - total_correct > stop_threshold)
-	return std::make_pair(total_correct, total_queries);
+        return std::make_pair(total_correct, total_queries);
     }
   }
   return std::make_pair(total_correct, total_queries);
@@ -1079,7 +1084,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     return 0;
   if (o->feature_vectors == 0) {
     PyErr_SetString(PyExc_RuntimeError,
-		    "knn: leave_one_out called before instantiate_from_images.");
+                    "knn: leave_one_out called before instantiate_from_images.");
     return 0;
   }
   if (indexes == 0) {
@@ -1104,24 +1109,89 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
     for (int i = 0; i < indexes_size; ++i) {
       PyObject* tmp = PySequence_Fast_GET_ITEM(indexes_seq, i);
       if (!PyInt_Check(tmp)) {
-	PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be ints");
-	Py_DECREF(indexes_seq);
-	return 0;
+        PyErr_SetString(PyExc_TypeError, "knn: expected indexes to be ints");
+        Py_DECREF(indexes_seq);
+        return 0;
       }
       idx[i] = PyInt_AS_LONG(tmp);
     }
     // make certain that none of the indexes are out of range
     for (size_t i = 0; i < idx.size(); ++i) {
       if (idx[i] > (long)(o->num_features - 1)) {
-	PyErr_SetString(PyExc_IndexError, "knn: index out of range in index list");
-	Py_DECREF(indexes_seq);
-	return 0;
+        PyErr_SetString(PyExc_IndexError, "knn: index out of range in index list");
+        Py_DECREF(indexes_seq);
+        return 0;
       }
     }
     // do the leave-one-out
     std::pair<int, int> ans = leave_one_out(o, stop_threshold, o->weight_vector, &idx);
     return Py_BuildValue(CHAR_PTR_CAST "(ii)", ans.first, ans.second);
   }
+}
+
+/*
+  statistics of average distance to k nearest neighbors
+*/
+static PyObject* knn_knndistance_statistics(PyObject* self, PyObject* args) {
+  KnnObject* o = (KnnObject*)self;
+  PyObject* progress = 0;
+  int k;
+  size_t i,j;
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|iO", &k, &progress) <= 0)
+    return 0;
+  if (o->feature_vectors == 0) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "knn: knndistance_statistics called before instantiate_from_images.");
+    return 0;
+  }
+  if (k <= 0) {
+    k = o->num_k;
+  }
+  if (k > (int)o->num_feature_vectors - 1) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "knn: knndistance_statistics requires more than k training samples.");
+    return 0;
+  }
+  PyObject* entry;
+  PyObject* result = PyList_New(o->num_feature_vectors);
+  double *feature_i, *feature_j;
+  double distance;
+  kNearestNeighbors<char*, ltstr, eqstr> knn((size_t)k);
+  for (i=0; i<o->num_feature_vectors; i++) {
+    knn.reset();
+    // find k nearest neighbors of i-th prototype
+    feature_i = &o->feature_vectors[i * o->num_features];
+    for (j=0; j<o->num_feature_vectors; j++) {
+      if (j==i) continue;
+      feature_j = &o->feature_vectors[j * o->num_features];
+      // compute distance
+      if (o->distance_type == CITY_BLOCK) {
+        distance = city_block_distance(feature_i, feature_i + o->num_features,
+                                       feature_j, o->weight_vector);
+      } else if (o->distance_type == FAST_EUCLIDEAN) {
+        distance = fast_euclidean_distance(feature_i, feature_i + o->num_features,
+                                           feature_j, o->weight_vector);
+      } else {
+        distance = euclidean_distance(feature_i, feature_i + o->num_features,
+                                      feature_j, o->weight_vector);
+      }
+      // store distance in kNearestNeighbors
+      knn.add(o->id_names[j], distance);
+    }
+    // compute average distance
+    distance = 0.0;
+    for (j=0; j < knn.m_nn.size(); ++j) {
+      distance += knn.m_nn[j].distance;
+    }
+    distance = distance / k;
+    entry = PyTuple_New(2);
+    PyTuple_SET_ITEM(entry, 0, PyFloat_FromDouble(distance));
+    PyTuple_SET_ITEM(entry, 1, PyString_FromString(o->id_names[i]));
+    PyList_SetItem(result, i, entry);
+    if (progress)
+      PyObject_CallObject(progress, NULL);
+  }
+  return result;
 }
 
 /*
@@ -1151,7 +1221,7 @@ static PyObject* knn_leave_one_out(PyObject* self, PyObject* args) {
   unsigned long    number of feature names
   na               list of feature names in the format
                    of unsigned long (length - including null)
-		   and char[]
+                   and char[]
 
   DATA
 
@@ -1231,7 +1301,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
       return 0;
     }
     if (fwrite((const void*)PyString_AS_STRING(cur_string),
-	       sizeof(char), string_size, file) != string_size) {
+               sizeof(char), string_size, file) != string_size) {
       PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
@@ -1250,7 +1320,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   }
 
   if (fwrite((const void*)o->normalize->get_norm_vector(),
-	     sizeof(double), o->num_features, file) != o->num_features) {
+             sizeof(double), o->num_features, file) != o->num_features) {
     PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
     return 0;
   }
@@ -1265,7 +1335,7 @@ static PyObject* knn_serialize(PyObject* self, PyObject* args) {
   double* cur = o->feature_vectors;
   for (size_t i = 0; i < o->num_feature_vectors; ++i, cur += o->num_features) {
     if (fwrite((const void*)cur, sizeof(double), o->num_features, file)
-	!= o->num_features) {
+        != o->num_features) {
       PyErr_SetString(PyExc_IOError, "knn: problem writing to a file.");
       return 0;
     }
@@ -1325,7 +1395,7 @@ static PyObject* knn_unserialize(PyObject* self, PyObject* args) {
       return 0;
     }
     PyList_SET_ITEM(feature_names, i,
-		    PyString_FromStringAndSize((const char*)&tmp_string, string_size - 1));
+                    PyString_FromStringAndSize((const char*)&tmp_string, string_size - 1));
   }
 
   knn_delete_feature_data(o);
@@ -1576,11 +1646,11 @@ DL_EXPORT(void) initknncore(void) {
   PyType_Ready(&KnnType);
   PyDict_SetItemString(d, "kNN", (PyObject*)&KnnType);
   PyDict_SetItemString(d, "CITY_BLOCK",
-		       Py_BuildValue(CHAR_PTR_CAST "i", CITY_BLOCK));
+                       Py_BuildValue(CHAR_PTR_CAST "i", CITY_BLOCK));
   PyDict_SetItemString(d, "EUCLIDEAN",
-		       Py_BuildValue(CHAR_PTR_CAST "i", EUCLIDEAN));
+                       Py_BuildValue(CHAR_PTR_CAST "i", EUCLIDEAN));
   PyDict_SetItemString(d, "FAST_EUCLIDEAN",
-		       Py_BuildValue(CHAR_PTR_CAST "i", FAST_EUCLIDEAN));
+                       Py_BuildValue(CHAR_PTR_CAST "i", FAST_EUCLIDEAN));
 
   PyObject* array_dict = get_module_dict("array");
   if (array_dict == 0) {

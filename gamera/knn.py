@@ -220,6 +220,30 @@ correct).
       ans = self.leave_one_out()
       return float(ans[0]) / float(ans[1])
 
+   def knndistance_statistics(self, k=0):
+      """**knndistance_statistics** (Int *k* = 0)
+
+Returns a list of average distances between each training sample and its *k*
+nearest neighbors. So, when you have *n* training samples, *n* average
+distance values are returned. This can be useful for distance rejection.
+
+Each item in the returned list is a tuple (*d*, *classname*), where
+*d* is the average kNN distance and *classname* is the class name of the
+training sample. In most cases, the class name is of little interest,
+but it could be useful if you need class conditional distance statistics.
+Beware however, that the average distance is computed over neighbors
+belonging to any class, not just the same class. If you need the latter,
+you must create a new classifier from training samples belonging only
+to the specific class.
+
+When *k* is zero, the property ``num_k`` of the knn classifier is used.
+"""
+      self.instantiate_from_images(self.database)
+      progress = util.ProgressFactory("Generating knndistance statistics...", len(self.database))
+      stats = self._knndistance_statistics(k, progress.step)
+      progress.kill()
+      return stats
+
    def settings_dialog(self, parent):
       """Display a settings dialog for k-NN settings"""
       from gamera import args

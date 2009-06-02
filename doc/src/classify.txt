@@ -239,9 +239,10 @@ Each classifier has the following member variables:
 
   ``_database``
     List of glyphs used as training data. This is a private property
-    that can only be accessed through the methods ``get_database`` 
+    that can only be accessed through the methods ``get_glyphs`` 
     and ``set_glyphs``, or it is set in the constructor or with
-    ``from_xml_filename``
+    ``from_xml_filename``. Note that the return value of ``get_glyphs``
+    must be converted to a list with ``list(classifier.get_glyphs())``.
 
   ``confidence_types``
     List of confidence types tht are to be computed during 
@@ -409,7 +410,7 @@ Serialization
 Evaluation
 ''''''''''
 
-.. docstring:: gamera.knn _kNNBase evaluate distance_from_images distance_between_images distance_matrix unique_distances
+.. docstring:: gamera.knn _kNNBase evaluate knndistance_statistics distance_from_images distance_between_images distance_matrix unique_distances
 
 ``kNNInteractive``
 ''''''''''''''''''

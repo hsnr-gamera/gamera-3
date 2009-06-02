@@ -528,12 +528,14 @@ will be displayed in a window:
 
   .. image:: images/progress_bar.png
 
-When the GUI is not running and the ``--progress-bar`` argument was
-provided when Gamera started, the progress bar will be displayed in
-the console::
+It is also possible to display a progress bar made from text characters
+in the console, when the GUI is not running. To make it appear, set
+the config option *progress_bar* to ``True`` as follows:
 
-  Generating connected components
-  |========================================------------------------------|
+.. code:: Python
+
+   from gamera.config import config
+   config.set("progress_bar",True)
 
 Progress bars will add some overhead when displayed, so they
 only make sense for plugins that take a long time to complete.

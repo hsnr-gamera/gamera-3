@@ -571,9 +571,9 @@ namespace Gamera {
       // confidence types and values for main class
       std::vector<int> confidence_types;
       std::vector<double> confidence;
-    private:
       std::vector<neighbor_type> m_nn;
       neighbor_type* m_nun;
+    private:
       size_t m_k;
       double m_max_distance;
     };

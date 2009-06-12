@@ -501,16 +501,18 @@ class remove_border(PluginFunction):
 
 class highlight(PluginFunction):
   """
-  Highlights a connected component on a given image using the given color.
-  Self must be an RGB image (usually the original image.)
+  Highlights all pixels on an image in given color that are black in the
+  passed connected component. The connected component can be part of a
+  different image, it must however lie within the image region.
 
   *cc*
     A one-bit connected component from the image
 
   *color*
-    An RGBPixel color value used to color the *cc*.
+    An color value (RGBPixel, 0-255, or [0|1], depending on the image
+    type) used to color the *cc*.
   """
-  self_type = ImageType([RGB])
+  self_type = ImageType([RGB,GREYSCALE,ONEBIT])
   args = Args([ImageType([ONEBIT], "cc"), Pixel("color")])
 
   def __doc_example1__(images):

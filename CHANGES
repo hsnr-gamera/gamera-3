@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - highlight also works with GREYSCALE and ONEBIT images
+
  - corrected resize function in VIGRA
 
  - the knn classifier can now return different confidence

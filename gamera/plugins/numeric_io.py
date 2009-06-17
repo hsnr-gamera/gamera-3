@@ -19,12 +19,13 @@
 """
 
 from gamera.plugin import *
+from gamera.util import warn_deprecated
 
 try:
-    import Numeric as n
+    import numpy.oldnumeric as n
 except ImportError:
     if __debug__:
-        print ('Numeric could not be imported.')
+        print ('numpy.oldumeric could not be imported.')
 else:
     _typecodes = {RGB       : n.UInt8,
                   GREYSCALE : n.UInt8,
@@ -92,13 +93,13 @@ else:
         def _check_input(array):
 
             shape = array.shape
-            typecode = array.typecode()
+            typecode = array.dtype.char
             if len(shape) == 3 and shape[2] == 3 and typecode == n.UInt8:
                 return RGB
             elif len(shape) == 2:
                 if _inverse_typecodes.has_key(typecode):
                     return _inverse_typecodes[typecode]
-            raise ValueError('Array is not one of the acceptable types (UInt8 * 3, UInt8, UInt16, UInt32, Float32, Complex64)')
+            raise ValueError('Array is not one of the acceptable types (UInt8 * 3, UInt8, UInt16, UInt32, Float64, Complex64)')
         _check_input = staticmethod(_check_input)
 
     class to_numeric(PluginFunction):
@@ -174,7 +175,7 @@ else:
                         __doc_example6__]
 
     class NumericModule(PluginModule):
-        category = "ExternalLibraries/Numeric"
+        category = None #"ExternalLibraries/Numeric"
         author = "Alex Cobb"
         functions = [from_numeric, to_numeric]
         pure_python = True

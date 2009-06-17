@@ -1,22 +1,22 @@
-# Copyright (c) 1999-2000 Gary Strangman; All Rights Reserved.
+# Copyright (c) 1999-2007 Gary Strangman; All Rights Reserved.
 #
-# This software is distributable under the terms of the GNU
-# General Public License (GPL) v2, the text of which can be found at
-# http://www.gnu.org/copyleft/gpl.html. Installing, importing or otherwise
-# using this module constitutes acceptance of the terms of this License.
-#
-# Disclaimer
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 # 
-# This software is provided "as-is".  There are no expressed or implied
-# warranties of any kind, including, but not limited to, the warranties
-# of merchantability and fittness for a given application.  In no event
-# shall Gary Strangman be liable for any direct, indirect, incidental,
-# special, exemplary or consequential damages (including, but not limited
-# to, loss of use, data or profits, or business interruption) however
-# caused and on any theory of liability, whether in contract, strict
-# liability or tort (including negligence or otherwise) arising in any way
-# out of the use of this software, even if advised of the possibility of
-# such damage.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 #
 # Comments and/or additions are welcome (send e-mail to:
 # strang@nmr.mgh.harvard.edu).
@@ -26,7 +26,7 @@ pstat.py module
 
 #################################################
 #######  Written by:  Gary Strangman  ###########
-#######  Last modified:  Jun 29, 2001 ###########
+#######  Last modified:  Dec 18, 2007 ###########
 #################################################
 
 This module provides some useful list and array manipulation routines
@@ -86,6 +86,7 @@ functions/methods.  Their inclusion here is for function name consistency.
 
 ## CHANGE LOG:
 ## ==========
+## 07-11-26 ... edited to work with numpy
 ## 01-11-15 ... changed list2string() to accept a delimiter
 ## 01-06-29 ... converted exec()'s to eval()'s to make compatible with Py2.1
 ## 01-05-31 ... added duplicates() and aduplicates() functions
@@ -322,7 +323,7 @@ Returns: rows from listoflists that meet the specified criterion.
 
 def flat(l):
     """
-Returns the flattened version of a '2D' list.  List-correlate to the a.flat()
+Returns the flattened version of a '2D' list.  List-correlate to the a.ravel()()
 method of NumPy arrays.
 
 Usage:    flat(l)
@@ -490,7 +491,7 @@ def printcc (lst,extra=2):
     """
 Prints a list of lists in columns, customized by the max size of items
 within the columns (max size of items in col, plus 'extra' number of spaces).
-Use 'dashes' or '\n' in the list-of-lists to print dashes or blank lines,
+Use 'dashes' or '\\n' in the list-of-lists to print dashes or blank lines,
 respectively.
 
 Usage:   printcc (lst,extra=2)
@@ -713,9 +714,8 @@ Usage:   nonrepeats (inlist)
 #===================   PSTAT ARRAY FUNCTIONS  =====================
 #===================   PSTAT ARRAY FUNCTIONS  =====================
 
-try:                         # DEFINE THESE *ONLY* IF NUMERIC IS AVAILABLE
- import Numeric
- N = Numeric
+try:                         # DEFINE THESE *ONLY* IF numpy IS AVAILABLE
+ import numpy as N
 
  def aabut (source, *args):
     """
@@ -755,7 +755,7 @@ column-array (and that the whole array will be returned as a column).
 Usage:   acolex (a,indices,axis=1)
 Returns: the columns of a specified by indices
 """
-    if type(indices) not in [ListType,TupleType,N.ArrayType]:
+    if type(indices) not in [ListType,TupleType,N.ndarray]:
         indices = [indices]
     if len(N.shape(a)) == 1:
         cols = N.resize(a,[a.shape[0],1])
@@ -779,6 +779,11 @@ Returns: unique 'conditions' specified by the contents of columns specified
     def acollmean (inarray):
         return N.sum(N.ravel(inarray))
 
+    if type(keepcols) not in [ListType,TupleType,N.ndarray]:
+        keepcols = [keepcols]
+    if type(collapsecols) not in [ListType,TupleType,N.ndarray]:
+        collapsecols = [collapsecols]
+
     if cfcn == None:
         cfcn = acollmean
     if keepcols == []:
@@ -798,14 +803,14 @@ Returns: unique 'conditions' specified by the contents of columns specified
             means = aabut(means,test)
         return means
     else:
-        if type(keepcols) not in [ListType,TupleType,N.ArrayType]:
+        if type(keepcols) not in [ListType,TupleType,N.ndarray]:
             keepcols = [keepcols]
         values = colex(a,keepcols)   # so that "item" can be appended (below)
         uniques = unique(values)  # get a LIST, so .sort keeps rows intact
         uniques.sort()
         newlist = []
         for item in uniques:
-            if type(item) not in [ListType,TupleType,N.ArrayType]:
+            if type(item) not in [ListType,TupleType,N.ndarray]:
                 item =[item]
             tmprows = alinexand(a,keepcols,item)
             for col in collapsecols:
@@ -843,7 +848,7 @@ Usage:   adm (a,criterion)   where criterion is like 'x[2]==37'
     try:
         lines = N.array(lines)
     except:
-        lines = N.array(lines,'O')
+        lines = N.array(lines,dtype='O')
     return lines
 
 
@@ -862,9 +867,9 @@ Returns the rows of an array where col (from columnlist) = val
 Usage:   alinexand (a,columnlist,valuelist)
 Returns: the rows of a where columnlist[i]=valuelist[i] for ALL i
 """
-    if type(columnlist) not in [ListType,TupleType,N.ArrayType]:
+    if type(columnlist) not in [ListType,TupleType,N.ndarray]:
         columnlist = [columnlist]
-    if type(valuelist) not in [ListType,TupleType,N.ArrayType]:
+    if type(valuelist) not in [ListType,TupleType,N.ndarray]:
         valuelist = [valuelist]
     criterion = ''
     for i in range(len(columnlist)):
@@ -888,9 +893,9 @@ other list.
 Usage:   alinexor (a,columnlist,valuelist)
 Returns: the rows of a where columnlist[i]=valuelist[i] for ANY i
 """
-    if type(columnlist) not in [ListType,TupleType,N.ArrayType]:
+    if type(columnlist) not in [ListType,TupleType,N.ndarray]:
         columnlist = [columnlist]
-    if type(valuelist) not in [ListType,TupleType,N.ArrayType]:
+    if type(valuelist) not in [ListType,TupleType,N.ndarray]:
         valuelist = [valuelist]
     criterion = ''
     if len(columnlist) == 1 and len(valuelist) > 1:
@@ -913,8 +918,7 @@ Replaces all occurrences of oldval with newval in array a.
 
 Usage:   areplace(a,oldval,newval)
 """
-    newa = N.not_equal(a,oldval)*a
-    return newa+N.equal(a,oldval)*newval
+    return N.where(a==oldval,newval,a)
 
 
  def arecode (a,listmap,col='all'):
@@ -922,42 +926,45 @@ Usage:   areplace(a,oldval,newval)
 Remaps the values in an array to a new set of values (useful when
 you need to recode data from (e.g.) strings to numbers as most stats
 packages require.  Can work on SINGLE columns, or 'all' columns at once.
+@@@BROKEN 2007-11-26
 
 Usage:   arecode (a,listmap,col='all')
 Returns: a version of array a where listmap[i][0] = (instead) listmap[i][1]
 """
     ashape = a.shape
     if col == 'all':
-        work = a.flat
+        work = a.ravel()
     else:
         work = acolex(a,col)
-        work = work.flat
+        work = work.ravel()
     for pair in listmap:
-        if type(pair[1]) == StringType or work.typecode()=='O' or a.typecode()=='O':
-            work = N.array(work,'O')
-            a = N.array(a,'O')
+        if type(pair[1]) == StringType or work.dtype.char=='O' or a.dtype.char=='O':
+            work = N.array(work,dtype='O')
+            a = N.array(a,dtype='O')
             for i in range(len(work)):
                 if work[i]==pair[0]:
                     work[i] = pair[1]
             if col == 'all':
                 return N.reshape(work,ashape)
             else:
-                return N.concatenate([a[:,0:col],work[:,N.NewAxis],a[:,col+1:]],1)
+                return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
         else:   # must be a non-Object type array and replacement
-            work = N.where(N.equal(work,pair[0]),pair[1],work)
-            return N.concatenate([a[:,0:col],work[:,N.NewAxis],a[:,col+1:]],1)
+            work = N.where(work==pair[0],pair[1],work)
+            return N.concatenate([a[:,0:col],work[:,N.newaxis],a[:,col+1:]],1)
 
 
  def arowcompare(row1, row2):
     """
 Compares two rows from an array, regardless of whether it is an
 array of numbers or of python objects (which requires the cmp function).
+@@@PURPOSE? 2007-11-26
 
 Usage:   arowcompare(row1,row2)
 Returns: an array of equal length containing 1s where the two rows had
          identical elements and 0 otherwise
 """
-    if row1.typecode()=='O' or row2.typecode=='O':
+    return 
+    if row1.dtype.char=='O' or row2.dtype=='O':
         cmpvect = N.logical_not(abs(N.array(map(cmp,row1,row2)))) # cmp fcn gives -1,0,1
     else:
         cmpvect = N.equal(row1,row2)
@@ -986,14 +993,7 @@ relative to one another.
 Usage:   asortrows(a,axis=0)
 Returns: sorted version of a
 """
-    if axis != 0:
-        a = N.swapaxes(a, axis, 0)
-    l = a.tolist()
-    l.sort()           # or l.sort(_sort)
-    y = N.array(l)
-    if axis != 0:
-        y = N.swapaxes(y, axis, 0)
-    return y
+    return N.sort(a,axis=axis,kind='mergesort')
 
 
  def aunique(inarray):
@@ -1006,17 +1006,17 @@ Usage:   aunique (inarray)
     uniques = N.array([inarray[0]])
     if len(uniques.shape) == 1:            # IF IT'S A 1D ARRAY
         for item in inarray[1:]:
-            if N.add.reduce(N.equal(uniques,item).flat) == 0:
+            if N.add.reduce(N.equal(uniques,item).ravel()) == 0:
                 try:
-                    uniques = N.concatenate([uniques,N.array[N.NewAxis,:]])
+                    uniques = N.concatenate([uniques,N.array[N.newaxis,:]])
                 except TypeError:
                     uniques = N.concatenate([uniques,N.array([item])])
     else:                                  # IT MUST BE A 2+D ARRAY
-        if inarray.typecode() != 'O':  # not an Object array
+        if inarray.dtype.char != 'O':  # not an Object array
             for item in inarray[1:]:
                 if not N.sum(N.alltrue(N.equal(uniques,item),1)):
                     try:
-                        uniques = N.concatenate( [uniques,item[N.NewAxis,:]] )
+                        uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
                     except TypeError:    # the item to add isn't a list
                         uniques = N.concatenate([uniques,N.array([item])])
                 else:
@@ -1031,7 +1031,7 @@ Usage:   aunique (inarray)
                         break
                 if newflag == 1:
                     try:
-                        uniques = N.concatenate( [uniques,item[N.NewAxis,:]] )
+                        uniques = N.concatenate( [uniques,item[N.newaxis,:]] )
                     except TypeError:    # the item to add isn't a list
                         uniques = N.concatenate([uniques,N.array([item])])
     return uniques

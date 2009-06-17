@@ -1,4 +1,4 @@
-# Copyright (c) Gary Strangman.  All rights reserved
+# Copyright (c) 2000-2007 Gary Strangman.  All rights reserved
 #
 # Disclaimer
 # 
@@ -32,10 +32,20 @@ Defines a number of functions for pseudo-command-line OS functionality.
     braw(filename,btype)
     bput(outarray,filename,writeheader=0,packstring='h',writetype='wb')
     mrget(filename)
+    find_dirs(sourcedir)
 """
 
 ## CHANGES:
 ## =======
+## 07-11-26 ... more numpy conversion work
+## 06-08-07 ... converted to numpy, changed version to 0.6
+## 06-02-03 ... added add2afnihistory() to load modify afni HISTORY_NOTEs,
+##              and added that option to array2afni output
+## 04-06-14 ... added getafniparam() to load in afni values from HEAD files
+## 03-04-09 ... fixed brikget to load based on datatype, changed array2afni
+##              so that the default sliceorder is altplus, not seqplus
+## 02-11-20 ... added binget(), binput(), array2afni(), version 0.5
+## 02-10-20 ... added find_dirs() function, changed version to 0.4
 ## 01-11-15 ... changed aput() and put() to accept a delimiter
 ## 01-04-19 ... added oneperline option to put() function
 ## 99-11-07 ... added DAs quick flat-text-file loaders, load() and fload()
@@ -57,11 +67,11 @@ except:
     pass
 
 import pstat
-import glob, re, string, types, os, Numeric, struct, copy, time, tempfile, sys
+import glob, re, string, types, os, struct, copy, time, tempfile, sys
 from types import *
-N = Numeric
+import numpy as N
 
-__version__ = 0.3
+__version__ = 0.6
 
 def wrap(f):
     """
@@ -117,7 +127,6 @@ outpattern.  Can only handle a single '*' in the two patterns!!!
 
 Usage:   rename (source, dest)     e.g., rename('*.txt', '*.c')
 """
-
     infiles = glob.glob(source)
     outfiles = []
     incutindex = string.index(source,'*')
@@ -138,6 +147,7 @@ Usage:   rename (source, dest)     e.g., rename('*.txt', '*.c')
                 if lastone <> -1:
                     newname = fname[0:lastone]
                     newname = newname + re.sub(findpattern2,replpattern2,fname[lastone:],1)
+        print fname, newname
         os.rename(fname,newname)
     return
 
@@ -163,7 +173,7 @@ Returns: a 1D or 2D list of lists from whitespace delimited text files
         
     if len(fnames) == 0:
         if verbose:
-            print 'NO FILENAMES MATCH PATTERN !!'
+            print 'NO FILENAMES MATCH ('+namepatterns+') !!'
         return None
 
     if verbose:
@@ -199,7 +209,7 @@ Returns: a list of strings, one per line in each text file specified by
     fnames = glob.glob(namepattern)
     if len(fnames) == 0:
         if verbose:
-            print 'NO FILENAMES MATCH PATTERN !!'
+            print 'NO FILENAMES MATCH ('+namepattern+') !!'
         return None
     if verbose:
         print fnames
@@ -220,7 +230,7 @@ file.
 Usage:   put (outlist,fname,writetype='w',oneperline=0,delimit=' ')
 Returns: None
 """
-    if type(outlist) in [N.ArrayType]:
+    if type(outlist) in [N.ndarray]:
         aput(outlist,fname,writetype)
         return
     if type(outlist[0]) not in [ListType,TupleType]:  # 1D list
@@ -263,7 +273,7 @@ Returns: an array of integers, floats or objects (type='O'), depending on the
     fnames = glob.glob(namepattern)
     if len(fnames) == 0:
         if verbose:
-            print 'NO FILENAMES MATCH PATTERN !!'
+            print 'NO FILENAMES MATCH ('+namepattern+') !!'
             return None
     if verbose:
         print fnames
@@ -274,7 +284,7 @@ Returns: an array of integers, floats or objects (type='O'), depending on the
         del_list = []
         for row in range(len(newelements)):
             if (newelements[row][0]=='%' or newelements[row][0]=='#'
-                or len(newelements[row])==1):
+                or len(newelements[row])==1 or newelements[row][0]=='\r'):
                 del_list.append(row)
         del_list.reverse()
         for i in del_list:
@@ -294,7 +304,7 @@ Returns: an array of integers, floats or objects (type='O'), depending on the
     try:
         elements = N.array(elements)
     except TypeError:
-        elements = N.array(elements,'O')
+        elements = N.array(elements,dtype='O')
     return elements
 
 
@@ -307,7 +317,7 @@ Returns: None
 """
     outfile = open(fname,writetype)
     if len(outarray.shape) == 1:
-        outarray = outarray[N.NewAxis,:]
+        outarray = outarray[N.newaxis,:]
     if len(outarray.shape) > 2:
         raise TypeError, "put() and aput() require 1D or 2D arrays.  Otherwise use some kind of pickling."
     else: # must be a 2D array
@@ -318,14 +328,14 @@ Returns: None
     return None
 
 
-def bget(imfile,shp=None,unpackstr=N.Int16,bytesperpixel=2.0,sliceinit=0):
+def bget(imfile,shp=None,unpackstr=N.int16,bytesperpixel=2.0,sliceinit=0):
     """
 Reads in a binary file, typically with a .bshort or .bfloat extension.
 If so, the last 3 parameters are set appropriately.  If not, the last 3
 parameters default to reading .bshort files (2-byte integers in big-endian
 binary format).
 
-Usage:   bget(imfile,shp=None,unpackstr=N.Int16,bytesperpixel=2.0,sliceinit=0)
+Usage:   bget(imfile,shp=None,unpackstr=N.int16,bytesperpixel=2.0,sliceinit=0)
 """
     if imfile[:3] == 'COR':
         return CORget(imfile)
@@ -333,7 +343,7 @@ Usage:   bget(imfile,shp=None,unpackstr=N.Int16,bytesperpixel=2.0,sliceinit=0)
         return mrget(imfile,unpackstr)
     if imfile[-4:] == 'BRIK':
         return brikget(imfile,unpackstr,shp) 
-    if imfile[-3:] in ['mnc','MNC']:
+    if imfile[-3:] in ['mnc','MNC','inc','INC']:
         return mincget(imfile,unpackstr,shp)
     if imfile[-3:] == 'img':
         return mghbget(imfile,unpackstr,shp)
@@ -351,17 +361,17 @@ Reads a binary COR-nnn file (flattening file).
 Usage:   CORget(imfile)
 Returns: 2D array of 16-bit ints
 """
-    d=braw(infile,N.Int8)
+    d=braw(infile,N.int8)
     d.shape = (256,256)
-    d = N.where(N.greater_equal(d,0),d,256+d)
+    d = N.where(d>=0,d,256+d)
     return d
 
 
-def mincget(imfile,unpackstr=N.Int16,shp=None):
+def mincget(imfile,unpackstr=N.int16,shp=None):
     """
 Loads in a .MNC file.
 
-Usage:  mincget(imfile,unpackstr=N.Int16,shp=None)  default shp = -1,20,64,64
+Usage:  mincget(imfile,unpackstr=N.int16,shp=None)  default shp = -1,20,64,64
 """
     if shp == None:
         shp = (-1,20,64,64)
@@ -379,11 +389,11 @@ Usage:  mincget(imfile,unpackstr=N.Int16,shp=None)  default shp = -1,20,64,64
     return d
     
 
-def brikget(imfile,unpackstr=N.Int16,shp=None):
+def brikget(imfile,unpackstr=N.int16,shp=None):
     """
 Gets an AFNI BRIK file.
 
-Usage:  brikget(imfile,unpackstr=N.Int16,shp=None)  default shp: (-1,48,61,51)
+Usage:  brikget(imfile,unpackstr=N.int16,shp=None)  default shp: (-1,48,61,51)
 """
     if shp == None:
         shp = (-1,48,61,51)
@@ -399,7 +409,23 @@ Usage:  brikget(imfile,unpackstr=N.Int16,shp=None)  default shp: (-1,48,61,51)
             if string.find(lines[i],'DATASET_DIMENSIONS') <> -1:
                 dims = string.split(lines[i+2][0:string.find(lines[i+2],' 0')])
                 dims = map(string.atoi,dims)
-                break
+            if string.find(lines[i],'BRICK_FLOAT_FACS') <> -1:
+                count = string.atoi(string.split(lines[i+1])[2])
+                mults = []
+                for j in range(int(N.ceil(count/5.))):
+                    mults += map(string.atof,string.split(lines[i+2+j]))
+                mults = N.array(mults)
+            if string.find(lines[i],'BRICK_TYPES') <> -1:
+                first5 = lines[i+2]
+                first5 = map(string.atoi,string.split(first5))
+                if first5[0] == 0:
+                    unpackstr = N.uint8
+                elif first5[0] == 1:
+                    unpackstr = N.int16
+                elif first5[0] == 3:
+                    unpackstr = N.float32
+                elif first5[0] == 5:
+                    unpackstr = N.complex32
         dims.reverse()
         shp = [-1]+dims
     except IOError:
@@ -414,9 +440,9 @@ Usage:  brikget(imfile,unpackstr=N.Int16,shp=None)  default shp: (-1,48,61,51)
 
     # the > forces big-endian (for or from Sun/SGI)
     bdata = N.fromstring(bdata,unpackstr)
-    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
-    if (littleEndian and os.uname()[0]<>'Linux') or (max(bdata)>1e30):
-        bdata = bdata.byteswapped()
+#    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
+    if (max(bdata)>1e30):
+        bdata = bdata.byteswap()
     try:
         bdata.shape = shp
     except:
@@ -424,11 +450,22 @@ Usage:  brikget(imfile,unpackstr=N.Int16,shp=None)  default shp: (-1,48,61,51)
         raise ValueError, 'Incorrect shape for file size'
     if len(bdata) == 1:
         bdata = bdata[0]
-    return bdata
 
+    if N.sum(mults) == 0:
+        return bdata
+    try:
+        multshape = [1]*len(bdata.shape)
+        for i in range(len(bdata.shape)):
+            if len(mults) == bdata.shape[i]:
+                multshape[i] = len(mults)
+                break
+        mults.shape = multshape
+        return bdata*mults
+    except:
+        return bdata
 
 def mghbget(imfile,numslices=-1,xsize=64,ysize=64,
-           unpackstr=N.Int16,bytesperpixel=2.0,sliceinit=0):
+           unpackstr=N.int16,bytesperpixel=2.0,sliceinit=0):
     """
 Reads in a binary file, typically with a .bshort or .bfloat extension.
 If so, the last 3 parameters are set appropriately.  If not, the last 3
@@ -436,7 +473,7 @@ parameters default to reading .bshort files (2-byte integers in big-endian
 binary format).
 
 Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
-                unpackstr=N.Int16, bytesperpixel=2.0, sliceinit=0)
+                unpackstr=N.int16, bytesperpixel=2.0, sliceinit=0)
 """
     try:
         file = open(imfile, "rb")
@@ -463,7 +500,7 @@ Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
     elif suffix[-3:] == 'img':
         pass
     elif suffix == 'bfloat':
-        unpackstr = N.Float32
+        unpackstr = N.float32
         bytesperpixel = 4.0
         sliceinit = 0.0
     else:
@@ -479,15 +516,17 @@ Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
         raise ValueError, "Incorrect file size in fmri.bget()"
     else:  # the > forces big-endian (for or from Sun/SGI)
         bdata = N.fromstring(bdata,unpackstr)
-        littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
-        if littleEndian:
-            bdata = bdata.byteswapped()
+#        littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
+#        if littleEndian:
+#            bdata = bdata.byteswap()
+        if (max(bdata)>1e30):
+            bdata = bdata.byteswap()
     if suffix[-3:] == 'img':
         if numslices == -1:
             numslices = len(bdata)/8200  # 8200=(64*64*2)+8 bytes per image
             xsize = 64
             ysize = 128
-        slices = N.zeros((numslices,xsize,ysize),N.Int)
+        slices = N.zeros((numslices,xsize,ysize),N.int32)
         for i in range(numslices):
             istart = i*8 + i*xsize*ysize
             iend = i*8 + (i+1)*xsize*ysize
@@ -503,21 +542,62 @@ Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
     return slices
 
 
-def braw(fname,btype):
+def braw(fname,btype,shp=None):
     """
 Opens a binary file, unpacks it, and returns a flat array of the
-type specified.  Use Numeric types ... N.Float32, N.Int64, etc.
+type specified.  Use Numeric types ... N.float32, N.int64, etc.
 
-Usage:   braw(fname,btype)
-Returns: flat array of floats, or ints (if btype=N.Int16)
+Usage:   braw(fname,btype,shp=None)
+Returns: flat array of floats, or ints (if btype=N.int16)
 """
     file = open(fname,'rb')
     bdata = file.read()
     bdata = N.fromstring(bdata,btype)
-    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
+#    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
 #    if littleEndian:
-#        bdata = bdata.byteswapped()  # didn't used to need this with '>' above
+#        bdata = bdata.byteswap()  # didn't used to need this with '>' above
+    if (max(bdata)>1e30):
+        bdata = bdata.byteswap()
+    if shp:
+        try:
+            bdata.shape = shp
+            return bdata
+        except:
+            pass
     return N.array(bdata)
+
+
+def glget(fname,btype):
+    """
+Load in a file containing pixels from glReadPixels dump.
+
+Usage:   glget(fname,btype)
+Returns: array of 'btype elements with shape 'shape', suitable for im.ashow()
+"""
+    d = braw(fname,btype)
+    d = d[8:]
+    f = open(fname,'rb')
+    shp = f.read(8)
+    f.close()
+    shp = N.fromstring(shp,N.int32)
+    shp[0],shp[1] = shp[1],shp[0]
+    try:
+        carray = N.reshape(d,shp)
+        return
+    except:
+        pass
+    try:
+        r = d[0::3]+0
+        g = d[1::3]+0
+        b = d[2::3]+0
+        r.shape = shp
+        g.shape = shp
+        b.shape = shp
+        carray = N.array([r,g,b])
+    except:
+        outstr = "glget: shape not correct for data of length "+str(len(d))
+        raise ValueError, outstr
+    return carray
 
 
 def mget(fname,btype):
@@ -549,7 +629,7 @@ Usage:   mget(fname,btype)
         return N.transpose(d)*1
 
 
-def mput(outarray,fname,writeheader=0,btype=N.Int16):
+def mput(outarray,fname,writeheader=0,btype=N.int16):
     """
 Save a file for use in matlab.
 """
@@ -576,25 +656,25 @@ Save a file for use in matlab.
     return None
 
 
-def bput(outarray,fname,writeheader=0,packtype=N.Int16,writetype='wb'):
+def bput(outarray,fname,writeheader=0,packtype=N.int16,writetype='wb'):
     """
 Writes the passed array to a binary output file, and then closes
 the file.  Default is overwrite the destination file.
 
-Usage:   bput (outarray,filename,writeheader=0,packtype=N.Int16,writetype='wb')
+Usage:   bput (outarray,filename,writeheader=0,packtype=N.int16,writetype='wb')
 """
     suffix = fname[-6:]
     if suffix == 'bshort':
-        packtype = N.Int16
+        packtype = N.int16
     elif suffix == 'bfloat':
-        packtype = N.Float32
+        packtype = N.float32
     else:
         print 'Not a bshort or bfloat file.  Using packtype=',packtype
 
     outdata = N.ravel(outarray).astype(packtype)
-    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
-    if littleEndian and os.uname()[0]<>'Linux':
-        outdata = outdata.byteswapped()
+#    littleEndian = ( struct.pack('i',1)==struct.pack('<i',1) )
+#    if littleEndian:
+#        outdata = outdata.byteswap()
     outdata = outdata.tostring()
     outfile = open(fname,writetype)
     outfile.write(outdata)
@@ -616,16 +696,18 @@ Usage:   bput (outarray,filename,writeheader=0,packtype=N.Int16,writetype='wb')
     return None
 
 
-def mrget(fname,datatype=N.Int16):
+def mrget(fname,datatype=N.int16):
     """
 Opens a binary .MR file and clips off the tail data portion of it, returning
 the result as an array.
 
-Usage:   mrget(fname,datatype=N.Int16)
+Usage:   mrget(fname,datatype=N.int16)
 """
     d = braw(fname,datatype)
     if len(d) > 512*512:
         return N.reshape(d[-512*512:],(512,512))
+    elif len(d) > 320*320:
+        return N.reshape(d[-320*320:],(320,320))
     elif len(d) > 256*256:
         return N.reshape(d[-256*256:],(256,256))
     elif len(d) > 128*128:
@@ -737,7 +819,7 @@ is the default.
 Usage:   writefc (listoflists,colsize,file,writetype='w')
 Returns: None
 """
-    if type(listoflists) == N.ArrayType:
+    if type(listoflists) == N.ndarray:
         listoflists = listoflists.tolist()
     if type(listoflists[0]) not in [ListType,TupleType]:
         listoflists = [listoflists]
@@ -833,5 +915,254 @@ Returns: numpy array of specified type
     return N.reshape(a,[numlines,numcols])
 
 
+def find_dirs(sourcedir):
+    """Finds and returns all directories in sourcedir
+
+Usage:   find_dirs(sourcedir)
+Returns: list of directory names (potentially empty)
+"""
+    files = os.listdir(sourcedir)
+    dirs = []
+    for fname in files:
+        if os.path.isdir(os.path.join(sourcedir,fname)):
+            dirs.append(fname)
+    return dirs
+
+
 # ALIASES ...
 save = aput
+
+
+
+def binget(fname,btype=None):
+    """
+Loads a binary file from disk. Assumes associated hdr file is in same
+location. You can force an unpacking type, or else it tries to figure
+it out from the filename (4th-to-last character). Hence, readable file
+formats are ...
+
+1bin=int8, sbin=int16, ibin=int32, fbin=float32, dbin=float64, etc.
+
+Usage:   binget(fname,btype=None)
+Returns: data in file fname of type btype
+"""
+    file = open(fname,'rb')
+    bdata = file.read()
+    file.close()
+
+    # if none given, assume character preceeding 'bin' is the unpacktype
+    if not btype:
+        btype = fname[-4]
+    try:
+        bdata = N.fromstring(bdata,btype)
+    except:
+        raise ValueError, "Bad unpacking type."
+
+    # force the data on disk to be LittleEndian (for more efficient PC/Linux use)
+    if not N.little_endian:
+        bdata = bdata.byteswap()
+
+    try:
+        header = fname[:-3]+'hdr'
+        vals = get(header,0)  # '0' means no missing-file warning msg
+        print vals
+        if type(vals[0]) == ListType:  # it's an extended header
+            xsize = int(vals[0][0])
+            ysize = int(vals[0][1])
+            numslices = int(vals[0][2])
+        else:
+            bdata.shape = vals
+    except:
+        print "No (or bad) header file. Returning unshaped array."
+    return N.array(bdata)
+
+
+
+def binput(outarray,fname,packtype=None,writetype='wb'):
+    """
+Unravels outarray and writes the data to a file, always in LittleEndian
+format, along with a header file containing the original data shape. Default
+is overwrite the destination file. Tries to figure out packtype from
+4th-to-last character in filename. Thus, the routine understands these
+file formats ...
+
+1bin=int8, sbin=int16, ibin=int32, fbin=float32, dbin=float64, etc.
+
+Usage:  binput(outarray,filename,packtype=None,writetype='wb')
+"""
+    if not packtype:
+        packtype = fname[-4]
+
+    # a speck of error checking
+    if packtype == N.int16 and outarray.dtype.char == 'f':
+        # check to see if there's data loss
+        if max(N.ravel(outarray)) > 32767 or min(N.ravel(outarray))<-32768:
+            print "*** WARNING: CONVERTING FLOAT DATA TO OUT-OF RANGE INT16 DATA"
+    outdata = N.ravel(outarray).astype(packtype)
+
+    # force the data on disk to be little_endian (for more efficient PC/Linux use)
+    if not N.little_endian:
+        outdata = outdata.byteswap()
+    outdata = outdata.tostring()
+    outfile = open(fname,writetype)
+    outfile.write(outdata)
+    outfile.close()
+
+    # Now, write the header file
+    try:
+        suffixindex = string.rfind(fname,'.')
+        hdrname = fname[0:suffixindex+2]+'hdr'  # include .s or .f or .1 or whatever
+    except ValueError:
+        hdrname = fname
+    hdr = outarray.shape
+    print hdrname
+    outfile = open(hdrname,'w')
+    outfile.write(pstat.list2string(hdr))
+    outfile.close()
+    return None
+
+def getafniparam(headfilename,paramname):
+    """
+Loads in an AFNI header file, and returns the values of 'paramname'.
+
+Usage:   getafniparam(headfile,paramname)
+Returns: appropriate "type" for params, or None if fails
+"""
+    if headfilename[-4:] == 'BRIK':  # if asked for BRIK, change it to HEAD
+        headfilename = headfilename[:-4]+'HEAD'
+    d = get(headfilename)
+    lines = open(headfilename,'r').readlines()
+    for i in range(len(lines)):
+        if string.find(lines[i],paramname) <> -1:
+            count = d[i+1][-1]
+            gotten = 0
+            result = []
+            for j in range(i+2,len(lines)):
+                for k in range(len(d[j])):
+                    if type(d[j][k]) == StringType:
+                        result = d[j][k][1:count]
+                        return result
+                    else:
+                        result.append(d[j][k])
+                        gotten += 1
+                if gotten == count:
+                    break
+            return result
+    return None
+    
+
+def add2afnihistory(headfilename,newtext):
+    """
+Adds 'newtext' to HISTORY_NOTE in afni file specified in headfilename.
+
+Usage:   add2afnihistory(headfile,newtext)
+Returns: None
+"""
+    if headfilename[-4:] == 'BRIK':  # if asked for BRIK, change it to HEAD
+        headfilename = headfilename[:-4]+'HEAD'
+    d = get(headfilename)
+    lines = open(headfilename,'r').readlines()
+    for i in range(len(lines)):
+        if string.find(lines[i],'HISTORY_NOTE') <> -1:
+            bytecount = d[i+1][-1]
+            oldstr = lines[i+2][:-2]
+            date = '[python:***  %s] ' %time.asctime()
+            lines[i+2] = oldstr +'\\n' +date +newtext +'~\n'
+            lines[i+1] = '  count = %s\n' %str(len(lines[i+2]))
+    f = open(headfilename,'w')
+    f.writelines(lines)
+    f.close()
+    return
+
+
+def array2afni(d,brikprefix,voltype=None,TR=2000,sliceorder='seqplus',geomparent=None,view=None,corrlength=1,briklabels=None,historytext=None):
+    """
+Converts an array 'd' to an AFNI BRIK/HEAD combo via putbin and to3d. Tries to
+guess the AFNI volume type
+
+voltype = {'-anat','-epan','-fim'}
+geomparent = filename of the afni BRIK file with the same geometry
+view = {'tlrc', 'acpc' or 'orig'}
+corrlength = # of images used in the (single-timeseries) correlation (for fico)
+briklabels = list of names (strings) to use for brick labels
+historytext = string to be appended to the history file, if any
+
+Usage:   array2afni(d,brikprefix,voltype=None,TR=2000,
+                    sliceorder='seqplus',geomparent=None,view=None,
+                    corrlength=1,briklabels=None,historytext=None)
+Returns: None
+"""
+    # converts numpy typecode()s into appropriate strings for to3d command line
+    typecodemapping = {'c':'b',  # character
+                       'B':'b',  # UnsignedInt8
+                       'f':'f',  # float0, float8, float16, float32
+                       'd':'f',  # float64
+                       'b':'b',  # int0, int8
+                       'h':'',   # int16
+                       'i':'i',  # int32
+                       'l':'i'}  # int
+
+    # Verify that the data is proper size (3- or 4-D)
+    if len(d.shape) not in [3,4]:
+        raise ValueError, "A 3D or 4D array is required for array2afni() ... %s" %d.shape
+
+    # Save out the array to a binary file, homebrew style
+    if d.dtype.char == N.float64:
+        outcode = 'f'
+    else:
+        outcode = d.dtype.char
+    tmpoutname = 'afnitmp.%sbin' % outcode
+    binput(d.astype(outcode),tmpoutname)
+    if not voltype:
+        if len(d.shape) == 3:  # either anatomy or functional
+            if d.dtype.char in ['s','i','l']:  # if floats, assume functional
+                voltype = '-anat'
+            else:
+                voltype = '-fim'
+        else:  # 4D dataset, must be anatomical timeseries (epan)
+            voltype = '-anat'
+    if voltype[0] != '-':
+        voltype = '-'+voltype
+    if len(d.shape) == 3:  # either anatomy or functional
+        timepts = 1
+        slices = d.shape[0]
+        timestr = ''
+    elif len(d.shape) == 4:
+        if voltype=='-fico':
+            timepts = 1
+            d = N.reshape(d,[d.shape[0]*d.shape[1],d.shape[2],d.shape[3]])
+            slices = d.shape[0]
+            timestr = '-statpar %s 1 1 ' % corrlength
+        else:
+            timepts = d.shape[0]
+            slices = d.shape[1]
+            timestr = '-time:zt %d %d %0.3f %s ' % (slices,timepts,TR,sliceorder)
+
+    cmd = 'to3d %s -prefix %s -session . ' % (voltype, brikprefix)
+    if not view:
+        view = 'orig'
+    cmd += '-view %s ' % view
+    if geomparent:
+        cmd += '-geomparent %s ' % geomparent
+    cmd += timestr
+    cmd += '3D%s:0:0:%d:%d:%d:%s' % (typecodemapping[d.dtype.char],d.shape[-1],d.shape[-2],slices*timepts,tmpoutname)
+    print cmd
+    os.system(cmd)
+    os.remove(tmpoutname)
+    os.remove(tmpoutname[:-3]+'hdr')
+
+    if len(d.shape)==4 and briklabels:
+        names = ''
+        for label in briklabels:
+            names += str(label)+'~'
+        count = len(names)
+        appendstr = """\n\ntype = string-attribute
+name = BRICK_LABS
+count = %s
+'%s""" % (count, names)
+        f = open('%s+%s.HEAD' %(brikprefix,view), 'a')
+        f.write(appendstr)
+        f.close()
+
+        if historytext:
+            add2afnihistory('%s+%s.HEAD'%(brikprefix,view),historytext)

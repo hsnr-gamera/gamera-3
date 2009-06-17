@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.0, Jun 17, 2009
+----------------------------
+
+ - plugins to_numpy and from_numpy added for support of numpy;
+   the deprecated numeric and numarry modules have been replaced with numpy
+
  - highlight also works with GREYSCALE and ONEBIT images
 
  - corrected resize function in VIGRA

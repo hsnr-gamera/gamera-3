@@ -28,10 +28,27 @@ please consider contributing your experiences to this documentation.
 Prerequisites
 `````````````
 
-- Python 2.4.x or later (only the distribution from python.org has been tested)
+- Python 2.4.x or later with Python 2.5.x recommended
+  (only the distribution from python.org has been tested)
 
 - wxPython 2.6.x or later (wxPython 2.8.x or later recommended for
   full functionality)
+
+.. note::
+
+   The Python 2.6 binary from python.org has been built with
+   a version of MS Visual Studio that causes problems when extensions
+   are compiled with Mingw32. The reason is an errenous
+   file ``libmsvcr90.a`` coming with Mingw32. To fix it, you can
+   recreate the file from the DLL ``msvcr90.dll`` that comes with
+   Python 2.6 with pexports__ and *dlltool* (the latter is part of Mingw32)::
+
+      pexports msvcr90.dll > msvcr90.def
+      dlltool --input-def msvcr90.def --dllname msvcr90.dll --output-lib libmsvcr90.a -k
+
+   With Python 2.5, these changes are not necessary.
+
+.. __: http://www.emmestech.com/software/pexports-0.43/download_pexports.html
 
 .. _mingw32:
 
@@ -89,8 +106,8 @@ feature. This means that the Python Distutils system cannot execute
 ``/usr/bin/gcc`` and the build command will fail. To fix this,
 replace the symbolic link with the actual compiler executable::
 
-  mv /usr/bin/gcc-3 /usr/bin/gcc
-  mv /usr/bin/g++-3 /usr/bin/g++
+  cp /usr/bin/gcc-3 /usr/bin/gcc
+  cp /usr/bin/g++-3 /usr/bin/g++
 
 From here on, you can proceed as for the standalone Mingw32 toolchain,
 i.e.::
@@ -198,13 +215,83 @@ uses Cocoa, and feels much more like a standard Macintosh
 application.  Please follow the instructions for *either* X11 or Cocoa
 install below.
 
-X11 build
----------
+
+Native (Cocoa) build
+--------------------
 
 Prerequisites
 `````````````
 
-- Mac OS-X 10.4 (Tiger) or presumably later
+Gamera installs out of the box on Mac OS-X 10.4 (Tiger) and 10.5 (Leopard).
+The only prerequisite is to install XCode, which is shipped with the
+OS-X installation DVD, but is not installed by default.
+
+It should be noted that OS-X 10.4 comes with the unstable branch 2.5 of
+wxPython. So far we have not yet encountered any problems with this
+version, but if you have any problems, please consider to install
+wxPython 2.6 instead. This is *not* possible from the binary
+installers from http://www.wxpython.org/, because there is none for
+Python 2.3, and the other Python versions require a particular prerelease
+of Xcode to build extensions, that is no longer available.
+So if you decide to upgrade wxPython on OS-X 10.4, you must do it from
+the source release of wxPython 2.6.
+
+Standard Build and Install
+``````````````````````````
+
+Gamera is built using the Python-standard Distutils system.
+
+To build Gamera, open a terminal and type::
+
+  python setup.py build
+
+and then to install (you'll need to have admin priviledges)::
+
+  sudo pythonw setup.py install
+
+On OS-X 10.4, you must do the installation with ``pythonw`` rather than
+with ``python``, because ``gamera_gui`` is a GUI application. On OS-X 10.5
+this distinction is no longer necessary, but using ``pythonw`` also works.
+The scripts can be installed by::
+
+  sudo pythonw setup.py install_scripts -d /usr/bin
+
+.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
+  place on the PATH.  If you do not specify it, the scripts are by
+  default installed to
+  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
+  So you can also simply add this directory to your PATH environment
+  variable and forget about the *install_scripts* step.
+
+Installing without root priviledges
+```````````````````````````````````
+
+The instructions for `installing without root (administrator)
+priviledges`__ can also be used on Mac OS-X.
+
+__ without_root_
+
+Running
+```````
+
+Start the Terminal application and run the ``gamera_gui`` script.
+
+.. note:: Running the script from the root of the source tree will not
+  work, since it will not be able to find the compiled version of
+  Gamera.
+
+
+X11 build
+---------
+
+Please note that this build is no longer maintained by the Gamera developers.
+So use it only when the Cocoa build is not possible for some reason (e.g. on a 
+legacy OS-X 10.3 system).
+
+Prerequisites
+`````````````
+
+- Mac OS-X 10.3 (Panther) or presumably later
 
 - Python 2.3 (including the version included).
 
@@ -269,62 +356,3 @@ Start an X11 terminal and run the ``gamera_gui`` script.
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of
   Gamera.
-
-
-Native (Cocoa) build
---------------------
-
-Prerequisites
-`````````````
-
-- Mac OS-X 10.4 (Tiger) or presumably later
-
-- Python 2.5 downloaded from http://www.python.org/ .  The Python 2.3
-  included with OS-X Tiger will not work.
-
-- wxPython 2.8.x or later, downloaded from
-  http://www.wxpython.org/ .
-
-- XCode 2.4.1, downloaded from
-  http://developer.apple.com/tools/xcode .  The version that shipped
-  on the Tiger installation DVD will not work.
-
-Standard Build and Install
-``````````````````````````
-
-Gamera is built using the Python-standard Distutils system.
-
-To build Gamera, open a X11 terminal and type::
-
-  python setup.py build
-
-and then to install (you'll need to have admin priviledges)::
-
-  sudo python setup.py install
-
-The scripts can be installed by::
-
-  sudo python setup.py install_scripts -d /usr/bin
-
-.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
-  place on the PATH.  If you do not specify it, the scripts are by
-  default installed to
-  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-
-Installing without root priviledges
-```````````````````````````````````
-
-The instructions for `installing without root (administrator)
-priviledges`__ can also be used on Mac OS-X.
-
-__ without_root_
-
-Running
-```````
-
-Start the Terminal application and run the ``gamera_gui`` script.
-
-.. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the compiled version of
-  Gamera.
-

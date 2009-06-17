@@ -555,9 +555,13 @@ type."""
       """id_name **guess_glyph_automatic** (Image *glyph*)
 
 Classifies the given *glyph* without setting its classification.  The
-return value is of the form of `id_name`__.
+return value is a tuple of the form ``(id_name,confidencemap)``, where
+*idname* is a list of the form `idname`_, and *confidencemap* is a
+map of the form `confidence`_ listing the confidences of the main id.
 
-.. __: #id-name
+.. _idname: #id-name
+
+.. _confidence: #confidence
 """
       self.generate_features(glyph)
       return self.classify(glyph)

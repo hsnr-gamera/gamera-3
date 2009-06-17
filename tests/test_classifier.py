@@ -8,7 +8,7 @@ groups = ['latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.letter.
 shaped_groups = ['latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.letter.n', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.g']
 
 def _test_classification(classifier, ccs):
-   id_name = classifier.guess_glyph_automatic(ccs[0])
+   (id_name, confidence) = classifier.guess_glyph_automatic(ccs[0])
    assert id_name == [(1.0, 'latin.lower.letter.h')]
 
    classifier.classify_glyph_automatic(ccs[1])

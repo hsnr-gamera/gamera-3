@@ -52,8 +52,10 @@ def _getMainId(classificationResult):
     """Classification results returned from a kNN Classifier are in a list
 containing '(confidence, className)' tuples. So to determine the 'main class',
 the classname with the highest confidence has to be returned.
-!TODO: Currently assumes, that there is just one result"""
-    return classificationResult[0][1]
+"""
+    # classificationResult is a tuple of the form
+    #   ([idname1, idname2, ...], confidences_for_idname1)
+    return classificationResult[0][0][1]
 
 class AlgoRegistry(object):
     """Registry containing a list of all available editing algorithms. Besides
@@ -164,7 +166,7 @@ Reference: D. Wilson: 'Asymptotic Properties of NN Rules Using Edited Data'.
         # classify each glyph with its leave-one-out classifier
         for i, glyph in enumerate(classifier.get_glyphs()):
             editedClassifier.get_glyphs().remove(glyph)
-            detectedClass = _getMainId(
+            detectedClass = _getMainId(\
                                 editedClassifier.guess_glyph_automatic(glyph))
             # check if recognized class complies with the true class
             if glyph.get_main_id() != detectedClass:

@@ -153,7 +153,9 @@ class draw_hollow_rect(PluginFunction):
       else:
         return _draw.draw_hollow_rect(self, a, b, c, 1.0)
     elif len(args) == 2:
-      return _draw.draw_hollow_rect(self, a.ul, a.lr, value, 1.0)
+      a, b = args
+      if hasattr(a, 'ul') and hasattr(a, 'lr'):
+        return _draw.draw_hollow_rect(self, a.ul, a.lr, b, 1.0)
     raise ValueError("Arguments to draw_hollow_rect are incorrect.")
   __call__ = staticmethod(__call__)
 

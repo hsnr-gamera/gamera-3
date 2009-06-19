@@ -9,14 +9,17 @@ namespace Gamera { namespace Kdtree {
 typedef std::vector<double> CoordPoint;
 
 // for passing points to the constructor of kdtree
-struct kdnode {
+struct KdNode {
   CoordPoint point;
   void* data;
-  kdnode(const CoordPoint &p, void* d = NULL) {point = p; data = d;}
-  kdnode() {data = NULL;}
+  KdNode(const CoordPoint &p, void* d = NULL) {point = p; data = d;}
+  KdNode() {data = NULL;}
 };
-typedef std::vector<kdnode> KdnodeVector;
+typedef std::vector<KdNode> KdNodeVector;
 
+//--------------------------------------------------------
+// private helper classes used internally by KdTree
+//
 // the internal node structure used by kdtree
 class kdtree_node {
 public:
@@ -34,7 +37,6 @@ public:
   // bounding rectangle of this node's subtree
   CoordPoint lobound, upbound;
 };
-
 // helper class for priority queue in k nearest neighbor search
 class nn4heap {
 public:
@@ -48,9 +50,10 @@ public:
     return (n.distance < m.distance);
   }
 };
+//--------------------------------------------------------
 
 // kdtree class
-class kdtree {
+class KdTree {
 private:
   // recursive build of tree
   kdtree_node* build_tree(size_t depth, size_t a, size_t b);
@@ -62,16 +65,16 @@ private:
   bool bounds_overlap_ball(const CoordPoint &point, double dist, kdtree_node* node);
   bool ball_within_bounds(const CoordPoint &point, double dist, kdtree_node* node);
 public:
-  KdnodeVector allnodes;
+  KdNodeVector allnodes;
   size_t dimension;
   kdtree_node* root;
   // pointers to distance functions between points and coordinates
   double (*distance)(const CoordPoint &p, const CoordPoint &q);
   double (*coordinate_distance)(double x, double y);
   // distance_type can be 0 (max), 1 (city block), or 2 (euklid)
-  kdtree(const KdnodeVector* nodes, int distance_type=2);
-  ~kdtree();
-  void k_nearest_neighbors(const CoordPoint &point, size_t k, KdnodeVector* result);
+  KdTree(const KdNodeVector* nodes, int distance_type=2);
+  ~KdTree();
+  void k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result);
   // predefined distance functions
   static double distance0(const CoordPoint &p, const CoordPoint &q);
   static double coordinate_distance0(double x, double y);

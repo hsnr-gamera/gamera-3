@@ -22,8 +22,8 @@
 #include "kdtree.hpp"
 
 // these classes are used from kdtree.hpp:
-//using Gamera::Kdtree::kdtree;
-//using Gamera::Kdtree::kdnode;
+//using Gamera::Kdtree::KdTree;
+//using Gamera::Kdtree::KdNode;
 //using Gamera::Kdtree::KdNodeVector;
 //using Gamera::Kdtree::CoordPoint;
 
@@ -154,7 +154,7 @@ void init_KdNodeType(PyObject* d) {
 struct KdTreeObject {
   PyObject_HEAD
   size_t dimension;
-  Kdtree::kdtree* tree;
+  Kdtree::KdTree* tree;
   // the nodes are stored in the property kdnode.data
   // of the nodes in tree->allnodes
 };
@@ -178,7 +178,7 @@ PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   size_t i,j,n,dimension;
   PyObject* list = NULL;
   PyObject *obj1,*obj2;
-  Kdtree::KdnodeVector nodes4tree;
+  Kdtree::KdNodeVector nodes4tree;
   // do some plausibility checks and extract basic properties
   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O|i:kdtree_new", &list, &distance_type) <= 0)
     return 0;
@@ -219,20 +219,20 @@ PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
       p[j] = PyFloat_AsDouble(PyList_GetItem(obj2,j));
     }
     // we store the KdNode object in kdnode.data
-    nodes4tree.push_back(Kdtree::kdnode(p,(void*)obj1));
+    nodes4tree.push_back(Kdtree::KdNode(p,(void*)obj1));
     Py_INCREF(obj1); // node object
     Py_DECREF(obj2); // no longer needed point property
   }
   // copy over parsed stuff to data structure
   self = (KdTreeObject*)(KdTreeType.tp_alloc(&KdTreeType, 0));
   self->dimension = dimension;
-  self->tree = new Kdtree::kdtree(&nodes4tree,distance_type);
+  self->tree = new Kdtree::KdTree(&nodes4tree,distance_type);
   return (PyObject*)self;
 }
 
 void kdtree_dealloc(PyObject* self) {
   size_t i;
-  Kdtree::kdtree* tree = ((KdTreeObject*)self)->tree;
+  Kdtree::KdTree* tree = ((KdTreeObject*)self)->tree;
   for (i=0; i<tree->allnodes.size(); i++) {
     Py_DECREF((PyObject*)tree->allnodes[i].data);
   }
@@ -251,7 +251,7 @@ PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
   PyObject *list, *entry;
   int k;
   size_t i,n;
-  Kdtree::KdnodeVector result;
+  Kdtree::KdNodeVector result;
   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "Oi", &list, &k) <= 0) {
     return 0;
   }

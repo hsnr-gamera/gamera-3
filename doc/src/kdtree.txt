@@ -155,9 +155,9 @@ Usage
 '''''
 
 For normal use of the kdtree, you will need the classes 
-``CoordPoint`` (a typedef for ``vector<double>``), ``kdnode``, 
-``KdNodeVector``, and ``kdtree``. Beside the property ``point``, a
-``kdnode`` can also store an arbitrary pointer as ``data``. See
+``CoordPoint`` (a typedef for ``vector<double>``), ``KdNode``, 
+``KdNodeVector``, and ``KdTree``. Beside the property ``point``, a
+``KdNode`` can also store an arbitrary pointer as ``data``. See
 the header file *kdtree.hpp* for details.
 
 Here is a usage example for a nearest neighbor search:
@@ -165,7 +165,7 @@ Here is a usage example for a nearest neighbor search:
 .. code:: CPP
 
    // set points for building the tree
-   KdnodeVector nodes;
+   KdNodeVector nodes;
    double points[][2] = {
      {1,4}, {2,4}, {1,5}, {3,6}, {8,9},
      {2,7}, {4,4}, {5,5}, {4,6}, {8,3},
@@ -176,14 +176,14 @@ Here is a usage example for a nearest neighbor search:
      CoordPoint p;
      p.push_back(points[i][0]);
      p.push_back(points[i][1]);
-     nodes.push_back(kdnode(p));
+     nodes.push_back(KdNode(p));
    }
 
    // build the tree
-   kdtree tree(&nodes);
+   KdTree tree(&nodes);
 
    // find the three nearest neighbors to (5,6)
-   KdnodeVector neighbors;
+   KdNodeVector neighbors;
    CoordPoint point(2);
    point[0] = 5;
    point[1] = 6;

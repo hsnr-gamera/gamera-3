@@ -44,3 +44,25 @@ def test_nearest_neighbors():
         [n.point for n in tree.k_nearest_neighbors([8,4],3)]
     assert [[3,4],[2,4],[1,3],[2,1],[1,1],[7,5]] == \
         [n.point for n in tree.k_nearest_neighbors([3,4],6)]
+
+#
+# tests with different distance measures
+#
+def test_distance_metrics():
+    points = [(1,4), (2,4), (1,5), (3,6), (8,9),
+              (3.2,4.2), (4,4), (5,5), (3.8,6), (8,3)]
+    nodes = [KdNode(p) for p in points]
+    tree = KdTree(nodes)
+    tree.set_distance(0)
+    assert [[5,5], [3.8,6], [3.2,4.2]] == \
+        [n.point for n in tree.k_nearest_neighbors([5,6],3)]
+    tree.set_distance(1)
+    assert [[5,5], [3.8,6], [3,6]] == \
+        [n.point for n in tree.k_nearest_neighbors([5,6],3)]
+    tree.set_distance(2,[1.0,0.5])
+    assert [[5,5], [3.8,6], [4,4]] == \
+        [n.point for n in tree.k_nearest_neighbors([5,6],3)]
+    tree.set_distance(0,[0.5,1.0])
+    assert [[3.8,6], [3,6], [5,5]] == \
+        [n.point for n in tree.k_nearest_neighbors([5,6],3)]
+

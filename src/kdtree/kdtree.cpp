@@ -38,26 +38,19 @@ kdtree_node::~kdtree_node()
 KdTree::~KdTree()
 {
   if (root) delete root;
+  delete distweights;
 }
-// *distance_type can be 0 (Maximum), 1 (Manhatten), or 2 (Euklidean)
+// distance_type can be 0 (Maximum), 1 (Manhatten), or 2 (Euklidean)
 KdTree::KdTree(const KdNodeVector* nodes, int distance_type /*=2*/)
 {
   size_t i,j;
   double val;
-  // set distance functions
-  if (distance_type == 0) {
-    distance = distance1;
-    coordinate_distance = coordinate_distance1;
-  } else if (distance_type == 1) {
-    distance = distance1;
-    coordinate_distance = coordinate_distance1;   
-  } else {
-    distance = distance2;
-    coordinate_distance = coordinate_distance2;
-  }
   // copy over input data
   dimension = nodes->begin()->point.size();
   allnodes = *nodes;
+  // initialize distance values
+  distweights = new DoubleVector(dimension, 1.0);
+  set_distance(distance_type);
   // compute global bounding box
   lobound = nodes->begin()->point;
   upbound = nodes->begin()->point;
@@ -70,6 +63,28 @@ KdTree::KdTree(const KdNodeVector* nodes, int distance_type /*=2*/)
   }
   // build tree recursively
   root = build_tree(0,0,allnodes.size());
+}
+
+// distance_type can be 0 (Maximum), 1 (Manhatten), or 2 (Euklidean)
+void KdTree::set_distance(int distance_type, const DoubleVector* weights /*=NULL*/)
+{
+  size_t i;
+  if (distance_type == 0) {
+    distance = distance0;
+    coordinate_distance = coordinate_distance0;
+  } else if (distance_type == 1) {
+    distance = distance1;
+    coordinate_distance = coordinate_distance1;   
+  } else {
+    distance = distance2;
+    coordinate_distance = coordinate_distance2;
+  }
+  for (i=0; i<dimension; i++) {
+    if (weights)
+      (*distweights)[i] = (*weights)[i];
+    else
+      (*distweights)[i] = 1.0;
+  }
 }
 
 //--------------------------------------------------------------
@@ -134,7 +149,7 @@ void KdTree::k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector
     // when more neighbors asked than nodes in tree, return everything
     k = allnodes.size();
     for (i=0; i<k; i++)
-      neighborheap->push(nn4heap(i,distance(allnodes[i].point,point)));
+      neighborheap->push(nn4heap(i,distance(allnodes[i].point,point,distweights)));
   } else {
     neighbor_search(point, root, k);
   }
@@ -163,7 +178,7 @@ bool KdTree::neighbor_search(const CoordPoint &point, kdtree_node* node, size_t 
 {
   double curdist, dist;
 
-  curdist = distance(point, node->point);
+  curdist = distance(point, node->point, distweights);
   if (neighborheap->size() < k) {
     neighborheap->push(nn4heap(node->dataindex,curdist));
   } else if (curdist < neighborheap->top().distance) {
@@ -203,12 +218,12 @@ bool KdTree::bounds_overlap_ball(const CoordPoint &point, double dist, kdtree_no
   size_t i;
   for (i=0; i<dimension; i++) {
     if (point[i] < node->lobound[i]) { // lower than low boundary
-      distsum += coordinate_distance(point[i],node->lobound[i]);
+      distsum += coordinate_distance(point[i],node->lobound[i],(*distweights)[i]);
       if (distsum > dist)
         return false;
     }
     else if (point[i] > node->upbound[i]) { // higher than high boundary
-      distsum += coordinate_distance(point[i],node->upbound[i]);
+      distsum += coordinate_distance(point[i],node->upbound[i],(*distweights)[i]);
       if (distsum > dist)
         return false;
     }
@@ -222,8 +237,8 @@ bool KdTree::ball_within_bounds(const CoordPoint &point, double dist, kdtree_nod
 {
   size_t i;
   for (i=0; i<dimension; i++)
-    if (coordinate_distance(point[i],node->lobound[i]) <= dist ||
-        coordinate_distance(point[i],node->upbound[i]) <= dist)
+    if (coordinate_distance(point[i],node->lobound[i],(*distweights)[i]) <= dist ||
+        coordinate_distance(point[i],node->upbound[i],(*distweights)[i]) <= dist)
       return false;
   return true;
 }
@@ -232,46 +247,46 @@ bool KdTree::ball_within_bounds(const CoordPoint &point, double dist, kdtree_nod
 // predefined distance functions
 //--------------------------------------------------------------
 // Maximum distance (Linfinite norm)
-double KdTree::distance0(const CoordPoint &p, const CoordPoint &q)
+double KdTree::distance0(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights)
 {
   size_t i;
   double dist, test;
-  dist = fabs(p[0]-q[0]);
+  dist = (*weights)[0] * fabs(p[0]-q[0]);
   for (i=1; i<p.size();i++) {
-    test = fabs(p[i]-q[i]);
+    test = (*weights)[i] * fabs(p[i]-q[i]);
     if (test > dist) dist = test;
   }
   return dist;
 }
-double KdTree::coordinate_distance0(double x, double y)
+double KdTree::coordinate_distance0(double x, double y, double weight)
 {
-  return fabs(x-y);
+  return weight*fabs(x-y);
 }
 // Manhatten distance (L1 norm)
-double KdTree::distance1(const CoordPoint &p, const CoordPoint &q)
+double KdTree::distance1(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights)
 {
   size_t i;
   double dist = 0.0;
   for (i=0; i<p.size();i++)
-    dist += fabs(p[i]-q[i]);
+    dist += (*weights)[i]*fabs(p[i]-q[i]);
   return dist;
 }
-double KdTree::coordinate_distance1(double x, double y)
+double KdTree::coordinate_distance1(double x, double y, double weight)
 {
-  return fabs(x-y);
+  return weight*fabs(x-y);
 }
 // Euklidean distance (L2 norm)
-double KdTree::distance2(const CoordPoint &p, const CoordPoint &q)
+double KdTree::distance2(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights)
 {
   size_t i;
   double dist = 0.0;
   for (i=0; i<p.size();i++)
-    dist += (p[i]-q[i])*(p[i]-q[i]);
+    dist += (*weights)[i]*(p[i]-q[i])*(p[i]-q[i]);
   return dist;
 }
-double KdTree::coordinate_distance2(double x, double y)
+double KdTree::coordinate_distance2(double x, double y, double weight)
 {
-  return (x-y)*(x-y);
+  return weight*(x-y)*(x-y);
 }
 
 }} // end namespace Gamera::Kdtree

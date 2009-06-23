@@ -329,7 +329,7 @@ class StatusPanel(wx.Panel):
           self, -1, "0.0%", style=wx.TE_READONLY, size=TEXT_SIZE)
       sizer.Add(self.elapsed_display, 0, SIZER_FLAGS, 10)
 
-      SLIDER_SIZE=(150, 10)
+      SLIDER_SIZE=(150, 40)
       SLIDER_STYLE=wx.SL_LABELS
 
       # population size

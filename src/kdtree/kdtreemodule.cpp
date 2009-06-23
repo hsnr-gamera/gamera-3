@@ -26,6 +26,7 @@
 //using Gamera::Kdtree::KdNode;
 //using Gamera::Kdtree::KdNodeVector;
 //using Gamera::Kdtree::CoordPoint;
+//using Gamera::Kdtree::DoubleVector;
 
 
 //======================================================================
@@ -52,7 +53,7 @@ static PyTypeObject KdNodeType = {
 };
 
 
-PyObject* kdnode_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+static PyObject* kdnode_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   KdNodeObject* self;
   size_t n, i;
   PyObject* point;
@@ -88,7 +89,7 @@ PyObject* kdnode_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   return (PyObject*)self;
 }
 
-void kdnode_dealloc(PyObject* self) {
+static void kdnode_dealloc(PyObject* self) {
   PyObject* data = ((KdNodeObject*)self)->data;
   PyObject* point = ((KdNodeObject*)self)->point;
   Py_DECREF(point);
@@ -96,13 +97,13 @@ void kdnode_dealloc(PyObject* self) {
   self->ob_type->tp_free(self);
 }
 
-PyObject* kdnode_get_point(PyObject* self) {
+static PyObject* kdnode_get_point(PyObject* self) {
   KdNodeObject* so = (KdNodeObject*)self;
   Py_INCREF(so->point);
   return so->point;
 }
 
-PyObject* kdnode_get_data(PyObject* self) {
+static PyObject* kdnode_get_data(PyObject* self) {
   KdNodeObject* so = (KdNodeObject*)self;
   if (so->data) {
     Py_INCREF(so->data);
@@ -172,7 +173,7 @@ static PyTypeObject KdTreeType = {
 };
 
 
-PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+static PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   KdTreeObject* self;
   int distance_type=2;
   size_t i,j,n,dimension;
@@ -230,7 +231,7 @@ PyObject* kdtree_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   return (PyObject*)self;
 }
 
-void kdtree_dealloc(PyObject* self) {
+static void kdtree_dealloc(PyObject* self) {
   size_t i;
   Kdtree::KdTree* tree = ((KdTreeObject*)self)->tree;
   for (i=0; i<tree->allnodes.size(); i++) {
@@ -240,12 +241,53 @@ void kdtree_dealloc(PyObject* self) {
   self->ob_type->tp_free(self);
 }
 
-PyObject* kdtree_get_dimension(PyObject* self) {
+static PyObject* kdtree_get_dimension(PyObject* self) {
   KdTreeObject* so = (KdTreeObject*)self;
   return PyInt_FromLong((long)(so->dimension));
 }
 
-PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
+static PyObject* kdtree_set_distance(PyObject* self, PyObject* args) {
+  KdTreeObject* so = (KdTreeObject*)self;
+  int distance_type;
+  size_t n,i;
+  PyObject* weights = NULL;
+  PyObject* entry;
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "i|O", &distance_type, &weights) <= 0) {
+    return 0;
+  }
+  Kdtree::DoubleVector wvector(so->dimension, 1.0);
+  if (weights) {
+    if(!PySequence_Check(weights)) {
+      PyErr_SetString(PyExc_RuntimeError, "KdTree.set_distance: weights must be list of floats");
+      return 0;
+    }
+    n = PySequence_Size(weights);
+    if (n != so->dimension) {
+      PyErr_SetString(PyExc_RuntimeError, "KdTree.set_distance: weight list must have length of KdTree.dimension");
+      return 0;
+    }
+    // copy over input data
+    for(i=0;i<n;++i) {
+      entry = PySequence_GetItem(weights,i);
+      if (PyFloat_Check(entry)) {
+        wvector[i] = PyFloat_AsDouble(entry);
+      } else if  (PyInt_Check(entry)) {
+        wvector[i] = (double)PyInt_AsLong(entry);
+      } else {
+        PyErr_SetString(PyExc_RuntimeError, "KdTree.set_distance: weights must be numeric");
+        Py_DECREF(entry);
+        return 0;
+      }
+      Py_DECREF(entry);
+    }
+  }
+  // actual C++ function call
+  so->tree->set_distance(distance_type, &wvector);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
   KdTreeObject* so = (KdTreeObject*)self;
   Kdtree::CoordPoint point(so->dimension);
   PyObject *list, *entry;
@@ -292,6 +334,8 @@ PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
 
 
 PyMethodDef kdtree_methods[] = {
+  { (char *)"set_distance", kdtree_set_distance, METH_VARARGS,
+    (char *)"**set_distance** (*distance_type*, *weights* = ``None``)\n\nSets the distance metrics used in subsequent k nearest neighbor searches.\n\n*distance_type* can be 0 (Linfinite or maximum norm), 1 (L1 or city block norm), or 2 (L2 or euklidean norm).\n\n*weights* is a list of floating point values, where each specifies a weight for a coordinate index in the distance computation. When weights are provided, the weight list must have exactly *d* entries, where *d* is the dimension of the kdtree. When no weights are provided, all coordinates are equally weighted with 1.0." },
   { (char *)"k_nearest_neighbors", kdtree_k_nearest_neighbors, METH_VARARGS,
     (char *)"**k_nearest_neighbors** (*point*, *k*)\n\nReturns the *k* nearest neighbors to the given *point* in O(log(n)) time. The parameter *point* must not be of Gamera's data type ``Point``, but a list or tuple of numbers representing the coordinates. *point* must be of the same dimension as the kd-tree.\n\nThe result is a list of nodes ordered by distance from *point*,i.e. the closest node is the first. If your query point happens to coincide with a node, you can skip it by simply removing the first entry form the result list." },
   { NULL }

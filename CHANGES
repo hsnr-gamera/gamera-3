@@ -1,8 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
-TODO - Biollante GUI broken with wxpython 2.8 on Linux, and
-       refresh problems with slider display on wxpython 2.6
+ - new method set_distance in kdtree for dimension weighting
+
+ - corrected slider display in Biollante
 
  - fixed errors in draw_hollow_rect and knn_editing
 

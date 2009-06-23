@@ -63,8 +63,7 @@ CC with the point in the node:
 .. code:: Python
 
    ccs = image.cc_analysis()
-   nodes = [KdNode([(cc.offset_x+cc.ncols)/2, (cc.offset_y+cc.nrows)/2], cc) \
-            for cc in ccs]
+   nodes = [KdNode(cc.center, cc) for cc in ccs]
 
 
 The Kd-Tree Python API
@@ -105,6 +104,8 @@ A ``KdTree`` has the following (read only) properties:
    by the constructor.
 
 .. docstring:: gamera.kdtree KdTree
+
+.. docstring:: gamera.kdtree KdTree set_distance
 
 .. docstring:: gamera.kdtree KdTree k_nearest_neighbors
 

@@ -7,6 +7,7 @@
 namespace Gamera { namespace Kdtree {
 
 typedef std::vector<double> CoordPoint;
+typedef std::vector<double> DoubleVector;
 
 // for passing points to the constructor of kdtree
 struct KdNode {
@@ -64,24 +65,27 @@ private:
   bool neighbor_search(const CoordPoint &point, kdtree_node* node, size_t k);
   bool bounds_overlap_ball(const CoordPoint &point, double dist, kdtree_node* node);
   bool ball_within_bounds(const CoordPoint &point, double dist, kdtree_node* node);
+  // weights for distance computation
+  DoubleVector* distweights;
 public:
   KdNodeVector allnodes;
   size_t dimension;
   kdtree_node* root;
   // pointers to distance functions between points and coordinates
-  double (*distance)(const CoordPoint &p, const CoordPoint &q);
-  double (*coordinate_distance)(double x, double y);
+  double (*distance)(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
+  double (*coordinate_distance)(double x, double y, double weight);
   // distance_type can be 0 (max), 1 (city block), or 2 (euklid)
   KdTree(const KdNodeVector* nodes, int distance_type=2);
   ~KdTree();
+  void set_distance(int distance_type, const DoubleVector* weights = NULL);
   void k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result);
   // predefined distance functions
-  static double distance0(const CoordPoint &p, const CoordPoint &q);
-  static double coordinate_distance0(double x, double y);
-  static double distance1(const CoordPoint &p, const CoordPoint &q);
-  static double coordinate_distance1(double x, double y);
-  static double distance2(const CoordPoint &p, const CoordPoint &q);
-  static double coordinate_distance2(double x, double y);
+  static double distance0(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
+  static double coordinate_distance0(double x, double y, double weight);
+  static double distance1(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
+  static double coordinate_distance1(double x, double y, double weight);
+  static double distance2(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
+  static double coordinate_distance2(double x, double y, double weight);
 };
 
 }} // end namespace Gamera::Kdtree

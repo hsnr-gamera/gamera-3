@@ -24,6 +24,7 @@
 // these classes are used from kdtree.hpp:
 //using Gamera::Kdtree::KdTree;
 //using Gamera::Kdtree::KdNode;
+//using Gamera::Kdtree::KdNodePredicate;
 //using Gamera::Kdtree::KdNodeVector;
 //using Gamera::Kdtree::CoordPoint;
 //using Gamera::Kdtree::DoubleVector;
@@ -287,14 +288,55 @@ static PyObject* kdtree_set_distance(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
+// helper class for passing over search predicate to k_nearest_neighbor
+struct KdNodePredicate_Py : public Gamera::Kdtree::KdNodePredicate {
+  PyObject* pyfunctor;
+  KdNodePredicate_Py(PyObject* pf) {
+    pyfunctor = pf;
+    Py_INCREF(pf);
+  }
+  ~KdNodePredicate_Py() {
+    Py_DECREF(pyfunctor);
+  }
+  bool operator()(const Gamera::Kdtree::KdNode& kn) const {
+    // build python object KdNode from C++ object
+    // and pass it to comparison function
+    PyObject *point, *kdnode, *result, *data;
+    bool retval;
+    size_t i;
+    //printf("KdNodePredicate_Py called\n");
+    data = (PyObject*)kn.data;
+    point = PyList_New(kn.point.size());
+    for (i=0; i<kn.point.size(); i++) {
+      PyList_SetItem(point, i, PyFloat_FromDouble(kn.point[i]));
+    }
+    if (data) {
+      kdnode = PyObject_CallFunctionObjArgs((PyObject*)&KdNodeType,point,data,NULL);
+    } else {
+      kdnode = PyObject_CallFunctionObjArgs((PyObject*)&KdNodeType,point,NULL);
+    }
+    result = PyObject_CallFunctionObjArgs(pyfunctor,kdnode,NULL);
+    retval = PyObject_IsTrue(result);
+    Py_DECREF(result);
+    Py_DECREF(kdnode);
+    Py_DECREF(point);
+    return retval;
+  }
+};
+
 static PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
   KdTreeObject* so = (KdTreeObject*)self;
   Kdtree::CoordPoint point(so->dimension);
   PyObject *list, *entry;
+  PyObject *predicate = NULL;
   int k;
   size_t i,n;
   Kdtree::KdNodeVector result;
-  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "Oi", &list, &k) <= 0) {
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "Oi|O", &list, &k, &predicate) <= 0) {
+    return 0;
+  }
+  if (predicate && !PyCallable_Check(predicate)) {
+    PyErr_SetString(PyExc_RuntimeError, "KdTree.k_nearest_neighbor: search predicate must be callable");
     return 0;
   }
   if(!PySequence_Check(list)) {
@@ -321,7 +363,12 @@ static PyObject* kdtree_k_nearest_neighbors(PyObject* self, PyObject* args) {
     Py_DECREF(entry);
   }
   // actual C++ function call
-  so->tree->k_nearest_neighbors(point, (size_t)k, &result);
+  if (predicate) {
+    KdNodePredicate_Py searchpredicate(predicate);
+    so->tree->k_nearest_neighbors(point, (size_t)k, &result, &searchpredicate);
+  } else {
+    so->tree->k_nearest_neighbors(point, (size_t)k, &result);
+  }
   // copy over result data
   list = PyList_New(result.size());
   for (i=0; i<result.size(); i++) {
@@ -337,7 +384,7 @@ PyMethodDef kdtree_methods[] = {
   { (char *)"set_distance", kdtree_set_distance, METH_VARARGS,
     (char *)"**set_distance** (*distance_type*, *weights* = ``None``)\n\nSets the distance metrics used in subsequent k nearest neighbor searches.\n\n*distance_type* can be 0 (Linfinite or maximum norm), 1 (L1 or city block norm), or 2 (L2 or euklidean norm).\n\n*weights* is a list of floating point values, where each specifies a weight for a coordinate index in the distance computation. When weights are provided, the weight list must have exactly *d* entries, where *d* is the dimension of the kdtree. When no weights are provided, all coordinates are equally weighted with 1.0." },
   { (char *)"k_nearest_neighbors", kdtree_k_nearest_neighbors, METH_VARARGS,
-    (char *)"**k_nearest_neighbors** (*point*, *k*)\n\nReturns the *k* nearest neighbors to the given *point* in O(log(n)) time. The parameter *point* must not be of Gamera's data type ``Point``, but a list or tuple of numbers representing the coordinates. *point* must be of the same dimension as the kd-tree.\n\nThe result is a list of nodes ordered by distance from *point*,i.e. the closest node is the first. If your query point happens to coincide with a node, you can skip it by simply removing the first entry form the result list." },
+    (char *)"**k_nearest_neighbors** (*point*, *k*, *predicate* = ``None``)\n\nReturns the *k* nearest neighbors to the given *point* in O(log(n)) time. The parameter *point* must not be of Gamera's data type ``Point``, but a list or tuple of numbers representing the coordinates. *point* must be of the same dimension as the kd-tree.\n\nThe result is a list of nodes ordered by distance from *point*,i.e. the closest node is the first. If your query point happens to coincide with a node, you can skip it by simply removing the first entry form the result list.\n\nThe optional parameter *predicate* is a function or callable class that takes a ``KdNode`` as argument and returns ``False`` when this node shall not be among the returned neighbors." },
   { NULL }
 };
 

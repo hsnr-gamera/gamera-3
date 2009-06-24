@@ -131,11 +131,15 @@ kdtree_node* KdTree::build_tree(size_t depth, size_t a, size_t b)
 // returns the *k* nearest neighbors of *point* in O(log(n)) 
 // time. The result is returned in *result* and is sorted by
 // distance from *point*.
+// The optional search predicate is a callable class (aka "functor")
+// derived from KdNodePredicate. When Null (default, no search
+// predicate is applied).
 //--------------------------------------------------------------
-void KdTree::k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result)
+    void KdTree::k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result, KdNodePredicate* pred /*=NULL*/)
 {
   size_t i;
   KdNode temp;
+  searchpredicate = pred;
 
   result->clear();
   if (k<1) return;
@@ -148,8 +152,10 @@ void KdTree::k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector
   if (k>allnodes.size()) {
     // when more neighbors asked than nodes in tree, return everything
     k = allnodes.size();
-    for (i=0; i<k; i++)
-      neighborheap->push(nn4heap(i,distance(allnodes[i].point,point,distweights)));
+    for (i=0; i<k; i++) {
+      if (!(searchpredicate && !(*searchpredicate)(allnodes[i])))
+        neighborheap->push(nn4heap(i,distance(allnodes[i].point,point,distweights)));
+    }
   } else {
     neighbor_search(point, root, k);
   }
@@ -161,6 +167,8 @@ void KdTree::k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector
     neighborheap->pop();
     result->push_back(allnodes[i]);
   }
+  // beware that less than k results might have been returned
+  k = result->size();
   for (i=0; i<k/2; i++) {
     temp = (*result)[i];
     (*result)[i] = (*result)[k-1-i];
@@ -179,11 +187,13 @@ bool KdTree::neighbor_search(const CoordPoint &point, kdtree_node* node, size_t 
   double curdist, dist;
 
   curdist = distance(point, node->point, distweights);
-  if (neighborheap->size() < k) {
-    neighborheap->push(nn4heap(node->dataindex,curdist));
-  } else if (curdist < neighborheap->top().distance) {
-    neighborheap->pop();
-    neighborheap->push(nn4heap(node->dataindex,curdist));
+  if (!(searchpredicate && !(*searchpredicate)(allnodes[node->dataindex]))) {
+    if (neighborheap->size() < k) {
+      neighborheap->push(nn4heap(node->dataindex,curdist));
+    } else if (curdist < neighborheap->top().distance) {
+      neighborheap->pop();
+      neighborheap->push(nn4heap(node->dataindex,curdist));
+    }
   }
   // first search on side closer to point
   if (point[node->cutdim] < node->point[node->cutdim]) {

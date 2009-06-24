@@ -1,7 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new method set_distance in kdtree for dimension weighting
+ - extensions in kdtree:
+    o new method set_distance for dimension weighting
+    o k_nearest_neighbors now supports an optional search predicate
 
  - corrected slider display in Biollante
 

@@ -66,3 +66,19 @@ def test_distance_metrics():
     assert [[3.8,6], [3,6], [5,5]] == \
         [n.point for n in tree.k_nearest_neighbors([5,6],3)]
 
+#
+# tests with search predicate
+#
+def test_search_predicate():
+    class predicate(object):
+        def __init__(self, point):
+            self.point = point
+        def __call__(self, node):
+            return (self.point[1] > node.point[1])
+    points = [(1,4), (2,4), (1,5), (3,6), (8,9),
+              (3.2,4.2), (4,4), (5,5), (3.8,6), (8,3)]
+    nodes = [KdNode(p) for p in points]
+    tree = KdTree(nodes)
+    assert [[5,5], [4,4]] == \
+        [n.point for n in tree.k_nearest_neighbors([5,6],2,predicate([5,6]))]
+    assert 0 == len(tree.k_nearest_neighbors([5,6],2,predicate([1,2])))

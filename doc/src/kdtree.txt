@@ -65,6 +65,31 @@ CC with the point in the node:
    ccs = image.cc_analysis()
    nodes = [KdNode(cc.center, cc) for cc in ccs]
 
+It is also possible to search for only those neighbors that fulfil
+a certain predicate. To this end, you must define a function or callable
+class that takes a KdNode as input and returns ``True`` when it fulfils
+the search predicate. The following example only returns nearest neighbors
+below the search point:
+
+.. code:: Python
+
+   # predicate definition as callable class
+   class predicate(object):
+       def __init__(self, point):
+           self.point = point
+       def __call__(self, node):
+           return (point[1] > node.point[1])
+
+   # find the three nearest neighbors below
+   point = (5,6)
+   knn = tree.k_nearest_neighbors(point, 3, predicate(point))
+
+Beware however, that a search predicate can have the effect that
+less than k neighbors are returned, because too few nodes fulfil
+the predicate. In such a case, the runtime is O(n) instead of O(log(n)).
+In other words, a poorly chosen search predicate can have a considerable
+negative impact on the runtime.
+
 
 The Kd-Tree Python API
 ----------------------
@@ -190,6 +215,42 @@ Here is a usage example for a nearest neighbor search:
    point[1] = 6;
    tree.k_nearest_neighbors(point, 3, &neighbors);
 
+If you want to restrict the returned neighbors to only those fulfilling
+a specific search predicate, you can define your search predicate as
+a callable class (aka *functor*, i.e. a class with the call operator
+``operator()`` overwritten [Stroustrup1997]_) derived from 
+``KdNodePredicate`` as in the following example:
+
+.. code:: CPP
+
+   // only search for nodes on the right hand side of search point
+   struct MyPredicate : public KdNodePredicate {
+     CoordPoint point(2);
+     MyPredicate(CoordPoint& p) {
+       point = p;
+     }
+     bool operator()(const KdNode& kn) const {
+       return point[0] < kn.point[0];
+     }
+   };
+
+The call of the class only takes a single argument, the ``KdNode``, and
+returns true when this node is an admissable search result. If this
+criterion depends on some information from the actual search point (like
+its *x*-component in the exampel above), this information must be passed to
+the class constructor and stored within the class.
+
+An instance of this class can then be passed as the third, optional argument
+to ``KdTree.k_nearest_neighbors``:
+
+.. code:: CPP
+
+   KdNodeVector neighbors;
+   CoordPoint point(2);
+   point[0] = 5;
+   point[1] = 6;
+   MyPredicate predicate(point);
+   tree.k_nearest_neighbors(point, 3, &neighbors, &predicate);
 
 
 References
@@ -206,4 +267,6 @@ References
    *An Algorithm for Finding Best Matches in Logarithmic Expected Time.*
    ACM Transcations on Mathematical Software 3, pp. 209-226 (1977)
 
+.. [Stroustrup1997] Stroustrup, B. 1997. *The C++ Programming
+   Language: Third Edition.*  Reading, MA: Addison-Wesley.
 

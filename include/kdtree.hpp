@@ -18,6 +18,16 @@ struct KdNode {
 };
 typedef std::vector<KdNode> KdNodeVector;
 
+// base function object for search predicate in knn search
+// returns true when the given KdNode is an admissible neighbor
+// To define an own search predicate, derive from this class
+// and overwrite the call operator operator()
+struct KdNodePredicate {
+  virtual bool operator()(const KdNode& kn) const {
+    return true;
+  }
+};
+
 //--------------------------------------------------------
 // private helper classes used internally by KdTree
 //
@@ -67,6 +77,8 @@ private:
   bool ball_within_bounds(const CoordPoint &point, double dist, kdtree_node* node);
   // weights for distance computation
   DoubleVector* distweights;
+  // search predicate in knn searches
+  KdNodePredicate* searchpredicate;
 public:
   KdNodeVector allnodes;
   size_t dimension;
@@ -78,7 +90,7 @@ public:
   KdTree(const KdNodeVector* nodes, int distance_type=2);
   ~KdTree();
   void set_distance(int distance_type, const DoubleVector* weights = NULL);
-  void k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result);
+  void k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result, KdNodePredicate* pred = NULL);
   // predefined distance functions
   static double distance0(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
   static double coordinate_distance0(double x, double y, double weight);

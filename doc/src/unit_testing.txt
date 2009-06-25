@@ -71,7 +71,7 @@ A new unit test, say *test_mystuff.py*, is added by the following steps:
 
    def test_something():
        img = load_image("data/OneBit_generic.png")
-	   assert img.myplugin(3) == 42
+       assert img.myplugin(3) == 42
 
 3. To verify that certain circumstances (e.g., wrong input data) lead
    to an exception, use ``py.test.raises``:

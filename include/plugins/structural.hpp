@@ -345,7 +345,7 @@ namespace Gamera {
     if (s2len == 0) return s1len;
 
     prev = new IntVector(s1len+1);
-    curr = new IntVector(s2len+1);
+    curr = new IntVector(s1len+1);
     for (i=0; i<s1len+1; i++) (*prev)[i] = i;
 
     for (j=1; j<s2len+1; j++) {

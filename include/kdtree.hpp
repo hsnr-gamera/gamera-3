@@ -23,6 +23,7 @@ typedef std::vector<KdNode> KdNodeVector;
 // To define an own search predicate, derive from this class
 // and overwrite the call operator operator()
 struct KdNodePredicate {
+  virtual ~KdNodePredicate() {}
   virtual bool operator()(const KdNode& kn) const {
     return true;
   }
@@ -32,22 +33,9 @@ struct KdNodePredicate {
 // private helper classes used internally by KdTree
 //
 // the internal node structure used by kdtree
-class kdtree_node {
-public:
-  kdtree_node();
-  ~kdtree_node();
-  // index of node data in kdtree array "allnodes"
-  size_t dataindex;
-  // cutting dimension
-  size_t cutdim;
-  // value of point
-  //double cutval; // == point[cutdim]
-  CoordPoint point;
-  //  roots of the two subtrees
-  kdtree_node *loson, *hison;
-  // bounding rectangle of this node's subtree
-  CoordPoint lobound, upbound;
-};
+class kdtree_node;
+// base class for different distance computations
+class DistanceMeasure;
 // helper class for priority queue in k nearest neighbor search
 class nn4heap {
 public:
@@ -75,29 +63,19 @@ private:
   bool neighbor_search(const CoordPoint &point, kdtree_node* node, size_t k);
   bool bounds_overlap_ball(const CoordPoint &point, double dist, kdtree_node* node);
   bool ball_within_bounds(const CoordPoint &point, double dist, kdtree_node* node);
-  // weights for distance computation
-  DoubleVector* distweights;
+  // class implementing the distance computation
+  DistanceMeasure* distance;
   // search predicate in knn searches
   KdNodePredicate* searchpredicate;
 public:
   KdNodeVector allnodes;
   size_t dimension;
   kdtree_node* root;
-  // pointers to distance functions between points and coordinates
-  double (*distance)(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
-  double (*coordinate_distance)(double x, double y, double weight);
   // distance_type can be 0 (max), 1 (city block), or 2 (euklid)
   KdTree(const KdNodeVector* nodes, int distance_type=2);
   ~KdTree();
   void set_distance(int distance_type, const DoubleVector* weights = NULL);
   void k_nearest_neighbors(const CoordPoint &point, size_t k, KdNodeVector* result, KdNodePredicate* pred = NULL);
-  // predefined distance functions
-  static double distance0(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
-  static double coordinate_distance0(double x, double y, double weight);
-  static double distance1(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
-  static double coordinate_distance1(double x, double y, double weight);
-  static double distance2(const CoordPoint &p, const CoordPoint &q, DoubleVector* weights);
-  static double coordinate_distance2(double x, double y, double weight);
 };
 
 }} // end namespace Gamera::Kdtree

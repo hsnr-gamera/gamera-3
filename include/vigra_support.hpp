@@ -338,12 +338,13 @@ namespace Gamera {
     void set(V const & value, ITERATOR & i) const 
     {
       VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
-      if (m_accessor(i) == m_label)
+      if (m_accessor(i) == m_label) {
 	if (tmp) {
 	  m_accessor.set(0, i);
 	} else {
 	  m_accessor.set(m_label, i);
 	}
+      }
     }
 
     template <class V, class ITERATOR, class DIFFERENCE>
@@ -351,12 +352,13 @@ namespace Gamera {
     { 
         VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
 	ITERATOR tmpi = i + diff;
-	if (m_accessor(tmpi) == m_label)
+	if (m_accessor(tmpi) == m_label) {
 	  if (tmp) {
 	    m_accessor.set(0, tmpi);
 	  } else {
 	    m_accessor.set(m_label, tmpi);
 	  }
+        }
     }
     OneBitPixel m_label;
     ImageAccessor<value_type> m_accessor;
@@ -391,12 +393,13 @@ namespace Gamera {
     void set(V const & value, ITERATOR & i) const 
     {
       VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
-      if (m_accessor(i) == m_label)
+      if (m_accessor(i) == m_label) {
 	if (tmp) {
 	  m_accessor.set(m_label, i);
 	} else {
 	  m_accessor.set(0, i);
 	}
+      }
     }
 
     template <class V, class ITERATOR, class DIFFERENCE>
@@ -404,12 +407,13 @@ namespace Gamera {
     { 
         VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
 	ITERATOR tmpi = i + diff;
-	if (m_accessor(tmpi) == m_label)
+	if (m_accessor(tmpi) == m_label) {
 	  if (tmp) {
 	    m_accessor.set(m_label, tmpi);
 	  } else {
 	    m_accessor.set(0, tmpi);
 	  }
+        }
     }
     OneBitPixel m_label;
     ImageAccessor<value_type> m_accessor;

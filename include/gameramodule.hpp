@@ -1242,7 +1242,7 @@ inline PyTypeObject* get_IteratorType() {
 
 class ProgressBar {
 public:
-  inline ProgressBar(char* message) {
+  inline ProgressBar(const char* message) {
     PyObject* dict = get_module_dict("gamera.util");
     if (!dict)
       throw std::runtime_error("Couldn't get gamera.util module");

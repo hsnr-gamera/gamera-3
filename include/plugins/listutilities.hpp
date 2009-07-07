@@ -82,6 +82,7 @@ namespace Gamera {
       }  
       std::nth_element(v->begin(), v->begin() + n/2, v->end());
       retval = (v->begin() + n/2)->value;
+      delete v;
       Py_INCREF(retval);
       return retval;
     }

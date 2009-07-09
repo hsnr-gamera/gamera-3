@@ -137,6 +137,7 @@ int *max_parts_per_group* = 5, int *max_graph_size* = 16)
 A convenience wrapper around group_list_automatic_ that returns
 a list of glyphs that is already updated for splitting and grouping."""
       added, removed = self.group_list_automatic(glyphs, *args, **kwargs)
+      glyphs = [g for g in glyphs if not g.get_main_id().startswith("_group._part")]
       return self._update_after_classification(glyphs, added, removed)
 
    def _pregroup(self, glyphs, function):

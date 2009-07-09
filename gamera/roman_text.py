@@ -162,8 +162,9 @@ class Page:
             ul_x = max(0, g.ul_x - FUDGE)
             lr_y = min(self.image.lr_y, g.lr_y + FUDGE)
             lr_x = min(self.image.lr_x, g.lr_x + FUDGE)
-            nrows = lr_y - ul_y + 1
-            ncols = lr_x - ul_x + 1
+            ul_x = int(ul_x); ul_y = int(ul_y)
+            nrows = int(lr_y - ul_y + 1)
+            ncols = int(lr_x - ul_x + 1)
             big_rects.append(core.Rect(core.Point(ul_x, ul_y), core.Dim(ncols, nrows)))
 
         # Search for intersecting glyphs and merge them. This is
@@ -535,7 +536,8 @@ Returns a ``Page`` object.
     if glyphs is None:
         glyphs = image.cc_analysis()
     if classifier is not None:
-       classifier.classify_list_automatic(glyphs)
+        #classifier.classify_list_automatic(glyphs)
+        glyphs = classifier.group_and_update_list_automatic(glyphs)
     page = Page(image, glyphs)
     page.segment()
     return page

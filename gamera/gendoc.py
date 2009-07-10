@@ -29,6 +29,7 @@ from time import strftime, localtime
 import locale
 import traceback
 import warnings
+from distutils.version import StrictVersion
 from gamera.util import dedent
 try:
    locale.setlocale(locale.LC_ALL, '')
@@ -40,7 +41,8 @@ except:
 try:
    from docutils.core import publish_file
    import docutils.parsers.rst
-   if docutils.__version__ < '0.4':
+   if StrictVersion(docutils.__version__) < StrictVersion('0.4'):
+      print "docutils version (" + docutils.__version__ + ") too old"
       raise ImportError()
 except ImportError, e:
    print "'docutils' 0.4 or later must be installed to generate the documentation."
@@ -55,7 +57,8 @@ try:
    import pygments.lexers
    import pygments.formatters
    source_highlighter = 'pygments'
-   if pygments.__version__ < '0.6':
+   if StrictVersion(pygments.__version__) < StrictVersion('0.6'):
+      print "pygments version (" + pygments.__version__ + ") too old"
       raise ImportError()
 except ImportError, e:
    try:

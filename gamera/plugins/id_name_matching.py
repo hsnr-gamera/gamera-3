@@ -64,7 +64,7 @@ dummy_regex = re.compile('')
 type_dummy_regex = type(dummy_regex)
 class match_id_name(PluginFunction):
     r"""
-    Returns true if the image's ``id_name`` matches the given regular
+    Returns true if the image's main ``id_name`` matches the given regular
     expression.
 
     *regex*
@@ -113,9 +113,12 @@ class match_id_name(PluginFunction):
         else:
             raise TypeError(
                 "Expression must be a string or a compiled Python regular expression.")
-        for confidence, name in self.id_name:
-            if compiled.match(name):
-                return 1
+        name = self.get_main_id()
+        if compiled.match(name):
+            return 1
+        #for confidence, name in self.id_name:
+        #    if compiled.match(name):
+        #        return 1
         return 0
     __call__ = staticmethod(__call__)
 

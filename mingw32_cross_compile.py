@@ -22,14 +22,19 @@ sys.platform = 'cygwin'
 from distutils import cygwinccompiler, util, ccompiler
 from distutils.command import build_ext, bdist_wininst
 
-LATEST_PYTHON_RELEASE = "2.5.2"
-PYTHON_WIN32 = "python-win32"
+if sys.version_info[2] == 0:
+    LATEST_PYTHON_RELEASE = "%d.%d" % tuple(sys.version_info[:2])
+else:
+    LATEST_PYTHON_RELEASE = "%d.%d.%d" % tuple(sys.version_info[:3])
+PYTHON_LIB = "python%d%d" % tuple(sys.version_info[:2])
+PYTHON_WIN32 = "python-win32-%s" % LATEST_PYTHON_RELEASE
 
-prefix = 'i586-mingw32msvc-'
+prefix = 'i686-pc-mingw32-'
 os.environ['CC'] = '%sgcc' % prefix
 os.environ['CXX'] = '%sg++' % prefix
 os.environ['LD'] = '%sld' % prefix
-os.environ['LDFLAGS'] = '-L./%s/dll/ -lpython25' % PYTHON_WIN32
+os.environ['LDFLAGS'] = '-L./%s/dll/ -l%s' % (
+    PYTHON_WIN32, PYTHON_LIB)
 os.environ['CFLAGS'] = '-I./%s/' % PYTHON_WIN32
 os.environ['CXXFLAGS'] = '-I./%s/' % PYTHON_WIN32
 
@@ -50,7 +55,7 @@ if not os.path.exists(PYTHON_WIN32) or not os.path.isdir(PYTHON_WIN32):
         print "Error extracting Python Windows dist.  Do you have cabextract installed?"
         sys.exit(1)
     os.mkdir("dll")
-    os.rename("python25.dll", "dll/python25.dll")
+    os.rename("%s.dll" % PYTHON_LIB, "dll/%s.dll" % PYTHON_LIB)
     os.chdir("..")
 
 def monkey_patch_get_platform():
@@ -138,11 +143,11 @@ class Mingw32CrossCCompiler (cygwinccompiler.CygwinCCompiler):
         cxxflags = os.environ.get('CXXFLAGS') or ''
         ldflags = os.environ.get('LDFLAGS') or ''
 
-        self.set_executables(compiler='%s -mno-cygwin -O -Wall %s' % (gcc, cflags),
-                             compiler_so='%s -mno-cygwin -mdll -O -Wall %s' % (so, cflags),
-                             compiler_cxx='%s -mno-cygwin -O -Wall %s' % (cxx, cxxflags),
-                             linker_exe='%s -mno-cygwin' % linker_exe,
-                             linker_so='%s -mno-cygwin %s %s %s'
+        self.set_executables(compiler='%s -mno-cygwin -O -Wall -static-libgcc %s' % (gcc, cflags),
+                             compiler_so='%s -mno-cygwin -mdll -O -Wall -static-libgcc %s' % (so, cflags),
+                             compiler_cxx='%s -mno-cygwin -O -Wall -static-libgcc %s' % (cxx, cxxflags),
+                             linker_exe='%s -mno-cygwin -static-libgcc' % linker_exe,
+                             linker_so='%s -mno-cygwin %s %s %s -static-libgcc'
                                         % (linker_dll, shared_option,
                                            entry_point, ldflags))
         # Maybe we should also append -mthreads, but then the finished
@@ -199,6 +204,6 @@ def get_exe_bytes (self):
     directory = os.path.dirname(bdist_wininst.__file__)
     # we must use a wininst-x.y.exe built with the same C compiler
     # used for python.  XXX What about mingw, borland, and so on?
-    filename = os.path.join(directory, "wininst-6.exe")
+    filename = os.path.join(directory, "wininst-9.0.exe")
     return open(filename, "rb").read()
 bdist_wininst.bdist_wininst.get_exe_bytes = get_exe_bytes

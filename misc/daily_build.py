@@ -31,22 +31,23 @@ ROOT_PATH = "/home/mdboom/JHU/builds/"
 WORKING_PATH = "gamera-daily-build"
 REPOS_PATH = "https://gamera.svn.sf.net/svnroot/gamera/trunk/gamera"
 STAGING_PATH = "gamera-daily"
-RSYNC_TARGET = "mdboom@shadowfax.mse.jhu.edu:/mnt/gamera-builds/"
+RSYNC_TARGET = "mdboom@xs004.mse.jhu.edu:/mnt/gamera-builds/"
 KEEP = 10
 
 def mysystem(message, command):
     print message,
     try:
-        process = subprocess.Popen(command, shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        retcode = process.wait()
+        # process = subprocess.Popen(command, shell=True,
+        #                            stdout=subprocess.PIPE,
+        #                            stderr=subprocess.PIPE)
+        # retcode = process.wait()
+        retcode = os.system(command)
         if retcode != 0:
             print "FAILED (%d)" % retcode
-            print process.stderr.read()
             return
     except:
         print "FAILED"
+        raise
     else:
         print "SUCCESS"
 
@@ -92,8 +93,7 @@ def build(version):
         myrmtree(os.path.join(WORKING_PATH, "dist"))
     myrmtree(os.path.join(WORKING_PATH, "doc/html"))
     os.chdir(WORKING_PATH)
-    mysystem("Building for Linux (Python 2.5)...", "python setup.py build")
-    mysystem("Building for Linux (Python 2.4)...", "python2.4 setup.py build")
+    mysystem("Building for Linux (Python 2.6)...", "python setup.py build")
     mysystem("Building source distribution...", "python setup.py sdist")
     mysystem("Building for Windows...", "python setup.py build --compiler=mingw32_cross bdist_wininst")
     os.chdir("doc")
@@ -123,7 +123,8 @@ def stage(version):
     mymkdir(os.path.join(STAGING_PATH, "doc"))
     shutil.copy2(os.path.join(WORKING_PATH, "dist", "gamera-%s.tar.gz" % version),
                  os.path.join(STAGING_PATH, "src"))
-    shutil.copy2(os.path.join(WORKING_PATH, "dist", "gamera-%s.win32-py2.5.exe" % version),
+    shutil.copy2(os.path.join(WORKING_PATH, "dist", "gamera-%s.win32-py%d.%d.exe" %
+                              (version, sys.version_info[0], sys.version_info[1])),
                  os.path.join(STAGING_PATH, "win32"))
     shutil.copy2(os.path.join(WORKING_PATH, "doc", "gamera-doc-%s.tar.gz" % version),
                  os.path.join(STAGING_PATH, "doc"))

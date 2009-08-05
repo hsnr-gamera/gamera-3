@@ -908,7 +908,7 @@ inline PyObject* init_image_members(ImageObject* o) {
   // confidence
   o->m_confidence = PyDict_New();
   if (o->m_confidence == 0)
-    return 0;  
+    return 0;
   return (PyObject*)o;
 }
 
@@ -1263,8 +1263,9 @@ public:
       Py_INCREF(m_progress_bar);
   }
   inline ~ProgressBar() {
-    if (m_progress_bar)
+    if (m_progress_bar) {
       Py_DECREF(m_progress_bar);
+    }
   }
   inline void add_length(int l) {
     if (m_progress_bar) {
@@ -1409,10 +1410,10 @@ namespace Gamera {
       value = (PyObject*)c2;
       return *this;
     }
-    inline int operator<(const canonicPyObject& c2) const { 
+    inline int operator<(const canonicPyObject& c2) const {
       return PyObject_RichCompareBool(value,c2.value,Py_LT);
     }
-    inline int operator==(const canonicPyObject& c2) const { 
+    inline int operator==(const canonicPyObject& c2) const {
       return PyObject_RichCompareBool(value,c2.value,Py_EQ);
     }
   };

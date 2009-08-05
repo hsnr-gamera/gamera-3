@@ -33,7 +33,7 @@
 /*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
 /*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
 /*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
-/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
 
@@ -1014,7 +1014,7 @@ operator< (const Rational<IntType1> & l, const Rational<IntType2>& r)
 
     // Handle the easy cases. Take advantage of the fact
     // that the denominator is never negative.
-    if(l.denominator() == zero)
+    if(l.denominator() == zero) {
         if(r.denominator() == zero)
             // -inf < inf, !(-inf < -inf), !(inf < -inf), !(inf < inf)
             return l.numerator() < r.numerator();
@@ -1022,16 +1022,20 @@ operator< (const Rational<IntType1> & l, const Rational<IntType2>& r)
             // -inf < -1, -inf < 0, -inf < 1
             // !(inf < -1), !(inf < 0), !(inf < 1)
             return l.numerator() < zero;
-    if(r.denominator() == zero)
+    }
+    if(r.denominator() == zero) {
         // -1 < inf, 0 < inf, 1 < inf
         // !(-1 < -inf), !(0 < -inf), !(1 < -inf)
         return r.numerator() > zero;
+    }
     // !(1 < -1), !(1 < 0), !(0 < -1), !(0 < 0)
-    if(l.numerator() >= zero && r.numerator() <= zero)
+    if(l.numerator() >= zero && r.numerator() <= zero) {
         return false;
+    }
     // -1 < 0, -1 < 1, 0 < 1 (note: !(0 < 0) was already handled!)
-    if(l.numerator() <= zero && r.numerator() >= zero)
+    if(l.numerator() <= zero && r.numerator() >= zero) {
         return true;
+    }
 
     // both numbers have the same sign (and are neither zero or +-infinity)
     // => calculate result, avoid overflow

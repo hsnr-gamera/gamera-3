@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -35,8 +35,9 @@ struct Edge {
        Node* to_node, CostType cost = 1.0, PyObject* label = NULL);
   inline ~Edge() {
     if (m_label != NULL)
-      if (m_label->ob_refcnt)
+      if (m_label->ob_refcnt) {
 	Py_DECREF(m_label);
+      }
     m_graph = NULL;
   }
   inline Node* traverse(Node* from_node) {
@@ -65,7 +66,7 @@ struct EdgeObject {
 #define EP_PATH(a) ((a)->m_node_properties[2].NodeObjectPtr)
 
 void init_EdgeType();
-PyObject* edgeobject_new(GraphObject* graph, Node* from_node, 
+PyObject* edgeobject_new(GraphObject* graph, Node* from_node,
 			 Node* to_node, CostType cost = 1.0,
 			 PyObject* label = NULL, bool directed = true);
 PyObject* edgeobject_new(Edge* edge);

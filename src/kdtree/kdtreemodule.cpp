@@ -94,7 +94,9 @@ static void kdnode_dealloc(PyObject* self) {
   PyObject* data = ((KdNodeObject*)self)->data;
   PyObject* point = ((KdNodeObject*)self)->point;
   Py_DECREF(point);
-  if (data) Py_DECREF(data);
+  if (data) {
+    Py_DECREF(data);
+  }
   self->ob_type->tp_free(self);
 }
 

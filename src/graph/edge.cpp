@@ -164,8 +164,9 @@ PyObject* edge_get_label(PyObject* self) {
 
 int edge_set_label(PyObject* self, PyObject* data) {
   Edge* so = ((EdgeObject*)self)->m_x;
-  if (so->m_label != NULL)
+  if (so->m_label != NULL) {
     Py_DECREF(so->m_label);
+  }
   so->m_label = data;
   Py_INCREF(so->m_label);
   return 0;

@@ -112,8 +112,9 @@ PyObject* node_get_data(PyObject* self) {
 
 int node_set_data(PyObject* self, PyObject* data) {
   Node* so = ((NodeObject*)self)->m_x;
-  if (so->m_data != NULL)
+  if (so->m_data != NULL) {
     Py_DECREF(so->m_data);
+  }
   so->m_data = data;
   Py_INCREF(so->m_data);
   return 0;

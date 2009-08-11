@@ -1,3 +1,14 @@
+#
+# This file has been taken from wxpython (see the file
+# wx/tools/img2py.py in the wxpython source distribution)
+#
+# Copyright (c) 1998 Julian Smart, Robert Roebling et al
+#
+# This program may be freely used, copied and distributed under
+# the terms of the wxWindows Library Licence, Version 3. See
+# the file "copyright" of the wxpython distribution from
+# http://wxpython.org/ for details.
+#
 """
 img2py.py  --  Convert an image to PNG format and embed it in a Python
                module with appropriate code so it can be loaded into

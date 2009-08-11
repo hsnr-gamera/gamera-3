@@ -112,7 +112,7 @@ class bbox_merging(PluginFunction):
     Segments a page by extending and merging the bounding boxes of the
     connected components on the page.
 
-    How much the segemnts are extended is controlled by the arguments
+    How much the segments are extended is controlled by the arguments
     *Ex* and *Ey*. Depending on their value, the returned segments
     can be lines or paragraphs or something else.
 
@@ -131,7 +131,8 @@ class bbox_merging(PluginFunction):
       When *-1*, it is set to twice the average size of all CCs.
       This will typically segemtn into paragraphs.
 
-      If you want to segment into lines, set *Ey* to zero.
+      If you want to segment into lines, set *Ey* to something small like
+      one sixth of the median symbol height.
     """
     self_type = ImageType([ONEBIT])
     return_type = ImageList("ccs")

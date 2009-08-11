@@ -1,3 +1,14 @@
+#
+# This file has been taken from wxpython (see the file
+# wx/tools/img2img.py in the wxpython source distribution)
+#
+# Copyright (c) 1998 Julian Smart, Robert Roebling et al
+#
+# This program may be freely used, copied and distributed under
+# the terms of the wxWindows Library Licence, Version 3. See
+# the file "copyright" of the wxpython distribution from
+# http://wxpython.org/ for details.
+#
 """
 Common routines for the image converter utilities.
 """

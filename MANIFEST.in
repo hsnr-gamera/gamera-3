@@ -1,6 +1,6 @@
 recursive-include misc *
 recursive-include doc gendoc.py
-recursive-include doc/src *.txt *.png
+recursive-include doc/src *.txt *.png *.css
 recursive-include doc/html *.css
 recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff

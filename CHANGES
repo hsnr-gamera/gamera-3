@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new page segmentation plugin bbox_merging
+
  - extensions in kdtree:
     o new method set_distance for dimension weighting
     o k_nearest_neighbors now supports an optional search predicate
@@ -45,7 +47,7 @@ Version 3.1.2, Apr 14, 2009
    also available on the C++ side as a template in listutilities.hpp
 
  - new C++ wrapper class canonicPyObject in gameramodule.hpp to make
-   PyObject* usable in STL containerclasses, e.g. vector<canonicPyObject>
+   PyObject* usable in STL container classes, e.g. vector<canonicPyObject>
 
  - fixed problem with weak image references in classifier dialog
 

@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2007 Christoph Dalitz, Stefan Ruloff, Maria Elhachimi,
-#                    Ilya Stoyanov
+#                    Ilya Stoyanov, Rene Baston
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -104,6 +104,133 @@ class runlength_smearing(PluginFunction):
     author = "Iliya Stoyanov"
     def __call__(image, Cx = -1, Cy = -1, Csm = -1):
 	return _pagesegmentation.runlength_smearing(image, Cx, Cy, Csm)
+    __call__ = staticmethod(__call__)
+
+
+class bbox_merging(PluginFunction):
+    """
+    Segments a page by extending and merging the bounding boxes of the
+    connected components on the page.
+
+    How much the segemnts are extended is controlled by the arguments
+    *Ex* and *Ey*. Depending on their value, the returned segments
+    can be lines or paragraphs or something else.
+
+    The return value is a list of 'CCs' where each 'CC' represents a
+    found segment. Note that the input image is changed such that each
+    pixel is set to its segment label.
+
+    Arguments:
+
+    *Ex*:
+      How much each CC is extended to the left and right before merging.
+      When *-1*, it is set to twice the average size of all CCs.
+
+    *Ey*:
+      How much each CC is extended to the top and bottom before merging.
+      When *-1*, it is set to twice the average size of all CCs.
+      This will typically segemtn into paragraphs.
+
+      If you want to segment into lines, set *Ey* to zero.
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("ccs")
+    args = Args([Int('Ex', default = -1), Int('Ey', default = -1)])
+    pure_python = True
+    author = "Rene Baston, Karl MacMillan, and Christoph Dalitz"
+
+    def __call__(self, Ex=-1, Ey=-1):
+        # two helper functions for merging rectangles
+        def find_intersecting_rects(glyphs, index):
+            g = glyphs[index]
+            inter = []
+            for i in range(len(glyphs)):
+                if i == index:
+                    continue
+                if g.intersects(glyphs[i]):
+                    inter.append(i)
+            return inter
+        def list_union_rects(big_rects):
+            current = 0
+            rects = big_rects
+            while(1):
+                inter = find_intersecting_rects(rects, current)
+                if len(inter):
+                    g = rects[current]
+                    new_rects = [g]
+                    for i in range(len(rects)):
+                        if i == current:
+                            continue
+                        if i in inter:
+                            g.union(rects[i])
+                        else:
+                            new_rects.append(rects[i])
+                    rects = new_rects
+                    current = 0
+                else:
+                    current += 1
+                if(current >= len(rects)):
+                    break
+            return rects
+
+        # the actual plugin
+        from gamera.core import Dim, Rect, Point, Cc
+        from gamera.plugins.image_utilities import union_images
+
+        page = self.image_copy()
+        ccs = page.cc_analysis()
+
+        # compute average CC size
+        avg_size = 0.0
+        for c in ccs:
+            avg_size += c.nrows
+            avg_size += c.ncols
+        avg_size /= (2 * len(ccs))
+        avg_size = int(avg_size)
+        if Ex == -1:
+            Ex = avg_size*2
+        if Ey == -1:
+            Ey = avg_size*2
+
+        # extend CC bounding boxes
+        big_rects = []
+        for c in ccs:
+            ul_y = max(0, c.ul_y - Ey)
+            ul_x = max(0, c.ul_x - Ex)
+            lr_y = min(page.lr_y, c.lr_y + Ey)
+            lr_x = min(page.lr_x, c.lr_x + Ex)
+            nrows = lr_y - ul_y + 1
+            ncols = lr_x - ul_x + 1
+            big_rects.append(Rect(Point(ul_x, ul_y), Dim(ncols, nrows)))
+        extended_segs = list_union_rects(big_rects)
+
+        # build new merged CCs
+        tmplist = ccs[:]
+        dellist = []
+        seg_ccs = []
+        seg_cc = []
+        if(len(extended_segs) > 0):
+            label = 1
+            for seg in extended_segs:
+                label += 1
+                for cc in tmplist:
+                    if(seg.intersects(cc)):
+                        # mark original image with segment label
+                        self.highlight(cc, label)
+                        seg_cc.append(cc)
+                        dellist.append(cc)
+                if len(seg_cc) == 0:
+                    continue
+                seg_rect = seg_cc[0].union_rects(seg_cc)
+                new_seg = Cc(self, label, seg_rect.ul, seg_rect.lr)
+                seg_cc = []
+                for item in dellist:
+                    tmplist.remove(item)
+                dellist = []
+                seg_ccs.append(new_seg)
+
+        return seg_ccs
+
     __call__ = staticmethod(__call__)
 
 
@@ -235,7 +362,8 @@ class PageSegmentationModule(PluginModule):
     cpp_headers = ["pagesegmentation.hpp"]
     cpp_namespace = ["Gamera"]
     category = "PageSegmentation"
-    functions = [projection_cutting, runlength_smearing, sub_cc_analysis, textline_reading_order]
+    functions = [projection_cutting, runlength_smearing, bbox_merging, \
+                     sub_cc_analysis, textline_reading_order]
 module = PageSegmentationModule() # create an instance of the module
 
 # free function instances

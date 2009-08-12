@@ -39,7 +39,7 @@ class create_gabor_filter(PluginFunction):
     the center *frequency* (for example 0.375 or smaller) and the two
     angular and radial sigmas of the gabor filter.
     
-    The energy of the filter is explicitely normalized to 1.0.
+    The energy of the filter is explicitly normalized to 1.0.
     """
     self_type = ImageType([GREYSCALE])
     return_type = ImageType([FLOAT])

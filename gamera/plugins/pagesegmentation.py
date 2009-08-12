@@ -250,7 +250,7 @@ class sub_cc_analysis(PluginFunction):
     The input image must be an image that has been processed with a
     page segmentation plugin, i.e. all pixels in the image must be
     labeled with a segment label. The input parameter *cclist* is the
-    list of sgements returned by the page segmentation algorithm.
+    list of segments returned by the page segmentation algorithm.
 
     The return value is a tuple with two entries:
 
@@ -290,7 +290,8 @@ class textline_reading_order(PluginFunction):
       *a* is above *b* (order within a column)
 
     In the reference `\"High Performance Document Analysis\"`__
-    by T.M. Breuel (2003 Symposium on Document Image Understanding, USA),
+    by T.M. Breuel (Symposium on Document Image Understanding,
+    USA, pp. 209-218, 2003),
     an additional constraint is made for the first criteria by demanding
     that no other segment may be between *a* and *b* that opverlaps
     horizontally with both. This constraint for taking multi column

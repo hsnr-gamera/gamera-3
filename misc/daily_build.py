@@ -130,7 +130,7 @@ def rotate(path, number=2):
     if len(files) < KEEP * number:
         return
     files.sort()
-    files.revert()
+    files.reverse()
     remove = files[KEEP * number:]
     for t, f in remove:
         os.path.remove(f)

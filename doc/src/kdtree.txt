@@ -139,7 +139,7 @@ The Kd-Tree C++ API
 -------------------
 
 The module ``gamera.kdtree`` is only a thin Python wrapper around
-a C++ class ``kdtree``. This can also be used directly in C++ plugins.
+a C++ class ``KdTree``. This can also be used directly in C++ plugins.
 
 Compilation and linkage
 '''''''''''''''''''''''

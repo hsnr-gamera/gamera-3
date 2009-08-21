@@ -63,7 +63,7 @@ CC with the point in the node:
 .. code:: Python
 
    ccs = image.cc_analysis()
-   nodes = [KdNode(cc.center, cc) for cc in ccs]
+   nodes = [KdNode([cc.center.x,cc.center.y], cc) for cc in ccs]
 
 It is also possible to search for only those neighbors that fulfil
 a certain predicate. To this end, you must define a function or callable

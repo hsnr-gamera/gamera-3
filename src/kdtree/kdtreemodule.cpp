@@ -301,27 +301,15 @@ struct KdNodePredicate_Py : public Gamera::Kdtree::KdNodePredicate {
     Py_DECREF(pyfunctor);
   }
   bool operator()(const Gamera::Kdtree::KdNode& kn) const {
-    // build python object KdNode from C++ object
-    // and pass it to comparison function
-    PyObject *point, *kdnode, *result, *data;
+    // remember that complete python KdNode object is stored
+    // in KdNode.data in the C++ KdTree => we can easily
+    // extract it and pass it to comparison function
+    PyObject *result;
     bool retval;
-    size_t i;
     //printf("KdNodePredicate_Py called\n");
-    data = (PyObject*)kn.data;
-    point = PyList_New(kn.point.size());
-    for (i=0; i<kn.point.size(); i++) {
-      PyList_SetItem(point, i, PyFloat_FromDouble(kn.point[i]));
-    }
-    if (data) {
-      kdnode = PyObject_CallFunctionObjArgs((PyObject*)&KdNodeType,point,data,NULL);
-    } else {
-      kdnode = PyObject_CallFunctionObjArgs((PyObject*)&KdNodeType,point,NULL);
-    }
-    result = PyObject_CallFunctionObjArgs(pyfunctor,kdnode,NULL);
+    result = PyObject_CallFunctionObjArgs(pyfunctor,(PyObject*)kn.data,NULL);
     retval = PyObject_IsTrue(result);
     Py_DECREF(result);
-    Py_DECREF(kdnode);
-    Py_DECREF(point);
     return retval;
   }
 };

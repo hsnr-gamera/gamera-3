@@ -184,8 +184,8 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 
 	// Create CCs 
 	ImageList::iterator i;
-	for (i = ccs_AND->begin(); i != ccs_AND->end(); ++i) {
-		Cc* cc = static_cast<Cc*>(*i);
+	for (i = ccs_AND->begin(); i != ccs_AND->end(); ++i) {	
+		Cc* cc = dynamic_cast<Cc*>(*i);
 		int label = cc->label();
 
 		// Edit the labels in original image
@@ -228,7 +228,7 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 /*-------------------------------------------------------------------------
  * Functions for projection_cutting:
  * remove_the_noise: remove the noise.
- * Interne_RXY_Cut(image, Tx, Ty, ccs, noise, label):recusively splits 
+ * Interne_RXY_Cut(image, Tx, Ty, ccs, noise, label):recursively splits 
  * the image, sets the label and creates the CCs.
  * Start_point(image, ul, lr):search the upper_left point of the sub-image.
  * End_point(image,ul,lr):search the lower_right point of the sub-image.
@@ -244,36 +244,30 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
  */
 template<class T>
 Point proj_cut_Start_Point(T& image, Point ul, Point lr) {
-    size_t temp = 0;
     Point Start;
 
     for (size_t y = ul.y(); y <= lr.y(); y++) {
-		for (size_t x = ul.x(); x <= lr.x(); x++) {
-			if (temp == 0) {
-				if ((image.get(Point(x, y))) != 0) {
-					Start.x(x);
-					Start.y(y);
-					temp = 1;
-				}
-			}
+	for (size_t x = ul.x(); x <= lr.x(); x++) {
+		if ((image.get(Point(x, y))) != 0) {
+			Start.x(x);
+			Start.y(y);
+			goto endLoop1; // unfortunately there is no break(2) in gorgeous C++
 		}
+	}
     }
+	    
+    endLoop1:
 
-    temp = 0;
     for (size_t x = ul.x(); x <= lr.x(); x++) {
-		for (size_t y = ul.y(); y <= lr.y(); y++) {
-			if (temp == 0) {
-				if ((image.get(Point(x, y))) != 0) {
-					if (Start.x() > x)
-						Start.x(x);
-					if (Start.y() > y)
-						Start.y(y);
-					temp = 1;
-				}
+	for (size_t y = ul.y(); y <= lr.y(); y++) {
+		if ((image.get(Point(x, y))) != 0) {
+			if (Start.x() > x)
+				Start.x(x);
+			goto endLoop2; // unfortunately there is no break(2) in gorgeous C++
 			}
-        }
+        	}
     }
-
+    endLoop2:
     return Start;
 }
 
@@ -283,36 +277,30 @@ Point proj_cut_Start_Point(T& image, Point ul, Point lr) {
  */
 template<class T>
 Point proj_cut_End_Point(T& image, Point ul, Point lr) {
-    size_t temp = 0;
     Point End;
-    size_t i, j;
+    size_t x, y;
 
-    for (j = lr.y(); j > ul.y(); j--) {
-		for (i = lr.x(); i > ul.x(); i--) {
-			if (temp == 0) {
-				if ((image.get(Point(i, j))) != 0) {
-					End.x(i);
-					End.y(j);
-					temp = 1;
-				}
-			}
-		}
-    }
-
-    temp = 0;
-    for (i = lr.x(); i > ul.x(); i--) {
-		for (j = lr.y(); j > ul.y(); j--) {
-			if (temp == 0){
-				if ((image.get(Point(i,j))) != 0){
-					if (End.x()<i)
-						End.x(i);
-					if (End.y()<j)
-						End.y(j);
-					temp = 1;
-				}
-			}
+    for (y = lr.y(); y+1 >= ul.y()+1; y--) {
+	for (x = lr.x(); x+1 >= ul.x()+1; x--) {
+		if ((image.get(Point(x, y))) != 0) {
+			End.x(x);
+			End.y(y);
+			goto endLoop1;
 		}
 	}
+    }
+    endLoop1:
+    
+    for (x = lr.x(); x+1 > ul.x()+1; x--) {
+	for (y = lr.y(); y+1 > ul.y()+1; y--) {
+		if ((image.get(Point(x,y))) != 0){
+			if (End.x()<x)
+				End.x(x);
+			goto endLoop2;
+		}
+	}
+    }
+    endLoop2:
 
     return End;
 }
@@ -332,7 +320,7 @@ Point proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, int noi
 
     IntVector *proj_x = projection_cols(image, Rect(ul, lr));
     IntVector *proj_y = projection_rows(image, Rect(ul, lr));
-
+	
 	int max_x = 0, max_y = 0;
 	int counter = 0;
 
@@ -347,7 +335,7 @@ Point proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, int noi
 			counter = 0;
 		}
 	}
-
+	
 	for (size_t i = 0; i < proj_x->size(); i++) {
 		if ((*proj_x)[i] <= noise) {
 		    counter++;
@@ -419,7 +407,7 @@ void proj_cut_remove_the_noise(T& image, int noise) {
 template<class T>
 void projection_cutting_intern(T& image, Point ul, Point lr, ImageList* ccs, 
 		int Tx, int Ty, int noise, int& label) {
-
+	
 	Point Start = proj_cut_Start_Point(image, ul, lr);
 	Point End = proj_cut_End_Point(image, ul, lr);
 	Point C_punkt = proj_cut_Split_Point(image, Start, End, Tx, Ty, noise);
@@ -428,7 +416,7 @@ void projection_cutting_intern(T& image, Point ul, Point lr, ImageList* ccs,
 	ul.y(Start.y());
 	lr.x(End.x());
 	lr.y(End.y());
-
+	
 	if (!( ((C_punkt.x() == ul.x()) || (C_punkt.x() == lr.x()))
 			&& ( (C_punkt.y() == ul.y()) || (C_punkt.y() == lr.y() )))) {
 		projection_cutting_intern(image, C_punkt, End, ccs, Tx, Ty, noise, label);
@@ -467,10 +455,10 @@ template<class T>
 ImageList* projection_cutting(T& image, int Tx, int Ty, int noise) {
 	int Label = 2;
 
-	if (noise > 0) {
+ 	if (noise > 0) {
 		proj_cut_remove_the_noise(image, noise);
-		noise = 0;
-	}
+ 		noise = 0;
+ 	}
 
 	if (noise < 0) {
 		noise = 0;

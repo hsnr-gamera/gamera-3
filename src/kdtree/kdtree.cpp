@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <stdexcept>
 #include <math.h>
+#include <limits>
+
 
 namespace Gamera { namespace Kdtree {
 
@@ -334,7 +336,11 @@ bool KdTree::neighbor_search(const CoordPoint &point, kdtree_node* node, size_t 
         return true;
   }
   // second search on farther side, if necessary
-  dist = neighborheap->top().distance;
+  if (neighborheap->size() < k) {
+    dist = std::numeric_limits<double>::max();
+  } else {
+    dist = neighborheap->top().distance;
+  }
   if (point[node->cutdim] < node->point[node->cutdim]) {
     if (node->hison && bounds_overlap_ball(point,dist,node->hison))
       if (neighbor_search(point, node->hison, k))
@@ -345,7 +351,9 @@ bool KdTree::neighbor_search(const CoordPoint &point, kdtree_node* node, size_t 
         return true;
   }  
 
-  return ball_within_bounds(point, neighborheap->top().distance, node);
+  if (neighborheap->size() == k)
+    dist = neighborheap->top().distance;
+  return ball_within_bounds(point, dist, node);
 }
 
 // returns true when the bounds of *node* overlap with the 

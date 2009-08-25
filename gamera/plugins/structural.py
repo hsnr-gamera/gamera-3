@@ -99,9 +99,12 @@ class edit_distance(PluginFunction):
 
     This counts the number of character substitutions, additions and deletions
     necessary to transform one string into another. This plugin is a 
-    straightforward implementation of Levenshtein's classic algorithm from
-    1965, which has runtime complexity *O(m*n)*, where *m* and *n* are the
-    lengths of the two strings.
+    straightforward implementation of the classic algorithm by Wagner 
+    and Fischer, which has runtime complexity *O(m*n)*, where *m* and *n* are
+    the lengths of the two strings.
+
+    See R.A. Wagner, M.J. Fischer: *The String-to-String Correction Problem.*
+    Journal of the ACM 21, pp. 168-173, 1974.
     """
     self_type = None
     args = Args([String("s1"), String("s2")])

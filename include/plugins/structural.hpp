@@ -331,7 +331,7 @@ namespace Gamera {
     return Py_BuildValue(CHAR_PTR_CAST "fffi", b, a, q, x_of_y);
   }
 
-  // straightforward implementation of Levenshtein's classic algorithm
+  // straightforward implementation of Wagner and Fischer's algorithm from 1974
   int edit_distance(std::string s1, std::string s2)
   {
     size_t s1len, s2len;       // length of the two strings

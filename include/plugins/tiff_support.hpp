@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
- * and Karl MacMillan
+ * Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
+ * Karl MacMillan, and Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -101,17 +101,17 @@ namespace {
       std::bitset<8> bits;
       int tmp;
       for (size_t j = 0, k = 7, bit_index = 0; j < info.ncols(); j++, k--) {
-	if (k == 7) {
-	  bits = data[bit_index];
-	  bit_index++;
-	}
-	if (bits[k])
-	  tmp = pixel_traits<OneBitPixel>::black();
-	else
-	  tmp = pixel_traits<OneBitPixel>::white(); 
-	matrix.set(Point(j, i), tmp);
-	if (k == 0)
-	  k = 8;
+        if (k == 7) {
+          bits = data[bit_index];
+          bit_index++;
+        }
+        if (bits[k])
+          tmp = pixel_traits<OneBitPixel>::black();
+        else
+          tmp = pixel_traits<OneBitPixel>::white(); 
+        matrix.set(Point(j, i), tmp);
+        if (k == 0)
+          k = 8;
       }
     }
     // do the cleanup
@@ -130,21 +130,21 @@ namespace {
     unsigned char* data;
     if (info.inverted()) {
       for (size_t i = 0; i < info.nrows(); i++, mi++) {
-	mj = mi.begin();
-	TIFFReadScanline(tif, buf, i);
-	data = (unsigned char *)buf;
-	for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	  *mj = 255 - data[j];
-	}
+        mj = mi.begin();
+        TIFFReadScanline(tif, buf, i);
+        data = (unsigned char *)buf;
+        for (size_t j = 0; j < info.ncols(); j++, mj++) {
+          *mj = 255 - data[j];
+        }
       }
     } else {
       for (size_t i = 0; i < info.nrows(); i++, mi++) {
-	mj = mi.begin();
-	TIFFReadScanline(tif, buf, i);
-	data = (unsigned char *)buf;
-	for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	  *mj = data[j];
-	}
+        mj = mi.begin();
+        TIFFReadScanline(tif, buf, i);
+        data = (unsigned char *)buf;
+        for (size_t j = 0; j < info.ncols(); j++, mj++) {
+          *mj = data[j];
+        }
       }
     }
     
@@ -167,7 +167,7 @@ namespace {
       TIFFReadScanline(tif, buf, i);
       data = (unsigned short *)buf;
       for (size_t j = 0; j < info.ncols(); j++, mj++) {
-	*mj = data[j];
+        *mj = data[j];
       }
     }
     
@@ -190,9 +190,9 @@ namespace {
       TIFFReadScanline(tif, buf, i);
       data = (unsigned char *)buf;
       for (size_t j = 0; j < info.ncols() * 3; j += 3, mj++) {
-	(*mj).red(data[j]);
-	(*mj).green(data[j + 1]);
-	(*mj).blue(data[j + 2]);
+        (*mj).red(data[j]);
+        (*mj).green(data[j + 1]);
+        (*mj).blue(data[j + 2]);
       }
     }
     // do the cleanup
@@ -205,9 +205,14 @@ namespace {
 
   };
 
-  /*
-    FIXME - this assumes that the only little endian machine is i386
-  */
+
+  // runtime test for endianness
+  // (safer and less cumbersome than querying compiler macros)
+  bool byte_order_little_endian() {
+    long numberone = 1;
+    return (*((char*)(&numberone)));
+  }
+
   template<>
   struct tiff_saver<OneBitPixel> {
     template<class T>
@@ -215,39 +220,38 @@ namespace {
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
       tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
       if (!buf)
-	throw std::runtime_error("Error allocating scanline");
+        throw std::runtime_error("Error allocating scanline");
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISWHITE);
       std::bitset<32> bits;
       unsigned long* data = (unsigned long *)buf;
+      bool little_endian = byte_order_little_endian();
       typename T::const_vec_iterator it = matrix.vec_begin();
       for (size_t i = 0; i < matrix.nrows(); i++) {
-	size_t bit_index = 0;
-	int k = 31;
-	for (size_t j = 0; j < matrix.ncols(); k--) {
-	  if (k < 0) {
-	    data[bit_index] = bits.to_ulong();
-            #if defined(__i386__) || defined(_MSC_VER)
-	    byte_swap32((unsigned char *)&data[bit_index]);
-            #endif
-	    bit_index++;
-	    k = 32;
-	    continue;
-	  }
-	  if (is_black(*it))
-	    bits[k] = 1;
-	  else
-	    bits[k] = 0;
-	  j++;
-	  it++;
-	}
-	// The last 32 pixels need to be saved, even if they are not full
-	if (k != 31) {
-	  data[bit_index] = bits.to_ulong();
-          #if defined(__i386__) || defined(_MSC_VER)
-	  byte_swap32((unsigned char *)&data[bit_index]);
-          #endif
-	}
-	TIFFWriteScanline(tif, buf, i);
+        size_t bit_index = 0;
+        int k = 31;
+        for (size_t j = 0; j < matrix.ncols(); k--) {
+          if (k < 0) {
+            data[bit_index] = bits.to_ulong();
+            if (little_endian)
+              byte_swap32((unsigned char *)&data[bit_index]);
+            bit_index++;
+            k = 32;
+            continue;
+          }
+          if (is_black(*it))
+            bits[k] = 1;
+          else
+            bits[k] = 0;
+          j++;
+          it++;
+        }
+        // The last 32 pixels need to be saved, even if they are not full
+        if (k != 31) {
+          data[bit_index] = bits.to_ulong();
+          if (little_endian)
+            byte_swap32((unsigned char *)&data[bit_index]);
+        }
+        TIFFWriteScanline(tif, buf, i);
       }
       _TIFFfree(buf);
     }
@@ -260,15 +264,15 @@ namespace {
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
       tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
       if (!buf)
-	throw std::runtime_error("Error allocating scanline");
+        throw std::runtime_error("Error allocating scanline");
       typename T::value_type pix;
       unsigned char* data = (unsigned char *)buf;
       for (size_t i = 0; i < matrix.nrows(); i++) {
-	for (size_t j = 0; j < matrix.ncols(); j++) {
-	  pix = matrix[i][j];
-	  data[j] = (unsigned char)pix;
-	}
-	TIFFWriteScanline(tif, buf, i);
+        for (size_t j = 0; j < matrix.ncols(); j++) {
+          pix = matrix[i][j];
+          data[j] = (unsigned char)pix;
+        }
+        TIFFWriteScanline(tif, buf, i);
       }
       _TIFFfree(buf);
     }
@@ -281,15 +285,15 @@ namespace {
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
       tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
       if (!buf)
-	throw std::runtime_error("Error allocating scanline");
+        throw std::runtime_error("Error allocating scanline");
       typename T::value_type pix;
       unsigned short* data = (unsigned short *)buf;
       for (size_t i = 0; i < matrix.nrows(); i++) {
-	for (size_t j = 0; j < matrix.ncols(); j++) {
-	  pix = matrix[i][j];
-	  data[j] = (unsigned short)pix;
-	}
-	TIFFWriteScanline(tif, buf, i);
+        for (size_t j = 0; j < matrix.ncols(); j++) {
+          pix = matrix[i][j];
+          data[j] = (unsigned short)pix;
+        }
+        TIFFWriteScanline(tif, buf, i);
       }
       _TIFFfree(buf);
     }
@@ -302,17 +306,17 @@ namespace {
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
       tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
       if (!buf)
-	throw std::runtime_error("Error allocating scanline");
+        throw std::runtime_error("Error allocating scanline");
       typename T::value_type pix;
       unsigned char* data = (unsigned char *)buf;
       for (size_t i = 0; i < matrix.nrows(); i++) {
-	for (size_t j = 0, k = 0; j < matrix.ncols(); j++) {
-	  pix = matrix[i][j];
-	  data[k++] = pix.red();
-	  data[k++] = pix.green();
-	  data[k++] = pix.blue();
-	}
-	TIFFWriteScanline(tif, buf, i);
+        for (size_t j = 0, k = 0; j < matrix.ncols(); j++) {
+          pix = matrix[i][j];
+          data[k++] = pix.red();
+          data[k++] = pix.green();
+          data[k++] = pix.blue();
+        }
+        TIFFWriteScanline(tif, buf, i);
       }
       _TIFFfree(buf);
     }
@@ -325,23 +329,23 @@ Image* load_tiff(const char* filename, int storage) {
   if (info->ncolors() == 1) {
     if (info->depth() == 1) {
       if (storage == DENSE) {
-	typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
-	fact_type::image_type*
-	  image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
-	image->resolution(info->x_resolution());
-	tiff_load_onebit(*image, *info, filename);
-	delete info;
-	TIFFSetErrorHandler(saved_handler);
-	return image;
+        typedef TypeIdImageFactory<ONEBIT, DENSE> fact_type;
+        fact_type::image_type*
+          image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
+        image->resolution(info->x_resolution());
+        tiff_load_onebit(*image, *info, filename);
+        delete info;
+        TIFFSetErrorHandler(saved_handler);
+        return image;
       } else {
-	typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
-	fact_type::image_type*
-	  image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
-	image->resolution(info->x_resolution());
-	tiff_load_onebit(*image, *info, filename);
-	delete info;
-	TIFFSetErrorHandler(saved_handler);
-	return image;
+        typedef TypeIdImageFactory<ONEBIT, RLE> fact_type;
+        fact_type::image_type*
+          image = fact_type::create(Point(0, 0), Dim(info->ncols(), info->nrows()));
+        image->resolution(info->x_resolution());
+        tiff_load_onebit(*image, *info, filename);
+        delete info;
+        TIFFSetErrorHandler(saved_handler);
+        return image;
       }
     }
   }
@@ -401,7 +405,7 @@ void save_tiff(const T& matrix, const char* filename) {
 
   tiff_saver<typename T::value_type> saver;
   saver(matrix, tif);
-	
+        
   TIFFClose(tif);
 }
 

@@ -23,3 +23,4 @@ ToDo list for Gamera
    optional plugins.
  - Add more image formats: JPEG (reading/writing), PDF (writing),
    NIST special database 19 (reading)...
+ - make draw_text plugin working again

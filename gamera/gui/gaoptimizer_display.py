@@ -19,6 +19,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
+import sys
+
 # TODO: needs to be rewritten
 
 import wx
@@ -45,6 +47,9 @@ class OptimizerFrame(wx.Frame):
       wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition,
                        (400, 500))
 
+      # we must remember all menu item id's because wx.menu.FindItem
+      # is broken in several wxpython versions (e.g. 2.8.7)
+      self.menu_item_ids = {}
       self.setup_menus()
       self.classifier = None
       self.notebook = wx.Notebook(self, -1)
@@ -76,17 +81,20 @@ class OptimizerFrame(wx.Frame):
       menu = wx.Menu()
       id = wx.NewId()
       menu.Append(id, "&Open data...", "Open a k-NN database")
+      self.menu_item_ids["File|Open data..."] = id
       wx.EVT_MENU(self, id, self.open_cb)
 
       # save
       id = wx.NewId()
       menu.Append(id, "&Save settings", "Save the current weights")
+      self.menu_item_ids["File|Save settings"] = id
       wx.EVT_MENU(self, id, self.save_cb)
       menu.Enable(id, False)
 
       # save as
       id = wx.NewId()
       menu.Append(id, "&Save settings as...", "Save the current weights")
+      self.menu_item_ids["File|Save settings as..."] = id
       wx.EVT_MENU(self, id, self.save_as_cb)
       menu.Enable(id, False)
 
@@ -94,6 +102,7 @@ class OptimizerFrame(wx.Frame):
       menu.AppendSeparator()
       id = wx.NewId()
       menu.Append(id, "&Exit", "Exit the application")
+      self.menu_item_ids["File|Exit"] = id
       wx.EVT_MENU(self, id, self.close_cb)
 
       self.file_menu = menu
@@ -102,12 +111,14 @@ class OptimizerFrame(wx.Frame):
       # start
       id = wx.NewId()
       menu.Append(id, "&Start", "Start the optimization")
+      self.menu_item_ids["Optimizer|Start"] = id
       wx.EVT_MENU(self, id, self.start_cb)
       menu.Enable(id, False)
 
       # stop
       id = wx.NewId()
       menu.Append(id, "&Stop", "Stop the optimization")
+      self.menu_item_ids["Optimizer|Stop"] = id
       wx.EVT_MENU(self, id, self.stop_cb)
       menu.Enable(id, False)
 
@@ -115,6 +126,7 @@ class OptimizerFrame(wx.Frame):
       menu.AppendSeparator()
       id = wx.NewId()
       menu.Append(id, "&Features...", "Set the features for the classifier")
+      self.menu_item_ids["Optimizer|Features..."] = id
       wx.EVT_MENU(self, id, self.features_cb)
       menu.Enable(id, False)
 
@@ -126,13 +138,17 @@ class OptimizerFrame(wx.Frame):
       self.SetMenuBar(self.menu_bar)
 
    def enable_controls(self, enable=True):
-      id = self.optimizer_menu.FindItem("Start")
+      #id = self.optimizer_menu.FindItem("Start") # broken in wxpython 2.8.7
+      id = self.menu_item_ids["Optimizer|Start"]
       self.optimizer_menu.Enable(id, enable)
-      id = self.optimizer_menu.FindItem("Features...")
+      #id = self.optimizer_menu.FindItem("Features...")
+      id = self.menu_item_ids["Optimizer|Features..."]
       self.optimizer_menu.Enable(id, enable)
-      id = self.file_menu.FindItem("Save settings")
+      #id = self.file_menu.FindItem("Save settings")
+      id = self.menu_item_ids["File|Save settings"]
       self.file_menu.Enable(id, True)
-      id = self.file_menu.FindItem("Save settings as...")
+      #id = self.file_menu.FindItem("Save settings as...")
+      id = self.menu_item_ids["File|Save settings as..."]
       self.file_menu.Enable(id, True)
       self.status.enable_controls(enable)
       self.update_status()
@@ -150,7 +166,8 @@ class OptimizerFrame(wx.Frame):
             self.classifier.stop_optimizing()
             self.running = False
             self.enable_controls(True)
-            id = self.optimizer_menu.FindItem("Stop")
+            #id = self.optimizer_menu.FindItem("Stop")
+            id = self.menu_item_ids["Optimizer|Stop"]
             self.optimizer_menu.Enable(id, False)
          finally:
             wx.EndBusyCursor()
@@ -163,7 +180,8 @@ class OptimizerFrame(wx.Frame):
          return
       self.classifier.start_optimizing()
       self.enable_controls(False)
-      id = self.optimizer_menu.FindItem("Stop")
+      #id = self.optimizer_menu.FindItem("Stop")
+      id = self.menu_item_ids["Optimizer|Stop"]
       self.optimizer_menu.Enable(id, True)
       self.timer.Start(TIMER_INTERVAL)
       self.running = True
@@ -197,7 +215,8 @@ class OptimizerFrame(wx.Frame):
             return
          self.weights_panel.new_classifier(self.classifier)
          self.enable_controls(True)
-         id = self.optimizer_menu.FindItem("Stop")
+         #id = self.optimizer_menu.FindItem("Stop")
+         id = self.menu_item_ids["Optimizer|Stop"]
          self.optimizer_menu.Enable(id, False)
          return
 

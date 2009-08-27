@@ -383,7 +383,7 @@ class draw_text(PluginFunction):
     try:
       dc = wx.MemoryDC()
     except wx._core.PyNoAppError:
-      wx.App()
+      app = wx.App()
       dc = wx.MemoryDC()
     if font_family < 0 or font_family > 2:
       raise ValueError("font_family must be in range 0-2.")

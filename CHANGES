@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - draw_text works again (thanks to S\oren Bjerregaard Vrist)
+
  - new page segmentation plugin bbox_merging
 
  - extensions in kdtree:

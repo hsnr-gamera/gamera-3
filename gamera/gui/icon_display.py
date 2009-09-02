@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -70,7 +70,7 @@ class IconDisplay(wx.ListCtrl):
       self.currentIconName = None
       self.init_events()
       self.SetToolTip(wx.ToolTip(
-        'Double-click to display.\n' + 
+        'Double-click to display.\n' +
         'Right-click to perform functions.\n'))
       self.help_mode = 0
       self.dt = IconDisplayDropTarget(self)
@@ -103,25 +103,29 @@ class IconDisplay(wx.ListCtrl):
       wx.EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
       wx.EVT_LIST_ITEM_RIGHT_CLICK(self, tID, self.OnRightClick)
       wx.EVT_CHAR(self, self.OnKeyPress)
-   
+
    def add_icon(self, label, data, icon):
       index = self.GetItemCount()
       data.index = index
       self.data[label] = data
       self.InsertImageStringItem(index, label, icon)
 
-   def refresh_icon(self, key, klass, data, icon):
-      index = self.data[key].index
+   def refresh_icon(self, key, klass, data, icon_num):
+      icon = self.data[key]
+      index = icon.index
+      del icon.data
+      if 'extra_methods' in icon.__dict__:
+         del icon.extra_methods
       obj = klass(key, data, index)
       self.data[key] = obj
-      self.SetStringItem(index, 0, key, icon)
+      self.SetStringItem(index, 0, key, icon_num)
 
    def remove_icon(self, key):
       if self.data.has_key(key):
          icon = self.data[key]
          del icon.data
-         if hasattr(icon, 'extra_method'):
-            del icon.extra_method
+         if 'extra_methods' in icon.__dict__:
+            del icon.extra_methods
          index = icon.index
          self.DeleteItem(index)
          del self.data[key]
@@ -198,7 +202,7 @@ class IconDisplay(wx.ListCtrl):
                source = source.split("\n")
                for s in source:
                   self.shell.run(s)
-   
+
    def OnKeyPress(self,event):
       keyID = event.GetKeyCode()
       if self.currentIcon:
@@ -230,15 +234,15 @@ class IconDisplay(wx.ListCtrl):
             drop_source = wx.DropSource(self, icon, icon, icon)
             drop_source.SetData(data)
             result = drop_source.DoDragDrop(True)
-   
+
 ######################################################################
 
 # Standard icons for core Gamera
 
 class CustomIcon:
    is_custom_icon_description = True
-
    extra_methods = {}
+
    def __init__(self, label_, data_, index_):
       self.label = label_
       self.data = data_
@@ -286,7 +290,7 @@ class CustomIcon:
       from gamera.plugins import image_utilities
       call = image_utilities.image_save.args.show()
       if call is None: return None
-      
+
       return self.label + ".image_save(r\'" + call[0] + "\'," + str(call[1]) + ")"
 
    def drag(self):
@@ -412,9 +416,9 @@ class CICC(CustomIcon):
 class CIImageList(CustomIcon):
    def __init__(self, *args):
       CustomIcon.__init__(self, *args)
-      self.extra_method = {
-        'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml},
-                'Features': {'generate_features_list' : self.generate_features}}}
+      self.extra_methods = {
+         'List': {'XML': {'glyphs_to_xml': self.glyphs_to_xml},
+                  'Features': {'generate_features_list' : self.generate_features}}}
 
    def get_icon():
       return wx.IconFromBitmap(gamera_icons.getIconImageListBitmap())
@@ -529,7 +533,7 @@ class _CIVector(CustomIcon):
 class CIIntVector(_CIVector):
    typecode = 'i'
    klass = int
-   
+
    def get_icon():
       return wx.IconFromBitmap(gamera_icons.getIntVectorBitmap())
    get_icon = staticmethod(get_icon)
@@ -537,7 +541,7 @@ class CIIntVector(_CIVector):
 class CIFloatVector(_CIVector):
    typecode = 'd'
    klass = float
-   
+
    def get_icon():
       return wx.IconFromBitmap(gamera_icons.getFloatVectorBitmap())
    get_icon = staticmethod(get_icon)
@@ -545,7 +549,7 @@ class CIFloatVector(_CIVector):
 class CIComplexVector(_CIVector):
    typecode = None
    klass = complex
-   
+
    def get_icon():
       return wx.IconFromBitmap(gamera_icons.getComplexVectorBitmap())
    get_icon = staticmethod(get_icon)

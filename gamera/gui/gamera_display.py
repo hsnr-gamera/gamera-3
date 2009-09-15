@@ -1815,9 +1815,9 @@ class ImageFrameBase:
       self._iw.id.refresh(0)
 
    def _OnCloseWindow(self, event):
-      del self._iw
       if self.owner:
          self.owner.set_display(None)
+      del self._iw
       self._frame.Destroy()
       del self._frame
 
@@ -1882,6 +1882,12 @@ class ImageFrame(ImageFrameBase):
          self._status_bar.SetStatusText(
             "(%d, %d) to (%d, %d) / (%d w, %d h) %s" %
             (x1, y1, x2, y2, abs(x1-x2), abs(y1-y2), image.get((x2 - image.ul_x, y2 - image.ul_y))), 1)
+
+   def _OnCloseWindow(self, event):
+      self.remove_callback("move", self._OnMove)
+      self.remove_callback("rubber", self._OnRubber)
+      ImageFrameBase._OnCloseWindow(self, event)
+
 
 class MultiImageFrame(ImageFrameBase):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):

@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -230,15 +230,16 @@ class ClassifierMultiImageWindow(ExtendedMultiImageWindow):
       self.toplevel._classifier.database.add_callback(
          'remove',
          self.id.remove_glyphs)
+      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
 
-   def __del__(self):
+   def _OnDestroy(self, event):
       self.toplevel._classifier.database.remove_callback(
          'add',
          self.id.append_glyphs)
       self.toplevel._classifier.database.remove_callback(
          'remove',
          self.id.remove_glyphs)
-      
+
    def get_display(self):
       return ClassifierMultiImageDisplay(self.toplevel, self)
 
@@ -387,7 +388,7 @@ class PageMultiImageDisplay(ExtendedMultiImageDisplay):
 
 class PageMultiImageWindow(ExtendedMultiImageWindow):
    pane_name = "Page glyphs"
-   
+
    def __init__(self, toplevel, parent = None, id = -1, size = wx.DefaultSize):
       ExtendedMultiImageWindow.__init__(self, toplevel, parent, id, size)
       from gamera.gui import gamera_icons
@@ -408,7 +409,7 @@ class PageMultiImageWindow(ExtendedMultiImageWindow):
          203, gamera_icons.getIconNextManclassBitmap(),
          "Auto-move to next MANUAL glyph",
          self._OnAutoMoveButton, 1)
-      
+
    def get_display(self):
       return PageMultiImageDisplay(self.toplevel, self)
 
@@ -425,8 +426,9 @@ class ClassifierImageDisplay(ImageDisplay):
       ImageDisplay.__init__(self, parent)
       self.SetToolTipString("Click or drag to select connected components.")
       self.add_callback("rubber", self._OnRubber)
+      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
 
-   def __del__(self):
+   def _OnDestroy(self, event):
       self.remove_callback("rubber", self._OnRubber)
 
    def _OnRubber(self, y1, x1, y2, x2, shift, ctrl):
@@ -463,7 +465,7 @@ class ClassifierFrame(ImageFrameBase):
       ('num_glyphs_page', "0 glyphs in page", -1),
       ('num_selected', "0 glyphs selected", -1),
       ('selected_ids', "", -1)]
-   
+
    def __init__(self, classifier, symbol_table=[],
                 parent = None, id = -1, title = "Classifier",
                 owner=None):
@@ -515,7 +517,7 @@ class ClassifierFrame(ImageFrameBase):
          status_bar.SetStatusText(default, i)
          self.status_bar_mapping[id] = i
       status_bar.SetStatusWidths([x[2] for x in self.status_bar_description])
-      
+
       self._frame.SetSize((800, 600))
       if aui:
          self._aui = aui.AuiManager(self._frame)
@@ -589,14 +591,6 @@ class ClassifierFrame(ImageFrameBase):
          'length_change',
          self.page_collection_length_change_callback)
       self.class_iw.id.set_image(self._classifier.get_glyphs())
-
-   def __del__(self):
-      self._classifier.database.remove_callback(
-         'length_change',
-         self.classifier_collection_length_change_callback)
-      self.multi_iw.id.glyphs.remove_callback(
-         'length_change',
-         self.page_collection_length_change_callback)
 
    def create_menus(self):
       file_menu = gui_util.build_menu(
@@ -673,7 +667,7 @@ class ClassifierFrame(ImageFrameBase):
             (None, None),
             ("Create &noninteractive copy...", self._OnCreateNoninteractiveCopy)])
       classifier_menu_spec.extend([
-         ("Create &edited classifier...", self._OnCreateEditedClassifier),                                 
+         ("Create &edited classifier...", self._OnCreateEditedClassifier),
          (None, None),
          ("Generate classifier stats...", self._OnGenerateClassifierStats)])
       classifier_menu = gui_util.build_menu(
@@ -689,7 +683,7 @@ class ClassifierFrame(ImageFrameBase):
       rules_menu = gui_util.build_menu(
          self._frame,
          rules_menu_spec)
-         
+
       menubar = wx.MenuBar()
       menubar.Append(file_menu, "&File")
       menubar.Append(image_menu, "&Image")
@@ -763,7 +757,7 @@ class ClassifierFrame(ImageFrameBase):
                id.set_close_button(True)
          finally:
             wx.EndBusyCursor()
-      
+
    def update_symbol_table(self):
       for glyph in self._classifier.get_glyphs():
          for id in glyph.id_name:
@@ -891,7 +885,7 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'Source image', self._save_state_dialog[4]),
           Directory('Open directory')], name="Open classifier window")
       results = dialog.show(
-         self._frame, 
+         self._frame,
          docstring = """
            This dialog opens a special directory of files containing
            an original image, and contents of the editor and the
@@ -963,7 +957,7 @@ class ClassifierFrame(ImageFrameBase):
           Check('', 'With features', self._save_state_dialog[5]),
           Directory('Save directory')], name="Save classifier window")
       results = dialog.show(
-         self._frame, 
+         self._frame,
          docstring = """
            This dialog saves all of the data necessary to restore the
            classifier's state into a special directory.  This includes
@@ -1116,7 +1110,7 @@ class ClassifierFrame(ImageFrameBase):
                with_features=with_features).write_filename(filename)
          except gamera_xml.XMLError, e:
             gui_util.message("Saving by criteria: " + str(e))
-         
+
    def _OnOpenClassifierCollection(self, event):
       if self._classifier.is_dirty:
          if not gui_util.are_you_sure_dialog(
@@ -1182,7 +1176,7 @@ class ClassifierFrame(ImageFrameBase):
          if filename:
             self.classifier_collection_filename = filename
             self._SaveClassifierCollection(filename, with_features=with_features)
-         
+
    def _SaveClassifierCollection(self, filename, with_features=True):
       try:
          self._classifier.to_xml_filename(filename, with_features=with_features)
@@ -1296,7 +1290,7 @@ class ClassifierFrame(ImageFrameBase):
                   filename)
             except gamera_xml.XMLError, e:
                gui_util.message("Saving selected glyphs: " + str(e))
-         
+
    def _OnImportSymbolTable(self, event):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
@@ -1331,7 +1325,7 @@ class ClassifierFrame(ImageFrameBase):
             gui_util.message("Exporting symbol table: " + str(e))
       finally:
          wx.EndBusyCursor()
-      
+
    ########################################
    # IMAGE MENU
 
@@ -1358,7 +1352,7 @@ class ClassifierFrame(ImageFrameBase):
          self.default_segmenter = segmenter
          if filename == None:
             gui_util.message("You must provide a filename to load.")
-      
+
       wx.BeginBusyCursor()
       try:
          image = load_image(filename)
@@ -1409,7 +1403,7 @@ class ClassifierFrame(ImageFrameBase):
          return
       (image,) = results
       self.set_single_image(image, weak=False)
-      
+
    def _segment_image(self, image, segmenter):
       image_ref = image
       image_ref = image_ref.to_onebit()
@@ -1453,7 +1447,7 @@ class ClassifierFrame(ImageFrameBase):
 
    def _OnGroupAndGuessAll(self, event):
       self._OnGroupAndGuess(self.multi_iw.id.GetAllItems())
-      
+
    def _OnGroupAndGuessSelected(self, event):
       selected = list(self.multi_iw.id.GetSelectedItems())
       if len(selected) == 0:
@@ -1544,7 +1538,7 @@ class ClassifierFrame(ImageFrameBase):
          self.multi_iw.id.ForceRefresh()
          wx.EndBusyCursor()
       self.class_iw.id.resize_grid()
-      
+
    def _OnChangeSetOfFeatures(self, event):
       all_features = [x[0] for x in
                       plugin.methods_flat_category("Features", ONEBIT)]
@@ -1557,7 +1551,7 @@ class ClassifierFrame(ImageFrameBase):
             Check('', x, default=(x in existing_features)))
       dialog = Args(
          feature_controls,
-         name='Feature selection', 
+         name='Feature selection',
          title='Select the features you want to use for classification')
       result = dialog.show(
          self._frame)
@@ -1577,7 +1571,7 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(self._frame, gamera_xml.extensions)
       if filename:
          self._OpenClassifierSettings(filename)
-         
+
    def _OpenClassifierSettings(self, filename):
       try:
          self._classifier.load_settings(filename)
@@ -1615,7 +1609,7 @@ class ClassifierFrame(ImageFrameBase):
          classifierName = var_name.get("classifier", image_menu.shell.locals)
          image_menu.shell.locals[classifierName] = editedClassifier
          image_menu.shell.update()
-          
+
    if not aui:
       def _OnDisplayContents(self, event):
          if self.splitterhr1.IsSplit():
@@ -1631,7 +1625,7 @@ class ClassifierFrame(ImageFrameBase):
       stats_controls.append(Directory('Stats directory'))
       dialog = Args(
          stats_controls,
-         name='Select statistics', 
+         name='Select statistics',
          title='Select the statistics to generate and the directory to save them to.\n(Experimental feature).')
       result = dialog.show(self._frame)
       if result is None or result[-1] is None:
@@ -1667,7 +1661,7 @@ class ClassifierFrame(ImageFrameBase):
       filename = gui_util.open_file_dialog(self._frame, "*.py")
       if not filename is None:
          self.rule_engine_runner.open_module(filename)
-      
+
       if not aui and not self.splitterhl.IsSplit():
          self.splitterhl.SplitHorizontally(
             self.symbol_editor, self.rule_engine_runner,
@@ -1683,7 +1677,14 @@ class ClassifierFrame(ImageFrameBase):
             "Are you sure you want to quit without saving?"):
             event.Veto()
             return
+      self._classifier.database.remove_callback(
+         'length_change',
+         self.classifier_collection_length_change_callback)
+      self.multi_iw.id.glyphs.remove_callback(
+         'length_change',
+         self.page_collection_length_change_callback)
       self._classifier.set_display(None)
+      self._frame.Destroy()
       self.multi_iw.Destroy()
       self.single_iw.Destroy()
       if not aui:
@@ -1691,7 +1692,6 @@ class ClassifierFrame(ImageFrameBase):
          self.splitterhr0.Destroy()
          self.splitterhl.Destroy()
          self.splitterv.Destroy()
-      self._frame.Destroy()
       del self._frame
 
    def refresh(self):
@@ -1720,11 +1720,12 @@ class SymbolTreeCtrl(wx.TreeCtrl):
          'remove', self.symbol_table_remove_callback)
       self.Expand(self.root)
       self.SelectItem(self.root)
+      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
 
-   def __del__(self):
-      self._symbol_table.remove_callback(
+   def _OnDestroy(self, event):
+      self.toplevel._symbol_table.remove_callback(
          'add', self.symbol_table_add_callback)
-      self._symbol_table.remove_callback(
+      self.toplevel._symbol_table.remove_callback(
          'remove', self.symbol_table_remove_callback)
 
    # This is a stub to provide compatibility with wx2.4 and wx2.5
@@ -1741,7 +1742,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       if t1 < t2: return -1
       if t1 == t2: return 0
       return 1
-     
+
    def set_label_display(self, symbol):
       self.toplevel.text.SetValue(symbol)
       self.toplevel.text.SetSelection(0, len(symbol))
@@ -1852,7 +1853,7 @@ class SymbolTableEditorPanel(wx.Panel):
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
       if wx.Platform == '__WXMSW__':
          wx.EVT_TEXT_ENTER(self, txID, self._OnEnter)
-      
+
    ########################################
    # CALLBACKS
 
@@ -1940,6 +1941,6 @@ class SymbolTableEditorPanel(wx.Panel):
          self.tree.ScrollTo(found)
       else:
          self.tree.UnselectAll()
-         
+
       if not evt is None:
          evt.Skip()

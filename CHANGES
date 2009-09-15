@@ -12,6 +12,8 @@ Changes made between Gamera File Releases
     o new method set_distance for dimension weighting
     o k_nearest_neighbors now supports an optional search predicate
 
+ - classifier display can be closed and opened again
+
  - corrected slider display in Biollante
 
  - fixed errors in draw_hollow_rect and knn_editing

@@ -18,6 +18,7 @@
 #
 
 from gamera.plugin import *
+import _gui_support
 
 class to_string(PluginFunction):
     """
@@ -59,6 +60,9 @@ class color_ccs(PluginFunction):
     image is colored one of eight different colors.  This function can
     be used to verify that ``cc_analysis`` is working correctly for your
     image.
+    
+    *ignore_unlabeled*:
+      do not colorize unlabeled pixels (pixel value one), but leave them black
 
     .. note:: Connected component analysis must already be performed
               on the image (using cc_analysis_, for example) in order
@@ -70,9 +74,14 @@ class color_ccs(PluginFunction):
 
       .. image:: images/color_ccs.png
     """
+    author = "Michael Droettboom, Karl MacMillan, and Robert Butz"
+    args = Args([Check('ignore_unlabeled', default=True)])
     category = "Color"
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])
+    def __call__(image, ignore_unlabeled=False):
+        return _gui_support.color_ccs(image, ignore_unlabeled)
+    __call__ = staticmethod(__call__)
 
 # By default, the wxPython-devel RPM puts stuff here, but this
 # should be done better

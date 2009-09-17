@@ -86,6 +86,25 @@ Incidentally, it was produced by the following code:
 		Point("Point"),
 		FloatPoint("FloatPoint")])
 
+Enabling default values beyond the GUI
+======================================
+
+The *default* parameter in the *Args* specification is only used
+in the GUI for the argument dialog box. If you need an actual default
+argument for your plugin function, you must define the ``__call__`` method
+in your plugin, e.g.
+
+.. code:: Python
+
+      # wrapper for passing a default argument
+      def __call__(self, nrows, ncols, interpolation="Linear"):
+          return _example.resize_copy(self, nrows, ncols, interpolation)
+    __call__ = staticmethod(__call__)
+
+``_example`` must be replaced by the actual name of your source file plus
+a leading underscore.
+
+
 Plugin types reference
 ======================
 

@@ -417,7 +417,7 @@ argument lists are documented in `Specifying arguments`__.
 
 .. __: args.html
 
-The *args* parameter in the plugin prototype allows the specifictaion of
+The *args* parameter in the plugin prototype allows the specification of
 default values for arguments. These are however used only in the GUI for
 the argument dialog box. If you need an actual default argument for your
 plugin function, you must define the ``__call__`` method in your plugin, e.g.

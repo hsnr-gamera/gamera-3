@@ -1,12 +1,18 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.1, Sep 17, 2009
+----------------------------
+
  - sourceforge logo can optionally be suppressed in gendoc by
    passing sourceforge_logo=False to gendoc.gendoc
 
  - draw_text works again (thanks to S\oren Bjerregaard Vrist)
 
  - new page segmentation plugin bbox_merging
+
+ - plugin projection_cutting no longer crashes, but still 
+   needs further improvement in the presence of noise
 
  - extensions in kdtree:
     o new method set_distance for dimension weighting

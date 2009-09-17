@@ -1,18 +1,10 @@
-CVS IS A KNOWN BUG!!!
+The following issues in Gamera are known.
+Fixes for some of them are currently under consideration.
 
-LINUX ISSUES
-------------
+ - Plugin projection_cutting does not work as expected
+   and removes pixels from the image when 'noise' is non zero.
 
-Q: I start up the Gamera GUI, but everything is blank.
+ - init_gamera() prints a lot of stuff to stdout.
+   This should be suppressable by a config option.
 
-A: This is most likely due to some recent Linux distributions
-(i.e. RedHat 8) setting the default locales to use UTF-8 encoding,
-which isn't really working in wxPython 2.3.3.  Hopefully this error
-will be corrected when wxWindows fully supports GTK+-2.0 and all of
-its wonderful Unicode support.  Until then, you can get around it by
-stripping off the UTF-8 on your LANG environment variable, such as:
-
-> export LANG=en_US
-
-Note: this problem is also fixed by upgrading to wxPython 2.3.4.2
-(or presumably higher).
+ - Config options should be somewhere documented.

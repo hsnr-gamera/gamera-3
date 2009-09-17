@@ -218,7 +218,7 @@ void to_buffer(T& m, PyObject *py_buffer) {
 }
 
 template<class T>
-Image *color_ccs(T& m) {
+Image *color_ccs(T& m, bool ignore_unlabeled) {
   typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
   RGBViewFactory::image_type* image =
     RGBViewFactory::create(m.origin(), m.dim());
@@ -232,7 +232,12 @@ Image *color_ccs(T& m) {
       dst->red(255);
       dst->green(255);
       dst->blue(255);
-    } else {
+    } else if (*src == 1 && ignore_unlabeled) {
+      dst->red(0);
+      dst->green(0);
+      dst->blue(0);
+    }
+	else {
       color = *src & 0x7;
       const unsigned char* out_color = color_set[color];
       dst->red(out_color[0]);

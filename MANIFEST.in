@@ -4,7 +4,7 @@ recursive-include doc/src *.txt *.png *.css
 recursive-include doc/html *.css
 recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff
-recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL KNOWNBUG LICENSE README TODO Y2KINFO
+recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL LICENSE README TODO KNOWNBUG Y2KINFO
 recursive-include examples *.py README *.tiff *.xml
 recursive-include include *.hpp *.hxx
 recursive-include include/zlib-1.2.1 *.h
@@ -14,4 +14,4 @@ recursive-include win32/msisource *.mmh *.txt *.jpg *.c *.template *.bmp
 recursive-include gamera/mac/ *.py *.html DMG_DS_STORE
 recursive-include gamera/mac/resources *.jpg
 recursive-include migration_tools README gamera_deprecation_filter generate_migration_docs replace_get_set
-include CHANGES INSTALL LICENSE ACKNOWLEDGEMENTS MANIFEST.in setup.cfg gamera_post_install.py version
+include CHANGES INSTALL LICENSE ACKNOWLEDGEMENTS KNOWN_BUGS MANIFEST.in TODO setup.cfg gamera_post_install.py version

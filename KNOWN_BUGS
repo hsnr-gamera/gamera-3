@@ -1,9 +1,6 @@
 The following issues in Gamera are known.
 Fixes for some of them are currently under consideration.
 
- - Plugin projection_cutting does not work as expected
-   and removes pixels from the image when 'noise' is non zero.
-
  - init_gamera() prints a lot of stuff to stdout.
    This should be suppressable by a config option.
 

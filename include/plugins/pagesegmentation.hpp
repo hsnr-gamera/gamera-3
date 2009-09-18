@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2007 Christoph Dalitz, Stefan Ruloff, Maria Elhachimi, 
- *                    Ilya Stoyanov
+ * Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff,
+ *                    Maria Elhachimi, Ilya Stoyanov, Robert Butz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -227,7 +227,6 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 
 /*-------------------------------------------------------------------------
  * Functions for projection_cutting:
- * remove_the_noise: remove the noise.
  * Interne_RXY_Cut(image, Tx, Ty, ccs, noise, label):recursively splits 
  * the image, sets the label and creates the CCs.
  * Start_point(image, ul, lr):search the upper_left point of the sub-image.
@@ -242,6 +241,9 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
  * calculates the coordinates of the begin of the cc
  * returns the coordinates of the upper-left point of subimage
  */
+
+
+
 template<class T>
 Point proj_cut_Start_Point(T& image, Point ul, Point lr) {
     Point Start;
@@ -254,8 +256,7 @@ Point proj_cut_Start_Point(T& image, Point ul, Point lr) {
 			goto endLoop1; // unfortunately there is no break(2) in gorgeous C++
 		}
 	}
-    }
-	    
+    } 
     endLoop1:
 
     for (size_t x = ul.x(); x <= lr.x(); x++) {
@@ -265,7 +266,7 @@ Point proj_cut_Start_Point(T& image, Point ul, Point lr) {
 				Start.x(x);
 			goto endLoop2; // unfortunately there is no break(2) in gorgeous C++
 			}
-        	}
+        }
     }
     endLoop2:
     return Start;
@@ -281,24 +282,24 @@ Point proj_cut_End_Point(T& image, Point ul, Point lr) {
     size_t x, y;
 
     for (y = lr.y(); y+1 >= ul.y()+1; y--) {
-	for (x = lr.x(); x+1 >= ul.x()+1; x--) {
-		if ((image.get(Point(x, y))) != 0) {
-			End.x(x);
-			End.y(y);
-			goto endLoop1;
+		for (x = lr.x(); x+1 >= ul.x()+1; x--) {
+			if ((image.get(Point(x, y))) != 0) {
+				End.x(x);
+				End.y(y);
+				goto endLoop1;
+			}
 		}
-	}
     }
     endLoop1:
     
     for (x = lr.x(); x+1 > ul.x()+1; x--) {
-	for (y = lr.y(); y+1 > ul.y()+1; y--) {
-		if ((image.get(Point(x,y))) != 0){
-			if (End.x()<x)
-				End.x(x);
-			goto endLoop2;
+		for (y = lr.y(); y+1 > ul.y()+1; y--) {
+			if ((image.get(Point(x,y))) != 0){
+				if (End.x()<x)
+					End.x(x);
+				goto endLoop2;
+			}
 		}
-	}
     }
     endLoop2:
 
@@ -311,91 +312,71 @@ Point proj_cut_End_Point(T& image, Point ul, Point lr) {
  * by finding the largest possible gaps in the X and Y projection of the image.
  */
 template<class T>
-Point proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, int noise ) {
-    Point C_punkt;
-    C_punkt.x(ul.x());
-    C_punkt.y(ul.y());
-    size_t Cut_Point_y = 0;
-    size_t Cut_Point_x = 0;
+IntVector * proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, int noise, int gap_treatment, char direction ) {
+    IntVector * SplitPoints = new IntVector(); //empty IntVector
+    size_t size;
+    lr.x()-ul.x()>lr.y()-ul.y()?size=lr.x()-ul.x():size=lr.y()-ul.y();
 
-    IntVector *proj_x = projection_cols(image, Rect(ul, lr));
-    IntVector *proj_y = projection_rows(image, Rect(ul, lr));
-	
-	int max_x = 0, max_y = 0;
-	int counter = 0;
+    int SplitPoints_Min[size]; // probably no need for such big mem-alloc, but necessary in certain situations
+    int SplitPoints_Max[size]; 
+    int gap_width = 0; // width of the gap
+    int gap_counter = 0; //number of gaps
 
-	for (size_t i = 0; i < proj_y->size(); i++) {
-		if ((*proj_y)[i] <= noise) {
-			counter++;
-			if (max_y < counter) {
-				max_y = counter;
-				Cut_Point_y = (i + ul.y());
+    if (direction == 'x'){
+		IntVector *proj_x = projection_rows(image, Rect(ul, lr));
+		SplitPoints->push_back(ul.y()); // starting point
+		
+		for (size_t i = 1; i < proj_x->size(); i++) {
+			if ((*proj_x)[i] <= noise) {
+				gap_width++;
+				if (Ty <= gap_width) {// min-gap <= act-gap?
+				SplitPoints_Min[gap_counter] = (i + ul.y() - gap_width+1);
+				SplitPoints_Max[gap_counter] = (i + ul.y()); // finally set to last point of gap
+				}
+			} 
+			else {
+				if (Ty <= gap_width)
+					gap_counter++;
+				gap_width = 0;
 			}
-		} else {
-			counter = 0;
 		}
-	}
-	
-	for (size_t i = 0; i < proj_x->size(); i++) {
-		if ((*proj_x)[i] <= noise) {
-		    counter++;
-		    if (max_x < counter) {
-				max_x = counter;
-				Cut_Point_x = (i + ul.x());
-		    }
-		} else {
-			counter = 0;
+	delete proj_x;
+    }
+    else{ // y-direction
+		IntVector *proj_y = projection_cols(image, Rect(ul, lr));
+		SplitPoints->push_back(ul.x()); // starting point
+		
+		for (size_t i = 1; i < proj_y->size(); i++) {
+			if ((*proj_y)[i] <= noise) {
+				gap_width++;
+				if (Tx <= gap_width) {// min-gap <= act-gap?
+				SplitPoints_Min[gap_counter] = (i + ul.x() - gap_width+1);
+				SplitPoints_Max[gap_counter] = (i + ul.x()); // finally set to last point of gap
+				}
+			} 
+			else {
+				if (Tx <= gap_width) 
+                    gap_counter++;
+				gap_width = 0;
+			}
 		}
+		delete proj_y;
 	}
-
-	if (max_x >= Tx) {
-		C_punkt.x(Cut_Point_x);
-	} else {
-	    if (max_y >= Ty) {
-	    	C_punkt.y(Cut_Point_y);
+    
+    for (int i=0; i<gap_counter; i++){
+		if (0==gap_treatment){ // cut exactly in the middle of the gap -> no unlabeled noise pixels
+			int mid = (SplitPoints_Min[i] + SplitPoints_Max[i]) / 2;
+			SplitPoints_Min[i] = mid;
+			SplitPoints_Max[i] = mid;
 		}
-	}
-
-    delete proj_x;
-    delete proj_y;
-
-	return C_punkt;
+		SplitPoints->push_back(SplitPoints_Min[i]);
+		SplitPoints->push_back(SplitPoints_Max[i]);
+    }	
+    direction=='x'? SplitPoints->push_back(lr.y()): SplitPoints->push_back(lr.x()); // ending point
+    
+    return SplitPoints;
 }
 
-
-/*
- * Function: remove_the_noise
- * This funktion is used to remove the black stain before running the XY-Cut
- * Algorithm.
- */
-template<class T>
-void proj_cut_remove_the_noise(T& image, int noise) {
-	IntVector *proj_x = projection_cols(image);
-	IntVector *proj_y = projection_rows(image);
-
-	for (size_t i = 0; i < proj_y->size(); i++) {
-	    if ( ( (*proj_y)[i] <= noise) && ( (*proj_y)[i] > 0) ) {
-			for (size_t x = 0; x < image.ncols(); x++) {
-				if (image.get(Point(x, i))) {
-					image.set(Point(x, i), 0);
-				}
-			}
-		}
-	}
-
-	for (size_t i = 0; i < proj_x->size(); i++) {
-	    if ( ( (*proj_x)[i] <= noise) && ( (*proj_x)[i] > 0) ) {
-			for (size_t y = 0; y < image.nrows(); y++) {
-				if(image.get(Point(i,y))) {
-					image.set(Point(i,y),0);
-				}
-			}
-		}
-	}
-
-    delete proj_x;
-    delete proj_y;
-}
 
 
 /* Function: Interne_RXY_Cut
@@ -406,26 +387,45 @@ void proj_cut_remove_the_noise(T& image, int noise) {
  */
 template<class T>
 void projection_cutting_intern(T& image, Point ul, Point lr, ImageList* ccs, 
-		int Tx, int Ty, int noise, int& label) {
+		int Tx, int Ty, int noise, int gap_treatment, char direction, int& label) {
 	
 	Point Start = proj_cut_Start_Point(image, ul, lr);
 	Point End = proj_cut_End_Point(image, ul, lr);
-	Point C_punkt = proj_cut_Split_Point(image, Start, End, Tx, Ty, noise);
-
+	IntVector * SplitPoints = proj_cut_Split_Point(image, Start, End, Tx, Ty, noise, gap_treatment, direction);
+	IntVector::iterator It;
+	
 	ul.x(Start.x());
 	ul.y(Start.y());
 	lr.x(End.x());
 	lr.y(End.y());
 	
-	if (!( ((C_punkt.x() == ul.x()) || (C_punkt.x() == lr.x()))
-			&& ( (C_punkt.y() == ul.y()) || (C_punkt.y() == lr.y() )))) {
-		projection_cutting_intern(image, C_punkt, End, ccs, Tx, Ty, noise, label);
-	    if (C_punkt.x() == ul.x()) {
-			C_punkt.x(lr.x());
-		} else {
-			C_punkt.y(lr.y());
+		
+
+	if (!(direction=='y' && SplitPoints->size() == 2)){ // ending condition, SplitPoints==2 => only Start- and Endpoint no gaps
+		if (direction=='x'){
+			direction = 'y';
+			for(It = SplitPoints->begin(); It != SplitPoints->end(); It++){
+				Point begin, end; // note the lowercase of end, which is not End
+				begin.x(Start.x());
+				begin.y(*It);
+				It++;
+				end.x(End.x());
+				end.y(*It);
+				projection_cutting_intern(image, begin, end, ccs, Tx, Ty, noise, gap_treatment, direction, label);
+			}
 		}
-	    projection_cutting_intern(image, ul, C_punkt, ccs, Tx, Ty, noise, label);
+		else { // direction==y
+			direction = 'x';
+			for(It = SplitPoints->begin(); It != SplitPoints->end(); ++It){
+				Point begin, end; // note the lowercase of end, which is not End
+				begin.x(*It);
+				begin.y(Start.y());
+				It++;
+				end.x(*It);
+				end.y(End.y());
+				projection_cutting_intern(image, begin, end, ccs, Tx, Ty, noise, gap_treatment, direction, label);
+			}
+		}
 	} else {
 	    label++;
 	    for (size_t y = ul.y(); y <= lr.y(); y++) {
@@ -445,6 +445,7 @@ void projection_cutting_intern(T& image, Point ul, Point lr, ImageList* ccs,
 				)
 			);
 	}
+	delete SplitPoints;
 }
 
 /*
@@ -452,13 +453,9 @@ void projection_cutting_intern(T& image, Point ul, Point lr, ImageList* ccs,
  * Returns a list of ccs found in the image.
  */
 template<class T>
-ImageList* projection_cutting(T& image, int Tx, int Ty, int noise) {
-	int Label = 2;
-
- 	if (noise > 0) {
-		proj_cut_remove_the_noise(image, noise);
- 		noise = 0;
- 	}
+ImageList* projection_cutting(T& image, int Tx, int Ty, int noise, int gap_treatment) {
+	int Label = 1;
+	char direction = 'x';
 
 	if (noise < 0) {
 		noise = 0;
@@ -481,6 +478,19 @@ ImageList* projection_cutting(T& image, int Tx, int Ty, int noise) {
           else Ty = 1;
         }
 	}
+    // set minimal gap_width
+    /*if (Tx <= 2){
+        if (gap_treatment)
+            Tx=2;
+        else
+            Tx=3;
+    }
+    if (Ty <= 2){
+        if (gap_treatment)
+            Ty=2;
+        else
+            Ty=3;
+    }*/
 
 	ImageList* ccs = new ImageList();
 	Point ul, lr;
@@ -489,8 +499,8 @@ ImageList* projection_cutting(T& image, int Tx, int Ty, int noise) {
 	ul.y(0);
 	lr.x(image.ncols() - 1);
 	lr.y(image.nrows() - 1);
-	projection_cutting_intern(image, ul, lr, ccs, Tx, Ty, noise, Label);
-
+	projection_cutting_intern(image, ul, lr, ccs, Tx, Ty, noise, gap_treatment, direction, Label);
+	
 	return ccs;
 }
 

@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - plugin projection_cutting now works as expected
+
+
 Version 3.2.1, Sep 17, 2009
 ----------------------------
 

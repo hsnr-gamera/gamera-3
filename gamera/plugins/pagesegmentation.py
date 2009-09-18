@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2007 Christoph Dalitz, Stefan Ruloff, Maria Elhachimi,
-#                    Ilya Stoyanov, Rene Baston
+# Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff, Robert Butz,
+#                         Maria Elhachimi, Ilya Stoyanov, Rene Baston
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -53,14 +53,21 @@ class projection_cutting(PluginFunction):
     *noise*:
       maximum projection value still consideread as belonging to a
       'gap'.
+
+    *gap_treatment*:
+      decides how to treat gaps when *noise* is non zero.
+      When 0 ('cut'), gaps are cut in the middle and the noise pixels
+      in the gap are assigned to the segments.
+      When 1 ('ignore'), noise pixels within the gap are not assigned
+      to a segment, in other words, they are ignored.
     """
     self_type = ImageType([ONEBIT])
     args = Args([Int('Tx', default = 0), Int('Ty', default = 0), \
-		 Int('noise', default = 0)])
+		 Int('noise', default = 0), Choice('gap_treatment', ["cut", "ignore"], default=0)])
     return_type = ImageList("ccs")
-    author = "Maria Elhachimi"
-    def __call__(image, Tx = 0, Ty = 0, noise = 0):
-	    return _pagesegmentation.projection_cutting(image, Tx, Ty, noise)
+    author = "Maria Elhachimi and Robert Butz"
+    def __call__(image, Tx = 0, Ty = 0, noise = 0, gap_treatment = 0):
+	    return _pagesegmentation.projection_cutting(image, Tx, Ty, noise, gap_treatment)
     __call__ = staticmethod(__call__)
 
 class runlength_smearing(PluginFunction):

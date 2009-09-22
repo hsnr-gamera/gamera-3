@@ -23,6 +23,7 @@
 
 #include <Python.h>
 #include "gameramodule.hpp"
+#include "canonicpyobject.hpp"
 #include <vector>
 #include <algorithm>
 

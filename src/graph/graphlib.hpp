@@ -32,6 +32,7 @@
 #include <vector>
 #include <exception>
 #include "gamera_limits.hpp"
+#include "canonicpyobject.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 // Forward references
@@ -56,7 +57,8 @@ typedef std::stack<Node*> NodeStack;
 typedef std::stack<Edge*> EdgeStack;
 typedef std::queue<Node*> NodeQueue;
 typedef std::queue<Edge*> EdgeQueue;
-typedef std::map<PyObject*, Node*> DataToNodeMap;
+//typedef std::map<PyObject*, Node*> DataToNodeMap;
+typedef std::map<canonicPyObject, Node*> DataToNodeMap;
 typedef std::map<Node*, Edge*> NodeToEdgeMap;
 
 union Any {

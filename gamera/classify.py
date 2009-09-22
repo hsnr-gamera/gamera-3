@@ -62,7 +62,7 @@ class _Classifier:
                             max_graph_size=16):
       """**group_list_automatic** (ImageList *glyphs*, Function
 *grouping_function* = ``None``, Function *evaluate_function* = ``None``,
-int *max_parts_per_group* = 4, int *max_group_size* = 16)
+int *max_parts_per_group* = 4, int *max_graph_size* = 16)
 
 Classifies the given list of glyphs.  Adjacent glyphs are joined
 together if doing so results in a higher global confidence.  Each part

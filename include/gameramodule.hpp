@@ -1393,31 +1393,4 @@ inline ComplexPixel pixel_from_python<ComplexPixel>::convert(PyObject* obj) {
 
 
 #endif
-
-
-namespace Gamera {
-
-  /* CANONICPYOBJECT TYPE */
-
-  // A "canonic" wrapper class around PyObject*, to make PyObjects
-  // usable in STL containers, e.g. vector<canonicPyObject>
-  // It is meant to be used on the C++ side only
-  class canonicPyObject {
-  public:
-    PyObject* value;
-    inline canonicPyObject(PyObject* c2) {value = c2;}
-    inline canonicPyObject& operator=(const PyObject* c2) {
-      value = (PyObject*)c2;
-      return *this;
-    }
-    inline int operator<(const canonicPyObject& c2) const {
-      return PyObject_RichCompareBool(value,c2.value,Py_LT);
-    }
-    inline int operator==(const canonicPyObject& c2) const {
-      return PyObject_RichCompareBool(value,c2.value,Py_EQ);
-    }
-  };
-
-}
-
 #endif

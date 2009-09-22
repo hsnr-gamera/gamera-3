@@ -92,7 +92,7 @@ inline Node* graph_add_node(GraphObject* so, Node* node) {
   so->m_nodes->push_back(node);
   node->m_set_id = so->m_nodes->size();
   node->m_disj_set = 0;
-  (*(so->m_data_to_node))[node->m_data] = node;
+  (*(so->m_data_to_node))[canonicPyObject(node->m_data)] = node;
   node->m_is_subgraph_root = true;
   return node;
 }
@@ -153,7 +153,7 @@ inline bool graph_remove_node_and_edges(GraphObject* so, Node* node) {
   }
 
   // Actually remove the node
-  so->m_data_to_node->erase(node->m_data);
+  so->m_data_to_node->erase(canonicPyObject(node->m_data));
   node->m_is_subgraph_root = false;
 
   for (NodeVector::iterator i = so->m_nodes->begin();

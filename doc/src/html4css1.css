@@ -253,6 +253,7 @@ table.docutils {
   margin-bottom: 0.5em;
   background-color: #f7fffd;
   border-color: #72ada8;
+  border: solid thin #aaaaaa;
 }
 
 table.footnote {

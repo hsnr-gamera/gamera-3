@@ -68,14 +68,15 @@ def get_directory_of_modules(dir, base=''):
          print e
    return mods
 
-def import_directory(dir, gl, lo, debug = 1):
+def import_directory(dir, gl, lo, verbose=0):
    modules = glob.glob(os.path.join(dir, "*.py"))
    modules = [os.path.basename(x).split('.')[0] for x in modules]
-   if debug:
+   if verbose:
       sys.stdout.write("Loading plugins: " + "-" * 40 + "\n")
    column = 0
    first = 1
    result = []
+     
    for m in modules:
       if m == '__init__':
          continue
@@ -92,12 +93,12 @@ def import_directory(dir, gl, lo, debug = 1):
       if m != modules[-1]:
          display += ", "
       column += len(display)
-      if debug:
+      if verbose:
          if column > 70:
             sys.stdout.write("\n")
             column = len(display)
          sys.stdout.write(display)
          sys.stdout.flush()
-   if debug:
+   if verbose:
       sys.stdout.write("\n")
    return result

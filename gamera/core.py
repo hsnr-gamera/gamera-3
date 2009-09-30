@@ -661,7 +661,11 @@ def _init_gamera():
       plugin.FileSave("filename", extension=gamera_xml.extensions)]))
       ):
       method.register()
-   paths.import_directory(paths.plugins, globals(), locals(), 1)
+   try:
+      verbose = config.get("verbosity_level")
+   except:
+      verbose = 0
+   paths.import_directory(paths.plugins, globals(), locals(), verbose)
    sys.path.append(".")
 
 import sys

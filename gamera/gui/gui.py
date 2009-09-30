@@ -37,8 +37,11 @@ except ImportError:
    aui = None
    
 import inspect
+import sys, StringIO
+
 from gamera.core import *
 from gamera.config import config
+   
 from gamera import paths, util
 from gamera.gui import gamera_display, image_menu, \
      icon_display, classifier_display, var_name, gui_util, \
@@ -63,6 +66,11 @@ config.add_option(
 config.add_option(
    "-e", "--execfile", type="string", action="append",
    help="[shell] Run execfile(...) on the given file.  This argument may be given multiple times")
+config.add_option(
+   "-v", "--verbosity-level", type="int", default=1,
+   help="[shell] when non zero, debug messsages on loaded plugins etc. are written to stdout.")
+
+
 main_win = None
 app = None
 

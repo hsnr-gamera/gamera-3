@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - plugin loading message no longer printed in non-GUI scripts;
+   in case these messages are needed, they can optionally be 
+   enabled by config.set("verbosity_level",1)
+
  - bugfix in graph API: node values are now compared by value,
    not by PyObject pointer => nodes with labels greater than 256
    are now reliably found

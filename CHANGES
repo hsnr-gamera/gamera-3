@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.2, Oct 01, 2009
+----------------------------
+
  - plugin loading message no longer printed in non-GUI scripts;
    in case these messages are needed, they can optionally be 
    enabled by config.set("verbosity_level",1)

@@ -1,7 +1,7 @@
 The following issues in Gamera are known.
 Fixes for some of them are currently under consideration.
 
- - init_gamera() prints a lot of stuff to stdout.
-   This should be suppressable by a config option.
-
  - Config options should be somewhere documented.
+
+ - GAlib is a copy of an old version, whcih generates
+   a number of compiler warnings. This should be updated

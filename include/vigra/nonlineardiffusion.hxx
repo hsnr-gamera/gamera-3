@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -254,28 +254,28 @@ void internalNonlinearDiffusionAOSStep(
                   class DestIterator, class DestAccessor,
                   class DiffusivityFunctor>
         void nonlinearDiffusion(SrcIterator sul, SrcIterator slr, SrcAccessor as,
-                           DestIterator dul, DestAccessor ad,
-                           DiffusivityFunctor const & weight, double scale);
+                                DestIterator dul, DestAccessor ad,
+                                DiffusivityFunctor const & weight, double scale);
     }
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor,
                   class DiffusivityFunctor>
         void nonlinearDiffusion(
-            triple<SrcIterator, SrcIterator, SrcAccessor> src,
-            pair<DestIterator, DestAccessor> dest,
-            DiffusivityFunctor const & weight, double scale);
+                  triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                  pair<DestIterator, DestAccessor> dest,
+                  DiffusivityFunctor const & weight, double scale);
     }
     \endcode
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="nonlineardiffusion_8hxx-source.html">vigra/nonlineardiffusion.hxx</a>"
+    <b>\#include</b> \<<a href="nonlineardiffusion_8hxx-source.html">vigra/nonlineardiffusion.hxx</a>\>
     
     
     \code
@@ -304,6 +304,8 @@ void internalNonlinearDiffusionAOSStep(
     
     <TT>scale > 0</TT>
 */
+doxygen_overloaded_function(template <...> void nonlinearDiffusion)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class DiffusivityFunc>

@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -47,6 +47,8 @@ namespace vigra {
 
 /** \addtogroup Morphology Basic Morphological Operations
     Perform erosion, dilation, and median with disc structuring functions
+    
+    See also: \ref MultiArrayMorphology Separable morphology with parabola structuring functions in arbitrary dimensions
 */
 //@{
 
@@ -80,7 +82,7 @@ namespace vigra {
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -94,7 +96,7 @@ namespace vigra {
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="flatmorphology_8hxx-source.html">vigra/flatmorphology.hxx</a>"<br>
+        <b>\#include</b> \<<a href="flatmorphology_8hxx-source.html">vigra/flatmorphology.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -131,6 +133,8 @@ namespace vigra {
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void discRankOrderFilter)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -378,7 +382,7 @@ discRankOrderFilter(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discErosion(SrcIterator upperleft1, 
                     SrcIterator lowerright1, SrcAccessor sa,
                     DestIterator upperleft2, DestAccessor da,
@@ -387,7 +391,7 @@ discRankOrderFilter(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -400,6 +404,8 @@ discRankOrderFilter(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discErosion)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline void 
@@ -446,7 +452,7 @@ discErosion(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discDilation(SrcIterator upperleft1, 
                     SrcIterator lowerright1, SrcAccessor sa,
                     DestIterator upperleft2, DestAccessor da,
@@ -455,7 +461,7 @@ discErosion(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -468,6 +474,8 @@ discErosion(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discDilation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline void 
@@ -514,7 +522,7 @@ discDilation(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discMedian(SrcIterator upperleft1, 
                     SrcIterator lowerright1, SrcAccessor sa,
                     DestIterator upperleft2, DestAccessor da,
@@ -523,7 +531,7 @@ discDilation(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -536,6 +544,8 @@ discDilation(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discMedian)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline void 
@@ -618,7 +628,7 @@ discMedian(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="flatmorphology_8hxx-source.html">vigra/flatmorphology.hxx</a>"<br>
+    <b>\#include</b> \<<a href="flatmorphology_8hxx-source.html">vigra/flatmorphology.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -660,6 +670,8 @@ discMedian(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void discRankOrderFilterWithMask)
+
 template <class SrcIterator, class SrcAccessor,
           class MaskIterator, class MaskAccessor,
           class DestIterator, class DestAccessor>
@@ -952,7 +964,7 @@ discRankOrderFilterWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discErosionWithMask(SrcIterator upperleft1, 
                             SrcIterator lowerright1, SrcAccessor sa,
                             MaskIterator upperleftm, MaskAccessor mask,
@@ -968,7 +980,7 @@ discRankOrderFilterWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discErosionWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                             pair<MaskIterator, MaskAccessor> mask,
                             pair<DestIterator, DestAccessor> dest,
@@ -977,6 +989,8 @@ discRankOrderFilterWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discErosionWithMask)
+
 template <class SrcIterator, class SrcAccessor,
           class MaskIterator, class MaskAccessor,
           class DestIterator, class DestAccessor>
@@ -1032,7 +1046,7 @@ discErosionWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discDilationWithMask(SrcIterator upperleft1, 
                             SrcIterator lowerright1, SrcAccessor sa,
                             MaskIterator upperleftm, MaskAccessor mask,
@@ -1048,7 +1062,7 @@ discErosionWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discDilationWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                             pair<MaskIterator, MaskAccessor> mask,
                             pair<DestIterator, DestAccessor> dest,
@@ -1057,6 +1071,8 @@ discErosionWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discDilationWithMask)
+
 template <class SrcIterator, class SrcAccessor,
           class MaskIterator, class MaskAccessor,
           class DestIterator, class DestAccessor>
@@ -1112,7 +1128,7 @@ discDilationWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discMedianWithMask(SrcIterator upperleft1, 
                             SrcIterator lowerright1, SrcAccessor sa,
                             MaskIterator upperleftm, MaskAccessor mask,
@@ -1128,7 +1144,7 @@ discDilationWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor>
-        inline void 
+        void 
         discMedianWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                             pair<MaskIterator, MaskAccessor> mask,
                             pair<DestIterator, DestAccessor> dest,
@@ -1137,6 +1153,8 @@ discDilationWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void discMedianWithMask)
+
 template <class SrcIterator, class SrcAccessor,
           class MaskIterator, class MaskAccessor,
           class DestIterator, class DestAccessor>

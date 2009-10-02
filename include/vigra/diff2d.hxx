@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -179,7 +179,7 @@ class Diff2DConstColumnIteratorPolicy
     Image new_image(old_image.size() - Diff2D(10,10));
     \endcode
 
-    <b>\#include</b> "<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>"<br>
+    <b>\#include</b> \<<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>\><br>
     Namespace: vigra
 */
 class Diff2D
@@ -477,7 +477,7 @@ struct IteratorTraits<Diff2D >
     Image new_image(Size2D(10,10));
     \endcode
 
-    <b>\#include</b> "<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>"<br>
+    <b>\#include</b> \<<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>\><br>
     Namespace: vigra
 */
 class Size2D : public Diff2D
@@ -587,7 +587,7 @@ public:
     value = image[Point2D(10, 20)];
     \endcode
 
-    <b>\#include</b> "<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>"<br>
+    <b>\#include</b> \<<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>\><br>
     Namespace: vigra
 */
 class Point2D : public Diff2D
@@ -867,7 +867,7 @@ inline Size2D operator/(Size2D l, int r)
     assert(r3.contains(p));
     \endcode
 
-    <b>\#include</b> "<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>"<br>
+    <b>\#include</b> \<<a href="diff2d_8hxx-source.html">vigra/utilities.hxx</a>\><br>
     Namespace: vigra
 */
 class Rect2D
@@ -1131,7 +1131,7 @@ public:
     bool contains(Rect2D const &r) const
     {
         return r.isEmpty() ||
-            (contains(r.upperLeft()) && contains(r.lowerRight()-Diff2D(1,1)));
+            contains(r.upperLeft()) && contains(r.lowerRight()-Diff2D(1,1));
     }
 
         /** Return whether this rectangle overlaps with the given

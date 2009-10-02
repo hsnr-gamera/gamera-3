@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -58,23 +58,14 @@ namespace vigra {
     accessor requirements:
 <p>
 <table border=2 cellspacing=0 cellpadding=2 width="100%">
-<tr><td>
-    \htmlonly
-    <th>
-    \endhtmlonly
+<tr><th>
     Operation
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Result
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Semantics
-    \htmlonly
     </th>
-    \endhtmlonly
-</td></tr>
+</tr>
 <tr>
     <td><tt>accessor(iter)</tt></td><td>convertible to <br><tt>Iterator::value_type const &</tt></td>
     <td>read data at the current position of the iterator</td>
@@ -93,19 +84,11 @@ namespace vigra {
     <td>write data <tt>value</tt> at offset <tt>index</tt> relative to iterator's current position
     (mutable random-access iterator only)</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>Accessor::value_type</tt></td>
     <td>type of the data field the accessor refers to</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=3>
-    \endhtmlonly
+<tr><td colspan=3>
         <tt>iter</tt> is an iterator<br>
         <tt>index</tt> has the iterator's index type (<tt>Iterator::difference_type</tt>)<br>
         <tt>value</tt> is convertible to <tt>Accessor::value_type const &</tt>
@@ -114,7 +97,7 @@ namespace vigra {
 </table>
 </p>
 
-    The template <tt>AccessorTraits&lt;T&gt;</tt> can be used to find the default accessor
+    The template <tt>AccessorTraits<T></tt> can be used to find the default accessor
     associated with the type <tt>T</tt>, e.g.
     
     \code
@@ -144,7 +127,7 @@ namespace vigra {
     When a floating point number is assigned by means of an accessor
     with integral value_type, the value is rounded and clipped as approriate.
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 */
 template <class VALUETYPE>
@@ -209,7 +192,7 @@ class StandardAccessor
     When a floating point number is assigned by means of an accessor
     with integral value_type, the value is rounded and clipped as approriate.
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 */
 template <class VALUETYPE>
@@ -280,7 +263,7 @@ class StandardValueAccessor
     StandardConstAccessor is usually faster for compound pixel types,
     while StandardConstValueAccessor is faster for the built-in types.
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 */
 template <class VALUETYPE>
@@ -318,7 +301,7 @@ class StandardConstAccessor
     When an iterator passes a floating point number to an accessor
     with integral value_type, the value is rounded and clipped as approriate.
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 */
 template <class VALUETYPE>
@@ -375,7 +358,7 @@ class StandardConstValueAccessor
               255);
     \endcode
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 
 */
@@ -459,7 +442,7 @@ class VectorComponentAccessor
               255);
     \endcode
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 
 */
@@ -549,7 +532,7 @@ class VectorComponentValueAccessor
               255);
     \endcode
     
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
     
 */
@@ -626,7 +609,7 @@ class VectorElementAccessor
 
     <b>Usage:</b>
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -725,7 +708,7 @@ class SequenceAccessor
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 
     The accessor has two modes of operation:
@@ -859,7 +842,7 @@ class VectorAccessor
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>"<br>
+    <b>\#include</b> \<<a href="accessor_8hxx-source.html">vigra/accessor.hxx</a>\><br>
     Namespace: vigra
 
     \code

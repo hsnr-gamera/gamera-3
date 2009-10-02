@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -86,7 +86,7 @@ namespace vigra
     /*!
       \brief used for reading bands after the source data type has been figured out.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -178,7 +178,7 @@ namespace vigra
     /*!
       \brief used for reading bands after the source data type has been figured out.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -219,7 +219,7 @@ namespace vigra
     /*!
       \brief used for reading images of vector type, such as integer of float rgb.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -231,12 +231,18 @@ namespace vigra
         }
         \endcode
 
-      \param ImageIterator the image iterator type for the destination image
-      \param Accessor      the image accessor type for the destination image
-      \param info          user supplied image import information
-      \param iter          image iterator referencing the upper left pixel of the destination image
-      \param a             image accessor for the destination image
+        <b> Paramters:</b>
+
+        <DL>
+        <DT>ImageIterator<DD> the image iterator type for the destination image
+        <DT>Accessor<DD> the image accessor type for the destination image
+        <DT>info<DD> user supplied image import information
+        <DT>iter<DD> image iterator referencing the upper left pixel of the destination image
+        <DT>a<DD> image accessor for the destination image
+        </DL>
     */
+doxygen_overloaded_function(template <...> void importVectorImage)
+
     template< class ImageIterator, class Accessor >
     void importVectorImage( const ImageImportInfo & info, ImageIterator iter, Accessor a )
     {
@@ -267,7 +273,7 @@ namespace vigra
     /*!
       \brief used for reading images of  scalar type, such as integer and float grayscale.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -279,12 +285,18 @@ namespace vigra
         }
         \endcode
 
-      \param ImageIterator the image iterator type for the destination image
-      \param Accessor      the image accessor type for the destination image
-      \param info          user supplied image import information
-      \param iter          image iterator referencing the upper left pixel of the destination image
-      \param a             image accessor for the destination image
+        <b> Paramters:</b>
+
+        <DL>
+        <DT>ImageIterator<DD> the image iterator type for the destination image
+        <DT>Accessor<DD> the image accessor type for the destination image
+        <DT>info<DD> user supplied image import information
+        <DT>iter<DD> image iterator referencing the upper left pixel of the destination image
+        <DT>a<DD> image accessor for the destination image
+        </DL>
     */
+doxygen_overloaded_function(template <...> void importScalarImage)
+
     template < class ImageIterator, class Accessor >
     void importScalarImage( const ImageImportInfo & info, ImageIterator iter, Accessor a )
     {
@@ -312,25 +324,13 @@ namespace vigra
         dec->close();
     }
 
-    template < class ImageIterator, class Accessor >
-    void importImage( const ImageImportInfo & info, ImageIterator iter, Accessor a, VigraFalseType )
-    {
-        importVectorImage( info, iter, a );
-    }
-
-    template < class ImageIterator, class Accessor >
-    void importImage( const ImageImportInfo & info, ImageIterator iter, Accessor a, VigraTrueType )
-    {
-        importScalarImage( info, iter, a );
-    }
-
 /********************************************************/
 /*                                                      */
 /*                     importImage                      */
 /*                                                      */
 /********************************************************/
 
-    /** \brief Read an image, given an \ref vigra::ImageImportInfo object.
+    /** \brief Read the image specified by the given \ref vigra::ImageImportInfo object.
 
         <b> Declarations:</b>
 
@@ -343,7 +343,7 @@ namespace vigra
         }
         \endcode
 
-        use argument objects in conjunction with \ref ArgumentObjectFactories:
+        use argument objects in conjunction with \ref ArgumentObjectFactories :
         \code
         namespace vigra {
             template <class ImageIterator, class Accessor>
@@ -354,7 +354,7 @@ namespace vigra
 
         <b> Usage:</b>
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         \code
@@ -402,6 +402,8 @@ namespace vigra
                 </DL>
         </UL>
     **/
+doxygen_overloaded_function(template <...> void importImage)
+
     template < class ImageIterator, class Accessor >
     void importImage( const ImageImportInfo & info, ImageIterator iter, Accessor a )
     {
@@ -415,10 +417,22 @@ namespace vigra
         importImage( info, dest.first, dest.second );
     }
 
+    template < class ImageIterator, class Accessor >
+    void importImage( const ImageImportInfo & info, ImageIterator iter, Accessor a, VigraFalseType )
+    {
+        importVectorImage( info, iter, a );
+    }
+
+    template < class ImageIterator, class Accessor >
+    void importImage( const ImageImportInfo & info, ImageIterator iter, Accessor a, VigraTrueType )
+    {
+        importScalarImage( info, iter, a );
+    }
+
     /*!
       \brief used for writing bands after the source data type has been figured out.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -545,7 +559,7 @@ namespace vigra
     /*!
       \brief used for writing bands after the source data type has been figured out.
 
-        <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+        <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
         Namespace: vigra
 
         <b> Declaration:</b>
@@ -595,101 +609,114 @@ namespace vigra
 
 namespace detail {
 
-    template < class SrcIterator, class SrcAccessor,
-               class DestIterator, class DestAccessor >
-    void mapScalarImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                                         DestIterator dul, DestAccessor dget )
-    {
-        typedef typename SrcAccessor::value_type SrcValue;
-        typedef typename DestAccessor::value_type DestValue;
-        typedef typename NumericTraits<SrcValue>::RealPromote PromoteValue;
-
-        FindMinMax<SrcValue> minmax;
-        inspectImage( sul, slr, sget, minmax );
-        double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
-                       (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
-        double offset = (NumericTraits<DestValue>::min() / scale) - minmax.min ;
-        transformImage( sul, slr, sget, dul, dget,
-                        linearIntensityTransform( scale, offset ) );
-    }
-
-    // export scalar images with conversion (if necessary)
+    // export scalar images without conversion
     template < class SrcIterator, class SrcAccessor, class T >
     void exportScalarImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                           Encoder * enc, bool downcast, T zero)
+                           Encoder * enc, T zero)
     {
-        if (!downcast) {
-            write_band( enc, sul, slr, sget, zero );
-        } else {
-            // convert to unsigned char in the usual way
-            BasicImage<T> image(slr-sul);
-            mapScalarImageToLowerPixelType(sul, slr, sget, image.upperLeft(), image.accessor());
-            write_band( enc, image.upperLeft(),
-                        image.lowerRight(), image.accessor(), zero );
-        }
+        write_band( enc, sul, slr, sget, zero );
     }
 
-    template < class SrcIterator, class SrcAccessor,
-               class MArray>
-    void mapVectorImageToLowerPixelType( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                                         MArray & array )
+    // export scalar images with conversion 
+    template < class SrcIterator, class SrcAccessor, class T >
+    void exportScalarImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                           Encoder * enc, 
+                           const ImageExportInfo & info, 
+                           T zero)
     {
-        typedef typename SrcAccessor::value_type SrcValue;
-        typedef typename SrcValue::value_type SrcComponent;
-        typedef typename MArray::value_type DestValue;
-
-        FindMinMax<SrcComponent> minmax;
-        for(unsigned int i=0; i<sget.size(sul); ++i)
+        double fromMin, fromMax, toMin, toMax;
+        if(info.hasForcedRangeMapping())
         {
-            // FIXME dangelo - This will break with vector accessors that have a "by value" interface.
-            // use VectorComponentValueAccessor instead, since it should work in both cases, even
-            // if it might be a bit slower..
-            //VectorElementAccessor<SrcAccessor> band(i, sget);
-            VectorComponentValueAccessor<typename SrcAccessor::value_type> band(i);
-            inspectImage( sul, slr, band, minmax );
+            fromMin = info.getFromMin();
+            fromMax = info.getFromMax();
+            toMin = info.getToMin();
+            toMax = info.getToMax();
         }
-        double scale = (double)NumericTraits<DestValue>::max() / (minmax.max - minmax.min) -
-                       (double)NumericTraits<DestValue>::min() / (minmax.max - minmax.min);
-// FIXME DGSW - Original was not correct. Is this what was intended?
-//        double offset = -minmax.min + NumericTraits<DestValue>::min() / scale;
-        double offset = (NumericTraits<DestValue>::min() / scale) - minmax.min ;
-        for(unsigned int i=0; i<sget.size(sul); ++i)
+        else
         {
-            BasicImageView<DestValue> subImage = makeBasicImageView(array.bindOuter(i));
-            // FIXME dangelo: use VectorComponentValueAccessor
-            //VectorElementAccessor<SrcAccessor> band(i, sget);
-            VectorComponentValueAccessor<typename SrcAccessor::value_type> band(i);
-            transformImage( sul, slr, band, subImage.upperLeft(), subImage.accessor(),
-                            linearIntensityTransform( scale, offset ) );
+            typedef typename SrcAccessor::value_type SrcValue;
+            FindMinMax<SrcValue> minmax;
+            inspectImage( sul, slr, sget, minmax );
+            
+            fromMin = (double)minmax.min;
+            fromMax = (double)minmax.max;
+            toMin = (double)NumericTraits<T>::min();
+            toMax = (double)NumericTraits<T>::max();
         }
+        double scale = (toMax - toMin) / (fromMax - fromMin);
+        double offset = (toMin / scale) - fromMin;
+        BasicImage<T> image(slr-sul);
+        transformImage( sul, slr, sget, image.upperLeft(), image.accessor(), 
+                        linearIntensityTransform(scale, offset));
+        write_band( enc, image.upperLeft(),
+                    image.lowerRight(), image.accessor(), zero );
     }
 
-    // export vector images with conversion (if necessary)
+    // export vector images without conversion
     template < class SrcIterator, class SrcAccessor, class T >
     void exportVectorImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                           Encoder * enc, bool downcast, T zero)
+                           Encoder * enc, T zero)
     {
         int bands = sget.size(sul);
         vigra_precondition(isBandNumberSupported(enc->getFileType(), bands),
            "exportImage(): file format does not support requested number of bands (color channels)");
-        if ( !downcast )
+        write_bands( enc, sul, slr, sget, zero );
+    }
+    
+    // export vector images with conversion
+    template < class SrcIterator, class SrcAccessor, class T >
+    void exportVectorImage(SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                           Encoder * enc, 
+                           const ImageExportInfo & info, 
+                           T zero)
+    {
+        unsigned int bands = sget.size(sul);
+        vigra_precondition(isBandNumberSupported(enc->getFileType(), bands),
+           "exportImage(): file format does not support requested number of bands (color channels)");
+
+        typedef typename SrcAccessor::value_type SrcValue;
+        double fromMin, fromMax, toMin, toMax;
+        if(info.hasForcedRangeMapping())
         {
-            write_bands( enc, sul, slr, sget, zero );
+            fromMin = info.getFromMin();
+            fromMax = info.getFromMax();
+            toMin = info.getToMin();
+            toMax = info.getToMax();
         }
         else
         {
-            // convert to unsigned char in the usual way
-            int w = slr.x - sul.x;
-            int h = slr.y - sul.y;
+            typedef typename SrcValue::value_type SrcComponent;
 
-            typedef vigra::MultiArray<3, T> MArray;
-            MArray array(typename MArray::difference_type(w, h, bands));
-
-            mapVectorImageToLowerPixelType(sul, slr, sget, array);
-
-            write_bands( enc, array, zero );
+            FindMinMax<SrcComponent> minmax;
+            for(unsigned int i=0; i<bands; ++i)
+            {
+                VectorComponentValueAccessor<SrcValue> band(i);
+                inspectImage( sul, slr, band, minmax );
+            }
+            
+            fromMin = (double)minmax.min;
+            fromMax = (double)minmax.max;
+            toMin = (double)NumericTraits<T>::min();
+            toMax = (double)NumericTraits<T>::max();
         }
+        double scale = (toMax - toMin) / (fromMax - fromMin);
+        double offset = (toMin / scale) - fromMin;
+        int w = slr.x - sul.x;
+        int h = slr.y - sul.y;
+
+        typedef vigra::MultiArray<3, T> MArray;
+        MArray array(typename MArray::difference_type(w, h, bands));
+
+        for(unsigned int i=0; i<bands; ++i)
+        {
+            BasicImageView<T> subImage = makeBasicImageView(array.bindOuter(i));
+            VectorComponentValueAccessor<SrcValue> band(i);
+            transformImage( sul, slr, band, subImage.upperLeft(), subImage.accessor(),
+                            linearIntensityTransform( scale, offset ) );
+        }
+        write_bands( enc, array, zero );
     }
+
 } // namespace detail
 
 
@@ -708,6 +735,8 @@ namespace detail {
         }
         \endcode
     */
+doxygen_overloaded_function(template <...> void exportFloatingVectorImage)
+
     template < class SrcIterator, class SrcAccessor >
     void exportFloatingVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
@@ -730,6 +759,8 @@ namespace detail {
         }
         \endcode
     */
+doxygen_overloaded_function(template <...> void exportIntegralVectorImage)
+
     template < class SrcIterator, class SrcAccessor >
     void exportIntegralVectorImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
@@ -752,6 +783,8 @@ namespace detail {
         }
         \endcode
     */
+doxygen_overloaded_function(template <...> void exportFloatingScalarImage)
+
     template < class SrcIterator, class SrcAccessor >
     void exportFloatingScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
@@ -774,66 +807,13 @@ namespace detail {
         }
         \endcode
     */
+doxygen_overloaded_function(template <...> void exportIntegralScalarImage)
+
     template < class SrcIterator, class SrcAccessor >
     void exportIntegralScalarImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                                     const ImageExportInfo & info )
     {
         exportImage(sul, slr, sget, info);
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                      const ImageExportInfo & info, VigraFalseType /*not scalar */)
-    {
-        typedef typename SrcAccessor::value_type AccessorValueType;
-        typedef typename AccessorValueType::value_type SrcValueType;
-        std::string pixeltype = info.getPixelType();
-        std::auto_ptr<Encoder> enc = encoder(info);
-        bool downcast = negotiatePixelType(enc->getFileType(),
-                        TypeAsString<SrcValueType>::result(), pixeltype);
-        enc->setPixelType(pixeltype);
-        if(pixeltype == "UINT8")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt8)0);
-        else if(pixeltype == "INT16")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, Int16());
-        else if(pixeltype == "UINT16")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt16)0);
-        else if(pixeltype == "INT32")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, Int32());
-        else if(pixeltype == "UINT32")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, (UInt32)0);
-        else if(pixeltype == "FLOAT")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, float());
-        else if(pixeltype == "DOUBLE")
-            detail::exportVectorImage( sul, slr, sget, enc.get(), downcast, double());
-        enc->close();
-    }
-
-    template < class SrcIterator, class SrcAccessor >
-    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
-                      const ImageExportInfo & info, VigraTrueType /*scalar*/ )
-    {
-        typedef typename SrcAccessor::value_type SrcValueType;
-        std::string pixeltype = info.getPixelType();
-        std::auto_ptr<Encoder> enc = encoder(info);
-        bool downcast = negotiatePixelType(enc->getFileType(),
-                           TypeAsString<SrcValueType>::result(), pixeltype);
-        enc->setPixelType(pixeltype);
-        if(pixeltype == "UINT8")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt8)0);
-        else if(pixeltype == "INT16")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, Int16());
-        else if(pixeltype == "UINT16")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt16)0);
-        else if(pixeltype == "INT32")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, Int32());
-        else if(pixeltype == "UINT32")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, (UInt32)0);
-        else if(pixeltype == "FLOAT")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, float());
-        else if(pixeltype == "DOUBLE")
-            detail::exportScalarImage( sul, slr, sget, enc.get(), downcast, double());
-        enc->close();
     }
 
 /********************************************************/
@@ -883,7 +863,7 @@ namespace detail {
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor>
@@ -894,7 +874,7 @@ namespace detail {
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="impex_8hxx-source.html">vigra/impex.hxx</a>"<br>
+    <b>\#include</b> \<<a href="impex_8hxx-source.html">vigra/impex.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -924,8 +904,9 @@ namespace detail {
 
     </UL>
 **/
+doxygen_overloaded_function(template <...> void exportImage)
+
     template < class SrcIterator, class SrcAccessor >
-    inline
     void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
                       const ImageExportInfo & info )
     {
@@ -948,6 +929,101 @@ namespace detail {
                       const ImageExportInfo & info )
     {
         exportImage( src.first, src.second, src.third, info );
+    }
+
+    template < class SrcIterator, class SrcAccessor >
+    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                      const ImageExportInfo & info, VigraFalseType /*not scalar */)
+    {
+        typedef typename SrcAccessor::value_type AccessorValueType;
+        typedef typename AccessorValueType::value_type SrcValueType;
+        std::string pixeltype = info.getPixelType();
+        std::auto_ptr<Encoder> enc = encoder(info);
+        bool downcast = negotiatePixelType(enc->getFileType(),
+                        TypeAsString<SrcValueType>::result(), pixeltype);
+        enc->setPixelType(pixeltype);
+        if(downcast || info.hasForcedRangeMapping())
+        {
+            if(pixeltype == "UINT8")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, (UInt8)0);
+            else if(pixeltype == "INT16")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, Int16());
+            else if(pixeltype == "UINT16")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, (UInt16)0);
+            else if(pixeltype == "INT32")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, Int32());
+            else if(pixeltype == "UINT32")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, (UInt32)0);
+            else if(pixeltype == "FLOAT")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, float());
+            else if(pixeltype == "DOUBLE")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), info, double());
+        }
+        else
+        {
+            if(pixeltype == "UINT8")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), (UInt8)0);
+            else if(pixeltype == "INT16")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), Int16());
+            else if(pixeltype == "UINT16")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), (UInt16)0);
+            else if(pixeltype == "INT32")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), Int32());
+            else if(pixeltype == "UINT32")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), (UInt32)0);
+            else if(pixeltype == "FLOAT")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), float());
+            else if(pixeltype == "DOUBLE")
+                detail::exportVectorImage( sul, slr, sget, enc.get(), double());
+        }
+        enc->close();
+    }
+
+    template < class SrcIterator, class SrcAccessor >
+    void exportImage( SrcIterator sul, SrcIterator slr, SrcAccessor sget,
+                      const ImageExportInfo & info, VigraTrueType /*scalar*/ )
+    {
+        typedef typename SrcAccessor::value_type SrcValueType;
+        std::string pixeltype = info.getPixelType();
+        std::auto_ptr<Encoder> enc = encoder(info);
+        bool downcast = negotiatePixelType(enc->getFileType(),
+                           TypeAsString<SrcValueType>::result(), pixeltype);
+        enc->setPixelType(pixeltype);
+        if(downcast || info.hasForcedRangeMapping())
+        {
+            if(pixeltype == "UINT8")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, (UInt8)0);
+            else if(pixeltype == "INT16")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, Int16());
+            else if(pixeltype == "UINT16")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, (UInt16)0);
+            else if(pixeltype == "INT32")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, Int32());
+            else if(pixeltype == "UINT32")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, (UInt32)0);
+            else if(pixeltype == "FLOAT")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, float());
+            else if(pixeltype == "DOUBLE")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), info, double());
+        }
+        else
+        {
+            if(pixeltype == "UINT8")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), (UInt8)0);
+            else if(pixeltype == "INT16")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), Int16());
+            else if(pixeltype == "UINT16")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), (UInt16)0);
+            else if(pixeltype == "INT32")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), Int32());
+            else if(pixeltype == "UINT32")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), (UInt32)0);
+            else if(pixeltype == "FLOAT")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), float());
+            else if(pixeltype == "DOUBLE")
+                detail::exportScalarImage( sul, slr, sget, enc.get(), double());
+        }
+        enc->close();
     }
 
 //@}

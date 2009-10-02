@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -70,7 +70,7 @@ namespace vigra {
     ColumnIterator is only necessary if this 'native' column iterator
     is not usable in a particular situation or is not provided.
 
-    <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
+    <b>\#include</b> \<<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>\>
 
     Namespace: vigra
 
@@ -276,7 +276,7 @@ class ColumnIterator : private IMAGE_ITERATOR
     RowIterator is only necessary if this 'native' row iterator
     is not usable in a particular situation or is not provided.
 
-    <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
+    <b>\#include</b> \<<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>\>
 
     Namespace: vigra
 
@@ -475,7 +475,7 @@ class RowIterator : private IMAGE_ITERATOR
     an arbitraty line on the image.
     The iterator gets associated with the accessor of the base iterator.
 
-    <b>\#include</b> "<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>"
+    <b>\#include</b> \<<a href="imageiteratoradapter_8hxx-source.html">vigra/imageiteratoradapter.hxx</a>\>
 
     Namespace: vigra
 

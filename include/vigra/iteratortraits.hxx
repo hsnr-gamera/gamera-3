@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -65,8 +65,9 @@ namespace vigra {
         typedef typename iterator::difference_type    difference_type;
         typedef typename iterator::row_iterator       row_iterator;
         typedef typename iterator::column_iterator    column_iterator;
-        typedef StandardAccessor<value_type>          DefaultAccessor;
-        typedef StandardAccessor<value_type>          default_accessor;
+        typedef typename
+         AccessorTraits<value_type>::default_accessor DefaultAccessor;
+        typedef DefaultAccessor                       default_accessor;
 
         typedef VigraTrueType/VigraFalseType          hasConstantStrides;
     };
@@ -95,15 +96,15 @@ namespace vigra {
     
     The member <tt>hasConstantStrides</tt> is useful for certain 
     optimizations: it helps to decide whether we can replace iterator
-    operations such as <tt>iter++</tt> ot <tt>iter =+ n</tt> with
+    operations such as <tt>iter++</tt> or <tt>iter += n</tt> with
     corresponding pointer operations (which may be faster), where
     the pointer is obtained as the address of iterator's pointee 
     (the object the iterator currently  refers to). 
-    This flag would be tt>VigraFalseType</tt> for a
-    <tt>std::list&lt;int&gt;::iterator</tt>, but is <tt>VigraTrueType</tt> 
+    This flag would be <tt>VigraFalseType</tt> for a
+    <tt>std::list<int>::iterator</tt>, but is <tt>VigraTrueType</tt> 
     for most VIGRA iterators.
 
-    <b>\#include</b> "<a href="iteratortraits_8hxx-source.html">vigra/iteratortraits.hxx</a>"
+    <b>\#include</b> \<<a href="iteratortraits_8hxx-source.html">vigra/iteratortraits.hxx</a>\>
     Namespace: vigra
 */
 template <class T>
@@ -142,26 +143,21 @@ struct IteratorTraitsBase
     typedef typename iterator::column_iterator    column_iterator;
 };
 
+
+//@}
+
+
 /***********************************************************/
 
 /** \page ArgumentObjectFactories Argument Object Factories
 
     Factory functions to create argument objects which simplify long argument lists.
 
-    <DL>
-    <DT>
-        <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-        \ref ImageBasedArgumentObjectFactories
-        <DD>
-    <DT>
-        <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-        \ref MultiArrayBasedArgumentObjectFactories
-        <DD>
-    <DT>
-        <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-        \ref IteratorBasedArgumentObjectFactories
-        <DD>
-    </DL>
+    <UL style="list-style-image:url(documents/bullet.gif)">
+    <LI> \ref ImageBasedArgumentObjectFactories
+    <LI> \ref MultiArrayBasedArgumentObjectFactories
+    <LI> \ref IteratorBasedArgumentObjectFactories
+    </UL>
 
     Long argument lists provide for greater flexibility of functions,
     but they are also tedious and error prone, when we don't need
@@ -257,16 +253,11 @@ struct IteratorTraitsBase
     given explicitly). The following factory functions are provided:
 
     <table>
-    <tr><td>
-        \htmlonly
-        <th bgcolor="#f0e0c0" colspan=2 align=left>
-        \endhtmlonly
+    <tr><th bgcolor="#f0e0c0" colspan=2 align=left>
         <TT>\ref vigra::BasicImage "vigra::BasicImage<SomeType>" img;</TT> or <br>
          <TT>\ref vigra::BasicImageView "vigra::BasicImageView<SomeType>" img;</TT>
-         \htmlonly
         </th>
-        \endhtmlonly
-    </td></tr>
+    </tr>
     <tr><td>
 
     <TT>srcImageRange(img)</TT>
@@ -433,7 +424,7 @@ struct IteratorTraitsBase
   \section MultiArrayBasedArgumentObjectFactories MultiArrayView Based Argument Object Factories
 
     <b>Include:</b> automatically included with 
-       "<a href="multi__array_8hxx-source.html">vigra/multi_array.hxx</a>"<br>
+       \<<a href="multi__array_8hxx-source.html">vigra/multi_array.hxx</a>\><br>
     Namespace: vigra
 
     These factories can be used to create argument objects when we
@@ -445,15 +436,10 @@ struct IteratorTraitsBase
     The following factory functions are provided:
 
     <table>
-    <tr><td>
-        \htmlonly
-        <th bgcolor="#f0e0c0" colspan=2 align=left>
-        \endhtmlonly
+    <tr><th bgcolor="#f0e0c0" colspan=2 align=left>
         <TT>\ref vigra::MultiArrayView "vigra::MultiArrayView<N, SomeType>" array;</TT>
-        \htmlonly
         </th>
-        \endhtmlonly
-    </td></tr>
+    </tr>
     <tr><td>
 
     <TT>srcMultiArrayRange(img)</TT>
@@ -531,7 +517,7 @@ struct IteratorTraitsBase
 
   \section IteratorBasedArgumentObjectFactories Iterator Based Argument Object Factories
 
-    <b>\#include</b> "<a href="iteratortraits_8hxx-source.html">vigra/iteratortraits.hxx</a>"
+    <b>\#include</b> \<<a href="iteratortraits_8hxx-source.html">vigra/iteratortraits.hxx</a>\>
     Namespace: vigra
 
     These factories can be used to create argument objects when we
@@ -542,15 +528,10 @@ struct IteratorTraitsBase
     are provided:
 
     <table>
-    <tr><td>
-        \htmlonly
-        <th bgcolor="#f0e0c0" colspan=2 align=left>
-        \endhtmlonly
+    <tr><th bgcolor="#f0e0c0" colspan=2 align=left>
         <TT>\ref vigra::BasicImage::Iterator "vigra::BasicImage<SomeType>::Iterator" i1, i2;</TT>
-        \htmlonly
         </th>
-        \endhtmlonly
-    </td></tr>
+    </tr>
     <tr><td>
 
     <TT>srcIterRange(i1, i2)</TT>
@@ -716,8 +697,6 @@ destIterRange(Iterator const & upperleft, Iterator const & lowerright)
                   upperleft, lowerright,
                   typename IteratorTraits<Iterator>::DefaultAccessor());
 }
-
-//@}
 
 } // namespace vigra
 

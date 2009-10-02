@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -46,7 +46,7 @@ namespace vigra {
 
     4- and 8-neighborhood definitions and circulators.
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
 
     <b>See also:</b> \ref vigra::NeighborhoodCirculator
  */
@@ -63,21 +63,42 @@ namespace vigra {
     This enum is used with \ref isAtImageBorder() and
     \ref vigra::RestrictedNeighborhoodCirculator.
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra
 */
+
 enum AtImageBorder
 {
-    NotAtBorder       = 0,     ///< &nbsp;
-    RightBorder       = 1,     ///< &nbsp;
-    LeftBorder        = 2,     ///< &nbsp;
-    TopBorder         = 4,     ///< &nbsp;
-    BottomBorder      = 8,     ///< &nbsp;
-    TopRightBorder    = TopBorder    | RightBorder,    ///< &nbsp;
-    TopLeftBorder     = TopBorder    | LeftBorder,     ///< &nbsp;
-    BottomLeftBorder  = BottomBorder | LeftBorder,     ///< &nbsp;
-    BottomRightBorder = BottomBorder | RightBorder     ///< &nbsp;
+        NotAtBorder       = 0,     ///< &nbsp;
+        RightBorder       = 1,     ///< &nbsp;
+        LeftBorder        = 2,     ///< &nbsp;
+        TopBorder         = 4,     ///< &nbsp;
+        BottomBorder      = 8,     ///< &nbsp;
+        FrontBorder       = 16,    ///< &nbsp;
+        RearBorder        = 32,
+        TopRightBorder    = TopBorder    | RightBorder,   //5
+        TopLeftBorder     = TopBorder    | LeftBorder,    //6
+        TopFrontBorder    = TopBorder    | FrontBorder,   //20
+        TopRearBorder     = TopBorder    | RearBorder,    //36
+        BottomLeftBorder  = BottomBorder | LeftBorder,    //10
+        BottomRightBorder = BottomBorder | RightBorder,   //9
+        BottomFrontBorder = BottomBorder | FrontBorder,   //24
+        BottomRearBorder  = BottomBorder | RearBorder,    //40
+        FrontLeftBorder   = FrontBorder  | LeftBorder,    //18
+        FrontRightBorder  = FrontBorder  | RightBorder,   //17
+        RearLeftBorder    = RearBorder   | LeftBorder,    //34
+        RearRightBorder   = RearBorder   | RightBorder,   //33
+        
+        TopRightFrontBorder    = TopBorder    | RightBorder | FrontBorder,    //21
+        TopLeftFrontBorder     = TopBorder    | LeftBorder  | FrontBorder,    //22
+        BottomLeftFrontBorder  = BottomBorder | LeftBorder  | FrontBorder,    //26
+        BottomRightFrontBorder = BottomBorder | RightBorder | FrontBorder,    //25
+        TopRightRearBorder     = TopBorder    | RightBorder | RearBorder,     //37
+        TopLeftRearBorder      = TopBorder    | LeftBorder  | RearBorder,     //38
+        BottomLeftRearBorder   = BottomBorder | LeftBorder  | RearBorder,     //42
+        BottomRightRearBorder  = BottomBorder | RightBorder | RearBorder      //41
 };
+
 
 /** \brief Find out whether a point is at the image border.
 
@@ -86,7 +107,7 @@ enum AtImageBorder
     of \ref vigra::AtImageBorder, or zero when the point is not at te image border.
     The behavior of the function is undefined if (x,y) is not inside the image.
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra
 */
 inline AtImageBorder isAtImageBorder(int x, int y, int width, int height)
@@ -140,12 +161,15 @@ namespace FourNeighborhood
     If you want to pass 4-neighborhood codes as a template parameter, use
     the class FourNeighborhood::NeighborCode.
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra::FourNeighborhood
 */
 class NeighborCode
 {
   public:
+
+    typedef Diff2D difference_type;
+    
         /** Freeman direction codes for the 4-neighborhood.
             <tt>East = 0</tt>, <tt>North = 1</tt> etc.
             <tt>DirectionCount</tt> may be used for portable loop termination conditions.
@@ -164,8 +188,12 @@ class NeighborCode
         CausalFirst = North,     ///< &nbsp;
         CausalLast  = West,      ///< &nbsp;
         AntiCausalFirst = South, ///< &nbsp;
-        AntiCausalLast  = East   ///< &nbsp;
-    };
+        AntiCausalLast  = East,   ///< &nbsp;
+   
+        InitialDirection = East,
+        OppositeDirPrefix = 1,
+        OppositeOffset = West
+ };
 
     static unsigned int directionBit(Direction d)
     {
@@ -364,12 +392,15 @@ namespace EightNeighborhood
     If you want to pass 8-neighborhood codes as a template parameter, use
     the class EightNeighborhood::NeighborCode.
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra::EightNeighborhood
 */
 class NeighborCode
 {
   public:
+
+    typedef Diff2D difference_type;
+    
         /** Freeman direction codes for the 8-neighborhood.
             <tt>East = 0</tt>, <tt>North = 1</tt> etc.
             <tt>DirectionCount</tt> may be used for portable loop termination conditions.
@@ -392,7 +423,11 @@ class NeighborCode
         CausalFirst = NorthEast,     ///< &nbsp;
         CausalLast  = West,          ///< &nbsp;
         AntiCausalFirst = SouthWest, ///< &nbsp;
-        AntiCausalLast  = East       ///< &nbsp;
+        AntiCausalLast  = East,       ///< &nbsp;
+   
+        InitialDirection = East,
+        OppositeDirPrefix = 1,
+        OppositeOffset = West
     };
 
     static unsigned int directionBit(Direction d)
@@ -628,7 +663,7 @@ typedef EightNeighborhood::NeighborCode EightNeighborCode;
     you usually doesn't use it directly but rather as a base class or helper for
     neighborhood circulators refering to a particular image (e.g. NeighborhoodCirculator)
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra
 */
 template<class NEIGHBORCODE>
@@ -644,19 +679,19 @@ public:
 
         /** the circulator's value type
         */
-    typedef Diff2D value_type;
+    typedef typename NEIGHBORCODE::difference_type value_type;
 
         /** the circulator's reference type (return type of <TT>*circ</TT>)
         */
-    typedef Diff2D const & reference;
+    typedef value_type const & reference;
 
         /** the circulator's index reference type (return type of <TT>circ[n]</TT>)
         */
-    typedef Diff2D const & index_reference;
+    typedef value_type const & index_reference;
 
         /** the circulator's pointer type (return type of <TT>operator-></TT>)
         */
-    typedef Diff2D const * pointer;
+    typedef value_type const * pointer;
 
         /** the circulator's difference type (argument type of <TT>circ[diff]</TT>)
         */
@@ -672,7 +707,7 @@ protected:
 public:
         /** Create circulator refering to the given direction.
         */
-    NeighborOffsetCirculator(Direction dir = NEIGHBORCODE::East)
+    NeighborOffsetCirculator(Direction dir = NEIGHBORCODE::InitialDirection)
         : direction_(dir)
     {
     }
@@ -811,24 +846,24 @@ public:
         return &diff();
     }
 
-        /** Get Diff2D offset from center to current neighbor.
+        /** Get offset from center to current neighbor.
         */
-    Diff2D const & diff() const
+    reference diff() const
     {
         return NEIGHBORCODE::diff(direction_);
     }
 
-        /** Get Diff2D offset to given direction.
+        /** Get offset to given direction.
         */
-    static Diff2D const & diff(Direction dir)
+    static reference diff(Direction dir)
     {
         return NEIGHBORCODE::diff(dir);
     }
 
-        /** Get relative distance (Diff2D) from current neighbor to neighbor
+        /** Get relative distance from current neighbor to neighbor
             at given offset.
         */
-    Diff2D const &relativeDiff(difference_type offset) const
+    value_type relativeDiff(difference_type offset) const
     {
         Direction toDir = static_cast<Direction>((direction_ + offset) % NEIGHBORCODE::DirectionCount);
         if(toDir < 0)
@@ -873,7 +908,7 @@ public:
         */
     Direction opposite() const
     {
-        return static_cast<Direction>((direction_ + NEIGHBORCODE::West) % NEIGHBORCODE::DirectionCount);
+        return static_cast<Direction>((NEIGHBORCODE::OppositeDirPrefix*direction_ + NEIGHBORCODE::OppositeOffset) % NEIGHBORCODE::DirectionCount);
     }
 
         /** Get opposite bit of current direction.
@@ -927,7 +962,7 @@ typedef NeighborOffsetCirculator<FourNeighborCode> FourNeighborOffsetCirculator;
 
     <b>Usage:</b><br>
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -961,6 +996,7 @@ class NeighborhoodCirculator : private IMAGEITERATOR
 {
     typedef NeighborOffsetCirculator<NEIGHBORCODE> NEIGHBOROFFSETCIRCULATOR;
 
+
 public:
         /** type of the underlying image iterator
         */
@@ -984,7 +1020,8 @@ public:
 
         /** the circulator's index reference type (return type of <TT>circ[n]</TT>)
         */
-    typedef typename IMAGEITERATOR::index_reference index_reference;
+
+    typedef reference index_reference;
 
         /** the circulator's pointer type (return type of <TT>operator-></TT>)
         */
@@ -1002,7 +1039,7 @@ public:
             at the given direction <tt>d</tt>.
         */
     NeighborhoodCirculator(IMAGEITERATOR const & center = IMAGEITERATOR(),
-                           Direction d = NEIGHBOROFFSETCIRCULATOR::East)
+                           Direction d = NEIGHBOROFFSETCIRCULATOR::InitialDirection)
         : IMAGEITERATOR(center), neighborCode_(d)
     {
         IMAGEITERATOR::operator+=(neighborCode_.diff());
@@ -1235,7 +1272,7 @@ private:
 
     <b>Usage:</b><br>
 
-    <b>\#include</b> "<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>"<br>
+    <b>\#include</b> \<<a href="pixelneighborhood_8hxx-source.html">vigra/pixelneighborhood.hxx</a>\><br>
     Namespace: vigra
 
     \code

@@ -19,12 +19,17 @@
 """
 
 from gamera.plugin import *
+from gamera import config
 
 try:
     import Image as PIL
 except ImportError:
-    if __debug__:
-        print ('Python Imaging Library module Image '
+    try:
+        verbose = config.get("verbosity_level")
+    except:
+        verbose = 0
+    if verbose:
+        print ('Info: Python Imaging Library module Image '
                'could not be imported')
 else:
 

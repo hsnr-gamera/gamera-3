@@ -267,7 +267,9 @@ namespace Gamera {
       // for straight scaling, resampleImage must be used in VIGRA
       double xfactor = (double)view->ncols()/image.ncols();
       double yfactor = (double)view->nrows()/image.nrows();
+      // this is implemented incorrectly in VIGRA:
       //resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
+      // the following works however:
       // requires extension of VIGRA (see basicgeometry.hxx)
       // that are not yet merged into VIGRA 1.6.0
       resampleImage(src_image_range(image), dest_image(*view), xfactor, yfactor);

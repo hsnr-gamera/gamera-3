@@ -19,12 +19,17 @@
 """
 
 from gamera.plugin import *
+from gamera import config
 
 try:
     import numpy as n
 except ImportError:
-    if __debug__:
-        print ('numpy could not be imported.')
+    try:
+        verbose = config.get("verbosity_level")
+    except:
+        verbose = 0
+    if verbose:
+        print ('Info: numpy could not be imported.')
 else:
     _typecodes = {RGB       : n.dtype('uint8'),
                   GREYSCALE : n.dtype('uint8'),

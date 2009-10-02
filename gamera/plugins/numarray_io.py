@@ -20,12 +20,17 @@
 
 from gamera.plugin import *
 from gamera.util import warn_deprecated
+from gamera import config
 
 try:
     import numpy.numarray as n
 except ImportError:
-    if __debug__:
-        print ('numpy.numarray could not be imported')
+    try:
+        verbose = config.get("verbosity_level")
+    except:
+        verbose = 0
+    if verbose:
+        print ('Info: numpy.numarray could not be imported')
 else:
     _typecodes = {RGB       : n.UInt8,
                   GREYSCALE : n.UInt8,

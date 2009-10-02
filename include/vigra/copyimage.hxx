@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -105,7 +105,7 @@ copyLineIf(SrcIterator s,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -118,7 +118,7 @@ copyLineIf(SrcIterator s,
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="copyimage_8hxx-source.html">vigra/copyimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="copyimage_8hxx-source.html">vigra/copyimage.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -142,6 +142,8 @@ copyLineIf(SrcIterator s,
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void copyImage)
+
 template <class SrcImageIterator, class SrcAccessor,
           class DestImageIterator, class DestAccessor>
 void
@@ -200,7 +202,7 @@ copyImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -215,7 +217,7 @@ copyImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="copyimage_8hxx-source.html">vigra/copyimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="copyimage_8hxx-source.html">vigra/copyimage.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -244,6 +246,8 @@ copyImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void copyImageIf)
+
 template <class SrcImageIterator, class SrcAccessor,
           class MaskImageIterator, class MaskAccessor,
           class DestImageIterator, class DestAccessor>

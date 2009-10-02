@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -277,6 +277,8 @@ internalDistanceTransform(SrcImageIterator src_upperleft,
 /** \addtogroup DistanceTransform Distance Transform
     Perform a distance transform using either the Euclidean, Manhattan, 
     or chessboard metrics.
+    
+    See also: \ref MultiArrayDistanceTransform "multi-dimensional distance transforms"
 */
 //@{
 
@@ -317,7 +319,7 @@ internalDistanceTransform(SrcImageIterator src_upperleft,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -332,7 +334,7 @@ internalDistanceTransform(SrcImageIterator src_upperleft,
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="distancetransform_8hxx-source.html">vigra/distancetransform.hxx</a>"<br>
+    <b>\#include</b> \<<a href="distancetransform_8hxx-source.html">vigra/distancetransform.hxx</a>\><br>
     Namespace: vigra
     
     
@@ -374,6 +376,8 @@ internalDistanceTransform(SrcImageIterator src_upperleft,
  
     \endcode
 */
+doxygen_overloaded_function(template <...> void distanceTransform)
+
 template <class SrcImageIterator, class SrcAccessor,
                    class DestImageIterator, class DestAccessor,
                    class ValueType>

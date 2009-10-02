@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -31,7 +31,7 @@
 /*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
 /*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
 /*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
-/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
 
@@ -52,7 +52,7 @@ namespace vigra {
 //@{
 /* B-Splines of arbitrary order and interpolating Catmull/Rom splines.
 
-    <b>\#include</b> "<a href="splines_8hxx-source.html">vigra/splines.hxx</a>"<br>
+    <b>\#include</b> \<<a href="splines_8hxx-source.html">vigra/splines.hxx</a>\><br>
     Namespace: vigra
 */
 #ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
@@ -60,60 +60,60 @@ namespace vigra {
 /** Basic interface of the spline functors.
 
     Implements the spline functions defined by the recursion
-    
+
     \f[ B_0(x) = \left\{ \begin{array}{ll}
                                   1 & -\frac{1}{2} \leq x < \frac{1}{2} \\
                                   0 & \mbox{otherwise}
                         \end{array}\right.
     \f]
-    
-    and 
-    
+
+    and
+
     \f[ B_n(x) = B_0(x) * B_{n-1}(x)
     \f]
-    
-    where * denotes convolution, and <i>n</i> is the spline order given by the 
-    template parameter <tt>ORDER</tt>. These spline classes can be used as 
+
+    where * denotes convolution, and <i>n</i> is the spline order given by the
+    template parameter <tt>ORDER</tt>. These spline classes can be used as
     unary and binary functors, as kernels for \ref resamplingConvolveImage(),
     and as arguments for \ref vigra::SplineImageView. Note that the spline order
     is given as a template argument.
 
-    <b>\#include</b> "<a href="splines_8hxx-source.html">vigra/splines.hxx</a>"<br>
+    <b>\#include</b> \<<a href="splines_8hxx-source.html">vigra/splines.hxx</a>\><br>
     Namespace: vigra
 */
 template <int ORDER, class T = double>
 class BSplineBase
 {
   public:
-  
+
         /** the value type if used as a kernel in \ref resamplingConvolveImage().
         */
-    typedef T            value_type;  
+    typedef T            value_type;
         /** the functor's unary argument type
         */
-    typedef T            argument_type;  
+    typedef T            argument_type;
         /** the functor's first binary argument type
         */
-    typedef T            first_argument_type;  
+    typedef T            first_argument_type;
         /** the functor's second binary argument type
         */
-    typedef unsigned int second_argument_type;  
+    typedef unsigned int second_argument_type;
         /** the functor's result type (unary and binary)
         */
-    typedef T            result_type; 
+    typedef T            result_type;
         /** the spline order
         */
     enum StaticOrder { order = ORDER };
 
         /** Create functor for gevine derivative of the spline. The spline's order
-            is specified spline by the template argument <TT>ORDER</tt>. 
+            is specified spline by the template argument <TT>ORDER</tt>.
         */
     explicit BSplineBase(unsigned int derivativeOrder = 0)
     : s1_(derivativeOrder)
     {}
-    
+
         /** Unary function call.
-            Returns the value of the spline with the derivative order given in the 
+            Returns the value of the spline with the derivative order given in the
             constructor. Note that only derivatives up to <tt>ORDER-1</tt> are
             continous, and derivatives above <tt>ORDER+1</tt> are zero.
         */
@@ -136,13 +136,13 @@ class BSplineBase
         */
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
-        /** Get the required filter radius for a discrete approximation of the 
+
+        /** Get the required filter radius for a discrete approximation of the
             spline. Always equal to <tt>(ORDER + 1) / 2.0</tt>.
         */
     double radius() const
         { return (ORDER + 1) * 0.5; }
-        
+
         /** Get the derivative order of the Gaussian.
         */
     unsigned int derivativeOrder() const
@@ -150,20 +150,20 @@ class BSplineBase
 
         /** Get the prefilter coefficients required for interpolation.
             To interpolate with a B-spline, \ref resamplingConvolveImage()
-            can be used. However, the image to be interpolated must be 
-            pre-filtered using \ref recursiveFilterImage() with the filter
-            coefficients given by this function. The length of the array
-            corresponds to the number of times \ref recursiveFilterImage()
+            can be used. However, the image to be interpolated must be
+            pre-filtered using \ref recursiveFilterX() and \ref recursiveFilterY()
+            with the filter coefficients given by this function. The length of the array
+            corresponds to how many times the above recursive filtering
             has to be applied (zero length means no prefiltering necessary).
         */
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> const & b = calculatePrefilterCoefficients();
         return b;
     }
-    
+
     static ArrayVector<double> const & calculatePrefilterCoefficients();
-    
+
     typedef T WeightMatrix[ORDER+1][ORDER+1];
 
         /** Get the coefficients to transform spline coefficients into
@@ -176,17 +176,17 @@ class BSplineBase
         static WeightMatrix & b = calculateWeightMatrix();
         return b;
     }
-    
+
     static WeightMatrix & calculateWeightMatrix();
-    
+
   protected:
     result_type exec(first_argument_type x, second_argument_type derivative_order) const;
-    
-    BSplineBase<ORDER-1, T> s1_;  
+
+    BSplineBase<ORDER-1, T> s1_;
 };
 
 template <int ORDER, class T>
-typename BSplineBase<ORDER, T>::result_type 
+typename BSplineBase<ORDER, T>::result_type
 BSplineBase<ORDER, T>::exec(first_argument_type x, second_argument_type derivative_order) const
 {
     if(derivative_order == 0)
@@ -203,7 +203,7 @@ BSplineBase<ORDER, T>::exec(first_argument_type x, second_argument_type derivati
 
 template <int ORDER, class T>
 ArrayVector<double> const & BSplineBase<ORDER, T>::calculatePrefilterCoefficients()
-{ 
+{
     static ArrayVector<double> b;
     if(ORDER > 1)
     {
@@ -220,9 +220,9 @@ ArrayVector<double> const & BSplineBase<ORDER, T>::calculatePrefilterCoefficient
     }
     return b;
 }
-    
+
 template <int ORDER, class T>
-typename BSplineBase<ORDER, T>::WeightMatrix & 
+typename BSplineBase<ORDER, T>::WeightMatrix &
 BSplineBase<ORDER, T>::calculateWeightMatrix()
 {
     static WeightMatrix b;
@@ -231,7 +231,7 @@ BSplineBase<ORDER, T>::calculateWeightMatrix()
     {
         if(d > 1)
             faculty *= d;
-        double x = ORDER / 2;
+        double x = ORDER / 2; // (note: integer division)
         BSplineBase spline;
         for(int i = 0; i <= ORDER; ++i, --x)
             b[d][i] = spline(x, d) / faculty;
@@ -247,7 +247,7 @@ BSplineBase<ORDER, T>::calculateWeightMatrix()
 
 /** Spline functors for arbitrary orders.
 
-    Provides the interface of \ref vigra::BSplineBase with a more convenient 
+    Provides the interface of \ref vigra::BSplineBase with a more convenient
     name -- see there for more documentation.
 */
 template <int ORDER, class T = double>
@@ -255,7 +255,7 @@ class BSpline
 : public BSplineBase<ORDER, T>
 {
   public:
-        /** Constructor forwarded to the base class constructor.. 
+        /** Constructor forwarded to the base class constructor..
         */
     explicit BSpline(unsigned int derivativeOrder = 0)
     : BSplineBase<ORDER, T>(derivativeOrder)
@@ -272,18 +272,18 @@ template <class T>
 class BSplineBase<0, T>
 {
   public:
-  
-    typedef T            value_type;  
-    typedef T            argument_type;  
-    typedef T            first_argument_type;  
-    typedef unsigned int second_argument_type;  
-    typedef T            result_type; 
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
     enum StaticOrder { order = 0 };
 
     explicit BSplineBase(unsigned int derivativeOrder = 0)
     : derivativeOrder_(derivativeOrder)
     {}
-    
+
     result_type operator()(argument_type x) const
     {
          return exec(x, derivativeOrder_);
@@ -293,38 +293,38 @@ class BSplineBase<0, T>
     FixedPoint<IntBits, FracBits> operator()(FixedPoint<IntBits, FracBits> x) const
     {
         typedef FixedPoint<IntBits, FracBits> Value;
-        return x.value < Value::ONE_HALF && -Value::ONE_HALF <= x.value 
+        return x.value < Value::ONE_HALF && -Value::ONE_HALF <= x.value
                    ? Value(Value::ONE, FPNoShift)
                    : Value(0, FPNoShift);
     }
 
     result_type operator()(first_argument_type x, second_argument_type derivative_order) const
-    {        
+    {
          return exec(x, derivativeOrder_ + derivative_order);
     }
-    
+
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
+
     double radius() const
         { return 0.5; }
-        
+
     unsigned int derivativeOrder() const
         { return derivativeOrder_; }
 
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> b;
         return b;
     }
-    
+
     typedef T WeightMatrix[1][1];
     static WeightMatrix & weights()
     {
         static T b[1][1] = {{ 1.0}};
         return b;
     }
-    
+
   protected:
     result_type exec(first_argument_type x, second_argument_type derivative_order) const
     {
@@ -335,7 +335,7 @@ class BSplineBase<0, T>
         else
             return 0.0;
     }
-    
+
     unsigned int derivativeOrder_;
 };
 
@@ -349,18 +349,18 @@ template <class T>
 class BSpline<1, T>
 {
   public:
-  
-    typedef T            value_type;  
-    typedef T            argument_type;  
-    typedef T            first_argument_type;  
-    typedef unsigned int second_argument_type;  
-    typedef T            result_type; 
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
     enum  StaticOrder { order = 1 };
 
     explicit BSpline(unsigned int derivativeOrder = 0)
     : derivativeOrder_(derivativeOrder)
     {}
-    
+
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
@@ -371,7 +371,7 @@ class BSpline<1, T>
     {
         typedef FixedPoint<IntBits, FracBits> Value;
         int v = abs(x.value);
-        return v < Value::ONE ? 
+        return v < Value::ONE ?
                 Value(Value::ONE - v, FPNoShift)
                 : Value(0, FPNoShift);
     }
@@ -380,22 +380,22 @@ class BSpline<1, T>
     {
          return exec(x, derivativeOrder_ + derivative_order);
     }
-    
+
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
+
     double radius() const
         { return 1.0; }
-        
+
     unsigned int derivativeOrder() const
         { return derivativeOrder_; }
 
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> b;
         return b;
     }
-    
+
     typedef T WeightMatrix[2][2];
     static WeightMatrix & weights()
     {
@@ -405,7 +405,7 @@ class BSpline<1, T>
 
   protected:
     T exec(T x, unsigned int derivative_order) const;
-    
+
     unsigned int derivativeOrder_;
 };
 
@@ -417,7 +417,7 @@ T BSpline<1, T>::exec(T x, unsigned int derivative_order) const
         case 0:
         {
             x = VIGRA_CSTD::fabs(x);
-            return x < 1.0 ? 
+            return x < 1.0 ?
                     1.0 - x
                     : 0.0;
         }
@@ -425,10 +425,10 @@ T BSpline<1, T>::exec(T x, unsigned int derivative_order) const
         {
             return x < 0.0 ?
                      -1.0 <= x ?
-                          1.0 
-                     : 0.0 
+                          1.0
+                     : 0.0
                    : x < 1.0 ?
-                       -1.0 
+                       -1.0
                      : 0.0;
         }
         default:
@@ -446,18 +446,18 @@ template <class T>
 class BSpline<2, T>
 {
   public:
-  
-    typedef T            value_type;  
-    typedef T            argument_type;  
-    typedef T            first_argument_type;  
-    typedef unsigned int second_argument_type;  
-    typedef T            result_type; 
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
     enum StaticOrder { order = 2 };
 
     explicit BSpline(unsigned int derivativeOrder = 0)
     : derivativeOrder_(derivativeOrder)
     {}
-    
+
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
@@ -470,13 +470,13 @@ class BSpline<2, T>
         enum { ONE_HALF = Value::ONE_HALF, THREE_HALVES = ONE_HALF * 3, THREE_QUARTERS = THREE_HALVES / 2,
                PREMULTIPLY_SHIFT1 = FracBits <= 16 ? 0 : FracBits - 16,
                PREMULTIPLY_SHIFT2 = FracBits - 1 <= 16 ? 0 : FracBits - 17,
-               POSTMULTIPLY_SHIFT1 = FracBits - 2*PREMULTIPLY_SHIFT1, 
-               POSTMULTIPLY_SHIFT2 = FracBits - 2*PREMULTIPLY_SHIFT2  }; 
+               POSTMULTIPLY_SHIFT1 = FracBits - 2*PREMULTIPLY_SHIFT1,
+               POSTMULTIPLY_SHIFT2 = FracBits - 2*PREMULTIPLY_SHIFT2  };
         int v = abs(x.value);
-        return v == ONE_HALF 
+        return v == ONE_HALF
                    ? Value(ONE_HALF, FPNoShift)
-                   : v <= ONE_HALF 
-                       ? Value(THREE_QUARTERS - 
+                   : v <= ONE_HALF
+                       ? Value(THREE_QUARTERS -
                                (int)(sq((unsigned)v >> PREMULTIPLY_SHIFT2) >> POSTMULTIPLY_SHIFT2), FPNoShift)
                        : v < THREE_HALVES
                             ? Value((int)(sq((unsigned)(THREE_HALVES-v) >> PREMULTIPLY_SHIFT1) >> (POSTMULTIPLY_SHIFT1 + 1)), FPNoShift)
@@ -487,26 +487,29 @@ class BSpline<2, T>
     {
          return exec(x, derivativeOrder_ + derivative_order);
     }
-    
+
+    result_type dx(argument_type x) const
+        { return operator()(x, 1); }
+
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
+
     double radius() const
         { return 1.5; }
-        
+
     unsigned int derivativeOrder() const
         { return derivativeOrder_; }
 
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> b(1, 2.0*M_SQRT2 - 3.0);
         return b;
     }
-    
+
     typedef T WeightMatrix[3][3];
     static WeightMatrix & weights()
     {
-        static T b[3][3] = {{ 0.125, 0.75, 0.125}, 
+        static T b[3][3] = {{ 0.125, 0.75, 0.125},
                             {-0.5, 0.0, 0.5},
                             { 0.5, -1.0, 0.5}};
         return b;
@@ -514,12 +517,12 @@ class BSpline<2, T>
 
   protected:
     result_type exec(first_argument_type x, second_argument_type derivative_order) const;
-    
+
     unsigned int derivativeOrder_;
 };
 
 template <class T>
-typename BSpline<2, T>::result_type 
+typename BSpline<2, T>::result_type
 BSpline<2, T>::exec(first_argument_type x, second_argument_type derivative_order) const
 {
     switch(derivative_order)
@@ -528,33 +531,33 @@ BSpline<2, T>::exec(first_argument_type x, second_argument_type derivative_order
         {
             x = VIGRA_CSTD::fabs(x);
             return x < 0.5 ?
-                    0.75 - x*x 
+                    0.75 - x*x
                     : x < 1.5 ?
-                        0.5 * sq(1.5 - x) 
+                        0.5 * sq(1.5 - x)
                     : 0.0;
         }
         case 1:
         {
             return x >= -0.5 ?
                      x <= 0.5 ?
-                       -2.0 * x 
+                       -2.0 * x
                      : x < 1.5 ?
-                         x - 1.5 
-                       : 0.0 
+                         x - 1.5
+                       : 0.0
                    : x > -1.5 ?
-                       x + 1.5 
+                       x + 1.5
                      : 0.0;
         }
         case 2:
         {
             return x >= -0.5 ?
                      x < 0.5 ?
-                         -2.0 
+                         -2.0
                      : x < 1.5 ?
-                         1.0 
-                       : 0.0 
+                         1.0
+                       : 0.0
                    : x >= -1.5 ?
-                       1.0 
+                       1.0
                      : 0.0;
         }
         default:
@@ -572,18 +575,18 @@ template <class T>
 class BSpline<3, T>
 {
   public:
-  
-    typedef T            value_type;  
-    typedef T            argument_type;  
-    typedef T            first_argument_type;  
-    typedef unsigned int second_argument_type;  
-    typedef T            result_type; 
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
     enum StaticOrder { order = 3 };
 
     explicit BSpline(unsigned int derivativeOrder = 0)
     : derivativeOrder_(derivativeOrder)
     {}
-    
+
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
@@ -595,12 +598,12 @@ class BSpline<3, T>
         typedef FixedPoint<IntBits, FracBits> Value;
         enum { ONE = Value::ONE, TWO = 2 * ONE, TWO_THIRDS = TWO / 3, ONE_SIXTH = ONE / 6,
                PREMULTIPLY_SHIFT = FracBits <= 16 ? 0 : FracBits - 16,
-               POSTMULTIPLY_SHIFT = FracBits - 2*PREMULTIPLY_SHIFT }; 
+               POSTMULTIPLY_SHIFT = FracBits - 2*PREMULTIPLY_SHIFT };
         int v = abs(x.value);
         return v == ONE
                    ? Value(ONE_SIXTH, FPNoShift)
-                   : v < ONE 
-                       ? Value(TWO_THIRDS + 
+                   : v < ONE
+                       ? Value(TWO_THIRDS +
                                (((int)(sq((unsigned)v >> PREMULTIPLY_SHIFT) >> (POSTMULTIPLY_SHIFT + PREMULTIPLY_SHIFT))
                                        * (((v >> 1) - ONE) >> PREMULTIPLY_SHIFT)) >> POSTMULTIPLY_SHIFT), FPNoShift)
                        : v < TWO
@@ -613,32 +616,32 @@ class BSpline<3, T>
     {
          return exec(x, derivativeOrder_ + derivative_order);
     }
-   
+
     result_type dx(argument_type x) const
         { return operator()(x, 1); }
-    
+
     result_type dxx(argument_type x) const
         { return operator()(x, 2); }
-    
+
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
+
     double radius() const
         { return 2.0; }
-        
+
     unsigned int derivativeOrder() const
         { return derivativeOrder_; }
 
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> b(1, VIGRA_CSTD::sqrt(3.0) - 2.0);
         return b;
     }
-    
+
     typedef T WeightMatrix[4][4];
     static WeightMatrix & weights()
     {
-        static T b[4][4] = {{ 1.0 / 6.0, 2.0 / 3.0, 1.0 / 6.0, 0.0}, 
+        static T b[4][4] = {{ 1.0 / 6.0, 2.0 / 3.0, 1.0 / 6.0, 0.0},
                             {-0.5, 0.0, 0.5, 0.0},
                             { 0.5, -1.0, 0.5, 0.0},
                             {-1.0 / 6.0, 0.5, -0.5, 1.0 / 6.0}};
@@ -647,12 +650,12 @@ class BSpline<3, T>
 
   protected:
     result_type exec(first_argument_type x, second_argument_type derivative_order) const;
-    
+
     unsigned int derivativeOrder_;
 };
 
 template <class T>
-typename BSpline<3, T>::result_type 
+typename BSpline<3, T>::result_type
 BSpline<3, T>::exec(first_argument_type x, second_argument_type derivative_order) const
 {
     switch(derivative_order)
@@ -675,11 +678,11 @@ BSpline<3, T>::exec(first_argument_type x, second_argument_type derivative_order
         case 1:
         {
             double s = x < 0.0 ?
-                         -1.0 
+                         -1.0
                        :  1.0;
             x = VIGRA_CSTD::fabs(x);
             return x < 1.0 ?
-                     s*x*(-2.0 + 1.5*x) 
+                     s*x*(-2.0 + 1.5*x)
                    : x < 2.0 ?
                        -0.5*s*sq(2.0 - x)
                      : 0.0;
@@ -688,9 +691,9 @@ BSpline<3, T>::exec(first_argument_type x, second_argument_type derivative_order
         {
             x = VIGRA_CSTD::fabs(x);
             return x < 1.0 ?
-                     3.0*x - 2.0 
+                     3.0*x - 2.0
                    : x < 2.0 ?
-                       2.0 - x 
+                       2.0 - x
                      : 0.0;
         }
         case 3:
@@ -698,13 +701,13 @@ BSpline<3, T>::exec(first_argument_type x, second_argument_type derivative_order
             return x < 0.0 ?
                      x < -1.0 ?
                        x < -2.0 ?
-                         0.0 
-                       : 1.0 
-                     : -3.0 
+                         0.0
+                       : 1.0
+                     : -3.0
                    : x < 1.0 ?
-                       3.0 
+                       3.0
                      : x < 2.0 ?
-                         -1.0 
+                         -1.0
                        : 0.0;
         }
         default:
@@ -716,26 +719,26 @@ typedef BSpline<3, double> CubicBSplineKernel;
 
 /********************************************************/
 /*                                                      */
-/*                     BSpline<5, T>                    */
+/*                     BSpline<4, T>                    */
 /*                                                      */
 /********************************************************/
 
 template <class T>
-class BSpline<5, T>
+class BSpline<4, T>
 {
   public:
-  
-    typedef T            value_type;  
-    typedef T            argument_type;  
-    typedef T            first_argument_type;  
-    typedef unsigned int second_argument_type;  
-    typedef T            result_type; 
-    enum StaticOrder { order = 5 };
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
+    enum StaticOrder { order = 4 };
 
     explicit BSpline(unsigned int derivativeOrder = 0)
     : derivativeOrder_(derivativeOrder)
     {}
-    
+
     result_type operator()(argument_type x) const
     {
         return exec(x, derivativeOrder_);
@@ -745,46 +748,243 @@ class BSpline<5, T>
     {
          return exec(x, derivativeOrder_ + derivative_order);
     }
-    
+
     result_type dx(argument_type x) const
         { return operator()(x, 1); }
-    
+
     result_type dxx(argument_type x) const
         { return operator()(x, 2); }
-    
+
     result_type dx3(argument_type x) const
         { return operator()(x, 3); }
-    
-    result_type dx4(argument_type x) const
-        { return operator()(x, 4); }
-    
+
     value_type operator[](value_type x) const
         { return operator()(x); }
-    
+
     double radius() const
-        { return 3.0; }
-        
+        { return 2.5; }
+
     unsigned int derivativeOrder() const
         { return derivativeOrder_; }
 
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> const & b = initPrefilterCoefficients();
         return b;
     }
-    
+
     static ArrayVector<double> const & initPrefilterCoefficients()
-    { 
+    {
         static ArrayVector<double> b(2);
-        b[0] = -0.43057534709997114;
-        b[1] = -0.043096288203264652;
+        // -19 + 4*sqrt(19) + 2*sqrt(2*(83 - 19*sqrt(19)))
+        b[0] = -0.361341225900220177092212841325;
+        // -19 - 4*sqrt(19) + 2*sqrt(2*(83 + 19*sqrt(19)))
+        b[1] = -0.013725429297339121360331226939;
         return b;
     }
-    
+
+    typedef T WeightMatrix[5][5];
+    static WeightMatrix & weights()
+    {
+        static T b[5][5] = {{ 1.0/384.0, 19.0/96.0, 115.0/192.0, 19.0/96.0, 1.0/384.0},
+                            {-1.0/48.0, -11.0/24.0, 0.0, 11.0/24.0, 1.0/48.0},
+                            { 1.0/16.0, 1.0/4.0, -5.0/8.0, 1.0/4.0, 1.0/16.0},
+                            {-1.0/12.0, 1.0/6.0, 0.0, -1.0/6.0, 1.0/12.0},
+                            { 1.0/24.0, -1.0/6.0, 0.25, -1.0/6.0, 1.0/24.0}};
+        return b;
+    }
+
+  protected:
+    result_type exec(first_argument_type x, second_argument_type derivative_order) const;
+
+    unsigned int derivativeOrder_;
+};
+
+template <class T>
+typename BSpline<4, T>::result_type
+BSpline<4, T>::exec(first_argument_type x, second_argument_type derivative_order) const
+{
+    switch(derivative_order)
+    {
+        case 0:
+        {
+            x = VIGRA_CSTD::fabs(x);
+            if(x <= 0.5)
+            {
+                return 115.0/192.0 + x*x*(-0.625 + x*x*0.25);
+            }
+            else if(x < 1.5)
+            {
+                return (55.0/16.0 + x*(1.25 + x*(-7.5 + x*(5.0 - x)))) / 6.0;
+            }
+            else if(x < 2.5)
+            {
+                x = 2.5 - x;
+                return sq(x*x) / 24.0;
+            }
+            else
+                return 0.0;
+        }
+        case 1:
+        {
+            double s = x < 0.0 ?
+                          -1.0 :
+                           1.0;
+            x = VIGRA_CSTD::fabs(x);
+            if(x <= 0.5)
+            {
+                return s*x*(-1.25 + x*x);
+            }
+            else if(x < 1.5)
+            {
+                return s*(5.0 + x*(-60.0 + x*(60.0 - 16.0*x))) / 24.0;
+            }
+            else if(x < 2.5)
+            {
+                x = 2.5 - x;
+                return s*x*x*x / -6.0;
+            }
+            else
+                return 0.0;
+        }
+        case 2:
+        {
+            x = VIGRA_CSTD::fabs(x);
+            if(x <= 0.5)
+            {
+                return -1.25 + 3.0*x*x;
+            }
+            else if(x < 1.5)
+            {
+                return -2.5 + x*(5.0 - 2.0*x);
+            }
+            else if(x < 2.5)
+            {
+                x = 2.5 - x;
+                return x*x / 2.0;
+            }
+            else
+                return 0.0;
+        }
+        case 3:
+        {
+            double s = x < 0.0 ?
+                          -1.0 :
+                           1.0;
+            x = VIGRA_CSTD::fabs(x);
+            if(x <= 0.5)
+            {
+                return s*x*6.0;
+            }
+            else if(x < 1.5)
+            {
+                return s*(5.0 - 4.0*x);
+            }
+            else if(x < 2.5)
+            {
+                return s*(x - 2.5);
+            }
+            else
+                return 0.0;
+        }
+        case 4:
+        {
+            return x < 0.0
+                     ? x < -2.5
+                         ? 0.0
+                         : x < -1.5
+                             ? 1.0
+                             : x < -0.5
+                                 ? -4.0
+                                 : 6.0
+                     : x < 0.5 
+                         ? 6.0
+                         : x < 1.5
+                             ? -4.0
+                             : x < 2.5
+                                 ? 1.0
+                                 : 0.0;
+        }
+        default:
+            return 0.0;
+    }
+}
+
+typedef BSpline<4, double> QuarticBSplineKernel;
+
+/********************************************************/
+/*                                                      */
+/*                     BSpline<5, T>                    */
+/*                                                      */
+/********************************************************/
+
+template <class T>
+class BSpline<5, T>
+{
+  public:
+
+    typedef T            value_type;
+    typedef T            argument_type;
+    typedef T            first_argument_type;
+    typedef unsigned int second_argument_type;
+    typedef T            result_type;
+    enum StaticOrder { order = 5 };
+
+    explicit BSpline(unsigned int derivativeOrder = 0)
+    : derivativeOrder_(derivativeOrder)
+    {}
+
+    result_type operator()(argument_type x) const
+    {
+        return exec(x, derivativeOrder_);
+    }
+
+    result_type operator()(first_argument_type x, second_argument_type derivative_order) const
+    {
+         return exec(x, derivativeOrder_ + derivative_order);
+    }
+
+    result_type dx(argument_type x) const
+        { return operator()(x, 1); }
+
+    result_type dxx(argument_type x) const
+        { return operator()(x, 2); }
+
+    result_type dx3(argument_type x) const
+        { return operator()(x, 3); }
+
+    result_type dx4(argument_type x) const
+        { return operator()(x, 4); }
+
+    value_type operator[](value_type x) const
+        { return operator()(x); }
+
+    double radius() const
+        { return 3.0; }
+
+    unsigned int derivativeOrder() const
+        { return derivativeOrder_; }
+
+    ArrayVector<double> const & prefilterCoefficients() const
+    {
+        static ArrayVector<double> const & b = initPrefilterCoefficients();
+        return b;
+    }
+
+    static ArrayVector<double> const & initPrefilterCoefficients()
+    {
+        static ArrayVector<double> b(2);
+        // -(13/2) + sqrt(105)/2 + sqrt(1/2*((135 - 13*sqrt(105))))
+        b[0] = -0.430575347099973791851434783493;
+        // (1/2)*((-13) - sqrt(105) + sqrt(2*((135 + 13*sqrt(105)))))
+        b[1] = -0.043096288203264653822712376822;
+        return b;
+    }
+
     typedef T WeightMatrix[6][6];
     static WeightMatrix & weights()
     {
-        static T b[6][6] = {{ 1.0/120.0, 13.0/60.0, 11.0/20.0, 13.0/60.0, 1.0/120.0, 0.0}, 
+        static T b[6][6] = {{ 1.0/120.0, 13.0/60.0, 11.0/20.0, 13.0/60.0, 1.0/120.0, 0.0},
                             {-1.0/24.0, -5.0/12.0, 0.0, 5.0/12.0, 1.0/24.0, 0.0},
                             { 1.0/12.0, 1.0/6.0, -0.5, 1.0/6.0, 1.0/12.0, 0.0},
                             {-1.0/12.0, 1.0/6.0, 0.0, -1.0/6.0, 1.0/12.0, 0.0},
@@ -795,12 +995,12 @@ class BSpline<5, T>
 
   protected:
     result_type exec(first_argument_type x, second_argument_type derivative_order) const;
-    
+
     unsigned int derivativeOrder_;
 };
 
 template <class T>
-typename BSpline<5, T>::result_type 
+typename BSpline<5, T>::result_type
 BSpline<5, T>::exec(first_argument_type x, second_argument_type derivative_order) const
 {
     switch(derivative_order)
@@ -910,18 +1110,18 @@ BSpline<5, T>::exec(first_argument_type x, second_argument_type derivative_order
             return x < 0.0 ?
                      x < -2.0 ?
                        x < -3.0 ?
-                         0.0 
-                       : 1.0 
+                         0.0
+                       : 1.0
                      : x < -1.0 ?
-                         -5.0    
-                       : 10.0 
+                         -5.0
+                       : 10.0
                    : x < 2.0 ?
                        x < 1.0 ?
-                         -10.0 
-                       : 5.0 
+                         -10.0
+                       : 5.0
                      : x < 3.0 ?
-                         -1.0 
-                       : 0.0; 
+                         -1.0
+                       : 0.0;
         }
         default:
             return 0.0;
@@ -941,21 +1141,21 @@ typedef BSpline<5, double> QuinticBSplineKernel;
 /** Interpolating 3-rd order splines.
 
     Implements the Catmull/Rom cardinal function
-    
+
     \f[ f(x) = \left\{ \begin{array}{ll}
                                   \frac{3}{2}x^3 - \frac{5}{2}x^2 + 1 & |x| \leq 1 \\
                                   -\frac{1}{2}x^3 + \frac{5}{2}x^2 -4x + 2 & |x| \leq 2 \\
                                   0 & \mbox{otherwise}
                         \end{array}\right.
     \f]
-    
-    It can be used as a functor, and as a kernel for 
+
+    It can be used as a functor, and as a kernel for
     \ref resamplingConvolveImage() to create a differentiable interpolant
-    of an image. However, it should be noted that a twice differentiable 
+    of an image. However, it should be noted that a twice differentiable
     interpolant can be created with only slightly more effort by recursive
     prefiltering followed by convolution with a 3rd order B-spline.
 
-    <b>\#include</b> "<a href="splines_8hxx-source.html">vigra/splines.hxx</a>"<br>
+    <b>\#include</b> \<<a href="splines_8hxx-source.html">vigra/splines.hxx</a>\><br>
     Namespace: vigra
 */
 template <class T = double>
@@ -978,7 +1178,7 @@ public:
         /** function (functor) call
         */
     result_type operator()(argument_type x) const;
-    
+
         /** index operator -- same as operator()
         */
     T operator[] (T x) const
@@ -989,7 +1189,7 @@ public:
         */
     int radius() const
         {return 2;}
-        
+
         /** Derivative order of the function: always 0.
         */
     unsigned int derivativeOrder() const
@@ -999,7 +1199,7 @@ public:
             (array has zero length, since prefiltering is not necessary).
         */
     ArrayVector<double> const & prefilterCoefficients() const
-    { 
+    {
         static ArrayVector<double> b;
         return b;
     }
@@ -1007,7 +1207,7 @@ public:
 
 
 template <class T>
-typename CatmullRomSpline<T>::result_type 
+typename CatmullRomSpline<T>::result_type
 CatmullRomSpline<T>::operator()(argument_type x) const
 {
     x = VIGRA_CSTD::fabs(x);

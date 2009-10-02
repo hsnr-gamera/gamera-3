@@ -4,12 +4,11 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -47,7 +46,6 @@
 #include "separableconvolution.hxx"
 #include "resampling_convolution.hxx"
 #include "splines.hxx"
-#include "basicgeometry.hxx"
 
 namespace vigra {
 
@@ -63,7 +61,7 @@ namespace vigra {
     (maria@isy.liu.se) in the context of tomographic reconstruction. It provides a fast
     transition between the pass- and stop-bands and minimal ripple outside the transition
     region. Both properties are important for this application and can be tuned by the parameters
-    <i>m</i> and </i>h</i> (with defaults 3 and 0.5). The function is defined by
+    <i>m</i> and <i>h</i> (with defaults 3 and 0.5). The function is defined by
 
     \f[ f_{m,h}(x) = \left\{ \begin{array}{ll}
                                    \frac{1}{2m}\sin(\pi x)\cot(\pi x / (2 m))(h + (1-h)\cos(\pi x/m)) & |x| \leq m \\
@@ -75,7 +73,7 @@ namespace vigra {
     \ref resamplingConvolveImage() to create a differentiable interpolant
     of an image.
 
-    <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
     Namespace: vigra
 
     \ingroup MathFunctions
@@ -146,11 +144,11 @@ class CoscotFunction
 /** \addtogroup GeometricTransformations Geometric Transformations
     Zoom up and down by repeating pixels, or using various interpolation schemes.
 
-    See also: \ref resamplingConvolveImage(), \ref resampleImage()
+    See also: \ref resamplingConvolveImage(), \ref resampleImage(), \ref resizeMultiArraySplineInterpolation()
 
-    <b>\#include</b> "<a href="stdimagefunctions_8hxx-source.html">vigra/stdimagefunctions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="stdimagefunctions_8hxx-source.html">vigra/stdimagefunctions.hxx</a>\><br>
     <b>or</b><br>
-    <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
 */
 //@{
 
@@ -169,31 +167,18 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     int wold = iend - i1;
     int wnew = idend - id;
 
-    if((wold <= 1) || (wnew <= 1)) return; // oder error ?
-
-    ad.set(as(i1), id);
-    ++id;
-
-    // this looks suspicious and makes the function useless
-    // use resampleImage instead!
-    // fixed with respect to VIGRA main branch
-    //--iend, --idend;          // changed
-    //ad.set(as(iend), idend);  // changed
-
-    //double dx = (double)(wold - 1) / (wnew - 1);  // changed
-    double dx = (double)wold / wnew;  // changed
-    double x = dx;
-
+    if(wnew == 1)
+    {
+        ad.set(as(i1), id);
+        return;
+    }
+    
+    double dx = (double)(wold - 1) / (wnew - 1);
+    double x = 0.5;
     for(; id != idend; ++id, x += dx)
     {
-    if(x >= 1.0)
-    {
-        int xx = (int)x;
-        i1 += xx;
-        x -= (double)xx;
-    }
-
-    ad.set(as(i1), id);
+        int ix = (int)x;
+        ad.set(as(i1, ix), id);
     }
 }
 
@@ -221,30 +206,30 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor>
+                  class DestImageIterator, class DestAccessor>
         void
         resizeImageNoInterpolation(
               SrcImageIterator is, SrcImageIterator iend, SrcAccessor sa,
-          DestImageIterator id, DestImageIterator idend, DestAccessor da)
+              DestImageIterator id, DestImageIterator idend, DestAccessor da)
     }
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor>
+                  class DestImageIterator, class DestAccessor>
         void
         resizeImageNoInterpolation(
               triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
-          triple<DestImageIterator, DestImageIterator, DestAccessor> dest)
+              triple<DestImageIterator, DestImageIterator, DestAccessor> dest)
     }
     \endcode
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -277,6 +262,8 @@ resizeLineNoInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void resizeImageNoInterpolation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -352,6 +339,7 @@ resizeLineLinearInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
 
     typedef
         NumericTraits<typename DestAccessor::value_type> DestTraits;
+    typedef typename DestTraits::RealPromote RealPromote;
 
     ad.set(DestTraits::fromRealPromote(as(i1)), id);
     ++id;
@@ -372,7 +360,7 @@ resizeLineLinearInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
         }
         double x1 = 1.0 - x;
 
-        ad.set(DestTraits::fromRealPromote(x1 * as(i1) + x * as(i1, 1)), id);
+        ad.set(DestTraits::fromRealPromote(RealPromote(x1 * as(i1) + x * as(i1, 1))), id);
     }
 }
 
@@ -403,30 +391,30 @@ resizeLineLinearInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor>
+                  class DestImageIterator, class DestAccessor>
         void
         resizeImageLinearInterpolation(
               SrcImageIterator is, SrcImageIterator iend, SrcAccessor sa,
-          DestImageIterator id, DestImageIterator idend, DestAccessor da)
+              DestImageIterator id, DestImageIterator idend, DestAccessor da)
     }
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor>
+                  class DestImageIterator, class DestAccessor>
         void
         resizeImageLinearInterpolation(
               triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
-          triple<DestImageIterator, DestImageIterator, DestAccessor> dest)
+              triple<DestImageIterator, DestImageIterator, DestAccessor> dest)
     }
     \endcode
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -469,6 +457,8 @@ resizeLineLinearInterpolation(SrcIterator i1, SrcIterator iend, SrcAccessor as,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void resizeImageLinearInterpolation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -572,8 +562,8 @@ resizeImageLinearInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
     pp. 834-848 (part II), 1993.
 
     to obtain optimal interpolation quality and speed. You may pass the funcion
-    a spline of arbitrary order (e.g. <TT>BSpline&lt;ORDER, double&gt;</tt> or
-    <TT>CatmullRomSpline&lt;double&gt;</tt>). The default is a third order spline
+    a spline of arbitrary order (e.g. <TT>BSpline<ORDER, double></tt> or
+    <TT>CatmullRomSpline<double></tt>). The default is a third order spline
     which gives a twice continuously differentiable interpolant.
     The implementation ensures that image values are interpolated rather
     than smoothed by first calling a recursive (sharpening) prefilter as
@@ -597,23 +587,23 @@ resizeImageLinearInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor,
-              class SPLINE>
+                  class DestImageIterator, class DestAccessor,
+                  class SPLINE>
         void
         resizeImageSplineInterpolation(
               SrcImageIterator is, SrcImageIterator iend, SrcAccessor sa,
-          DestImageIterator id, DestImageIterator idend, DestAccessor da,
-          SPLINE spline = BSpline<3, double>())
+              DestImageIterator id, DestImageIterator idend, DestAccessor da,
+              SPLINE spline = BSpline<3, double>())
     }
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
-              class DestImageIterator, class DestAccessor,
-              class SPLINE>
+                  class DestImageIterator, class DestAccessor,
+                  class SPLINE>
         void
         resizeImageSplineInterpolation(
               triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
@@ -624,7 +614,7 @@ resizeImageLinearInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -671,6 +661,8 @@ resizeImageLinearInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void resizeImageSplineInterpolation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class SPLINE>
@@ -881,7 +873,7 @@ resizeImageSplineInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -893,13 +885,15 @@ resizeImageSplineInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src
     \endcode
 
 
-    <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
     Namespace: vigra
 
 */
+doxygen_overloaded_function(template <...> void resizeImageCatmullRomInterpolation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
-void
+inline void
 resizeImageCatmullRomInterpolation(SrcIterator src_iter, SrcIterator src_iter_end, SrcAccessor src_acc,
                       DestIterator dest_iter, DestIterator dest_iter_end, DestAccessor dest_acc)
 {
@@ -932,7 +926,7 @@ resizeImageCatmullRomInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor>
     The interpolated function has two continuous derivatives.
     (See \ref resizeImageSplineInterpolation() for more documentation)
 
-    <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
     Namespace: vigra
 
 */
@@ -985,7 +979,7 @@ resizeImageCubicInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -997,10 +991,12 @@ resizeImageCubicInterpolation(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 
-    <b>\#include</b> "<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="resizeimage_8hxx-source.html">vigra/resizeimage.hxx</a>\><br>
     Namespace: vigra
 
 */
+doxygen_overloaded_function(template <...> void resizeImageCoscotInterpolation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void

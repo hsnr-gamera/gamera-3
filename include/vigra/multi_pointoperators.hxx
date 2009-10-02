@@ -1,16 +1,16 @@
 //-- -*- c++ -*-
 /************************************************************************/
 /*                                                                      */
-/*               Copyright 2003 by Ullrich Koethe                       */
+/*      Copyright 2003 by Ullrich Koethe, B. Seppke, F. Heinrich        */
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -59,7 +59,7 @@ namespace vigra
     specified by a pair: an iterator referring to the first point of the array 
     and a shape object specifying the size of the (rectangular) ROI.
 
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\>
 */
 //@{
 
@@ -72,7 +72,7 @@ namespace vigra
 template <class Iterator, class Shape, class Accessor, 
           class VALUETYPE>
 inline void
-initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  VALUETYPE v, MetaInt<0>)
+initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  VALUETYPE const & v, MetaInt<0>)
 {
     initLine(s, s + shape[0], a, v);
 }
@@ -81,10 +81,10 @@ template <class Iterator, class Shape, class Accessor,
           class VALUETYPE, int N>
 void
 initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  
-                   VALUETYPE v, MetaInt<N>)
+                   VALUETYPE const & v, MetaInt<N>)
 {
     Iterator send = s + shape[N];
-    for(; s != send; ++s)
+    for(; s < send; ++s)
     {
         initMultiArrayImpl(s.begin(), shape, a, v, MetaInt<N-1>());
     }
@@ -99,6 +99,12 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     the range simultaneously in all dimensions (this is a necessary consequence
     of the \ref vigra::MultiIterator design).
     
+    The initial value can either be a constant of appropriate type (compatible with 
+    the destination's value_type), or a functor with compatible result_type. These two 
+    cases are automatically distinguished when <tt>FunctorTraits<FUNCTOR>::isInitializer</tt>
+    yields <tt>VigraTrueType</tt>. Since the functor is passed by <tt>const</tt> reference, its 
+    <tt>operator()</tt> must be const, and ist internal state may need to be <tt>mutable</tt>.
+    
     <b> Declarations:</b>
     
     pass arguments explicitly:
@@ -106,7 +112,7 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     namespace vigra {
         template <class Iterator, class Shape, class Accessor, class VALUETYPE>
         void
-        initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE v);
+        initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE const & v);
 
 
         template <class Iterator, class Shape, class Accessor, class FUNCTOR>
@@ -115,12 +121,12 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class Iterator, class Shape, class Accessor, class VALUETYPE>
         void
-        initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE v);
+        initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE const & v);
 
 
         template <class Iterator, class Shape, class Accessor, class FUNCTOR>
@@ -131,7 +137,7 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -158,7 +164,7 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     or a functor that is called (without argument) at every location,
     and the result is written into the current element. Internally,
     functors are recognized by the meta function 
-    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> yielding <tt>VigraTrueType</tt>.
+    <tt>FunctorTraits<FUNCTOR>::isInitializer</tt> yielding <tt>VigraTrueType</tt>.
     Make sure that your functor correctly defines <tt>FunctorTraits</tt> because
     otherwise the code will not compile.
     
@@ -174,9 +180,11 @@ initMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,
     
     
 */
+doxygen_overloaded_function(template <...> void initMultiArray)
+
 template <class Iterator, class Shape, class Accessor, class VALUETYPE>
 inline void
-initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE v)
+initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE const & v)
 {
     initMultiArrayImpl(s, shape, a, v, MetaInt<Iterator::level>());
 }
@@ -184,11 +192,49 @@ initMultiArray(Iterator s, Shape const & shape, Accessor a,  VALUETYPE v)
 template <class Iterator, class Shape, class Accessor, class VALUETYPE>
 inline 
 void
-initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE v)
+initMultiArray(triple<Iterator, Shape, Accessor> const & s, VALUETYPE const & v)
 {
     initMultiArray(s.first, s.second, s.third, v);
 }
+
+/********************************************************/
+/*                                                      */
+/*                  initMultiArrayBorder                */
+/*                                                      */
+/********************************************************/
+
+/** \brief Write value to the specified border values in the array.
+
+*/template <class Iterator, class Diff_type, class Accessor, class VALUETYPE>
+inline void initMultiArrayBorder( Iterator upperleft, Diff_type shape, 
+                                  Accessor a,  int border_width, VALUETYPE v)
+{
+    Diff_type border(shape);
+    for(unsigned int dim=0; dim<shape.size(); dim++){
+        border[dim] = (border_width > shape[dim]) ? shape[dim] : border_width;
+    }
+
+    for(unsigned int dim=0; dim<shape.size(); dim++){
+        Diff_type  start(shape),
+                   offset(shape);
+        start = start-shape;
+        offset[dim]=border[dim];
+
+        initMultiArray(upperleft+start, offset, a, v);
+ 
+        start[dim]=shape[dim]-border[dim];
+        initMultiArray(upperleft+start, offset, a, v);
+    }
+}
     
+template <class Iterator, class Diff_type, class Accessor, class VALUETYPE>
+inline void initMultiArrayBorder( triple<Iterator, Diff_type, Accessor> multiArray, 
+                                  int border_width, VALUETYPE v)
+{
+    initMultiArrayBorder(multiArray.first, multiArray.second, multiArray.third, border_width, v);
+}
+
+
 /********************************************************/
 /*                                                      */
 /*                    copyMultiArray                    */
@@ -220,14 +266,14 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     DestIterator dend = d + dshape[N];
     if(sshape[N] == 1)
     {
-        for(; d != dend; ++d)
+        for(; d < dend; ++d)
         {
             copyMultiArrayImpl(s.begin(), sshape, src, d.begin(), dshape, dest, MetaInt<N-1>());
         }
     }
     else
     {
-        for(; d != dend; ++s, ++d)
+        for(; d < dend; ++s, ++d)
         {
             copyMultiArrayImpl(s.begin(), sshape, src, d.begin(), dshape, dest, MetaInt<N-1>());
         }
@@ -262,7 +308,7 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     
     <b> Declarations:</b>
     
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
     
     pass arguments explicitly:
@@ -285,7 +331,7 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -343,6 +389,8 @@ copyMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void copyMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor>
 inline void
@@ -405,7 +453,7 @@ transformMultiArrayReduceImpl(SrcIterator s, SrcShape const & sshape, SrcAccesso
                Functor const & ff, MetaInt<0>)
 {
     DestIterator dend = d + dshape[0];
-    for(; d != dend; ++s.template dim<0>(), ++d)
+    for(; d < dend; ++s.template dim<0>(), ++d)
     {
         Functor f = ff;
         inspectMultiArray(s, reduceShape, src, f);
@@ -423,7 +471,7 @@ transformMultiArrayReduceImpl(SrcIterator s, SrcShape const & sshape, SrcAccesso
                    Functor const & f, MetaInt<N>)
 {
     DestIterator dend = d + dshape[N];
-    for(; d != dend; ++s.template dim<N>(), ++d)
+    for(; d < dend; ++s.template dim<N>(), ++d)
     {
         transformMultiArrayReduceImpl(s, sshape, src, d.begin(), dshape, dest,
                                       reduceShape, f, MetaInt<N-1>());
@@ -482,7 +530,7 @@ transformMultiArrayExpandImpl(SrcIterator s, SrcShape const & sshape, SrcAccesso
     DestIterator dend = d + dshape[N];
     if(sshape[N] == 1)
     {
-        for(; d != dend; ++d)
+        for(; d < dend; ++d)
         {
             transformMultiArrayExpandImpl(s.begin(), sshape, src, d.begin(), dshape, dest,
                                           f, MetaInt<N-1>());
@@ -490,7 +538,7 @@ transformMultiArrayExpandImpl(SrcIterator s, SrcShape const & sshape, SrcAccesso
     }
     else
     {
-        for(; d != dend; ++s, ++d)
+        for(; d < dend; ++s, ++d)
         {
             transformMultiArrayExpandImpl(s.begin(), sshape, src, d.begin(), dshape, dest,
                                           f, MetaInt<N-1>());
@@ -561,7 +609,7 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     
     <b> Declarations:</b>
 
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
     
     pass arguments explicitly:
@@ -586,7 +634,7 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -689,8 +737,8 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     with one argument and no return vakue <tt>functor(arg)</tt>) and Initializer
     (i.e. support function call with no argument, but return value 
     <tt>res = functor()</tt>). Internally, such functors are recognized by the 
-    meta functions <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isUnaryAnalyser</tt> and
-    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> which must both yield 
+    meta functions <tt>FunctorTraits<FUNCTOR>::isUnaryAnalyser</tt> and
+    <tt>FunctorTraits<FUNCTOR>::isInitializer</tt> which must both yield 
     <tt>VigraTrueType</tt>. Make sure that your functor correctly defines 
     <tt>FunctorTraits</tt> because otherwise reduce mode will not work. In addition,
     the functor must be copy constructible in order to start each reduction
@@ -711,6 +759,8 @@ transformMultiArrayImpl(SrcIterator s, SrcShape const & sshape, SrcAccessor src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void transformMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor, 
           class Functor>
@@ -783,7 +833,7 @@ combineTwoMultiArraysReduceImpl(
                Functor const & ff, MetaInt<0>)
 {
     DestIterator dend = d + dshape[0];
-    for(; d != dend; ++s1.template dim<0>(), ++s2.template dim<0>(), ++d)
+    for(; d < dend; ++s1.template dim<0>(), ++s2.template dim<0>(), ++d)
     {
         Functor f = ff;
         inspectTwoMultiArrays(s1, reduceShape, src1, s2, src2, f);
@@ -804,7 +854,7 @@ combineTwoMultiArraysReduceImpl(
                Functor const & f, MetaInt<N>)
 {
     DestIterator dend = d + dshape[N];
-    for(; d != dend; ++s1.template dim<N>(), ++s2.template dim<N>(), ++d)
+    for(; d < dend; ++s1.template dim<N>(), ++s2.template dim<N>(), ++d)
     {
         combineTwoMultiArraysReduceImpl(s1, sshape, src1, s2, src2, 
                                         d.begin(), dshape, dest,
@@ -860,13 +910,13 @@ combineTwoMultiArraysExpandImpl(
     else if(sshape1[0] == 1)
     {
         typename SrcAccessor1::value_type sv1 = src1(s1);
-        for(; d != dend; ++d, ++s2)
+        for(; d < dend; ++d, ++s2)
             dest.set(f(sv1, src2(s2)), d);
     }
     else if(sshape2[0] == 1)
     {
         typename SrcAccessor2::value_type sv2 = src2(s2);
-        for(; d != dend; ++d, ++s1)
+        for(; d < dend; ++d, ++s1)
             dest.set(f(src1(s1), sv2), d);
     }
     else
@@ -893,7 +943,7 @@ combineTwoMultiArraysExpandImpl(
     int s2inc = sshape2[N] == 1
                     ? 0 
                     : 1;
-    for(; d != dend; ++d, s1 += s1inc, s2 += s2inc)
+    for(; d < dend; ++d, s1 += s1inc, s2 += s2inc)
     {
         combineTwoMultiArraysExpandImpl(s1.begin(), sshape1, src1, 
                                         s2.begin(), sshape2, src2, 
@@ -974,7 +1024,7 @@ combineTwoMultiArraysImpl(
     
     <b> Declarations:</b>
     
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
     
     pass arguments explicitly:
@@ -1003,7 +1053,7 @@ combineTwoMultiArraysImpl(
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator1, class SrcShape, class SrcAccessor1,
@@ -1131,8 +1181,8 @@ combineTwoMultiArraysImpl(
     with two arguments and no return vakue <tt>functor(arg1, arg2)</tt>) and Initializer
     (i.e. support function call with no argument, but return value 
     <tt>res = functor()</tt>). Internally, such functors are recognized by the 
-    meta functions <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isBinaryAnalyser</tt> and
-    <tt>FunctorTraits&lt;FUNCTOR&gt;::</tt><tt>isInitializer</tt> which must both yield 
+    meta functions <tt>FunctorTraits<FUNCTOR>::isBinaryAnalyser</tt> and
+    <tt>FunctorTraits<FUNCTOR>::isInitializer</tt> which must both yield 
     <tt>VigraTrueType</tt>. Make sure that your functor correctly defines 
     <tt>FunctorTraits</tt> because otherwise reduce mode will not work. In addition,
     the functor must be copy constructible in order to start each reduction
@@ -1154,6 +1204,8 @@ combineTwoMultiArraysImpl(
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void combineTwoMultiArrays)
+
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
           class SrcIterator2, class SrcAccessor2,
           class DestIterator, class DestAccessor, 
@@ -1252,7 +1304,7 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
                    Functor const & f, MetaInt<N>)
 {
     SrcIterator1 s1end = s1 + shape[N];
-    for(; s1 != s1end; ++s1, ++s2, ++s3, ++d)
+    for(; s1 < s1end; ++s1, ++s2, ++s3, ++d)
     {
         combineThreeMultiArraysImpl(s1.begin(), shape, src1, 
                                   s2.begin(), src2, s3.begin(), src3, d.begin(), dest, 
@@ -1286,7 +1338,7 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator1, class SrcShape, class SrcAccessor1,
@@ -1304,7 +1356,7 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
     
     <b> Usage:</b>
     
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -1326,6 +1378,8 @@ combineThreeMultiArraysImpl(SrcIterator1 s1, SrcShape const & shape, SrcAccessor
     
     \endcode
 */
+doxygen_overloaded_function(template <...> void combineThreeMultiArrays)
+
 template <class SrcIterator1, class SrcShape, class SrcAccessor1,
           class SrcIterator2, class SrcAccessor2,
           class SrcIterator3, class SrcAccessor3,
@@ -1376,7 +1430,7 @@ void
 inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f, MetaInt<N>)
 {
     Iterator send = s + shape[N];
-    for(; s != send; ++s)
+    for(; s < send; ++s)
     {
         inspectMultiArrayImpl(s.begin(), shape, a, f, MetaInt<N-1>());
     }
@@ -1404,7 +1458,7 @@ inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f,
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class Iterator, class Shape, class Accessor, class Functor>
@@ -1415,7 +1469,7 @@ inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -1443,6 +1497,8 @@ inspectMultiArrayImpl(Iterator s, Shape const & shape, Accessor a,  Functor & f,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectMultiArray)
+
 template <class Iterator, class Shape, class Accessor, class Functor>
 inline void
 inspectMultiArray(Iterator s, Shape const & shape, Accessor a,  Functor & f)
@@ -1483,7 +1539,7 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
                           Functor & f, MetaInt<N>)
 {
     Iterator1 s1end = s1 + shape[N];
-    for(; s1 != s1end; ++s1, ++s2)
+    for(; s1 < s1end; ++s1, ++s2)
     {
         inspectTwoMultiArraysImpl(s1.begin(), shape, a1, 
                                   s2.begin(), a2, f, MetaInt<N-1>());
@@ -1516,7 +1572,7 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class Iterator1, class Shape1, class Accessor1, 
@@ -1530,7 +1586,7 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>"<br>
+    <b>\#include</b> \<<a href="multi__pointoperators_8hxx-source.html">vigra/multi_pointoperators.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -1557,6 +1613,8 @@ inspectTwoMultiArraysImpl(Iterator1 s1, Shape const & shape, Accessor1 a1,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectTwoMultiArrays)
+
 template <class Iterator1, class Shape, class Accessor1, 
           class Iterator2, class Accessor2, 
           class Functor>
@@ -1581,7 +1639,7 @@ inspectTwoMultiArrays(triple<Iterator1, Shape, Accessor1> const & s1,
     
 //@}
 
-}	//-- namespace vigra
+}  //-- namespace vigra
 
 
-#endif	//-- VIGRA_MULTI_POINTOPERATORS_H
+#endif  //-- VIGRA_MULTI_POINTOPERATORS_H

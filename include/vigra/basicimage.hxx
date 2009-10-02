@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -110,7 +110,7 @@ class LineBasedColumnIteratorPolicy
 /** Implementation of the standard image iterator for \ref vigra::BasicImage.
     See \ref vigra::ImageIterator for documentation.
 
-    <b>\#include</b> "<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>"
+    <b>\#include</b> \<<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>\>
     Namespace: vigra
 */
 template <class IMAGEITERATOR, class PIXELTYPE,
@@ -246,7 +246,7 @@ class BasicImageIteratorBase
 /** Implementation of the standard image iterator for \ref vigra::BasicImage.
     See \ref vigra::ImageIterator for documentation.
 
-    <b>\#include</b> "<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>"
+    <b>\#include</b> \<<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>\>
     Namespace: vigra
 */
 template <class PIXELTYPE, class ITERATOR>
@@ -278,7 +278,7 @@ class BasicImageIterator
 /** Implementation of the standard const image iterator for \ref vigra::BasicImage.
     See \ref vigra::ConstImageIterator for documentation.
 
-    <b>\#include</b> "<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>"
+    <b>\#include</b> \<<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>\>
     Namespace: vigra
 */
 template <class PIXELTYPE, class ITERATOR>
@@ -457,7 +457,7 @@ VIGRA_DEFINE_ITERATORTRAITS(VIGRA_PIXELTYPE)
     A customized memory allocator can be specified as a templated argument
     and passed in the constructor.
 
-    <b>\#include</b> "<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>"
+    <b>\#include</b> \<<a href="basicimage_8hxx-source.html">vigra/basicimage.hxx</a>\>
 
     Namespace: vigra
 */
@@ -1080,7 +1080,7 @@ BasicImage<PIXELTYPE, Alloc>::resize(int width, int height, value_type const & d
         {
             if (width*height != width_*height_) // different sizes, must reallocate
             {
-                newdata = allocator_.allocate(width*height);
+                newdata = allocator_.allocate(typename Alloc::size_type(width*height));
                 std::uninitialized_fill_n(newdata, width*height, d);
                 newlines = initLineStartArray(newdata, width, height);
                 deallocate();
@@ -1090,7 +1090,7 @@ BasicImage<PIXELTYPE, Alloc>::resize(int width, int height, value_type const & d
                 newdata = data_;
                 std::fill_n(newdata, width*height, d);
                 newlines = initLineStartArray(newdata, width, height);
-                pallocator_.deallocate(lines_, height_);
+                pallocator_.deallocate(lines_, typename Alloc::size_type(height_));
             }
         }
         else
@@ -1123,7 +1123,7 @@ BasicImage<PIXELTYPE, Alloc>::resizeCopy(int width, int height, const_pointer da
         {
             if (newsize != width_*height_) // different sizes, must reallocate
             {
-                newdata = allocator_.allocate(newsize);
+                newdata = allocator_.allocate(typename Alloc::size_type(newsize));
                 std::uninitialized_copy(data, data + newsize, newdata);
                 newlines = initLineStartArray(newdata, width, height);
                 deallocate();
@@ -1133,7 +1133,7 @@ BasicImage<PIXELTYPE, Alloc>::resizeCopy(int width, int height, const_pointer da
                 newdata = data_;
                 std::copy(data, data + newsize, newdata);
                 newlines = initLineStartArray(newdata, width, height);
-                pallocator_.deallocate(lines_, height_);
+                pallocator_.deallocate(lines_, typename Alloc::size_type(height_));
             }
         }
         else
@@ -1176,8 +1176,8 @@ BasicImage<PIXELTYPE, Alloc>::deallocate()
 
         for(; i != iend; ++i)   (*i).~PIXELTYPE();
 
-        allocator_.deallocate(data_, width()*height());
-        pallocator_.deallocate(lines_, height_);
+        allocator_.deallocate(data_, typename Alloc::size_type(width()*height()));
+        pallocator_.deallocate(lines_, typename Alloc::size_type(height_));
     }
 }
 
@@ -1185,7 +1185,7 @@ template <class PIXELTYPE, class Alloc>
 PIXELTYPE **
 BasicImage<PIXELTYPE, Alloc>::initLineStartArray(value_type * data, int width, int height)
 {
-    value_type ** lines = pallocator_.allocate(height);
+    value_type ** lines = pallocator_.allocate(typename Alloc::size_type(height));
     for(int y=0; y<height; ++y)
          lines[y] = data + y*width;
     return lines;

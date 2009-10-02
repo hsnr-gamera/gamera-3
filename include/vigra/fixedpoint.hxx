@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -185,7 +185,7 @@ struct FPMulImplementation<true>
     
     The template wraps an <tt>int</tt> and uses <tt>IntBits</tt> to
     represent the integral part of a number, and <tt>FractionalBits</tt>
-    for the fractional part, where <tt>IntBits + FractionalBits &lt; 32</tt>.
+    for the fractional part, where <tt>IntBits + FractionalBits < 32</tt>.
     (The 32rd bit is reserved because FixedPoint is a signed type).
     These numbers will be automatically allocated in an intelligent way
     in the result of an arithmetic operation. For example, when two 
@@ -212,7 +212,7 @@ struct FPMulImplementation<true>
     <li> \ref FixedPointTraits
     </ul>
 
-    <b>\#include</b> "<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>"<br>
+    <b>\#include</b> \<<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>\><br>
     Namespace: vigra
 */
 template <unsigned IntBits, unsigned FractionalBits>
@@ -465,7 +465,7 @@ struct FixedPointCast<double>
 
 /** \addtogroup FixedPointOperations Functions for FixedPoint
 
-    \brief     <b>\#include</b> "<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>"<br>
+    \brief     <b>\#include</b> \<<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>\><br>
 
     These functions fulfill the requirements of an \ref AlgebraicRing.
 
@@ -758,7 +758,7 @@ round(FixedPoint<IntBits, FracBits> v)
     };
     \endcode
 
-    <b>\#include</b> "<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>"<br>
+    <b>\#include</b> \<<a href="fixedpoint_8hxx-source.html">vigra/fixedpoint.hxx</a>\><br>
     Namespace: vigra
 
 */

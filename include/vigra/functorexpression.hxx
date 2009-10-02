@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -44,7 +44,7 @@
     Simple automatic functor creation by means of expression templates
     (also known as a "lambda library").    
 
-    <b>\#include</b> "<a href="functorexpression_8hxx-source.html">vigra/functorexpression.hxx</a>"<br>
+    <b>\#include</b> \<<a href="functorexpression_8hxx-source.html">vigra/functorexpression.hxx</a>\><br>
     Namespace: vigra::functor
     
     <b> Note:</b> This functionality is not available under Microsoft Visual C++, 
@@ -411,6 +411,9 @@ struct UnaryFunctor
   
   protected:  
     EXPR expr_;
+  
+  private:
+    UnaryFunctor & operator=(UnaryFunctor const &); // not implemented
 };
 
 template <class Expr>
@@ -470,6 +473,9 @@ struct UnaryFunctor<ArgumentFunctor1>
     {
         return v1;
     }
+  
+  private:
+    UnaryFunctor & operator=(UnaryFunctor const &); // not implemented
 };
 
 template <>
@@ -524,6 +530,9 @@ struct UnaryFunctor<ArgumentFunctor2>
     {
         return v2;
     }
+  
+  private:
+    UnaryFunctor & operator=(UnaryFunctor const &); // not implemented
 };
 
 template <>
@@ -572,6 +581,9 @@ struct UnaryFunctor<ArgumentFunctor3>
     {
         return v3;
     }
+  
+  private:
+    UnaryFunctor & operator=(UnaryFunctor const &); // not implemented
 };
 
 template <>
@@ -645,6 +657,9 @@ struct ParameterFunctor
     
   protected:
     T value_;
+  
+  private:
+    ParameterFunctor & operator=(ParameterFunctor const &); // not implemented
 };
 
 template <class T>
@@ -672,7 +687,7 @@ struct ResultTraits3<ParameterFunctor<T>, T1, T2, T3>
 };
 
 template <class T>
-UnaryFunctor<ParameterFunctor<T> >
+inline UnaryFunctor<ParameterFunctor<T> >
 Param(T const & v)
 {
     ParameterFunctor<T> fv(v);
@@ -719,6 +734,9 @@ class UnaryAnalyser
   protected:
   
     EXPR expr_;
+  
+  private:
+    UnaryAnalyser & operator=(UnaryAnalyser const &); // not implemented
 };
 
 /************************************************************/
@@ -774,6 +792,8 @@ struct UnaryFunctor<VarFunctor<T> >;
       private: \
         V & value_; \
         UnaryFunctor<EXPR> expr_; \
+        \
+        AssignmentFunctor_##name & operator=(AssignmentFunctor_##name const &);\
     }; 
 
 /************************************************************/
@@ -865,6 +885,9 @@ struct UnaryFunctor<VarFunctor<T> >
     }
     
     T & value_;
+  
+  private:
+    UnaryFunctor & operator=(UnaryFunctor const &); // not implemented
 };
 
 template <class T>
@@ -892,7 +915,7 @@ struct ResultTraits3<UnaryFunctor<VarFunctor<T> >, T1, T2, T3>
 };
 
 template <class T>
-UnaryFunctor<VarFunctor<T> >
+inline UnaryFunctor<VarFunctor<T> >
 Var(T & v)
 {
     return UnaryFunctor<VarFunctor<T> >(v);
@@ -940,6 +963,9 @@ struct IfThenFunctor
   
     EXPR1 expr1_;
     EXPR2 expr2_;
+  
+  private:
+    IfThenFunctor & operator=(IfThenFunctor const &); // not implemented
 };
 
 template <class EXPR1, class EXPR2>
@@ -1058,6 +1084,8 @@ struct IfThenElseFunctor
     EXPR1 expr1_;
     EXPR2 expr2_;
     EXPR3 expr3_;
+  
+    IfThenElseFunctor & operator=(IfThenElseFunctor const &); // not implemented
 };
 
 template <class EXPR1, class EXPR2, class EXPR3>
@@ -1152,10 +1180,13 @@ ifThenElse(UnaryFunctor<EXPR1> const & e1,
       protected: \
        \
         EXPR expr_; \
+       \
+      private: \
+        Functor_##function & operator=(Functor_##function const &); \
     }; \
      \
     template <class EXPR> \
-    UnaryFunctor<Functor_##function<UnaryFunctor<EXPR> > > \
+    inline UnaryFunctor<Functor_##function<UnaryFunctor<EXPR> > > \
     function(UnaryFunctor<EXPR> const & e) \
     { \
         Functor_##function<UnaryFunctor<EXPR> > p(e); \
@@ -1252,10 +1283,13 @@ MAKE_FUNCTOR_UNARY_FUNCTION(abs, vigra)
       protected: \
        \
         EXPR expr_; \
+       \
+      private: \
+        Functor_##name & operator=(Functor_##name const &);\
     }; \
      \
     template <class EXPR> \
-    UnaryFunctor<Functor_##name<UnaryFunctor<EXPR> > > \
+    inline UnaryFunctor<Functor_##name<UnaryFunctor<EXPR> > > \
     operator op(UnaryFunctor<EXPR> const & e) \
     { \
         Functor_##name<UnaryFunctor<EXPR> > p(e); \
@@ -1356,10 +1390,12 @@ MAKE_FUNCTOR_UNARY_OPERATOR(bitNegate, ~)
          \
         EXPR1 expr1_; \
         EXPR2 expr2_; \
+        \
+        Functor_##function & operator=(Functor_##function const &); \
     }; \
      \
     template <class EXPR1, class EXPR2> \
-    UnaryFunctor<Functor_##function<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
+    inline UnaryFunctor<Functor_##function<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
     function(UnaryFunctor<EXPR1> const & e1, UnaryFunctor<EXPR2> const & e2) \
     { \
         Functor_##function<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > p(e1, e2); \
@@ -1467,10 +1503,12 @@ MAKE_FUNCTOR_BINARY_FUNCTION(fmod)
          \
         EXPR1 expr1_; \
         EXPR2 expr2_; \
+        \
+        Functor_##name & operator=(Functor_##name const &); \
     }; \
      \
     template <class EXPR1, class EXPR2> \
-    UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
+    inline UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
     name(UnaryFunctor<EXPR1> const & e1, UnaryFunctor<EXPR2> const & e2) \
     { \
         Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > p(e1, e2); \
@@ -1563,10 +1601,12 @@ MAKE_FUNCTOR_MINMAX(max, >)
          \
         EXPR1 expr1_; \
         EXPR2 expr2_; \
+        \
+        Functor_##name & operator=(Functor_##name const &); \
     }; \
      \
     template <class EXPR1, class EXPR2> \
-    UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
+    inline UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
     operator op(UnaryFunctor<EXPR1> const & e1, UnaryFunctor<EXPR2> const & e2) \
     { \
         Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > p(e1, e2); \
@@ -1651,10 +1691,12 @@ MAKE_FUNCTOR_BINARY_OPERATOR(bitXor, ^)
          \
         EXPR1 expr1_; \
         EXPR2 expr2_; \
+        \
+        Functor_##name & operator=(Functor_##name const &); \
     }; \
      \
     template <class EXPR1, class EXPR2> \
-    UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
+    inline UnaryFunctor<Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > > \
     operator op(UnaryFunctor<EXPR1> const & e1, UnaryFunctor<EXPR2> const & e2) \
     { \
         Functor_##name<UnaryFunctor<EXPR1>, UnaryFunctor<EXPR2> > p(e1, e2); \
@@ -1714,6 +1756,9 @@ struct UnaryFctPtrFunctor
   
     EXPR expr_;
     RES (*f_)(ARG);
+  
+  private:
+    UnaryFctPtrFunctor & operator=(UnaryFctPtrFunctor const &); // not implemented
 };
 
 template <class EXPR, class RES, class ARG>
@@ -1741,7 +1786,7 @@ struct ResultTraits3<UnaryFctPtrFunctor<EXPR, RES, ARG>, T1, T2, T3>
 };
 
 template <class EXPR, class RES, class ARG>
-UnaryFunctor<UnaryFctPtrFunctor<UnaryFunctor<EXPR>, RES, ARG> >
+inline UnaryFunctor<UnaryFctPtrFunctor<UnaryFunctor<EXPR>, RES, ARG> >
 applyFct(RES (*f)(ARG), UnaryFunctor<EXPR> const & e)
 {
     UnaryFctPtrFunctor<UnaryFunctor<EXPR>, RES, ARG> p(e, f);
@@ -1784,11 +1829,15 @@ struct BinaryFctPtrFunctor
     {
         return f_(expr1_(v1, v2, v3), expr2_(v1, v2, v3));
     }
+    
   protected:
   
     EXPR1 expr1_;
     EXPR2 expr2_;
     RES (*f_)(ARG1, ARG2);
+  
+  private:
+    BinaryFctPtrFunctor & operator=(BinaryFctPtrFunctor const &); // not implemented
 };
 
 template <class EXPR1, class EXPR2, class RES, class ARG1, class ARG2>
@@ -1819,7 +1868,7 @@ struct ResultTraits3<BinaryFctPtrFunctor<EXPR1, EXPR2, RES, ARG1, ARG2>, T1, T2,
 };
 
 template <class EXPR1, class EXPR2, class RES, class ARG1, class ARG2>
-UnaryFunctor<BinaryFctPtrFunctor<UnaryFunctor<EXPR1>, 
+inline UnaryFunctor<BinaryFctPtrFunctor<UnaryFunctor<EXPR1>, 
                                  UnaryFunctor<EXPR2>, 
                                  RES, ARG1, ARG2> >
 applyFct(RES (*f)(ARG1, ARG2), UnaryFunctor<EXPR1> const & e1, 
@@ -1881,6 +1930,9 @@ struct CommaFunctor
   
     EXPR1 expr1_;
     EXPR2 expr2_;
+  
+  private:
+    CommaFunctor & operator=(CommaFunctor const &); // not implemented
 };
 
 template <class Expr1, class Expr2>
@@ -1908,7 +1960,7 @@ struct ResultTraits3<CommaFunctor<Expr1, Expr2>, T1, T2, T3>
 };
 
 template <class EXPR1, class EXPR2>
-UnaryFunctor<CommaFunctor<UnaryAnalyser<EXPR1>, 
+inline UnaryFunctor<CommaFunctor<UnaryAnalyser<EXPR1>, 
                             UnaryFunctor<EXPR2> > >
 operator,(UnaryAnalyser<EXPR1> const & e1, 
           UnaryFunctor<EXPR2> const & e2)
@@ -1959,10 +2011,13 @@ struct CommaAnalyser
   
     EXPR1 expr1_;
     EXPR2 expr2_;
+  
+  private:
+    CommaAnalyser & operator=(CommaAnalyser const &); // not implemented
 };
 
 template <class EXPR1, class EXPR2>
-UnaryAnalyser<CommaAnalyser<UnaryAnalyser<EXPR1>, 
+inline UnaryAnalyser<CommaAnalyser<UnaryAnalyser<EXPR1>, 
                             UnaryAnalyser<EXPR2> > >
 operator,(UnaryAnalyser<EXPR1> const & e1, 
           UnaryAnalyser<EXPR2> const & e2)

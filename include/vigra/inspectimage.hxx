@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -31,13 +31,15 @@
 /*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
 /*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
 /*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
-/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
 /*                                                                      */
 /************************************************************************/
 
 
 #ifndef VIGRA_INSPECTIMAGE_HXX
 #define VIGRA_INSPECTIMAGE_HXX
+
+#pragma warning (disable: 4350)
 
 #include <vector>
 #include <algorithm>
@@ -139,7 +141,7 @@ inspectTwoLinesIf(SrcIterator1 s1,
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor, class Functor>
@@ -151,7 +153,7 @@ inspectTwoLinesIf(SrcIterator1 s1,
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -179,6 +181,8 @@ inspectTwoLinesIf(SrcIterator1 s1,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectImage)
+
 template <class ImageIterator, class Accessor, class Functor>
 void
 inspectImage(ImageIterator upperleft, ImageIterator lowerright,
@@ -257,7 +261,7 @@ inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor,
@@ -271,7 +275,7 @@ inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -305,6 +309,8 @@ inspectImage(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectImageIf)
+
 template <class ImageIterator, class Accessor,
       class MaskImageIterator, class MaskAccessor, class Functor>
 void
@@ -333,6 +339,29 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
 {
     inspectImageIf(img.first, img.second, img.third,
                    mask.first, mask.second, f);
+}
+
+template <class ImageIterator, class Accessor,
+      class MaskImageIterator, class MaskAccessor, class Functor>
+inline void
+inspectImageIf(ImageIterator upperleft,
+               ImageIterator lowerright, Accessor a,
+               MaskImageIterator mask_upperleft, MaskAccessor ma,
+               functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectImageIf(upperleft, lowerright, a,
+                   mask_upperleft, ma, const_cast<functor::UnaryAnalyser<Functor> &>(f));
+}
+
+template <class ImageIterator, class Accessor,
+      class MaskImageIterator, class MaskAccessor, class Functor>
+inline void
+inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
+               pair<MaskImageIterator, MaskAccessor> mask,
+               functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectImageIf(img.first, img.second, img.third,
+                   mask.first, mask.second, const_cast<functor::UnaryAnalyser<Functor> &>(f));
 }
 
 /********************************************************/
@@ -365,7 +394,7 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator1, class Accessor1,
@@ -380,7 +409,7 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -411,13 +440,15 @@ inspectImageIf(triple<ImageIterator, ImageIterator, Accessor> img,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectTwoImages)
+
 template <class ImageIterator1, class Accessor1,
           class ImageIterator2, class Accessor2,
-      class Functor>
+          class Functor>
 void
 inspectTwoImages(ImageIterator1 upperleft1, ImageIterator1 lowerright1, Accessor1 a1,
                  ImageIterator2 upperleft2, Accessor2 a2,
-         Functor & f)
+                 Functor & f)
 {
     int w = lowerright1.x - upperleft1.x;
 
@@ -440,6 +471,31 @@ inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
 {
     inspectTwoImages(img1.first, img1.second, img1.third,
                      img2.first, img2.second, f);
+}
+
+template <class ImageIterator1, class Accessor1,
+          class ImageIterator2, class Accessor2,
+          class Functor>
+inline void
+inspectTwoImages(ImageIterator1 upperleft1, ImageIterator1 lowerright1, Accessor1 a1,
+                 ImageIterator2 upperleft2, Accessor2 a2,
+                 functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectTwoImages(upperleft1, lowerright1, a1,
+                     upperleft2, a2, const_cast<functor::UnaryAnalyser<Functor> &>(f));
+}
+
+template <class ImageIterator1, class Accessor1,
+      class ImageIterator2, class Accessor2,
+      class Functor>
+inline
+void
+inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
+         pair<ImageIterator2, Accessor2> img2,
+         functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectTwoImages(img1.first, img1.second, img1.third,
+                     img2.first, img2.second, const_cast<functor::UnaryAnalyser<Functor> &>(f));
 }
 
 /********************************************************/
@@ -475,7 +531,7 @@ inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator1, class Accessor1,
@@ -492,7 +548,7 @@ inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -527,6 +583,8 @@ inspectTwoImages(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void inspectTwoImagesIf)
+
 template <class ImageIterator1, class Accessor1,
           class ImageIterator2, class Accessor2,
           class MaskImageIterator, class MaskAccessor,
@@ -565,6 +623,39 @@ inspectTwoImagesIf(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
                      f);
 }
 
+template <class ImageIterator1, class Accessor1,
+          class ImageIterator2, class Accessor2,
+          class MaskImageIterator, class MaskAccessor,
+          class Functor>
+inline void
+inspectTwoImagesIf(ImageIterator1 upperleft1, ImageIterator1 lowerright1, Accessor1 a1,
+                 ImageIterator2 upperleft2, Accessor2 a2,
+                 MaskImageIterator mupperleft, MaskAccessor mask,
+                 functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectTwoImagesIf(upperleft1, lowerright1, a1,
+                       upperleft2, a2,
+                       mupperleft, mask,
+                       const_cast<functor::UnaryAnalyser<Functor> &>(f));
+}
+
+template <class ImageIterator1, class Accessor1,
+          class ImageIterator2, class Accessor2,
+          class MaskImageIterator, class MaskAccessor,
+          class Functor>
+inline
+void
+inspectTwoImagesIf(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
+         pair<ImageIterator2, Accessor2> img2,
+         pair<MaskImageIterator, MaskAccessor> m,
+         functor::UnaryAnalyser<Functor> const & f)
+{
+    inspectTwoImagesIf(img1.first, img1.second, img1.third,
+                       img2.first, img2.second,
+                       m.first, m.second,
+                       const_cast<functor::UnaryAnalyser<Functor> &>(f));
+}
+
 //@}
 
 /** \addtogroup InspectFunctor Functors To Inspect Images
@@ -584,14 +675,14 @@ inspectTwoImagesIf(triple<ImageIterator1, ImageIterator1, Accessor1> img1,
     These functors can also be used in conjunction with
     \ref ArrayOfRegionStatistics to find the extremes of all regions in
     a labeled image.
-    
+
     <b> Traits defined:</b>
-    
-    <tt>FunctorTraits::isUnaryAnalyser</tt> is true (<tt>VigraTrueType<tt>)
-    
+
+    <tt>FunctorTraits::isUnaryAnalyser</tt> is true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -635,7 +726,9 @@ class FindMinMax
         /** init min and max
         */
     FindMinMax()
-    : count(0)
+    : min( NumericTraits<value_type>::max() ),
+      max( NumericTraits<value_type>::min() ),
+      count(0)
     {}
 
         /** (re-)init functor (clear min, max)
@@ -727,13 +820,13 @@ class FunctorTraits<FindMinMax<VALUETYPE> >
     a labeled image.
 
     <b> Traits defined:</b>
-    
+
     <tt>FunctorTraits::isUnaryAnalyser</tt> and <tt>FunctorTraits::isInitializer</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -751,9 +844,10 @@ class FunctorTraits<FindMinMax<VALUETYPE> >
 
     \code
     VALUETYPE v1, v2(v1);
+    double d;
 
-    v1 < v2;
-    v1 = v2;
+    v1 += v2;
+    v1 / d;
     \endcode
 
 */
@@ -766,6 +860,14 @@ class FindAverage
         */
     typedef VALUETYPE argument_type;
 
+        /** the functor's first argument type (for calls with a weight)
+        */
+    typedef VALUETYPE first_argument_type;
+
+        /** the functor's second argument type (for calls with a weight)
+        */
+    typedef double second_argument_type;
+
         /** the functor's result type
         */
     typedef typename NumericTraits<VALUETYPE>::RealPromote result_type;
@@ -777,55 +879,253 @@ class FindAverage
         /** init average
         */
     FindAverage()
-    : count(0), sum(NumericTraits<result_type>::zero())
+    : sum_(NumericTraits<result_type>::zero()), count_(0)
     {}
 
         /** (re-)init average
         */
     void reset()
     {
-        count = 0;
-        sum = NumericTraits<result_type>::zero();
+        count_ = 0;
+        sum_ = NumericTraits<result_type>::zero();
     }
 
         /** update average
         */
     void operator()(argument_type const & v)
     {
-        sum += v;
-        ++count;
+        sum_ += v;
+        ++count_;
+    }
+
+        /** update average, using weighted input.
+         * <tt>stats(value, 1.0)</tt> is equivalent to the unweighted
+         * call <tt>stats(value)</tt>, and <tt>stats(value, 2.0)</tt>
+         * is equivalent to two unweighted calls.
+         */
+    void operator()(first_argument_type const & v, second_argument_type weight)
+    {
+        sum_   += v * weight;
+        count_ += weight;
     }
 
         /** merge two statistics
         */
     void operator()(FindAverage const & v)
     {
-        sum += v.sum;
-        count += v.count;
+        sum_   += v.sum_;
+        count_ += v.count_;
+    }
+
+        /** return number of values (sum of weights) seen so far
+        */
+    double count() const
+    {
+        return count_;
     }
 
         /** return current average
         */
     result_type average() const
     {
-        return sum / (double)count;
+        return sum_ / (double)count_;
     }
 
         /** return current average
         */
     result_type operator()() const
     {
-        return sum / (double)count;
+        return sum_ / (double)count_;
     }
 
-    unsigned int count;
-    result_type sum;
-
+    result_type sum_;
+    double count_;
 };
 
 template <class VALUETYPE>
 class FunctorTraits<FindAverage<VALUETYPE> >
 : public FunctorTraitsBase<FindAverage<VALUETYPE> >
+{
+  public:
+    typedef VigraTrueType isInitializer;
+    typedef VigraTrueType isUnaryAnalyser;
+};
+
+/********************************************************/
+/*                                                      */
+/*                 FindAverageAndVariance               */
+/*                                                      */
+/********************************************************/
+
+/** \brief  Find the average pixel value and its variance in an image or ROI.
+
+    This Functor uses West's algorithm to accumulate highly accurate values for
+    the mean and the sum of squared differences of all values seen so far (the
+    naive incremental algorithm for the computation of the sum of squares
+    produces large round-off errors when the mean is much larger than the
+    standard deviation of the data.) This Functor can also be used in
+    conjunction with \ref ArrayOfRegionStatistics to find the statistics of all
+    regions in a labeled image.
+
+    <b> Traits defined:</b>
+
+    <tt>FunctorTraits::isUnaryAnalyser</tt> and <tt>FunctorTraits::isInitializer</tt>
+    are true (<tt>VigraTrueType</tt>)
+
+    <b> Usage:</b>
+
+        <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
+        Namespace: vigra
+
+    \code
+    vigra::BImage img;
+
+    vigra::FindAverageAndVariance<vigra::BImage::PixelType> averageAndVariance;   // init functor
+
+    vigra::inspectImage(srcImageRange(img), averageAndVariance);
+
+    cout << "Average: " << averageAndVariance.average() << "\n";
+    cout << "Standard deviation: " << sqrt(averageAndVariance.variance()) << "\n";
+
+    \endcode
+
+    <b> Required Interface:</b>
+
+    \code
+    VALUETYPE v1, v2(v1);
+    double d;
+
+    v1 += v2;
+    v1 + v2;
+    v1 - v2;
+    v1 * v2;
+    v1 / d;
+    d * v1;
+    \endcode
+
+*/
+template <class VALUETYPE>
+class FindAverageAndVariance
+{
+   public:
+
+        /** the functor's argument type
+        */
+    typedef VALUETYPE argument_type;
+
+        /** the functor's first argument type (for calls with a weight)
+        */
+    typedef VALUETYPE first_argument_type;
+
+        /** the functor's second argument type (for calls with a weight)
+        */
+    typedef double second_argument_type;
+
+        /** the functor's result type
+        */
+    typedef typename NumericTraits<VALUETYPE>::RealPromote result_type;
+
+        /** \deprecated use argument_type and result_type
+        */
+    typedef typename NumericTraits<VALUETYPE>::RealPromote value_type;
+
+        /** init average
+        */
+    FindAverageAndVariance()
+    : mean_(NumericTraits<result_type>::zero()),
+      sumOfSquaredDifferences_(NumericTraits<result_type>::zero()),
+      count_(0.0)
+    {}
+
+        /** (re-)init average and variance
+        */
+    void reset()
+    {
+        count_ = 0.0;
+        mean_ = NumericTraits<result_type>::zero();
+        sumOfSquaredDifferences_ = NumericTraits<result_type>::zero();
+    }
+
+        /** update average and variance
+        */
+    void operator()(argument_type const & v)
+    {
+        ++count_;
+        result_type t1 = v - mean_;
+        result_type t2 = t1 / count_;
+        mean_ += t2;
+        sumOfSquaredDifferences_ += (count_-1.0)*t1*t2;
+    }
+
+        /** update average and variance, using weighted input.
+         * <tt>stats(value, 1.0)</tt> is equivalent to the unweighted
+         * call <tt>stats(value)</tt>, and <tt>stats(value, 2.0)</tt>
+         * is equivalent to two unweighted calls.
+         */
+    void operator()(first_argument_type const & v, second_argument_type weight)
+    {
+        count_ += weight;
+        result_type t1 = v - mean_;
+        result_type t2 = t1 * weight / count_;
+        mean_ += t2;
+
+        //sumOfSquaredDifferences_ += (count_ - weight)*t1*t2;
+
+        if(count_ > weight)
+            sumOfSquaredDifferences_ +=
+                (t1 * t1 * weight / count_) * (count_ - weight );
+    }
+
+        /** merge two statistics
+        */
+    void operator()(FindAverageAndVariance const & v)
+    {
+        double newCount = count_ + v.count_;
+        sumOfSquaredDifferences_ += v.sumOfSquaredDifferences_ +
+                                    count_ / newCount * v.count_ * (mean_ - v.mean_) * (mean_ - v.mean_);
+        mean_ = (count_ * mean_ + v.count_ * v.mean_) / newCount;
+        count_ += v.count_;
+    }
+
+        /** return number of values (sum of weights) seen so far
+        */
+    unsigned int count() const
+    {
+        return (unsigned int)count_;
+    }
+
+        /** return current average
+        */
+    result_type average() const
+    {
+        return mean_;
+    }
+
+        /** return current variance.
+            If <tt>unbiased = true</tt>, the sum of squared differences
+            is divided by <tt>count()-1</tt> instead of just <tt>count()</tt>.
+        */
+    result_type variance(bool unbiased = false) const
+    {
+        return unbiased
+                  ? sumOfSquaredDifferences_ / (count_ - 1.0)
+                  : sumOfSquaredDifferences_ / count_;
+    }
+
+        /** return current variance. calls <tt>variance()</tt>.
+        */
+    result_type operator()() const
+    {
+        return variance();
+    }
+
+    result_type mean_, sumOfSquaredDifferences_;
+    double count_;
+};
+
+template <class VALUETYPE>
+class FunctorTraits<FindAverageAndVariance<VALUETYPE> >
+: public FunctorTraitsBase<FindAverageAndVariance<VALUETYPE> >
 {
   public:
     typedef VigraTrueType isInitializer;
@@ -845,13 +1145,13 @@ class FunctorTraits<FindAverage<VALUETYPE> >
     a labeled image.
 
     <b> Traits defined:</b>
-    
+
     <tt>FunctorTraits::isUnaryAnalyser</tt> and <tt>FunctorTraits::isInitializer</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -954,13 +1254,13 @@ class FunctorTraits<FindROISize<VALUETYPE> >
     of all regions in a labeled image.
 
     <b> Traits defined:</b>
-    
+
     <tt>FunctorTraits::isUnaryAnalyser</tt> and <tt>FunctorTraits::isInitializer</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -1100,13 +1400,13 @@ class FunctorTraits<FindBoundingRectangle>
     \ref ArrayOfRegionStatistics to realize a look-up table.
 
     <b> Traits defined:</b>
-    
+
     <tt>FunctorTraits::isUnaryAnalyser</tt> and <tt>FunctorTraits::isInitializer</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -1141,16 +1441,17 @@ class LastValueFunctor
         */
     typedef VALUETYPE value_type;
 
-        /** default initialization of value
+        /** default construction of value (i.e. builtin types will be set to zero)
         */
-    LastValueFunctor()
+    LastValueFunctor(argument_type const &initial = argument_type())
+    : value(initial)
     {}
 
         /** replace value
         */
     void operator=(argument_type const & v) { value = v; }
 
-        /** reset to initia÷ value
+        /** reset to initial value (the same as after default construction)
         */
     void reset() { value = VALUETYPE(); }
 
@@ -1191,17 +1492,17 @@ class FunctorTraits<LastValueFunctor<VALUETYPE> >
     the expression to be applied, and an accumulator storing the current state
     of the reduction. For each element of the array, the embedded functor is called
     with the accumulator and the current element(s) of the array. The result
-    of the reduction is available by calling <tt>reduceFunctor()</tt>. 
+    of the reduction is available by calling <tt>reduceFunctor()</tt>.
 
     <b> Traits defined:</b>
-    
-    <tt>FunctorTraits::isUnaryAnalyser</tt>, <tt>FunctorTraits::isBinaryAnalyser</tt> 
+
+    <tt>FunctorTraits::isUnaryAnalyser</tt>, <tt>FunctorTraits::isBinaryAnalyser</tt>
     and <tt>FunctorTraits::isInitializer</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -1210,7 +1511,7 @@ class FunctorTraits<LastValueFunctor<VALUETYPE> >
 
     // create a functor to sum the elements of the image
     vigra::ReduceFunctor<std::plus<int>, int> sumElements(std::plus<int>, 0);
-    
+
     vigra::inspectImage(srcImageRange(img), sumElements);
 
     cout << "The sum of the elements " << sumElements() << endl;
@@ -1222,7 +1523,7 @@ class FunctorTraits<LastValueFunctor<VALUETYPE> >
     \code
     FUNCTOR f;
     VALUETYPE accumulator, current1, current2;
-    
+
     f(accumulator, current1); // for inspectImage()
     f(accumulator, current1, current2); // for inspectTwoImages()
     \endcode
@@ -1267,7 +1568,7 @@ class ReduceFunctor
       start_(initial),
       accumulator_(initial)
     {}
-    
+
         /** Reset accumulator to the initial value.
         */
     void reset()
@@ -1278,9 +1579,9 @@ class ReduceFunctor
             as the second.
         */
     template <class T>
-    void operator()(T const & v) 
-    { 
-        accumulator_ = f_(accumulator_, v); 
+    void operator()(T const & v)
+    {
+        accumulator_ = f_(accumulator_, v);
     }
 
         /** Use ternary functor to connect given values with accumulator.
@@ -1288,14 +1589,14 @@ class ReduceFunctor
             ans \a v2 as the second and third.
         */
     template <class T1, class T2>
-    void operator()(T1 const & v1, T2 const & v2) 
-    { 
-        accumulator_ = f_(accumulator_, v1, v2); 
+    void operator()(T1 const & v1, T2 const & v2)
+    {
+        accumulator_ = f_(accumulator_, v1, v2);
     }
 
         /** return current value
         */
-    result_type const & operator()() const 
+    result_type const & operator()() const
       { return accumulator_; }
 };
 
@@ -1329,13 +1630,13 @@ class FunctorTraits<ReduceFunctor<FUNCTOR, VALUETYPE> >
     pixel's label.
 
     <b> Traits defined:</b>
-    
+
     <tt>FunctorTraits::isBinaryAnalyser</tt> and <tt>FunctorTraits::isUnaryFunctor</tt>
-    are true (<tt>VigraTrueType<tt>)
-    
+    are true (<tt>VigraTrueType</tt>)
+
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>"<br>
+    <b>\#include</b> \<<a href="inspectimage_8hxx-source.html">vigra/inspectimage.hxx</a>\><br>
         Namespace: vigra
 
     \code

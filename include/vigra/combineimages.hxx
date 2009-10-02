@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -141,7 +141,7 @@ combineThreeLines(SrcIterator1 s1,
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -158,7 +158,7 @@ combineThreeLines(SrcIterator1 s1,
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>"<br>
+        <b>\#include</b> \<<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -200,6 +200,8 @@ combineThreeLines(SrcIterator1 s1,
     
     
 */
+doxygen_overloaded_function(template <...> void combineTwoImages)
+
 template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
           class DestImageIterator, class DestAccessor,
@@ -278,7 +280,7 @@ combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -297,7 +299,7 @@ combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>"<br>
+        <b>\#include</b> \<<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -344,6 +346,8 @@ combineTwoImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> src1
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void combineTwoImagesIf)
+
 template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
           class MaskImageIterator, class MaskAccessor,
@@ -424,7 +428,7 @@ combineTwoImagesIf(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
     \endcode
     
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator1, class SrcAccessor1,
@@ -443,7 +447,7 @@ combineTwoImagesIf(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>"<br>
+        <b>\#include</b> \<<a href="combineimages_8hxx-source.html">vigra/combineimages.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -485,6 +489,8 @@ combineTwoImagesIf(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
     
     
 */
+doxygen_overloaded_function(template <...> void combineThreeImages)
+
 template <class SrcImageIterator1, class SrcAccessor1,
           class SrcImageIterator2, class SrcAccessor2,
           class SrcImageIterator3, class SrcAccessor3,
@@ -554,7 +560,7 @@ combineThreeImages(triple<SrcImageIterator1, SrcImageIterator1, SrcAccessor1> sr
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType<tt>)    
+    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType</tt>)    
 */
 template <class ValueType>
 class MagnitudeFunctor
@@ -605,7 +611,7 @@ public:
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType<tt>)    
+    <tt>FunctorTraits::isBinaryFunctor</tt> are true (<tt>VigraTrueType</tt>)    
 */
 template <class ValueType>
 class RGBGradientMagnitudeFunctor

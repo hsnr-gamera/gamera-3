@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -43,12 +43,12 @@
 namespace vigra { namespace detail {
 
 template <class T>
-void destroy_n(T * /* p */, int /* n */, VigraTrueType /* isPOD */)
+inline void destroy_n(T * /* p */, int /* n */, VigraTrueType /* isPOD */)
 {
 }
 
 template <class T>
-void destroy_n(T * p, int n, VigraFalseType /* isPOD */)
+inline void destroy_n(T * p, int n, VigraFalseType /* isPOD */)
 {
 	T * end = p + n;
 	for(; p != end; ++p)
@@ -56,7 +56,7 @@ void destroy_n(T * p, int n, VigraFalseType /* isPOD */)
 }
 
 template <class T>
-void destroy_n(T * p, int n)
+inline void destroy_n(T * p, int n)
 {
     destroy_n(p, n, typename TypeTraits<T>::isPOD());
 }
@@ -67,18 +67,18 @@ void destroy_n(T * p, int n)
 #if !defined(__GNUC__) ||  __GNUC__ >= 3
 
 template <class T>
-void destroy(T * p, VigraTrueType /* isPOD */)
+inline void destroy(T * p, VigraTrueType /* isPOD */)
 {
 }
 
 template <class T>
-void destroy(T * p, VigraFalseType /* isPOD */)
+inline void destroy(T * p, VigraFalseType /* isPOD */)
 {
     p->~T();
 }
 
 template <class T>
-void destroy(T * p)
+inline void destroy(T * p)
 {
     destroy(p, typename TypeTraits<T>::isPOD());
 }

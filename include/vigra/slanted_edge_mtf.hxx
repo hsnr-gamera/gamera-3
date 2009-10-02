@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -76,7 +76,7 @@ namespace vigra {
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>"<br>
+        <b>\#include</b> \<<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -548,7 +548,7 @@ void slantedEdgeMTFImpl(Image const & i, BackInsertable & mtf, double angle,
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor, class BackInsertable>
@@ -560,7 +560,7 @@ void slantedEdgeMTFImpl(Image const & i, BackInsertable & mtf, double angle,
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>"<br>
+        <b>\#include</b> \<<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -593,6 +593,8 @@ void slantedEdgeMTFImpl(Image const & i, BackInsertable & mtf, double angle,
     result.push_back(ResultType(intensity, variance));
     \endcode
 */
+doxygen_overloaded_function(template <...> void slantedEdgeMTF)
+
 template <class SrcIterator, class SrcAccessor, class BackInsertable>
 void
 slantedEdgeMTF(SrcIterator sul, SrcIterator slr, SrcAccessor src, BackInsertable & mtf,
@@ -646,7 +648,7 @@ slantedEdgeMTF(triple<SrcIterator, SrcIterator, SrcAccessor> src, BackInsertable
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>"<br>
+        <b>\#include</b> \<<a href="slanted__edge__mtf_8hxx-source.html">vigra/slanted_edge_mtf.hxx</a>\><br>
     Namespace: vigra
     
     \code

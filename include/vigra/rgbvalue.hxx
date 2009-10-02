@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -115,13 +115,13 @@ struct RGBValue_bad_color_indices
     operations. Addition, subtraction, and multiplication of two RGBValues
     (+=, -=, *=, +, -, *, unary -), multiplication and division of an
     RGBValue with a double, and NumericTraits/PromoteTraits are defined,
-    so that RGBValue fulfills the requirements of a \ref LinearAlgebra.
+    so that RGBValue fulfills the requirements of a \ref LinearAlgebraConcept "Linear Algebra".
 
     A number of \ref RGBValueAccessors "accessors" are provided
     that support access to RGBValues as a whole, to a selected
     color component, or to the luminance value.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
 */
 template <class VALUETYPE, unsigned int RED_IDX = 0, unsigned int GREEN_IDX = 1, unsigned int BLUE_IDX = 2>
@@ -336,11 +336,12 @@ class RGBValue
 
 /** \addtogroup RGBValueOperators Functions for RGBValue
 
-    \brief <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>
+    \brief Implement basic arithmetic and equality for RGBValue.
 
     These functions fulfill the requirements of a Linear Algebra.
     Return types are determined according to \ref RGBValueTraits.
 
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     <p>
 
@@ -433,7 +434,7 @@ operator!=(RGBValue<V1, RIDX1, GIDX1, BIDX1> const & l,
     };
     \endcode
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
 
 */
@@ -664,7 +665,8 @@ operator-=(RGBValue<V1, RIDX1, GIDX1, BIDX1> & l,
 }
 
     /// componentwise multiply-assignment
-template <class V1, unsigned int RIDX1, unsigned int BIDX1, unsigned int GIDX1, class V2, unsigned int RIDX2, unsigned int GIDX2, unsigned int BIDX2>
+template <class V1, unsigned int RIDX1, unsigned int GIDX1, unsigned int BIDX1,
+          class V2, unsigned int RIDX2, unsigned int GIDX2, unsigned int BIDX2>
 inline
 RGBValue<V1, RIDX1, GIDX1, BIDX1> &
 operator*=(RGBValue<V1, RIDX1, GIDX1, BIDX1> & l,
@@ -869,7 +871,7 @@ floor(RGBValue<V, RIDX, GIDX, BIDX> const & r)
 //@{
     /** Encapsulate access to rgb values.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class RGBVALUE>
@@ -1000,7 +1002,7 @@ class RGBAccessor
 
     /** Encapsulate access to red band of an rgb value.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class RGBVALUE>
@@ -1051,7 +1053,7 @@ class RedAccessor
 
     /** Encapsulate access to green band of an rgb value.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class RGBVALUE>
@@ -1102,7 +1104,7 @@ class GreenAccessor
 
     /** Encapsulate access to blue band of an rgb value.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class RGBVALUE>
@@ -1153,7 +1155,7 @@ class BlueAccessor
 
     /** Encapsulate access to luminance of an rgb value.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class RGBVALUE>
@@ -1187,7 +1189,7 @@ class RGBToGrayAccessor
     /** Create an RGB view for a grayscale image by making all three channels
         equal.
 
-    <b>\#include</b> "<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rgbvalue_8hxx-source.html">vigra/rgbvalue.hxx</a>\><br>
     Namespace: vigra
     */
 template <class VALUETYPE>

@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -44,183 +44,6 @@
 #include "rgbvalue.hxx"
 #include "functortraits.hxx"
 
-/** \page ColorConversions  Color Space Conversions
-
-    Convert between RGB, R'G'B', XYZ, L*a*b*, L*u*v*, Y'PbPr, Y'CbCr, Y'IQ, and Y'UV color spaces.
-
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
-    Namespace: vigra
-    
-    <UL>
-    <LI> <b>RGB/R'G'B'</b><br>
-        <em>linear and non-linear (gamma corrected) additive color</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGB2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2RGBFunctor
-        </DL><p>
-    <LI> <b>XYZ</b><br>
-        <em>device independent color representation 
-               (according to Publication CIE  No  15.2 "Colorimetry"
-                and ITU-R Recommendation BT.709)</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGB2XYZFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2XYZFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::XYZ2RGBFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::XYZ2RGBPrimeFunctor
-        </DL><p>
-    <LI> <b>L*a*b* </b><br>
-        <em>perceptually uniform color representation 
-               (according to Publication CIE No 15.2 "Colorimetry" and
-               ITU-R Recommendation BT.709)</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGB2LabFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2LabFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::XYZ2LabFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Lab2RGBFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Lab2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Lab2XYZFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2Lab "vigra::polar2Lab"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref lab2Polar "vigra::lab2Polar"()
-        </DL><p>
-    <LI> <b>L*u*v* </b><br>
-        <em>perceptually uniform color representation 
-               (according to Publication CIE No 15.2 "Colorimetry" and
-               ITU-R Recommendation BT.709)</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGB2LuvFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2LuvFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::XYZ2LuvFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Luv2RGBFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Luv2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::Luv2XYZFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2Luv "vigra::polar2Luv"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref luv2Polar "vigra::luv2Polar"()
-        </DL><p>
-    <LI> <b>Y'PbPr and Y'CbCr </b><br>
-        <em>color difference coding
-                (according to ITU-R Recommendation BT. 601)</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2YPrimePbPrFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::YPrimePbPr2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2YPrimePbPr "vigra::polar2YPrimePbPr"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref yPrimePbPr2Polar "vigra::yPrimePbPr2Polar"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2YPrimeCbCrFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::YPrimeCbCr2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2YPrimeCbCr "vigra::polar2YPrimeCbCr"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref yPrimeCbCr2Polar "vigra::yPrimeCbCr2Polar"()
-        </DL><p>
-    <LI> <b>Y'UV and Y'IQ </b><br>
-        <em>analog video coding according to NTSC and PAL standards</em>
-        <p>
-        <DL>
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2YPrimeUVFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::YPrimeUV2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2YPrimeUV "vigra::polar2YPrimeUV"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref yPrimeUV2Polar "vigra::yPrimeUV2Polar"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::RGBPrime2YPrimeIQFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             vigra::YPrimeIQ2RGBPrimeFunctor
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref polar2YPrimeIQ "vigra::polar2YPrimeIQ"()
-        <DT> <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-             \ref yPrimeIQ2Polar "vigra::yPrimeIQ2Polar"()
-        </DL><p>
-    </UL>
-    
-    \anchor _details
-    This module provides conversion from RGB/R'G'B' into more perceptually uniform
-    color spaces. In image analysis, colors are usually converted into another color space 
-    in order to get good estimates of perceived color differences by just calculating 
-    Euclidean distances between the transformed colors. The L*a*b* and L*u*v* were 
-    designed with exactly this application in mind and thus give the best results. But these
-    conversions are also the most computationally demanding. The Y'PbPr color difference
-    space (designed for the coding of digital video) is computationally much cheaper, and 
-    almost as good. Y'CbCr represents esentially the same transformation, but the color values 
-    are scaled so that they can be stored with 8 bits per channel with minimal loss of 
-    information. The other transformations are of lesser interest here: XYZ is a device independent
-    (but not perceptually uniform) color representation, and Y'IQ and Y'UV are the color 
-    spaces used by the PAL and NTSC analog video standards. Detailed information about
-    these color spaces and their transformations can be found in 
-    <a href="http://www.poynton.com/ColorFAQ.html">Charles Poynton's Color FAQ</a>
-    
-    When you want to perform a color conversion, you must first know in which
-    color space the data are given. Although this sounds trivial, it is
-    quite often done wrong in practice, because the distinction
-    between RGB and R'G'B' is frequently overlooked: nowadays, most images are stored in 
-    R'G'B' space, and treating them as RGB leads to wrong results. RGB and R'G'B' are 
-    related by a so called <em>gamma correction</em>:
-    
-    \f[
-        R' = R_{max} \left(\frac{R}{R_{max}} \right)^{0.45} \qquad
-        G' = G_{max} \left(\frac{G}{G_{max}} \right)^{0.45} \qquad
-        B' = B_{max} \left(\frac{B}{B_{max}} \right)^{0.45}
-    \f]
-    
-    (where usually \f$ R_{max} = G_{max} = B_{max} = 255 \f$). In practice, you can 
-    distinguish the two kinds of red, green, and blue by displaying the images: if they look
-    too dark, they are probably RGB, if they are OK, they are likely R'G'B'. (However,
-    this may also be misleading: Some graphics cards and display programs silently apply a 
-    gamma correction to every image, so that RGB appears correct and R'G'B' is too bright.)
-    The distinction between RGB and R'G'B' is important because some conversions start at 
-    RGB (XYZ, L*a*b*, L*u*v*), while others start at R'G'B' (Y'PbPr, Y'CbCr, Y'IQ, and Y'UV). 
-    The names of VIGRA's color conversion functors always make clear to which color space 
-    they must be applied.
-    
-    In addition VIGRA provides a <em>polar coordinate interface</em>
-    to several color spaces (L*a*b*, L*u*v*, Y'PbPr, Y'CbCr, Y'IQ, and Y'UV). This
-    interface makes use of the fact that these color spaces are conceptually similar:
-    they represent colors by a "brightness" coordinate (L* or Y') and a pair of 
-    "chromaticity" coordinates that span a plane of colors with equal brightness.
-    The polar representation transforms chroma coordinates into a color "angle"
-    (similar to hue in the HSV system) and a "saturation". The polar coordinates are 
-    normalized so that a color angle of 0 degrees is always associated with red
-    (green is at about 120 degrees, blue at about 240 degrees - exact values differ
-    between color spaces). A saturation of 1 is the highest saturation that any RGB color 
-    in the unit cube can have after transformation into the respective color space, 
-    and saturation 0 corresponds to gray. Polar coordinates provide a more intuitive 
-    interface to color specification by users and make different color spaces somewhat 
-    comparable.
-*/
 namespace vigra {
 
 namespace detail
@@ -240,11 +63,183 @@ inline double gammaCorrection(double value, double gamma, double norm)
             norm*VIGRA_CSTD::pow(value/norm, gamma);
 }
 
+inline double sRGBCorrection(double value, double norm)
+{
+    value /= norm;
+    return (value <= 0.00304) 
+               ? norm*12.92*value 
+               : norm*(1.055*VIGRA_CSTD::pow(value, 0.41666666666666667) - 0.055);
+}
+
+inline double inverse_sRGBCorrection(double value, double norm)
+{
+    value /= norm;
+    return (value <= 0.03928) 
+               ? norm*value / 12.92
+               : norm*VIGRA_CSTD::pow((value + 0.055)/1.055, 2.4);
+}
+
+
 } // namespace detail
+
+/** \defgroup ColorConversions  Color Space Conversions
+
+    Convert between RGB, sRGB, R'G'B', XYZ, L*a*b*, L*u*v*, Y'PbPr, Y'CbCr, Y'IQ, and Y'UV color spaces.
+
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
+    Namespace: vigra
+    
+    <UL>
+    <LI> <b>RGB/sRGB/R'G'B'</b><br>
+        <em>linear and non-linear (gamma corrected) additive color</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGB2sRGBFunctor
+        <LI> \ref vigra::sRGB2RGBFunctor
+        <LI> \ref vigra::RGB2RGBPrimeFunctor
+        <LI> \ref vigra::RGBPrime2RGBFunctor
+        </UL><p>
+    <LI> <b>XYZ</b><br>
+        <em>device independent color representation 
+               (according to Publication CIE  No  15.2 "Colorimetry"
+                and ITU-R Recommendation BT.709)</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGB2XYZFunctor
+        <LI> \ref vigra::RGBPrime2XYZFunctor
+        <LI> \ref vigra::XYZ2RGBFunctor
+        <LI> \ref vigra::XYZ2RGBPrimeFunctor
+        </UL><p>
+    <LI> <b>L*a*b* </b><br>
+        <em>perceptually uniform color representation 
+               (according to Publication CIE No 15.2 "Colorimetry" and
+               ITU-R Recommendation BT.709)</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGB2LabFunctor
+        <LI> \ref vigra::RGBPrime2LabFunctor
+        <LI> \ref vigra::XYZ2LabFunctor
+        <LI> \ref vigra::Lab2RGBFunctor
+        <LI> \ref vigra::Lab2RGBPrimeFunctor
+        <LI> \ref vigra::Lab2XYZFunctor
+        <LI> \ref polar2Lab()
+        <LI> \ref lab2Polar()
+        </UL><p>
+    <LI> <b>L*u*v* </b><br>
+        <em>perceptually uniform color representation 
+               (according to Publication CIE No 15.2 "Colorimetry" and
+               ITU-R Recommendation BT.709)</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGB2LuvFunctor
+        <LI> \ref vigra::RGBPrime2LuvFunctor
+        <LI> \ref vigra::XYZ2LuvFunctor
+        <LI> \ref vigra::Luv2RGBFunctor
+        <LI> \ref vigra::Luv2RGBPrimeFunctor
+        <LI> \ref vigra::Luv2XYZFunctor
+        <LI> \ref polar2Luv()
+        <LI> \ref luv2Polar()
+        </UL><p>
+    <LI> <b>Y'PbPr and Y'CbCr </b><br>
+        <em>color difference coding
+                (according to ITU-R Recommendation BT. 601)</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGBPrime2YPrimePbPrFunctor
+        <LI> \ref vigra::YPrimePbPr2RGBPrimeFunctor
+        <LI> \ref polar2YPrimePbPr()
+        <LI> \ref yPrimePbPr2Polar()
+        <LI> \ref vigra::RGBPrime2YPrimeCbCrFunctor
+        <LI> \ref vigra::YPrimeCbCr2RGBPrimeFunctor
+        <LI> \ref polar2YPrimeCbCr()
+        <LI> \ref yPrimeCbCr2Polar()
+        </UL><p>
+    <LI> <b>Y'UV and Y'IQ </b><br>
+        <em>analog video coding according to NTSC and PAL standards</em>
+        <p>
+        <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::RGBPrime2YPrimeUVFunctor
+        <LI> \ref vigra::YPrimeUV2RGBPrimeFunctor
+        <LI> \ref polar2YPrimeUV()
+        <LI> \ref yPrimeUV2Polar()
+        <LI> \ref vigra::RGBPrime2YPrimeIQFunctor
+        <LI> \ref vigra::YPrimeIQ2RGBPrimeFunctor
+        <LI> \ref polar2YPrimeIQ()
+        <LI> \ref yPrimeIQ2Polar()
+        </UL><p>
+    </UL>
+    
+    \anchor _details
+    This module provides conversion from RGB/R'G'B' into more perceptually uniform
+    color spaces. In image analysis, colors are usually converted into another color space 
+    in order to get good estimates of perceived color differences by just calculating 
+    Euclidean distances between the transformed colors. The L*a*b* and L*u*v* were 
+    designed with exactly this application in mind and thus give the best results. But these
+    conversions are also the most computationally demanding. The Y'PbPr color difference
+    space (designed for coding digital video) is computationally much cheaper, and 
+    almost as good. Y'CbCr represents esentially the same transformation, but the color values 
+    are scaled so that they can be stored with 8 bits per channel with minimal loss of 
+    information. The other transformations are of lesser interest here: XYZ is a device independent
+    (but not perceptually uniform) color representation, and Y'IQ and Y'UV are the color 
+    spaces used by the PAL and NTSC analog video standards. Detailed information about
+    these color spaces and their transformations can be found in 
+    <a href="http://www.poynton.com/ColorFAQ.html">Charles Poynton's Color FAQ</a>
+    
+    When you want to perform a color conversion, you must first know in which
+    color space the data are given. Although this sounds trivial, it is
+    quite often done wrong, because the distinction between RGB and sRGB (still images) or R'G'B' 
+    (digital video) is frequently overlooked: nowadays, most still images are stored in
+    sRGB space, and treating them as RGB leads to wrong results (although the color primaries
+    are named the same). RGB and R'G'B' are related by a so called <em>gamma correction</em>:
+    
+    \f[
+        C' = C_{max} \left(\frac{C_{RGB}}{C_{max}} \right)^{0.45} \qquad
+    \f]
+    
+    where C represents one of the color channels R, G, and B, and \f$ C_{max} \f$ usually equals 255. 
+    The sRGB color space realizes a slight enhancement of this definition:
+    
+    \f[
+        C_{sRGB} = \left\{\begin{array}{ll}
+        12.92\,C_{RGB} & \textrm{ if }\frac{C_{RGB}}{C_{max}} \le 0.00304 \\
+        C_{max}\left( 1.055 \left(\frac{C_{RGB}}{C_{max}}\right)^{1/2.4}-0.055\right) & \textrm{ otherwise}
+        \end{array} \right.
+    \f]
+    
+    sRGB has now become a widely accepted international standard (IEC 61966-2.1) which is used by most 
+    consumer products (digital cameras, printers, and screens). In practice, you can 
+    distinguish between linear and gamma-corrected red, green, and blue by displaying the images: if they look
+    too dark, they are probably RGB, if they are OK, they are likely sRGB. (However, there are still a few older 
+    graphics cards and display programs which silently apply an additional gamma correction to every image, 
+    so that RGB appears correct and sRGB is too bright.) Whether or not the data are represented
+    in the sRGB color space can also be seen in the color space tag of an image's EXIF data, if available.
+    
+    The distinction between RGB and R'G'B' is important because some conversions start at 
+    RGB (XYZ, L*a*b*, L*u*v*), while others start at R'G'B' (Y'PbPr, Y'CbCr, Y'IQ, and Y'UV). 
+    The names of VIGRA's color conversion functors always make clear to which color space 
+    they must be applied.
+   
+    In addition VIGRA provides a <em>\ref PolarColors "polar coordinate interface"</em>
+    to several color spaces (L*a*b*, L*u*v*, Y'PbPr, Y'CbCr, Y'IQ, and Y'UV). This
+    interface makes use of the fact that these color spaces are conceptually similar:
+    they represent colors by a "brightness" coordinate (L* or Y') and a pair of 
+    "chromaticity" coordinates that span a plane of colors with equal brightness.
+    The polar representation transforms chroma coordinates into a color "angle"
+    (similar to hue in the HSV system) and a "saturation". The polar coordinates are 
+    normalized so that a color angle of 0 degrees is always associated with red
+    (green is at about 120 degrees, blue at about 240 degrees - exact values differ
+    between color spaces). A saturation of 1 is the highest saturation that any RGB color 
+    in the unit cube can have after transformation into the respective color space, 
+    and saturation 0 corresponds to gray. Polar coordinates provide a more intuitive 
+    interface to color specification by users and make different color spaces somewhat 
+    comparable.
+*/
+//@{
+
 
 /** \brief Convert linear (raw) RGB into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -261,7 +256,7 @@ inline double gammaCorrection(double value, double gamma, double norm)
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
     */
 template <class From, class To = From>
 class RGB2RGBPrimeFunctor
@@ -353,9 +348,123 @@ class FunctorTraits<RGB2RGBPrimeFunctor<From, To> >
     typedef VigraTrueType isUnaryFunctor;
 };
 
+/** \brief Convert linear (raw) RGB into standardized sRGB.
+
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
+    Namespace: vigra
+    
+    The sRGB color space is a slight improvement over the R'G'B' space. It is now a widely accepted 
+    international standard (IEC 61966-2.1) which is used by most consumer products
+    (digital cameras, printers, and screens). The functor realizes the transformation
+    
+    \f[
+        C_{sRGB} = \left\{ \begin{array}{ll}
+        12.92\,C_{RGB} & \textrm{ if }\frac{C_{RGB}}{C_{max}} \le 0.00304 \\
+        C_{max}\left( 1.055 \left(\frac{C_{RGB}}{C_{max}}\right)^{1/2.4}-0.055\right) & \textrm{ otherwise}
+        \end{array}  \right.
+    \f]
+    
+    where C is any of the primaries R, G, and B. By default, \f$ C_{max} = 255 \f$ (this default can be
+    overridden in the constructor). If both source and target color components are stored
+    as <tt>unsigned char</tt>, a look-up-table will be used to speed up the transformation.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
+    */
+template <class From, class To = From>
+class RGB2sRGBFunctor
+{
+  public:
+  
+        /** the functor's argument type
+        */
+    typedef TinyVector<From, 3> argument_type;
+  
+        /** the functor's result type
+        */
+    typedef RGBValue<To> result_type;
+  
+        /** \deprecated use argument_type and result_type
+        */
+    typedef RGBValue<To> value_type;
+  
+        /** the result component's promote type
+        */
+    typedef typename NumericTraits<To>::RealPromote component_type;
+    
+        /** Default constructor.
+            The maximum value for each RGB component defaults to 255
+        */
+    RGB2sRGBFunctor()
+    : max_(255.0)
+    {}
+    
+        /** constructor
+            \arg max - the maximum value for each RGB component
+        */
+    RGB2sRGBFunctor(component_type max)
+    : max_(max)
+    {}
+    
+        /** apply the transformation
+        */
+    template <class V>
+    result_type operator()(V const & rgb) const
+    {
+        return RGBValue<To>(
+            NumericTraits<To>::fromRealPromote(detail::sRGBCorrection(rgb[0], max_)),
+            NumericTraits<To>::fromRealPromote(detail::sRGBCorrection(rgb[1], max_)),
+            NumericTraits<To>::fromRealPromote(detail::sRGBCorrection(rgb[2], max_)));
+    }
+    
+  private:
+    component_type max_;    
+};
+
+template <>
+class RGB2sRGBFunctor<unsigned char, unsigned char>
+{
+    unsigned char lut_[256];
+        
+  public:
+  
+    typedef RGBValue<unsigned char> value_type;
+    
+    RGB2sRGBFunctor()
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::sRGBCorrection(i, 255.0));
+        }
+    }
+    
+    RGB2sRGBFunctor(double max)
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::sRGBCorrection(i, max));
+        }
+    }
+    
+    template <class V>
+    RGBValue<unsigned char> operator()(V const & rgb) const
+    {
+        return RGBValue<unsigned char>(lut_[rgb[0]], lut_[rgb[1]], lut_[rgb[2]]);
+    }
+};
+
+template <class From, class To>
+class FunctorTraits<RGB2sRGBFunctor<From, To> >
+: public FunctorTraitsBase<RGB2sRGBFunctor<From, To> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert non-linear (gamma corrected) R'G'B' into non-linear (raw) RGB.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -367,12 +476,12 @@ class FunctorTraits<RGB2RGBPrimeFunctor<From, To> >
     \f]
     
     By default, \f$ R_{max} = G_{max} = B_{max} = 255 \f$. This default can be overridden
-    in the constructor. If both source and target colors components are stored 
+    in the constructor. If both source and target color components are stored 
     as <tt>unsigned char</tt>, a look-up-table will be used to speed up the transformation.
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class From, class To = From>
 class RGBPrime2RGBFunctor
@@ -464,9 +573,122 @@ class FunctorTraits<RGBPrime2RGBFunctor<From, To> >
     typedef VigraTrueType isUnaryFunctor;
 };
 
+/** \brief Convert standardized sRGB into non-linear (raw) RGB.
+
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
+    Namespace: vigra
+    
+    The sRGB color space is a slight improvement over the R'G'B' space. Is is now a widely accepted 
+    international standard (IEC 61966-2.1) which is used by most consumer products
+    (digital cameras, printers, and screens). The functor realizes the transformation
+    
+    \f[
+        C_{RGB} = \left\{\begin{array}{ll}
+        C_{sRGB} / 12.92 & \textrm{if }\frac{C_{sRGB}}{C_{max}} \le 0.03928 \\
+        C_{max}\left( \frac{C_{sRGB}/C_{max}+0.055}{1.055}\right)^{2.4} & \textrm{otherwise}
+        \end{array}\right.
+    \f]
+    
+    where C is one of the color channels R, G, or B, and \f$ C_{max}\f$ equals 255 by default (This default 
+    can be overridden in the constructor). If both source and target color components are stored 
+    as <tt>unsigned char</tt>, a look-up-table will be used to speed up the transformation.
+
+    <b> Traits defined:</b>
+    
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
+*/
+template <class From, class To = From>
+class sRGB2RGBFunctor
+{
+  public:
+  
+        /** the functor's argument type
+        */
+    typedef TinyVector<From, 3> argument_type;
+  
+        /** the functor's result type
+        */
+    typedef RGBValue<To> result_type;
+  
+        /** \deprecated use argument_type and result_type
+        */
+    typedef RGBValue<To> value_type;
+  
+        /** the result component's promote type
+        */
+    typedef typename NumericTraits<To>::RealPromote component_type;
+    
+        /** Default constructor.
+            The maximum value for each RGB component defaults to 255.
+        */
+    sRGB2RGBFunctor()
+    : max_(255.0)
+    {}
+    
+        /** constructor
+            \arg max - the maximum value for each RGB component
+        */
+    sRGB2RGBFunctor(component_type max)
+    : max_(max)
+    {}
+    
+        /** apply the transformation
+        */
+    result_type operator()(argument_type const & rgb) const
+    {
+        return RGBValue<To>(
+            NumericTraits<To>::fromRealPromote(detail::inverse_sRGBCorrection(rgb[0], max_)),
+            NumericTraits<To>::fromRealPromote(detail::inverse_sRGBCorrection(rgb[1], max_)),
+            NumericTraits<To>::fromRealPromote(detail::inverse_sRGBCorrection(rgb[2], max_)));
+    }
+
+  private:
+    component_type max_;
+};
+
+template <>
+class sRGB2RGBFunctor<unsigned char, unsigned char>
+{    
+    unsigned char lut_[256];
+        
+  public:
+  
+    typedef RGBValue<unsigned char> value_type;
+    
+    sRGB2RGBFunctor()
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::inverse_sRGBCorrection(i, 255.0));
+        }
+    }
+    
+    sRGB2RGBFunctor(double max)
+    {
+        for(int i=0; i<256; ++i)
+        {
+            lut_[i] = NumericTraits<unsigned char>::fromRealPromote(detail::inverse_sRGBCorrection(i, max));
+        }
+    }
+    
+    template <class V>
+    RGBValue<unsigned char> operator()(V const & rgb) const
+    {
+        return RGBValue<unsigned char>(lut_[rgb[0]], lut_[rgb[1]], lut_[rgb[2]]);
+    }
+};
+
+template <class From, class To>
+class FunctorTraits<sRGB2RGBFunctor<From, To> >
+: public FunctorTraitsBase<sRGB2RGBFunctor<From, To> >
+{
+  public:
+    typedef VigraTrueType isUnaryFunctor;
+};
+
 /** \brief Convert linear (raw) RGB into standardized tri-stimulus XYZ.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     According to ITU-R Recommendation BT.709, the functor realizes the transformation
@@ -486,7 +708,7 @@ class FunctorTraits<RGBPrime2RGBFunctor<From, To> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGB2XYZFunctor
@@ -551,7 +773,7 @@ class FunctorTraits<RGB2XYZFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into standardized tri-stimulus XYZ.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -565,7 +787,7 @@ class FunctorTraits<RGB2XYZFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2XYZFunctor
@@ -630,7 +852,7 @@ class FunctorTraits<RGBPrime2XYZFunctor<T> >
 
 /** \brief Convert standardized tri-stimulus XYZ into linear (raw) RGB.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     According to ITU-R Recommendation BT.709, the functor realizes the transformation
@@ -648,7 +870,7 @@ class FunctorTraits<RGBPrime2XYZFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class XYZ2RGBFunctor
@@ -710,7 +932,7 @@ class FunctorTraits<XYZ2RGBFunctor<T> >
 
 /** \brief Convert standardized tri-stimulus XYZ into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -724,7 +946,7 @@ class FunctorTraits<XYZ2RGBFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class XYZ2RGBPrimeFunctor
@@ -788,7 +1010,7 @@ class FunctorTraits<XYZ2RGBPrimeFunctor<T> >
 
 /** \brief Convert standardized tri-stimulus XYZ into perceptual uniform CIE L*u*v*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -815,7 +1037,7 @@ class FunctorTraits<XYZ2RGBPrimeFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class XYZ2LuvFunctor
@@ -881,14 +1103,14 @@ class FunctorTraits<XYZ2LuvFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*u*v* into standardized tri-stimulus XYZ.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::XYZ2LuvFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Luv2XYZFunctor
@@ -955,7 +1177,7 @@ class FunctorTraits<Luv2XYZFunctor<T> >
 
 /** \brief Convert standardized tri-stimulus XYZ into perceptual uniform CIE L*a*b*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -978,7 +1200,7 @@ class FunctorTraits<Luv2XYZFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class XYZ2LabFunctor
@@ -1037,14 +1259,14 @@ class FunctorTraits<XYZ2LabFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*a*b* into standardized tri-stimulus XYZ.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::XYZ2LabFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Lab2XYZFunctor
@@ -1105,7 +1327,7 @@ class FunctorTraits<Lab2XYZFunctor<T> >
 
 /** \brief Convert linear (raw) RGB into perceptual uniform CIE L*u*v*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -1127,7 +1349,7 @@ class FunctorTraits<Lab2XYZFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGB2LuvFunctor
@@ -1194,7 +1416,7 @@ class FunctorTraits<RGB2LuvFunctor<T> >
 
 /** \brief Convert linear (raw) RGB into perceptual uniform CIE L*a*b*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -1216,7 +1438,7 @@ class FunctorTraits<RGB2LuvFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGB2LabFunctor
@@ -1283,14 +1505,14 @@ class FunctorTraits<RGB2LabFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*u*v* into linear (raw) RGB.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGB2LuvFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Luv2RGBFunctor
@@ -1342,14 +1564,14 @@ class FunctorTraits<Luv2RGBFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*a*b* into linear (raw) RGB.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGB2LabFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Lab2RGBFunctor
@@ -1408,7 +1630,7 @@ class FunctorTraits<Lab2RGBFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into perceptual uniform CIE L*u*v*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -1430,7 +1652,7 @@ class FunctorTraits<Lab2RGBFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2LuvFunctor
@@ -1490,7 +1712,7 @@ class FunctorTraits<RGBPrime2LuvFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into perceptual uniform CIE L*a*b*.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the transformation
@@ -1512,7 +1734,7 @@ class FunctorTraits<RGBPrime2LuvFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2LabFunctor
@@ -1572,14 +1794,14 @@ class FunctorTraits<RGBPrime2LabFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*u*v* into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2LuvFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Luv2RGBPrimeFunctor
@@ -1638,14 +1860,14 @@ class FunctorTraits<Luv2RGBPrimeFunctor<T> >
 
 /** \brief Convert perceptual uniform CIE L*a*b* into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2LabFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class Lab2RGBPrimeFunctor
@@ -1704,7 +1926,7 @@ class FunctorTraits<Lab2RGBPrimeFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'PbPr color difference components.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     According to ITU-R Recommendation BT.601, the functor realizes the transformation
@@ -1732,7 +1954,7 @@ class FunctorTraits<Lab2RGBPrimeFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2YPrimePbPrFunctor
@@ -1806,14 +2028,14 @@ class FunctorTraits<RGBPrime2YPrimePbPrFunctor<T> >
 
 /** \brief Convert Y'PbPr color difference components into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimePbPrFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class YPrimePbPr2RGBPrimeFunctor
@@ -1876,7 +2098,7 @@ class FunctorTraits<YPrimePbPr2RGBPrimeFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'IQ components.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     According to the PAL analog videa standard, the functor realizes the transformation
@@ -1903,7 +2125,7 @@ class FunctorTraits<YPrimePbPr2RGBPrimeFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2YPrimeIQFunctor
@@ -1977,14 +2199,14 @@ class FunctorTraits<RGBPrime2YPrimeIQFunctor<T> >
 
 /** \brief Convert Y'IQ color components into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeIQFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class YPrimeIQ2RGBPrimeFunctor
@@ -2047,7 +2269,7 @@ class FunctorTraits<YPrimeIQ2RGBPrimeFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'UV components.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     According to the NTSC analog videa standard, the functor realizes the transformation
@@ -2074,7 +2296,7 @@ class FunctorTraits<YPrimeIQ2RGBPrimeFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2YPrimeUVFunctor
@@ -2148,14 +2370,14 @@ class FunctorTraits<RGBPrime2YPrimeUVFunctor<T> >
 
 /** \brief Convert Y'UV color components into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeUVFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class YPrimeUV2RGBPrimeFunctor
@@ -2218,7 +2440,7 @@ class FunctorTraits<YPrimeUV2RGBPrimeFunctor<T> >
 
 /** \brief Convert non-linear (gamma corrected) R'G'B' into Y'CbCr color difference components.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This functor basically applies the same transformation as vigra::RGBPrime2YPrimePbPrFunctor
@@ -2235,7 +2457,7 @@ class FunctorTraits<YPrimeUV2RGBPrimeFunctor<T> >
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class RGBPrime2YPrimeCbCrFunctor
@@ -2309,14 +2531,14 @@ class FunctorTraits<RGBPrime2YPrimeCbCrFunctor<T> >
 
 /** \brief Convert Y'CbCr color difference components into non-linear (gamma corrected) R'G'B'.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     The functor realizes the inverse of the transformation described in vigra::RGBPrime2YPrimeCbCrFunctor
 
     <b> Traits defined:</b>
     
-    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType<tt>)
+    <tt>FunctorTraits::isUnaryFunctor</tt> is true (<tt>VigraTrueType</tt>)
 */
 template <class T>
 class YPrimeCbCr2RGBPrimeFunctor
@@ -2381,6 +2603,8 @@ class FunctorTraits<YPrimeCbCr2RGBPrimeFunctor<T> >
     typedef VigraTrueType isUnaryFunctor;
 };
 
+//@}
+
 /*
 Polar coordinates of standard colors:
 =====================================
@@ -2436,7 +2660,8 @@ YUV: white = [229.992, 1, 9.81512e-17]
 
 */
 
-/** \addtogroup PolarColors Polar Color Coordinates
+/** \ingroup ColorConversions
+    \defgroup PolarColors Polar Color Coordinates
     
     Transform colors from/to a polar representation (hue, brighness, saturation).
     In many situations, this is more inituitive than direct initialization in a 
@@ -2450,7 +2675,7 @@ YUV: white = [229.992, 1, 9.81512e-17]
 //@{
 /** \brief Init L*a*b* color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2512,11 +2737,11 @@ polar2Lab(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2Lab polar2Lab\endlink().
+    \ref polar2Lab().
 */
 template <class V>
 TinyVector<float, 3>
@@ -2536,7 +2761,7 @@ lab2Polar(V const & lab)
 
 /** \brief Init L*u*v* color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2597,11 +2822,11 @@ polar2Luv(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2Luv polar2Luv\endlink().
+    \ref polar2Luv().
 */
 template <class V>
 TinyVector<float, 3>
@@ -2621,7 +2846,7 @@ luv2Polar(V const & luv)
 
 /** \brief Init Y'PbPr color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2682,11 +2907,11 @@ polar2YPrimePbPr(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2YPrimePbPr polar2YPrimePbPr\endlink().
+    \ref polar2YPrimePbPr().
 */
 template <class V>
 TinyVector<float, 3>
@@ -2706,7 +2931,7 @@ yPrimePbPr2Polar(V const & ypbpr)
 
 /** \brief Init Y'CbCr color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2767,11 +2992,11 @@ polar2YPrimeCbCr(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2YPrimeCbCr polar2YPrimeCbCr\endlink().
+    \ref polar2YPrimeCbCr().
 */
 template <class V>
 TinyVector<float, 3>
@@ -2793,7 +3018,7 @@ yPrimeCbCr2Polar(V const & ycbcr)
 
 /** \brief Init Y'IQ color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2854,11 +3079,11 @@ polar2YPrimeIQ(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2YPrimeIQ polar2YPrimeIQ\endlink().
+    \ref polar2YPrimeIQ().
 */
 template <class V>
 TinyVector<float, 3>
@@ -2878,7 +3103,7 @@ yPrimeIQ2Polar(V const & yiq)
 
 /** \brief Init Y'UV color triple from polar representation.
 
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     <b> Declarations:</b>
@@ -2939,11 +3164,11 @@ polar2YPrimeUV(V const & polar)
     }
     \endcode
     
-    <b>\#include</b> "<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>"<br>
+    <b>\#include</b> \<<a href="colorconversions_8hxx-source.html">vigra/colorconversions.hxx</a>\><br>
     Namespace: vigra
     
     This realizes the inverse of the transformation described in 
-    \link PolarColors#polar2YPrimeUV polar2YPrimeUV\endlink().
+    \ref polar2YPrimeUV().
 */
 template <class V>
 TinyVector<float, 3>

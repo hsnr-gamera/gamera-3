@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -56,7 +56,7 @@ namespace vigra {
     Implemented as a unary functor. Since it supports the <tt>radius()</tt> function
     it can also be used as a kernel in \ref resamplingConvolveImage().
 
-    <b>\#include</b> "<a href="gaussians_8hxx-source.html">vigra/gaussians.hxx</a>"<br>
+    <b>\#include</b> \<<a href="gaussians_8hxx-source.html">vigra/gaussians.hxx</a>\><br>
     Namespace: vigra
 
     \ingroup MathFunctions

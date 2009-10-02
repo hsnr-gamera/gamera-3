@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -49,32 +49,20 @@
 /*! \page Utilities Utilities
     Basic helper functionality needed throughout.
 
-    <DL>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref vigra::ArrayVector
-     <DD><em>replacement for std::vector</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref RangesAndPoints
-     <DD><em>2-dimensional positions, extents, and rectangles</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref PixelNeighborhood
-     <DD><em>4- and 8-neighborhood definitions and circulators</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref vigra::IteratorAdaptor
-     <DD><em>Quickly create STL-compatible 1D iterator adaptors</em>
-     <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref TupleTypes
-     <DD><em>pair, triple, tuple4, tuple5</em>
-      <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-     \ref MathConstants
-     <DD><em>M_PI, M_SQRT2</em>
-    </DL>
+    <UL style="list-style-image:url(documents/bullet.gif)">
+    <LI> \ref vigra::ArrayVector
+         <BR>&nbsp;&nbsp;&nbsp;<em>replacement for std::vector</em>
+    <LI> \ref RangesAndPoints
+         <BR>&nbsp;&nbsp;&nbsp;<em>2-dimensional positions, extents, and rectangles</em>
+    <LI> \ref PixelNeighborhood
+         <BR>&nbsp;&nbsp;&nbsp;<em>4- and 8-neighborhood definitions and circulators</em>
+    <LI> \ref vigra::IteratorAdaptor
+         <BR>&nbsp;&nbsp;&nbsp;<em>Quickly create STL-compatible 1D iterator adaptors</em>
+    <LI> \ref TupleTypes
+         <BR>&nbsp;&nbsp;&nbsp;<em>pair, triple, tuple4, tuple5</em>
+    <LI> \ref MathConstants
+         <BR>&nbsp;&nbsp;&nbsp;<em>M_PI, M_SQRT2</em>
+    </UL>
 */
 
 #endif // VIGRA_BASICS_HXX

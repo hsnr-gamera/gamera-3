@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -373,7 +373,7 @@ The functions need a suitable 2D kernel to operate.
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -388,7 +388,7 @@ The functions need a suitable 2D kernel to operate.
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>"<br>
+    <b>\#include</b> \<<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>\><br>
     Namespace: vigra
 
 
@@ -403,6 +403,7 @@ The functions need a suitable 2D kernel to operate.
                          0.125, 0.0, -0.125,
                          0.25,  0.0, -0.25,
                          0.125, 0.0, -0.125;
+    sobel.setBorderTreatment(vigra::BORDER_TREATMENT_REFLECT);
 
     vigra::convolveImage(srcImageRange(src), destImage(dest), kernel2d(sobel));
     \endcode
@@ -559,13 +560,14 @@ void convolveImage(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_acc,
         return; // skip processing near the border
 
     int interiorskip = w + kul.x - klr.x - 1;
-    // To appease gcc warnings gods
     int borderskipx = 0;
     int borderskipy = 0;
     int borderinc = 0;
     if(border == BORDER_TREATMENT_REPEAT)
     {
-
+        borderskipx = 0;
+        borderskipy = 0;
+        borderinc = 0;
     }
     else if(border == BORDER_TREATMENT_REFLECT)
     {
@@ -726,14 +728,13 @@ void convolveImage(
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor,
                   class KernelIterator, class KernelAccessor>
-        inline
         void normalizedConvolveImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                                      pair<MaskIterator, MaskAccessor> mask,
                                      pair<DestIterator, DestAccessor> dest,
@@ -744,7 +745,7 @@ void convolveImage(
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>"<br>
+    <b>\#include</b> \<<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>\><br>
     Namespace: vigra
 
 
@@ -811,6 +812,8 @@ void convolveImage(
     Sum of kernel elements must be != 0.
 
 */
+doxygen_overloaded_function(template <...> void normalizedConvolveImage)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class MaskIterator, class MaskAccessor,
@@ -908,7 +911,7 @@ normalizedConvolveImage(SrcIterator src_ul, SrcIterator src_lr, SrcAccessor src_
                 typename MaskIterator::row_iterator xxm = yym.rowIterator();
                 typename KernelIterator::row_iterator xk  = yk.rowIterator();
 
-                for(xx=0; xxs < xxend; ++xxs.x, --xk.x, ++xxm.x)
+                for(xx=0; xxs < xxend; ++xxs, --xk, ++xxm)
                 {
                     if(!am(xxm)) continue;
 
@@ -978,14 +981,13 @@ void normalizedConvolveImage(
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class MaskIterator, class MaskAccessor,
                   class DestIterator, class DestAccessor,
                   class KernelIterator, class KernelAccessor>
-        inline
         void convolveImageWithMask(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                                    pair<MaskIterator, MaskAccessor> mask,
                                    pair<DestIterator, DestAccessor> dest,
@@ -994,6 +996,8 @@ void normalizedConvolveImage(
     }
     \endcode
 */
+doxygen_overloaded_function(template <...> void convolveImageWithMask)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class MaskIterator, class MaskAccessor,
@@ -1060,7 +1064,7 @@ void convolveImageWithMask(
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>"<br>
+    <b>\#include</b> \<<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>\><br>
     Namespace: vigra
 
     \code

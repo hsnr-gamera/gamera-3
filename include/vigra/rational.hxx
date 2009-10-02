@@ -4,14 +4,13 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    It was adapted from the file boost/rational.hpp of the            */
 /*    boost library.                                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -33,7 +32,7 @@
 /*    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,      */
 /*    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING      */
 /*    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR     */
-/*    OTHER DEALINGS IN THE SOFTWARE.                                   */
+/*    OTHER DEALINGS IN THE SOFTWARE.                                   */                
 /*                                                                      */
 /************************************************************************/
 
@@ -76,7 +75,7 @@ namespace vigra {
     This function works for arbitrary integer types, including user-defined
     (e.g. infinite precision) ones.
 
-    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rational_8hxx-source.html">vigra/rational.hxx</a>\><br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -117,7 +116,7 @@ IntType gcd(IntType n, IntType m)
     This function works for arbitrary integer types, including user-defined
     (e.g. infinite precision) ones.
 
-    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rational_8hxx-source.html">vigra/rational.hxx</a>\><br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -188,7 +187,7 @@ Rational<IntType> ceil(const Rational<IntType>& r);
     </ul>
 
 
-    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rational_8hxx-source.html">vigra/rational.hxx</a>\><br>
     Namespace: vigra
 */
 template <typename IntType>
@@ -733,7 +732,7 @@ void Rational<IntType>::normalize()
     };
     \endcode
 
-    <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    <b>\#include</b> \<<a href="rational_8hxx-source.html">vigra/rational.hxx</a>\><br>
     Namespace: vigra
 
 */
@@ -819,7 +818,7 @@ struct PromoteTraits<T1, Rational<T2> >
 
 /** \addtogroup RationalOperations Functions for Rational
 
-    \brief     <b>\#include</b> "<a href="rational_8hxx-source.html">vigra/rational.hxx</a>"<br>
+    \brief     <b>\#include</b> \<<a href="rational_8hxx-source.html">vigra/rational.hxx</a>\><br>
 
     These functions fulfill the requirements of an \ref AlgebraicField.
 
@@ -1014,7 +1013,8 @@ operator< (const Rational<IntType1> & l, const Rational<IntType2>& r)
 
     // Handle the easy cases. Take advantage of the fact
     // that the denominator is never negative.
-    if(l.denominator() == zero) {
+    if(l.denominator() == zero)
+    {
         if(r.denominator() == zero)
             // -inf < inf, !(-inf < -inf), !(inf < -inf), !(inf < inf)
             return l.numerator() < r.numerator();
@@ -1023,19 +1023,16 @@ operator< (const Rational<IntType1> & l, const Rational<IntType2>& r)
             // !(inf < -1), !(inf < 0), !(inf < 1)
             return l.numerator() < zero;
     }
-    if(r.denominator() == zero) {
+    if(r.denominator() == zero)
         // -1 < inf, 0 < inf, 1 < inf
         // !(-1 < -inf), !(0 < -inf), !(1 < -inf)
         return r.numerator() > zero;
-    }
     // !(1 < -1), !(1 < 0), !(0 < -1), !(0 < 0)
-    if(l.numerator() >= zero && r.numerator() <= zero) {
+    if(l.numerator() >= zero && r.numerator() <= zero)
         return false;
-    }
     // -1 < 0, -1 < 1, 0 < 1 (note: !(0 < 0) was already handled!)
-    if(l.numerator() <= zero && r.numerator() >= zero) {
+    if(l.numerator() <= zero && r.numerator() >= zero)
         return true;
-    }
 
     // both numbers have the same sign (and are neither zero or +-infinity)
     // => calculate result, avoid overflow

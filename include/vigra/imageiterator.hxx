@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -114,123 +114,64 @@ class StridedIteratorPolicy
 <p>
 
 <table border=2 cellspacing=0 cellpadding=2 width="100%">
-<tr><td>
-    \htmlonly
-    <th colspan=2>
-    \endhtmlonly
+<tr><th colspan=2>
     Local Types
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Meaning
-    \htmlonly
     </th>
-    \endhtmlonly
-</td></tr>
-<tr><td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+</tr>
+<tr><td colspan=2>
     <tt>ImageIterator::value_type</tt></td><td>the underlying image's pixel type</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::PixelType</tt></td><td>the underlying image's pixel type</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::reference</tt></td>
     <td>the iterator's reference type (return type of <TT>*iter</TT>). Will be
     <tt>value_type &</tt> for a mutable iterator, and convertible to
     <tt>value_type const &</tt> for a const iterator.</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::index_reference</tt></td>
     <td>the iterator's index reference type (return type of <TT>iter[diff]</TT>). Will be
     <tt>value_type &</tt> for a mutable iterator, and convertible to
     <tt>value_type const &</tt> for a const iterator.</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::pointer</tt></td>
     <td>the iterator's pointer type (return type of <TT>iter.operator->()</TT>). Will be
     <tt>value_type *</tt> for a mutable iterator, and convertible to
     <tt>value_type const *</tt> for a const iterator.</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::difference_type</tt></td>
     <td>the iterator's difference type (<TT>vigra::Diff2D</TT>)</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::iterator_category</tt></td>
     <td>the iterator tag (<tt>vigra::image_traverser_tag</tt>)</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::row_iterator</tt></td><td>the associated row iterator</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::column_iterator</tt></td><td>the associated column iterator</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::MoveX</tt></td><td>type of the horizontal navigator</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::MoveY</tt></td><td>type of the vertical navigator</td>
 </tr>
-<tr><td>
-    \htmlonly
-    <th>
-    \endhtmlonly
+<tr><th>
     Operation
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Result
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Semantics
-    \htmlonly
     </th>
-    \endhtmlonly
-</td></tr>
+</tr>
 <tr>
     <td><tt>++i.x<br>i.x--</tt></td><td><tt>void</tt></td><td>increment x-coordinate</td>
 </tr>
@@ -288,35 +229,19 @@ class StridedIteratorPolicy
 <tr>
     <td><tt>i.y < j.y</tt></td><td><tt>bool</tt></td><td><tt>j.y - i.y > 0</tt></td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator k(i)</tt></td><td>copy constructor</td>
 </tr>
 <tr>
     <td><tt>k = i</tt></td><td><tt>ImageIterator &</tt></td><td>assignment</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator k</tt></td><td>default constructor</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::row_iterator r(i)</tt></td><td>construction of row iterator</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=2>
-    \endhtmlonly
+<tr><td colspan=2>
     <tt>ImageIterator::column_iterator c(i)</tt></td><td>construction of column iterator</td>
 </tr>
 <tr>
@@ -359,11 +284,7 @@ class StridedIteratorPolicy
     <td><tt>i->member()</tt></td><td>depends on operation</td>
     <td>call member function of underlying pixel type via <tt>operator-></tt> of iterator</td>
 </tr>
-<tr>
-    <td>
-    \htmlonly
-    <td colspan=3>
-    \endhtmlonly
+<tr><td colspan=3>
        <tt>i, j, k</tt> are of type <tt>ImageIterator</tt><br>
        <tt>diff</tt> is of type <tt>ImageIterator::difference_type</tt><br>
        <tt>dx, dy</tt> are of type <tt>int</tt><br>
@@ -377,64 +298,57 @@ The following iterator traits must be defined for an image iterator:
 </p>
 <p>
 <table border=2 cellspacing=0 cellpadding=2 width="100%">
-<tr><td>
-    \htmlonly
-    <th>
-    \endhtmlonly
+<tr><th>
     Types
-    \htmlonly
     </th><th>
-    \endhtmlonly
     Meaning
-    \htmlonly
     </th>
-    \endhtmlonly
-</td></tr>
-<tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::Iterator</tt></td><td>the iterator type the traits are referring to</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::iterator</tt></td><td>the iterator type the traits are referring to</td>
+    <td><tt>IteratorTraits<ImageIterator>::Iterator</tt></td><td>the iterator type the traits are referring to</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::value_type</tt></td><td>the underlying image's pixel type</td>
+    <td><tt>IteratorTraits<ImageIterator>::iterator</tt></td><td>the iterator type the traits are referring to</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::reference</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::value_type</tt></td><td>the underlying image's pixel type</td>
+</tr>
+<tr>
+    <td><tt>IteratorTraits<ImageIterator>::reference</tt></td>
     <td>the iterator's reference type (return type of <TT>*iter</TT>)</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::index_reference</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::index_reference</tt></td>
     <td>the iterator's index reference type (return type of <TT>iter[diff]</TT>)</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::pointer</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::pointer</tt></td>
     <td>the iterator's pointer type (return type of <TT>iter.operator->()</TT>)</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::difference_type</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::difference_type</tt></td>
     <td>the iterator's difference type</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::iterator_category</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::iterator_category</tt></td>
     <td>the iterator tag (<tt>vigra::image_traverser_tag</tt>)</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::row_iterator</tt></td><td>the associated row iterator</td>
+    <td><tt>IteratorTraits<ImageIterator>::row_iterator</tt></td><td>the associated row iterator</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::column_iterator</tt></td><td>the associated column iterator</td>
+    <td><tt>IteratorTraits<ImageIterator>::column_iterator</tt></td><td>the associated column iterator</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::DefaultAccessor</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::DefaultAccessor</tt></td>
     <td>the default accessor to be used with the iterator</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::default_accessor</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::default_accessor</tt></td>
     <td>the default accessor to be used with the iterator</td>
 </tr>
 <tr>
-    <td><tt>IteratorTraits&lt;ImageIterator&gt;::hasConstantStrides</tt></td>
+    <td><tt>IteratorTraits<ImageIterator>::hasConstantStrides</tt></td>
     <td>whether the iterator uses constant strides on the underlying memory
         (always <tt>VigraTrueType</tt> for <tt>ImageIterator</tt>s).</td>
 </tr>
@@ -629,7 +543,7 @@ class LinearIteratorSelector<StridedArrayTag>
     It is usually not constructed directly, but via some derived class such as
     \ref ImageIterator or \ref StridedImageIterator.
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -929,7 +843,7 @@ class ImageIteratorBase
     <a href="documents/GenericProg2D.ps">Reusable Algorithms in Image Processing</a>
     for a discussion of the concepts behind ImageIterators.
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -975,7 +889,7 @@ class ImageIterator
 
     Most functions are inherited from ImageIteratorBase.
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -1049,7 +963,7 @@ class ConstImageIterator
     // the original resolution in either dimension
     \endcode
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -1110,7 +1024,7 @@ class StridedImageIterator
     // the original resolution in either dimension
     \endcode
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -1374,7 +1288,7 @@ class ConstValueIteratorPolicy
     This iterator can be used to simulate an image that
     does not actually exist.
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
 
@@ -1589,15 +1503,13 @@ struct IteratorTraits<ConstValueIterator<T> >
 
 #endif
 
-typedef Diff2D CoordinateIterator;
+/** \brief Simulate an image where each pixel contains its coordinate.
 
-/** \class CoordinateIterator
-
-    This used to be a separate class,
+    CoordinateIterator used to be a separate class,
     but has now become an alias for \ref vigra::Diff2D. This is possible because
     Diff2D now provides all the necessary functionality.
 
-    CoordinateIterator behaves like a read-only \ref ImageIterator for
+    CoordinateIterator behaves like a read-only \ref vigra::ImageIterator for
     an image in which each pixel contains its coordinate. This is useful for
     algorithms that need access to the current pixel's location.
     For example, you can use CoordinateIterator/Diff2D to
@@ -1648,12 +1560,11 @@ typedef Diff2D CoordinateIterator;
                                 ", " << center.yCenter() << std::endl;
     \endcode
 
-    <b>\#include</b> "<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>"
+    <b>\#include</b> \<<a href="imageiterator_8hxx-source.html">vigra/imageiterator.hxx</a>\>
 
     Namespace: vigra
-
-    \brief Simulate an image where each pixel contains its coordinate
 */
+typedef Diff2D CoordinateIterator;
 
 //@}
 

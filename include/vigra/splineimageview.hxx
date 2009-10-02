@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -75,7 +75,7 @@ namespace vigra {
     
     <b>Usage:</b>
     
-    <b>\#include</b> "<a href="splineimageview_8hxx-source.html">vigra/splineimageview.hxx</a>"<br>
+    <b>\#include</b> \<<a href="splineimageview_8hxx-source.html">vigra/splineimageview.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -83,18 +83,18 @@ namespace vigra {
     ... // fill img
     
     // construct spline view for quadratic interpolation
-    SplineImageView<2, double> spi2(img);
+    SplineImageView<2, double> spi2(srcImageRange(img));
     
     double x = ..., y = ...;
     double v2 = spi2(x, y);
     
     // construct spline view for linear interpolation
-    SplineImageView<1, UInt32> spi1(img);
+    SplineImageView<1, UInt32> spi1(srcImageRange(img));
     
     UInt32 v1 = spi1(x, y);    
     
     FixedPoint<16, 15> fx(...), fy(...);
-    UInt32 vf = spi1.unchecked(fx, fy);
+    UInt32 vf = spi1.unchecked(fx, fy); // caller is sure that (fx, fy) are valid coordinates
     \endcode
 */
 template <int ORDER, class VALUETYPE>
@@ -372,19 +372,19 @@ class SplineImageView
         { return g2yy(d[0], d[1]); }
     
         /** The width of the image.
-            <tt>0 &lt;= x &lt;= width()-1</tt> is required for all access functions.
+            <tt>0 <= x <= width()-1</tt> is required for all access functions.
         */
     unsigned int width() const
         { return w_; }
     
         /** The height of the image.
-            <tt>0 &lt;= y &lt;= height()-1</tt> is required for all access functions.
+            <tt>0 <= y <= height()-1</tt> is required for all access functions.
         */
     unsigned int height() const
         { return h_; }
     
         /** The size of the image.
-            <tt>0 &lt;= x &lt;= size().x-1</tt> and <tt>0 &lt;= y &lt;= size().y-1</tt> 
+            <tt>0 <= x <= size().x-1</tt> and <tt>0 <= y <= size().y-1</tt> 
             are required for all access functions.
         */
     size_type size() const
@@ -437,7 +437,7 @@ class SplineImageView
     void coefficientArray(double x, double y, Array & res) const;
     
         /** Check if x is in the original image range.
-            Equivalent to <tt>0 &lt;= x &lt;= width()-1</tt>.
+            Equivalent to <tt>0 <= x <= width()-1</tt>.
         */
     bool isInsideX(double x) const
     {
@@ -445,7 +445,7 @@ class SplineImageView
     }
         
         /** Check if y is in the original image range.
-            Equivalent to <tt>0 &lt;= y &lt;= height()-1</tt>.
+            Equivalent to <tt>0 <= y <= height()-1</tt>.
         */
     bool isInsideY(double y) const
     {
@@ -453,7 +453,7 @@ class SplineImageView
     }
         
         /** Check if x and y are in the original image range.
-            Equivalent to <tt>0 &lt;= x &lt;= width()-1</tt> and <tt>0 &lt;= y &lt;= height()-1</tt>.
+            Equivalent to <tt>0 <= x <= width()-1</tt> and <tt>0 <= y <= height()-1</tt>.
         */
     bool isInside(double x, double y) const
     {
@@ -462,8 +462,8 @@ class SplineImageView
     
         /** Check if x and y are in the valid range. Points outside the original image range are computed
             by reflcective boundary conditions, but only within the first reflection.
-            Equivalent to <tt>-width() + ORDER/2 + 2 &lt; x &lt; 2*width() - ORDER/2 - 2</tt> and 
-            <tt>-height() + ORDER/2 + 2 &lt; y &lt; 2*height() - ORDER/2 - 2</tt>.
+            Equivalent to <tt>-width() + ORDER/2 + 2 < x < 2*width() - ORDER/2 - 2</tt> and 
+            <tt>-height() + ORDER/2 + 2 < y < 2*height() - ORDER/2 - 2</tt>.
         */
     bool isValid(double x, double y) const
     {

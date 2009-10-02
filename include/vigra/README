@@ -3,16 +3,33 @@ Readme for VIGRA includion in Gamera
 
 These header files are taken from VIGRA
 
-	version 1.5.0
+	version 1.6.0
 
 avaliable from 
 
 http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
 
-As the convolution in this version caused crashes in
-Gamera (possibly due to changes/bugs in the implementation
-of BORDER_TREATMENT_REFLECT in VIGRA), the file
+Due to some shortcomings in VIGRA 1.6.0, the following
+files are modified:
 
-	stdconvolution.hxx
+ - basicgeometry.hxx
+     has been taken from the development branch of VIGRA
+     to make the Gamera plugin "resize" work
 
-is taken from VIGRA version 1.3.0.
+ - stdconvolution.hxx
+     a compiler warning about uninitialized variables is
+     suppressed. This change is already included in the
+     development branch of VIGRA
+
+ - rational.hxx
+     has been taken from the development branch of VIGRA
+     to suppress a compiler warnign about an "ambiguous else"
+
+ - resizeimage.hxx
+     has been taken from the development branch of VIGRA,
+     even though this version still does not work correctly
+     for an image resize without interpolation.
+     Therefore never use resizeImageNoInterpolation(), but
+     instead resampleImage()
+
+Christoph Dalitz

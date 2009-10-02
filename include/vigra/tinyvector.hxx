@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -366,7 +366,7 @@ class TinyVectorView;
     \ref TinyVector and \ref TinyVectorView, and enables these classes
     to be freely mixed within expressions. It is typically not used directly.
 
-    <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
+    <b>\#include</b> \<<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>\><br>
     Namespace: vigra
 **/
 template <class VALUETYPE, int SIZE, class DATA, class DERIVED>
@@ -551,32 +551,20 @@ class TinyVectorBase
     operations. Addition and subtraction of two TinyVectors
     (+=, -=, +, -, unary -), multiplication and division of an
     TinyVector with a double, and NumericTraits/PromoteTraits are defined,
-    so that TinyVector fulfills the requirements of \ref LinearAlgebra.
+    so that TinyVector fulfills the requirements of \ref LinearAlgebraConcept "Linear Algebra".
 
     VIGRA algorithms typically use \ref vigra::VectorAccessor to access
     TinyVectors as a whole, or specific components of them.
 
     See also:<br>
-    <DL>
-        <DT>
-            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-            \ref vigra::TinyVectorBase
-            <DD>
-        <DT>
-            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-            \ref vigra::TinyVectorView
-            <DD>
-        <DT>
-            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-            \ref TinyVectorTraits
-            <DD>
-        <DT>
-            <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif">
-            \ref TinyVectorOperators
-            <DD>
-    </DL>
+    <UL style="list-style-image:url(documents/bullet.gif)">
+        <LI> \ref vigra::TinyVectorBase
+        <LI> \ref vigra::TinyVectorView
+        <LI> \ref TinyVectorTraits
+        <LI> \ref TinyVectorOperators
+    </UL>
 
-    <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
+    <b>\#include</b> \<<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>\><br>
     Namespace: vigra
 **/
 template <class T, int SIZE>
@@ -711,7 +699,7 @@ class TinyVector
     operations. Addition and subtraction of two TinyVectorViews
     (+=, -=, +, -, unary -), multiplication and division of an
     TinyVectorViews with a double, and NumericTraits/PromoteTraits are defined,
-    so that TinyVectorView fulfills the requirements of \ref LinearAlgebra.
+    so that TinyVectorView fulfills the requirements of \ref LinearAlgebraConcept "Linear Algebra".
 
     VIGRA algorithms typically use \ref vigra::VectorAccessor to access
     TinyVectorViews as a whole, or specific components of them.
@@ -724,7 +712,7 @@ class TinyVector
         <li> \ref TinyVectorOperators
     </ul>
 
-    <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
+    <b>\#include</b> \<<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>\><br>
     Namespace: vigra
 **/
 template <class T, int SIZE>
@@ -809,15 +797,14 @@ class TinyVectorView
 
 /** \addtogroup TinyVectorOperators Functions for TinyVector
 
-    \brief <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>
+    \brief Implement basic arithmetic and equality for TinyVector.
 
     These functions fulfill the requirements of a Linear Space (vector space).
     Return types are determined according to \ref TinyVectorTraits.
 
+    <b>\#include</b> \<<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>\><br>
     Namespace: vigra
-    <p>
-
- */
+*/
 //@{
     /// component-wise equal
 template <class V1, int SIZE, class D1, class D2, class V2, class D3, class D4>
@@ -900,7 +887,7 @@ operator<<(std::ostream & out, TinyVectorBase<V1, SIZE, DATA, DERIVED> const & l
     };
     \endcode
 
-    <b>\#include</b> "<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>"<br>
+    <b>\#include</b> \<<a href="tinyvector_8hxx-source.html">vigra/tinyvector.hxx</a>\><br>
     Namespace: vigra
 
     On compilers that don't support pertial template specialization (e.g.

@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -60,13 +60,12 @@ namespace vigra {
     This function implements anisotropic tensor smoothing by an
     hourglass-shaped filters as described in
     
-    U. K÷the: <a href="http://kogs-www.informatik.uni-hamburg.de/~koethe/papers/abstracts/structureTensor.html">
+    U. K&ouml;the: <a href="http://kogs-www.informatik.uni-hamburg.de/~koethe/papers/abstracts/structureTensor.html">
     <i>"Edge and Junction Detection with an Improved Structure Tensor"</i></a>, 
      in: Proc. of 25th DAGM Symposium, Magdeburg 2003, Lecture Notes in Computer Science 2781, 
      pp. 25-32, Heidelberg: Springer, 2003
      
-    It is closely related to the structure tensor (see 
-    \link CommonConvolutionFilters#structureTensor structureTensor\endlink()), but
+    It is closely related to the structure tensor (see \ref structureTensor()), but
     replaces the linear tensor smoothing with a smoothing along edges only. 
     Smoothing accross edges is largely suppressed. This means that the
     image structure is preserved much better because nearby features
@@ -98,7 +97,7 @@ namespace vigra {
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -112,7 +111,7 @@ namespace vigra {
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="orientedtensorfilters_8hxx-source.html">vigra/orientedtensorfilters.hxx</a>"
+    <b>\#include</b> \<<a href="orientedtensorfilters_8hxx-source.html">vigra/orientedtensorfilters.hxx</a>\>
 
     \code
     FImage img(w,h);
@@ -126,6 +125,8 @@ namespace vigra {
     
     \see vectorToTensor()
 */
+doxygen_overloaded_function(template <...> void hourGlassFilter)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void hourGlassFilter(SrcIterator sul, SrcIterator slr, SrcAccessor src,

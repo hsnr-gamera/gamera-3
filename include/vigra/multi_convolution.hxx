@@ -6,12 +6,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -181,7 +181,7 @@ internalSeparableConvolveMultiArrayTmp(
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         // apply the same kernel to all dimensions
@@ -204,7 +204,7 @@ internalSeparableConvolveMultiArrayTmp(
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>"
+    <b>\#include</b> \<<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>\>
 
     \code
     MultiArray<3, unsigned char>::size_type shape(width, height, depth);
@@ -223,6 +223,8 @@ internalSeparableConvolveMultiArrayTmp(
 
     \see vigra::Kernel1D, convolveLine()
 */
+doxygen_overloaded_function(template <...> void separableConvolveMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor, class KernelIterator>
 void
@@ -312,7 +314,7 @@ separableConvolveMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & s
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -326,7 +328,7 @@ separableConvolveMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & s
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>"
+    <b>\#include</b> \<<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>\>
 
     \code
     MultiArray<3, unsigned char>::size_type shape(width, height, depth);
@@ -342,6 +344,8 @@ separableConvolveMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & s
 
     \see separableConvolveMultiArray()
 */
+doxygen_overloaded_function(template <...> void convolveMultiArrayOneDimension)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor, class T>
 void
@@ -419,7 +423,7 @@ convolveMultiArrayOneDimension(triple<SrcIterator, SrcShape, SrcAccessor> const 
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -433,7 +437,7 @@ convolveMultiArrayOneDimension(triple<SrcIterator, SrcShape, SrcAccessor> const 
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>"
+    <b>\#include</b> \<<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>\>
 
     \code
     MultiArray<3, unsigned char>::size_type shape(width, height, depth);
@@ -446,6 +450,8 @@ convolveMultiArrayOneDimension(triple<SrcIterator, SrcShape, SrcAccessor> const 
 
     \see separableConvolveMultiArray()
 */
+doxygen_overloaded_function(template <...> void gaussianSmoothMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -504,7 +510,7 @@ gaussianSmoothMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & sour
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -518,7 +524,7 @@ gaussianSmoothMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & sour
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>"
+    <b>\#include</b> \<<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>\>
 
     \code
     MultiArray<3, unsigned char>::size_type shape(width, height, depth);
@@ -540,6 +546,8 @@ gaussianSmoothMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & sour
 
     \see separableConvolveMultiArray()
 */
+doxygen_overloaded_function(template <...> void gaussianGradientMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -603,7 +611,7 @@ gaussianGradientMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & so
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcShape, class SrcAccessor,
@@ -616,7 +624,7 @@ gaussianGradientMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & so
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>"
+    <b>\#include</b> \<<a href="multi__convolution_8hxx-source.html">vigra/multi_convolution.hxx</a>\>
 
     \code
     MultiArray<3, unsigned char>::size_type shape(width, height, depth);
@@ -638,6 +646,8 @@ gaussianGradientMultiArray(triple<SrcIterator, SrcShape, SrcAccessor> const & so
 
     \see convolveMultiArrayOneDimension()
 */
+doxygen_overloaded_function(template <...> void symmetricGradientMultiArray)
+
 template <class SrcIterator, class SrcShape, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void

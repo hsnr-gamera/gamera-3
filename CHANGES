@@ -1,6 +1,13 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - newer VIGRA version 1.6 included with some backports
+   (see the file include/vigra/README for a list of modifications)
+
+ - warnings about unavailable optional packages only printed
+   when config.set("verbosity_level",1) has been set
+
+
 Version 3.2.2, Oct 01, 2009
 ----------------------------
 

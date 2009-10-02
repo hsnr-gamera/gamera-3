@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -56,22 +56,16 @@
 
     Meta-information about arithmetic types.
     
-    <DL>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
-    \ref NumericTraits
-    <DD><em>Unary traits for promotion, conversion, creation of arithmetic objects</em>
-    <DT>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
-    \ref PromoteTraits
-    <DD><em>Binary traits for promotion of arithmetic objects</em>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
-    \ref SquareRootTraits
-    <DD><em>Unary traits for the calculation of the square root of arithmetic objects</em>
-    <IMG BORDER=0 ALT="-" SRC="documents/bullet.gif"> 
-    \ref NormTraits
-    <DD><em>Unary traits for the calculation of the norm and squared norm of arithmetic objects</em>
-    </DL>
+    <UL style="list-style-image:url(documents/bullet.gif)">
+    <LI> \ref NumericTraits
+         <BR>&nbsp;&nbsp;&nbsp;<em>Unary traits for promotion, conversion, creation of arithmetic objects</em>
+    <LI> \ref PromoteTraits
+         <BR>&nbsp;&nbsp;&nbsp;<em>Binary traits for promotion of arithmetic objects</em>
+    <LI> \ref SquareRootTraits
+         <BR>&nbsp;&nbsp;&nbsp;<em>Unary traits for the calculation of the square root of arithmetic objects</em>
+    <LI> \ref NormTraits
+         <BR>&nbsp;&nbsp;&nbsp;<em>Unary traits for the calculation of the norm and squared norm of arithmetic objects</em>
+    </UL>
     
     These traits classes contain information that is used by generic
     algorithms and data structures to determine intermediate and result
@@ -91,7 +85,7 @@
     Unary traits for promotion, conversion, creation of arithmetic objects.
 
     <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
 
     This traits class is used derive important properties of
     an arithmetic type. Consider the following algorithm:
@@ -320,7 +314,7 @@
     </table>
     
     NumericTraits for the built-in types are defined in <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
     
     Namespace: vigra
     
@@ -331,7 +325,7 @@
     Binary traits for promotion of arithmetic objects.
     
     <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
 
     This traits class is used to determine the appropriate result type
     of arithmetic expressions which depend of two arguments. Consider
@@ -383,7 +377,7 @@
     </table>
     
     PromoteTraits for the built-in types are defined in <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
     
     Namespace: vigra
 */
@@ -393,7 +387,7 @@
     Unary traits for the calculation of the square root of arithmetic objects.
     
     <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
 
     This traits class is used to determine appropriate argument and result types
     for the function sqrt(). These traits are typically used like this:
@@ -429,7 +423,7 @@
     </table>
     
     NormTraits for the built-in types are defined in <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
     
     Namespace: vigra
 */
@@ -439,7 +433,7 @@
     Unary traits for the calculation of the norm and squared norm of arithmetic objects.
     
     <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
 
     This traits class is used to determine appropriate result types
     for the functions norm() and squaredNorm(). These functions are always 
@@ -467,12 +461,12 @@
     <b> <TT>typedef ... NormType;</TT></b>
     </td><td>
             result of <tt>norm(ArithmeticType)</tt><br>
-            Usually equal to <tt>SquareRootTraits&lt;SquaredNormType&gt;::SquareRootResult
+            Usually equal to <tt>SquareRootTraits<SquaredNormType>::SquareRootResult</tt>
     </td></tr>
     </table>
     
     NormTraits for the built-in types are defined in <b>\#include</b> 
-    "<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>"
+    \<<a href="numerictraits_8hxx-source.html">vigra/numerictraits.hxx</a>\>
     
     Namespace: vigra
 */
@@ -487,6 +481,7 @@ struct NumericTraits
 {
     typedef Error_NumericTraits_not_specialized_for_this_case Type;
     typedef Error_NumericTraits_not_specialized_for_this_case Promote;
+    typedef Error_NumericTraits_not_specialized_for_this_case UnsignedPromote;
     typedef Error_NumericTraits_not_specialized_for_this_case RealPromote;
     typedef Error_NumericTraits_not_specialized_for_this_case ComplexPromote;
     typedef Error_NumericTraits_not_specialized_for_this_case ValueType;
@@ -503,6 +498,7 @@ struct NumericTraits<char>
 {
     typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char Type;
     typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char Promote;
+    typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char UnsignedPromote;
     typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char RealPromote;
     typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char ComplexPromote;
     typedef Error_NumericTraits_char_is_not_a_numeric_type__use_signed_char_or_unsigned_char ValueType;
@@ -520,6 +516,7 @@ struct NumericTraits<bool>
 {
     typedef bool Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -559,6 +556,7 @@ struct NumericTraits<signed char>
 {
     typedef signed char Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -603,6 +601,7 @@ struct NumericTraits<unsigned char>
 {
     typedef unsigned char Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -629,14 +628,18 @@ struct NumericTraits<unsigned char>
     static Promote toPromote(unsigned char v) { return v; }
     static RealPromote toRealPromote(unsigned char v) { return v; }
     static unsigned char fromPromote(Promote const & v) { 
-        return ((v < 0) ? 0 : (v > UCHAR_MAX) ? UCHAR_MAX : v); 
+        return Type((v < 0) 
+             ? 0 
+             : (v > (Promote)UCHAR_MAX) 
+                    ? UCHAR_MAX
+                    : v); 
     }
     static unsigned char fromRealPromote(RealPromote const & v) {
-            return ((v < 0.0) 
+            return Type((v < 0.0) 
                      ? 0 
                      : ((v > (RealPromote)UCHAR_MAX) 
                          ? UCHAR_MAX 
-                         : static_cast<unsigned char>(v + 0.5)));
+                         : v + 0.5));
     }
 };
 
@@ -645,6 +648,7 @@ struct NumericTraits<short int>
 {
     typedef short int Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -690,6 +694,7 @@ struct NumericTraits<short unsigned int>
 {
     typedef short unsigned int Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -716,14 +721,18 @@ struct NumericTraits<short unsigned int>
     static Promote toPromote(short unsigned int v) { return v; }
     static RealPromote toRealPromote(short unsigned int v) { return v; }
     static short unsigned int fromPromote(Promote v) { 
-        return ((v < 0) ? 0 : (v > USHRT_MAX) ? USHRT_MAX : v); 
+        return Type((v < 0) 
+              ? 0 
+              : (v > USHRT_MAX) 
+                   ? USHRT_MAX 
+                   : v); 
     }
     static short unsigned int fromRealPromote(RealPromote v) {
-            return ((v < 0.0) 
+            return Type((v < 0.0) 
                      ? 0 
                      : ((v > (RealPromote)USHRT_MAX) 
                          ? USHRT_MAX 
-                         : static_cast<short unsigned int>(v + 0.5)));
+                         : v + 0.5));
     }
 };
 
@@ -732,6 +741,7 @@ struct NumericTraits<int>
 {
     typedef int Type;
     typedef int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -774,6 +784,7 @@ struct NumericTraits<unsigned int>
 {
     typedef unsigned int Type;
     typedef unsigned int Promote;
+    typedef unsigned int UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -814,6 +825,7 @@ struct NumericTraits<long>
 {
     typedef long Type;
     typedef long Promote;
+    typedef unsigned long UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -856,6 +868,7 @@ struct NumericTraits<unsigned long>
 {
     typedef unsigned long Type;
     typedef unsigned long Promote;
+    typedef unsigned long UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -891,11 +904,98 @@ struct NumericTraits<unsigned long>
     }
 };
 
+#ifdef LLONG_MAX
+template<>
+struct NumericTraits<long long>
+{
+    typedef long long Type;
+    typedef long long Promote;
+    typedef unsigned long long UnsignedPromote;
+    typedef double RealPromote;
+    typedef std::complex<RealPromote> ComplexPromote;
+    typedef Type ValueType;
+
+    typedef VigraTrueType isIntegral;
+    typedef VigraTrueType isScalar;
+    typedef VigraTrueType isSigned;
+    typedef VigraTrueType isOrdered;
+    typedef VigraFalseType isComplex;
+    
+    static long long zero() { return 0; }
+    static long long one() { return 1; }
+    static long long nonZero() { return 1; }
+    static long long min() { return LLONG_MIN; }
+    static long long max() { return LLONG_MAX; }
+    
+#ifdef NO_INLINE_STATIC_CONST_DEFINITION
+    enum { minConst = LLONG_MIN, maxConst = LLONG_MAX };
+#else
+    static const long long minConst = LLONG_MIN;
+    static const long long maxConst = LLONG_MAX;
+#endif
+
+    static Promote toPromote(long long v) { return v; }
+    static RealPromote toRealPromote(long long v) { return v; }
+    static long long fromPromote(Promote v) { return v; }
+    static long long fromRealPromote(RealPromote v) {
+        return ((v < 0.0) 
+                 ? ((v < (RealPromote)LLONG_MIN) 
+                     ? LLONG_MIN 
+                     : static_cast<long long>(v - 0.5)) 
+                 : ((v > (RealPromote)LLONG_MAX) 
+                     ? LLONG_MAX 
+                     : static_cast<long long>(v + 0.5))); 
+    }
+};
+
+template<>
+struct NumericTraits<unsigned long long>
+{
+    typedef unsigned long long Type;
+    typedef unsigned long long Promote;
+    typedef unsigned long long UnsignedPromote;
+    typedef double RealPromote;
+    typedef std::complex<RealPromote> ComplexPromote;
+    typedef Type ValueType;
+
+    typedef VigraTrueType isIntegral;
+    typedef VigraTrueType isScalar;
+    typedef VigraFalseType isSigned;
+    typedef VigraTrueType isOrdered;
+    typedef VigraFalseType isComplex;
+    
+    static unsigned long long zero() { return 0; }
+    static unsigned long long one() { return 1; }
+    static unsigned long long nonZero() { return 1; }
+    static unsigned long long min() { return 0; }
+    static unsigned long long max() { return ULLONG_MAX; }
+    
+#ifdef NO_INLINE_STATIC_CONST_DEFINITION
+    enum { minConst = 0, maxConst = ULLONG_MAX };
+#else
+    static const unsigned long long minConst = 0;
+    static const unsigned long long maxConst = ULLONG_MAX;
+#endif
+
+    static Promote toPromote(unsigned long long v) { return v; }
+    static RealPromote toRealPromote(unsigned long long v) { return v; }
+    static unsigned long long fromPromote(Promote v) { return v; }
+    static unsigned long long fromRealPromote(RealPromote v) {
+            return ((v < 0.0) 
+                     ? 0 
+                     : ((v > (RealPromote)ULLONG_MAX) 
+                         ? ULONG_MAX 
+                         : static_cast<unsigned long long>(v + 0.5)));
+    }
+};
+#endif // LLONG_MAX
+
 template<>
 struct NumericTraits<float>
 {
     typedef float Type;
     typedef float Promote;
+    typedef float UnsignedPromote;
     typedef float RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -925,6 +1025,7 @@ struct NumericTraits<double>
 {
     typedef double Type;
     typedef double Promote;
+    typedef double UnsignedPromote;
     typedef double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -954,6 +1055,7 @@ struct NumericTraits<long double>
 {
     typedef long double Type;
     typedef long double Promote;
+    typedef long double UnsignedPromote;
     typedef long double RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef Type ValueType;
@@ -985,6 +1087,7 @@ struct NumericTraits<std::complex<T> >
 {
     typedef std::complex<T> Type;
     typedef std::complex<typename NumericTraits<T>::Promote> Promote;
+    typedef std::complex<typename NumericTraits<T>::UnsignedPromote> UnsignedPromote;
     typedef std::complex<typename NumericTraits<T>::RealPromote> RealPromote;
     typedef std::complex<RealPromote> ComplexPromote;
     typedef T ValueType;
@@ -1034,9 +1137,9 @@ struct Error_NormTraits_not_specialized_for_this_case { };
 template<class T>
 struct NormTraits
 {
-    typedef T                                                            Type;
-    typedef typename T::SquaredNormType                                  SquaredNormType;
-    typedef typename SquareRootTraits<SquaredNormType>::SquareRootResult NormType;
+    typedef T                                                Type;
+    typedef Error_NormTraits_not_specialized_for_this_case   SquaredNormType;
+    typedef Error_NormTraits_not_specialized_for_this_case   NormType;
 };
 
 #define VIGRA_DEFINE_NORM_TRAITS(T) \
@@ -1059,6 +1162,11 @@ VIGRA_DEFINE_NORM_TRAITS(float)
 VIGRA_DEFINE_NORM_TRAITS(double)
 VIGRA_DEFINE_NORM_TRAITS(long double)
 
+#ifdef LLONG_MAX
+VIGRA_DEFINE_NORM_TRAITS(long long)
+VIGRA_DEFINE_NORM_TRAITS(unsigned long long)
+#endif // LLONG_MAX
+
 #undef VIGRA_DEFINE_NORM_TRAITS
 
 #ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
@@ -1079,6 +1187,31 @@ struct NormTraits<std::complex<T> >
 /*                                                      */
 /********************************************************/
 
+namespace detail {
+
+template <class T, class U>
+struct PromoteType
+{
+    static T & t();
+    static U & u();
+    // let C++ figure out the promote type by adding a T and an U
+    typedef typename SizeToType<sizeof(*typeToSize(t() + u()))>::result Promote;
+    static Promote toPromote(T t) { return Promote(t); }
+    static Promote toPromote(U u) { return Promote(u); }
+};
+
+
+template <class T>
+struct PromoteType<T, T>
+{
+    static T & t();
+    // let C++ figure out the promote type by adding two Ts
+    typedef typename SizeToType<sizeof(*typeToSize(t() + t()))>::result Promote;
+    static Promote toPromote(T t) { return Promote(t); }
+};
+
+} // namespace detail
+
 struct Error_PromoteTraits_not_specialized_for_this_case { };
 
 template<class A, class B>
@@ -1087,962 +1220,7 @@ struct PromoteTraits
     typedef Error_PromoteTraits_not_specialized_for_this_case Promote;
 };
 
-template<>
-struct PromoteTraits<signed char, signed char>
-{
-    typedef int Promote;
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, unsigned char>
-{
-    typedef int Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, short int>
-{
-    typedef int Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, int>
-{
-    typedef int Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, long>
-{
-    typedef long Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, float>
-{
-    typedef float Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, double>
-{
-    typedef double Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<signed char, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(signed char v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, signed char>
-{
-    typedef int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, unsigned char>
-{
-    typedef int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, short int>
-{
-    typedef int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, int>
-{
-    typedef int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, long>
-{
-    typedef long Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, float>
-{
-    typedef float Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, double>
-{
-    typedef double Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned char, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(unsigned char v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, signed char>
-{
-    typedef int Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, unsigned char>
-{
-    typedef int Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, short int>
-{
-    typedef int Promote;
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, int>
-{
-    typedef int Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, long>
-{
-    typedef long Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, float>
-{
-    typedef float Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, double>
-{
-    typedef double Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short int, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(short int v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, signed char>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, unsigned char>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, short int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, long>
-{
-    typedef long Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, float>
-{
-    typedef float Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, double>
-{
-    typedef double Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<short unsigned int, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(short unsigned int v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, signed char>
-{
-    typedef int Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, unsigned char>
-{
-    typedef int Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, short int>
-{
-    typedef int Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, int>
-{
-    typedef int Promote;
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, long>
-{
-    typedef long Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, float>
-{
-    typedef float Promote;
-    static Promote toPromote(int v) { return static_cast<Promote>(v); }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, double>
-{
-    typedef double Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<int, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(int v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, signed char>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, unsigned char>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, short int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, short unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, unsigned int>
-{
-    typedef unsigned int Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, long>
-{
-    typedef long Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, float>
-{
-    typedef float Promote;
-    static Promote toPromote(unsigned int v) { return static_cast<Promote>(v); }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, double>
-{
-    typedef double Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned int, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(unsigned int v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, signed char>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, unsigned char>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, short int>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, short unsigned int>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, int>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, unsigned int>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, long>
-{
-    typedef long Promote;
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, float>
-{
-    typedef float Promote;
-    static Promote toPromote(long v) { return static_cast<Promote>(v); }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, double>
-{
-    typedef double Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(long v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, signed char>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, unsigned char>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, short int>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, short unsigned int>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, int>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, unsigned int>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, unsigned long>
-{
-    typedef unsigned long Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, float>
-{
-    typedef float Promote;
-    static Promote toPromote(unsigned long v) { return static_cast<Promote>(v); }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, double>
-{
-    typedef double Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<unsigned long, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(unsigned long v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, signed char>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, unsigned char>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, short int>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, short unsigned int>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, int>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(int v) { return static_cast<Promote>(v); }
-};
-
-template<>
-struct PromoteTraits<float, unsigned int>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(unsigned int v) { return static_cast<Promote>(v); }
-};
-
-template<>
-struct PromoteTraits<float, long>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(long v) { return static_cast<Promote>(v); }
-};
-
-template<>
-struct PromoteTraits<float, unsigned long>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(unsigned long v) { return static_cast<Promote>(v); }
-};
-
-template<>
-struct PromoteTraits<float, float>
-{
-    typedef float Promote;
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, double>
-{
-    typedef double Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<float, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(float v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, signed char>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, unsigned char>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, short int>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, short unsigned int>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, int>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, unsigned int>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, long>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, unsigned long>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, float>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, double>
-{
-    typedef double Promote;
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<double, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(double v) { return v; }
-    static Promote toPromote(long double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, signed char>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(signed char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, unsigned char>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(unsigned char v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, short int>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(short int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, short unsigned int>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(short unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, int>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, unsigned int>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(unsigned int v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, long>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, unsigned long>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(unsigned long v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, float>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(float v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, double>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-    static Promote toPromote(double v) { return v; }
-};
-
-template<>
-struct PromoteTraits<long double, long double>
-{
-    typedef long double Promote;
-    static Promote toPromote(long double v) { return v; }
-};
+#include "promote_traits.hxx"
 
 #ifndef NO_PARTIAL_TEMPLATE_SPECIALIZATION
 

@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -182,7 +182,7 @@ enum SRGType { KeepContours, CompleteGrow, SRGWatershedLabel = -1 };
     Analysis and Maschine Intelligence, vol 16, no 6, 1994, and
 
     Ullrich K&ouml;the:
-    <em> "<a href="http://kogs-www.informatik.uni-hamburg.de/~koethe/papers/#primary">Primary Image Segmentation</a>"</em>,
+    <em><a href="http://kogs-www.informatik.uni-hamburg.de/~koethe/papers/#primary">Primary Image Segmentation</a></em>,
     in: G. Sagerer, S.
     Posch, F. Kummert (eds.): Mustererkennung 1995, Proc. 17. DAGM-Symposium,
     Springer 1995
@@ -267,14 +267,14 @@ enum SRGType { KeepContours, CompleteGrow, SRGWatershedLabel = -1 };
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
                   class SeedImageIterator, class SeedAccessor,
                   class DestImageIterator, class DestAccessor,
                   class RegionStatisticsArray>
-        inline void
+        void
         seededRegionGrowing(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> img1,
                             pair<SeedImageIterator, SeedAccessor> img3,
                             pair<DestImageIterator, DestAccessor> img4,
@@ -285,7 +285,7 @@ enum SRGType { KeepContours, CompleteGrow, SRGWatershedLabel = -1 };
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="seededregiongrowing_8hxx-source.html">vigra/seededregiongrowing.hxx</a>"<br>
+    <b>\#include</b> \<<a href="seededregiongrowing_8hxx-source.html">vigra/seededregiongrowing.hxx</a>\><br>
     Namespace: vigra
 
     Example: implementation of the voronoi tesselation
@@ -345,6 +345,8 @@ enum SRGType { KeepContours, CompleteGrow, SRGWatershedLabel = -1 };
 
     Further requirements are determined by the <TT>RegionStatisticsArray</TT>.
 */
+doxygen_overloaded_function(template <...> void seededRegionGrowing)
+
 template <class SrcImageIterator, class SrcAccessor,
           class SeedImageIterator, class SeedAccessor,
           class DestImageIterator, class DestAccessor,
@@ -535,7 +537,7 @@ seededRegionGrowing(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> img1
     candidate and does not depend on properties of the region it is going to
     be merged with.
 
-    <b>\#include</b> "<a href="seededregiongrowing_8hxx-source.html">vigra/seededregiongrowing.hxx</a>"<br>
+    <b>\#include</b> \<<a href="seededregiongrowing_8hxx-source.html">vigra/seededregiongrowing.hxx</a>\><br>
     Namespace: vigra
 
 

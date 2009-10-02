@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -47,7 +47,7 @@
 namespace vigra {
 
 /** \addtogroup Labeling Connected Components Labeling
-     The connected components algorithm may use either 4 or 8 connectivity.
+     The 2-dimensional connected components algorithms may use either 4 or 8 connectivity.
      By means of a functor the merge criterium can be defined arbitrarily.
 */
 //@{
@@ -59,17 +59,6 @@ namespace vigra {
 /********************************************************/
 
 /** \brief Find the connected components of a segmented image.
-
-    Connected components are defined as regions with uniform pixel
-    values. Thus, <TT>SrcAccessor::value_type</TT> either must be
-    equality comparable (first form), or an EqualityFunctor must be
-    provided that realizes the desired predicate (second form). The
-    destination's value type should be large enough to hold the labels
-    without overflow. Region numbers will be a consecutive sequence
-    starting with one and ending with the region number returned by
-    the function (inclusive). The parameter '<TT>eight_neighbors</TT>'
-    determines whether the regions should be 4-connected or
-    8-connected. The function uses accessors.
 
     <b> Declarations:</b>
 
@@ -93,7 +82,7 @@ namespace vigra {
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -111,11 +100,22 @@ namespace vigra {
     }
     \endcode
 
+    Connected components are defined as regions with uniform pixel
+    values. Thus, <TT>SrcAccessor::value_type</TT> either must be
+    equality comparable (first form), or an EqualityFunctor must be
+    provided that realizes the desired predicate (second form). The
+    destination's value type should be large enough to hold the labels
+    without overflow. Region numbers will be a consecutive sequence
+    starting with one and ending with the region number returned by
+    the function (inclusive). The parameter '<TT>eight_neighbors</TT>'
+    determines whether the regions should be 4-connected or
+    8-connected. The function uses accessors.
+
     Return:  the number of regions found (= largest region label)
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -152,6 +152,8 @@ namespace vigra {
     \endcode
 
 */
+doxygen_overloaded_function(template <...> unsigned int labelImage)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class EqualityFunctor>
@@ -339,21 +341,6 @@ unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 /** \brief Find the connected components of a segmented image,
     excluding the background from labeling.
 
-    Connected components are defined as regions with uniform pixel
-    values. Thus, <TT>SrcAccessor::value_type</TT> either must be
-    equality comparable (first form), or an EqualityFunctor must be
-    provided that realizes the desired predicate (second form). All
-    pixel equal to the given '<TT>background_value</TT>' are ignored
-    when determining connected components and remain untouched in the
-    destination image and
-
-    The destination's value type should be large enough to hold the
-    labels without overflow. Region numbers will be a consecutive
-    sequence starting with one and ending with the region number
-    returned by the function (inclusive). The parameter
-    '<TT>eight_neighbors</TT>' determines whether the regions should
-    be 4-connected or 8-connected. The function uses accessors.
-
     <b> Declarations:</b>
 
     pass arguments explicitly:
@@ -379,13 +366,12 @@ unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor,
                   class ValueType>
-        inline
         int labelImageWithBackground(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                                      pair<DestIterator, DestAccessor> dest,
                                      bool eight_neighbors,
@@ -394,7 +380,6 @@ unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
         template <class SrcIterator, class SrcAccessor,
                   class DestIterator, class DestAccessor,
                   class ValueType, class EqualityFunctor>
-        inline
         int labelImageWithBackground(triple<SrcIterator, SrcIterator, SrcAccessor> src,
                                      pair<DestIterator, DestAccessor> dest,
                                      bool eight_neighbors,
@@ -402,11 +387,26 @@ unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     }
     \endcode
 
+    Connected components are defined as regions with uniform pixel
+    values. Thus, <TT>SrcAccessor::value_type</TT> either must be
+    equality comparable (first form), or an EqualityFunctor must be
+    provided that realizes the desired predicate (second form). All
+    pixel equal to the given '<TT>background_value</TT>' are ignored
+    when determining connected components and remain untouched in the
+    destination image and
+
+    The destination's value type should be large enough to hold the
+    labels without overflow. Region numbers will be a consecutive
+    sequence starting with one and ending with the region number
+    returned by the function (inclusive). The parameter
+    '<TT>eight_neighbors</TT>' determines whether the regions should
+    be 4-connected or 8-connected. The function uses accessors.
+
     Return:  the number of regions found (= largest region label)
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -447,6 +447,8 @@ unsigned int labelImage(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> unsigned int labelImageWithBackground)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class ValueType, class EqualityFunctor>
@@ -638,6 +640,32 @@ unsigned int labelImageWithBackground(
 
 /** \brief Transform a labeled image into a crack edge image.
 
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor, class DestValue>
+        void regionImageToCrackEdgeImage(
+                       SrcIterator sul, SrcIterator slr, SrcAccessor sa,
+                       DestIterator dul, DestAccessor da,
+                       DestValue edge_marker)
+    }
+    \endcode
+
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor, class DestValue>
+        void regionImageToCrackEdgeImage(
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   DestValue edge_marker)
+    }
+    \endcode
+
     This algorithm inserts border pixels (so called "crack edges")
     between regions in a labeled image like this (<TT>a</TT> and
     <TT>c</TT> are the original labels, and <TT>0</TT> is the value of
@@ -662,36 +690,9 @@ unsigned int labelImageWithBackground(
     source value type (<TT>SrcAccessor::value-type</TT>) must be
     equality-comparable.
 
-    <b> Declarations:</b>
-
-    pass arguments explicitly:
-    \code
-    namespace vigra {
-        template <class SrcIterator, class SrcAccessor,
-                  class DestIterator, class DestAccessor, class DestValue>
-        void regionImageToCrackEdgeImage(
-                       SrcIterator sul, SrcIterator slr, SrcAccessor sa,
-                       DestIterator dul, DestAccessor da,
-                       DestValue edge_marker)
-    }
-    \endcode
-
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
-    \code
-    namespace vigra {
-        template <class SrcIterator, class SrcAccessor,
-                  class DestIterator, class DestAccessor, class DestValue>
-        inline
-        void regionImageToCrackEdgeImage(
-                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                   pair<DestIterator, DestAccessor> dest,
-                   DestValue edge_marker)
-    }
-    \endcode
-
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -736,6 +737,8 @@ unsigned int labelImageWithBackground(
     h_dest = 2 * h_src - 1
     \endcode
 */
+doxygen_overloaded_function(template <...> void regionImageToCrackEdgeImage)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor, class DestValue>
 void regionImageToCrackEdgeImage(
@@ -856,6 +859,32 @@ void regionImageToCrackEdgeImage(
 
 /** \brief Transform a labeled image into an edge image.
 
+    <b> Declarations:</b>
+
+    pass arguments explicitly:
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor, class DestValue>
+        void regionImageToEdgeImage(
+                       SrcIterator sul, SrcIterator slr, SrcAccessor sa,
+                       DestIterator dul, DestAccessor da,
+                       DestValue edge_marker)
+    }
+    \endcode
+
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
+    \code
+    namespace vigra {
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor, class DestValue>
+        void regionImageToEdgeImage(
+                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
+                   pair<DestIterator, DestAccessor> dest,
+                   DestValue edge_marker)
+    }
+    \endcode
+
     This algorithm marks all pixels with the given <TT>edge_marker</TT>
     which belong to a different region (label) than their right or lower
     neighbors:
@@ -873,36 +902,9 @@ void regionImageToCrackEdgeImage(
     The source value type (<TT>SrcAccessor::value-type</TT>) must be
     equality-comparable.
 
-    <b> Declarations:</b>
-
-    pass arguments explicitly:
-    \code
-    namespace vigra {
-        template <class SrcIterator, class SrcAccessor,
-                  class DestIterator, class DestAccessor, class DestValue>
-        void regionImageToEdgeImage(
-                       SrcIterator sul, SrcIterator slr, SrcAccessor sa,
-                       DestIterator dul, DestAccessor da,
-                       DestValue edge_marker)
-    }
-    \endcode
-
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
-    \code
-    namespace vigra {
-        template <class SrcIterator, class SrcAccessor,
-                  class DestIterator, class DestAccessor, class DestValue>
-        inline
-        void regionImageToEdgeImage(
-                   triple<SrcIterator, SrcIterator, SrcAccessor> src,
-                   pair<DestIterator, DestAccessor> dest,
-                   DestValue edge_marker)
-    }
-    \endcode
-
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>"<br>
+        <b>\#include</b> \<<a href="labelimage_8hxx-source.html">vigra/labelimage.hxx</a>\><br>
     Namespace: vigra
 
     \code
@@ -941,6 +943,8 @@ void regionImageToCrackEdgeImage(
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void regionImageToEdgeImage)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor, class DestValue>
 void regionImageToEdgeImage(

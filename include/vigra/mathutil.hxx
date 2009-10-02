@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -50,7 +50,7 @@
 
     <TT>M_PI, M_SQRT2</TT>
 
-    <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"
+    <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\>
 
     Since <TT>M_PI</TT> and <TT>M_SQRT2</TT> are not officially standardized,
     we provide definitions here for those compilers that don't support them.
@@ -117,7 +117,7 @@ VIGRA_DEFINE_MISSING_ABS(signed short)
         Defined for all floating point types. Rounds towards the nearest integer 
         such that <tt>abs(round(t)) == round(abs(t))</tt> for all <tt>t</tt>.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline float round(float t)
@@ -141,11 +141,100 @@ inline long double round(long double t)
                 : ceil(t - 0.5);
 }
 
+    /*! Round up to the nearest power of 2.
+
+        Efficient algorithm for finding the smallest power of 2 which is not smaller than \a x
+        (function clp2() from Henry Warren: "Hacker's Delight", Addison-Wesley, 2003,
+         see http://www.hackersdelight.org/).
+        If \a x > 2^31, the function will return 0 because integer arithmetic is defined modulo 2^32.
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+inline UInt32 ceilPower2(UInt32 x) 
+{
+    if(x == 0) return 0;
+    
+    x = x - 1;
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >>16);
+    return x + 1;
+} 
+    
+    /*! Round down to the nearest power of 2.
+
+        Efficient algorithm for finding the largest power of 2 which is not greater than \a x
+        (function flp2() from Henry Warren: "Hacker's Delight", Addison-Wesley, 2003,
+         see http://www.hackersdelight.org/).
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+inline UInt32 floorPower2(UInt32 x) 
+{ 
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >>16);
+    return x - (x >> 1);
+}
+
+namespace detail {
+
+template <class T>
+class IntLog2
+{
+  public:
+    static Int32 table[64];
+};
+
+template <class T>
+Int32 IntLog2<T>::table[64] = {
+         -1,  0,  -1,  15,  -1,  1,  28,  -1,  16,  -1,  -1,  -1,  2,  21,  
+         29,  -1,  -1,  -1,  19,  17,  10,  -1,  12,  -1,  -1,  3,  -1,  6,  
+         -1,  22,  30,  -1,  14,  -1,  27,  -1,  -1,  -1,  20,  -1,  18,  9,  
+         11,  -1,  5,  -1,  -1,  13,  26,  -1,  -1,  8,  -1,  4,  -1,  25,  
+         -1,  7,  24,  -1,  23,  -1,  31,  -1};
+
+} // namespace detail
+
+    /*! Compute the base-2 logarithm of an integer.
+
+        Returns the position of the left-most 1-bit in the given number \a x, or
+        -1 if \a x == 0. That is,
+        
+        \code
+        assert(k >= 0 && k < 32 && log2i(1 << k) == k);
+        \endcode
+        
+        The function uses Robert Harley's algorithm to determine the number of leading zeros
+        in \a x (algorithm nlz10() at http://www.hackersdelight.org/). But note that the functions
+        \ref floorPower2() or \ref ceilPower2() are more efficient and should be preferred when possible.
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+inline Int32 log2i(UInt32 x) 
+{ 
+    // Propagate leftmost 1-bit to the right.
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >>16);
+    x = x*0x06EB14F9; // Multiplier is 7*255**3. 
+    return detail::IntLog2<Int32>::table[x >> 26];
+}
+
     /*! The square function.
 
-        sq(x) is needed so often that it makes sense to define it as a function.
+        <tt>sq(x) = x*x</tt> is needed so often that it makes sense to define it as a function.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 template <class T>
@@ -161,12 +250,12 @@ template <class T>
 class IntSquareRoot
 {
   public:
-    static int sqq_table[];
+    static UInt32 sqq_table[];
     static UInt32 exec(UInt32 v);
 };
 
 template <class T>
-int IntSquareRoot<T>::sqq_table[] = {
+UInt32 IntSquareRoot<T>::sqq_table[] = {
 	       0,  16,  22,  27,  32,  35,  39,  42,  45,  48,  50,  53,  55,  57,
 	      59,  61,  64,  65,  67,  69,  71,  73,  75,  76,  78,  80,  81,  83,
 	      84,  86,  87,  89,  90,  91,  93,  94,  96,  97,  98,  99, 101, 102,
@@ -258,7 +347,7 @@ using VIGRA_CSTD::sqrt;
     
         Useful for fast fixed-point computations.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline Int32 sqrti(Int32 v)
@@ -272,7 +361,7 @@ inline Int32 sqrti(Int32 v)
 
         Useful for fast fixed-point computations.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline UInt32 sqrti(UInt32 v)
@@ -286,7 +375,7 @@ inline UInt32 sqrti(UInt32 v)
         The  hypot()  function  returns  the  sqrt(a*a  +  b*b).
         It is implemented in a way that minimizes round-off error.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double hypot(double a, double b) 
@@ -310,11 +399,11 @@ using ::hypot;
 
         Returns 1, 0, or -1 depending on the sign of \a t.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 template <class T>
-T sign(T t) 
+inline T sign(T t) 
 { 
     return t > NumericTraits<T>::zero()
                ? NumericTraits<T>::one()
@@ -327,11 +416,11 @@ T sign(T t)
 
         Transfers the sign of \a t2 to \a t1.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 template <class T1, class T2>
-T1 sign(T1 t1, T2 t2) 
+inline T1 sign(T1 t1, T2 t2) 
 { 
     return t2 >= NumericTraits<T2>::zero()
                ? abs(t1)
@@ -381,7 +470,7 @@ NormTraits<T>::SquaredNormType squaredNorm(T const & t);
         For scalar types: implemented as <tt>abs(t)</tt><br>
         otherwise: implemented as <tt>sqrt(squaredNorm(t))</tt>.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 template <class T>
@@ -392,13 +481,154 @@ norm(T const & t)
     return sqrt(static_cast<typename SquareRootTraits<SNT>::SquareRootArgument>(squaredNorm(t)));
 }
 
+    /*! Find the minimum element in a sequence.
+    
+        The function returns the iterator refering to the minimum element.
+        
+        <b>Required Interface:</b>
+        
+        \code
+        Iterator is a standard forward iterator.
+        
+        bool f = *first < NumericTraits<typename std::iterator_traits<Iterator>::value_type>::max();
+        \endcode
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+template <class Iterator>
+Iterator argMin(Iterator first, Iterator last)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type Value;
+    Value vopt = NumericTraits<Value>::max();
+    Iterator best = last;
+    for(; first != last; ++first)
+    {
+        if(*first < vopt)
+        {
+            vopt = *first;
+            best = first;
+        }
+    }
+    return best;
+}
+
+    /*! Find the maximum element in a sequence.
+    
+        The function returns the iterator refering to the maximum element.
+        
+        <b>Required Interface:</b>
+        
+        \code
+        Iterator is a standard forward iterator.
+        
+        bool f = NumericTraits<typename std::iterator_traits<Iterator>::value_type>::min() < *first;
+        \endcode
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+template <class Iterator>
+Iterator argMax(Iterator first, Iterator last)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type Value;
+    Value vopt = NumericTraits<Value>::min();
+    Iterator best = last;
+    for(; first != last; ++first)
+    {
+        if(vopt < *first)
+        {
+            vopt = *first;
+            best = first;
+        }
+    }
+    return best;
+}
+
+    /*! Find the minimum element in a sequence conforming to a condition.
+    
+        The function returns the iterator refering to the minimum element,
+        where only elements conforming to the condition (i.e. where 
+        <tt>condition(*iterator)</tt> evaluates to <tt>true</tt>) are considered.
+        If no element conforms to the condition, or the sequence is empty,
+        the end iterator \a last is returned.
+        
+        <b>Required Interface:</b>
+        
+        \code
+        Iterator is a standard forward iterator.
+        
+        bool c = condition(*first);
+        
+        bool f = *first < NumericTraits<typename std::iterator_traits<Iterator>::value_type>::max();
+        \endcode
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+template <class Iterator, class UnaryFunctor>
+Iterator argMinIf(Iterator first, Iterator last, UnaryFunctor condition)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type Value;
+    Value vopt = NumericTraits<Value>::max();
+    Iterator best = last;
+    for(; first != last; ++first)
+    {
+        if(condition(*first) && *first < vopt)
+        {
+            vopt = *first;
+            best = first;
+        }
+    }
+    return best;
+}
+
+    /*! Find the maximum element in a sequence conforming to a condition.
+    
+        The function returns the iterator refering to the maximum element,
+        where only elements conforming to the condition (i.e. where 
+        <tt>condition(*iterator)</tt> evaluates to <tt>true</tt>) are considered.
+        If no element conforms to the condition, or the sequence is empty,
+        the end iterator \a last is returned.
+        
+        <b>Required Interface:</b>
+        
+        \code
+        Iterator is a standard forward iterator.
+        
+        bool c = condition(*first);
+        
+        bool f = NumericTraits<typename std::iterator_traits<Iterator>::value_type>::min() < *first;
+        \endcode
+
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
+        Namespace: vigra
+    */
+template <class Iterator, class UnaryFunctor>
+Iterator argMaxIf(Iterator first, Iterator last, UnaryFunctor condition)
+{
+    typedef typename std::iterator_traits<Iterator>::value_type Value;
+    Value vopt = NumericTraits<Value>::min();
+    Iterator best = last;
+    for(; first != last; ++first)
+    {
+        if(condition(*first) && vopt < *first)
+        {
+            vopt = *first;
+            best = first;
+        }
+    }
+    return best;
+}
+
+
 namespace detail {
 
 template <class T>
 T ellipticRD(T x, T y, T z)
 {
     double f = 1.0, s = 0.0, X, Y, Z, m;
-    while(true)
+    for(;;)
     {
         m = (x + y + 3.0*z) / 5.0;
         X = 1.0 - x/m;
@@ -426,7 +656,7 @@ template <class T>
 T ellipticRF(T x, T y, T z)
 {
     double X, Y, Z, m;
-    while(true)
+    for(;;)
     {
         m = (x + y + z) / 3.0;
         X = 1.0 - x/m;
@@ -459,7 +689,7 @@ T ellipticRF(T x, T y, T z)
         Note: In some libraries (e.g. Mathematica), the second parameter of the elliptic integral
         functions must be k^2 rather than k. Check the documentation when results disagree!
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double ellipticIntegralF(double x, double k)
@@ -483,7 +713,7 @@ inline double ellipticIntegralF(double x, double k)
         Note: In some libraries (e.g. Mathematica), the second parameter of the elliptic integral
         functions must be k^2 rather than k. Check the documentation when results disagree!
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double ellipticIntegralE(double x, double k)
@@ -526,7 +756,7 @@ double erfImpl(T x)
         
         according to the formula given in Press et al. "Numerical Recipes".
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double erf(double x)
@@ -646,7 +876,7 @@ std::pair<double, double> noncentralChi2CDF(unsigned int degreesOfFreedom, T non
         and tolerance \a accuracy at the given argument \a arg
         by calling <tt>noncentralChi2(degreesOfFreedom, 0.0, arg, accuracy)</tt>.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double chi2(unsigned int degreesOfFreedom, double arg, double accuracy = 1e-7)
@@ -661,7 +891,7 @@ inline double chi2(unsigned int degreesOfFreedom, double arg, double accuracy = 
         a random number drawn from the distribution is below \a arg
         by calling <tt>noncentralChi2CDF(degreesOfFreedom, 0.0, arg, accuracy)</tt>.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double chi2CDF(unsigned int degreesOfFreedom, double arg, double accuracy = 1e-7)
@@ -677,7 +907,7 @@ inline double chi2CDF(unsigned int degreesOfFreedom, double arg, double accuracy
         http://lib.stat.cmu.edu/apstat/231). The algorithm has linear complexity in the number of
         degrees of freedom.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double noncentralChi2(unsigned int degreesOfFreedom, 
@@ -695,7 +925,7 @@ inline double noncentralChi2(unsigned int degreesOfFreedom,
         http://lib.stat.cmu.edu/apstat/231). The algorithm has linear complexity in the number of
         degrees of freedom (see noncentralChi2CDFApprox() for a constant-time algorithm).
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double noncentralChi2CDF(unsigned int degreesOfFreedom, 
@@ -715,7 +945,7 @@ inline double noncentralChi2CDF(unsigned int degreesOfFreedom,
         when noncentralChi2CDF() is too slow, and approximate values are sufficient. The accuracy is only 
         about 0.1 for few degrees of freedom, but reaches about 0.001 above dof = 5.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 inline double noncentralChi2CDFApprox(unsigned int degreesOfFreedom, double noncentrality, double arg)
@@ -749,11 +979,12 @@ FPT safeFloatDivision( FPT f1, FPT f2 )
         rarely exactly equal in practice. If the tolerance \a epsilon is not given,
         twice the machine epsilon is used.
 
-        <b>\#include</b> "<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>"<br>
+        <b>\#include</b> \<<a href="mathutil_8hxx-source.html">vigra/mathutil.hxx</a>\><br>
         Namespace: vigra
     */
 template <class T1, class T2>
-bool closeAtTolerance(T1 l, T2 r, typename PromoteTraits<T1, T2>::Promote epsilon)
+bool 
+closeAtTolerance(T1 l, T2 r, typename PromoteTraits<T1, T2>::Promote epsilon)
 {
     typedef typename PromoteTraits<T1, T2>::Promote T;
     if(l == 0.0)
@@ -768,7 +999,7 @@ bool closeAtTolerance(T1 l, T2 r, typename PromoteTraits<T1, T2>::Promote epsilo
 }
 
 template <class T1, class T2>
-bool closeAtTolerance(T1 l, T2 r)
+inline bool closeAtTolerance(T1 l, T2 r)
 {
     typedef typename PromoteTraits<T1, T2>::Promote T;
     return closeAtTolerance(l, r, 2.0 * NumericTraits<T>::epsilon());

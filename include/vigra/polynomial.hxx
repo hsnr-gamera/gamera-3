@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -66,7 +66,7 @@ template <unsigned int MAXORDER, class T> class StaticPolynomial;
     
     \see vigra::Polynomial, vigra::StaticPolynomial, polynomialRoots()
 
-    <b>\#include</b> "<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>"<br>
+    <b>\#include</b> \<<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>\><br>
     Namespace: vigra
     
     \ingroup Polynomials
@@ -436,7 +436,7 @@ PolynomialView<T>::balance()
 
     \see vigra::PolynomialView, vigra::StaticPolynomial, polynomialRoots()
 
-    <b>\#include</b> "<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>"<br>
+    <b>\#include</b> \<<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>\><br>
     Namespace: vigra
     
     \ingroup Polynomials
@@ -567,7 +567,7 @@ class Polynomial
 
     \see vigra::PolynomialView, vigra::Polynomial, polynomialRoots()
 
-    <b>\#include</b> "<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>"<br>
+    <b>\#include</b> \<<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>\><br>
     Namespace: vigra
     
     \ingroup Polynomials
@@ -922,7 +922,7 @@ struct PolynomialRootCompare
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>"<br>
+        <b>\#include</b> \<<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>\><br>
         Namespace: vigra
 
     \code
@@ -1060,7 +1060,7 @@ polynomialRoots(POLYNOMIAL const & poriginal, VECTOR & roots)
 
     <b> Usage:</b>
 
-        <b>\#include</b> "<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>"<br>
+        <b>\#include</b> \<<a href="polynomial_8hxx-source.html">vigra/polynomial.hxx</a>\><br>
         Namespace: vigra
 
     \code

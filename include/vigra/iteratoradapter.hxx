@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -142,7 +142,7 @@ namespace vigra {
     it can be any type that contains the information necessary for the
     adaptor to do it's work.
 
-    <b>\#include</b> "<a href="iteratoradapter_8hxx-source.html">vigra/iteratoradapter.hxx</a>"<br>
+    <b>\#include</b> \<<a href="iteratoradapter_8hxx-source.html">vigra/iteratoradapter.hxx</a>\><br>
     Namespace: vigra
 
 */

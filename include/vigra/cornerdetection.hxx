@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -155,8 +155,7 @@ class FunctorTraits<BeaudetCornerFunctor<T> >
     region, depending on the scale.
     
     The algorithm first determines the structure tensor at each pixel by calling
-    \link CommonConvolutionFilters#structureTensor structureTensor\endlink(). 
-    Then the entries of the structure tensor are combined as 
+    \ref structureTensor(). Then the entries of the structure tensor are combined as 
     
     \f[
         \mbox{\rm CornerResponse} = \mbox{\rm det(StructureTensor)} - 0.04 \mbox{\rm tr(StructureTensor)}^2
@@ -185,7 +184,7 @@ class FunctorTraits<BeaudetCornerFunctor<T> >
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -200,7 +199,7 @@ class FunctorTraits<BeaudetCornerFunctor<T> >
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>"<br>
+        <b>\#include</b> \<<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -248,6 +247,8 @@ class FunctorTraits<BeaudetCornerFunctor<T> >
     dest_accessor.set(u, dest_upperleft);
     \endcode
 */
+doxygen_overloaded_function(template <...> void cornerResponseFunction)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -308,12 +309,11 @@ void cornerResponseFunction(
     matching"</em>, Intl. Arch. Photogrammetry and Remote Sensing, vol. 24, pp 160-166, 
     1986]. It is also known as the "Plessey Detector" by Harris. However, it should not 
     be confused with the
-    "\link CornerDetection#cornerResponseFunction Corner Repsonse Function\endlink ",
+    "\link cornerResponseFunction Corner Response Function\endlink ",
     another detector invented by Harris.
     
     The algorithm first determines the structure tensor at each pixel by calling
-    \link CommonConvolutionFilters#structureTensor structureTensor\endlink(). 
-    Then the entries of the structure tensor are combined as 
+    \ref structureTensor(). Then the entries of the structure tensor are combined as 
     
     \f[
         \mbox{\rm FoerstnerCornerStrength} = \frac{\mbox{\rm det(StructureTensor)}}{\mbox{\rm tr(StructureTensor)}} = 
@@ -321,8 +321,7 @@ void cornerResponseFunction(
     \f]
     
     The local maxima of the corner strength denote the corners in the gray level 
-    image. Its performance is similar to the 
-    \link CornerDetection#cornerResponseFunction cornerResponseFunction\endlink().
+    image. Its performance is similar to the \ref cornerResponseFunction().
     
     The source value type must be a division algebra, i.e. addition, subtraction,
     multiplication, and division with itself, multiplication with doubles and 
@@ -343,7 +342,7 @@ void cornerResponseFunction(
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -358,7 +357,7 @@ void cornerResponseFunction(
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>"<br>
+        <b>\#include</b> \<<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -398,6 +397,8 @@ void cornerResponseFunction(
     dest_accessor.set(u, dest_upperleft);
     \endcode
 */
+doxygen_overloaded_function(template <...> void foerstnerCornerDetector)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -461,16 +462,14 @@ void foerstnerCornerDetector(
     Direct Corner Detectors"</em>, J. of Mathematical Imaging and Vision 4:2 (1994) 139-150]. 
     
     The algorithm first determines the structure tensor at each pixel by calling
-    \link CommonConvolutionFilters#structureTensor structureTensor\endlink(). 
-    Then the entries of the structure tensor are combined as 
+    \ref structureTensor(). Then the entries of the structure tensor are combined as 
     
     \f[
         \mbox{\rm RohrCornerStrength} = \mbox{\rm det(StructureTensor)} = A B - C^2
     \f]
     
     The local maxima of the corner strength denote the corners in the gray level 
-    image. Its performance is similar to the 
-    \link CornerDetection#cornerResponseFunction cornerResponseFunction\endlink().
+    image. Its performance is similar to the \ref cornerResponseFunction().
     
     The source value type must be a linear algebra, i.e. addition, subtraction, and
     multiplication with itself, multiplication with doubles and 
@@ -491,7 +490,7 @@ void foerstnerCornerDetector(
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -506,7 +505,7 @@ void foerstnerCornerDetector(
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>"<br>
+        <b>\#include</b> \<<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -545,6 +544,8 @@ void foerstnerCornerDetector(
     dest_accessor.set(u, dest_upperleft);
     \endcode
 */
+doxygen_overloaded_function(template <...> void rohrCornerDetector)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void
@@ -604,7 +605,7 @@ void rohrCornerDetector(
     Proc. Intl. Joint Conf. on Pattern Recognition, Kyoto, Japan, 1978, pp. 579-583]. 
     
     The algorithm calculates the corner strength as the negative determinant of the 
-    \link CommonConvolutionFilters#hessianMatrixOfGaussian Hessian Matrix\endlink. 
+    \link hessianMatrixOfGaussian() Hessian Matrix\endlink. 
     The local maxima of the corner strength denote the corners in the gray level 
     image. 
     
@@ -627,7 +628,7 @@ void rohrCornerDetector(
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -642,7 +643,7 @@ void rohrCornerDetector(
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>"<br>
+        <b>\#include</b> \<<a href="cornerdetection_8hxx-source.html">vigra/cornerdetection.hxx</a>\><br>
     Namespace: vigra
     
     \code
@@ -681,6 +682,8 @@ void rohrCornerDetector(
     dest_accessor.set(u, dest_upperleft);
     \endcode
 */
+doxygen_overloaded_function(template <...> void beaudetCornerDetector)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void

@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -91,7 +91,7 @@ typedef TIFF TiffImage;
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
@@ -102,7 +102,7 @@ typedef TIFF TiffImage;
     
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     uint32 w, h;
@@ -126,6 +126,8 @@ typedef TIFF TiffImage;
     see \ref tiffToScalarImage() and \ref tiffToRGBImage()
     
 */
+doxygen_overloaded_function(template <...> void importTiffImage)
+
 template <class ImageIterator, class Accessor>
 inline void
 importTiffImage(TiffImage * tiff, ImageIterator iter, Accessor a)
@@ -178,7 +180,7 @@ importTiffImage(TiffImage * tiff, ImageIterator iter, Accessor a, VigraFalseType
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
@@ -189,7 +191,7 @@ importTiffImage(TiffImage * tiff, ImageIterator iter, Accessor a, VigraFalseType
     
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     uint32 w, h;
@@ -248,6 +250,8 @@ importTiffImage(TiffImage * tiff, ImageIterator iter, Accessor a, VigraFalseType
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void tiffToScalarImage)
+
 template <class ImageIterator, class Accessor>
 void
 tiffToScalarImage(TiffImage * tiff, ImageIterator iter, Accessor a)
@@ -536,7 +540,7 @@ tiffToScalarImage(TiffImage * tiff, pair<ImageIterator, Accessor> dest)
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class RGBImageIterator, class RGBAccessor>
@@ -547,7 +551,7 @@ tiffToScalarImage(TiffImage * tiff, pair<ImageIterator, Accessor> dest)
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     uint32 w, h;
@@ -607,6 +611,8 @@ tiffToScalarImage(TiffImage * tiff, pair<ImageIterator, Accessor> dest)
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void tiffToRGBImage)
+
 template <class RGBImageIterator, class RGBAccessor>
 void
 tiffToRGBImage(TiffImage * tiff, RGBImageIterator iter, RGBAccessor a)
@@ -1019,24 +1025,24 @@ struct CreateTiffImage;
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
-        inline TiffImage *
+        TiffImage *
         createTiffImage(ImageIterator upperleft, ImageIterator lowerright, 
                         Accessor a)
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
-        inline TiffImage *
+        TiffImage *
         createTiffImage(triple<ImageIterator, ImageIterator, Accessor> src)
     }
     \endcode
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     vigra::BImage img(width, height);
@@ -1060,6 +1066,8 @@ struct CreateTiffImage;
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void createTiffImage)
+
 template <class ImageIterator, class Accessor>
 inline void
 createTiffImage(ImageIterator upperleft, ImageIterator lowerright, 
@@ -1094,24 +1102,24 @@ createTiffImage(triple<ImageIterator, ImageIterator, Accessor> src, TiffImage * 
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
-        inline TiffImage *
+        TiffImage *
         createScalarTiffImage(ImageIterator upperleft, ImageIterator lowerright, 
                   Accessor a)
     }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class ImageIterator, class Accessor>
-        inline TiffImage *
+        TiffImage *
         createScalarTiffImage(triple<ImageIterator, ImageIterator, Accessor> src)
     }
     \endcode
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     vigra::BImage img(width, height);
@@ -1135,6 +1143,8 @@ createTiffImage(triple<ImageIterator, ImageIterator, Accessor> src, TiffImage * 
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void createScalarTiffImage)
+
 template <class ImageIterator, class Accessor>
 inline void
 createScalarTiffImage(ImageIterator upperleft, ImageIterator lowerright, 
@@ -1452,18 +1462,18 @@ struct CreateTiffImage<double>
                 }
     \endcode
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class RGBImageIterator, class RGBAccessor>
-        inline TiffImage *
+        TiffImage *
         createRGBTiffImage(triple<RGBImageIterator, RGBImageIterator, RGBAccessor> src)
     }
     \endcode
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>"
+    <b>\#include</b> \<<a href="tiff_8hxx-source.html">vigra/tiff.hxx</a>\>
     
     \code
     vigra::BRGBImage img(width, height);
@@ -1489,6 +1499,8 @@ struct CreateTiffImage<double>
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void createRGBTiffImage)
+
 template <class RGBImageIterator, class RGBAccessor>
 inline void
 createRGBTiffImage(RGBImageIterator upperleft, RGBImageIterator lowerright,

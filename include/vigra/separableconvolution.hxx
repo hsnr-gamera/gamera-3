@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -414,7 +414,7 @@ void internalConvolveLineAvoid(SrcIterator is, SrcIterator iend, SrcAccessor sa,
 */
 //@{
 
-/** \brief Performs a 1 dimensional convolution of the source signal using the given
+/** \brief Performs a 1-dimensional convolution of the source signal using the given
     kernel.
 
     The KernelIterator must point to the center iterator, and
@@ -448,7 +448,7 @@ void internalConvolveLineAvoid(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -463,7 +463,7 @@ void internalConvolveLineAvoid(SrcIterator is, SrcIterator iend, SrcAccessor sa,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>"
+    <b>\#include</b> \<<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>\>
 
 
     \code
@@ -529,6 +529,8 @@ void internalConvolveLineAvoid(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     != 0.
 
 */
+doxygen_overloaded_function(template <...> void convolveLine)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class KernelIterator, class KernelAccessor>
@@ -618,9 +620,8 @@ void convolveLine(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 
 /** \brief Performs a 1 dimensional convolution in x direction.
 
-    It calls \link SeparableConvolution#convolveLine convolveLine\endlink() for every row of the
-    image. See \link SeparableConvolution#convolveLine convolveLine\endlink() for more information about required interfaces
-    and vigra_preconditions.
+    It calls \ref convolveLine() for every row of the image. See \ref convolveLine() 
+    for more information about required interfaces and vigra_preconditions.
 
     <b> Declarations:</b>
 
@@ -639,7 +640,7 @@ void convolveLine(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -654,7 +655,7 @@ void convolveLine(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>"
+    <b>\#include</b> \<<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>\>
 
 
     \code
@@ -670,6 +671,8 @@ void convolveLine(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void separableConvolveX)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class KernelIterator, class KernelAccessor>
@@ -729,9 +732,8 @@ separableConvolveX(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 
 /** \brief Performs a 1 dimensional convolution in y direction.
 
-    It calls \link SeparableConvolution#convolveLine convolveLine\endlink() for every column of the
-    image. See \link SeparableConvolution#convolveLine convolveLine\endlink() for more information about required interfaces
-    and vigra_preconditions.
+    It calls \ref convolveLine() for every column of the image. See \ref convolveLine() 
+    for more information about required interfaces and vigra_preconditions.
 
     <b> Declarations:</b>
 
@@ -750,7 +752,7 @@ separableConvolveX(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -765,7 +767,7 @@ separableConvolveX(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>"
+    <b>\#include</b> \<<a href="separableconvolution_8hxx-source.html">vigra/separableconvolution.hxx</a>\>
 
 
     \code
@@ -781,6 +783,8 @@ separableConvolveX(triple<SrcIterator, SrcIterator, SrcAccessor> src,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void separableConvolveY)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor,
           class KernelIterator, class KernelAccessor>
@@ -859,7 +863,7 @@ separableConvolveY(triple<SrcIterator, SrcIterator, SrcAccessor> src,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>"
+    <b>\#include</b> \<<a href="stdconvolution_8hxx-source.html">vigra/stdconvolution.hxx</a>\>
 
     \code
     vigra::FImage src(w,h), dest(w,h);
@@ -933,22 +937,23 @@ class Kernel1D
         {
             vigra_precondition(count_ == 1 || count_ == sum_,
                   "Kernel1D::initExplicitly(): "
-                  "Too few init values.");
+                  "Wrong number of init values.");
         }
 
         InitProxy & operator,(value_type const & v)
         {
-            if(sum_ == count_) norm_ = *iter_;
+            if(sum_ == count_) 
+                norm_ = *iter_;
 
             norm_ += v;
 
             --count_;
-            vigra_precondition(count_ > 0,
-                  "Kernel1D::initExplicitly(): "
-                  "Too many init values.");
 
-            ++iter_;
-            *iter_ = v;
+            if(count_ > 0)
+            {
+                ++iter_;
+                *iter_ = v;
+            }
 
             return *this;
         }
@@ -968,7 +973,7 @@ class Kernel1D
     : kernel_(),
       left_(0),
       right_(0),
-      border_treatment_(BORDER_TREATMENT_CLIP),
+      border_treatment_(BORDER_TREATMENT_REFLECT),
       norm_(one())
     {
         kernel_.push_back(norm_);
@@ -1047,7 +1052,7 @@ class Kernel1D
             \code
             1. left()  == -(int)(3.0*std_dev + 0.5)
             2. right() ==  (int)(3.0*std_dev + 0.5)
-            3. borderTreatment() == BORDER_TREATMENT_CLIP
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
             4. norm() == norm
             \endcode
         */
@@ -1080,7 +1085,7 @@ class Kernel1D
         */
     void initDiscreteGaussian(double std_dev, value_type norm);
 
-        /** Init as a LOineberg's discrete analog of the Gaussian function
+        /** Init as a Lindeberg's discrete analog of the Gaussian function
             with norm 1.
          */
     void initDiscreteGaussian(double std_dev)
@@ -1114,7 +1119,7 @@ class Kernel1D
             \code
             1. left()  == -(int)(3.0*std_dev + 0.5*order + 0.5)
             2. right() ==  (int)(3.0*std_dev + 0.5*order + 0.5)
-            3. borderTreatment() == BORDER_TREATMENT_REPEAT
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
             4. norm() == norm
             \endcode
         */
@@ -1125,6 +1130,207 @@ class Kernel1D
     void initGaussianDerivative(double std_dev, int order)
     {
         initGaussianDerivative(std_dev, order, one());
+    }
+
+        /**
+            Init an optimal 3-tap smoothing filter.
+            The filter values are 
+            
+            \code
+            [0.216, 0.568, 0.216]
+            \endcode
+            
+            These values are optimal in the sense that the 3x3 filter obtained by separable application
+            of this filter is the best possible 3x3 approximation to a Gaussian filter.
+            The equivalent Gaussian has sigma = 0.680.
+ 
+            Postconditions:
+            \code
+            1. left()  == -1
+            2. right() ==  1
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalSmoothing3()
+    {
+        this->initExplicitly(-1, 1) = 0.216, 0.568, 0.216;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init an optimal 3-tap smoothing filter to be used in the context of first derivative computation.
+            This filter must be used in conjunction with the symmetric difference filter (see initSymmetricDifference()), 
+            such that the difference filter is applied along one dimension, and the smoothing filter along the other.
+            The filter values are 
+            
+            \code
+            [0.224365, 0.55127, 0.224365]
+            \endcode
+            
+            These values are optimal in the sense that the 3x3 filter obtained by combining 
+            this filter with the symmetric difference is the best possible 3x3 approximation to a 
+            Gaussian first derivative filter. The equivalent Gaussian has sigma = 0.675.
+ 
+            Postconditions:
+            \code
+            1. left()  == -1
+            2. right() ==  1
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalFirstDerivativeSmoothing3()
+    {
+        this->initExplicitly(-1, 1) = 0.224365, 0.55127, 0.224365;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init an optimal 3-tap smoothing filter to be used in the context of second derivative computation.
+            This filter must be used in conjunction with the 3-tap second difference filter (see initSecondDifference3()), 
+            such that the difference filter is applied along one dimension, and the smoothing filter along the other.
+            The filter values are 
+            
+            \code
+            [0.13, 0.74, 0.13]
+            \endcode
+            
+            These values are optimal in the sense that the 3x3 filter obtained by combining 
+            this filter with the 3-tap second difference is the best possible 3x3 approximation to a 
+            Gaussian second derivative filter. The equivalent Gaussian has sigma = 0.433.
+ 
+            Postconditions:
+            \code
+            1. left()  == -1
+            2. right() ==  1
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalSecondDerivativeSmoothing3()
+    {
+        this->initExplicitly(-1, 1) = 0.13, 0.74, 0.13;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init an optimal 5-tap smoothing filter.
+            The filter values are 
+            
+            \code
+            [0.03134, 0.24, 0.45732, 0.24, 0.03134]
+            \endcode
+            
+            These values are optimal in the sense that the 5x5 filter obtained by separable application
+            of this filter is the best possible 5x5 approximation to a Gaussian filter.
+            The equivalent Gaussian has sigma = 0.867.
+ 
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalSmoothing5()
+    {
+        this->initExplicitly(-2, 2) = 0.03134, 0.24, 0.45732, 0.24, 0.03134;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init an optimal 5-tap smoothing filter to be used in the context of first derivative computation.
+           This filter must be used in conjunction with the optimal 5-tap first derivative filter 
+           (see initOptimalFirstDerivative5()),  such that the derivative filter is applied along one dimension, 
+           and the smoothing filter along the other. The filter values are 
+            
+            \code
+            [0.04255, 0.241, 0.4329, 0.241, 0.04255]
+            \endcode
+            
+            These values are optimal in the sense that the 5x5 filter obtained by combining 
+            this filter with the optimal 5-tap first derivative is the best possible 5x5 approximation to a 
+            Gaussian first derivative filter. The equivalent Gaussian has sigma = 0.906.
+ 
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalFirstDerivativeSmoothing5()
+    {
+        this->initExplicitly(-2, 2) = 0.04255, 0.241, 0.4329, 0.241, 0.04255;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init an optimal 5-tap smoothing filter to be used in the context of second derivative computation.
+           This filter must be used in conjunction with the optimal 5-tap second derivative filter 
+           (see initOptimalSecondDerivative5()), such that the derivative filter is applied along one dimension, 
+           and the smoothing filter along the other. The filter values are 
+            
+            \code
+            [0.0243, 0.23556, 0.48028, 0.23556, 0.0243]
+            \endcode
+            
+            These values are optimal in the sense that the 5x5 filter obtained by combining 
+            this filter with the optimal 5-tap second derivative is the best possible 5x5 approximation to a 
+            Gaussian second derivative filter. The equivalent Gaussian has sigma = 0.817.
+ 
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalSecondDerivativeSmoothing5()
+    {
+        this->initExplicitly(-2, 2) = 0.0243, 0.23556, 0.48028, 0.23556, 0.0243;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+
+        /**
+            Init a 5-tap filter as defined by Peter Burt in the context of pyramid creation.
+            The filter values are
+            
+            \code
+            [a, 0.25, 0.5-2*a, 0.25, a]
+            \endcode
+            
+            The default <tt>a = 0.04785</tt> is optimal in the sense that it minimizes the difference
+            to a true Gaussian filter (which would have sigma = 0.975). For other values of <tt>a</tt>, the scale 
+            of the most similar Gaussian can be approximated by
+            
+            \code
+            sigma = 5.1 * a + 0.731
+            \endcode
+ 
+            Preconditions:
+            \code
+            0 <= a <= 0.125
+            \endcode
+
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initBurtFilter(double a = 0.04785)
+    {
+        vigra_precondition(a >= 0.0 && a <= 0.125,
+            "Kernel1D::initBurtFilter(): 0 <= a <= 0.125 required.");
+        this->initExplicitly(-2, 2) = a, 0.25, 0.5 - 2.0*a, 0.25, a;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
     }
 
         /**
@@ -1172,7 +1378,7 @@ class Kernel1D
         */
     void initAveraging(int radius, value_type norm);
 
-        /** Init as a Averaging filter with norm 1.
+        /** Init as an Averaging filter with norm 1.
          */
     void initAveraging(int radius)
     {
@@ -1180,8 +1386,10 @@ class Kernel1D
     }
 
         /**
-            Init as a symmetric gradient filter of the form
+           Init as a symmetric gradient filter of the form
            <TT>[ 0.5 * norm, 0.0 * norm, -0.5 * norm]</TT>
+           
+           <b>Deprecated</b>. Use initSymmetricDifference() instead.
 
             Postconditions:
             \code
@@ -1192,13 +1400,126 @@ class Kernel1D
             \endcode
         */
     void
-    initSymmetricGradient(value_type norm );
+    initSymmetricGradient(value_type norm )
+    {
+        initSymmetricDifference(norm);
+        setBorderTreatment(BORDER_TREATMENT_REPEAT);
+    }
 
         /** Init as a symmetric gradient filter with norm 1.
+           
+           <b>Deprecated</b>. Use initSymmetricDifference() instead.
          */
     void initSymmetricGradient()
     {
         initSymmetricGradient(one());
+    }
+
+    void
+    initSymmetricDifference(value_type norm );
+
+        /** Init as the 3-tap symmetric difference filter
+             The filter values are
+             
+             \code
+             [0.5, 0, -0.5]
+             \endcode
+
+            Postconditions:
+            \code
+            1. left()  == -1
+            2. right() ==  1
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+          */
+    void initSymmetricDifference()
+    {
+        initSymmetricDifference(one());
+    }
+
+        /**
+            Init the 3-tap second difference filter.
+            The filter values are
+             
+             \code
+             [1, -2, 1]
+             \endcode
+
+            Postconditions:
+            \code
+            1. left()  == -1
+            2. right() ==  1
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1
+            \endcode
+        */
+    void
+    initSecondDifference3()
+    {
+        this->initExplicitly(-1, 1) = 1.0, -2.0, 1.0;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+    
+        /**
+            Init an optimal 5-tap first derivative filter.
+           This filter must be used in conjunction with the corresponding 5-tap smoothing filter 
+           (see initOptimalFirstDerivativeSmoothing5()), such that the derivative filter is applied along one dimension,
+            and the smoothing filter along the other.
+            The filter values are 
+            
+            \code
+            [0.1, 0.3, 0.0, -0.3, -0.1]
+            \endcode
+            
+            These values are optimal in the sense that the 5x5 filter obtained by combining 
+            this filter with the corresponding 5-tap smoothing filter is the best possible 5x5 approximation to a 
+            Gaussian first derivative filter. The equivalent Gaussian has sigma = 0.906.
+            
+            If the filter is instead separably combined with itself, an almost optimal approximation of the
+            mixed second Gaussian derivative at scale sigma = 0.899 results.
+ 
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalFirstDerivative5()
+    {
+        this->initExplicitly(-2, 2) = 0.1, 0.3, 0.0, -0.3, -0.1;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
+    }
+    
+        /**
+            Init an optimal 5-tap second derivative filter.
+           This filter must be used in conjunction with the corresponding 5-tap smoothing filter 
+           (see initOptimalSecondDerivativeSmoothing5()), such that the derivative filter is applied along one dimension,
+            and the smoothing filter along the other.
+            The filter values are 
+            
+            \code
+            [0.22075, 0.117, -0.6755, 0.117, 0.22075]
+            \endcode
+            
+            These values are optimal in the sense that the 5x5 filter obtained by combining 
+            this filter with the corresponding 5-tap smoothing filter is the best possible 5x5 approximation to a 
+            Gaussian second derivative filter. The equivalent Gaussian has sigma = 0.817.
+ 
+            Postconditions:
+            \code
+            1. left()  == -2
+            2. right() ==  2
+            3. borderTreatment() == BORDER_TREATMENT_REFLECT
+            4. norm() == 1.0
+            \endcode
+        */
+    void initOptimalSecondDerivative5()
+    {
+        this->initExplicitly(-2, 2) = 0.22075, 0.117, -0.6755, 0.117, 0.22075;
+        this->setBorderTreatment(BORDER_TREATMENT_REFLECT);
     }
 
         /** Init the kernel by an explicit initializer list.
@@ -1240,7 +1561,7 @@ class Kernel1D
         vigra_precondition(left <= 0,
                      "Kernel1D::initExplicitly(): left border must be <= 0.");
         vigra_precondition(right >= 0,
-                     "Kernel1D::initExplicitly(): right border must be <= 0.");
+                     "Kernel1D::initExplicitly(): right border must be >= 0.");
 
         right_ = right;
         left_ = left;
@@ -1313,7 +1634,7 @@ class Kernel1D
     value_type norm() const { return norm_; }
 
         /** set a new norm and normalize kernel, use the normalization formula
-            for the given </tt>derivativeOrder</tt>.
+            for the given <tt>derivativeOrder</tt>.
         */
     void
     normalize(value_type norm, unsigned int derivativeOrder = 0, double offset = 0.0);
@@ -1426,8 +1747,8 @@ void Kernel1D<ARITHTYPE>::initGaussian(double std_dev,
     else
         norm_ = 1.0;
 
-    // best border treatment for Gaussians is BORDER_TREATMENT_CLIP
-    border_treatment_ = BORDER_TREATMENT_CLIP;
+    // best border treatment for Gaussians is BORDER_TREATMENT_REFLECT
+    border_treatment_ = BORDER_TREATMENT_REFLECT;
 }
 
 /***********************************************************************/
@@ -1533,7 +1854,7 @@ Kernel1D<ARITHTYPE>::initGaussianDerivative(double std_dev,
     kernel_.reserve(radius*2+1);
 
     // fill the kernel and calculate the DC component
-    // introduced by truncation of the Geussian
+    // introduced by truncation of the Gaussian
     ARITHTYPE dc = 0.0;
     for(ARITHTYPE x = -radius; x <= radius; ++x)
     {
@@ -1561,8 +1882,8 @@ Kernel1D<ARITHTYPE>::initGaussianDerivative(double std_dev,
         norm_ = 1.0;
 
     // best border treatment for Gaussian derivatives is
-    // BORDER_TREATMENT_REPEAT
-    border_treatment_ = BORDER_TREATMENT_REPEAT;
+    // BORDER_TREATMENT_REFLECT
+    border_treatment_ = BORDER_TREATMENT_REFLECT;
 }
 
 /***********************************************************************/
@@ -1644,7 +1965,7 @@ void Kernel1D<ARITHTYPE>::initAveraging(int radius,
 
 template <class ARITHTYPE>
 void
-Kernel1D<ARITHTYPE>::initSymmetricGradient(value_type norm)
+Kernel1D<ARITHTYPE>::initSymmetricDifference(value_type norm)
 {
     kernel_.erase(kernel_.begin(), kernel_.end());
     kernel_.reserve(3);
@@ -1657,9 +1978,9 @@ Kernel1D<ARITHTYPE>::initSymmetricGradient(value_type norm)
     right_ = 1;
     norm_ = norm;
 
-    // best border treatment for SymmetricGradient is
-    // BORDER_TREATMENT_REPEAT
-    border_treatment_ = BORDER_TREATMENT_REPEAT;
+    // best border treatment for symmetric difference is
+    // BORDER_TREATMENT_REFLECT
+    border_treatment_ = BORDER_TREATMENT_REFLECT;
 }
 
 /**************************************************************/

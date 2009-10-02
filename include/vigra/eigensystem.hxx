@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -988,8 +988,8 @@ bool hessenbergQrDecomposition(MultiArrayView<2, T, C1> & H, MultiArrayView<2, T
 
 } // namespace detail
 
-/** \addtogroup LinearAlgebraFunctions Matrix functions
- */
+/** \addtogroup MatrixAlgebra 
+*/
 //@{
     /** Compute the eigensystem of a symmetric matrix.
 
@@ -1001,8 +1001,8 @@ bool hessenbergQrDecomposition(MultiArrayView<2, T, C1> & H, MultiArrayView<2, T
         converge. It can be applied in-place, i.e. <tt>&a == &ev</tt> is allowed.
         The code of this function was adapted from JAMA.
 
-    <b>\#include</b> "<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>" or<br>
-    <b>\#include</b> "<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>"<br>
+    <b>\#include</b> \<<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>\> or<br>
+    <b>\#include</b> \<<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>\><br>
         Namespaces: vigra and vigra::linalg
      */
 template <class T, class C1, class C2, class C3>
@@ -1038,8 +1038,8 @@ symmetricEigensystem(MultiArrayView<2, T, C1> const & a,
         converge. It can be applied in-place, i.e. <tt>&a == &ev</tt> is allowed.
         The code of this function was adapted from JAMA.
 
-    <b>\#include</b> "<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>" or<br>
-    <b>\#include</b> "<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>"<br>
+    <b>\#include</b> \<<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>\> or<br>
+    <b>\#include</b> \<<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>\><br>
         Namespaces: vigra and vigra::linalg
      */
 template <class T, class C1, class C2, class C3>
@@ -1076,8 +1076,8 @@ nonsymmetricEigensystem(MultiArrayView<2, T, C1> const & a,
         companion matrix yielding the roots as eigenvalues. It returns <tt>false</tt> if
         it fails to converge.
 
-        <b>\#include</b> "<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>" or<br>
-        <b>\#include</b> "<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>"<br>
+        <b>\#include</b> \<<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>\> or<br>
+        <b>\#include</b> \<<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>\><br>
         Namespaces: vigra and vigra::linalg
 
         \see polynomialRoots(), vigra::Polynomial
@@ -1128,8 +1128,8 @@ bool polynomialRootsEigenvalueMethod(POLYNOMIAL const & poly, VECTOR & roots)
         the roots are appended. The function calls \ref polynomialRootsEigenvalueMethod() and
         throws away all complex roots. It returns <tt>false</tt> if it fails to converge.
 
-        <b>\#include</b> "<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>" or<br>
-        <b>\#include</b> "<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>"<br>
+        <b>\#include</b> \<<a href="eigensystem_8hxx-source.html">vigra/eigensystem.hxx</a>\> or<br>
+        <b>\#include</b> \<<a href="linear__algebra_8hxx-source.html">vigra/linear_algebra.hxx</a>\><br>
         Namespaces: vigra and vigra::linalg
 
         \see polynomialRealRoots(), vigra::Polynomial

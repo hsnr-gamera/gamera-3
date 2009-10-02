@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -101,6 +101,10 @@
         #endif // _MSC_EXTENSIONS
     #endif // _MSC_VER < 1310
 
+    #if _MSC_VER < 1400
+        #define VIGRA_NO_WORKING_STRINGSTREAM
+    #endif
+    
     #define VIGRA_NEED_BIN_STREAMS
 
     #ifdef VIGRA_DLL
@@ -121,6 +125,9 @@
 #if defined(__GNUC__)
     #if  __GNUC__ < 2 || ((__GNUC__ == 2) && (__GNUC_MINOR__ <= 8))
         #error "Need at least g++ 2.95"
+    #endif
+    #if __GNUC__ < 3
+        #define VIGRA_NO_WORKING_STRINGSTREAM
     #endif
     #define HAS_HASH_CONTAINERS
 #endif  // __GNUC__
@@ -206,5 +213,12 @@ namespace vigra {
 #endif
 
 } // namespace vigra
+
+#ifdef DOXYGEN
+#  define doxygen_overloaded_function(fun) fun(...);
+#else
+#  define doxygen_overloaded_function(fun)
+#endif
+
 
 #endif // VIGRA_CONFIG_HXX

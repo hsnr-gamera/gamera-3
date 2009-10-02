@@ -4,12 +4,11 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -73,7 +72,7 @@ namespace vigra {
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -86,7 +85,7 @@ namespace vigra {
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>"<br>
+        <b>\#include</b> \<<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -116,6 +115,8 @@ namespace vigra {
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void rotateImage)
+
 template <class SrcIterator, class SrcAccessor, 
           class DestIterator, class DestAccessor>
 void rotateImage(SrcIterator is, SrcIterator end, SrcAccessor as,
@@ -224,7 +225,7 @@ enum Reflect{horizontal = 1, vertical = 2};
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -237,7 +238,7 @@ enum Reflect{horizontal = 1, vertical = 2};
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>"<br>
+        <b>\#include</b> \<<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -267,6 +268,8 @@ enum Reflect{horizontal = 1, vertical = 2};
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void reflectImage)
+
 template <class SrcIterator, class SrcAccessor, 
           class DestIterator, class DestAccessor>
 void reflectImage(SrcIterator is, SrcIterator end, SrcAccessor as,
@@ -365,7 +368,7 @@ enum Transpose{major = 1, minor = 2};
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -378,7 +381,7 @@ enum Transpose{major = 1, minor = 2};
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>"<br>
+        <b>\#include</b> \<<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -408,6 +411,8 @@ enum Transpose{major = 1, minor = 2};
     \endcode
     
 */
+doxygen_overloaded_function(template <...> void transposeImage)
+
 template <class SrcIterator, class SrcAccessor, 
           class DestIterator, class DestAccessor>
 void transposeImage(SrcIterator is, SrcIterator end, SrcAccessor as,
@@ -572,7 +577,7 @@ inline int sizeForResamplingFactor(int oldsize, double factor)
     The input image must have a size of at
     least 2x2. Destiniation pixels are directly copied from the appropriate
     source pixels. The size of the result image is the product of <tt>factor</tt>
-    and the original size, where we round up if <tt>factor &lt; 1.0</tt> and down otherwise.
+    and the original size, where we round up if <tt>factor < 1.0</tt> and down otherwise.
     This size calculation is the main difference to the convention used in the similar 
     function \ref resizeImageNoInterpolation():
     there, the result size is calculated as <tt>n*(old_width-1)+1</tt> and 
@@ -580,6 +585,9 @@ inline int sizeForResamplingFactor(int oldsize, double factor)
     does not replicate the last pixel in every row/column in order to make it compatible
     with the other functions of the <tt>resizeImage...</tt> family.
     
+    The function can be called with different resampling factors for x and y, or
+    with a single factor to be used for both directions.
+
     It should also be noted that resampleImage() is implemented so that an enlargement followed
     by the corresponding shrinking reproduces the original image. The function uses accessors. 
     
@@ -593,10 +601,16 @@ inline int sizeForResamplingFactor(int oldsize, double factor)
         void 
         resampleImage(SrcIterator is, SrcIterator iend, SrcAccessor sa,
                       DestIterator id, DestAccessor ad, double factor);
+                      
+        template <class SrcIterator, class SrcAccessor,
+                  class DestIterator, class DestAccessor>
+        void 
+        resampleImage(SrcIterator is, SrcIterator iend, SrcAccessor sa,
+                      DestIterator id, DestAccessor ad, double xfactor, double yfactor);
     }
     \endcode
     
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcImageIterator, class SrcAccessor,
@@ -604,12 +618,18 @@ inline int sizeForResamplingFactor(int oldsize, double factor)
         inline void 
         resampleImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
                       pair<DestImageIterator, DestAccessor> dest, double factor);
+                      
+        template <class SrcImageIterator, class SrcAccessor,
+              class DestImageIterator, class DestAccessor>
+        inline void 
+        resampleImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
+                      pair<DestImageIterator, DestAccessor> dest, double xfactor, double yfactor);
     }
     \endcode
     
     <b> Usage:</b>
     
-        <b>\#include</b> "<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>"<br>
+        <b>\#include</b> \<<a href="basicgeometry_8hxx-source.html">vigra/basicgeometry.hxx</a>\><br>
         Namespace: vigra
     
     \code
@@ -640,7 +660,8 @@ inline int sizeForResamplingFactor(int oldsize, double factor)
     \endcode
     
 */
-  // Extension by Christoph Dalitz
+doxygen_overloaded_function(template <...> void resampleImage)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void 
@@ -691,6 +712,7 @@ resampleImage(SrcIterator is, SrcIterator iend, SrcAccessor sa,
     }
 
 }
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void 

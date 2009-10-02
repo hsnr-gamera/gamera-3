@@ -4,12 +4,12 @@
 /*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.5.0, Dec 07 2006 )                                    */
+/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
 /*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
 /*    Please direct questions, bug reports, and contributions to        */
-/*        koethe@informatik.uni-hamburg.de          or                  */
-/*        vigra@kogs1.informatik.uni-hamburg.de                         */
+/*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
+/*        vigra@informatik.uni-hamburg.de                               */
 /*                                                                      */
 /*    Permission is hereby granted, free of charge, to any person       */
 /*    obtaining a copy of this software and associated documentation    */
@@ -73,7 +73,7 @@ namespace vigra {
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void vectorToTensor(SrcIterator sul, SrcIterator slr, SrcAccessor src,
                             DestIterator dul, DestAccessor dest,
                             bool negateComponent2 = true);
@@ -81,11 +81,11 @@ namespace vigra {
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void vectorToTensor(triple<SrcIterator, SrcIterator, SrcAccessor> s,
                             pair<DestIterator, DestAccessor> d,
                             bool negateComponent2 = true);
@@ -94,7 +94,7 @@ namespace vigra {
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>"
+    <b>\#include</b> \<<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>\>
 
     \code
     FImage img(w,h);
@@ -106,6 +106,8 @@ namespace vigra {
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void vectorToTensor)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void vectorToTensor(SrcIterator sul, SrcIterator slr, SrcAccessor src,
@@ -185,7 +187,7 @@ void vectorToTensor(triple<SrcIterator, SrcIterator, SrcAccessor> s,
 
     This function turns a 3-band image representing the tensor components
     t11, t12 (== t21 due to symmetry), t22 into the a 3-band image holding the eigen
-    representation e1, e2, and angle, where e1 &gt; e2. The original tensor must be
+    representation e1, e2, and angle, where e1 \> e2. The original tensor must be
     defined in a right-handed coordinate system, and the angle of the tensor will
     then be given in mathematical positive (counter-clockwise) orientation, starting
     at the x-axis.
@@ -196,18 +198,18 @@ void vectorToTensor(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void tensorEigenRepresentation(SrcIterator sul, SrcIterator slr, SrcAccessor src,
                                        DestIterator dul, DestAccessor dest);
     }
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void tensorEigenRepresentation(triple<SrcIterator, SrcIterator, SrcAccessor> s,
                                        pair<DestIterator, DestAccessor> d);
     }
@@ -215,7 +217,7 @@ void vectorToTensor(triple<SrcIterator, SrcIterator, SrcAccessor> s,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>"
+    <b>\#include</b> \<<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>\>
 
     \code
     FVector3Image tensor(w,h);
@@ -225,6 +227,8 @@ void vectorToTensor(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void tensorEigenRepresentation)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void tensorEigenRepresentation(SrcIterator sul, SrcIterator slr, SrcAccessor src,
@@ -293,18 +297,18 @@ void tensorEigenRepresentation(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void tensorTrace(SrcIterator sul, SrcIterator slr, SrcAccessor src,
                          DestIterator dul, DestAccessor dest);
     }
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
-                class DestIterator, class DestAccessor>
+                  class DestIterator, class DestAccessor>
         void tensorTrace(triple<SrcIterator, SrcIterator, SrcAccessor> s,
                          pair<DestIterator, DestAccessor> d);
     }
@@ -312,7 +316,7 @@ void tensorEigenRepresentation(triple<SrcIterator, SrcIterator, SrcAccessor> s,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>"
+    <b>\#include</b> \<<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>\>
 
     \code
     FVector3Image tensor(w,h);
@@ -322,6 +326,8 @@ void tensorEigenRepresentation(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void tensorTrace)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator, class DestAccessor>
 void tensorTrace(SrcIterator sul, SrcIterator slr, SrcAccessor src,
@@ -385,7 +391,7 @@ void tensorTrace(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \endcode
 
 
-    use argument objects in conjunction with \ref ArgumentObjectFactories:
+    use argument objects in conjunction with \ref ArgumentObjectFactories :
     \code
     namespace vigra {
         template <class SrcIterator, class SrcAccessor,
@@ -399,7 +405,7 @@ void tensorTrace(triple<SrcIterator, SrcIterator, SrcAccessor> s,
 
     <b> Usage:</b>
 
-    <b>\#include</b> "<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>"
+    <b>\#include</b> \<<a href="tensorutilities_8hxx-source.html">vigra/tensorutilities.hxx</a>\>
 
     \code
     FVector3Image tensor(w,h);
@@ -410,6 +416,8 @@ void tensorTrace(triple<SrcIterator, SrcIterator, SrcAccessor> s,
     \endcode
 
 */
+doxygen_overloaded_function(template <...> void tensorToEdgeCorner)
+
 template <class SrcIterator, class SrcAccessor,
           class DestIterator1, class DestAccessor1,
           class DestIterator2, class DestAccessor2>

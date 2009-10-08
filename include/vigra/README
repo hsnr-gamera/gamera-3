@@ -23,7 +23,7 @@ files are modified:
 
  - rational.hxx
      has been taken from the development branch of VIGRA
-     to suppress a compiler warnign about an "ambiguous else"
+     to suppress a compiler warning about an "ambiguous else"
 
  - resizeimage.hxx
      has been taken from the development branch of VIGRA,

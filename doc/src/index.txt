@@ -157,3 +157,10 @@ and support from the Lester S. Levy Estate.
 These documents were produced using reStructuredText_.
 
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
+
+The documentation was written by M. Droettboom and Christoph Dalitz.
+Permission is granted to copy, distribute and/or modify this documentation
+under the terms of the `Creative Commons Attribution Share-Alike License (CC-BY-SA) v3.0`__. In addition, permission is granted to use and/or
+modify the code snippets from the documentation without restrictions.
+
+.. __: http://creativecommons.org/licenses/by-sa/3.0/

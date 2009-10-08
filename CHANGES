@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.3, Oct 08, 2009
+----------------------------
+
+ - documentation licensed under CC-BY-SA
+   see the bottom of doc/src/index.txt for details
+
  - newer VIGRA version 1.6 included with some backports
    (see the file include/vigra/README for a list of modifications)
 

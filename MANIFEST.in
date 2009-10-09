@@ -6,9 +6,7 @@ recursive-include gamera/pixmaps *.png *.py *.bmp
 recursive-include gamera/test *.tiff
 recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL LICENSE README TODO KNOWNBUG Y2KINFO
 recursive-include examples *.py README *.tiff *.xml
-recursive-include include *.hpp *.hxx
-recursive-include include/zlib-1.2.1 *.h
-recursive-include src/zlib-1.2.1 *.c
+recursive-include include *.hpp *.hxx *.h README
 recursive-include win32 *.py 
 recursive-include win32/msisource *.mmh *.txt *.jpg *.c *.template *.bmp
 recursive-include gamera/mac/ *.py *.html DMG_DS_STORE

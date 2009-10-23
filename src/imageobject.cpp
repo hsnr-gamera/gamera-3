@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2009      Jonathan Koch, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,6 +20,7 @@
 #define GAMERACORE_INTERNAL
 #include "gameramodule.hpp"
 #include "pixel.hpp"
+#include <vector>
 
 using namespace Gamera;
 
@@ -38,6 +40,7 @@ extern "C" {
   { return 0; };
   static int cc_init(PyObject* self, PyObject* args, PyObject* kwds)
   { return 0; };
+  
   // more useful stuff...
   static void image_dealloc(PyObject* self);
   static int image_traverse(PyObject* self, visitproc visit, void* arg);
@@ -69,6 +72,28 @@ extern "C" {
   static int image_set_resolution(PyObject* self, PyObject* v);
   static PyObject* cc_get_label(PyObject* self);
   static int cc_set_label(PyObject* self, PyObject* v);
+
+  static PyObject* mlcc_new(PyTypeObject* pytype, PyObject* args,
+				 PyObject* kwds);
+
+  static int mlcc_init(PyObject* self, PyObject* args, PyObject* kwds)
+  { return 0; };
+
+  static PyObject* cc_convert_to_mlcc(PyObject* self);
+  static PyObject* mlcc_convert_to_cc(PyObject* self);
+  static PyObject* mlcc_convert_to_cc_list(PyObject* self);
+  
+  static PyObject* mlcc_has_label(PyObject* self, PyObject* v);
+  static PyObject* mlcc_relabel(PyObject* self, PyObject* args);
+  static PyObject* mlcc_get_labels(PyObject* self);
+  static PyObject* mlcc_get_neighbors(PyObject* self);
+
+  static PyObject* mlcc_add_label(PyObject* self, PyObject* args);
+  static PyObject* mlcc_remove_label(PyObject* self, PyObject* args);
+  //static PyObject* mlcc_find_bounding_box(PyObject* self, PyObject* args);
+  static PyObject* mlcc_add_neighbors(PyObject* self, PyObject* args);
+
+  static PyObject* mlcc_copy(PyObject* self, PyObject* args);
 }
 
 static PyTypeObject ImageType = {
@@ -139,6 +164,14 @@ static PyGetSetDef image_getset[] = {
 static PyGetSetDef cc_getset[] = {
   { (char *)"label", (getter)cc_get_label, (setter)cc_set_label, (char *)"(read/write property)\n\nThe pixel label value for the Cc", 0},
   { NULL }
+};
+
+static PyMethodDef cc_methods[] = {
+    {"convert_to_mlcc", (PyCFunction)cc_convert_to_mlcc, METH_NOARGS,
+     (char*)"**convert_to_mlcc** ()\n\n"
+     "Converts the ConnectedComponent into a MultiLabelCC."
+    },
+    {NULL} //Sentinel//
 };
 
 static PyMethodDef image_methods[] = {
@@ -262,42 +295,42 @@ static PyObject* image_new(PyTypeObject* pytype, PyObject* args,
     if (PyArg_ParseTupleAndKeywords(args, kwds, (char *)"OO|ii", (char **)kwlist, &a, &b, &pixel, &format)) {
       Point point_a;
       try {
-	point_a = coerce_Point(a);
+        point_a = coerce_Point(a);
       } catch (std::invalid_argument e) {
-	goto phase2;
+        goto phase2;
       }
 
       try {
-	Point point_b = coerce_Point(b);
-	int ncols = point_b.x() - point_a.x() + 1;
-	int nrows = point_b.y() - point_a.y() + 1;
-	return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
+      	Point point_b = coerce_Point(b);
+      	int ncols = point_b.x() - point_a.x() + 1;
+      	int nrows = point_b.y() - point_a.y() + 1;
+      	return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
       } catch (std::invalid_argument e) {
-	PyErr_Clear();
-	if (is_SizeObject(b)) {
-	  Size* size_b = ((SizeObject*)b)->m_x;
-	  int nrows = size_b->height() + 1;
-	  int ncols = size_b->width() + 1;
-	  return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
-	} else if (is_DimObject(b)) {
-	  Dim* dim_b = ((DimObject*)b)->m_x;
-	  return _image_new(pytype, point_a, *dim_b, pixel, format);
-	}
+      	PyErr_Clear();
+      	if (is_SizeObject(b)) {
+      	  Size* size_b = ((SizeObject*)b)->m_x;
+      	  int nrows = size_b->height() + 1;
+      	  int ncols = size_b->width() + 1;
+      	  return _image_new(pytype, point_a, Dim(ncols, nrows), pixel, format);
+      	} else if (is_DimObject(b)) {
+      	  Dim* dim_b = ((DimObject*)b)->m_x;
+      	  return _image_new(pytype, point_a, *dim_b, pixel, format);
+      	}
 #ifdef GAMERA_DEPRECATED
-	else if (is_DimensionsObject(b)) {
-	  if (send_deprecation_warning(
-"Image(Point point, Dimensions dimensions, pixel_type, storage_format) \n"
-"is deprecated.\n\n"
-"Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
-"in favor of Dim).\n\n"
-"Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type, \n"
-"storage_format) instead.",
-"imageobject.cpp", __LINE__) == 0)
-	    return 0;
-	  Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
-	  return _image_new(pytype, point_a, Dim(dim_b->ncols(), dim_b->nrows()),
-			    pixel, format);
-	}
+          else if (is_DimensionsObject(b)) {
+            if (send_deprecation_warning(
+              "Image(Point point, Dimensions dimensions, pixel_type, storage_format) \n"
+              "is deprecated.\n\n"
+              "Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+              "in favor of Dim).\n\n"
+              "Use Image((offset_x, offset_y), Dim(ncols, nrows), pixel_type, \n"
+              "storage_format) instead.",
+              "imageobject.cpp", __LINE__) == 0)
+        	    return 0;
+        	  Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
+        	  return _image_new(pytype, point_a, Dim(dim_b->ncols(), dim_b->nrows()),
+        			    pixel, format);
+          }
 #endif
       }
     }
@@ -718,6 +751,8 @@ static PyObject* image_get(PyObject* self, const Point& point) {
   }
   if (is_CCObject(self)) {
     return PyInt_FromLong(((Cc*)o->m_x)->get(point));
+  } else if (is_MLCCObject(self)) {
+    return PyInt_FromLong(((MlCc*)o->m_x)->get(point));
   } else if (od->m_storage_format == RLE) {
     return PyInt_FromLong(((OneBitRleImageView*)o->m_x)->get(point));
   } else {
@@ -765,6 +800,12 @@ static PyObject* image_set(PyObject* self, const Point& point, PyObject* value) 
       return 0;
     }
     ((Cc*)o->m_x)->set(point, (OneBitPixel)PyInt_AS_LONG(value));
+  } else if (is_MLCCObject(self)) {
+    if (!PyInt_Check(value)) {
+      PyErr_SetString(PyExc_TypeError, "Pixel value for MlCc objects must be an int.");
+      return 0;
+    }
+    ((MlCc*)o->m_x)->set(point, (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == Gamera::FLOAT) {
     if (!PyFloat_Check(value)) {
       PyErr_SetString(PyExc_TypeError, "Pixel value for Float objects must be a float.");
@@ -1033,7 +1074,7 @@ static PyObject* cc_get_label(PyObject* self) {
 static int cc_set_label(PyObject* self, PyObject* v) {
   RectObject* o = (RectObject*)self;
   if (!PyInt_Check(v)) {
-    PyErr_SetString(PyExc_TypeError, "label must be a int value.");
+    PyErr_SetString(PyExc_TypeError, "label must be an int value.");
     return -1;
   }
   ((Cc*)o->m_x)->label(PyInt_AS_LONG(v));
@@ -1108,6 +1149,611 @@ static PyObject* cc_richcompare(PyObject* a, PyObject* b, int op) {
       Cc& ac = *(Cc*)((RectObject*)a)->m_x;
       Cc& bc = *(Cc*)((RectObject*)b)->m_x;
       cmp = (ap != bp) || (ap.data() != bp.data()) || ac.label() != bc.label();
+    }
+    break;
+  case Py_LT:
+  case Py_LE:
+  case Py_GT:
+  case Py_GE:
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  default:
+    return 0; // cannot happen
+  }
+  if (cmp) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyTypeObject MLCCType = {
+  PyObject_HEAD_INIT(NULL)
+  0,
+};
+
+PyTypeObject* get_MLCCType() {
+  return &MLCCType;
+}
+/*
+(char *)"**get** (Point *p*)\n\n"
+"Gets a pixel value at the given (*x*, *y*) coordinate.\n\n"
+"A 2-element sequence may be used in place of the ``Point`` argument.  For "
+"instance, the following are all equivalent:\n\n"
+*/
+
+static PyMethodDef mlcc_methods[] = {
+    {(char*)"add_label", (PyCFunction)mlcc_add_label, METH_VARARGS,
+     (char*)"**add_label** (int *label*, Rect *rect*)\n\n"
+     "Adds a label and a bounding box (for the label) to a MultiLabelCC. The bounding box of the MlCc is extended by the given *rect*."
+    },
+    {(char*)"remove_label", (PyCFunction)mlcc_remove_label, METH_O,
+     (char*)"**remove_label** (int *label*)\n\n"
+     "Removes a label from a MultiLabelCC. The bounding box of the MlCc is shrunk by the bounding box associated with the removed label as far as possible with respect to the other bounding boxes."
+    },
+//     {(char*)"find_bounding_box", (PyCFunction)mlcc_find_bounding_box, METH_NOARGS,
+//      (char*)"**find_bounding_box** ()\n\n"
+//      "Calculates the bounding box of a MultiLabelCC depending from the stored labels/rectangles."
+//     },
+    {(char*)"add_neighbors", (PyCFunction)mlcc_add_neighbors, METH_VARARGS,
+     (char*)"**add_neighbors** (int *i*, int *j*)\n\n"
+     "Adds a neighborhood relation to the MultiLabelCC.\n\n"
+     "This is entirely optional: neighborship relations are only stored, and can be returned with get_neighbors(), but are not used internally by MlCc."
+    },
+    {(char*)"copy", (PyCFunction)mlcc_copy, METH_VARARGS,
+     (char*)"**copy** ()\n\n"
+     "Makes a deep copy of a MultiLabelCC. "
+     "There are a number of ways to to call this Method:\n\n"
+     "  - **copy** (MlCc *other*, Point *upper_left*, Point *lower_right*)\n\n"
+     "  - **copy** (MlCc *other*, Point *upper_left*, Size *size*)\n\n"
+     "  - **copy** (MlCc *other*, Point *upper_left*, Dim *dim*)\n\n"
+     "  - **copy** (MlCc *other*, Rect *rectangle*)\n\n"
+    },
+    {(char*)"get_labels", (PyCFunction)mlcc_get_labels, METH_NOARGS,
+     (char*)"**get_labels** ()\n\n"
+     "Returns a list of all labels belonging to the MultiLabelCC."
+    },
+    {(char*)"has_label", (PyCFunction)mlcc_has_label, METH_O,
+     (char*)"**has_label** (int *label*)\n\n"
+     "Returns wether a label belongs to the MlCc or not."
+    },
+    {(char*)"get_neighbors", (PyCFunction)mlcc_get_neighbors, METH_NOARGS,
+     (char*)"**get_neighbors** ()\n\n"
+     "Returns all pairs of neighbors that have been previously added with add_neighbors()."
+    },
+    {(char*)"relabel", (PyCFunction)mlcc_relabel, METH_VARARGS,
+     (char *)"Returns a new MlCc containing only the given labels. For computing the new bounding boxes, the bounding box information stored for each label are utilized. The neighborship information is lost in the returned MlCc.\n\nThis function is overloaded to return either a single or several new MlCc's:\n\n"
+     "**relabel** (List<int> *l*)\n\n"
+     "Creates a single MultiLabelCC based on the current one.\n\n"
+     ".. code:: Python\n\n"
+     "    new_mlcc = mlcc.relabel([2,3,4])\n\n"
+     "This returns a single MultiLabelCC which contains the labels 2,3,4.\n\n"
+     "**relabel** (List<List<int>> *l*)\n\n"
+     "Creates a list of MultiLabelCC based on the current one.\n\n"
+     ".. code:: Python\n\n"
+     "    new_mlcc_list = mlcc.relabel([[2,3],[4]])\n\n"
+     "This returns a list of two MultiLabelCCs. The first one contains the labels 2,3; the "
+     "second one contains the label 4."
+    },
+    {(char*)"convert_to_cc", (PyCFunction)mlcc_convert_to_cc, METH_NOARGS,
+     (char*)"**convert_to_cc** ()\n\n"
+     "Converts the MultiLabelCC into a ConnectedComponent. All labels belonging to the MultiLabelCc are set to the value of the first label. After calling this method, the MultiLabelCc only has one label."
+    },
+    {(char*)"convert_to_cc_list", (PyCFunction)mlcc_convert_to_cc_list, METH_NOARGS,
+     (char*)"**convert_to_cc_list** ()\n\n"
+     "Converts the MultiLabelCC into a  list of ConnectedComponent."
+     "Each ConnectedComponent in the List represents one label of the MultiLabelCC.\n"
+     "For example: You have a MultiLabelCC with the labels 2, 3, 4. Therefore it would be "
+     "transformed into a list of 3 ConnectedComponent, one for each label."
+    },
+    {NULL} //Sentinel//
+};
+  
+static PyObject* mlcc_add_neighbors(PyObject* self, PyObject* args){
+  int i, j;
+  
+  if (!PyArg_ParseTuple(args, "ii", &i, &j)){
+    PyErr_SetString(PyExc_TypeError, "Both labels need to be int values.");
+    return 0;
+  }
+  RectObject* o = (RectObject*)self;
+  ((MlCc*)o->m_x)->add_neighbors(i, j);
+  
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+// static PyObject* mlcc_find_bounding_box(PyObject* self, PyObject* args){
+//   RectObject* o = (RectObject*)self;
+//   ((MlCc*)o->m_x)->find_bounding_box();
+  
+//   Py_INCREF(Py_None);
+//   return Py_None;
+// }
+
+static PyObject* mlcc_remove_label(PyObject* self, PyObject* args){
+
+  if (!PyInt_Check(args)) {
+    PyErr_SetString(PyExc_TypeError, "Label must be an int value.");
+    return 0;
+  }
+  
+  RectObject* o = (RectObject*)self;
+  ((MlCc*)o->m_x)->remove_label(PyInt_AS_LONG(args));
+  
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* mlcc_add_label(PyObject* self, PyObject* args){
+  int i;
+  PyObject *pyrect;
+  
+  if (!PyArg_ParseTuple(args, "iO", &i, &pyrect)){
+    PyErr_SetString(PyExc_TypeError, "usage: add_label(int, Rect).");
+    return 0;
+  }
+  Rect *rect;
+  try{
+    rect=(Rect*)( ((RectObject*)pyrect)->m_x );
+  } catch (...) {
+    PyErr_SetString(PyExc_TypeError, "The second argument has to be of the type Rectangle.");
+    return 0;
+  }
+  
+  RectObject* o = (RectObject*)self;
+ ((MlCc*)o->m_x)->add_label(i, *rect);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject* mlcc_get_labels(PyObject* self){
+  PyObject *pylist;
+  RectObject* o = (RectObject*)self;
+  std::vector<int> labels;
+  ((MlCc*)o->m_x)->get_labels(labels);
+  pylist = PyList_New(labels.size());
+  for (size_t i=0; i<labels.size(); i++) {
+    PyList_SetItem(pylist, i, PyInt_FromLong(labels[i]));
+  }
+  return pylist;
+}
+
+static PyObject* _mlcc_copy(MlCc* mlcc, const Point& offset, const Dim& dim) {
+  MlCc* mlcc_new=new MultiLabelCC<ImageData<OneBitPixel> >(*mlcc, offset, dim);
+  return create_ImageObject(mlcc_new);
+}
+
+static PyObject* mlcc_copy(PyObject* self, PyObject* args){
+  int num_args = PyTuple_GET_SIZE(args);
+  RectObject* o = (RectObject*)self;
+  MlCc* mlcc=(MlCc*)o->m_x;
+
+  if (num_args == 2) {
+    PyObject *a, *b;
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO", &a, &b)) {
+      Point point_a;
+      try {
+        point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+        goto phase2;
+      }
+      try {
+        Point point_b = coerce_Point(b);
+        int nrows = point_b.y() - point_a.y() + 1;
+        int ncols = point_b.x() - point_a.x() + 1;
+        return _mlcc_copy(mlcc, point_a, Dim(ncols, nrows));
+      } catch (std::invalid_argument e) {
+        PyErr_Clear();
+        if (is_SizeObject(b)) {
+          Size* size_b = ((SizeObject*)b)->m_x;
+          int nrows = size_b->height() + 1;
+          int ncols = size_b->width() + 1;
+          return _mlcc_copy(mlcc, point_a, Dim(ncols, nrows));
+        } else if (is_DimObject(b)) {
+          Dim* dim_b = ((DimObject*)b)->m_x;
+          return _mlcc_copy(mlcc, point_a, *dim_b);
+        }
+      }
+    }
+  }
+
+phase2:
+  PyErr_Clear();
+
+  if (num_args == 3) {
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &pyrect)) {
+      if (is_RectObject(pyrect)) {
+        Rect* rect = ((RectObject*)pyrect)->m_x;
+        return _mlcc_copy(mlcc, rect->origin(), rect->dim());
+      }
+    }
+  }
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to MlCc constructor.  See the MlCc docstring for valid arguments.");
+  return 0;
+}
+
+static PyObject* mlcc_get_neighbors(PyObject* self){
+  PyObject *pylist, *tuple;
+  RectObject* o = (RectObject*)self;
+  std::vector<int> neighbors;
+  ((MlCc*)o->m_x)->get_neighbors(neighbors);
+  pylist = PyList_New(neighbors.size()/2);
+
+  for (size_t i=0; i<neighbors.size(); i+=2) {
+    tuple=PyTuple_New(2);
+    PyTuple_SetItem(tuple, 0, PyInt_FromLong(neighbors[i]));
+    PyTuple_SetItem(tuple, 1, PyInt_FromLong(neighbors[i+1]));
+
+    PyList_SetItem(pylist, i/2, tuple);
+  }
+
+  return pylist;
+}
+
+static PyObject* mlcc_has_label(PyObject* self, PyObject* v){
+  RectObject* o = (RectObject*)self;
+  if (!PyInt_Check(v)) {
+    PyErr_SetString(PyExc_TypeError, "Label must be an int value.");
+    return 0;
+  }
+  
+  if(((MlCc*)o->m_x)->has_label(PyInt_AS_LONG(v))){
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+}
+
+static PyObject* mlcc_relabel(PyObject* self, PyObject* args){
+  RectObject* o = (RectObject*)self;
+  PyObject* pyList;
+  int outer_size;
+  bool error=false;
+  bool listOfList=false;  //used as a trick to "overload" the function. The return value also depends from this value.
+  std::vector<std::vector<int>* > labelVector;
+  std::vector<MlCc*> mlccs;
+  
+  if (!PyArg_ParseTuple(args, "O", &pyList)){
+    PyErr_SetString(PyExc_TypeError, "no argument given.");
+    error=true;
+    goto tidyUp;
+  }
+  if (!PyList_Check(pyList)){
+    PyErr_SetString(PyExc_TypeError, "argument has to be a list.");
+    error=true;
+    goto tidyUp;
+  }
+
+  outer_size=PyList_Size(pyList);
+
+  if(outer_size==0){
+    PyErr_SetString(PyExc_TypeError, "argument (list) has to contain further values (lists/integers).");
+    error=true;
+    goto tidyUp;
+  }
+
+  if(!PyList_Check(PyList_GetItem(pyList,0))){ //if first inner element is not a list assume, that the given argument is a list of labels
+    IntVector* labels=new IntVector();
+    labelVector.push_back(labels);
+    for (int i=0; i<outer_size; i++){
+      PyObject* label=PyList_GetItem(pyList,i);
+      if(PyInt_Check(label)){
+        labels->push_back(PyInt_AS_LONG(label));
+      } else {
+        PyErr_SetString(PyExc_TypeError, "label values have to be int values.");
+        error=true;
+        goto tidyUp;
+      }
+    }
+  } else {
+    listOfList=true;
+    for (int i=0; i<outer_size; i++){
+      PyObject* pyList_inner=PyList_GetItem(pyList,i);
+      if(PyList_Check(pyList_inner)){
+        int inner_size=PyList_Size(pyList_inner);
+        IntVector* labels=new IntVector();
+        labelVector.push_back(labels);
+        for (int j=0;  j<inner_size; j++){
+          PyObject* label=PyList_GetItem(pyList_inner,j);
+          if(PyInt_Check(label)){
+            labels->push_back(PyInt_AS_LONG(label));
+          } else {
+            PyErr_SetString(PyExc_TypeError, "label values have to be int values.");
+            error=true;
+            goto tidyUp;
+          }
+        }
+      } else {
+        PyErr_SetString(PyExc_TypeError, "one of the inner elements is not a list.");
+        error=true;
+        goto tidyUp;
+      }
+    }
+  }
+
+  try{
+    ((MlCc*)o->m_x)->relabel(labelVector, mlccs);
+  } catch (std::exception& e) {
+    error=true;
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    goto tidyUp;
+  }
+
+  pyList = PyList_New(mlccs.size());
+  for (size_t i = 0; i < mlccs.size(); i++){
+    PyObject* retVal=create_ImageObject(mlccs[i]);
+    PyList_SetItem(pyList, i, retVal);
+  }
+  
+tidyUp:
+  for (size_t i=0; i<labelVector.size(); i++)
+    delete labelVector[i];
+
+  if(error){
+    for (size_t i=0; i<mlccs.size(); i++)
+      delete mlccs[i];
+    return 0;
+  } else {
+    if(listOfList){
+      return pyList;
+    } else {
+      PyObject* retVal=PyList_GetItem(pyList,0);
+      Py_INCREF(retVal);
+      Py_DECREF(pyList);
+      return retVal;
+    }
+  }
+}
+
+static PyObject* cc_convert_to_mlcc(PyObject* self){
+  CCObject* ccObject=(CCObject*)self;
+  ImageObject* imageObject=&(ccObject->m_parent);
+  RectObject* rectObject=&(imageObject->m_parent);
+  Image* mlcc=(((Cc*)rectObject->m_x)->convert_to_mlcc());
+  PyObject* retVal=create_ImageObject(mlcc);
+  return retVal;
+}
+
+static PyObject* mlcc_convert_to_cc_list(PyObject* self){
+  CCObject* ccObject=(CCObject*)self;
+  ImageObject* imageObject=&(ccObject->m_parent);
+  RectObject* rectObject=&(imageObject->m_parent);
+  std::list<Cc*>* ccs=(((MlCc*)rectObject->m_x)->convert_to_cc_list());
+
+  PyObject* pylist = PyList_New(ccs->size());
+  std::list<Cc*>::iterator it = ccs->begin();
+  for (size_t i = 0; i < ccs->size(); ++i, ++it) {
+    PyObject *item = create_ImageObject(*it);
+    PyList_SetItem(pylist, i, item);
+  }
+  delete ccs;
+  return pylist;
+}
+
+static PyObject* mlcc_convert_to_cc(PyObject* self){
+  CCObject* ccObject=(CCObject*)self;
+  ImageObject* imageObject=&(ccObject->m_parent);
+  RectObject* rectObject=&(imageObject->m_parent);
+  Image* cc=(((MlCc*)rectObject->m_x)->convert_to_cc());
+  PyObject* retVal=create_ImageObject(cc);
+  return retVal;
+}
+
+static PyObject* _mlcc_new(PyTypeObject* pytype, PyObject* py_src, int label, const Point& offset, const Dim& dim) {
+  if (!is_ImageObject(py_src)) {
+    PyErr_SetString(PyExc_TypeError, "First argument to the MlCc constructor must be an Image (or SubImage).");
+    return NULL;
+  }
+
+  int pixel, format;
+  ImageObject* src = (ImageObject*)py_src;
+  pixel = ((ImageDataObject*)src->m_data)->m_pixel_type;
+  format = ((ImageDataObject*)src->m_data)->m_storage_format;
+
+  Rect* mlcc = NULL;
+
+  try {
+    if (pixel != ONEBIT) {
+      PyErr_SetString(PyExc_TypeError, "MlCc objects may only be created from ONEBIT Images.");
+      return NULL;
+    }
+
+    if (format == DENSE) {
+      ImageData<OneBitPixel>* data =
+        ((ImageData<OneBitPixel>*)((ImageDataObject*)src->m_data)->m_x);
+      mlcc = (Rect*)new MultiLabelCC<ImageData<OneBitPixel> >(*data, label, offset, dim);
+    } else if (format == RLE) {
+      PyErr_SetString(PyExc_TypeError, "MultiLabelCCs cannot be used with runline length encoding.");
+      return NULL;
+    } else {
+      PyErr_SetString(PyExc_TypeError, "Unknown pixel type/storage format combination. Receiving this error indicates an internal inconsistency or memory corruption.  Please report it on the Gamera mailing list.");
+      return NULL;
+    }
+  } catch (std::exception& e) {
+    delete mlcc;
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+    return NULL;
+  }
+
+  ImageObject* o;
+  o = (ImageObject*)pytype->tp_alloc(pytype, 0);
+  ((RectObject*)o)->m_x = mlcc;
+  o->m_data = ((ImageObject*)py_src)->m_data;
+  Py_INCREF(o->m_data);
+  // set the resolution
+  ((Image*)((RectObject*)o)->m_x)->resolution(((Image*)((RectObject*)py_src)->m_x)->resolution());
+  return init_image_members(o);
+}
+
+PyObject* mlcc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
+  int num_args = PyTuple_GET_SIZE(args);
+  PyObject* image = NULL;
+
+  // TODO: Constructor from CC list (JK)
+//   if (num_args == 1) {
+//     // create MLCC from list of CCs
+//     PyObject *cclist;
+//     size_t n, N;
+//     if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &cclist)) {
+//       if (!PyList_Check(cclist)) {
+//         PyErr_SetString(PyExc_TypeError, "MlCc objects must be constructed from image list.");
+//         return 0;
+//       }
+//       N = PyList_Size(cclist);
+//       for (n=0; n<N; n++) {
+//         PyObject* image=PyList_GetItem
+//       }
+//     }
+//   }
+
+  if (num_args == 4) {
+    PyObject *a, *b;
+    int label;
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OiOO", &image, &label, &a, &b)) {
+      Point point_a;
+      try {
+        point_a = coerce_Point(a);
+      } catch (std::invalid_argument e) {
+        goto phase2;
+      }
+      try {
+        Point point_b = coerce_Point(b);
+        int nrows = point_b.y() - point_a.y() + 1;
+        int ncols = point_b.x() - point_a.x() + 1;
+        return _mlcc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+      } catch (std::invalid_argument e) {
+        PyErr_Clear();
+        if (is_SizeObject(b)) {
+          Size* size_b = ((SizeObject*)b)->m_x;
+          int nrows = size_b->height() + 1;
+          int ncols = size_b->width() + 1;
+          return _mlcc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+        } else if (is_DimObject(b)) {
+          Dim* dim_b = ((DimObject*)b)->m_x;
+          return _mlcc_new(pytype, image, label, point_a, *dim_b);
+        }
+#ifdef GAMERA_DEPRECATED
+        else if (is_DimensionsObject(b)) {
+          if (send_deprecation_warning(
+            "MlCc(image, label, Point offset, Dimensions dimensions) is deprecated.\n\n"
+            "Reason: (x, y) coordinate consistency. (Dimensions is now deprecated \n"
+            "in favor of Dim).\n\n"
+            "Use MlCc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.",
+            "imageobject.cpp", __LINE__) == 0)
+            return 0;
+          Dimensions* dim_b = ((DimensionsObject*)b)->m_x;
+          int nrows = dim_b->nrows();
+          int ncols = dim_b->ncols();
+          return _mlcc_new(pytype, image, label, point_a, Dim(ncols, nrows));
+        }
+#endif
+      }
+    }
+  }
+
+phase2:
+  PyErr_Clear();
+
+  if (num_args == 3) {
+    int label;
+    PyObject* pyrect;
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OiO", &image, &label, &pyrect)) {
+      if (is_RectObject(pyrect)) {
+        Rect* rect = ((RectObject*)pyrect)->m_x;
+        return _mlcc_new(pytype, image, label, rect->origin(), rect->dim());
+      }
+    }
+  }
+
+#ifdef GAMERA_DEPRECATED
+  PyErr_Clear();
+  if (num_args == 6) {
+    int offset_y, offset_x, nrows, ncols, label;
+    if (PyArg_ParseTuple(args, "Oiiiii",
+       &image, &label, &offset_y, &offset_x, &nrows, &ncols) > 0) {
+      if (send_deprecation_warning(
+        "MlCc(image, label, offset_y, offset_x, nrows, ncols) is deprecated.\n\n"
+        "Reason: (x, y) coordinate consistency.\n\n"
+        "Use MlCc(image, label, (offset_x, offset_y), Dim(ncols, nrows)) instead.",
+        "imageobject.cpp", __LINE__) == 0)
+        return 0;
+      return _mlcc_new(pytype, image, label, Point(offset_x, offset_y), Dim(ncols, nrows));
+    }
+  }
+#endif
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_TypeError, "Invalid arguments to MlCc constructor.  See the MlCc docstring for valid arguments.");
+  return 0;
+}
+
+static PyObject* mlcc_richcompare(PyObject* a, PyObject* b, int op) {
+  if (!is_ImageObject(a) || !is_ImageObject(b)) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+
+  Image& ap = *(Image*)((RectObject*)a)->m_x;
+  Image& bp = *(Image*)((RectObject*)b)->m_x;
+
+  /*
+    Only equality and inequality make sense.
+  */
+  bool cmp;
+  switch (op) {
+  case Py_EQ:
+    if (!is_MLCCObject(a) || !is_MLCCObject(b))
+      cmp = false;
+    else {
+      MlCc& ac = *(MlCc*)((RectObject*)a)->m_x;
+      MlCc& bc = *(MlCc*)((RectObject*)b)->m_x;
+      
+      cmp=true;
+      std::vector<int> labels;
+      ac.get_labels(labels);
+      for(size_t i=0; i<labels.size(); i++){
+        if(!bc.has_label(labels[i])){
+          cmp=false;
+          break;
+        }
+      }
+
+      //Neighborhoods don't need to be compared because they do not depend from the mlcc but from the underlying data (i.e. image).
+      //Therefore they have to be equal for both mlccs (if not there is an internal error).
+
+      cmp = (ap == bp) && (ap.data() == bp.data()) && cmp;
+    }
+    break;
+  case Py_NE:
+    if (!is_MLCCObject(a) || !is_MLCCObject(b))
+      cmp = true;
+    else {
+      MlCc& ac = *(MlCc*)((RectObject*)a)->m_x;
+      MlCc& bc = *(MlCc*)((RectObject*)b)->m_x;
+      
+      cmp=true;
+      std::vector<int> labels;
+      ac.get_labels(labels);
+      for(size_t i=0; i<labels.size(); i++){
+        if(!bc.has_label(labels[i])){
+          cmp=false;
+          break;
+        }
+      }
+
+      //Neighborhoods don't need to be compared because they do not depend from the mlcc but from the underlying data (i.e. image).
+      //Therefore they have to be equal for both mlccs (if not there is an internal error).
+
+      cmp = (ap != bp) || (ap.data() != bp.data()) || !cmp;
     }
     break;
   case Py_LT:
@@ -1208,6 +1854,7 @@ void init_ImageType(PyObject* module_dict) {
   CCType.tp_new = cc_new;
   CCType.tp_init = (initproc)cc_init;
   CCType.tp_getset = cc_getset;
+  CCType.tp_methods = cc_methods;
   CCType.tp_getattro = PyObject_GenericGetAttr;
   CCType.tp_alloc = NULL;
   CCType.tp_richcompare = cc_richcompare;
@@ -1227,6 +1874,34 @@ void init_ImageType(PyObject* module_dict) {
 "*label*\n  The pixel value used to represent this Cc.";
   PyType_Ready(&CCType);
   PyDict_SetItemString(module_dict, "Cc", (PyObject*)&CCType);
+
+  MLCCType.ob_type = &PyType_Type;
+  MLCCType.tp_name = CHAR_PTR_CAST "gameracore.MlCc";
+  MLCCType.tp_basicsize = sizeof(MLCCObject) + PyGC_HEAD_SIZE;
+  MLCCType.tp_dealloc = image_dealloc;
+  MLCCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
+    Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
+  MLCCType.tp_base = &ImageType;
+  MLCCType.tp_new = mlcc_new;
+  MLCCType.tp_init = (initproc)mlcc_init;
+  MLCCType.tp_methods = mlcc_methods;
+  MLCCType.tp_getattro = PyObject_GenericGetAttr;
+  MLCCType.tp_alloc = NULL;
+  MLCCType.tp_richcompare = mlcc_richcompare;
+  MLCCType.tp_free = NULL; //_PyObject_Del;
+  MLCCType.tp_doc = CHAR_PTR_CAST
+"Creates a multi label connected component (MultiLabelCC) representing part of a OneBit image.\n\n"
+"Most often you will create a MultiLabelCCs from a list of Cc's.\n\n"
+"There are a number of ways to create a MultiLabelCC:\n\n"
+"  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Point *lower_right*)\n\n"
+"  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Size *size*)\n\n"
+"  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Dim *dim*)\n\n"
+"  - **MlCc** (Image *image*, int *label*, Rect *rectangle*)\n\n"
+"**Deprecated forms:**\n\n"
+"  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n"
+"  - **MlCc** (Image *image*, int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n";
+  PyType_Ready(&MLCCType);
+  PyDict_SetItemString(module_dict, "MlCc", (PyObject*)&MLCCType);
 
   // some constants
   //-------------------------------

@@ -840,56 +840,8 @@ pixels is not fixed.):
 Connected components
 ====================
 
-Connected components (``CC``) are a special kind of view on ``ONEBIT`` image
-data. The implementation (ab)uses the fact that ``ONEBIT`` images are 
-actually stored as 16-bits-per-pixel data. Therefore all pixels belonging to
-the same CC are set to the same pixel value (the "connected component label")
-and pixels belonging to different CCs have different pixel values.
-
-Each CC object defines a bounding box and a ``label`` value which
-indicates the pixel value that the CC object corresponds to.
-Pixels with that value will appear to be black, and pixels without
-that value will appear to be white.
-
-As a programmer using a CC object, this detail should not matter
-most of the time: it will behave as a standalone ``ONEBIT`` image.
-However, care should be taken when setting the values of a CC
-object: it may be possible to make pixels "disappear" by setting them
-to a value other than ``label``.
-
-
-Using CCs from Python
----------------------
-
-CCs behave like image views with the additional property ``label``.
-You can remove a particular CC with ``fill_white``:
-
-.. code:: Python
-
-  # remove all CCs with an aspect ration > 3
-  ccs = onebit.cc_analysis()
-  for c in ccs:
-    if float(c.nrows) / c.ncols > 3.0:
-       c.fill_white()
-
-You can even take a CC from one image and highlight its black pixels
-on a different image:
-
-.. code:: Python
-
-  # mark all CCs with an aspect ration > 3 in red
-  # wihtout changing the original image
-  ccs = onebit.cc_analysis()
-  rgb = onebit.to_rgb()
-  for c in ccs:
-    if float(c.nrows) / c.ncols > 3.0:
-       rgb.highlight(c, RGBPixel(255,0,0))
-
-
-Using CCs from C++
-------------------
-
-On the C++ side, you can access CCs just like in Python:
+On the C++ side, the Python image type ``Cc`` corresponds to the
+image type ``ConnectedComponent``. You can us it just like in Python:
 
 .. code:: CPP
 
@@ -913,7 +865,7 @@ For creating a list of CCs from C++, two steps are necessary:
 
  1) Setting all pixels in the image to its label value
 
- 2) Call the constructor for each CC:
+ 2) Call the constructor for each ConnectedComponent:
 
     .. code:: CPP
 
@@ -930,4 +882,17 @@ For creating a list of CCs from C++, two steps are necessary:
                          rectvec[i]->dim()
                         ));
       }
+
+
+Multi-label connected components
+================================
+
+On the C++ side, the Python image type ``MlCc`` corresponds to the
+image type ``MultiLabelCC`` (two upper case C's at the end). Its
+methods are the `same as on the Python side`__; for details about
+its C++ constructors and properties (``m_labels`` etc.) see the
+source file *include/connected_component.hpp* of the Gamera source
+code.
+
+.. __: image_types.html#multi-label-connected-components
 

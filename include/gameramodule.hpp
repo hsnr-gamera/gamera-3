@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
- *               2009      Christoph Dalitz
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2009      Christoph Dalitz, Jonathan Koch
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -797,6 +797,10 @@ struct CCObject {
   ImageObject m_parent;
 };
 
+struct MLCCObject {
+  ImageObject m_parent;
+};
+
 #ifndef GAMERACORE_INTERNAL
 inline PyTypeObject* get_CCType() {
   static PyTypeObject* t = 0;
@@ -813,12 +817,35 @@ inline PyTypeObject* get_CCType() {
   }
   return t;
 }
+inline PyTypeObject* get_MLCCType() {
+  static PyTypeObject* t = 0;
+  if (t == 0) {
+    PyObject* dict = get_gameracore_dict();
+    if (dict == 0)
+      return 0;
+    t = (PyTypeObject*)PyDict_GetItemString(dict, "MlCc");
+    if (t == 0) {
+      PyErr_SetString(PyExc_RuntimeError,
+                      "Unable to get MlCc type from gamera.gameracore.\n");
+      return 0;
+    }
+  }
+  return t;
+}
 #else
 extern PyTypeObject* get_CCType();
+extern PyTypeObject* get_MLCCType();
 #endif
 
 inline bool is_CCObject(PyObject* x) {
   PyTypeObject* t = get_CCType();
+  if (t == 0)
+    return 0;
+  return PyObject_TypeCheck(x, t);
+}
+
+inline bool is_MLCCObject(PyObject* x) {
+  PyTypeObject* t = get_MLCCType();
   if (t == 0)
     return 0;
   return PyObject_TypeCheck(x, t);
@@ -851,11 +878,16 @@ inline const char* get_pixel_type_name(PyObject* image) {
 inline int get_image_combination(PyObject* image) {
   int storage = get_storage_format(image);
   if (is_CCObject(image)) {
-    if (storage == Gamera::RLE)
+    if (storage == Gamera::RLE){
       return Gamera::RLECC;
-    else if (storage == Gamera::DENSE)
+    } else if (storage == Gamera::DENSE){
       return Gamera::CC;
-    else
+    } else
+      return -1;
+  } else if (is_MLCCObject(image)) {
+    if (storage == Gamera::DENSE){
+      return Gamera::MLCC;
+    } else
       return -1;
   } else if (storage == Gamera::RLE) {
     return Gamera::ONEBITRLEIMAGEVIEW;
@@ -908,7 +940,7 @@ inline PyObject* init_image_members(ImageObject* o) {
   // confidence
   o->m_confidence = PyDict_New();
   if (o->m_confidence == 0)
-    return 0;
+    return 0;  
   return (PyObject*)o;
 }
 
@@ -927,7 +959,7 @@ inline PyObject* init_image_members(ImageObject* o) {
 
 inline PyObject* create_ImageObject(Image* image) {
   static bool initialized = false;
-  static PyTypeObject *image_type, *subimage_type, *cc_type,
+  static PyTypeObject *image_type, *subimage_type, *cc_type, *mlcc_type,
     *image_data;
   static PyObject* pybase_init;
   if (!initialized) {
@@ -939,6 +971,7 @@ inline PyObject* create_ImageObject(Image* image) {
     image_type = (PyTypeObject*)PyDict_GetItemString(dict, "Image");
     subimage_type = (PyTypeObject*)PyDict_GetItemString(dict, "SubImage");
     cc_type = (PyTypeObject*)PyDict_GetItemString(dict, "Cc");
+    mlcc_type = (PyTypeObject*)PyDict_GetItemString(dict, "MlCc");
     image_data = (PyTypeObject*)PyDict_GetItemString(dict, "ImageData");
     initialized = true;
   }
@@ -946,11 +979,16 @@ inline PyObject* create_ImageObject(Image* image) {
   int pixel_type;
   int storage_type;
   bool cc = false;
+  bool mlcc =false;
 
   if (dynamic_cast<Cc*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::DENSE;
     cc = true;
+  } else if (dynamic_cast<MlCc*>(image) != 0) {
+    pixel_type = Gamera::ONEBIT;
+    storage_type = Gamera::DENSE;
+    mlcc = true;
   } else if (dynamic_cast<OneBitImageView*>(image) != 0) {
     pixel_type = Gamera::ONEBIT;
     storage_type = Gamera::DENSE;
@@ -995,6 +1033,8 @@ inline PyObject* create_ImageObject(Image* image) {
   ImageObject* i;
   if (cc) {
     i = (ImageObject*)cc_type->tp_alloc(cc_type, 0);
+  } else if (mlcc) {
+    i = (ImageObject*)mlcc_type->tp_alloc(mlcc_type, 0);
   } else if (image->nrows() < image->data()->nrows()
              || image->ncols() < image->data()->ncols()) {
     i = (ImageObject*)subimage_type->tp_alloc(subimage_type, 0);
@@ -1263,7 +1303,7 @@ public:
       Py_INCREF(m_progress_bar);
   }
   inline ~ProgressBar() {
-    if (m_progress_bar) {
+    if (m_progress_bar){
       Py_DECREF(m_progress_bar);
     }
   }

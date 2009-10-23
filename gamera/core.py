@@ -32,6 +32,7 @@ Image - images.
 SubImage - a view on part of an image.
 Cc - a non-rectangular view of part of an image (the view area
      is marked with labels in the image).
+MlCc - the same as Cc but with multiple labels
 
 Additionally this module contains the following functions:
 
@@ -462,6 +463,8 @@ There are a number of ways to create a subimage:
 Changes to subimages will affect all other subimages viewing the same data."""
       if hasattr(self, "label"):
          return Cc(self, self.label, *args, **kwargs)
+      if self.__class__.__name__=="MlCc": #seems more robust to me
+         return self.copy(*args, **kwargs)
       else:
          return SubImage(self, *args, **kwargs)
 
@@ -601,6 +604,16 @@ is not running.
       self._display.focus(self)
       self.last_display = "context"
 
+class MlCc(gameracore.MlCc, ImageBase):
+   def __init__(self, *args, **kwargs):
+      ImageBase.__init__(self)
+      gameracore.MlCc.__init__(self, *args, **kwargs)
+   __init__.__doc__ = gameracore.MlCc.__doc__
+
+   def __del__(self):
+      if self._display:
+         self._display.close()
+
 # this is a convenience function for using in a console
 _gamera_initialised = False
 def _init_gamera():
@@ -698,6 +711,6 @@ __all__ = ("init_gamera UNCLASSIFIED AUTOMATIC HEURISTIC MANUAL "
            "CONFIDENCE_LINEARWEIGHT CONFIDENCE_INVERSEWEIGHT "
            "CONFIDENCE_NUN CONFIDENCE_NNDISTANCE CONFIDENCE_AVGDISTANCE "
            "ImageData Size Dim Point FloatPoint Rect Region RegionMap "
-           "ImageInfo Image SubImage Cc load_image image_info "
+           "ImageInfo Image SubImage Cc MlCc load_image image_info "
            "display_multi ImageBase nested_list_to_image RGBPixel "
            "save_image").split()

@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2009      Jonathan Koch 
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -319,9 +320,9 @@ namespace Gamera {
     template <class ITERATOR>
     VALUETYPE operator()(ITERATOR const & i) const {
       if (m_label == m_accessor(i))
-	return 0;
+      	return 0;
       else
-	return 1;
+      	return 1;
     }
     
     template <class ITERATOR, class DIFFERENCE>
@@ -331,7 +332,7 @@ namespace Gamera {
       if (m_label == m_accessor(tmp))
         return 0; 
       else
-	return 1;
+      	return 1;
     }
 
     template <class V, class ITERATOR>
@@ -339,26 +340,26 @@ namespace Gamera {
     {
       VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
       if (m_accessor(i) == m_label) {
-	if (tmp) {
-	  m_accessor.set(0, i);
-	} else {
-	  m_accessor.set(m_label, i);
-	}
+	      if (tmp) {
+	        m_accessor.set(0, i);
+	      } else {
+	        m_accessor.set(m_label, i);
+	      }
       }
     }
 
     template <class V, class ITERATOR, class DIFFERENCE>
     void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
     { 
-        VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
-	ITERATOR tmpi = i + diff;
-	if (m_accessor(tmpi) == m_label) {
-	  if (tmp) {
-	    m_accessor.set(0, tmpi);
-	  } else {
-	    m_accessor.set(m_label, tmpi);
-	  }
-        }
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
+	    ITERATOR tmpi = i + diff;
+	    if (m_accessor(tmpi) == m_label) {
+	      if (tmp) {
+	        m_accessor.set(0, tmpi);
+	      } else {
+	        m_accessor.set(m_label, tmpi);
+	      }
+      }
     }
     OneBitPixel m_label;
     ImageAccessor<value_type> m_accessor;
@@ -374,9 +375,9 @@ namespace Gamera {
     template <class ITERATOR>
     VALUETYPE operator()(ITERATOR const & i) const {
       if (m_label == m_accessor(i))
-	return 1;
+	      return 1;
       else
-	return 0;
+	      return 0;
     }
     
     template <class ITERATOR, class DIFFERENCE>
@@ -386,7 +387,7 @@ namespace Gamera {
       if (m_label == m_accessor(tmp))
         return 1; 
       else
-	return 0;
+	      return 0;
     }
 
     template <class V, class ITERATOR>
@@ -394,30 +395,166 @@ namespace Gamera {
     {
       VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
       if (m_accessor(i) == m_label) {
-	if (tmp) {
-	  m_accessor.set(m_label, i);
-	} else {
-	  m_accessor.set(0, i);
-	}
+	      if (tmp) {
+	        m_accessor.set(m_label, i);
+	      } else {
+	        m_accessor.set(0, i);
+      	}
       }
     }
 
     template <class V, class ITERATOR, class DIFFERENCE>
     void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
     { 
-        VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
-	ITERATOR tmpi = i + diff;
-	if (m_accessor(tmpi) == m_label) {
-	  if (tmp) {
-	    m_accessor.set(m_label, tmpi);
-	  } else {
-	    m_accessor.set(0, tmpi);
-	  }
-        }
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
+	    ITERATOR tmpi = i + diff;
+	    if (m_accessor(tmpi) == m_label) {
+	      if (tmp) {
+	        m_accessor.set(m_label, tmpi);
+	      } else {
+	        m_accessor.set(0, tmpi);
+	      }
+      }
     }
     OneBitPixel m_label;
     ImageAccessor<value_type> m_accessor;
   };
+
+/**********************************************/
+
+  /*
+    The MLCCAccessor provides filtering of pixels based on an image label. This serves the
+    same purpose as the MLCCProxy in connected_component_iterators.hpp.
+  */
+
+  class MLCCAccessor {
+  public:
+    typedef OneBitPixel value_type;
+    typedef OneBitPixel VALUETYPE;
+
+    MLCCAccessor(const std::map<value_type, Rect*>* labels){
+      m_labels=labels;
+    }
+    
+    inline bool has_label(value_type value) const {
+      return m_labels->find(value)==m_labels->end();
+    }
+    
+    template <class ITERATOR>
+    VALUETYPE operator()(ITERATOR const & i) const {
+      if (has_label(m_accessor(i)))
+      	return 0;
+      else
+      	return 1;
+    }
+    
+    template <class ITERATOR, class DIFFERENCE>
+    VALUETYPE operator()(ITERATOR & i, DIFFERENCE diff) const
+    {
+      ITERATOR tmp = i + diff;
+      if (has_label(m_accessor(tmp)))
+        return 0; 
+      else
+      	return 1;
+    }
+
+    template <class V, class ITERATOR>
+    void set(V const & value, ITERATOR & i) const 
+    {
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
+      value_type val=m_accessor(i);
+      if (has_label(val)) {
+	      if (tmp) {
+	        m_accessor.set(0, i);
+	      } else {
+	        m_accessor.set(val, i);
+	      }
+      }
+    }
+
+    template <class V, class ITERATOR, class DIFFERENCE>
+    void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
+    { 
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
+	    ITERATOR tmpi = i + diff;
+	    value_type val=m_accessor(tmpi);
+	    if (has_label(val)) {
+	      if (tmp) {
+	        m_accessor.set(0, tmpi);
+	      } else {
+	        m_accessor.set(val, tmpi);
+	      }
+      }
+    }
+    const std::map<value_type, Rect*>* m_labels;
+    ImageAccessor<value_type> m_accessor;
+  };
+
+  class RawMLCCAccessor {
+  public:
+    typedef OneBitPixel value_type;
+    typedef OneBitPixel VALUETYPE;
+
+    RawMLCCAccessor(const std::map<value_type, Rect*>* labels){ 
+      m_labels=labels;
+    }
+    
+   inline bool has_label(value_type value) const {
+      return m_labels->find(value)==m_labels->end();
+    }
+    
+    template <class ITERATOR>
+    VALUETYPE operator()(ITERATOR const & i) const {
+      if (has_label(m_accessor(i)))
+	      return 1;
+      else
+	      return 0;
+    }
+    
+    template <class ITERATOR, class DIFFERENCE>
+    VALUETYPE operator()(ITERATOR & i, DIFFERENCE diff) const
+    {
+      ITERATOR tmp = i + diff;
+      if (has_label(m_accessor(tmp)))
+        return 1; 
+      else
+	      return 0;
+    }
+
+    template <class V, class ITERATOR>
+    void set(V const & value, ITERATOR & i) const 
+    {
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value);
+      value_type val=m_accessor(i);
+      if (has_label(val)) {
+	      if (tmp) {
+	        m_accessor.set(val, i);
+	      } else {
+	        m_accessor.set(0, i);
+      	}
+      }
+    }
+
+    template <class V, class ITERATOR, class DIFFERENCE>
+    void set(V const & value, ITERATOR & i, DIFFERENCE diff) const 
+    { 
+      VALUETYPE tmp = vigra::detail::RequiresExplicitCast<VALUETYPE>::cast(value); 
+	    ITERATOR tmpi = i + diff;
+	    value_type val=m_accessor(tmpi);
+	    if (has_label(val)) {
+	      if (tmp) {
+	        m_accessor.set(val, tmpi);
+	      } else {
+	        m_accessor.set(0, tmpi);
+	      }
+      }
+    }
+    const std::map<value_type, Rect*>* m_labels;
+    ImageAccessor<value_type> m_accessor;
+  };
+
+
+/**********************************************/
 
   /*
     The OneBitAccessor hides the fact that OneBitValues can be something other
@@ -650,6 +787,26 @@ namespace Gamera {
     }
     typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
     static interp_accessor make_interp_accessor(const Cc& mat) {
+      return interp_accessor(make_raw_accessor(mat));
+    }
+  };
+
+  template<>
+  struct choose_accessor<MlCc> {
+    typedef MLCCAccessor accessor;
+    static accessor make_accessor(const MlCc& mat) {
+      return accessor(mat.get_labels_pointer());
+    }
+    typedef RawMLCCAccessor raw_accessor;
+    static raw_accessor make_raw_accessor(const MlCc& mat) {
+      return raw_accessor(mat.get_labels_pointer());
+    }
+    typedef accessor real_accessor;
+    static real_accessor make_real_accessor(const MlCc& mat) {
+      return real_accessor(mat.get_labels_pointer());
+    }
+    typedef BilinearInterpolatingAccessor<raw_accessor, OneBitPixel> interp_accessor;
+    static interp_accessor make_interp_accessor(MlCc& mat) {
       return interp_accessor(make_raw_accessor(mat));
     }
   };

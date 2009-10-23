@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new image type MultiLabelCC (C++) reps. MlCc (Python)
+
+ - the set() method now works for connected components
+
+
 Version 3.2.3, Oct 08, 2009
 ----------------------------
 

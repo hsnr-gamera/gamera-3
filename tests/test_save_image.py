@@ -1,6 +1,4 @@
 from gamera.core import *
-
-from gamera.core import *
 init_gamera()
 
 def test_save_image():

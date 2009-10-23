@@ -188,7 +188,7 @@ class ImageType(Arg):
 
    def _get_choices_for_pixel_type(self, pixel_type):
       if pixel_type == ONEBIT:
-         result = ["OneBitImageView", "Cc", "OneBitRleImageView", "RleCc"]
+         result = ["OneBitImageView", "Cc", "OneBitRleImageView", "RleCc", "MlCc"]
       else:
          result = [util.get_pixel_type_name(pixel_type) + "ImageView"]
       return [(x, pixel_type) for x in result]

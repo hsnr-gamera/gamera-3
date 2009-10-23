@@ -74,6 +74,8 @@ namespace {
     // for sorting by label
     bool operator<(const equivalence& other) const {
       return label < other.label; }
+    bool operator==(const equivalence& other) const {
+      return label == other.label &&  equiv == other.equiv; }
   };
   
   struct equiv_table : public std::vector<equivalence> {
@@ -81,10 +83,10 @@ namespace {
     // add an equivalence
     void add(size_t a, size_t b) {
       if (size() == 0 || (back().label != a || back().equiv != b)) {
-	if (a < b)
-	  push_back(equivalence(a, b));
-	else
-	  push_back(equivalence(b, a));
+	      if (a < b)
+	        push_back(equivalence(a, b));
+	      else
+	        push_back(equivalence(b, a));
       }
     }
   };
@@ -194,37 +196,36 @@ namespace Gamera {
       size_t y = eq[i].equiv;
 		
       if (labels[y] > labels[x]) {
-	if (labels[y] != y)
-	  labels[labels[y]] = labels[x];
-	labels[y] = labels[x];
+        if (labels[y] != y)
+          labels[labels[y]] = labels[x];
+        labels[y] = labels[x];
       } else if (labels[y] < labels[x]) {
-	if (labels[labels[y]] < labels[x])
-	  labels[x] = labels[labels[y]];
-	else
-	  labels[x] = labels[y];
+          if (labels[labels[y]] < labels[x])
+            labels[x] = labels[labels[y]];
+          else
+            labels[x] = labels[y];
       }
-		
     }
     bool swapped = true;
     while (swapped) {
       swapped = false;
       for (size_t i = 0; i < eq.size(); i++) {
-	size_t x = eq[i].label;
-	size_t y = eq[i].equiv;
+        size_t x = eq[i].label;
+        size_t y = eq[i].equiv;
 			
-	if (labels[x] != labels[y]) {
-	  swapped = true;
-	  if (labels[x] < labels[y])
-	    labels[y] = labels[x];
-	  else
-	    labels[x] = labels[y];
-	}
+        if (labels[x] != labels[y]) {
+          swapped = true;
+          if (labels[x] < labels[y])
+            labels[y] = labels[x];
+          else
+            labels[x] = labels[y];
+        }
       }
     }
 	
     for (size_t i = 0; i < labels.size(); i++)
       if(labels[labels[i]] < labels[i])
-	labels[i] = labels[labels[i]];
+        labels[i] = labels[labels[i]];
 	
     /*
       Second Pass - relabel with equivalences and get bounding boxes
@@ -239,55 +240,53 @@ namespace Gamera {
     try {
       row = image.upperLeft();
       for (size_t i = 0; i < image.nrows(); i++, ++row.y) {
-	size_t j;
-	for (j = 0, col = row; j < image.ncols(); j++, ++col.x) {
-	  // relabel
-	  acc.set(labels[acc(col)], col); 
-	  // put bounding box in map
-	  typename T::value_type label = acc(col);
-	  if (label) {
-	    if (rects[label] == 0) {
-	      rects[label] = new Rect(Point(j, i), Dim(1, 1));
-	    } else {
-	      if (j < rects[label]->ul_x())
-		rects[label]->ul_x(j);
-	      if (j > rects[label]->lr_x())
-		rects[label]->lr_x(j);
-	      if (i < rects[label]->ul_y())
-		rects[label]->ul_y(i);
-	      if (i > rects[label]->lr_y())
-		rects[label]->lr_y(i);
-	    }
-	  }
-	}
+        size_t j;
+        for (j = 0, col = row; j < image.ncols(); j++, ++col.x) {
+          // relabel
+          acc.set(labels[acc(col)], col); 
+          // put bounding box in map
+          typename T::value_type label = acc(col);
+          if (label) {
+            if (rects[label] == 0) {
+              rects[label] = new Rect(Point(j, i), Dim(1, 1));
+            } else {
+              if (j < rects[label]->ul_x())
+                rects[label]->ul_x(j);
+              if (j > rects[label]->lr_x())
+                rects[label]->lr_x(j);
+              if (i < rects[label]->ul_y())
+                rects[label]->ul_y(i);
+              if (i > rects[label]->lr_y())
+                rects[label]->lr_y(i);
+            }
+          }
+        }
 	// if ((i % 20) == 0)
 	// progress_bar.step();
       }
-    
-	
+
       // create ConnectedComponents
       ccs = new ImageList();
       try {
-	for (size_t i = 0; i < rects.size(); ++i) {
-	  if (rects[i] != 0) {
-	    ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
-									 OneBitPixel(i),
-									 Point(rects[i]->offset_x() + image.offset_x(),
-									       rects[i]->offset_y() + image.offset_y()),
-									 rects[i]->dim()));
-	    delete rects[i];
-	  }
-	}
-	
-      } catch (std::exception e) {
-	for (ImageList::iterator i = ccs->begin(); i != ccs->end(); ++i)
-	  delete *i;
-	delete ccs;
-	throw;
+        for (size_t i = 0; i < rects.size(); ++i) {
+          if (rects[i] != 0) {
+            ccs->push_back(new ConnectedComponent<typename T::data_type>(*((typename T::data_type*)image.data()),
+            OneBitPixel(i),
+              Point(rects[i]->offset_x() + image.offset_x(),
+                rects[i]->offset_y() + image.offset_y()),
+                rects[i]->dim()));
+            delete rects[i];
+          }
+        }
+	    } catch (std::exception e) {
+        for (ImageList::iterator i = ccs->begin(); i != ccs->end(); ++i)
+          delete *i;
+        delete ccs;
+        throw;
       }
     } catch (std::exception e) {
       for (size_t i = 0; i != rects.size(); ++i)
-	delete rects[i];
+        delete rects[i];
     }
     return ccs;
   }

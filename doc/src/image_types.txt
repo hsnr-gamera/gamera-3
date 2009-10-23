@@ -133,12 +133,6 @@ Constructors
 .. docstring:: gamera.core SubImage __init__
    :no_title:
 
-``Cc.__init__``
-'''''''''''''''
-
-.. docstring:: gamera.core Cc __init__
-   :no_title:
-
 Pixel access
 ------------
 
@@ -169,6 +163,88 @@ Classification
 See `Classification plugins`__.
 
 .. __: classification.html
+
+
+Special image views
+===================
+
+There are two special image views on ``ONEBIT`` images that only consider
+specific pixel values to be black: *connected components* and *multilabel
+connected components*. In most cases, you will need connected components; 
+multilabel connected components are only meant for very special use cases.
+
+Connected Components
+--------------------
+
+Connected components (``Cc``) are a special kind of view on ``ONEBIT`` image
+data. The implementation (ab)uses the fact that ``ONEBIT`` images are 
+actually stored as 16-bits-per-pixel data. Therefore all pixels belonging to
+the same Cc are set to the same pixel value (the "connected component label")
+and pixels belonging to different Cc's have different pixel values.
+
+Each Cc object defines a bounding box and a ``label`` value which
+indicates the pixel value that the Cc object corresponds to.
+Pixels with that value will appear to be black, and pixels without
+that value will appear to be white.
+
+As a programmer using a Cc object, this detail should not matter
+most of the time: it will behave as a standalone ``ONEBIT`` image.
+However, care should be taken when setting the values of a Cc
+object: it may be possible to make pixels "disappear" by setting them
+to a value other than ``Cc.label``.
+
+Cc's behave like image views with the additional property ``label``.
+You can remove a particular Cc with ``fill_white``:
+
+.. code:: Python
+
+  # remove all CCs with an aspect ration > 3
+  ccs = onebit.cc_analysis()
+  for c in ccs:
+    if float(c.nrows) / c.ncols > 3.0:
+       c.fill_white()
+
+You can even take a CC from one image and highlight its black pixels
+on a different image:
+
+.. code:: Python
+
+  # mark all CCs with an aspect ration > 3 in red
+  # without changing the original image
+  ccs = onebit.cc_analysis()
+  rgb = onebit.to_rgb()
+  for c in ccs:
+    if float(c.nrows) / c.ncols > 3.0:
+       rgb.highlight(c, RGBPixel(255,0,0))
+
+.. docstring:: gamera.core Cc __init__
+
+
+Multi-Label Connected Components
+--------------------------------
+
+MultiLabelCCs (``MlCc`` on the python side, and ``MultiLabelCC`` on the 
+C++ side) basically work in the same way as 'regular'
+Connected Components. The difference between those two is the abillity
+of MlCcs to have multiple labels. Each label has an associated ``Rect``
+representing its bounding box; the bounding box of the entire MlCc is
+the closure of all label bounding boxes.
+
+This special feature allows for building connected components which 
+actually consist of different parts, thus making it fast and easy to 
+create different variants of an MlCcs with some parts excluded. To
+make this even more useful, each MlCc has an additional (optional)
+property, the subpart neighborship relations. Note that these relationships
+need to be provided by the user, in case he needs them.
+
+Apart from the basic image methods, MlCcs offer a number of additional
+functions as listed below.
+
+.. docstring:: gamera.core MlCc __init__
+
+.. docstring:: gamera.core MlCc has_label get_labels add_label remove_label relabel
+.. docstring:: gamera.core MlCc convert_to_cc convert_to_cc_list
+.. docstring:: gamera.core MlCc get_neighbors add_neighbors
 
 
 Image functions

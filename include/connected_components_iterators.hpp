@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2009      Jonathan Koch
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +23,7 @@
 
 #include "accessor.hpp"
 #include "iterator_base.hpp"
+#include <map>
 
 namespace Gamera {
   namespace CCDetail {
@@ -46,25 +48,25 @@ namespace Gamera {
     class CCProxy {
     public:
       /*
-	constructor - we store a pointer to the value so that
-	changing the ConnectedComponent from another place (say
-	the set function of ConnectedComponent) doesn't invalidate
-	this proxy object. This is probably not a big concern. KWM
+        constructor - we store a pointer to the value so that
+        changing the ConnectedComponent from another place (say
+        the set function of ConnectedComponent) doesn't invalidate
+        this proxy object. This is probably not a big concern. KWM
       */
       CCProxy(I i, T label) : m_iter(i), m_label(label) { }
       // conversion to T
       operator T() const {
-	T tmp = m_accessor(m_iter);
-	if (tmp == m_label)
-	  return tmp;
-	else
-	  return 0;
+        T tmp = m_accessor(m_iter);
+        if (tmp == m_label)
+          return tmp;
+        else
+          return 0;
       }
       // assignment only happens if the label matches
       void operator=(T value) {
-	if (m_accessor(m_iter) == m_label)
-	  m_accessor.set(value, m_iter);
-      }
+        if (m_accessor(m_iter) == m_label)
+          m_accessor.set(value, m_iter);
+        }
     private:
       I m_iter;
       T m_label;
@@ -93,27 +95,27 @@ namespace Gamera {
       RowIterator() { }
 
       proxy_type operator*() const {
-	return proxy_type(m_iterator, m_image->label());
+        return proxy_type(m_iterator, m_image->label());
       }
 
       value_type get() const {
-	if (m_accessor(m_iterator) == m_image->label())
-	  return m_accessor(m_iterator);
-	else
-	  return 0;
+      if (m_accessor(m_iterator) == m_image->label())
+        return m_accessor(m_iterator);
+      else
+        return 0;
       }
 
       void set(const value_type& v) {
-	if (m_accessor(m_iterator) == m_image->label())
-	  m_accessor.set(v, m_iterator);
+      if (m_accessor(m_iterator) == m_image->label())
+        m_accessor.set(v, m_iterator);
       }
 
       iterator begin() const {
-	return iterator(m_image, m_iterator);
+        return iterator(m_image, m_iterator);
       }
 
       iterator end() const {
-	return iterator(m_image, m_iterator + m_image->ncols());
+        return iterator(m_image, m_iterator + m_image->ncols());
       }
     private:
       accessor m_accessor;
@@ -140,27 +142,27 @@ namespace Gamera {
       ColIterator() { }
 
       proxy_type operator*() const {
-	return proxy_type(m_iterator, m_image->label());
+      return proxy_type(m_iterator, m_image->label());
       }      
 
       // Image specific
       value_type get() const {
-	if (m_accessor(m_iterator) == m_image->label())
-	  return m_accessor(m_iterator);
-	else
-	  return 0;
+      if (m_accessor(m_iterator) == m_image->label())
+        return m_accessor(m_iterator);
+      else
+        return 0;
       }
       
       void set(const value_type& v) {
-	if (m_accessor(m_iterator) == m_image->label())
-	  m_accessor.set(v, m_iterator);
+        if (m_accessor(m_iterator) == m_image->label())
+          m_accessor.set(v, m_iterator);
       }
 
       iterator begin() const {
-	return iterator(m_image, m_iterator);
+        return iterator(m_image, m_iterator);
       }
       iterator end() const {
-	return iterator(m_image, m_iterator) + m_image->nrows();
+        return iterator(m_image, m_iterator) + m_image->nrows();
       }
     private:
       accessor m_accessor;
@@ -188,22 +190,22 @@ namespace Gamera {
       ConstRowIterator() { }
 
       typename Image::value_type operator*() const {
-	return get();
+      return get();
       }
 
       value_type get() const {
-	if (m_accessor(m_iterator) == m_image->label())
-	  return m_accessor(m_iterator);
-	else
-	  return 0;
+      if (m_accessor(m_iterator) == m_image->label())
+        return m_accessor(m_iterator);
+      else
+        return 0;
       }
 
       iterator begin() const {
-	return iterator(m_image, m_iterator);
+        return iterator(m_image, m_iterator);
       }
 
       iterator end() const {
-	return iterator(m_image, m_iterator + m_image->ncols());
+        return iterator(m_image, m_iterator + m_image->ncols());
       }
     private:
       accessor m_accessor;
@@ -229,22 +231,22 @@ namespace Gamera {
       ConstColIterator() { }
 
       typename Image::value_type operator*() const {
-	return get();
+        return get();
       }
 
       // Image specific
       value_type get() const {
-	if (m_accessor(m_iterator) == m_image->label())
-	  return m_accessor(m_iterator);
-	else
-	  return 0;
+        if (m_accessor(m_iterator) == m_image->label())
+          return m_accessor(m_iterator);
+        else
+          return 0;
       }
 
       iterator begin() const {
-	return iterator(m_image, m_iterator);
+        return iterator(m_image, m_iterator);
       }
       iterator end() const {
-	return iterator(m_image, m_iterator) + m_image->nrows();
+        return iterator(m_image, m_iterator) + m_image->nrows();
       }
     private:
       accessor m_accessor;
@@ -269,19 +271,19 @@ namespace Gamera {
 
       // Operators
       proxy_type operator*() const {
-	return proxy_type(m_coliterator.m_iterator, m_coliterator.m_image->label());
+        return proxy_type(m_coliterator.m_iterator, m_coliterator.m_image->label());
       }
 
       value_type get() const {
-	if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
-	  return m_accessor(m_coliterator);
-	else
-	  return 0;
+      if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
+        return m_accessor(m_coliterator);
+      else
+        return 0;
       }
       
       void set(const value_type& v) {
-	if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
-	  m_accessor.set(v, m_coliterator);
+        if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
+          m_accessor.set(v, m_coliterator);
       }
     private:
       accessor m_accessor;
@@ -304,19 +306,298 @@ namespace Gamera {
 
       // Operators
       typename Image::value_type operator*() const {
-	return get();
+        return get();
       }
 
       value_type get() const {
-	if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
-	  return m_accessor(m_coliterator);
-	else
-	  return 0;
+        if (m_accessor(m_coliterator) == m_coliterator.m_image->label())
+          return m_accessor(m_coliterator);
+        else
+          return 0;
+      }
+    private:
+      accessor m_accessor;
+    };
+  } // namespace
+
+
+
+/*****************************************************************************/
+
+  namespace MLCCDetail {
+
+    template<class T, class I>
+    class MLCCProxy {
+    public:
+      MLCCProxy(I i, const typename std::map<T, Rect*> *labels) : m_iter(i){ 
+        this->m_labels=labels;
+      }
+
+      // conversion to T
+      operator T() {
+        T tmp = m_accessor(m_iter);
+        if (m_labels->find(tmp) != m_labels->end())
+          return tmp;
+        else
+          return 0;
+      }
+      // assignment only happens if the label matches
+      void operator=(T value) {
+        T tmp=m_accessor(m_iter);
+        if (m_labels->find(tmp) != m_labels->end())
+          m_accessor.set(value, m_iter);
+        }
+    private:
+      I m_iter;
+      const typename std::map<T, Rect*> *m_labels;
+      ImageAccessor<T> m_accessor;
+    };
+    
+    template<class Image, class T> class ColIterator;
+
+    template<class Image, class T>
+    class RowIterator : public RowIteratorBase<Image, RowIterator<Image, T>, T> {
+    public:
+      using RowIteratorBase<Image, RowIterator<Image, T>, T>::m_iterator;
+      using RowIteratorBase<Image, RowIterator<Image, T>, T>::m_image;
+
+      // Typedefs for rows
+      typedef ColIterator<Image, T> iterator;
+      typedef typename Image::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      typedef RowIterator self;
+      typedef RowIteratorBase<Image, self, T> base;
+      typedef MLCCProxy<value_type, T> proxy_type;
+
+      // Constructor
+      RowIterator(Image* image, const T iterator) : base(image, iterator) { }
+      RowIterator() { }
+
+      proxy_type operator*() const {
+        return proxy_type(m_iterator, m_image->get_labels_pointer());
+      }
+
+      value_type get() const {
+        if (m_image->has_label(m_accessor(m_iterator)))
+          return m_accessor(m_iterator);
+        else
+          return 0;
+      }
+
+      void set(const value_type& v) {
+        if (m_image->has_label(m_accessor(m_iterator)))
+          m_accessor.set(v, m_iterator);
+      }
+
+      iterator begin() const {
+        return iterator(m_image, m_iterator);
+      }
+
+      iterator end() const {
+        return iterator(m_image, m_iterator + m_image->ncols());
       }
     private:
       accessor m_accessor;
     };
 
+    template<class Image, class T>
+    class ColIterator : public ColIteratorBase<Image, ColIterator<Image, T>, T> {
+    public:
+      using ColIteratorBase<Image, ColIterator<Image, T>, T>::m_iterator;
+      using ColIteratorBase<Image, ColIterator<Image, T>, T>::m_image;
+
+      // Typedefs for Cols
+      typedef RowIterator<Image, T> iterator;
+      typedef typename Image::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      // Convenience typedefs
+      typedef ColIterator self;
+      typedef ColIteratorBase<Image, self, T> base;
+      typedef MLCCProxy<value_type, T> proxy_type;
+
+      // Constructor
+      ColIterator(Image* image, const T iterator) : base(image, iterator) { }
+      ColIterator() { }
+
+      proxy_type operator*() const {
+        return proxy_type(m_iterator, m_image->get_labels_pointer());
+      }      
+
+      // Image specific
+      value_type get() const {
+      if (m_image->has_label(m_accessor(m_iterator)))
+        return m_accessor(m_iterator);
+      else
+        return 0;
+      }
+      
+      void set(const value_type& v) {
+        if (m_image->has_label(m_accessor(m_iterator)))
+          m_accessor.set(v, m_iterator);
+      }
+
+      iterator begin() const {
+        return iterator(m_image, m_iterator);
+      }
+      iterator end() const {
+        return iterator(m_image, m_iterator) + m_image->nrows();
+      }
+    private:
+      accessor m_accessor;
+    };
+
+    template<class Image, class T> class ConstColIterator;
+
+    template<class Image, class T>
+    class ConstRowIterator : public RowIteratorBase<Image, ConstRowIterator<Image, T>, T> {
+    public:
+      using RowIteratorBase<Image, ConstRowIterator<Image, T>, T>::m_iterator;
+      using RowIteratorBase<Image, ConstRowIterator<Image, T>, T>::m_image;
+
+      // Typedefs for rows
+      typedef ConstColIterator<Image, T> iterator;
+
+      // Convenience typedefs
+      typedef ConstRowIterator self;
+      typedef RowIteratorBase<Image, self, T> base;
+      typedef typename Image::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      // Constructor
+      ConstRowIterator(Image* image, const T iterator) : base(image, iterator) { }
+      ConstRowIterator() { }
+
+      typename Image::value_type operator*() const {
+        return get();
+      }
+
+      value_type get() const {
+        if (m_image->has_label(m_accessor(m_iterator)))
+          return m_accessor(m_iterator);
+        else
+          return 0;
+      }
+
+      iterator begin() const {
+        return iterator(m_image, m_iterator);
+      }
+
+      iterator end() const {
+        return iterator(m_image, m_iterator + m_image->ncols());
+      }
+    private:
+      accessor m_accessor;
+    };
+
+    template<class Image, class T>
+    class ConstColIterator : public ColIteratorBase<Image, ConstColIterator<Image, T>, T> {
+    public:
+      using ColIteratorBase<Image, ConstColIterator<Image, T>, T>::m_iterator;
+      using ColIteratorBase<Image, ConstColIterator<Image, T>, T>::m_image;
+
+      // Typedefs for Cols
+      typedef ConstRowIterator<Image, T> iterator;
+
+      // Convenience typedefs
+      typedef ConstColIterator self;
+      typedef ColIteratorBase<Image, self, T> base;
+      typedef typename Image::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      // Constructor
+      ConstColIterator(Image* image, const T iterator) : base(image, iterator) { }
+      ConstColIterator() { }
+
+      typename Image::value_type operator*() const {
+        return get();
+      }
+
+      // Image specific
+      value_type get() const {
+        if (m_image->has_label(m_accessor(m_iterator)))
+          return m_accessor(m_iterator);
+        else
+          return 0;
+      }
+
+      iterator begin() const {
+        return iterator(m_image, m_iterator);
+      }
+      iterator end() const {
+        return iterator(m_image, m_iterator) + m_image->nrows();
+      }
+    private:
+      accessor m_accessor;
+    };
+
+
+    template<class Image, class Row, class Col>
+    class VecIterator : public VecIteratorBase<Image, Row, Col,
+					       VecIterator<Image, Row, Col> > {
+    public:
+      using VecIteratorBase<Image, Row, Col, VecIterator<Image, Row, Col> >::m_coliterator;
+
+      typedef VecIterator self;
+      typedef VecIteratorBase<Image, Row, Col, self> base;
+      typedef typename Image::value_type value_type;
+      typedef MLCCProxy<value_type, typename Image::data_type::iterator> proxy_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      // Constructor
+      VecIterator(const Row iterator) : base(iterator) { }
+      VecIterator() { }
+
+      // Operators
+      proxy_type operator*() const {
+        return proxy_type(m_coliterator.m_iterator, m_coliterator.m_image->get_labels_pointer());
+      }
+
+      value_type get() const {
+        if (m_coliterator.m_image->has_label(m_accessor(m_coliterator)))
+          return m_accessor(m_coliterator);
+        else
+          return 0;
+      }
+      
+      void set(const value_type& v) {
+        if (m_coliterator.m_image->has_label(m_accessor(m_coliterator)))
+          m_accessor.set(v, m_coliterator);
+      }
+    private:
+      accessor m_accessor;
+    };
+
+    template<class Image, class Row, class Col>
+    class ConstVecIterator : public VecIteratorBase<Image, Row, Col,
+						    ConstVecIterator<Image, Row, Col> > {
+    public:
+      using VecIteratorBase<Image, Row, Col, ConstVecIterator<Image, Row, Col> >::m_coliterator;
+
+      typedef ConstVecIterator self;
+      typedef VecIteratorBase<Image, Row, Col, self> base;
+      typedef typename Image::value_type value_type;
+      typedef ImageAccessor<value_type> accessor;
+
+      // Constructor
+      ConstVecIterator(const Row iterator) : base(iterator) { }
+      ConstVecIterator() { }
+
+      // Operators
+      typename Image::value_type operator*() const {
+        return get();
+      }
+
+      value_type get() const {
+        if (m_coliterator.m_image->has_label(m_accessor(m_coliterator)))
+          return m_accessor(m_coliterator);
+        else
+          return 0;
+      }
+    private:
+      accessor m_accessor;
+    };
   } // namespace
 } // namespace
 #endif

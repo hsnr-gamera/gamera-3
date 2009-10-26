@@ -11,12 +11,23 @@ neighbor searches, provided the dimension is not to high. In document
 analysis problems, the dimension is typically two, so that kd-trees
 can be a powerful utility for layout analysis problems.
 
-A detailed introduction to kd-trees can be found in the literature:
+For a detailed description of the present kd-tree implementation with
+examples for use cases, see
+
+  C. Dalitz: `Kd-Trees for Document Layout Analysis.`__
+  In C. Dalitz (Ed.): "Document Image Analysis with the Gamera Framework."
+  Schriftenreihe des Fachbereichs Elektrotechnik und Informatik,
+  Hochschule Niederrhein, vol. 8, pp. 39-52, Shaker Verlag (2009)
+
+.. __: http://lionel.kr.hsnr.de/~dalitz/data/publications/sr09-kdtree-layout.pdf
+
+Additional background information on kd-trees can be found in the 
+following literature:
 
 - for an introduction to kd-trees and basic properties, see [deBerg2000]_
 - more algorithms for kd-trees can be found in the original article 
   [Bentley1975]_
-- none of the above references covers nearest neighbor
+- neither of the above two references covers nearest neighbor
   searches in kd-trees; these are coverd in [Friedman1977]_
 
 
@@ -88,7 +99,9 @@ Beware however, that a search predicate can have the effect that
 less than k neighbors are returned, because too few nodes fulfil
 the predicate. In such a case, the runtime is O(n) instead of O(log(n)).
 In other words, a poorly chosen search predicate can have a considerable
-negative impact on the runtime.
+negative impact on the runtime. In some cases, modifying the distance metric
+(method *set_distance*) can be an alternative to a search predicate
+[Dalitz09]_.
 
 
 The Kd-Tree Python API
@@ -270,3 +283,9 @@ References
 .. [Stroustrup1997] Stroustrup, B. 1997. *The C++ Programming
    Language: Third Edition.*  Reading, MA: Addison-Wesley.
 
+.. [Dalitz09] C. Dalitz: `Kd-Trees for Document Layout Analysis.`__
+  In C. Dalitz (Ed.): "Document Image Analysis with the Gamera Framework."
+  Schriftenreihe des Fachbereichs Elektrotechnik und Informatik,
+  Hochschule Niederrhein, vol. 8, pp. 39-52, Shaker Verlag (2009)
+
+.. __: http://lionel.kr.hsnr.de/~dalitz/data/publications/sr09-kdtree-layout.pdf

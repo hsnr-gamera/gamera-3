@@ -1598,22 +1598,40 @@ PyObject* mlcc_new(PyTypeObject* pytype, PyObject* args, PyObject* kwds) {
   int num_args = PyTuple_GET_SIZE(args);
   PyObject* image = NULL;
 
-  // TODO: Constructor from CC list (JK)
-//   if (num_args == 1) {
-//     // create MLCC from list of CCs
-//     PyObject *cclist;
-//     size_t n, N;
-//     if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &cclist)) {
-//       if (!PyList_Check(cclist)) {
-//         PyErr_SetString(PyExc_TypeError, "MlCc objects must be constructed from image list.");
-//         return 0;
-//       }
-//       N = PyList_Size(cclist);
-//       for (n=0; n<N; n++) {
-//         PyObject* image=PyList_GetItem
-//       }
-//     }
-//   }
+  if (num_args == 1) {
+    // create MLCC from list of CCs
+    PyObject *cclist;
+    size_t n, N;
+    if (PyArg_ParseTuple(args, CHAR_PTR_CAST "O", &cclist)) {
+      if (!PyList_Check(cclist)) {
+        PyErr_SetString(PyExc_TypeError, "MlCc objects must be constructed from a Cc list.");
+        return 0;
+      }
+      N = PyList_Size(cclist);
+      for (n=0; n<N; n++) { //check if every argument has the right type (Cc)
+        PyObject* py_cc=PyList_GetItem(cclist,n);
+        if(!is_CCObject(py_cc)){
+          PyErr_SetString(PyExc_TypeError, "MlCc objects must be constructed from a Cc list.");
+          return 0;
+        }
+      }
+
+      PyObject* py_mlcc=cc_convert_to_mlcc(PyList_GetItem(cclist,0));
+      RectObject* o=(RectObject*)py_mlcc;
+      MlCc* mlcc=(MlCc*)(o->m_x);
+      for (n=1; n<N; n++) {
+        RectObject* o_cc=(RectObject*)PyList_GetItem(cclist,n);
+        Cc* cc=(Cc*)(o_cc->m_x);
+        if(mlcc->data()!=cc->data()){ //check if every Cc has the same image
+          Py_DECREF(py_mlcc); //free memory on error
+          PyErr_SetString(PyExc_TypeError, "All Ccs have to be a part of the same image.");
+          return 0;
+        }
+        mlcc->add_label(cc->label(),*cc);
+      }
+      return py_mlcc;
+    }
+  }
 
   if (num_args == 4) {
     PyObject *a, *b;
@@ -1897,6 +1915,7 @@ void init_ImageType(PyObject* module_dict) {
 "  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Size *size*)\n\n"
 "  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Dim *dim*)\n\n"
 "  - **MlCc** (Image *image*, int *label*, Rect *rectangle*)\n\n"
+"  - **MlCc** (CcList *ccs*)\n\n"
 "**Deprecated forms:**\n\n"
 "  - **MlCc** (Image *image*, int *label*, Point *upper_left*, Dimensions *dimensions*)\n\n"
 "  - **MlCc** (Image *image*, int *label*, Int *offset_y*, Int *offset_x*, Int *nrows*, Int *ncols*)\n\n";

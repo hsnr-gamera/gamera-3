@@ -1,5 +1,17 @@
+import py.test
+
 from gamera.core import *
 init_gamera()
+
+def test_mlcc_wrongcalls():
+   img=Image((0,0),(8,8))
+   img.draw_filled_rect((1,1),(3,3),2)
+   img.set((1,5),3)
+   py.test.raises(Exception, MlCc, img, 2, 1)
+   py.test.raises(Exception, MlCc, img, "a", Rect((0,0),(8,8)))
+   py.test.raises(Exception, MlCc, "abc", 2, Rect((0,0),(8,8)))
+   py.test.raises(Exception, MlCc, [1,2])
+   py.test.raises(Exception, MlCc, [img])
 
 def test_mlcc():
    # create test image with different labels
@@ -70,3 +82,14 @@ def test_mlcc():
    cc.set((0,2),cc.label)
    assert cc.label == img.get((5,3))
    assert cc.label == cc.get((0,2))
+
+   # test constructor from Cc's
+   img2 = img=Image((0,0),(8,8))
+   img.draw_filled_rect((1,1),(3,3),1)
+   img.set((5,5),1)
+   ccs = img.cc_analysis()
+   mlcc = MlCc(ccs)
+   assert [(1,1),(5,5)] == [mlcc.ul, mlcc.lr]
+   cclabels = [c.label for c in ccs]; cclabels.sort()
+   mlcclabels = mlcc.get_labels(); mlcclabels.sort()
+   assert cclabels == mlcclabels

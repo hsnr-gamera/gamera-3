@@ -625,6 +625,7 @@ class ClassifierFrame(ImageFrameBase):
          self._frame,
          (("&Open and segment image...", self._OnOpenAndSegmentImage),
           ("Se&lect and segment image...", self._OnSelectAndSegmentImage),
+          ("Select already &segmented image...", self._OnSelectSegmentedImage),
           ("Se&lect image...", self._OnSelectImage),
           (None, None),
           ("&Save glyphs into separate files",
@@ -1391,6 +1392,22 @@ class ClassifierFrame(ImageFrameBase):
          gui_util.message(str(e))
          return
       wx.EndBusyCursor()
+
+   def _OnSelectSegmentedImage(self, event):
+      if self.multi_iw.id.is_dirty:
+         if not gui_util.are_you_sure_dialog("Page glyphs have not been saved.  Are you sure you wish to proceed?"):
+            return
+      dialog = Args(
+         [Class("Image", ImageBase),
+          Class("Ccs", ImageBase, list_of=True)],
+         name="Select image and ccs...")
+      results = dialog.show(
+         self._frame, image_menu.shell.locals,
+         docstring = "Select an image and its segmented glyphs")
+      if results is None:
+         return
+      (image, ccs) = results
+      self.set_image(ccs, image, weak=False)
 
    def _OnSelectImage(self, event):
       dialog = Args(

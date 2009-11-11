@@ -191,16 +191,15 @@ map depends on the ``confidence_types`` property of the classifier.
 So when the list ``Classifier.confidence_types`` is empty, no
 confidence values will be written to ``Image.confidence``.
 
-References:
+Reference:
 
-  - B.V. Dasarathy: *Nearest unlike neighbor (NUN): an aid to decision
-    confidence estimation.* Optical Engineering 34, pp. 2785-2792
-    (1995)
+    C. Dalitz:
+    `Reject Options and Confidence Measures for kNN Classifiers.`__
+    In C. Dalitz (Ed.): "Document Image Analysis with the Gamera Framework."
+    Schriftenreihe des Fachbereichs Elektrotechnik und Informatik,
+    Hochschule Niederrhein, vol. 8, pp. 16-38, Shaker Verlag (2009) 
 
-  - S.A. Dudani: *The Distance-Weighted k-Nearest Neighbor Rule.*
-    IEEE Transactions on Systems, Man, and Cybernetics 6, 
-    pp. 325-327 (1976)
-
+.. __: http://lionel.kr.hsnr.de/~dalitz/data/publications/sr09-knn-rejection.pdf
 
 Methods
 '''''''

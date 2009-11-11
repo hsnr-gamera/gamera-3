@@ -358,7 +358,7 @@ This method also unsets the *confidence* map.
    def classify_automatic(self, id_name):
       """Classifies the image as the value *id_name* and sets the state
 to AUTOMATIC.  Use this method when an automatic classifier has classified
-this glyph. Note that this method does not the *confidence* map for
+this glyph. Note that this method does not touch the *confidence* map for
 the main id; this must be set separately.
 
 *id_name*
@@ -383,7 +383,7 @@ the main id; this must be set separately.
 
    def classify_heuristic(self, id_name):
       """Classifies the image as the value *id_name* and sets the state
-to AUTOMATIC.  Use this method when a heuristic process has classified
+to HEURISTIC.  Use this method when a heuristic process has classified
 this glyph. This method also unsets the *confidence* map.
 
 *id_name*
@@ -429,6 +429,15 @@ If the image is unclassified, the result is 'UNCLASSIFIED'.
 
 When no *confidence_type* is given, the default confidence stored with
 ``id_name[0]`` is returned. If the image is unclassified, -1.0 is returned.
+
+For details about the confidence computation in Gamera, see
+
+   C. Dalitz: `Reject Options and Confidence Measures for kNN Classifiers.`__
+   In C. Dalitz (Ed.): "Document Image Analysis with the Gamera Framework."
+   Schriftenreihe des Fachbereichs Elektrotechnik und Informatik,
+   Hochschule Niederrhein, vol. 8, pp. 16-38, Shaker Verlag (2009).
+
+.. __: http://lionel.kr.hsnr.de/~dalitz/data/publications/sr09-knn-rejection.pdf
 """
       if self.classification_state == UNCLASSIFIED:
          return -1.0

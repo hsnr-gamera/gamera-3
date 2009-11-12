@@ -287,11 +287,11 @@ class PageMultiImageDisplay(ExtendedMultiImageDisplay):
          self.SelectBlock(row, col, row, col, 0)
          self.MakeCellVisible(min(row + 1, self.rows), col)
          if image.classification_state != MANUAL:
-            id = self.toplevel.guess_glyph(image)
+            id = self.toplevel.guess_glyph(image)[0][0][1]
          else:
-            id = image.id_name
-         self.toplevel.set_label_display(id[0][0][1])
-         self.toplevel.display_label_at_cell(row, col, id[0][0][1])
+            id = image.id_name[0][1]
+         self.toplevel.set_label_display(id)
+         self.toplevel.display_label_at_cell(row, col, id)
 
    def move_back(self):
       row = self.GetGridCursorRow()
@@ -305,11 +305,11 @@ class PageMultiImageDisplay(ExtendedMultiImageDisplay):
       self.MakeCellVisible(min(row + 1, self.rows), col)
       image = self.sorted_glyphs[image_no]
       if image.classification_state != MANUAL:
-         id = self.toplevel.guess_glyph(image)
+         id = self.toplevel.guess_glyph(image)[0][0][1]
       else:
-         id = image.id_name
-      self.toplevel.set_label_display(id[0][1])
-      self.toplevel.display_label_at_cell(row, col, id[0][1])
+         id = image.id_name[0][1]
+      self.toplevel.set_label_display(id)
+      self.toplevel.display_label_at_cell(row, col, id)
 
    ########################################
    # DISPLAYING A LABEL BENEATH A CELL

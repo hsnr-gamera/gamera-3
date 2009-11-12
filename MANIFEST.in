@@ -7,9 +7,12 @@ recursive-include gamera/test *.tiff
 recursive-include src *.cpp *.c *.h makefile.* *.hpp *.txt ANNOUNCE CHANGES INSTALL LICENSE README TODO KNOWNBUG Y2KINFO
 recursive-include examples *.py README *.tiff *.xml
 recursive-include include *.hpp *.hxx *.h README
-recursive-include win32 *.py 
+recursive-include win32 *.py
 recursive-include win32/msisource *.mmh *.txt *.jpg *.c *.template *.bmp
 recursive-include gamera/mac/ *.py *.html DMG_DS_STORE
 recursive-include gamera/mac/resources *.jpg
 recursive-include migration_tools README gamera_deprecation_filter generate_migration_docs replace_get_set
 include CHANGES INSTALL LICENSE ACKNOWLEDGEMENTS KNOWN_BUGS MANIFEST.in TODO setup.cfg gamera_post_install.py version
+recursive-include tests *.py README
+recursive-include tests/data *
+include tests/tmp/.empty_dir

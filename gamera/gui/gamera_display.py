@@ -1176,20 +1176,13 @@ class MultiImageDisplay(gridlib.Grid):
       wx.BeginBusyCursor()
       self.BeginBatch()
       try:
-         i = None
-         for i in range(len(self.sorted_glyphs) - 1, -1, -1):
-            if not self.sorted_glyphs[i] is None:
-               break
-         if not i is None:
-            del self.sorted_glyphs[i+1:]
          added = False
          for g in glyphs:
             if not g in self.glyphs:
                self.glyphs.add(g)
-               self.sorted_glyphs.append(g)
                added = True
-         if added and resize:
-            self.resize_grid(False)
+         if (added or resize) and self.frame.IsShown():
+            self.sort_images()
       finally:
          self.EndBatch()
          wx.EndBusyCursor()

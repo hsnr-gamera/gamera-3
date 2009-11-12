@@ -13,7 +13,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -103,7 +103,7 @@ def constains_instance(gl, klass):
    for g in gl:
       if isinstance(g, klass):
          return True
-   return False  
+   return False
 
 def sublists(list):
    l = len(list) - 1
@@ -122,7 +122,7 @@ def sublists(list):
             k *= 2
          yield set
       list = [list[-1]] + list[0:-1]
-         
+
 def string2identifier(str):
    """Defines how illegal variable names are converted to legal ones."""
    # TODO: Not very robust.
@@ -365,15 +365,15 @@ def dedent(s):
     if unindent is None:
         unindent = re.compile("\n\r? {0,%d}" % nshift)
         _dedent_regex[nshift] = unindent
-        
+
     result = unindent.sub("\n", s).strip()
     return result
-   
+
 class CallbackObject:
    def __init__(self):
       self._callbacks = {}
       self.is_dirty = False
-   
+
    def add_callback(self, alert, callback):
       category = self._callbacks.setdefault(alert, [])
       if callback not in category:
@@ -409,13 +409,13 @@ class CallbackList(list, CallbackObject):
       for i in self:
          self.trigger_callback('remove', [i])
       self.trigger_callback('length_change', len(self))
-      
+
    def __setitem__(self, i, item):
       if abs(i) < len(self):
          self.trigger_callback('remove', [self[i]])
          self.trigger_callback('add', [item])
       list.__setitem__(self, i, item)
-      
+
    def __delitem__(self, i):
       if abs(i) < len(self):
          self.trigger_callback('remove', [self[i]])
@@ -510,7 +510,7 @@ class CallbackSet(sets.Set, CallbackObject):
       result = sets.Set.pop(self)
       self.trigger_callback('remove', [result])
       self.trigger_callback('length_change', len(self))
-   
+
    def clear(self):
       self.trigger_callback('remove', self)
       sets.Set.clear(self)
@@ -563,8 +563,9 @@ class CallbackSet(sets.Set, CallbackObject):
    extend = update
 
    def __setstate__(self, data):
+      CallbackObject.__init__(self)
       self.trigger_callback('remove', self)
-      sets.Set(self, data)
+      sets.Set.__setstate__(self, data)
       self.trigger_callback('add', self)
       self.trigger_callback('length_change', len(self))
 

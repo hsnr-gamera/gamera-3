@@ -290,8 +290,8 @@ class PageMultiImageDisplay(ExtendedMultiImageDisplay):
             id = self.toplevel.guess_glyph(image)
          else:
             id = image.id_name
-         self.toplevel.set_label_display(id[0][1])
-         self.toplevel.display_label_at_cell(row, col, id[0][1])
+         self.toplevel.set_label_display(id[0][0][1])
+         self.toplevel.display_label_at_cell(row, col, id[0][0][1])
 
    def move_back(self):
       row = self.GetGridCursorRow()

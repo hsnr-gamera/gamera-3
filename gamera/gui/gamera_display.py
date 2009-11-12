@@ -1176,13 +1176,32 @@ class MultiImageDisplay(gridlib.Grid):
       wx.BeginBusyCursor()
       self.BeginBatch()
       try:
+         i = None
+         for i in range(len(self.sorted_glyphs) - 1, -1, -1):
+            if not self.sorted_glyphs[i] is None:
+               break
+         if not i is None:
+            del self.sorted_glyphs[i+1:]
          added = False
          for g in glyphs:
             if not g in self.glyphs:
                self.glyphs.add(g)
+               self.sorted_glyphs.append(g)
                added = True
-         if (added or resize) and self.frame.IsShown():
-            self.sort_images()
+         if added and resize:
+            self.resize_grid(False)
+
+         # The following code will sort on each add.  It is probably
+         # too slow, however, with large classifier databases.  This
+         # could become a user-configurable option someday - MGD
+
+         # added = False
+         # for g in glyphs:
+         #    if not g in self.glyphs:
+         #       self.glyphs.add(g)
+         #       added = True
+         # if (added or resize) and self.frame.IsShown():
+         #    self.sort_images()
       finally:
          self.EndBatch()
          wx.EndBusyCursor()

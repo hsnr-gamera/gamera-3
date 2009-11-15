@@ -75,7 +75,7 @@ void PNG_info_specific(const char* filename, FILE* & fp, png_structp& png_ptr, p
   if (setjmp(png_jmpbuf(png_ptr))) {
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     fclose(fp);
-    throw std::runtime_error("Unknown PNG error");
+    throw std::runtime_error("error in reading PNG header");
   }
 
   png_set_sig_bytes(png_ptr, PNG_BYTES_TO_CHECK);
@@ -178,6 +178,13 @@ Image* load_PNG(const char* filename, int storage) {
   int bit_depth, color_type;
   double x_resolution, y_resolution;
   PNG_info_specific(filename, fp, png_ptr, info_ptr, end_info, width, height, bit_depth, color_type, x_resolution, y_resolution);
+
+  // libpng exception handling
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+    fclose(fp);
+    throw std::runtime_error("error in reading PNG data");
+  }
 
   //Damon
   double reso = (x_resolution + y_resolution) / 2.0;

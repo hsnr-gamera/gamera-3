@@ -1191,17 +1191,17 @@ class MultiImageDisplay(gridlib.Grid):
          if added and resize:
             self.resize_grid(False)
 
-         # The following code will sort on each add.  It is probably
-         # too slow, however, with large classifier databases.  This
+         # The following code will sort on each add.  It can be
+         # slow, however, with large classifier databases.  This
          # could become a user-configurable option someday - MGD
+         added = False
+         for g in glyphs:
+            if not g in self.glyphs:
+               self.glyphs.add(g)
+               added = True
+         if (added or resize) and self.frame.IsShown():
+            self.sort_images()
 
-         # added = False
-         # for g in glyphs:
-         #    if not g in self.glyphs:
-         #       self.glyphs.add(g)
-         #       added = True
-         # if (added or resize) and self.frame.IsShown():
-         #    self.sort_images()
       finally:
          self.EndBatch()
          wx.EndBusyCursor()

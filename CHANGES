@@ -1,7 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new image type MultiLabelCC (C++) reps. MlCc (Python)
+ - display of classifier glyphs corrected when adding
+   glyphs to the classifier (can be slow for large databases)
+
+ - new image type MultiLabelCC (C++) resp. MlCc (Python)
 
  - the set() method now works for connected components
 

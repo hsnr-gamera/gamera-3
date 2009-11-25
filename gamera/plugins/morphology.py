@@ -119,10 +119,10 @@ class despeckle(PluginFunction):
 
 class distance_transform(PluginFunction):
   """
-  For all background pixels, calculate the distance to the nearest
-  object or contour. In the destination image, all pixels corresponding to
-  background will be assigned the their distance value, all pixels
-  corresponding to objects will be assigned 0.  The result is returned
+  For all black pixels, the distance to the nearest white pixel is calculated.
+  In the destination image, all pixels corresponding to black pixels in the
+  input image will be assigned the their distance value, all pixels
+  corresponding to white pixels will be assigned 0.  The result is returned
   as a Float image.
 
   *norm*:
@@ -137,7 +137,7 @@ class distance_transform(PluginFunction):
   args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
   return_type = ImageType([FLOAT])
   doc_examples = [(ONEBIT,5),]
-  author = u"Ullrich K\u00f6the (wrapped from VIGRA by Michael Droettboom"
+  author = u"Ullrich K\u00f6the (wrapped from VIGRA by Michael Droettboom)"
 
 
 class dilate_with_structure(PluginFunction):

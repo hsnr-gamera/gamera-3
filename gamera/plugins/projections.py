@@ -137,9 +137,10 @@ class projection_skewed_rows(PluginFunction):
 class rotation_angle_projections(PluginFunction):
     """
     Estimates the rotation angle of a document with the aid of skewed
-    projections (see Ha, Bunke: 'Image Processing Methods for Document
-    Image Analysis' in 'Handbook of Character Recognition and Document
-    Image Analysis' edited by Bunke and Wang, World Scientific 1997).
+    projections, as described in section 3.1 of C. Dalitz, G.K. Michalakis,
+    C. Pranzas: 'Optical Recognition of Psaltic Byzantine Chant Notation.'
+    International Journal of Document Analysis and Recognition 11,
+    pp. 143-158 (2008).
 
     This method works for a wide range of documents (text, music,
     forms), but can become slow for large images. This particular

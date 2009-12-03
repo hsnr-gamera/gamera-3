@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2002-2005 Michael Drottboom and Robert Ferguson
+ * Copyright (C) 2002-2005 Michael Droettboom and Robert Ferguson
+ *               2009      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -99,5 +100,55 @@ typename ImageFactory<T>::view_type* canny_edge_image(const T& src, double scale
   }
   return dest;
 }
+
+template<class T>
+Image* labeled_region_edges(T& src, bool mark_both=false) {
+  OneBitImageData* edges_data = new OneBitImageData(src.size(), src.origin());
+  OneBitImageView* edges = new OneBitImageView(*edges_data);
+  size_t x,y,max_x,max_y;
+
+  //mark_both=true;
+  max_x = src.ncols()-1;
+  max_y = src.nrows()-1;
+
+  // the following mask is sufficient:  xx
+  //                                   x
+  // because we assume that no pixel is unlabeled
+
+  // check bulk of image
+  for (y=0; y<max_y; ++y) {
+    for (x=0; x<max_x; ++x) {
+      if (src.get(Point(x,y)) != src.get(Point(x+1,y))) {
+        edges->set(Point(x,y),1);
+        if (mark_both)
+          edges->set(Point(x+1,y),1);
+      }
+      if (src.get(Point(x,y)) != src.get(Point(x,y+1))) {
+        edges->set(Point(x,y),1);
+        if (mark_both)
+          edges->set(Point(x,y+1),1);
+      }
+    }
+  }
+  // check last row
+  for (x=0; x<max_x; ++x) {
+    if (src.get(Point(x,max_y)) != src.get(Point(x+1,max_y))) {
+      edges->set(Point(x,max_y),1);
+      if (mark_both)
+        edges->set(Point(x+1,max_y),1);
+    }      
+  }
+  // check last column
+  for (y=0; y<max_y; ++y) {
+    if (src.get(Point(max_x,y)) != src.get(Point(max_x,y+1))) {
+      edges->set(Point(max_x,y),1);
+      if (mark_both)
+        edges->set(Point(max_x,y+1),1);
+    }
+  }
+
+  return edges;
+}
+
 
 #endif

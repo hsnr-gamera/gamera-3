@@ -1,6 +1,6 @@
 #
-#
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Michael Droettboom and Robert Ferguson
+#               2009      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -129,12 +129,31 @@ class canny_edge_image(PluginFunction):
       __call__ = staticmethod(__call__)
       doc_examples = [(GREYSCALE,)]
 
+class labeled_region_edges(PluginFunction):
+  """
+  Pixels with a label different from one of its neighboring pixels
+  are marked black in the returned image.
+
+  When *mark_both* is ``True``, both edges of the region border are
+  marked, resulting in a two pixel wide edge.
+  """
+  self_type = ImageType([ONEBIT,GREYSCALE])
+  args = Args([Check("mark_both", default=False)])
+  return_type = ImageType([ONEBIT])
+  author = "Christoph Dalitz"
+  # wrapper for passing default argument
+  def __call__(self, mark_both=False):
+      return _edgedetect.labeled_region_edges(self, mark_both)
+  __call__ = staticmethod(__call__)
+
+
 class EdgeDetect(PluginModule):
       category = "Edge"
       cpp_headers=["edgedetect.hpp"]
       functions = [difference_of_exponential_edge_image,
                    difference_of_exponential_crack_edge_image,
-                   canny_edge_image]
+                   canny_edge_image,
+                   labeled_region_edges]
       author = u"Ullrich K\u00f6the (wrapped by Robert Ferguson)"
       url = "http://gamera.dkc.jhu.edu"
 module = EdgeDetect()

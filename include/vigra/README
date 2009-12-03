@@ -32,4 +32,7 @@ files are modified:
      Therefore never use resizeImageNoInterpolation(), but
      instead resampleImage()
 
+ - inspectimage.hxx
+     removed #pragma warning
+
 Christoph Dalitz

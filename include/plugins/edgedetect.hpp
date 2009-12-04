@@ -102,17 +102,16 @@ typename ImageFactory<T>::view_type* canny_edge_image(const T& src, double scale
 }
 
 template<class T>
-Image* labeled_region_edges(T& src, bool mark_both=false) {
+Image* labeled_region_edges(const T& src, bool mark_both=false) {
   OneBitImageData* edges_data = new OneBitImageData(src.size(), src.origin());
   OneBitImageView* edges = new OneBitImageView(*edges_data);
   size_t x,y,max_x,max_y;
 
-  //mark_both=true;
   max_x = src.ncols()-1;
   max_y = src.nrows()-1;
 
   // the following mask is sufficient:  xx
-  //                                   x
+  //                                    x
   // because we assume that no pixel is unlabeled
 
   // check bulk of image

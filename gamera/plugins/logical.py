@@ -151,7 +151,7 @@ class LogicalModule(PluginModule):
   cpp_headers = ["logical.hpp"]
   functions = [and_image, or_image, xor_image]
   author = "Michael Droettboom"
-  url = "http://gamera.dkc.jhu.edu/"
+  url = "http://gamera.sourceforge.net/"
 
 module = LogicalModule()
 

@@ -155,6 +155,6 @@ class EdgeDetect(PluginModule):
                    canny_edge_image,
                    labeled_region_edges]
       author = u"Ullrich K\u00f6the (wrapped by Robert Ferguson)"
-      url = "http://gamera.dkc.jhu.edu"
+      url = "http://gamera.sourceforge.net/"
 module = EdgeDetect()
 

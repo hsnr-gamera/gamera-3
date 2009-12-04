@@ -95,6 +95,6 @@ class GuiSupportModule(PluginModule):
     functions = [to_string, to_buffer, to_buffer_colorize, color_ccs,
                  draw_cc]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
     
 module = GuiSupportModule()

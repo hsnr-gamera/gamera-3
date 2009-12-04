@@ -421,7 +421,7 @@ class UtilModule(PluginModule):
                  mirror_horizontal, mirror_vertical,
                  diff_images, mse, reset_onebit_image]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = UtilModule()
 
 union_images = union_images()

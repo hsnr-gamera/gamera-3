@@ -98,5 +98,5 @@ class CorelationModule(PluginModule):
     functions = [corelation_weighted, corelation_sum,
                  corelation_sum_squares]
     author = "Michael Droettboom"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = CorelationModule()

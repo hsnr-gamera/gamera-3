@@ -70,6 +70,6 @@ class ContourModule(PluginModule):
   category = "Analysis/Contour"
   functions = [contour_top, contour_left, contour_bottom, contour_right]
   author = "Michael Droettboom"
-  url = "http://gamera.dkc.jhu.edu/"
+  url = "http://gamera.sourceforge.net/"
 
 module = ContourModule()

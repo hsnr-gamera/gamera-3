@@ -100,7 +100,7 @@ class TiffSupportModule(PluginModule):
     functions = [tiff_info, load_tiff_class, save_tiff]
     cpp_include_dirs = ["src/libtiff"]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = TiffSupportModule()
 

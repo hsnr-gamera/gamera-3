@@ -291,6 +291,6 @@ class ProjectionsModule(PluginModule):
                  projection_skewed_rows, projection_skewed_cols,
                  rotation_angle_projections]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = ProjectionsModule()
 

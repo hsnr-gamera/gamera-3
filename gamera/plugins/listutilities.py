@@ -115,7 +115,7 @@ class ListUtilitiesModule(PluginModule):
    cpp_headers=["listutilities.hpp"]
    functions = [permute_list, all_subsets, median, median_py]
    author = "Michael Droettboom and Karl MacMillan"
-   url = "http://gamera.informatik.hsnr.de/"
+   url = "http://gamera.sourceforge.net/"
 module = ListUtilitiesModule()
 
 permute_list = permute_list()

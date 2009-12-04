@@ -222,7 +222,7 @@ class MorphologyModule(PluginModule):
   functions = [erode_dilate, erode, dilate, rank, mean, despeckle,
                distance_transform, dilate_with_structure, erode_with_structure]
   author = "Michael Droettboom and Karl MacMillan"
-  url = "http://gamera.dkc.jhu.edu/"
+  url = "http://gamera.sourceforge.net/"
 
 module = MorphologyModule()
 

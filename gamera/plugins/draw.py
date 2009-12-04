@@ -533,6 +533,6 @@ class DrawModule(PluginModule):
                remove_border, highlight, draw_circle,
                draw_text]
   author = "Michael Droettboom"
-  url = "http://gamera.dkc.jhu.edu/"
+  url = "http://gamera.sourceforge.net/"
 
 module = DrawModule()

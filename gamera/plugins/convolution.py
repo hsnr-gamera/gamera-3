@@ -426,7 +426,7 @@ class ConvolutionModule(PluginModule):
                  gaussian_gradient, laplacian_of_gaussian,
                  hessian_matrix_of_gaussian, sobel_edge_detection]
     author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = ConvolutionModule()
 
 BORDER_TREATMENT_AVOID = 0

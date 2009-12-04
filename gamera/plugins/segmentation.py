@@ -262,7 +262,7 @@ class SegmentationModule(PluginModule):
                  splitx_left, splitx_right, splity_top, splity_bottom,
                  splitx_max]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = SegmentationModule()
 

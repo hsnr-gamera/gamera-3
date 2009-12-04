@@ -1,7 +1,6 @@
 ToDo list for Gamera
 ====================
 
- - add constructor for MlCc that creates it form a list of Cc's
  - plugin trim_image for ONEBIT images
  - More documentation of wrapped Vigra functions
  - More page layout analysis resp. page segmentation methods.
@@ -19,8 +18,6 @@ ToDo list for Gamera
    vector machines, or hidden Markov models.
  - Add support for the hOCR exchange format in the form of a general
    writing and parsing library.
- - Write a toolkit for standard text document recognition, i.e. a
-   more complete version of roman.py.
  - Write wrappers for external OCR engines like Tesseract OCR as
    optional plugins.
  - Add more image formats: JPEG (reading/writing), PDF (writing),

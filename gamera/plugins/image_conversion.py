@@ -144,7 +144,7 @@ class ImageConversionModule(PluginModule):
                  to_onebit, to_onebit, to_complex, extract_real,
                  extract_imaginary]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = ImageConversionModule()
 

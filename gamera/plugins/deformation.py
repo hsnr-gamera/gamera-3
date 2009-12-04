@@ -138,6 +138,6 @@ class DefModule(PluginModule):
     category = "Deformations"
     functions = [rotate, noise, inkrub, wave, ink_diffuse]
     author = "Albert Brzeczko"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = DefModule()
 

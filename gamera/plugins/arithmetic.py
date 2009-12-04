@@ -141,7 +141,7 @@ class ArithmeticModule(PluginModule):
     category = "Combine/Arithmetic"
     functions = [add_images, subtract_images, multiply_images, divide_images]
     author = "Michael Droettboom"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = ArithmeticModule()
     
 del ARITHMETIC_TYPES

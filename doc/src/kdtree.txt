@@ -178,7 +178,7 @@ to the ``cpp_sources`` property in the plugin Python interface:
    class ExampleModule(PluginModule):
        category = "MyPlugins"
        cpp_headers=["myplugins.hpp"]
-       cpp_sources=["src/kdtree.cpp"]
+       cpp_sources=["src/kdtree/kdtree.cpp"]
        functions = [myplugin1, myplugin2]
    module = ExampleModule()
 

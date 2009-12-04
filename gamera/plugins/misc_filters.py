@@ -64,5 +64,5 @@ class MiscFiltersModule(PluginModule):
     functions = [outline,create_gabor_filter]
     cpp_headers = ["misc_filters.hpp"]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = MiscFiltersModule()

@@ -120,7 +120,7 @@ class RelationalModule(PluginModule):
                  least_squares_fit, least_squares_fit_xy,
                  edit_distance]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = RelationalModule()
 

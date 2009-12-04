@@ -349,7 +349,7 @@ class BinarizationGenerator(PluginModule):
                  gatos_threshold,
                  white_rohrer_threshold]
     author = "John Ashley Burgoyne and Ichiro Fujinaga"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = BinarizationGenerator()
 

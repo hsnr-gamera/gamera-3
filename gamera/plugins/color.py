@@ -138,7 +138,7 @@ class ColorModule(PluginModule):
     functions = [hue, saturation, value, cyan, magenta, yellow,
                  cie_x, cie_y, cie_z, red, green, blue, false_color]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = ColorModule()
 

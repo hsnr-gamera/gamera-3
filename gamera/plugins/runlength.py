@@ -212,7 +212,7 @@ class RunLengthModule(PluginModule):
                  to_rle, from_rle]
 
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = RunLengthModule()
                  

@@ -235,6 +235,6 @@ class ThresholdModule(PluginModule):
     functions = [threshold, otsu_find_threshold, otsu_threshold, tsai_moment_preserving_find_threshold, tsai_moment_preserving_threshold, abutaleb_threshold,
                  bernsen_threshold, djvu_threshold]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 
 module = ThresholdModule()

@@ -352,7 +352,7 @@ class FeaturesModule(PluginModule):
                  generate_features, zernike_moments,
                  skeleton_features, top_bottom]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = FeaturesModule()
 
 def get_features_length(features):

@@ -149,7 +149,7 @@ class IdNameMatchingModule(PluginModule):
     category = "Classification"
     functions = [match_id_name]
     author = "Michael Droettboom and Karl MacMillan"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
     pure_python = 1
 
 module = IdNameMatchingModule()

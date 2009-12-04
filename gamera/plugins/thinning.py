@@ -126,7 +126,7 @@ class ThinningModule(PluginModule):
                  thin_lc]
     cpp_headers = ["thinning.hpp"]
     author = u"Michael Droettboom and Karl MacMillan (based on code by \u00d8ivind Due Trier and Qian Huang)"
-    url = "http://gamera.dkc.jhu.edu/"
+    url = "http://gamera.sourceforge.net/"
 module = ThinningModule()
 
 del Thinning

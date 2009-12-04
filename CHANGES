@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugins for area Voronoi tesselation (category "Geometry")
+
+ - new plugin labeled_region_edges (category "Edge")
+
  - display of classifier glyphs corrected when adding
    glyphs to the classifier (can be slow for large databases)
 

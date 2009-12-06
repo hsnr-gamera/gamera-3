@@ -37,17 +37,39 @@ class voronoi_from_labeled_image(PluginFunction):
   of the input image, a method known as *seeded region growing* (U. K\u00f6the:
   *Primary Image Segmentation.* Proceedings 17th DAGM-Symposium, Springer,
   1995).
+
+  The example shown below is the image *voronoi_cells* as created with
+  the the following code:
+
+  .. code:: Python
+
+    # create an area Voronoi tesselation and
+    # mark the cells and their edges in color
+    ccs = image.cc_analysis()  # labels the image
+    voronoi = image.voronoi_from_labeled_image()
+    voronoi_cells = voronoi.color_ccs()
+    voronoi_cells.highlight(image, RGBPixel(0,0,0))
+    voronoi_edges = voronoi.labeled_region_edges()
+    voronoi_cells.highlight(voronoi_edges, RGBPixel(255,255,255))
   """
   self_type = ImageType([ONEBIT,GREYSCALE])
-  #args = Args([Choice("norm", ['chessboard', 'manhattan', 'euclidean'])])
   return_type = ImageType([ONEBIT,GREYSCALE])
-  #doc_examples = [(ONEBIT,5),]
+  def __doc_example1__(images):
+    from gamera.core import RGBPixel
+    image = images[ONEBIT]
+    ccs = image.cc_analysis()
+    voronoi = image.voronoi_from_labeled_image()
+    voronoi_cells = voronoi.color_ccs()
+    voronoi_cells.highlight(image, RGBPixel(0,0,0))
+    voronoi_edges = voronoi.labeled_region_edges()
+    voronoi_cells.highlight(voronoi_edges, RGBPixel(255,255,255))
+    return [image, voronoi_cells]
+  doc_examples = [__doc_example1__]
   author = u"Christoph Dalitz, based on code by Ullrich K\u00f6the"
 
 class voronoi_from_points(PluginFunction):
   """
   Computes the Voronoi tesselation from a list of points and point labels.
-
   The result is directly written to the input image. Each white pixel is
   labeled with the label value of the closest point. Non white pixel in the
   input image are not overwritten.
@@ -65,11 +87,34 @@ class voronoi_from_points(PluginFunction):
 
 .. _`kd-tree`: kdtree.html
 .. _`voronoi_from_labeled_image`: #voronoi-from-labeled-image
+
+  The example shown below is the image *voronoi_edges* as created with
+  the the following code:
+
+  .. code:: Python
+
+    # create a Voronoi tesselation and mark
+    # the cell edges in a second image
+    points = [(10,10),(20,30),(32,22),(85,14),(40,70),(80,85)]
+    voronoi = Image((0,0),(90,90))
+    voronoi.voronoi_from_points(points,[i+2 for i in range(len(points))])
+    voronoi_edges = voronoi.labeled_region_edges()
+    for p in points:
+       voronoi_edges.set(p,1)
   """
   self_type = ImageType([ONEBIT,GREYSCALE])
   args = Args([PointVector("points"),IntVector("labels")])
   return_type = None
-  #doc_examples = [(ONEBIT,5),]
+  def __doc_example1__(images):
+    from gamera.core import Image
+    points = [(10,10),(20,30),(32,22),(85,14),(40,70),(80,85)]
+    voronoi = Image((0,0),(90,90))
+    voronoi.voronoi_from_points(points,[i+2 for i in range(len(points))])
+    voronoi_edges = voronoi.labeled_region_edges()
+    for p in points:
+      voronoi_edges.set(p,1)
+    return [voronoi_edges]
+  doc_examples = [__doc_example1__]
   author = "Christoph Dalitz"
 
 class labeled_region_neighbors(PluginFunction):

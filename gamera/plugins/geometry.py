@@ -35,8 +35,8 @@ class voronoi_from_labeled_image(PluginFunction):
 
   The implementation applies a watershed algorithm to the distance transform
   of the input image, a method known as *seeded region growing* (U. K\u00f6the:
-  *Primary Image Segmentation.* Proceedings 17th DAGM-Symposium, Springer,
-  1995).
+  *Primary Image Segmentation.* Proceedings 17th DAGM-Symposium, pp. 554-561,
+  Springer, 1995).
 
   The example shown below is the image *voronoi_cells* as created with
   the the following code:

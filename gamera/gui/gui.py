@@ -68,7 +68,7 @@ config.add_option(
    help="[shell] Run execfile(...) on the given file.  This argument may be given multiple times")
 config.add_option(
    "-v", "--verbosity-level", type="int", default=1,
-   help="[shell] when non zero, debug messsages on loaded plugins etc. are written to stdout.")
+   help="[shell] when non zero, debug messages on loaded plugins etc. are written to stdout.")
 
 
 main_win = None

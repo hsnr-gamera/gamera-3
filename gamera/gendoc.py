@@ -244,7 +244,7 @@ class DocumentationGenerator:
                             'stylesheet_path': None,
                             'stylesheet': 'default.css'}
                try:
-                  publish_file(source=fd, destination_path=output_file, 
+                  publish_file(source=fd, source_path=filename, destination_path=output_file, 
                                writer_name="html", settings_overrides=overrides)
                except TypeError:
                   publish_file(source=fd, destination_path=output_file)

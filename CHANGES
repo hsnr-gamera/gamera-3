@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - plugin category cleanup:
+    o "Convolution" moved to "Filter"
+    o new category "Thinning"
+    o new category "Transformation" for rotate, scale etc.
+
  - new plugins for area Voronoi tesselation (category "Geometry")
 
  - new plugin labeled_region_edges (category "Edge")

@@ -73,29 +73,6 @@ class erode_dilate(PluginFunction):
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE, 10, 0, 1)]
 
-class rank(PluginFunction):
-  """
-  Within each 3x3 window, set the center pixel to the *n*-th ranked
-  value.
-
-  *rank* (1 - 9)
-    The rank of the 9 pixels to select for the center.  5 is equivalent to
-    the median.
-  """
-  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  args = Args([Int('rank', range=(1, 9))])
-  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
-
-class mean(PluginFunction):
-  """
-  Within each 3x3 window, set the center pixel to the mean value of
-  all 9 pixels.
-  """
-  self_type = ImageType([GREYSCALE, FLOAT])
-  doc_examples = [(GREYSCALE,)]
-  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-
 class despeckle(PluginFunction):
   """
   Removes connected components that are smaller than the given size.
@@ -219,7 +196,7 @@ class erode_with_structure(PluginFunction):
 class MorphologyModule(PluginModule):
   cpp_headers = ["morphology.hpp"]
   category = "Morphology"
-  functions = [erode_dilate, erode, dilate, rank, mean, despeckle,
+  functions = [erode_dilate, erode, dilate, despeckle,
                distance_transform, dilate_with_structure, erode_with_structure]
   author = "Michael Droettboom and Karl MacMillan"
   url = "http://gamera.sourceforge.net/"

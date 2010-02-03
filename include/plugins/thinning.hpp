@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef kwm11062002_misc_filters
-#define kwm11062002_misc_filters
+#ifndef kwm11062002_thinning
+#define kwm11062002_thinning
 
 #include "gamera.hpp"
 #include "logical.hpp"

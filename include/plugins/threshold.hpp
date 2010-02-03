@@ -22,7 +22,7 @@
 
 #include "gamera.hpp"
 #include "image_utilities.hpp"
-#include "morphology.hpp"
+#include "misc_filters.hpp"
 #include <exception>
 #include <vector>
 #include <algorithm>

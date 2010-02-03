@@ -47,6 +47,7 @@ class rotate(PluginFunction):
     *order*
       The order of the spline used for interpolation.  Must be between 1 - 3.
     """
+    category = "Transformation"
     self_type = ImageType(ALL)    
     return_type = ImageType(ALL)
     args = Args([Float("angle"), Pixel("bgcolor"), Int("order", range=(1,3), default=1)])

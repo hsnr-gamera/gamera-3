@@ -30,6 +30,7 @@ class image_mean(PluginFunction):
     """
     Returns the mean over all pixels of an image as a FLOAT.
     """
+    category = "Binarization/RegionInformation"
     return_type = Real("output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     def __call__(self):
@@ -41,6 +42,7 @@ class image_variance(PluginFunction):
     """
     Returns the variance over all pixels of an image as a FLOAT.
     """
+    category = "Binarization/RegionInformation"
     return_type = Real("output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     def __call__(self):
@@ -55,6 +57,7 @@ class mean_filter(PluginFunction):
     *region_size*
       The size of the region in which to calculate a mean.
     """
+    category = "Binarization/RegionInformation"
     return_type = ImageType([FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([Int("region size", default=5)])
@@ -74,6 +77,7 @@ class variance_filter(PluginFunction):
     *region_size*
       The size of the region in which to calculate the variance.
     """
+    category = "Binarization/RegionInformation"
     return_type = ImageType([FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([ImageType([FLOAT], "means"),
@@ -100,6 +104,7 @@ class wiener_filter(PluginFunction):
       Variance of the noise in the image. If negative, estimated
       automatically as the median of local variances.
     """
+    category = "Filter"
     return_type = ImageType([GREYSCALE,GREY16,FLOAT], "output")
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     args = Args([Int("region size", default=5),

@@ -120,7 +120,7 @@ class thin_lc(Thinning):
     pass
 
 class ThinningModule(PluginModule):
-    category = "Filter/Thinning"
+    category = "Thinning"
     functions = [thin_zs, thin_hs, medial_axis_transform_hs,
                  thin_hs_large_image, medial_axis_transform_large_image_hs,
                  thin_lc]

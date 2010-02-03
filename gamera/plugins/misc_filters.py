@@ -21,14 +21,28 @@
 from gamera.plugin import *
 import _misc_filters
 
-class outline(PluginFunction):
-    """
-    Traces the outline of the image.  This result is obtained by
-    dilating the image and then XOR'ing the result with the original.
-    """
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([ONEBIT])
-    doc_examples = [(ONEBIT,)]
+class rank(PluginFunction):
+  """
+  Within each 3x3 window, set the center pixel to the *n*-th ranked
+  value.
+
+  *rank* (1 - 9)
+    The rank of the 9 pixels to select for the center.  5 is equivalent to
+    the median.
+  """
+  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  args = Args([Int('rank', range=(1, 9))])
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
+
+class mean(PluginFunction):
+  """
+  Within each 3x3 window, set the center pixel to the mean value of
+  all 9 pixels.
+  """
+  self_type = ImageType([GREYSCALE, FLOAT])
+  doc_examples = [(GREYSCALE,)]
+  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
 
 class create_gabor_filter(PluginFunction):
     """
@@ -61,7 +75,7 @@ class create_gabor_filter(PluginFunction):
 
 class MiscFiltersModule(PluginModule):
     category = "Filter"
-    functions = [outline,create_gabor_filter]
+    functions = [mean, rank, create_gabor_filter]
     cpp_headers = ["misc_filters.hpp"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

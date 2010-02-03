@@ -146,6 +146,14 @@ class labeled_region_edges(PluginFunction):
       return _edgedetect.labeled_region_edges(self, mark_both)
   __call__ = staticmethod(__call__)
 
+class outline(PluginFunction):
+    """
+    Traces the outline of the image.  This result is obtained by
+    dilating the image and then XOR'ing the result with the original.
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT])
+    doc_examples = [(ONEBIT,)]
 
 class EdgeDetect(PluginModule):
       category = "Edge"
@@ -153,7 +161,8 @@ class EdgeDetect(PluginModule):
       functions = [difference_of_exponential_edge_image,
                    difference_of_exponential_crack_edge_image,
                    canny_edge_image,
-                   labeled_region_edges]
+                   labeled_region_edges,
+                   outline]
       author = u"Ullrich K\u00f6the (wrapped by Robert Ferguson)"
       url = "http://gamera.sourceforge.net/"
 module = EdgeDetect()

@@ -1,6 +1,7 @@
 #
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+#               2008-2010 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -92,7 +93,7 @@ class resize(PluginFunction):
 
     .. _scale: #scale
     """
-    category = "Utility"
+    category = "Transformation"
     self_type = ImageType(ALL)
     args = Args([Dim("dim"), Choice("interp_type", ["None", "Linear", "Spline"])])
     return_type = ImageType(ALL)
@@ -116,7 +117,7 @@ class scale(PluginFunction):
 
     .. _resize: #resize
     """
-    category = "Utility"
+    category = "Transformation"
     self_type = ImageType(ALL)
     args= Args([Real("scaling"),
                 Choice("interp_type", ["None", "Linear", "Spline"])])
@@ -328,7 +329,7 @@ class shear_row(PluginFunction):
       move the row to the right.  Negative values move the row
       to the left.
     """
-    category = "Shearing"
+    category = "Transformation"
     self_type = ImageType(ALL)
     args = Args([Int('row'), Int('distance')])
     doc_examples = [(ONEBIT, 50, 10)]
@@ -345,7 +346,7 @@ class shear_column(PluginFunction):
       move the column downward.  Negative values move the column
       upward.
     """
-    category = "Shearing"
+    category = "Transformation"
     self_type = ImageType(ALL)
     args = Args([Int('column'), Int('distance')])
     doc_examples = [(ONEBIT, 50, 10)]
@@ -354,7 +355,7 @@ class mirror_horizontal(PluginFunction):
     """
     Flips the image across the horizontal (*x*) axis.
     """
-    category = "Utility"
+    category = "Transformation"
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
@@ -362,7 +363,7 @@ class mirror_vertical(PluginFunction):
     """
     Flips the image across the vertical (*y*) axis.
     """
-    category = "Utility"
+    category = "Transformation"
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
@@ -375,7 +376,7 @@ class diff_images(PluginFunction):
     Pixels in the given image but not in self (\"inserted\" pixels)
     are green.
     """
-    category = "Utility"
+    category = "Combine"
     self_type = ImageType(ONEBIT)
     args = Args([ImageType(ONEBIT)])
     return_type = ImageType(RGB)

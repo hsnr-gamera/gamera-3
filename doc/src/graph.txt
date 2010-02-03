@@ -346,12 +346,12 @@ applications.  Unfortunately, this library only uses one, which may
 not be suitable for all applications.  It is as follows:
 
   - The graph object contains arrays of all nodes and edges.
-    Therefore, random access to nodes and edges is constant time (*O*(1)).
-    Deleting nodes and edges is in linear time (*O*(*n*)).
+    Therefore, random access to nodes and edges is constant time (*O(1)*).
+    Deleting nodes and edges is in linear time (*O(n)*).
     
   - The graph contains a hash table from node data to nodes, so given a
     particular piece of data associated with a node, the node can be
-    looked up in *O*(*n* ln *n*) time.
+    looked up in *O(n* ln *n*) time.
 
   - Each node contains an array of coincident edges.  If the graph is
     directed, this includes edges going in and out from the node.

@@ -31,6 +31,10 @@
 #include "image_utilities.hpp"
 #include "vigra/distancetransform.hxx"
 
+// for backward compatibility:
+// mean, rank were formerly defined in the present header file
+#include "misc_filters.hpp"
+
 using namespace std;
 
 namespace Gamera {
@@ -349,67 +353,6 @@ namespace Gamera {
   }
 
   template<class T>
-  class Rank {
-    unsigned int rank;
-  public:
-    Rank<T>(unsigned int rank_) { rank = rank_ - 1; }
-    inline T operator() (typename vector<T>::iterator begin,
-			 typename vector<T>::iterator end);
-  };
-
-  template<class T>
-  inline T Rank<T>::operator() (typename vector<T>::iterator begin,
-				typename vector<T>::iterator end) {
-    nth_element(begin, begin + rank, end);
-    return *(begin + rank);
-  }
-
-  template<>
-  inline OneBitPixel Rank<OneBitPixel>::operator() (vector<OneBitPixel>::iterator begin,
-						    vector<OneBitPixel>::iterator end) {
-    nth_element(begin, end - rank, end);
-    return *(end - rank);
-  }
-
-  template<class T>
-  typename ImageFactory<T>::view_type* rank(const T &m, unsigned int r) {
-    typedef typename ImageFactory<T>::data_type data_type;
-    typedef typename ImageFactory<T>::view_type view_type;
-    if (m.nrows() < 3 || m.ncols() < 3)
-      return simple_image_copy(m);
-
-    data_type* new_data = new data_type(m.size(), m.origin());
-    view_type* new_view = new view_type(*new_data);
-
-    try {
-      Rank<typename T::value_type> rank(r);
-      neighbor9(m, rank, *new_view);
-    } catch (std::exception e) {
-      delete new_view;
-      delete new_data;
-      throw;
-    }
-    return new_view;
-  }
-
-  template<class T>
-  class Mean {
-  public:
-    inline T operator() (typename vector<T>::iterator begin,
-			 typename vector<T>::iterator end);
-  };
-
-  template<class T>
-  inline T Mean<T>::operator() (typename vector<T>::iterator begin,
-				typename vector<T>::iterator end) {
-    long sum = 0;
-    size_t size = end - begin;
-    for (; begin != end; ++begin)
-      sum += size_t(*begin);
-    return T(sum / size);
-  }
-
-  template<class T>
   class Mode {
   public:
     inline T operator() (typename vector<T>::iterator begin,
@@ -430,27 +373,6 @@ namespace Gamera {
       }
     }
     return max_value;
-  }
-
-  template<class T>
-  typename ImageFactory<T>::view_type* mean(T &m) {
-    typedef typename ImageFactory<T>::data_type data_type;
-    typedef typename ImageFactory<T>::view_type view_type;
-    if (m.nrows() < 3 || m.ncols() < 3)
-      return simple_image_copy(m);
-
-    data_type* new_data = new data_type(m.size(), m.origin());
-    view_type* new_view = new view_type(*new_data);
-
-    try {
-      Mean<typename T::value_type> mean_op;
-      neighbor9(m, mean_op, *new_view);
-    } catch (std::exception e) {
-      delete new_view;
-      delete new_data;
-      throw;
-    }
-    return new_view;
   }
 
   template<class T>

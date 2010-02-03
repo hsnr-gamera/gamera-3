@@ -17,8 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-"""The image utilities module contains plugins for copy, rotating, resizing,
-and computing histograms."""
+"""The convolution module contains plugins for linear filtering"""
 
 from gamera.plugin import *
 from gamera.plugins import image_utilities
@@ -83,6 +82,7 @@ class convolve(PluginFunction):
       # Using one of the included kernel generators
       img2 = image.convolve(GaussianKernel(3.0))
     """
+    category = "Filter/Convolution"
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel'),
                  Choice('border_treatment',
@@ -120,6 +120,7 @@ class convolve_xy(PluginFunction):
       Specifies how to treat the borders of the image.  See
       ``convolve`` for information about *border_treatment* values.
     """
+    category = "Filter/Convolution"
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_x'),
                  ImageType([FLOAT], 'kernel_y'),
@@ -163,6 +164,7 @@ class convolve_x(PluginFunction):
       Specifies how to treat the borders of the image.  See
       ``convolve`` for information about *border_treatment* values.
     """
+    category = "Filter/Convolution"
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_x'),
                  Choice('border_treatment',
@@ -194,6 +196,7 @@ class convolve_y(PluginFunction):
       Specifies how to treat the borders of the image.  See
       ``convolve`` for information about *border_treatment* values.
     """
+    category = "Filter/Convolution"
     self_type = ImageType(CONVOLUTION_TYPES)
     args = Args([ImageType([FLOAT], 'kernel_y'),
                  Choice('border_treatment',
@@ -214,7 +217,7 @@ class convolve_y(PluginFunction):
 class ConvolutionKernel(PluginFunction):
     self_type = None
     return_type = ImageType([FLOAT])
-    category = "Convolution/Kernels"
+    category = "Filter/ConvolutionKernels"
 
 class GaussianKernel(ConvolutionKernel):
     """
@@ -417,7 +420,7 @@ class sobel_edge_detection(PluginFunction):
 
 class ConvolutionModule(PluginModule):
     cpp_headers=["convolution.hpp"]
-    category = "Convolution"
+    category = "Filter"
     functions = [convolve, convolve_xy, convolve_x, convolve_y,
                  GaussianKernel, GaussianDerivativeKernel,
                  BinomialKernel, AveragingKernel,

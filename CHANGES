@@ -5,6 +5,7 @@ Changes made between Gamera File Releases
     o "Convolution" moved to "Filter"
     o new category "Thinning"
     o new category "Transformation" for rotate, scale etc.
+    o category "Threshold" moved to "Binarization"
 
  - new plugins for area Voronoi tesselation (category "Geometry")
 

@@ -3,7 +3,7 @@
 
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
-#               2007      Christoph Dalitz and Uma Kompella
+#               2007-2010 Christoph Dalitz and Uma Kompella
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@ import _threshold
 
 class threshold(PluginFunction):
     """
-    Creates a binary image by splitting along a given threshold value.
+    Creates a binary image by splitting along a given global threshold value.
 
     Pixels that are greater than the given value become white.
     Pixels less than the given value become black.
@@ -230,7 +230,7 @@ class ThresholdModule(PluginModule):
     This module provides functions that convert images between different
     pixel types.
     """
-    category = "Thresholding"
+    category = "Binarization"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold, otsu_find_threshold, otsu_threshold, tsai_moment_preserving_find_threshold, tsai_moment_preserving_threshold, abutaleb_threshold,
                  bernsen_threshold, djvu_threshold]

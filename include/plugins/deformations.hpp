@@ -30,121 +30,7 @@
 #include <time.h>
 #include <algorithm>
 
-/*
- * Rotate at an arbitrary angle.
- *
- * This algorithm works by first rotating for 90 degrees, depending whether
- * height and width are exchanged by rotation or not.
- * Afterwards VIGRA's rotation algorithm is called, which allows
- * for different types of interpolation.
- *
- * src - A view of of the source image
- * angle - Degree of rotation
- * bgcolor - Background color
- *
- */
-template<class T>
-typename ImageFactory<T>::view_type* rotate(const T &src, double angle, typename T::value_type bgcolor, int order)
-{
-  if (order < 1 || order > 3) {
-    throw std::range_error("Order must be between 1 and 3");
-  }
-  
-  // Adjust angle to a positive double between 0-360
-  while(angle<0.0) angle+=360;
-  while(angle>=360.0) angle-=360;
-
-  // some angle ranges flip width and height
-  // as VIGRA requires source and destination to be of the same
-  // size, it cannot handle a reduce in one image dimension.
-  // Hence we must rotate by 90 degrees, if necessary
-  bool rot90done = false;
-  typename ImageFactory<T>::view_type* prep4vigra = (typename ImageFactory<T>::view_type*) &src;
-  if ((45 < angle && angle < 135) ||
-      (225 < angle && angle < 315)) {
-     typename ImageFactory<T>::data_type* prep4vigra_data =
-       new typename ImageFactory<T>::data_type(Size(src.height(),src.width()));
-     prep4vigra = new typename ImageFactory<T>::view_type(*prep4vigra_data);
-     size_t ymax = src.nrows() - 1;
-     for (size_t y = 0; y < src.nrows(); ++y) {
-       for (size_t x = 0; x < src.ncols(); ++x) {
-         prep4vigra->set(Point(ymax-y,x), src.get(Point(x,y)));
-       }
-     }
-     rot90done = true;
-     // recompute rotation angle, because partial rotation already done
-     angle -= 90.0;
-     if (angle < 0.0) angle +=360;
-  }
-
-  double rad = (angle / 180.0) * M_PI;
-
-  // new width/height depending on angle
-  size_t new_width, new_height;
-  if ((0 <= angle && angle <= 90) ||
-      (180 <= angle && angle <= 270)) {
-    new_width = size_t(0.5+abs(cos(rad) * (double)prep4vigra->width() + 
-                           sin(rad) * (double)prep4vigra->height()));
-    new_height = size_t(0.5+abs(sin(rad) * (double)prep4vigra->width() + 
-                            cos(rad) * (double)prep4vigra->height()));
-  } else {
-    new_width = size_t(0.5+abs(cos(rad) * (double)prep4vigra->width() - 
-                           sin(rad) * (double)prep4vigra->height()));
-    new_height = size_t(0.5+abs(sin(rad) * (double)prep4vigra->width() - 
-                            cos(rad) * (double)prep4vigra->height()));
-  }
-  size_t pad_width = 0;
-  if (new_width > prep4vigra->width())
-    pad_width = (new_width - prep4vigra->width()) / 2 + 2;
-  size_t pad_height = 0;
-  if (new_height > prep4vigra->height())
-    pad_height = (new_height - prep4vigra->height()) / 2 + 2;
-
-  typename ImageFactory<T>::view_type* tmp =
-    pad_image(*prep4vigra, pad_height, pad_width, pad_height, pad_width, bgcolor);
-
-  typename ImageFactory<T>::data_type* dest_data =
-    new typename ImageFactory<T>::data_type(tmp->size());
-  typename ImageFactory<T>::view_type* dest =
-    new typename ImageFactory<T>::view_type(*dest_data);
-
-  try {
-    fill(*dest, bgcolor);
-
-    if (order == 1) {
-      vigra::SplineImageView<1, typename T::value_type> 
-	spline(src_image_range(*tmp));
-      vigra::rotateImage(spline, dest_image(*dest), -angle);
-    } else if (order == 2) {
-      vigra::SplineImageView<2, typename T::value_type> 
-	spline(src_image_range(*tmp));
-      vigra::rotateImage(spline, dest_image(*dest), -angle);
-    } else if (order == 3) {
-      vigra::SplineImageView<3, typename T::value_type> 
-	spline(src_image_range(*tmp));
-      vigra::rotateImage(spline, dest_image(*dest), -angle);
-    }
-  } catch (std::exception e) {
-    delete tmp->data();
-    delete tmp;
-    delete dest;
-    delete dest_data;
-    if (rot90done) {
-      delete prep4vigra->data();
-      delete prep4vigra;
-    }
-    throw;
-  }
-
-  if (rot90done) {
-    delete prep4vigra->data();
-    delete prep4vigra;
-  }
-  delete tmp->data();
-  delete tmp;
-
-  return dest;
-}
+namespace Gamera {
 
 /*
  *  shear_x
@@ -708,4 +594,6 @@ inline T norm_weight_avg(T& pix1, T& pix2, double w1=1.0, double w2=1.0)
   return T(((pix1 * w1) + (pix2 * w2))/(w1 + w2));
 }
 
- #endif
+}
+
+#endif

@@ -18,8 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 
-"""The image utilities module contains plugins for copy, rotating, resizing,
-and computing histograms."""
+"""The image utilities module contains plugins that do not fit in
+any other category, like image copying or computing histograms."""
 
 from gamera.plugin import * 
 from gamera.gui import has_gui
@@ -74,55 +74,6 @@ class image_save(PluginFunction):
                 raise ImportError("Could not load PNG support.")
             image.save_PNG(name)
     __call__ = staticmethod(__call__)
-
-class resize(PluginFunction):
-    """
-    Returns a resized copy of an image. In addition to size, the type
-    of interpolation can be specified, with a tradeoff between speed
-    and quality.
-
-    If you need to maintain the aspect ratio of the original image,
-    consider using scale_ instead.
-
-    *dim*
-      The size of the resulting image.
-
-    *interp_type* [None|Linear|Spline]
-      The type of interpolation used to resize the image.  Each option
-      is progressively higher quality, yet slower.
-
-    .. _scale: #scale
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    args = Args([Dim("dim"), Choice("interp_type", ["None", "Linear", "Spline"])])
-    return_type = ImageType(ALL)
-
-class scale(PluginFunction):
-    """
-    Returns a scaled copy of the image. In addition to scale, the type
-    of interpolation can be specified, with a tradeoff between speed
-    and quality.
-
-    If you need to change the aspect ratio of the original image,
-    consider using resize_ instead.
-
-    *scale*
-      A scaling factor.  Values greater than 1 will result in a larger image.
-      Values less than 1 will result in a smaller image.
-
-    *interp_type* [None|Linear|Spline]
-      The type of interpolation used to resize the image.  Each option is
-      progressively higher quality, yet slower.
-
-    .. _resize: #resize
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    args= Args([Real("scaling"),
-                Choice("interp_type", ["None", "Linear", "Spline"])])
-    return_type = ImageType(ALL)
-    doc_examples = [(RGB, 0.5, 2), (RGB, 2.0, 2)]
 
 class histogram(PluginFunction):
     """
@@ -317,56 +268,6 @@ class nested_list_to_image(PluginFunction):
         return _image_utilities.nested_list_to_image(l, t)
     __call__ = staticmethod(__call__)
 
-class shear_row(PluginFunction):
-    """
-    Shears a given row by a given amount.
-
-    *row*
-      The row number to shear.
-
-    *distance*
-      The number of pixels to move the row.  Positive values
-      move the row to the right.  Negative values move the row
-      to the left.
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    args = Args([Int('row'), Int('distance')])
-    doc_examples = [(ONEBIT, 50, 10)]
-
-class shear_column(PluginFunction):
-    """
-    Shears a given column by a given amount.
-
-    *column*
-      The column number to shear.
-
-    *distance*
-      The number of pixels to move the column.  Positive values
-      move the column downward.  Negative values move the column
-      upward.
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    args = Args([Int('column'), Int('distance')])
-    doc_examples = [(ONEBIT, 50, 10)]
-
-class mirror_horizontal(PluginFunction):
-    """
-    Flips the image across the horizontal (*x*) axis.
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    doc_examples = [(RGB,)]
-
-class mirror_vertical(PluginFunction):
-    """
-    Flips the image across the vertical (*y*) axis.
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)
-    doc_examples = [(RGB,)]
-
 class diff_images(PluginFunction):
     """
     Returns a color image representing the difference of two images
@@ -413,13 +314,11 @@ class reset_onebit_image(PluginFunction):
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
-    functions = [image_save, image_copy, resize, scale,
+    functions = [image_save, image_copy,
                  histogram, union_images,
                  fill_white, fill, pad_image, pad_image_default,
 		 invert, clip_image, mask,
-                 nested_list_to_image,
-                 to_nested_list, shear_row, shear_column,
-                 mirror_horizontal, mirror_vertical,
+                 nested_list_to_image, to_nested_list,
                  diff_images, mse, reset_onebit_image]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

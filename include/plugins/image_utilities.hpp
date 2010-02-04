@@ -31,6 +31,9 @@
 #include <math.h>
 #include <algorithm>
 
+// for compatibility: resize, scale, mirror, and shear
+//  were formerly implemented in image_utilitis instead of transformation
+#include "transformation.hpp"
 
 namespace Gamera {
   
@@ -247,51 +250,6 @@ namespace Gamera {
     return dest;
   }
 
-  template<class T>
-  Image* resize(T& image, const Dim& dim, int resize_quality) {
-    typename T::data_type* data = new typename T::data_type
-      (dim, image.origin());
-    ImageView<typename T::data_type>* view = 
-      new ImageView<typename T::data_type>(*data);
-    /*
-      Images with nrows or ncols == 1 cannot be scaled by VIGRA.
-      This is a hack that just returns an image with the same 
-      color as the upper-left pixel
-    */
-    if (image.nrows() <= 1 || image.ncols() <= 1 || 
-	view->nrows() <= 1 || view->ncols() <= 1) {
-      std::fill(view->vec_begin(), view->vec_end(), image.get(Point(0, 0)));
-      return view;
-    }
-    if (resize_quality == 0) {
-      // for straight scaling, resampleImage must be used in VIGRA
-      double xfactor = (double)view->ncols()/image.ncols();
-      double yfactor = (double)view->nrows()/image.nrows();
-      // this is implemented incorrectly in VIGRA:
-      //resizeImageNoInterpolation(src_image_range(image), dest_image_range(*view));
-      // the following works however:
-      // requires extension of VIGRA (see basicgeometry.hxx)
-      // that are not yet merged into VIGRA 1.6.0
-      resampleImage(src_image_range(image), dest_image(*view), xfactor, yfactor);
-    } else if (resize_quality == 1) {
-      resizeImageLinearInterpolation(src_image_range(image), dest_image_range(*view));
-    } else {
-      resizeImageSplineInterpolation(src_image_range(image), dest_image_range(*view));
-    }
-    image_copy_attributes(image, *view);
-    return view;
-  }
-
-  template<class T>
-  Image* scale(T& image, double scaling, int resize_quality) {
-    // nrows, ncols are cast to a double so that the multiplication happens
-    // exactly as it does in Python
-    return resize(image, 
-		  Dim(size_t(double(image.ncols()) * scaling),
-		      size_t(double(image.nrows()) * scaling)),
-		  resize_quality);
-  }
-
 
   /*
     FloatVector histogram(GreyScale|Grey16 image);
@@ -485,48 +443,6 @@ namespace Gamera {
       acc.set(invert(acc(in)), in);
   }
 
-  /*
-    Shearing
-  */
-
-  template<class T>
-  inline void simple_shear(T begin, const T end, int distance) {
-    // short-circuit
-    if (distance == 0)
-      return;
-    typename T::value_type filler;
-    // move down or right
-    if (distance > 0) {
-      filler = *begin;
-      std::copy_backward(begin, end - distance, end);
-      std::fill(begin, begin + distance, filler);
-      // move up or left
-    } else if (distance < 0) {
-      filler = *(end - 1);
-      std::copy(begin - distance, end, begin);
-      std::fill(end + distance, end, filler);
-    } // if distance == 0, do nothing
-  }
-
-  template<class T>
-  void shear_column(T& mat, size_t column, int distance) {
-    if (size_t(std::abs(distance)) >= mat.nrows())
-      throw std::range_error("Tried to shear column too far");
-    if (column >= mat.ncols())
-      throw std::range_error("Column argument to shear_column out of range");
-    simple_shear((mat.col_begin() + column).begin(),
-		 (mat.col_begin() + column).end(), distance);
-  }
-
-  template<class T>
-  void shear_row(T& mat, size_t row, int distance) {
-    if (size_t(std::abs(distance)) >= mat.ncols())
-      throw std::range_error("Tried to shear column too far");
-    if (row >= mat.nrows())
-      throw std::range_error("Column argument to shear_column out of range");
-    simple_shear((mat.row_begin() + row).begin(),
-		 (mat.row_begin() + row).end(), distance);
-  }
 
   template<class T>
   Image *clip_image(T& m, const Rect* rect) {
@@ -717,27 +633,6 @@ namespace Gamera {
     return rows;
   }
 
-  template<class T>
-  void mirror_horizontal(T& m) {
-    for (size_t r = 0; r < size_t(m.nrows()) / 2; ++r) {
-      for (size_t c = 0; c < m.ncols(); ++c) {
-	typename T::value_type tmp = m.get(Point(c, r));
-	m.set(Point(c, r), m.get(Point(c, m.nrows() - r - 1)));
-	m.set(Point(c, m.nrows() - r - 1), tmp);
-      }
-    }
-  }
-
-  template<class T>
-  void mirror_vertical(T& m) {
-    for (size_t r = 0; r < m.nrows(); ++r) {
-      for (size_t c = 0; c < size_t(m.ncols() / 2); ++c) {
-	typename T::value_type tmp = m.get(Point(c, r));
-	m.set(Point(c, r), m.get(Point(m.ncols() - c - 1, r)));
-	m.set(Point(m.ncols() - c - 1, r), tmp);
-      }
-    }
-  }
 
   template<class T>
   double mse(T& a, T& b) {

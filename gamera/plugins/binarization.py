@@ -220,6 +220,7 @@ class gatos_background(PluginFunction):
     *binarization*
       A preliminary binarization of the image.
     """
+    category = "Binarization/RegionInformation"
     return_type = ImageType([GREYSCALE], "output")
     self_type = ImageType([GREYSCALE])
     args = Args([ImageType([ONEBIT], "binarization"),

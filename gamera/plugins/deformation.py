@@ -34,30 +34,6 @@ except:
 
 import _deformation
 
-class rotate(PluginFunction):
-    """
-    Rotates an image.
-
-    *angle*
-      The angle of rotation (in degrees)
-
-    *bgcolor*
-      The color to use for pixels outside of the original image bounds.
-
-    *order*
-      The order of the spline used for interpolation.  Must be between 1 - 3.
-    """
-    category = "Transformation"
-    self_type = ImageType(ALL)    
-    return_type = ImageType(ALL)
-    args = Args([Float("angle"), Pixel("bgcolor"), Int("order", range=(1,3), default=1)])
-    args.list[0].rng = (-180,180)
-    doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255), 3), (COMPLEX, 15.0, 0.0j, 3)]
-    author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
-    def __call__(self, angle, bgcolor, order=1):
-      return _deformation.rotate(self, angle, bgcolor, order)
-    __call__ = staticmethod(__call__)
-    
 class wave(PluginFunction):
     """
     Causes periodic disturbance of user-defined frequency, amplitude,
@@ -137,7 +113,7 @@ class batch_deform(PluginFunction):
 class DefModule(PluginModule):
     cpp_headers=["deformations.hpp"]
     category = "Deformations"
-    functions = [rotate, noise, inkrub, wave, ink_diffuse]
+    functions = [noise, inkrub, wave, ink_diffuse]
     author = "Albert Brzeczko"
     url = "http://gamera.sourceforge.net/"
 module = DefModule()

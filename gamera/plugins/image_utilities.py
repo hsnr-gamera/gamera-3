@@ -279,7 +279,7 @@ class diff_images(PluginFunction):
     """
     category = "Combine"
     self_type = ImageType(ONEBIT)
-    args = Args([ImageType(ONEBIT)])
+    args = Args([ImageType(ONEBIT, 'other')])
     return_type = ImageType(RGB)
     pure_python = True
     def __call__(self, other):

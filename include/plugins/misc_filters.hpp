@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
- * and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -47,7 +47,7 @@ namespace Gamera {
     size_t size = end - begin;
     for (; begin != end; ++begin)
       sum += size_t(*begin);
-    return T(sum / size);
+    return T(sum / double(size) + 0.5);
   }
 
   template<class T>
@@ -93,8 +93,8 @@ namespace Gamera {
   template<>
   inline OneBitPixel Rank<OneBitPixel>::operator() (vector<OneBitPixel>::iterator begin,
 						    vector<OneBitPixel>::iterator end) {
-    nth_element(begin, end - rank, end);
-    return *(end - rank);
+    nth_element(begin, end - rank - 1, end);
+    return *(end - rank - 1);
   }
 
   template<class T>

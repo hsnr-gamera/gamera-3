@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -134,8 +135,8 @@ void neighbor9(const T& m, F func, M& tmp) {
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
-  window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = window[1] = white(m);
     window[3] = m.get(Point(col - 1, 0));
     window[4] = m.get(Point(col, 0));
     window[5] = m.get(Point(col + 1, 0));
@@ -146,8 +147,8 @@ void neighbor9(const T& m, F func, M& tmp) {
   }
 
   // Bottom edge
-  window[6] = window[7] = window[8] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[6] = window[7] = window[8] = white(m);
     window[0] = m.get(Point(col - 1, nrows_m2));
     window[1] = m.get(Point(col, nrows_m2));
     window[2] = m.get(Point(col + 1, nrows_m2));
@@ -158,8 +159,8 @@ void neighbor9(const T& m, F func, M& tmp) {
   }
 
   // Left edge
-  window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = window[3] = white(m);
     window[1] = m.get(Point(0, row - 1));
     window[2] = m.get(Point(1, row - 1));
     window[4] = m.get(Point(0, row));
@@ -170,8 +171,8 @@ void neighbor9(const T& m, F func, M& tmp) {
   }
 
   // Right edge
-  window[2] = window[5] = window[8] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[2] = window[5] = window[8] = white(m);
     window[0] = m.get(Point(ncols_m2, row - 1));
     window[1] = m.get(Point(ncols_m1, row - 1));
     window[3] = m.get(Point(ncols_m2, row));
@@ -249,8 +250,8 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
-  window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = window[1] = white(m);
     window[3] = m.get(Point(col - 1, 0));
     window[4] = m.get(Point(col + 1, 0));
     window[5] = m.get(Point(col - 1, 1));
@@ -260,8 +261,8 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  window[5] = window[6] = window[7] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[5] = window[6] = window[7] = white(m);
     window[0] = m.get(Point(col - 1, nrows_m2));
     window[1] = m.get(Point(col, nrows_m2));
     window[2] = m.get(Point(col + 1, nrows_m2));
@@ -271,8 +272,8 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   }
 
   // Left edge
-  window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = window[3] = white(m);
     window[1] = m.get(Point(1, row - 1));
     window[2] = m.get(Point(0, row - 1));
     window[4] = m.get(Point(1, row));
@@ -282,8 +283,8 @@ void neighbor8o(const T& m, F& func, M& tmp) {
   }
 
   // Right edge
-  window[2] = window[4] = window[7] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[2] = window[4] = window[7] = white(m);
     window[0] = m.get(Point(ncols_m2, row - 1));
     window[1] = m.get(Point(ncols_m1, row - 1));
     window[3] = m.get(Point(ncols_m2, row));
@@ -358,8 +359,8 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
-  window[0] = window[1] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = window[1] = white(m);
     window[2] = m.get(Point(col, 0));
     window[3] = m.get(Point(col - 1, 1));
     window[4] = m.get(Point(col + 1, 1));
@@ -367,8 +368,8 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  window[3] = window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[3] = window[4] = white(m);
     window[0] = m.get(Point(col - 1, nrows_m2));
     window[1] = m.get(Point(col + 1, nrows_m2));
     window[2] = m.get(Point(col, nrows_m1));
@@ -376,8 +377,8 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   }
 
   // Left edge
-  window[0] = window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = window[3] = white(m);
     window[1] = m.get(Point(1, row - 1));
     window[2] = m.get(Point(0, row));
     window[4] = m.get(Point(1, row + 1));
@@ -385,8 +386,8 @@ void neighbor4x(const T& m, F& func, M& tmp) {
   }
 
   // Right edge
-  window[1] = window[4] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[1] = window[4] = white(m);
     window[0] = m.get(Point(ncols_m2, row - 1));
     window[2] = m.get(Point(ncols_m1, row));
     window[3] = m.get(Point(ncols_m2, row + 1));
@@ -461,8 +462,8 @@ void neighbor4o(const T& m, F& func, M& tmp) {
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
-  window[0] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = white(m);
     window[1] = m.get(Point(col - 1, 0));
     window[2] = m.get(Point(col, 0));
     window[3] = m.get(Point(col + 1, 0));
@@ -471,8 +472,8 @@ void neighbor4o(const T& m, F& func, M& tmp) {
   }
 
   // Bottom edge
-  window[4] = white(m);
   for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[4] = white(m);
     window[0] = m.get(Point(col, nrows_m2));
     window[1] = m.get(Point(col - 1, nrows_m1));
     window[2] = m.get(Point(col, nrows_m1));
@@ -481,8 +482,8 @@ void neighbor4o(const T& m, F& func, M& tmp) {
   }
 
   // Left edge
-  window[1] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[1] = white(m);
     window[0] = m.get(Point(0, row - 1));
     window[2] = m.get(Point(0, row));
     window[3] = m.get(Point(1, row));
@@ -491,8 +492,8 @@ void neighbor4o(const T& m, F& func, M& tmp) {
   }
 
   // Right edge
-  window[3] = white(m);
   for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[3] = white(m);
     window[0] = m.get(Point(ncols_m1, row - 1));
     window[1] = m.get(Point(ncols_m2, row));
     window[2] = m.get(Point(ncols_m1, row));

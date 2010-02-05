@@ -26,6 +26,11 @@ class rank(PluginFunction):
   Within each 3x3 window, set the center pixel to the *n*-th ranked
   value.
 
+  Note that for ``Onebit`` images, actually *rank(9 - r)* is computed instead
+  of *rank(r)*. This has the effect that you do not need to worry whether
+  your image is a greyscale or onebit image: in all cases low values
+  for *r* will darken the image and high values will light it up.
+
   *rank* (1 - 9)
     The rank of the 9 pixels to select for the center.  5 is equivalent to
     the median.
@@ -40,7 +45,7 @@ class mean(PluginFunction):
   Within each 3x3 window, set the center pixel to the mean value of
   all 9 pixels.
   """
-  self_type = ImageType([GREYSCALE, FLOAT])
+  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,)]
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
 

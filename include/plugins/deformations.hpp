@@ -30,6 +30,10 @@
 #include <time.h>
 #include <algorithm>
 
+// for backward compatibility:
+// plugin rotate has been moved from here to transformation.hpp
+#include "transformation.hpp"
+
 namespace Gamera {
 
 /*

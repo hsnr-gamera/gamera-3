@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - corrected border treatment in neighbor.hpp (affected mean()
+   and rank()) and fixed another error in the rank() filter
+
  - plugin category cleanup:
     o "Convolution" moved to "Filter"
     o new category "Thinning"

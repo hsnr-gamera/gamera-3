@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2010      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +19,8 @@
 #
 
 from gamera.plugin import *
+
+import _color
 
 class ExtractFloatChannel(PluginFunction):
     self_type = ImageType([RGB])
@@ -132,11 +135,43 @@ class false_color(PluginFunction):
     return_type = ImageType([RGB], "false_color")
     doc_examples = [(GREYSCALE,)]
 
+class colors_to_labels(PluginFunction):
+    """
+    Converts an RGB image to a labeled onebit image.
+
+    Each RGB color is replaced by the label specified in the mapping
+    *rgb_to_label*. RGB values not listed in *rgb_to_label* are white
+    in the returned onebit image. When no mapping *rgb_to_label* is
+    provided, each different RGB color is replaced by a unique label.
+
+    This is mostly useful for reading manually labeled groundtruth
+    data from color PNG files. Example:
+
+    .. code:: Python
+
+      # map red to label 3, and green to label 5
+      labeled = rgb.colors_to_labels( {RGBPixel(255,0,0): 3, RGBPixel(0,255,0): 5} )
+
+    A typical use case of this plugin is in combination
+    with ccs_from_labeled_image_.
+
+    .. _ccs_from_labeled_image: utility.html#ccs-from-labeled-image
+    """
+    self_type = ImageType([RGB])
+    return_type = ImageType([ONEBIT])
+    args = Args([Class("rgb_to_label", dict)])
+    author = "Christoph Dalitz and Hasan Yildiz"
+    def __call__(self, dict=None):
+      return _color.colors_to_labels(self, dict)
+    __call__ = staticmethod(__call__)
+
+
 class ColorModule(PluginModule):
     category = "Color"
     cpp_headers=["color.hpp"]
     functions = [hue, saturation, value, cyan, magenta, yellow,
-                 cie_x, cie_y, cie_z, red, green, blue, false_color]
+                 cie_x, cie_y, cie_z, red, green, blue, false_color,
+                 colors_to_labels]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 

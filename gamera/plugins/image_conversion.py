@@ -100,12 +100,11 @@ class to_onebit(PluginFunction):
     """
     Converts the given image to a ONEBIT image.  Uses the
     otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
-    see the Thresholding_ and Binarization_ categories.
+    see the Binarization_ category.
 
     Note, converting an image to one of the same type performs a copy operation.
 
-    .. _otsu_threshold: thresholding.html#otsu-threshold
-    .. _Thresholding: thresholding.html
+    .. _otsu_threshold: binarization.html#otsu-threshold
     .. _Binarization: binarization.html
     """
     pure_python = True

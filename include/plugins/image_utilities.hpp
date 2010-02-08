@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005
- * Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz, Hasan Yildiz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@
 #include <exception>
 #include <math.h>
 #include <algorithm>
+#include <map>
 
 // for compatibility: resize, scale, mirror, and shear
 //  were formerly implemented in image_utilitis instead of transformation
@@ -656,6 +657,62 @@ namespace Gamera {
     for (i = image.vec_begin(); i != image.vec_end(); ++i) {
       if (i.get() > 0) i.set(1);
     }
+  }
+
+  /*
+   * compute Cc's from an already labeled image
+   * Christoph Dalitz and Hasan Yildiz
+   */
+  template<class T>
+  ImageList* ccs_from_labeled_image(T &src) {
+    typedef typename T::value_type value_type;
+    value_type value;
+
+    ImageList* return_ccs = new ImageList();
+
+    std::map<unsigned int, Rect*> pixel;
+    std::map<unsigned int, Rect*>::iterator iter;
+
+    for (size_t y=0; y < src.nrows(); ++y) {
+      for (size_t x=0; x < src.ncols(); ++x) {
+        if (!is_white(src.get(Point(x,y)))) {
+          value = src.get(Point(x,y));
+
+          // when new label: create Rect for new Cc
+          if (pixel.find(value) == pixel.end()) {
+            pixel[value] = new Rect(Point(x, y), Point(x, y));
+          }
+          // update Rect bounding box when known label
+          else {
+            iter = pixel.find(value);
+
+            if (y < (*iter).second->ul_y())
+              (*iter).second->ul_y(y);
+            if (x < (*iter).second->ul_x())
+              (*iter).second->ul_x(x);
+            if (y > (*iter).second->lr_y())
+              (*iter).second->lr_y(y);
+            if (x > (*iter).second->lr_x())
+              (*iter).second->lr_x(x);
+          }
+        }
+      }
+    }
+
+    // create Cc's for all labels
+    for (iter = pixel.begin(); iter != pixel.end(); iter++) {
+      return_ccs->push_back(new ConnectedComponent<typename T::data_type>(
+                    *src.data(),    // data
+                    (*iter).first,  // label
+                    Point((*iter).second->ul_x(), (*iter).second->ul_y()), // upper left
+                    Point((*iter).second->lr_x(), (*iter).second->lr_y())  // lower right
+                  ));
+
+      delete iter->second;
+      iter->second = 0;
+    }
+
+    return return_ccs;
   }
 
 }

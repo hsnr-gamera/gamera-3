@@ -311,6 +311,27 @@ class reset_onebit_image(PluginFunction):
     self_type = ImageType([ONEBIT])
     author = "Christoph Dalitz"
 
+class ccs_from_labeled_image(PluginFunction):
+    """
+    Returns all ''Cc'''s represented by unique labels in the given
+    onebit image. The bounding boxes are computed as tight as possible.
+
+    This is mostly useful for reading manually labeled groundtruth
+    data from color PNG files in combination with the plugin
+    colors_to_labels_. Example:
+
+    .. code:: Python
+
+      labeled = rgb.colors_to_labels()
+      ccs = labeled.ccs_from_labeled_image()
+
+    .. _colors_to_labels: color.html#colors-to-labels
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("ccs")
+    author = "Christoph Dalitz and Hasan Yildiz"
+
+
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
     category = "Utility"
@@ -319,7 +340,8 @@ class UtilModule(PluginModule):
                  fill_white, fill, pad_image, pad_image_default,
 		 invert, clip_image, mask,
                  nested_list_to_image, to_nested_list,
-                 diff_images, mse, reset_onebit_image]
+                 diff_images, mse, reset_onebit_image,
+                 ccs_from_labeled_image]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 module = UtilModule()

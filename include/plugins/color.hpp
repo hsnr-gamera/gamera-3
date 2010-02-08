@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz, Hasan Yildiz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +22,9 @@
 
 #include "gamera.hpp"
 #include "image_conversion.hpp"
+
+#include <string>
+#include <map>
 
 namespace Gamera {
 
@@ -212,6 +216,95 @@ namespace Gamera {
       
     return view;	
   }
+
+  // replace colors with labels
+  // Christoph Dalitz and Hasan Yildiz
+  template<class T>
+  Image* colors_to_labels(const T &src, PyObject* obj) {
+    OneBitImageData* dest_data = new OneBitImageData(src.size(), src.origin());
+    OneBitImageView* dest = new OneBitImageView(*dest_data, src.origin(), src.size());
+
+    typedef typename T::value_type value_type;
+    value_type value;
+
+    char buffer[16];
+    std::string buf;
+    unsigned int i;
+    unsigned int MAX_PIXEL_VALUE = 65536; //OneBit Pixel type has 16 Bits per Pixel
+
+    std::map<std::string, unsigned int> pixel;
+    std::map<std::string, unsigned int>::iterator iter;
+
+    PyObject *itemKey, *itemValue;
+    PyObject *testKey, *testValue;
+    Py_ssize_t pos = 0;
+
+    // mapping given how colors are to be mapped to labels
+    if (PyDict_Check(obj)) {
+
+      // copy color->label map to C++ map
+      i = 0;
+      while (PyDict_Next(obj, &pos, &itemKey, &itemValue)) {
+        if (i == MAX_PIXEL_VALUE)
+          throw std::runtime_error("More RGB colors than available labels.");
+        i++;
+        testKey = PyObject_Str(itemKey);
+        testValue = PyObject_Str(itemValue);
+        if (pixel.find(PyString_AsString(testKey)) == pixel.end()) 
+          pixel[PyString_AsString(testKey)] = atoi(PyString_AsString(testValue));
+        Py_DECREF(testKey);
+        Py_DECREF(testValue);
+      }
+
+      for (size_t y=0; y<src.nrows(); ++y) {
+        for (size_t x=0; x<src.ncols(); ++x) {
+          value = src.get(Point(x,y));
+          // Warning: this assumes a specific string representation of RGBPixel !!
+          sprintf(buffer, "(%d, %d, %d)", value.red(), value.green(), value.blue());
+          buf = buffer;
+          if (pixel.find(buf) != pixel.end()) 
+            dest->set(Point(x,y), pixel.find(buf)->second);
+        }
+      }
+    }
+
+    // no mapping given: determine labels automatically by counting
+    else if (obj == Py_None) {
+      i = 2;
+      for (size_t y=0; y<src.nrows(); ++y) {
+        for (size_t x=0; x<src.ncols(); ++x) {
+
+          value = src.get(Point(x,y));
+          sprintf(buffer, "(%d, %d, %d)", value.red(), value.green(), value.blue());
+          buf = buffer;
+
+          // special cases black and white
+          if (buf == "(0, 0, 0)" && pixel.find(buf) == pixel.end())
+            pixel[buf] = 1;
+          if (buf == "(255, 255, 255)" && pixel.find(buf) == pixel.end())
+            pixel[buf] = 0;
+
+          // when new color: add to map and increase label counter
+          if (pixel.find(buf) == pixel.end()) {
+            if (i == MAX_PIXEL_VALUE)
+              throw std::runtime_error("More RGB colors than available labels.");
+            pixel[buf] = i++;
+          }
+
+          // replace color with label
+          dest->set(Point(x,y), pixel.find(buf)->second);
+        }
+      }
+    }
+
+    // some argument given that is not a mapping color -> label
+    else {
+      throw std::invalid_argument("Mapping rgb_to_label must be dict or None");
+    }
+
+    return dest;
+  }
+
 
 }
 

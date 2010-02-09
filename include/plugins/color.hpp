@@ -226,41 +226,48 @@ namespace Gamera {
 
     typedef typename T::value_type value_type;
     value_type value;
+    typedef typename OneBitImageView::value_type onebit_value_type;
 
     char buffer[16];
     std::string buf;
-    unsigned int i;
-    unsigned int MAX_PIXEL_VALUE = 65536; //OneBit Pixel type has 16 Bits per Pixel
+    onebit_value_type label;
+    // highest label that can be stored in Onebit pixel type
+    onebit_value_type max_value = std::numeric_limits<onebit_value_type>::max();
 
     std::map<std::string, unsigned int> pixel;
     std::map<std::string, unsigned int>::iterator iter;
 
     PyObject *itemKey, *itemValue;
-    PyObject *testKey, *testValue;
+    PyObject *testKey;
     Py_ssize_t pos = 0;
 
     // mapping given how colors are to be mapped to labels
     if (PyDict_Check(obj)) {
 
       // copy color->label map to C++ map
-      i = 0;
+      long given_label;
+      label = 1;
       while (PyDict_Next(obj, &pos, &itemKey, &itemValue)) {
-        if (i == MAX_PIXEL_VALUE)
-          throw std::runtime_error("More RGB colors than available labels.");
-        i++;
+        if (label == max_value) {
+          char msg[128];
+          sprintf(msg, "More RGB colors than available labels (%i).", max_value);
+          throw std::range_error(msg);
+        }
+        label++;
         testKey = PyObject_Str(itemKey);
-        testValue = PyObject_Str(itemValue);
+        given_label = PyInt_AsLong(itemValue);
+        if (given_label < 0)
+          throw std::invalid_argument("Labels must be positive integers.");
         if (pixel.find(PyString_AsString(testKey)) == pixel.end()) 
-          pixel[PyString_AsString(testKey)] = atoi(PyString_AsString(testValue));
+          pixel[PyString_AsString(testKey)] = given_label;
         Py_DECREF(testKey);
-        Py_DECREF(testValue);
       }
 
       for (size_t y=0; y<src.nrows(); ++y) {
         for (size_t x=0; x<src.ncols(); ++x) {
           value = src.get(Point(x,y));
           // Warning: this assumes a specific string representation of RGBPixel !!
-          sprintf(buffer, "(%d, %d, %d)", value.red(), value.green(), value.blue());
+          sprintf(buffer, "(%i, %i, %i)", value.red(), value.green(), value.blue());
           buf = buffer;
           if (pixel.find(buf) != pixel.end()) 
             dest->set(Point(x,y), pixel.find(buf)->second);
@@ -270,12 +277,12 @@ namespace Gamera {
 
     // no mapping given: determine labels automatically by counting
     else if (obj == Py_None) {
-      i = 2;
+      label = 2;
       for (size_t y=0; y<src.nrows(); ++y) {
         for (size_t x=0; x<src.ncols(); ++x) {
 
           value = src.get(Point(x,y));
-          sprintf(buffer, "(%d, %d, %d)", value.red(), value.green(), value.blue());
+          sprintf(buffer, "(%i, %i, %i)", value.red(), value.green(), value.blue());
           buf = buffer;
 
           // special cases black and white
@@ -286,9 +293,12 @@ namespace Gamera {
 
           // when new color: add to map and increase label counter
           if (pixel.find(buf) == pixel.end()) {
-            if (i == MAX_PIXEL_VALUE)
-              throw std::runtime_error("More RGB colors than available labels.");
-            pixel[buf] = i++;
+            if (label == max_value) {
+              char msg[128];
+              sprintf(msg, "More RGB colors than available labels (%i).", max_value);
+              throw std::range_error(msg);
+            }
+            pixel[buf] = label++;
           }
 
           // replace color with label

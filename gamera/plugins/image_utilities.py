@@ -313,7 +313,7 @@ class reset_onebit_image(PluginFunction):
 
 class ccs_from_labeled_image(PluginFunction):
     """
-    Returns all ''Cc'''s represented by unique labels in the given
+    Returns all ``Cc``'s represented by unique labels in the given
     onebit image. The bounding boxes are computed as tight as possible.
 
     This is mostly useful for reading manually labeled groundtruth

@@ -1,14 +1,17 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.4, Feb 12, 2010
+----------------------------
+
  - new deformation plugins degrade_kanungo and white_speckles
 
  - new plugins colors_to_labels (category "Color") and
    ccs_from_labeled_image (category "Utility") for reading
    in manually labeled ground truth data (thanks to Hasan Yilidz)
 
- - corrected border treatment in neighbor.hpp (affected mean()
-   and rank()) and fixed another error in the rank() filter
+ - corrected border treatment in neighbor.hpp (affected mean
+   and rank) and fixed another error in the rank filter
 
  - plugin category cleanup:
     o "Convolution" moved to "Filter"

@@ -125,16 +125,18 @@ class fill(PluginFunction):
     args = Args([Pixel("value")])
 
 class pad_image_default(PluginFunction):
+    """Pads an image with the default pixel value white"""
     # This is only for plugin generation, it will not be added to the image type
     # (since self_type == None)
-    category = "Utility"
+    category = None
     self_type = None
     args = Args([ImageType(ALL), Int("top"), Int("right"), Int("bottom"), Int("left")])
     return_type = ImageType(ALL)
 
 class pad_image(PluginFunction):
     """
-    Pads an image with any value.
+    Pads an image with any value. When no pixel value is given, the value 
+    corresponding to the color *white* is used.
 
     *top*
       Padding on the top.
@@ -149,7 +151,8 @@ class pad_image(PluginFunction):
       Padding on the left.
 
     *value*
-      A pixel value.  This value may be any value the pixel type can support.
+      An optional pixel value of the pixel type of the image.
+      When omitted or set to ``None``, the color white is used for padding.
 
     """
     category = "Utility"
@@ -160,7 +163,8 @@ class pad_image(PluginFunction):
     def __call__(self, top, right, bottom, left, value=None):
         if value is None:
             return pad_image._pad_image_default(self, top, right, bottom, left)
-    	return _image_utilities.pad_image(self, top, right, bottom, left, value)
+        else:
+            return _image_utilities.pad_image(self, top, right, bottom, left, value)
     __call__ = staticmethod(__call__)
     doc_examples = [(RGB, 5, 10, 15, 20)]
 
@@ -327,6 +331,7 @@ class ccs_from_labeled_image(PluginFunction):
 
     .. _colors_to_labels: color.html#colors-to-labels
     """
+    category="Utility"
     self_type = ImageType([ONEBIT])
     return_type = ImageList("ccs")
     author = "Christoph Dalitz and Hasan Yildiz"
@@ -334,7 +339,7 @@ class ccs_from_labeled_image(PluginFunction):
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
-    category = "Utility"
+    category = None
     functions = [image_save, image_copy,
                  histogram, union_images,
                  fill_white, fill, pad_image, pad_image_default,

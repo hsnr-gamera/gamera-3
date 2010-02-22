@@ -211,6 +211,15 @@ options.  For example, from the ``resize`` plugin method::
     args = Args([Int("nrows"), Int("ncols"),
                  Choice("interp_type", ["None", "Linear", "Spline"])])
 
+In some cases, it might be necessary to know whether the user actually has
+made a choice. An alternative to defining a special choice index for
+'no choice', you can alternatively set the default to ``NoneDefault``,
+which is a special object that translates to ``None`` when used as
+a default value::
+
+    args = Args([Choice("bla", ["Choice1", "Choice2"], default=NoneDefault)])
+
+
 ChoiceString
 ------------
 

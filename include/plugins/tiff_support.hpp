@@ -218,12 +218,15 @@ namespace {
     template<class T>
     void operator()(const T& matrix, TIFF* tif) {
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-      tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+      tsize_t scanline_size = TIFFScanlineSize(tif);
+      if (scanline_size % 4) // round up to multiple of 4
+        scanline_size += 4 - (scanline_size % 4);
+      tdata_t buf = _TIFFmalloc(scanline_size);
       if (!buf)
         throw std::runtime_error("Error allocating scanline");
       TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISWHITE);
       std::bitset<32> bits;
-      unsigned long* data = (unsigned long *)buf;
+      uint32* data = (uint32 *)buf;
       bool little_endian = byte_order_little_endian();
       typename T::const_vec_iterator it = matrix.vec_begin();
       for (size_t i = 0; i < matrix.nrows(); i++) {

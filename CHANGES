@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+TODO - set default range for Real() in args.py to
+       (minfloat, maxfloat) instead of (minint, maxint)
+
+ - new Python image methods white() and black() for obtaining
+   these colors in the pixel type representation of the image
+
  - writing TIFFs on 64bit systems corrected
 
 

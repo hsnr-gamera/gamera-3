@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
- *               2009      Jonathan Koch, Christoph Dalitz
+ *               2009      Jonathan Koch
+ *               2009-2010 Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -49,6 +50,8 @@ extern "C" {
   // methods
   static PyObject* image_get(PyObject* self, PyObject* args);
   static PyObject* image_set(PyObject* self, PyObject* args);
+  static PyObject* image_white(PyObject* self, PyObject* args);
+  static PyObject* image_black(PyObject* self, PyObject* args);
   static PyObject* image_getitem(PyObject* self, PyObject* args);
   static PyObject* image_setitem(PyObject* self, PyObject* args);
   static PyObject* image_len(PyObject* self, PyObject* args);
@@ -196,6 +199,14 @@ static PyMethodDef image_methods[] = {
 "    image.set((5, 2), value)\n"
 "    image.set([5, 2], value)\n\n"
 "This coordinate is relative to the image view, not the logical coordinates."
+  },
+  { (char *)"white", image_white, METH_NOARGS,
+(char *)"Pixel **white** ()\n\n"
+"Returns the pixel value representing the color white for this image."
+  },
+  { (char *)"black", image_black, METH_NOARGS,
+(char *)"Pixel **black** ()\n\n"
+"Returns the pixel value representing the color black for this image."
   },
   { (char *)"__getitem__", image_getitem, METH_VARARGS },
   { (char *)"__setitem__", image_setitem, METH_VARARGS },
@@ -939,6 +950,62 @@ static PyObject* image_set(PyObject* self, PyObject* args) {
 		  "Acceptable forms are: set(Point p, Pixel v), get((x, y), Pixel v) "
 		  "and get(Int index, Pixel v).");
   return 0;
+}
+
+static PyObject* image_white(PyObject* self, PyObject* args) {
+  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
+  switch (od->m_pixel_type) {
+  case Gamera::FLOAT:
+    return PyFloat_FromDouble(pixel_traits<FloatPixel>::white());
+    break;
+  case Gamera::RGB:
+    return create_RGBPixelObject(pixel_traits<RGBPixel>::white());
+    break;
+  case Gamera::GREYSCALE:
+    return PyInt_FromLong(pixel_traits<GreyScalePixel>::white());
+    break;
+  case Gamera::GREY16:
+    return PyInt_FromLong(pixel_traits<Grey16Pixel>::white());
+    break;
+  case Gamera::ONEBIT:
+    return PyInt_FromLong(pixel_traits<OneBitPixel>::white());
+    break;
+  case Gamera::COMPLEX: {
+    ComplexPixel temp = pixel_traits<ComplexPixel>::white();
+    return PyComplex_FromDoubles(temp.real(), temp.imag());
+    break;
+  }
+  default:
+    return 0;
+  }
+}
+
+static PyObject* image_black(PyObject* self, PyObject* args) {
+  ImageDataObject* od = (ImageDataObject*)((ImageObject*)self)->m_data;
+  switch (od->m_pixel_type) {
+  case Gamera::FLOAT:
+    return PyFloat_FromDouble(pixel_traits<FloatPixel>::black());
+    break;
+  case Gamera::RGB:
+    return create_RGBPixelObject(pixel_traits<RGBPixel>::black());
+    break;
+  case Gamera::GREYSCALE:
+    return PyInt_FromLong(pixel_traits<GreyScalePixel>::black());
+    break;
+  case Gamera::GREY16:
+    return PyInt_FromLong(pixel_traits<Grey16Pixel>::black());
+    break;
+  case Gamera::ONEBIT:
+    return PyInt_FromLong(pixel_traits<OneBitPixel>::black());
+    break;
+  case Gamera::COMPLEX: {
+    ComplexPixel temp = pixel_traits<ComplexPixel>::black();
+    return PyComplex_FromDoubles(temp.real(), temp.imag());
+    break;
+  }
+  default:
+    return 0;
+  }
 }
 
 // convert Python indexing into row/col format for images

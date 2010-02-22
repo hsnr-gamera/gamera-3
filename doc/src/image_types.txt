@@ -144,8 +144,8 @@ Informational
 
 These methods provide information about the image.
 
-.. docstring:: gamera.core ImageBase pixel_type_name storage_format_name memory_size 
-.. docstring:: gamera.core Image resolution
+.. docstring:: gamera.core ImageBase pixel_type_name storage_format_name memory_size
+.. docstring:: gamera.core Image resolution white black
 .. docstring:: gamera.core Cc label
 .. docstring:: gamera.core Image data ncols nrows offset_x offset_y ul ur ll lr
 

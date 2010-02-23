@@ -1,8 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - default range for Real made smaller, so that it should
+   now also work on 46bit architectures
+
 TODO - set default range for Real() in args.py to
-       (minfloat, maxfloat) instead of (minint, maxint)
+       (-maxfloat, maxfloat) instead of (-maxint, maxint)
 
  - new Python image methods white() and black() for obtaining
    these colors in the pixel type representation of the image

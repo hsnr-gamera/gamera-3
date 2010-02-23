@@ -82,9 +82,7 @@ class PngSupportModule(PluginModule):
     cpp_headers = ["png_support.hpp"]
     internal_png_dir = "src/libpng-1.2.5/"
     internal_zlib_dir = "src/zlib-1.2.1/"
-    if sys.platform == 'linux2':
-        extra_libraries = ["png"]
-    elif sys.platform == 'darwin':
+    if sys.platform == 'darwin':
         found_png = None
         for p in ["/sw", "/usr", "/usr/local"]:
             if os.path.exists(os.path.join(p, "include/png.h")):
@@ -115,6 +113,8 @@ class PngSupportModule(PluginModule):
                              'uncompr.c','zutil.c']])
         cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.1"]
 #        extra_libraries = ["z"]
+    else:
+        extra_libraries = ["png"]
     functions = [save_PNG, PNG_info, load_PNG]
     author = "Michael Droettboom and Albert Bzreckzo"
     url = "http://gamera.sourceforge.net/"

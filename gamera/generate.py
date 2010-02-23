@@ -1,8 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2010      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -183,10 +183,11 @@ template = Template("""
 
       [[if function.feature_function]]
          feature_t* feature_buffer = 0;
-         PyObject* str = 0;
+         //PyObject* str = 0;
          if (offset < 0) {
-           str = PyString_FromStringAndSize(NULL, [[function.return_type.length]] * sizeof(feature_t));
-           feature_buffer = (feature_t*)PyString_AsString(str);
+           feature_buffer = new feature_t[ [[function.return_type.length]] ];
+           //str = PyString_FromStringAndSize(NULL, [[function.return_type.length]] * sizeof(feature_t));
+           //feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
            if (self_arg->features_len < offset + [[function.return_type.length]]) {
              PyErr_Format(PyExc_ValueError, \"Offset as given (%d) will cause data to be written outside of array of length (%d).  Perhaps the feature array is not initialised?\", offset, (int)self_arg->features_len);
@@ -212,6 +213,7 @@ template = Template("""
       [[end]]
 
       [[if function.feature_function]]
+         PyObject* str = PyString_FromStringAndSize((char*)feature_buffer, [[function.return_type.length]] * sizeof(feature_t));
          if (str != 0) {
             [[# This is pretty expensive, but simple #]]
             PyObject* array_init = get_ArrayInit();
@@ -220,8 +222,10 @@ template = Template("""
             PyObject* array = PyObject_CallFunction(
                   array_init, (char *)\"sO\", (char *)\"d\", str);
             Py_DECREF(str);
+            if (offset < 0) delete[] feature_buffer;
             return array;
          } else {
+           if (offset < 0) delete[] feature_buffer;
            Py_INCREF(Py_None);
            return Py_None;
          }

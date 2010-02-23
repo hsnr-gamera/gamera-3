@@ -183,11 +183,8 @@ template = Template("""
 
       [[if function.feature_function]]
          feature_t* feature_buffer = 0;
-         //PyObject* str = 0;
          if (offset < 0) {
            feature_buffer = new feature_t[ [[function.return_type.length]] ];
-           //str = PyString_FromStringAndSize(NULL, [[function.return_type.length]] * sizeof(feature_t));
-           //feature_buffer = (feature_t*)PyString_AsString(str);
          } else {
            if (self_arg->features_len < offset + [[function.return_type.length]]) {
              PyErr_Format(PyExc_ValueError, \"Offset as given (%d) will cause data to be written outside of array of length (%d).  Perhaps the feature array is not initialised?\", offset, (int)self_arg->features_len);

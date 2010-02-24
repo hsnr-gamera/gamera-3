@@ -210,19 +210,23 @@ template = Template("""
       [[end]]
 
       [[if function.feature_function]]
-         PyObject* str = PyString_FromStringAndSize((char*)feature_buffer, [[function.return_type.length]] * sizeof(feature_t));
-         if (str != 0) {
-            [[# This is pretty expensive, but simple #]]
-            PyObject* array_init = get_ArrayInit();
-            if (array_init == 0)
-              return 0;
-            PyObject* array = PyObject_CallFunction(
-                  array_init, (char *)\"sO\", (char *)\"d\", str);
-            Py_DECREF(str);
-            if (offset < 0) delete[] feature_buffer;
-            return array;
+         if (offset < 0) {
+           PyObject* str = PyString_FromStringAndSize((char*)feature_buffer, [[function.return_type.length]] * sizeof(feature_t));
+           if (str != 0) {
+              [[# This is pretty expensive, but simple #]]
+              PyObject* array_init = get_ArrayInit();
+              if (array_init == 0)
+                return 0;
+              PyObject* array = PyObject_CallFunction(
+                    array_init, (char *)\"sO\", (char *)\"d\", str);
+              Py_DECREF(str);
+              delete[] feature_buffer;
+              return array;
+           } else {
+             delete[] feature_buffer;
+             return 0;
+           }
          } else {
-           if (offset < 0) delete[] feature_buffer;
            Py_INCREF(Py_None);
            return Py_None;
          }

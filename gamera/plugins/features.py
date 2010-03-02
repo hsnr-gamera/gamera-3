@@ -186,18 +186,20 @@ class ncols_feature(Feature):
 
 class compactness(Feature):
     """
-    Loosely speaking, compactness is a volume to surface area ratio of
-    the connected components.  Highly ornate connected components have
-    a low compactness, whereas a perfect circle has very high
-    compactness.
+    Compactness is the volume to surface ratio. Highly ornate connected
+    components have a low compactness, whereas a perfect circle has a 
+    high compactness. The present implementation of this feature in
+    Gamera does however not return the compactness, but its *inverse*,
+    i.e. the surface to volume ratio.
 
     Since this function requires allocation and deallocation of
     memory, it is relatively slow.  However, it has proven to be a
     very useful feature in many cases.
 
-    This feature is relatively scale and rotation invariant, though as
-    the image scales, the pixel size relative to the image size
-    diminishes.  This is currently not corrected for.
+    This feature is not scale invariant, because, as
+    the image is scaled by *a*, the surface increases proportional to *a*
+    while the volume grows with *a^2*.
+    This is currently not corrected for.
 
     +---------------------------+
     | **Invariant to:**         |  

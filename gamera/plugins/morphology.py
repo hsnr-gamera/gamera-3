@@ -24,7 +24,7 @@ import _morphology
 
 class erode(PluginFunction):
   """
-  Erodes the image by the image morphology method.
+  Morpholgically erodes the image with a 3x3 square structuring element.
   """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
@@ -36,7 +36,14 @@ class erode(PluginFunction):
 
 class dilate(PluginFunction):
   """
-  Dilates the image by the image morphology method.
+  Morpholgically dilates the image with a 3x3 square structuring element.
+
+  The returned image is of the same size as the input image, which means
+  that border pixels are not dilated beyond the image dimensions. If you
+  also want the border pixels to be dilated, apply pad_image_ to the input
+  image beforehand.
+
+.. _pad_image: utility.html#pad-image
   """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   doc_examples = [(GREYSCALE,), (ONEBIT,)]
@@ -48,9 +55,19 @@ class dilate(PluginFunction):
 
 class erode_dilate(PluginFunction):
   """
-  Erodes or dilates the image by the image morphology method.  In case
-  of calling with onebit images and shape is set to rectangular
-  erode_with_structure/dilate_with_structure is used.
+  Morphologically erodes or dilates the image with a rectangular or
+  ocagonal structuring element. For onebit images, this is simply a
+  wrapper for erode_with_structure_ or dilate_with_structure_ with
+  special cases for the structuring element.
+
+  The returned image is of the same size as the input image, which means
+  that border pixels are not dilated beyond the image dimensions. If you
+  also want the border pixels to be dilated, apply pad_image_ to the input
+  image beforehand.
+
+.. _pad_image: utility.html#pad-image
+.. _erode_with_structure: #erode-with-structure
+.. _dilate_with_structure: #dilate-with-structure
 
   *ntimes*
     The number of times to perform the operation.
@@ -92,7 +109,7 @@ class despeckle(PluginFunction):
   """
   self_type = ImageType([ONEBIT])
   args = Args([Int('cc_size', range=(1, 100))])
-  doc_examples = [(ONEBIT,5), (ONEBIT,15)]
+  doc_examples = [(ONEBIT,15)]
 
 class distance_transform(PluginFunction):
   """
@@ -144,6 +161,13 @@ class dilate_with_structure(PluginFunction):
     ``True``, because in this case only the border pixels in the image
     need to be considered which can speed up the dilation for some
     images (though not for all).
+
+    The returned image is of the same size as the input image, which means
+    that border pixels are not dilated beyond the image dimensions. If you
+    also want the border pixels to be dilated, apply pad_image_ to the input
+    image beforehand.
+
+.. _pad_image: utility.html#pad-image
 
     References:
 

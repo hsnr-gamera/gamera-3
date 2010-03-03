@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - computation of feature compactness corrected
+   (border pixels were formerly ignored in computation)
+
  - default range for Real made smaller than sys.maxint,
    so that it should now also work on 64bit architectures
 

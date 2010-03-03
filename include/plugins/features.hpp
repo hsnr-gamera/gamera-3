@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
- * and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2009-2010 Christoph Dalitz
+ *               2010      Robert Butz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -251,6 +252,91 @@ namespace Gamera {
     *buf = feature_t(image.ncols());
   }
 
+
+  // helper function for compactness which computes the surface
+  // of pixels lying on the image bounding box that are ignored
+  // by a dilation
+  template<class T>
+  feature_t compactness_border_outer_volume(const T &m) {
+    int lastPx = 0;
+    int i, rows, cols;
+    int startPx = 0;
+    feature_t num_dil_px = 0;
+    rows = m.nrows();
+    cols = m.ncols();
+
+    startPx = m.get(Point(0,0)); // needed for the last pxs
+
+    // 1st row left to right, including both corners
+    for (i=0; i<cols; i++) {
+      if (is_black(m.get(Point(i,0)))) {
+        if (lastPx == 2)       num_dil_px += 1;
+        else if (lastPx == 1)  num_dil_px += 2;
+        else                   num_dil_px += 3;
+        if (i == 0 || i== rows-1) // upper left or upper right corner
+          num_dil_px += 2;
+        lastPx = 2;
+      } else { // px is white
+        lastPx -=1;
+        if (i== rows-1) // upper right corner
+          lastPx = 0;
+      }
+    }
+    // last column top-> down, including lower right corner
+    for (i=1; i<rows; i++) {
+      if (is_black( m.get(Point(cols-1,i)))) {
+        if (lastPx == 2)       num_dil_px += 1;
+        else if (lastPx == 1)  num_dil_px += 2;
+        else                   num_dil_px += 3;
+        if (i== rows-1)// lower right corner
+          num_dil_px += 2;
+        lastPx = 2;
+      } else { // px is white
+        lastPx -=1;
+        if (i== rows-1)// lower right corner
+          lastPx = 0;
+      }
+    }
+    // last row right to left, including lower left corner
+    for (i=cols-2; i>=0; i--) {
+      if (is_black(m.get(Point(i,rows-1)))) {
+        if (lastPx == 2)       num_dil_px += 1;
+        else if (lastPx == 1)  num_dil_px += 2;
+        else                   num_dil_px += 3;
+        if (i== 0)// lower left corner
+          num_dil_px += 2;
+        lastPx = 2;
+      }
+      else{ // px is white
+        lastPx -=1;
+        if (i== 0) // lower left corner
+          lastPx = 0;
+      }
+    }
+    // 1st column down->top, no corners included
+    for (i=rows-2; i>0; i--) {
+      if (is_black(m.get(Point(0,i)))) {
+        if (lastPx == 2)       num_dil_px += 1;
+        else if (lastPx == 1)  num_dil_px += 2;
+        else                   num_dil_px += 3;
+        lastPx = 2;
+      } else { // px is white
+        lastPx -=1;
+      }
+    }
+
+    // avoiding overlapping dilated_px: Start-End
+    if (is_black(startPx)) {
+      if (is_black(m.get(Point(0,1)))) {
+        num_dil_px -= 2;
+      }
+      else if (is_black( m.get(Point(0,2)))) {
+        num_dil_px -= 1;
+      }
+    }
+    return num_dil_px / (rows*cols); // volume
+  }
+
   /*
     compactness
     
@@ -265,7 +351,10 @@ namespace Gamera {
     // prevents the unnecessary xor_image pixel-by-pixel operation from
     // happening.  We still need to create a copy to dilate, however,
     // since we don't want to change the original.
+    // as dilate does not extend beyond the image borders,
+    // we must compute the surface of the border pixels separately
     feature_t vol = volume(image);
+    feature_t outer_vol = compactness_border_outer_volume(image);
     feature_t result;
     if (vol == 0)
       result = std::numeric_limits<feature_t>::max();
@@ -273,7 +362,7 @@ namespace Gamera {
       typedef typename ImageFactory<T>::view_type* view_type;
       view_type copy = erode_dilate(image, 1, 0, 0);
       // dilate(*copy);
-      result = (volume(*copy) - vol) / vol;
+      result = (volume(*copy) + outer_vol - vol) / vol;
       delete copy->data();
       delete copy;
     }

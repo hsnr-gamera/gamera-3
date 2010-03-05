@@ -341,7 +341,7 @@ as possible.  Therefore, there are a number of interfaces that can be
 used to access and process the underlying pixel data of an image.
 
 .. note:: Whenever accessing individual pixels, the ``row`` and ``col``
-   given are *not* relative to the offsets of the view or the
+   given are relative to the offsets of the view or the
    underlying data.  In other words ``.get(0,0)`` will always return
    the pixel in the upper-left hand corner of the view.  This makes it
    easier for algorithms that work on the pixels of a view to ignore

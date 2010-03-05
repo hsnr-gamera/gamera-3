@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - runlength_smearing now also works on views with non zero offset
+
  - computation of feature compactness corrected
    (border pixels were formerly ignored in computation)
 

@@ -58,7 +58,7 @@ int pagesegmentation_median_height(ImageList* ccs) {
 
 /*****************************************************************************
 * Run Length Smearing
-* IN:Cx - Minimal length of white runs in the rows
+* IN:   Cx - Minimal length of white runs in the rows
 *	Cy - Minimal length of white runs in the columns
 *	Csm- Minimal length of white runs row-wise in the almost final image
 *		
@@ -152,15 +152,15 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 		}
 	}
 
-	// Segmentation from Horizontal and Vertical Smearing
-	for (x = 0; x < NCols; ++x) {
-		for (y = 0; y < NRows; ++y) {
+        // Segmentation from Horizontal and Vertical Smearing
+        for(y = 0; y < NRows; ++y) {
+                for(x = 0; x < NCols; ++x) {
 			if ((is_black(X_View->get(Point(x, y))))
 					&& (is_black(Y_View->get(Point(x, y))))){
 				AND_View->set(Point(x, y), Black);
 			}
-		}
-	}
+                }
+        }
 
 	// Removing spots from the rows less than Csm pixels
 	for (y = 0; y < NRows; ++y) {
@@ -173,12 +173,13 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 			} else {									// Black
 				if ((0 != Ctemp) && (Ctemp <= Csm)){
 					for (int z = 0; z < Ctemp; z++)
-						AND_View->set(Point(x - z - 1, y), 1);
+						AND_View->set(Point(x - z - 1, y), Black);
 				}
 				Ctemp = 0;
 			}
 		}
 	}
+
 	ImageList* ccs_AND = cc_analysis(*AND_View);
 	ImageList* return_ccs = new ImageList();
 
@@ -188,13 +189,16 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 		Cc* cc = dynamic_cast<Cc*>(*i);
 		int label = cc->label();
 
-		// Edit the labels in original image
+                // Methods "get" and "set" operates relative to the image view
+                // but the offset of the connected components is not relative
+                // to the view. (here: (*i)->offset_x() and (*i)->offset_y())
+                //
+                // This means that these values must be adjusted for labeling
+                // the image view.
 		for (y = 0; y < (*i)->nrows(); ++y) {
 			for (x = 0; x < (*i)->ncols(); ++x) {
-				if (is_black(image.get(
-						Point(x + (*i)->offset_x(),	y + (*i)->offset_y())))) {
-					image.set(Point(x + (*i)->offset_x(), y + (*i)->offset_y()),
-							label);
+				if( is_black(image.get(Point(x + (*i)->offset_x() - image.offset_x() , y + (*i)->offset_y() - image.offset_y()))) ) {
+					image.set(Point(x + (*i)->offset_x() - image.offset_x() , y + (*i)->offset_y() - image.offset_y()), label);
 				}
 			}
 		}
@@ -222,7 +226,6 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
 
 	return return_ccs;
 }
-
 
 
 /*-------------------------------------------------------------------------

@@ -1,10 +1,15 @@
 Changes made between Gamera File Releases
 =========================================
 
- - runlength_smearing now also works on views with non zero offset
+ - new plugin kfill (category "Filter")
 
- - computation of feature compactness corrected
-   (border pixels were formerly ignored in computation)
+ - runlength_smearing and projection_cutting now also work
+   on views with non zero offset
+
+ - computation of some features corrected:
+    o nholes (white rows/cols made whole count negative)
+    o nholes_extended (normalization for scale invariance was missing)
+    o compactness (border pixels were formerly ignored in computation)
 
  - default range for Real made smaller than sys.maxint,
    so that it should now also work on 64bit architectures

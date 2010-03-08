@@ -1,5 +1,6 @@
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2009-2010 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -87,15 +88,16 @@ class nholes(Feature):
 
 class nholes_extended(Feature):
     """
-    Divides the image into four quadrants and then does a nholes_
-    analysis on each of those quadrants.
+    Divides the image into four strips and then does a nholes_
+    analysis on each of those strips. This is first done vertically
+    and then horizontally, resulting in a total of eight feature values.
 
     The elements of the returned ``FloatVector`` are:
 
     0 - 3
-      vertical ``nholes`` for each of the quadrants in order NW, NE, SW, SE.
+      vertical ``nholes`` for each of the strips in order left to right.
     4 - 7
-      horizonal ``nholes`` for each of the quadrants in order NW, NE, SW, SE.
+      horizonal ``nholes`` for each of the strips in order top to bottom.
 
     +---------------------------+
     | **Invariant to:**         |  

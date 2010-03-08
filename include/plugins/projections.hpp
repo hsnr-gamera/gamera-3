@@ -64,7 +64,9 @@ namespace Gamera {
 
   /*
     Projection along the y axis (rows) of a portion
-    on an image.    
+    on an image.
+    NOTE: 'rect' must be absolute with respect to the underlying image data,
+          *not* relative to the offset of the view 'image'
   */
   template<class T>
   IntVector* projection_rows(const T& image, const Rect& rect) {
@@ -99,6 +101,8 @@ namespace Gamera {
   /*
     Projection along the y axis (rows) of a portion
     on an image.    
+    NOTE: 'rect' must be absolute with respect to the underlying image data,
+          *not* relative to the offset of the view 'image'
   */
   template<class T>
   IntVector* projection_cols(const T& image, const Rect& rect) {

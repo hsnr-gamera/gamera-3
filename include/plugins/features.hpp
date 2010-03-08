@@ -175,22 +175,28 @@ namespace Gamera {
   
   template<class Iterator>
   inline int nholes_1d(Iterator begin, Iterator end) {
+
     int hole_count = 0;
     bool last;
+    bool has_black;
     Iterator r = begin;
     for (; r != end; r++) {
       last = false;
+      has_black = false;
       typename Iterator::iterator c = r.begin();
       for (; c != r.end(); c++) {
-	if (is_black(*c))
-	  last = true;
-	else if (last) {
-	  last = false;
-	  hole_count++;
-	}
+        if (is_black(*c)){
+          last = true;
+          has_black = true;
+        }
+        else if (last) {
+          last = false;
+          hole_count++;
+        }
       }
-      if (!last && hole_count)
-	hole_count--;
+      if (!last && hole_count && has_black){ 
+        hole_count--;
+      }
     }
     return hole_count;
   }
@@ -209,9 +215,8 @@ namespace Gamera {
   /*
     nholes_extended
 
-    This divides the image into quarters (both horizontally
-    and vertically) and computes the number of holes on
-    each of the sections.
+    This divides the image into strips (both horizontally
+    and vertically) and computes the number of holes on each strip.
   */
   template<class T>
   void nholes_extended(const T& m, feature_t* buf) {
@@ -219,15 +224,16 @@ namespace Gamera {
     double start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.col_begin() + size_t(start),
-			   m.col_begin() + size_t(start) + size_t(quarter_cols));
+			    m.col_begin() + size_t(start) + size_t(quarter_cols))
+                /quarter_cols;
       start += quarter_cols;
     }
     double quarter_rows = m.nrows() / 4.0;
     start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.row_begin() + size_t(start),
-			   m.row_begin() + size_t(start)
-			   + size_t(quarter_rows));
+			   m.row_begin() + size_t(start) + size_t(quarter_rows))
+               / quarter_rows;
       start += quarter_rows;
     }
   }

@@ -144,6 +144,203 @@ namespace Gamera {
 
   }
 
+  //---------------------------
+  // kfill
+  //---------------------------
+
+  // count core ON pixel
+  inline unsigned int kfill_count_core_pixel(OneBitImageView *tmp, int x, int y, Point *c_lr) {
+    unsigned int core_pixel = 0;
+    for( unsigned int cy = y ; cy <= c_lr->y() ; cy++ ) {
+      for( unsigned int cx = x ; cx <= c_lr->x() ; cx++ ) {
+        if( (*tmp).get( Point(cx, cy) ) == is_black(tmp)) {
+          core_pixel++;
+        }
+      }
+    }
+    return core_pixel;
+  }
+  // set all core pixel to given value
+  inline void kfill_set_core_pixel(OneBitImageView *res, int x, int y, Point *c_lr, int v) {
+    for( unsigned int cy = y ; cy <= c_lr->y() ; cy++ ) {
+      for( unsigned int cx = x ; cx <= c_lr->x() ; cx++ ) {
+        (*res).set( Point(cx, cy), v);
+      }
+    }
+  }
+  // get n, r, c
+  void kfill_get_condition_variables(OneBitImageView *tmp, int k, int x, int y, int *n, int *r, int *c) {
+		
+    Point ul; // upper left corner of current window
+    Point ur; // upper right corner of current window
+    Point ll; // lower left corner of current window
+    Point lr; // lower right corner of current window
+		
+    int nnp = 4*(k-1); // total number of neighborhood pixels
+		
+    int *nh_pixel = new int[nnp]; // array for neighborhood pixel
+    int nh_pixel_count = 0;
+    int corner_pixel_count;
+    int nh_ccs;
+		
+    int pixelvalue;
+    int i = 0;
+		
+    // calculate window borders
+    ul.x( x - 1 );
+    ul.y( y - 1 );
+		
+    ur.x( x + k - 2 );
+    ur.y( y - 1 );
+		
+    ll.x( x - 1 );
+    ll.y( y + k - 2 );
+		
+    lr.x( x + k - 2 );
+    lr.y( y + k - 2 );
+		
+    // fill array with neighborhood and count neighborhood ON pixel
+    for( unsigned int ul_to_ur_np = ul.x() ; ul_to_ur_np < ur.x() ; ul_to_ur_np++ ) {
+      pixelvalue = (*tmp).get( Point(ul_to_ur_np, y - 1) );
+			
+      nh_pixel[i++] = pixelvalue;
+      if( pixelvalue == is_black(tmp)) { nh_pixel_count++; }
+    }
+		
+    for( unsigned int ur_to_lr_np = ur.y() ; ur_to_lr_np < lr.y() ; ur_to_lr_np++ ) {
+      pixelvalue = (*tmp).get( Point(x + k - 2, ur_to_lr_np) );
+			
+      nh_pixel[i++] = pixelvalue;
+      if( pixelvalue == is_black(tmp)) { nh_pixel_count++; }
+    }
+		
+    for( unsigned int lr_to_ll_np = lr.x() ; lr_to_ll_np > ll.x() ; lr_to_ll_np-- ) {
+      pixelvalue = (*tmp).get( Point(lr_to_ll_np, y + k - 2) );
+			
+      nh_pixel[i++] = pixelvalue;
+      if( pixelvalue == is_black(tmp)) { nh_pixel_count++; }
+    }
+		
+    for( unsigned int ll_to_ul_np = ll.y() ; ll_to_ul_np > ul.y() ; ll_to_ul_np-- ) {
+      pixelvalue = (*tmp).get( Point(x - 1, ll_to_ul_np) );
+			
+      nh_pixel[i++] = pixelvalue;
+      if( pixelvalue == is_black(tmp)) { nh_pixel_count++; }
+    }
+		
+    // count corner ON pixel
+    corner_pixel_count = nh_pixel[(k-1)*0] + nh_pixel[(k-1)*1] + nh_pixel[(k-1)*2] + nh_pixel[(k-1)*3];
+		
+    // get ccs in neighborhood
+    nh_ccs = 0;
+    for(int nhpixel = 0 ; nhpixel < i ; nhpixel++) {
+      nh_ccs += abs( nh_pixel[(nhpixel+1)%nnp] - nh_pixel[nhpixel] );
+    }
+    nh_ccs /= 2;
+		
+    *n = nh_pixel_count;
+    *r = corner_pixel_count;
+    *c = nh_ccs;
+		
+    delete nh_pixel;
+  }
+	
+  // the actual kfill implementation
+  template<class T>
+  OneBitImageView * kfill(const T &src, int k, int iterations) {
+		
+    /*
+      create a copy of the original image
+      kfill algorithm sets pixel ON/OFF information in this image
+    */
+    OneBitImageData *res_data = new OneBitImageData( src.size(), src.origin() );
+    OneBitImageView *res = new OneBitImageView(*res_data);
+    image_copy_fill(src, *res);
+		
+    // kfill algorithm reads pixel ON/OFF information from this image
+    OneBitImageData *tmp_data = new OneBitImageData( src.size(), src.origin() );
+    OneBitImageView *tmp = new OneBitImageView(*tmp_data);
+		
+    bool changed; // pixels changed in an iteration
+    int src_size_x = src.ncols(); // source image size x
+    int src_size_y = src.nrows(); // source image size y
+		
+    int x, y; // windows position (upper left core coordinate)
+    Point c_lr; // windows position (lower right core coordinate)
+		
+    int ncp = (k-2)*(k-2); // number of core pixel
+    int core_pixel; // number of ON core pixel
+		
+    int r; // number of pixel in the neighborhood corners
+    int n; // number of neighborhood pixel
+    int c; // number of ccs in neighborhood
+				
+    while(iterations) {
+			
+      // create a copy from the result image (result of previous iteration or original at first iteration)
+      image_copy_fill(*res, *tmp);
+			
+      // reset changed pixel
+      changed =  false;
+			
+      // move window over the image
+      for(y = 1 ; y < src_size_y - (k-2) ; y++) {
+        for(x = 1 ; x < src_size_x - (k-2) ; x++) {
+					
+          // calculate lower right core coordinate
+          c_lr.x( x + (k - 3) );
+          c_lr.y( y + (k - 3) );
+					
+          // count core ON pixel
+          core_pixel = kfill_count_core_pixel(tmp, x, y, &c_lr);
+					
+          /*
+            ON filling requires ALL core pixels to be OFF
+          */
+          if(core_pixel == 0) {
+						
+            // get condition variables
+            kfill_get_condition_variables(tmp, k, x, y, &n, &r, &c);
+						
+            // condition check
+            if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+              kfill_set_core_pixel(res, x, y, &c_lr, 1);
+              changed = true;
+            }
+          }
+					
+          /*
+            OFF filling requires ALL core pixels to be ON
+          */				
+          if(core_pixel == ncp) {
+            kfill_get_condition_variables(tmp, k, x, y, &n, &r, &c);
+            n = ( 4*(k-1) ) - n;
+            r = 4 - r;
+						
+						
+            // condition check
+            if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+              kfill_set_core_pixel(res, x, y, &c_lr, 0);
+              changed = true;
+            }
+          }
+										
+        } // end for x
+      } // end for y
+						
+      if(!changed) {
+        break;
+      }
+			
+      iterations--;
+    } // end while
+		
+    delete tmp->data();
+    delete tmp;
+		
+    return res;
+  }
+
 }
 
 #endif

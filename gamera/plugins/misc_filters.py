@@ -1,7 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2010      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -78,9 +79,40 @@ class create_gabor_filter(PluginFunction):
     __call__ = staticmethod(__call__)
     
 
+class kfill(PluginFunction):
+    """
+    Remove salt and pepper noise in onebit images by applying the *kfill*
+    filter *iterations* times.
+
+    In contrast to a rank or mean filter, kfill is designed in such
+    a way that it does not merge non touching connected components.
+    To this end, the border of the *k* times *k* mask is scanned for
+    black pixels and the center is not filled when this would connect
+    disjoint pixels on the border. A detailed description of the
+    algorithm can be found in
+
+       M. Seul, L. O'Gorman, M.J. Sammon: *Practical Algorithms for
+       Image Analysis.* Cambridge University Press, 2000
+
+    The present implementation does not use code from the book, but has
+    been written form scratch.
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT])
+    author = "Oliver Christen"
+    args = Args([Int("k", default=3),Int("iterations", default=1),])
+    def __call__(self, k=3, iterations=1):
+      if k < 3:
+        raise RuntimeError("kfill: k must be >= 3")
+      if iterations < 1:
+        raise RuntimeError("kfill: number of iterations must be > 0")
+      return _misc_filters.kfill(self, k, iterations)
+    __call__ = staticmethod(__call__)
+
+
 class MiscFiltersModule(PluginModule):
     category = "Filter"
-    functions = [mean, rank, create_gabor_filter]
+    functions = [mean, rank, create_gabor_filter, kfill]
     cpp_headers = ["misc_filters.hpp"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

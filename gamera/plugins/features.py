@@ -276,8 +276,8 @@ class skeleton_features(Feature):
     2. Average number of bend points (pixels which do not form a horizontal or
        vertical line with its neighbors)
     3. Number of end points (1-connected pixels)
-    4. Number of *x*-axis crossings
-    5. Number of *y*-axis crossings
+    4. Number of *x*-axis crossings with respect to the *x*-axis through the center of mass
+    5. Number of *y*-axis crossings with respect to the *y*-axis through the center of mass
 
     +---------------------------+
     | **Invariant to:**         |  

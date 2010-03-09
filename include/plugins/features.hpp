@@ -577,12 +577,15 @@ namespace Gamera {
     center_y /= total_pixels;
     size_t y_axis_crossings = 0;
     last_pixel = false;
-    for (size_t x = 0; x < skel->ncols(); ++x)
-      if (is_black(skel->get(Point(x, center_y))) && !last_pixel) {
-	last_pixel = true;
-	++y_axis_crossings;
-      } else 
-	last_pixel = false;
+    for (size_t x = 0; x < skel->ncols(); ++x) {
+      if (is_black(skel->get(Point(x, center_y)))) {
+          if (!last_pixel)
+              ++y_axis_crossings;
+          last_pixel = true;
+      } else {
+        last_pixel = false;
+      }
+    }
     
     delete skel->data();
     delete skel;

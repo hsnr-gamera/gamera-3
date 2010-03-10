@@ -435,13 +435,20 @@ class ImageList(Class):
 class Pixel(Class):
    """Uses these to pass pixel values into a plugin.  The
 PixelType must always match the type of the "self" image."""
-   def __init__(self, name=None):
+   def __init__(self, name=None, default=None):
       Class.__init__(self, name)
+      if default is None:
+         self.has_default = False
+      else:
+         self.has_default = True
+      self.default = default
 
    def rest_repr(self, name=False):
       result = "Pixel"
       if name:
          result += " *%s*" % self.name
+         if self.has_default:
+            result += " = %s" % str(self.default)
       return result
 
 class Info(Arg):

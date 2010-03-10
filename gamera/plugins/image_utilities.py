@@ -24,6 +24,7 @@ any other category, like image copying or computing histograms."""
 from gamera.plugin import * 
 from gamera.gui import has_gui
 from gamera.util import warn_deprecated
+from gamera.args import NoneDefault
 import sys
 import _image_utilities 
 
@@ -167,6 +168,22 @@ class pad_image(PluginFunction):
             return _image_utilities.pad_image(self, top, right, bottom, left, value)
     __call__ = staticmethod(__call__)
     doc_examples = [(RGB, 5, 10, 15, 20)]
+
+class trim_image(PluginFunction):
+    """
+    Returns minimal view so that outside of the view only Pixels with
+    *PixelValue* exists. When no *PixelValue* is given, white is used.
+    """
+    category = "Utility"
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    args = Args([Pixel("PixelValue", default=NoneDefault)])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
+    author = "Tobias Bolten"
+    def __call__(self, PixelValue=None):
+        if (PixelValue == None):
+            PixelValue = self.white()
+        return _image_utilities.trim_image(self, PixelValue)
+    __call__ = staticmethod(__call__)
 
 class invert(PluginFunction):
     """
@@ -342,7 +359,7 @@ class UtilModule(PluginModule):
     category = None
     functions = [image_save, image_copy,
                  histogram, union_images,
-                 fill_white, fill, pad_image, pad_image_default,
+                 fill_white, fill, pad_image, pad_image_default, trim_image,
 		 invert, clip_image, mask,
                  nested_list_to_image, to_nested_list,
                  diff_images, mse, reset_onebit_image,

@@ -1,7 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new plugin kfill (category "Filter")
+ - new plugin trim_image (category "Utilities")
+
+ - new plugins kfill and kfill_modified (category "Filter")
 
  - runlength_smearing and projection_cutting now also work
    on views with non zero offset

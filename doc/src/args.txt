@@ -353,6 +353,17 @@ A pixel value corresponding to the type of the "self" image.  For instance,
 if the method is operating on a FLOAT image, this argument will take
 a FLOAT value.
 
+Setting a default value for a pixel is generally of little use because
+the value depends on teh pixel type. You can however set the default to
+``NoneDefault``, which is a special object that translates to ``None``
+when used as a default value. This can then be queried in the
+function, as shown in the following example::
+
+    args = Args([Pixel("PixelValue", default=NoneDefault)])
+    def __call__(self, PixelValue=None):
+        if (PixelValue == None):
+            PixelValue = self.white()
+
 Point
 -----
 

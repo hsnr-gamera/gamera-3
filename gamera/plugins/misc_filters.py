@@ -81,8 +81,10 @@ class create_gabor_filter(PluginFunction):
 
 class kfill(PluginFunction):
     """
-    Remove salt and pepper noise in onebit images by applying the *kfill*
-    filter *iterations* times.
+    Removes salt and pepper noise in onebit images by applying the *kfill*
+    filter *iterations* times. Should before *iteration* times a run of
+    the kfill filter not change a single pixel, the iteration is stopped
+    beforehand.
 
     In contrast to a rank or mean filter, kfill is designed in such
     a way that it does not merge non touching connected components.
@@ -95,7 +97,7 @@ class kfill(PluginFunction):
        Image Analysis.* Cambridge University Press, 2000
 
     The present implementation does not use code from the book, but has
-    been written form scratch.
+    been written from scratch.
     """
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
@@ -109,10 +111,39 @@ class kfill(PluginFunction):
       return _misc_filters.kfill(self, k, iterations)
     __call__ = staticmethod(__call__)
 
+class kfill_modified(PluginFunction):
+    """
+    Removes salt and pepper noise in onebit images by applying a
+    modified version of the *kfill* filter proposed in the following
+    reference:
+
+       K.Chinnasarn, Y.Rangsanseri, P.Thitimajshima:
+       *Removing Salt-and-Pepper Noise in Text/Graphics Images.*
+       Proceedings of The Asia-Pacific Conference on Circuits and Systems
+       (APCCAS'98), pp. 459-462, 1998
+
+    For *k* = 3, this algorithm is identical with the original kfill algorithm.
+    For larger *k* however, it fills the window core also when not all
+    pixels are of the same value. It should be noted that in this case,
+    the modified version does *not* take care
+    of connectivity. In other words, it can result in joining previously
+    disconnected connected components, similar to a morphological closing
+    operation, while at the same time small black speckles are removed.
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageType([ONEBIT])
+    author = "Oliver Christen"
+    args = Args([Int("k", default=3)])
+    def __call__(self, k=3):
+    		if k < 3:
+    			raise RuntimeError("k < 3")
+    		return _misc_filters.kfill_modified(self, k)
+    __call__ = staticmethod(__call__)
+
 
 class MiscFiltersModule(PluginModule):
     category = "Filter"
-    functions = [mean, rank, create_gabor_filter, kfill]
+    functions = [mean, rank, create_gabor_filter, kfill, kfill_modified]
     cpp_headers = ["misc_filters.hpp"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

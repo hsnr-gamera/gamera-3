@@ -1,7 +1,7 @@
 /*
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
- *               2010      Christoph Dalitz, Hasan Yildiz
+ *               2010      Christoph Dalitz, Hasan Yildiz, Tobias Bolten
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -433,6 +433,62 @@ namespace Gamera {
     delete dest_srcpart;
 
     return(dest);
+  }
+
+
+  /*
+    Trim white (or other) borders
+  */
+  template<class T>
+  Image * trim_image(const T &image, const typename T::value_type pixelValue) {
+    typedef typename T::value_type value_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    view_type *res;
+
+    unsigned int min_x, max_x;
+    unsigned int min_y, max_y;
+
+    min_x = image.ncols() - 1;
+    min_y = image.nrows() - 1;
+
+    max_x = max_y = 0;
+
+    // Search upper left and lower right coordinates for the bounding box
+    // of the view
+    for(size_t y = 0; y < image.nrows(); ++y) {
+      for(size_t x = 0; x < image.ncols(); ++x) {
+        if( image.get(Point(x,y)) != pixelValue ) {
+          if( x < min_x )
+            min_x = x;
+          if( x > max_x )
+            max_x = x;
+          if( y < min_y )
+            min_y = y;
+          if( y > max_y )
+            max_y = y;                                
+        }
+      }
+    }
+
+    // When no points found, set the view to the complete image
+    if( min_x > max_x ) {
+      min_x = 0;
+      max_x = image.ncols() - 1;
+    }
+    if( min_y > max_y ) {
+      min_y = 0;
+      max_y = image.nrows() - 1;
+    }
+
+    // Creates points for the new view
+    // Don't forget the offset of the image (this can be already a view)
+    // --> Offsets have to be added
+    Point ul(min_x + image.offset_x(), min_y + image.offset_y());
+    Point lr(max_x + image.offset_x(), max_y + image.offset_y());
+
+    // Create the view and return it
+    res = new view_type(*image.data(), ul, lr);
+    return res;
   }
 
 

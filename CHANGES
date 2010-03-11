@@ -13,6 +13,7 @@ Changes made between Gamera File Releases
     o nholes_extended (normalization for scale invariance was missing)
     o compactness (border pixels were formerly ignored in computation)
     o skeleton_features (crossings through x/y-axis was erronously computed)
+    o volume[16|64]regions (zones occasionally not covered entire images)
 
  - default range for Real made smaller than sys.maxint,
    so that it should now also work on 64bit architectures

@@ -383,20 +383,30 @@ namespace Gamera {
   */
   template<class T>
   void volume16regions(const T& image, feature_t* buf) {
-    double rows = image.height() / 4.0;
-    double cols = image.width() / 4.0;
-    size_t rows_int = size_t(rows + 1);
-    size_t cols_int = size_t(cols + 1);
+    double rows = image.nrows() / 4.0;
+    double cols = image.ncols() / 4.0;
+    size_t rows_int = size_t(rows);
+    size_t cols_int = size_t(cols);
     Dim size(cols_int, rows_int);
+    if (size.ncols() == 0)
+        size.ncols(1);
+    if (size.nrows() == 0)
+        size.nrows(1);
     double start_col = double(image.offset_x());
     for (size_t i = 0; i < 4; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 4; ++j) {
-	T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
-	*(buf++) = volume(tmp);
-	start_row += rows;
+        T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
+        *(buf++) = volume(tmp);
+        start_row += rows;
+        size.nrows( size_t(start_row + rows)-size_t(start_row));
+        if (size.nrows() == 0)
+            size.nrows(1);
       }
       start_col += cols;
+      size.ncols( size_t(start_col + cols) - size_t(start_col));
+      if (size.ncols() == 0)
+        size.ncols(1);
     }
   }
 
@@ -408,20 +418,30 @@ namespace Gamera {
   */
   template<class T>
   void volume64regions(const T& image, feature_t* buf) {
-    double rows = image.height() / 8.0;
-    double cols = image.width() / 8.0;
-    size_t rows_int = size_t(rows + 1);
-    size_t cols_int = size_t(cols + 1);
+    double rows = image.nrows() / 8.0;
+    double cols = image.ncols() / 8.0;
+    size_t rows_int = size_t(rows);
+    size_t cols_int = size_t(cols);
     Dim size(cols_int, rows_int);
+    if (size.ncols() == 0)
+        size.ncols(1);
+    if (size.nrows() == 0)
+        size.nrows(1);
     double start_col = double(image.offset_x());
     for (size_t i = 0; i < 8; ++i) {
       double start_row = double(image.offset_y());
       for (size_t j = 0; j < 8; ++j) {
-	T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
-	*(buf++) = volume(tmp);
-	start_row += rows;
+        T tmp(image, Point((size_t)start_col, (size_t)start_row), size);
+        *(buf++) = volume(tmp);
+        start_row += rows;
+        size.nrows( size_t(start_row + rows)-size_t(start_row));
+        if (size.nrows() == 0)
+            size.nrows(1);
       }
       start_col += cols;
+      size.ncols( size_t(start_col + cols) - size_t(start_col));
+      if (size.ncols() == 0)
+            size.ncols(1);
     }
   }
 

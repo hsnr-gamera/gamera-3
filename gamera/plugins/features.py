@@ -216,7 +216,7 @@ class compactness(Feature):
 class volume16regions(Feature):
     """
     Divides the image into a 4 x 4 grid of 16 regions and calculates
-    the volume within each.
+    the volume within each. This feature is also known as \"zoning\" method.
 
     +---------------------------+
     | **Invariant to:**         |  
@@ -231,7 +231,7 @@ class volume16regions(Feature):
 class volume64regions(Feature):
     """
     Divides the image into a 8 x 8 grid of 64 regions and calculates
-    the volume within each.
+    the volume within each. This feature is also known as \"zoning\" method.
 
     +---------------------------+
     | **Invariant to:**         |  

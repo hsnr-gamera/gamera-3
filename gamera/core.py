@@ -1,8 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2009-2010 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -262,7 +262,7 @@ the same data."""
    def set_display(self, _display):
       self._display = _display
 
-   def display(self):
+   def display(self, title=None):
       """Displays the image in its own window.  (See `Using the Gamera GUI`__).  If the GUI
 process is not running, this method has no effect.
 
@@ -276,9 +276,14 @@ process is not running, this method has no effect.
       if self._display:
          self._display.set_image(self, conversion)
       else:
-         self.set_display(
-            has_gui.gui.ShowImage(self, self.name, conversion,
-                          owner=self))
+         if title == None:
+            self.set_display(
+               has_gui.gui.ShowImage(self, self.name, conversion,
+                                     owner=self))
+         else:
+            self.set_display(
+               has_gui.gui.ShowImage(self, title, conversion,
+                                     owner=self))
       self.last_display = "normal"
       return self._display
 

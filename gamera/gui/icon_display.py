@@ -270,7 +270,7 @@ class CustomIcon:
    check = staticmethod(check)
 
    def double_click(self):
-      return "%s.display()" % self.label
+      return '%s.display("%s")' % (self.label, self.label)
 
    def right_click(self, parent, event, shell):
       if not has_gui.has_gui:

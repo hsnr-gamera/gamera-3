@@ -87,6 +87,8 @@ void neighbor16(const T& m, F& func, M& tmp,
       ###  678
    The temporary matrix required may be passed in to avoid reallocating for
    each pass of a multi-pass algorithm. (see erode)
+   Pixels in the window outside the image are set to white. If you want
+   reflecting boundary conditions instead, use neighbor9reflection().
 */
 template<class T, class F, class M>
 void neighbor9(const T& m, F func, M& tmp) {
@@ -195,6 +197,155 @@ void neighbor9(const T& m, F func, M& tmp) {
     }
   }
 }
+
+/* Steps through the image using a 3x3 window, replacing the center pixel
+   with a value determined by a given function.
+   This version uses all nine pixels in the 3x3 window:
+      ###  012
+      ###  345
+      ###  678
+   When the window extends beyonds the image, reflecting boundary
+   conditions are used.
+*/
+template<class T, class F, class M>
+void neighbor9reflection(const T& m, F func, M& tmp) {
+  if (m.nrows() < 3 || m.ncols() < 3)
+    return;
+  std::vector<typename T::value_type> window(9);
+	
+  unsigned int nrows_m1 = m.nrows() - 1;
+  unsigned int ncols_m1 = m.ncols() - 1;
+  unsigned int nrows_m2 = m.nrows() - 2;
+  unsigned int ncols_m2 = m.ncols() - 2;
+	
+  // Upper-left	  
+  window[4] = m.get(Point(0, 0));
+  window[5] = m.get(Point(1, 0));
+  window[7] = m.get(Point(0, 1));
+  window[8] = m.get(Point(1, 1));
+	  
+  window[0] = window[4];
+  window[1] = window[4];
+  window[2] = window[5];
+  window[3] = window[4];
+  window[6] = window[7];
+  tmp.set(Point(0, 0), func(window.begin(), window.end()));
+	  
+  // Upper-right
+  window[3] = m.get(Point(ncols_m2, 0));
+  window[4] = m.get(Point(ncols_m1, 0));
+  window[6] = m.get(Point(ncols_m2, 1));
+  window[7] = m.get(Point(ncols_m1, 1));
+	  
+  window[0] = window[3];
+  window[1] = window[4];
+  window[2] = window[4];
+  window[5] = window[4];
+  window[8] = window[7];
+  tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
+	  
+  // Lower-left
+  window[1] = m.get(Point(0, nrows_m2));
+  window[2] = m.get(Point(1, nrows_m2));
+  window[4] = m.get(Point(0, nrows_m1));
+  window[5] = m.get(Point(1, nrows_m1));
+	  
+  window[0] = window[1];
+  window[3] = window[4];
+  window[6] = window[4];
+  window[7] = window[4];
+  window[8] = window[5];
+  tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
+	
+  // Lower-right
+  window[0] = m.get(Point(ncols_m2, nrows_m2));
+  window[1] = m.get(Point(ncols_m1, nrows_m2));
+  window[3] = m.get(Point(ncols_m2, nrows_m1));
+  window[4] = m.get(Point(ncols_m1, nrows_m1));
+	  
+  window[2] = window[1];
+  window[5] = window[4];
+  window[8] = window[4];
+  window[7] = window[4];
+  window[6] = window[3];
+	  
+  tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
+	
+  // Top edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[3] = m.get(Point(col - 1, 0));
+    window[4] = m.get(Point(col, 0));
+    window[5] = m.get(Point(col + 1, 0));
+    window[6] = m.get(Point(col - 1, 1));
+    window[7] = m.get(Point(col, 1));
+    window[8] = m.get(Point(col + 1, 1));
+		
+    window[0] = window[3];
+    window[1] = window[4];
+    window[2] = window[5];
+		
+    tmp.set(Point(col, 0), func(window.begin(), window.end()));
+  }
+	
+  // Bottom edge
+  for (unsigned int col = 1; col < ncols_m1; col++) {
+    window[0] = m.get(Point(col - 1, nrows_m2));
+    window[1] = m.get(Point(col, nrows_m2));
+    window[2] = m.get(Point(col + 1, nrows_m2));
+    window[3] = m.get(Point(col - 1, nrows_m1));
+    window[4] = m.get(Point(col, nrows_m1));
+    window[5] = m.get(Point(col + 1, nrows_m1));
+		
+    window[6] = window[4];
+    window[7] = window[5];
+    window[8] = window[6];
+    tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
+  }
+	
+  // Left edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[1] = m.get(Point(0, row - 1));
+    window[2] = m.get(Point(1, row - 1));
+    window[4] = m.get(Point(0, row));
+    window[5] = m.get(Point(1, row));
+    window[7] = m.get(Point(0, row + 1));
+    window[8] = m.get(Point(1, row + 1));
+		
+    window[0] = window[1];
+    window[3] = window[4];
+    window[6] = window[7];
+    tmp.set(Point(0, row), func(window.begin(), window.end()));
+  }
+	
+  // Right edge
+  for (unsigned int row = 1; row < nrows_m1; row++) {
+    window[0] = m.get(Point(ncols_m2, row - 1));
+    window[1] = m.get(Point(ncols_m1, row - 1));
+    window[3] = m.get(Point(ncols_m2, row));
+    window[4] = m.get(Point(ncols_m1, row));
+    window[6] = m.get(Point(ncols_m2, row + 1));
+    window[7] = m.get(Point(ncols_m1, row + 1));
+		
+    window[2] = window[1];
+    window[5] = window[4];
+    window[8] = window[7];
+    tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
+  }
+	  
+  // Core of image
+  for (int row = 1; row < int(nrows_m1); ++row) {
+    for (int col = 1; col < int(ncols_m1); ++col) {
+      // This may seem silly, but it's significantly faster than using
+      // nine iterators
+      typename std::vector<typename T::value_type>::iterator window_it = window.begin();
+      for (int ri = -1; ri < 2; ++ri)
+        for (int ci = -1; ci < 2; ++ci, ++window_it) 
+          *window_it = m.get(Point(col + ci, row + ri));
+      tmp.set(Point(col, row), func(window.begin(), window.end()));
+    }
+  }
+}
+
 
 /* Steps through the image using a 3x3 window, replacing the center pixel
    with a value determined by a given function.

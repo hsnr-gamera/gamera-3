@@ -482,6 +482,7 @@ going to be an ``Image`` object and not a ``PluginFunction`` object:
       """
       self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT, RGB])
       return_type = Float("area")
+      pure_python = True
       def __call__(self):
           return float(self.ncols) / float(self.nrows)
       __call__ = staticmethod(__call__)

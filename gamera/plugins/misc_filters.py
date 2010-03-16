@@ -24,22 +24,38 @@ import _misc_filters
 
 class rank(PluginFunction):
   """
-  Within each 3x3 window, set the center pixel to the *n*-th ranked
+  Within each *k* times *k* window, set the center pixel to the *r*-th ranked
   value.
 
-  Note that for ``Onebit`` images, actually *rank(9 - r)* is computed instead
+  Note that for ``Onebit`` images, actually *rank(k*k - r)* is computed instead
   of *rank(r)*. This has the effect that you do not need to worry whether
   your image is a greyscale or onebit image: in all cases low values
   for *r* will darken the image and high values will light it up.
 
-  *rank* (1 - 9)
-    The rank of the 9 pixels to select for the center.  5 is equivalent to
-    the median.
+  *rank* (1, 2, ..., *k* * *k*)
+    The rank of the windows pixels to select for the center. (k*k+1)/2 is
+    equivalent to the median.
+
+  *k* (3, 5 ,7, ...)
+    The windows size (must be odd).
+
+  *border_treatment* (0, 1)
+    When 0 ('clip'), window pixels outside the image are set to white.
+    When 1 ('reflect'), reflecting boundary conditions are used.
   """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  args = Args([Int('rank', range=(1, 9))])
+  args = Args([Int('rank'), Int('k', default=3),
+               Choice('border_treatment', ['clip', 'reflect'], default=0)])
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  author = "Oliver Christen and Christoph Dalitz"
   doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
+  def __call__(self, rank, k=3, border_treatment=0):
+    if k%2 == 0:
+      raise RuntimeError("rank: window size k must be odd")
+    if rank < 1 or rank > k*k:
+      raise RuntimeError("rank: rank must be between 1 and k*k")
+    return _misc_filters.rank(self, rank, k, border_treatment)
+  __call__ = staticmethod(__call__)
 
 class mean(PluginFunction):
   """
@@ -102,7 +118,7 @@ class kfill(PluginFunction):
     self_type = ImageType([ONEBIT])
     return_type = ImageType([ONEBIT])
     author = "Oliver Christen"
-    args = Args([Int("k", default=3),Int("iterations", default=1),])
+    args = Args([Int("k", default=3),Int("iterations", default=1)])
     def __call__(self, k=3, iterations=1):
       if k < 3:
         raise RuntimeError("kfill: k must be >= 3")

@@ -98,25 +98,97 @@ namespace Gamera {
   }
 
   template<class T>
-  typename ImageFactory<T>::view_type* rank(const T &m, unsigned int r) {
+  typename ImageFactory<T>::view_type* rank(const T &src, unsigned int r, unsigned int k, size_t border_treatment=0) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    if (m.nrows() < 3 || m.ncols() < 3)
-      return simple_image_copy(m);
 
-    data_type* new_data = new data_type(m.size(), m.origin());
-    view_type* new_view = new view_type(*new_data);
+    if (src.nrows() < k || src.ncols() < k)
+      return simple_image_copy(src);
 
-    try {
-      Rank<typename T::value_type> rank(r);
-      neighbor9(m, rank, *new_view);
-    } catch (std::exception e) {
-      delete new_view;
-      delete new_data;
-      throw;
+    data_type *new_data = new data_type(src.size(), src.origin());
+    view_type *new_view = new view_type(*new_data);
+
+    Rank<typename T::value_type> rank(r);
+		
+    if(k==3) {
+      if (border_treatment == 1) // reflect
+        neighbor9reflection(src, rank, *new_view);
+      else // clip
+        neighbor9(src, rank, *new_view);
+      return new_view;
     }
+    unsigned int x, y; // window center coordinates
+    int ul_x, ul_y; // upper left window coordinates
+    int lr_x, lr_y; // lower right window coordinates
+    unsigned int min_x, max_x, min_y, max_y;
+    typename T::value_type white_val = white(src);
+		
+    for(y = 0 ; y < src.nrows() ; y++) {
+      for(x = 0 ; x < src.ncols(); x++) {
+
+        ul_x = (int)x - k/2;
+        ul_y = (int)y - k/2;
+        lr_x = (int)x + k/2;
+        lr_y = (int)y + k/2;
+
+        vector<typename T::value_type> window(k*k);
+
+        // window partially outside the image?
+        if (ul_x < 0 || lr_x >= (int)src.ncols() || ul_y < 0 || lr_y >= (int)src.nrows()) {
+
+          if (border_treatment == 1) { // reflect
+            int offset_x;
+            int offset_y;
+            for (size_t i = 0 ; i < k*k ; i++) {
+              // calculate reflection offsets
+              offset_x = 0;
+              offset_y = 0;
+              if( (ul_x + i%k) < 0 ) {
+                offset_x = (abs((ul_x + i%k)) * 2) - 1;
+              }
+              if( (ul_x + i%k) >= src.ncols() ) {
+                offset_x = ( (ul_x + i%k) - ( (int) src.ncols() - 1 ) );
+                offset_x = offset_x * (-1);
+              }
+              if( (ul_y + i/k) < 0 ) {
+                offset_y = (abs((ul_y + i/k)) * 2) - 1;
+              }
+              if( (ul_y + i/k) >= src.nrows() ) {
+                offset_y = (ul_y + i/k) - ((int) src.nrows() - 1);
+                offset_y = offset_y * (-1);
+              }
+              window[i] = src.get(Point(ul_x + (i%k) + offset_x, ul_y + (i/k) + offset_y));
+            }
+          }
+          else { // border treatment 'clip'
+            size_t i, _x, _y;
+            min_x = std::max(0, ul_x);
+            max_x = std::min((int)src.ncols()-1, lr_x);
+            min_y = std::max(0, ul_y);
+            max_y = std::min((int)src.nrows()-1, lr_y);
+            i = 0; // position of entries does not matter for rank
+            for (_x=min_x; _x <= max_x; _x++)
+              for (_y=min_y; _y <= max_y; _y++) {
+                window[i] = src.get(Point(_x,_y));
+                i++;
+              }
+            // fill rest with white
+            for (; i < k*k; i++) window[i] = white_val;
+          }
+        }
+        else {
+          for(size_t i = 0 ; i < k*k ; i++) {
+            window[i] = src.get(Point(ul_x + (i%k), ul_y + (i/k)));
+          }
+        }
+						
+        (*new_view).set(Point(x, y), rank( window.begin(), window.end()));
+      }
+    }
+		
     return new_view;
   }
+
 
   //---------------------------
   // Gabor filter

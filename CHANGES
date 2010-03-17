@@ -5,8 +5,8 @@ Changes made between Gamera File Releases
 
  - new plugins kfill and kfill_modified (category "Filter")
 
- - rank now allows larger window sizes than 3x3 and an
-   optional border treatment (clip or reflect)
+ - rank  and mean now allow larger window sizes than 3x3
+   and an optional border treatment (clip or reflect)
 
  - runlength_smearing and projection_cutting now also work
    on views with non zero offset

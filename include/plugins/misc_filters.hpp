@@ -25,6 +25,7 @@
 #include "image_utilities.hpp"
 #include "neighbor.hpp"
 #include "vigra/gaborfilter.hxx"
+#include "convolution.hpp"
 
 using namespace std;
 
@@ -37,12 +38,12 @@ namespace Gamera {
   class Mean {
   public:
     inline T operator() (typename vector<T>::iterator begin,
-			 typename vector<T>::iterator end);
+                         typename vector<T>::iterator end);
   };
 
   template<class T>
   inline T Mean<T>::operator() (typename vector<T>::iterator begin,
-				typename vector<T>::iterator end) {
+                                typename vector<T>::iterator end) {
     long sum = 0;
     size_t size = end - begin;
     for (; begin != end; ++begin)
@@ -50,24 +51,82 @@ namespace Gamera {
     return T(sum / double(size) + 0.5);
   }
 
+
   template<class T>
-  typename ImageFactory<T>::view_type* mean(T &m) {
+  typename ImageFactory<T>::view_type* mean(const T &src, unsigned int k=3, size_t border_treatment=0) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
-    if (m.nrows() < 3 || m.ncols() < 3)
-      return simple_image_copy(m);
 
-    data_type* new_data = new data_type(m.size(), m.origin());
-    view_type* new_view = new view_type(*new_data);
+    if (src.nrows() < k || src.ncols() < k)
+      return simple_image_copy(src);
 
-    try {
-      Mean<typename T::value_type> mean_op;
-      neighbor9(m, mean_op, *new_view);
-    } catch (std::exception e) {
-      delete new_view;
-      delete new_data;
-      throw;
+    data_type *new_data = new data_type(src.size(), src.origin());
+    view_type *new_view = new view_type(*new_data);
+
+    Mean<typename T::value_type> mean_op;
+		
+    if (border_treatment == 1) { // reflect
+
+      // for reflection, we can use convolve plugin
+      // because BORDER_TREATMENT_REFLECT is supported in VIGRA
+
+      // create averaging kernel and do convolution
+      FloatImageData *kernel_data = new FloatImageData( Dim(k,k), Point(0,0) );
+      FloatImageView *kernel_view = new FloatImageView(*kernel_data);
+      FloatPixel fp = 1.0f / (k*k);
+      for(unsigned int y = 0 ; y < (*kernel_view).nrows() ; y++) {
+        for(unsigned int x = 0 ; x < (*kernel_view).ncols(); x++) {
+          (*kernel_view).set( Point(x,y), fp);
+        }
+      }
+      new_view = convolve(src, *kernel_view, vigra::BORDER_TREATMENT_REFLECT);
+      delete kernel_view->data();
+      delete kernel_view;
     }
+    else { // border treatment 'padwhite'
+
+      unsigned int x, y; // window center coordinates
+      int ul_x, ul_y; // upper left window coordinates
+      int lr_x, lr_y; // lower right window coordinates
+      unsigned int min_x, max_x, min_y, max_y;
+      vector<typename T::value_type> window(k*k);
+      typename T::value_type white_val = white(src);	
+
+      for(y = 0 ; y < src.nrows() ; y++) {
+        for(x = 0 ; x < src.ncols(); x++) {
+
+          ul_x = (int)x - k/2;
+          ul_y = (int)y - k/2;
+          lr_x = (int)x + k/2;
+          lr_y = (int)y + k/2;
+
+          // window partially outside the image?
+          if (ul_x < 0 || lr_x >= (int)src.ncols() || ul_y < 0 || lr_y >= (int)src.nrows()) {
+            size_t i, _x, _y;
+            min_x = std::max(0, ul_x);
+            max_x = std::min((int)src.ncols()-1, lr_x);
+            min_y = std::max(0, ul_y);
+            max_y = std::min((int)src.nrows()-1, lr_y);
+            i = 0; // position of entries does not matter for mean
+            for (_x=min_x; _x <= max_x; _x++)
+              for (_y=min_y; _y <= max_y; _y++) {
+                window[i] = src.get(Point(_x,_y));
+                i++;
+              }
+            // fill rest with white
+            for (; i < k*k; i++) window[i] = white_val;
+          }
+          else {
+            for(size_t i=0 ; i < k*k ; i++) {
+              window[i] = src.get(Point(ul_x + (i%k), ul_y + (i/k)));
+            }
+          }
+						
+          (*new_view).set(Point(x, y), mean_op(window.begin(), window.end()));
+        }
+      }
+    }
+
     return new_view;
   }
 
@@ -98,7 +157,7 @@ namespace Gamera {
   }
 
   template<class T>
-  typename ImageFactory<T>::view_type* rank(const T &src, unsigned int r, unsigned int k, size_t border_treatment=0) {
+  typename ImageFactory<T>::view_type* rank(const T &src, unsigned int r, unsigned int k=3, size_t border_treatment=0) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
 
@@ -137,27 +196,19 @@ namespace Gamera {
         if (ul_x < 0 || lr_x >= (int)src.ncols() || ul_y < 0 || lr_y >= (int)src.nrows()) {
 
           if (border_treatment == 1) { // reflect
-            int offset_x;
-            int offset_y;
+            int _x, _y;
             for (size_t i = 0 ; i < k*k ; i++) {
-              // calculate reflection offsets
-              offset_x = 0;
-              offset_y = 0;
-              if( (ul_x + i%k) < 0 ) {
-                offset_x = (abs((ul_x + i%k)) * 2) - 1;
-              }
-              if( (ul_x + i%k) >= src.ncols() ) {
-                offset_x = ( (ul_x + i%k) - ( (int) src.ncols() - 1 ) );
-                offset_x = offset_x * (-1);
-              }
-              if( (ul_y + i/k) < 0 ) {
-                offset_y = (abs((ul_y + i/k)) * 2) - 1;
-              }
-              if( (ul_y + i/k) >= src.nrows() ) {
-                offset_y = (ul_y + i/k) - ((int) src.nrows() - 1);
-                offset_y = offset_y * (-1);
-              }
-              window[i] = src.get(Point(ul_x + (i%k) + offset_x, ul_y + (i/k) + offset_y));
+              _x = ul_x + i%k;
+              _y = ul_y + i/k;
+              if (_x < 0)
+                _x = -_x;
+              if (_x >= (int)src.ncols())
+                _x = src.ncols() - (_x - src.ncols()) - 2;
+              if (_y < 0)
+                _y = -_y;
+              if (_y >= (int)src.nrows())
+                _y = src.nrows() - (_y - src.nrows()) - 2;
+              window[i] = src.get(Point(_x, _y));
             }
           }
           else { // border treatment 'clip'

@@ -102,43 +102,40 @@ void neighbor9(const T& m, F func, M& tmp) {
   unsigned int ncols_m2 = m.ncols() - 2;
 
   // Upper-left
-  for (unsigned int i = 0; i < 4; ++i)
-    window[i] = white(m);
+  window[0] = window[1] = window[2] = window[3] = window[6] = white(m);
   window[4] = m.get(Point(0, 0));
   window[5] = m.get(Point(1, 0));
-  window[6] = white(m);
   window[7] = m.get(Point(0, 1));
   window[8] = m.get(Point(1, 1));
   tmp.set(Point(0, 0), func(window.begin(), window.end()));
   
   // Upper-right
+  window[5] = window[8] = window[0] = window[1] = window[2] = white(m);
   window[3] = m.get(Point(ncols_m2, 0));
   window[4] = m.get(Point(ncols_m1, 0));
   window[6] = m.get(Point(ncols_m2, 1));
   window[7] = m.get(Point(ncols_m1, 1));
-  window[5] = window[8] = white(m);
   tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
   
   // Lower-left
+  window[0] = window[3] = window[6] =  window[7] = window[8] = white(m);
   window[1] = m.get(Point(0, nrows_m2));
   window[2] = m.get(Point(1, nrows_m2));
   window[4] = m.get(Point(0, nrows_m1));
   window[5] = m.get(Point(1, nrows_m1));
-  window[6] = white(m);
-  window[3] = window[7] = white(m);
   tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
 
   // Lower-right
+  window[2] = window[5] = window[8] = window[7] = window[6] = white(m);
   window[0] = m.get(Point(ncols_m2, nrows_m2));
   window[1] = m.get(Point(ncols_m1, nrows_m2));
   window[3] = m.get(Point(ncols_m2, nrows_m1));
   window[4] = m.get(Point(ncols_m1, nrows_m1));
-  window[2] = window[4] = white(m);
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 
   // Top edge
   for (unsigned int col = 1; col < ncols_m1; col++) {
-    window[0] = window[1] = white(m);
+    window[0] = window[1] = window[2] = white(m);
     window[3] = m.get(Point(col - 1, 0));
     window[4] = m.get(Point(col, 0));
     window[5] = m.get(Point(col + 1, 0));
@@ -162,7 +159,7 @@ void neighbor9(const T& m, F func, M& tmp) {
 
   // Left edge
   for (unsigned int row = 1; row < nrows_m1; row++) {
-    window[0] = window[3] = white(m);
+    window[0] = window[3] = window[6] = white(m);
     window[1] = m.get(Point(0, row - 1));
     window[2] = m.get(Point(1, row - 1));
     window[4] = m.get(Point(0, row));
@@ -212,7 +209,7 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
   if (m.nrows() < 3 || m.ncols() < 3)
     return;
   std::vector<typename T::value_type> window(9);
-	
+
   unsigned int nrows_m1 = m.nrows() - 1;
   unsigned int ncols_m1 = m.ncols() - 1;
   unsigned int nrows_m2 = m.nrows() - 2;
@@ -225,10 +222,10 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
   window[8] = m.get(Point(1, 1));
 	  
   window[0] = window[4];
-  window[1] = window[4];
-  window[2] = window[5];
-  window[3] = window[4];
-  window[6] = window[7];
+  window[1] = window[7];
+  window[2] = window[8];
+  window[3] = window[5];
+  window[6] = window[8];
   tmp.set(Point(0, 0), func(window.begin(), window.end()));
 	  
   // Upper-right
@@ -237,11 +234,11 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
   window[6] = m.get(Point(ncols_m2, 1));
   window[7] = m.get(Point(ncols_m1, 1));
 	  
-  window[0] = window[3];
-  window[1] = window[4];
+  window[0] = window[6];
+  window[1] = window[7];
   window[2] = window[4];
-  window[5] = window[4];
-  window[8] = window[7];
+  window[5] = window[3];
+  window[8] = window[6];
   tmp.set(Point(ncols_m1, 0), func(window.begin(), window.end()));
 	  
   // Lower-left
@@ -250,24 +247,24 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
   window[4] = m.get(Point(0, nrows_m1));
   window[5] = m.get(Point(1, nrows_m1));
 	  
-  window[0] = window[1];
-  window[3] = window[4];
+  window[0] = window[2];
+  window[3] = window[5];
   window[6] = window[4];
-  window[7] = window[4];
-  window[8] = window[5];
+  window[7] = window[1];
+  window[8] = window[2];
   tmp.set(Point(0, nrows_m1), func(window.begin(), window.end()));
-	
+
   // Lower-right
   window[0] = m.get(Point(ncols_m2, nrows_m2));
   window[1] = m.get(Point(ncols_m1, nrows_m2));
   window[3] = m.get(Point(ncols_m2, nrows_m1));
   window[4] = m.get(Point(ncols_m1, nrows_m1));
 	  
-  window[2] = window[1];
-  window[5] = window[4];
+  window[2] = window[0];
+  window[5] = window[3];
   window[8] = window[4];
-  window[7] = window[4];
-  window[6] = window[3];
+  window[7] = window[1];
+  window[6] = window[0];
 	  
   tmp.set(Point(ncols_m1, nrows_m1), func(window.begin(), window.end()));
 	
@@ -279,11 +276,11 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
     window[6] = m.get(Point(col - 1, 1));
     window[7] = m.get(Point(col, 1));
     window[8] = m.get(Point(col + 1, 1));
-		
-    window[0] = window[3];
-    window[1] = window[4];
-    window[2] = window[5];
-		
+
+    window[0] = window[6];
+    window[1] = window[7];
+    window[2] = window[8];
+
     tmp.set(Point(col, 0), func(window.begin(), window.end()));
   }
 	
@@ -295,10 +292,10 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
     window[3] = m.get(Point(col - 1, nrows_m1));
     window[4] = m.get(Point(col, nrows_m1));
     window[5] = m.get(Point(col + 1, nrows_m1));
-		
-    window[6] = window[4];
-    window[7] = window[5];
-    window[8] = window[6];
+
+    window[6] = window[0];
+    window[7] = window[1];
+    window[8] = window[2];
     tmp.set(Point(col, nrows_m1), func(window.begin(), window.end()));
   }
 	
@@ -310,10 +307,10 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
     window[5] = m.get(Point(1, row));
     window[7] = m.get(Point(0, row + 1));
     window[8] = m.get(Point(1, row + 1));
-		
-    window[0] = window[1];
-    window[3] = window[4];
-    window[6] = window[7];
+
+    window[0] = window[2];
+    window[3] = window[5];
+    window[6] = window[8];
     tmp.set(Point(0, row), func(window.begin(), window.end()));
   }
 	
@@ -325,10 +322,10 @@ void neighbor9reflection(const T& m, F func, M& tmp) {
     window[4] = m.get(Point(ncols_m1, row));
     window[6] = m.get(Point(ncols_m2, row + 1));
     window[7] = m.get(Point(ncols_m1, row + 1));
-		
-    window[2] = window[1];
-    window[5] = window[4];
-    window[8] = window[7];
+
+    window[2] = window[0];
+    window[5] = window[3];
+    window[8] = window[6];
     tmp.set(Point(ncols_m1, row), func(window.begin(), window.end()));
   }
 	  

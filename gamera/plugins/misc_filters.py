@@ -37,15 +37,15 @@ class rank(PluginFunction):
     equivalent to the median.
 
   *k* (3, 5 ,7, ...)
-    The windows size (must be odd).
+    The window size (must be odd).
 
   *border_treatment* (0, 1)
-    When 0 ('clip'), window pixels outside the image are set to white.
+    When 0 ('padwhite'), window pixels outside the image are set to white.
     When 1 ('reflect'), reflecting boundary conditions are used.
   """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   args = Args([Int('rank'), Int('k', default=3),
-               Choice('border_treatment', ['clip', 'reflect'], default=0)])
+               Choice('border_treatment', ['padwhite', 'reflect'], default=0)])
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
   author = "Oliver Christen and Christoph Dalitz"
   doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
@@ -59,12 +59,24 @@ class rank(PluginFunction):
 
 class mean(PluginFunction):
   """
-  Within each 3x3 window, set the center pixel to the mean value of
-  all 9 pixels.
+  Within each *k* times *k* window, set the center pixel to the mean
+  value of all pixels.
+
+  *k* is the window size (must be odd), and *border_treatment* can
+  be 0 ('padwhite'), which sets window pixels outside the image to white,
+  or 1 ('reflect'), for reflecting boundary conditions.
   """
   self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  args = Args([Int('k', default=3),
+               Choice('border_treatment', ['padwhite', 'reflect'], default=0)])
   doc_examples = [(GREYSCALE,)]
   return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  author = "Oliver Christen and Christoph Dalitz"
+  def __call__(self, k=3, border_treatment=0):
+    if k%2 == 0:
+      raise RuntimeError("mean: window size k must be odd")
+    return _misc_filters.mean(self, k, border_treatment)
+  __call__ = staticmethod(__call__)
 
 class create_gabor_filter(PluginFunction):
     """

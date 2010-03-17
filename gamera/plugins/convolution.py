@@ -55,8 +55,9 @@ class convolve(PluginFunction):
 
       - BORDER_TREATMENT_CLIP (1)
 
-        clip kernel at image border (this is only useful if the kernel
-        is >= 0 everywhere)
+        clip kernel at image border. The kernel entries are renormalized
+        so that the total kernel sum is not changed (this is only useful
+        if the kernel is >= 0 everywhere).
 
       - BORDER_TREATMENT_REPEAT (2)
 

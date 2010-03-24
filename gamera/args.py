@@ -25,6 +25,9 @@ import sys, os.path   # Python standard library
 from types import *
 import util, paths            # Gamera specific
 
+# the maximum default number (int, float) in argument boxes
+# necessary because sys.maxint is not accepted by some wxPython widgets
+DEFAULT_MAX_ARG_NUMBER = 1048576    # 2^20
 
 ######################################################################
 
@@ -91,7 +94,7 @@ class Arg:
       pass
    
 class Int(Arg):
-   def __init__(self, name=None, range=(-sys.maxint, sys.maxint), default=None):
+   def __init__(self, name=None, range=(-DEFAULT_MAX_ARG_NUMBER, DEFAULT_MAX_ARG_NUMBER), default=None):
       Arg.__init__(self, name)
       if not (util.is_sequence(range) and len(range) == 2 and
               type(range[0]) in (int, float) and type(range[1]) in (int, float)):
@@ -108,7 +111,7 @@ class Int(Arg):
 
    def rest_repr(self, name=False):
       result = "int"
-      if self.rng != (-sys.maxint, sys.maxint):
+      if self.rng != (-DEFAULT_MAX_ARG_NUMBER, DEFAULT_MAX_ARG_NUMBER):
          result += "(%d, %d)" % tuple([int(x) for x in self.rng])
       if name:
          result += " *%s*" % self.name
@@ -122,12 +125,7 @@ class Real(Arg):
                 default=None):
       Arg.__init__(self, name)
       if range is None:
-         # args.py is used during compilation
-         # => we cannot import gamera extensions
-         #from gamera.plugins.misc_free_functions import range_of_float
-         #(minfloat, maxfloat) = range_of_float()
-         maxfloat = 1048576  # use 2^20 instead
-         range = (-maxfloat, maxfloat)
+         range = (-DEFAULT_MAX_ARG_NUMBER, DEFAULT_MAX_ARG_NUMBER)
       if not (util.is_sequence(range) and len(range) == 2 and
               type(range[0]) in (int, float) and type(range[1]) in (int, float)):
          raise TypeError("'range' must be a 2-tuple of numbers")
@@ -143,12 +141,7 @@ class Real(Arg):
 
    def rest_repr(self, name=False):
       result = "float"
-      # args.py is used during compilation
-      # => we cannot import gamera extensions
-      #from gamera.plugins.misc_free_functions import range_of_float
-      #(minfloat, maxfloat) = range_of_float()
-      maxfloat = 1048576  # use 2^20 instead
-      if self.rng != (-maxfloat, maxfloat):
+      if self.rng != (-DEFAULT_MAX_ARG_NUMBER, DEFAULT_MAX_ARG_NUMBER):
          result += "(%.02f, %.02f)" % tuple([float(x) for x in self.rng])
       if name:
          result += " *%s*" % self.name

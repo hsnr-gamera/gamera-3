@@ -18,13 +18,14 @@ Changes made between Gamera File Releases
     o skeleton_features (crossings through x/y-axis was erronously computed)
     o volume[16|64]regions (zones occasionally not covered entire images)
 
- - default range for Real made smaller than sys.maxint,
-   so that it should now also work on 64bit architectures
-
  - new Python image methods white() and black() for obtaining
    these colors in the pixel type representation of the image
 
- - writing TIFFs on 64bit systems corrected
+ - should now also compile on MacOS X 10.6 out-of-the-box
+
+ - changes for 64bit architecture:
+    o default range of Int, Real, Point made smaller than sys.maxint
+    o writing TIFFs corrected
 
 
 Version 3.2.4, Feb 12, 2010

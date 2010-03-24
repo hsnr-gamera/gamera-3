@@ -27,6 +27,7 @@ import string
 from gamera import util, enums
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
+from gamera.args import DEFAULT_MAX_ARG_NUMBER
 import sys
 
 class ArgInvalidException(Exception):
@@ -751,14 +752,14 @@ class Point:
       self.control.Add(wx.StaticText(parent, -1, "x:"))
       self.control_x = wx.SpinCtrl(
          parent, -1, value=str(default.x),
-         min=-sys.maxint, max=sys.maxint,
+         min=-DEFAULT_MAX_ARG_NUMBER, max=DEFAULT_MAX_ARG_NUMBER,
          initial=default.x)
       self.control_x.SetValidator(_IntValidator(name=self.name))
       self.control.Add(self.control_x, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
       self.control.Add(wx.StaticText(parent, -1, "y:"))
       self.control_y = wx.SpinCtrl(
          parent, -1, value=str(default.y),
-         min=-sys.maxint, max=sys.maxint,
+         min=-DEFAULT_MAX_ARG_NUMBER, max=DEFAULT_MAX_ARG_NUMBER,
          initial=default.y)
       self.control_y.SetValidator(_IntValidator(name=self.name))
       self.control.Add(self.control_y, 1, wx.EXPAND | wx.LEFT, 5)

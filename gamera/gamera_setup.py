@@ -23,6 +23,7 @@
 
 import sys
 import os
+import platform
 import glob
 from distutils.sysconfig import get_python_lib, get_python_inc, PREFIX
 from distutils.command import install_data
@@ -82,6 +83,9 @@ if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
    extras['extra_compile_args'] = ['/GR']#, "/Zi"]
 elif sys.platform == 'darwin':
    extras['extra_link_args'] = ['-F/System/Library/Frameworks/']
+   macosversion = platform.mac_ver()[0]
+   if macosversion.startswith("10.6"):
+      extras['extra_link_args'].append('-L/Developer/SDKs/MacOSX10.5.sdk/usr/lib')
 elif '--compiler=mingw32' in sys.argv or not sys.platform == 'win32':
    extras['libraries'] = ['stdc++'] # Not for intel compiler
 

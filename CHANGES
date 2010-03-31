@@ -28,6 +28,8 @@ Changes made between Gamera File Releases
     o default range of Int, Real, Point made smaller than sys.maxint
     o writing TIFFs corrected
 
+ - necessary changes for libpng 1.4.0 with #if's on PNG_LIBPNG_VER
+
 
 Version 3.2.4, Feb 12, 2010
 ----------------------------

@@ -147,7 +147,11 @@ void load_PNG_simple(T& image, png_structp& png_ptr) {
 template<class T>
 void load_PNG_onebit(T& image, png_structp& png_ptr) {
   png_set_invert_mono(png_ptr);
+#if PNG_LIBPNG_VER > 10399
+  png_set_expand_gray_1_2_4_to_8(png_ptr);
+#else
   png_set_gray_1_2_4_to_8(png_ptr);
+#endif
 
   png_bytep row = new png_byte[image.ncols()];
   try {
@@ -239,8 +243,13 @@ Image* load_PNG(const char* filename, int storage) {
 	PNG_close(fp, png_ptr, info_ptr, end_info);
 	throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
       }
-      if (bit_depth < 8)
-	png_set_gray_1_2_4_to_8(png_ptr);
+      if (bit_depth < 8) {
+#if PNG_LIBPNG_VER > 10399
+        png_set_expand_gray_1_2_4_to_8(png_ptr);
+#else
+        png_set_gray_1_2_4_to_8(png_ptr);
+#endif
+      }
       typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
       fact_type::image_type*
 	image = fact_type::create(Point(0, 0), Dim(width, height));

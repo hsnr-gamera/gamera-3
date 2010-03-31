@@ -87,10 +87,10 @@ namespace Gamera {
   */
 
   template<class Iterator>
-  void moments_1d(Iterator begin, Iterator end, size_t& m0, size_t& m1,
-                  size_t& m2, size_t& m3) {
+  void moments_1d(Iterator begin, Iterator end, feature_t& m0, feature_t& m1,
+                  feature_t& m2, feature_t& m3) {
     // zeroeth, first, second, third order on one axis
-    size_t tmp = 0;
+    feature_t tmp = 0;
     size_t x = 0;
     Iterator itx = begin;
     for (; itx != end; ++itx, x++) {
@@ -107,9 +107,9 @@ namespace Gamera {
   }
 
   template<class Iterator>
-  void moments_2d(Iterator begin, Iterator end, size_t& m11, size_t& m12,
-                  size_t& m21) {
-    size_t tmp = 0;
+  void moments_2d(Iterator begin, Iterator end, feature_t& m11, feature_t& m12,
+                  feature_t& m21) {
+    feature_t tmp = 0;
     size_t x = 0;
     Iterator itx = begin;
     for (; itx != end; itx++, x++) {
@@ -126,7 +126,7 @@ namespace Gamera {
 
   template<class T>
   void moments(T &m, feature_t* buf) {
-    size_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
+    feature_t m10 = 0, m11 = 0, m20 = 0, m21 = 0, m12 = 0, 
       m01 = 0, m02 = 0, m30 = 0, m03 = 0, m00 = 0, dummy = 0;
     moments_1d(m.row_begin(), m.row_end(), m00, m01, m02, m03);
     moments_1d(m.col_begin(), m.col_end(), dummy, m10, m20, m30);

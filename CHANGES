@@ -17,6 +17,7 @@ Changes made between Gamera File Releases
     o compactness (border pixels were formerly ignored in computation)
     o skeleton_features (crossings through x/y-axis was erronously computed)
     o volume[16|64]regions (zones occasionally not covered entire images)
+    o moments (no longer overflow errors on larger glyphs)
 
  - new Python image methods white() and black() for obtaining
    these colors in the pixel type representation of the image

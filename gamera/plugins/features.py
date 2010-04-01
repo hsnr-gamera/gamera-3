@@ -245,13 +245,24 @@ class volume64regions(Feature):
 
 class zernike_moments(Feature):
     """
-    I can't say I understand much about Zernike moments, except that
-    they are well known for all kinds of invariance, and are often detailed
-    enough to reconstruct many shapes in a reasonable way.
+    Computes the absolute values of the Normalized Zernike Moments up to
+    order six.
 
-    A. Khotanzad and Y. Hong. Invariant image recognition by Zernike
-    moments.  *IEEE Transactions on Pattern Analysis and Machine
-    Intelligence*, 12(5), 1990.
+    Zernike moments are the scalar product in the complex L2
+    Hilbert space between the image and the complex Zernike polynomials.
+    This results in complex values, the absolute values of which are
+    invariant under image rotation and reflection. To make them additionally
+    scale invariant, different normalization schemes have been suggested.
+    The present implementation normalizes the Zernike moments by
+    division with the zeroeth geometric moment *m00*, which results
+    in an approximate scale invariance according to
+    S. Belkasim, E. Hassan, T. Obeidi: \"Explicit invariance of Cartesian
+    Zernike moments.\" Pattern Recognition Letters 28, pp. 1969-1980 (2007)
+
+    The return values are the absolute values of
+    *A20, A22, A31, A33, A40, A42, A44, A51, A53, A54, A60, A62, A64, A66*.
+    The moments *A00* and *A11* are not computed because these are constant
+    under the used normalization scheme.
 
     +---------------------------+
     | **Invariant to:**         |  
@@ -261,7 +272,8 @@ class zernike_moments(Feature):
     |   X   |    X     |   X    |
     +-------+----------+--------+
     """
-    return_type = FloatVector(length=26)
+    author = "Robert Butz and Christoph Dalitz"
+    return_type = FloatVector(length=14)
 
 class skeleton_features(Feature):
     """

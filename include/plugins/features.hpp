@@ -30,14 +30,13 @@
 #include <vector>
 
 namespace Gamera {
-  /*
-    Black Area
-
-    Find the number of black pixels in an image. This is just a convenience
-    routine, but it demonstrates the correct method for determining whether
-    a pixel is black or white.
-  */
-
+  //
+  // Black Area
+  //
+  // Find the number of black pixels in an image. This is just a convenience
+  // routine, but it demonstrates the correct method for determining whether
+  // a pixel is black or white.
+  //
   template<class T>
   void black_area(const T& mat, feature_t* buf) {
     *buf = 0;
@@ -47,9 +46,7 @@ namespace Gamera {
         (*buf)++;
     }
   }
-
   // Old-style version, since it is called from C++ elsewhere
-
   template<class T>
   feature_t black_area(const T& mat) {
     int black_pixels = 0;
@@ -62,7 +59,6 @@ namespace Gamera {
   }
 
   // Ratio of black to white pixels
-
   template<class T>
   feature_t volume(const T &m) {
     unsigned int count = 0;
@@ -79,12 +75,12 @@ namespace Gamera {
   }
   
 
-  /*
-    MOMENTS
-
-    Returns vector containing:
-    u10, u01, u20, u02, u11, u30, u12, u21, u03
-  */
+  //
+  // Normalized Central Moments 
+  //
+  // Returns vector containing:
+  // u10, u01, u20, u02, u11, u30, u12, u21, u03
+  //
 
   template<class Iterator>
   void moments_1d(Iterator begin, Iterator end, feature_t& m0, feature_t& m1,
@@ -212,12 +208,12 @@ namespace Gamera {
     *buf = (feature_t)horiz / m.nrows();
   }
 
-  /*
-    nholes_extended
-
-    This divides the image into strips (both horizontally
-    and vertically) and computes the number of holes on each strip.
-  */
+  //
+  // nholes_extended
+  //
+  // This divides the image into strips (both horizontally
+  // and vertically) and computes the number of holes on each strip.
+  //
   template<class T>
   void nholes_extended(const T& m, feature_t* buf) {
     double quarter_cols = m.ncols() / 4.0;
@@ -343,12 +339,12 @@ namespace Gamera {
     return num_dil_px / (rows*cols); // volume
   }
 
-  /*
-    compactness
-    
-    compactness is ratio of the volume of the outline of an image to
-    the volume of the image.
-  */
+  //
+  // compactness
+  //
+  // compactness is ratio of the volume of the outline of an image to
+  // the volume of the image.
+  //
   template<class T>
   void compactness(const T& image, feature_t* buf) {
     // I've converted this to a more efficient method.  Rather than
@@ -375,12 +371,12 @@ namespace Gamera {
     *buf = result;
   }
 
-  /*
-    volume16regions
-
-    This function divides the image into 16 regions and takes the volume of
-    each of those regions.
-  */
+  //
+  // volume16regions
+  //
+  // This function divides the image into 16 regions and takes the volume of
+  // each of those regions.
+  //
   template<class T>
   void volume16regions(const T& image, feature_t* buf) {
     double rows = image.nrows() / 4.0;
@@ -410,12 +406,12 @@ namespace Gamera {
     }
   }
 
-  /*
-    volume64regions
-
-    This function divides the image into 64 regions and takes the volume of
-    each of those regions.
-  */
+  //
+  // volume64regions
+  //
+  // This function divides the image into 64 regions and takes the volume of
+  // each of those regions.
+  //
   template<class T>
   void volume64regions(const T& image, feature_t* buf) {
     double rows = image.nrows() / 8.0;
@@ -445,90 +441,124 @@ namespace Gamera {
     }
   }
 
-  double zer_pol_R(int n, int m_in, double x, double y) {
-    int m = abs(m_in);
-    int sign;
+
+  //
+  // Zernike Moments
+  //
+
+  double zer_pol_R(int n, int m, double x, double y) {
+    // precomputed factorials => make sure that n < 11
+    const int fak_a[] = {1,1,2,6,24,120,720,5040,40320,362880,3628800};
+    int s,Na,Nb,Nc;
+    int sign = 1;
     double result = 0;
-    double distance = (x * x + y * y);
-      sign = 1;
-    int a = 1;
-    for (int i = 2; i <= n; ++i)
-      a *= i;
-    int b = 1;
-    int c = 1;
-    for (int i = 2; i <= (n + m) / 2; ++i)
-      c *= i;
-    int d = c;
-    int s = 0; // Outside the loop, since we need to access it at the end too.
-    for (; s < (n - m) / 2; ++s) {
-      result += sign * (a * 1.0 / (b * c * d)) * pow(distance, (n / 2.0) - s);
+    double distance = sqrt(x * x + y * y);
+    double Zb = 1;
+
+    for(s=0; s<=(n-m)/2; s++){
+      Na = fak_a[n-s] / fak_a[s];
+      if (n-2*s == 0)
+        Zb = 1;
+      else
+        Zb *= distance;
+      Nb = fak_a[(n+m)/2-s];
+      Nc = fak_a[(n-m)/2-s];
+      result += sign * (Na * Zb / Nb) / Nc;
       sign = -sign;
-      a /= (n - s);
-      b *= (s + 1);
-      c /= ((n + m) / 2 - s);
-      d /= ((n - m) / 2 - s);
     }
-    result += sign * (a * 1.0 / (b * c * d)) * pow(distance, (n / 2.0) - s);
     return result;
   }
 
-  void zer_pol(int n, int m, double x, double y, double& real, double& imag) {
-    if ((x*x + y*y) > 1.0) {
+  void zer_pol(int n, int m, double x, double y, double& real, double& imag, double norm_scale=1.0) {
+    const complex<double> I(0.0, 1.0);
+    // theoretically redundant due to scaling,
+    // but with translation-normalizing after all needed
+    if (sqrt(x*x + y*y) > 1.0) {
+      //std::cout << "outer px=" << x << "," << y << std::endl;
       real = 0.0;
       imag = 0.0; 
     } else {
-      double R = zer_pol_R(n, m, x, y);
-      double arg = m * atan2(y, x);
-      real = R * cos(arg);
-      imag = R * sin(arg);
+      double Rnm = zer_pol_R(n, m, x*norm_scale, y*norm_scale);
+      double angle_Theta = atan2(y,x);
+      complex<double> Inm = exp(m*angle_Theta*I);
+      complex<double> result = conj(Rnm * Inm); // complex conj.
+      real = result.real();
+      imag = result.imag();
     }
   }
 
-  // This is my own modification so that all pixels in the image become 
-  // involved in the calculation.  I "imagine" a zernike circle that encompasses the
-  // entire bounding box rectangle.  (Rather than an ellipse that fits
-  // inside the bounding box.)  This not only helps to better distinguish
-  // glyphs, it is slightly more efficient since it removes an 'if' in the
-  // inner loop.
+  // we use this wrapper so that it is easy to
+  // change the maximum order in the future
   template<class T>
   void zernike_moments(const T& image, feature_t* buf) {
-    size_t max_dimension = std::max(image.ncols(), image.nrows());
-    double x_0 = (image.ncols() + 1) / 2.0;
-    double y_0 = (image.nrows() + 1) / 2.0;
-    double scale = max_dimension / 2.0;
+    // beware that, when changing the maximum order from six to
+    // something different, the dimension of the feature vector
+    // needs to be adjusted in the python interface features.py
+    zernike_moments( image, buf, 6);
+  }
+
+  template<class T>
+  void zernike_moments(const T& image, feature_t* buf, size_t order_n) {
+    size_t const max_order_n=order_n; 
+    size_t num_features=0; // evaluated by max_order_n
     double x_dist, y_dist, real_tmp, imag_tmp;
 
-    int m = 1;
+    // compute center of mass and normalization factor m00
+    feature_t m00=0, m10=0, m01=0, dummy1=0, dummy2=0, dummy3=0;
+    moments_1d(image.row_begin(), image.row_end(), m00, m01, dummy1, dummy2);
+    moments_1d(image.col_begin(), image.col_end(), dummy1, m10, dummy2, dummy3);
+    double centroid_x = m10/m00;
+    double centroid_y = m01/m00;
+
+    // we use a Zernike circle that includes the entire image
+    // beware however that some pixels can fall outside the circle
+    // by normalizing ZMs to be translation invariant, e.g. a large
+    // bunch of pixels in the upper left corner which draws the
+    // center to it, excludes pixels in the lower right corner.
+    size_t max_dimension = std::max(image.ncols(), image.nrows());
+    double unit_circle_scale = sqrt(2*pow(max_dimension/2.0,2));
+
+    // number of features depends on maximum order
+    for (size_t i=0 ; i<=max_order_n; i++)
+      num_features += i/2 + 1;
+    num_features -= 2; // A00 and A11 are constants
 
     feature_t* begin = buf;
-    for (size_t i = 0; i < 26; ++i)
+    for (size_t i = 0; i < num_features; ++i)
       *(buf++) = 0.0;
     buf = begin;
 
+    size_t m, n, idx;
     typename T::const_vec_iterator it = image.vec_begin();
-    for (size_t y = 0; y < image.nrows(); ++y)
+    for (size_t y = 0; y < image.nrows(); ++y) {
       for (size_t x = 0; x < image.ncols(); ++x, ++it) {
-	y_dist = (y - y_0) / scale;
-	x_dist = (x - x_0) / scale;
-	if (is_black(*it)) {
-	  for (size_t n = 1; n < 14; ++n) { 
-	    size_t idx = (n - 1) * 2;
-	    zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
-	    buf[idx] += real_tmp;
-	    buf[idx + 1] += (-imag_tmp);
-	  }
-	}
+        if (is_black(*it)) {
+          x_dist = (x - centroid_x) / unit_circle_scale;
+          y_dist = (y - centroid_y) / unit_circle_scale;
+          for (n = 2, idx=0; n <= max_order_n; ++n) {
+            for (m = n%2; m <= n; m+=2) {
+              zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
+              buf[idx++] += sqrt(real_tmp*real_tmp + imag_tmp*imag_tmp);
+            }
+          }
+        }
       }
-    
-    for (size_t n = 1; n < 14; ++n) {
-      size_t idx = (n-1) * 2;
+    }
+
+    // scale normalization by m00
+    for (size_t n = 2, idx=0; n <= max_order_n; ++n) {
       double multiplier = (n + 1) / M_PI;
-      buf[idx] *= multiplier;
-      buf[idx + 1] *= multiplier;
+      multiplier /= m00;
+      for (m= n%2; m<= n; m+=2){
+        buf[idx++] *= multiplier;
+      }
     }
 
   }
 
+  //
+  // Skeleton features
+  //
   template<class T>
   void skeleton_features(const T& image, feature_t* buf) {
     if (image.nrows() == 1 || image.ncols() == 1) {
@@ -618,6 +648,9 @@ namespace Gamera {
     *buf = feature_t(y_axis_crossings);
   }
 
+  //
+  // Top Bottom
+  //
   template<class T>
   void top_bottom(const T& m, feature_t* buf) {
     int top = -1;

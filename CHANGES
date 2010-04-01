@@ -5,7 +5,7 @@ Changes made between Gamera File Releases
 
  - new plugins kfill and kfill_modified (category "Filter")
 
- - rank  and mean now allow larger window sizes than 3x3
+ - rank and mean now allow larger window sizes than 3x3
    and an optional border treatment (clip or reflect)
 
  - runlength_smearing and projection_cutting now also work
@@ -18,6 +18,7 @@ Changes made between Gamera File Releases
     o skeleton_features (crossings through x/y-axis was erronously computed)
     o volume[16|64]regions (zones occasionally not covered entire images)
     o moments (no longer overflow errors on larger glyphs)
+	o Zernike moments now have the desired invariance properties
 
  - new Python image methods white() and black() for obtaining
    these colors in the pixel type representation of the image

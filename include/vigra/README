@@ -35,4 +35,8 @@ files are modified:
  - inspectimage.hxx
      removed #pragma warning
 
+ - affinegeometry.hxx
+     corrected floating point errors in sinus and cosinus
+     for exact rotations in rotateImage()
+
 Christoph Dalitz

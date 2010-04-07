@@ -252,6 +252,13 @@ void rotateImage(SplineImageView<ORDER, T> const & src,
     double angle = angleInDegree*M_PI/180.0;
     double c = std::cos(angle);
     double s = std::sin(angle);
+    // correct rounding errors for exact rotations
+    if (fabs(c) < 0.0001) c = 0.0;
+    if (c > 1.0) c = 1.0;
+    if (c < -1.0) c = -1.0;
+    if (fabs(s) < 0.0001) s = 0.0;
+    if (s > 1.0) s = 1.0;
+    if (s < -1.0) s = -1.0;
     
     for(int y = 0; y < h; ++y, ++id.y)
     {

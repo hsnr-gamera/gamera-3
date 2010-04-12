@@ -96,7 +96,3 @@ def test_noninteractive_classifier():
    classifier.clear_glyphs()
    assert len(classifier.get_glyphs()) == 0
    classifier.unserialize("tmp/serialized.knn")
-
-   database = gamera_xml.glyphs_from_xml("data/testline.xml")
-   classifier = knn.kNNNonInteractive(database)
-   _test_classification(classifier, ccs)

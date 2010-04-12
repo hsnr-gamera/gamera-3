@@ -1,4 +1,4 @@
-Readme for VIGRA includion in Gamera
+Readme for VIGRA inclusion in Gamera
 ====================================
 
 These header files are taken from VIGRA
@@ -36,7 +36,7 @@ files are modified:
      removed #pragma warning
 
  - affinegeometry.hxx
-     corrected floating point errors in sinus and cosinus
-     for exact rotations in rotateImage()
+     has been taken from the development branch of VIGRA,
+     to avoid rounding errors for exact rotations in rotateImage()
 
 Christoph Dalitz

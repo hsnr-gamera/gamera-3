@@ -1,12 +1,10 @@
 /************************************************************************/
 /*                                                                      */
 /*               Copyright 2005-2006 by Ullrich Koethe                  */
-/*       Cognitive Systems Group, University of Hamburg, Germany        */
 /*                                                                      */
 /*    This file is part of the VIGRA computer vision library.           */
-/*    ( Version 1.6.0, Aug 13 2008 )                                    */
 /*    The VIGRA Website is                                              */
-/*        http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/      */
+/*        http://hci.iwr.uni-heidelberg.de/vigra/                       */
 /*    Please direct questions, bug reports, and contributions to        */
 /*        ullrich.koethe@iwr.uni-heidelberg.de    or                    */
 /*        vigra@informatik.uni-hamburg.de                               */
@@ -252,13 +250,25 @@ void rotateImage(SplineImageView<ORDER, T> const & src,
     double angle = angleInDegree*M_PI/180.0;
     double c = std::cos(angle);
     double s = std::sin(angle);
-    // correct rounding errors for exact rotations
-    if (fabs(c) < 0.0001) c = 0.0;
-    if (c > 1.0) c = 1.0;
-    if (c < -1.0) c = -1.0;
-    if (fabs(s) < 0.0001) s = 0.0;
-    if (s > 1.0) s = 1.0;
-    if (s < -1.0) s = -1.0;
+    
+    // avoid round-off errors for simple rotations
+    if(closeAtTolerance(std::fmod(angleInDegree, 45.0), 0.0))
+    {
+        // convert angle into a multiple of pi/4
+        //int ai = roundi(angleInDegree / 45.0) % 8;
+        int ai = angleInDegree < 0
+          ? int(angleInDegree / 45.0 - 0.5) % 8
+          : int(angleInDegree / 45.0 + 0.5) % 8;
+        if(ai < 0)
+            ai += 8;
+        
+        static double sqrt2_2 = 0.5*M_SQRT2;
+        static double ss[8] = {0.0, sqrt2_2, 1.0,  sqrt2_2,  0.0, -sqrt2_2, -1.0, -sqrt2_2};
+        static double cc[8] = {1.0, sqrt2_2, 0.0, -sqrt2_2, -1.0, -sqrt2_2,  0.0,  sqrt2_2};
+        
+        s = ss[ai];
+        c = cc[ai];
+    }
     
     for(int y = 0; y < h; ++y, ++id.y)
     {

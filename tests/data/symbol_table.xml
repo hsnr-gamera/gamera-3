@@ -3,13 +3,12 @@
   <symbols>
     <symbol name="_group"/>
     <symbol name="_group._part"/>
-    <symbol name="_group.latin.capital.letter.m"/>
-    <symbol name="_group.latin.lower.i"/>
-    <symbol name="_group.latin.lower.letter.g"/>
-    <symbol name="_group.latin.lower.letter.h"/>
-    <symbol name="_group.latin.lower.letter.i"/>
-    <symbol name="_group.latin.lower.letter.n"/>
-    <symbol name="_group.latin.lower.ligature.ft"/>
+    <symbol name="_group._part.latin.capital.letter.m"/>
+    <symbol name="_group._part.latin.lower.letter.g"/>
+    <symbol name="_group._part.latin.lower.letter.h"/>
+    <symbol name="_group._part.latin.lower.letter.i"/>
+    <symbol name="_group._part.latin.lower.letter.n"/>
+    <symbol name="_group._part.latin.lower.ligature.ft"/>
     <symbol name="_split.cc_analysis"/>
     <symbol name="_split.cc_and_cluster"/>
     <symbol name="_split.splitx"/>
@@ -28,7 +27,9 @@
     <symbol name="latin.lower.letter.a"/>
     <symbol name="latin.lower.letter.d"/>
     <symbol name="latin.lower.letter.e"/>
+    <symbol name="latin.lower.letter.g"/>
     <symbol name="latin.lower.letter.h"/>
+    <symbol name="latin.lower.letter.i"/>
     <symbol name="latin.lower.letter.n"/>
     <symbol name="latin.lower.letter.o"/>
     <symbol name="latin.lower.letter.o-"/>

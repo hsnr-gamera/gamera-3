@@ -10,6 +10,6 @@ if __name__ == "__main__":
       ("gamera.core", "ImageData",
        'nrows ncols page_offset_x page_offset_y stride size bytes pixel_type storage_format'),
       ("gamera.core", "RGBPixel",
-       'red green blue hue saturation value cie_x cie_y cie_z cyan magenta yellow')
+       'red green blue hue saturation value cie_x cie_y cie_z cie_Lab_L cie_Lab_a cie_Lab_b cyan magenta yellow')
       ])
    

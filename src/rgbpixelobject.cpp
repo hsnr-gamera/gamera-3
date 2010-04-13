@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Oliver Christen, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,6 +40,9 @@ extern "C" {
   static PyObject* rgbpixel_get_cie_x(PyObject* self);
   static PyObject* rgbpixel_get_cie_y(PyObject* self);
   static PyObject* rgbpixel_get_cie_z(PyObject* self);
+  static PyObject* rgbpixel_get_cie_Lab_L(PyObject* self);
+  static PyObject* rgbpixel_get_cie_Lab_a(PyObject* self);
+  static PyObject* rgbpixel_get_cie_Lab_b(PyObject* self);
   static PyObject* rgbpixel_get_cyan(PyObject* self);
   static PyObject* rgbpixel_get_magenta(PyObject* self);
   static PyObject* rgbpixel_get_yellow(PyObject* self);
@@ -67,11 +71,17 @@ static PyGetSetDef rgbpixel_getset[] = {
   { (char *)"value", (getter)rgbpixel_get_value, 0,
     (char *)"(float property)\n\nThe value [0, 1.0]", 0 },
   { (char *)"cie_x", (getter)rgbpixel_get_cie_x, 0,
-    (char *)"(float property)\n\nThe cie_x value [0, 1.0]", 0 },
+    (char *)"(float property)\n\nThe x value in CIE XYZ color space [0, 1.0]", 0 },
   { (char *)"cie_y", (getter)rgbpixel_get_cie_y, 0,
-    (char *)"(float property)\n\nThe cie_y value [0, 1.0]", 0 },
+    (char *)"(float property)\n\nThe y value in CIE XYZ color space [0, 1.0]", 0 },
   { (char *)"cie_z", (getter)rgbpixel_get_cie_z, 0,
-    (char *)"(float property)\n\nThe cie_z value [0, 1.0]", 0 },
+    (char *)"(float property)\n\nThe z value in CIE XYZ color space [0, 1.0]", 0 },
+  { (char *)"cie_Lab_L", (getter)rgbpixel_get_cie_Lab_L, 0,
+    (char *)"(float property)\n\nThe L value in CIE L*a*b* color space", 0 },
+  { (char *)"cie_Lab_a", (getter)rgbpixel_get_cie_Lab_a, 0,
+    (char *)"(float property)\n\nThe a value in CIE L*a*b* color space", 0 },
+  { (char *)"cie_Lab_b", (getter)rgbpixel_get_cie_Lab_b, 0,
+    (char *)"(float property)\n\nThe b value in CIE L*a*b* color space", 0 },
   { (char *)"cyan", (getter)rgbpixel_get_cyan, 0,
     (char *)"(int property)\n\nThe cyan value [0, 255]", 0 },
   { (char *)"magenta", (getter)rgbpixel_get_magenta, 0,
@@ -116,7 +126,7 @@ static void rgbpixel_dealloc(PyObject* self) {
 
 #define CREATE_FLOAT_GET_FUNC(name) static PyObject* rgbpixel_get_##name(PyObject* self) {\
   RGBPixel* x = ((RGBPixelObject*)self)->m_x; \
-  return PyFloat_FromDouble((int)x->name()); \
+  return PyFloat_FromDouble(x->name()); \
 }
 
 #define CREATE_SET_FUNC(name) static int rgbpixel_set_##name(PyObject* self, PyObject* value) {\
@@ -137,6 +147,9 @@ CREATE_FLOAT_GET_FUNC(value)
 CREATE_FLOAT_GET_FUNC(cie_x)
 CREATE_FLOAT_GET_FUNC(cie_y)
 CREATE_FLOAT_GET_FUNC(cie_z)
+CREATE_FLOAT_GET_FUNC(cie_Lab_L)
+CREATE_FLOAT_GET_FUNC(cie_Lab_a)
+CREATE_FLOAT_GET_FUNC(cie_Lab_b)
 CREATE_GET_FUNC(cyan)
 CREATE_GET_FUNC(magenta)
 CREATE_GET_FUNC(yellow)

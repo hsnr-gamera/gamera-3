@@ -43,6 +43,7 @@
 
 #include "gamera_limits.hpp"
 #include "vigra/rgbvalue.hxx"
+#include "vigra/colorconversions.hxx"
 #include <complex>
 
 using namespace vigra;
@@ -257,15 +258,42 @@ namespace Gamera {
       return (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
     }
 
+    // conversion to CIE color space XYZ
+    RGB2XYZFunctor<FloatPixel> rgb2xyz_func;
     FloatPixel const cie_x() {
-      return (data_[0] * 0.607 + data_[1] * 0.174 + data_[2] * 0.200) / 256.0;
+      RGB2XYZFunctor<FloatPixel>::result_type xyz;
+      xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return xyz[0];
     }
     FloatPixel const cie_y() {
-      return (data_[0] * 0.299 + data_[1] * 0.587 + data_[2] * 0.114) / 256.0;
-    }
+      RGB2XYZFunctor<FloatPixel>::result_type xyz;
+      xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return xyz[1];
+	}
     FloatPixel const cie_z() {
-      return (data_[1] * 0.066 + data_[2] * 1.111) / 256.0;
+      RGB2XYZFunctor<FloatPixel>::result_type xyz;
+      xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return xyz[2];
     }
+
+    // conversion to CIE color space Lab
+    RGB2LabFunctor<FloatPixel> rgb2lab_func;
+	FloatPixel const cie_Lab_L() {
+      RGB2LabFunctor<FloatPixel>::result_type lab;
+      lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return lab[0];
+    }
+	FloatPixel const cie_Lab_a() {
+      RGB2LabFunctor<FloatPixel>::result_type lab;
+      lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return lab[1];
+    }
+	FloatPixel const cie_Lab_b() {
+      RGB2LabFunctor<FloatPixel>::result_type lab;
+      lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
+      return lab[2];
+    }
+	  
     GreyScalePixel const cyan() {
       return std::numeric_limits<T>::max() - data_[0];
     }

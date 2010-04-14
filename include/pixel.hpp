@@ -259,36 +259,40 @@ namespace Gamera {
     }
 
     // conversion to CIE color space XYZ
-    RGB2XYZFunctor<FloatPixel> rgb2xyz_func;
     FloatPixel const cie_x() {
+      RGB2XYZFunctor<FloatPixel> rgb2xyz_func;
       RGB2XYZFunctor<FloatPixel>::result_type xyz;
       xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return xyz[0];
     }
     FloatPixel const cie_y() {
+      RGB2XYZFunctor<FloatPixel> rgb2xyz_func;
       RGB2XYZFunctor<FloatPixel>::result_type xyz;
       xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return xyz[1];
 	}
     FloatPixel const cie_z() {
+      RGB2XYZFunctor<FloatPixel> rgb2xyz_func;
       RGB2XYZFunctor<FloatPixel>::result_type xyz;
       xyz = rgb2xyz_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return xyz[2];
     }
 
     // conversion to CIE color space Lab
-    RGB2LabFunctor<FloatPixel> rgb2lab_func;
 	FloatPixel const cie_Lab_L() {
+      RGB2LabFunctor<FloatPixel> rgb2lab_func;
       RGB2LabFunctor<FloatPixel>::result_type lab;
       lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return lab[0];
     }
 	FloatPixel const cie_Lab_a() {
+      RGB2LabFunctor<FloatPixel> rgb2lab_func;
       RGB2LabFunctor<FloatPixel>::result_type lab;
       lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return lab[1];
     }
 	FloatPixel const cie_Lab_b() {
+      RGB2LabFunctor<FloatPixel> rgb2lab_func;
       RGB2LabFunctor<FloatPixel>::result_type lab;
       lab = rgb2lab_func( RGBValue<FloatPixel>(data_[0], data_[1], data_[2]) );
       return lab[2];

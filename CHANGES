@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.5, Apr 14, 2010
+----------------------------
+
  - CIE L*a*b* values can be queried from RGBPixels
 
  - new plugin trim_image (category "Utilities")

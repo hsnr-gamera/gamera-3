@@ -99,6 +99,10 @@ Reference
 
 .. __: image_types.html
 
+  + `RGBPixel`__: properties of color values in Gamera
+
+.. __: gamera.core.RGBPixel.html
+
 - `Dimension types`__: The various classes to manage bounding boxes and geometry.
    
 .. __: dimension_types.html

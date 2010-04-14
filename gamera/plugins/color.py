@@ -49,7 +49,7 @@ class saturation(ExtractFloatChannel):
 
 class value(ExtractFloatChannel):
     """
-    Returns a FLOAT image where each pixel is a saturation value in
+    Returns a FLOAT image where each pixel is the value in
     HSV space in range [0, 1).  For more information, Google for HSV color
     space.
     """
@@ -79,6 +79,42 @@ class cie_z(ExtractFloatChannel):
     1964 Colorimetric`__ system in range [0, 1).
 
     .. __: http://www.isc.tamu.edu/~astro/color/cie_xyz1964.html
+    """
+    pass
+
+class cie_Lab_L(ExtractFloatChannel):
+    """
+    Returns a FLOAT image where each pixel is an *L* value in the 
+    CIE L*a*b* color space. For an introduction to the different color
+    spaces, see A. Ford and A. Roberts: `Color Space Concersions`__ (1998).
+
+    The present conversion uses the RGB to Lab conversion routine from VIGRA.
+
+    .. __: http://www.poynton.com/PDFs/coloureq.pdf
+    """
+    pass
+
+class cie_Lab_a(ExtractFloatChannel):
+    """
+    Returns a FLOAT image where each pixel is an *a* value in the 
+    CIE L*a*b* color space. For an introduction to the different color
+    spaces, see A. Ford and A. Roberts: `Color Space Concersions`__ (1998).
+
+    The present conversion uses the RGB to Lab conversion routine from VIGRA.
+
+    .. __: http://www.poynton.com/PDFs/coloureq.pdf
+    """
+    pass
+
+class cie_Lab_b(ExtractFloatChannel):
+    """
+    Returns a FLOAT image where each pixel is a *b* value in the 
+    CIE L*a*b* color space. For an introduction to the different color
+    spaces, see A. Ford and A. Roberts: `Color Space Concersions`__ (1998).
+
+    The present conversion uses the RGB to Lab conversion routine from VIGRA.
+
+    .. __: http://www.poynton.com/PDFs/coloureq.pdf
     """
     pass
 
@@ -170,7 +206,8 @@ class ColorModule(PluginModule):
     category = "Color"
     cpp_headers=["color.hpp"]
     functions = [hue, saturation, value, cyan, magenta, yellow,
-                 cie_x, cie_y, cie_z, red, green, blue, false_color,
+                 cie_x, cie_y, cie_z, cie_Lab_L, cie_Lab_a, cie_Lab_b,
+                 red, green, blue, false_color,
                  colors_to_labels]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

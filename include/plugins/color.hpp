@@ -40,7 +40,7 @@ namespace Gamera {
       ImageAccessor<to_pixel_type> out_acc;
       F f;
       for (; in != image.vec_end(); ++in, ++out)
-	out_acc.set(f(from_pixel_type(in_acc.get(in))), out);
+        out_acc.set(f(from_pixel_type(in_acc.get(in))), out);
       return view;
     }
   };
@@ -128,6 +128,27 @@ namespace Gamera {
     }
   };
   extract_plane<RGBImageView, FloatImageView, CIE_Z> cie_z;
+
+  struct CIE_Lab_L {
+    FloatPixel operator()(RGBPixel pixel) {
+      return pixel.cie_Lab_L();
+    }
+  };
+  extract_plane<RGBImageView, FloatImageView, CIE_Lab_L> cie_Lab_L;
+
+  struct CIE_Lab_a {
+    FloatPixel operator()(RGBPixel pixel) {
+      return pixel.cie_Lab_a();
+    }
+  };
+  extract_plane<RGBImageView, FloatImageView, CIE_Lab_L> cie_Lab_a;
+
+  struct CIE_Lab_b {
+    FloatPixel operator()(RGBPixel pixel) {
+      return pixel.cie_Lab_L();
+    }
+  };
+  extract_plane<RGBImageView, FloatImageView, CIE_Lab_L> cie_Lab_b;
 
   // TODO: Find a cool way to false color Complex images.
 

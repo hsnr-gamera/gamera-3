@@ -353,7 +353,7 @@ Generates features for the given glyph.
 
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
    def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
-      """**kNNInteractive** (ImageList *database* = ``[]``, *features* = 'all', bool *perform_splits* = ``True``, int *num_k* = 1)
+      """**kNNInteractive** (ImageList *database* = ``[]``, *features* = 'all', bool *perform_splits* = ``True``, int *num_k* = ``1``)
 
 Creates a new kNN interactive classifier instance.
 
@@ -401,7 +401,7 @@ Creates a new kNN interactive classifier instance.
       self.features = features
       self.feature_functions = core.ImageBase.get_feature_functions(features)
       num_features = features_module.get_features_length(features)
-      _kNNBase.__init__(self, num_features)
+      _kNNBase.__init__(self, num_features=num_features, num_k=num_k)
       classify.InteractiveClassifier.__init__(self, database, perform_splits)
 
    def __del__(self):
@@ -439,7 +439,7 @@ Changes the set of features used in the classifier to the given list of feature 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
    def __init__(self, database=[], features='all', perform_splits=True, num_k=1):
       """**kNNNonInteractive** (ImageList *database* = ``[]``, *features* = ``'all'``,
-bool *perform_splits* = ``True``)
+bool *perform_splits* = ``True``, int *num_k* = ``1``)
 
 Creates a new kNN classifier instance.
 
@@ -495,7 +495,7 @@ Creates a new kNN classifier instance.
       self.features = features
       self.feature_functions = core.ImageBase.get_feature_functions(features)
       num_features = features_module.get_features_length(features)
-      _kNNBase.__init__(self, num_features)
+      _kNNBase.__init__(self, num_features=num_features, num_k=num_k)
       classify.NonInteractiveClassifier.__init__(self, database, perform_splits)
 
    def __del__(self):

@@ -30,9 +30,17 @@ class to_string(PluginFunction):
 
 class to_buffer(PluginFunction):
     """
-    Encodes the image into a 'string' required by wxImage.
-    (i.e. 8-bit RGB triplets).
+    Encodes the image into a 'buffer' required by wx.Image.
+    (i.e. 8-bit RGB triplets). If you need to convert a gamera image
+    *scaled_image* to a wx.Bitmap, you can do so as follows:
+
+    .. code:: Python
+        
+      wximg = wx.EmptyImage(scaled_image.ncols, scaled_image.nrows)
+      scaled_image.to_buffer(image.GetDataBuffer())
+      wxbmp = wx.BitmapFromImage(image)
     """
+    category = "ExternalLibraries"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX])
     args = Args(Class("Buffer"))
 

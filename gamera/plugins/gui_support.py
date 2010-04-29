@@ -37,8 +37,8 @@ class to_buffer(PluginFunction):
     .. code:: Python
         
       wximg = wx.EmptyImage(scaled_image.ncols, scaled_image.nrows)
-      scaled_image.to_buffer(image.GetDataBuffer())
-      wxbmp = wx.BitmapFromImage(image)
+      scaled_image.to_buffer(wximg.GetDataBuffer())
+      wxbmp = wx.BitmapFromImage(wximg)
     """
     category = "ExternalLibraries"
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, FLOAT, COMPLEX])

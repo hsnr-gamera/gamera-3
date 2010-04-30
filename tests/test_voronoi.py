@@ -7,7 +7,7 @@ init_gamera()
 # Tests for Voronoi tesselation and Delaunay triangulation
 #
 
-from gamera.kdtree import *
+from gamera.plugins.geometry import delaunay_from_points
 
 #
 # input parameter check
@@ -51,3 +51,29 @@ def test_voronoi_cell_labeling():
     assert [2,3] in labelpairs or [3,2] in labelpairs
     assert [4,3] in labelpairs or [3,4] in labelpairs
 
+#
+# delaunay triangulation
+#
+def test_delaunay_triangulation():
+    # all labels different
+    points = [(50,50),(25,100),(50,150),(150,75),(150,125)]
+    edges = delaunay_from_points(points,range(len(points)))
+    assert len(edges) == 7
+    assert [0,1] in edges or [1,0] in edges
+    assert [0,2] in edges or [2,0] in edges
+    assert [0,3] in edges or [3,0] in edges
+    assert [0,4] in edges or [4,0] in edges
+    assert [1,2] in edges or [2,1] in edges
+    assert [2,4] in edges or [4,2] in edges
+    assert [3,4] in edges or [4,3] in edges
+    # some doublettes
+    points = [(50,50),(25,100),(50,150),(150,75),(150,125)]
+    labels = [0,1,2,3,3]
+    edges = delaunay_from_points(points,labels)
+    assert len(edges) == 5
+    assert [0,1] in edges or [1,0] in edges
+    assert [0,2] in edges or [2,0] in edges
+    assert [0,3] in edges or [3,0] in edges
+    assert [1,2] in edges or [2,1] in edges
+    assert [2,3] in edges or [3,2] in edges
+    # TODO: test collinear edge resolution

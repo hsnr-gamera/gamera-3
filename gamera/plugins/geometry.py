@@ -1,6 +1,5 @@
 #
-#
-# Copyright (C) 2009 Christoph Dalitz
+# Copyright (C) 2009 Christoph Dalitz, Oliver Christen
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -164,16 +163,58 @@ class labeled_region_neighbors(PluginFunction):
       return _geometry.labeled_region_neighbors(self, eight_connectivity)
   __call__ = staticmethod(__call__)
 
+class delaunay_from_points(PluginFunction):
+  """
+  Computes the Delaunay triangulation directly from a list of points and
+  point labels. The result is a list which contains tuples of adjacent labels.
+
+  The arguments *points* and *labels* specify the points and nonnegative
+  labels, such that ``labels[i]`` is the label of ``points[i]``. Note that
+  the labels need not necessarily all be different.
+  
+  The used algorithm is based on the Delaunay tree which is a randomized
+  geometric data structure computing the Delaunay triangulation.
+  
+  Reference: O. Devillers, S. Meiser, M. Teillaud:
+  `Fully dynamic Delaunay triangulation in logarithmic expected time per operation.`__
+  Computational Geometry: Theory and Applications 2, pp. 55-80, 1992.
+  
+  This can be useful for building a neighborhood graph as shown in the
+  following example:
+
+  .. code:: Python
+
+    from gamera import graph
+    from gamera.plugins.geometry import delaunay_from_points
+    
+    points = [(10,10),(20,30),(32,22),(85,14),(40,70),(80,85)]
+    labels = range(len(points))
+    neighbors = delaunay_from_points(points, labels)
+    
+    g = graph.Graph()
+    g.make_undirected()
+    g.make_singly_connected()
+
+    for pair in neighbors:
+        g.add_edge(pair[0], pair[1])
+  """
+  self_type = None
+  args = Args([PointVector("points"), IntVector("labels")])
+  return_type = Class("labelpairs")
+  author = "Oliver Christen (based on code by Olivier Devillers)"
+
 
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
   category = "Geometry"
-  cpp_sources=["src/kdtree/kdtree.cpp"]
+  cpp_sources=["src/kdtree/kdtree.cpp", "src/geostructs/delaunaytree.cpp"]
   functions = [voronoi_from_labeled_image,
                voronoi_from_points,
-               labeled_region_neighbors]
+               labeled_region_neighbors,
+               delaunay_from_points]
   author = "Christoph Dalitz"
   url = "http://gamera.sourceforge.net/"
 
 module = GeometryModule()
 
+delaunay_from_points = delaunay_from_points()

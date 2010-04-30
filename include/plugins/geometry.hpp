@@ -26,6 +26,7 @@
 #include "vigra/distancetransform.hxx"
 #include "vigra/seededregiongrowing.hxx"
 #include "kdtree.hpp"
+#include "geostructs/delaunaytree.hpp"
 
 using namespace Gamera::Kdtree;
 using namespace std;
@@ -267,6 +268,68 @@ namespace Gamera {
     }
     return retval;
   }
+
+
+  // Delaunay triangulation
+  void delaunay_from_points_cpp(PointVector *pv, IntVector *lv, std::multimap<int, int> * result) {
+
+    // some plausi checks
+	if (pv->empty()) {
+      throw std::runtime_error("points must not be empty.");
+    }
+    if (pv->size() != lv->size()) {
+      throw std::runtime_error("Number of points must match the number of labels.");
+    }
+
+    DelaunayTree dt;
+    PointVector::iterator pv_it;
+    IntVector::iterator lv_it;
+    std::vector<Vertex*> vertices;
+    std::vector<Vertex*>::iterator it;
+
+    result->clear();
+
+    pv_it = pv->begin();
+    lv_it = lv->begin();
+
+    int x, y;
+    while(pv_it != pv->end() && lv_it != lv->end()) {
+      x = (*pv_it).x();
+      y = (*pv_it).y();
+      vertices.push_back(new Vertex(x, y, (*lv_it)));
+      ++pv_it;
+      ++lv_it;
+    }
+    random_shuffle(vertices.begin(), vertices.end());
+    for(it = vertices.begin() ; it != vertices.end() ; ++it) {
+      dt.addVertex(*it);
+    }
+    dt.output(result);
+    for(it = vertices.begin() ; it != vertices.end() ; ++it) {
+      delete *it;
+    }
+  }
+  
+  PyObject* delaunay_from_points(PointVector *pv, IntVector *lv) {
+  	PyObject *list, *entry, *label1, *label2;
+  	multimap<int, int> neighbors;
+  	multimap<int, int>::iterator neighbors_it;
+  	
+	delaunay_from_points_cpp(pv, lv, &neighbors);
+    list = PyList_New(0);
+    for(neighbors_it=neighbors.begin(); neighbors_it!=neighbors.end(); ++neighbors_it) {
+      entry = PyList_New(2);
+      label1 = Py_BuildValue("i", neighbors_it->first);
+      label2 = Py_BuildValue("i", neighbors_it->second);
+      PyList_SetItem(entry, 0, label1);
+      PyList_SetItem(entry, 1, label2);
+      PyList_Append(list, entry);
+      Py_DECREF(entry);
+    }
+
+  	return list;
+  }
+
 
 } // namespace Gamera
 

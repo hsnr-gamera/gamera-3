@@ -1,5 +1,6 @@
 #
-# Copyright (C) 2009 Christoph Dalitz, Oliver Christen
+# Copyright (C) 2009-2010 Christoph Dalitz
+#               2010      Oliver Christen
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -173,12 +174,13 @@ class delaunay_from_points(PluginFunction):
   the labels need not necessarily all be different.
   
   The used algorithm is based on the Delaunay tree which is a randomized
-  geometric data structure computing the Delaunay triangulation.
-  
-  Reference: O. Devillers, S. Meiser, M. Teillaud:
+  geometric data structure computing the Delaunay triangulation. It is
+  described in O. Devillers, S. Meiser, M. Teillaud:
   `Fully dynamic Delaunay triangulation in logarithmic expected time per operation.`__
   Computational Geometry: Theory and Applications 2, pp. 55-80, 1992.
-  
+
+.. __: http://hal.inria.fr/inria-00090678
+
   This can be useful for building a neighborhood graph as shown in the
   following example:
 

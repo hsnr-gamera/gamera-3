@@ -56,7 +56,7 @@ def test_voronoi_cell_labeling():
 #
 def test_delaunay_triangulation():
     # all labels different
-    points = [(50,50),(25,100),(50,150),(150,75),(150,125)]
+    points = [(50,50),(25,100),(50,150),(150,60),(150,125)]
     edges = delaunay_from_points(points,range(len(points)))
     assert len(edges) == 7
     assert [0,1] in edges or [1,0] in edges
@@ -67,7 +67,7 @@ def test_delaunay_triangulation():
     assert [2,4] in edges or [4,2] in edges
     assert [3,4] in edges or [4,3] in edges
     # some doublettes
-    points = [(50,50),(25,100),(50,150),(150,75),(150,125)]
+    points = [(50,50),(25,100),(50,150),(150,60),(150,125)]
     labels = [0,1,2,3,3]
     edges = delaunay_from_points(points,labels)
     assert len(edges) == 5

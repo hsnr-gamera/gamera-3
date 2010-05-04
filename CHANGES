@@ -1,10 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
- - prelimary version of Delaunay trinagulation delaunay_from_points
-   TODO:
-    o removal of edge doublets
-    o collinear edge resolution
+ - prelimary version of Delaunay triangulation delaunay_from_points
+   (TODO: collinear edge resolution)
 
 
 Version 3.2.5, Apr 14, 2010

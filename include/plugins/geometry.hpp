@@ -29,6 +29,7 @@
 #include "geostructs/delaunaytree.hpp"
 
 using namespace Gamera::Kdtree;
+using namespace Gamera::Delaunaytree;
 using namespace std;
 
 namespace Gamera {
@@ -271,7 +272,7 @@ namespace Gamera {
 
 
   // Delaunay triangulation
-  void delaunay_from_points_cpp(PointVector *pv, IntVector *lv, std::multimap<int, int> * result) {
+  void delaunay_from_points_cpp(PointVector *pv, IntVector *lv, std::map<int,std::set<int> > *result) {
 
     // some plausi checks
 	if (pv->empty()) {
@@ -304,7 +305,7 @@ namespace Gamera {
     for(it = vertices.begin() ; it != vertices.end() ; ++it) {
       dt.addVertex(*it);
     }
-    dt.output(result);
+    dt.neighboringLabels(result);
     for(it = vertices.begin() ; it != vertices.end() ; ++it) {
       delete *it;
     }
@@ -312,19 +313,22 @@ namespace Gamera {
   
   PyObject* delaunay_from_points(PointVector *pv, IntVector *lv) {
   	PyObject *list, *entry, *label1, *label2;
-  	multimap<int, int> neighbors;
-  	multimap<int, int>::iterator neighbors_it;
+    std::map<int,std::set<int> > neighbors;
+    std::map<int,std::set<int> >::iterator nit1;
+    std::set<int>::iterator nit2;
   	
 	delaunay_from_points_cpp(pv, lv, &neighbors);
     list = PyList_New(0);
-    for(neighbors_it=neighbors.begin(); neighbors_it!=neighbors.end(); ++neighbors_it) {
-      entry = PyList_New(2);
-      label1 = Py_BuildValue("i", neighbors_it->first);
-      label2 = Py_BuildValue("i", neighbors_it->second);
-      PyList_SetItem(entry, 0, label1);
-      PyList_SetItem(entry, 1, label2);
-      PyList_Append(list, entry);
-      Py_DECREF(entry);
+    for (nit1=neighbors.begin(); nit1!=neighbors.end(); ++nit1) {
+      for (nit2=nit1->second.begin(); nit2!=nit1->second.end(); nit2++) {
+        entry = PyList_New(2);
+        label1 = Py_BuildValue("i", nit1->first);
+        label2 = Py_BuildValue("i", *nit2);
+        PyList_SetItem(entry, 0, label1);
+        PyList_SetItem(entry, 1, label2);
+        PyList_Append(list, entry);
+        Py_DECREF(entry);
+      }
     }
 
   	return list;

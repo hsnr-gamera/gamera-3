@@ -26,7 +26,7 @@
 #include "vigra/distancetransform.hxx"
 #include "vigra/seededregiongrowing.hxx"
 #include "kdtree.hpp"
-#include "geostructs/delaunaytree.hpp"
+#include "delaunaytree.hpp"
 
 using namespace Gamera::Kdtree;
 using namespace Gamera::Delaunaytree;

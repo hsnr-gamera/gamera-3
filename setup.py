@@ -167,8 +167,7 @@ includes = [(os.path.join(gamera_setup.include_path, path),
             for path, ext in
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
-            ("vigra", "*.hxx"),
-            ("geostructs", "*.hpp")]
+            ("vigra", "*.hxx")]
 
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']

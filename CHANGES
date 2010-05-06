@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin graph_color_ccs (alpha status)
+   (TODO: still crashes)
+
  - new plugin contour_samplepoints (category "Contour")
 
  - prelimary version of Delaunay triangulation delaunay_from_points

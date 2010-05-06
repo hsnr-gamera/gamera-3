@@ -27,7 +27,7 @@
 // use the Gamera plugin delaunay_from_points()
 //
 
-#include "geostructs/delaunaytree.hpp"
+#include "delaunaytree.hpp"
 
 //-------------------------------------------------------------------------
 // data structure for computing the two dimensional Delaunay triangulation

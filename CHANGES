@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin contour_samplepoints (category "Contour")
+
  - prelimary version of Delaunay triangulation delaunay_from_points
    (TODO: collinear edge resolution)
 

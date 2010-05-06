@@ -1,5 +1,6 @@
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2010      Oliver Christen, Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,6 +18,8 @@
 #
 
 from gamera.plugin import *
+
+import _contour
 
 #TODO: Change these to out-of-place
 
@@ -65,10 +68,42 @@ class contour_right(Contour):
   """
   pass
 
+class contour_samplepoints(PluginFunction):
+  """
+  Returns a point vector containing contour points of the given image.
+  
+  *percentage*:
+    return every 100/percentage-th contour points.
+  
+  In addition to the points determined by the percentage argument the result
+  list also contains the four extreme points (top, left, bottom, right).
+  
+  .. code:: Python
+   
+   	ccs = image.cc_analysis()
+   	points = []
+   	for cc in ccs:
+   	  for samplepoint in cc.contour_samplepoints(50):
+   	    points.append(samplepoint)
+  """
+  self_type = ImageType([ONEBIT])
+  author = "Oliver Christen"
+  args = Args([Int("percentage", range=(1,100), default=25)])
+  return_type = PointVector("contourpoints")
+  doc_examples = [(ONEBIT, 10)]
+  
+  def __call__(self, percentage=25): 	
+    if percentage < 1 or percentage > 100:
+      raise RuntimeError("contour_samplepoints: percentage must be between 1 and 100")
+    return _contour.contour_samplepoints(self, percentage)
+  __call__ = staticmethod(__call__)
+
+
 class ContourModule(PluginModule):
   cpp_headers = ["contour.hpp"]
   category = "Analysis/Contour"
-  functions = [contour_top, contour_left, contour_bottom, contour_right]
+  functions = [contour_top, contour_left, contour_bottom, contour_right,
+               contour_samplepoints]
   author = "Michael Droettboom"
   url = "http://gamera.sourceforge.net/"
 

@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005
- * Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Oliver Christen, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,5 +115,146 @@ namespace Gamera {
     }
     return output;
   }
+
+  template<class T>
+  PointVector * contour_samplepoints(const T& cc, int percentage) {
+    PointVector *output = new PointVector();
+    PointVector *contour_points = new PointVector();
+    PointVector::iterator found;
+
+    FloatVector *top = contour_top(cc);
+    FloatVector *right = contour_right(cc);
+    FloatVector *bottom = contour_bottom(cc);
+    FloatVector *left = contour_left(cc);
+    FloatVector::iterator it;
+
+    int x, y, i;
+    float d;
+
+    unsigned int top_d = std::numeric_limits<unsigned int>::max() ;
+    unsigned int top_max_x = 0;
+    unsigned int top_max_y = 0;
+
+    unsigned int right_d = std::numeric_limits<unsigned int>::max();
+    unsigned int right_max_x = 0;
+    unsigned int right_max_y = 0;
+
+    unsigned int bottom_d = std::numeric_limits<unsigned int>::max();
+    unsigned int bottom_max_x = 0;
+    unsigned int bottom_max_y = 0;
+
+    unsigned int left_d = std::numeric_limits<unsigned int>::max();
+    unsigned int left_max_x = 0; 
+    unsigned int left_max_y = 0;
+
+    // top
+    i = 0;for(it = top->begin() ; it != top->end() ; it++, i++) {
+	    if( *it == std::numeric_limits<double>::infinity() ) {
+		    continue;
+	    }
+	    d = *it;
+	    x = cc.offset_x() + i;
+	    y = cc.offset_y() + d;
+	    if( d < top_d) {
+		    top_d = d;
+		    top_max_x = x;
+		    top_max_y = y;	
+	    }
+	    found = find(contour_points->begin(), contour_points->end(), Point(x,y));
+	    if(found == contour_points->end()) {
+          contour_points->push_back( Point(x,y) );
+	    }
+    }
+    // right
+    i = 0;for(it = right->begin() ; it != right->end() ; it++, i++) {
+      if( *it == std::numeric_limits<double>::infinity() ) {
+        continue;
+      }
+      d = *it;
+      x = cc.offset_x() + cc.ncols() - d;
+      y = cc.offset_y() + i;
+      if( d < right_d) {
+        right_d = d;
+        right_max_x = x;
+        right_max_y = y;
+      }
+      found = find(contour_points->begin(), contour_points->end(), Point(x,y));
+      if(found == contour_points->end()) {
+        contour_points->push_back( Point(x,y) );
+      }
+    }
+    // bottom
+    i = 0;for(it = bottom->begin() ; it != bottom->end() ; it++, i++) {
+      if( *it == std::numeric_limits<double>::infinity() ) {
+        continue;
+      }
+      d = *it;
+      x = cc.offset_x() + i;
+      y = cc.offset_y() + cc.nrows() - d;
+      if( d <= bottom_d) {
+        bottom_d = d;
+        bottom_max_x = x;
+        bottom_max_y = y;
+      }
+      found = find(contour_points->begin(), contour_points->end(), Point(x,y));
+      if(found == contour_points->end()) {
+        contour_points->push_back( Point(x,y) );
+      }
+    }
+    // left
+    i = 0;for(it = left->begin() ; it != left->end() ; it++, i++) {
+      if( *it == std::numeric_limits<double>::infinity() ) {
+        continue;
+      }
+      d = *it;
+      x = cc.offset_x() + d;
+      y = cc.offset_y() + i;
+      if( d <= left_d) {
+        left_d = d;
+        left_max_x = x;
+        left_max_y = y;
+      }
+      found = find(contour_points->begin(), contour_points->end(), Point(x,y));
+      if(found == contour_points->end()) {
+        contour_points->push_back( Point(x,y) );
+      }
+    }
+
+    // add only every 100/percentage-th point
+    for(unsigned int i = 0 ; i < contour_points->size() ; i+= 100/percentage) {
+      output->push_back( (*contour_points)[i] );
+    }
+
+    // add the four outer extreme points ...
+    // ... top
+    found = find(output->begin(), output->end(), Point(top_max_x, top_max_y));
+    if(found == output->end()) {
+      output->push_back( Point(top_max_x, top_max_y) );
+    }
+    // ... right
+    found = find(output->begin(), output->end(), Point(right_max_x, right_max_y));
+    if(found == output->end()) {
+      output->push_back( Point(right_max_x, right_max_y) );
+    }
+    // ... bottom
+    found = find(output->begin(), output->end(), Point(bottom_max_x, bottom_max_y));
+    if(found == output->end()) {
+      output->push_back( Point(bottom_max_x, bottom_max_y) );
+    }
+    // ... left
+    found = find(output->begin(), output->end(), Point(left_max_x, left_max_y));
+    if(found == output->end()) {
+      output->push_back( Point(left_max_x, left_max_y) );
+    }
+
+    delete top;
+    delete right;
+    delete bottom;
+    delete left;
+    delete contour_points;
+
+    return output;
+  }
+
 }
 #endif

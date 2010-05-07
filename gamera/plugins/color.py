@@ -254,7 +254,6 @@ class graph_color_ccs(PluginFunction):
     """
     author = "Oliver Christen and Tobias Bolten"
     args = Args([ImageList('ccs'), Class('colors'), Choice('method', ["CC center", "20% contour points", "voronoi diagram"], default=1)])
-    category = "Coloring"
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])
 

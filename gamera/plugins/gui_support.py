@@ -68,7 +68,14 @@ class color_ccs(PluginFunction):
     image is colored one of eight different colors.  This function can
     be used to verify that ``cc_analysis`` is working correctly for your
     image.
-    
+
+    It should be noted that this coloring does not take care of
+    component adjacency. It may therefore happen that adjacent components
+    obtain the same color. If this is not acceptable in your use case,
+    have a look at graph_color_ccs_ instead.
+
+    .. _graph_color_ccs: color.html#graph-color-ccs
+
     *ignore_unlabeled*:
       do not colorize unlabeled pixels (pixel value one), but leave them black
 

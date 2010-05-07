@@ -17,13 +17,17 @@
 //
 
 
-#include "colorgraph.hpp"
+#include "geostructs/colorgraph.hpp"
 
 //--------------------------------------------------------------
 // graph object for coloring a planar graph in linear time
 //--------------------------------------------------------------
 
 namespace Gamera { namespace Colorgraph {
+
+  ColorGraph::ColorGraph() {
+    this->color_histogramm = NULL;
+  }
 
   ColorGraph::~ColorGraph() {
     delete this->color_histogramm;

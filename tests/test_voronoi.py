@@ -59,21 +59,31 @@ def test_delaunay_triangulation():
     points = [(50,50),(25,100),(50,150),(150,60),(150,125)]
     edges = delaunay_from_points(points,range(len(points)))
     assert len(edges) == 7
-    assert [0,1] in edges or [1,0] in edges
-    assert [0,2] in edges or [2,0] in edges
-    assert [0,3] in edges or [3,0] in edges
-    assert [0,4] in edges or [4,0] in edges
-    assert [1,2] in edges or [2,1] in edges
-    assert [2,4] in edges or [4,2] in edges
-    assert [3,4] in edges or [4,3] in edges
+    assert [0,1] in edges
+    assert [0,2] in edges
+    assert [0,3] in edges
+    assert [0,4] in edges
+    assert [1,2] in edges
+    assert [2,4] in edges
+    assert [3,4] in edges
     # some doublettes
     points = [(50,50),(25,100),(50,150),(150,60),(150,125)]
     labels = [0,1,2,3,3]
     edges = delaunay_from_points(points,labels)
     assert len(edges) == 5
-    assert [0,1] in edges or [1,0] in edges
-    assert [0,2] in edges or [2,0] in edges
-    assert [0,3] in edges or [3,0] in edges
-    assert [1,2] in edges or [2,1] in edges
-    assert [2,3] in edges or [3,2] in edges
-    # TODO: test collinear edge resolution
+    assert [0,1] in edges
+    assert [0,2] in edges
+    assert [0,3] in edges
+    assert [1,2] in edges
+    assert [2,3] in edges
+    # collinear edge resolution
+    points = [(50,50),(50,100),(50,150),(50,200),(150,125)]
+    edges = delaunay_from_points(points,range(len(points)))
+    assert len(edges) == 7
+    assert [0, 1] in edges
+    assert [0, 4] in edges
+    assert [1, 2] in edges
+    assert [1, 4] in edges
+    assert [2, 3] in edges
+    assert [2, 4] in edges
+    assert [3, 4] in edges

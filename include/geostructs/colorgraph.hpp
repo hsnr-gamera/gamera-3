@@ -46,6 +46,7 @@ namespace Gamera { namespace Colorgraph {
 	color_map colors;
     histogramm_map *color_histogramm;
   public:
+    ColorGraph();
     ~ColorGraph();
 
 	void add_node(int n);

@@ -27,13 +27,25 @@
 // use the Gamera plugin delaunay_from_points()
 //
 
-#include "delaunaytree.hpp"
+#include "geostructs/delaunaytree.hpp"
+#include <cmath>
 
 //-------------------------------------------------------------------------
 // data structure for computing the two dimensional Delaunay triangulation
 //-------------------------------------------------------------------------
 
 namespace Gamera { namespace Delaunaytree {
+
+  // are three points collinear?
+  inline bool three_points_collinear(Vertex* v1, Vertex* v2, Vertex* v3) {
+    // in DIA applications, the coordinates are typically integers
+    // => we may compare to a hard coded epsilon
+    return fabs(
+                v1->getX() * (v2->getY() - v3->getY()) +
+                v2->getX() * (v3->getY() - v1->getY()) +
+                v3->getX() * (v1->getY() - v2->getY())
+                ) < 1.0e-07F;
+  }
 
   // Vertex
   Vertex::Vertex(double x, double y) {
@@ -245,39 +257,17 @@ namespace Gamera { namespace Delaunaytree {
     return;
   }
 
+  // returns all neighboring vertices as a map vertex->{neighbor1, ...}
+  // every neighbor pair is only listed once in the set for the smaller vertex*
+  void DelaunayTree::neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *vertexmap) {
+  	root->setNumber(++number); // termination criterium
+    root->neighboringVertices(vertexmap);
+  }
   // returns all neighboring labels as a map label->{neighbor1, ...}
   // every neighbor pair is only listed once in the set for the smaller label
   void DelaunayTree::neighboringLabels(std::map<int,std::set<int> > *labelmap) {
-
-    std::map<Vertex*,std::set<Vertex*> > vertexmap;
-    std::map<Vertex*,std::set<Vertex*> >::iterator vit1;
-    std::set<Vertex*>::iterator vit2;
-    std::set<int> emptyset;
-    int label1, label2;
-
     root->setNumber(++number); // termination criterium
-    root->neighboringVertices(&vertexmap);
-
-    // TODO: resolve collinear edges
-    // (when two edges are collinear, the longer one is to be removed)
-    // ...
-
-    // copy over result to labelmap
-    for (vit1=vertexmap.begin(); vit1!=vertexmap.end(); vit1++) {
-      for (vit2=vit1->second.begin(); vit2!=vit1->second.end(); vit2++) {
-        label1 = (vit1->first)->getLabel();
-        label2 = (*vit2)->getLabel();
-        if (label1 < label2) {
-          if (labelmap->find(label1) == labelmap->end())
-            (*labelmap)[label1] = emptyset;
-          (*labelmap)[label1].insert(label2);
-        } else if (label1 > label2) {
-          if (labelmap->find(label2) == labelmap->end())
-            (*labelmap)[label2] = emptyset;
-          (*labelmap)[label2].insert(label1);
-        }
-      }
-    }
+    root->neighboringLabels(labelmap);
   }
 
   // Triangle
@@ -471,13 +461,46 @@ namespace Gamera { namespace Delaunaytree {
     return this->number;
   }
 
+  // adds the labels of neighboring vertices into the neighbors map
+  void Triangle::neighboringLabels(std::map<int,std::set<int> > *allneighbors) {
+    if( flag.isDead() ) {
+      for( TriangleList *l = sons; l ; l = l->getNext() ) {
+        if( l->getTriangle()->number != number ) {
+          l->getTriangle()->number = number;
+          l->getTriangle()->neighboringLabels(allneighbors);
+        }
+      }
+      return;
+    }
+
+    if(three_points_collinear(vertices[0], vertices[1], vertices[2]) ||
+       vertices[0]->getLabel() == -1 || vertices[1]->getLabel() == -1 || vertices[2]->getLabel() == -1) {
+    	return;
+    }
+
+    if( vertices[0]->getLabel() < vertices[1]->getLabel()  ) {
+    	(*allneighbors)[vertices[0]->getLabel()].insert(vertices[1]->getLabel());
+    } else if( vertices[0]->getLabel() > vertices[1]->getLabel()  ) {
+    	(*allneighbors)[vertices[1]->getLabel()].insert(vertices[0]->getLabel());
+    }
+
+    if( vertices[1]->getLabel() < vertices[2]->getLabel()  ) {
+    	(*allneighbors)[vertices[1]->getLabel()].insert(vertices[2]->getLabel());
+    } else if( vertices[1]->getLabel() > vertices[2]->getLabel()  ) {
+    	(*allneighbors)[vertices[2]->getLabel()].insert(vertices[1]->getLabel());
+    }
+
+    if( vertices[2]->getLabel() < vertices[0]->getLabel()  ) {
+    	(*allneighbors)[vertices[2]->getLabel()].insert(vertices[0]->getLabel());
+    } else if( vertices[2]->getLabel() > vertices[0]->getLabel()  ) {
+    	(*allneighbors)[vertices[0]->getLabel()].insert(vertices[2]->getLabel());
+    }
+  }
+  
   // adds the neighboring vertices into the map neighbors
   void Triangle::neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *allneighbors) {
-    TriangleList* l;
-    std::set<Vertex*> emptyset;
-
     if( flag.isDead() ) {
-      for( l = sons; l; l = l->getNext() ) {
+      for( TriangleList *l = sons; l; l = l->getNext() ) {
         if( l->getTriangle()->number != number ) {
           l->getTriangle()->number = number;
           l->getTriangle()->neighboringVertices(allneighbors);
@@ -485,49 +508,29 @@ namespace Gamera { namespace Delaunaytree {
       }
       return;
     }
-	
-    if(neighbors[0]->number != number) {
-      if(!flag.isInfinite()) {
-        if(vertices[1]->getLabel() >= 0 && vertices[2]->getLabel() >= 0) {
-          if (allneighbors->find(vertices[1]) == allneighbors->end())
-            (*allneighbors)[vertices[1]] = emptyset;
-          (*allneighbors)[vertices[1]].insert(vertices[2]);
-          if (allneighbors->find(vertices[2]) == allneighbors->end())
-            (*allneighbors)[vertices[2]] = emptyset;
-          (*allneighbors)[vertices[2]].insert(vertices[1]);
-        }
-      }
+        
+    if(three_points_collinear(vertices[0], vertices[1], vertices[2]) ||
+       vertices[0]->getLabel() == -1 || vertices[1]->getLabel() == -1 || vertices[2]->getLabel() == -1) {
+    	return;
     }
-	
-    if (neighbors[1]->number != number) {
-      if (!flag.isInfinite() || 
-          (flag.isInfinite() == 1 && flag.isLastFinite())) {
-        if (vertices[2]->getLabel() >= 0 && vertices[0]->getLabel() >= 0) {
-          if (allneighbors->find(vertices[2]) == allneighbors->end())
-            (*allneighbors)[vertices[2]] = emptyset;
-          (*allneighbors)[vertices[2]].insert(vertices[0]);
-          if (allneighbors->find(vertices[0]) == allneighbors->end())
-            (*allneighbors)[vertices[0]] = emptyset;
-          (*allneighbors)[vertices[0]].insert(vertices[2]);
-        }
-      	
-      }
-    }
-	
-    if (neighbors[2]->number != number) {
-      if (!flag.isInfinite() ||
-          (flag.isInfinite() == 1 && !flag.isLastFinite())) {
-        if (vertices[0]->getLabel() >= 0 && vertices[1]->getLabel() >= 0) {
-          if (allneighbors->find(vertices[1]) == allneighbors->end())
-            (*allneighbors)[vertices[1]] = emptyset;
-          (*allneighbors)[vertices[1]].insert(vertices[0]);
-          if (allneighbors->find(vertices[0]) == allneighbors->end())
-            (*allneighbors)[vertices[0]] = emptyset;
-          (*allneighbors)[vertices[0]].insert(vertices[1]);
-        }
-      }
-    }    
-  }
 
+    if( vertices[0] < vertices[1]  ) {
+    	(*allneighbors)[vertices[0]].insert(vertices[1]);
+    } else if( vertices[0] > vertices[1] ) {
+    	(*allneighbors)[vertices[1]].insert(vertices[0]);
+    }
+
+    if( vertices[1] < vertices[2] ) {
+    	(*allneighbors)[vertices[1]].insert(vertices[2]);
+    } else if( vertices[1] > vertices[2] ) {
+    	(*allneighbors)[vertices[2]].insert(vertices[1]);
+    }
+
+    if( vertices[2] < vertices[0] ) {
+    	(*allneighbors)[vertices[2]].insert(vertices[0]);
+    } else if( vertices[2] > vertices[0] ) {
+    	(*allneighbors)[vertices[0]].insert(vertices[2]);
+    }
+  }
 
 }} // end namespace Gamera::Delaunaytree

@@ -167,14 +167,15 @@ class labeled_region_neighbors(PluginFunction):
 class delaunay_from_points(PluginFunction):
   """
   Computes the Delaunay triangulation directly from a list of points and
-  point labels. The result is a list which contains tuples of adjacent labels.
+  point labels. The result is a list which contains tuples of adjacent labels,
+  where in each tuple the smaller label is given first.
 
   The arguments *points* and *labels* specify the points and nonnegative
   labels, such that ``labels[i]`` is the label of ``points[i]``. Note that
   the labels need not necessarily all be different.
-  
-  The used algorithm is based on the Delaunay tree which is a randomized
-  geometric data structure computing the Delaunay triangulation. It is
+
+  The computation of the Delaunay triangulation is based on the Delaunay
+  tree which is a randomized geometric data structure. It is
   described in O. Devillers, S. Meiser, M. Teillaud:
   `Fully dynamic Delaunay triangulation in logarithmic expected time per operation.`__
   Computational Geometry: Theory and Applications 2, pp. 55-80, 1992.
@@ -209,7 +210,7 @@ class delaunay_from_points(PluginFunction):
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
   category = "Geometry"
-  cpp_sources=["src/kdtree/kdtree.cpp", "src/delaunaytree.cpp"]
+  cpp_sources=["src/kdtree/kdtree.cpp", "src/geostructs/delaunaytree.cpp"]
   functions = [voronoi_from_labeled_image,
                voronoi_from_points,
                labeled_region_neighbors,

@@ -28,7 +28,7 @@
 #include <map>
 #include <vector>
 
-#include "colorgraph.hpp"
+#include "geostructs/colorgraph.hpp"
 #include "plugins/contour.hpp"
 #include "plugins/geometry.hpp"
 

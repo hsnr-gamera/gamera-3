@@ -241,14 +241,12 @@ class graph_color_ccs(PluginFunction):
     .. code:: Python
 
        ccs = imgage.cc_analysis()
-       colors = [ RGBPixel(0xbc, 0x2d, 0x2d),
-                  RGBPixel(0xb4, 0x2d, 0xbc),
-                  RGBPixel(0x2d, 0x34, 0xbc),
-                  RGBPixel(0x2d, 0xbc, 0xb7),
-                  RGBPixel(0x3a, 0xbc, 0x2d),
-                  RGBPixel(0xbc, 0xb7, 0x2d),
-                  RGBPixel(0xbc, 0x88, 0x2d),
-                  RGBPixel(0x6e, 0x00, 0xc7) ]
+       colors = [ RGBPixel(180, 0, 0),
+                  RGBPixel(0, 255, 0),
+                  RGBPixel(0, 0, 255),
+                  RGBPixel(255, 200, 20),
+                  RGBPixel(255, 0, 255),
+                  RGBPixel(50, 150, 50) ]
        rgb = imgage.mycolor_ccs(ccs, colors, 1)
 
     .. note:: *colors* may not contain less than six colors.
@@ -268,7 +266,7 @@ class graph_color_ccs(PluginFunction):
 class ColorModule(PluginModule):
     category = "Color"
     cpp_headers = ["color.hpp"]
-    cpp_sources = ["src/colorgraph.cpp", "src/delaunaytree.cpp"]
+    cpp_sources = ["src/geostructs/colorgraph.cpp", "src/geostructs/delaunaytree.cpp"]
     functions = [hue, saturation, value, cyan, magenta, yellow,
                  cie_x, cie_y, cie_z, cie_Lab_L, cie_Lab_a, cie_Lab_b,
                  red, green, blue, false_color,

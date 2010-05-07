@@ -98,6 +98,7 @@ namespace Gamera { namespace Delaunaytree {
     void addVertex(Vertex *v);
     void appendTriangle(Triangle *t);
     void neighboringLabels(std::map<int,std::set<int> > *lbmap);
+    void neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *vmap);
   };
 
   // Triangle
@@ -124,6 +125,7 @@ namespace Gamera { namespace Delaunaytree {
     int NeighborIndex(Triangle *t);
     int cwNeighbor(Vertex *v);
     void neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *allneighbors);
+    void neighboringLabels(std::map<int,std::set<int> > *allneighbors);
   };
 
 }} // end namespace Gamera::Delaunaytree

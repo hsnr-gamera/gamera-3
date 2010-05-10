@@ -172,7 +172,9 @@ class delaunay_from_points(PluginFunction):
 
   The arguments *points* and *labels* specify the points and nonnegative
   labels, such that ``labels[i]`` is the label of ``points[i]``. Note that
-  the labels need not necessarily all be different.
+  the labels need not necessarily all be different, which can be useful
+  for the computation of a neighborship graph from a set of connected
+  components.
 
   The computation of the Delaunay triangulation is based on the Delaunay
   tree which is a randomized geometric data structure. It is
@@ -194,10 +196,7 @@ class delaunay_from_points(PluginFunction):
     labels = range(len(points))
     neighbors = delaunay_from_points(points, labels)
     
-    g = graph.Graph()
-    g.make_undirected()
-    g.make_singly_connected()
-
+    g = graph.Graph(graph.UNDIRECTED)
     for pair in neighbors:
         g.add_edge(pair[0], pair[1])
   """

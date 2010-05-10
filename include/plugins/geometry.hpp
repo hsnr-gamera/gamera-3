@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2009 Christoph Dalitz
+ * Copyright (C) 2009-2010 Christoph Dalitz
+ *               2010      Oliver Christen
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -276,7 +277,10 @@ namespace Gamera {
 
     // some plausi checks
 	if (pv->empty()) {
-      throw std::runtime_error("points must not be empty.");
+      throw std::runtime_error("No points for triangulation given.");
+    }
+    if (pv->size() < 3) {
+      throw std::runtime_error("At least three points are required.");
     }
     if (pv->size() != lv->size()) {
       throw std::runtime_error("Number of points must match the number of labels.");
@@ -302,9 +306,7 @@ namespace Gamera {
       ++lv_it;
     }
     random_shuffle(vertices.begin(), vertices.end());
-    for(it = vertices.begin() ; it != vertices.end() ; ++it) {
-      dt.addVertex(*it);
-    }
+    dt.addVertices(&vertices);
     dt.neighboringLabels(result);
     for(it = vertices.begin() ; it != vertices.end() ; ++it) {
       delete *it;

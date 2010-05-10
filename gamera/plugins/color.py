@@ -234,9 +234,15 @@ class graph_color_ccs(PluginFunction):
 
     *method*:
         Controls the calculation of the neighborhood graph:
-                0 = from the CC center points
-                1 = from a 20 percent sample of the contour points
-                2 = from the exact area Voronoi diagram
+
+            0 = from the CC center points
+            (fastest, but can be inaccurate for large CC's)
+
+            1 = from a 20 percent sample of the contour points
+            (reasonable compromise between speed and accuracy)
+
+            2 = from the exact area Voronoi diagram
+            (can be slow on large images)
 
     .. code:: Python
 

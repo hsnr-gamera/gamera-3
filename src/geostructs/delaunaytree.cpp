@@ -194,7 +194,7 @@ namespace Gamera { namespace Delaunaytree {
     for(i = 0; i < (3 - n->getFlag()->isInfinite()); ++i) {
       if( ( v->getX() == n->getVertex(i)->getX() )
           && ( v->getY() == n->getVertex(i)->getY() ) ) {
-        throw std::runtime_error("This should NEVER happen :(");
+        throw std::runtime_error("point is already inserted");
       }
     }
 	
@@ -255,6 +255,52 @@ namespace Gamera { namespace Delaunaytree {
     first->setNeighbor(2, last);
     last->setNeighbor(1, first);
     return;
+  }
+	
+  void DelaunayTree::addVertices(std::vector<Vertex*> *vertices) {
+    std::vector<Vertex*>::iterator it;
+    unsigned int i;
+
+    // randomization commented out, to avoid unexpected changes to input
+    // argument => input data should be randomized beforehand by caller
+    // //random_shuffle(vertices->begin(), vertices->end());
+
+    // to avoid an infinite loop while adding the first three points,
+    // we must make sure that these are not colliner
+    if( three_points_collinear((*vertices)[0], (*vertices)[1], (*vertices)[2]) ) {
+			
+      if(vertices->size() == 3) {
+        throw std::runtime_error("all points are collinear");
+      }
+			
+      this->addVertex((*vertices)[0]);
+      this->addVertex((*vertices)[1]);
+			
+      i = 3;
+			
+      // find next non collinear point
+      while( three_points_collinear((*vertices)[0], (*vertices)[1], (*vertices)[i] )) {
+        i++;
+        if(i == vertices->size()) {
+          throw std::runtime_error("all points are collinear");
+        }
+      }
+      // insert points beginning at first non collinear point
+      for(it = vertices->begin() + i; it != vertices->end() ; ++it) {
+        this->addVertex(*it);
+      }
+	  // insert skipped points
+      for(it = vertices->begin() + 2; it != vertices->begin() + i ; ++it) {
+        this->addVertex(*it);
+      }
+    }
+    // when the first three points are not collinear,
+    // we can insert all points sequentially
+    else {
+      for (it = vertices->begin(); it != vertices->end(); ++it) {
+        this->addVertex(*it);
+      }
+    }
   }
 
   // returns all neighboring vertices as a map vertex->{neighbor1, ...}

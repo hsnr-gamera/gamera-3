@@ -3,10 +3,10 @@ Changes made between Gamera File Releases
 
  - new plugin graph_color_ccs (cetegory "Color")
 
- - new plugin contour_samplepoints (category "Contour")
+ - new plugin contour_samplepoints (category "Analysis/Contour")
 
- - prelimary version of Delaunay triangulation delaunay_from_points
-   (TODO: circumvent hanging when first three points are collinear)
+ - new plugin delaunay_from_points (category "Geometry")
+   for Delaunay triangulation
 
 
 Version 3.2.5, Apr 14, 2010

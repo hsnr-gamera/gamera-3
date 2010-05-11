@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                          and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2009-2010 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@ import sys
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 from fudge import Fudge
-from gamera.gui import has_gui
+from gamera.gui import has_gui, gui_util
 from gamera.gameracore import CONFIDENCE_DEFAULT
 
 """This file defines the Python part of classifiers.  These wrapper classes
@@ -719,18 +719,25 @@ connnected components, such as the lower-case *i*.
 .. note::
    Here *id* is a simple string, not of the `id_name`_ format, since
    the confidence of a manual classification is always 1.0."""
-      if id.startswith('_group') and len(glyphs) > 1:
-         import image_utilities
-         parts = id.split('.')
-         sub = '.'.join(parts[1:])
-         union = image_utilities.union_images(glyphs)
-         for glyph in glyphs:
-            if glyph.nrows > 2 and glyph.ncols > 2:
-               glyph.classify_heuristic('_group._part.' + sub)
-               self.generate_features(glyph)
-         added, removed = self.classify_glyph_manual(union, sub)
-         added.append(union)
-         return added, removed
+      if id.startswith('_group'):
+         if len(glyphs) > 1:
+            import image_utilities
+            parts = id.split('.')
+            sub = '.'.join(parts[1:])
+            union = image_utilities.union_images(glyphs)
+            for glyph in glyphs:
+               if glyph.nrows > 2 and glyph.ncols > 2:
+                  glyph.classify_heuristic('_group._part.' + sub)
+                  self.generate_features(glyph)
+            added, removed = self.classify_glyph_manual(union, sub)
+            added.append(union)
+            return added, removed
+         else:
+            # grouping a single glyph corrupts the classifier_glyph.xml file
+            added, removed = [],[]
+            if has_gui.gui:
+               gui_util.message('Grouping of only a single glyph is not allowed.')
+            return added, removed
 
       added = []
       removed = util.sets.Set()

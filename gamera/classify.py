@@ -21,7 +21,7 @@ import sys
 import core # grab all of the standard gamera modules
 import util, gamera_xml, config
 from fudge import Fudge
-from gamera.gui import has_gui, gui_util
+from gamera.gui import has_gui
 from gamera.gameracore import CONFIDENCE_DEFAULT
 
 """This file defines the Python part of classifiers.  These wrapper classes
@@ -737,6 +737,7 @@ connnected components, such as the lower-case *i*.
             added, removed = [],[]
             if has_gui.gui:
                import wx
+               from gamera.gui import gui_util
                cursorbusy = False
                if wx.IsBusy():
                   cursorbusy = True

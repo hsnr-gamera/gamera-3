@@ -210,7 +210,7 @@ else:
    # Some docstrings may contain SilverCity ".. code::" blocks.
    # Since wx.html.HtmlWindow does not support CSS, it therefore
    # can not properly handle SilverCity's syntax coloring.  So instead,
-   # we create a "dummy" code block handler that simply uses
+   # we create a "dummy" code block handler that simply uses <pre>
    def code_block(name, arguments, options, content, lineno,
                   content_offset, block_text, state, state_machine ):
       html = '\n<pre>%s</pre>\n' % "\n".join(content)

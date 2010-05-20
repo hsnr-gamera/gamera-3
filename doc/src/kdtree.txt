@@ -166,11 +166,8 @@ header files, and can thus be included with
    #include "kdtree.hpp"
    using namespace Gamera::Kdtree;
 
-The tricky part is getting your plugin module to be linked with the
-actual kdtree implementation. There are two ways, depending whether
-you are working on the gamera core code or on a separate toolkit.
-
-In the gamera core code, you can simply add the file ``kdtree.cpp``
+To ge a plugin module in the Gamera core to be linked with the
+actual kdtree implementation, you can add the file ``kdtree.cpp``
 to the ``cpp_sources`` property in the plugin Python interface:
 
 .. code:: Python
@@ -182,13 +179,7 @@ to the ``cpp_sources`` property in the plugin Python interface:
        functions = [myplugin1, myplugin2]
    module = ExampleModule()
 
-In a toolkit, you can theoretically specify the absolute path to the location
-of *kdtree.cpp* in ``cpp_cources``, but this would not be portable because
-it depends on the path of your local copy of the gamera source code. In
-this case, it is therefore better to include copies of the files 
-*kdtree.hpp* and *kdtree.cpp* from the gamera sources in your toolkit
-and set ``cpp_sources`` to the relative path in your toolkit.
-
+In a toolkit, this is not necessary.
 
 Usage
 '''''

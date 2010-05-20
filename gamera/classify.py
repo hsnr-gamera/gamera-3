@@ -734,18 +734,7 @@ connnected components, such as the lower-case *i*.
             return added, removed
          else:
             # grouping a single glyph corrupts the classifier_glyph.xml file
-            added, removed = [],[]
-            if has_gui.gui:
-               import wx
-               from gamera.gui import gui_util
-               cursorbusy = False
-               if wx.IsBusy():
-                  cursorbusy = True
-                  wx.EndBusyCursor()
-               gui_util.message('Grouping of only a single glyph is not allowed.')
-               if cursorbusy:
-                  wx.BeginBusyCursor()
-            return added, removed
+            raise ClassifierError("Grouping of only a single glyph is not allowed.")
 
       added = []
       removed = util.sets.Set()

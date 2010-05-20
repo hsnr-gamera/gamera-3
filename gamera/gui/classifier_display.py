@@ -837,7 +837,13 @@ class ClassifierFrame(ImageFrameBase):
          try:
             added, removed = self._classifier.classify_list_manual(selection, id)
          except ClassifierError, e:
+            cursorbusy = False
+            if wx.IsBusy():
+               cursorbusy = True
+               wx.EndBusyCursor()
             gui_util.message(str(e))
+            if cursorbusy:
+               wx.BeginBusyCursor()
             return
          if len(added) or len(removed):
             wx.BeginBusyCursor()

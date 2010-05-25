@@ -166,20 +166,39 @@ header files, and can thus be included with
    #include "kdtree.hpp"
    using namespace Gamera::Kdtree;
 
-To ge a plugin module in the Gamera core to be linked with the
-actual kdtree implementation, you can add the file ``kdtree.cpp``
-to the ``cpp_sources`` property in the plugin Python interface:
+The tricky part is getting your plugin module to be linked with the
+actual kdtree implementation. This is achieved by adding the
+source file ``kdtree.cpp`` to the ``cpp_sources`` property in the
+plugin Python interface.
+
+In the gamera core code, the following works:
 
 .. code:: Python
 
    class ExampleModule(PluginModule):
        category = "MyPlugins"
-       cpp_headers=["myplugins.hpp"]
-       cpp_sources=["src/kdtree/kdtree.cpp"]
+       cpp_headers = ["myplugins.hpp"]
+       cpp_sources = ["src/geostructs/kdtree.cpp"]
        functions = [myplugin1, myplugin2]
    module = ExampleModule()
 
-In a toolkit, this is not necessary.
+In a toolkit, this will not work, because the path names in
+the ``cpp_sources`` property are relative to the location
+of the *setup.py* script. To allow for the use of the KdTree C++
+class in toolkits, the source file *kdtree.cpp* is installed together
+with Gamera. You can thus specify this file in ``cpp_sources``
+as follows:
+
+.. code:: Python
+
+   class ExampleModule(PluginModule):
+       # ...
+       from distutils.sysconfig import get_python_lib
+       import os
+       gamera_root = os.path.join(get_python_lib(), "gamera")
+       cpp_sources = [os.path.join(gamera_root, "src/geostructs/kdtree.cpp")]
+       # ...
+
 
 Usage
 '''''

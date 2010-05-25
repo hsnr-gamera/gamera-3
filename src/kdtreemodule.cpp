@@ -19,7 +19,7 @@
 
 #include <Python.h>
 #include "gameramodule.hpp"
-#include "kdtree.hpp"
+#include "geostructs/kdtree.hpp"
 
 // these classes are used from kdtree.hpp:
 //using Gamera::Kdtree::KdTree;

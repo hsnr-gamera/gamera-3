@@ -209,7 +209,7 @@ class delaunay_from_points(PluginFunction):
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
   category = "Geometry"
-  cpp_sources=["src/kdtree/kdtree.cpp", "src/geostructs/delaunaytree.cpp"]
+  cpp_sources=["src/geostructs/kdtree.cpp", "src/geostructs/delaunaytree.cpp"]
   functions = [voronoi_from_labeled_image,
                voronoi_from_points,
                labeled_region_neighbors,

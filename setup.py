@@ -20,6 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
 import sys, os, glob, datetime
+from distutils.sysconfig import get_python_lib
 
 if sys.hexversion < 0x02030000:
    print "At least Python 2.3 is required to build Gamera.  You have"
@@ -124,7 +125,7 @@ plugin_extensions = gamera_setup.generate_plugins(
 ga_files = glob.glob("src/ga/*.cpp")
 ga_files.append("src/knncoremodule.cpp")
 graph_files = glob.glob("src/graph/*.cpp")
-kdtree_files = glob.glob("src/kdtree/*.cpp")
+kdtree_files = ["src/kdtreemodule.cpp", "src/geostructs/kdtree.cpp"]
 
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
@@ -151,7 +152,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include", "src", "src/graph"],
                         **gamera_setup.extras),
               Extension("gamera.kdtree", kdtree_files,
-                        include_dirs=["include", "src", "src/kdtree"],
+                        include_dirs=["include", "src", "include/geostructs"],
                         **gamera_setup.extras)]
 extensions.extend(plugin_extensions)
 
@@ -167,7 +168,13 @@ includes = [(os.path.join(gamera_setup.include_path, path),
             for path, ext in
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
-            ("vigra", "*.hxx")]
+            ("vigra", "*.hxx"),
+            ("geostructs", "*.hpp")]
+
+srcfiles = [(os.path.join(get_python_lib(),"gamera",path),
+             glob.glob(os.path.join(path, ext)))
+            for path, ext in
+            [("src/geostructs", "*.cpp")]]
 
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']
@@ -179,6 +186,8 @@ else:
    data_files = [(os.path.join(gamera_setup.lib_path, "$LIB/test"),
                   glob.glob("gamera/test/*.tiff"))] + includes
    package_data = {}
+
+data_files += srcfiles
 
 if sys.platform == 'darwin':
    packages.append("gamera.mac")

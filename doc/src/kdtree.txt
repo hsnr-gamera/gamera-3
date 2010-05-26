@@ -194,10 +194,15 @@ as follows:
    class ExampleModule(PluginModule):
        # ...
        from distutils.sysconfig import get_python_lib
-       import os
-       gamera_root = os.path.join(get_python_lib(), "gamera")
+       import os, gamera
+       gamera_root = os.path.dirname(gamera.__file__)
        cpp_sources = [os.path.join(gamera_root, "src/geostructs/kdtree.cpp")]
        # ...
+
+Querying the Gamera installation directory through the *__file__* property
+of the gamera module is safer than using *get_python_lib()* from
+``distutils.sysconfig``, because it also works when Gamera is not
+installed into the standard location for python extensions.
 
 
 Usage

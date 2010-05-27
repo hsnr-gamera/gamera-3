@@ -24,7 +24,6 @@
 #include <vector>
 #include <string>
 #include <list>
-#include <set>
 #include <stdexcept>
 
 //--------------------------------------------------------------
@@ -42,25 +41,27 @@ namespace Gamera { namespace Colorgraph {
 
   class ColorGraph {
   private:
-	adj_map adj;
-	color_map colors;
+    adj_map adj;
+    color_map colors;
     histogramm_map *color_histogramm;
   public:
     ColorGraph();
     ~ColorGraph();
 
-	void add_node(int n);
-	void remove_node(int n);
-	void add_edge(int u, int v);
-	void remove_edge(int u, int v);
-	void neighbors(int n, NodeVector neighbors);
+    void add_node(int n);
+    void remove_node(int n);
+    void add_edge(int u, int v);
+    void remove_edge(int u, int v);
+    void neighbors(int n, NodeVector neighbors);
     void nodes(NodeVector nodes);
-	int size();
-	
-	void set_color(int n, int c);
-	int get_color(int n);
-	void colorize(int c);
-	bool is_valid_coloration();
+    int size();
+
+    void breadth_traversal(std::list<int> *ordering, int start = 0);
+    
+    void set_color(int n, int c);
+    int get_color(int n);
+    void colorize(int c);
+    bool is_valid_coloration();
     histogramm_map * get_color_histogramm();
   };
 

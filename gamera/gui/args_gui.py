@@ -27,7 +27,7 @@ import string
 from gamera import util, enums
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
-from gamera.args import DEFAULT_MAX_ARG_NUMBER
+from gamera.args import DEFAULT_MAX_ARG_NUMBER, CNoneDefault
 import sys
 
 class ArgInvalidException(Exception):
@@ -365,6 +365,8 @@ class Class:
             for key, val in locals.items():
                if isinstance(val, self.klass):
                   choices.append(key)
+      if isinstance(self.default, CNoneDefault):
+         choices = ["None"] + choices
       return choices
 
    def get_control(self, parent, locals=None):
@@ -372,7 +374,7 @@ class Class:
          self.klass = eval(self.klass)
       self.control = wx.Choice(
          parent, -1, choices = self.determine_choices(locals))
-      self.control.SetSelection(self.default)
+      #self.control.SetSelection(0)
       return self
 
    def get(self):

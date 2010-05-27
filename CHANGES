@@ -1,7 +1,7 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new plugin graph_color_ccs (cetegory "Color")
+ - new plugin graph_color_ccs (category "Color")
 
  - new plugin contour_samplepoints (category "Analysis/Contour")
 

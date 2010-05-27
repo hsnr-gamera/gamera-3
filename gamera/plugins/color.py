@@ -1,7 +1,7 @@
 #
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
-#               2010      Christoph Dalitz, Tobias Bolten, Oliver Christen
+#               2010      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -202,80 +202,13 @@ class colors_to_labels(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
-class graph_color_ccs(PluginFunction):
-    """
-    Returns an RGB Image where each segment is colored with one of the colors
-    from *colors* with the constraint that segments adjacent in the 
-    neighborship graph have different colors.
-
-    This function can be used to verify that the pagesegmentation 
-    e.g. ``cc_analysis`` is working correctly for your image.
-
-    The graph coloring algorithm is based on the "6-COLOR" alorithm for
-    planar graphs, as described in:
-
-        D. Matula, Y. Shiloach, R. Tarjan:
-        `Two linear-time algorithms for five-coloring a planar graph.`__
-        Tech Rep STAN-CS-80-830, Computer Science Dep., Stanford Univ., 
-        Stanford, Calif., 1980
-
-.. __: ftp://db.stanford.edu/pub/cstr/reports/cs/tr/80/830/CS-TR-80-830.pdf
-
-    We have modified the algorithm in such way that the color distribution is
-    balanced, i.e. that each color is assigned approximately to the same
-    number of nodes (also known as \"equitable coloring\").
-
-    *ccs*:
-        ImageList which contains ccs to be colored. Must be views on
-        the image an which this method is called.
-
-    *colors*:
-        list of colors (instances of RGBPixel) which will be used for coloring
-
-    *method*:
-        Controls the calculation of the neighborhood graph:
-
-            0 = from the CC center points
-            (fastest, but can be inaccurate for large CC's)
-
-            1 = from a 20 percent sample of the contour points
-            (reasonable compromise between speed and accuracy)
-
-            2 = from the exact area Voronoi diagram
-            (can be slow on large images)
-
-    .. code:: Python
-
-       ccs = imgage.cc_analysis()
-       colors = [ RGBPixel(180, 0, 0),
-                  RGBPixel(0, 255, 0),
-                  RGBPixel(0, 0, 255),
-                  RGBPixel(255, 200, 20),
-                  RGBPixel(255, 0, 255),
-                  RGBPixel(50, 150, 50) ]
-       rgb = imgage.mycolor_ccs(ccs, colors, 1)
-
-    .. note:: *colors* may not contain less than six colors.
-
-    """
-    author = "Oliver Christen and Tobias Bolten"
-    args = Args([ImageList('ccs'), Class('colors'), Choice('method', ["CC center", "20% contour points", "voronoi diagram"], default=1)])
-    self_type = ImageType([ONEBIT])
-    return_type = ImageType([RGB])
-
-    def __call__(image, ccs, colors, method=1):
-        return _color.graph_color_ccs(image, ccs, colors, method)
-    __call__ = staticmethod(__call__)
-
-
 class ColorModule(PluginModule):
     category = "Color"
     cpp_headers = ["color.hpp"]
-    cpp_sources = ["src/geostructs/colorgraph.cpp", "src/geostructs/delaunaytree.cpp"]
     functions = [hue, saturation, value, cyan, magenta, yellow,
                  cie_x, cie_y, cie_z, cie_Lab_L, cie_Lab_a, cie_Lab_b,
                  red, green, blue, false_color,
-                 colors_to_labels, graph_color_ccs]
+                 colors_to_labels]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 

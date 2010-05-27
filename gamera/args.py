@@ -190,10 +190,16 @@ class String(Arg):
       return result
 
 class Class(Arg):
-   def __init__(self, name=None, klass=None, list_of=False):
+   def __init__(self, name=None, klass=None, list_of=False, default=None):
       Arg.__init__(self, name)
       self.klass = klass
       self.list_of = bool(list_of)
+      if default is None:
+         self.has_default = False
+         self.default = ''
+      else:
+         self.has_default = True
+         self.default = default
 
    def rest_repr(self, name=False):
       if self.klass is None:
@@ -203,7 +209,9 @@ class Class(Arg):
       if name:
          result += " *%s*" % self.name
       if self.list_of:
-         return "[%s]" % result
+         result = "[%s]" % result
+      if self.has_default:
+         result += " = %s" % str(self.default)
       return result
 
 class ImageType(Arg):

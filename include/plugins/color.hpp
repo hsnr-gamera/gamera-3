@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
- *               2010      Hasan Yildiz, Tobias Bolten, Oliver Christen,
- *                         Christoph Dalitz
+ *               2010      Hasan Yildiz, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,13 +27,7 @@
 #include <map>
 #include <vector>
 
-#include "geostructs/colorgraph.hpp"
-#include "plugins/contour.hpp"
-#include "plugins/geometry.hpp"
-
 namespace Gamera {
-
-  using namespace Colorgraph;
 
   template<class T, class U, class F>
   struct extract_plane {
@@ -344,138 +337,6 @@ namespace Gamera {
     return dest;
   }
 
-
-  //-----------------------------------------------------------------------
-  // functions for graph coloring of Cc's with different colors
-  //-----------------------------------------------------------------------
-  template<class T>
-  ColorGraph *graph_from_ccs(T &image, ImageVector &ccs, int method) {
-    ColorGraph *graph = new ColorGraph();
-
-    PointVector *pv = new PointVector();
-    IntVector *iv = new IntVector();
-    ImageVector::iterator iter;
-
-    if( method == 0 || method == 1 ) {
-      if( method == 0 ) {
-        // method == 0 --> from the CC center points
-        for( iter = ccs.begin(); iter != ccs.end(); iter++) {
-          Cc* cc = static_cast<Cc*>((*iter).first);
-          pv->push_back( cc->center() );
-          iv->push_back( cc->label() );
-        }        
-      }
-      else if( method == 1) {
-        // method == 1 --> from a 20 percent sample of the contour points
-        for( iter = ccs.begin(); iter != ccs.end(); iter++) {
-          Cc* cc = static_cast<Cc*>((*iter).first);
-          PointVector *cc_pv = contour_samplepoints(*cc, 20);
-          PointVector::iterator point_vec_iter;
-          for( point_vec_iter = cc_pv->begin(); point_vec_iter != cc_pv->end(); point_vec_iter++ ) {
-            pv->push_back(*point_vec_iter);
-            iv->push_back(cc->label());
-          }
-          delete cc_pv;
-        }
-      }
-
-      // Build the graph
-      std::map<int,std::set<int> > neighbors;
-      std::map<int,std::set<int> >::iterator nit1;
-      std::set<int>::iterator nit2;
-      delaunay_from_points_cpp(pv, iv, &neighbors);
-      for (nit1=neighbors.begin(); nit1!=neighbors.end(); ++nit1) {
-        for (nit2=nit1->second.begin(); nit2!=nit1->second.end(); nit2++) {
-          graph->add_edge(nit1->first, *nit2);
-        }
-      }
-    }
-    else if( method == 2 ) {
-      // method == 2 --> from the exact area Voronoi diagram
-      typedef typename ImageFactory<T>::view_type view_type;
-      Image *voronoi       = voronoi_from_labeled_image(image);
-      PyObject *labelpairs = labeled_region_neighbors( *((view_type*) voronoi) );
-      for (int i = 0; i < PyList_Size(labelpairs); i++) {
-        PyObject *adj_list = PyList_GetItem(labelpairs, i);
-        PyObject *region1 = PyList_GetItem(adj_list, 0);
-        PyObject *region2 = PyList_GetItem(adj_list, 1); 
-        long neighborhood1 = PyInt_AsLong(region1);
-        long neighborhood2 = PyInt_AsLong(region2);
-        graph->add_edge( (int) neighborhood1, (int) neighborhood2);
-      }
-      delete voronoi->data();
-      delete voronoi;
-      Py_DECREF(labelpairs);
-    }
-    else {
-      throw std::runtime_error("Unknown method for construction the neighborhood graph");
-    }
-
-    delete pv;
-    delete iv;
-    return graph;
-  }
-
-
-  template<class T>
-  RGBImageView* graph_color_ccs(T &image, ImageVector &ccs, PyObject *colors, int method) {
-    ColorGraph *graph = NULL;
-    std::vector<RGBPixel*> RGBColors;
-    
-    // check input parameters
-    if( ccs.size() == 0 ) {
-      throw std::runtime_error("graph_color_ccs: no CCs given.");
-    }
-    if( !PyList_Check(colors) ) {
-      throw std::runtime_error("graph_color_ccs: colors is no list");
-    }
-    if( PyList_Size(colors) < 6 ) {
-      throw std::runtime_error("graph_color_ccs: coloring algorithm only works with more than five colors");
-    }
-
-    // extract the colors
-    for( int i = 0; i < PyList_Size(colors); i++) {
-      PyObject *Py_RGBPixel = PyList_GetItem(colors, i);
-      RGBPixel *RGBPixel    = ((RGBPixelObject*) Py_RGBPixel )->m_x;
-      RGBColors.push_back(RGBPixel);
-    }
-
-    // build the graph from the given ccs
-    graph = graph_from_ccs(image, ccs, method);
-
-    // volor the graph
-    graph->colorize( PyList_Size(colors) );
-
-//     // for debugging only: print the result color histogramm
-//     std::map<int, int> *color_histogramm = graph->get_color_histogramm();
-//     std::map<int, int>::iterator histo_iter;
-//     for( histo_iter = color_histogramm->begin(); histo_iter != color_histogramm->end(); histo_iter++) {
-//         std::cout << histo_iter->first << " --> " << histo_iter->second << std::endl;
-//     }
-
-    // Create the return image
-    // Ccs not passed to the function are set black in the result
-    typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
-    RGBViewFactory::image_type *coloredImage = RGBViewFactory::create(image.origin(), image.dim());
-    int label;
-    for( size_t y = 0; y < image.nrows(); y++) {
-      for( size_t x = 0; x < image.ncols(); x++ ) {
-        label = image.get(Point(x,y));
-        if( label != 0 ) {
-          try {
-            int c = graph->get_color(label);
-            coloredImage->set(Point(x,y), *RGBColors[c]);
-          }
-          catch( std::runtime_error runtimeError ) {
-            coloredImage->set(Point(x,y), RGBPixel(0,0,0));
-          }
-        }
-      }
-    }
-    delete graph;
-
-    return coloredImage;
-  }
 
 
 }

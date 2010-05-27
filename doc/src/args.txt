@@ -167,7 +167,10 @@ If the optional *list_of* is ``True``, then this argument refers to a
 Python list, in which all of its elements are instances of *klass*.
 
 ``Class`` arguments are displayed in the GUI as a drop-down list of
-instances of that class.
+instances of that class. If you want to have ``None`` as the first
+entry in this list, you can set the default to ``NoneDefault``,
+which is a special object that translates to ``None``
+when used as a default value.
 
 ImageType
 ---------
@@ -354,7 +357,7 @@ if the method is operating on a FLOAT image, this argument will take
 a FLOAT value.
 
 Setting a default value for a pixel is generally of little use because
-the value depends on teh pixel type. You can however set the default to
+the value depends on the pixel type. You can however set the default to
 ``NoneDefault``, which is a special object that translates to ``None``
 when used as a default value. This can then be queried in the
 function, as shown in the following example::

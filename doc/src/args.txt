@@ -200,6 +200,13 @@ ImageList
 
 ``ImageList`` is a convenience alias for ``ImageType(ALL,`` *name* ``, list_of=True)``.
 
+Like ``Class``, this argument is displayed in the GUI as a drop-down list of
+instances of image lists. If you want to have ``None`` as the first
+entry in this list, you can set the default to ``NoneDefault``,
+which is a special object that translates to ``None``
+when used as a default value.
+
+
 Choice
 ------
 

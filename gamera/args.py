@@ -1,8 +1,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
-#                         Karl MacMillan, and Christoph Dalitz
+# Copyright (C) 2001-2010 Ichiro Fujinaga, Michael Droettboom,
+#                         Karl MacMillan, Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -430,8 +430,8 @@ class ComplexVector(_Vector):
    typecode = None
 
 class ImageList(Class):
-   def __init__(self, name=None):
-      Class.__init__(self, name, None, True)
+   def __init__(self, name=None, default=None):
+      Class.__init__(self, name=name, klass=None, list_of=True, default=default)
 
 class Pixel(Class):
    """Uses these to pass pixel values into a plugin.  The

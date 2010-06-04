@@ -194,7 +194,9 @@ namespace Gamera { namespace Delaunaytree {
     for(i = 0; i < (3 - n->getFlag()->isInfinite()); ++i) {
       if( ( v->getX() == n->getVertex(i)->getX() )
           && ( v->getY() == n->getVertex(i)->getY() ) ) {
-        throw std::runtime_error("point is already inserted");
+        char msg[64];
+        sprintf(msg, "point (%.1f,%.1f) is already inserted", v->getX(), v->getY());
+        throw std::runtime_error(msg);
       }
     }
 	

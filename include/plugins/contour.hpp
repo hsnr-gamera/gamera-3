@@ -29,16 +29,16 @@ namespace Gamera {
     FloatVector* output = new FloatVector(m.ncols());
     try {
       for (size_t c = 0; c != m.ncols(); ++c) {
-	size_t r = 0;
-	for (; r != m.nrows(); ++r)
-	  if (is_black(m.get(Point(c, r))))
-	    break;
-	double result;
-	if (r >= m.nrows())
-	  result = std::numeric_limits<double>::infinity();
-	else
-	  result = (double)r;
-	(*output)[c] = result;
+        size_t r = 0;
+        for (; r != m.nrows(); ++r)
+          if (is_black(m.get(Point(c, r))))
+            break;
+        double result;
+        if (r >= m.nrows())
+          result = std::numeric_limits<double>::infinity();
+        else
+          result = (double)r;
+        (*output)[c] = result;
       }
     } catch (std::exception e) {
       delete output;
@@ -52,16 +52,16 @@ namespace Gamera {
     FloatVector* output = new FloatVector(m.ncols());
     try {
       for (size_t c = 0; c != m.ncols(); ++c) {
-	long r = m.nrows() - 1;
-	for (; r >= 0; --r)
-	  if (is_black(m.get(Point(c, r))))
-	    break;
-	double result;
-	if (r < 0)
-	  result = std::numeric_limits<double>::infinity();
-	else
-	  result = (double)(m.nrows() - r);
-	(*output)[c] = result;
+        long r = m.nrows() - 1;
+        for (; r >= 0; --r)
+          if (is_black(m.get(Point(c, r))))
+            break;
+        double result;
+        if (r < 0)
+          result = std::numeric_limits<double>::infinity();
+        else
+          result = (double)(m.nrows() - r);
+        (*output)[c] = result;
       }
     } catch (std::exception e) {
       delete output;
@@ -75,16 +75,16 @@ namespace Gamera {
     FloatVector* output = new FloatVector(m.nrows());
     try {
       for (size_t r = 0; r != m.nrows(); ++r) {
-	size_t c = 0;
-	for (; c != m.ncols(); ++c)
-	  if (is_black(m.get(Point(c, r))))
-	    break;
-	double result;
-	if (c >= m.ncols())
-	  result = std::numeric_limits<double>::infinity();
-	else
-	  result = (double)c;
-	(*output)[r] = result;
+        size_t c = 0;
+        for (; c != m.ncols(); ++c)
+          if (is_black(m.get(Point(c, r))))
+            break;
+        double result;
+        if (c >= m.ncols())
+          result = std::numeric_limits<double>::infinity();
+        else
+          result = (double)c;
+        (*output)[r] = result;
       }
     } catch (std::exception e) {
       delete output;
@@ -98,16 +98,16 @@ namespace Gamera {
     FloatVector* output = new FloatVector(m.nrows());
     try {
       for (size_t r = 0; r != m.nrows(); ++r) {
-	long c = m.ncols() - 1;
-	for (; c >= 0; --c)
-	  if (is_black(m.get(Point(c, r))))
-	    break;
-	double result;
-	if (c < 0)
-	  result = std::numeric_limits<double>::infinity();
-	else
-	  result = (double)(m.ncols() - c);
-	(*output)[r] = result;
+        long c = m.ncols() - 1;
+        for (; c >= 0; --c)
+          if (is_black(m.get(Point(c, r))))
+            break;
+        double result;
+        if (c < 0)
+          result = std::numeric_limits<double>::infinity();
+        else
+          result = (double)(m.ncols() - c);
+        (*output)[r] = result;
       }
     } catch (std::exception e) {
       delete output;
@@ -227,24 +227,32 @@ namespace Gamera {
 
     // add the four outer extreme points ...
     // ... top
-    found = find(output->begin(), output->end(), Point(top_max_x, top_max_y));
-    if(found == output->end()) {
-      output->push_back( Point(top_max_x, top_max_y) );
+    if (top_d != std::numeric_limits<unsigned int>::max()) {
+      found = find(output->begin(), output->end(), Point(top_max_x, top_max_y));
+      if(found == output->end()) {
+        output->push_back( Point(top_max_x, top_max_y) );
+      }
     }
     // ... right
-    found = find(output->begin(), output->end(), Point(right_max_x, right_max_y));
-    if(found == output->end()) {
-      output->push_back( Point(right_max_x, right_max_y) );
+    if (right_d != std::numeric_limits<unsigned int>::max()) {
+      found = find(output->begin(), output->end(), Point(right_max_x, right_max_y));
+      if(found == output->end()) {
+        output->push_back( Point(right_max_x, right_max_y) );
+      }
     }
     // ... bottom
-    found = find(output->begin(), output->end(), Point(bottom_max_x, bottom_max_y));
-    if(found == output->end()) {
-      output->push_back( Point(bottom_max_x, bottom_max_y) );
+    if (bottom_d != std::numeric_limits<unsigned int>::max()) {
+      found = find(output->begin(), output->end(), Point(bottom_max_x, bottom_max_y));
+      if(found == output->end()) {
+        output->push_back( Point(bottom_max_x, bottom_max_y) );
+      }
     }
     // ... left
-    found = find(output->begin(), output->end(), Point(left_max_x, left_max_y));
-    if(found == output->end()) {
-      output->push_back( Point(left_max_x, left_max_y) );
+    if (left_d != std::numeric_limits<unsigned int>::max()) {
+      found = find(output->begin(), output->end(), Point(left_max_x, left_max_y));
+      if(found == output->end()) {
+        output->push_back( Point(left_max_x, left_max_y) );
+      }
     }
 
     delete top;

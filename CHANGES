@@ -8,6 +8,8 @@ Changes made between Gamera File Releases
  - new plugin delaunay_from_points (category "Geometry")
    for Delaunay triangulation
 
+ - fixed bug in runlength smearing that could split smeared lines
+
 
 Version 3.2.5, Apr 14, 2010
 ----------------------------

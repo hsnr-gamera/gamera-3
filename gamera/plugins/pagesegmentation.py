@@ -108,7 +108,7 @@ class runlength_smearing(PluginFunction):
     return_type = ImageList("ccs")
     args = Args([Int('Cx', default = -1), Int('Cy', default = -1), \
 		 Int('Csm', default = -1)])
-    author = "Iliya Stoyanov"
+    author = "Christoph Dalitz and Iliya Stoyanov"
     def __call__(image, Cx = -1, Cy = -1, Csm = -1):
 	return _pagesegmentation.runlength_smearing(image, Cx, Cy, Csm)
     __call__ = staticmethod(__call__)

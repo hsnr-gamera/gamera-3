@@ -72,161 +72,145 @@ int pagesegmentation_median_height(ImageList* ccs) {
 ******************************************************************************/
 template<class T>
 ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
-    typedef OneBitImageView VIEW;
-    typedef OneBitImageData DATA;
-    typedef typename T::value_type COLOR;
+    typedef OneBitImageView view_type;
+    typedef OneBitImageData data_type;
+    typedef typename T::value_type value_type;
 
-    DATA* X_Data = new DATA(image.size(), image.origin());
-    VIEW* X_View = new VIEW(*X_Data);
-    image_copy_fill(image, *X_View);
+    data_type* img1_data = new data_type(image.size(), image.origin());
+    view_type* img1 = new view_type(*img1_data);
+    image_copy_fill(image, *img1);
     
-    DATA* Y_Data = new DATA(image.size(), image.origin());
-    VIEW* Y_View = new VIEW(*Y_Data);
-    image_copy_fill(image, *Y_View);
-
-    DATA* AND_Data = new DATA(image.size(), image.origin());
-    VIEW* AND_View = new VIEW(*AND_Data);
+    data_type* img2_data = new data_type(image.size(), image.origin());
+    view_type* img2 = new view_type(*img2_data);
+    image_copy_fill(image, *img2);
 
     int Ctemp = 0;
-    size_t NRows = image.nrows();
-    size_t NCols = image.ncols();
+    size_t nrows = image.nrows();
+    size_t ncols = image.ncols();
     size_t x, y;
-    COLOR Black = black(image);
-    //COLOR White = white(image);
+    value_type black_val = black(image);
+    value_type white_val = white(image);
 
-    // int Csm = 17, Cy = 100, Cx = 100;
-    // The user can't define values for the white runs
-    // Default behavior if one parameter is less then zero
+    // when no values given, guess them from the Cc size statistics
     if (Csm <= 0 || Cy <= 0 || Cx <= 0) {
-        ImageList* ccs_temp = cc_analysis(image);
-        int Median = pagesegmentation_median_height(ccs_temp);
+      ImageList* ccs_temp = cc_analysis(image);
+      int Median = pagesegmentation_median_height(ccs_temp);
 
-        for (ImageList::iterator i = ccs_temp->begin(); 
-                i != ccs_temp->end(); i++) {
-            delete *i;
-        }
-        delete ccs_temp;
+      for (ImageList::iterator i = ccs_temp->begin(); i != ccs_temp->end(); i++) {
+        delete *i;
+      }
+      delete ccs_temp;
 
-        if (Csm <= 0) {
-            Csm = 3 * Median;
-        }
-        if (Cy <= 0) {
-            Cy = 20 * Median;
-        }
-        if (Cx <= 0) {
-            Cx = 20 * Median;
-        }
+      if (Csm <= 0)
+        Csm = 3 * Median;
+      if (Cy <= 0)
+        Cy = 20 * Median;
+      if (Cx <= 0)
+        Cx = 20 * Median;
     }
 
-
-    // Horizontal Smearing
-    for (y = 0; y < NRows; ++y) {
-        for (x = 0; x < NCols; ++x) {
-            if (x == 0) { // On new line
-                Ctemp = 0;
+    // horizontal smearing
+    for (y = 0; y < nrows; ++y) {
+      for (x = 0, Ctemp = 0; x < ncols; ++x) {
+        if (is_white(image.get(Point(x, y)))) {
+          Ctemp += 1;
+        } else {
+          if ((0 != Ctemp) && (Ctemp <= Cx)){
+            for (int z = 0; z < Ctemp; z++) {
+              img1->set(Point(x-z-1, y), black_val);
             }
-            if (is_white(image.get(Point(x, y)))) { //White
-                Ctemp += 1;
-            } else {                                //Black
-                if ((0 != Ctemp) && (Ctemp <= Cx)){
-                    for (int z = 0; z < Ctemp; z++) {
-                        X_View->set(Point(x - z - 1, y), Black);
-                    }
-                }
-                Ctemp = 0;
-            }
+          }
+          Ctemp = 0;
         }
+      }
     }
 
-    // Vertical Smearing
-    for (x = 0; x < NCols; ++x) {
-        for (y = 0; y < NRows; ++y) {
-            if (y == 0) { // New line
-                Ctemp = 0;
-            }
-            if (is_white(image.get(Point(x, y)))) { // White
-                Ctemp += 1;
-            } else {                                // Black
-                if ((0 != Ctemp) && (Ctemp <= Cy)) {
-                    for (int z = 0; z < Ctemp; z++)
-                        Y_View->set(Point(x, y - z - 1), Black);
-                }
-                Ctemp = 0;
-            }
+    // vertical smearing
+    for (x = 0; x < ncols; ++x) {
+      for (y = 0, Ctemp = 0; y < nrows; ++y) {
+        if (is_white(image.get(Point(x, y)))) {
+          Ctemp += 1;
+        } else {
+          if ((0 != Ctemp) && (Ctemp <= Cy)) {
+            for (int z = 0; z < Ctemp; z++)
+              img2->set(Point(x, y-z-1), black_val);
+          }
+          Ctemp = 0;
         }
+      }
     }
 
-        // Segmentation from Horizontal and Vertical Smearing
-        for(y = 0; y < NRows; ++y) {
-                for(x = 0; x < NCols; ++x) {
-            if ((is_black(X_View->get(Point(x, y))))
-                    && (is_black(Y_View->get(Point(x, y))))){
-                AND_View->set(Point(x, y), Black);
-            }
-                }
+    // logical AND between both images
+    for(y = 0; y < nrows; ++y) {
+      for(x = 0; x < ncols; ++x) {
+        if ((is_black(img1->get(Point(x, y))))
+            && (is_black(img2->get(Point(x, y))))){
+          img1->set(Point(x, y), black_val);
+        } else {
+          img1->set(Point(x, y), white_val);
         }
-
-    // Removing spots from the rows less than Csm pixels
-    for (y = 0; y < NRows; ++y) {
-        for ( x = 0; x < NCols; ++x) {
-            if (x == 0) { // New line
-                Ctemp = 0;
-            }
-            if (is_white(AND_View->get(Point(x, y)))) { // White
-                Ctemp += 1;
-            } else {                                    // Black
-                if ((0 != Ctemp) && (Ctemp <= Csm)){
-                    for (int z = 0; z < Ctemp; z++)
-                        AND_View->set(Point(x - z - 1, y), Black);
-                }
-                Ctemp = 0;
-            }
-        }
+      }
     }
 
-    ImageList* ccs_AND = cc_analysis(*AND_View);
+    // again horizontal smearing for removal of small holes
+    for (y = 0; y < nrows; ++y) {
+      for (x = 0, Ctemp = 0; x < ncols; ++x) {
+        if (is_white(img1->get(Point(x, y)))) {
+          Ctemp += 1;
+        } else {
+          if ((0 != Ctemp) && (Ctemp <= Csm)){
+            for (int z = 0; z < Ctemp; z++)
+              img1->set(Point(x-z-1, y), black_val);
+          }
+          Ctemp = 0;
+        }
+      }
+    }
+
+    ImageList* ccs_AND = cc_analysis(*img1);
     ImageList* return_ccs = new ImageList();
 
-    // Create CCs 
+    // create result Cc's 
     ImageList::iterator i;
     for (i = ccs_AND->begin(); i != ccs_AND->end(); ++i) {  
-        Cc* cc = dynamic_cast<Cc*>(*i);
-        int label = cc->label();
+      Cc* cc = dynamic_cast<Cc*>(*i);
+      int label = cc->label();
 
-                // Methods "get" and "set" operates relative to the image view
-                // but the offset of the connected components is not relative
-                // to the view. (here: (*i)->offset_x() and (*i)->offset_y())
-                //
-                // This means that these values must be adjusted for labeling
-                // the image view.
-        for (y = 0; y < (*i)->nrows(); ++y) {
-            for (x = 0; x < (*i)->ncols(); ++x) {
-                if( is_black(image.get(Point(x + (*i)->offset_x() - image.offset_x() , y + (*i)->offset_y() - image.offset_y()))) ) {
-                    image.set(Point(x + (*i)->offset_x() - image.offset_x() , y + (*i)->offset_y() - image.offset_y()), label);
-                }
-            }
+      // Methods "get" and "set" operates relative to the image view
+      // but the offset of the connected components is not relative
+      // to the view. (here: (*i)->offset_x() and (*i)->offset_y())
+      //
+      // This means that these values must be adjusted for labeling
+      // the image view.
+      for (y = 0; y < cc->nrows(); ++y) {
+        for (x = 0; x < cc->ncols(); ++x) {
+          if ( is_black(image.get(Point(x+(*i)->offset_x()-image.offset_x(),
+                                        y+(*i)->offset_y()-image.offset_y())))
+              && is_black(cc->get(Point(x,y))) ) {
+            image.set(Point(x + cc->offset_x() - image.offset_x(),
+                            y + cc->offset_y() - image.offset_y()), label);
+          }
         }
+      }
 
-        // Makes a new CC with the dimensions, offset and label from the
-        // smeared image and the content of the original image.
-        return_ccs->push_back(new ConnectedComponent<DATA>(
-                *((DATA*)image.data()),                     // Data
+      // create new CC with the dimensions, offset and label from the
+      // smeared image, pointing to the original image.
+      return_ccs->push_back(new ConnectedComponent<data_type>(
+                *((data_type*)image.data()),                // Data
                 label,                                      // Label
                 Point((*i)->offset_x(), (*i)->offset_y()),  // Point
                 (*i)->dim())                                // Dim
                 );
-
-        delete *i;
     }
     
-    // Free the memory
+    // clean up
+    for (ImageList::iterator i=ccs_AND->begin(); i!=ccs_AND->end(); i++)
+      delete *i;
     delete ccs_AND;
-    delete X_View->data();
-    delete X_View;
-    delete Y_View->data();
-    delete Y_View;
-    delete AND_View->data();
-    delete AND_View;
+    delete img1->data();
+    delete img1;
+    delete img2->data();
+    delete img2;
 
     return return_ccs;
 }

@@ -163,7 +163,7 @@ header files, and can thus be included with
 
 .. code:: CPP
 
-   #include "kdtree.hpp"
+   #include "geostructs/kdtree.hpp"
    using namespace Gamera::Kdtree;
 
 The tricky part is getting your plugin module to be linked with the

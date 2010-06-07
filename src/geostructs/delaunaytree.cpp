@@ -28,7 +28,8 @@
 //
 
 #include "geostructs/delaunaytree.hpp"
-#include <cmath>
+#include <math.h>
+#include <stdio.h>
 
 //-------------------------------------------------------------------------
 // data structure for computing the two dimensional Delaunay triangulation

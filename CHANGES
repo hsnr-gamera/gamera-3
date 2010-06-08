@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.6, Jun 08, 2010
+----------------------------
+
+ - plugin args Class, ImageList, and Pixel now support
+   default value NoneDefault
+
  - new plugin graph_color_ccs (category "Color")
 
  - new plugin contour_samplepoints (category "Analysis/Contour")

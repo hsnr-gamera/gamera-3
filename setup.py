@@ -159,9 +159,15 @@ extensions.extend(plugin_extensions)
 ##########################################
 # Here's the basic distutils stuff
 
-description = ("This is the Gamera installer. " +
-               "Please ensure that Python 2.4 and wxPython 2.6.x " +
-               "(or later) are installed before proceeding.")
+# read versions from compile computer
+pythonversion = "%d.%d" % (sys.version_info[0],sys.version_info[1])
+import wx
+wx_version_info = wx.__version__.split(".")
+wxversion = "%s.%s" % (wx_version_info[0],wx_version_info[1])
+description = ("This is the Gamera installer.\n" + \
+               "\tPlease ensure that Python " + pythonversion + \
+               " and wxPython " + wxversion + "\n" + \
+               "\tare installed before proceeding.")
 
 includes = [(os.path.join(gamera_setup.include_path, path),
              glob.glob(os.path.join("include", os.path.join(path, ext))))

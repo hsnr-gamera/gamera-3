@@ -79,7 +79,18 @@ of a joined glyph is classified as HEURISTIC with the prefix
   *glyphs*.  If the two glyphs should be considered for grouping, the
   function should return ``True``, else ``False``.  
 
-  If no *grouping_function* is provided, a default one will be used.
+  In ``gamera.classify``, there are two predefined grouping functions:
+
+  **BoundingBoxGroupingFunction** (*threshold*)
+      A callable class that returns ``True`` when the bounding boxes
+      are at most *threshold* apart.
+
+  **ShapedGroupingFunction** (*threshold*)
+      A callable class that returns ``True`` when the closest distance
+      between the black pixels is at most *threshold*.
+
+  When *grouping_function* is ``None``, *BoundingBoxGroupingFunction(4)*
+  is used.
 
 *evaluate_function*
    A function that evaluates a grouping of glyphs.  This function must
@@ -88,7 +99,8 @@ of a joined glyph is classified as HEURISTIC with the prefix
    confident) representing how confidently the grouping forms a valid
    character.
 
-   If no *evaluate_function* is provided, a default one will be used.
+   If no *evaluate_function* is provided, a default one will be used
+   that returns the CONFIDENCE_DEFAULT of the knn classification.
 
 *max_parts_per_group*
    The maximum number of connected components that will be grouped

@@ -59,10 +59,10 @@ class _Classifier:
    # GROUPING
    def group_list_automatic(self, glyphs, grouping_function=None,
                             evaluate_function=None, max_parts_per_group=4,
-                            max_graph_size=16):
+                            max_graph_size=16, criterion="min"):
       """**group_list_automatic** (ImageList *glyphs*, Function
 *grouping_function* = ``None``, Function *evaluate_function* = ``None``,
-int *max_parts_per_group* = 4, int *max_graph_size* = 16)
+int *max_parts_per_group* = 4, int *max_graph_size* = 16, *criterion* = ``'min'``)
 
 Classifies the given list of glyphs.  Adjacent glyphs are joined
 together if doing so results in a higher global confidence.  Each part
@@ -112,6 +112,12 @@ of a joined glyph is classified as HEURISTIC with the prefix
    the given number of nodes will be ignored.  This is a hack to
    prevent the runtime of the algorithm from exploding.
 
+*criterion*
+   Determines how the grouping candidates ccs are evaluated against
+   each other in the optimization step. Default = *min* choses the 
+   grouping with the highest minimum confidence, and *avg* that one
+   with the highest average confidence.
+   
 The function returns a 2-tuple (pair) of lists: (*add*, *remove*).
 *add* is a list of glyphs that were created by classifying any glyphs
 as a split (See Initialization_) or grouping.  *remove* is a list of
@@ -138,13 +144,13 @@ this automatically for you.
       if evaluate_function is None:
          evaluate_function = self._evaluate_subgroup
       found_unions = self._find_group_unions(
-         G, evaluate_function, max_parts_per_group, max_graph_size)
+         G, evaluate_function, max_parts_per_group, max_graph_size, criterion)
       return found_unions + splits, removed
 
    def group_and_update_list_automatic(self, glyphs, *args, **kwargs):
       """**group_and_update_list_automatic** (ImageList *glyphs*, Function
 *grouping_function* = ``None``, Function *evaluate_function* = ``None``,
-int *max_parts_per_group* = 5, int *max_graph_size* = 16)
+int *max_parts_per_group* = 5, int *max_graph_size* = 16, string *criterion* = ``'min'``)
 
 A convenience wrapper around group_list_automatic_ that returns
 a list of glyphs that is already updated for splitting and grouping."""
@@ -188,7 +194,7 @@ a list of glyphs that is already updated for splitting and grouping."""
       raise ValueError("Something is wrong here...  Either you don't have classifier data or there is an internal error in the grouping algorithm.")
 
    def _find_group_unions(self, G, evaluate_function, max_parts_per_group=5,
-                          max_graph_size=16):
+                          max_graph_size=16, criterion="min"):
       import image_utilities
       progress = util.ProgressFactory("Grouping glyphs...", G.nsubgraphs)
       try:
@@ -197,7 +203,7 @@ a list of glyphs that is already updated for splitting and grouping."""
             if G.size_of_subgraph(root) > max_graph_size:
                continue
             best_grouping = G.optimize_partitions(
-               root, evaluate_function, max_parts_per_group, max_graph_size)
+               root, evaluate_function, max_parts_per_group, max_graph_size, criterion)
             if not best_grouping is None:
                for subgroup in best_grouping:
                   if len(subgroup) > 1:

@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -194,35 +195,46 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
 
 inline void graph_optimize_partitions_find_solution
  (const Parts& parts, const size_t begin, const size_t end,
-  Solution& best_solution, double& best_mean, Solution& partial_solution,
-  double partial_sum, const Bitfield bits, const Bitfield all_bits) {
+  Solution& best_solution, double& best_val, Solution& partial_solution,
+  double partial_val, const Bitfield bits, const Bitfield all_bits, const char* criterion) {
+
+  double tmp_val = partial_val;
 
   if (bits == all_bits) {
-    double partial_mean = partial_sum / partial_solution.size();
-    if (partial_mean > best_mean) {
-      best_mean = partial_mean;
-      best_solution = partial_solution; // Copy
+    // when criterion = "min", partial_val contains highest minimum confidence
+    // when criterion "avg", it contains the sum over all confidences
+    if (0 == strcmp(criterion, "avg")) {
+      tmp_val = partial_val / partial_solution.size();
     }
+    if (tmp_val > best_val){
+      best_val = tmp_val;
+      best_solution = partial_solution; // Copy
+    }      
   }
 
   for (size_t i = begin; i < end; ++i) {
     const Part& root = parts[i];
     if (!(root.bits & bits)) { // If this part "fits into" the current parts
       partial_solution.push_back(root.bits);
+      if (0 == strcmp(criterion, "avg")) {
+        tmp_val = partial_val + root.score;
+      } else { // criterion == "min"
+        tmp_val = std::min(partial_val, root.score);
+      }
       graph_optimize_partitions_find_solution
-	(parts,
-	 std::max(begin, root.begin), std::max(end, root.end),
-	 best_solution, best_mean,
-	 partial_solution, partial_sum + root.score,
-	 bits | root.bits, all_bits);
+        (parts,
+         std::max(begin, root.begin), std::max(end, root.end),
+         best_solution, best_val,
+         partial_solution, tmp_val,
+         bits | root.bits, all_bits, criterion);
       partial_solution.pop_back();
     }
   }
 }
 
 PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
-				    const PyObject* eval_func, const size_t max_parts_per_group,
-				    const size_t max_graph_size) {
+                                    const PyObject* eval_func, const size_t max_parts_per_group,
+                                    const size_t max_graph_size, const char* criterion = "min") {
 
   for (NodeVector::iterator i = so->m_nodes->begin();
        i != so->m_nodes->end(); ++i)
@@ -240,10 +252,10 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       // Now, build a Python list of the solution
       PyObject* result = PyList_New(subgraph.size());
       for (size_t i = 0; i < subgraph.size(); ++i) {
-	PyObject* subresult = PyList_New(1);
-	Py_INCREF(subgraph[i]->m_data);
-	PyList_SET_ITEM(subresult, 0, subgraph[i]->m_data);
-	PyList_SET_ITEM(result, i, subresult);
+        PyObject* subresult = PyList_New(1);
+        Py_INCREF(subgraph[i]->m_data);
+        PyList_SET_ITEM(subresult, 0, subgraph[i]->m_data);
+        PyList_SET_ITEM(result, i, subresult);
       }
       return result;
     }
@@ -265,9 +277,9 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       node_stack.reserve(max_parts_per_group);
       for (NodeVector::iterator i = subgraph.begin();
 	   i != subgraph.end(); ++i) {
-	Bitfield bits = 0;
-	graph_optimize_partitions_evaluate_parts(*i, max_parts_per_group, size,
-						 node_stack, bits, eval_func, parts);
+        Bitfield bits = 0;
+        graph_optimize_partitions_evaluate_parts(*i, max_parts_per_group, size,
+                                                 node_stack, bits, eval_func, parts);
       }
 
       // Build the skip list
@@ -278,11 +290,20 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       best_solution.reserve(size);    // Maximum size the solution can be
       partial_solution.reserve(size); // Maximum size the solution can be
       Bitfield all_bits = (Bitfield(1) << size) - 1;
-      double best_mean = 0;
-      graph_optimize_partitions_find_solution(parts, 0, (*(parts.begin())).begin,
-					      best_solution, best_mean,
-					      partial_solution, 0.0,
-					      0, all_bits);
+      double best_val = 0;
+      // partial_val carries sum (criterion "avg") or minimum ("min")
+      // of confidences in subgroups => different initialization
+      double partial_val_init;
+      if (0 == strcmp(criterion, "avg")) {
+        partial_val_init = 0.0;
+      } else { // criterion == "min"
+        partial_val_init = std::numeric_limits<double>::max();
+      }
+      graph_optimize_partitions_find_solution
+        (parts, 0, (*(parts.begin())).begin,
+         best_solution, best_val,
+         partial_solution, partial_val_init,
+         0, all_bits, criterion);
     }
 
     // Now, build a Python list of the solution
@@ -321,12 +342,13 @@ PyObject* graph_optimize_partitions(PyObject* self, PyObject* args) {
   PyObject* a, *eval_func;
   int max_parts_per_group = 5;
   int max_graph_size = 16;
-  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO|ii:optimize_partitions", &a, &eval_func, &max_parts_per_group, &max_graph_size) <= 0)
+  char* criterion = (char*)"min";
+  if (PyArg_ParseTuple(args, CHAR_PTR_CAST "OO|iis:optimize_partitions", &a, &eval_func, &max_parts_per_group, &max_graph_size, &criterion) <= 0)
     return 0;
   Node* root = graph_find_node(so, (PyObject*)a);
   if (root == NULL)
     return 0;
-  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_parts_per_group, max_graph_size);
+  PyObject* result = graph_optimize_partitions(so, root, eval_func, max_parts_per_group, max_graph_size, criterion);
   return result;
 }
 

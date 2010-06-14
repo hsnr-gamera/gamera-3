@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2010      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,7 +30,7 @@ extern "C" {
 
 #define PARTITIONS_METHODS \
   { CHAR_PTR_CAST "optimize_partitions", graph_optimize_partitions, METH_VARARGS, \
-    CHAR_PTR_CAST "**optimize_partitions** (*root_node*, *fittness_func*, *max_parts_per_group* = 5, *max_subgraph_size* = 16)\n\n" \
+    CHAR_PTR_CAST "**optimize_partitions** (*root_node*, *fittness_func*, *max_parts_per_group* = 5, *max_subgraph_size* = 16, criterion = \"min\")\n\n" \
     "A partition is defined as a way to divide a subgraph into groups.  This algorithm finds an optimal\n" \
     "partition according to the given fitness function.\n\n" \
     "  *root_node*\n" \
@@ -42,6 +43,8 @@ extern "C" {
     "  *max_subgraph_size*\n" \
     "    If the subgraph rooted at *root_node* has more than *max_subgraph_size* nodes, the partitions will not be\n" \
     "    optimized.\n\n" \
+    "  *criterion*\n" \
+    "    Choses the solution with the highest minimum ('min') or highest average ('avg') confidence.\n\n" \
  }, \
 
 #endif

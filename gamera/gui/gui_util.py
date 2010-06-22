@@ -146,7 +146,7 @@ def directory_dialog(parent, create=1):
    return None
 
 class ProgressBox:
-   def __init__(self, message, length=1):
+   def __init__(self, message, length=1, numsteps=0):
       assert util.is_string_or_unicode(message)
       self.progress_box = wx.ProgressDialog(
          "Progress", message, 100,
@@ -157,6 +157,8 @@ class ProgressBox:
          self._den = 1
       else:
          self._den = length
+      self._numsteps = numsteps
+      self._lastupdate = 0
       wx.BeginBusyCursor()
 
    def __del__(self):
@@ -184,8 +186,10 @@ class ProgressBox:
             self.done = True
             wx.EndBusyCursor()
             self.progress_box.Destroy()
-         else:
+         elif 0 == self._numsteps or \
+                ((num-self._lastupdate)/float(den) >= 1.0/float(self._numsteps)):
             self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
+            self._lastupdate = num
 
    def kill(self):
       self.update(1, 1)

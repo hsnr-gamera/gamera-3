@@ -460,6 +460,9 @@ class CIInteractiveClassifier(CustomIcon):
       return isinstance(data, classify.InteractiveClassifier)
    check = staticmethod(check)
 
+   def double_click(self):
+      return '%s.display()' % (self.label)
+
    def right_click(self, *args):
       pass
 

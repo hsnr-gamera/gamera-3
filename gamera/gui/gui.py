@@ -138,8 +138,8 @@ class GameraGui:
       return main_win
    TopLevel = staticmethod(TopLevel)
 
-   def ProgressBox(message, length=1):
-      return gui_util.ProgressBox(message, length)
+   def ProgressBox(message, length=1, numsteps=0):
+      return gui_util.ProgressBox(message, length, numsteps)
    ProgressBox = staticmethod(ProgressBox)
 
 if wx.VERSION >= (2, 5):

@@ -328,9 +328,9 @@ class ProgressText:
             sys.stdout.write("\n")
             sys.stdout.flush()
 
-def ProgressFactory(message, length=1):
+def ProgressFactory(message, length=1, numsteps=0):
    if has_gui.gui != None:
-      return has_gui.gui.ProgressBox(message, length)
+      return has_gui.gui.ProgressBox(message, length, numsteps)
    elif config.get("progress_bar"):
       return ProgressText(message, length)
    else:

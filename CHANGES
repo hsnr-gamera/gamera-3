@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - ProgressFactory now has optional constructor argument
+   "numsteps" for doing the update only in *numsteps* discrete steps
+   (used for significantly speeding up loading/saving XML files)
+
  - group_[and_update]_list_automatic() now has an optional
    argument "criterion" for chosing the way how the best
    grouping is chosen. The old method was "avg", while the new

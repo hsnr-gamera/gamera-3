@@ -22,6 +22,8 @@
 import wx
 import keyword, re
 
+from gamera.gui import gui_util
+
 variable_name = re.compile("^[A-Za-z_][A-Za-z0-9_]*$")
 def verify_variable_name(name):
    if keyword.iskeyword(name):

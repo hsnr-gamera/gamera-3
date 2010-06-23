@@ -437,12 +437,11 @@ existing training data."""
    def generate_features_on_glyphs(self, glyphs):
       """Generates features for all the given glyphs."""
       progress = util.ProgressFactory("Generating features...",
-                                      len(glyphs) / 16)
+                                      len(glyphs), numsteps=32)
       try:
          for i, glyph in enumerate(glyphs):
             self.generate_features(glyph)
-            if i & 0xf == 0:
-               progress.step()
+            progress.step()
       finally:
          progress.kill()
    

@@ -6,8 +6,11 @@ ToDo list for Gamera
    E.g. text/graphics separation and more text line finding
    algorithms. Maybe some parts of Leptonica could be useful?
  - Add multilevel thresholding.
+ - Support FFT on Gamera images by wrapping FFT from VIGRA
  - Feature selection via genetic algorithms (GA) as an alternative
    to the currently implemented GA based feature weighting.
+   Investigate why the GA based feature weighting in Gamera produces
+   so poor results.
  - A new menu function in the interactive classifier dialog for
    highlighting outliers, i.e. possible manual misclassifications.
    Can be based on MNN editing.

@@ -99,7 +99,7 @@ class WriteXML:
       self._write_core(stream)
 
    def _write_core(self, stream, indent=0):
-      progress = util.ProgressFactory("Saving XML...", 1, numsteps=25)
+      progress = util.ProgressFactory("Saving XML...", 1, numsteps=32)
       try:
          self._write_symbol_table(stream, self.symbol_table, indent=indent)
          if isinstance(self.glyphs, core.ImageBase):
@@ -250,7 +250,7 @@ class LoadXML:
       self._parser.StartElementHandler = self._start_element_handler
       self._parser.EndElementHandler = self._end_element_handler
       self._stream = stream
-      self._progress = util.ProgressFactory("Loading XML...", self._stream_length, numsteps=25)
+      self._progress = util.ProgressFactory("Loading XML...", self._stream_length, numsteps=32)
       try:
          try:
             self._parser.ParseFile(stream)

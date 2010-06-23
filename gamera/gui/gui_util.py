@@ -187,7 +187,7 @@ class ProgressBox:
             wx.EndBusyCursor()
             self.progress_box.Destroy()
          elif 0 == self._numsteps or \
-                ((num-self._lastupdate)/float(den) >= 1.0/float(self._numsteps)):
+                (den/(num-self._lastupdate) <= self._numsteps):
             self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
             self._lastupdate = num
 

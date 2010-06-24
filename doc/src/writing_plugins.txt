@@ -524,7 +524,7 @@ Progress bars
 -------------
 
 This section describes how to display a progress bar dialog from a
-long-running C++-based plugin.  When the GUI is running, the progress
+long-running plugin. When the GUI is running, the progress
 will be displayed in a window:
 
   .. image:: images/progress_bar.png
@@ -543,8 +543,35 @@ only make sense for plugins that take a long time to complete.
 Supporting progress bars adds very minimal overhead when they are not
 displayed.
 
-Plugin Metadata
-```````````````
+
+Progress Bars in Python
+```````````````````````
+
+To create a progress bar that is a message box in the GUI and
+a text line in a non GUI script, you can use the ``ProgressFactory``:
+
+.. code:: Python
+
+   from gamera.util import ProgressFactory
+   progress = ProgressFactory("Title", length, numsteps=0)
+
+where *length* is the total number of which the progress fraction is to
+be shown. The optional argument *numsteps* can be useful to reduce
+the overhead by only updating the progress bar in *numsteps* discrete steps;
+when zero, every update call will result in an update of the progress bar.
+
+To update the progress bar, there are two alternative methods:
+
+
+ - ``.step()`` increases the progress counter by one. Whether the
+   displayed progress bar actually is updated depends on *numsteps*.
+
+ - ``.update(steps, length)`` sets the progress bar to the
+   *steps*/*length* fraction.
+
+
+Progress Bars in C++ Plugins
+````````````````````````````
 
 To create a plugin method with a progress bar, simply set the
 ``progress_bar`` member to the message that will be displayed in the
@@ -556,9 +583,6 @@ progress box.
     ...
     progress_bar = "Generating connected components"
     ...
-
-C++ code
-````````
 
 Add an extra argument to the C++ function that takes an object of type
 ``ProgressBar``.  This can be a default argument, to make it easier to
@@ -575,9 +599,6 @@ dummy ``ProgressBar`` object where all methods are ignored.
 
 The progress bar window will automatically disappear when the function returns.
 
-ProgressBar instances
-`````````````````````
-
 There are essentially two ways to update the progress bar:
 
  - Call ``.set_length(*length*)`` to set the number of steps that will be
@@ -586,6 +607,7 @@ There are essentially two ways to update the progress bar:
  - Call ``.update(*num*, *den*)`` to say that *num* of *den* steps
    have completed.  ``.update`` is useful when the number of steps can
    not be pre-determined.
+
 
 Documenting and unit-testing Plugin functions
 ---------------------------------------------

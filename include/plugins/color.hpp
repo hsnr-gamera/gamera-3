@@ -22,6 +22,7 @@
 
 #include "gamera.hpp"
 #include "image_conversion.hpp"
+#include "gameramodule.hpp"
 
 #include <string>
 #include <map>
@@ -250,17 +251,16 @@ namespace Gamera {
     value_type value;
     typedef typename OneBitImageView::value_type onebit_value_type;
 
-    char buffer[16];
     std::string buf;
     onebit_value_type label;
     // highest label that can be stored in Onebit pixel type
     onebit_value_type max_value = std::numeric_limits<onebit_value_type>::max();
 
-    std::map<std::string, unsigned int> pixel;
-    std::map<std::string, unsigned int>::iterator iter;
+    std::map<unsigned int, unsigned int> pixel;
+    std::map<unsigned int, unsigned int>::iterator iter;
 
     PyObject *itemKey, *itemValue;
-    PyObject *testKey;
+    unsigned int testKey;
     Py_ssize_t pos = 0;
 
     // mapping given how colors are to be mapped to labels
@@ -276,23 +276,26 @@ namespace Gamera {
           throw std::range_error(msg);
         }
         label++;
-        testKey = PyObject_Str(itemKey);
+        if( !PyObject_TypeCheck(itemKey, get_RGBPixelType()) ) {
+            throw std::runtime_error("Dictionary rgb_to_label must have RGBPixel's as keys");
+        }
+        
+        RGBPixel *rgbpixel = ((RGBPixelObject *) itemKey)->m_x;
+        testKey = (rgbpixel->red() << 16) | (rgbpixel->green() << 8) | rgbpixel->blue();
+        
         given_label = PyInt_AsLong(itemValue);
         if (given_label < 0)
           throw std::invalid_argument("Labels must be positive integers.");
-        if (pixel.find(PyString_AsString(testKey)) == pixel.end()) 
-          pixel[PyString_AsString(testKey)] = given_label;
-        Py_DECREF(testKey);
+        if (pixel.find(testKey) == pixel.end()) 
+          pixel[testKey] = given_label;
       }
 
       for (size_t y=0; y<src.nrows(); ++y) {
         for (size_t x=0; x<src.ncols(); ++x) {
           value = src.get(Point(x,y));
-          // Warning: this assumes a specific string representation of RGBPixel !!
-          sprintf(buffer, "(%i, %i, %i)", value.red(), value.green(), value.blue());
-          buf = buffer;
-          if (pixel.find(buf) != pixel.end()) 
-            dest->set(Point(x,y), pixel.find(buf)->second);
+          testKey = (value.red() << 16) | (value.green() << 8) | value.blue();
+          if (pixel.find(testKey) != pixel.end()) 
+            dest->set(Point(x,y), pixel.find(testKey)->second);
         }
       }
     }
@@ -300,31 +303,28 @@ namespace Gamera {
     // no mapping given: determine labels automatically by counting
     else if (obj == Py_None) {
       label = 2;
+      // special colors black and white
+      pixel[0] = 1;
+      pixel[(255<<16) | (255<<8) | 255] = 0;
       for (size_t y=0; y<src.nrows(); ++y) {
         for (size_t x=0; x<src.ncols(); ++x) {
 
-          value = src.get(Point(x,y));
-          sprintf(buffer, "(%i, %i, %i)", value.red(), value.green(), value.blue());
-          buf = buffer;
-
-          // special cases black and white
-          if (buf == "(0, 0, 0)" && pixel.find(buf) == pixel.end())
-            pixel[buf] = 1;
-          if (buf == "(255, 255, 255)" && pixel.find(buf) == pixel.end())
-            pixel[buf] = 0;
-
-          // when new color: add to map and increase label counter
-          if (pixel.find(buf) == pixel.end()) {
+          value = src.get(Point(x,y));  
+          testKey = (value.red() << 16) | (value.green() << 8) | value.blue();
+          
+          if ( !(value.red()==0 && value.green()==0 && value.blue()==0) &&
+               !(value.red()==255 && value.green()==255 && value.blue()==255) &&
+               pixel.find(testKey) == pixel.end() ) {
             if (label == max_value) {
               char msg[128];
               sprintf(msg, "More RGB colors than available labels (%i).", max_value);
               throw std::range_error(msg);
             }
-            pixel[buf] = label++;
+            pixel[testKey] = label++;
           }
 
           // replace color with label
-          dest->set(Point(x,y), pixel.find(buf)->second);
+          dest->set(Point(x,y), pixel.find(testKey)->second);
         }
       }
     }
@@ -336,8 +336,6 @@ namespace Gamera {
 
     return dest;
   }
-
-
 
 }
 

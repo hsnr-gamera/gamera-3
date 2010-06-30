@@ -29,7 +29,7 @@ def test_color_to_ccs():
     assert 2 == labeled.get((12,18))
     assert 7 == labeled.get((12,22))
 
-    # test converison to CCs
+    # test conversion to CCs
     ccs = labeled.ccs_from_labeled_image()
     for c in ccs:
         if c.label == 6:

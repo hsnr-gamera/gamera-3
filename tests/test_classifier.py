@@ -28,14 +28,15 @@ def _test_classification(classifier, ccs):
    assert [cc.get_main_id() for cc in ccs] != correct_classes
    
    classifier.change_feature_set('all')
-   added, removed = classifier.group_list_automatic(ccs)
+   added, removed = classifier.group_list_automatic(ccs, criterion='avg')
    assert [cc.get_main_id() for cc in added] == groups
 
    added, removed = classifier.group_list_automatic(
       ccs,
       grouping_function = classify.ShapedGroupingFunction(4),
       max_parts_per_group = 10,
-      max_graph_size = 64)
+      max_graph_size = 64,
+      criterion='avg')
    assert [cc.get_main_id() for cc in added] == shaped_groups
 
 def _test_training(classifier, ccs):

@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin segmentation_error (category "PageSegmentation")
+
  - ProgressFactory now has optional constructor argument
    "numsteps" for doing the update only in *numsteps* discrete steps
    (used for significantly speeding up loading/saving XML files)

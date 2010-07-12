@@ -621,6 +621,116 @@ PyObject* sub_cc_analysis(T& image, ImageVector &cclist) {
     return return_values;
 }
 
+
+//
+// evaluation of segmentation
+//
+
+// for distinguishing Ccs from Gccs and Sccs
+class CcLabel {
+public:
+  char image; // 'G' or 'S'
+  int  cclabel;
+  CcLabel(char i, int c) {image = i; cclabel = c;}
+  friend int operator<(const CcLabel& c1, const CcLabel& c2) { 
+    if (c1.image == c2.image) return (c1.cclabel < c2.cclabel);
+    else return c1.image < c2.image;
+  }
+};
+
+// the plugin function
+template<class T, class U>
+IntVector* segmentation_error(T &Gseg, U &Sseg) {
+
+  ImageList* Gccs = ccs_from_labeled_image(Gseg);
+  ImageList* Sccs = ccs_from_labeled_image(Sseg);
+  ImageList::iterator ccs_it;
+  size_t x,y;
+  int classlabel, Gclasslabel, Sclasslabel;
+  CcLabel Gcclabel('G',0), Scclabel('S',0), cclabel('A',0);
+  map<CcLabel,int> classoflabel; // cclabel -> classlabel
+  multimap<int,CcLabel> labelsofclass; // classlabel -> cclabel
+  typedef multimap<int,CcLabel>::iterator mm_iterator;
+  mm_iterator mmit;
+  pair<mm_iterator,mm_iterator> fromto;
+  vector<CcLabel> tmplabels;
+  vector<CcLabel>::iterator vit;
+
+  // check for overlaps from Gseg
+  for (ccs_it = Gccs->begin(), classlabel = 0; ccs_it != Gccs->end(); ++ccs_it, ++classlabel) {
+    Gclasslabel = classlabel;
+    Cc* cc = static_cast<Cc*>(*ccs_it);
+    Gcclabel.cclabel = cc->label();
+    classoflabel[Gcclabel] = Gclasslabel;
+    labelsofclass.insert(make_pair(Gclasslabel,Gcclabel));
+    for (y=0; y < cc->nrows(); y++)
+      for (x=0; x < cc->ncols(); x++) {
+        Scclabel.cclabel = Sseg.get(Point(cc->ul_x() + x, cc->ul_y() + y));
+        // in case of overlap:
+        if (Scclabel.cclabel) {
+          // check whether segment from S is new
+          if (classoflabel.find(Scclabel) == classoflabel.end()) {
+            classoflabel[Scclabel] = Gclasslabel;
+            labelsofclass.insert(make_pair(Gclasslabel,Scclabel));
+          } else {
+            Sclasslabel = classoflabel[Scclabel];
+            if (Sclasslabel != Gclasslabel) {
+              // unite both classes, i.e. move Sclasslabel into Gclasslabel
+              tmplabels.clear();
+              fromto = labelsofclass.equal_range(Sclasslabel);
+              for (mmit = fromto.first; mmit != fromto.second; ++mmit) {
+                cclabel = mmit->second;
+                classoflabel[cclabel] = Gclasslabel;
+                tmplabels.push_back(cclabel);
+              }
+              labelsofclass.erase(Sclasslabel);
+              for (vit = tmplabels.begin(); vit != tmplabels.end(); ++vit)
+                labelsofclass.insert(make_pair(Gclasslabel,*vit));
+            }
+          }
+        }
+      }
+  }
+
+  // check for CCs from Sseg without overlap (false positives)
+  for (ccs_it = Sccs->begin(); ccs_it != Sccs->end(); ++ccs_it) {
+    Cc* cc = static_cast<Cc*>(*ccs_it);
+    Scclabel.cclabel = cc->label();
+    if (classoflabel.find(Scclabel) == classoflabel.end()) {
+        classlabel++;
+        classoflabel[Scclabel] = classlabel;
+        labelsofclass.insert(make_pair(classlabel,Scclabel));
+    }
+  }
+
+  // build up class population numbers and classify error types
+  int n1,n2,n3,n4,n5,n6,nG,nS;
+  n1 = n2 = n3 = n4 = n5 = n6 = 0;
+  for (mmit = labelsofclass.begin(); mmit != labelsofclass.end(); ) {
+    nG = nS = 0;
+    fromto = labelsofclass.equal_range(mmit->first);
+    for (mmit = fromto.first; mmit != fromto.second; ++mmit) {
+      if (mmit->second.image == 'G') nG++; else nS++;
+    }
+    // determine error category
+    if (nG == 1 && nS == 1) n1++;
+    else if (nG == 1 && nS == 0) n2++;
+    else if (nG == 0 && nS == 1) n3++;
+    else if (nG == 1 && nS  > 1) n4++;
+    else if (nG  > 1 && nS == 1) n5++;
+    else if (nG  > 1 && nS  > 1) n6++;
+    else printf("Plugin segment_error: empty equivalence"
+                " constructed which should not happen\n");
+  }
+
+  // build return value
+  IntVector* errors = new IntVector();
+  errors->push_back(n1); errors->push_back(n2);
+  errors->push_back(n3); errors->push_back(n4);
+  errors->push_back(n5); errors->push_back(n6);
+  return errors;
+}
+
 } // end of namespace Gamera
 
 #endif

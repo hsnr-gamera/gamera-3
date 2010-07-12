@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff, Robert Butz,
 #                         Maria Elhachimi, Ilya Stoyanov, Rene Baston
+#               2010      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -299,7 +300,7 @@ class textline_reading_order(PluginFunction):
     In the reference `\"High Performance Document Analysis\"`__
     by T.M. Breuel (Symposium on Document Image Understanding,
     USA, pp. 209-218, 2003),
-    an additional constraint is made for the first criteria by demanding
+    an additional constraint is made for the first criterion by demanding
     that no other segment may be between *a* and *b* that opverlaps
     horizontally with both. This constraint for taking multi column
     headings that interrupt columns into account is replaced in this
@@ -366,15 +367,75 @@ class textline_reading_order(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
+class segmentation_error(PluginFunction):
+    """Compares a ground truth segmentation *Gseg* with a segmentation *Sseg*
+and returns error count numbers.
+
+The input images must be given in such a way that each segment is
+uniquely labeled, similar to the output of a page segmentation
+algorithm like `runlength_smearing`_. For ground truth data, such a labeled
+image can be obtained from an external color image with `colors_to_labels`_.
+
+.. _`runlength_smearing`: #runlength-smearing
+.. _`colors_to_labels`: color.html#colors-to-labels
+
+The two segmentations are compared by building equivalence classes of
+overlapping segments as described in
+
+  M. Thulke, V. Margner, A. Dengel:
+  *A general approach to quality evaluation of document
+  segmentation results.*
+  Lecture Notes in Computer Science 1655, pp. 43-57 (1999)
+
+Each class is assigned an error type depending on how many ground truth
+and test segments it contains. The return value is a tuple
+(*n1,n2,n3,n4,n5,n6)* where each value is the total number of classes
+with the corresponding error type:
+
++------+-----------------------+---------------+----------------------+
+| Nr   | Ground truth segments | Test segments | Error type           |
++======+=======================+===============+======================+
+| *n1* | 1                     | 1             | correct              |
++------+-----------------------+---------------+----------------------+
+| *n2* | 1                     | 0             | missed segment       |
++------+-----------------------+---------------+----------------------+
+| *n3* | 0                     | 1             | false positive       |
++------+-----------------------+---------------+----------------------+
+| *n4* | 1                     | > 1           | split                |
++------+-----------------------+---------------+----------------------+
+| *n5* | > 1                   | 1             | merge                |
++------+-----------------------+---------------+----------------------+
+| *n6* | > 1                   | > 1           | splits and merges    |
++------+-----------------------+---------------+----------------------+
+
+The total segmentation error can be computed from these numbers as
+*1 - n1 / (n1 + n2 + n3 + n4 + n5 + n6)*. The individual numbers can
+be of use to determine what exactly is wrong with the segmentation.
+
+As this function is not an image method, but a free function, it
+is not automatically imported with all plugins and you must import
+it explicitly with
+
+.. code:: Python
+
+      from gamera.plugins.pagesegmentation import segmentation_error
+"""
+    self_type = None
+    args = Args([ImageType([ONEBIT], 'Gseg'), \
+                 ImageType([ONEBIT], 'Sseg')])
+    return_type = IntVector("errors", length=6)
+    author = "Christoph Dalitz"
+
 # module declaration
 class PageSegmentationModule(PluginModule):
     cpp_headers = ["pagesegmentation.hpp"]
     cpp_namespace = ["Gamera"]
     category = "PageSegmentation"
     functions = [projection_cutting, runlength_smearing, bbox_merging, \
-                     sub_cc_analysis, textline_reading_order]
+                     sub_cc_analysis, textline_reading_order, \
+                     segmentation_error]
 module = PageSegmentationModule() # create an instance of the module
 
 # free function instances
 textline_reading_order = textline_reading_order()
-
+segmentation_error = segmentation_error()

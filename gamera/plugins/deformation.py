@@ -161,9 +161,8 @@ the following meaning:
  - An image containing the random walk is smoothed by a closing operation
    with a rectangle of size *k*.
 
- - Eventually the image with the random walks is subtracted from both the
-   original image and the provided staffless image, which results in white
-   speckles at the random walk positions
+ - Eventually the image with the random walks is subtracted from the input
+   image, which results in white speckles at the random walk positions
 
 Input arguments:
 

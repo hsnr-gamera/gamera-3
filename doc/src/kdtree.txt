@@ -193,7 +193,6 @@ as follows:
 
    class ExampleModule(PluginModule):
        # ...
-       from distutils.sysconfig import get_python_lib
        import os, gamera
        gamera_root = os.path.dirname(gamera.__file__)
        cpp_sources = [os.path.join(gamera_root, "src/geostructs/kdtree.cpp")]

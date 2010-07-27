@@ -1443,9 +1443,18 @@ class ClassifierFrame(ImageFrameBase):
       self._OnSaveAsImages(self._classifier.get_glyphs())
 
    def _OnSaveAsImages(self, list):
-      filename = gui_util.directory_dialog(self._frame)
-      if filename:
-         classifier_stats.GlyphStats(list).write(filename)
+      dirname = gui_util.directory_dialog(self._frame)
+      if dirname:
+         list.sort(lambda g1,g2: cmp(g1.get_main_id().lower(),g2.get_main_id().lower()))
+         lastid = ""
+         nr = 0
+         for glyph in list:
+            thisid = glyph.get_main_id().lower()
+            if thisid != lastid:
+               nr = 0
+               lastid = thisid
+            nr += 1
+            glyph.save_PNG(os.path.join(dirname, "%s-%03d.png" % (thisid,nr)))
 
    ########################################
    # CLASSIFIER MENU

@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - classifier menu entry "Image/Save glyphs into separate files" now works
+
  - new plugin segmentation_error (category "PageSegmentation")
 
  - ProgressFactory now has optional constructor argument

@@ -1434,21 +1434,34 @@ class ClassifierFrame(ImageFrameBase):
       self.set_image(ccs, image, weak=False)
 
    def _OnSavePageCollectionAsImages(self, event):
-      self._OnSaveAsImages(self.multi_iw.id.GetAllItems())
+      list = self.multi_iw.id.GetAllItems()
+      if len(list) == 0:
+         gui_util.message("No glyphs in page.")
+         return
+      self._OnSaveAsImages(list)
 
    def _OnSaveSelectedAsImages(self, event):
-      self._OnSaveAsImages(self.get_all_selected()[0])
+      list = self.get_all_selected()[0]
+      if len(list) == 0:
+         gui_util.message("No glyphs selected.")
+         return
+      self._OnSaveAsImages(list)
 
    def _OnSaveClassifierCollectionAsImages(self, event):
-      self._OnSaveAsImages(self._classifier.get_glyphs())
+      list = self._classifier.get_glyphs()
+      if len(list) == 0:
+         gui_util.message("No glyphs in classifier.")
+         return
+      self._OnSaveAsImages(list)
 
    def _OnSaveAsImages(self, list):
       dirname = gui_util.directory_dialog(self._frame)
       if dirname:
-         list.sort(lambda g1,g2: cmp(g1.get_main_id().lower(),g2.get_main_id().lower()))
+         glyphs = [g for g in list]
+         glyphs.sort(lambda g1,g2: cmp(g1.get_main_id().lower(),g2.get_main_id().lower()))
          lastid = ""
          nr = 0
-         for glyph in list:
+         for glyph in glyphs:
             thisid = glyph.get_main_id().lower()
             if thisid != lastid:
                nr = 0

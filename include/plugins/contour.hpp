@@ -221,8 +221,18 @@ namespace Gamera {
     }
 
     // add only every 100/percentage-th point
-    for(unsigned int i = 0 ; i < contour_points->size() ; i+= 100/percentage) {
-      output->push_back( (*contour_points)[i] );
+    double delta = 100.0/percentage;
+    double step = 0.0;
+    unsigned int offset = 0; // to avoid overflow and rounding errors
+    unsigned int ii = 0;
+    while (ii < contour_points->size()) {
+      output->push_back( (*contour_points)[ii] );
+      step += delta;
+      if (step > 100.0) {
+        step -= 100.0;
+        offset += 100;
+      }
+      ii = offset + (unsigned int)step;
     }
 
     // add the four outer extreme points ...

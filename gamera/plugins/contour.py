@@ -73,10 +73,12 @@ class contour_samplepoints(PluginFunction):
   Returns a point vector containing contour points of the given image.
   
   *percentage*:
-    return every 100/percentage-th contour points.
+    return percentage of contour points. The points are selected approximately
+    equidistant on the countour.
   
   In addition to the points determined by the percentage argument the result
-  list also contains the four extreme points (top, left, bottom, right).
+  list also contains the four extreme points (topmost, leftmost, bottommost,
+  rightmost).
   
   .. code:: Python
    

@@ -63,7 +63,7 @@ class FudgeInt(FudgeNumber, int):
       self.above = int(value + amount)
 
 class FudgeFloat(FudgeNumber, float):
-   def __init__(self, value):
+   def __init__(self, value, amount=FUDGE_AMOUNT):
       int.__init__(self, value)
       self.below = float(value - amount)
       self.above = float(value + amount)

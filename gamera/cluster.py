@@ -150,16 +150,19 @@ def graphvis_output(G, filename):
       fd.write("}\n")
    fd.close()
 
-def analysis(glyphs):
-   by_id = {}
-   for x in glyphs:
-      id = x.get_main_id()
-      if not by_id.has_key(id):
-         by_id[id] = []
-      by_id[id].append(x)
-   num_features = len(x.features)
+# this function is a stub and does not do anything
+# unless we figure out what it was supposed to do,
+# I have commented it out (CD)
+# def analysis(glyphs):
+#    by_id = {}
+#    for x in glyphs:
+#       id = x.get_main_id()
+#       if not by_id.has_key(id):
+#          by_id[id] = []
+#       by_id[id].append(x)
+#    num_features = len(x.features)
 
-   for x in by_id:
-      for i in range(len(x)):
-         sum_vec
+#    for x in by_id:
+#       for i in range(len(x)):
+#          sum_vec
    

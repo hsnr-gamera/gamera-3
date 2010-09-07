@@ -54,7 +54,7 @@ class RuleEngineRunnerTree(wx.TreeCtrl):
          engine = data
       elif ismodule(data):
          engine = ruleengine.RuleEngine(
-           [val for val in module.__dict__.values()
+           [val for val in data.__dict__.values()
             if isinstance(val, ruleengine.RuleEngine)])
       added = {}
       removed = {}
@@ -107,13 +107,13 @@ class RuleEngineRunnerTree(wx.TreeCtrl):
       module_node = self.AppendItem(self.root, path.split(module.__file__)[1])
       self.SetPyData(module_node, module)
       for key, val in module.__dict__.items():
-         self.SetItemHasChildren(module_node, TRUE)
+         self.SetItemHasChildren(module_node, True)
          if isinstance(val, ruleengine.RuleEngine):
             rule_engine_node = self.AppendItem(module_node, key)
             self.Expand(module_node)
             self.SetPyData(rule_engine_node, val)
             for rule in val.get_rules():
-               self.SetItemHasChildren(rule_engine_node, TRUE)
+               self.SetItemHasChildren(rule_engine_node, True)
                rule_node = self.AppendItem(rule_engine_node, rule.__name__)
                self.SetPyData(rule_node, rule)
 

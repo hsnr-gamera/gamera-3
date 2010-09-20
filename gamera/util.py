@@ -545,7 +545,7 @@ class CallbackSet(sets.Set, CallbackObject):
                yield i
       self.trigger_callback('remove', remove_iter())
       self.trigger_callback('add', add_iter())
-      self.Set.symmetric_difference_update(self, iterable)
+      sets.Set.symmetric_difference_update(self, iterable)
       self.trigger_callback('length_change', len(self))
 
    def intersection_update(self, iterable):
@@ -554,7 +554,7 @@ class CallbackSet(sets.Set, CallbackObject):
             if not i in iterable:
                yield i
       self.trigger_callback('remove', iter())
-      self.Set.intersection_update(self, iterable)
+      sets.Set.intersection_update(self, iterable)
       self.trigger_callback('length_change', len(self))
 
    def union_update(self, other):

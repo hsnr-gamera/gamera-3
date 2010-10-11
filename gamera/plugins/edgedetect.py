@@ -137,7 +137,7 @@ class labeled_region_edges(PluginFunction):
   When *mark_both* is ``True``, both edges of the region border are
   marked, resulting in a two pixel wide edge.
   """
-  self_type = ImageType([ONEBIT,GREYSCALE])
+  self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB])
   args = Args([Check("mark_both", default=False)])
   return_type = ImageType([ONEBIT])
   author = "Christoph Dalitz"

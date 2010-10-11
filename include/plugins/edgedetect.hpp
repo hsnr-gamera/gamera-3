@@ -113,7 +113,7 @@ namespace Gamera {
     max_y = src.nrows()-1;
 
     // the following mask is sufficient:  xx
-    //                                    x
+    //                                    xx
     // because we assume that no pixel is unlabeled
 
     // check bulk of image
@@ -128,6 +128,11 @@ namespace Gamera {
           edges->set(Point(x,y),1);
           if (mark_both)
             edges->set(Point(x,y+1),1);
+        }
+        if (src.get(Point(x,y)) != src.get(Point(x+1,y+1))) {
+          edges->set(Point(x,y),1);
+          if (mark_both)
+            edges->set(Point(x+1,y+1),1);
         }
       }
     }

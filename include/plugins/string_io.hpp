@@ -37,7 +37,7 @@ PyObject* _to_raw_string(const T &image) {
   for (; j != image.vec_end(); ++i, ++j) {
     *i = *j;
   }
-  return Py_BuildValue(CHAR_PTR_CAST "O", pystring);
+  return pystring;
 };
 
 template <class T>

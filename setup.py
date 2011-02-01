@@ -177,7 +177,7 @@ includes = [(os.path.join(gamera_setup.include_path, path),
             ("vigra", "*.hxx"),
             ("geostructs", "*.hpp")]
 
-srcfiles = [(os.path.join(get_python_lib(),"gamera",path),
+srcfiles = [(os.path.join(gamera_setup.lib_path,path),
              glob.glob(os.path.join(path, ext)))
             for path, ext in
             [("src/geostructs", "*.cpp")]]

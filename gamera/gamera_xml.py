@@ -26,6 +26,7 @@ from xml.parsers import expat
 
 import core, util
 from util import word_wrap, ProgressFactory, is_image_list
+from gamera.plugins import runlength
 from gamera.symbol_table import SymbolTable
 from config import config
 

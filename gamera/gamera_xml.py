@@ -436,7 +436,7 @@ class LoadXML:
       self._property_value.append(data)
 
 def glyphs_from_xml(filename, feature_functions = None):
-   """**glyphs_from_xml** (FileOpen *filename*, Features *feature_functions* = ``None``)
+   """**glyphs_from_xml** (*filename*, *feature_functions* = ``None``)
 
 Return a list of glyphs from a Gamera XML file."""
    glyphs = LoadXML().parse_filename(filename).glyphs
@@ -446,7 +446,7 @@ Return a list of glyphs from a Gamera XML file."""
    return glyphs
 
 def glyphs_with_features_from_xml(filename, feature_functions = None):
-   """**glyphs_with_features_from_xml** (FileOpen *filename*, Features *feature_functions* = ``None``)
+   """**glyphs_with_features_from_xml** (*filename*, *feature_functions* = ``None``)
 
 Loads glyphs from a Gamera XML file, and then generates features
 for all of those glyphs.  The set of features can be specified with the
@@ -457,7 +457,7 @@ for all of those glyphs.  The set of features can be specified with the
    return glyphs_from_xml(filename, feature_functions)
 
 def glyphs_to_xml(filename, glyphs, with_features=True):
-   """**glyphs_to_xml** (FileSave *filename*, *with_features* = ``True``)
+   """**glyphs_to_xml** (*filename*, *glyphs*, *with_features* = ``True``)
 
 Saves the given list of glyphs to a Gamera XML file.
 
@@ -557,7 +557,7 @@ class StripTag:
       self._output.close()
 
 def strip_features(input_filename, output_filename):
-   """**strip_features** (FileOpen *input_filename*, FileSave *output_filename*)
+   """**strip_features** (*input_filename*, *output_filename*)
 
 Strips the features from a Gamera XML file.  Provided mainly to reduce filesizes for
 files created before saving features was an option.

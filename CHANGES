@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - toolkits now compile out-of-the box again on Ubuntu
+
  - classifier menu entry "Image/Save glyphs into separate files" now works
 
  - new plugin segmentation_error (category "PageSegmentation")
@@ -12,8 +14,7 @@ Changes made between Gamera File Releases
  - group_[and_update]_list_automatic() now has an optional
    argument "criterion" for chosing the way how the best
    grouping is chosen. The old method was "avg", while the new
-   default is "min", because we have found this to be considerably
-   better in our tests.
+   default is "min", because we have found this to be better in our tests.
 
 
 Version 3.2.6, Jun 08, 2010

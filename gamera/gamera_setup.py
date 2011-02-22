@@ -152,6 +152,9 @@ def generate_plugins(plugins, location, compiling_gamera=0):
    return plugin_extensions
 
 def get_gamera_include_dirs():
+   # the "usr/local" prefix is for recent Ubunut versions, which
+   # install addon modules no longer along with the python core
    return [os.path.join(get_python_inc(), "gamera"),
+           os.path.join(get_python_inc(prefix="/usr/local"), "gamera"),
            os.path.join(get_python_inc(), "../gamera"),
            "/usr/include/gamera"]

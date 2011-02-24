@@ -502,7 +502,7 @@ class ClassifierFrame(ImageFrameBase):
       self.menu = None
       self.default_segmenter = -1
       self._save_by_criteria_dialog = [1] * 10
-      self._group_and_guess_dialog = [0, 4, 4, 16]
+      self._group_and_guess_dialog = [0, 4, 4, 16, 0]
 
       ImageFrameBase.__init__(
          self, parent, id,
@@ -644,8 +644,8 @@ class ClassifierFrame(ImageFrameBase):
          ("Guess all", self._OnGuessAll),
          ("&Guess selected", self._OnGuessSelected),
          (None, None),
-         ("Group and guess all", self._OnGroupAndGuessAll),
-         ("Group &and guess selected", self._OnGroupAndGuessSelected),
+         ("Group and guess all...", self._OnGroupAndGuessAll),
+         ("Group &and guess selected...", self._OnGroupAndGuessSelected),
          (None, None),
          ("Confirm all", self._OnConfirmAll),
          ("&Confirm selected", self._OnConfirmSelected),
@@ -1505,12 +1505,13 @@ class ClassifierFrame(ImageFrameBase):
          [Choice('Grouping function', ['Bounding Box', 'Shaped'], self._group_and_guess_dialog[0]),
           Int('Distance threshold', range=(0, 100), default=self._group_and_guess_dialog[1]),
           Int('Maximum number of parts per group', default=self._group_and_guess_dialog[2]),
-          Int('Maximum solveable subgraph size', default=self._group_and_guess_dialog[3])],
-         name = 'Save by criteria...')
+          Int('Maximum solveable subgraph size', default=self._group_and_guess_dialog[3]),
+          Choice('Grouping criterion', ['min', 'avg'], self._group_and_guess_dialog[4])],
+         name = 'Group and guess...')
       results = dialog.show(self._frame)
       if results is None:
          return
-      function, threshold, max_parts_per_group, max_graph_size = results
+      function, threshold, max_parts_per_group, max_graph_size, criterion = results
       self._group_and_guess_dialog = results
 
       if function == 0:

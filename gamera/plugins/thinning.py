@@ -42,29 +42,26 @@ class thin_zs(Thinning):
     """
     pass
 
-_hs_common_docstring = """
-Derives the medial axis transformation from a ONEBIT image using the
-Haralick and Shapiro algorithm.
-
-%s
-
-Unlike thin_zs_ and thin_lc_, this function performs a medial axis
-transformation, and the ends of the skeleton extend to the corners of
-the original image.
-
-Consider using thin_hs_large_image_ instead, for faster performance on
-large images with a lot of connected components.
-
-R. M. Haralick and L. G. Shapiro. 1992.  *Computer and Robot Vision*,
-Vol. 1, Chapter 5 (especially 5.10.1).  Reading, MA: Addison-Wesley.
-"""
     
 class thin_hs(Thinning):
-    _hs_common_docstring % "This function is an alias for medial_axis_transform_hs_."
+    """
+    Derives the medial axis transformation from a ONEBIT image using the
+    Haralick and Shapiro algorithm.
+
+    Unlike thin_zs_ and thin_lc_, this function performs a medial axis
+    transformation, and the ends of the skeleton extend to the corners of
+    the original image.
+
+    Consider using thin_hs_large_image_ instead, for faster performance on
+    large images with a lot of connected components.
+
+    R. M. Haralick and L. G. Shapiro. 1992.  *Computer and Robot Vision*,
+    Vol. 1, Chapter 5 (especially 5.10.1).  Reading, MA: Addison-Wesley.
+    """
     pass
 
 class medial_axis_transform_hs(Thinning):
-    _hs_common_docstring % "This function is an alias for thin_hs_."
+    """"This function is an alias for thin_hs_."""
     pure_python = True
     def __call__(self):
         return _thinning.thin_hs(self)
@@ -130,4 +127,3 @@ class ThinningModule(PluginModule):
 module = ThinningModule()
 
 del Thinning
-del _hs_common_docstring

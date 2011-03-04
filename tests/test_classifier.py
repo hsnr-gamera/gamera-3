@@ -4,8 +4,37 @@ init_gamera()
 
 correct_classes = ['latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.capital.letter.m', '_group._part.latin.capital.letter.m', '_group._part.latin.capital.letter.m', '_group._part.latin.lower.letter.i', 'latin.lower.letter.d', 'latin.capital.letter.m', 'latin.capital.letter.t', '_group._part.latin.lower.letter.h', 'latin.lower.ligature.fi', '_group._part.latin.lower.ligature.ft', '_group._part.latin.lower.letter.h', '_group._part.latin.lower.letter.i', 'latin.lower.letter.h', 'latin.lower.letter.d', 'latin.lower.letter.d', 'latin.capital.letter.m', 'latin.capital.letter.c', 'latin.lower.letter.t', 'latin.lower.letter.t', '_group._part.latin.lower.letter.n', 'latin.lower.letter.e', 'latin.lower.letter.a', 'latin.lower.letter.r', 'latin.lower.letter.r', 'latin.lower.letter.a', '_group._part.latin.lower.letter.n', '_group._part.latin.lower.letter.i', 'latin.lower.letter.a', 'latin.lower.letter.r', 'latin.lower.letter.r', '_group._part.latin.lower.letter.h', 'latin.lower.letter.e', 'latin.lower.letter.r', 'latin.lower.letter.e', 'latin.lower.letter.n', 'latin.lower.letter.n', 'latin.lower.letter.o', 'latin.lower.letter.e', 'latin.lower.letter.s', 'latin.lower.letter.e', '_group._part.latin.lower.letter.h', '_group._part.latin.lower.letter.i', '_group._part.latin.lower.letter.g', 'latin.lower.letter.a', 'latin.lower.letter.r', 'latin.lower.letter.r', 'latin.lower.letter.o-', 'latin.lower.letter.r', 'hyphen-minus', 'comma', 'full.stop', 'comma', '_group._part.latin.lower.ligature.ft', 'noise', '_group._part.latin.lower.letter.g']
 
-groups = ['latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.letter.n', 'latin.lower.ligature.ft', 'latin.lower.letter.i', 'latin.lower.letter.h', 'latin.lower.letter.g']
-shaped_groups = ['latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.letter.n', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.g']
+
+results = [
+      ['latin.lower.letter.n', 'latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.capital.letter.t', 'latin.lower.letter.g'],
+      ['latin.lower.letter.n', 'latin.capital.letter.m', 'latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.g'],
+      ['latin.lower.letter.n', 'latin.capital.letter.m', 'latin.capital.letter.t', 'latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.i', 'latin.lower.letter.g'],
+      ['latin.lower.letter.n', 'latin.capital.letter.m', 'latin.capital.letter.t', 'latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.i', 'latin.lower.letter.g']
+   ]
+
+
+def _test_grouping(classifier, ccs):
+   classifier.change_feature_set('all')
+   cases = [(classify.ShapedGroupingFunction(4), 'min'),
+             (classify.ShapedGroupingFunction(4), 'avg'),
+             (None, 'min'),
+             (None, 'avg')
+            ]
+
+   for (i, (func, criterion)) in enumerate(cases):
+        if func == None:
+            added,removed = classifier.group_list_automatic(ccs, criterion=criterion)
+        else:
+            added, removed = classifier.group_list_automatic(
+               ccs,
+               grouping_function = func,
+               max_parts_per_group = 10,
+               max_graph_size = 64,
+               criterion=criterion)
+   
+        added.sort(key=lambda a: a.offset_x)
+        assert [cc.get_main_id() for cc in added] == results[i]
+
 
 def _test_classification(classifier, ccs):
    (id_name, confidence) = classifier.guess_glyph_automatic(ccs[0])
@@ -26,18 +55,9 @@ def _test_classification(classifier, ccs):
 
    added, removed = classifier.classify_list_automatic(ccs)
    assert [cc.get_main_id() for cc in ccs] != correct_classes
-   
-   classifier.change_feature_set('all')
-   added, removed = classifier.group_list_automatic(ccs, criterion='avg')
-   assert [cc.get_main_id() for cc in added] == groups
 
-   added, removed = classifier.group_list_automatic(
-      ccs,
-      grouping_function = classify.ShapedGroupingFunction(4),
-      max_parts_per_group = 10,
-      max_graph_size = 64,
-      criterion='avg')
-   assert [cc.get_main_id() for cc in added] == shaped_groups
+   _test_grouping(classifier, ccs)
+
 
 def _test_training(classifier, ccs):
    length = len(classifier.get_glyphs())
@@ -97,3 +117,4 @@ def test_noninteractive_classifier():
    classifier.clear_glyphs()
    assert len(classifier.get_glyphs()) == 0
    classifier.unserialize("tmp/serialized.knn")
+

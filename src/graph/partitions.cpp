@@ -41,6 +41,32 @@ public:
   double score;
   size_t begin, end;
 };
+
+// two score values for a partition
+// when the first value is equal, the second value is compared
+struct ScoreValue {
+  double value1;
+  double value2;
+
+  bool operator >(const ScoreValue& b) {
+    if(this->value1 == b.value1) {
+      return this->value2 > b.value2;
+	}
+	else {
+      return this->value1 > b.value1;
+	}
+  };
+  bool operator <(const ScoreValue& b) {
+    if(this->value1 == b.value1) {
+      return this->value2 < b.value2;
+	}
+	else {
+      return this->value1 < b.value1;
+	}
+  };
+};
+
+
 typedef std::vector<Part> Parts;
 typedef std::vector<Bitfield> Solution;
 
@@ -195,16 +221,18 @@ inline void graph_optimize_partitions_find_skips(Parts &parts) {
 
 inline void graph_optimize_partitions_find_solution
  (const Parts& parts, const size_t begin, const size_t end,
-  Solution& best_solution, double& best_val, Solution& partial_solution,
-  double partial_val, const Bitfield bits, const Bitfield all_bits, const char* criterion) {
+  Solution& best_solution, ScoreValue& best_val, Solution& partial_solution,
+  ScoreValue partial_val, const Bitfield bits, const Bitfield all_bits, const char* criterion) {
 
-  double tmp_val = partial_val;
+  ScoreValue tmp_val = partial_val;
 
   if (bits == all_bits) {
-    // when criterion = "min", partial_val contains highest minimum confidence
+    // when criterion = "min", partial_val.value1 contains highest minimum confidence
     // when criterion "avg", it contains the sum over all confidences
+    // partial_val.value2 always contains sum over confidences
+    tmp_val.value2 = partial_val.value2 / partial_solution.size();
     if (0 == strcmp(criterion, "avg")) {
-      tmp_val = partial_val / partial_solution.size();
+      tmp_val.value1 = tmp_val.value2;
     }
     if (tmp_val > best_val){
       best_val = tmp_val;
@@ -216,10 +244,11 @@ inline void graph_optimize_partitions_find_solution
     const Part& root = parts[i];
     if (!(root.bits & bits)) { // If this part "fits into" the current parts
       partial_solution.push_back(root.bits);
+      tmp_val.value2 = partial_val.value2 + root.score;
       if (0 == strcmp(criterion, "avg")) {
-        tmp_val = partial_val + root.score;
+        tmp_val.value1 = tmp_val.value2;
       } else { // criterion == "min"
-        tmp_val = std::min(partial_val, root.score);
+        tmp_val.value1 = std::min(partial_val.value1, root.score);
       }
       graph_optimize_partitions_find_solution
         (parts,
@@ -290,14 +319,17 @@ PyObject* graph_optimize_partitions(const GraphObject* so, Node* root,
       best_solution.reserve(size);    // Maximum size the solution can be
       partial_solution.reserve(size); // Maximum size the solution can be
       Bitfield all_bits = (Bitfield(1) << size) - 1;
-      double best_val = 0;
-      // partial_val carries sum (criterion "avg") or minimum ("min")
+      ScoreValue best_val;
+      best_val.value1 = best_val.value2 = 0.0;
+      // partial_val.value1 carries sum (criterion "avg") or minimum ("min")
       // of confidences in subgroups => different initialization
-      double partial_val_init;
+      // partial_val.value2 always carries sum
+      ScoreValue partial_val_init;
+      partial_val_init.value2 = 0.0;
       if (0 == strcmp(criterion, "avg")) {
-        partial_val_init = 0.0;
+        partial_val_init.value1 = 0.0;
       } else { // criterion == "min"
-        partial_val_init = std::numeric_limits<double>::max();
+        partial_val_init.value1 = std::numeric_limits<double>::max();
       }
       graph_optimize_partitions_find_solution
         (parts, 0, (*(parts.begin())).begin,

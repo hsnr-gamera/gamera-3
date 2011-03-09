@@ -182,7 +182,7 @@ class ProgressBox:
 
    def update(self, num, den):
       if not self.done:
-         if num >= den:
+         if num >= den or num == self._lastupdate:
             self.done = True
             wx.EndBusyCursor()
             self.progress_box.Destroy()

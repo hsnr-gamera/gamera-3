@@ -260,7 +260,8 @@ def word_wrap(stream, l, indent=0, width=78):
          i = l.rfind(' ', p, p + width)
          if i == -1:
             stream.write(l[p:])
-         stream.write(l[p:i])
+         else:
+            stream.write(l[p:i])
       stream.write('\n')
       p = i + 1
 

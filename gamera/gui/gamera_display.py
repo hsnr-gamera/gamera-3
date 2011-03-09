@@ -441,13 +441,13 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       x = min(self.rubber_origin_x, self.rubber_x2)
       y = min(self.rubber_origin_y, self.rubber_y2)
-      x2 = max(self.rubber_origin_x, self.rubber_x2)
-      y2 = max(self.rubber_origin_y, self.rubber_y2)
+      x2 = max(self.rubber_origin_x, self.rubber_x2) +1
+      y2 = max(self.rubber_origin_y, self.rubber_y2) +1
       x, y, x2, y2 = tuple([int(a * scaling) for a in (x, y, x2, y2)])
       x -= origin[0]
       y -= origin[1]
-      x2 -= origin[0]
-      y2 -= origin[1]
+      x2 -= origin[0] 
+      y2 -= origin[1] 
       w = x2 - x
       h = y2 - y
       if dc is None:
@@ -482,12 +482,14 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if name:
          if (self.rubber_y2 == self.rubber_origin_y and
              self.rubber_x2 == self.rubber_origin_x):
-            subimage = self.original_image.subimage(self.original_image)
+            subimage = self.original_image.subimage(
+               (0,0), 
+               Size(self.original_image.ncols-1, self.original_image.nrows-1))
          else:
             subimage = self.original_image.subimage(
                (int(self.rubber_origin_x + self.original_image.ul_x),
                 int(self.rubber_origin_y + self.original_image.ul_y)),
-               Size(int(self.rubber_x2 - self.rubber_origin_x + 1),
+               Size(int(self.rubber_x2 - self.rubber_origin_x),
                     int(self.rubber_y2 - self.rubber_origin_y)))
          image_menu.shell.locals[name] = subimage
          image_menu.shell.update()
@@ -502,7 +504,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
             copy = self.original_image.subimage(
                (int(self.rubber_origin_x + self.original_image.ul_x),
                 int(self.rubber_origin_y + self.original_image.ul_y)),
-               Size(int(self.rubber_x2 - self.rubber_origin_x + 1),
+               Size(int(self.rubber_x2 - self.rubber_origin_x),
                     int(self.rubber_y2 - self.rubber_origin_y))).image_copy()
          image_menu.shell.locals[name] = copy
          image_menu.shell_frame.icon_display.update_icons()
@@ -774,8 +776,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          return
       scaling = self.scaling
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
-      x2 = int(max(min((event.GetX() + origin[0] - 1) / scaling, image.ncols - 1), 0))
-      y2 = int(max(min((event.GetY() + origin[1] - 1) / scaling, image.nrows - 1), 0))
+      x2 = int(max(min((event.GetX() + origin[0] ) / scaling, image.ncols - 1), 0))
+      y2 = int(max(min((event.GetY() + origin[1] ) / scaling, image.nrows - 1), 0))
       if self.rubber_on:
          self.draw_rubber(clear=True)
          self.rubber_x2 = x2

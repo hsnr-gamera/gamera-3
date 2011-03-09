@@ -1,9 +1,14 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - interactive view selection with rubber bands now also
+   works, when rubber band touches the image border
+
  - toolkits now compile out-of-the box again on Ubuntu
 
- - classifier menu entry "Image/Save glyphs into separate files" now works
+ - the following classifier menu entries now work:
+    o "Image/Save glyphs into separate files"
+    o "File/Symbol names/Import"
 
  - new plugin segmentation_error (category "PageSegmentation")
 

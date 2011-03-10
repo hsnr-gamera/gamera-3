@@ -383,16 +383,20 @@ Saves the training data in XML format to the given stream (which could
 be any object supporting the file protocol, such as a file object or StringIO
 object)."""
       self.is_dirty = False
+      glyphs = [g for g in self.get_glyphs() 
+                if not g.get_main_id().startswith("_group._part")]
       return gamera_xml.WriteXML(
-         glyphs=self.get_glyphs()).write_stream(stream, with_features)
+         glyphs=glyphs).write_stream(stream, with_features)
 
    def to_xml_filename(self, filename, with_features=True):
       """**to_xml_filename** (FileSave *filename*)
 
 Saves the training data in XML format to the given filename."""
       self.is_dirty = False
+      glyphs = [g for g in self.get_glyphs() 
+                if not g.get_main_id().startswith("_group._part")]
       return gamera_xml.WriteXMLFile(
-         glyphs=self.get_glyphs()).write_filename(filename, with_features)
+         glyphs=glyphs).write_filename(filename, with_features)
 
    def from_xml(self, stream):
       """**from_xml** (stream *stream*)

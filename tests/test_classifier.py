@@ -90,6 +90,13 @@ def test_interactive_classifier():
    _test_classification(classifier, ccs)
    _test_training(classifier, ccs)
    length = len(classifier.get_glyphs())
+
+   # subtract len(group_parts) because to_xml_filename() does 
+   # not save "_group._part"
+   group_parts = [x for x in classifier.get_glyphs() 
+                  if x.get_main_id().startswith("_group._part")]
+   length = length - len(group_parts)
+
    classifier.to_xml_filename("tmp/testline_classifier.xml")
    classifier.from_xml_filename("tmp/testline_classifier.xml")
    assert len(classifier.get_glyphs()) == length

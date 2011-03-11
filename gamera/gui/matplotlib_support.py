@@ -21,13 +21,13 @@ from sys import stderr
 
 try:
    import matplotlib
-   if (not hasattr(matplotlib, '__version__') or
-       matplotlib.__version__ not in ("0.73.1", "0.84", "0.90.1")):
-      print >>stderr, "WARNING: The version of matplotlib you have installed has not been officially"
-      print >>stderr, "tested with Gamera.  It may work fine, or you may experience strange"
-      print >>stderr, "problems using the matplotlib functionality.  Please include the"
-      print >>stderr, "version of your matplotlib (%s) in any bug reports to the Gamera" % (matplotlib.__version__)
-      print >>stderr, "developers.\n"
+#    if (not hasattr(matplotlib, '__version__') or
+#        matplotlib.__version__ not in ("0.73.1", "0.84", "0.90.1")):
+#       print >>stderr, "WARNING: The version of matplotlib you have installed has not been officially"
+#       print >>stderr, "tested with Gamera.  It may work fine, or you may experience strange"
+#       print >>stderr, "problems using the matplotlib functionality.  Please include the"
+#       print >>stderr, "version of your matplotlib (%s) in any bug reports to the Gamera" % (matplotlib.__version__)
+#       print >>stderr, "developers.\n"
    try:
       matplotlib.use("WXAgg")
       from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas

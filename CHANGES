@@ -1,12 +1,15 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.2.7, Mar 11, 2011
+----------------------------
+
  - _group._part glyphs no longer saved in classifier training data:
    when saved as "Page glyphs", they are still saved, but no longer
    when saved as "Classifier glyphs"
 
- - interactive view selection with rubber bands now also
-   works, when rubber band touches the image border
+ - interactive view selection with rubber bands now also works
+   when rubber band touches the image border
 
  - toolkits now compile out-of-the box again on Ubuntu
 

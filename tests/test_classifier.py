@@ -32,7 +32,7 @@ def _test_grouping(classifier, ccs):
                max_graph_size = 64,
                criterion=criterion)
    
-        added.sort(key=lambda a: a.offset_x)
+        added.sort(lambda a,b: cmp(a.offset_x,b.offset_x))
         assert [cc.get_main_id() for cc in added] == results[i]
 
 

@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin contour_pavlidis (category Analysis/Contour)
+
+
 Version 3.2.7, Mar 11, 2011
 ----------------------------
 

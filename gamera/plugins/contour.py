@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
 #               2010      Oliver Christen, Christoph Dalitz
+#               2011      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -100,12 +101,35 @@ class contour_samplepoints(PluginFunction):
     return _contour.contour_samplepoints(self, percentage)
   __call__ = staticmethod(__call__)
 
+class contour_pavlidis(PluginFunction):
+    """
+    Returns a point list of the outer contour trace found with Pavlidis'
+    algorithm (T. Pavlidis: *Algorithms for Grapics and Image Processing.*
+    pp. 129-165, Springer, 1982).
+
+    Note that this extracts only the first contour found, so this method
+    should be applied to a single connected component. If you have an
+    image with more than one connected component, do a CC analysis before,
+    as in the following example:
+
+    .. code:: Python
+
+      ccs = img.cc_analysis()
+      contours = []
+      for cc in ccs:
+        contours.append([Point(p.x + cc.offset_x, p.y + cc.offset_y) \\
+                         for p in cc.contour_pavlidis()])
+
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = PointVector("contour")
+    author = "Andreas Leuschner"
 
 class ContourModule(PluginModule):
   cpp_headers = ["contour.hpp"]
   category = "Analysis/Contour"
   functions = [contour_top, contour_left, contour_bottom, contour_right,
-               contour_samplepoints]
+               contour_samplepoints, contour_pavlidis]
   author = "Michael Droettboom"
   url = "http://gamera.sourceforge.net/"
 

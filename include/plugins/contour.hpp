@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
  *               2010      Oliver Christen, Christoph Dalitz
+ *               2011      Andreas Leuschner, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -116,6 +117,8 @@ namespace Gamera {
     return output;
   }
 
+  // etxraction of sample points from the contour
+  // author: Oliver Christen
   template<class T>
   PointVector * contour_samplepoints(const T& cc, int percentage) {
     PointVector *output = new PointVector();
@@ -149,21 +152,21 @@ namespace Gamera {
 
     // top
     i = 0;for(it = top->begin() ; it != top->end() ; it++, i++) {
-	    if( *it == std::numeric_limits<double>::infinity() ) {
-		    continue;
-	    }
-	    d = *it;
-	    x = cc.offset_x() + i;
-	    y = cc.offset_y() + d;
-	    if( d < top_d) {
-		    top_d = d;
-		    top_max_x = x;
-		    top_max_y = y;	
-	    }
-	    found = find(contour_points->begin(), contour_points->end(), Point(x,y));
-	    if(found == contour_points->end()) {
-          contour_points->push_back( Point(x,y) );
-	    }
+      if( *it == std::numeric_limits<double>::infinity() ) {
+        continue;
+      }
+      d = *it;
+      x = cc.offset_x() + i;
+      y = cc.offset_y() + d;
+      if( d < top_d) {
+        top_d = d;
+        top_max_x = x;
+        top_max_y = y;	
+      }
+      found = find(contour_points->begin(), contour_points->end(), Point(x,y));
+      if(found == contour_points->end()) {
+        contour_points->push_back( Point(x,y) );
+      }
     }
     // right
     i = 0;for(it = right->begin() ; it != right->end() ; it++, i++) {
@@ -273,6 +276,133 @@ namespace Gamera {
 
     return output;
   }
+
+  // contour extraction with Pavlidis' algorithm
+  // author: Andreas Leuschner
+  template<class T>
+  PointVector* contour_pavlidis(T &m) {
+
+    PointVector* v_contour = new PointVector();
+
+    // neighbor mask:
+    //   5  6  7
+    //   4  P  0
+    //   3  2  1
+    int mask[8][2];
+    //	 X            Y
+    mask[0][0] = 1;  mask[0][1] = 0;
+    mask[1][0] = 1;  mask[1][1] = -1;
+    mask[2][0] = 0;  mask[2][1] = -1;
+    mask[3][0] = -1; mask[3][1] = -1;
+    mask[4][0] = -1; mask[4][1] = 0;
+    mask[5][0] = -1; mask[5][1] = 1;
+    mask[6][0] = 0;  mask[6][1] = 1;
+    mask[7][0] = 1;  mask[7][1] = 1;
+
+    // find startpixel
+    unsigned int x = 0;
+    unsigned int y = 0;
+    while(m.get(Point(x, y)) == 0 && x < m.ncols() && y < m.nrows()){
+      if (x == m.ncols() - 1){
+        y++;
+        x = 0;
+      } 
+      x++;
+    }
+    v_contour->push_back( Point(x, y) );
+  
+    // extract contour
+    Point p_Right;
+    Point p_Middle;
+    Point p_Left;
+    unsigned int newX_R;
+    unsigned int newY_R;
+    unsigned int newX_M;
+    unsigned int newY_M;
+    unsigned int newX_L;
+    unsigned int newY_L;
+    bool found = false;
+    bool first = true;
+    bool border = true;
+    int n = 0;
+    int s = 6;
+    int third = 0;
+  
+    int run = 1;
+    while ( (*v_contour)[n].x() != (*v_contour)[0].x() || 
+            (*v_contour)[n].y() != (*v_contour)[0].y() || 
+            first == true
+            ){
+      found = false; 
+      while(found == false && third < 3){
+        third++;
+
+        newX_R = (*v_contour)[n].x() + mask[ (s-1)%8 ][0];
+        newY_R = (*v_contour)[n].y() + mask[ (s-1)%8 ][1];
+      
+        newX_M = (*v_contour)[n].x() + mask[ (s)%8 ][0];
+        newY_M = (*v_contour)[n].y() + mask[ (s)%8 ][1];
+      
+        newX_L = (*v_contour)[n].x() + mask[ (s+1)%8 ][0];
+        newY_L = (*v_contour)[n].y() + mask[ (s+1)%8 ][1];
+      
+        if(newX_R < m.ncols() && newY_R < m.nrows()){
+          p_Right.x( newX_R );
+          p_Right.y( newY_R );
+          border = false;
+        }   
+        if(newX_M < m.ncols() && newY_M < m.nrows()){
+          p_Middle.x( newX_M );	
+          p_Middle.y( newY_M );
+          border = false;
+        }
+        if(newX_L < m.ncols() && newY_L < m.nrows()){
+          p_Left.x( newX_L );	
+          p_Left.y( newY_L );
+          border = false;
+        }
+      
+        if(border == false){
+          border = true;
+          if ( is_black(m.get( p_Right)) && newX_R < m.ncols() && newY_R < m.nrows() )
+            {
+              v_contour->push_back(p_Right);
+              found = true;
+              n++;	
+              s = s - 2;
+            }
+          else{
+            if(is_black(m.get(p_Middle)) && newX_M < m.ncols() && newY_M < m.nrows()){
+              v_contour->push_back(p_Middle);
+              found = true;
+              n++;
+            }
+            else {
+              if(is_black(m.get(p_Left) ) && newX_L < m.ncols() && newY_L < m.nrows() ){
+                v_contour->push_back(p_Left);
+                found = true;
+                n++;
+              }
+              else {
+                s = s + 2;
+              }
+            }
+          }
+          first = false;
+        }
+        else {
+          s = s + 2;
+        }
+      
+      }
+      third = 0;
+      run++;
+    }
+    if (v_contour->size() > 1)
+      v_contour->pop_back(); // start pixel is doublette
+  
+    return v_contour;
+  }  
 
 }
 #endif

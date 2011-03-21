@@ -261,6 +261,8 @@ demonstration of the main ideas):
     if (my_class == NULL) {
       my_class = PyClass_New(NULL, PyDict_New(), PyString_FromString("MyClass"));
     }
-    return PyInstance_NewRaw(my_class, class_dict);
+    PyObject* ret = PyInstance_NewRaw(my_class, class_dict);
+    Py_DECREF(class_dict);
+    return ret;
   }
 

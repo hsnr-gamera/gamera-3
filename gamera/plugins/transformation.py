@@ -29,6 +29,7 @@ except:
     pass
 from gamera.gui import has_gui
 from gamera.util import warn_deprecated
+from gamera.args import NoneDefault
 import sys
 import _transformation
 
@@ -41,6 +42,7 @@ class rotate(PluginFunction):
 
     *bgcolor*
       The color to use for pixels outside of the original image bounds.
+      When *bgcolor* is ``None``, white is used.
 
     *order*
       The order of the spline used for interpolation.  Must be between 1 - 3.
@@ -48,11 +50,13 @@ class rotate(PluginFunction):
     category = "Transformation"
     self_type = ImageType(ALL)    
     return_type = ImageType(ALL)
-    args = Args([Float("angle"), Pixel("bgcolor"), Int("order", range=(1,3), default=1)])
+    args = Args([Float("angle"), Pixel("bgcolor", default=NoneDefault), Int("order", range=(1,3), default=1)])
     args.list[0].rng = (-180,180)
     doc_examples = [(RGB, 32.0, RGBPixel(255, 255, 255), 3), (COMPLEX, 15.0, 0.0j, 3)]
     author = u"Michael Droettboom (With code from VIGRA by Ullrich K\u00f6the)"
-    def __call__(self, angle, bgcolor, order=1):
+    def __call__(self, angle, bgcolor=None, order=1):
+      if (bgcolor == None):
+          bgcolor = self.white()
       return _transformation.rotate(self, angle, bgcolor, order)
     __call__ = staticmethod(__call__)
     

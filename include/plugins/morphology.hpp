@@ -294,7 +294,7 @@ namespace Gamera {
   template<class T>
   typename ImageFactory<T>::view_type* erode_dilate(T &m, const size_t times, int direction, int geo){
 	typedef typename ImageFactory<T>::view_type view_type;
-	view_type* new_view = new view_type();
+	view_type* new_view;
 	
 	new_view = erode_dilate_original(m,times,direction,geo);
 	return new_view;

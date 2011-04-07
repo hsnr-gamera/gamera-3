@@ -3,6 +3,7 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
+#               2011      Christian Brandt
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -75,7 +76,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       wx.EVT_TIMER(self, 100, self._OnBoxHighlight)
       self.boxes = []
       self.rubber_on = 0
-      self.rubber_origin_x = 0
+      self.rubber_origin_x = None # none indicates that nothing is selected
       self.rubber_origin_y = 0
       self.rubber_x2 = 0
       self.rubber_y2 = 0
@@ -412,17 +413,21 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          return
       scroll_amount = self.scroll_amount
       # Zooms in as best it can on the current view
-      x = min(self.rubber_origin_x, self.rubber_x2)
-      y = min(self.rubber_origin_y, self.rubber_y2)
-      x2 = max(self.rubber_origin_x, self.rubber_x2)
-      y2 = max(self.rubber_origin_y, self.rubber_y2)
-      rubber_w = (x2 - x) + scroll_amount
-      rubber_h = (y2 - y) + scroll_amount
+      rubber_w = self.image.ncols
+      rubber_h = self.image.nrows
+      x = y = x2 = y2 = 0
+      if self.rubber_origin_x != None:
+         x = min(self.rubber_origin_x, self.rubber_x2)
+         y = min(self.rubber_origin_y, self.rubber_y2)
+         x2 = max(self.rubber_origin_x, self.rubber_x2)
+         y2 = max(self.rubber_origin_y, self.rubber_y2)
+         rubber_w = (x2 - x) + scroll_amount
+         rubber_h = (y2 - y) + scroll_amount
       size = self.GetSize()
-      if rubber_w == scroll_amount and rubber_h == scroll_amount:
-         rubber_w = self.image.ncols
-         rubber_h = self.image.nrows
-         x = y = x2 = y2 = 0
+#      if rubber_w == scroll_amount and rubber_h == scroll_amount:
+#         rubber_w = self.image.ncols
+#         rubber_h = self.image.nrows
+#         x = y = x2 = y2 = 0
       scaling = min(float(size.x) / float(rubber_w),
                     float(size.y) / float(rubber_h)) * 0.95
       self.scale(scaling)
@@ -437,6 +442,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    # RUBBER BAND
    #
    def draw_rubber(self, dc=None, clear=False):
+      if self.rubber_origin_x == None:
+         return
       scaling = self.scaling
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
       x = min(self.rubber_origin_x, self.rubber_x2)
@@ -462,15 +469,15 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          dc.SetPen(wx.TRANSPARENT_PEN)
          brush = wx.BLUE_BRUSH
          dc.SetBrush(brush)
-         self.block_w = block_w = max(min(w / 2 - 1, 8), 0)
-         self.block_h = block_h = max(min(h / 2 - 1, 8), 0)
+         self.block_w = block_w = max(min((w / 2 - 1)/scaling,8), 4)
+         self.block_h = block_h = max(min((h / 2 - 1)/scaling,8), 4)
          dc.DrawRectangle(x + 1, y + 1, block_w, block_h)
          dc.DrawRectangle(x2 - block_w - 1, y + 1, block_w, block_h)
          dc.DrawRectangle(x + 1, y2 - block_h - 1, block_w, block_h)
          dc.DrawRectangle(x2 - block_w - 1, y2 - block_h - 1, block_w, block_h)
 
       if clear:
-         self.RefreshRect(wx.Rect(x, y, w, h))
+         self.RefreshRect(wx.Rect(max(x-8,0), max(y-8,0), w+16, h+16))
       else:
          _draw_rubber_inner()
 
@@ -480,8 +487,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    def _OnMakeView(self, *args):
       name = var_name.get("view", image_menu.shell.locals)
       if name:
-         if (self.rubber_y2 == self.rubber_origin_y and
-             self.rubber_x2 == self.rubber_origin_x):
+         if self.rubber_origin_x == None:
             subimage = self.original_image.subimage(
                (0,0), 
                Size(self.original_image.ncols-1, self.original_image.nrows-1))
@@ -489,23 +495,22 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
             subimage = self.original_image.subimage(
                (int(self.rubber_origin_x + self.original_image.ul_x),
                 int(self.rubber_origin_y + self.original_image.ul_y)),
-               Size(int(self.rubber_x2 - self.rubber_origin_x),
-                    int(self.rubber_y2 - self.rubber_origin_y)))
+               Size(max(0,int(self.rubber_x2 - self.rubber_origin_x)),
+                    max(0,int(self.rubber_y2 - self.rubber_origin_y))))
          image_menu.shell.locals[name] = subimage
          image_menu.shell.update()
 
    def _OnMakeCopy(self, *args):
       name = var_name.get("copy", image_menu.shell.locals)
       if name:
-         if (self.rubber_y2 == self.rubber_origin_y and
-             self.rubber_x2 == self.rubber_origin_x):
+         if self.rubber_origin_x == None: 
             copy = self.original_image.image_copy()
          else:
             copy = self.original_image.subimage(
                (int(self.rubber_origin_x + self.original_image.ul_x),
                 int(self.rubber_origin_y + self.original_image.ul_y)),
-               Size(int(self.rubber_x2 - self.rubber_origin_x),
-                    int(self.rubber_y2 - self.rubber_origin_y))).image_copy()
+               Size(max(0,int(self.rubber_x2 - self.rubber_origin_x)),
+                    max(0,int(self.rubber_y2 - self.rubber_origin_y)))).image_copy()
          image_menu.shell.locals[name] = copy
          image_menu.shell_frame.icon_display.update_icons()
 
@@ -669,6 +674,8 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    def _OnLeftDown(self, event):
       if not self.image:
          return
+      if self.rubber_origin_x == None:
+         self.rubber_origin_x = 0
       self.CaptureMouse()
       self.rubber_on = 1
       self.draw_rubber(clear=True)
@@ -677,30 +684,38 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
               self.image.ncols - 1)
       y = min((event.GetY() + origin[1]) / self.scaling,
               self.image.nrows - 1)
-      if (x >= self.rubber_origin_x and
-          x <= self.rubber_origin_x + self.block_w):
+
+      # factor_05 and factor_15 are used to double the virtual size 
+      # of the blue points. 
+      # factor_05 in outer direction and factor_15 in inner direction
+      # This makes it easier for an end-user to hit the blue points with 
+      # the mouse because it is not needed to hit them exactly
+      factor_15 = 1.5 / self.scaling
+      factor_05 = 0.5 / self.scaling
+      if (x+0.5 >= self.rubber_origin_x - self.block_w * factor_05 and
+          x-0.5 <= self.rubber_origin_x + self.block_w * factor_15 ):
          self.rubber_origin_x, self.rubber_x2 = \
                                self.rubber_x2, self.rubber_origin_x
-         if (y >= self.rubber_origin_y and
-             y <= self.rubber_origin_y + self.block_h):
+         if (y+0.5 >= self.rubber_origin_y - self.block_h * factor_05  and
+             y-0.5 <= self.rubber_origin_y + self.block_h * factor_15 ):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
             self.draw_rubber(clear=False)
             return
-         elif (y <= self.rubber_y2 and
-               y >= self.rubber_y2 - self.block_h):
+         elif (y-0.5 <= self.rubber_y2 + self.block_h * factor_05 and
+               y+0.5 >= self.rubber_y2 - self.block_h * factor_15 ):
             self.draw_rubber(clear=False)
             return
-      elif (x <= self.rubber_x2 and
-            x >= self.rubber_x2 - self.block_w):
-         if (y >= self.rubber_origin_y and
-             y <= self.rubber_origin_y + self.block_h):
+      elif (x-0.5 <= self.rubber_x2 + self.block_w*factor_05 and
+            x+0.5 >= self.rubber_x2 - self.block_w *factor_15):
+         if (y+0.5 >= self.rubber_origin_y - self.block_h * factor_05 and
+             y-0.5 <= self.rubber_origin_y + self.block_h * factor_15):
             self.rubber_origin_y, self.rubber_y2 = \
                                   self.rubber_y2, self.rubber_origin_y
             self.draw_rubber(clear=False)
             return
-         elif (y <= self.rubber_y2 and
-               y >= self.rubber_y2 - self.block_h):
+         elif (y-0.5 <= self.rubber_y2 + self.block_h * factor_05  and
+               y+0.5 >= self.rubber_y2 - self.block_h * factor_15 ):
             self.draw_rubber(clear=False)
             return
       self.rubber_origin_x = self.rubber_x2 = int(x)
@@ -1895,7 +1910,7 @@ class ImageFrame(ImageFrameBase):
       else:
          self._status_bar.SetStatusText(
             "(%d, %d) to (%d, %d) / (%d w, %d h) %s" %
-            (x1, y1, x2, y2, abs(x1-x2), abs(y1-y2), image.get((x2 - image.ul_x, y2 - image.ul_y))), 1)
+            (x1, y1, x2, y2, abs(x1-x2)+1, abs(y1-y2)+1, image.get((x2 - image.ul_x, y2 - image.ul_y))), 1)
 
    def _OnCloseWindow(self, event):
       self.remove_callback("move", self._OnMove)

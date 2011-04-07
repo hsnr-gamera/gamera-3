@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
  *               2010      Christoph Dalitz, Hasan Yildiz, Tobias Bolten
+ *               2011      Christian Brandt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -143,7 +144,7 @@ namespace Gamera {
   */
   template<class T>
   Image* image_copy(T &a, int storage_format) {
-    if (a.ul_x() >= a.lr_x() || a.ul_y() >= a.lr_y())
+    if (a.ul_x() > a.lr_x() || a.ul_y() > a.lr_y())
       throw std::exception();
     if (storage_format == DENSE) {
       typename ImageFactory<T>::dense_data_type* data =

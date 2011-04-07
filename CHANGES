@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - image_copy() did not work for 1x1 images
+
  - new plugin contour_pavlidis (category Analysis/Contour)
 
 

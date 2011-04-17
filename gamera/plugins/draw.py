@@ -345,7 +345,7 @@ class draw_text(PluginFunction):
 
       MONOSPACE (2)
 
-  *pixel_size* = 10
+  *size* = 10
     The font size **in pixels** (i.e. not in "points")
 
   *italic* = ``False``
@@ -363,7 +363,7 @@ class draw_text(PluginFunction):
   """
   self_type = ImageType([ONEBIT, RGB])
   args = Args([FloatPoint("p"), String("text"), Pixel("color"),
-               Int("pixel_size", default=10, range=(3, 512)),
+               Int("size", default=10, range=(3, 512)),
                Choice("font_family", ['serif', 'sans-serif', 'monospace']),
                Check("italic", default=False),
                Check("bold", default=False),

@@ -28,13 +28,15 @@
 #include "vigra/seededregiongrowing.hxx"
 #include "geostructs/kdtree.hpp"
 #include "geostructs/delaunaytree.hpp"
-#include "geostructs/colorgraph.hpp"
+#include "graph/graph.hpp"
+#include "graph/graphdataderived.hpp"
+#include "graph/node.hpp"
 #include "plugins/contour.hpp"
 
 
 using namespace Gamera::Kdtree;
 using namespace Gamera::Delaunaytree;
-using namespace Gamera::Colorgraph;
+using namespace Gamera::GraphApi;
 using namespace std;
 
 namespace Gamera {
@@ -346,9 +348,11 @@ namespace Gamera {
   //-----------------------------------------------------------------------
   // functions for graph coloring of Cc's with different colors
   //-----------------------------------------------------------------------
+  typedef std::map<unsigned int, Image*> LabelCcMap;
   template<class T>
-  ColorGraph *graph_from_ccs(T &image, ImageVector &ccs, int method) {
-    ColorGraph *graph = new ColorGraph();
+  Graph *graph_from_ccs(T &image, ImageVector &ccs, int method) {
+    Graph *graph = new Graph(FLAG_UNDIRECTED);
+    graph->make_singly_connected();
 
     PointVector *pv = new PointVector();
     IntVector *iv = new IntVector();
@@ -384,7 +388,15 @@ namespace Gamera {
       delaunay_from_points_cpp(pv, iv, &neighbors);
       for (nit1=neighbors.begin(); nit1!=neighbors.end(); ++nit1) {
         for (nit2=nit1->second.begin(); nit2!=nit1->second.end(); nit2++) {
-          graph->add_edge(nit1->first, *nit2);
+           GraphDataLong* a_p = new GraphDataLong(nit1->first);
+           GraphDataLong* b_p = new GraphDataLong(*nit2);
+           bool del_a = !graph->add_node(a_p);
+           bool del_b = !graph->add_node(b_p);
+           graph->add_edge(a_p, b_p); 
+           if(del_a)
+              delete a_p;
+           if(del_b)
+              delete b_p;
         }
       }
     }
@@ -396,10 +408,16 @@ namespace Gamera {
       for (int i = 0; i < PyList_Size(labelpairs); i++) {
         PyObject *adj_list = PyList_GetItem(labelpairs, i);
         PyObject *region1 = PyList_GetItem(adj_list, 0);
-        PyObject *region2 = PyList_GetItem(adj_list, 1); 
-        long neighborhood1 = PyInt_AsLong(region1);
-        long neighborhood2 = PyInt_AsLong(region2);
-        graph->add_edge( (int) neighborhood1, (int) neighborhood2);
+        PyObject *region2 = PyList_GetItem(adj_list, 1);
+        GraphDataLong* a_p = new GraphDataLong(PyInt_AsLong(region1));
+        GraphDataLong* b_p = new GraphDataLong(PyInt_AsLong(region2));
+        bool del_a = !graph->add_node(a_p);
+        bool del_b = !graph->add_node(b_p);
+        graph->add_edge(a_p, b_p); 
+        if(del_a)
+           delete a_p;
+        if(del_b)
+           delete b_p;
       }
       delete voronoi->data();
       delete voronoi;
@@ -417,7 +435,7 @@ namespace Gamera {
 
   template<class T>
   RGBImageView* graph_color_ccs(T &image, ImageVector &ccs, PyObject *colors, int method) {
-    ColorGraph *graph = NULL;
+    Graph *graph = NULL;
     std::vector<RGBPixel*> RGBColors;
     
     // check input parameters
@@ -428,7 +446,8 @@ namespace Gamera {
       throw std::runtime_error("graph_color_ccs: colors is no list");
     }
     if( PyList_Size(colors) < 6 ) {
-      throw std::runtime_error("graph_color_ccs: coloring algorithm only works with more than five colors");
+      throw std::runtime_error("graph_color_ccs: coloring algorithm only works "
+            "with more than five colors");
     }
 
     // extract the colors
@@ -444,25 +463,23 @@ namespace Gamera {
     // volor the graph
     graph->colorize( PyList_Size(colors) );
 
-//     // for debugging only: print the result color histogramm
-//     std::map<int, int> *color_histogramm = graph->get_color_histogramm();
-//     std::map<int, int>::iterator histo_iter;
-//     for( histo_iter = color_histogramm->begin(); histo_iter != color_histogramm->end(); histo_iter++) {
-//         std::cout << histo_iter->first << " --> " << histo_iter->second << std::endl;
-//     }
-
     // Create the return image
     // Ccs not passed to the function are set black in the result
     typedef TypeIdImageFactory<RGB, DENSE> RGBViewFactory;
-    RGBViewFactory::image_type *coloredImage = RGBViewFactory::create(image.origin(), image.dim());
+    
+    RGBViewFactory::image_type *coloredImage = 
+       RGBViewFactory::create(image.origin(), image.dim());
+    
     int label;
     for( size_t y = 0; y < image.nrows(); y++) {
       for( size_t x = 0; x < image.ncols(); x++ ) {
         label = image.get(Point(x,y));
         if( label != 0 ) {
           try {
-            int c = graph->get_color(label);
-            coloredImage->set(Point(x,y), *RGBColors[c]);
+             GraphDataLong d(label);
+             Node* n = graph->get_node(&d);
+             unsigned int c = graph->get_color(n);
+             coloredImage->set(Point(x,y), *RGBColors[c]);
           }
           catch( std::runtime_error runtimeError ) {
             coloredImage->set(Point(x,y), RGBPixel(0,0,0));
@@ -470,13 +487,22 @@ namespace Gamera {
         }
       }
     }
+
+    NodePtrIterator* it = graph->get_nodes();
+    Node* n;
+    
+    while((n = it->next()) != NULL) {
+      delete dynamic_cast<GraphDataLong*>(n->_value);
+    }
+
+    delete it;
     delete graph;
 
     return coloredImage;
   }
 
 
-} // namespace Gamera
 
+} // namespace Gamera
 #endif
 

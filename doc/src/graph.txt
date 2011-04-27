@@ -6,17 +6,15 @@ Introduction
 ------------
 
 Gamera provides a rudimentary framework for dealing with graph
-structures.  While this is a clearly Python-centric library, Many of
-the algorithms are written in C++ so are generally faster than a pure
-Python approach.
+structures.  This library can be used from Python and from C++.
 
 This chapter assumes a basic understanding of graph theory and graph
 algorithms.   While this document describes the API, it
 does not describe in detail how the algorithms work.  (Hopefully this
 can be added in a future release of this documentation.)
 
-Examples
---------
+Using the graph library from Python
+-----------------------------------
 
 Most operations on graphs in the Gamera graph library are methods on
 ``Graph`` objects.
@@ -119,11 +117,12 @@ result until it has been entirely evaluated.
 
 Note that this graph is composed of two distinct subgraphs.  There are
 ways to determine the number of subgraphs and iterate over the roots
-of those subgraphs.  For instance, to do a breadth-first search of all
-subgraphs:
+of those subgraphs if the graph is undirected.  For instance, to do a 
+breadth-first search of all subgraphs:
 
 .. code:: Python
 
+  >>> g.make_undirected()
   >>> g.nsubgraphs
   2
   >>> for root in g.get_subgraph_roots():
@@ -144,7 +143,7 @@ is undirected and contains no cycles, using the same graph structure:
 
 .. code:: Python
 
-  >>> g = graph.Graph(graph.TREE)
+  >>> g = graph.Graph(graph.TREE | graph.CHECK_ON_INSERT)
   >>> g.add_edge('a', 'b')
   1
   >>> g.add_edge('a', 'c')
@@ -236,7 +235,7 @@ node from which all other nodes can be reached.
 Utility
 """""""
 
-.. docstring:: gamera.graph Graph copy
+.. docstring:: gamera.graph Graph copy has_flag has_path
 
 Properties
 ``````````
@@ -262,7 +261,7 @@ Search
 Shortest path
 """""""""""""
 
-.. docstring:: gamera.graph Graph djikstra_shortest_path shortest_path djikstra_all_pairs_shortest_path all_pairs_shortest_path
+.. docstring:: gamera.graph Graph dijkstra_shortest_path shortest_path dijkstra_all_pairs_shortest_path all_pairs_shortest_path
 
 Spanning trees
 """"""""""""""
@@ -273,6 +272,14 @@ Partitions
 """"""""""
 
 .. docstring:: gamera.graph Graph optimize_partitions
+
+Coloration
+""""""""""""
+
+.. docstring:: gamera.graph Graph colorize get_color
+
+
+
 
 Node objects
 ''''''''''''
@@ -345,14 +352,150 @@ There are many ways to represent graphs in memory for different
 applications.  Unfortunately, this library only uses one, which may
 not be suitable for all applications.  It is as follows:
 
-  - The graph object contains arrays of all nodes and edges.
-    Therefore, random access to nodes and edges is constant time (*O(1)*).
-    Deleting nodes and edges is in linear time (*O(n)*).
+  - The graph object contains lists of all nodes and edges.
+    Deleting nodes and edges is in linear time.
     
   - The graph contains a hash table from node data to nodes, so given a
     particular piece of data associated with a node, the node can be
-    looked up in *O(n* ln *n*) time.
+    looked up in O(ln *n*) time.
 
   - Each node contains an array of coincident edges.  If the graph is
     directed, this includes edges going in and out from the node.
+
+
+
+Using the Graph library from C++
+--------------------------------
+
+The module ``gamera.graph`` is only a thin Python wrapper around
+a C++ class ``Graph``. This can also be used directly in C++ plugins.
+
+Compilation and linkage
+'''''''''''''''''''''''
+
+The header file *graph.hpp* declares the necessary structures in
+the namespace ``Gamera::Graph``. It is installed with the other gamera
+header files, and can thus be included with
+
+.. code:: CPP
+
+   #include "graph.hpp"
+   using namespace Gamera::Graph;
+
+The tricky part is getting your plugin module to be linked with the
+actual kdtree implementation. This is achieved by adding the
+source files to the ``cpp_sources`` property and the include directory 
+to ``cpp_include_dirs`` in the plugin Python interface.
+
+In the gamera core code, the following works:
+
+.. code:: Python
+
+   class ExampleModule(PluginModule):
+       category = "MyPlugins"
+       cpp_headers = ["myplugins.hpp"]
+       import glob
+       cpp_sources = glob.glob("src/graph/*.cpp")
+       cpp_include_dirs=["include/graph/"]
+       functions = [myplugin1, myplugin2]
+   module = ExampleModule()
+
+In a toolkit, this will not work, because the path names in
+the ``cpp_sources`` property are relative to the location
+of the *setup.py* script. To allow for the use of the Graph C++
+class in toolkits, the source files are installed together
+with Gamera. You can thus specify this file in ``cpp_sources``
+as follows:
+
+.. code:: Python
+
+   class ExampleModule(PluginModule):
+       # ...
+       import os, gamera
+       gamera_root = os.path.dirname(gamera.__file__)
+       import glob
+       cpp_sources = (glob.glob(os.path.join(gamera_root, "src/graph/*.cpp"))
+       # ...
+
+Querying the Gamera installation directory through the *__file__* property
+of the gamera module is safer than using *get_python_lib()* from
+``distutils.sysconfig``, because it also works when Gamera is not
+installed into the standard location for python extensions.
+
+
+Usage
+'''''
+
+Most methods are similar to them in the Python wrapper. For a detailed 
+description you can see more details in the implementation and header files 
+of Graph. A node is designed for storing a class derived from GraphData. Be 
+sure storing your GraphData objects as long as your Graph lives. GraphData 
+defines the virtual methods which must be implemented in your derived class.
+
+  - **virtual GraphData* copy** ()
+
+    copies a given Data element. Note that this will *not* be deleted 
+    automatically.
+
+  - **virtual int compare** (*const GraphData& b*)
+
+    returns 0 if b and \*this are equal
+
+    returns <0 if \*this < b
+
+    returns >0 if \*this > b
+
+    The comparison operators < > == != <= >= are mapped to this method.
+
+
+You can see some examples for derived classes in ``graphdataderived.hpp``
+
+
+Example
+'''''''
+Here is a very short example for a C++-Usage:
+
+.. code:: CPP
+
+   #include "graph.hpp"
+   
+   void test() {
+      Graph* g = new Graph(FLAG_UNDIRECTED);
+      GraphDataUnsignedInt* data1 = new GraphDataUnsignedInt(42);
+      GraphDataUnsignedInt* data2 = new GraphDataUnsignedInt(21);
+      
+      g->add_node(data1);
+      g->add_node(data2);
+      g->add_edge(data1, data2, 2.0);
+
+      delete g;
+      delete data1;
+      delete data2;
+   }
+
+
+Iterators
+'''''''''
+
+Many methods use lazy iterators as their return value. Here is a small 
+example on handling iterators in C++.
+
+.. code:: CPP
+
+   Graph* g = new Graph();
+   // add nodes and edges to g ...
+   DFSIterator* it = g->DFS(); //iterator is allocated on heap
+
+   Node *n;
+   while((n = it->next()) != NULL) {
+      // next() returns NULL when there are no more elements
+      // You can do something with node n, but do not add or remove 
+      // nodes to the graph because this would invalidate the iterator.
+   }
+
+   delete it; //iterator must be deleted after usage
+
+
+
+
 

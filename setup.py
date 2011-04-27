@@ -124,7 +124,7 @@ plugin_extensions = gamera_setup.generate_plugins(
 
 ga_files = glob.glob("src/ga/*.cpp")
 ga_files.append("src/knncoremodule.cpp")
-graph_files = glob.glob("src/graph/*.cpp")
+graph_files = glob.glob("src/graph/*.cpp") + glob.glob("src/graph/graphmodule/*.cpp")
 kdtree_files = ["src/kdtreemodule.cpp", "src/geostructs/kdtree.cpp"]
 
 extensions = [Extension("gamera.gameracore",
@@ -149,7 +149,7 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include", "src/ga", "src"],
                         **gamera_setup.extras),
               Extension("gamera.graph", graph_files,
-                        include_dirs=["include", "src", "src/graph"],
+                        include_dirs=["include", "src", "include/graph", "src/graph/graphmodule"],
                         **gamera_setup.extras),
               Extension("gamera.kdtree", kdtree_files,
                         include_dirs=["include", "src", "include/geostructs"],
@@ -175,12 +175,13 @@ includes = [(os.path.join(gamera_setup.include_path, path),
             ("", "*.hpp"),
             ("plugins", "*.hpp"),
             ("vigra", "*.hxx"),
-            ("geostructs", "*.hpp")]
+            ("geostructs", "*.hpp"),
+            ("graph", "*.hpp")]
 
 srcfiles = [(os.path.join(gamera_setup.lib_path,path),
              glob.glob(os.path.join(path, ext)))
             for path, ext in
-            [("src/geostructs", "*.cpp")]]
+            [("src/geostructs", "*.cpp"), ("src/graph", "*.cpp")]]
 
 packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
             'gamera.backport']

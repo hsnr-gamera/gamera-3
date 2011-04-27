@@ -218,22 +218,13 @@ class graph_color_ccs(PluginFunction):
     neighborship graph have different colors.
 
     This function can be used to verify that the pagesegmentation 
-    e.g. ``cc_analysis`` is working correctly for your image.
+    e.g. ``runlength_smearing`` is working correctly for your image.
 
-    The graph coloring algorithm is based on the "6-COLOR" alorithm for
-    planar graphs, as described in:
+    For coloring the Gamera graph library is used. For more information on the 
+    coloring algorithm see Graph.colorize__
 
-        D. Matula, Y. Shiloach, R. Tarjan:
-        `Two linear-time algorithms for five-coloring a planar graph.`__
-        Tech Rep STAN-CS-80-830, Computer Science Dep., Stanford Univ., 
-        Stanford, Calif., 1980
-
-.. __: ftp://db.stanford.edu/pub/cstr/reports/cs/tr/80/830/CS-TR-80-830.pdf
-
-    We have modified the algorithm in such way that the color distribution is
-    balanced, i.e. that each color is assigned approximately to the same
-    number of nodes (also known as \"equitable coloring\").
-
+    .. __: graph.html#colorize
+    
     *ccs*:
         ImageList which contains ccs to be colored. Must be views on
         the image on which this method is called.
@@ -296,7 +287,9 @@ class graph_color_ccs(PluginFunction):
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
   category = "Geometry"
-  cpp_sources=["src/geostructs/colorgraph.cpp", "src/geostructs/kdtree.cpp", "src/geostructs/delaunaytree.cpp"]
+  import glob
+  cpp_sources=["src/geostructs/kdtree.cpp", "src/geostructs/delaunaytree.cpp"] + glob.glob("src/graph/*.cpp")
+  cpp_include_dirs=["include/graph/"]
   functions = [voronoi_from_labeled_image,
                voronoi_from_points,
                labeled_region_neighbors,

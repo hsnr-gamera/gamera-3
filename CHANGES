@@ -1,6 +1,18 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - graph API completely rewritten from scratch (thanks to Christian Brandt)
+   Changes from a user's perspective:
+    o colorize() for coloring a (planar) graph in linear time
+    o new flag CHECK_ON_INSERT
+    o is_*_connected now actually tests connectedness
+    o is_cyclic now actually tests for cycles
+    o has_path() for path existence check between nodes
+    o add_edge no longer crashes after edges had been removed
+    o now also usable directly from C++ (see documentation)
+
+ - geostructs/colorgraph.* have been removed (now available in graph API)
+
  - rubber band selection in image display improved
 
  - image_copy() did not work for 1x1 images

@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <queue>
+#include <cstdlib>
 
 namespace Gamera { namespace Kdtree {
 

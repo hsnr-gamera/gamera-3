@@ -48,7 +48,8 @@ protected:
 public:
    NodeTraverseIterator(Graph* graph) {
       _graph = graph;
-   }   
+   }
+   virtual ~NodeTraverseIterator() {}
 
    /// marks the given node as visited
    inline void visit(Node* node) {

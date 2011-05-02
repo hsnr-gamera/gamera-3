@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.3.0, Mai 02, 2011
+----------------------------
+
  - graph API completely rewritten from scratch (thanks to Christian Brandt)
    Changes from a user's perspective:
     o colorize() for coloring a (planar) graph in linear time

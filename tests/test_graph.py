@@ -499,8 +499,11 @@ def _test_check_insert_restrictions(flag = None):
    print g.nedges
    if results.has_key(flag) and results[flag][1] != None:
 #      assert g.nedges == results[flag][0]
-      assert sorted([(e.from_node(), e.to_node()) for e in list(g.get_edges())]) \
-            == sorted(results[flag][1])
+      result = [(e.from_node(), e.to_node()) for e in list(g.get_edges())]
+      result.sort()
+      correct = results[flag][1]
+      correct.sort()
+      assert result == correct
 
    del g
 
@@ -510,8 +513,11 @@ def _test_check_insert_restrictions(flag = None):
    g.add_nodes([1,2,3,4,5,6,7,8,9])
    g.add_edge(3,3)
    if results.has_key(flag) and results[flag][2] != None:
-      assert sorted([(e.from_node(), e.to_node()) for e in g.get_edges()]) \
-            == sorted(results[flag][2])
+      result = [(e.from_node(), e.to_node()) for e in g.get_edges()]
+      result.sort()
+      correct = results[flag][2]
+      correct.sort()
+      assert result == correct
 
 
    #tests multi-connected restriction
@@ -559,10 +565,12 @@ def _test_spanning_tree(flag = gamera.graph.FREE):
    )
    assert g.nedges == 14
 
-   bfsnodes = [n() for n in g.BFS(11)].sort()
+   bfsnodes = [n() for n in g.BFS(11)]
+   bfsnodes.sort()
 
    t = g.create_spanning_tree(11)
-   treenodes = [n() for n in t.get_nodes()].sort()
+   treenodes = [n() for n in t.get_nodes()]
+   treenodes.sort()
 
    assert treenodes == bfsnodes
 

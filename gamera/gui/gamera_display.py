@@ -1833,8 +1833,9 @@ class ImageFrameBase:
 
    def set_image(self, image, view_function=None, weak=1):
       size = self._iw.id.set_image(image, view_function, weak)
-      self._frame.SetSize((max(200, min(600, size[0] + 30)),
-                           max(200, min(400, size[1] + 60))))
+      displaysize = wx.GetClientDisplayRect().GetSize()
+      self._frame.SetSize((max(200, min(displaysize[0], size[0] + 30)),
+                           max(200, min(displaysize[1], size[1] + 60))))
 
    def close(self):
       self._iw.Destroy()

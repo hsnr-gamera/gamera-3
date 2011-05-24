@@ -255,7 +255,7 @@ namespace Gamera {
 
     /// Return the value of this pixel (max of RGB)
     FloatPixel const value() {
-      return (FloatPixel)std::max(data_[0], std::max(data_[1], data_[2]));
+      return (FloatPixel)((float)(std::max(data_[0], std::max(data_[1], data_[2])))/255.0);
     }
 
     // conversion to CIE color space XYZ

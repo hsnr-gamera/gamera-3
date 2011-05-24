@@ -30,19 +30,19 @@ config.add_option(
    "", "--default-dir", default=".",
    help="[gui] The default directory when opening files")
 
-colors = (wx.Color(0xbc, 0x2d, 0x2d), wx.Color(0xb4, 0x2d, 0xbc),
-          wx.Color(0x2d, 0x34, 0xbc), wx.Color(0x2d, 0xbc, 0x2d),
-          wx.Color(0x2d, 0xbc, 0xbc), wx.Color(0xbc, 0xb7, 0x2d),
-          wx.Color(0xbc, 0x88, 0x2d), wx.Color(0x6e, 0x00, 0xc7))
+colors = (wx.Colour(0xbc, 0x2d, 0x2d), wx.Colour(0xb4, 0x2d, 0xbc),
+          wx.Colour(0x2d, 0x34, 0xbc), wx.Colour(0x2d, 0xbc, 0x2d),
+          wx.Colour(0x2d, 0xbc, 0xbc), wx.Colour(0xbc, 0xb7, 0x2d),
+          wx.Colour(0xbc, 0x88, 0x2d), wx.Colour(0x6e, 0x00, 0xc7))
 
 color_number = 0
 def get_color(number):
    global color_number
-   if isinstance(number, wx.Color):
+   if isinstance(number, wx.Colour):
       return number
    if util.is_sequence(number):
       if len(number) == 3:
-         return wx.Color(*tuple(number))
+         return wx.Colour(*tuple(number))
       else:
          number = None
    if type(number) != IntType:

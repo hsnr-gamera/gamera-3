@@ -179,7 +179,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       w = x2 - x
       h = y2 - y
 
-      pen = wx.Pen(wx.Color(0, 0, 255), 2, wx.SOLID)
+      pen = wx.Pen(wx.Colour(0, 0, 255), 2, wx.SOLID)
       dc.SetPen(pen)
       dc.SetBrush(wx.TRANSPARENT_BRUSH)
       dc.DrawRectangle(int(x), int(y), int(w), int(h))
@@ -894,10 +894,10 @@ class MultiImageGridRenderer(GridCellRenderer):
       self.parent = parent
       self.label_font = wx.Font(6, wx.SWISS, wx.NORMAL, wx.NORMAL)
 
-   _colors = {UNCLASSIFIED: wx.Color(255,255,255),
-              AUTOMATIC:    wx.Color(198,145,145),
-              HEURISTIC:    wx.Color(240,230,140),
-              MANUAL:       wx.Color(180,238,180)}
+   _colors = {UNCLASSIFIED: wx.Colour(255,255,255),
+              AUTOMATIC:    wx.Colour(198,145,145),
+              HEURISTIC:    wx.Colour(240,230,140),
+              MANUAL:       wx.Colour(180,238,180)}
 
    # Draws one cell of the grid
    def Draw(self, grid, attr, dc, rect, row, col, isSelected):
@@ -1067,7 +1067,7 @@ class MultiImageDisplay(gridlib.Grid):
       self.renderer = MultiImageGridRenderer(self)
       self.SetDefaultRenderer(self.renderer)
       if wx.VERSION >= (2, 5):
-         self.SetGridLineColour(wx.Color(130,130,254))
+         self.SetGridLineColour(wx.Colour(130,130,254))
 
       self.glyphs = util.CallbackSet()
       self.sorted_glyphs = []
@@ -1948,7 +1948,7 @@ def graph_horiz(data, dc, x1, y1, x2, y2, mark=None, border=1):
       scale_y = (y2 - y1) / max(data)
    m = log(max_data)
    dc.SetPen(wx.TRANSPARENT_PEN)
-   light_blue = wx.Color(128, 128, 255)
+   light_blue = wx.Colour(128, 128, 255)
    for i in range(len(data)):
       datum = data[i] * scale_y
       dc.SetBrush(wx.WHITE_BRUSH)
@@ -1976,7 +1976,7 @@ def graph_vert(data, dc, x1, y1, x2, y2, mark=None, border=1):
       scale_x = 1.0
    else:
       scale_x = (x2 - x1) / max_data
-   light_blue = wx.Color(128, 128, 255)
+   light_blue = wx.Colour(128, 128, 255)
    dc.SetPen(wx.TRANSPARENT_PEN)
    for i in range(len(data)):
       datum = data[i] * scale_x
@@ -2001,7 +2001,7 @@ def graph_scale(dc, x1, y1, x2, y2):
    scale_x = float(x2 - x1) / float(255)
    dc.SetPen(wx.TRANSPARENT_PEN)
    for i in range(255):
-      dc.SetBrush(wx.Brush(wx.Color(i, i, i), wx.SOLID))
+      dc.SetBrush(wx.Brush(wx.Colour(i, i, i), wx.SOLID))
       dc.DrawRectangle(x1 + i * scale_x, y1,
                        scale_x + 1, y2 - y1)
    dc.SetPen(wx.BLACK_PEN)
@@ -2110,7 +2110,7 @@ class ProjectionDisplay(wx.Frame):
 ##############################################################################
 
 if wx.PostScriptDC_GetResolution() < 150:
-   wx.PostScriptDC_SetResolution(600)
+    wx.PostScriptDC_SetResolution(600)
 
 class GameraPrintout(wx.Printout):
    def __init__(self, image, margin = 1.0):

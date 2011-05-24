@@ -164,8 +164,8 @@ class ExtendedMultiImageWindow(MultiImageWindow):
          font.SetWeight(wx.BOLD)
          self.titlebar_text.SetFont(font)
          if wx.Platform != '__WXGTK__':
-            self.titlebar_text.SetForegroundColour(wx.Color(255,255,255))
-            self.titlebar_text.SetBackgroundColour(wx.Color(128,128,128))
+            self.titlebar_text.SetForegroundColour(wx.Colour(255,255,255))
+            self.titlebar_text.SetBackgroundColour(wx.Colour(128,128,128))
          if hasattr(buttons, 'ThemedGenBitmapButton'):
             TitleBarButtonClass = buttons.ThemedGenBitmapButton
          else:

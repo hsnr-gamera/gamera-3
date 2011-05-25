@@ -35,7 +35,7 @@ class ExtractGreyscaleChannel(PluginFunction):
 class hue(ExtractFloatChannel):
     """
     Returns a FLOAT image where each pixel is a hue value in HSV space
-    in range [0, 1).  Since the hue space is continuous, the shortest
+    in range [0, 1).  Since the hue space is cyclic, the shortest
     *distance* between 1 and 0 is 0.
     """
     pass
@@ -43,14 +43,14 @@ class hue(ExtractFloatChannel):
 class saturation(ExtractFloatChannel):
     """
     Returns a FLOAT image where each pixel is a saturation value in
-    HSV space in range [0, 1).
+    HSV space in range [0, 1].
     """
     pass
 
 class value(ExtractFloatChannel):
     """
     Returns a FLOAT image where each pixel is the value in
-    HSV space in range [0, 1).  For more information, Google for HSV color
+    HSV space in range [0, 1].  For more information, Google for HSV color
     space.
     """
     pass

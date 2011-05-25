@@ -44,9 +44,21 @@ else:
         Instantiates a Gamera image from a Python Imaging Library
         image *image*.
 
-        Only RGB or 8-bit greyscale mode PIL images are supported
-        
+        Only RGB or 8-bit greyscale mode PIL images are supported.
         Requires a copying operation;  may fail for very large images.
+
+        This can, e.g., be used to read images from file formats not
+        directly supported by gamera, as JPEG images:
+
+        .. code:: Python
+
+          # Beware: name "Image" is already used in Gamera!
+          import Image as Pil
+          from pil_io import
+
+          # read a JPEG image and convert it to a Gamera image
+          pilimg = Pil.open("image.jpg")
+          img = from_pil(pilimg)
         """
         self_type = None
         return_type = ImageType([GREYSCALE, RGB, FLOAT])
@@ -76,7 +88,6 @@ else:
         image's data.
 
         Only RGB and Greyscale images are supported.
-
         May fail for very large images.
         """
         self_type = ImageType([RGB, GREYSCALE])

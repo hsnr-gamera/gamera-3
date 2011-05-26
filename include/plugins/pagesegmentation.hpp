@@ -175,6 +175,7 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
     for (i = ccs_AND->begin(); i != ccs_AND->end(); ++i) {  
       Cc* cc = dynamic_cast<Cc*>(*i);
       int label = cc->label();
+      bool containspixel = false; // some segments may not contain black pixels
 
       // Methods "get" and "set" operates relative to the image view
       // but the offset of the connected components is not relative
@@ -189,18 +190,21 @@ ImageList* runlength_smearing(T &image, int Cx, int Cy, int Csm) {
               && is_black(cc->get(Point(x,y))) ) {
             image.set(Point(x + cc->offset_x() - image.offset_x(),
                             y + cc->offset_y() - image.offset_y()), label);
+            containspixel = true;
           }
         }
       }
 
       // create new CC with the dimensions, offset and label from the
       // smeared image, pointing to the original image.
-      return_ccs->push_back(new ConnectedComponent<data_type>(
+      if (containspixel) {
+        return_ccs->push_back(new ConnectedComponent<data_type>(
                 *((data_type*)image.data()),                // Data
                 label,                                      // Label
                 Point((*i)->offset_x(), (*i)->offset_y()),  // Point
                 (*i)->dim())                                // Dim
                 );
+      }
     }
     
     // clean up

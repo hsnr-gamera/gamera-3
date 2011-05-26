@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - runlength_smearing no longer returns empty segments
+
  - RGBPixel.value now returns V in [0.0,1.0] as documented, not in [0,255]
 
 

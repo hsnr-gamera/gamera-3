@@ -99,16 +99,16 @@ extern "C" {
 #define COLOR_METHODS \
   { CHAR_PTR_CAST "colorize", graph_colorize, METH_O, \
     CHAR_PTR_CAST "**colorize** (*ncolors*)\n\n" \
-    "This method colors the graph using a count of *ncolors* colors with the " \
+    "This method colors the graph using *ncolors* colors with the " \
     "constraint that adjacent nodes have different colors. When the number of " \
-    "colors is not big enough for the given graph, a runtime_error is raised.\n" \
+    "colors is too small for the given graph, a runtime_error is raised.\n" \
     "The graph coloring algorithm is based on the \"6-COLOR\" alorithm for planar " \
     "graphs, as described in:\n\n" \
     "   D. Matula, Y. Shiloach, R. Tarjan:\n"\
     "   `Two linear-time algorithms for five-coloring a planar graph.`__\n" \
     "   Tech Rep STAN-CS-80-830, Computer Science Dep., Stanford Univ., 1980\n\n" \
     ".. __: ftp://db.stanford.edu/pub/cstr/reports/cs/tr/80/830/CS-TR-80-830.pdf\n\n"\
-    "We have modified the algorithm in such way that the color distribution is\n"\
+    "We have modified the algorithm in such a way that the color distribution is\n"\
     "balanced, i.e. that each color is assigned approximately to the same\n"\
     "number of nodes (also known as \"equitable coloring\").\n\n"\
     ".. note:: The coloring algorithm works in linear time and is only\n" \
@@ -117,7 +117,7 @@ extern "C" {
   }, \
   { CHAR_PTR_CAST "get_color", graph_get_color, METH_O, \
     CHAR_PTR_CAST "**get_color** (*value* or *node*)\n\n" \
-    "Returns the color of the node after the graph being colorized with colorize_." }, \
+    "Returns the color of the node after the graph was colorized with colorize_." }, \
 
 
 

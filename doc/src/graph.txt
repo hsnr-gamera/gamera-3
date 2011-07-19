@@ -383,7 +383,7 @@ header files, and can thus be included with
    using namespace Gamera::Graph;
 
 The tricky part is getting your plugin module to be linked with the
-actual kdtree implementation. This is achieved by adding the
+actual graph implementation. This is achieved by adding the
 source files to the ``cpp_sources`` property and the include directory 
 to ``cpp_include_dirs`` in the plugin Python interface.
 

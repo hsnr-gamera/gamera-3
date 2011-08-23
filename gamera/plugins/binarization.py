@@ -1,6 +1,6 @@
 #
-#
 # Copyright (C) 2005 John Ashley Burgoyne and Ichiro Fujinaga
+#               2011 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@
 """Adaptive binarization tools."""
 
 from gamera.plugin import *
+from gamera.args import NoneDefault
 import _binarization
 
 class image_mean(PluginFunction):
@@ -341,6 +342,54 @@ class white_rohrer_threshold(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
+class shading_subtraction(PluginFunction):
+    """
+    Thresholds an image after subtracting a -possibly shaded- background.
+
+    First the backgrund image is extracted with a maximum filter with a
+    *k\*k* window, and this image is subtracted from the original image.
+    On the difference image, a threshold is applied, and the inverted
+    image thereof is the binarization result.
+
+    Parameters:
+
+    *k*
+      Window size of the maximum filter. Must be odd. For decent results,
+      it must be chosen so large that every window includes at least one
+      background pixel.
+
+    *threshold*
+      Threshold applied to the difference image. A possibly reasonable
+      values might lie about 20. When ``None``, the threshold is
+      determined automatically with otsu_find_threshold_.
+
+    .. _otsu_find_threshold: binarization.html#otsu-find-threshold
+
+    Reference: K.D. Toennies: *Grundlagen der Bildverarbeitung.* 
+    Pearson Studium, 2005, p.202
+    """
+    author = "Christoph Dalitz"
+    return_type = ImageType([ONEBIT], "onebit")
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int("k", default=7), Int("threshold", default=NoneDefault)])
+    pure_python = True
+    def __call__(self, k=7, threshold=None):
+        background = self.rank(k*k,k,border_treatment=1)
+        backfloat = background.to_float()
+        imgfloat = self.to_float()
+        difffloat = backfloat.subtract_images(imgfloat)
+        if threshold is None:
+            diffgrey = difffloat.to_greyscale()
+            diffgrey.invert()
+            return diffgrey.otsu_threshold()
+        else:
+            onebit = difffloat.threshold(threshold)
+            onebit.invert()
+            return onebit
+
+    __call__ = staticmethod(__call__)
+
+
 class BinarizationGenerator(PluginModule):
     category = "Binarization"
     cpp_headers = ["binarization.hpp"]
@@ -353,7 +402,8 @@ class BinarizationGenerator(PluginModule):
                  sauvola_threshold,
                  gatos_background,
                  gatos_threshold,
-                 white_rohrer_threshold]
+                 white_rohrer_threshold,
+                 shading_subtraction]
     author = "John Ashley Burgoyne and Ichiro Fujinaga"
     url = "http://gamera.sourceforge.net/"
 

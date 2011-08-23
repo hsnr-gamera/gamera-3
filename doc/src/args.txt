@@ -117,6 +117,8 @@ A signed integers argument.  Corresponds to the C ``int`` type.
 
 Optionally, a *range* can be given as the
 tuple (*lower_bound*, *upper_bound*) and a *default* value.
+The latter can be set to ``NoneDefault`` for forcing the default
+to ``None``.
 
 .. note:: 
    Ranges and defaults are used for the benefit of the GUI only.

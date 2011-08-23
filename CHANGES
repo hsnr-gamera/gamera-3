@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - Int args can now have default NoneDefault;
+   required use of TextControl instead of SpinControl for Int in GUI
+
+ - new binarization plugin shading_subtraction for images
+   with shaded backgrounds
+
  - conversion from FLOAT to GREYSCALE/GREY16/RGB now works when
    FLOAT image contains negative values. The range [min,max] is
    now linearly scaled to grey range.

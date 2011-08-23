@@ -253,20 +253,23 @@ class _NumericValidator(wx.PyValidator):
    def Validate(self, win):
       tc = self.GetWindow()
       val = str(tc.GetValue())
-      for x in val:
-         if x not in self._digits:
-            self.show_error(self.name + " must be numeric.")
-            return False
-      try:
-         val = self._type(val)
-      except:
-         self.show_error(self.caption + " is invalid.")
-         return False
-      if self.rng:
-         if val < self.rng[0] or val > self.rng[1]:
-            self.show_error(
-               self.name + " must be in the range " + str(self.rng) + ".")
-            return False
+      if val == "None":
+          pass
+      else:
+          for x in val:
+             if x not in self._digits:
+                self.show_error(self.name + " must be numeric.")
+                return False
+          try:
+             val = self._type(val)
+          except:
+             self.show_error(self.caption + " is invalid.")
+             return False
+          if self.rng:
+             if val < self.rng[0] or val > self.rng[1]:
+                self.show_error(
+                   self.name + " must be in the range " + str(self.rng) + ".")
+                return False
       return True
 
    def OnChar(self, event):
@@ -294,11 +297,7 @@ class _IntValidator(_NumericValidator):
 
 class Int:
    def get_control(self, parent, locals=None):
-      self.control = wx.SpinCtrl(
-         parent, -1,
-         value=str(self.default),
-         min=self.rng[0], max=self.rng[1],
-         initial=self.default)
+      self.control = wx.TextCtrl(parent, -1, str(self.default))
       self.control.SetValidator(_IntValidator(name = self.name, range = self.rng))
       return self
 

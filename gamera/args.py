@@ -106,7 +106,7 @@ class Int(Arg):
       else:
          self.has_default = True
          self.default = default
-      if type(self.default) != int:
+      if not isinstance(self.default,CNoneDefault) and type(self.default) != int:
          raise TypeError("'default' must be an int")
 
    def rest_repr(self, name=False):
@@ -116,7 +116,10 @@ class Int(Arg):
       if name:
          result += " *%s*" % self.name
          if self.has_default:
-            result += " = %d" % self.default
+            if isinstance(self.default,CNoneDefault):
+                result += " = %s" % str(self.default)
+            else:
+                result += " = %d" % self.default
       return result
 
 class Real(Arg):

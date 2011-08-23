@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2011      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,10 +23,15 @@ import image_utilities, _image_conversion
 
 class to_rgb(PluginFunction):
     """
-    Converts the given image to an RGB image.
+    Converts the given image to an RGB image according to teh following rules:
+
+    - for ONEBIT images, 0 is mapped to (255,255,255) and everything else to (0,0,0)
+    - for GREYSCALE and GREY16 images, R=G=B
+    - for FLOAT images, the range [min,max] is linearly mapped to the 256 grey values
 
     Note, converting an image to one of the same type performs a copy operation.
     """
+    author = "Michael Droettboom, Karl MacMillan, and Christoph Dalitz"
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, GREY16, COMPLEX])
     return_type = ImageType([RGB], "rgb")
 
@@ -37,10 +43,17 @@ class to_rgb(PluginFunction):
 
 class to_greyscale(PluginFunction):
     """
-    Converts the given image to a GREYSCALE image.
+    Converts the given image to a GREYSCALE image according to the
+    following rules:
 
-    Note, converting an image to one of the same type performs a copy operation.
+    - for ONEBIT images, 0 is mapped to 255 and everything else to 0.
+    - for FLOAT images, the range [min,max] is linearly scaled to [0,255]
+    - for GREY16 images, the range [0,max] is linearly scaled to [0,255]
+    - for RGB images, the luminance is used, which is defined in VIGRA as 0.3*R + 0.59*G + 0.11*B
+
+    Converting an image to one of the same type performs a copy operation.
     """
+    author = "Michael Droettboom, Karl MacMillan, and Christoph Dalitz"
     self_type = ImageType([ONEBIT, FLOAT, GREY16, RGB, COMPLEX])
     return_type = ImageType([GREYSCALE], "greyscale")
     doc_examples = [(RGB,)]
@@ -53,10 +66,17 @@ class to_greyscale(PluginFunction):
 
 class to_grey16(PluginFunction):
     """
-    Converts the given image to a GREY16 image.
+    Converts the given image to a GREY16 image according to the
+    following rules:
 
-    Note, converting an image to one of the same type performs a copy operation.
+    - for ONEBIT images, 0 is mapped to 65535 and everything else to 0.
+    - for FLOAT images, the range [min,max] is linearly scaled to [0,65535]
+    - for GREYSCALE images, pixel values are copied unchanged
+    - for RGB images, the luminance is used, which is defined in VIGRA as 0.3*R + 0.59*G + 0.11*B. This results only in a value range [0,255]
+
+    Converting an image to one of the same type performs a copy operation.
     """
+    author = "Michael Droettboom, Karl MacMillan, and Christoph Dalitz"
     self_type = ImageType([ONEBIT, GREYSCALE, FLOAT, RGB, COMPLEX])
     return_type = ImageType([GREY16], "grey16")
 
@@ -68,9 +88,14 @@ class to_grey16(PluginFunction):
 
 class to_float(PluginFunction):
     """
-    Converts the given image to a FLOAT image.
+    Converts the given image to a FLOAT image according to the following
+    rules:
 
-    Note, converting an image to one of the same type performs a copy operation.
+    - for ONEBIT images, 0 is mapped to 0.0 and everything else to 1.0
+    - for GREYSCALE and GREY16 images, pixel values are copied unchanged
+    - for RGB images, the luminance is used, which is defined in VIGRA as 0.3*R + 0.59*G + 0.11*B
+
+    Converting an image to one of the same type performs a copy operation.
     """
     self_type = ImageType([ONEBIT, GREYSCALE, GREY16, RGB, COMPLEX])
     return_type = ImageType([FLOAT], "float")
@@ -98,11 +123,11 @@ class to_complex(PluginFunction):
 
 class to_onebit(PluginFunction):
     """
-    Converts the given image to a ONEBIT image.  Uses the
-    otsu_threshold_ algorithm.  For more ways to convert to ONEBIT images,
-    see the Binarization_ category.
+    Converts the given image to a ONEBIT image. First the image is converted
+    and then the otsu_threshold_ algorithm is applied.
+    For other ways to convert to ONEBIT images, see the Binarization_ category.
 
-    Note, converting an image to one of the same type performs a copy operation.
+    Converting an image to one of the same type performs a copy operation.
 
     .. _otsu_threshold: binarization.html#otsu-threshold
     .. _Binarization: binarization.html

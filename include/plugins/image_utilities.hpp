@@ -292,7 +292,7 @@ namespace Gamera {
   }
 
   /*
-    Find the maximum pixel value for an image
+    Find the maximum and minimum pixel value for an image
   */
 
   // TODO: Test this
@@ -316,6 +316,29 @@ namespace Gamera {
 
   template<>
   void _my_max(const ComplexPixel& a, ComplexPixel& b) {
+    if (a.real() > b.real())
+      b = a;
+  }
+
+  template<class T>
+  typename T::value_type find_min(const T& image) {
+    if (image.nrows() <= 1 || image.ncols() <= 1)
+      throw std::range_error("Image must have nrows and ncols > 0.");
+    typename T::const_vec_iterator min = image.vec_begin();
+    typename T::value_type value = NumericTraits<typename T::value_type>::max();
+    for (; min != image.vec_end(); ++min)
+      _my_min(*min, value);
+    return value;
+  }
+  
+  template<class T>
+  void _my_min(const T& a, T& b) {
+    if (b > a)
+      b = a;
+  }
+
+  template<>
+  void _my_min(const ComplexPixel& a, ComplexPixel& b) {
     if (a.real() > b.real())
       b = a;
   }

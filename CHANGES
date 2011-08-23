@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - conversion from FLOAT to GREYSCALE/GREY16/RGB now works when
+   FLOAT image contains negative values. The range [min,max] is
+   now linearly scaled to grey range.
+
  - runlength_smearing no longer returns empty segments
 
  - RGBPixel.value now returns V in [0.0,1.0] as documented, not in [0,255]

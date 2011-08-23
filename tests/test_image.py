@@ -126,3 +126,27 @@ def _test_index(type, value, storage):
    py.test.raises(IndexError, _fail2)
 test_index = make_test(_test_index)
 
+def test_conversions():
+    img = Image((0,0),(9,9),FLOAT)
+    img.set((0,0),-5.0)
+    img.set((9,9),10.0)
+    # float -> grey
+    tmp = img.to_greyscale()
+    assert tmp.get((0,0)) == 0
+    assert tmp.get((5,5)) == 85
+    assert tmp.get((9,9)) == 255
+    # float -> rgb
+    tmp = img.to_rgb()
+    assert tmp.get((0,0)) == RGBPixel(0,0,0)
+    assert tmp.get((5,5)) == RGBPixel(85,85,85)
+    assert tmp.get((9,9)) == RGBPixel(255,255,255)
+    # float -> grey16
+    tmp = img.to_grey16()
+    assert tmp.get((0,0)) == 0
+    assert tmp.get((5,5)) == 21845
+    assert tmp.get((9,9)) == 65535
+    # grey16 -> grey
+    tmp = tmp.to_greyscale()
+    assert tmp.get((0,0)) == 0
+    assert tmp.get((5,5)) == 85
+    assert tmp.get((9,9)) == 255

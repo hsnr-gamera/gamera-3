@@ -1,6 +1,7 @@
 #
-# Copyright (C) 2009-2010 Christoph Dalitz
+# Copyright (C) 2009-2011 Christoph Dalitz
 #               2010      Oliver Christen, Tobias Bolten
+#               2011      Christian Brandt
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -284,6 +285,53 @@ class graph_color_ccs(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
+class convex_hull_from_points(PluginFunction):
+    """Returns the polygon vertices of the convex hull of the given list of
+points.
+
+The function uses Graham's scan algorithm as described e.g. in Cormen et al.:
+*Introduction to Algorithms.* 2nd ed., MIT Press, p. 949, 2001
+"""
+    self_type = None
+    args = Args([PointVector("points")])
+    return_type = PointVector("convexhull")
+    author = "Christian Brandt and Christoph Dalitz"
+
+
+class convex_hull_as_points(PluginFunction):
+   """Returns the vertex points of the convex hull of all black pixels
+in the given image.
+
+Actually not all black pixels are required for computing the convex hull,
+but only the left and right contour pixels of the image. This follows
+from the fact that, when a point is invisible both from the left and the
+right, it lies on the connection axis between two visible points and thus
+cannot be a vertex point of the convex hull.
+   """
+   self_type = ImageType([ONEBIT])
+   args = Args([])
+   return_type = PointVector("convexhull")
+   author = "Christoph Dalitz"
+
+
+class convex_hull_as_image(PluginFunction):
+   """Returns an image containing the polygon of the convex hull calculated
+by convex_hull_as_points_.
+
+.. _convex_hull_as_points: geometry.html#convex_hull_as_points
+   """
+   self_type = ImageType([ONEBIT])
+   args = Args([Check("filled",default=False)])
+   return_type = ImageType([ONEBIT])
+   author = "Christoph Dalitz"
+   doc_examples = [(ONEBIT,)]
+
+   def __call__(image, filled=False):
+       return _geometry.convex_hull_as_image(image, filled)
+   __call__ = staticmethod(__call__)
+
+
+
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
   category = "Geometry"
@@ -294,10 +342,14 @@ class GeometryModule(PluginModule):
                voronoi_from_points,
                labeled_region_neighbors,
                delaunay_from_points,
-               graph_color_ccs]
+               graph_color_ccs,
+               convex_hull_from_points,
+               convex_hull_as_points,
+               convex_hull_as_image]
   author = "Christoph Dalitz"
   url = "http://gamera.sourceforge.net/"
 
 module = GeometryModule()
 
 delaunay_from_points = delaunay_from_points()
+convex_hull_from_points = convex_hull_from_points()

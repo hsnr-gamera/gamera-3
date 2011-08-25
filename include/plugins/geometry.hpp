@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2009-2010 Christoph Dalitz
+ * Copyright (C) 2009-2011 Christoph Dalitz
  *               2010      Oliver Christen
+ *               2011      Christian Brandt
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +24,7 @@
 
 #include <map>
 #include <set>
+#include <algorithm>
 #include "gamera.hpp"
 #include "vigra/distancetransform.hxx"
 #include "vigra/seededregiongrowing.hxx"
@@ -32,6 +34,7 @@
 #include "graph/graphdataderived.hpp"
 #include "graph/node.hpp"
 #include "plugins/contour.hpp"
+#include "plugins/draw.hpp"
 
 
 using namespace Gamera::Kdtree;
@@ -501,7 +504,179 @@ namespace Gamera {
     return coloredImage;
   }
 
+  //------------------------------------------------------------------
+  // convex hull computation with Graham's scan algorithm.
+  // See Cormen et al.: Introduction to Algorithms. 2nd ed., p. 949
+  //------------------------------------------------------------------
 
+  inline bool greater_distance(const Point& origin, const Point& p1, const Point& p2) {
+    double dx2 = (double)p2.x() - origin.x();
+    double dx1 = (double)p1.x() - origin.x();
+    double dy2 = (double)p2.y() - origin.y();
+    double dy1 = (double)p1.y() - origin.y();
+    if (dy1*dy1+dx1*dx1 > dy2*dy2+dx2*dx2) {
+      return true;
+    }
+    return false;
+  }
+
+  // positive when p0p1 clockwise oriented compared to p0p2
+  // zero when all points collinear
+  inline double clockwise_orientation(const Point& p0, const Point& p1, const Point& p2) {
+    return ((double)p1.x() - p0.x())*((double)p2.y() - p0.y()) -
+      ((double)p2.x() - p0.x())*((double)p1.y() - p0.y());
+  }
+
+  class CompareCounterclockwise {
+  public:
+    Point origin;
+    CompareCounterclockwise(Point _origin) {
+      origin = _origin;
+    }
+    inline bool operator()(const Point& p1, const Point& p2) const {
+      return clockwise_orientation(origin, p1, p2) > 0.0;
+    }
+  };
+
+  PointVector* convex_hull_from_points(PointVector *points) {
+    if (points->size() == 0)
+      throw std::runtime_error("No points given to convex hull computation.");
+
+    unsigned int min_y = std::numeric_limits<unsigned int>::max();
+    unsigned int min_x = std::numeric_limits<unsigned int>::max();
+    size_t i;
+    size_t min_i = 0;
+    // get topmost point
+    for (i=0; i < points->size(); i++) {
+      if (points->at(i).y() < min_y) {
+        min_y = points->at(i).y();
+        min_x = points->at(i).x();
+        min_i = i;
+      }
+      else if (points->at(i).y() == min_y && points->at(i).x() < min_x) {
+        min_x = points->at(i).x();
+        min_i = i;
+      }
+    }
+    // and remember it as origin
+    points->at(min_i) = points->at(0);
+    points->at(0) = Point(min_x,min_y);
+    Point origin = points->at(0);
+
+    // sort remaining points counter clockwise
+    CompareCounterclockwise comparefunc(origin);
+    std::sort(points->begin()+1, points->end(),comparefunc);
+
+    // of collinear points, only keep the farest from origin
+    PointVector sortedpoints;
+    sortedpoints.push_back(origin);
+    size_t start_i = 1;
+    while (start_i < points->size() && points->at(start_i) == origin)
+      start_i++; // beware of doublets in the point vector
+    if (start_i < points->size()) {
+      sortedpoints.push_back(points->at(start_i));
+      start_i++;
+    }
+    for (i=start_i; i<points->size(); i++) {
+      if (points->at(i) == sortedpoints.back())
+        continue;
+      if (0 != clockwise_orientation(origin, points->at(i), sortedpoints.back())) {
+        sortedpoints.push_back(points->at(i));
+      }
+      else if (greater_distance(origin,points->at(i),sortedpoints.back())) {
+        sortedpoints.pop_back();
+        sortedpoints.push_back(points->at(i));
+      }
+    }
+
+    // do Graham's scan
+    PointVector* S = new PointVector;
+    if (sortedpoints.size() < 3) {
+      for (i=0; i < sortedpoints.size(); i++)
+        S->push_back(sortedpoints[i]);
+      return S;
+    }
+    S->push_back(sortedpoints[0]);
+    S->push_back(sortedpoints[1]);
+    S->push_back(sortedpoints[2]);
+
+    for(i = 3; i < sortedpoints.size(); i++) {
+      Point top = S->at(S->size()-1);
+      Point ntt = S->at(S->size()-2);
+      Point p = sortedpoints[i];
+      while (S->size() > 2 && clockwise_orientation(top,p,ntt) <= 0.0) {
+        S->pop_back();
+        top = S->at(S->size()-1);
+        ntt = S->at(S->size()-2);
+      }
+      S->push_back(p);
+    }
+
+    return S;
+  }
+
+  template<class T>
+  PointVector* convex_hull_as_points(const T& src) {
+    PointVector *contour_points = new PointVector();
+    PointVector::iterator found;
+
+    FloatVector *left = contour_left(src);
+    FloatVector *right = contour_right(src);
+    FloatVector::iterator it;
+    size_t y;
+
+    for(it = left->begin(), y=0; it != left->end() ; it++, y++) {
+      if( *it != std::numeric_limits<double>::infinity() ) {
+        contour_points->push_back(Point((int)*it,y));
+      }
+    }
+    for(it = right->begin(), y=0; it != right->end() ; it++, y++) {
+      if( *it != std::numeric_limits<double>::infinity() ) {
+        contour_points->push_back(Point((int)src.ncols()-*it,y));
+      }
+    }
+    PointVector *output = convex_hull_from_points(contour_points);
+
+    delete left;
+    delete right;
+    delete contour_points;
+
+    return output;
+  }
+
+  template<class T>
+    Image* convex_hull_as_image(const T& src, bool filled) {
+    typedef typename T::value_type value_type;
+    
+    typedef typename ImageFactory<OneBitImageView>::view_type view_type;
+    OneBitImageData* res_data = new OneBitImageData(src.size(),src.origin());
+    OneBitImageView* res = new OneBitImageView(*res_data,src.origin(),src.size());
+
+    PointVector* hullpoints = convex_hull_as_points(src);
+    for (size_t i=1; i< hullpoints->size(); i++)
+      draw_line(*res,hullpoints->at(i-1),hullpoints->at(i),black(*res));
+    draw_line(*res,hullpoints->back(),hullpoints->front(),black(*res));
+
+    delete hullpoints;
+
+    if (filled) {
+      size_t x,y,from,to;
+      for (y=0; y<res->nrows(); y++) {
+        from = to = res->ncols();
+        from = 0;
+        while (from < res->ncols() && is_white(res->get(Point(from,y))))
+          from++;
+        if (from >= res->ncols()-1) continue;
+        to = res->ncols()-1;
+        while (to > 0 && is_white(res->get(Point(to,y))))
+          to--;
+        for (x=from+1; x<to; x++)
+          res->set(Point(x,y),black(*res));
+      }
+    }
+
+    return res;
+  }
 
 } // namespace Gamera
 #endif

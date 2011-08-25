@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - plugins for convex hull computation added in category Geometry
+
  - Int args can now have default NoneDefault;
    required use of TextControl instead of SpinControl for Int in GUI
 

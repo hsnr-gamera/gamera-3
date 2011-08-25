@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.3.1, Aug 25, 2011
+----------------------------
+
  - plugins for convex hull computation added in category Geometry
 
  - Int args can now have default NoneDefault;

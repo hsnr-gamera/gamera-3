@@ -1,8 +1,9 @@
 /*
  *
- * Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff,
- *                         Maria Elhachimi, Ilya Stoyanov, Robert Butz
- *               2010      Christoph Dalitz, Tobias Bolten
+ * Copyright (C) 2007-2009 Stefan Ruloff, Maria Elhachimi,
+ *                         Ilya Stoyanov, Robert Butz
+ *               2010      Tobias Bolten
+ *               2007-2011 Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -520,95 +521,87 @@ sub_cc_analysis
 */
 template<class T>
 PyObject* sub_cc_analysis(T& image, ImageVector &cclist) {
-    unsigned int pos, max;
-    unsigned int max_last = 1;
-    int x, y;
-    int label;
-    int count;
+    unsigned int pos;
+    int label = 2; // one is reserved for unlabeled pixels
     OneBitImageData *ret_image;
     OneBitImageView *ret_view;
+    OneBitImageData *temp_image;
+    OneBitImageView *temp_view;
+    Cc* cc;
     ImageVector::iterator iv;
     ImageList::iterator il;
     typename T::value_type Black = black(image);
 
-    ret_image = new OneBitImageData(image.size(), image.origin());
-    ret_view = new OneBitImageView(*ret_image, image.origin(), image.size());
+    ret_image = new OneBitImageData(image.dim(), image.origin());
+    ret_view = new OneBitImageView(*ret_image, image.origin(), image.dim());
+    temp_image = new OneBitImageData(image.dim(), image.origin());
+    temp_view = new OneBitImageView(*temp_image, image.origin(), image.dim());
 
     // Generate a list to store the CCs of all lines
     PyObject *return_cclist = PyList_New(cclist.size());
     
     for (iv = cclist.begin(), pos = 0; iv != cclist.end(); iv++, pos++) {
-        Cc* cc = static_cast<Cc*>((*iv).first);
+        cc = static_cast<Cc*>(iv->first);
 
         // copy the needed CC from the original image(image) 
-        // to the new image(ret_view)
-        for (size_t i = 0; i < cc->ncols(); i++) {
-            for (size_t j = 0; j < cc->nrows(); j++) {
-                x = i + cc->offset_x();
-                y = j + cc->offset_y();
-                if (!is_white(image.get(Point(x, y)))) {
-                    ret_view->set(Point(x, y), Black);
-                }
+        // to the temporary image temp_view
+        for (size_t y = 0; y < cc->nrows(); y++) {
+          for (size_t x = 0; x < cc->ncols(); x++) {
+            if (!is_white(cc->get(Point(x, y)))) {
+              temp_view->set(Point(x+cc->offset_x()-temp_view->offset_x(), y+cc->offset_y()-temp_view->offset_y()), Black);
             }
+          }
         }
         
         // generate a temp image for the cc_analysis,
         // it's simply a copy of one cclist entry
-        OneBitImageView *cc_temp = new OneBitImageView(*ret_image, Point((*cc).offset_x(), (*cc).offset_y()), (*cc).dim() );
+        OneBitImageView *cc_temp = new OneBitImageView(*temp_image, cc->origin(), cc->dim() );
 
         // Cc_analysis of one list entry
         ImageList* ccs_orig = cc_analysis(*cc_temp);
-        delete cc_temp;
 
-        // Query the greatest label, or count only the list values
-        max = ccs_orig->size();
-        
         ImageList* return_ccs = new ImageList();
         il = ccs_orig->begin();
-        count = 0;
         while (il != ccs_orig->end()) {
-            Cc* cc = static_cast<Cc*>(*il);
-
-            // Calculate new labels for the CCs.
-            // cc_analysis makes no sequenced lables, so i make it
-            label = max_last + count;
-            
+            cc = static_cast<Cc*>(*il);
+           
             return_ccs->push_back(
                     new ConnectedComponent<typename T::data_type>(
                         *((typename T::data_type*)ret_view->data()),
                         OneBitPixel(label),
                         cc->origin(),
-                        cc->size()
+                        cc->dim()
                     )
                 );
     
-            // Renumbering the old labels to the new one
-            for (int i = 0; i < (int)cc->ncols(); i++) {
-                for (int j = 0; j < (int)cc->nrows(); j++) {
-                    x = i + cc->offset_x();
-                    y = j + cc->offset_y();
-                    if (!is_white(ret_view->get(Point(x, y)))) {
-                        ret_view->set(Point(x, y), label);
-                    }
+            // Copy CC over to return image
+            for (size_t y = 0; y < cc->nrows(); y++) {
+              for (size_t x = 0; x < cc->ncols(); x++) {
+                if (!is_white(cc->get(Point(x, y)))) {
+                  ret_view->set(Point(x+cc->offset_x()-ret_view->offset_x(), y+cc->offset_y()-ret_view->offset_y()), label);
                 }
+              }
             }
 
             // delete the temporary used CCs from the cc_analysis
             delete *il;
 
             il++;
-            count++;
+            label++; // we use consecutive labels in return image
         }
-        // delete the ImageList
+        // remove copy of Cc in temporary image and clean up
+        fill_white(*cc_temp);
         delete ccs_orig;
-
-        max_last += max;
+        delete cc_temp;
 
         // Set the Imagelist into the PyList
         // ImageList must be converted to be a valid datatype for the PyList
         PyList_SetItem(return_cclist, pos, ImageList_to_python(return_ccs));
         delete return_ccs;
     }
+    // delete temporary image
+    delete temp_view;
+    delete temp_image;
 
     // Finaly create the return type, a tuple with a image 
     // and a list of ImageLists

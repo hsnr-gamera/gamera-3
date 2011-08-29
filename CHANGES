@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - sub_cc_analysis did not work on images with offset
+
  - fixed memory leaks in segmentation_error
 
 

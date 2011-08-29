@@ -552,19 +552,13 @@ PyObject* sub_cc_analysis(T& image, ImageVector &cclist) {
             }
         }
         
-        // generate a CC for the cc_analysis, it's simply a copy 
-        // of one cclist entry
-        ConnectedComponent<typename T::data_type> *cc_new = 
-                new ConnectedComponent<typename T::data_type>(
-                    *((typename T::data_type*)ret_view->data()),
-                    OneBitPixel(cc->label()),
-                    Point((*cc).offset_x(), (*cc).offset_y()),
-                    (*cc).dim()
-                );
+        // generate a temp image for the cc_analysis,
+        // it's simply a copy of one cclist entry
+        OneBitImageView *cc_temp = new OneBitImageView(*ret_image, Point((*cc).offset_x(), (*cc).offset_y()), (*cc).dim() );
 
-        // cc_analysis of one list entry
-        ImageList* ccs_orig = cc_analysis(*cc_new);
-        delete cc_new;
+        // Cc_analysis of one list entry
+        ImageList* ccs_orig = cc_analysis(*cc_temp);
+        delete cc_temp;
 
         // Query the greatest label, or count only the list values
         max = ccs_orig->size();
@@ -599,7 +593,7 @@ PyObject* sub_cc_analysis(T& image, ImageVector &cclist) {
                 }
             }
 
-            // delete the temporary uses CCs from the cc_analysis
+            // delete the temporary used CCs from the cc_analysis
             delete *il;
 
             il++;
@@ -726,6 +720,14 @@ IntVector* segmentation_error(T &Gseg, U &Sseg) {
     else printf("Plugin segment_error: empty equivalence"
                 " constructed which should not happen\n");
   }
+
+  // clean up
+  for (ccs_it = Sccs->begin(); ccs_it != Sccs->end(); ++ccs_it)
+    delete *ccs_it;
+  delete Sccs;
+  for (ccs_it = Gccs->begin(); ccs_it != Gccs->end(); ++ccs_it)
+    delete *ccs_it;
+  delete Gccs;
 
   // build return value
   IntVector* errors = new IntVector();

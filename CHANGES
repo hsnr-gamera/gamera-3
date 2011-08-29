@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed memory leaks in segmentation_error
+
+
 Version 3.3.1, Aug 25, 2011
 ----------------------------
 

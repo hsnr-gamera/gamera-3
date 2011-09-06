@@ -148,6 +148,15 @@ class bernsen_threshold(PluginFunction):
     """
     Creates a binary image by using the Bernsen algorithm.
 
+    Each point is thresholded by the mean between the maximum and minimum
+    value in the surrounding region of size *region_size*. When the difference
+    between maximum and minimum is below *contrast_limit* the pixel is set
+    to black in case of *doubt_to_black* = ``True``, otherwise to white.
+
+    Reference: J. Bernsen: *Dynamic thresholding of grey-level images.* 
+    Proc. 8th International Conference on Pattern Recognition (ICPR8),
+    pp. 1251-1255, 1986.
+
     *storage_format*
       specifies the compression type for the result:
 
@@ -162,19 +171,19 @@ class bernsen_threshold(PluginFunction):
     *contrast_limit*
       The minimum amount of contrast required to threshold.
 
-    *doubt*
-      When True, *doubt* is low.
+    *doubt_to_black*
+      When ``True``, 'doubtful' values are set to black, otherwise to white.
     """
     self_type = ImageType([GREYSCALE])
     args = Args([Choice("storage format", ['dense', 'rle']),
-                 Int("region size", range=(1, 50), default=20),
-                 Int("contrast limit", range=(0, 255), default=5),
-                 Check("doubt", "is low")])
+                 Int("region size", range=(1, 50), default=11),
+                 Int("contrast limit", range=(0, 255), default=80),
+                 Check("doubt_to_black", default=False)])
     return_type = ImageType([ONEBIT], "output")
     doc_examples = [(GREYSCALE,)]
-    def __call__(image, storage_format = 0, region_size = 3,
-                 contrast_limit = 128, set_doubt_to_low = 0):
-        return _threshold.bernsen_threshold(image, storage_format, region_size, contrast_limit, set_doubt_to_low)
+    def __call__(image, storage_format = 0, region_size = 11,
+                 contrast_limit = 80, doubt_to_black = False):
+        return _threshold.bernsen_threshold(image, storage_format, region_size, contrast_limit, doubt_to_black)
     __call__ = staticmethod(__call__)
 
 class djvu_threshold(PluginFunction):

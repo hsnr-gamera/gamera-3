@@ -360,7 +360,7 @@ class shading_subtraction(PluginFunction):
 
     *threshold*
       Threshold applied to the difference image. A possibly reasonable
-      values might lie about 20. When ``None``, the threshold is
+      value might lie around 20. When ``None``, the threshold is
       determined automatically with otsu_find_threshold_.
 
     .. _otsu_find_threshold: binarization.html#otsu-find-threshold
@@ -373,6 +373,8 @@ class shading_subtraction(PluginFunction):
     self_type = ImageType([GREYSCALE])
     args = Args([Int("k", default=7), Int("threshold", default=NoneDefault)])
     pure_python = True
+    doc_examples = [(GREYSCALE,)]
+
     def __call__(self, k=7, threshold=None):
         background = self.rank(k*k,k,border_treatment=1)
         backfloat = background.to_float()

@@ -54,12 +54,12 @@ void threshold_fill(const T& in, U& out, typename T::value_type threshold) {
 
   for (; in_row != in.row_end(); ++in_row, ++out_row) {
     for (in_col = in_row.begin(), out_col = out_row.begin(); in_col != in_row.end();
-	 ++in_col, ++out_col) {
+         ++in_col, ++out_col) {
       tmp = in_acc.get(in_col);
       if (tmp > threshold)
-	out_acc.set(white(out), out_col);
+        out_acc.set(white(out), out_col);
       else
-	out_acc.set(black(out), out_col);
+        out_acc.set(black(out), out_col);
     }
   }
 }
@@ -154,10 +154,10 @@ int otsu_find_threshold(const T& matrix) {
       expr_1 = (mu_T*omega_k - mu_k);
       sigma_b_k = expr_1 * expr_1 / (omega_k*(1-omega_k));
       if (criterion < sigma_b_k/sigma_T)
-	{
-	  criterion = sigma_b_k/sigma_T;
-	  thresh = k;
-	}
+        {
+          criterion = sigma_b_k/sigma_T;
+          thresh = k;
+        }
     }
   delete p;
   return thresh;
@@ -343,7 +343,7 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
     for (size_t s = 0; s < 256; ++s) {
       double p = histogram.get(Point(s, t));
       if (p != 0)
-	H_sum -= p * log(p);
+        H_sum -= p * log(p);
       H_histogram.set(Point(s, t), H_histogram.get(Point(s, t - 1)) + H_sum);
     }
   }
@@ -356,13 +356,13 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
     for (size_t t = 0; t < 256; ++t) {
       double P = P_histogram.get(Point(s, t));
       double H = H_histogram.get(Point(s, t));
-      if ((P > tiny) && ((1.0 - P) > tiny)) {	
-	double Phi = log(P * (1.0 - P)) + H / P + (H_end - H) / (1.0 - P);
-	if (Phi > Phi_max) {
-	  Phi_max = Phi;
-	  threshold = s;
-	  avg_threshold = t;
-	}
+      if ((P > tiny) && ((1.0 - P) > tiny)) {   
+        double Phi = log(P * (1.0 - P)) + H / P + (H_end - H) / (1.0 - P);
+        if (Phi > Phi_max) {
+          Phi_max = Phi;
+          threshold = s;
+          avg_threshold = t;
+        }
       }
     }
 
@@ -371,10 +371,10 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
     typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
     for (size_t y = 0; y < m.nrows(); ++y)
       for (size_t x = 0; x < m.ncols(); ++x) {
-	if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
-	  view->set(Point(x, y), black(*view));
-	else
-	  view->set(Point(x, y), white(*view));
+        if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
+          view->set(Point(x, y), black(*view));
+        else
+          view->set(Point(x, y), white(*view));
       }
     delete average->data();
     delete average;
@@ -384,10 +384,10 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
     typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
     for (size_t y = 0; y < m.nrows(); ++y) 
       for (size_t x = 0; x < m.ncols(); ++x) {
-	if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
-	  view->set(Point(x, y), black(*view));
-	else
-	  view->set(Point(x, y), white(*view));
+        if (m.get(Point(x, y)) <= threshold && average->get(Point(x, y)) <= avg_threshold)
+          view->set(Point(x, y), black(*view));
+        else
+          view->set(Point(x, y), white(*view));
       }
 
     delete average->data();
@@ -409,7 +409,7 @@ Image* abutaleb_threshold(const T &m, int storage_format) {
 */
 
 template<class T>
-Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, size_t contrast_limit, bool set_doubt_to_low) {
+Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, size_t contrast_limit, bool doubt_to_black) {
   if ((contrast_limit < 0) || (contrast_limit > 255))
     throw std::range_error("bernsen_threshold: contrast_limit out of range (0 - 255)");
   if ((region_size < 1) || (region_size > std::min(m.nrows(), m.ncols())))
@@ -421,7 +421,7 @@ Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, siz
   typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
   typename result_type::image_type* view = result_type::create(m.origin(), m.dim());
   OneBitPixel confused;
-  if (set_doubt_to_low)
+  if (doubt_to_black)
     confused = black(*view);
   else
     confused = white(*view);
@@ -431,23 +431,23 @@ Image* bernsen_threshold(const T &m, int storage_format, size_t region_size, siz
       pixel_type minimum = std::numeric_limits<pixel_type>::max();
       pixel_type maximum = 0;
       for (int dy = -half_region_size; dy < half_region_size; ++dy) {
-	int use_dy = (y + dy < 0 || y + dy >= m.nrows()) ? -dy : dy;
-	for (int dx = -half_region_size; dx < half_region_size; ++dx) {
-	  int use_dx = (x + dx < 0 || x + dx >= m.ncols()) ? -dx : dx;
-	  pixel_type pixel = m.get(Point(x + use_dx, y + use_dy));
-	  minimum = std::min(minimum, pixel);
-	  maximum = std::max(maximum, pixel);
-	}
+        int use_dy = (y + dy < 0 || y + dy >= m.nrows()) ? -dy : dy;
+        for (int dx = -half_region_size; dx < half_region_size; ++dx) {
+          int use_dx = (x + dx < 0 || x + dx >= m.ncols()) ? -dx : dx;
+          pixel_type pixel = m.get(Point(x + use_dx, y + use_dy));
+          minimum = std::min(minimum, pixel);
+          maximum = std::max(maximum, pixel);
+        }
       }
       pixel_type c = maximum - minimum;
       if (c < contrast_limit)
-	view->set(Point(x, y), confused);
+        view->set(Point(x, y), confused);
       else {
-	long t = (maximum + minimum) / 2;
-	if (m.get(Point(x, y)) >= t)
-	  view->set(Point(x, y), white(*view));
-	else
-	  view->set(Point(x, y), black(*view));
+        long t = (maximum + minimum) / 2;
+        if (m.get(Point(x, y)) >= t)
+          view->set(Point(x, y), white(*view));
+        else
+          view->set(Point(x, y), black(*view));
       }
     }
   return view;
@@ -485,12 +485,12 @@ inline bool djvu_converged(const T& fg, const T& bg) {
 
 template<class T, class U>
 void djvu_threshold_recurse(const T image, 
-			    const double smoothness,
-			    const size_t min_block_size,
-			    U& fg_image, U& bg_image,
-			    Rgb<double> fg_init, 
-			    Rgb<double> bg_init, 
-			    const size_t block_size) {
+                            const double smoothness,
+                            const size_t min_block_size,
+                            U& fg_image, U& bg_image,
+                            Rgb<double> fg_init, 
+                            Rgb<double> bg_init, 
+                            const size_t block_size) {
   typedef typename T::value_type value_type;
   typedef Rgb<double> promote_t;
 
@@ -506,15 +506,15 @@ void djvu_threshold_recurse(const T image,
     promote_t fg_avg, bg_avg;
     size_t fg_count = 0, bg_count = 0;
     for (typename T::const_vec_iterator i = image.vec_begin();
-	 i != image.vec_end(); ++i) {
+         i != image.vec_end(); ++i) {
       double fg_dist = djvu_distance(*i, fg);
       double bg_dist = djvu_distance(*i, bg);
       if (fg_dist <= bg_dist) {
-	fg_avg += *i;
-	++fg_count;
+        fg_avg += *i;
+        ++fg_count;
       } else {
-	bg_avg += *i;
-	++bg_count;
+        bg_avg += *i;
+        ++bg_count;
       }
     }
 
@@ -534,17 +534,17 @@ void djvu_threshold_recurse(const T image,
 
   if (block_size < min_block_size) {
     fg_image.set(Point(image.ul_x() / min_block_size,
-		       image.ul_y() / min_block_size), fg);
+                       image.ul_y() / min_block_size), fg);
     bg_image.set(Point(image.ul_x() / min_block_size,
-		       image.ul_y() / min_block_size), bg);
+                       image.ul_y() / min_block_size), bg);
   } else {
     for (size_t r = 0; r <= (image.nrows() - 1) / block_size; ++r) {
       for (size_t c = 0; c <= (image.ncols() - 1) / block_size; ++c) {
-	Point ul(c * block_size + image.ul_x(), r * block_size + image.ul_y());
-	Point lr(std::min((c + 1) * block_size + image.ul_x(), image.lr_x()),
-		 std::min((r + 1) * block_size + image.ul_y(), image.lr_y()));
-	djvu_threshold_recurse(T(image, ul, lr), smoothness, min_block_size, 
-			       fg_image, bg_image, fg, bg, block_size / 2);
+        Point ul(c * block_size + image.ul_x(), r * block_size + image.ul_y());
+        Point lr(std::min((c + 1) * block_size + image.ul_x(), image.lr_x()),
+                 std::min((r + 1) * block_size + image.ul_y(), image.lr_y()));
+        djvu_threshold_recurse(T(image, ul, lr), smoothness, min_block_size, 
+                               fg_image, bg_image, fg, bg, block_size / 2);
       }
     }
   }
@@ -552,26 +552,26 @@ void djvu_threshold_recurse(const T image,
 
 template<class T>
 Image *djvu_threshold(const T& image, const double smoothness, 
-		      const size_t max_block_size, const size_t min_block_size,
-		      const size_t block_factor,
-		      const typename T::value_type init_fg, 
-		      const typename T::value_type init_bg) {
+                      const size_t max_block_size, const size_t min_block_size,
+                      const size_t block_factor,
+                      const typename T::value_type init_fg, 
+                      const typename T::value_type init_bg) {
   // Create some temporary images to store the foreground and 
   // background colors for each block
 
   RGBImageData fg_data(Dim(image.ncols() / min_block_size + 1,
-			   image.nrows() / min_block_size + 1),
-		       Point(0, 0));
+                           image.nrows() / min_block_size + 1),
+                       Point(0, 0));
   RGBImageView fg_image(fg_data);
 
   RGBImageData bg_data(Dim(image.ncols() / min_block_size + 1,
-			   image.nrows() / min_block_size + 1),
-		       Point(0, 0));
+                           image.nrows() / min_block_size + 1),
+                       Point(0, 0));
   RGBImageView bg_image(bg_data);
 
   djvu_threshold_recurse(image, smoothness, min_block_size, 
-			 fg_image, bg_image,
-			 init_fg, init_bg, max_block_size);
+                         fg_image, bg_image,
+                         init_fg, init_bg, max_block_size);
 
   typedef TypeIdImageFactory<ONEBIT, DENSE> result_type;
   typename result_type::image_type* result = result_type::create
@@ -591,9 +591,9 @@ Image *djvu_threshold(const T& image, const double smoothness,
       double fg_dist = djvu_distance(image.get(Point(c, r)), fg);
       double bg_dist = djvu_distance(image.get(Point(c, r)), bg);
       if (fg_dist <= bg_dist)
-	result->set(Point(c, r), black(*result));
+        result->set(Point(c, r), black(*result));
       else
-	result->set(Point(c, r), white(*result));
+        result->set(Point(c, r), white(*result));
     }
   }
 
@@ -601,8 +601,8 @@ Image *djvu_threshold(const T& image, const double smoothness,
 }
 
 Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2, 
-		      int max_block_size = 512, int min_block_size = 16, 
-		      int block_factor = 2) {
+                      int max_block_size = 512, int min_block_size = 16, 
+                      int block_factor = 2) {
   // We do an approximate histrogram here, using 6 bits per pixel
   // plane.  That greatly reduces the amount of memory required.
   RGBPixel max_color;
@@ -610,16 +610,16 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
     size_t max_count = 0;
     std::vector<size_t> histogram(64 * 64 * 64, 0);
     for (RGBImageView::const_vec_iterator i = image.vec_begin();
-	 i != image.vec_end(); ++i) {
+         i != image.vec_end(); ++i) {
       size_t approx_color = (((size_t)((*i).red() & 0xfc) << 10) |
-			     ((size_t)((*i).green() & 0xfc) << 4) |
-			     ((size_t)((*i).blue() & 0xfc) >> 2));
+                             ((size_t)((*i).green() & 0xfc) << 4) |
+                             ((size_t)((*i).blue() & 0xfc) >> 2));
       size_t x = histogram[approx_color]++;
       if (x > max_count) {
-	max_count = x;
-	max_color = RGBPixel((*i).red() & 0xfc,
-			     (*i).green() & 0xfc,
-			     (*i).blue() & 0xfc);
+        max_count = x;
+        max_color = RGBPixel((*i).red() & 0xfc,
+                             (*i).green() & 0xfc,
+                             (*i).blue() & 0xfc);
       }
     }
   }
@@ -628,7 +628,7 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
     max_color = RGBPixel(255, 255, 255);
 
   return djvu_threshold(image, smoothness, max_block_size, min_block_size, 
-			block_factor, RGBPixel(0, 0, 0), max_color);
+                        block_factor, RGBPixel(0, 0, 0), max_color);
 }
 
 #endif

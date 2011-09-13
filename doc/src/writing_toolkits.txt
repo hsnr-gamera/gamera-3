@@ -158,7 +158,9 @@ Building and installing toolkits is very similar to building and
 installing Gamera itself.  
 
 **You must ensure that Gamera is installed and working before
-attempting to build and install a Gamera toolkit.**
+attempting to build and install a Gamera toolkit. On Windows,
+you should build and install gamera from the sources before
+building a toolkit to avoid possible compiler incompatibilities.**
 
 The complete instructions for building Gamera toolkits is included in
 the skeleton example in the INSTALL file.  You should redistribute

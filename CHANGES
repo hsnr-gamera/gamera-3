@@ -1,7 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
- - FSF address in license corrected
+Version 3.3.2, Sep 19, 2011
+----------------------------
+
+ - FSF address in all files corrected
 
  - sub_cc_analysis did not work on images with offset
 

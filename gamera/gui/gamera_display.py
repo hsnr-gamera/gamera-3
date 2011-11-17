@@ -2109,8 +2109,12 @@ class ProjectionDisplay(wx.Frame):
 # PRINTING
 ##############################################################################
 
-if wx.PostScriptDC_GetResolution() < 150:
-    wx.PostScriptDC_SetResolution(600)
+try:
+    if wx.PostScriptDC_GetResolution() < 150:
+        wx.PostScriptDC_SetResolution(600)
+except:
+    # workaround for missing function (Bug?) in wxPython 2.9
+    pass
 
 class GameraPrintout(wx.Printout):
    def __init__(self, image, margin = 1.0):

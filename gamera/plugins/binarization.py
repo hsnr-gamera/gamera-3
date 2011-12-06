@@ -376,7 +376,8 @@ class shading_subtraction(PluginFunction):
     doc_examples = [(GREYSCALE,)]
 
     def __call__(self, k=7, threshold=None):
-        background = self.rank(k*k,k,border_treatment=1)
+        #background = self.rank(k*k,k,border_treatment=1)
+        background = self.min_max_filter(k,1)
         backfloat = background.to_float()
         imgfloat = self.to_float()
         difffloat = backfloat.subtract_images(imgfloat)

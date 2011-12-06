@@ -78,6 +78,43 @@ class mean(PluginFunction):
     return _misc_filters.mean(self, k, border_treatment)
   __call__ = staticmethod(__call__)
 
+class min_max_filter(PluginFunction):
+    """
+    Within each *k* times *k* window, set the center pixel to the minimum or
+    maximum value of all pixels inside the window.
+
+    *k* is the window size (must be odd) and *filter* is the filter type
+    (0 for min, 1 for max). When *k_vertical* is nonzero, the vertical size of
+    the window is set to *k_vertical* instead of *k*.
+
+    This function does the same as *rank(1,k,border_treatment=1)*, but is
+    much faster because the runtime of *min_max_filter* is constant in
+    the window size. The same algorithm has been developed independently
+    by van Herk and Gil and Werman. See
+
+      M. van Herk: *A fast algorithm for local minimum and maximum filters
+      on rectangular and octagonal kernels.* Pattern Recognition Letters 13,
+      pp. 517-521, 1992
+
+      J. Gil, M. Werman: *Computing 2-D min, median, and max filters.*
+      IEEE Transactions on Pattern Analysis and Machine Intelligence 15,
+      pp. 504-507, 1993
+      """
+    self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
+    args = Args([Int('k', default=3),
+                 Choice('filter', ['min', 'max'], default=0),
+                 Int('k_vertical', default=0)])
+    return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
+    author = "David Kolanus"
+    doc_examples = [(GREYSCALE,)]
+    def __call__(self, k=3, filter=0, k_vertical=0):
+        if k%2 == 0:
+            raise RuntimeError("min_max_filter: window size k must be odd")
+        if k_vertical != 0 and k_vertical%2 == 0:
+            raise RuntimeError("min_max_filter: k_vertical must be zero or odd")
+        return _misc_filters.min_max_filter(self, k, filter, k_vertical)
+    __call__ = staticmethod(__call__)
+
 class create_gabor_filter(PluginFunction):
     """
     Computes the convolution of an image with a two dimensional Gabor
@@ -171,7 +208,8 @@ class kfill_modified(PluginFunction):
 
 class MiscFiltersModule(PluginModule):
     category = "Filter"
-    functions = [mean, rank, create_gabor_filter, kfill, kfill_modified]
+    functions = [mean, rank, min_max_filter, create_gabor_filter,
+                 kfill, kfill_modified]
     cpp_headers = ["misc_filters.hpp"]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

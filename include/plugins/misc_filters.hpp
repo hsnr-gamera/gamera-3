@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
  *               2010      Christoph Dalitz, Oliver Christen
+ *               2011      David Kolanus, Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +31,139 @@
 using namespace std;
 
 namespace Gamera {
+
+  //---------------------------
+  // min/max filter
+  //---------------------------
+  template<class T>
+  typename ImageFactory<T>::view_type* min_max_filter(const T &src, unsigned int k_h=3, int filter=0, unsigned int k_v=0){
+
+    typedef typename ImageFactory<T>::data_type data_type;
+    typedef typename ImageFactory<T>::view_type view_type;
+    typedef typename T::value_type T_value_type;
+
+    T_value_type defaultval;
+    const T_value_type &(*opt)(const T_value_type&,const T_value_type&);
+
+    if(filter==0){
+      opt = std::min<T_value_type>;
+      defaultval = std::numeric_limits<T_value_type>::max();
+    } else {
+      opt = std::max<T_value_type>;
+      defaultval = std::numeric_limits<T_value_type>::min();
+    }
+
+    if(k_v==0)
+      k_v=k_h;
+    if (src.nrows() < k_v || src.ncols() < k_h)
+      return simple_image_copy(src);
+
+
+    data_type *res_data = new data_type(src.size(), src.origin());
+    view_type *res= new view_type(*res_data);
+    image_copy_fill(src, *res);
+
+    unsigned int src_nrows = src.nrows();
+    unsigned int src_ncols = src.ncols();
+    unsigned int shiftsize_v = ((k_v-1)/2);
+    unsigned int shiftsize_h = ((k_h-1)/2);
+    unsigned int max_length = std::max(src_nrows, src_ncols);
+    unsigned int max_shift = std::max(shiftsize_v, shiftsize_h);
+    unsigned int k,i,j;
+    unsigned int loc_max;
+
+
+    T_value_type* g_long = new T_value_type[(max_length + max_shift)];
+    T_value_type* h_long = new T_value_type[(max_length + max_shift)];
+
+    // init for horizontal processing
+    for(k=0; k<shiftsize_h; k++){
+      g_long[src_ncols + k] = defaultval;
+      h_long[k]=defaultval;
+	}
+
+    T_value_type* g = g_long;
+    T_value_type* h = h_long+shiftsize_h;
+
+
+	//Horizontal max
+	for(j=0; j<src_nrows; j++){ // x=row, y=col
+
+      //calc subarray g
+      for( i=0 ; i<src_ncols ; i+=k_h ){
+
+        g[i] = src.get(Point(i,j));
+
+        for(k=1; k<k_h && (i+k)<src_ncols ; k++){
+          g[i+k]=opt(src.get(Point(i+k,j)), g[i+k-1]);
+        }
+      }
+
+      //calc subarray h
+      for( i=0 ; i<src_ncols ; i+=k_h ){
+        loc_max = i + k_h;
+        loc_max = (src_ncols<loc_max)?src_ncols:loc_max;
+
+        h[loc_max-1] = src.get(Point(loc_max-1,j));
+
+        for(k=2; k<=k_h; k++){
+          h[loc_max-k]=opt(src.get(Point(loc_max-k,j)), h[loc_max-k+1]);
+        }
+
+      }
+
+      // combine g and h
+      for(i=0; i<src_ncols; i++){
+        res->set(Point(i,j), opt(g_long[i+shiftsize_h], h_long[i]));
+      }
+	}
+
+	//init for vertical prozessing
+    for(k=0; k<shiftsize_v; k++){
+      g_long[src_nrows + k] = defaultval;
+      h_long[k]=defaultval;
+	}
+
+    g = g_long;
+    h = h_long+shiftsize_v;
+
+	//Vertical Max
+	for(j=0; j<src_ncols; j++){ // x=row, y=col
+
+      //calc subarray g
+      for( i=0 ; i<src_nrows ; i+=k_v ){
+
+        g[i] = res->get(Point(j,i));
+
+        for(k=1; k<k_v && (i+k)<src_nrows ; k++){
+          g[i+k]=opt(res->get(Point(j,i+k)), g[i+k-1]);
+        }
+      }
+
+      //calc subarray h
+      for( i=0 ; i<src_nrows ; i+=k_v ){
+        loc_max = i + k_v;
+        loc_max = (src_nrows<loc_max)?src_nrows:loc_max;
+
+        h[loc_max-1] = res->get(Point(j, loc_max-1));
+
+        for(k=2; k<=k_v; k++){
+          h[loc_max-k]=opt(res->get(Point(j, loc_max-k)), h[loc_max-k+1]);
+        }
+
+      }
+
+      // combine g and h
+      for(i=0; i<src_nrows; i++){
+        res->set(Point(j,i), opt(g_long[i+shiftsize_v], h_long[i]));
+      }
+	}
+
+	delete[] g_long;
+	delete[] h_long;
+
+    return res;
+  }
 
   //---------------------------
   // mean filter

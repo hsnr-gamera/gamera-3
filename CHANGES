@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - min_max_filter for computing minimum and maximum filter in
+   a runtime that is independent from the window size (thanks to
+   David Kolanus). This method is now used by shading_subtraction
+   to speed up the binarization considerably.
+
+
 Version 3.3.2, Sep 19, 2011
 ----------------------------
 

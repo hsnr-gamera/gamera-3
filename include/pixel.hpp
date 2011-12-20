@@ -482,6 +482,11 @@ namespace Gamera {
   }
 
   template<>
+  inline Grey16Pixel pixel_traits<Grey16Pixel>::white() {
+    return 65535;  // 2^16 - 1
+  }
+
+  template<>
   inline RGBPixel pixel_traits<RGBPixel>::black() {
     return RGBPixel(0, 0, 0);
   }

@@ -2,7 +2,7 @@
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
-#               2010      Christoph Dalitz
+#               2010-2012 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@ class rank(PluginFunction):
   Within each *k* times *k* window, set the center pixel to the *r*-th ranked
   value.
 
-  Note that for ``Onebit`` images, actually *rank(k*k - r)* is computed instead
+  Note that for ``Onebit`` images, actually *rank(k*k - r + 1)* is computed instead
   of *rank(r)*. This has the effect that you do not need to worry whether
   your image is a greyscale or onebit image: in all cases low values
   for *r* will darken the image and high values will light it up.
@@ -43,13 +43,13 @@ class rank(PluginFunction):
     When 0 ('padwhite'), window pixels outside the image are set to white.
     When 1 ('reflect'), reflecting boundary conditions are used.
   """
-  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
   args = Args([Int('rank'), Int('k', default=3),
-               Choice('border_treatment', ['padwhite', 'reflect'], default=0)])
-  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  author = "Oliver Christen and Christoph Dalitz"
+               Choice('border_treatment', ['padwhite', 'reflect'], default=1)])
+  return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
+  author = "Christoph Dalitz and David Kolanus"
   doc_examples = [(GREYSCALE, 2), (GREYSCALE, 5), (GREYSCALE, 8)]
-  def __call__(self, rank, k=3, border_treatment=0):
+  def __call__(self, rank, k=3, border_treatment=1):
     if k%2 == 0:
       raise RuntimeError("rank: window size k must be odd")
     if rank < 1 or rank > k*k:
@@ -66,13 +66,13 @@ class mean(PluginFunction):
   be 0 ('padwhite'), which sets window pixels outside the image to white,
   or 1 ('reflect'), for reflecting boundary conditions.
   """
-  self_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
+  self_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
   args = Args([Int('k', default=3),
-               Choice('border_treatment', ['padwhite', 'reflect'], default=0)])
+               Choice('border_treatment', ['padwhite', 'reflect'], default=1)])
   doc_examples = [(GREYSCALE,)]
-  return_type = ImageType([ONEBIT, GREYSCALE, FLOAT])
-  author = "Oliver Christen and Christoph Dalitz"
-  def __call__(self, k=3, border_treatment=0):
+  return_type = ImageType([ONEBIT, GREYSCALE, GREY16, FLOAT])
+  author = "David Kolanus"
+  def __call__(self, k=3, border_treatment=1):
     if k%2 == 0:
       raise RuntimeError("mean: window size k must be odd")
     return _misc_filters.mean(self, k, border_treatment)

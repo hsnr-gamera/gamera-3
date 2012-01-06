@@ -1,6 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - changes in rank() and mean():
+    o now significantly faster
+	o default border_treatment changed to 'reflect',
+      because that leads to more expected results than 'padwhite'
+    o extended to grey16 images
+
  - min_max_filter for computing minimum and maximum filter in
    a runtime that is independent from the window size (thanks to
    David Kolanus). This method is now used by shading_subtraction

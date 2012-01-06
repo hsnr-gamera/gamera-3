@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
  *               2010      Christoph Dalitz, Oliver Christen
- *               2011      David Kolanus, Christoph Dalitz
+ *               2011-2012 Christoph Dalitz, David Kolanus
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@
 #include "neighbor.hpp"
 #include "vigra/gaborfilter.hxx"
 #include "convolution.hpp"
+#include <math.h>
 
 using namespace std;
 
@@ -165,215 +166,262 @@ namespace Gamera {
     return res;
   }
 
-  //---------------------------
-  // mean filter
-  //---------------------------
+  //---------------------------------------------------------------
+  // Parametrization of border treatment (padwhite versus reflect)
+  //---------------------------------------------------------------
   template<class T>
-  class Mean {
+  class GetPixel4Border{
+    const T& _src;
+    int _src_ncols;
+    int _src_nrows;
+    int _border_treatment; // 0=padwhite, 1=reflect
+    typename T::value_type _white_val;
+    unsigned int _k;
+
   public:
-    inline T operator() (typename vector<T>::iterator begin,
-                         typename vector<T>::iterator end);
+    GetPixel4Border<T>(const T &src, int border_treatment, unsigned int k):_src(src){
+	  _src_ncols=src.ncols();
+	  _src_nrows=src.nrows();
+	  _border_treatment=border_treatment;
+	  _white_val = white(src);
+	  _k = k;
+    }
+
+    typename T::value_type operator() (int column, int row) {
+      // window partially outside the image?
+      if (column < 0 || column >= _src_ncols || row < 0 || row >= _src_nrows) {
+        if(_border_treatment==1) {
+          if (column < 0)
+            column = -column;
+          if (column >= _src_ncols)
+            column = _src_ncols - (column -_src_ncols) - 2;
+          if (row < 0)
+            row = -row;
+          if (row >= _src_nrows)
+            row = _src_nrows - (row - _src_nrows) - 2;
+        }
+        else {
+          return _white_val;
+        }
+      }
+      return _src.get(Point(column, row));
+    }
   };
 
+  //----------------------------------------------
+  // mean filter (David Kolanus)
+  //----------------------------------------------
   template<class T>
-  inline T Mean<T>::operator() (typename vector<T>::iterator begin,
-                                typename vector<T>::iterator end) {
-    long sum = 0;
-    size_t size = end - begin;
-    for (; begin != end; ++begin)
-      sum += size_t(*begin);
-    return T(sum / double(size) + 0.5);
-  }
-
-
-  template<class T>
-  typename ImageFactory<T>::view_type* mean(const T &src, unsigned int k=3, size_t border_treatment=0) {
+  typename ImageFactory<T>::view_type* mean(const T &src, unsigned int k=3, size_t border_treatment=1) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
+    typedef typename T::value_type T_value_type;
 
     if (src.nrows() < k || src.ncols() < k)
       return simple_image_copy(src);
 
-    data_type *new_data = new data_type(src.size(), src.origin());
-    view_type *new_view = new view_type(*new_data);
 
-    Mean<typename T::value_type> mean_op;
-		
-    if (border_treatment == 1) { // reflect
+    data_type *res_data = new data_type(src.size(), src.origin());
+    view_type *res= new view_type(*res_data);
 
-      // for reflection, we can use convolve plugin
-      // because BORDER_TREATMENT_REFLECT is supported in VIGRA
+    int src_ncols = src.ncols();
+    int src_nrows = src.nrows();
 
-      // create averaging kernel and do convolution
-      FloatImageData *kernel_data = new FloatImageData( Dim(k,k), Point(0,0) );
-      FloatImageView *kernel_view = new FloatImageView(*kernel_data);
-      FloatPixel fp = 1.0f / (k*k);
-      for(unsigned int y = 0 ; y < (*kernel_view).nrows() ; y++) {
-        for(unsigned int x = 0 ; x < (*kernel_view).ncols(); x++) {
-          (*kernel_view).set( Point(x,y), fp);
+    double window_sum=0.0;
+    double kk = 1.0/double(k*k);
+
+    //(col,row)
+    int column=0;
+    int row=0;
+	int r = (k-1)/2;
+
+	//row/column are now center
+	GetPixel4Border<T> gp(src, border_treatment, k);
+	int ci, ri;
+	int r_p=r;
+	int r_m=-r;
+
+	for(row=0; row<src_nrows; row++){
+      column=0;
+
+      //init sum
+      window_sum=0.0;
+      for(ri=r_m; ri<=r_p; ri++) {
+        for(ci=r_m; ci<=r_p; ci++) {
+          window_sum += gp(column+ci, row+ri);
         }
       }
-      new_view = convolve(src, *kernel_view, vigra::BORDER_TREATMENT_REFLECT);
-      delete kernel_view->data();
-      delete kernel_view;
-    }
-    else { // border treatment 'padwhite'
 
-      unsigned int x, y; // window center coordinates
-      int ul_x, ul_y; // upper left window coordinates
-      int lr_x, lr_y; // lower right window coordinates
-      unsigned int min_x, max_x, min_y, max_y;
-      vector<typename T::value_type> window(k*k);
-      typename T::value_type white_val = white(src);	
+      //calc mean
+      res->set( Point(column,row), T_value_type(window_sum*kk + 0.5));
 
-      for(y = 0 ; y < src.nrows() ; y++) {
-        for(x = 0 ; x < src.ncols(); x++) {
+      //go right column....
+      for(column=1; column<src_ncols; column++) {
+        for(ci=r_m; ci<=r_p; ci++) {
+          //sub
+          window_sum -= gp(column-1-r,row+ci);
 
-          ul_x = (int)x - k/2;
-          ul_y = (int)y - k/2;
-          lr_x = (int)x + k/2;
-          lr_y = (int)y + k/2;
-
-          // window partially outside the image?
-          if (ul_x < 0 || lr_x >= (int)src.ncols() || ul_y < 0 || lr_y >= (int)src.nrows()) {
-            size_t i, _x, _y;
-            min_x = std::max(0, ul_x);
-            max_x = std::min((int)src.ncols()-1, lr_x);
-            min_y = std::max(0, ul_y);
-            max_y = std::min((int)src.nrows()-1, lr_y);
-            i = 0; // position of entries does not matter for mean
-            for (_x=min_x; _x <= max_x; _x++)
-              for (_y=min_y; _y <= max_y; _y++) {
-                window[i] = src.get(Point(_x,_y));
-                i++;
-              }
-            // fill rest with white
-            for (; i < k*k; i++) window[i] = white_val;
-          }
-          else {
-            for(size_t i=0 ; i < k*k ; i++) {
-              window[i] = src.get(Point(ul_x + (i%k), ul_y + (i/k)));
-            }
-          }
-						
-          (*new_view).set(Point(x, y), mean_op(window.begin(), window.end()));
+          //add
+          window_sum += gp(column+r,row+ci);
         }
-      }
-    }
 
-    return new_view;
+        //calc mean
+        res->set( Point(column,row), T_value_type(window_sum*kk + 0.5));
+      }
+	}
+    return res;
   }
 
-  //---------------------------
-  // rank filter
-  //---------------------------
+  //----------------------------------------------------------------
+  // rank filter (Christoph Dalitz and David Kolanus)
+  //----------------------------------------------------------------
   template<class T>
-  class Rank {
-    unsigned int rank;
+  class RankHist {
   public:
-    Rank<T>(unsigned int rank_) { rank = rank_ - 1; }
-    inline T operator() (typename vector<T>::iterator begin,
-			 typename vector<T>::iterator end);
+    unsigned int* hist;
+    unsigned int histsize;
+    RankHist<T>() {
+      unsigned int color;
+      histsize = (unsigned int)pow(2.0,8.0*sizeof(T));
+      hist = new unsigned int[histsize];
+      for(color=0; color<histsize; color++){
+        hist[color]=0;
+      }
+    };
+    ~RankHist<T>() { delete[] hist; };
+    inline unsigned int operator() (unsigned int r, unsigned int k2);
   };
 
+  template<>
+  RankHist<Grey16Pixel>::RankHist() {
+    unsigned int color;
+    histsize = 65536; // only 16bit
+    hist = new unsigned int[histsize];
+    for(color=0; color<histsize; color++){
+      hist[color]=0;
+    }
+  }
+
   template<class T>
-  inline T Rank<T>::operator() (typename vector<T>::iterator begin,
-				typename vector<T>::iterator end) {
-    nth_element(begin, begin + rank, end);
-    return *(begin + rank);
+  inline unsigned int RankHist<T>::operator() (unsigned int r, unsigned int k2) {
+	unsigned int collect = 0;
+    unsigned int color;
+	for(color=0; color<histsize; color++){
+      collect += hist[color];
+      if(collect>=r){
+        return color;
+      }
+	}
+	return color;
   }
 
   template<>
-  inline OneBitPixel Rank<OneBitPixel>::operator() (vector<OneBitPixel>::iterator begin,
-						    vector<OneBitPixel>::iterator end) {
-    nth_element(begin, end - rank - 1, end);
-    return *(end - rank - 1);
+  inline unsigned int RankHist<OneBitPixel>::operator() (unsigned int r, unsigned int k2) {
+	unsigned int collect = 0;
+    unsigned int color;
+	collect = 0;
+	for(color=0; color<histsize; color++){
+      collect += hist[color];
+      if(collect>=k2-r+1){
+        return color;
+      }
+	}
+	return color;
   }
 
   template<class T>
-  typename ImageFactory<T>::view_type* rank(const T &src, unsigned int r, unsigned int k=3, size_t border_treatment=0) {
+  typename ImageFactory<T>::view_type* rank (const T &src, unsigned int rank, unsigned int k=3, size_t border_treatment=1) {
     typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
+    typedef typename T::value_type T_value_type;
 
     if (src.nrows() < k || src.ncols() < k)
       return simple_image_copy(src);
 
-    data_type *new_data = new data_type(src.size(), src.origin());
-    view_type *new_view = new view_type(*new_data);
+    data_type *res_data = new data_type(src.size(), src.origin());
+    view_type *res= new view_type(*res_data);
+    //image_copy_fill(src, *res);
 
-    Rank<typename T::value_type> rank(r);
-		
-    if(k==3) {
-      if (border_treatment == 1) // reflect
-        neighbor9reflection(src, rank, *new_view);
-      else // clip
-        neighbor9(src, rank, *new_view);
-      return new_view;
-    }
-    unsigned int x, y; // window center coordinates
-    int ul_x, ul_y; // upper left window coordinates
-    int lr_x, lr_y; // lower right window coordinates
-    unsigned int min_x, max_x, min_y, max_y;
-    typename T::value_type white_val = white(src);
-		
-    for(y = 0 ; y < src.nrows() ; y++) {
-      for(x = 0 ; x < src.ncols(); x++) {
+    int src_ncols = (int)src.ncols();
+    int src_nrows = (int)src.nrows();
 
-        ul_x = (int)x - k/2;
-        ul_y = (int)y - k/2;
-        lr_x = (int)x + k/2;
-        lr_y = (int)y + k/2;
+    //(col,row)
+    int column=0;
+    int row;
+    unsigned int color;
+	int r = (k-1)/2;
 
-        vector<typename T::value_type> window(k*k);
+	//rank class
+	RankHist<T_value_type> rk;
 
-        // window partially outside the image?
-        if (ul_x < 0 || lr_x >= (int)src.ncols() || ul_y < 0 || lr_y >= (int)src.nrows()) {
+	//row/column are now center
+	GetPixel4Border<T> gp(src, border_treatment, k);
+	int ci, ri;
+	int r_p=r;
+	int r_m=-r;
 
-          if (border_treatment == 1) { // reflect
-            int _x, _y;
-            for (size_t i = 0 ; i < k*k ; i++) {
-              _x = ul_x + i%k;
-              _y = ul_y + i/k;
-              if (_x < 0)
-                _x = -_x;
-              if (_x >= (int)src.ncols())
-                _x = src.ncols() - (_x - src.ncols()) - 2;
-              if (_y < 0)
-                _y = -_y;
-              if (_y >= (int)src.nrows())
-                _y = src.nrows() - (_y - src.nrows()) - 2;
-              window[i] = src.get(Point(_x, _y));
-            }
-          }
-          else { // border treatment 'clip'
-            size_t i, _x, _y;
-            min_x = std::max(0, ul_x);
-            max_x = std::min((int)src.ncols()-1, lr_x);
-            min_y = std::max(0, ul_y);
-            max_y = std::min((int)src.nrows()-1, lr_y);
-            i = 0; // position of entries does not matter for rank
-            for (_x=min_x; _x <= max_x; _x++)
-              for (_y=min_y; _y <= max_y; _y++) {
-                window[i] = src.get(Point(_x,_y));
-                i++;
-              }
-            // fill rest with white
-            for (; i < k*k; i++) window[i] = white_val;
-          }
-        }
-        else {
-          for(size_t i = 0 ; i < k*k ; i++) {
-            window[i] = src.get(Point(ul_x + (i%k), ul_y + (i/k)));
-          }
-        }
-						
-        (*new_view).set(Point(x, y), rank( window.begin(), window.end()));
+	for(row=0; row<src_nrows; row++){
+      column=0;
+
+      for(color=0; color<rk.histsize; color++){
+        rk.hist[color]=0;
       }
-    }
-		
-    return new_view;
+      //init hist
+      for(ri=r_m; ri<=r_p; ri++) {
+        for(ci=r_m; ci<=r_p; ci++) {
+          rk.hist[gp(column+ci, row+ri)]++;
+        }
+      }
+
+      //calc median
+      res->set( Point(column,row), T_value_type(rk(rank,k*k)));
+
+      //go right column....
+      for(column=1; column<src_ncols; column++) {
+        for(ci=r_m; ci<=r_p; ci++) {
+          //sub
+          rk.hist[gp(column-1-r,row+ci)]--;
+
+          //add
+          rk.hist[gp(column+r,row+ci)]++;
+        }
+
+        //calc median
+        res->set( Point(column,row), T_value_type(rk(rank,k*k)));
+      }
+	}
+
+    return res;
   }
 
+  // specialization for FloatImage,
+  // because here the histogram based approach does not work
+  template<>
+  FloatImageView* rank (const FloatImageView &src, unsigned int rank, unsigned int k, size_t border_treatment) {
+
+    if (src.nrows() < k || src.ncols() < k)
+      return simple_image_copy(src);
+
+    int x,y;
+    size_t i;
+    FloatImageData *res_data = new FloatImageData(src.size(), src.origin());
+    FloatImageView *res= new FloatImageView(*res_data);
+
+	GetPixel4Border<FloatImageView> gp(src, border_treatment, k);
+    vector<FloatPixel> window(k*k);
+    
+    int radius = (k-1)/2;
+    for(y = 0 ; (size_t)y < src.nrows() ; y++) {
+      for(x = 0 ; (size_t)x < src.ncols(); x++) {
+        for(i = 0 ; i < k*k ; i++) {
+          window[i] = gp(x - radius + (i%k), y - radius + (i/k));
+        }
+        nth_element(window.begin(), window.begin() + rank, window.end());
+        res->set(Point(x,y), *(window.begin()+rank));
+      }
+    }
+    return res;
+  }
 
   //---------------------------
   // Gabor filter

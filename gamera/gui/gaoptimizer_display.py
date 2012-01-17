@@ -266,8 +266,9 @@ class OptimizerFrame(wx.Frame):
       if self.classifier == None:
          gui_util.message("Please load some data first.")
          return
-      existing_features = [x[0] for x in self.classifier.get_feature_functions()[0]]
+      existing_features = self.classifier.features
       selected_features = self.features_dialog(existing_features)
+      self.classifier.change_feature_set(selected_features)
       self.weights_panel.new_classifier(self.classifier)
 
    def features_dialog(self, existing_features=None):
@@ -275,8 +276,8 @@ class OptimizerFrame(wx.Frame):
       all_features.sort()
       if existing_features == None:
          existing_features = all_features[:]
-      else:
-         existing_features = [x[0] for x in self.classifier.get_feature_functions()[0]]
+      #else:
+      #   existing_features = self.classifier.features
       feature_controls = []
       for x in all_features:
          feature_controls.append(

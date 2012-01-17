@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - changing feature set in Biollante now works
+
  - changes in rank() and mean():
     o now significantly faster
     o default border_treatment changed to 'reflect',

@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed a type mismatch in graph API on 64bit bigendian architectures
+
  - changing feature set in Biollante now works
 
  - changes in rank() and mean():

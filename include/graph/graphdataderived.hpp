@@ -37,7 +37,7 @@ struct GraphDataInt: public GraphData {
 
    virtual int compare(const GraphData& b) {
 #ifdef __DEBUG_GAPI__
-      std::cout << "GrahpDataInt::compare called\n";
+      std::cout << "GraphDataInt::compare called\n";
 #endif
       return data - (dynamic_cast<const GraphDataInt&>(b)).data;
    }
@@ -59,7 +59,7 @@ struct GraphDataLong: public GraphData {
 
    virtual int compare(const GraphData& b) {
 #ifdef __DEBUG_GAPI__
-      std::cout << "GrahpDataInt::compare called\n";
+      std::cout << "GraphDataInt::compare called\n";
 #endif
       return data - (dynamic_cast<const GraphDataLong&>(b)).data;
    }
@@ -81,7 +81,7 @@ struct GraphDataUnsignedInt: public GraphData {
 
    virtual int compare(const GraphData& b) {
 #ifdef __DEBUG_GAPI__
-      std::cout << "GrahpDataUnsignedInt::compare called\n";
+      std::cout << "GraphDataUnsignedInt::compare called\n";
 #endif
       const GraphDataUnsignedInt& c = dynamic_cast<const GraphDataUnsignedInt&>(b);
       if(data < c.data)
@@ -109,7 +109,7 @@ struct GraphDataString: public GraphData {
 
    virtual int compare(const GraphData& b) {
 #ifdef __DEBUG_GAPI__
-      std::cout << "GrahpDataUnsignedInt::compare called\n";
+      std::cout << "GraphDataUnsignedInt::compare called\n";
 #endif
       const GraphDataString& c = dynamic_cast<const GraphDataString&>(b);
       if(data < c.data)

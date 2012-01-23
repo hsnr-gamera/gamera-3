@@ -419,7 +419,7 @@ GraphObject* graph_copy(GraphObject* so, flag_t flags) {
 PyObject* graph_new(PyTypeObject* pytype, PyObject* args,
 		    PyObject* kwds) {
    unsigned long flags = FLAG_FREE;
-   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:Graph.__init__", &flags) <= 0)
+   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|k:Graph.__init__", &flags) <= 0)
       return NULL;
 
    return (PyObject*)graph_new(flags);
@@ -479,7 +479,7 @@ void graph_dealloc(PyObject* self) {
 PyObject* graph_copy(PyObject* self, PyObject* args) {
    INIT_SELF_GRAPH();
    unsigned long flags = FLAG_FREE;
-   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|i:Graph.copy", &flags) <= 0)
+   if (PyArg_ParseTuple(args, CHAR_PTR_CAST "|k:Graph.copy", &flags) <= 0)
       return NULL;
 
    return (PyObject*)graph_copy(so, flags);

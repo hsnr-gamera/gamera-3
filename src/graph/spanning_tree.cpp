@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "graph.hpp"
-#include "node.hpp"
-#include "edge.hpp"
-#include "spanning_tree.hpp"
+#include "graph/graph.hpp"
+#include "graph/node.hpp"
+#include "graph/edge.hpp"
+#include "graph/spanning_tree.hpp"
 
 namespace Gamera { namespace GraphApi {
 

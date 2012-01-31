@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "graph.hpp"
-#include "edge.hpp"
-#include "node.hpp"
+#include "graph/graph.hpp"
+#include "graph/edge.hpp"
+#include "graph/node.hpp"
 
 namespace Gamera { namespace GraphApi {
 

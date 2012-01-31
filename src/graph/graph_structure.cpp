@@ -18,9 +18,9 @@
  */
 
 
-#include "graph.hpp"
-#include "edge.hpp"
-#include "node.hpp"
+#include "graph/graph.hpp"
+#include "graph/edge.hpp"
+#include "graph/node.hpp"
 
 namespace Gamera { namespace GraphApi {
 

@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "graph.hpp"
-#include "edge.hpp"
-#include "node.hpp"
-#include "bfsdfsiterator.hpp"
-#include "spanning_tree.hpp"
-#include "shortest_path.hpp"
-#include "subgraph_root.hpp"
+#include "graph/graph.hpp"
+#include "graph/edge.hpp"
+#include "graph/node.hpp"
+#include "graph/bfsdfsiterator.hpp"
+#include "graph/spanning_tree.hpp"
+#include "graph/shortest_path.hpp"
+#include "graph/subgraph_root.hpp"
 
 namespace Gamera { namespace GraphApi {
 

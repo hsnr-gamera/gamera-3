@@ -337,7 +337,6 @@ class GeometryModule(PluginModule):
   category = "Geometry"
   import glob
   cpp_sources=["src/geostructs/kdtree.cpp", "src/geostructs/delaunaytree.cpp"] + glob.glob("src/graph/*.cpp")
-  cpp_include_dirs=["include/graph/"]
   functions = [voronoi_from_labeled_image,
                voronoi_from_points,
                labeled_region_neighbors,

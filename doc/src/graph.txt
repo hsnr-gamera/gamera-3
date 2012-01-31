@@ -379,13 +379,12 @@ header files, and can thus be included with
 
 .. code:: CPP
 
-   #include "graph.hpp"
+   #include "graph/graph.hpp"
    using namespace Gamera::Graph;
 
 The tricky part is getting your plugin module to be linked with the
 actual graph implementation. This is achieved by adding the
-source files to the ``cpp_sources`` property and the include directory 
-to ``cpp_include_dirs`` in the plugin Python interface.
+source files to the ``cpp_sources`` property in the plugin Python interface.
 
 In the gamera core code, the following works:
 
@@ -396,7 +395,6 @@ In the gamera core code, the following works:
        cpp_headers = ["myplugins.hpp"]
        import glob
        cpp_sources = glob.glob("src/graph/*.cpp")
-       cpp_include_dirs=["include/graph/"]
        functions = [myplugin1, myplugin2]
    module = ExampleModule()
 
@@ -414,7 +412,7 @@ as follows:
        import os, gamera
        gamera_root = os.path.dirname(gamera.__file__)
        import glob
-       cpp_sources = (glob.glob(os.path.join(gamera_root, "src/graph/*.cpp"))
+       cpp_sources = (glob.glob(os.path.join(gamera_root, "src/graph/*.cpp")))
        # ...
 
 Querying the Gamera installation directory through the *__file__* property
@@ -457,7 +455,7 @@ Here is a very short example for a C++-Usage:
 
 .. code:: CPP
 
-   #include "graph.hpp"
+   #include "graph/graph.hpp"
    
    void test() {
       Graph* g = new Graph(FLAG_UNDIRECTED);

@@ -20,9 +20,9 @@
 
 #include <limits>
 #include <algorithm>
-#include "graph.hpp"
-#include "node.hpp"
-#include "graphdataderived.hpp"
+#include "graph/graph.hpp"
+#include "graph/node.hpp"
+#include "graph/graphdataderived.hpp"
 namespace Gamera { namespace GraphApi {
 
    

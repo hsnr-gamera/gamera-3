@@ -112,7 +112,7 @@ Now, to begin training.  Training is simply the act of assigning
 names to each of the glyphs.  In Gamera, these names are made up of
 dot-delimited tokens.  (See `class names`__.)
 
-.. __: gui.html#class_names
+.. __: gui.html#class-names
 
 To see what's happening behind the scenes as we're training, open the
 **Classifier glyphs** pane by pressing the **+** button in the **Page

@@ -218,7 +218,7 @@ class Class(Arg):
       return result
 
 class ImageType(Arg):
-   def __init__(self, pixel_types, name=None, list_of=False):
+   def __init__(self, pixel_types, name=None, list_of=False, default=None):
       import core
       Arg.__init__(self, name)
       if not util.is_sequence(pixel_types):
@@ -231,13 +231,23 @@ class ImageType(Arg):
          self.klass = None
       self.pixel_types = pixel_types
       self.list_of = bool(list_of)
+      if default is None:
+         self.has_default = False
+         self.default = None
+      else:
+         self.has_default = True
+         self.default = default
+      if self.has_default and not isinstance(self.default,CNoneDefault):
+         raise TypeError("'default' can only be NoneDefault")
 
    def rest_repr(self, name=False):
       result = '``Image`` [%s]' % '|'.join([util.get_pixel_type_name(x) for x in self.pixel_types])
       if name:
          result += " *%s*" % self.name
       if self.list_of:
-         return "[%s]" % result
+         result = "[%s]" % result
+      if self.has_default:
+          result += " = %s" % str(self.default)
       return result
 
    def register(self, plug, func):

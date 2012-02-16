@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin min_max_location()
+
+ - ImageType arguments can be optional with "default=NoneDefault"
+
  - C++ graph API also usable from toolkits
 
  - fixed a type mismatch in graph API on 64bit bigendian architectures

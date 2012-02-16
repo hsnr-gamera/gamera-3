@@ -1,7 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
-#               2008-2010 Christoph Dalitz
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2008-2012 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -353,6 +353,48 @@ class ccs_from_labeled_image(PluginFunction):
     return_type = ImageList("ccs")
     author = "Christoph Dalitz and Hasan Yildiz"
 
+class min_max_location(PluginFunction):
+    """Returns the minimum and maximum pixel value and their location
+in an image.
+
+Only those pixels are examined that are black in the provided *mask*. 
+When no *mask* is given, the entire image is examined. The mask can
+be useful, e.g., to find the lightest and darkest value in the original
+greyscale image belonging to a Cc, as in the following example:
+
+    .. code:: Python
+
+      onebit = grey.to_onebit()
+      ccs = onebit.cc_analysis()
+      # compute min/max of first cc in original greyscale image
+      (pmin, vmin, pmax, vmax) = grey.min_max_location(ccs[0])
+
+The return value is a tuple of the form *(pmin, vmin, pmax, vmax)* where
+*pmin* and *pmax* are the point of the minimum and maximimum, respectively,
+and *vmin* and *vmax* the corresponding pixel values.
+"""
+    category="Analysis"
+    self_type = ImageType([GREYSCALE,GREY16,FLOAT])
+    return_type = Class("min_max_loc")
+    args = Args([ImageType([ONEBIT], name='mask', default=NoneDefault)])
+    author = "Christoph Dalitz"
+    doc_examples = [(GREYSCALE,)]
+    def __call__(self, mask=None):
+        if mask is None:
+            return _image_utilities.min_max_location_nomask(self)
+        else:
+            return _image_utilities.min_max_location(self, mask)
+    __call__ = staticmethod(__call__)
+
+class min_max_location_nomask(PluginFunction):
+    """This is only a helper function for overloading min_max_location.
+It is not needed on the Python side, but only on the C++ side due to
+the plugin wrapping mechanism of Gamera.
+"""
+    category="None"
+    self_type = ImageType([GREYSCALE,GREY16,FLOAT])
+    return_type = Class("min_max_loc")
+    author = "Christoph Dalitz"
 
 class UtilModule(PluginModule):
     cpp_headers=["image_utilities.hpp"]
@@ -363,7 +405,8 @@ class UtilModule(PluginModule):
 		 invert, clip_image, mask,
                  nested_list_to_image, to_nested_list,
                  diff_images, mse, reset_onebit_image,
-                 ccs_from_labeled_image]
+                 ccs_from_labeled_image,
+                 min_max_location, min_max_location_nomask]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 module = UtilModule()

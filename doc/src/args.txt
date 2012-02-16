@@ -118,13 +118,13 @@ A signed integers argument.  Corresponds to the C ``int`` type.
 Optionally, a *range* can be given as the
 tuple (*lower_bound*, *upper_bound*) and a *default* value.
 The latter can be set to ``NoneDefault`` for forcing the default
-to ``None``.
+to ``None`` in the GUI.
 
 .. note:: 
    Ranges and defaults are used for the benefit of the GUI only.
    There is no range-checking performed for you.
 
-In the GUI, this is presented as a spin button.
+In the GUI, this is presented as a text entry field.
 
 Real
 ----
@@ -177,7 +177,7 @@ when used as a default value.
 ImageType
 ---------
 
-**ImageType** (list *pixel_types*, string *name*, bool *list_of* = ``False``)
+**ImageType** (list *pixel_types*, string *name*, bool *list_of* = ``False``, default = ``None``)
 
 A Gamera ``Image``.  Corresponds to the subclasses of ``gamera::Image &`` on
 the C++ side.
@@ -194,6 +194,12 @@ all pixel types.
 If the optional *list_of* is ``True``, this argument refers to a
 Python list of Gamera Images, and on the C++ side will be passed in as
 a ``std::vector<gamera::Image*>``.
+
+To allow for an optional image argument, it is possible to set the *default*
+argument to ``NoneDefault``, which will be translated by the GUI entry mask
+to ``None``. In this case, make sure that you overwrite the ``__call__``
+method in the python plugin wrapper, so that the missing argument is
+correctly caught.
 
 ImageList
 ---------

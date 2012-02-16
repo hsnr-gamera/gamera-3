@@ -898,8 +898,8 @@ namespace Gamera {
     }
 
     return Py_BuildValue("NINI",
-                         create_PointObject(Point(max_x,max_y)), max_val,
-                         create_PointObject(Point(min_x,min_y)), min_val);
+                         create_PointObject(Point(min_x,min_y)), min_val,
+                         create_PointObject(Point(max_x,max_y)), max_val);
   }
   // specialization for FloatImage
   template<class U>
@@ -928,8 +928,8 @@ namespace Gamera {
     }
 
     return Py_BuildValue("NfNf",
-                         create_PointObject(Point(max_x,max_y)), max_val,
-                         create_PointObject(Point(min_x,min_y)), min_val);
+                         create_PointObject(Point(min_x,min_y)), min_val,
+                         create_PointObject(Point(max_x,max_y)), max_val);
   }
 
 

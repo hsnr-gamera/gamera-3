@@ -355,7 +355,8 @@ class ccs_from_labeled_image(PluginFunction):
 
 class min_max_location(PluginFunction):
     """Returns the minimum and maximum pixel value and their location
-in an image.
+in an image. When the min/max value occurs at several locations, only the
+location that is closest to the botom right corner is returned.
 
 Only those pixels are examined that are black in the provided *mask*. 
 When no *mask* is given, the entire image is examined. The mask can

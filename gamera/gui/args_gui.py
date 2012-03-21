@@ -487,6 +487,8 @@ class ImageType(Class):
             for key, val in locals.items():
                if isinstance(val, core.ImageBase) and val.data.pixel_type in self.pixel_types:
                   choices.append(key)
+      if self.has_default and isinstance(self.default,CNoneDefault):
+          choices = ["None"] + choices
       return choices
 
 class Rect(Class):

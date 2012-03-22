@@ -392,7 +392,7 @@ class min_max_location_nomask(PluginFunction):
 It is not needed on the Python side, but only on the C++ side due to
 the plugin wrapping mechanism of Gamera.
 """
-    category="None"
+    category = None
     self_type = ImageType([GREYSCALE,GREY16,FLOAT])
     return_type = Class("min_max_loc")
     author = "Christoph Dalitz"

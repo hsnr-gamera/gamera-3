@@ -2,7 +2,7 @@
 #define DELAUNAYTREE_20100430_HPP
 
 //
-// Copyright (C) 2010 Oliver Christen, Christoph Dalitz
+// Copyright (C) 2010-2012 Oliver Christen, Christoph Dalitz
 //
 // This code is based on the Delaunay_Tree implementation
 // http://people.sc.fsu.edu/~burkardt/cpp_src/delaunay_tree_2d/
@@ -27,6 +27,7 @@
 #include <map>
 #include <set>
 #include <stdexcept>
+#include <list>
 
 //-------------------------------------------------------------------------
 // data structure for computing the two dimensional Delaunay triangulation
@@ -100,6 +101,7 @@ namespace Gamera { namespace Delaunaytree {
     void appendTriangle(Triangle *t);
     void neighboringLabels(std::map<int,std::set<int> > *lbmap);
     void neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *vmap);
+    void getTriangles(std::list< std::vector<Vertex*>* > *triangles);
   };
 
   // Triangle
@@ -127,6 +129,7 @@ namespace Gamera { namespace Delaunaytree {
     int cwNeighbor(Vertex *v);
     void neighboringVertices(std::map<Vertex*,std::set<Vertex*> > *allneighbors);
     void neighboringLabels(std::map<int,std::set<int> > *allneighbors);
+    void getTriangles(std::list< std::vector<Vertex*>* > *triangles);
   };
 
 }} // end namespace Gamera::Delaunaytree

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2010 Oliver Christen, Christoph Dalitz
+// Copyright (C) 2010-2012 Oliver Christen, Christoph Dalitz
 //
 // This code is based on the Delaunay_Tree implementation
 // http://people.sc.fsu.edu/~burkardt/cpp_src/delaunay_tree_2d/
@@ -319,6 +319,11 @@ namespace Gamera { namespace Delaunaytree {
     root->neighboringLabels(labelmap);
   }
 
+  void DelaunayTree::getTriangles(std::list< std::vector<Vertex*>* > *triangles) {
+    root->setNumber(++number); // termination criterium
+    root->getTriangles(triangles);
+  }
+
   // Triangle
   Triangle::Triangle(DelaunayTree *tree) {
     tree->appendTriangle(this);
@@ -580,6 +585,30 @@ namespace Gamera { namespace Delaunaytree {
     } else if( vertices[2] > vertices[0] ) {
     	(*allneighbors)[vertices[0]].insert(vertices[2]);
     }
+  }
+
+  void Triangle::getTriangles(std::list< std::vector<Vertex*>* > *triangles) {
+    if( flag.isDead() ) {
+      for( TriangleList *l = sons; l ; l = l->getNext() ) {
+        if( l->getTriangle()->number != number ) {
+          l->getTriangle()->number = number;
+          l->getTriangle()->getTriangles(triangles);
+        }
+      }
+      return;
+    }
+
+    if(three_points_collinear(vertices[0], vertices[1], vertices[2]) ||
+       vertices[0]->getLabel() == -1 || vertices[1]->getLabel() == -1 || vertices[2]->getLabel() == -1) {
+    	return;
+    }
+
+    std::vector<Vertex*>* tri = new std::vector<Vertex*>();
+    tri->push_back(vertices[0]);
+    tri->push_back(vertices[1]);
+    tri->push_back(vertices[2]);
+    triangles->push_back(tri);
+    
   }
 
 }} // end namespace Gamera::Delaunaytree

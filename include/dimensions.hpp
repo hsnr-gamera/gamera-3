@@ -141,17 +141,17 @@ namespace Gamera {
     /// Equality operator
     bool operator==(const Size& other) const {
       if (m_width == other.width() && m_height == other.height())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     
     /// Inequality operator
     bool operator!=(const Size& other) const {
       if (m_width != other.width() || m_height != other.height())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
   };
 
@@ -174,16 +174,16 @@ namespace Gamera {
     template<class Other>
     bool operator==(const Other& other) const {
       if (m_ncols == other.ncols() && m_nrows == other.nrows())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     template<class Other>
     bool operator!=(const Other& other) const {
       if (m_ncols != other.ncols() || m_nrows != other.nrows())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
   };
 
@@ -202,10 +202,10 @@ namespace Gamera {
       : m_origin(upper_left), m_lr(lower_right) { }
     Rect(const Point& upper_left, const Size& size)
       : m_origin(upper_left), m_lr(upper_left.x() + size.width(),
-				   upper_left.y() + size.height()) { }
+                                   upper_left.y() + size.height()) { }
     Rect(const Point& upper_left, const Dim& dim)
       : m_origin(upper_left), m_lr(upper_left.x() + dim.ncols() - 1,
-				   upper_left.y() + dim.nrows() - 1) { }
+                                   upper_left.y() + dim.nrows() - 1) { }
 
     virtual ~Rect() { }
     // Get
@@ -308,34 +308,34 @@ namespace Gamera {
     // containment
     bool contains_x(coord_t v) const {
       if (v >= ul_x() && v <= lr_x())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     bool contains_y(coord_t v) const {
       if (v >= ul_y() && v <= lr_y())
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     bool contains_point(const Point& v) const {
       if (contains_x(v.x()) && contains_y(v.y()))
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     bool contains_rect(const self& v) const {
       if (contains_point(v.ul()) && contains_point(v.lr()))
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     
     Rect expand(size_t expansion) const {
       return Rect(Point(size_t(std::max((long)ul_x() - (long)expansion, 0l)),
-			size_t(std::max((long)ul_y() - (long)expansion, 0l))),
-		  Point(size_t((long)lr_x() + expansion + 1),
-			size_t((long)lr_y() + expansion + 1)));
+                        size_t(std::max((long)ul_y() - (long)expansion, 0l))),
+                  Point(size_t((long)lr_x() + expansion + 1),
+                        size_t((long)lr_y() + expansion + 1)));
     }
 
     // intersection
@@ -345,9 +345,9 @@ namespace Gamera {
       coord_t vul = v.ul_x();
       coord_t vlr = v.lr_x();
       return (((vul >= sul) && (vul <= slr)) ||
-	      ((vlr >= sul) && (vlr <= slr)) ||
-	      ((sul >= vul) && (sul <= vlr)) ||
-	      ((slr >= vul) && (slr <= vlr)));
+              ((vlr >= sul) && (vlr <= slr)) ||
+              ((sul >= vul) && (sul <= vlr)) ||
+              ((slr >= vul) && (slr <= vlr)));
     }
     bool intersects_y(const self& v) const {
       coord_t sul = ul_y();
@@ -355,9 +355,9 @@ namespace Gamera {
       coord_t vul = v.ul_y();
       coord_t vlr = v.lr_y();
       return (((vul >= sul) && (vul <= slr)) ||
-	      ((vlr >= sul) && (vlr <= slr)) ||
-	      ((sul >= vul) && (sul <= vlr)) ||
-	      ((slr >= vul) && (slr <= vlr)));
+              ((vlr >= sul) && (vlr <= slr)) ||
+              ((sul >= vul) && (sul <= vlr)) ||
+              ((slr >= vul) && (slr <= vlr)));
     }
     bool intersects(const self& v) const {
       return (intersects_x(v) && intersects_y(v));
@@ -374,15 +374,15 @@ namespace Gamera {
     // Equality
     bool operator==(const Rect& other) const {
       if (m_origin == other.m_origin && m_lr == other.m_lr)
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
     bool operator!=(const Rect& other) const {
       if (m_origin != other.m_origin || m_lr != other.m_lr)
-	return true;
+        return true;
       else
-	return false;
+        return false;
     }
 
     // union
@@ -392,12 +392,12 @@ namespace Gamera {
       max_x = max_y = 0;
 
       for (std::vector<Rect*>::iterator i = rects.begin();
-	   i != rects.end(); ++i) {
-	Rect* rect = (*i);
-	min_x = std::min(min_x, rect->ul_x());
-	min_y = std::min(min_y, rect->ul_y());
-	max_x = std::max(max_x, rect->lr_x());
-	max_y = std::max(max_y, rect->lr_y());
+           i != rects.end(); ++i) {
+        Rect* rect = (*i);
+        min_x = std::min(min_x, rect->ul_x());
+        min_y = std::min(min_y, rect->ul_y());
+        max_x = std::max(max_x, rect->lr_x());
+        max_y = std::max(max_y, rect->lr_y());
       }
       return new Rect(Point(min_x, min_y), Point(max_x, max_y));
     }
@@ -417,29 +417,29 @@ namespace Gamera {
       coord_t cx = center_x();
       coord_t other_cx = other.center_x();
       if (cx > other_cx)
-	return cx - other_cx;
+        return cx - other_cx;
       else
-	return other_cx - cx;
+        return other_cx - cx;
     }
     coord_t distance_cy(const self& other) {
       coord_t cy = center_y();
       coord_t other_cy = other.center_y();
       if (cy > other_cy)
-	return cy - other_cy;
+        return cy - other_cy;
       else
-	return other_cy - cy;
+        return other_cy - cy;
     }
     double distance_bb(const self& other) {
       double min_y = (double)std::min
-	(std::min(abs((long)ul_y() - (long)other.ul_y()),
-		  abs((long)ul_y() - (long)other.lr_y())),
-	 std::min(abs((long)lr_y() - (long)other.ul_y()),
-		  abs((long)lr_y() - (long)other.lr_y())));
+        (std::min(abs((long)ul_y() - (long)other.ul_y()),
+                  abs((long)ul_y() - (long)other.lr_y())),
+         std::min(abs((long)lr_y() - (long)other.ul_y()),
+                  abs((long)lr_y() - (long)other.lr_y())));
       double min_x = (double)std::min
-	(std::min(abs((long)ul_x() - (long)other.ul_x()),
-		  abs((long)ul_x() - (long)other.lr_x())),
-	 std::min(abs((long)lr_x() - (long)other.ul_x()),
-		  abs((long)lr_x() - (long)other.lr_x())));
+        (std::min(abs((long)ul_x() - (long)other.ul_x()),
+                  abs((long)ul_x() - (long)other.lr_x())),
+         std::min(abs((long)lr_x() - (long)other.ul_x()),
+                  abs((long)lr_x() - (long)other.lr_x())));
       
       return std::sqrt(min_y*min_y + min_x*min_x);
     }

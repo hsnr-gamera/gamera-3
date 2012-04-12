@@ -831,7 +831,7 @@ namespace Gamera {
     if (max_x < 0)
       throw std::runtime_error("min_max_location: mask has no black pixel");
 
-    return Py_BuildValue("NINI", 
+    return Py_BuildValue("NiNi", 
                          create_PointObject(Point(min_x,min_y)), min_val,
                          create_PointObject(Point(max_x,max_y)), max_val);
   }
@@ -897,7 +897,7 @@ namespace Gamera {
       }
     }
 
-    return Py_BuildValue("NINI",
+    return Py_BuildValue("NiNi",
                          create_PointObject(Point(min_x,min_y)), min_val,
                          create_PointObject(Point(max_x,max_y)), max_val);
   }

@@ -39,4 +39,8 @@ files are modified:
      has been taken from the development branch of VIGRA,
      to avoid rounding errors for exact rotations in rotateImage()
 
+ - sized_int.hxx
+     fix for gcc 4.7. This change is already included in the
+     development branch of VIGRA
+
 Christoph Dalitz

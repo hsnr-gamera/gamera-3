@@ -299,6 +299,18 @@ namespace Gamera {
   // TODO: Test this
 
   template<class T>
+  void _my_max(const T& a, T& b) {
+    if (a > b)
+      b = a;
+  }
+
+  template<>
+  void _my_max(const ComplexPixel& a, ComplexPixel& b) {
+    if (a.real() > b.real())
+      b = a;
+  }
+  
+  template<class T>
   typename T::value_type find_max(const T& image) {
     if (image.nrows() <= 1 || image.ncols() <= 1)
       throw std::range_error("Image must have nrows and ncols > 0.");
@@ -310,13 +322,13 @@ namespace Gamera {
   }
   
   template<class T>
-  void _my_max(const T& a, T& b) {
-    if (a > b)
+  void _my_min(const T& a, T& b) {
+    if (b > a)
       b = a;
   }
 
   template<>
-  void _my_max(const ComplexPixel& a, ComplexPixel& b) {
+  void _my_min(const ComplexPixel& a, ComplexPixel& b) {
     if (a.real() > b.real())
       b = a;
   }
@@ -332,17 +344,6 @@ namespace Gamera {
     return value;
   }
   
-  template<class T>
-  void _my_min(const T& a, T& b) {
-    if (b > a)
-      b = a;
-  }
-
-  template<>
-  void _my_min(const ComplexPixel& a, ComplexPixel& b) {
-    if (a.real() > b.real())
-      b = a;
-  }
 
   /*
     Fill an image with white.

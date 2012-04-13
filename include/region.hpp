@@ -129,7 +129,7 @@ namespace Gamera {
     RegionMapTemplate() : std::list<region_type>(0) { }
     virtual ~RegionMapTemplate() { }
     void add_region(const region_type& x) {
-      push_back(x);
+      this->push_back(x);
     }
     virtual region_type lookup(const rect_t& r) {
       typename self::iterator answer =

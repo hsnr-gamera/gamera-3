@@ -194,17 +194,17 @@ namespace Gamera {
 
     /// Set the red component to the passed in value.
     void red(T v) {
-      setRed(v);
+      this->setRed(v);
     }
 
     /// Set the green component to the passed in value.
     void green(T v) {
-      setGreen(v);
+      this->setGreen(v);
     }
 
     /// Set the blue component to the passed in value.
     void blue(T v) {
-      setBlue(v);
+      this->setBlue(v);
     }
 
     /// Retrieve the red component - the returned value is an lvalue.

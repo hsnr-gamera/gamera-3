@@ -685,15 +685,20 @@ namespace Gamera {
     std::stack<unsigned int> S;
     std::vector<unsigned int> vruns(src.ncols()+1,0);
     Rect* bestrect = new Rect(Point(0,0),Point(0,0));
-    bool nowhitefound = true;
+    bool norect = true;
+    bool blackfound = false;
+    bool whitefound = false;
 
     for (y=0; y<src.nrows(); y++) {
       // update vruns
       for (x=0; x<=src.ncols(); x++) {
-        if (is_white(src.get(Point(x,y))))
+        if (is_white(src.get(Point(x,y)))) {
           ++vruns[x];
-        else
+          whitefound = true;
+        } else {
           vruns[x] = 0;
+          blackfound = true;
+        }
       }
       height = 0;
       for (x=0; x<=src.ncols(); x++) {
@@ -703,13 +708,13 @@ namespace Gamera {
           S.push(height);
           height = vruns[x];
         }
-        if (curvrun < height) { // rect finished
+        else if (curvrun < height) { // rect finished
           do {
             w0 = S.top(); S.pop();
             x0 = S.top(); S.pop();
-            if (nowhitefound && height*(x-x0) > 0) {
+            if (norect && height*(x-x0) > 0) {
               *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
-              nowhitefound = false;
+              norect = false;
             }
             else if (height*(x-x0) > bestrect->nrows()*bestrect->ncols()) {
               *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
@@ -725,9 +730,13 @@ namespace Gamera {
       }
     }
 
-    if (nowhitefound) {
+    if (!whitefound) {
       delete bestrect;
       throw std::runtime_error("max_empty_rect: image has no white pixels.");
+    }
+    if (!blackfound) {
+      delete bestrect;
+      bestrect = new Rect(src);
     }
     return bestrect;
   }

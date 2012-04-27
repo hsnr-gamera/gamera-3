@@ -314,6 +314,13 @@ In the GUI, this is presented as a check box.
 *check_box* is an additional piece of text that will be placed to the
 right of the check box in the GUI.
 
+Rect
+----
+
+**Rect** (string *name*)
+
+A Gamera ``Rect`` object. Corresponds to ``gamera::Rect*`` on the C++ side.
+
 Region
 ------
 

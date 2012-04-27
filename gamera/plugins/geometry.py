@@ -339,7 +339,7 @@ generally known as the *Largest Empty Rectangle Problem*.
 There are a number of algorithms for this problem. The present implementation
 uses the algorithm described in
 
- - D. Vandevoorde: `The Maximal Rectangle Problem.`__ Dr. Dobb's, April 1998
+- D. Vandevoorde: `*The Maximal Rectangle Problem.*`__ Dr. Dobb's, April 1998
 
 .. __: http://www.drdobbs.com/database/184410529
    """

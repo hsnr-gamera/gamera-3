@@ -681,7 +681,7 @@ namespace Gamera {
 
   template<class T>
   Rect* max_empty_rect(const T& src) {
-    size_t x,xx,y,height,curvrun,x0,w0;
+    size_t x,y,height,curvrun,x0,w0;
     std::stack<unsigned int> S;
     std::vector<unsigned int> vruns(src.ncols()+1,0);
     Rect* bestrect = new Rect(Point(0,0),Point(0,0));
@@ -689,8 +689,7 @@ namespace Gamera {
 
     for (y=0; y<src.nrows(); y++) {
       // update vruns
-      for (xx=1; xx<=src.ncols(); xx++) {
-        x = src.ncols()-xx;
+      for (x=0; x<=src.ncols(); x++) {
         if (is_white(src.get(Point(x,y))))
           ++vruns[x];
         else

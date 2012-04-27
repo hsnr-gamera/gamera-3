@@ -207,7 +207,10 @@ class Rect(Arg):
       """ % self
 
    def to_python(self):
-      return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
+      return """
+      return_pyarg = create_RectObject(*%(symbol)s);
+      delete %(symbol)s;""" % self
+      #return "%(pysymbol)s = create_RectObject(%(symbol)s);" % self
 
 class Region(Arg):
    c_type = 'Region*'

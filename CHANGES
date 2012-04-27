@@ -1,7 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new plugin min_max_location()
+ - new plugins min_max_location() and max_empty_rect()
+
+ - Rect can now be a return type of a plugin function
 
  - ImageType arguments can be optional with "default=NoneDefault"
 

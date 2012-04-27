@@ -24,6 +24,7 @@
 
 #include <map>
 #include <set>
+#include <stack>
 #include <algorithm>
 #include "gamera.hpp"
 #include "vigra/distancetransform.hxx"
@@ -677,6 +678,61 @@ namespace Gamera {
 
     return res;
   }
+
+  template<class T>
+  Rect* max_empty_rect(const T& src) {
+    size_t x,xx,y,height,curvrun,x0,w0;
+    std::stack<unsigned int> S;
+    std::vector<unsigned int> vruns(src.ncols()+1,0);
+    Rect* bestrect = new Rect(Point(0,0),Point(0,0));
+    bool nowhitefound = true;
+
+    for (y=0; y<src.nrows(); y++) {
+      // update vruns
+      for (xx=1; xx<=src.ncols(); xx++) {
+        x = src.ncols()-xx;
+        if (is_white(src.get(Point(x,y))))
+          ++vruns[x];
+        else
+          vruns[x] = 0;
+      }
+      height = 0;
+      for (x=0; x<=src.ncols(); x++) {
+        curvrun = vruns[x];
+        if (curvrun > height) { // new rect for investigation
+          S.push(x);
+          S.push(height);
+          height = vruns[x];
+        }
+        if (curvrun < height) { // rect finished
+          do {
+            w0 = S.top(); S.pop();
+            x0 = S.top(); S.pop();
+            if (nowhitefound && height*(x-x0) > 0) {
+              *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
+              nowhitefound = false;
+            }
+            else if (height*(x-x0) > bestrect->nrows()*bestrect->ncols()) {
+              *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
+            }
+            height = w0;
+          } while (curvrun<height);
+          height = curvrun;
+          if (height != 0) {
+            S.push(x0);
+            S.push(w0);
+          }
+        }
+      }
+    }
+
+    if (nowhitefound) {
+      delete bestrect;
+      throw std::runtime_error("max_empty_rect: image has no white pixels.");
+    }
+    return bestrect;
+  }
+
 
 } // namespace Gamera
 #endif

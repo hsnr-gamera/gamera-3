@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009-2011 Christoph Dalitz
+# Copyright (C) 2009-2012 Christoph Dalitz
 #               2010      Oliver Christen, Tobias Bolten
 #               2011      Christian Brandt
 #
@@ -331,6 +331,36 @@ by convex_hull_as_points_.
    __call__ = staticmethod(__call__)
 
 
+class max_empty_rect(PluginFunction):
+   """Returns the maximum area empty rect that fits into the image without
+containing any of the black image pixels. This problem is in the literature
+generally known as the *Largest Empty Rectangle Problem*.
+
+There are a number of algorithms for this problem. The present implementation
+uses the algorithm described in
+
+ - D. Vandevoorde: `The Maximal Rectangle Problem.`__ Dr. Dobb's, April 1998
+
+.. __: http://www.drdobbs.com/database/184410529
+   """
+   self_type = ImageType([ONEBIT])
+   args = Args([])
+   return_type = Rect("max_epmty_rect")
+   author = "Christoph Dalitz"
+   def __doc_example1__(images):
+       from gamera.core import Image
+       from gamera.core import Point as P
+       img = Image((0,0),(90,90))
+       points = [P(10,10),P(20,30),P(32,22),P(85,14),P(40,70),P(80,85)]
+       for p in points:
+           img.draw_filled_rect((p.x-2,p.y-2),(p.x+1,p.y+1),1)
+       r = img.max_empty_rect()
+       rgb = img.to_rgb()
+       rgb.draw_hollow_rect(r,RGBPixel(255,0,0))
+       rgb.highlight(img,RGBPixel(0,0,0))
+       return [rgb]
+   doc_examples = [__doc_example1__]
+
 
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
@@ -344,7 +374,8 @@ class GeometryModule(PluginModule):
                graph_color_ccs,
                convex_hull_from_points,
                convex_hull_as_points,
-               convex_hull_as_image]
+               convex_hull_as_image,
+               max_empty_rect]
   author = "Christoph Dalitz"
   url = "http://gamera.sourceforge.net/"
 

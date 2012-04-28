@@ -336,17 +336,15 @@ class max_empty_rect(PluginFunction):
 containing any of the black image pixels. This problem is in the literature
 generally known as the *Largest Empty Rectangle Problem*.
 
-There are a number of algorithms for this problem. The present implementation
-uses the algorithm described in
-
-- D. Vandevoorde: `*The Maximal Rectangle Problem.*`__ Dr. Dobb's, April 1998
+Reference: D. Vandevoorde: `\"The Maximal Rectangle Problem.\"`__ Dr. Dobb's,
+April 1998.
 
 .. __: http://www.drdobbs.com/database/184410529
    """
    self_type = ImageType([ONEBIT])
    args = Args([])
    return_type = Rect("max_epmty_rect")
-   author = "Christoph Dalitz"
+   author = "Deveed Vandevoorde and Christoph Dalitz"
    def __doc_example1__(images):
        from gamera.core import Image
        from gamera.core import Point as P

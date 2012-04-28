@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Christoph Dalitz
+ * Copyright (C) 2009-2012 Christoph Dalitz
  *               2010      Oliver Christen
  *               2011      Christian Brandt
  *
@@ -679,66 +679,58 @@ namespace Gamera {
     return res;
   }
 
+  // based upon a sample program kindly provided by Daveed Vandevoorde
   template<class T>
   Rect* max_empty_rect(const T& src) {
-    size_t x,y,height,curvrun,x0,w0;
-    std::stack<unsigned int> S;
-    std::vector<unsigned int> vruns(src.ncols()+1,0);
-    Rect* bestrect = new Rect(Point(0,0),Point(0,0));
-    bool norect = true;
-    bool blackfound = false;
-    bool whitefound = false;
+    size_t x,y,open_width,x0;
+    unsigned int w0,area,best_area;
+    std::vector<unsigned int> c(src.ncols()+1,0);
+    std::stack<unsigned int> s;
+    Point best_ul(0,0);
+    Point best_lr(0,0);
+    best_area = 0;
 
-    for (y=0; y<src.nrows(); y++) {
-      // update vruns
-      for (x=0; x<=src.ncols(); x++) {
-        if (is_white(src.get(Point(x,y)))) {
-          ++vruns[x];
-          whitefound = true;
+	for (y=0; y<src.nrows(); ++y) {
+      open_width = 0;
+      // update cache
+      for (x=0; x<src.ncols(); ++x) {
+		if (is_black(src.get(Point(x,y)))) {
+          c[x] = 0;
         } else {
-          vruns[x] = 0;
-          blackfound = true;
+          ++c[x];
         }
       }
-      height = 0;
-      for (x=0; x<=src.ncols(); x++) {
-        curvrun = vruns[x];
-        if (curvrun > height) { // new rect for investigation
-          S.push(x);
-          S.push(height);
-          height = vruns[x];
-        }
-        else if (curvrun < height) { // rect finished
+      for (x=0; x<=src.ncols(); ++x) {
+        if (c[x]>open_width) { // open new rectangle?
+          s.push(x);
+          s.push(open_width);
+          open_width = c[x];
+        } // "else" optional here 
+        else if (c[x]<open_width) { // close rectangle(s)? 
           do {
-            w0 = S.top(); S.pop();
-            x0 = S.top(); S.pop();
-            if (norect && height*(x-x0) > 0) {
-              *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
-              norect = false;
+            w0 = s.top(); s.pop();
+            x0 = s.top(); s.pop();
+            area = open_width*(x-x0);
+            if (area>best_area) {
+              best_area = area;
+              best_ul = Point(x0, y);
+              best_lr = Point(x-1, y-open_width+1);
             }
-            else if (height*(x-x0) > bestrect->nrows()*bestrect->ncols()) {
-              *bestrect = Rect(Point(x0,y-height+1),Point(x-1, y));
-            }
-            height = w0;
-          } while (curvrun<height);
-          height = curvrun;
-          if (height != 0) {
-            S.push(x0);
-            S.push(w0);
+            open_width = w0;
+          } while (c[x]<open_width);
+          open_width = c[x];
+          if (open_width!=0) {
+            s.push(x0);
+            s.push(w0);
           }
         }
       }
-    }
-
-    if (!whitefound) {
-      delete bestrect;
+	}
+    if (is_black(src.get(best_lr))) {
       throw std::runtime_error("max_empty_rect: image has no white pixels.");
     }
-    if (!blackfound) {
-      delete bestrect;
-      bestrect = new Rect(src);
-    }
-    return bestrect;
+    Rect* result = new Rect(best_ul,best_lr);
+    return result;
   }
 
 

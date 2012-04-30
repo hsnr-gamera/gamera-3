@@ -336,6 +336,10 @@ class max_empty_rect(PluginFunction):
 containing any of the black image pixels. This problem is in the literature
 generally known as the *Largest Empty Rectangle Problem*.
 
+When the image does not contain a white pixel at all, an exception of type
+``RuntimeError`` is thrown. The coordinates of the returned rectangle are
+relative to the upper left corner of the image.
+
 Reference: D. Vandevoorde: `\"The Maximal Rectangle Problem.\"`__ Dr. Dobb's,
 April 1998.
 
@@ -344,7 +348,7 @@ April 1998.
    self_type = ImageType([ONEBIT])
    args = Args([])
    return_type = Rect("max_epmty_rect")
-   author = "Deveed Vandevoorde and Christoph Dalitz"
+   author = "Daveed Vandevoorde and Christoph Dalitz"
    def __doc_example1__(images):
        from gamera.core import Image
        from gamera.core import Point as P

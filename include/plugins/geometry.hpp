@@ -713,8 +713,8 @@ namespace Gamera {
             area = open_width*(x-x0);
             if (area>best_area) {
               best_area = area;
-              best_ul = Point(x0, y);
-              best_lr = Point(x-1, y-open_width+1);
+              best_ul = Point(x0, y-open_width+1);
+              best_lr = Point(x-1, y);
             }
             open_width = w0;
           } while (c[x]<open_width);

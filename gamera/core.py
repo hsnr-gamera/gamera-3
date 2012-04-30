@@ -676,7 +676,8 @@ def _init_gamera():
          "has_id_name", "Classification", plugin.Check("result"),
          plugin.ImageType([ONEBIT]), plugin.Args([plugin.String("id")])),
       plugin.PluginFactory(
-         "subimage", "Utility", plugin.Check("result"),
+         #"subimage", "Utility", plugin.Check("result"),
+         "subimage", "Utility", plugin.ImageType(ALL),
          plugin.ImageType(ALL), plugin.Args([plugin.Point("upper_left"),
                                              plugin.Point("lower_right")])),
       plugin.PluginFactory(

@@ -1534,7 +1534,6 @@ float Fitness(GAGenome & g) {
 
 void Initializer(GAGenome& genome) {
   GA1DArrayGenome<double>& g = (GA1DArrayGenome<double>&)genome;
-  srand(time(0));
   for (int i = 0; i < g.length(); i++) {
     g.gene(i, rand() / (RAND_MAX + 1.0));
   }
@@ -1543,6 +1542,7 @@ void Initializer(GAGenome& genome) {
 static PyObject* knn_ga_create(PyObject* self, PyObject* args) {
   KnnObject* o = (KnnObject*)self;
   o->ga_running = true;
+  srand(time(0));
 
   Py_BEGIN_ALLOW_THREADS
   if (o->ga != 0)

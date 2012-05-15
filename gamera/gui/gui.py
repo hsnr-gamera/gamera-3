@@ -23,7 +23,7 @@
 # wxPython
 try:
    import wxversion
-   wxversion.select(["2.8", "2.6", "2.5", "2.4"])
+   wxversion.select(["2.8", "2.9", "2.6", "2.5", "2.4"])
 except ImportError:
    from wxPython.wx import wxVERSION
    # Check that the version is correct

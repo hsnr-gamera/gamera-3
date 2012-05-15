@@ -20,6 +20,7 @@ Copyright (C) 2001-2005 Michael Droettboom
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from backport.config import *
+from gamera import __version__
 
 from inspect import getfile
 from os.path import split, join, expanduser
@@ -35,7 +36,7 @@ class GameraConfigOptionParser(ConfigOptionParser):
       return ([join(dir, "gamera.cfg"), join(expanduser("~"), ".gamera")] +
               self.extra_files)
 
-config = GameraConfigOptionParser(usage = "%prog [options] [script [script_args]]")
+config = GameraConfigOptionParser(usage = "%prog [options] [script [script_args]]", version = __version__)
 config.disable_interspersed_args()
 
 

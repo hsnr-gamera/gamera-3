@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.3.3, May 15, 2012
+----------------------------
+
  - new plugins min_max_location() and max_empty_rect()
 
  - Rect can now be a return type of a plugin function
@@ -23,6 +26,10 @@ Changes made between Gamera File Releases
    a runtime that is independent from the window size (thanks to
    David Kolanus). This method is now used by shading_subtraction
    to speed up the binarization considerably.
+
+ - convex_hull did not work in some cases
+
+ - option "--version" added to gamera_gui
 
 
 Version 3.3.2, Sep 19, 2011

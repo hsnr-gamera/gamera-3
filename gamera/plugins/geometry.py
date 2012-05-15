@@ -295,7 +295,7 @@ The function uses Graham's scan algorithm as described e.g. in Cormen et al.:
     self_type = None
     args = Args([PointVector("points")])
     return_type = PointVector("convexhull")
-    author = "Christian Brandt and Christoph Dalitz"
+    author = "Christian Brandt, Christoph Dalitz, and David Kolanus"
 
 
 class convex_hull_as_points(PluginFunction):

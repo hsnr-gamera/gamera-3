@@ -2,6 +2,7 @@
  * Copyright (C) 2009-2012 Christoph Dalitz
  *               2010      Oliver Christen
  *               2011      Christian Brandt
+ *               2012      David Kolanus
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -528,93 +529,82 @@ namespace Gamera {
       ((double)p2.x() - p0.x())*((double)p1.y() - p0.y());
   }
 
-  class CompareCounterclockwise {
-  public:
-    Point origin;
-    CompareCounterclockwise(Point _origin) {
-      origin = _origin;
-    }
-    inline bool operator()(const Point& p1, const Point& p2) const {
-      return clockwise_orientation(origin, p1, p2) > 0.0;
-    }
+  inline double polar_angle(Point center, Point p2) {
+    double dx = double(p2.x()) - center.x();
+    double dy = double(p2.y()) - center.y();
+    return atan2(dy, dx);
   };
 
+  // see Cormen et al.: Introduction to Algorithms.
+  // 2nd ed., MIT Press, p. 949, 2001
   PointVector* convex_hull_from_points(PointVector *points) {
-    if (points->size() == 0)
-      throw std::runtime_error("No points given to convex hull computation.");
+     //get leftmost and top point and save it in (*points)[0]
+     size_t min_x = points->at(0).x();
+     size_t min_y = points->at(0).y();
+     size_t min_i = 0;
+     size_t i;
+     for(i=0; i < points->size(); i++) {
+        if (points->at(i).x() < min_x) {
+            min_x = points->at(i).x();
+            min_y = points->at(i).y();
+            min_i = i;
+        } else if (points->at(i).x() < min_x && points->at(i).y() < min_y) {
+            min_x = points->at(i).x();
+            min_y = points->at(i).y();
+            min_i = i;
+        }
+     }
+     std::swap( points->at(0), points->at(min_i));
 
-    unsigned int min_y = std::numeric_limits<unsigned int>::max();
-    unsigned int min_x = std::numeric_limits<unsigned int>::max();
-    size_t i;
-    size_t min_i = 0;
-    // get topmost point
-    for (i=0; i < points->size(); i++) {
-      if (points->at(i).y() < min_y) {
-        min_y = points->at(i).y();
-        min_x = points->at(i).x();
-        min_i = i;
-      }
-      else if (points->at(i).y() == min_y && points->at(i).x() < min_x) {
-        min_x = points->at(i).x();
-        min_i = i;
-      }
-    }
-    // and remember it as origin
-    points->at(min_i) = points->at(0);
-    points->at(0) = Point(min_x,min_y);
-    Point origin = points->at(0);
 
-    // sort remaining points counter clockwise
-    CompareCounterclockwise comparefunc(origin);
-    std::sort(points->begin()+1, points->end(),comparefunc);
+      //sort by polar in polarmap. If more than one point,
+      //remove all but the one farthest from origin
+     Point origin = points->at(0);
+     std::map<double, Point> stack_polarangle;
+     std::map<double, Point>::iterator found;
+     double polarangle;
+     Point p;
 
-    // of collinear points, only keep the farest from origin
-    PointVector sortedpoints;
-    sortedpoints.push_back(origin);
-    size_t start_i = 1;
-    while (start_i < points->size() && points->at(start_i) == origin)
-      start_i++; // beware of doublets in the point vector
-    if (start_i < points->size()) {
-      sortedpoints.push_back(points->at(start_i));
-      start_i++;
-    }
-    for (i=start_i; i<points->size(); i++) {
-      if (points->at(i) == sortedpoints.back())
-        continue;
-      if (0 != clockwise_orientation(origin, points->at(i), sortedpoints.back())) {
-        sortedpoints.push_back(points->at(i));
-      }
-      else if (greater_distance(origin,points->at(i),sortedpoints.back())) {
-        sortedpoints.pop_back();
-        sortedpoints.push_back(points->at(i));
-      }
-    }
+     for(PointVector::iterator it = points->begin()+1; it != points->end();it++) {
+        p = *it;
+        polarangle = polar_angle(origin, p);
+        found = stack_polarangle.find(polarangle);
+        //use nearest
+        if(found == stack_polarangle.end()){
+           stack_polarangle[polarangle] = p;
+        }
+        else if(greater_distance(origin, p, found->second)) {
+           stack_polarangle[polarangle] = p;
+    	}
+     }
 
-    // do Graham's scan
-    PointVector* S = new PointVector;
-    if (sortedpoints.size() < 3) {
-      for (i=0; i < sortedpoints.size(); i++)
-        S->push_back(sortedpoints[i]);
-      return S;
-    }
-    S->push_back(sortedpoints[0]);
-    S->push_back(sortedpoints[1]);
-    S->push_back(sortedpoints[2]);
 
-    for(i = 3; i < sortedpoints.size(); i++) {
-      Point top = S->at(S->size()-1);
-      Point ntt = S->at(S->size()-2);
-      Point p = sortedpoints[i];
-      while (S->size() > 2 && clockwise_orientation(top,p,ntt) <= 0.0) {
-        S->pop_back();
-        top = S->at(S->size()-1);
-        ntt = S->at(S->size()-2);
-      }
-      S->push_back(p);
-    }
+     // start with graham scan
+     PointVector* retVector = new PointVector;
+     std::map<double, Point>::iterator pointIt;
+     pointIt = stack_polarangle.begin();
 
-    return S;
+     retVector->push_back(origin); 			// push point[0]
+
+     retVector->push_back(pointIt->second); // push point[1]
+     pointIt++;
+
+     retVector->push_back(pointIt->second); // push point[2]
+     pointIt++;
+
+
+     //pointIt starts at point[3]
+     for( ; pointIt != stack_polarangle.end(); pointIt++) {
+        p = pointIt->second;
+        while(retVector->size() > 2 && clockwise_orientation(*(retVector->end()-2),*(retVector->end()-1), p) <= 0.0) {
+			retVector->pop_back();
+        }
+        retVector->push_back(p);
+     }
+
+     return retVector;
   }
+
 
   template<class T>
   PointVector* convex_hull_as_points(const T& src) {

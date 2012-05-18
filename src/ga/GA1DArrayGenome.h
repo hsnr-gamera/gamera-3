@@ -142,6 +142,8 @@ class GA1DArrayAlleleGenome : public GA1DArrayGenome<T> {
 public:
   using GA1DArrayGenome<T>::ElementComparator;
   using GA1DArrayGenome<T>::OnePointCrossover;
+  using GA1DArrayGenome<T>::initializer;
+  using GA1DArrayGenome<T>::mutator;
   using GA1DArrayGenome<T>::comparator;
   using GA1DArrayGenome<T>::crossover;
 

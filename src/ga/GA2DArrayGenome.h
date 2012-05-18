@@ -114,6 +114,8 @@ class GA2DArrayAlleleGenome : public GA2DArrayGenome<T> {
 public:
   using GA2DArrayGenome<T>::ElementComparator;
   using GA2DArrayGenome<T>::OnePointCrossover;
+  using GA2DArrayGenome<T>::initializer;
+  using GA2DArrayGenome<T>::mutator;
   using GA2DArrayGenome<T>::comparator;
   using GA2DArrayGenome<T>::crossover;
   

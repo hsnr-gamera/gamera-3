@@ -129,6 +129,8 @@ class GA3DArrayAlleleGenome : public GA3DArrayGenome<T> {
 public:
   using GA3DArrayGenome<T>::ElementComparator;
   using GA3DArrayGenome<T>::OnePointCrossover;
+  using GA3DArrayGenome<T>::initializer;
+  using GA3DArrayGenome<T>::mutator;
   using GA3DArrayGenome<T>::comparator;
   using GA3DArrayGenome<T>::crossover;
 

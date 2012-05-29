@@ -22,7 +22,8 @@ from gamera.plugin import *
 from gamera import config
 
 try:
-    import Image as PIL
+    #import Image as PIL
+    from PIL import Image as PIL
 except ImportError:
     try:
         verbose = config.get("verbosity_level")

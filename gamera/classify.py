@@ -574,7 +574,7 @@ type."""
    # AUTOMATIC CLASSIFICATION
    # (most of this is implemented in the base class, _Classifier)
    def guess_glyph_automatic(self, glyph):
-      """id_name **guess_glyph_automatic** (Image *glyph*)
+      """(id_name, confidencemap) **guess_glyph_automatic** (Image *glyph*)
 
 Classifies the given *glyph* without setting its classification.  The
 return value is a tuple of the form ``(id_name,confidencemap)``, where

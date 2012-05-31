@@ -265,6 +265,7 @@ Classification
 The following methods deal with classifying glyphs on a individual level.
 
 .. docstring:: gamera.classify NonInteractiveClassifier classify_glyph_automatic classify_list_automatic classify_and_update_list_automatic guess_glyph_automatic
+.. docstring:: gamera.knn _kNNBase classify_with_images
 
 Grouping
 ````````

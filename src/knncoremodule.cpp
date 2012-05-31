@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2001-2009 Ichiro Fujinaga, Michael Droettboom,
  *                         Karl MacMillan, and Christoph Dalitz
+ *               2012      David Kolanus
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -152,7 +153,16 @@ struct KnnObject {
 
 PyMethodDef knn_methods[] = {
   { (char *)"classify_with_images", knn_classify_with_images, METH_VARARGS,
-    (char *)"classify an unknown image using a list of images." },
+    (char *) "(id_name, confidencemap) **classify_with_images** (ImageList *glyphs*, Image *glyph*, bool cross_validation_mode=False, bool do_confidence=True )\n"
+    "\nClassifies an unknown image using the given list of images as training data.\n"
+    "The *glyph* is classified without setting its classification.  The\n"
+    "return value is a tuple of the form ``(id_name,confidencemap)``, where\n"
+    "*idname* is a list of the form `idname`_, and *confidencemap* is a\n"
+    "map of the form `confidence`_ listing the confidences of the main id.\n"
+    "\n"
+    ".. _idname: #id-name\n\n"
+    ".. _confidence: #confidence"
+  },
   { (char *)"instantiate_from_images", knn_instantiate_from_images, METH_VARARGS,
     (char *)"Use the list of images for non-interactive classification." },
   { (char *)"_distance_from_images", knn_distance_from_images, METH_VARARGS, (char *)"" },

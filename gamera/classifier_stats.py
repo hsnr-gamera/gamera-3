@@ -59,7 +59,7 @@ class ClassifierStat:
       fd = open(filename, "w")
       fd.write("<html><head><title>%s</title></head><body><h1>%s</h1>" %
                (name, name))
-      fd.write("<table>")
+      fd.write("<table border=\"1\">")
       for row in grid:
          fd.write("<tr>")
          for col in row:

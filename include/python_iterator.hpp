@@ -45,7 +45,7 @@
 #ifndef mgd010105_iterator_hpp
 #define mgd010105_iterator_hpp
 
-#include "Python.h"
+#include <Python.h>
 #include "gameramodule.hpp"
 
 struct IteratorObject {

@@ -20,8 +20,8 @@
 
 #ifndef _SPANNING_TREE_HPP_6AC2CA9C54D727
 #define _SPANNING_TREE_HPP_6AC2CA9C54D727
-#include <map>
 #include "graph_common.hpp"
+#include <map>
 
 namespace Gamera { namespace GraphApi {
 

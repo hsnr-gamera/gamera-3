@@ -23,8 +23,8 @@
 #ifndef KWM12172002_knnmodule
 #define KWM12172002_knnmodule
 
-#include "knn.hpp"
 #include <Python.h>
+#include "knn.hpp"
 
 using namespace Gamera;
 using namespace Gamera::kNN;

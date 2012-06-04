@@ -19,14 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <limits>
 
 #include "graphobject.hpp"
 #include "nodeobject.hpp"
 #include "node.hpp"
 #include "edge.hpp"
 #include "graph.hpp"
-
+#include <limits>
+#include <cstdio>
 
 // This should always be at least a 64-bit unsigned
 // If compiling on a platform with a larger available native integer length,
@@ -38,6 +38,7 @@ typedef unsigned __int64 Bitfield;
 typedef unsigned long long Bitfield;
 #define BITFIELD_SIZE 64
 #endif
+
 
 extern "C" {
    PyObject* graph_optimize_partitions(PyObject* self, PyObject* args);
@@ -454,7 +455,8 @@ public:
                   Py_INCREF(data);
                   PyList_SET_ITEM(subresult, l++, data);
                }
-               PyList_SET_ITEM(result, i, subresult);
+				
+            PyList_SET_ITEM(result, i, subresult);
          }
          return result;
       }

@@ -78,7 +78,7 @@ NodePtrEdgeIterator* Node::get_nodes(bool both_directions) {
       from_node = this;
 
    NodePtrEdgeIterator* it = new NodePtrEdgeIterator(_graph, _edges.begin(), 
-         _edges.end(), this);
+         _edges.end(), from_node);
    return it;
 }
 

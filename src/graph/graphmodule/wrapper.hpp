@@ -27,9 +27,6 @@
 #include "gameramodule.hpp"
 //##include "graphdata_pyobject.hpp"
 
-#ifdef __DEBUG_GAPI__
-#include <iostream>
-#endif
 
 #ifdef CHAR_PTR_CAST
 #undef CHAR_PTR_CAST
@@ -38,6 +35,9 @@
 #define CHAR_PTR_CAST (char*)
 #include "graph_common.hpp"
 #include "graphdatapyobject.hpp"
+#ifdef __DEBUG_GAPI__
+#include <iostream>
+#endif
 using namespace Gamera::GraphApi;
 class GraphObject;
 class EdgeObject;

@@ -12,7 +12,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#  
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -21,12 +21,12 @@
 """The image utilities module contains plugins that do not fit in
 any other category, like image copying or computing histograms."""
 
-from gamera.plugin import * 
+from gamera.plugin import *
 from gamera.gui import has_gui
 from gamera.util import warn_deprecated
 from gamera.args import NoneDefault
 import sys
-import _image_utilities 
+import _image_utilities
 
 class image_copy(PluginFunction):
     """
@@ -62,13 +62,13 @@ class image_save(PluginFunction):
                  Choice("File format", ["TIFF", "PNG"])
                  ])
     def __call__(image, name, format):
-        if format == 0 or format.upper() == "TIFF":
+        if format == 0 or str(format).upper() == "TIFF":
             try:
                 from gamera.plugins import tiff_support
             except ImportError:
                 raise ImportError("Could not load TIFF support.")
             image.save_tiff(name)
-        elif format == 1 or format.upper() == "PNG":
+        elif format == 1 or str(format).upper() == "PNG":
             try:
                 from gamera.plugins import png_support
             except ImportError:

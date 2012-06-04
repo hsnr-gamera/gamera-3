@@ -21,12 +21,12 @@
 #ifndef kwm10222002_tiff_support
 #define kwm10222002_tiff_support
 
+#include "gamera.hpp"
+#include <tiffio.h>
 #include <string>
 #include <exception>
 #include <stdexcept>
 #include <bitset>
-#include "gamera.hpp"
-#include <tiffio.h>
 
 namespace Gamera {
 

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "graph.hpp"
 #include "graphobject.hpp"
+#include "graph.hpp"
 #include "edgeobject.hpp"
 #include "nodeobject.hpp"
 #include "graphobject_algorithm.hpp"

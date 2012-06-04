@@ -763,7 +763,7 @@ resizeImageSplineInterpolation(
 
     y_tmp = tmp.upperLeft();
 
-    DestIterator dest = dest_iter;
+    //DestIterator dest = dest_iter;
 
     kernels.resize(xperiod);
     createResamplingKernels(spline, xmapCoordinate, kernels);

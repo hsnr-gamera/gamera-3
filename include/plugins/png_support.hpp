@@ -25,9 +25,9 @@
 #ifndef mgd_png_support
 #define mgd_png_support
 
+#include "image_utilities.hpp"
 #include <png.h>
 #include <stdio.h>
-#include "image_utilities.hpp"
 
 // TODO: Get/Save resolution information
 

@@ -411,7 +411,7 @@ static PyObject* _sub_image_new(PyTypeObject* pytype, PyObject* py_src, const Po
 				const Dim& dim) {
   if (!is_ImageObject(py_src)) {
     PyErr_SetString(PyExc_TypeError, "First argument to SubImage constructor must be an Image (or SubImage).");
-    return false;
+    return NULL;
   }
 
   int pixel, format;

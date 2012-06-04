@@ -21,11 +21,11 @@
 #ifndef kwm01102002_to_string
 #define kwm01102002_to_string
 
+#include <Python.h>
 #include "gamera.hpp"
 #include "vigra/resizeimage.hxx"
 #include "image_utilities.hpp"
 #include "connected_components.hpp"
-#include "Python.h"
 
 #include <algorithm>
 

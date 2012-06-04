@@ -20,14 +20,14 @@
 #ifndef _SHORTEST_PATH_HPP_64D06E271FB0FA
 #define _SHORTEST_PATH_HPP_64D06E271FB0FA
 
+#include "graph_common.hpp"
+#include "node.hpp"
+#include "edge.hpp"
+
 #include <map>
 #include <vector>
 #include <limits>
 #include <queue>
-#include "node.hpp"
-#include "edge.hpp"
-#include "graph_common.hpp"
-
 namespace Gamera { namespace GraphApi {
 
 

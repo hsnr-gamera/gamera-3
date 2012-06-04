@@ -19,11 +19,11 @@
 #ifndef kwm11052002_runlength
 #define kwm11052002_runlength
 
+#ifndef GAMERA_NO_PYTHON
+#include <Python.h>
+#endif
 #include "gamera.hpp"
 #include "python_iterator.hpp"
-#ifndef GAMERA_NO_PYTHON
-#include "Python.h"
-#endif
 #include <vector>
 #include <algorithm>
 #include <sstream>

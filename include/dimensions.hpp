@@ -78,7 +78,7 @@ namespace Gamera {
       m_y = y;
     }
     
-    /// Move this point the the coordinates x and y
+    /// Move this point by the coordinates x and y (i.e. add (x,y))
     void move(int x, int y) {
       m_x += x;
       m_y += y;

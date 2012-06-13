@@ -50,7 +50,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { (char *)"move", point_move, METH_VARARGS,
-    (char *)"**move** (*x*, *y*)\n\nMoves the point to the given *x*, *y* coordinate."},
+    (char *)"**move** (*x*, *y*)\n\nMoves the point by the given *x*, *y* coordinate, i.e. the vector (*x*,*y*) is added to the point."},
   { NULL }
 };
 
@@ -204,7 +204,9 @@ void init_PointType(PyObject* module_dict) {
   PointType.tp_hash = point_hash;
   PointType.tp_doc = CHAR_PTR_CAST
 "__init__(Int *x*, Int *y*)\n\n"
-"Point stores an (*x*, *y*) coordinate point.\n\n"
+"Point stores an (*x*, *y*) coordinate point. On the C++ side, the\n"
+"coordinates are unsigned integers, so that you cannot use negative\n"
+"*x* or *y* values.\n\n"
 "Most functions that take a Point as an argument can also take a\n"
 "2-element sequence.  For example, the following are all equivalent:\n\n"
 ".. code:: Python\n\n"

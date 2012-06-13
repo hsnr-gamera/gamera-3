@@ -474,7 +474,15 @@ There are a number of ways to create a subimage:
 
    - subimage(Rect *rectangle*)
 
-Changes to subimages will affect all other subimages viewing the same data."""
+Changes to subimages will affect all other subimages viewing the same data.
+
+.. warning:: The *upper_left* and *lower_right* coordinates are absolute and
+   not relative to the image origin. Hence, for all practical use cases,
+   you must add the image offset to the coordinates, e.g.::
+
+     subimg = image.subimage(Point(p.x + image.offset_x, p.y + image.offset_y), dim)
+
+"""
       if hasattr(self, "label"):
          return Cc(self, self.label, *args, **kwargs)
       if self.__class__.__name__=="MlCc": #seems more robust to me

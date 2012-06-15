@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2012      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,12 +36,15 @@ extern "C" {
   // methods
   static PyObject* point_move(PyObject* self, PyObject* args);
   static PyObject* point_repr(PyObject* self);
+  static PyObject* point_add(PyObject* self, PyObject* args);
 }
 
 static PyTypeObject PointType = {
   PyObject_HEAD_INIT(NULL)
   0,
 };
+
+static PyNumberMethods point_number_methods;
 
 static PyGetSetDef point_getset[] = {
   { (char *)"x", (getter)point_get_x, (setter)point_set_x, (char *)"(int property)\n\nThe current x value", 0},
@@ -50,7 +54,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { (char *)"move", point_move, METH_VARARGS,
-    (char *)"**move** (*x*, *y*)\n\nMoves the point by the given *x*, *y* coordinate, i.e. the vector (*x*,*y*) is added to the point."},
+    (char *)"**move** (*x*, *y*)\n\nMoves the point by the given *x*, *y* coordinate, i.e. the vector (*x*, *y*) is added to the point. The following two lineas are equivalent:\n\n.. code:: Python\n\n    p.move(x,y)\n    p += Point(x,y)"},
   { NULL }
 };
 
@@ -187,7 +191,21 @@ static long point_hash(PyObject* self) {
   return ((x->x() << 16) + x->y());
 }
 
+static PyObject* point_add(PyObject* self, PyObject* args) {
+  Point* x = ((PointObject*)self)->m_x;
+  try {
+    Point p = coerce_Point(args);
+    //Point result(x->x()+p.x(), x->y()+p.y());
+    Point result = *x + p;
+    return create_PointObject(result);
+  } catch (std::exception e) {
+    return 0;
+  }
+}
+
 void init_PointType(PyObject* module_dict) {
+  point_number_methods.nb_add = point_add;
+
   PointType.ob_type = &PyType_Type;
   PointType.tp_name = CHAR_PTR_CAST "gameracore.Point";
   PointType.tp_basicsize = sizeof(PointObject);
@@ -212,7 +230,10 @@ void init_PointType(PyObject* module_dict) {
 ".. code:: Python\n\n"
 "    px = image.get(Point(5, 2))\n"
 "    px = image.get((5, 2))\n"
-"    px = image.get([5, 2])\n\n";
+"    px = image.get([5, 2])\n\n"
+"From the numeric operators, only *+* and *+=* are implemented, because\n"
+"subtraction would cause problems when the result is negative.";
+  PointType.tp_as_number = &point_number_methods;
   PyType_Ready(&PointType);
   PyDict_SetItemString(module_dict, "Point", (PyObject*)&PointType);
 }

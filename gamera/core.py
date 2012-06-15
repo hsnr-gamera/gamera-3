@@ -478,9 +478,13 @@ Changes to subimages will affect all other subimages viewing the same data.
 
 .. warning:: The *upper_left* and *lower_right* coordinates are absolute and
    not relative to the image origin. Hence, for all practical use cases,
-   you must add the image offset to the coordinates, e.g.::
+   you must add the image offset to the coordinates, e.g.
 
-     subimg = image.subimage(Point(p.x + image.offset_x, p.y + image.offset_y), dim)
+   .. code:: Python
+
+      subimg = image.subimage(Point(p.x + image.offset_x, p.y + image.offset_y), dim)
+      # or, equivalently:
+      subimg = image.subimage(p + image.ul, dim)
 
 """
       if hasattr(self, "label"):

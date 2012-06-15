@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2012      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -93,6 +94,17 @@ namespace Gamera {
     bool operator!=(const Point& x) const {
       return (m_x != x.m_x || m_y != x.m_y);
     }
+
+    /// Addition
+    const Point operator+(const Point& p) const {
+      return Point(m_x + p.m_x, m_y + p.m_y);
+    }
+    Point operator+=(const Point& p) {
+      m_x += p.m_x;
+      m_y += p.m_y;
+      return *this;
+    }
+
   };
 
   /*

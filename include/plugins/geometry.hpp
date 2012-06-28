@@ -548,7 +548,7 @@ namespace Gamera {
             min_x = points->at(i).x();
             min_y = points->at(i).y();
             min_i = i;
-        } else if (points->at(i).x() < min_x && points->at(i).y() < min_y) {
+        } else if (points->at(i).x() == min_x && points->at(i).y() < min_y) {
             min_x = points->at(i).x();
             min_y = points->at(i).y();
             min_i = i;
@@ -584,7 +584,8 @@ namespace Gamera {
      std::map<double, Point>::iterator pointIt;
      pointIt = stack_polarangle.begin();
 
-     retVector->push_back(origin); 			// push point[0]
+     retVector->push_back(origin); 	    // push point[0]
+     pointIt++;
 
      retVector->push_back(pointIt->second); // push point[1]
      pointIt++;

@@ -28,7 +28,7 @@ class threshold(PluginFunction):
     Creates a binary image by splitting along a given global threshold value.
 
     Pixels that are greater than the given value become white.
-    Pixels less than the given value become black.
+    Pixels less than or equal to the given value become black.
 
     *storage_format* (optional)
       specifies the compression type for the result:

@@ -63,8 +63,8 @@ class least_squares_fit(PluginFunction):
 
     The result is a tuple of the form (*m*, *b*, *q*) where *m* is the
     slope of the line, *b* is the *y*-offset, and *q* is the gamma fit
-    of the line to the points.  (This assumes the same statistical
-    significance for all points.
+    of the line to the points. (This assumes the same statistical
+    significance for all points).
     
     See Numerical Recipes in C, section 15.2__ for more information.
 

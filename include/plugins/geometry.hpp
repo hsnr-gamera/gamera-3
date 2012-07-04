@@ -584,8 +584,7 @@ namespace Gamera {
      std::map<double, Point>::iterator pointIt;
      pointIt = stack_polarangle.begin();
 
-     retVector->push_back(origin); 	    // push point[0]
-     pointIt++;
+     retVector->push_back(origin); 	        // push point[0]
 
      retVector->push_back(pointIt->second); // push point[1]
      pointIt++;

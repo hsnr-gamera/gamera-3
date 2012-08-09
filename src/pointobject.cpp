@@ -232,7 +232,9 @@ void init_PointType(PyObject* module_dict) {
 "    px = image.get((5, 2))\n"
 "    px = image.get([5, 2])\n\n"
 "From the numeric operators, only *+* and *+=* are implemented, because\n"
-"subtraction would cause problems when the result is negative.";
+"subtraction would cause problems when the result is negative.\n"
+"On the C++ side, the comparison operator *<* is also implemented, which does\n"
+"not make real sense, but allows Points to be used as keys in maps and sets.";
   PointType.tp_as_number = &point_number_methods;
   PyType_Ready(&PointType);
   PyDict_SetItemString(module_dict, "Point", (PyObject*)&PointType);

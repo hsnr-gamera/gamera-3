@@ -95,6 +95,14 @@ namespace Gamera {
       return (m_x != x.m_x || m_y != x.m_y);
     }
 
+    /// Less Than operator
+    /// (this does not make real sense, but allows Points to be keys in Maps)
+    bool operator<(const Point& x) const {
+      if (m_x < x.m_x)  return true;
+      if (m_y < x.m_y) return true;
+      return false;
+    }
+
     /// Addition
     const Point operator+(const Point& p) const {
       return Point(m_x + p.m_x, m_y + p.m_y);

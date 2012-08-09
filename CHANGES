@@ -1,7 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
- - Points can be added
+ - new C++ operators in dimension type Point:
+   o addition with operator+
+   o comparison with operator<
+     (this makes no reals sense, but allows Points to be keys in maps)
+
+ - convex_hull could return doublets in the point list
 
 
 Version 3.3.3, May 15, 2012

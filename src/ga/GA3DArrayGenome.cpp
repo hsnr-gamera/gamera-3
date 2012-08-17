@@ -322,10 +322,10 @@ GA3DArrayGenome<T>(w,h,d,f,u) {
   aset = new GAAlleleSet<T>[1];
   aset[0] = s;
 
-  initializer(DEFAULT_3DARRAY_ALLELE_INITIALIZER);
-  mutator(DEFAULT_3DARRAY_ALLELE_MUTATOR);
-  comparator(DEFAULT_3DARRAY_ALLELE_COMPARATOR);
-  crossover(DEFAULT_3DARRAY_ALLELE_CROSSOVER);
+  this->initializer(DEFAULT_3DARRAY_ALLELE_INITIALIZER);
+  this->mutator(DEFAULT_3DARRAY_ALLELE_MUTATOR);
+  this->comparator(DEFAULT_3DARRAY_ALLELE_COMPARATOR);
+  this->crossover(DEFAULT_3DARRAY_ALLELE_CROSSOVER);
 }
 
 template <class T> 
@@ -339,10 +339,10 @@ GA3DArrayGenome<T>(w,h,d, f, u) {
   for(int i=0; i<naset; i++)
     aset[i] = sa.set(i);
 
-  initializer(DEFAULT_3DARRAY_ALLELE_INITIALIZER);
-  mutator(DEFAULT_3DARRAY_ALLELE_MUTATOR);
-  comparator(DEFAULT_3DARRAY_ALLELE_COMPARATOR);
-  crossover(DEFAULT_3DARRAY_ALLELE_CROSSOVER);
+  this->initializer(DEFAULT_3DARRAY_ALLELE_INITIALIZER);
+  this->mutator(DEFAULT_3DARRAY_ALLELE_MUTATOR);
+  this->comparator(DEFAULT_3DARRAY_ALLELE_COMPARATOR);
+  this->crossover(DEFAULT_3DARRAY_ALLELE_CROSSOVER);
 }
 
 

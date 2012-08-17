@@ -317,6 +317,20 @@ class top_bottom(Feature):
     """
     return_type = FloatVector(length=2)
 
+class diagonal_projection(Feature):
+    """
+
+    +---------------------------+
+    | **Invariant to:**         |  
+    +-------+----------+--------+
+    | scale | rotation | mirror | 
+    +-------+----------+--------+
+    |   X   |          |        |
+    +-------+----------+--------+
+    """
+    return_type = FloatVector(length=1)
+    # pass
+
 class generate_features(PluginFunction):
     """
     Generates features for the image by calling a number of feature
@@ -366,7 +380,7 @@ class FeaturesModule(PluginModule):
                  aspect_ratio, nrows_feature, ncols_feature, compactness,
                  volume16regions, volume64regions,
                  generate_features, zernike_moments,
-                 skeleton_features, top_bottom]
+                 skeleton_features, top_bottom, diagonal_projection]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 module = FeaturesModule()

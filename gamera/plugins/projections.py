@@ -284,12 +284,35 @@ class rotation_angle_projections(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
+class diagonal_projections(PluginFunction):
+    """
+    Computes diagonal projections of an image by rotating it
+    in 45 degrees, and then calculating the horizontal and 
+    vertical projections of the rotated image.
+
+    If the GUI is being used, the result is displayed in a window
+    """
+
+    self_type = ImageType([ONEBIT])
+    return_type = Class()
+    pure_python = 1
+    def __call__(image):
+        rotated_image = image.rotate(45, None, 1)
+        rows = _projections.projection_rows(rotated_image)
+        cols = _projections.projection_cols(rotated_image)
+        gui = has_gui.gui
+        if gui:
+            gui.ShowProjections(rows, cols, rotated_image)
+        return (rows, cols)
+    __call__ = staticmethod(__call__)
+
+
 class ProjectionsModule(PluginModule):
     cpp_headers=["projections.hpp"]
     category = "Analysis"
     functions = [projection_rows, projection_cols, projections,
                  projection_skewed_rows, projection_skewed_cols,
-                 rotation_angle_projections]
+                 rotation_angle_projections, diagonal_projections]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 module = ProjectionsModule()

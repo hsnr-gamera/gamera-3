@@ -22,8 +22,10 @@
 #define jab18112005_binarization
 
 #include "gamera.hpp"
+#include "threshold.hpp"
 #include "math.h"
 #include <numeric>
+#include <vector>
 #include <algorithm>
 
 #include <iostream>
@@ -900,6 +902,188 @@ OneBitImageView* white_rohrer_threshold (const T& in, int x_lookahead, int y_loo
   
  return bin_view;
 
+}
+
+/*
+ *  FloatVector histogram_real_values(GreyScale|Grey16 image);
+ *
+ *  Returns a histogram of the values in an image. 
+ */
+template<class T>
+FloatVector* histogram_real_values(const T& image) {
+    // The histogram is the size of all of the possible values of
+    // the pixel type.
+    size_t l = std::numeric_limits<typename T::value_type>::max() + 1;
+    FloatVector* values = new FloatVector(l);
+
+    // set the list to 0
+    std::fill(values->begin(), values->end(), 0);
+
+    typename T::const_row_iterator row = image.row_begin();
+    typename T::const_col_iterator col;
+    ImageAccessor<typename T::value_type> acc;
+
+    // create the histogram
+    for (; row != image.row_end(); ++row)
+      for (col = row.begin(); col != row.end(); ++col)
+    (*values)[acc.get(col)]++;
+
+    return values;
+}
+
+/*
+ *  Image* brink_threshold(const T& image);
+ *
+ *  Calculates threshold for image with Brink and Pendock's minimum-cross    
+ *  entropy method and returns corrected image.
+ *
+ *  References: Brink, A., and Pendock, N. 1996. Minimum cross-entropy
+ *  threshold selection. Pattern Recognition 29: 179-188. 
+ *
+ */
+template<class T>
+Image* brink_threshold(const T& image)
+{
+  int i,j;  // for iteration
+
+  static const size_t VEC_DBL_SZ = sizeof(double) * 256; //size of vector
+  unsigned long vecSum = 0;     // sum of histogram
+  double invHistSum;            // inverse of histogram sum
+  int Topt = 0;                 // threshold value
+  double locMin;                // local minimum
+  int isMinInit = 0;            // flat for minimum initialization
+
+  FloatVector *histoFV;
+  histoFV = histogram_real_values(image);   // compute gray histogram 
+  unsigned long histo[256];
+  for (i = 0; i < 256; i++)
+    histo[i] = (*histoFV)[i];   // copy from FloatVector to an array of longs
+
+  double pmf[256];          // pmf (i.e. normalized histogram)
+  double m_f[256];          // first foreground moment
+  double m_b[256];          // first background moment
+
+  double tmpVec1[256];      // temporary vector 1
+  double tmpVec2[256];      // temporary vector 2
+  double tmpVec3[256];      // temporary vector 3
+
+  double tmp1[256][256];    // temporary matrix 1
+  double tmp2[256][256];    // temporary matrix 2 
+  double tmp3[256][256];    // temporary matrix 3
+  double tmp4[256][256];    // temporary matrix 4
+
+  double tmpMat1[256][256];  // local temporary matrix 1
+  double tmpMat2[256][256];  // local temporary matrix 2
+  
+  // compute sum of the histogram
+  for (i = 0; i < 256; ++i)
+        vecSum += histo[i];
+        
+  // compute inverse of vecSum
+  invHistSum = 1.0 / vecSum;    
+
+  // compute normalized histogram (pmf)  
+  for (i = 0; i < 256; i++)
+    pmf[i] = histo[i] * invHistSum;     // equivalent to dividing by the sum, but faster!
+    
+  // compute foreground moment
+  m_f[0] = 0.0;
+  for (i = 1; i < 256; ++i)         
+    m_f[i] = i * pmf[i] + m_f[i - 1];
+
+  // compute background moment
+  memcpy(m_b, m_f, VEC_DBL_SZ);      
+
+  for (i = 0; i < 256; ++i)
+    m_b[i] = m_f[255] - m_b[i];     
+    
+  // compute brink entropy binarization
+  for (i = 0; i < 256; ++i)     
+  {
+    for (j = 0; j < 256; ++j)
+    {
+      tmp1[i][j] = m_f[j] / i;
+
+      if ((m_f[j] == 0) || (i == 0)) 
+      {
+        tmp2[i][j] = 0.0;               
+        tmp3[i][j] = 0.0;
+      }
+      else
+      {
+        tmp2[i][j] = log(tmp1[i][j]);
+        tmp3[i][j] = log(1.0 / tmp1[i][j]);;
+      }
+      tmp4[i][j] = pmf[i] * (m_f[j] * tmp2[i][j] + i * tmp3[i][j]);
+    }
+  }
+
+  // compute the diagonal of the cumulative sum of tmp4 and store result in tmpVec1
+  memcpy(tmpMat1[0], tmp4[0], VEC_DBL_SZ);   // copies first row of tmp4 to the first row of tmpMat1
+  for (i = 1; i < 256; ++i)         // get cumulative sum
+    for (j = 0; j < 256; ++j)
+      tmpMat1[i][j] = tmpMat1[i-1][j] + tmp4[i][j];
+    for (i = 0; i < 256; ++i)       // set to diagonal
+      tmpVec1[i] = tmpMat1[i][i];   // tmpVec1 is now the diagonal of the cumulative sum of tmp4
+ 
+
+  // same operation but for background moment, NOTE: tmp1 through tmp4 get overwritten
+  for (i = 0; i < 256; ++i)     
+  {
+    for (j = 0; j < 256; ++j)
+    {
+      tmp1[i][j] = m_b[j] / i;          // tmpb0 = m_b_rep ./ g_rep;
+      if ((m_b[j] == 0) || (i == 0)) 
+      {
+        tmp2[i][j] = 0.0;               // replace inf or NaN values with 0
+        tmp3[i][j] = 0.0;
+            }
+            else
+            {  
+                tmp2[i][j] = log(tmp1[i][j]);
+                tmp3[i][j] = log(1.0 / tmp1[i][j]);;
+            }
+            tmp4[i][j] = pmf[i] * (m_b[j] * tmp2[i][j] + i * tmp3[i][j]);
+        }
+    }
+
+    // sum columns, subtract diagonal of cumulative sum of tmp4 
+    memcpy(tmpVec2, tmp4[0], VEC_DBL_SZ);   // copies first row of tmp4 to the first row of tmpMat2 
+    for (i = 1; i < 256; ++i)           
+        for (j = 0; j < 256; ++j)
+            tmpVec2[j] += tmp4[i][j];   // sums of columns of tmp4 and store result in tmpVec2
+
+    // compute the diagonal of the cumulative sum of tmp4 and store result in tmpVec1
+    memcpy(tmpMat2[0], tmp4[0], VEC_DBL_SZ);    // copies first row of tmp4 to the first row of tmpMat2 
+    for (i = 1; i < 256; ++i)       // get cumulative sum
+        for (j = 0; j < 256; ++j)
+          tmpMat2[i][j] = tmpMat2[i-1][j] + tmp4[i][j]; 
+    for (i = 0; i < 256; ++i)       // set to diagonal
+        tmpVec3[i] = tmpMat2[i][i]; // tmpVec3 is now the diagonal of the cumulative sum of tmpMat2
+
+    for (i = 0; i < 256; ++i)       
+        tmpVec2[i] -= tmpVec3[i];
+    for (int i = 0; i < 256; ++i)
+        tmpVec1[i] += tmpVec2[i];
+
+    // calculate the threshold value
+    for (i = 0; i < 256; ++i)
+    {
+        if (m_f[i] != 0 && m_b[i] != 0)
+        {
+            if (!isMinInit || tmpVec1[i] < locMin)
+            {
+                isMinInit = 1;
+                locMin = tmpVec1[i];    // gets a new minimum
+                Topt = i;
+            }
+        }
+    }
+        
+    Topt++; // DO I NEED TO ADD ONE
+    
+    // call threshold from threshold.hpp with image and Topt and return the output
+    return threshold(image, Topt, 0);   
 }
 
 #endif

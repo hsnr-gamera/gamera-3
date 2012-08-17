@@ -269,10 +269,10 @@ GA2DArrayGenome<T>(width,height,f,u){
   aset = new GAAlleleSet<T>[1];
   aset[0] = s;
 
-  initializer(DEFAULT_2DARRAY_ALLELE_INITIALIZER);
-  mutator(DEFAULT_2DARRAY_ALLELE_MUTATOR);
-  comparator(DEFAULT_2DARRAY_ALLELE_COMPARATOR);
-  crossover(DEFAULT_2DARRAY_ALLELE_CROSSOVER);
+  this->initializer(DEFAULT_2DARRAY_ALLELE_INITIALIZER);
+  this->mutator(DEFAULT_2DARRAY_ALLELE_MUTATOR);
+  this->comparator(DEFAULT_2DARRAY_ALLELE_COMPARATOR);
+  this->crossover(DEFAULT_2DARRAY_ALLELE_CROSSOVER);
 }
 
 template <class T> 
@@ -286,10 +286,10 @@ GA2DArrayGenome<T>(width,height, f, u) {
   for(int i=0; i<naset; i++)
     aset[i] = sa.set(i);
 
-  initializer(DEFAULT_2DARRAY_ALLELE_INITIALIZER);
-  mutator(DEFAULT_2DARRAY_ALLELE_MUTATOR);
-  comparator(DEFAULT_2DARRAY_ALLELE_COMPARATOR);
-  crossover(DEFAULT_2DARRAY_ALLELE_CROSSOVER);
+  this->initializer(DEFAULT_2DARRAY_ALLELE_INITIALIZER);
+  this->mutator(DEFAULT_2DARRAY_ALLELE_MUTATOR);
+  this->comparator(DEFAULT_2DARRAY_ALLELE_COMPARATOR);
+  this->crossover(DEFAULT_2DARRAY_ALLELE_CROSSOVER);
 }
 
 

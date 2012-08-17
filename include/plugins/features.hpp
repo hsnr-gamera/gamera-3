@@ -26,6 +26,8 @@
 #include "image_utilities.hpp"
 #include "morphology.hpp"
 #include "thinning.hpp"
+#include "plugins/projections.hpp"
+#include "plugins/transformation.hpp"
 #include <cmath>
 #include <vector>
 
@@ -686,5 +688,47 @@ namespace Gamera {
     *(buf++) = feature_t(top) / feature_t(m.nrows());
     *buf = feature_t(bottom) / feature_t(m.nrows());
   }
+
+
+
+
+  template<class T>
+  void diagonal_projection(const T& image, feature_t* buf) {
+    typedef typename ImageFactory<T>::view_type* view_type;
+    view_type rotated_image = rotate(image, 45, 0, 2);
+
+    IntVector *proj_x = projection_cols(*rotated_image);
+    IntVector *proj_y = projection_rows(*rotated_image);
+    
+    int mid_x = (*proj_x).size()/2;
+    int mid_y = (*proj_y).size()/2;
+
+
+    // for (int i = 0 ; i < (*proj_x).size(); i++) 
+    //   cout << (*proj_x)[i] << endl; 
+    // cout << endl;
+
+    float relation_xy = (float) (*proj_x)[mid_x] / (float) (*proj_y)[mid_y];
+
+    // cout << "mid_x: " << (*proj_x)[mid_x] << endl;
+    // cout << "mid_y: " << (*proj_y)[mid_y] << endl;
+    // cout << "relation_xy: " << relation_xy << endl;
+
+
+    *buf = relation_xy;
+
+
+
+    delete proj_x;
+    delete proj_y;
+
+    delete rotated_image;
+
+  }
+
+
+
+
+
 }
 #endif

@@ -319,6 +319,9 @@ class top_bottom(Feature):
 
 class diagonal_projection(Feature):
     """
+    Computes the ratio of the mid point of the rotated projections at
+    +/- 45 degrees. As the projections are only taken at two points,
+    this feature is not translation invariant.
 
     +---------------------------+
     | **Invariant to:**         |  
@@ -329,7 +332,8 @@ class diagonal_projection(Feature):
     +-------+----------+--------+
     """
     return_type = FloatVector(length=1)
-    # pass
+    author = "Andrew Hankinson"
+
 
 class generate_features(PluginFunction):
     """

@@ -1,6 +1,7 @@
 #
-# Copyright (C) 2005 John Ashley Burgoyne and Ichiro Fujinaga
-#               2011 Christoph Dalitz
+# Copyright (C) 2005      John Ashley Burgoyne and Ichiro Fujinaga
+#               2012      Andrew Hankinson
+#               2011-2012 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -399,11 +400,11 @@ class brink_threshold(PluginFunction):
 
     Reference: A.D. Brink, N.E. Pendock: Minimum cross-entropy threshold selection.
     Pattern Recognition 29 (1), 1996. 179-188.
-
     """
     author = "Johanna Devaney, Brian Stern"
     self_type = ImageType([GREYSCALE])
-    return_type = ImageType([ONEBIT], "output")
+    return_type = ImageType([ONEBIT], "onebit")
+    doc_examples = [(GREYSCALE,)]
     def __call__(self):
         return _binarization.brink_threshold(self)
     __call__ = staticmethod(__call__)

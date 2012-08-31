@@ -396,7 +396,10 @@ class shading_subtraction(PluginFunction):
 class brink_threshold(PluginFunction):
     """
     Calculates threshold for image with Brink and Pendock's minimum-cross    
-    entropy method and returns corrected image.
+    entropy method and returns corrected image. It is best used for binarising
+    images with dark, near-black foreground and significant bleed-through.
+    To that end, it generally predicts lower thresholds than other
+    thresholding algorithms.
 
     Reference: A.D. Brink, N.E. Pendock: Minimum cross-entropy threshold selection.
     Pattern Recognition 29 (1), 1996. 179-188.

@@ -21,6 +21,14 @@
 #
 import sys, os, glob, datetime
 from distutils.sysconfig import get_python_lib
+from distutils.command.install import INSTALL_SCHEMES
+
+# # unfortunately this does not help installing data_files
+# # to the same dir as gamera :(
+# for scheme in INSTALL_SCHEMES.values():
+#     scheme['data'] = scheme['purelib']
+
+#sys.exit(0)
 
 if sys.hexversion < 0x02030000:
    print "At least Python 2.3 is required to build Gamera.  You have"

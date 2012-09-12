@@ -193,15 +193,21 @@ as follows:
 
    class ExampleModule(PluginModule):
        # ...
-       import os, gamera
+       import os, sys, gamera
        gamera_root = os.path.dirname(gamera.__file__)
-       cpp_sources = [os.path.join(gamera_root, "src/geostructs/kdtree.cpp")]
+       cppfile = os.path.join(gamera_root,"src/geostructs/delaunaytree.cpp")
+       if not os.path.exists(cppfile):
+           gamera_root = os.path.join(sys.exec_prefix,"gamera")
+           cppfile = os.path.join(gamera_root,"src/geostructs/delaunaytree.cpp")
+       cpp_sources=[cppfile]
        # ...
 
-Querying the Gamera installation directory through the *__file__* property
-of the gamera module is safer than using *get_python_lib()* from
-``distutils.sysconfig``, because it also works when Gamera is not
-installed into the standard location for python extensions.
+Querying the installation directory is a bit tricky, because the python
+distutils do not install additional *data_files* in a predictable way:
+they might go into the gamera installation directory, which
+can be found out through the *__file__* property of the gamera module, or
+they might go into *sys.exec_prefix/gamera* (this is what the distutils
+documentation says, but apparently this does not hold on all platforms).
 
 
 Usage

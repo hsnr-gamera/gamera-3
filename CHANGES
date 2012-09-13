@@ -1,8 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new plugins brink_threshold and diagonal_projections (feature)
-   (thanks to Andrew Hankinson)
+ - new plugins brink_threshold and [diagonal_projections (feature)]
+   (thanks to Andrew Hankinson) [diagonal_projections is yet deactivated]
 
  - new C++ operators in dimension type Point:
    o addition with operator+

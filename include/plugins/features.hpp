@@ -693,6 +693,8 @@ namespace Gamera {
 
 
 
+  // this feature currently causes a segmentation fault
+  // and is therefore deactivated!
   template<class T>
   void diagonal_projection(const T& image, feature_t* buf) {
     typedef typename ImageFactory<T>::view_type* view_type;

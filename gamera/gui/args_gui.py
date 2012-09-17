@@ -3,6 +3,7 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
+#               2012      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -174,7 +175,7 @@ class Args:
          static_text.SetFont(font)
          self.box.Add(static_text, 0,
                       wx.EXPAND|wx.BOTTOM, 20)
-      self.box.Add(self.gs, 0,
+      self.box.Add(self.gs, 1,
                    wx.EXPAND|wx.ALIGN_RIGHT)
       self.box.Add(wx.Panel(self.window, -1, size=(20,20)), 0,
                    wx.ALIGN_RIGHT)

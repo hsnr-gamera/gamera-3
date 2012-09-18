@@ -317,22 +317,22 @@ class top_bottom(Feature):
     """
     return_type = FloatVector(length=2)
 
-# class diagonal_projection(Feature):
-#     """
-#     Computes the ratio of the mid point of the rotated projections at
-#     +/- 45 degrees. As the projections are only taken at two points,
-#     this feature is not translation invariant.
+class diagonal_projection(Feature):
+    """
+    Computes the ratio of the mid point of the rotated projections at
+    +/- 45 degrees. As the projections are only taken at two points,
+    this feature is not translation invariant.
 
-#     +---------------------------+
-#     | **Invariant to:**         |  
-#     +-------+----------+--------+
-#     | scale | rotation | mirror | 
-#     +-------+----------+--------+
-#     |   X   |          |        |
-#     +-------+----------+--------+
-#     """
-#     return_type = FloatVector(length=1)
-#     author = "Andrew Hankinson"
+    +---------------------------+
+    | **Invariant to:**         |  
+    +-------+----------+--------+
+    | scale | rotation | mirror | 
+    +-------+----------+--------+
+    |   X   |          |        |
+    +-------+----------+--------+
+    """
+    return_type = FloatVector(length=1)
+    author = "Andrew Hankinson"
 
 
 class generate_features(PluginFunction):
@@ -384,7 +384,7 @@ class FeaturesModule(PluginModule):
                  aspect_ratio, nrows_feature, ncols_feature, compactness,
                  volume16regions, volume64regions,
                  generate_features, zernike_moments,
-                 skeleton_features, top_bottom]
+                 skeleton_features, top_bottom, diagonal_projection]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 module = FeaturesModule()

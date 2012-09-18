@@ -1,7 +1,7 @@
 /*
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
- *               2010      Christoph Dalitz
+ *               2010-2012 Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,7 +56,9 @@ namespace Gamera {
     if (order < 1 || order > 3) {
       throw std::range_error("Order must be between 1 and 3");
     }
-  
+    if (src.nrows()<2 && src.ncols()<2)
+      return simple_image_copy(src);
+
     // Adjust angle to a positive double between 0-360
     while(angle<0.0) angle+=360;
     while(angle>=360.0) angle-=360;

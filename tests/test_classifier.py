@@ -14,7 +14,7 @@ results = [
 
 
 def _test_grouping(classifier, ccs):
-   classifier.change_feature_set('all')
+   classifier.change_feature_set(['volume64regions','moments'])
    cases = [(classify.ShapedGroupingFunction(4), 'min'),
              (classify.ShapedGroupingFunction(4), 'avg'),
              (None, 'min'),

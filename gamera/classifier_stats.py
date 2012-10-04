@@ -114,7 +114,7 @@ class ConfusionMatrix(ClassifierStat):
       try:
          for i, glyph in enumerate(glyphs):
             guess = classifier.classify_with_images(glyphs, glyph, True)
-            result[glyph.get_main_id()][guess[0][1]] += 1
+            result[glyph.get_main_id()][guess[0][0][1]] += 1
             if i % 50 == 0:
                progress.step()
       finally:
@@ -152,7 +152,7 @@ class ClassNameHistogram(ClassifierStat):
       result.sort()
       result.reverse()
 
-      grid = self.make_grid(len(self.classifier.get_glyphs()), 2)
+      grid = self.make_grid(len(self.example_glyphs.keys()), 2)
       for i, (val, key) in enumerate(result):
          grid[i][0] = self.example_glyphs[key]
          grid[i][1] = val

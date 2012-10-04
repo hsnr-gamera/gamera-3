@@ -113,8 +113,8 @@ class ConfusionMatrix(ClassifierStat):
       progress = util.ProgressFactory("Generating confusion matrix...", len(glyphs) / 50)
       try:
          for i, glyph in enumerate(glyphs):
-            guess = classifier.classify_with_images(glyphs, glyph, True)
-            result[glyph.get_main_id()][guess[0][0][1]] += 1
+            idname, conf = classifier.classify_with_images(glyphs, glyph, True)
+            result[glyph.get_main_id()][idname[0][1]] += 1
             if i % 50 == 0:
                progress.step()
       finally:

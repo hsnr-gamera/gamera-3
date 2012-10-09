@@ -224,7 +224,9 @@ class Args:
                else:
                   return function + self.get_args_string()
             else:
-               return self.function + self.get_args_string()
+               ret = self.function + self.get_args_string()
+               self.window.Destroy()
+               return ret 
          except ArgInvalidException, e:
             gui_util.message(str(e))
          #except Exception:

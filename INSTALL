@@ -156,6 +156,19 @@ terminal and type::
   python setup.py build
   sudo python setup.py install
 
+By default, parallelization of the genetica algorithms is only compiled
+into Gamera under Linux and with gcc version > 4.2, because we could only
+get it running in this environment. If you are sure that you have unbroken
+OpenMP support on your system, you can compile Gamera with::
+
+  python setup.py build --openmp=yes
+
+If Gamera is compiled with OpenMP on your system, but OpenMP does not work
+on your system for some reason, you can switch it off with::
+
+  python setup.py build --openmp=no
+
+
 Installing without root priviledges
 -----------------------------------
 
@@ -252,16 +265,30 @@ and then to install (you'll need to have admin priviledges)::
 On OS-X 10.4, you must do the installation with ``pythonw`` rather than
 with ``python``, because ``gamera_gui`` is a GUI application. On OS-X 10.5
 this distinction is no longer necessary, but using ``pythonw`` also works.
-The scripts can be installed by::
+
+On OS-X 10.5, the script ``gamera_gui`` is installed to ``/usr/local/bin``,
+which is also in the default search PATH for programs.
+Prior to OS-X 10.5, the script ``gamera_gui`` was installed to 
+``/System/Library/Frameworks/Python.framework/Versions/2.?/bin``, which
+is not in the default search PATH. You can either add this directory
+to your search PATH, or install the scripts to ``/usr/bin`` with::
 
   sudo pythonw setup.py install_scripts -d /usr/bin
 
-.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
-  place on the PATH.  If you do not specify it, the scripts are by
-  default installed to
-  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-  So you can also simply add this directory to your PATH environment
-  variable and forget about the *install_scripts* step.
+.. note::
+  In its default configuraton, the Python distutils on MacOS X
+  build fat binaries. You can speedup the compilation time
+  by a factor two by removing the unnecessary architecture from
+  your distutils build settings.
+
+  The critical part are the architecture options "-arch ppc" and
+  "-arch i386". When you do not want to redistribute the compiled
+  binaries, you can simply remove one of the architectures.
+  Depending on the OSX/Python version, this is done in
+  ``/Library/Framework/Python.framework/Versions/2.?/lib/python2.?/config/Makefile``,
+  or in
+  ``/System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/sysconfig.py``
+
 
 Installing without root priviledges
 ```````````````````````````````````

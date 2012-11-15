@@ -156,6 +156,19 @@ terminal and type::
   python setup.py build
   sudo python setup.py install
 
+By default, parallelization of the genetica algorithms is only compiled
+into Gamera under Linux and with gcc version > 4.2, because we could only
+get it running in this environment. If you are sure that you have unbroken
+OpenMP support on your system, you can compile Gamera with::
+
+  python setup.py build --openmp=yes
+
+If Gamera is compiled with OpenMP on your system, but OpenMP does not work
+on your system for some reason, you can switch it off with::
+
+  python setup.py build --openmp=no
+
+
 Installing without root priviledges
 -----------------------------------
 

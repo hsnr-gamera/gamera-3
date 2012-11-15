@@ -1,7 +1,7 @@
 Changes made between Gamera File Releases
 =========================================
 
-Version 3.4.0, Nov 15, 2012
+Version 3.4.0, 
 ----------------------------
 
  - GA optimization module rewritten from scratch
@@ -10,7 +10,7 @@ Version 3.4.0, Nov 15, 2012
      o optimization process is now highly configurable
      o fitness evaluation is now parallelizable
 
- - knncoremodule is now splitted in header and implemenation file
+ - knncoremodule splitted in header and implemenation file
 
  - feature normalization for noninteractive classifier now works
 

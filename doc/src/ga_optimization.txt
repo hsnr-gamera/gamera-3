@@ -11,12 +11,17 @@ Feature Selection, Weighting and Genetic Algorithms
 Feature selection is the techique of selecting a subset of good features
 out of a larger featureset to obtain the features which are suitable
 for the best possible classification. Feature weighting is a generalization
-of feature selection with real-valued weights between [0,1] instead of the binary
-values 0/1.
+of feature selection with real-valued weights between [0,1] instead of the
+binary values 0/1.
 
 Due to the fact that feature selection and weighting are NP-hard optimization
 problems, a complete and correct solution is not easy to determine. One way
-to get an approximate solution is by using genetic algorithms.
+to get an approximate solution is by using genetic algorithms. Even though
+feature weighting is a generalization of feature selection and should thus
+be able to produce better classification results, practice has shown that
+feature selection produces better recognition rates in most cases. It is
+thus recommended to use feature selection rather than feature weighting
+[Bolten2012]_.
 
 Genetic algorithms, proposed by Holland, are adaptive problem
 solvers that find solutions based on the mechanics of natural selection and
@@ -325,11 +330,15 @@ Getter and Setter
 References
 ----------
 
-.. [Holland1975] Holland, J. H. 1975. *Adaptation in natural and
+.. [Holland1975] Holland, J. H. (1975). *Adaptation in natural and
    artifical systems.*  University of Michigan Press, Ann Arbor.
 
 .. [EOdev] Keijzer, M., Merelo, J. J., Romero, G., & Schoenauer, M. (2002).
    `Evolving objects: A general purpose evolutionary computation library`__.
    Artificial Evolution, 2310, pp. 829–888.
+
+.. [Bolten2012] Bolten, T. (2012) *Genetische Algorithmen zur Auswahl und
+   Gewichtung von Features in der Mustererkennung.* Master thesis, Niederrhein
+   University of Applied Sciences, Krefeld, Germany
 
 .. __:  http://eodev.sourceforge.net/

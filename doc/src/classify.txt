@@ -56,11 +56,10 @@ as needed.
  - kNNNonInteractive_
      Noninteractive *k* nearest neighbor classifier.  The weights of
      the dimensions can be optimised using a genetic algorithm.
+     To learn more about applying genetic algorithms for feature selection,
+     see the `Evolutionary Optimization Module documentation`__.
 
-     For a user-friendly way to perform GA optimization, consider the module_
-     documentation.
-
-.. _module: ga_optimization.html
+.. __: ga_optimization.html
 
 Image properties related to classification
 ------------------------------------------
@@ -334,10 +333,10 @@ classifier API.  It adds some methods of its own.
 ``kNNNonInteractive`` has a number of advantages over
 ``kNNInteractive``:
 
-- Each feature is normalized independently in the range (0, 1).  This
-  reduces the bias toward features that generate large values, such as
-  ``area``.  This normalization may change the classifications that
-  the classifier makes, however.
+- Each feature can optionally be normalized independently to zero mean and
+  unit variance. This reduces the bias toward features that generate large
+  values, such as ``area``.  This normalization may change the classifications
+  that the classifier makes, however.
 
 - The selections and weights of the features can be optimized using a genetic
   algorithm (See here_).

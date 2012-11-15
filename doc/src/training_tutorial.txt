@@ -320,63 +320,13 @@ whole question is well beyond the scope of this tutorial.
 When you have a representative amount of data collected, however, it
 may be a good idea to optimize the classifier.  In short, optimization
 involves deciding the relative weight (or importance) of each of the
-features used for classification.  There are many ways to do this, 
-but one that requires minimal manual intervention is an optimizer based
-on a Genetic Algorithm (GA).  Gamera includes a GA for this purpose
-called Biollante.
+features used for classification.
 
-Once you have saved your training data, start Biollante using 
-**File -> Biollante...** from the main Gamera console.
+There are many ways to do this, but one that requires minimal manual
+intervention is an optimizer based on a Genetic Algorithm (GA). Gamera
+includes a GA for this purpose called `Biollante`__.
 
-  .. image:: images/tutorial_biollante_start.png
-
-Load the training data into by going to **File -> Open data...**.  You
-will then by prompted to select the initial set of features used for
-classification.  For now, leave them all turned on.  The
-optimizer will run much slower with all the features, but at this
-point it is unknown which features are going to be most useful for
-this domain.
-
-  .. image:: images/tutorial_feature_selection.png
-
-There are some parameters to set for the optimizer.  These are typical
-parameters for Genetic Algorithms, and changing them may help the GA
-arrive at an optimum faster.  For now, let's leave all settings at
-their defaults.
-
-Start the optimizer using **Optimizer -> Start**.  As the GA works, it
-will display the original recognition rate (with all feature weights
-set to 1.0), and the best rate seen so far. 
-
-After a few generations have run, look at the **Best weights** tab.
-This tab shows the weights of each of the features in the best found
-combination.  From this, one can get a rough idea of which features
-are more important to classification.  It's important to note that
-GAs involve a lot of randomization, and will obtain different results
-on successive runs.
-
-  .. image:: images/tutorial_biollante_weights.png
-
-After running for some time, stop the optimzier using **Optimizer ->
-Stop**.  To speed up the optimization somewhat, we'll turn off
-features that don't seem to have very high weights.  This can be done
-by either looking at the **Best weights** tab, or saving the weights
-out to an XML file and analysing them there.
-
-For my particular data and run of the optimizer,
-it seemed best to turn off the following
-features:  area, black_area, compactness, ncols_features,
-nrows_features, top_bottom, volume64regions,
-and zernike_moments.  Change the set of features by going to
-**Optimizer -> Features** and set as follows:
-
-  .. image:: images/tutorial_biollante_features_subset.png
-
-Start the optimizer again.  The generations should increase
-faster now, as there are fewer calculations involved.  When the optimizer
-arrives at a reasonable performance rate, stop it and save the
-settings using **File -> Save settings...**.  These settings can be
-loaded into a classifier by a Gamera application as the data is loaded.
+.. __: ga_optimization.html
 
 The end
 -------

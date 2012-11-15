@@ -1,6 +1,7 @@
 /*
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ *               2012      Tobias Bolten
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,14 +42,17 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC: iterator tyoe for the selection vector
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC>
+    template<class IterA, class IterB, class IterC, class IterD>
     inline double city_block_distance(IterA known, const IterA end,
-                                      IterB unknown, IterC weight) {
+                                      IterB unknown, IterC selection,
+                                      IterD weight) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-        distance += *weight * std::abs(*unknown - *known);
+      for (; known != end; ++known, ++unknown, ++selection, ++weight) {
+        distance += (*selection) * ((*weight) * std::abs((*unknown) - (*known)));
+      }
       return distance;
     }
 
@@ -59,14 +63,18 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC: iterator type for the selection vector
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC>
+    template<class IterA, class IterB, class IterC, class IterD>
     inline double euclidean_distance(IterA known, const IterA end,
-                                     IterB unknown, IterC weight) {
+                                     IterB unknown, IterC selection,
+                                     IterD weight) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-        distance += *weight * std::sqrt((*unknown - *known) * (*unknown - *known));
+      for (; known != end; ++known, ++unknown, ++selection, ++weight) {
+        distance += (*selection) * ((*weight) *
+            std::sqrt(((*unknown) - (*known)) * ((*unknown) - (*known))));
+      }
       return distance;
     }
 
@@ -77,14 +85,17 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC: iterator type for the selection vector
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC>
+    template<class IterA, class IterB, class IterC, class IterD>
     inline double fast_euclidean_distance(IterA known, const IterA end,
-                                          IterB unknown, IterC weight) {
+                                          IterB unknown, IterC selection,
+                                          IterD weight) {
       double distance = 0;
-      for (; known != end; ++known, ++unknown, ++weight)
-        distance += *weight * ((*unknown - *known) * (*unknown - *known));
+      for (; known != end; ++known, ++unknown, ++selection, ++weight)
+        distance += (*selection) * ((*weight) *
+            (((*unknown) - (*known)) * ((*unknown) - (*known))));
       return distance;
     }
 
@@ -106,14 +117,18 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC: iterator type for the selection vector
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC, class IterD>
-    inline double city_block_distance_skip(IterA known, IterB unknown, IterC weight,
-                                           IterD indexes, const IterD end) {
+    template<class IterA, class IterB, class IterC, class IterD, class IterE>
+    inline double city_block_distance_skip(IterA known, IterB unknown,
+                                           IterC selection, IterD weight,
+                                           IterE indexes, const IterE end) {
       double distance = 0;
-      for (; indexes != end; ++indexes)
-        distance += weight[*indexes] * std::abs(unknown[*indexes] - known[*indexes]);
+      for (; indexes != end; ++indexes) {
+        distance += selection[*indexes] * (weight[*indexes] *
+            std::abs(unknown[*indexes] - known[*indexes]));
+      }
       return distance;
     }
 
@@ -124,15 +139,18 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC: iterator type fot the selection vector
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC, class IterD>
-    inline double euclidean_distance_skip(IterA known, IterB unknown, IterC weight,
-                                          IterD indexes, const IterD end) {
+    template<class IterA, class IterB, class IterC, class IterD, class IterE>
+    inline double euclidean_distance_skip(IterA known, IterB unknown,
+                                          IterC selection, IterD weight,
+                                          IterE indexes, const IterE end) {
       double distance = 0;
-      for (; indexes != end; ++indexes)
-        distance += weight[*indexes] * std::sqrt((unknown[*indexes] - known[*indexes])
-                                                 * (unknown[*indexes] - known[*indexes]));
+      for (; indexes != end; ++indexes) {
+        distance += selection[*indexes] * (weight[*indexes] *
+            std::sqrt((unknown[*indexes] - known[*indexes]) * (unknown[*indexes] - known[*indexes])));
+      }
       return distance;
     }
 
@@ -143,15 +161,18 @@ namespace Gamera {
 
       IterA: iterator type for the known feature vector
       IterB: iterator type for the unknown feature vector
-      IterC: iterator type for the weighting vector
+      IterC:
+      IterD: iterator type for the weighting vector
     */
-    template<class IterA, class IterB, class IterC, class IterD>
-    inline double fast_euclidean_distance_skip(IterA known, IterB unknown, IterC weight,
-                                               IterD indexes, const IterD end) {
+    template<class IterA, class IterB, class IterC, class IterD, class IterE>
+    inline double fast_euclidean_distance_skip(IterA known, IterB unknown,
+                                               IterC selection, IterD weight,
+                                               IterE indexes, const IterE end) {
       double distance = 0;
-      for (; indexes != end; ++indexes)
-        distance += weight[*indexes] * ((unknown[*indexes] - known[*indexes]) 
-                                        * (unknown[*indexes] - known[*indexes]));
+      for (; indexes != end; ++indexes) {
+        distance += selection[*indexes] * (weight[*indexes] *
+            ((unknown[*indexes] - known[*indexes]) * (unknown[*indexes] - known[*indexes])));
+      }
       return distance;
     }
 
@@ -173,8 +194,10 @@ namespace Gamera {
       Normalize(size_t num_features) {
         m_num_features = num_features;
         m_num_feature_vectors = 0;
-        m_norm_vector = new double[m_num_features];
-        std::fill(m_norm_vector, m_norm_vector + m_num_features, 0.0);
+        m_mean_vector = new double[m_num_features];
+        std::fill(m_mean_vector, m_mean_vector + m_num_features, 0.0);
+        m_stdev_vector = new double[m_num_features];
+        std::fill(m_stdev_vector, m_stdev_vector + m_num_features, 0.0);
         m_sum_vector = new double[m_num_features];
         std::fill(m_sum_vector, m_sum_vector + m_num_features, 0.0);
         m_sum2_vector = new double[m_num_features];
@@ -185,7 +208,9 @@ namespace Gamera {
           delete[] m_sum_vector;
         if (m_sum2_vector != 0)
           delete[] m_sum2_vector;
-        delete[] m_norm_vector;
+
+        delete[] m_mean_vector;
+        delete[] m_stdev_vector;
       }
       template<class T>
       void add(T begin, const T end) {
@@ -210,7 +235,8 @@ namespace Gamera {
           stdev = std::sqrt(var);
           if (stdev < 0.00001)
             stdev = 0.00001;
-          m_norm_vector[i] = mean / stdev;
+          m_mean_vector[i] = mean;
+          m_stdev_vector[i] = stdev;
         }
         delete[] m_sum_vector;
         m_sum_vector = 0;
@@ -221,35 +247,50 @@ namespace Gamera {
       template<class T>
       void apply(T begin, const T end) const {
         assert(size_t(end - begin) == m_num_features);
-        double* cur = m_norm_vector;
-        for (; begin != end; ++begin, ++cur)
-          *begin -= *cur;
+        double* mean = m_mean_vector;
+        double* stdev = m_stdev_vector;
+        for (; begin != end; ++begin, ++mean, ++stdev)
+          *begin = (*begin - *mean)/ *stdev;
       }
       // out-of-place
       template<class T, class U>
       void apply(T in_begin, const T end, U out_begin) const {
         assert(size_t(end - in_begin) == m_num_features);
-        double* cur = m_norm_vector;
-        for (; in_begin != end; ++in_begin, ++cur, ++out_begin)
-          *out_begin = *in_begin - *cur;
+        double *mean = m_mean_vector;
+        double *stdev = m_stdev_vector;
+        for (; in_begin != end; ++in_begin, ++mean, ++stdev, ++out_begin)
+          *out_begin = (*in_begin - *mean) / *stdev;
       }
       size_t num_features() const {
         return m_num_features;
       }
-      double* get_norm_vector() const {
-        return m_norm_vector;
+      double* get_mean_vector() const {
+        return m_mean_vector;
+      }
+      double* get_stdev_vector() const {
+        return m_stdev_vector;
       }
       template<class T>
-      void set_norm_vector(T begin, const T end) {
-        //assert(size_t(end - in_begin) == m_num_features);
-        double* cur = m_norm_vector;
+      void set_mean_vector(T begin, const T end) {
+        assert(size_t(end - begin) == m_num_features);
+        double* cur = m_mean_vector;
         for (; begin != end; ++begin, ++cur)
-          *cur = *begin;        
+          *cur = *begin;
+        return;
+      }
+      template<class T>
+      void set_stdev_vector(T begin, const T end) {
+        assert(size_t(end - begin) == m_num_features);
+        double* cur = m_stdev_vector;
+        for (; begin != end; ++begin, ++cur)
+          *cur = *begin;
+        return;
       }
     private:
       size_t m_num_features;
       size_t m_num_feature_vectors;
-      double* m_norm_vector;
+      double* m_mean_vector;
+      double* m_stdev_vector;
       double* m_sum_vector;
       double* m_sum2_vector;
     };

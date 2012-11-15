@@ -19,7 +19,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-import sys, os, glob, datetime
+import sys, os, glob, datetime, platform
 from distutils.sysconfig import get_python_lib
 from distutils.command.install import INSTALL_SCHEMES
 
@@ -40,6 +40,7 @@ cross_compiling = False
 # We do this first, so that when gamera.__init__ loads gamera.__version__,
 # it is in fact the new and updated version
 gamera_version = open("version", 'r').readlines()[0].strip()
+has_openmp = None
 i = 0
 for argument in sys.argv:
    i = i + 1
@@ -59,7 +60,27 @@ for argument in sys.argv:
       sys.argv[sys.argv.index('--compiler=mingw32_cross')] = '--compiler=mingw32'
       cross_compiling = True
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
-print gamera_version
+print "Gamera version:", gamera_version
+
+# query OpenMP (parallelization) support and save it to compile time config file
+if has_openmp is None:
+    has_openmp = False
+    if platform.system() == "Linux":
+        p = os.popen("gcc -dumpversion","r")
+        gccv = p.readline().strip().split(".")
+        p.close()
+        if int(gccv[0]) >= 4 and int(gccv[1]) >= 3:
+            has_openmp = True
+f = open("gamera/__compiletime_config__.py", "w")
+f.write("# automatically generated configuration at compile time\n")
+if has_openmp:
+    f.write("has_openmp = True\n")
+    print "Compiling genetic algorithms with parallelization (OpenMP)"
+else:
+    f.write("has_openmp = False\n")
+    print "Compiling genetic algorithms without parallelization (OpenMP)"
+f.close()
+
 from distutils.core import setup, Extension
 from gamera import gamera_setup
 
@@ -130,10 +151,32 @@ plugin_extensions = gamera_setup.generate_plugins(
 ########################################
 # Non-plugin extensions
 
-ga_files = glob.glob("src/ga/*.cpp")
-ga_files.append("src/knncoremodule.cpp")
+eodev_files = glob.glob("src/eodev/*.cpp") + glob.glob("src/eodev/*/*.cpp")
+eodev_dir = glob.glob("src/eodev/*")
+eodev_includes = ["src/eodev"]
+for entry in eodev_dir:
+   if os.path.isdir(entry):
+      eodev_includes.append(entry)
+
 graph_files = glob.glob("src/graph/*.cpp") + glob.glob("src/graph/graphmodule/*.cpp")
 kdtree_files = ["src/kdtreemodule.cpp", "src/geostructs/kdtree.cpp"]
+
+if has_openmp:
+    ExtGA = Extension("gamera.knnga",
+                      ["src/knngamodule.cpp"] + eodev_files,
+                      include_dirs=["include", "src"] + eodev_includes,
+                      libraries=["stdc++"],
+                      extra_compile_args=["-Wall", "-fopenmp"],
+                      extra_link_args=["-fopenmp"]
+                      )
+else:
+    ExtGA = Extension("gamera.knnga",
+                      ["src/knngamodule.cpp"] + eodev_files,
+                      include_dirs=["include", "src"] + eodev_includes,
+                      libraries=["stdc++"],
+                      extra_compile_args=["-Wall"]
+                      )
+
 
 extensions = [Extension("gamera.gameracore",
                         ["src/gameramodule.cpp",
@@ -153,9 +196,12 @@ extensions = [Extension("gamera.gameracore",
                         include_dirs=["include"],
                         **gamera_setup.extras
                         ),
-              Extension("gamera.knncore", ga_files,
-                        include_dirs=["include", "src/ga", "src"],
-                        **gamera_setup.extras),
+              Extension("gamera.knncore", 
+                        ["src/knncoremodule.cpp"],
+                        include_dirs=["include", "src"],
+                        **gamera_setup.extras
+                        ),
+              ExtGA,
               Extension("gamera.graph", graph_files,
                         include_dirs=["include", "src", "include/graph", "src/graph/graphmodule"],
                         **gamera_setup.extras),
@@ -191,8 +237,8 @@ srcfiles = [(os.path.join(gamera_setup.lib_path,path),
             for path, ext in
             [("src/geostructs", "*.cpp"), ("src/graph", "*.cpp")]]
 
-packages = ['gamera', 'gamera.gui', 'gamera.plugins', 'gamera.toolkits',
-            'gamera.backport']
+packages = ['gamera', 'gamera.gui', 'gamera.gui.gaoptimizer', 'gamera.plugins',
+            'gamera.toolkits', 'gamera.backport']
 
 if sys.hexversion >= 0x02040000:
    data_files = includes

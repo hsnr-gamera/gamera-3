@@ -93,18 +93,19 @@ inline int image_get_id_name(PyObject* image, char** id_name, int* len) {
 /*
   Compute the distance between two feature vectors.
 */
-inline void compute_distance(DistanceType distance_type, const double* known_buf, int known_len,
-			     const double* unknown_buf, double* distance, const double* weights) {
+inline void compute_distance(DistanceType distance_type, const double* known_buf,
+                 int known_len, const double* unknown_buf, double* distance, 
+                 const int* selections, const double* weights) {
 
   if (distance_type == CITY_BLOCK) {
     *distance = city_block_distance(known_buf, known_buf + known_len, unknown_buf,
-				    weights);
+				   selections, weights);
   } else if (distance_type == FAST_EUCLIDEAN) {
     *distance = fast_euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
+				   selections, weights);
   } else {
     *distance = euclidean_distance(known_buf, known_buf + known_len, unknown_buf,
-				   weights);
+				   selections, weights);
   }
 }
 
@@ -114,8 +115,9 @@ inline void compute_distance(DistanceType distance_type, const double* known_buf
   with weights. This version takes an image and a buffer
   for the unknown image.
 */
-inline int compute_distance(DistanceType distance_type, PyObject* known, double* unknown_buf,
-			    double* distance, double* weights, Py_ssize_t unknown_len) {
+inline int compute_distance(DistanceType distance_type, PyObject* known,
+                double* unknown_buf, double* distance,
+                int* selections, double* weights, Py_ssize_t unknown_len) {
   double* known_buf;
   Py_ssize_t known_len;
 
@@ -127,7 +129,8 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, double*
     return -1;
   }
 
-  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance, weights);
+  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance,
+                   selections, weights);
 
   return 0;
 }
@@ -137,8 +140,10 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, double*
   an image and a buffer for the unknown image. Arguments must be images - no type checking
   is performed.
 */
-inline int compute_distance(DistanceType distance_type, PyObject* known, PyObject* unknown,
-			    double* distance, double* weights, int weights_len) {
+inline int compute_distance(DistanceType distance_type, PyObject* known,
+                PyObject* unknown, double* distance,
+                int* selections, int selections_len,
+                double* weights, int weights_len) {
   double *known_buf, *unknown_buf;
   Py_ssize_t known_len, unknown_len;
 
@@ -153,12 +158,18 @@ inline int compute_distance(DistanceType distance_type, PyObject* known, PyObjec
     return -1;
   }
 
+  if (unknown_len != selections_len) {
+    PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
+    return -1;
+  }
+
   if (unknown_len != weights_len) {
     PyErr_SetString(PyExc_IndexError, "Array lengths do not match");
     return -1;
   }
-  
-  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance, weights);
+
+  compute_distance(distance_type, known_buf, known_len, unknown_buf, distance,
+                   selections, weights);
 
   return 0;
 }

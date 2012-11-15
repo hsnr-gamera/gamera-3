@@ -50,17 +50,17 @@ particular classifier type.  The currently implemented classifiers
 are all *k* - nearest-neighbor, but we plan to add other classifiers
 as needed.
 
- - kNNInteractive_
+ - kNNInteractive
      Interactive *k* nearest neighbor classifier.
 
- - kNNNonInteractive_
+ - kNNNonInteractive
      Noninteractive *k* nearest neighbor classifier.  The weights of
      the dimensions can be optimised using a genetic algorithm.
 
-     For a user-friendly way to perform GA optimization, consider the Biollante_
-     tool in the Gamera GUI.
+     For a user-friendly way to perform GA optimization, consider the module_
+     documentation.
 
-.. _Biollante: gui.html#classifier-optimization-biollante
+.. _module: ga_optimization.html
 
 Image properties related to classification
 ------------------------------------------
@@ -339,13 +339,8 @@ classifier API.  It adds some methods of its own.
   ``area``.  This normalization may change the classifications that
   the classifier makes, however.
 
-- The weights of the features can be optimized using a genetic
-  algorithm.  (See start_optimizing_).
-
-  For a user-friendly way to perform GA optimization, consider the Biollante_
-  tool in the Gamera GUI.
-
-.. _Biollante: gui.html#classifier-optimization-biollante
+- The selections and weights of the features can be optimized using a genetic
+  algorithm (See here_).
 
 - The training data can be serialized to a classifier-specific binary file
   format.  This format saves and loads much faster than the Gamera XML
@@ -355,6 +350,8 @@ classifier API.  It adds some methods of its own.
    It is good practice to retain the XML
    file, since it is portable across platforms and to future versions of
    Gamera.  The binary format is not guaranteed to be portable.
+
+.. _here: ga_optimization.html
 
 Feature management
 ''''''''''''''''''
@@ -401,6 +398,11 @@ the following settings are plain properties of all kNN classifier classes:
 
 .. docstring:: gamera.knn kNNInteractive change_feature_set
 
+.. docstring:: gamera.knn _kNNBase get_selections_by_features get_selections_by_feature
+.. docstring:: gamera.knn _kNNBase get_weights_by_features get_weights_by_feature
+.. docstring:: gamera.knn _kNNBase set_selections_by_features set_selections_by_feature
+.. docstring:: gamera.knn _kNNBase set_weights_by_features set_weights_by_feature
+
 .. docstring:: gamera.knn _kNNBase save_settings load_settings
 
 Serialization
@@ -418,18 +420,6 @@ Evaluation
 .. docstring:: gamera.knn kNNInteractive __init__
 
 .. docstring:: gamera.knn kNNInteractive noninteractive_copy
-
-``kNNNonInteractive``
-'''''''''''''''''''''
-
-Optimization
-````````````
-
-These methods pertain to optimizing the feature weights of the classifier
-using a genetic algorithm (GA). For information about genetic algorithms,
-see [Holland1975]_. The GA implementation in Gamera is based on [GAlib]_.
-
-.. docstring:: gamera.knn kNNNonInteractive start_optimizing stop_optimizing add_optimization_callback remove_optimization_callback
 
 Improving kNN Classifiers using Editing
 '''''''''''''''''''''''''''''''''''''''
@@ -493,15 +483,3 @@ Integrating your own editing algorithm
 If you have written your own editing algorithm and want to make it available in
 the Classifier GUI, refer to the documentation of the class 
 **gamera.knn_editing.AlgoRegistry**.  
-
-
-References
-----------
-
-.. [Holland1975] Holland, J. H. 1975. *Adaptation in natural and
-   artifical systems.*  University of Michigan Press, Ann Arbor.
-
-.. [GAlib] Wall, M. 1999. `GAlib. A C++ Library of Genetic Algorithm
-    Components.`__
-
-.. __:  http://lancet.mit.edu/ga/

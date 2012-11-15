@@ -121,8 +121,8 @@ static. Gamera has a generic and flexible `XML-based file format`__ to
 store classifier data, but for efficiency, the "non-interactive"
 classifiers can also define their own format containing Pre-parsed or
 pre-optimized data. At present, we have an implementation of the k
--nearest neighbor (kNN) algorithm [Cover1967]_ whose weights are
-optimized using a genetic algorithm (GA) [Holland1975]_. We have tested
+-nearest neighbor (kNN) algorithm [Cover1967]_ whose selections and weights
+can be optimized by a genetic algorithm (GA) [Holland1975]_. We have tested
 the extensibility of our classifier framework by porting a simple
 back-propagating neural network library to Gamera
 [Schemenauer2002]_. We also plan to examine what modifications would be

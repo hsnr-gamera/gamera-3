@@ -474,9 +474,8 @@ class ShellFrame(wx.Frame):
          fd.close()
 
    def _OnBiollante(self, event):
-      from gamera.gui import gaoptimizer_display
-      from gamera import knn
-      frame = gaoptimizer_display.OptimizerFrame(None, -1, "GA Optimization for k-NN")
+      from gamera.gui.gaoptimizer import OptimizerFrame
+      frame = OptimizerFrame.OptimizerFrame(None, -1, "Biollante - GA Optimization for kNN")
       frame.Show(True)
 
    def _OnClassifier(self, event):

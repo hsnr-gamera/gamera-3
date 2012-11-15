@@ -56,8 +56,9 @@ The Gamera source tree looks something like this:
 | src/                | Source code (that compiles directly to object                  |
 |                     | files.)                                                        |
 |                     +---------------+------------------------------------------------+
-|                     | ga/           | GALib_: Matthew's Genetic Algorithm Library    |
-|                     |               | Used to optimize the kNN classifier.           |
+|                     | eodev/        | EOdev_: Evolving Objects (EO): an              |
+|                     |               | Evolutionary Computation Framework             |
+|                     |               | used to optimize the kNN classifier.           |
 |                     +---------------+------------------------------------------------+
 |                     | graph/        | A graph library.  API should be considered     |
 |                     |               | unstable.                                      |
@@ -86,6 +87,6 @@ The Gamera source tree looks something like this:
 .. _docutils: http://docutils.sf.net/
 .. _Writing Gamera Plugins: writing_plugins.html
 .. _VIGRA Computer Vision Library: http://kogs-www.informatik.uni-hamburg.de/~koethe/vigra/
-.. _GALib: http://lancet.mit.edu/ga/
+.. _EOdev: http://eodev.sourceforge.net/
 .. _libtiff: http://www.libtiff.org/
 .. _script-writing documentation: script.html

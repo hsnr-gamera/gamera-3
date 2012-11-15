@@ -541,7 +541,7 @@ expensive.
       self.generate_features_on_glyphs(glyphs)
       self.database.clear()
       self.database.extend(glyphs)
-      self.instantiate_from_images(self.database)
+      self.instantiate_from_images(self.database, self.normalize)
 
    def merge_glyphs(self, glyphs):
       """**merge_glyphs** (ImageList *glyphs*)
@@ -552,7 +552,7 @@ On some non-interactive classifiers, this operation can be quite
 expensive."""
       self.generate_features_on_glyphs(glyphs)
       self.database.extend(glyphs)
-      self.instantiate_from_images(self.database)
+      self.instantiate_from_images(self.database, self.normalize)
 
    def clear_glyphs(self):
       """**clear_glyphs** ()
@@ -568,7 +568,7 @@ Loads classifier-specific settings from the given filename.  The
 format of this file is entirely dependant on the concrete classifier
 type."""
       _Classifier.load_settings(self, filename)
-      self.instantiate_from_images(self.database)
+      self.instantiate_from_images(self.database, self.normalize)
 
    ########################################
    # AUTOMATIC CLASSIFICATION

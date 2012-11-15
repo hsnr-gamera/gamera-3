@@ -55,6 +55,11 @@ How to *use* Gamera:
 
 .. __: classify.html
 
+- `GA Optimization`__: How to use the kNN-classifier optimization through genetic algorithms.
+
+.. __: ga_optimization.html
+
+
 How to *extend* Gamera:
 
 - `Writing Gamera plugins`__: Learn how to write new image methods.

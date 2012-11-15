@@ -1,0 +1,335 @@
+================================
+Evolutionary Optimization Module
+================================
+
+Introduction
+------------
+
+Feature Selection, Weighting and Genetic Algorithms
+'''''''''''''''''''''''''''''''''''''''''''''''''''
+
+Feature selection is the techique of selecting a subset of good features
+out of a larger featureset to obtain the features which are suitable
+for the best possible classification. Feature weighting is a generalization
+of feature selection with real-valued weights between [0,1] instead of the binary
+values 0/1.
+
+Due to the fact that feature selection and weighting are NP-hard optimization
+problems, a complete and correct solution is not easy to determine. One way
+to get an approximate solution is by using genetic algorithms.
+
+Genetic algorithms, proposed by Holland, are adaptive problem
+solvers that find solutions based on the mechanics of natural selection and
+natural genetics. For more information, see a genetic algorithms
+text such as [Holland1975]_
+
+How the optimization can be used after training the classifier is described in the `training
+tutorial`__.
+
+.. __: training_tutorial.html
+
+Usage
+-----
+
+There are two ways to use the optimization:
+
+- Graphical User Interface: `Biollante`__
+
+- Python `Script API`__
+
+These two approaches are equivalent, although due to the required runtime
+the script API is recommended.
+
+.. __: #user-interface-biollante
+.. __: #script-usage
+
+
+User Interface `Biollante`
+''''''''''''''''''''''''''
+
+  "Biollante is the result of an experiment in genetic
+  engineering. The creature was created by splicing together the DNA
+  of three organisms: a rose, a human female (Erica, daughter of the
+  scientist), and Godzilla himself."
+
+For our purposes, Biollante is a GUI for optimizing kNN classifiers using
+genetic algorithms. A genetic algorithm is used to adjust the selection
+and weight of each feature.
+
+Overview
+````````
+
+To use Biollante from the Gamera console window select **File ->
+Biollante**.  From the Biollante window select **File -> Open from XML** to
+open a `Gamera XML file`__ containing training data or load with
+**File -> Open existing classifier** an existing classifier from the gamera main
+window. Once the training data has been loaded you can start and
+stop the optimization process. After the optimizer has finished, the results
+can be saved using **File -> Save to XML** or **File -> Save to XML as**.
+
+Classifier specific settings are configurable through the **Classifier** menu.
+With **Classifier -> Copy classifier** it is possible to create an
+copy from the loaded classifier for the optimization process. The menu entry
+**Classifier -> Classifier to Gamera-GUI** allows the usage of the
+optimized classifier in the Gamera main window. Through **Classifier ->
+Load settings from XML** an settings xml file will be loaded and applied.
+
+The used feature set can be modified with **Classifier -> Change feature set**.
+With the menu entries **Classifier -> Reset selections** and
+**Classifier -> Reset weights** it is possible to discard already choosen
+optimizations.
+
+.. __: gamera_xml.html
+
+Settings Page
+`````````````
+
+  .. image:: images/biollante_settings.png 
+
+The Biollante settings page offers the control over the evolutionary
+optimization process. It is possible to select which kind of optimization is applied:
+selection or weighting.
+
+Additionally, the basic parameters **population size**, **crossover rate** and
+**mutation rate** can be adjusted. In the optional available
+**Expert GA settings** it is possible to select and fine-tune each used
+genetic algorithms operator (for further information see below). These settings
+are predefined with useful default values.
+
+
+The crossover rate and mutation rate are expressed in percentages.
+
+Status Page
+```````````
+
+  .. image:: images/biollante_status_sub.png
+
+The Biollante status page displays information about the current state
+of the optimization and allows to stop the process manually. 
+
+**Current Status**
+    Flag which indicates whether the optimization is currently
+    running or not.
+
+**Initial leave one out rate**
+    The initial leave-one-out performance of the classifier.
+
+**Elapsed time**
+    Clock which measures how much time elapsed since optimization start.
+
+**Current generation**
+    The current number of generations (of the genetic algorithm).
+
+**Best leave one out rate**
+    The best leave-one-out performance achieved so far.
+
+**GA statistics**
+    Text field which shows statistical information about the
+    optimization process like the number of fitness evaluations, average
+    and stdev of fitness values within each generation.
+
+Result Page
+```````````
+
+  .. image:: images/biollante_results_sub.png
+
+The result page graphically displays the best selections or weights in a "bar graph" style.
+
+Script Usage
+''''''''''''
+
+The optimization module is also fully operable from Python
+directly.
+
+The following listing clarifies the usage of the optimization module. All
+functions are explained in the `function reference`__.
+
+.. __: #function-reference
+
+.. code:: Python
+
+    from gamera.core import *
+    init_gamera()
+
+    from gamera import knn, knnga
+
+    if __name__ == "__main__":
+        # Load the trainingdata and create a classifier object
+        classifier = knn.kNNNonInteractive("classifiers/traindata.xml",
+                                           features = 'all',
+                                           normalize = False)
+
+        # Create and configure the GA objects and settings
+        baseSettings = knnga.GABaseSetting()
+        baseSettings.opMode = knnga.GA_SELECTION
+        baseSettings.popSize = 75
+        baseSettings.crossRate = 0.95
+        baseSettings.mutRate = 0.05
+
+        selection = knnga.GASelection()
+        selection.setRoulettWheelScaled(2.0)
+
+        crossover = knnga.GACrossover()
+        crossover.setUniformCrossover(0.5)
+
+        mutation = knnga.GAMutation()
+        mutation.setSwapMutation()
+        mutation.setBinaryMutation(0.5, False)
+
+        replacement = knnga.GAReplacement()
+        replacement.setSSGAdetTournament(3)
+
+        stop = knnga.GAStopCriteria()
+        stop.setSteadyStateStop(40,10)
+
+        parallel = knnga.GAParallelization()
+        parallel.mode = True
+        parallel.thredNum = 4
+
+        # Combine each setting object into one main object
+        ga = knnga.GAOptimization(classifier, baseSettings, selection,
+                                  crossover, mutation, replacement,
+                                  stop, parallel)
+
+        # Run the optimization
+        ga.startCalculation()
+
+        # Lets have a look on the reported optimization progress and the results
+        print "Generation statistics", ga.monitorString
+        print "Selections:", classifier.get_selections_by_features()
+
+It is recommended to use the settings from the *Biollante GUI*.
+
+Function Reference
+''''''''''''''''''
+
+The optimization module follows a highly object oriented design.
+
+Capsle Object `GAOptimization`
+``````````````````````````````
+
+.. docstring:: gamera.knnga GAOptimization
+
+Getter
+~~~~~~
+
+.. docstring:: gamera.knnga GAOptimization.status
+.. docstring:: gamera.knnga GAOptimization.generation
+.. docstring:: gamera.knnga GAOptimization.bestFitness
+.. docstring:: gamera.knnga GAOptimization.monitorString
+.. docstring:: gamera.knnga GAOptimization.bestIndiString
+
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GAOptimization.startCalculation
+.. docstring:: gamera.knnga GAOptimization.stopCalculation
+
+
+Base Settings
+`````````````
+
+.. docstring:: gamera.knnga GABaseSetting
+
+Getter and Setter
+~~~~~~~~~~~~~~~~~
+
+.. docstring:: gamera.knnga GABaseSetting.opMode
+.. docstring:: gamera.knnga GABaseSetting.popSize
+.. docstring:: gamera.knnga GABaseSetting.crossRate
+.. docstring:: gamera.knnga GABaseSetting.mutRate
+
+Individuals Selection Settings
+``````````````````````````````
+
+.. docstring:: gamera.knnga GASelection
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GASelection.setRoulettWheel
+.. docstring:: gamera.knnga GASelection.setRoulettWheelScaled
+.. docstring:: gamera.knnga GASelection.setStochUniSampling
+.. docstring:: gamera.knnga GASelection.setRankSelection
+.. docstring:: gamera.knnga GASelection.setTournamentSelection
+.. docstring:: gamera.knnga GASelection.setRandomSelection
+
+Crossover Settings
+``````````````````
+
+.. docstring:: gamera.knnga GACrossover
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GACrossover.setNPointCrossover
+.. docstring:: gamera.knnga GACrossover.setUniformCrossover
+.. docstring:: gamera.knnga GACrossover.setSBXcrossover
+.. docstring:: gamera.knnga GACrossover.setSegmentCrossover
+.. docstring:: gamera.knnga GACrossover.setHypercubeCrossover
+
+Mutation
+````````
+
+.. docstring:: gamera.knnga GAMutation
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GAMutation.setShiftMutation
+.. docstring:: gamera.knnga GAMutation.setSwapMutation
+.. docstring:: gamera.knnga GAMutation.setInversionMutation
+.. docstring:: gamera.knnga GAMutation.setBinaryMutation
+.. docstring:: gamera.knnga GAMutation.setGaussMutation
+
+Replacement
+```````````
+
+.. docstring:: gamera.knnga GAReplacement
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GAReplacement.setGenerationalReplacement
+.. docstring:: gamera.knnga GAReplacement.setSSGAworse
+.. docstring:: gamera.knnga GAReplacement.setSSGAdetTournament
+
+
+Stop Criteria
+`````````````
+
+.. docstring:: gamera.knnga GAStopCriteria
+
+Functions
+~~~~~~~~~
+
+.. docstring:: gamera.knnga GAStopCriteria.setBestFitnessStop
+.. docstring:: gamera.knnga GAStopCriteria.setMaxGenerations
+.. docstring:: gamera.knnga GAStopCriteria.setMaxFitnessEvals
+.. docstring:: gamera.knnga GAStopCriteria.setSteadyStateStop
+
+
+Parallelization
+```````````````
+
+.. docstring:: gamera.knnga GAParallelization
+
+Getter and Setter
+~~~~~~~~~~~~~~~~~
+
+.. docstring:: gamera.knnga GAParallelization.mode
+.. docstring:: gamera.knnga GAParallelization.thredNum
+
+
+References
+----------
+
+.. [Holland1975] Holland, J. H. 1975. *Adaptation in natural and
+   artifical systems.*  University of Michigan Press, Ann Arbor.
+
+.. [EOdev] Keijzer, M., Merelo, J. J., Romero, G., & Schoenauer, M. (2002).
+   `Evolving objects: A general purpose evolutionary computation library`__.
+   Artificial Evolution, 2310, pp. 829–888.
+
+.. __:  http://eodev.sourceforge.net/

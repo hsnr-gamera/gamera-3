@@ -1,6 +1,23 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.4.0, Nov 15, 2012
+----------------------------
+
+ - GA optimization module rewritten from scratch
+     o evolutionary optimization now for selection and weighting implemented
+     o replacement of used library (GALib was replaced by EO)
+     o optimization process is now highly configurable
+     o fitness evaluation is now parallelizable
+
+ - knncoremodule is now splitted in header and implemenation file
+
+ - feature normalization for noninteractive classifier now works
+
+ - feature selection supported as a better alternative to feature weighting
+
+ - Point-types can be added
+
  - new plugins brink_threshold and diagonal_projections (feature)
    (thanks to Andrew Hankinson)
 

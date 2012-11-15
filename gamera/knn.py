@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                          and Karl MacMillan
+#               2012      Tobias Bolten
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -40,22 +41,6 @@ _distance_type_to_number = {
     "EUCLIDEAN": EUCLIDEAN,
     "FAST-EUCLIDEAN": FAST_EUCLIDEAN }
 
-class GaWorker(Thread):
-   def __init__(self, knn):
-      Thread.__init__(self)
-      self.knn = knn
-
-   def run(self):
-      self.knn.ga_initial = self.knn._ga_create()
-      self.knn.ga_best = self.knn.ga_initial
-      while(1):
-         if self.knn.ga_worker_stop:
-            return
-         self.knn.ga_best = self.knn._ga_step()
-         self.knn.ga_generation += 1
-         for x in self.knn.ga_callbacks:
-            x(self.knn)
-
 # The kNN classifier stores it settings in a simple xml file -
 # this class uses the gamera_xml.LoadXML class to load that
 # file. After the file is loaded, kNN.load_settings extracts
@@ -66,20 +51,19 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
 
    def _setup_handlers(self):
       self.feature_functions = []
+      self.selections = { }
       self.weights = { }
       self.num_k = None
       self.distance_type = None
-      self.ga_mutation = None
-      self.ga_crossover = None
-      self.ga_population = None
       self.add_start_element_handler('gamera-knn-settings', self._tag_start_knn_settings)
-      self.add_start_element_handler('ga', self._tag_start_ga)
+      self.add_start_element_handler('selections', self._tag_start_selections)
+      self.add_end_element_handler('selections', self._tag_end_selections)
       self.add_start_element_handler('weights', self._tag_start_weights)
       self.add_end_element_handler('weights', self._tag_end_weights)
 
    def _remove_handlers(self):
       self.remove_start_element_handler('gamera-knn-settings')
-      self.remove_start_element_handler('ga')
+      self.remove_start_element_handler('selections')
       self.remove_start_element_handler('weights')
 
    def _tag_start_knn_settings(self, a):
@@ -92,10 +76,28 @@ class _KnnLoadXML(gamera.gamera_xml.LoadXML):
         _distance_type_to_number[self.try_type_convert(a, 'distance-type',
                                                        str, 'gamera-knn-settings')]
 
-   def _tag_start_ga(self, a):
-      self.ga_mutation = self.try_type_convert(a, 'mutation', float, 'ga')
-      self.ga_crossover = self.try_type_convert(a, 'crossover', float, 'ga')
-      self.ga_population = self.try_type_convert(a, 'population', int, 'ga')
+   def _tag_start_selections(self, a):
+      self.add_start_element_handler('selection', self._tag_start_selection)
+      self.add_end_element_handler('selection', self._tag_end_selection)
+
+   def _tag_end_selections(self):
+      self.remove_start_element_handler('selection')
+      self.remove_start_element_handler('selection')
+
+   def _tag_start_selection(self, a):
+      self._data = u''
+      self._selection_name = str(a["name"])
+      self._parser.CharacterDataHandler = self._add_selections
+
+   def _tag_end_selection(self):
+      self._parser.CharacterDataHandler = None
+      self.selections[self._selection_name] = array.array('i')
+      nums = str(self._data).split()
+      tmp = array.array('i', [int(x) for x in nums])
+      self.selections[self._selection_name] = tmp
+
+   def _add_selections(self, data):
+      self._data += data
 
    def _tag_start_weights(self, a):
       self.add_start_element_handler('weight', self._tag_start_weight)
@@ -125,7 +127,7 @@ class _kNNBase(gamera.knncore.kNN):
    a Genetic Algorithm. This classifier supports all of
    the Gamera interactive/non-interactive classifier interface."""
 
-   def __init__(self, num_features=1, num_k=1):
+   def __init__(self, num_features=1, num_k=1, normalize=False):
       """Constructor for knn object. Features is a list
       of feature names to use for classification. If features
       is none then the default settings will be loaded from a
@@ -135,12 +137,7 @@ class _kNNBase(gamera.knncore.kNN):
       gamera.knncore.kNN.__init__(self)
       self.num_features = num_features
       self.num_k = num_k
-      self.ga_initial = 0.0
-      self.ga_best = 0.0
-      self.ga_worker_thread = None
-      self.ga_worker_stop = 0
-      self.ga_generation = 0
-      self.ga_callbacks = []
+      self.normalize = normalize
 
    def __del__(self):
       pass
@@ -216,7 +213,7 @@ leave-one-out cross-validation. The return value is a
 floating-point number between 0.0 (0% correct) and 1.0 (100%
 correct).
 """
-      self.instantiate_from_images(self.database)
+      self.instantiate_from_images(self.database, self.normalize)
       ans = self.leave_one_out()
       return float(ans[0]) / float(ans[1])
 
@@ -238,7 +235,7 @@ to the specific class.
 
 When *k* is zero, the property ``num_k`` of the knn classifier is used.
 """
-      self.instantiate_from_images(self.database)
+      self.instantiate_from_images(self.database, self.normalize)
       progress = util.ProgressFactory("Generating knndistance statistics...", len(self.database))
       stats = self._knndistance_statistics(k, progress.step)
       progress.kill()
@@ -261,9 +258,9 @@ When *k* is zero, the property ``num_k`` of the knn classifier is used.
       """**save_settings** (FileSave *filename*)
 
 Save the kNN settings to the given filename. This settings file (which is XML)
-includes k, distance type, GA mutation rate, GA crossover rate, GA population size,
-and the current floating point weights. This file is different from the one produced
-by serialize in that it contains only the settings and no data."""
+includes k, distance type, the current selection and weighting. This file is
+different from the one produced by serialize in that it contains only the settings 
+and no data."""
       from util import word_wrap
       file = open(filename, "w")
       indent = 0
@@ -274,9 +271,24 @@ by serialize in that it contains only the settings and no data."""
                    self.num_k,
                    _distance_type_to_name[self.distance_type]), indent)
       indent += 1
-      word_wrap(file, '<ga mutation="%s" crossover="%s" population="%s"/>' %
-                (self.ga_mutation, self.ga_crossover, self.ga_population), indent)
       if self.feature_functions != None:
+         # selections
+         word_wrap(file, '<selections>', indent)
+         indent += 1
+         feature_no = 0
+         selections = self.get_selections()
+         for name, function in self.feature_functions[0]:
+            word_wrap(file, '<selection name="%s">' % name, indent)
+            length = function.return_type.length
+            word_wrap(file, [x for x in
+                             selections[feature_no:feature_no+length]],
+                             indent + 1)
+            word_wrap(file, '</selection>', indent)
+            feature_no += length
+         indent -= 1
+         word_wrap(file, '</selections>', indent)
+
+         # weights
          word_wrap(file, '<weights>', indent)
          indent += 1
          feature_no = 0
@@ -306,12 +318,21 @@ Load the kNN settings from an XML file.  See save_settings_."""
       loader.parse_filename(filename)
       self.num_k = loader.num_k
       self.distance_type = loader.distance_type
-      self.ga_mutation = loader.ga_mutation
-      self.ga_crossover = loader.ga_crossover
-      self.ga_population = loader.ga_population
       functions = loader.weights.keys()
       functions.sort()
       self.change_feature_set(functions)
+
+      # Create the selection array with the selection in the correct order
+      try:
+         selections = array.array('i')
+         for x in self.feature_functions[0]:
+            selections.extend(loader.selections[x[0]])
+         self.set_selections(selections)
+      except:
+         # if no selections are given use the default values (all features are
+         # selected)
+         pass
+
       # Create the weights array with the weights in the correct order
       weights = array.array('d')
       for x in self.feature_functions[0]:
@@ -350,6 +371,155 @@ classifer-specific format."""
 Generates features for the given glyph.
 """
       glyph.generate_features(self.feature_functions)
+
+   def __get_settings_by_features(self, function):
+      result = {}
+      values = function()
+
+      feature_no = 0
+      for name, feature_function in self.feature_functions[0]:
+         length = feature_function.return_type.length
+         result[name] = [x for x in values[feature_no:feature_no+length]]
+         feature_no += length
+
+      return result
+
+   def get_selections_by_features(self):
+      """**get_selections_by_features** ()
+
+Get the selection vector elements.
+
+This function returns a python dictionary: keys are the feature names, values
+are lists which elements corresponds to the selection values (1/0).
+"""
+      return self.__get_settings_by_features(self.get_selections)
+
+   def get_selections_by_feature(self, feature_name):
+      """**get_selections_by_feature** (String *feature_name*)
+
+Convenience wrapper for *get_selections_by_features* function. This function
+returns only the selection values list for the given feature name.
+"""
+      selections = self.__get_settings_by_features(self.get_selections)
+
+      if feature_name not in selections.keys():
+         raise RuntimeError("get_selections_by_feature: feature is not in the feature set")
+
+      return selections[feature_name]
+
+   def get_weights_by_features(self):
+      """**get_weights_by_features** ()
+
+Get the weighting vector elements.
+
+This function returns a python dictionary: keys are the feature names, values
+are lists which elements corresponds to the weighting values.
+"""
+      return self.__get_settings_by_features(self.get_weights)
+
+   def get_weights_by_feature(self, feature_name):
+      """**get_weights_by_feature** (String *feature_name*)
+
+Convenience wrapper for *get_weights_by_features* function. This function
+returns only the weighting values list for the given feature name.
+"""
+      weights = self.__get_settings_by_features(self.get_weights)
+
+      if feature_name not in weights.keys():
+         raise RuntimeError("get_weights_by_feature: feature is not in the feature set")
+
+      return weights[feature_name]
+
+   def __set_settings_by_features(self, function, values, a):
+      if len(values.keys()) != len(self.feature_functions[0]):
+         raise RuntimeError("set_settings_by_features: feature number mismatch")
+
+      for name, feature_function in self.feature_functions[0]:
+         if name not in values.keys():
+            raise RuntimeError("set_settings_by_features: feature is not in the feature set")
+
+         if len(values[name]) != feature_function.return_type.length:
+            raise RuntimeError("set_settings_by_features: dimension from feature mismatch")
+
+         # create the settings array
+         a.extend(values[name])
+
+      # apply the settings to the classifier
+      function(a)
+
+   def set_selections_by_features(self, values):
+      """**set_selections_by_features** (Dictionary *values*)
+
+Set the selection vector elements by the corresponding feature name.
+
+*values*
+   Python dictionary with feature names as keys and lists as values.
+   See get_selections_by_features for format.
+
+.. note::
+   All features in the classifier must be provided with the
+   corresponding values in the dictionary.
+"""
+      a = array.array('i')
+      self.__set_settings_by_features(self.set_selections, values, a)
+
+   def set_selections_by_feature(self, feature_name, values):
+      """ **set_selections_by_feature** (String *feature_name*, List *values*)
+
+Set the selection vector elements for one specific feature.
+
+*feature_name*
+   The feature name as string.
+
+*values*
+   Python list with the selection values for the given feature. Dimension of the
+   list must match with the feature dimension.
+"""
+      selections = self.get_selections_by_features()
+
+      if feature_name not in selections.keys():
+         raise RuntimeError("set_selections_by_feature: feature is not in the feature set")
+
+      if not isinstance(values, list):
+         raise RuntimeError("set_selections_by_feature: values is not a list")
+
+      selections[feature_name] = values
+      self.set_selections_by_features(selections)
+
+   def set_weights_by_features(self, values):
+      """**set_weights_by_features** (Dictionary *values*)
+
+Set the weighing vector elements by the corresponding feature name.
+
+.. note::
+   All features in the classifier must be provided with the
+   corresponding values in the dictionary.
+"""
+      a = array.array('d')
+      self.__set_settings_by_features(self.set_weights, values, a)
+
+   def set_weights_by_feature(self, feature_name, values):
+      """ **set_weights_by_feature** (String *feature_name*, List *values*
+
+Set the weighting vector elements for one specific feature.
+
+*feature_name*
+   The feature name as string.
+
+*values*
+   Python list with the weighting values for the given feature. Dimension of the
+   list must match with the feature dimension.
+"""
+      weights = self.get_weights_by_features()
+
+      if feature_name not in weights.keys():
+         raise RuntimeError("set_weights_by_feature: feature is not in the feature set")
+
+      if not isinstance(values, list):
+         raise RuntimeError("set_weights_by_feature: values is not a list")
+
+      weights[feature_name] = values
+      self.set_weights_by_features(weights)
 
 class kNNInteractive(_kNNBase, classify.InteractiveClassifier):
    def __init__(self, database=[], features='all', perform_splits=1, num_k=1):
@@ -437,9 +607,9 @@ Changes the set of features used in the classifier to the given list of feature 
          self.generate_features_on_glyphs(self.database)
 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
-   def __init__(self, database=[], features='all', perform_splits=True, num_k=1):
+   def __init__(self, database=[], features='all', perform_splits=True, num_k=1, normalize=True):
       """**kNNNonInteractive** (ImageList *database* = ``[]``, *features* = ``'all'``,
-bool *perform_splits* = ``True``, int *num_k* = ``1``)
+bool *perform_splits* = ``True``, int *num_k* = ``1``, bool *normalize* = ``True``)
 
 Creates a new kNN classifier instance.
 
@@ -491,11 +661,14 @@ Creates a new kNN classifier instance.
 
 .. __: writing_plugins.html
 
+*normalize*
+    Normalize the feature vectors: x' = (x - mean_x)/stdev_x
+
       """
       self.features = features
       self.feature_functions = core.ImageBase.get_feature_functions(features)
       num_features = features_module.get_features_length(features)
-      _kNNBase.__init__(self, num_features=num_features, num_k=num_k)
+      _kNNBase.__init__(self, num_features=num_features, num_k=num_k, normalize=normalize)
       classify.NonInteractiveClassifier.__init__(self, database, perform_splits)
 
    def __del__(self):
@@ -518,65 +691,20 @@ Changes the set of features used in the classifier to the given list of feature 
       if len(self.database):
          self.is_dirty = True
          self.generate_features_on_glyphs(self.database)
-         self.instantiate_from_images(self.database)
+         self.instantiate_from_images(self.database, self.normalize)
 
-   def supports_optimization(self):
-      """Flag indicating that this classifier supports optimization."""
-      return True
+   def set_normalization_state(self, flag):
+      """**set_normalization_state** (bool *flag*)
+Set whether normalization is used or not for classification.
+"""
+      self.instantiate_from_images(self.database, flag)
+      self.normalize = flag
 
-   def start_optimizing(self):
-      """**start_optimizing** ()
-
-Starts the genetic algorithm optimization of the weights of the
-features.  The optimization is run in a background thread.
-
-In the genetic algorithm, the population consists of vectors of
-feature weights.  The vectors are evaluated using the
-leave_one_out algorithm.  The vectors that perform well are
-allowed to reproduce to producing offspring using combination at a
-randomly chosen split point.
-
-For a user-friendly way to perform GA optimization, consider the Biollante_
-tool in the Gamera GUI.
-
-.. _Biollante: gui.html#classifier-optimization-biollante"""
-      self.ga_worker_stop = False
-      self.ga_worker_thread = GaWorker(self)
-      self.ga_worker_thread.setDaemon(1)
-      self.ga_worker_thread.start()
-
-   def stop_optimizing(self):
-      """**stop_optimizing** ()
-
-Stops the background optimization thread.
-
-NOTE: This method has to wait for the current GA generation to finish before returning, which
-could take several seconds."""
-      if not self.ga_worker_thread:
-         return
-      self.ga_worker_stop = 1
-      self.ga_worker_thread.join()
-      self.ga_worker_thread = None
-      self._ga_destroy()
-      return self.ga_best
-
-   def add_optimization_callback(self, func):
-      """**add_optimization_callback** (*function*)
-
-Adds a function that will be called everytime the optimization process
-improves the performance of the classifier.  This callback function must take
-one argument which is an instance of the kNN classifier."""
-      self.ga_callbacks.append(func)
-
-   def remove_optimization_callback(self, func):
-      """**remove_optimization_callback** (*function*)
-
-Removes an optimization callback function added using
-add_optimization_callback_."""
-      try:
-         self.ga_callbacks.remove(func)
-      except:
-         pass
+   def get_normalization_state(self):
+      """**get_normalization_state** ()
+Returns whether normalization is used or not for classification.
+"""
+      return self.normalize
 
 def simple_feature_selector(glyphs):
    """simple_feature_selector does a brute-force search through all

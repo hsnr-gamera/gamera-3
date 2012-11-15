@@ -50,10 +50,10 @@ particular classifier type.  The currently implemented classifiers
 are all *k* - nearest-neighbor, but we plan to add other classifiers
 as needed.
 
- - kNNInteractive
+ - kNNInteractive_
      Interactive *k* nearest neighbor classifier.
 
- - kNNNonInteractive
+ - kNNNonInteractive_
      Noninteractive *k* nearest neighbor classifier.  The weights of
      the dimensions can be optimised using a genetic algorithm.
 
@@ -376,6 +376,8 @@ with something more appropriate to other problem domains.  See the
 Methods on all ``kNN`` classes
 ''''''''''''''''''''''''''''''
 
+.. _kNNNonInteractive:
+
 kNN Initialization
 ``````````````````
 
@@ -413,6 +415,8 @@ Evaluation
 ''''''''''
 
 .. docstring:: gamera.knn _kNNBase evaluate knndistance_statistics distance_from_images distance_between_images distance_matrix unique_distances
+
+.. _kNNInteractive:
 
 ``kNNInteractive``
 ''''''''''''''''''

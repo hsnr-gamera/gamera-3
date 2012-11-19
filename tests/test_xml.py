@@ -5,6 +5,8 @@ init_gamera()
 
 from gamera import gamera_xml
 
+features = ['aspect_ratio', 'moments', 'volume64regions']
+
 # check for identical training data *except features*
 # feature values are subject to rounding errors and
 # are thus randomly different => test files not portable
@@ -56,7 +58,7 @@ def test_glyphs_to_xml():
    assert equal_files("tmp/testline_test1.xml", "data/testline_test1.xml")
 
 def test_glyphs_to_xml_with_features():
-   glyphs = gamera_xml.glyphs_with_features_from_xml("data/testline.xml")
+   glyphs = gamera_xml.glyphs_with_features_from_xml("data/testline.xml", feature_functions=features)
    gamera_xml.glyphs_to_xml("tmp/testline_test2.xml", glyphs, True)
    assert equal_files("tmp/testline_test2.xml", "data/testline_test2.xml")
 

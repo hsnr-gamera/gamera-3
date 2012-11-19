@@ -12,9 +12,11 @@ results = [
       ['latin.lower.letter.n', 'latin.capital.letter.m', 'latin.capital.letter.t', 'latin.lower.letter.h', 'latin.lower.ligature.ft', 'latin.lower.letter.h', 'latin.lower.letter.i', 'latin.lower.letter.g']
    ]
 
+#featureset = ['area', 'aspect_ratio', 'black_area', 'compactness', 'moments', 'ncols_feature', 'nholes', 'nholes_extended', 'nrows_feature', 'skeleton_features', 'top_bottom', 'volume', 'volume16regions', 'volume64regions', 'zernike_moments']
+featureset = ['area', 'aspect_ratio', 'black_area', 'moments', 'nholes_extended', 'skeleton_features', 'volume64regions']
 
 def _test_grouping(classifier, ccs):
-   classifier.change_feature_set(['volume64regions','moments'])
+   classifier.change_feature_set(featureset)
    cases = [(classify.ShapedGroupingFunction(4), 'min'),
              (classify.ShapedGroupingFunction(4), 'avg'),
              (None, 'min'),
@@ -81,7 +83,7 @@ def test_interactive_classifier():
    image = load_image("data/testline.png")
    ccs = image.cc_analysis()
 
-   classifier = knn.kNNInteractive([])
+   classifier = knn.kNNInteractive([],features=featureset)
    assert classifier.is_interactive()
    assert len(classifier.get_glyphs()) == 0
    
@@ -114,7 +116,7 @@ def test_noninteractive_classifier():
    ccs = image.cc_analysis()
 
    database = gamera_xml.glyphs_from_xml("data/testline.xml")
-   classifier = knn.kNNNonInteractive(database)
+   classifier = knn.kNNNonInteractive(database,features=featureset,normalize=False)
    assert not classifier.is_interactive()
    assert len(classifier.get_glyphs()) == 66
    

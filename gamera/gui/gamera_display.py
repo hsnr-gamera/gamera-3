@@ -39,7 +39,8 @@ import gamera.plugins.gui_support  # Gamera plugin
 ##############################################################################
 
 # we want this done on import
-wx.InitAllImageHandlers()
+if int(wx.__version__.split('.')[1]) < 9:
+    wx.InitAllImageHandlers() # deprecated since wxPython 2.9
 
 def _sort_by_nrows(a, b):
    return cmp(a.nrows, b.nrows)

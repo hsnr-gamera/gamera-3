@@ -11,48 +11,13 @@
         2 5 5 12 3 5 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          368.0
-        </feature>
         <feature name="aspect_ratio">
           0.695652173913
-        </feature>
-        <feature name="black_area">
-          129.0
-        </feature>
-        <feature name="compactness">
-          0.961240310078
         </feature>
         <feature name="moments">
           0.413953488372 0.590204369274 0.151394077111 0.344568775449
           0.0791069409682 0.0358926226307 -0.035603847149 0.0272906889632
           -0.0680578513156
-        </feature>
-        <feature name="ncols_feature">
-          16.0
-        </feature>
-        <feature name="nholes">
-          0.5625 0.565217391304
-        </feature>
-        <feature name="nholes_extended">
-          1.0 0.75 0.5 0.0 0.173913043478 0.0 0.869565217391 0.869565217391
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 5.0 0.229166666667 0.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.350543478261
-        </feature>
-        <feature name="volume16regions">
-          0.6 0.333333333333 0.458333333333 0.666666666667 0.5 0.375
-          0.458333333333 0.416666666667 0.0 0.166666666667 0.125 0.125 0.0
-          0.0416666666667 0.5 0.791666666667
         </feature>
         <feature name="volume64regions">
           0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.666666666667 0.25 1.0 0.666666666667
@@ -62,12 +27,6 @@
           0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.5 0.0 0.0 0.5 0.0 0.0
           0.0 0.166666666667 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5
           0.666666666667
-        </feature>
-        <feature name="zernike_moments">
-          0.310967737252 0.434186961985 1.12078673156 0.578915949313
-          3.62356486434 1.73965265335 0.723644936642 3.95287491119
-          2.49398627071 0.86837392397 5.65790973929 6.31372414361
-          3.38378758362 1.0131029113
         </feature>
       </features>
     </glyph>
@@ -81,48 +40,13 @@
         2 7 3 7 1 8 3 6 3 7 3 6 3 3 2 1 5 5 14 6 7 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          418.0
-        </feature>
         <feature name="aspect_ratio">
           0.863636363636
-        </feature>
-        <feature name="black_area">
-          150.0
-        </feature>
-        <feature name="compactness">
-          1.01333333333
         </feature>
         <feature name="moments">
           0.432962962963 0.561587301587 0.17442637037 0.265448592593
           0.00740414814815 -0.00222968192802 0.00947687106571 0.0291988802726
           -0.0183717830442
-        </feature>
-        <feature name="ncols_feature">
-          19.0
-        </feature>
-        <feature name="nholes">
-          0.578947368421 1.09090909091
-        </feature>
-        <feature name="nholes_extended">
-          0.210526315789 0.421052631579 0.842105263158 0.631578947368
-          0.909090909091 0.909090909091 0.909090909091 1.09090909091
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 10.0 0.137931034483 1.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.358851674641
-        </feature>
-        <feature name="volume16regions">
-          0.15 0.666666666667 0.8 0.833333333333 0.4 0.0 0.04 0.0666666666667
-          0.48 0.666666666667 0.68 0.533333333333 0.0 0.2 0.0 0.366666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.833333333333 0.75 0.5 0.5 0.833333333333 0.0 0.5
@@ -133,12 +57,6 @@
           0.666666666667 1.0 1.0 0.777777777778 0.555555555556 0.888888888889
           0.0 0.0 0.0 0.833333333333 0.0 0.0 0.0 0.666666666667 0.0 0.0 0.0
           0.111111111111 0.0 0.0 0.0 0.777777777778
-        </feature>
-        <feature name="zernike_moments">
-          0.271203317419 0.471587905619 1.19205468332 0.628783874159
-          3.70381496529 1.84211260988 0.785979842699 4.11558809408
-          2.63298823874 0.943175811239 5.90564976519 6.53121927434
-          3.56468156988 1.10037177978
         </feature>
       </features>
     </glyph>
@@ -152,49 +70,13 @@
         4 6 4 1 7 4 6 3 2 12 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          391.0
-        </feature>
         <feature name="aspect_ratio">
           0.739130434783
-        </feature>
-        <feature name="black_area">
-          127.0
-        </feature>
-        <feature name="compactness">
-          1.0157480315
         </feature>
         <feature name="moments">
           0.459645669291 0.566571224052 0.18755379243 0.33068327554
           0.0968500519678 0.0321390441449 -0.0535855819439 0.0231357255503
           -0.0631870174111
-        </feature>
-        <feature name="ncols_feature">
-          17.0
-        </feature>
-        <feature name="nholes">
-          0.588235294118 0.608695652174
-        </feature>
-        <feature name="nholes_extended">
-          0.941176470588 0.705882352941 0.235294117647 0.470588235294
-          0.173913043478 0.173913043478 0.869565217391 0.869565217391
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 6.0 0.208333333333 1.0 0.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.324808184143
-        </feature>
-        <feature name="volume16regions">
-          0.55 0.25 0.291666666667 0.5 0.5 0.541666666667 0.291666666667
-          0.416666666667 0.0 0.25 0.0 0.0416666666667 0.0 0.0333333333333
-          0.733333333333 0.7
         </feature>
         <feature name="volume64regions">
           0.5 0.166666666667 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.75
@@ -206,12 +88,6 @@
           0.166666666667 0.0 0.0 0.0 0.166666666667 0.833333333333 1.0 1.0
           0.666666666667 0.0 0.0 0.0 0.0 0.666666666667 0.555555555556
           0.666666666667 0.555555555556
-        </feature>
-        <feature name="zernike_moments">
-          0.271486565043 0.448459223322 1.16019098843 0.597945631096
-          3.69996952091 1.80164208386 0.74743203887 4.09217888642
-          2.58365451864 0.896918446644 5.92049151319 6.53415379656
-          3.50622829274 1.04640485442
         </feature>
       </features>
     </glyph>
@@ -225,48 +101,13 @@
         4 6 4 7 3 7 3 7 3 6 4 5 7 3 8 1 9 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          220.0
-        </feature>
         <feature name="aspect_ratio">
           0.454545454545
-        </feature>
-        <feature name="black_area">
-          113.0
-        </feature>
-        <feature name="compactness">
-          0.787610619469
         </feature>
         <feature name="moments">
           0.500491642085 0.486725663717 0.0357308941664 0.440713370393
           0.023681524045 -0.000618341421094 0.00984095114297
           -0.00208762292139 0.0476271196485
-        </feature>
-        <feature name="ncols_feature">
-          10.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.181818181818
-        </feature>
-        <feature name="nholes_extended">
-          0.4 1.6 0.0 1.6 0.363636363636 0.363636363636 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 9.0 0.0833333333333 0.0 10.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.513636363636
-        </feature>
-        <feature name="volume16regions">
-          0.4 0.416666666667 0.0 0.0833333333333 0.933333333333
-          0.555555555556 0.533333333333 0.722222222222 0.9 1.0 1.0 1.0 0.4
-          0.0 0.0666666666667 0.444444444444
         </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.666666666667 0.0 0.0 0.0
@@ -275,12 +116,6 @@
           0.666666666667 1.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 0.5 0.666666666667 0.0 0.0 0.5 0.0 0.0 1.0 0.75 0.0
           0.0 0.0 0.0 0.0 0.0 0.833333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.334282020267 0.408233969766 1.06641581567 0.544311959688
-          3.54943889086 1.65933467958 0.68038994961 3.79333067977
-          2.38277950749 0.816467939533 5.3721248109 6.07119549405
-          3.23675029939 0.952545929455
         </feature>
       </features>
     </glyph>
@@ -292,61 +127,19 @@
         2 9 3 44 2 3 4 2 3 3 10 1 11 1 10 3 7 2 1 5 3 2 3 4 3 2 4 7 8 2 4 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          168.0
-        </feature>
         <feature name="aspect_ratio">
           0.857142857143
-        </feature>
-        <feature name="black_area">
-          90.0
-        </feature>
-        <feature name="compactness">
-          0.944444444444
         </feature>
         <feature name="moments">
           0.469696969697 0.392307692308 0.119814814815 0.186185185185
           -0.0100617283951 0.00465015315734 0.0109417409739 -0.001381164893
           0.0430288388387
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          0.916666666667 0.285714285714
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 1.0 1.0 1.0 0.0 0.285714285714 0.285714285714
-          0.571428571429
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 9.0 0.275862068966 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.535714285714
-        </feature>
-        <feature name="volume16regions">
-          0.555555555556 1.0 0.555555555556 0.25 1.0 0.5 0.0 0.75 1.0
-          0.666666666667 0.0 0.416666666667 0.888888888889 0.333333333333
-          0.222222222222 0.416666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 1.0 1.0 0.0 0.5 0.0 0.0 0.5 0.75 1.0 1.0 0.5 0.75 0.75 0.0
           1.0 1.0 1.0 0.0 0.0 0.0 1.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 1.0 0.5 1.0
           1.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.5 0.0 0.0 0.0 0.75 1.0
           1.0 1.0 0.0 0.0 0.0 1.0 0.5 0.5 1.0 0.5 0.0 0.0 0.5 0.5 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.26096446781 0.480496289721 1.20637256578 0.640661719627
-          3.71296510399 1.86153498607 0.800827149534 4.13231869 2.6581251179
-          0.960992579441 5.90372283779 6.54093097246 3.59614296127
-          1.12115800935
         </feature>
       </features>
     </glyph>
@@ -358,59 +151,19 @@
         0 4 1 15 1 9 1 4 6 3 7 3 7 4 6 4 6 4 6 4 6 4 6 5 4 6 4 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          130.0
-        </feature>
         <feature name="aspect_ratio">
           0.769230769231
-        </feature>
-        <feature name="black_area">
-          69.0
-        </feature>
-        <feature name="compactness">
-          0.797101449275
         </feature>
         <feature name="moments">
           0.375201288245 0.427536231884 0.0777573825983 0.247390482453
           -0.0486014081806 0.0183529157338 0.00253116450822 -0.0211688791358
           0.0387874169373
         </feature>
-        <feature name="ncols_feature">
-          10.0
-        </feature>
-        <feature name="nholes">
-          0.3 0.0769230769231
-        </feature>
-        <feature name="nholes_extended">
-          0.4 0.0 0.4 0.0 0.307692307692 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 5.0 0.0869565217391 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.530769230769
-        </feature>
-        <feature name="volume16regions">
-          0.833333333333 0.5 0.5 0.625 0.888888888889 0.777777777778 1.0 1.0
-          1.0 0.0 0.0 0.25 1.0 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0
           0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0
           0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.327705986236 0.452925016249 1.13559622459 0.603900021666
-          3.58541019189 1.75180540757 0.754875027082 3.90833451107
-          2.50093864128 0.905850032499 5.53499589928 6.20168544435
-          3.38299592571 1.05682503792
         </feature>
       </features>
     </glyph>
@@ -422,59 +175,19 @@
         1 3 2 24 1 5 5 4 7 3 6 4 6 4 6 4 6 3 8 3 6 4 5 6 4 4 6 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          140.0
-        </feature>
         <feature name="aspect_ratio">
           0.714285714286
-        </feature>
-        <feature name="black_area">
-          71.0
-        </feature>
-        <feature name="compactness">
-          0.830985915493
         </feature>
         <feature name="moments">
           0.369327073552 0.417118093174 0.0744989676204 0.259734962044
           -0.0580675084029 0.0177420667695 -0.00263408402817 -0.0198036097265
           0.0514861600343
         </feature>
-        <feature name="ncols_feature">
-          10.0
-        </feature>
-        <feature name="nholes">
-          0.5 0.0714285714286
-        </feature>
-        <feature name="nholes_extended">
-          1.2 0.0 0.4 0.0 0.285714285714 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 6.0 0.166666666667 0.0 6.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.507142857143
-        </feature>
-        <feature name="volume16regions">
-          0.833333333333 0.375 0.5 0.625 0.888888888889 1.0 0.888888888889
-          0.916666666667 0.833333333333 0.125 0.0 0.125 1.0 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 0.5 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 1.0 1.0 0.75 1.0 0.75 0.0
           1.0 0.5 0.0 0.0 0.0 0.0 0.5 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0
           0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.341733377877 0.426298350953 1.08856585672 0.568397801271
-          3.54217963887 1.68581235556 0.710497251588 3.81139171622
-          2.41310086827 0.852596701906 5.37686700386 6.07796299155
-          3.27043139483 0.994696152224
         </feature>
       </features>
     </glyph>
@@ -486,59 +199,19 @@
         2 12 1 3 2 11 5 4 2 3 5 3 3 3 5 3 3 3 5 3 4 2 5 2 11 2 5 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          112.0
-        </feature>
         <feature name="aspect_ratio">
           1.75
-        </feature>
-        <feature name="black_area">
-          54.0
-        </feature>
-        <feature name="compactness">
-          1.14814814815
         </feature>
         <feature name="moments">
           0.481481481481 0.357142857143 0.296423309455 0.0835048010974
           -0.0329218106996 -0.0310446542133 0.00207065933367
           -0.00173707231247 0.0113402302907
         </feature>
-        <feature name="ncols_feature">
-          14.0
-        </feature>
-        <feature name="nholes">
-          0.0714285714286 0.75
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.285714285714 0.0 0.5 1.0 1.0 0.5
-        </feature>
-        <feature name="nrows_feature">
-          8.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 2.0 0.136363636364 0.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.875
-        </feature>
-        <feature name="volume">
-          0.482142857143
-        </feature>
-        <feature name="volume16regions">
-          0.5 1.0 1.0 0.333333333333 0.75 0.0 0.0 0.0 1.0 0.666666666667
-          0.666666666667 0.666666666667 1.0 0.375 0.25 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0
           0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0
           0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 1.0
           0.5 0.5 0.5 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.250724736088 0.414154653431 1.1235179463 0.552206204574
-          3.7339684624 1.76146727146 0.690257755718 4.11103530433
-          2.54224453205 0.828309306862 6.02578056868 6.62646375604
-          3.46584972807 0.966360858005
         </feature>
       </features>
     </glyph>
@@ -550,60 +223,19 @@
         0 24 1 1 2 4 5 3 5 4 6 3 6 2 8 2 6 3 6 4 5 4 4 6 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          117.0
-        </feature>
         <feature name="aspect_ratio">
           0.692307692308
-        </feature>
-        <feature name="black_area">
-          60.0
-        </feature>
-        <feature name="compactness">
-          0.95
         </feature>
         <feature name="moments">
           0.35625 0.413888888889 0.0676805555556 0.296092592593
           -0.0400833333333 0.0143746852723 0.00632156948398 -0.0194052005393
           0.0670096246987
         </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.666666666667 0.0769230769231
-        </feature>
-        <feature name="nholes_extended">
-          1.33333333333 0.444444444444 0.888888888889 0.0 0.307692307692 0.0
-          0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 5.0 0.0 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.512820512821
-        </feature>
-        <feature name="volume16regions">
-          1.0 0.666666666667 0.333333333333 0.625 1.0 1.0 0.833333333333 1.0
-          1.0 0.166666666667 0.0 0.5 0.777777777778 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           1.0 1.0 0.0 0.5 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 1.0 1.0 1.0
           1.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.5 0.0
           0.0 0.0 0.0 0.0 0.0 1.0 0.75 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.334134247097 0.443229183278 1.11516001235 0.590972244371
-          3.55725356085 1.72156737043 0.738715305464 3.85107822678
-          2.4590216705 0.886458366557 5.46922915501 6.11699058023
-          3.32752291257 1.03420142765
         </feature>
       </features>
     </glyph>
@@ -615,58 +247,19 @@
         2 2 2 5 1 12 1 4 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          30.0
-        </feature>
         <feature name="aspect_ratio">
           1.2
-        </feature>
-        <feature name="black_area">
-          23.0
-        </feature>
-        <feature name="compactness">
-          1.13043478261
         </feature>
         <feature name="moments">
           0.478260869565 0.554347826087 0.0973124023999 0.0641078326621
           0.00575326703378 0.000469423997398 -7.45117456187e-06
           0.00183745964696 -0.00211017263592
         </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          5.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 1.0 0.2 0.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.8
-        </feature>
-        <feature name="volume">
-          0.766666666667
-        </feature>
-        <feature name="volume16regions">
-          0.0 1.0 1.0 0.5 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0 0.75
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0
           0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.257768075063 0.408541235474 1.10893022947 0.544721647299
-          3.70733161407 1.7387931507 0.680902059124 4.05366827951
-          2.50970821747 0.817082470949 5.89613849967 6.53056639848
-          3.42167542978 0.953262882774
         </feature>
       </features>
     </glyph>
@@ -678,59 +271,19 @@
         3 1 8 3 1 28 1 5 7 4 7 4 7 3 8 3 8 3 8 3 8 4 6 6 4 7 5 2 9 1 9 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          176.0
-        </feature>
         <feature name="aspect_ratio">
           0.6875
-        </feature>
-        <feature name="black_area">
-          77.0
-        </feature>
-        <feature name="compactness">
-          0.87012987013
         </feature>
         <feature name="moments">
           0.393506493506 0.415584415584 0.0803972549629 0.255319987821
           -0.0517509139536 0.017373364118 -0.00615020067083 -0.0180936623295
           0.0538452835319
         </feature>
-        <feature name="ncols_feature">
-          11.0
-        </feature>
-        <feature name="nholes">
-          0.363636363636 0.0625
-        </feature>
-        <feature name="nholes_extended">
-          0.727272727273 0.0 0.727272727273 0.0 0.25 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          16.0
-        </feature>
-        <feature name="skeleton_features">
-          7.0 2.0 0.0714285714286 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.9375
-        </feature>
-        <feature name="volume">
-          0.4375
-        </feature>
-        <feature name="volume16regions">
-          0.625 0.125 0.0 0.625 0.75 1.0 1.0 0.583333333333 0.75 0.25
-          0.0833333333333 0.333333333333 0.75 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 1.0 0.0 0.0 0.0 0.0 0.5 0.0 0.5 1.0 0.5 0.0 0.0 0.0 1.0 1.0
           0.75 1.0 1.0 1.0 1.0 1.0 1.0 0.25 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0
           0.5 1.0 1.0 0.5 0.0 0.5 1.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.5 0.0 0.5
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.311399499666 0.391676405846 1.05243168368 0.522235207795
-          3.5797862155 1.64691240203 0.652794009743 3.83302074981
-          2.37394223936 0.783352811692 5.51468749002 6.17411580364
-          3.23352119565 0.913911613641
         </feature>
       </features>
     </glyph>
@@ -743,62 +296,19 @@
         1 6 1 4 3 4 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          156.0
-        </feature>
         <feature name="aspect_ratio">
           0.923076923077
-        </feature>
-        <feature name="black_area">
-          95.0
-        </feature>
-        <feature name="compactness">
-          0.863157894737
         </feature>
         <feature name="moments">
           0.541626794258 0.54298245614 0.108790202653 0.162185741362
           0.00200145793847 -0.0107767183375 -0.00672926794542
           0.00715076609375 -0.0179044281223
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          0.75 0.615384615385
-        </feature>
-        <feature name="nholes_extended">
-          1.0 1.33333333333 0.666666666667 0.0 0.615384615385 0.307692307692
-          0.307692307692 0.923076923077
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 9.0 0.212121212121 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.608974358974
-        </feature>
-        <feature name="volume16regions">
-          0.666666666667 0.222222222222 0.333333333333 0.833333333333
-          0.555555555556 0.0 0.555555555556 0.5 0.888888888889 0.666666666667
-          1.0 0.75 0.333333333333 0.666666666667 0.666666666667
-          0.916666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.0 0.0 0.0 0.0 0.5 0.5 0.5 1.0 1.0 0.0 0.25 1.0 1.0 1.0
           1.0 0.5 0.0 0.0 0.5 1.0 1.0 1.0 1.0 0.25 0.0 0.0 0.5 0.5 0.0 0.5
           1.0 0.5 0.0 0.0 1.0 1.0 0.5 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.75
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.5 0.5 0.5 0.5 0.75 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.313748137523 0.492671534018 1.19490761959 0.65689537869
-          3.6090953343 1.82989217505 0.821119223363 3.98065013069
-          2.59937979074 0.985343068035 5.57652621143 6.25557388242
-          3.50337046665 1.14956691271
         </feature>
       </features>
     </glyph>
@@ -813,49 +323,13 @@
         7 3 7 2 7 3 7 3 6 3 8 2 6 4 3 9 5 1 6 7 1 9 5 1 6 14 1 1 12 9 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          638.0
-        </feature>
         <feature name="aspect_ratio">
           1.31818181818
-        </feature>
-        <feature name="black_area">
-          271.0
-        </feature>
-        <feature name="compactness">
-          0.822878228782
         </feature>
         <feature name="moments">
           0.517264101212 0.500439290107 0.262818797085 0.164945016234
           -0.000527069172327 -0.00260266621993 -0.0019075900028
           0.00806976683478 0.00376543115039
-        </feature>
-        <feature name="ncols_feature">
-          29.0
-        </feature>
-        <feature name="nholes">
-          0.551724137931 2.09090909091
-        </feature>
-        <feature name="nholes_extended">
-          0.551724137931 0.275862068966 0.137931034483 1.10344827586
-          1.45454545455 2.18181818182 2.0 1.81818181818
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 15.0 0.166666666667 3.0 4.0 4.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.424764890282
-        </feature>
-        <feature name="volume16regions">
-          0.6 0.285714285714 0.342857142857 0.642857142857 0.485714285714
-          0.547619047619 0.4 0.190476190476 0.114285714286 0.142857142857
-          0.428571428571 0.214285714286 0.725 0.458333333333 0.475 0.6875
         </feature>
         <feature name="volume64regions">
           0.333333333333 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.875 1.0 0.5 0.5 0.625
@@ -867,12 +341,6 @@
           1.0 0.75 0.583333333333 0.625 0.666666666667 0.583333333333 1.0
           0.75 0.416666666667 0.25 0.25 0.375 0.25 0.25 0.916666666667
         </feature>
-        <feature name="zernike_moments">
-          0.280062243259 0.468577608023 1.17229372535 0.624770144031
-          3.64476286086 1.80756939501 0.780962680039 4.00760198063 2.57972596
-          0.937155216046 5.6697266353 6.34139100146 3.48876342032
-          1.09334775205
-        </feature>
       </features>
     </glyph>
     <glyph uly="27" ulx="655" nrows="2" ncols="1">
@@ -883,56 +351,17 @@
         0 2 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          2.0
-        </feature>
         <feature name="aspect_ratio">
           0.5
         </feature>
-        <feature name="black_area">
-          2.0
-        </feature>
-        <feature name="compactness">
-          3.0
-        </feature>
         <feature name="moments">
           0.5 0.5 0.0 0.125 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="ncols_feature">
-          1.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          2.0
-        </feature>
-        <feature name="skeleton_features">
-          0.0 0.0 0.0 3.0 3.0 3.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.5
-        </feature>
-        <feature name="volume">
-          1.0
-        </feature>
-        <feature name="volume16regions">
-          1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
         </feature>
         <feature name="volume64regions">
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.279692421434 0.337618618559 1.03216458805 0.450158158079
-          3.77407354332 1.6539597538 0.562697697598 4.14079735944
-          2.42125652704 0.675237237118 6.35339698209 6.83706122382
-          3.33405490777 0.787776776637
         </feature>
       </features>
     </glyph>
@@ -944,59 +373,19 @@
         2 3 2 4 2 5 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 11 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          78.0
-        </feature>
         <feature name="aspect_ratio">
           0.461538461538
-        </feature>
-        <feature name="black_area">
-          47.0
-        </feature>
-        <feature name="compactness">
-          0.978723404255
         </feature>
         <feature name="moments">
           0.578723404255 0.526595744681 0.0282788977394 0.342332623792
           -0.00289916492492 -0.00099093044569 -0.00481735679747
           0.00452524903532 -0.00531963746953
         </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          0.333333333333 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.666666666667 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 3.0 0.0 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.602564102564
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.0 0.25 0.833333333333 0.5 0.5 0.75 1.0 1.0 1.0 1.0
-          0.666666666667 0.5 0.5 0.75
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 0.0
           1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.337527546681 0.390878681006 1.03858619118 0.521171574674
-          3.53185424282 1.62161687429 0.651464468343 3.74843691601
-          2.33400121153 0.781757362011 5.32032617025 6.02335139058
-          3.17573920289 0.91205025568
         </feature>
       </features>
     </glyph>
@@ -1008,59 +397,19 @@
         0 4 2 8 1 5 1 9 1 4 6 4 6 4 6 4 6 4 7 3 7 3 7 4 5 6 3 7 4 1 1 2 5 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          140.0
-        </feature>
         <feature name="aspect_ratio">
           0.714285714286
-        </feature>
-        <feature name="black_area">
-          72.0
-        </feature>
-        <feature name="compactness">
-          0.861111111111
         </feature>
         <feature name="moments">
           0.391975308642 0.434829059829 0.071748542524 0.26240730024
           -0.033720207476 0.0141062866562 0.00577614840378 -0.0200367816628
           0.0341689506252
         </feature>
-        <feature name="ncols_feature">
-          10.0
-        </feature>
-        <feature name="nholes">
-          0.4 0.214285714286
-        </feature>
-        <feature name="nholes_extended">
-          0.8 0.0 0.8 0.0 0.571428571429 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 8.0 0.192307692308 0.0 5.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.514285714286
-        </feature>
-        <feature name="volume16regions">
-          0.833333333333 0.5 0.166666666667 0.5 0.777777777778 1.0 1.0
-          0.916666666667 0.833333333333 0.0 0.0 0.625 1.0 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 0.5 0.5 0.75 1.0 1.0 1.0 1.0 1.0 1.0 0.0
           1.0 0.0 0.0 0.0 0.0 1.0 0.5 1.0 1.0 0.0 0.0 0.0 0.0 0.5 0.5 1.0 1.0
           0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.331131987765 0.432479056446 1.10474987509 0.576638741928
-          3.57196618027 1.71100680209 0.72079842741 3.85820549263
-          2.44929151238 0.864958112892 5.44080381828 6.14497271836
-          3.31960400596 1.00911779837
         </feature>
       </features>
     </glyph>
@@ -1073,61 +422,19 @@
         8 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          180.0
-        </feature>
         <feature name="aspect_ratio">
           0.8
-        </feature>
-        <feature name="black_area">
-          72.0
-        </feature>
-        <feature name="compactness">
-          0.944444444444
         </feature>
         <feature name="moments">
           0.455808080808 0.411706349206 0.0873815800754 0.251733431927
           -0.0408495156036 0.0163710630017 -0.00245932779136 -0.0254425525981
           0.0599329577829
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          0.25 0.2
-        </feature>
-        <feature name="nholes_extended">
-          0.333333333333 0.0 0.666666666667 0.0 0.533333333333 0.0 0.0
-          0.266666666667
-        </feature>
-        <feature name="nrows_feature">
-          15.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 6.0 0.230769230769 0.0 5.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.933333333333
-        </feature>
-        <feature name="volume">
-          0.4
-        </feature>
-        <feature name="volume16regions">
-          0.555555555556 0.0833333333333 0.0 0.166666666667 0.666666666667
-          1.0 1.0 0.75 0.555555555556 0.5 0.0 0.416666666667 0.777777777778
-          0.166666666667 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.25 0.0 0.0 0.0 0.25 0.25
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.75 1.0 1.0 1.0 1.0 1.0 0.25
           0.0 0.5 1.0 0.5 0.0 0.0 1.0 0.5 0.0 1.0 0.75 0.0 0.0 0.0 0.25 0.25
           0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.25 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.321283517162 0.405747782037 1.07031958447 0.540997042716
-          3.57650896251 1.66872606919 0.676246303394 3.84207303474
-          2.39946318934 0.811495564073 5.50639032841 6.16546336017
-          3.26253094494 0.946744824752
         </feature>
       </features>
     </glyph>
@@ -1139,60 +446,19 @@
         2 3 4 4 2 5 2 6 2 5 2 5 4 3 3 4 2 4 2 5 1 4 3 3 4 2 5 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          91.0
-        </feature>
         <feature name="aspect_ratio">
           0.538461538462
-        </feature>
-        <feature name="black_area">
-          53.0
-        </feature>
-        <feature name="compactness">
-          0.924528301887
         </feature>
         <feature name="moments">
           0.537735849057 0.466981132075 0.0531445421388 0.225944907541
           -0.036755173734 -0.00117433511631 -0.026279042765 0.00894770313025
           0.0154880001228
         </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          0.428571428571 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.571428571429 0.571428571429 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          0.0 4.0 0.2 0.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.582417582418
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.0 0.75 0.666666666667 0.666666666667 0.166666666667 0.875
-          1.0 1.0 0.833333333333 0.375 0.333333333333 1.0 0.833333333333
-          0.125
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.0
           0.5 1.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 0.5 1.0 1.0
           1.0 1.0 0.5 1.0 1.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 0.0 0.0 1.0 1.0
           1.0 1.0 1.0 0.5 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.330771656443 0.365418121623 1.01591084474 0.487224162164
-          3.57412449057 1.60031773253 0.609030202705 3.81364123845
-          2.31689629097 0.730836243246 5.53672342467 6.19545055025
-          3.16564652005 0.852642283788
         </feature>
       </features>
     </glyph>
@@ -1205,49 +471,13 @@
         3 1 10 2 3 7 4 2 8 3 3 7 3 4 1 9 4 6 3 15 3 5 2 18 5 1 2 21 5 17 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          378.0
-        </feature>
         <feature name="aspect_ratio">
           1.92857142857
-        </feature>
-        <feature name="black_area">
-          119.0
-        </feature>
-        <feature name="compactness">
-          1.06722689076
         </feature>
         <feature name="moments">
           0.400129282482 0.509372979961 0.440974412504 0.0930713362953
           0.003541505579 0.112803260905 -0.0278651347362 0.00523233024466
           -0.000125416055098
-        </feature>
-        <feature name="ncols_feature">
-          27.0
-        </feature>
-        <feature name="nholes">
-          0.259259259259 1.21428571429
-        </feature>
-        <feature name="nholes_extended">
-          0.296296296296 0.740740740741 0.0 0.0 0.857142857143 0.857142857143
-          1.71428571429 0.857142857143
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 8.0 0.382978723404 0.0 2.0 3.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.314814814815
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.583333333333 0.555555555556 0.458333333333
-          0.52380952381 0.25 0.238095238095 0.428571428571 0.0 0.392857142857
-          0.619047619048 0.0357142857143 0.0 0.25 0.52380952381 0.0
         </feature>
         <feature name="volume64regions">
           0.0 0.166666666667 0.666666666667 0.833333333333 1.0 0.666666666667
@@ -1259,12 +489,6 @@
           0.0 0.375 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.0
           0.0 0.5 0.75 0.25 0.0 0.0
         </feature>
-        <feature name="zernike_moments">
-          0.305940372859 0.367034053704 1.02415151379 0.489378738272
-          3.59694733911 1.61442237693 0.61172342284 3.85136838037
-          2.33838643396 0.734068107408 5.60938644012 6.25840871459
-          3.19604368486 0.856412791975
-        </feature>
       </features>
     </glyph>
     <glyph uly="22" ulx="383" nrows="4" ncols="9">
@@ -1275,59 +499,19 @@
         1 3 2 2 1 24 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          36.0
-        </feature>
         <feature name="aspect_ratio">
           2.25
-        </feature>
-        <feature name="black_area">
-          29.0
-        </feature>
-        <feature name="compactness">
-          1.13793103448
         </feature>
         <feature name="moments">
           0.456896551724 0.51724137931 0.207552585182 0.0346877690762
           -0.0136536963385 0.0180528127478 -0.00247871735241
           -0.00245666330542 -0.000255196829419
         </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.25
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          4.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 3.0 0.0 0.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.75
-        </feature>
-        <feature name="volume">
-          0.805555555556
-        </feature>
-        <feature name="volume16regions">
-          0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.666666666667 1.0
-          1.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0
           1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 0.0 0.0 0.5 0.5 1.0 1.0 1.0 1.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.334868697901 0.362337161999 1.00764642811 0.483116215999
-          3.55853772632 1.5873894177 0.603895269999 3.77897304957
-          2.29826496032 0.724674323999 5.45478076469 6.13629466196
-          3.14027305597 0.845453377999
         </feature>
       </features>
     </glyph>
@@ -1339,58 +523,19 @@
         1 1 1 1 2 9 1 3 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          20.0
-        </feature>
         <feature name="aspect_ratio">
           1.25
-        </feature>
-        <feature name="black_area">
-          14.0
-        </feature>
-        <feature name="compactness">
-          1.71428571429
         </feature>
         <feature name="moments">
           0.535714285714 0.547619047619 0.100583090379 0.0674198250729
           -0.00655976676385 -0.000667874823605 -0.00144706211781
           -0.000667874823605 -0.00300543670622
         </feature>
-        <feature name="ncols_feature">
-          5.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.25
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          4.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 0.0 0.2 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.75
-        </feature>
-        <feature name="volume">
-          0.7
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 1.0 0.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.5 1.0 1.0 0.5
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.257412569055 0.389303111921 1.07805862717 0.519070815894
-          3.68775372322 1.69694066602 0.648838519868 4.00699497479
-          2.45556965768 0.778606223841 5.8503347958 6.48482367389
-          3.35394560216 0.908373927815
         </feature>
       </features>
     </glyph>
@@ -1402,59 +547,19 @@
         2 2 2 2 2 2 1 17 3 4 4 4 4 3 5 3 5 4 4 4 4 3 5 4 3 6 3 3 4 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          112.0
-        </feature>
         <feature name="aspect_ratio">
           0.571428571429
-        </feature>
-        <feature name="black_area">
-          61.0
-        </feature>
-        <feature name="compactness">
-          0.918032786885
         </feature>
         <feature name="moments">
           0.405152224824 0.462799495586 0.0500834871641 0.278684118935
           -0.0405364325648 0.00736088277342 0.0081187096434 -0.0129219325102
           0.0313124508351
         </feature>
-        <feature name="ncols_feature">
-          8.0
-        </feature>
-        <feature name="nholes">
-          0.5 0.142857142857
-        </feature>
-        <feature name="nholes_extended">
-          0.5 0.0 1.5 0.0 0.571428571429 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 4.0 0.125 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.544642857143
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.625 0.5 0.625 1.0 1.0 1.0 1.0 0.5 0.5
-          0.333333333333 0.375 1.0 0.0 0.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.5 0.0 0.0 0.0 0.0 0.5 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5
           1.0 0.5 0.0 1.0 0.5 0.5 0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.5 1.0 1.0 0.0
           0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.331253753801 0.392185745072 1.04762879776 0.522914326763
-          3.55922869716 1.63748254157 0.653642908454 3.80122086639
-          2.35851490314 0.784371490145 5.46574993066 6.11791463459
-          3.21072588245 0.915100071836
         </feature>
       </features>
     </glyph>
@@ -1466,58 +571,19 @@
         1 2 1 11 2 2 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          20.0
-        </feature>
         <feature name="aspect_ratio">
           0.8
-        </feature>
-        <feature name="black_area">
-          15.0
-        </feature>
-        <feature name="compactness">
-          1.4
         </feature>
         <feature name="moments">
           0.466666666667 0.483333333333 0.0604444444444 0.101925925926
           -0.00711111111111 0.000826236447191 0.000673229697711
           -0.00189728369355 0.00412098178599
         </feature>
-        <feature name="ncols_feature">
-          4.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          5.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 1.0 0.111111111111 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.8
-        </feature>
-        <feature name="volume">
-          0.75
-        </feature>
-        <feature name="volume16regions">
-          0.0 1.0 1.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 0.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0
           1.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.252229173447 0.39705350818 1.09204672924 0.529404677574
-          3.70145712468 1.71670969385 0.661755846967 4.03499989196
-          2.48203317137 0.794107016361 5.88730160722 6.51929438131
-          3.38801716181 0.926458185754
         </feature>
       </features>
     </glyph>
@@ -1531,49 +597,13 @@
         5 4 11 3 5 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          330.0
-        </feature>
         <feature name="aspect_ratio">
           0.681818181818
-        </feature>
-        <feature name="black_area">
-          127.0
-        </feature>
-        <feature name="compactness">
-          0.968503937008
         </feature>
         <feature name="moments">
           0.426321709786 0.586051743532 0.144452477881 0.300516065599
           0.0636262847329 0.0275639457578 -0.0331651082969 0.0174628751351
           -0.0466870119718
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.733333333333 0.636363636364
-        </feature>
-        <feature name="nholes_extended">
-          1.33333333333 0.8 0.266666666667 0.266666666667 0.181818181818
-          0.181818181818 0.909090909091 0.909090909091
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 9.0 0.163265306122 0.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.384848484848
-        </feature>
-        <feature name="volume16regions">
-          0.533333333333 0.333333333333 0.466666666667 0.611111111111 0.5
-          0.625 0.45 0.583333333333 0.0 0.333333333333 0.0 0.125 0.0
-          0.166666666667 0.75 0.708333333333
         </feature>
         <feature name="volume64regions">
           0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.75 0.666666666667 0.5
@@ -1582,12 +612,6 @@
           0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.833333333333 0.0 0.0
           0.0 0.5 0.0 0.0 0.0 0.666666666667 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0
           0.5 0.5 0.166666666667 0.666666666667
-        </feature>
-        <feature name="zernike_moments">
-          0.28529160939 0.431758959843 1.13239082857 0.575678613124
-          3.67922023885 1.76343367037 0.719598266405 4.04689957551
-          2.53365456603 0.863517919686 5.87426960986 6.48683534916
-          3.44305351555 1.00743757297
         </feature>
       </features>
     </glyph>
@@ -1600,47 +624,12 @@
         3 7 3 2 3 7 3 2 3 7 3 2 3 7 3 2 3 7 3 2 4 6 3 2 4 6 4 1 5 4 5 3 13 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          315.0
-        </feature>
         <feature name="aspect_ratio">
           0.714285714286
-        </feature>
-        <feature name="black_area">
-          121.0
-        </feature>
-        <feature name="compactness">
-          0.876033057851
         </feature>
         <feature name="moments">
           0.550767414404 0.6 0.161387612394 0.314186189468 -0.0699405778294
           -0.0413387185696 0.0313849557742 0.0258775375861 -0.072945837033
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.266666666667 0.52380952381
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.266666666667 0.8 0.0 0.0 0.190476190476 0.952380952381
-          0.952380952381
-        </feature>
-        <feature name="nrows_feature">
-          21.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 3.0 0.116279069767 1.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.952380952381
-        </feature>
-        <feature name="volume">
-          0.384126984127
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.933333333333 0.888888888889 0.0 0.05 0.05 0.333333333333
-          0.6 0.35 0.35 0.416666666667 0.45 0.5 0.5 0.666666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.666666666667 1.0 1.0 0.666666666667 0.0 0.0 0.0
@@ -1650,12 +639,6 @@
           0.333333333333 1.0 1.0 0.5 0.833333333333 0.833333333333 0.5 0.5
           0.833333333333 0.75 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0
           0.0 0.0 0.666666666667
-        </feature>
-        <feature name="zernike_moments">
-          0.256325640794 0.461576278696 1.1817441725 0.615435038262
-          3.7152086843 1.83112342452 0.769293797827 4.12284583035
-          2.6220799601 0.923152557393 5.93838650691 6.56088031738
-          3.55461377923 1.07701131696
         </feature>
       </features>
     </glyph>
@@ -1667,59 +650,19 @@
         4 1 7 2 6 3 5 7 1 9 1 4 6 3 6 3 6 3 6 3 6 2 7 3 5 4 6 3 6 4 6 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          144.0
-        </feature>
         <feature name="aspect_ratio">
           0.5625
-        </feature>
-        <feature name="black_area">
-          60.0
-        </feature>
-        <feature name="compactness">
-          1.08333333333
         </feature>
         <feature name="moments">
           0.4375 0.512222222222 0.0497222222222 0.346939814815
           0.0101388888889 0.00796113243387 0.0208214692642 -0.000432722213373
           0.0505438471835
         </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.666666666667 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.444444444444 0.0 0.888888888889 0.888888888889 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          16.0
-        </feature>
-        <feature name="skeleton_features">
-          0.0 5.0 0.185185185185 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.9375
-        </feature>
-        <feature name="volume">
-          0.416666666667
-        </feature>
-        <feature name="volume16regions">
-          0.125 0.375 0.0 0.125 0.625 1.0 1.0 0.875 0.625 0.625 0.375 0.75
-          0.166666666667 0.25 0.0 0.25
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.0 0.0 0.0 0.5 0.0 0.0
           1.0 1.0 1.0 1.0 1.0 1.0 0.5 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 0.5 1.0 1.0 0.0 0.5 0.5 0.0 0.0 0.0 0.0 1.0 0.0 0.5 0.5
           0.0 0.0 0.0 0.0 0.5 0.0 0.25 0.5 0.0 0.0 0.0 0.0 0.5
-        </feature>
-        <feature name="zernike_moments">
-          0.32340380627 0.3733181648 1.01979222972 0.497757553067
-          3.54917946835 1.60101196005 0.622196941334 3.76643575812
-          2.31274035955 0.746636329601 5.38940450511 6.09015301615
-          3.15497742821 0.871075717867
         </feature>
       </features>
     </glyph>
@@ -1733,48 +676,13 @@
         20 5 2 1 2 6 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          368.0
-        </feature>
         <feature name="aspect_ratio">
           0.695652173913
-        </feature>
-        <feature name="black_area">
-          175.0
-        </feature>
-        <feature name="compactness">
-          0.794285714286
         </feature>
         <feature name="moments">
           0.489142857143 0.571688311688 0.0940770145773 0.21984354519
           -0.00483433236152 0.0072279351844 0.0096841755054 0.00527616814915
           -0.0362644637178
-        </feature>
-        <feature name="ncols_feature">
-          16.0
-        </feature>
-        <feature name="nholes">
-          1.25 0.565217391304
-        </feature>
-        <feature name="nholes_extended">
-          0.75 1.25 2.0 1.0 0.521739130435 0.0 0.695652173913 0.695652173913
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 21.0 0.142857142857 0.0 3.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.475543478261
-        </feature>
-        <feature name="volume16regions">
-          0.05 0.458333333333 0.5 0.5 0.5 0.541666666667 0.833333333333
-          0.833333333333 0.4 0.333333333333 0.333333333333 0.375 0.3 0.25
-          0.666666666667 0.625
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.5 0.166666666667 0.0 0.0 0.333333333333 0.0
@@ -1788,12 +696,6 @@
           0.666666666667 0.0 0.0 0.0 0.333333333333 0.5 0.333333333333
           0.333333333333 0.666666666667
         </feature>
-        <feature name="zernike_moments">
-          0.324919327053 0.397243474022 1.06007550399 0.529657965362
-          3.58061520077 1.65660534163 0.662072456703 3.85044132006
-          2.38573956392 0.794486948043 5.55056181443 6.20100025558
-          3.24747817087 0.926901439384
-        </feature>
       </features>
     </glyph>
     <glyph uly="17" ulx="805" nrows="13" ncols="8">
@@ -1804,59 +706,19 @@
         0 4 7 2 7 2 6 3 5 3 5 3 5 3 6 1 7 2 5 3 5 4 3 5 2 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          104.0
-        </feature>
         <feature name="aspect_ratio">
           0.615384615385
-        </feature>
-        <feature name="black_area">
-          41.0
-        </feature>
-        <feature name="compactness">
-          1.29268292683
         </feature>
         <feature name="moments">
           0.651567944251 0.563008130081 0.05835666923 0.407829253783
           0.0646102058879 -0.01108629047 -0.0483080332087 -0.0142871285521
           -0.0601817248727
         </feature>
-        <feature name="ncols_feature">
-          8.0
-        </feature>
-        <feature name="nholes">
-          0.5 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.0 0.5 0.5 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          0.0 2.0 0.25 0.0 1.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.394230769231
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.0 0.0 0.0 0.5 0.0 0.0 0.375 0.5 1.0 0.666666666667
-          1.0 0.0 0.5 0.333333333333 0.875
-        </feature>
         <feature name="volume64regions">
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
           0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0
           1.0 1.0 0.5 0.0 1.0 1.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0
           1.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.341476820344 0.409478809018 1.06191001838 0.545971745357
-          3.52631795474 1.64984894361 0.682464681696 3.77906662718
-          2.36677243709 0.818957618035 5.37054614807 6.05658762014
-          3.21268049884 0.955450554374
         </feature>
       </features>
     </glyph>
@@ -1868,58 +730,18 @@
         1 3 2 4 2 5 2 4 2 4 2 3 3 3 3 3 3 3 3 3 3 4 1 5 1 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          78.0
-        </feature>
         <feature name="aspect_ratio">
           0.461538461538
-        </feature>
-        <feature name="black_area">
-          50.0
-        </feature>
-        <feature name="compactness">
-          0.92
         </feature>
         <feature name="moments">
           0.428 0.523333333333 0.029608 0.314432 0.009616 0.000666060646752
           -0.000456078217011 0.00329618108893 0.000712492106432
-        </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          0.333333333333 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 0.0 0.0 0.666666666667 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 1.0 0.0526315789474 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.641025641026
-        </feature>
-        <feature name="volume16regions">
-          0.666666666667 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
-          0.166666666667 0.333333333333 0.0 0.5
         </feature>
         <feature name="volume64regions">
           0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0
           0.5 0.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5
-        </feature>
-        <feature name="zernike_moments">
-          0.330181480315 0.390277785099 1.04271429664 0.520370380132
-          3.55033911784 1.62985781862 0.650462975165 3.77958006924
-          2.34758731973 0.780555570198 5.39313883648 6.08016828854
-          3.19590279997 0.91064816523
         </feature>
       </features>
     </glyph>
@@ -1932,61 +754,19 @@
         11 6 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          169.0
-        </feature>
         <feature name="aspect_ratio">
           1.0
-        </feature>
-        <feature name="black_area">
-          66.0
-        </feature>
-        <feature name="compactness">
-          1.21212121212
         </feature>
         <feature name="moments">
           0.421717171717 0.454545454545 0.18176252887 0.202562818265
           -0.0642374154771 0.039448883935 0.0163917721369 -0.0283167692405
           0.0397469803192
         </feature>
-        <feature name="ncols_feature">
-          13.0
-        </feature>
-        <feature name="nholes">
-          0.692307692308 0.307692307692
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.23076923077 0.923076923077 0.615384615385 0.923076923077
-          0.307692307692 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 9.0 0.15625 1.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.390532544379
-        </feature>
-        <feature name="volume16regions">
-          0.111111111111 0.777777777778 0.777777777778 0.333333333333
-          0.555555555556 0.555555555556 0.333333333333 0.75 0.0
-          0.666666666667 0.0 0.25 0.666666666667 0.583333333333 0.0 0.0625
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.5 0.5 0.0 0.0 0.0 0.0 0.25 1.0 1.0 1.0 1.0 0.75 0.25
           0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0 0.25 0.0 0.5 0.0 0.0 0.5 1.0
           0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.5 0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.5 1.0
           0.75 1.0 0.5 0.0 0.0 0.0 0.25 0.0 0.75 1.0 0.25 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.280362262323 0.495426164839 1.21729464323 0.660568219785
-          3.67927351885 1.8695723187 0.825710274731 4.10341831494
-          2.66103160003 0.990852329678 5.84068632785 6.47010586816
-          3.59167248721 1.15599438462
         </feature>
       </features>
     </glyph>
@@ -1999,48 +779,13 @@
         1 7 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          154.0
-        </feature>
         <feature name="aspect_ratio">
           0.318181818182
-        </feature>
-        <feature name="black_area">
-          64.0
-        </feature>
-        <feature name="compactness">
-          1.109375
         </feature>
         <feature name="moments">
           0.4296875 0.588541666667 0.0272483825684 0.713558197021
           0.036304473877 -2.86549329758e-05 -0.00968520343304
           0.00336502492428 -0.272065535188
-        </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.0454545454545
-        </feature>
-        <feature name="nholes_extended">
-          1.14285714286 1.14285714286 0.571428571429 0.0 0.181818181818 0.0
-          0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 1.0 0.2 0.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.415584415584
-        </feature>
-        <feature name="volume16regions">
-          0.2 0.333333333333 0.0 0.166666666667 0.7 0.333333333333 0.6 0.75
-          0.6 0.25 1.0 1.0 0.0 0.0 0.0 0.25
         </feature>
         <feature name="volume64regions">
           0.0 0.333333333333 0.0 0.666666666667 0.0 0.0 0.0 0.333333333333
@@ -2051,12 +796,6 @@
           0.333333333333 0.0 0.333333333333 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0
           0.0 0.0 0.0 0.666666666667 0.0 0.0 0.0 0.0 0.0 0.0 0.0
           0.333333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.423830951774 0.36171399786 0.947960529816 0.48228533048
-          3.33783142843 1.47599766186 0.6028566631 3.40951814656
-          2.12045359373 0.72342799572 4.70172850704 5.48167981596
-          2.88132832544 0.84399932834
         </feature>
       </features>
     </glyph>
@@ -2069,49 +808,13 @@
         12 9 6 12 3 13 1 5 6 8 7 3 1 3 9 2 1 4 8 2 1 4 7 1 5 4 12 1 11 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          330.0
-        </feature>
         <feature name="aspect_ratio">
           0.681818181818
-        </feature>
-        <feature name="black_area">
-          129.0
-        </feature>
-        <feature name="compactness">
-          1.04651162791
         </feature>
         <feature name="moments">
           0.449058693245 0.464747139166 0.140760026254 0.340096772285
           -0.0496429617891 0.010308769127 0.00597092370044 0.0074724908371
           -0.0333591944273
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          1.26666666667 0.5
-        </feature>
-        <feature name="nholes_extended">
-          0.533333333333 1.6 1.06666666667 1.06666666667 0.727272727273
-          0.363636363636 0.181818181818 0.727272727273
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          7.0 9.0 0.2 4.0 2.0 0.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.390909090909
-        </feature>
-        <feature name="volume16regions">
-          0.466666666667 0.222222222222 0.666666666667 0.722222222222 0.45
-          0.125 0.75 0.291666666667 0.7 0.25 0.55 0.0 0.6 0.0416666666667
-          0.45 0.333333333333
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.333333333333 1.0 0.333333333333 0.25 1.0 0.5
@@ -2121,12 +824,6 @@
           0.0 0.5 0.666666666667 0.0 0.0 1.0 1.0 0.833333333333 0.0 0.25
           0.666666666667 0.0 0.0 1.0 0.666666666667 0.166666666667 0.0 0.0
           1.0 0.666666666667 0.166666666667 1.0 0.0 0.0 0.0 0.0 0.5 0.5 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.266835184497 0.457698731718 1.17806996843 0.610264975625
-          3.72081815393 1.82746558104 0.762831219531 4.1239240323
-          2.61881244185 0.915397463437 5.93795356279 6.56720822655
-          3.55211055086 1.06796370734
         </feature>
       </features>
     </glyph>
@@ -2139,61 +836,19 @@
         5 3 2 4 4 3 4 7 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          169.0
-        </feature>
         <feature name="aspect_ratio">
           1.0
-        </feature>
-        <feature name="black_area">
-          77.0
-        </feature>
-        <feature name="compactness">
-          1.15584415584
         </feature>
         <feature name="moments">
           0.424242424242 0.465367965368 0.176819638449 0.201163990336
           -0.0249773838912 0.0159730248789 0.0206100669951 0.00345732962157
           0.0288799617408
         </feature>
-        <feature name="ncols_feature">
-          13.0
-        </feature>
-        <feature name="nholes">
-          0.923076923077 0.615384615385
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.53846153846 1.23076923077 0.923076923077 0.615384615385
-          0.923076923077 0.0 0.923076923077
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 16.0 0.102564102564 1.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.455621301775
-        </feature>
-        <feature name="volume16regions">
-          0.222222222222 1.0 1.0 0.583333333333 0.444444444444 0.555555555556
-          0.0 0.5 0.777777777778 0.555555555556 0.0 0.25 0.583333333333
-          0.416666666667 0.0 0.5
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 0.5 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 0.5 0.0
           1.0 1.0 0.5 0.0 0.0 0.5 1.0 1.0 0.0 1.0 0.25 0.0 0.0 0.0 0.75 1.0
           0.5 1.0 0.5 0.0 0.0 0.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.5 0.5 1.0
           1.0 0.25 0.0 0.0 0.5 0.75 0.0 0.5 0.5 0.25 0.0 0.0 0.5 0.25
-        </feature>
-        <feature name="zernike_moments">
-          0.275273742484 0.540036729274 1.28305093688 0.720048972365
-          3.70280679784 1.95568989892 0.900061215457 4.17416508898
-          2.76907935209 1.08007345855 5.86381553426 6.50912596352
-          3.72321929638 1.26008570164
         </feature>
       </features>
     </glyph>
@@ -2207,49 +862,13 @@
         11 3 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          330.0
-        </feature>
         <feature name="aspect_ratio">
           0.681818181818
-        </feature>
-        <feature name="black_area">
-          117.0
-        </feature>
-        <feature name="compactness">
-          1.06837606838
         </feature>
         <feature name="moments">
           0.41514041514 0.584045584046 0.168008126807 0.366629141996
           0.0978032770713 0.0403874515891 -0.0375312224002 0.0324580032063
           -0.0704702246182
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.733333333333 0.636363636364
-        </feature>
-        <feature name="nholes_extended">
-          1.06666666667 0.8 0.266666666667 0.533333333333 0.181818181818
-          0.181818181818 0.909090909091 0.909090909091
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 4.0 0.255813953488 1.0 0.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.354545454545
-        </feature>
-        <feature name="volume16regions">
-          0.6 0.333333333333 0.466666666667 0.555555555556 0.55
-          0.541666666667 0.45 0.458333333333 0.0 0.208333333333 0.0 0.125 0.0
-          0.0416666666667 0.7 0.75
         </feature>
         <feature name="volume64regions">
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.666666666667 0.75 0.666666666667 0.5
@@ -2258,12 +877,6 @@
           0.0 0.0 0.166666666667 0.0 0.0 0.0 0.333333333333 0.0 0.0 0.0 0.0
           0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.166666666667 1.0 1.0
           0.666666666667 1.0 0.0 0.0 0.0 0.0 0.25 0.5 0.333333333333 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.300903812091 0.452125536092 1.15028401553 0.602834048123
-          3.6444868087 1.78001124904 0.753542560154 4.00731175612
-          2.54660097441 0.904251072184 5.74036283682 6.37935962747
-          3.45005319162 1.05495958421
         </feature>
       </features>
     </glyph>
@@ -2276,48 +889,13 @@
         1 6 2 4 3 4 4 3 4 1 7 3 2 2 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          161.0
-        </feature>
         <feature name="aspect_ratio">
           0.304347826087
-        </feature>
-        <feature name="black_area">
-          76.0
-        </feature>
-        <feature name="compactness">
-          1.03947368421
         </feature>
         <feature name="moments">
           0.589912280702 0.476076555024 0.022313292754 0.663945181513
           -0.00249671963843 -0.00153944008106 -0.0226276079008
           -0.000495824735023 0.0869098847367
-        </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.0434782608696
-        </feature>
-        <feature name="nholes_extended">
-          0.571428571429 0.571428571429 0.0 0.571428571429 0.173913043478 0.0
-          0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 10.0 0.0571428571429 0.0 6.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.472049689441
-        </feature>
-        <feature name="volume16regions">
-          0.2 0.0 0.0 0.166666666667 0.6 0.0 0.0833333333333 0.416666666667
-          0.9 1.0 0.833333333333 1.0 0.5 0.583333333333 0.25 0.333333333333
         </feature>
         <feature name="volume64regions">
           0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.5 0.0 0.0 0.0 0.0 0.0
@@ -2327,12 +905,6 @@
           1.0 1.0 1.0 1.0 0.333333333333 1.0 1.0 1.0 1.0 1.0 1.0
           0.666666666667 0.0 0.333333333333 0.666666666667 0.0 0.0 0.0
           0.333333333333 0.333333333333 0.0 0.0 0.333333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.366626350843 0.373879154804 0.99338710331 0.498505539738
-          3.44735529431 1.55103485637 0.623131924673 3.58686770337
-          2.23240300032 0.747758309607 5.01488347335 5.76488780748
-          3.03749153517 0.872384694542
         </feature>
       </features>
     </glyph>
@@ -2347,48 +919,13 @@
         16 2 16 2 16 3 3 1 11 3 2 2 12 6 14 1 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          414.0
-        </feature>
         <feature name="aspect_ratio">
           0.782608695652
-        </feature>
-        <feature name="black_area">
-          123.0
-        </feature>
-        <feature name="compactness">
-          1.10569105691
         </feature>
         <feature name="moments">
           0.509325681492 0.460827790096 0.181218754484 0.28757025623
           0.0679360749586 -0.018312163853 0.0484077907561 0.0224270427997
           0.0231049315166
-        </feature>
-        <feature name="ncols_feature">
-          18.0
-        </feature>
-        <feature name="nholes">
-          0.388888888889 0.826086956522
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.444444444444 1.11111111111 0.869565217391 0.869565217391
-          0.869565217391 0.347826086957
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 11.0 0.294117647059 2.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.297101449275
-        </feature>
-        <feature name="volume16regions">
-          0.1 0.583333333333 0.5 0.0 0.44 0.2 0.166666666667 0.0 0.65 0.5
-          0.541666666667 0.375 0.04 0.3 0.166666666667 0.366666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.666666666667 0.166666666667 0.0 0.0 0.0 0.0
@@ -2399,12 +936,6 @@
           0.5 0.0 0.166666666667 0.166666666667 0.833333333333 0.5
           0.333333333333 0.166666666667 0.666666666667 0.0 0.0 0.0
           0.333333333333 0.0 0.0 0.111111111111 0.555555555556
-        </feature>
-        <feature name="zernike_moments">
-          0.268665871773 0.41842688606 1.11857463756 0.557902514747
-          3.69406989145 1.7486383737 0.697378143434 4.05631088515
-          2.51887014055 0.836853772121 5.91803685821 6.52604356804
-          3.4292699381 0.976329400808
         </feature>
       </features>
     </glyph>
@@ -2417,62 +948,19 @@
         9 3 5 1 5 1 5 2 2 5 2 1 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          168.0
-        </feature>
         <feature name="aspect_ratio">
           0.857142857143
-        </feature>
-        <feature name="black_area">
-          90.0
-        </feature>
-        <feature name="compactness">
-          1.02222222222
         </feature>
         <feature name="moments">
           0.526262626263 0.54358974359 0.127035665295 0.171061728395
           0.00398353909465 -0.0118222368064 -0.00412140066773 0.0116569237332
           -0.0179735360058
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          0.916666666667 0.714285714286
-        </feature>
-        <feature name="nholes_extended">
-          1.0 2.0 0.666666666667 0.0 0.285714285714 0.285714285714
-          0.857142857143 0.857142857143
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 9.0 0.305555555556 1.0 3.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.535714285714
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.25 0.777777777778 0.75 0.666666666667
-          0.0833333333333 0.555555555556 0.416666666667 0.777777777778 0.75
-          0.444444444444 0.5 0.111111111111 0.583333333333 0.666666666667
-          0.916666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.5 0.0 0.0 1.0 1.0 0.0 0.0 0.5 0.5 0.0 0.5 1.0 1.0 0.75
           0.0 1.0 0.0 0.0 1.0 1.0 0.5 1.0 1.0 0.5 0.0 0.25 1.0 0.0 0.0 0.5
           1.0 0.5 0.0 0.5 0.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 0.5 1.0 0.5 0.0
           0.5 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.25 0.5 0.5 0.5 1.0 0.75
-        </feature>
-        <feature name="zernike_moments">
-          0.264191498177 0.473529308932 1.19698570339 0.631372411909
-          3.71259927397 1.84974043641 0.789215514886 4.11934142811
-          2.6438984923 0.947058617863 5.87721134542 6.52724842458
-          3.57945987106 1.10490172084
         </feature>
       </features>
     </glyph>
@@ -2484,59 +972,18 @@
         2 3 3 5 2 6 1 6 2 5 3 4 3 4 2 4 3 4 1 5 2 4 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          77.0
-        </feature>
         <feature name="aspect_ratio">
           0.636363636364
-        </feature>
-        <feature name="black_area">
-          50.0
-        </feature>
-        <feature name="compactness">
-          0.88
         </feature>
         <feature name="moments">
           0.553333333333 0.488 0.051552 0.189312 -0.020832 -0.00109534800204
           -0.0179989335962 0.00358707916185 0.0126977823419
-        </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          0.285714285714 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.571428571429 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          11.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 3.0 0.357142857143 0.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.909090909091
-        </feature>
-        <feature name="volume">
-          0.649350649351
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.0 0.666666666667 0.75 0.833333333333 0.166666666667
-          0.833333333333 1.0 1.0 1.0 0.833333333333 0.25 1.0 0.833333333333
-          0.166666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0
           1.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 0.0 1.0 1.0
           1.0 1.0 1.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0 0.5 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.312832387409 0.39116349999 1.05774892607 0.52155133332
-          3.60229040374 1.65730965306 0.65193916665 3.87561718481
-          2.39091977823 0.78232699998 5.60337894368 6.25370035662
-          3.2585793016 0.91271483331
         </feature>
       </features>
     </glyph>
@@ -2550,47 +997,13 @@
         10 6 1 2 4 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          440.0
-        </feature>
         <feature name="aspect_ratio">
           0.909090909091
-        </feature>
-        <feature name="black_area">
-          149.0
-        </feature>
-        <feature name="compactness">
-          0.93288590604
         </feature>
         <feature name="moments">
           0.419992935359 0.482901885586 0.247959082803 0.343409768409
           -0.0243492266658 0.0642275255415 0.0677604954782 -0.022519157039
           0.0149705873644
-        </feature>
-        <feature name="ncols_feature">
-          20.0
-        </feature>
-        <feature name="nholes">
-          0.75 0.5
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.0 1.0 1.0 0.727272727273 0.363636363636 0.0 0.727272727273
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 11.0 0.4 1.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.338636363636
-        </feature>
-        <feature name="volume16regions">
-          0.24 0.9 0.92 0.233333333333 0.6 0.0 0.04 0.533333333333 0.32 0.0
-          0.0 0.4 0.72 0.133333333333 0.0 0.4
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.5 1.0 1.0 0.666666666667 0.0 0.0 0.0 0.666666666667 1.0
@@ -2600,12 +1013,6 @@
           0.0 0.0 0.0 0.0 0.666666666667 0.75 0.5 0.0 0.0 0.0 0.0 0.0
           0.833333333333 0.5 1.0 0.444444444444 0.0 0.0 0.0 0.666666666667
           0.111111111111
-        </feature>
-        <feature name="zernike_moments">
-          0.278010485895 0.556338005885 1.29816047952 0.741784007847
-          3.6779611997 1.9704358942 0.927230009808 4.16112834093
-          2.78180542679 1.11267601177 5.83125626473 6.46385979758
-          3.7322690773 1.29812201373
         </feature>
       </features>
     </glyph>
@@ -2617,59 +1024,19 @@
         2 2 3 4 1 6 1 5 2 3 3 3 3 3 3 3 3 3 3 2 3 3 3 4 1 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          78.0
-        </feature>
         <feature name="aspect_ratio">
           0.461538461538
-        </feature>
-        <feature name="black_area">
-          47.0
-        </feature>
-        <feature name="compactness">
-          1.06382978723
         </feature>
         <feature name="moments">
           0.536170212766 0.505319148936 0.0326902516783 0.328116120705
           -0.00635697292507 -0.00068226233763 -0.00764812971682
           0.000734394545693 0.0298593797991
         </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          0.666666666667 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 0.666666666667 0.0 0.666666666667 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 4.0 0.136363636364 0.0 4.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.602564102564
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.0 0.0 0.25 0.833333333333 0.666666666667 0.5 0.875
-          1.0 1.0 1.0 1.0 0.5 0.666666666667 0.5 0.375
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 0.0
           1.0 1.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0
           1.0 1.0 1.0 0.0 1.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.5
-        </feature>
-        <feature name="zernike_moments">
-          0.332248137758 0.386719471782 1.03583721869 0.515625962376
-          3.54234164209 1.61992855855 0.64453245297 3.76301357268
-          2.3340727125 0.773438943565 5.36573207099 6.05728017167
-          3.17826968052 0.902345434159
         </feature>
       </features>
     </glyph>
@@ -2682,62 +1049,19 @@
         4 3 7 2 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          143.0
-        </feature>
         <feature name="aspect_ratio">
           0.846153846154
-        </feature>
-        <feature name="black_area">
-          70.0
-        </feature>
-        <feature name="compactness">
-          1.25714285714
         </feature>
         <feature name="moments">
           0.505714285714 0.511904761905 0.117096209913 0.234402332362
           0.00539358600583 -0.00947337897076 -0.00205543478881
           0.0115615095593 -0.00752381724343
         </feature>
-        <feature name="ncols_feature">
-          11.0
-        </feature>
-        <feature name="nholes">
-          1.18181818182 0.538461538462
-        </feature>
-        <feature name="nholes_extended">
-          0.363636363636 1.09090909091 1.45454545455 0.727272727273
-          0.615384615385 0.307692307692 0.307692307692 0.923076923077
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 11.0 0.151515151515 1.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.48951048951
-        </feature>
-        <feature name="volume16regions">
-          0.166666666667 0.5 0.166666666667 0.75 0.666666666667
-          0.666666666667 0.0 0.416666666667 0.888888888889 0.444444444444
-          0.666666666667 0.583333333333 0.444444444444 0.111111111111
-          0.444444444444 0.666666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.5 0.0 0.5 1.0 1.0 0.0 1.0 1.0 0.5 1.0
           0.75 0.5 1.0 0.0 0.0 0.25 0.75 1.0 0.0 0.0 0.5 0.0 0.0 0.0 0.5 1.0
           0.5 0.0 0.5 0.5 0.0 0.0 0.5 1.0 1.0 0.5 0.5 1.0 0.5 0.5 1.0 1.0 1.0
           1.0 0.0 0.5 1.0 1.0 1.0 0.0 0.25 0.0 0.0 0.25 0.5 0.75 0.25
-        </feature>
-        <feature name="zernike_moments">
-          0.279334462854 0.486233418275 1.20344422752 0.648311224366
-          3.67329819274 1.85126341137 0.810389030458 4.05819253988
-          2.63786584601 0.97246683655 5.74051058827 6.39160577272
-          3.56325153143 1.13454464264
         </feature>
       </features>
     </glyph>
@@ -2750,61 +1074,19 @@
         4 2 5 7 2 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          169.0
-        </feature>
         <feature name="aspect_ratio">
           1.0
-        </feature>
-        <feature name="black_area">
-          71.0
-        </feature>
-        <feature name="compactness">
-          1.21126760563
         </feature>
         <feature name="moments">
           0.430751173709 0.460093896714 0.178133670102 0.23719863318
           -0.0480566397792 0.0245866398974 0.0337868444677 -0.00675967785079
           0.0289477109322
         </feature>
-        <feature name="ncols_feature">
-          13.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.384615384615
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.23076923077 1.84615384615 0.923076923077 0.615384615385
-          0.307692307692 0.0 0.615384615385
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          6.0 13.0 0.0277777777778 1.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.420118343195
-        </feature>
-        <feature name="volume16regions">
-          0.111111111111 0.777777777778 1.0 0.416666666667 0.666666666667
-          0.444444444444 0.111111111111 0.75 0.444444444444 0.444444444444
-          0.0 0.25 0.833333333333 0.25 0.0 0.3125
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.5 1.0 1.0 0.0 0.0 0.0 0.25 1.0 1.0 1.0 1.0 1.0 0.25
           0.0 0.5 1.0 0.5 0.0 1.0 1.0 0.5 1.0 0.75 1.0 0.0 0.0 0.0 0.5 1.0
           1.0 0.0 1.0 0.25 0.0 0.0 0.0 0.5 1.0 0.5 1.0 0.0 0.0 0.0 0.0 0.5
           1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.75 0.5 0.75 0.5 0.0 0.0 0.0 0.25 0.25
-        </feature>
-        <feature name="zernike_moments">
-          0.274628000719 0.54239209602 1.28090463485 0.723189461359
-          3.68298133151 1.94970277699 0.903986826699 4.15589541689
-          2.75792971251 1.08478419204 5.85083231162 6.47950464148
-          3.7055854414 1.26558155738
         </feature>
       </features>
     </glyph>
@@ -2818,49 +1100,13 @@
         18 5 17 6 17 6 13 12 7 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          506.0
-        </feature>
         <feature name="aspect_ratio">
           1.04545454545
-        </feature>
-        <feature name="black_area">
-          138.0
-        </feature>
-        <feature name="compactness">
-          1.04347826087
         </feature>
         <feature name="moments">
           0.491436100132 0.423050379572 0.173550800739 0.399713554271
           -0.0131282552381 -0.00286512934289 -0.00646556528476
           -0.0830490960158 0.0877714931171
-        </feature>
-        <feature name="ncols_feature">
-          23.0
-        </feature>
-        <feature name="nholes">
-          0.608695652174 0.772727272727
-        </feature>
-        <feature name="nholes_extended">
-          0.173913043478 1.04347826087 1.21739130435 0.0 2.90909090909
-          0.181818181818 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          12.0 16.0 0.0161290322581 3.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.272727272727
-        </feature>
-        <feature name="volume16regions">
-          0.56 0.0333333333333 0.0 0.0333333333333 0.4 0.222222222222
-          0.233333333333 0.444444444444 0.533333333333 0.416666666667
-          0.433333333333 0.527777777778 0.533333333333 0.0 0.0 0.0
         </feature>
         <feature name="volume64regions">
           0.75 1.0 0.166666666667 0.0 0.0 0.0 0.0 0.0 0.666666666667
@@ -2873,12 +1119,6 @@
           0.222222222222 0.833333333333 0.111111111111 0.0 0.0 0.0 0.0 0.0
           0.0 0.666666666667 0.666666666667 0.0 0.0 0.0 0.0 0.0 0.0
         </feature>
-        <feature name="zernike_moments">
-          0.397118578624 0.469561285276 1.11660738835 0.626081713701
-          3.43102071086 1.7023377821 0.782602142126 3.67401085473
-          2.41069959451 0.939122570552 5.0259825248 5.76020913412
-          3.24169282558 1.09564299898
-        </feature>
       </features>
     </glyph>
     <glyph uly="17" ulx="668" nrows="13" ncols="9">
@@ -2889,58 +1129,18 @@
         0 6 4 5 5 5 6 3 7 3 6 2 7 2 7 2 6 3 7 3 5 5 4 5 3 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          117.0
-        </feature>
         <feature name="aspect_ratio">
           0.692307692308
-        </feature>
-        <feature name="black_area">
-          50.0
-        </feature>
-        <feature name="compactness">
-          1.1
         </feature>
         <feature name="moments">
           0.605 0.5 0.065888 0.3696 0.0904 -0.00920537629278 -0.0208262746049
           -0.0122007032453 0.0
-        </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.444444444444 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.444444444444 0.888888888889 0.444444444444 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 3.0 0.166666666667 0.0 1.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.42735042735
-        </feature>
-        <feature name="volume16regions">
-          0.5 0.0 0.0 0.0 1.0 0.0 0.0 0.125 1.0 0.666666666667 0.666666666667
-          0.875 0.111111111111 0.444444444444 0.333333333333 0.916666666667
         </feature>
         <feature name="volume64regions">
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 1.0
           1.0 0.0 0.0 1.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.25 0.0 0.0 0.75 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.323113421943 0.445260499439 1.12485200621 0.593680665919
-          3.58344195701 1.73804709544 0.742100832399 3.88729693043
-          2.48403501975 0.890520998878 5.52762375964 6.17231864796
-          3.36281577913 1.03894116536
         </feature>
       </features>
     </glyph>
@@ -2953,62 +1153,19 @@
         4 3 2 3 3 5 1 11 2 4 2 4 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          168.0
-        </feature>
         <feature name="aspect_ratio">
           0.857142857143
-        </feature>
-        <feature name="black_area">
-          78.0
-        </feature>
-        <feature name="compactness">
-          1.17948717949
         </feature>
         <feature name="moments">
           0.555944055944 0.586785009862 0.122939108886 0.214039768034
           0.0107406564507 -0.0125814065484 -0.00809398058191 0.00620471581159
           -0.0290423740822
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.642857142857
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 1.66666666667 1.33333333333 0.333333333333
-          0.285714285714 0.571428571429 0.857142857143 0.571428571429
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 5.0 0.444444444444 0.0 3.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.464285714286
-        </feature>
-        <feature name="volume16regions">
-          0.222222222222 0.333333333333 0.111111111111 0.583333333333
-          0.444444444444 0.0 0.666666666667 0.666666666667 0.666666666667
-          0.583333333333 0.444444444444 0.583333333333 0.111111111111 0.5
-          0.444444444444 0.916666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.5 0.75 0.0 0.0 0.25 1.0 0.75
           0.0 1.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.5 0.0 0.0 0.5 0.75 0.0 1.0
           1.0 0.5 0.0 0.0 1.0 0.0 0.0 0.5 0.0 1.0 1.0 0.75 0.5 0.5 0.75 0.75
           0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.5 0.5 0.0 0.75 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.274439233855 0.466445984165 1.18279869415 0.621927978887
-          3.69481461315 1.82904256473 0.777409973609 4.08726980102
-          2.61550411412 0.932891968331 5.83529484331 6.48554140257
-          3.54218334232 1.08837396305
         </feature>
       </features>
     </glyph>
@@ -3022,49 +1179,13 @@
         16 2 7 3 6 2 7 4 5 3 3 1 2 4 5 3 2 2 1 6 5 6 14 1 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          414.0
-        </feature>
         <feature name="aspect_ratio">
           0.782608695652
-        </feature>
-        <feature name="black_area">
-          140.0
-        </feature>
-        <feature name="compactness">
-          1.12142857143
         </feature>
         <feature name="moments">
           0.471848739496 0.513961038961 0.1623946793 0.293662900875
           0.0140856413994 0.00052770968784 0.0126677732755 0.0220323622586
           -0.00329700051584
-        </feature>
-        <feature name="ncols_feature">
-          18.0
-        </feature>
-        <feature name="nholes">
-          0.722222222222 1.0
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 0.666666666667 0.444444444444 1.11111111111
-          0.869565217391 0.869565217391 0.869565217391 1.04347826087
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 11.0 0.296296296296 4.0 1.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.338164251208
-        </feature>
-        <feature name="volume16regions">
-          0.1 0.583333333333 0.5 0.375 0.44 0.2 0.166666666667 0.266666666667
-          0.65 0.5 0.541666666667 0.375 0.04 0.3 0.166666666667
-          0.366666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.666666666667 0.166666666667 0.0 0.0 0.166666666667
@@ -3077,12 +1198,6 @@
           0.333333333333 0.166666666667 0.666666666667 0.0 0.0 0.0
           0.333333333333 0.0 0.0 0.111111111111 0.555555555556
         </feature>
-        <feature name="zernike_moments">
-          0.263943138596 0.444068114484 1.16157395959 0.592090819311
-          3.72711120697 1.80789441217 0.740113524139 4.12809047905
-          2.59658564981 0.888136228967 5.99457570527 6.60286119301
-          3.52764767253 1.0361589338
-        </feature>
       </features>
     </glyph>
     <glyph uly="19" ulx="136" nrows="13" ncols="12">
@@ -3093,60 +1208,19 @@
         0 24 2 6 1 2 3 5 8 4 8 4 8 4 8 4 8 3 9 4 8 4 7 6 6 6 4 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          156.0
-        </feature>
         <feature name="aspect_ratio">
           0.923076923077
-        </feature>
-        <feature name="black_area">
-          76.0
-        </feature>
-        <feature name="compactness">
-          0.763157894737
         </feature>
         <feature name="moments">
           0.444976076555 0.404605263158 0.0770702726345 0.22635178233
           -0.0230536521359 0.0116905273261 6.44192571521e-05 -0.0230265837014
           0.045019674297
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          0.25 0.0769230769231
-        </feature>
-        <feature name="nholes_extended">
-          0.333333333333 0.0 0.666666666667 0.0 0.307692307692 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 0.0 0.0 0.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.487179487179
-        </feature>
-        <feature name="volume16regions">
-          0.777777777778 0.111111111111 0.0 0.166666666667 1.0 1.0 1.0 1.0
-          0.888888888889 0.333333333333 0.222222222222 0.5 0.888888888889 0.0
-          0.0 0.0
-        </feature>
         <feature name="volume64regions">
           1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.75 0.5 0.0 0.0 0.0 0.0 0.5
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.75 0.0 0.0 0.0 0.0 0.0 0.5 1.0
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.75 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.354189901151 0.453712372741 1.11991455857 0.604949830321
-          3.52266716186 1.72174615337 0.756187287902 3.81016093709
-          2.45231893024 0.907424745482 5.36102885351 6.02933676792
-          3.31163288916 1.05866220306
         </feature>
       </features>
     </glyph>
@@ -3162,49 +1236,13 @@
         0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          690.0
-        </feature>
         <feature name="aspect_ratio">
           1.30434782609
-        </feature>
-        <feature name="black_area">
-          300.0
-        </feature>
-        <feature name="compactness">
-          0.76
         </feature>
         <feature name="moments">
           0.521379310345 0.488181818182 0.228796444444 0.140308
           -0.0142737777778 -0.012854077126 0.00598406053887 -0.0054981235491
           0.00466684693352
-        </feature>
-        <feature name="ncols_feature">
-          30.0
-        </feature>
-        <feature name="nholes">
-          0.566666666667 1.95652173913
-        </feature>
-        <feature name="nholes_extended">
-          0.8 0.4 0.533333333333 0.533333333333 1.04347826087 2.26086956522
-          1.91304347826 1.73913043478
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          9.0 13.0 0.25 5.0 4.0 4.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.434782608696
-        </feature>
-        <feature name="volume16regions">
-          0.485714285714 0.285714285714 0.404761904762 0.547619047619 0.275
-          0.625 0.520833333333 0.25 0.257142857143 0.285714285714
-          0.261904761905 0.238095238095 0.8 0.520833333333 0.5625 0.5625
         </feature>
         <feature name="volume64regions">
           0.333333333333 0.333333333333 0.0 0.0 0.0 0.111111111111
@@ -3218,12 +1256,6 @@
           0.333333333333 0.875 1.0 1.0 0.833333333333 1.0 1.0 1.0 1.0 0.875
           0.5 0.25 0.0 0.0 0.25 0.0 0.25
         </feature>
-        <feature name="zernike_moments">
-          0.270936955979 0.443772262132 1.14847788212 0.591696349509
-          3.67948017822 1.78358581054 0.739620436886 4.04484210356
-          2.5578891221 0.887544524264 5.80751425138 6.45376093252
-          3.47138781682 1.03546861164
-        </feature>
       </features>
     </glyph>
     <glyph uly="17" ulx="680" nrows="13" ncols="16">
@@ -3235,49 +1267,13 @@
         5 5 3 4 4 4 4 6 7 5 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          208.0
-        </feature>
         <feature name="aspect_ratio">
           1.23076923077
-        </feature>
-        <feature name="black_area">
-          90.0
-        </feature>
-        <feature name="compactness">
-          1.11111111111
         </feature>
         <feature name="moments">
           0.502222222222 0.508333333333 0.281283950617 0.165197530864
           -0.017012345679 -0.0152920633605 0.000812388697114 -0.0013587816931
           -0.00596694466148
-        </feature>
-        <feature name="ncols_feature">
-          16.0
-        </feature>
-        <feature name="nholes">
-          0.5625 0.846153846154
-        </feature>
-        <feature name="nholes_extended">
-          0.25 1.0 1.0 0.0 0.615384615385 0.923076923077 0.923076923077
-          0.923076923077
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 11.0 0.205128205128 0.0 2.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.432692307692
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.666666666667 0.833333333333 0.5 0.416666666667 0.0
-          0.0 0.5 0.666666666667 0.0 0.0 0.4375 0.416666666667 0.833333333333
-          0.833333333333 0.4375
         </feature>
         <feature name="volume64regions">
           0.0 0.25 0.5 1.0 1.0 1.0 0.5 0.0 0.0 0.75 0.5 0.5 0.5 1.0 1.0 0.5
@@ -3285,12 +1281,6 @@
           1.0 0.25 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.75 0.0 0.0 0.0 0.0 0.5 0.75
           0.5 0.75 1.0 1.0 1.0 1.0 1.0 0.5 0.0 0.25 0.5 0.75 0.75 0.5 0.25
           0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.146703599078 0.530297871904 1.32176947138 0.707063829205
-          3.89669558906 2.03640286558 0.883829786506 4.44492420123
-          2.90471267032 1.06059574381 6.35847313604 6.98265835416
-          3.92669888561 1.23736170111
         </feature>
       </features>
     </glyph>
@@ -3303,60 +1293,19 @@
         11 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          180.0
-        </feature>
         <feature name="aspect_ratio">
           1.25
-        </feature>
-        <feature name="black_area">
-          75.0
-        </feature>
-        <feature name="compactness">
-          1.0
         </feature>
         <feature name="moments">
           0.399047619048 0.453333333333 0.247144296296 0.0926198518519
           -0.013229037037 0.0613403128851 -0.015121705528 0.0147635729607
           0.0109997213498
         </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.266666666667 0.416666666667
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.8 0.0 0.266666666667 0.0 0.333333333333 1.0 0.333333333333
-        </feature>
-        <feature name="nrows_feature">
-          12.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 10.0 0.161290322581 2.0 2.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.916666666667
-        </feature>
-        <feature name="volume">
-          0.416666666667
-        </feature>
-        <feature name="volume16regions">
-          0.444444444444 0.777777777778 1.0 0.444444444444 0.5 0.833333333333
-          0.166666666667 0.416666666667 0.25 0.666666666667 0.0 0.0 0.0 0.75
-          0.583333333333 0.0833333333333
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.5 1.0 1.0 1.0 0.0 0.5 0.75 1.0 1.0 1.0 1.0 1.0 0.25
           0.5 0.75 1.0 1.0 0.5 0.25 0.5 0.75 0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.25
           0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.25 1.0 0.5 0.0 0.0 0.0 0.0
           0.0 0.0 1.0 1.0 1.0 0.5 0.5 0.0 0.0 0.0 0.0 0.75 0.5 0.5 0.0 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.26425529177 0.426854357539 1.13061589775 0.569139143385
-          3.69708725978 1.76419284366 0.711423929231 4.05965244943
-          2.53813897816 0.853708715077 5.88162967765 6.5113602408
-          3.45245430126 0.995993500923
         </feature>
       </features>
     </glyph>
@@ -3370,48 +1319,13 @@
         12 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          315.0
-        </feature>
         <feature name="aspect_ratio">
           0.714285714286
-        </feature>
-        <feature name="black_area">
-          118.0
-        </feature>
-        <feature name="compactness">
-          0.966101694915
         </feature>
         <feature name="moments">
           0.532082324455 0.630084745763 0.155931838211 0.264311954971
           -0.0448067962158 -0.0233071540781 0.0416690772831 0.0163019396096
           -0.078966322716
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.666666666667 0.571428571429
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.8 1.06666666667 0.266666666667 0.0 0.380952380952
-          0.952380952381 0.952380952381
-        </feature>
-        <feature name="nrows_feature">
-          21.0
-        </feature>
-        <feature name="skeleton_features">
-          7.0 7.0 0.204081632653 0.0 2.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.952380952381
-        </feature>
-        <feature name="volume">
-          0.374603174603
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.8 0.666666666667 0.0 0.2 0.45 0.458333333333 0.3 0.35 0.3
-          0.375 0.35 0.4 0.5 0.708333333333
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.333333333333 1.0 0.666666666667 0.0 0.0 0.0 0.0
@@ -3421,12 +1335,6 @@
           0.0 0.0 0.0 0.333333333333 1.0 0.333333333333 0.0 0.833333333333
           0.666666666667 0.5 0.5 0.666666666667 1.0 0.5 0.5 1.0 1.0 1.0 1.0
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.833333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.270144922321 0.424293284946 1.12448942208 0.565724379929
-          3.68691833898 1.75483992894 0.707155474911 4.06444277705
-          2.52488169634 0.848586569893 5.95864567935 6.53800450072
-          3.43461472428 0.990017664875
         </feature>
       </features>
     </glyph>
@@ -3442,48 +1350,13 @@
         1 6 1 3 7 1 2 2 3 30 1 29 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          768.0
-        </feature>
         <feature name="aspect_ratio">
           1.33333333333
-        </feature>
-        <feature name="black_area">
-          310.0
-        </feature>
-        <feature name="compactness">
-          0.812903225806
         </feature>
         <feature name="moments">
           0.513943808533 0.442356241234 0.264927964822 0.152097747642
           0.00285804437582 -0.00272034243522 -0.00633676010028
           -0.00584683327905 0.00827534728673
-        </feature>
-        <feature name="ncols_feature">
-          32.0
-        </feature>
-        <feature name="nholes">
-          0.71875 2.08333333333
-        </feature>
-        <feature name="nholes_extended">
-          0.75 0.625 0.5 1.0 1.16666666667 3.0 2.33333333333 1.83333333333
-        </feature>
-        <feature name="nrows_feature">
-          24.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 17.0 0.25 4.0 1.0 4.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.958333333333
-        </feature>
-        <feature name="volume">
-          0.403645833333
-        </feature>
-        <feature name="volume16regions">
-          0.666666666667 0.375 0.291666666667 0.458333333333 0.5
-          0.479166666667 0.3125 0.166666666667 0.208333333333 0.229166666667
-          0.375 0.25 0.75 0.458333333333 0.479166666667 0.458333333333
         </feature>
         <feature name="volume64regions">
           0.916666666667 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.583333333333
@@ -3498,12 +1371,6 @@
           0.333333333333 0.75 0.25 0.166666666667 0.166666666667
           0.166666666667 0.166666666667 0.416666666667 0.166666666667
         </feature>
-        <feature name="zernike_moments">
-          0.265201983459 0.44859714375 1.15141269701 0.598129525
-          3.66636132594 1.78506785376 0.74766190625 4.02697441769
-          2.55704380352 0.897194287501 5.75978462421 6.41305587051
-          3.46734054628 1.04672666875
-        </feature>
       </features>
     </glyph>
     <glyph uly="16" ulx="281" nrows="14" ncols="16">
@@ -3515,60 +1382,19 @@
         3 6 3 4 2 6 4 3 3 7 4 2 4 5 5 1 6 3 7 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          224.0
-        </feature>
         <feature name="aspect_ratio">
           1.14285714286
-        </feature>
-        <feature name="black_area">
-          105.0
-        </feature>
-        <feature name="compactness">
-          1.00952380952
         </feature>
         <feature name="moments">
           0.502222222222 0.528937728938 0.202642479214 0.165024079473
           0.00833862433862 -0.010095739119 0.0012619378842 0.0132885506031
           0.00400958064815
         </feature>
-        <feature name="ncols_feature">
-          16.0
-        </feature>
-        <feature name="nholes">
-          0.5 0.928571428571
-        </feature>
-        <feature name="nholes_extended">
-          0.5 0.5 0.75 0.25 0.571428571429 0.857142857143 0.857142857143
-          0.857142857143
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 4.0 0.1875 0.0 0.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.46875
-        </feature>
-        <feature name="volume16regions">
-          0.416666666667 0.6875 0.5 0.75 0.166666666667 0.375 0.25 0.1875
-          0.833333333333 0.375 0.25 0.5 0.25 0.5625 0.5 0.75
-        </feature>
         <feature name="volume64regions">
           0.0 0.25 0.75 0.0 0.0 0.0 0.25 0.75 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           0.0 0.25 1.0 0.5 0.5 0.5 0.0 0.75 0.0 0.25 0.0 0.0 0.0 0.0 0.0 0.0
           1.0 0.75 0.0 0.0 0.0 0.0 0.0 0.25 0.5 1.0 1.0 0.5 0.5 0.5 0.75 1.0
           0.0 0.75 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.25 0.0 0.0 0.25 0.75
-        </feature>
-        <feature name="zernike_moments">
-          0.202145166449 0.510305207039 1.27319898146 0.680406942719
-          3.81451957619 1.96199375104 0.850508678399 4.31811985004
-          2.7989865303 1.02061041408 6.20515785389 6.81012869808
-          3.78417731924 1.19071214976
         </feature>
       </features>
     </glyph>
@@ -3584,49 +1410,13 @@
         10 3 2 3 10 3 2 27 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          690.0
-        </feature>
         <feature name="aspect_ratio">
           1.30434782609
-        </feature>
-        <feature name="black_area">
-          349.0
-        </feature>
-        <feature name="compactness">
-          0.661891117479
         </feature>
         <feature name="moments">
           0.471396107104 0.480333420162 0.193849853591 0.127516749631
           -0.00329025580243 0.00511814286746 -0.00196638563689
           -0.000111196546118 0.00247482077951
-        </feature>
-        <feature name="ncols_feature">
-          30.0
-        </feature>
-        <feature name="nholes">
-          0.533333333333 2.13043478261
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 0.4 0.666666666667 0.4 1.73913043478 2.26086956522
-          1.91304347826 1.73913043478
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          7.0 17.0 0.26 3.0 4.0 4.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.505797101449
-        </feature>
-        <feature name="volume16regions">
-          0.771428571429 0.452380952381 0.52380952381 0.761904761905 0.5
-          0.625 0.520833333333 0.395833333333 0.428571428571 0.357142857143
-          0.333333333333 0.285714285714 0.625 0.5 0.5 0.541666666667
         </feature>
         <feature name="volume64regions">
           0.833333333333 0.333333333333 0.0 0.0 0.0 0.0 0.444444444444
@@ -3640,12 +1430,6 @@
           0.75 1.0 1.0 1.0 1.0 1.0 1.0 0.666666666667 0.75 0.0833333333333
           0.0 0.0 0.0 0.0 0.166666666667 0.333333333333
         </feature>
-        <feature name="zernike_moments">
-          0.266752120967 0.445309720327 1.14656040582 0.59374629377
-          3.66460235111 1.77870932731 0.742182867212 4.01769871917
-          2.54906177681 0.890619440655 5.74269462614 6.40072493846
-          3.45761775432 1.0390560141
-        </feature>
       </features>
     </glyph>
     <glyph uly="8" ulx="816" nrows="22" ncols="6">
@@ -3657,47 +1441,13 @@
         
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          132.0
-        </feature>
         <feature name="aspect_ratio">
           0.272727272727
-        </feature>
-        <feature name="black_area">
-          62.0
-        </feature>
-        <feature name="compactness">
-          1.09677419355
         </feature>
         <feature name="moments">
           0.554838709677 0.575268817204 0.0205095498641 0.732725487563
           0.0174633278507 -0.0002603202747 -0.017138095211 0.00369051776654
           -0.247936599953
-        </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.33333333333 0.666666666667 0.666666666667 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 0.0 0.15 1.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.469696969697
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.0 0.166666666667 0.8 0.25 0.6 0.666666666667 1.0
-          0.333333333333 1.0 1.0 0.2 0.166666666667 0.6 0.666666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.333333333333 0.0 0.0 0.0 0.0 0.0 0.0
@@ -3706,12 +1456,6 @@
           1.0 0.0 0.666666666667 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.666666666667
           1.0 1.0 1.0 1.0 0.5 0.333333333333 0.0 0.666666666667 1.0 1.0 1.0
           1.0 0.0 0.0 0.0 0.0 0.5 0.0 0.0 0.666666666667
-        </feature>
-        <feature name="zernike_moments">
-          0.417162095071 0.358966384256 0.94445218628 0.478621845675
-          3.33841320819 1.47170919573 0.598277307094 3.40090618492
-          2.11542379033 0.717932768513 4.68618873034 5.46745334276
-          2.87559597008 0.837588229931
         </feature>
       </features>
     </glyph>
@@ -3723,59 +1467,19 @@
         1 3 5 6 5 5 5 4 5 4 6 3 6 4 5 3 6 3 6 3 5 4 6 4 4 5 3 7 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          126.0
-        </feature>
         <feature name="aspect_ratio">
           0.642857142857
-        </feature>
-        <feature name="black_area">
-          58.0
-        </feature>
-        <feature name="compactness">
-          0.98275862069
         </feature>
         <feature name="moments">
           0.558189655172 0.51724137931 0.0470960268974 0.324490549018
           0.0545327811718 -0.00406363762388 -0.0176816389503
           -0.00584025785808 0.00353634635502
         </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.444444444444 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 1.33333333333 0.0 0.444444444444 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          2.0 2.0 0.105263157895 0.0 1.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.460317460317
-        </feature>
-        <feature name="volume16regions">
-          0.5 0.0 0.0 0.0 1.0 0.25 0.0 0.5 0.666666666667 1.0 1.0 1.0
-          0.111111111111 0.416666666667 0.333333333333 0.666666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0
           1.0 0.0 0.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 0.5 1.0 0.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.25 0.0 0.0 0.25 0.75
-        </feature>
-        <feature name="zernike_moments">
-          0.339327764442 0.405258541438 1.06101608577 0.540344721918
-          3.54406704535 1.65168970961 0.675430902397 3.78725451944
-          2.37253117442 0.810517082877 5.35390471343 6.0689741752
-          3.22354048019 0.945603263356
         </feature>
       </features>
     </glyph>
@@ -3788,58 +1492,19 @@
         1 3 3 4 2 4 1 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          24.0
-        </feature>
         <feature name="aspect_ratio">
           1.5
-        </feature>
-        <feature name="black_area">
-          17.0
-        </feature>
-        <feature name="compactness">
-          1.52941176471
         </feature>
         <feature name="moments">
           0.482352941176 0.588235294118 0.104213311622 0.0728679014859
           0.0091593730918 0.00386797874245 -0.00236086089911 0.0122398876873
           -0.00580196811368
         </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          0.0 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          4.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 0.0 0.0 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.75
-        </feature>
-        <feature name="volume">
-          0.708333333333
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 0.5 1.0
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0
-        </feature>
-        <feature name="zernike_moments">
-          0.307042027168 0.362964375463 1.02597576255 0.483952500618
-          3.62413666318 1.6212342419 0.604940625772 3.89209285628
-          2.35199853673 0.725928750927 5.70423066502 6.33755170512
-          3.21826864705 0.846916876081
         </feature>
       </features>
     </glyph>
@@ -3852,62 +1517,19 @@
         3 3 5 1 3 3 17 2 2 4 3 2 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          168.0
-        </feature>
         <feature name="aspect_ratio">
           0.857142857143
-        </feature>
-        <feature name="black_area">
-          84.0
-        </feature>
-        <feature name="compactness">
-          1.11904761905
         </feature>
         <feature name="moments">
           0.480519480519 0.571428571429 0.111556527373 0.184037900875
           0.0050615484289 -0.0108343985833 -0.00553648749696 0.0114321019189
           -0.0251773851734
         </feature>
-        <feature name="ncols_feature">
-          12.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.714285714286
-        </feature>
-        <feature name="nholes_extended">
-          1.0 2.0 0.333333333333 0.666666666667 0.857142857143 0.571428571429
-          0.571428571429 0.571428571429
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          3.0 14.0 0.205128205128 0.0 3.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.5
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.25 0.555555555556 0.916666666667 0.555555555556
-          0.0833333333333 0.555555555556 0.25 0.666666666667 1.0
-          0.777777777778 0.916666666667 0.0 0.166666666667 0.222222222222
-          0.666666666667
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 0.0 0.0 0.5 1.0 0.5 0.0 0.75 0.25 0.0 0.0 1.0 1.0 1.0
           1.0 0.5 0.0 0.0 1.0 1.0 0.0 0.5 0.0 0.75 0.0 0.25 1.0 0.0 0.0 0.5
           1.0 1.0 1.0 1.0 1.0 0.0 1.0 0.5 0.0 0.75 1.0 1.0 1.0 1.0 1.0 1.0
           0.0 0.0 0.5 0.5 1.0 0.5 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.75 0.25
-        </feature>
-        <feature name="zernike_moments">
-          0.282513199011 0.450326384933 1.15611265645 0.60043517991
-          3.67533996794 1.7924392434 0.750543974888 4.04073044552
-          2.56768519948 0.900652769865 5.77719371092 6.43273830682
-          3.4818505247 1.05076156484
         </feature>
       </features>
     </glyph>
@@ -3919,60 +1541,19 @@
         0 4 7 3 9 3 5 4 5 4 5 3 6 4 5 4 5 4 5 4 5 4 5 4 4 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          117.0
-        </feature>
         <feature name="aspect_ratio">
           0.692307692308
-        </feature>
-        <feature name="black_area">
-          51.0
-        </feature>
-        <feature name="compactness">
-          1.01960784314
         </feature>
         <feature name="moments">
           0.629901960784 0.535947712418 0.0545642324596 0.287777702392
           0.0534937542876 -0.00951284559762 -0.0275515187266 -0.0169135975511
           -0.0188832456487
         </feature>
-        <feature name="ncols_feature">
-          9.0
-        </feature>
-        <feature name="nholes">
-          0.333333333333 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.444444444444 0.444444444444 0.444444444444 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          1.0 3.0 0.263157894737 0.0 1.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.435897435897
-        </feature>
-        <feature name="volume16regions">
-          0.333333333333 0.0 0.0 0.0 0.666666666667 0.0 0.0 0.125
-          0.333333333333 1.0 1.0 1.0 0.222222222222 0.555555555556
-          0.666666666667 0.75
-        </feature>
         <feature name="volume64regions">
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0
           0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 0.0 0.5
           1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.5 1.0
           1.0 1.0 1.0 1.0 1.0 0.0 0.25 0.5 0.25 0.5 0.5 0.5 0.75
-        </feature>
-        <feature name="zernike_moments">
-          0.374821356346 0.38473770462 1.01279584208 0.51298360616
-          3.46584531561 1.57837745005 0.6412295077 3.65703377397 2.268912117
-          0.76947540924 5.18124564063 5.88601466944 3.08439984292
-          0.89772131078
         </feature>
       </features>
     </glyph>
@@ -3987,48 +1568,13 @@
         7 3 5 3 8 2 2 9 5 1 3 9 5 1 3 6 1 1 10 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          396.0
-        </feature>
         <feature name="aspect_ratio">
           0.818181818182
-        </feature>
-        <feature name="black_area">
-          158.0
-        </feature>
-        <feature name="compactness">
-          0.848101265823
         </feature>
         <feature name="moments">
           0.472449739389 0.510247136829 0.123090921813 0.259180561781
           0.00650633114216 0.0112853819596 -0.0401463821208 0.0238117188744
           -0.00333668898896
-        </feature>
-        <feature name="ncols_feature">
-          18.0
-        </feature>
-        <feature name="nholes">
-          0.333333333333 0.909090909091
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 0.444444444444 0.0 0.0 0.181818181818 0.909090909091
-          1.09090909091 0.909090909091
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 8.0 0.181818181818 2.0 2.0 3.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.39898989899
-        </feature>
-        <feature name="volume16regions">
-          0.35 0.0 0.1 0.541666666667 0.92 0.466666666667 0.4 0.633333333333
-          0.4 0.791666666667 0.45 0.0416666666667 0.0 0.1 0.8 0.333333333333
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.5 0.0 0.0 0.25 0.166666666667
@@ -4038,12 +1584,6 @@
           0.666666666667 0.166666666667 0.0 0.0 0.0 0.0 0.333333333333 1.0
           1.0 0.833333333333 0.333333333333 0.0 0.0 0.0 0.111111111111
           0.666666666667 0.666666666667 0.333333333333 0.0
-        </feature>
-        <feature name="zernike_moments">
-          0.275082343157 0.449278638119 1.16155867794 0.599038184159
-          3.70100128262 1.80352365605 0.748797730199 4.09093800733
-          2.5861187576 0.898557276239 5.90654340924 6.52838346657
-          3.50934398259 1.04831682228
         </feature>
       </features>
     </glyph>
@@ -4055,58 +1595,18 @@
         0 4 3 5 3 4 4 3 4 3 4 3 4 3 4 3 4 3 4 3 3 4 3 5 1 7 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          91.0
-        </feature>
         <feature name="aspect_ratio">
           0.538461538462
-        </feature>
-        <feature name="black_area">
-          50.0
-        </feature>
-        <feature name="compactness">
-          0.96
         </feature>
         <feature name="moments">
           0.45 0.53 0.0354 0.340608 0.02656 -0.00033941125497
           -0.0110539457518 0.00369731993747 -0.0154983324889
-        </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          0.285714285714 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.571428571429 0.571428571429 0.0 0.0 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          13.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 1.0 0.047619047619 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.923076923077
-        </feature>
-        <feature name="volume">
-          0.549450549451
-        </feature>
-        <feature name="volume16regions">
-          0.666666666667 0.0 0.0 0.25 1.0 0.5 0.5 0.875 0.833333333333 1.0
-          1.0 1.0 0.0 0.0 0.0 0.375
         </feature>
         <feature name="volume64regions">
           1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.0 0.0 0.5 1.0
           1.0 0.0 0.0 0.0 0.0 0.5 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0
           0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5
-        </feature>
-        <feature name="zernike_moments">
-          0.339451735783 0.407071805991 1.06172124203 0.542762407989
-          3.53764505857 1.65150082381 0.678453009986 3.77447841551
-          2.3710201141 0.814143611983 5.31785599749 6.04092616974
-          3.2202791129 0.94983421398
         </feature>
       </features>
     </glyph>
@@ -4120,49 +1620,13 @@
         1 2 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          345.0
-        </feature>
         <feature name="aspect_ratio">
           0.652173913043
-        </feature>
-        <feature name="black_area">
-          151.0
-        </feature>
-        <feature name="compactness">
-          0.76821192053
         </feature>
         <feature name="moments">
           0.607852412488 0.563816977724 0.113843037557 0.252899329674
           -0.0559671049632 -0.0211004004504 0.0230955867028 0.0153256373689
           -0.040521040528
-        </feature>
-        <feature name="ncols_feature">
-          15.0
-        </feature>
-        <feature name="nholes">
-          0.666666666667 0.434782608696
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.533333333333 1.33333333333 0.0 0.0 0.0 0.869565217391
-          0.695652173913
-        </feature>
-        <feature name="nrows_feature">
-          23.0
-        </feature>
-        <feature name="skeleton_features">
-          8.0 9.0 0.115384615385 0.0 2.0 2.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.95652173913
-        </feature>
-        <feature name="volume">
-          0.43768115942
-        </feature>
-        <feature name="volume16regions">
-          0.0 0.0 0.666666666667 0.388888888889 0.0 0.166666666667
-          0.458333333333 0.708333333333 0.4 0.5 0.166666666667 0.25 0.75 0.75
-          0.75 0.791666666667
         </feature>
         <feature name="volume64regions">
           0.0 0.0 0.0 0.0 0.0 0.333333333333 0.0 0.0 0.0 0.0 0.0 0.0
@@ -4173,12 +1637,6 @@
           0.833333333333 0.5 0.166666666667 0.166666666667 0.5 1.0 1.0 1.0
           1.0 1.0 1.0 1.0 0.833333333333 0.25 0.666666666667 0.5 0.5 0.5 0.5
           0.666666666667 0.666666666667
-        </feature>
-        <feature name="zernike_moments">
-          0.274272752523 0.408971106567 1.10273067513 0.545294808756
-          3.68193392983 1.7268107604 0.681618510945 4.02212909668
-          2.49024981226 0.817942213135 5.85361985516 6.47967644461
-          3.39304783072 0.954265915324
         </feature>
       </features>
     </glyph>
@@ -4191,48 +1649,13 @@
         2 5 1 4 3 2 4 1 5 1 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          132.0
-        </feature>
         <feature name="aspect_ratio">
           0.272727272727
-        </feature>
-        <feature name="black_area">
-          76.0
-        </feature>
-        <feature name="compactness">
-          0.960526315789
         </feature>
         <feature name="moments">
           0.542105263158 0.494360902256 0.0200193176848 0.617024620936
           -0.0063374763085 -0.000789204665333 -0.0170432532316
           0.000104358096343 0.0383884241808
-        </feature>
-        <feature name="ncols_feature">
-          6.0
-        </feature>
-        <feature name="nholes">
-          1.16666666667 0.0454545454545
-        </feature>
-        <feature name="nholes_extended">
-          0.666666666667 1.33333333333 0.0 0.666666666667 0.181818181818 0.0
-          0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          8.0 5.0 0.151515151515 0.0 4.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.575757575758
-        </feature>
-        <feature name="volume16regions">
-          0.4 0.0 0.0 0.333333333333 0.7 0.5 0.7 0.666666666667 1.0 1.0 1.0
-          1.0 0.6 0.583333333333 0.4 0.416666666667
         </feature>
         <feature name="volume64regions">
           1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.666666666667 1.0 0.0 0.0 0.0 0.0 0.0
@@ -4241,12 +1664,6 @@
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0
           0.333333333333 0.333333333333 1.0 0.5 0.0 0.0 0.333333333333 0.5
           0.0 0.0 0.333333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.384683149848 0.374988310899 0.990496015388 0.499984414532
-          3.43096793413 1.54468976977 0.624980518165 3.5657263307
-          2.22151142436 0.749976621798 4.97351924534 5.72826477654
-          3.02096097917 0.874972725431
         </feature>
       </features>
     </glyph>
@@ -4258,60 +1675,19 @@
         4 4 6 7 3 14 1 19 8 3 8 3 8 3 8 3 9 3 6 1 1 4 1 5 2 8 5 4 3 0 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          154.0
-        </feature>
         <feature name="aspect_ratio">
           0.785714285714
-        </feature>
-        <feature name="black_area">
-          81.0
-        </feature>
-        <feature name="compactness">
-          0.913580246914
         </feature>
         <feature name="moments">
           0.456790123457 0.46628679962 0.114902689104 0.21562130133
           -0.0143026224924 0.00702437294172 0.0192552774358 0.000532354394917
           0.0279598480399
         </feature>
-        <feature name="ncols_feature">
-          11.0
-        </feature>
-        <feature name="nholes">
-          0.818181818182 0.214285714286
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.363636363636 1.09090909091 0.727272727273 0.0 0.285714285714
-          0.0 0.571428571429
-        </feature>
-        <feature name="nrows_feature">
-          14.0
-        </feature>
-        <feature name="skeleton_features">
-          7.0 7.0 0.133333333333 0.0 2.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.928571428571
-        </feature>
-        <feature name="volume">
-          0.525974025974
-        </feature>
-        <feature name="volume16regions">
-          0.0 1.0 1.0 0.25 0.666666666667 0.666666666667 0.333333333333 0.75
-          1.0 0.416666666667 0.0 0.666666666667 0.555555555556 0.5 0.0 0.5
-        </feature>
         <feature name="volume64regions">
           0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0
           0.75 1.0 0.5 0.5 0.5 1.0 0.5 1.0 1.0 1.0 0.0 0.0 0.0 0.5 1.0 1.0
           1.0 0.5 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.5 1.0 0.0 1.0
           1.0 0.0 0.0 0.0 0.5 0.5 0.0 0.75 1.0 0.0 0.0 0.0 0.75 0.25
-        </feature>
-        <feature name="zernike_moments">
-          0.214294883087 0.482079192215 1.23264873981 0.642772256287
-          3.80358624414 1.90948372697 0.803465320359 4.27365205514
-          2.73378783501 0.964158384431 6.17528287483 6.78243565448
-          3.70556106393 1.1248514485
         </feature>
       </features>
     </glyph>
@@ -4323,58 +1699,18 @@
         2 1 6 3 4 7 1 7 2 5 3 3 5 3 5 3 5 3 5 3 5 2 6 3 5 3 5 4 5 6 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          120.0
-        </feature>
         <feature name="aspect_ratio">
           0.533333333333
-        </feature>
-        <feature name="black_area">
-          56.0
-        </feature>
-        <feature name="compactness">
-          1.01785714286
         </feature>
         <feature name="moments">
           0.375 0.494897959184 0.0450015943878 0.350036443149 0.0122767857143
           0.00727463411077 0.0191433534645 0.00142825639768 0.0566415245909
-        </feature>
-        <feature name="ncols_feature">
-          8.0
-        </feature>
-        <feature name="nholes">
-          0.5 0.0
-        </feature>
-        <feature name="nholes_extended">
-          0.0 0.5 1.0 0.5 0.0 0.0 0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          15.0
-        </feature>
-        <feature name="skeleton_features">
-          5.0 1.0 0.0434782608696 1.0 7.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.933333333333
-        </feature>
-        <feature name="volume">
-          0.466666666667
-        </feature>
-        <feature name="volume16regions">
-          0.5 0.625 0.5 0.375 0.833333333333 1.0 0.875 1.0 0.333333333333 0.5
-          0.0 0.375 0.166666666667 0.125 0.0 0.25
         </feature>
         <feature name="volume64regions">
           0.0 0.5 0.5 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.5 1.0
           1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 1.0 0.5 1.0 1.0 0.0 0.5
           1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.5 1.0 0.0 0.0 0.0 0.0 0.5 0.0 0.5 0.5
           0.0 0.0 0.0 0.0 0.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.5
-        </feature>
-        <feature name="zernike_moments">
-          0.327979534438 0.382901571366 1.0308636924 0.510535428488
-          3.5427804206 1.61378478045 0.63816928561 3.76491056355
-          2.32678793448 0.765803142732 5.38471320373 6.07020539139
-          3.16987315448 0.893436999854
         </feature>
       </features>
     </glyph>
@@ -4387,48 +1723,13 @@
         1 7 
       </data>
       <features scaling="1.0">
-        <feature name="area">
-          154.0
-        </feature>
         <feature name="aspect_ratio">
           0.318181818182
-        </feature>
-        <feature name="black_area">
-          64.0
-        </feature>
-        <feature name="compactness">
-          1.109375
         </feature>
         <feature name="moments">
           0.4296875 0.588541666667 0.0272483825684 0.713558197021
           0.036304473877 -2.86549329758e-05 -0.00968520343304
           0.00336502492428 -0.272065535188
-        </feature>
-        <feature name="ncols_feature">
-          7.0
-        </feature>
-        <feature name="nholes">
-          1.0 0.0454545454545
-        </feature>
-        <feature name="nholes_extended">
-          1.14285714286 1.14285714286 0.571428571429 0.0 0.181818181818 0.0
-          0.0 0.0
-        </feature>
-        <feature name="nrows_feature">
-          22.0
-        </feature>
-        <feature name="skeleton_features">
-          4.0 1.0 0.2 0.0 3.0 1.0
-        </feature>
-        <feature name="top_bottom">
-          0.0 0.954545454545
-        </feature>
-        <feature name="volume">
-          0.415584415584
-        </feature>
-        <feature name="volume16regions">
-          0.2 0.333333333333 0.0 0.166666666667 0.7 0.333333333333 0.6 0.75
-          0.6 0.25 1.0 1.0 0.0 0.0 0.0 0.25
         </feature>
         <feature name="volume64regions">
           0.0 0.333333333333 0.0 0.666666666667 0.0 0.0 0.0 0.333333333333
@@ -4439,12 +1740,6 @@
           0.333333333333 0.0 0.333333333333 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0
           0.0 0.0 0.0 0.666666666667 0.0 0.0 0.0 0.0 0.0 0.0 0.0
           0.333333333333
-        </feature>
-        <feature name="zernike_moments">
-          0.423830951774 0.36171399786 0.947960529816 0.48228533048
-          3.33783142843 1.47599766186 0.6028566631 3.40951814656
-          2.12045359373 0.72342799572 4.70172850704 5.48167981596
-          2.88132832544 0.84399932834
         </feature>
       </features>
     </glyph>

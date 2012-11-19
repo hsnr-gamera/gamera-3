@@ -28,7 +28,7 @@ except ImportError:
    from wxPython.wx import wxVERSION
    # Check that the version is correct
    if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (2, 9):
-     raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x or 2.8.x.  However, it seems that you have wxPython %s installed."""
+     raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x, 2.8.x, or 2.9.x.  However, it seems that you have wxPython %s installed."""
                       % ".".join([str(x) for x in wxVERSION]))
 
 try:

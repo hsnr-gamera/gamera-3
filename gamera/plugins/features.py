@@ -319,9 +319,8 @@ class top_bottom(Feature):
 
 class diagonal_projection(Feature):
     """
-    Computes the ratio of the mid point of the rotated projections at
-    +/- 45 degrees. As the projections are only taken at two points,
-    this feature is not translation invariant.
+    Computes the ratio of sum of the interquartile (center plusminus half width)
+    rotated projections at +/- 45 degrees.
 
     +---------------------------+
     | **Invariant to:**         |  

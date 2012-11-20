@@ -1,7 +1,7 @@
 /*
  *
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
- *               2009-2010 Christoph Dalitz
+ *               2009-2012 Christoph Dalitz
  *               2010      Robert Butz
  *               2012      Andrew Hankinson
  *
@@ -690,11 +690,6 @@ namespace Gamera {
     *buf = feature_t(bottom) / feature_t(m.nrows());
   }
 
-
-
-
-  // this feature currently causes a segmentation fault
-  // and is therefore deactivated!
   template<class T>
   void diagonal_projection(const T& image, feature_t* buf) {
     typedef typename ImageFactory<T>::view_type* view_type;
@@ -702,28 +697,35 @@ namespace Gamera {
 
     IntVector *proj_x = projection_cols(*rotated_image);
     IntVector *proj_y = projection_rows(*rotated_image);
+
+    size_t i;
+    size_t size_x = (*proj_x).size();
+    unsigned int sum_x = 0;
+    double mean_x = 1.0;
+
+    if (size_x > 1) {
+      for (i = size_x/4; i < size_x*3/4+1; i++) {
+      sum_x += (*proj_x)[i];
+      }
+      mean_x = double(sum_x) / (size_x / 2);      
+    }
     
-    int mid_x = (*proj_x).size()/2;
-    int mid_y = (*proj_y).size()/2;
+    size_t size_y = (*proj_y).size();
+    unsigned int sum_y = 0;
+    double mean_y = 1.0;
 
-    float relation_xy;
-    if (mid_y > 0)
-      relation_xy = (float) (*proj_x)[mid_x] / (float) (*proj_y)[mid_y];
-    else
-      relation_xy = 0.0;
+    if (size_y > 1) {
+      for (i = size_y/4; i < size_y*3/4+1; i++) {
+      sum_y += (*proj_y)[i];
+      }
+      mean_y = double(sum_y) / (size_y / 2);
+    }
 
-
-    *buf = relation_xy;
-
+    *buf = (mean_x / mean_y);
+    
     delete proj_x;
     delete proj_y;
     delete rotated_image;
-
   }
-
-
-
-
-
 }
 #endif

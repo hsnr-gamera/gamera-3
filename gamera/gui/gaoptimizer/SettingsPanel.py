@@ -53,7 +53,6 @@ class GAWorker(threading.Thread):
     #---------------------------------------------------------------------------
     def run(self):
     #---------------------------------------------------------------------------
-        self.frame.timer.Start(1000)
         self.GAOptimizer.startCalculation()
         self.frame.timer.Stop()
 
@@ -101,6 +100,7 @@ class SettingsPanel(wx.ScrolledWindow):
         self.weightingLabel = "Feature weighting"
 
         self.featureSelection = wx.RadioButton(self, -1, self.selectingLabel)
+        self.featureSelection.SetValue(True)
         self.featureWeighting = wx.RadioButton(self, -1, self.weightingLabel)
         self.normalization = wx.CheckBox(self, -1, "Normalization")
 
@@ -401,6 +401,7 @@ class SettingsPanel(wx.ScrolledWindow):
         self.workerThread.setDaemon(1)
 
         self.frame.statusPanel.starttime = time.time()
+        self.frame.timer.Start(1000)
         self.workerThread.start()
 
         self.frame.UpdatePanels()

@@ -390,7 +390,7 @@ Generates features for the given glyph.
 Get the selection vector elements.
 
 This function returns a python dictionary: keys are the feature names, values
-are lists which elements corresponds to the selection values (1/0).
+are lists of zeros and ones, where ones correspond to the selected components.
 """
       return self.__get_settings_by_features(self.get_selections)
 
@@ -413,7 +413,8 @@ returns only the selection values list for the given feature name.
 Get the weighting vector elements.
 
 This function returns a python dictionary: keys are the feature names, values
-are lists which elements corresponds to the weighting values.
+are lists of real values in [0,1], which give the weight of the respective
+component.
 """
       return self.__get_settings_by_features(self.get_weights)
 
@@ -453,12 +454,19 @@ returns only the weighting values list for the given feature name.
 Set the selection vector elements by the corresponding feature name.
 
 *values*
-   Python dictionary with feature names as keys and lists as values.
-   See get_selections_by_features for format.
+   Python dictionary with feature names as keys and lists as values, as
+   described in get_selections_by_features.
 
-.. note::
-   All features in the classifier must be provided with the
-   corresponding values in the dictionary.
+The dictionary must contain an entry for every feature of the currently
+active feature set, that has been set in the contructor of the classifier or
+by *change_feature_set*. Example:
+
+.. code:: Python
+
+   classifier = knn.kNNNonInteractive("train.xml",
+                                      ["aspect_ratio","moments"], 0)
+   classifier.set_selections_by_features({"aspect_ratio":[1],
+                                          "moments":[0, 1, 1, 1, 1, 1, 1, 1, 0]})
 """
       a = array.array('i')
       self.__set_settings_by_features(self.set_selections, values, a)
@@ -490,16 +498,22 @@ Set the selection vector elements for one specific feature.
       """**set_weights_by_features** (Dictionary *values*)
 
 Set the weighing vector elements by the corresponding feature name.
+The dictionary must contain an entry for every feature of the currently
+active feature set, that has been set in the contructor of the classifier or
+by *change_feature_set*. Example:
 
-.. note::
-   All features in the classifier must be provided with the
-   corresponding values in the dictionary.
+.. code:: Python
+
+   classifier = knn.kNNNonInteractive("train.xml",
+                                      ["aspect_ratio","moments"], 0)
+   classifier.set_weights_by_features({"aspect_ratio":[0.6],
+                                       "moments":[0.1, 1.0, 0.3, 0.5, 1.0, 0.0, 1.0, 0.9, 0.0]})
 """
       a = array.array('d')
       self.__set_settings_by_features(self.set_weights, values, a)
 
    def set_weights_by_feature(self, feature_name, values):
-      """ **set_weights_by_feature** (String *feature_name*, List *values*
+      """ **set_weights_by_feature** (String *feature_name*, List *values*)
 
 Set the weighting vector elements for one specific feature.
 
@@ -607,9 +621,9 @@ Changes the set of features used in the classifier to the given list of feature 
          self.generate_features_on_glyphs(self.database)
 
 class kNNNonInteractive(_kNNBase, classify.NonInteractiveClassifier):
-   def __init__(self, database=[], features='all', perform_splits=True, num_k=1, normalize=True):
+   def __init__(self, database=[], features='all', perform_splits=True, num_k=1, normalize=False):
       """**kNNNonInteractive** (ImageList *database* = ``[]``, *features* = ``'all'``,
-bool *perform_splits* = ``True``, int *num_k* = ``1``, bool *normalize* = ``True``)
+bool *perform_splits* = ``True``, int *num_k* = ``1``, bool *normalize* = ``False``)
 
 Creates a new kNN classifier instance.
 

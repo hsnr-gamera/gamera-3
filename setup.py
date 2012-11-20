@@ -60,9 +60,11 @@ for argument in sys.argv:
       sys.argv[sys.argv.index('--compiler=mingw32_cross')] = '--compiler=mingw32'
       cross_compiling = True
    elif argument == '--openmp=yes':
-       has_openmp = True
+      has_openmp = True
+      sys.argv.remove(argument)
    elif argument == '--openmp=no':
-       has_openmp = False
+      has_openmp = False
+      sys.argv.remove(argument)
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
 print "Gamera version:", gamera_version
 

@@ -14,7 +14,7 @@
 #include <config.h>
 #endif
 
-#ifndef _WINDOWS
+#if !defined(_WINDOWS) && !defined(WIN32)
 
 #include <cstdlib>
 #include <cstring>

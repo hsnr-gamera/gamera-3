@@ -225,6 +225,18 @@ the Desktop) and double-clicked to run Gamera.
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of Gamera.
 
+Installing without wxPython
+---------------------------
+
+When you need Gamera as a backend for document processing routines on
+a server and do not need the GUI, it can save a lot of trouble to
+avoid the installation of wxPython. For this case, use the option
+``--nowx`` for ``setup.py``::
+
+  python setup.py --nowx build
+  sudo python setup.py --nowx install
+
+
 Mac OS-X
 ========
 

@@ -2,8 +2,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                         and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2010-2012 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -41,6 +41,7 @@ cross_compiling = False
 # it is in fact the new and updated version
 gamera_version = open("version", 'r').readlines()[0].strip()
 has_openmp = None
+no_wx = False
 i = 0
 for argument in sys.argv:
    i = i + 1
@@ -64,6 +65,9 @@ for argument in sys.argv:
       sys.argv.remove(argument)
    elif argument == '--openmp=no':
       has_openmp = False
+      sys.argv.remove(argument)
+   elif argument == '--nowx':
+      no_wx = True
       sys.argv.remove(argument)
 open("gamera/__version__.py", "w").write("ver = '%s'\n\n" % gamera_version)
 print "Gamera version:", gamera_version
@@ -221,13 +225,19 @@ extensions.extend(plugin_extensions)
 
 # read versions from compile computer
 pythonversion = "%d.%d" % (sys.version_info[0],sys.version_info[1])
-import wx
-wx_version_info = wx.__version__.split(".")
-wxversion = "%s.%s" % (wx_version_info[0],wx_version_info[1])
-description = ("This is the Gamera installer.\n" + \
-               "\tPlease ensure that Python " + pythonversion + \
-               " and wxPython " + wxversion + "\n" + \
-               "\tare installed before proceeding.")
+if not no_wx:
+    import wx
+    wx_version_info = wx.__version__.split(".")
+    wxversion = "%s.%s" % (wx_version_info[0],wx_version_info[1])
+    description = ("This is the Gamera installer.\n" + \
+                   "\tPlease ensure that Python " + pythonversion + \
+                   " and wxPython " + wxversion + "\n" + \
+                   "\tare installed before proceeding.")
+else:
+    description = ("This is the Gamera installer.\n" + \
+                   "\tPlease ensure that Python " + pythonversion + \
+                   "\tare installed before proceeding.")
+
 
 includes = [(os.path.join(gamera_setup.include_path, path),
              glob.glob(os.path.join("include", os.path.join(path, ext))))

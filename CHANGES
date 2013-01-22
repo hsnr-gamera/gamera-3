@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - option --nowx for setup.py to install without wxPython
+
+
 Version 3.4.0, Nov 20, 2012
 ----------------------------
 

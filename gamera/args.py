@@ -116,7 +116,7 @@ class Int(Arg):
       if name:
          result += " *%s*" % self.name
          if self.has_default:
-            if isinstance(self.default,CNoneDefault):
+            if isinstance(self.default,CNoneDefault) or isinstance(self.default, NoneType):
                 result += " = %s" % str(self.default)
             else:
                 result += " = %d" % self.default

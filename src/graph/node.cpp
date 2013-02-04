@@ -72,10 +72,9 @@ EdgePtrIterator* Node::get_edges(bool both_directions) {
 
 
 // -----------------------------------------------------------------------------
-NodePtrEdgeIterator* Node::get_nodes(bool both_directions) {
+NodePtrEdgeIterator* Node::get_nodes() {
    Node* from_node = NULL;
-   if(_graph->is_directed() && !both_directions)
-      from_node = this;
+   from_node = this;
 
    NodePtrEdgeIterator* it = new NodePtrEdgeIterator(_graph, _edges.begin(), 
          _edges.end(), from_node);

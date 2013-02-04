@@ -481,19 +481,15 @@ example on handling iterators in C++.
 .. code:: CPP
 
    Graph* g = new Graph();
-   // add nodes and edges to g ...
-   DFSIterator* it = g->DFS(); //iterator is allocated on heap
-
+   // add nodes and edges to g
+   // ...
+   NodePtrIterator *nit = g->get_nodes(); //iterator is allocated on heap
    Node *n;
-   while((n = it->next()) != NULL) {
+   while((n = nit->next()) != NULL) {
       // next() returns NULL when there are no more elements
       // You can do something with node n, but do not add or remove 
       // nodes to the graph because this would invalidate the iterator.
    }
 
-   delete it; //iterator must be deleted after usage
-
-
-
-
+   delete nit; //iterator must be deleted after usage
 

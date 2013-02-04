@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009-2012 Christoph Dalitz
+# Copyright (C) 2009-2013 Christoph Dalitz
 #               2010      Oliver Christen, Tobias Bolten
 #               2011      Christian Brandt
 #
@@ -216,15 +216,18 @@ class graph_color_ccs(PluginFunction):
     """
     Returns an RGB Image where each segment is colored with one of the colors
     from *colors* with the constraint that segments adjacent in the 
-    neighborship graph have different colors.
+    neighborship graph have different colors. Optionally, each segment can
+    also be colored uniquely with adjacent segments colored with sufficiently
+    different colors. Reference:
+
+      C. Dalitz, T. Bolten, O. Christion:
+      *Color Visualization of 2D Segmentations.* IVAPP 2013
 
     This function can be used to verify that the pagesegmentation 
     e.g. ``runlength_smearing`` is working correctly for your image.
 
-    For coloring the Gamera graph library is used. For more information on the 
-    coloring algorithm see Graph.colorize__
 
-    .. __: graph.html#colorize
+    Arguments:
     
     *ccs*:
         ImageList which contains ccs to be colored. Must be views on
@@ -247,6 +250,14 @@ class graph_color_ccs(PluginFunction):
             2 = from the exact area Voronoi diagram
             (can be slow on large images)
 
+    *unique*:
+        When ``True``, each segemnt obtains a unique color that is
+        close to one of the colors in *colors* with the restriction
+        that neighboring segments obtain sufficiently different colors.
+        See the reference above for details.
+
+    Example:
+
     .. code:: Python
 
        ccs = imgage.cc_analysis()
@@ -257,18 +268,18 @@ class graph_color_ccs(PluginFunction):
                   RGBPixel(50, 150, 50),
                   RGBPixel(0, 190, 255),
                   RGBPixel(230, 190, 20) ]
-       rgb = imgage.mycolor_ccs(ccs, colors, 1)
+       rgb = imgage.graph_color_ccs(ccs, colors, 1)
 
     .. note:: *colors* may not contain less than six colors.
 
     """
     category = "Color"
-    author = "Oliver Christen and Tobias Bolten"
-    args = Args([ImageList('ccs'), Class('colors', klass=RGBPixel, list_of=True,default=NoneDefault), Choice('method', ["CC center", "20% contour points", "voronoi diagram"], default=1)])
+    author = "Oliver Christen, Tobias Bolten, Christoph Dalitz"
+    args = Args([ImageList('ccs'), Class('colors', klass=RGBPixel, list_of=True,default=NoneDefault), Choice('method', ["CC center", "20% contour points", "voronoi diagram"], default=1), Check("unique", default=False)])
     self_type = ImageType([ONEBIT])
     return_type = ImageType([RGB])
 
-    def __call__(image, ccs, colors=None, method=1):
+    def __call__(image, ccs, colors=None, method=1, unique=False):
       if colors == None:
         from gamera.core import RGBPixel
         colors = [ RGBPixel(150, 0, 0),
@@ -281,7 +292,7 @@ class graph_color_ccs(PluginFunction):
                    RGBPixel(0, 190, 255),
                    RGBPixel(230, 190, 20),
                    ]
-      return _geometry.graph_color_ccs(image, ccs, colors, method)
+      return _geometry.graph_color_ccs(image, ccs, colors, method, unique)
     __call__ = staticmethod(__call__)
 
 

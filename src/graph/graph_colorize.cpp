@@ -18,14 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+
 #include <limits>
 #include <algorithm>
 #include "graph/graph.hpp"
 #include "graph/node.hpp"
 #include "graph/graphdataderived.hpp"
+
+#ifdef __DEBUG_GAPI__
+#include <Python.h>
+#include "graph/graphdatapyobject.hpp"
+#endif
+
 namespace Gamera { namespace GraphApi {
 
-   
    
 // -----------------------------------------------------------------------------
 unsigned int Graph::get_color(Node* n) {
@@ -75,7 +81,7 @@ void Graph::colorize(unsigned int ncolors) {
    n_it = get_nodes();
    while((n = n_it->next()) != NULL) {
       size_t nnodes = n->get_nnodes();
-      if(degrees[nnodes] == NULL)
+      if(degrees.find(nnodes) == degrees.end())
          degrees[nnodes] = new NodeList;
       degrees[nnodes]->push_back(n);
       nodedegrees[n] = nnodes;
@@ -85,7 +91,7 @@ void Graph::colorize(unsigned int ncolors) {
    // --------------------------------------------------------------------------
    //Step 2
    //
-   std::vector<Node*> removed(get_nnodes());
+   std::vector<Node*> removed(get_nnodes(),NULL);
 
    for(int i = get_nnodes()-1; i >= 0; i--) {
       Node* to_be_removed = NULL;
@@ -116,9 +122,9 @@ void Graph::colorize(unsigned int ncolors) {
          
          if(it != degrees[degree]->end()) {
             degrees[degree]->erase(it);
-            nodedegrees[n] = degree -1;
+            nodedegrees[neighbor] = degree -1;
             if(degree >= 0) {
-               if(degrees[degree-1] == NULL)
+              if(degrees.find(degree-1) == degrees.end())
                   degrees[degree-1] = new NodeList;
 
                //insert at degree-1
@@ -126,7 +132,6 @@ void Graph::colorize(unsigned int ncolors) {
             }
          }
       }
-
       delete neighbors;
      
 
@@ -147,8 +152,9 @@ void Graph::colorize(unsigned int ncolors) {
       for(std::vector<Node*>::iterator it = removed.begin(); it != removed.end(); it++) {
    //   while ((n = n_it->next()) != NULL) {
          n = *it;
-         if(n == NULL)
+         if(n == NULL) {
             continue;
+         }
 
          std::vector<bool> available_colors(ncolors, true);
 

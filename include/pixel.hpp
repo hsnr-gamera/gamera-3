@@ -189,7 +189,7 @@ namespace Gamera {
 	(typename vigra::NumericTraits<T>::Promote)vigra::NumericTraits<T>::max;
       const typename vigra::NumericTraits<T>::Promote s2 = s * s;
       return (red() * s2 + green() * s + blue() <
-	      other.red() * s2 + green() * s + blue());
+	      other.red() * s2 + other.green() * s + other.blue());
     }
 
     /// Set the red component to the passed in value.

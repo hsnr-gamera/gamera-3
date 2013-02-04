@@ -66,7 +66,7 @@ struct Node {
    EdgePtrIterator* get_edges(bool both_directions = false);
 
    /// Iterator over all nodes reachable from this node
-   NodePtrEdgeIterator* get_nodes(bool both_directions = false);
+   NodePtrEdgeIterator* get_nodes();
 
    size_t get_nedges() { return _edges.size() ; }
    size_t get_nnodes() {

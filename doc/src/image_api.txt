@@ -852,6 +852,8 @@ image type ``ConnectedComponent``. You can us it just like in Python:
   // loop over all ccs
   for (ccs_it = ccs->begin(); ccs_it != ccs->end(); ++ccs_it) {
 
+    Cc* cc = static_cast<Cc*>(*ccs_it);
+
     // query cc label
     int label = cc->label();
 

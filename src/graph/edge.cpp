@@ -58,7 +58,7 @@ void Edge::remove_self() {
 
 // -----------------------------------------------------------------------------
 Node* Edge::traverse(Node* node) {
-   if(from_node == NULL or to_node == NULL)
+   if(from_node == NULL || to_node == NULL)
       return NULL;
    else if(node == from_node)
       return to_node;
@@ -71,7 +71,7 @@ Node* Edge::traverse(Node* node) {
 
 // -----------------------------------------------------------------------------
 Node* Edge::traverse(GraphData * value) { 
-   if(from_node == NULL or to_node == NULL)
+   if(from_node == NULL || to_node == NULL)
       return NULL;
    else if(*value == *from_node->_value)
       return to_node;

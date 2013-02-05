@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2013      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -180,16 +181,33 @@ namespace Gamera {
     template<class I>
     Rgb(I i, const I end) : RGBValue<T>(i, end) { }
 
+    /**
+     * equality of RGB values
+     */
+    bool operator==(const Rgb<T>& other) const {
+      return (red() == other.red() &&
+              green() == other.green() &&
+              blue() == other.blue());
+    }
+
     /* This is totally arbitrary, and doesn't make sense in terms
        of "colors", but it will make using RGB as a key in a std::map
        work.
     */
     bool operator<(const Rgb<T>& other) const {
+      /* This does not work on all platforms and compilers:
       const typename vigra::NumericTraits<T>::Promote s = 
 	(typename vigra::NumericTraits<T>::Promote)vigra::NumericTraits<T>::max;
       const typename vigra::NumericTraits<T>::Promote s2 = s * s;
       return (red() * s2 + green() * s + blue() <
 	      other.red() * s2 + other.green() * s + other.blue());
+      */
+      if (red() < other.red()) return true;
+      if (red() > other.red()) return false;
+      if (green() < other.green()) return true;
+      if (green() > other.green()) return false;
+      if (blue() < other.blue()) return true;
+      return false;
     }
 
     /// Set the red component to the passed in value.

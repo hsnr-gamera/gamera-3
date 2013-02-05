@@ -215,10 +215,11 @@ class delaunay_from_points(PluginFunction):
 class graph_color_ccs(PluginFunction):
     """
     Returns an RGB Image where each segment is colored with one of the colors
-    from *colors* with the constraint that segments adjacent in the 
-    neighborship graph have different colors. Optionally, each segment can
-    also be colored uniquely with adjacent segments colored with sufficiently
-    different colors. Reference:
+    from *colors* in such a way that neighboring segments have different
+    colors. Optionally, each segment can also be colored uniquely with
+    a color that is close to one of the given *colors*.
+
+    Reference:
 
       C. Dalitz, T. Bolten, O. Christion:
       *Color Visualization of 2D Segmentations.* IVAPP 2013

@@ -222,7 +222,11 @@ class graph_color_ccs(PluginFunction):
     Reference:
 
       C. Dalitz, T. Bolten, O. Christion:
-      *Color Visualization of 2D Segmentations.* IVAPP 2013
+      `\"Color Visualization of 2D Segmentations.\"`__
+      International Conference on Information Visualization Theory
+      and Applications (IVAPP), pp. 567-572 (2013)
+
+.. __: http://informatik.hsnr.de/~dalitz/data/publications/ivapp13-coloring.pdf
 
     This function can be used to verify that the pagesegmentation 
     e.g. ``runlength_smearing`` is working correctly for your image.
@@ -271,7 +275,7 @@ class graph_color_ccs(PluginFunction):
                   RGBPixel(230, 190, 20) ]
        rgb = imgage.graph_color_ccs(ccs, colors, 1)
 
-    .. note:: *colors* may not contain less than six colors.
+    .. note:: *colors* must not contain less than six colors.
 
     """
     category = "Color"

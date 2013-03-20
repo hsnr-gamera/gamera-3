@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - all user provided filenames (trining XML files etc) converted
+   to unicode to allow for arbitrary filenames
+
  - new argument 'unique' for graph_color_ccs based on IVAPP 2013 paper
 
  - node.nodes() in graph API now works

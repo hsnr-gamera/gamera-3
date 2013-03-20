@@ -581,6 +581,11 @@ class _Filename:
 
    def get(self):
       text = self.text.GetValue()
+      try:
+         textutf8 = text.encode('utf8')
+         text = textutf8
+      except:
+         pass
       if text == "":
          return None
       else:

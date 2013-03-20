@@ -160,6 +160,10 @@ class RuleEngineRunnerPanel(wx.Panel):
 
    def open_module(self, filename):
       import imp
+      try:
+         filename = filename.encode('utf8')
+      except:
+         pass
       fd = open(filename, 'r')
       module_name = path.split(filename)[1]
       module_name = module_name[:module_name.rfind('.')]

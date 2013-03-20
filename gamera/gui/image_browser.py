@@ -39,6 +39,10 @@ class FileList(wx.GenericDirCtrl):
          return
       wx.BeginBusyCursor()
       try:
+         filename = filename.encode('utf8')
+      except:
+         pass
+      try:
          try:
             image = core.load_image(filename)
          except Exception, e:

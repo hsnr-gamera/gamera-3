@@ -279,7 +279,7 @@ namespace Gamera {
   IntVector* run_histogram(const T& image, const Color& color, const runs::Vertical& direction) {
     // MGD: Changed so data is accessed in row-major order.  This should make things
     //      much faster.
-    typedef typename runs::GetIterator<T, runs::Vertical>::const_iterator iterator;
+    //typedef typename runs::GetIterator<T, runs::Vertical>::const_iterator iterator;
     IntVector* hist = new IntVector(image.nrows() + 1, 0);
     IntVector tmp(image.ncols(), 0);
 

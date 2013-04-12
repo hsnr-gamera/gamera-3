@@ -490,7 +490,7 @@ void djvu_threshold_recurse(const T image,
                             Rgb<double> fg_init, 
                             Rgb<double> bg_init, 
                             const size_t block_size) {
-  typedef typename T::value_type value_type;
+  //typedef typename T::value_type value_type;
   typedef Rgb<double> promote_t;
 
   promote_t fg = fg_init;

@@ -467,7 +467,7 @@ namespace Gamera {
   */
   template<class T>
   Image * trim_image(const T &image, const typename T::value_type pixelValue) {
-    typedef typename T::value_type value_type;
+    //typedef typename T::value_type value_type;
     typedef typename ImageFactory<T>::view_type view_type;
     view_type *res;
 

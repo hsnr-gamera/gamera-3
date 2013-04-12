@@ -763,9 +763,9 @@ namespace Gamera {
 
   template<class T>
     Image* convex_hull_as_image(const T& src, bool filled) {
-    typedef typename T::value_type value_type;
+    //typedef typename T::value_type value_type;
     
-    typedef typename ImageFactory<OneBitImageView>::view_type view_type;
+    //typedef typename ImageFactory<OneBitImageView>::view_type view_type;
     OneBitImageData* res_data = new OneBitImageData(src.size(),src.origin());
     OneBitImageView* res = new OneBitImageView(*res_data,src.origin(),src.size());
 

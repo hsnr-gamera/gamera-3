@@ -242,7 +242,7 @@ eoRealBounds* eoGeneralRealBounds::getBoundsFromString(std::string _value)
         }
 
       // now create the embedded eoRealBounds object
-      eoRealBounds * locBound;
+      eoRealBounds * locBound = NULL;
       if (minBounded && maxBounded)
         {
           if (maxBound <= minBound)

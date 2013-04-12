@@ -159,7 +159,7 @@ namespace Gamera {
 
   template<class T>
   typename ImageFactory<T>::view_type* outline(const T& in) {
-    typedef typename ImageFactory<T>::data_type data_type;
+    //typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
     view_type* out = erode_dilate(in, 1, 0, 0);
     xor_image(*out, in);

@@ -350,7 +350,7 @@ namespace Gamera {
 
   template<class T>
   typename ImageFactory<T>::view_type* thin_lc(const T& in) {
-    typedef typename ImageFactory<T>::data_type data_type;
+    //typedef typename ImageFactory<T>::data_type data_type;
     typedef typename ImageFactory<T>::view_type view_type;
 
     // Chain to thin_zs

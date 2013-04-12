@@ -327,7 +327,7 @@ namespace Gamera {
     static void fill_seeds(T& image, Stack& s, 
                            const typename T::value_type& interior, 
                            const typename T::value_type& color) {
-      typedef typename T::value_type pixel_t;
+      //typedef typename T::value_type pixel_t;
       size_t left, right;
       while (!s.empty()) {
         Point p = s.top();

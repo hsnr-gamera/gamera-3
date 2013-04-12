@@ -28,12 +28,12 @@
 #include "knnmodule.hpp"
 
 namespace Gamera { namespace kNN {
-
+#if 0
   static PyTypeObject KnnType = {
     PyObject_HEAD_INIT(NULL)
     0,
   };
-
+#endif
   /*
     The KnnObject holds all of the information needed by knn. Unlike
     many of the parts of Gamera, there is a significant amount of

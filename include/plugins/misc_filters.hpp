@@ -629,7 +629,7 @@ namespace Gamera {
             // get condition variables
             kfill_get_condition_variables(tmp, k, x, y, src_size_x, src_size_y, &n, &r, &c);
             // condition check
-            if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+            if( (c <= 1) && ( (n > 3*k - 4) || ( (n == 3*k - 4) && (r == 2) ) ) ) {
               kfill_set_core_pixel(res, x, y, &c_lr, 1);
               changed = true;
             }
@@ -643,7 +643,7 @@ namespace Gamera {
             n = ( 4*(k-1) ) - n;
             r = 4 - r;
             // condition check
-            if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+            if( (c <= 1) && ( (n > 3*k - 4) || ( (n == 3*k - 4) && (r == 2) ) ) ) {
               kfill_set_core_pixel(res, x, y, &c_lr, 0);
               changed = true;
             }
@@ -713,7 +713,7 @@ namespace Gamera {
           r = 4 - r;
 					
           // eq. satisfied?
-          if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+          if( (c <= 1) && ( (n > 3*k - 4) || ( (n == 3*k - 4) && (r == 2) ) ) ) {
             kfill_set_core_pixel(res, x, y, &c_lr, 0);
           } else {
             kfill_set_core_pixel(res, x, y, &c_lr, 1);
@@ -725,7 +725,7 @@ namespace Gamera {
           kfill_get_condition_variables(tmp, k, x, y, src_size_x, src_size_y, &n, &r, &c);
 
           // eq. satisfied?					
-          if( (c <= 1) && ( (n > 3*k - 4) || (n == 3*k - 4) && (r == 2) ) ) {
+          if( (c <= 1) && ( (n > 3*k - 4) || ( (n == 3*k - 4) && (r == 2) ) ) ) {
             kfill_set_core_pixel(res, x, y, &c_lr, 1);
           } else {
             kfill_set_core_pixel(res, x, y, &c_lr, 0);

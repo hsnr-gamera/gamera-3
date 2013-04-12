@@ -22,6 +22,7 @@
 import sys, os, glob, datetime, platform
 from distutils.sysconfig import get_python_lib
 from distutils.command.install import INSTALL_SCHEMES
+from distutils import sysconfig
 
 # # unfortunately this does not help installing data_files
 # # to the same dir as gamera :(

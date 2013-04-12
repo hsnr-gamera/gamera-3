@@ -45,6 +45,15 @@
 using namespace Gamera;
 using namespace Gamera::kNN;
 
+namespace Gamera {
+	namespace kNN {
+		static PyTypeObject KnnType = {
+		PyObject_HEAD_INIT(NULL)
+		0,
+		};
+	}
+}
+
 extern "C" {
   DL_EXPORT(void) initknncore(void);
   // Construction/destruction

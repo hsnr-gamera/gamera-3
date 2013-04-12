@@ -87,7 +87,7 @@ template <class T>
 struct my_minus : public std::binary_function<T,T,T>
 {
   T operator()(const T& x, const T& y) const { 
-    typedef typename NumericTraits<T>::Promote PROMOTE;
+    //typedef typename NumericTraits<T>::Promote PROMOTE;
     return std::minus<T>()(x, y); 
   }
 };

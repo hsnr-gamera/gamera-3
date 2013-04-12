@@ -32,7 +32,7 @@ logical_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
   if (a.nrows() != b.nrows() || a.ncols() != b.ncols())
     throw std::runtime_error("Images must be the same size.");
   
-  typedef typename T::value_type TVALUE;
+  //typedef typename T::value_type TVALUE;
   typedef typename ImageFactory<T>::view_type VIEW;
 
   if (in_place) {
@@ -82,14 +82,14 @@ logical_combine(T& a, const U& b, const FUNCTOR& functor, bool in_place) {
 template<class T, class U>
 typename ImageFactory<T>::view_type* 
 and_image(T& a, const U& b, bool in_place=true) {
-  typedef typename T::value_type value_type;
+  //typedef typename T::value_type value_type;
   return logical_combine(a, b, std::logical_and<bool>(), in_place);
 }
 
 template<class T, class U>
 typename ImageFactory<T>::view_type* 
 or_image(T& a, const U& b, bool in_place=true) {
-  typedef typename T::value_type value_type;
+  //typedef typename T::value_type value_type;
   return logical_combine(a, b, std::logical_or<bool>(), in_place);
 };
 
@@ -103,7 +103,7 @@ struct logical_xor : public std::binary_function<_Tp,_Tp,bool>
 template<class T, class U>
 typename ImageFactory<T>::view_type* 
 xor_image(T& a, const U& b, bool in_place=true) {
-  typedef typename T::value_type value_type;
+  //typedef typename T::value_type value_type;
   return logical_combine(a, b, logical_xor<bool>(), in_place);
 }
 

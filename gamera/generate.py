@@ -74,6 +74,8 @@ template = Template("""
   [[# This should be included first in order to avoid libpng.h/setjmp.h problems. #]]
   [[if module.__class__.__name__ == "PngSupportModule"]]
     #include <png.h>
+    #undef _POSIX_C_SOURCE
+    #undef _XOPEN_SOURCE
   [[end]]
 
   #include \"gameramodule.hpp\"

@@ -312,7 +312,7 @@ void recursiveFilterLine(SrcIterator is, SrcIterator isend, SrcAccessor as,
     
     typedef typename
         NumericTraits<typename SrcAccessor::value_type>::RealPromote TempType;
-    typedef NumericTraits<typename DestAccessor::value_type> DestTraits;
+    //typedef NumericTraits<typename DestAccessor::value_type> DestTraits;
     
     // speichert den Ergebnis der linkseitigen Filterung.
     std::vector<TempType> vline(w+1);

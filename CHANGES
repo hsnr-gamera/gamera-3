@@ -1,7 +1,14 @@
 Changes made between Gamera File Releases
 =========================================
 
- - all user provided filenames (trining XML files etc) converted
+ - export/import to/from OpenCV images
+
+ - interactive classifier: "Unckeck all" button in
+   "Change feature set" dialogue
+
+ - args dialogue sizes now dynamically computed
+
+ - all user provided filenames (training XML files etc) converted
    to unicode to allow for arbitrary filenames
 
  - new argument 'unique' for graph_color_ccs based on IVAPP 2013 paper

@@ -1598,14 +1598,51 @@ class ClassifierFrame(ImageFrameBase):
       dialog = Args(
          feature_controls,
          name='Feature selection',
-         title='Select the features you want to use for classification')
-      result = dialog.show(
-         self._frame)
+         title='Select the features you want\n to use for classification')
+      # Calling setup and ShowModal manually 
+      # because calling show of the Args class would ignore the '(Un)check all' Button 
+      dialog.wizard = 0 # dialog.setup needs this
+      dialog.setup(None,None,"")
+      self.dialog = dialog
+      
+      dialog.window.Uncheck = wx.Button(dialog.window, -1, "(Un)check all")
+      dialog.buttons.Prepend(dialog.window.Uncheck, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+      dialog.window.Uncheck.Bind(wx.EVT_BUTTON, self._OnUncheck) 
+      
+      while 1:
+         result = wx.Dialog.ShowModal(dialog.window)
+         try:
+            if result == wx.ID_CANCEL:
+               return None
+            else:
+               result = dialog.get_args()
+               dialog.window.Destroy()
+               break
+         except Exception, e:
+            gui_util.message(str(e))
+         else:
+            break
       if result is None:
          return
       selected_features = [name for check, name in
                            zip(result, all_features) if check]
       self._classifier.change_feature_set(selected_features)
+
+   def _OnUncheck(self, event):
+      unchecked = True
+      for c in self.dialog.controls:
+         if isinstance(c, Check):
+            if c.control.GetValue():
+               unchecked = False
+               break
+      if unchecked:
+         for c in self.dialog.controls:
+            if isinstance(c, Check):
+               c.control.SetValue(True)
+      else:
+         for c in self.dialog.controls:
+            if isinstance(c, Check):
+               c.control.SetValue(False)
 
    def _OnClassifierSettingsEdit(self, event):
       if hasattr(self._classifier, 'settings_dialog'):

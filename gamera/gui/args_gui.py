@@ -3,7 +3,8 @@
 #
 # Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
 #                         and Karl MacMillan
-#               2012      Christoph Dalitz
+#               2013      Manuel Jeltsch
+#               2012-2013 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -50,18 +51,16 @@ class Args:
          return self._create_page(locals, parent, self.list)
 
    def _create_page(self, locals, parent, page):
-      if len(page) > 15:
-         sw = wx.ScrolledWindow(
-            parent, style=wx.SIMPLE_BORDER,
-            size=(450, 400))
-         sw.EnableScrolling(0, 1)
-         sw.SetScrollRate(0, 20)
-         gs = self._create_page_impl(locals, sw, page)
-         sw.SetSizer(gs)
-         gs.SetVirtualSizeHints(sw)
-         return sw
+      sw = wx.ScrolledWindow(
+         parent, style=wx.SIMPLE_BORDER,
+         size=(-1, -1))
+      gs = self._create_page_impl(locals, sw, page)
+      sw.SetSizer(gs)
+      if wx.VERSION < (2, 9):
+          gs.SetVirtualSizeHints(sw)
       else:
-         return self._create_page_impl(locals, parent, page)
+          gs.FitInside(sw)
+      return sw
 
    def _create_page_impl(self, locals, parent, page):
       gs = wx.FlexGridSizer(len(page), 2, 2, 2)
@@ -90,31 +89,34 @@ class Args:
       buttons = wx.BoxSizer(wx.HORIZONTAL)
       ok = wx.Button(self.window, wx.ID_OK, "OK")
       ok.SetDefault()
-      buttons.Add(ok, 1, wx.EXPAND|wx.ALL, 5)
+      buttons.AddStretchSpacer(1)
+      buttons.Add(ok, 0, wx.ALL, 5)
       buttons.Add(wx.Button(self.window,
                            wx.ID_CANCEL,
                            "Cancel"),
-                  1,
-                  wx.EXPAND|wx.ALL,
+                  0,
+                  wx.ALL,
                   5)
+      self.buttons = buttons
       return buttons
 
    def _create_wizard_buttons(self):
       # Buttons
       buttons = wx.BoxSizer(wx.HORIZONTAL)
+      buttons.AddStretchSpacer(1)
       buttons.Add(wx.Button(self.window,
                            wx.ID_CANCEL,
                            "< Back"),
-                  1,
-                  wx.EXPAND|wx.ALL,
+                  0,
+                  wx.ALL,
                   5)
       ok = wx.Button(self.window,
                     wx.ID_OK,
                     "Next >")
       ok.SetDefault()
       buttons.Add(ok,
-                  1,
-                  wx.EXPAND|wx.ALL,
+                  0,
+                  wx.ALL,
                   5)
       return buttons
 
@@ -170,10 +172,10 @@ class Args:
          buttons = self._create_buttons()
       # Put it all together
       if self.title != None:
-         static_text = wx.StaticText(self.window, -1, self.title)
+         static_text = wx.StaticText(self.window, 0, self.title)
          font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, False, "Helvetica")
          static_text.SetFont(font)
-         self.box.Add(static_text, 0,
+         self.box.Prepend(static_text, 0,
                       wx.EXPAND|wx.BOTTOM, 20)
       self.box.Add(self.gs, 1,
                    wx.EXPAND|wx.ALIGN_RIGHT)
@@ -182,7 +184,7 @@ class Args:
       if docstring:
          help = self._create_help_display(docstring)
          self.box.Add(help, 1, wx.EXPAND)
-      self.box.Add(buttons, 0, wx.ALIGN_RIGHT)
+      self.box.Add(buttons, 0, wx.ALIGN_RIGHT|wx.EXPAND)
       if self.wizard:
          bigbox.Add(
             self.box, 1,
@@ -193,10 +195,43 @@ class Args:
       else:
          self.border.Add(
             self.box, 1, wx.EXPAND|wx.ALL, 15)
+      self.border.Fit(self.window)
+      self.border.Layout()
+      size = self.window.GetSize()
+      self.window.SetSize((max(450, size[0]), max(200, size[1])))
+      min_width = self.border.GetMinSize().width
+      #self.border.Layout()
+      #self.border.Fit(self.window)
+      min_height = self.border.GetMinSize().height
+      display = wx.Display(0)
+      client_area = display.GetClientArea()
+      if min_width < 350:
+         min_width = 350
+      if min_height < 200:
+         min_height = 200
+      if min_height < client_area.height/100*98:
+         if wx.VERSION < (2, 8):
+            self.gs.SetBestFittingSize(wx.Size(0, 0))
+            self.window.SetBestFittingSize(wx.Size(min_width,min_height))
+            self.gs.SetWindowStyle(wx.BORDER_NONE)
+         else:
+            height = self.window.GetSize().height
+            self.gs.SetInitialSize(wx.Size(0, 0))
+            self.window.SetInitialSize(wx.Size(min_width,height))
+            self.gs.SetWindowStyle(wx.BORDER_NONE)
+      else:
+         if wx.VERSION < (2, 8):
+            self.gs.SetBestFittingSize(wx.Size(0, 0))
+            self.window.SetBestFittingSize(wx.Size(min_width,client_area.height/2))
+            self.gs.EnableScrolling(0, 1)
+            self.gs.SetScrollRate(0, 20)
+         else:
+            self.gs.SetInitialSize(wx.Size(0, 0))
+            self.window.SetInitialSize(wx.Size(min_width,client_area.height/2))
+            self.gs.EnableScrolling(0, 1)
+            self.gs.SetScrollRate(0, 20)
       self.border.Layout()
       self.border.Fit(self.window)
-      size = self.window.GetSize()
-      self.window.SetSize((max(400, size[0]), max(200, size[1])))
       self.window.Centre()
 
    def get_args_string(self):

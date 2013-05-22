@@ -256,7 +256,7 @@ class graph_color_ccs(PluginFunction):
             (can be slow on large images)
 
     *unique*:
-        When ``True``, each segemnt obtains a unique color that is
+        When ``True``, each segment obtains a unique color that is
         close to one of the colors in *colors* with the restriction
         that neighboring segments obtain sufficiently different colors.
         See the reference above for details.

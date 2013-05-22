@@ -832,7 +832,7 @@ static PyObject* image_set(PyObject* self, const Point& point, PyObject* value) 
                                        (OneBitPixel)PyInt_AS_LONG(value));
   } else if (od->m_pixel_type == RGB) {
     if (!is_RGBPixelObject((PyObject*)value)) {
-      PyErr_SetString(PyExc_TypeError, "Pixel value for OneBit objects must be an RGBPixel");
+      PyErr_SetString(PyExc_TypeError, "Pixel value for RGB objects must be an RGBPixel");
       return 0;
     }
     RGBPixelObject* v = (RGBPixelObject*)value;

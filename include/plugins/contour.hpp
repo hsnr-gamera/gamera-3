@@ -335,15 +335,15 @@ PointVector* contour_pavlidis(T &m) {
     int third = 0;
 
     int run = 1;
-    while ( first == true || (*v_contour)[n].x() != (*v_contour)[0].x() ||
-            (*v_contour)[n].y() != (*v_contour)[0].y()
+    while ( first == true || !((*v_contour)[n].x() == (*v_contour)[0].x() &&
+            (*v_contour)[n].y() == (*v_contour)[0].y())
           ) {
         found = false;
         while(found == false && third < 3) {
             third++;
 
-            newX_R = (*v_contour)[n].x() + mask[ (s-1)%8 ][0];
-            newY_R = (*v_contour)[n].y() + mask[ (s-1)%8 ][1];
+            newX_R = (*v_contour)[n].x() + mask[ (s-1+8)%8 ][0];
+            newY_R = (*v_contour)[n].y() + mask[ (s-1+8)%8 ][1];
 
             newX_M = (*v_contour)[n].x() + mask[ (s)%8 ][0];
             newY_M = (*v_contour)[n].y() + mask[ (s)%8 ][1];
@@ -365,7 +365,7 @@ PointVector* contour_pavlidis(T &m) {
                     v_contour->push_back(p_Right);
                     found = true;
                     n++;
-                    s = (s - 2);
+                    s = (s+8 - 2) % 8;
                 }
                 else if(newX_M < m.ncols() && newY_M < m.nrows() && is_black(m.get(p_Middle))) {
                     v_contour->push_back(p_Middle);
@@ -378,11 +378,11 @@ PointVector* contour_pavlidis(T &m) {
                     n++;
                 }
                 else {
-                    s = (s + 2);
+                    s = (s + 2)%8;
                 }
             }
             else {
-                s = (s + 2) ;
+                s = (s + 2) %8;
             }
         }
 		

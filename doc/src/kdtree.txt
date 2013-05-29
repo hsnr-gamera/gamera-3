@@ -195,10 +195,10 @@ as follows:
        # ...
        import os, sys, gamera
        gamera_root = os.path.dirname(gamera.__file__)
-       cppfile = os.path.join(gamera_root,"src/geostructs/delaunaytree.cpp")
+       cppfile = os.path.join(gamera_root,"src/geostructs/kdtree.cpp")
        if not os.path.exists(cppfile):
            gamera_root = os.path.join(sys.exec_prefix,"gamera")
-           cppfile = os.path.join(gamera_root,"src/geostructs/delaunaytree.cpp")
+           cppfile = os.path.join(gamera_root,"src/geostructs/kdtree.cpp")
        cpp_sources=[cppfile]
        # ...
 

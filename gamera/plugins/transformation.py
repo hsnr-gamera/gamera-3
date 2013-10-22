@@ -163,7 +163,7 @@ class mirror_vertical(PluginFunction):
 class grey_convert(PluginFunction):
     """
     Converts grey values to the new values provided in the vector *newgrey*,
-    i.e. *val* is replaced by *newgrey*[*val*].
+    i.e. *val* is replaced by *newgrey[val]*.
 
     As this is only implemented for greyscale images, the vector *newgrey*
     must be of size 256 and all entries must be in [0,255].

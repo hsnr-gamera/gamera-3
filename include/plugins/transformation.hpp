@@ -270,6 +270,36 @@ namespace Gamera {
     }
   }
 
+  // grey value transformation
+  template<class T>
+  typename ImageFactory<T>::view_type* grey_convert(const T &m, IntVector *newgrey) {
+	
+	typedef typename ImageFactory<T>::data_type data_type;
+	typedef typename ImageFactory<T>::view_type view_type;
+    typedef typename T::value_type value_type;
+	data_type* dest_data = new data_type(m.size(), m.origin());
+	view_type* dest = new view_type( * dest_data);
+    size_t i,j;
+    value_type val;
+
+    // plausi checks grey values
+    if (newgrey->size() < 256)
+      throw std::runtime_error("256 grey values required");
+    for (i = 0; i < newgrey->size(); i++) {
+      if (newgrey->at(i) < 0 || newgrey->at(i) > 255)
+        throw std::runtime_error("Grey values must be in [0,255]");
+    }
+
+	for(i = 0; i < m.nrows(); i++)
+      for(j = 0; j < m.ncols(); j++)
+		{
+          val = m.get(Point(j,i));
+          val = (value_type)(*newgrey)[val];
+          dest->set(Point(j,i), val);
+		}	
+	return dest;
+  }
+
 
 }
 #endif

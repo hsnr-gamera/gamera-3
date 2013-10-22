@@ -1,7 +1,8 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
-#               2010 Christoph Dalitz
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2013      Fabian Schmitt
+#               2010-2013 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -159,13 +160,27 @@ class mirror_vertical(PluginFunction):
     self_type = ImageType(ALL)
     doc_examples = [(RGB,)]
 
+class grey_convert(PluginFunction):
+    """
+    Converts grey values to the new values provided in the vector *newgrey*,
+    i.e. *val* is replaced by *newgrey*[*val*].
+
+    As this is only implemented for greyscale images, the vector *newgrey*
+    must be of size 256 and all entries must be in [0,255].
+    """
+    category = "Transformation"
+    author = "Fabian Schmitt and Christoph Dalitz"
+    self_type = ImageType([GREYSCALE])
+    return_type = ImageType([GREYSCALE])
+    args = Args([IntVector ("newgrey")])
+    doc_examples = [(GREYSCALE,range(255,-1,-1))]
 
 class TransformationModule(PluginModule):
     cpp_headers=["transformation.hpp"]
     category = "Transformation"
     functions = [rotate, resize, scale,
                  shear_row, shear_column,
-                 mirror_horizontal, mirror_vertical]
+                 mirror_horizontal, mirror_vertical, grey_convert]
     author = "Michael Droettboom, Karl MacMillan, and Christoph Dalitz"
     url = "http://gamera.sourceforge.net/"
 module = TransformationModule()

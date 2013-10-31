@@ -272,7 +272,7 @@ class zernike_moments(Feature):
     |   X   |    X     |   X    |
     +-------+----------+--------+
     """
-    author = "Robert Butz and Christoph Dalitz"
+    author = "Robert Butz, Fabian Schmitt, Christoph Dalitz"
     return_type = FloatVector(length=14)
 
 class skeleton_features(Feature):

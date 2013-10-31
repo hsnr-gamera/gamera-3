@@ -435,74 +435,72 @@ def test_zernike_moments():
     img.draw_line((3,35),(20,35),1)
     
     ZM_f = img.zernike_moments()
-    assert abs(ZM_f[0] -  0.4303043) <= eps            
-    assert abs(ZM_f[1] -  0.2670617) <= eps             
-    assert abs(ZM_f[2] -  0.8271535) <= eps             
-    assert abs(ZM_f[3] -  0.3560822) <= eps             
-    assert abs(ZM_f[4] -  3.3580666) <= eps             
-    assert abs(ZM_f[5] -  1.3283614) <= eps             
-    assert abs(ZM_f[6] -  0.4451028) <= eps             
-    assert abs(ZM_f[7] -  3.3781997) <= eps             
-    assert abs(ZM_f[8] -  1.9473371) <= eps             
-    assert abs(ZM_f[9] -  0.5341234) <= eps             
-    assert abs(ZM_f[10] -  4.8711029) <= eps             
-    assert abs(ZM_f[11] -  5.6105727) <= eps             
-    assert abs(ZM_f[12] -  2.6840807) <= eps             
-    assert abs(ZM_f[13] -  0.6231440) <= eps             
+    assert abs(ZM_f[0] -  0.4041497) <= eps
+    assert abs(ZM_f[1] -  0.2138501) <= eps
+    assert abs(ZM_f[2] -  0.2063463) <= eps
+    assert abs(ZM_f[3] -  0.1483378) <= eps
+    assert abs(ZM_f[4] -  0.1623111) <= eps
+    assert abs(ZM_f[5] -  0.3384352) <= eps
+    assert abs(ZM_f[6] -  0.1148943) <= eps
+    assert abs(ZM_f[7] -  0.2504674) <= eps
+    assert abs(ZM_f[8] -  0.0819277) <= eps
+    assert abs(ZM_f[9] -  0.1827993) <= eps
+    assert abs(ZM_f[10] - 0.0524176) <= eps
+    assert abs(ZM_f[11] - 0.4059857) <= eps
+    assert abs(ZM_f[12] - 0.0920007) <= eps
+    assert abs(ZM_f[13] - 0.1367013) <= eps
 
     # test rotation-invariance
     img = img.rotate(90.0, 1)
     ZM_f = img.zernike_moments()
-
-    assert abs(ZM_f[0] -  0.4303043) <= eps            
-    assert abs(ZM_f[1] -  0.2670617) <= eps             
-    assert abs(ZM_f[2] -  0.8271535) <= eps             
-    assert abs(ZM_f[3] -  0.3560822) <= eps             
-    assert abs(ZM_f[4] -  3.3580666) <= eps             
-    assert abs(ZM_f[5] -  1.3283614) <= eps             
-    assert abs(ZM_f[6] -  0.4451028) <= eps             
-    assert abs(ZM_f[7] -  3.3781997) <= eps             
-    assert abs(ZM_f[8] -  1.9473371) <= eps             
-    assert abs(ZM_f[9] -  0.5341234) <= eps             
-    assert abs(ZM_f[10] -  4.8711029) <= eps             
-    assert abs(ZM_f[11] -  5.6105727) <= eps             
-    assert abs(ZM_f[12] -  2.6840807) <= eps             
-    assert abs(ZM_f[13] -  0.6231440) <= eps  
+    assert abs(ZM_f[0] -  0.4041497) <= eps
+    assert abs(ZM_f[1] -  0.2138501) <= eps
+    assert abs(ZM_f[2] -  0.2063463) <= eps
+    assert abs(ZM_f[3] -  0.1483378) <= eps
+    assert abs(ZM_f[4] -  0.1623111) <= eps
+    assert abs(ZM_f[5] -  0.3384352) <= eps
+    assert abs(ZM_f[6] -  0.1148943) <= eps
+    assert abs(ZM_f[7] -  0.2504674) <= eps
+    assert abs(ZM_f[8] -  0.0819277) <= eps
+    assert abs(ZM_f[9] -  0.1827993) <= eps
+    assert abs(ZM_f[10] - 0.0524176) <= eps
+    assert abs(ZM_f[11] - 0.4059857) <= eps
+    assert abs(ZM_f[12] - 0.0920007) <= eps
+    assert abs(ZM_f[13] - 0.1367013) <= eps
     
     # test mirror-invariance
     img.mirror_horizontal()
     ZM_f = img.zernike_moments()
-
-    assert abs(ZM_f[0] -  0.4303043) <= eps            
-    assert abs(ZM_f[1] -  0.2670617) <= eps             
-    assert abs(ZM_f[2] -  0.8271535) <= eps             
-    assert abs(ZM_f[3] -  0.3560822) <= eps             
-    assert abs(ZM_f[4] -  3.3580666) <= eps             
-    assert abs(ZM_f[5] -  1.3283614) <= eps             
-    assert abs(ZM_f[6] -  0.4451028) <= eps             
-    assert abs(ZM_f[7] -  3.3781997) <= eps             
-    assert abs(ZM_f[8] -  1.9473371) <= eps             
-    assert abs(ZM_f[9] -  0.5341234) <= eps             
-    assert abs(ZM_f[10] -  4.8711029) <= eps             
-    assert abs(ZM_f[11] -  5.6105727) <= eps             
-    assert abs(ZM_f[12] -  2.6840807) <= eps             
-    assert abs(ZM_f[13] -  0.6231440) <= eps 
+    assert abs(ZM_f[0] -  0.4041497) <= eps
+    assert abs(ZM_f[1] -  0.2138501) <= eps
+    assert abs(ZM_f[2] -  0.2063463) <= eps
+    assert abs(ZM_f[3] -  0.1483378) <= eps
+    assert abs(ZM_f[4] -  0.1623111) <= eps
+    assert abs(ZM_f[5] -  0.3384352) <= eps
+    assert abs(ZM_f[6] -  0.1148943) <= eps
+    assert abs(ZM_f[7] -  0.2504674) <= eps
+    assert abs(ZM_f[8] -  0.0819277) <= eps
+    assert abs(ZM_f[9] -  0.1827993) <= eps
+    assert abs(ZM_f[10] - 0.0524176) <= eps
+    assert abs(ZM_f[11] - 0.4059857) <= eps
+    assert abs(ZM_f[12] - 0.0920007) <= eps
+    assert abs(ZM_f[13] - 0.1367013) <= eps
     
     # test scale-invariance
-    img = img.scale(2.0, 1)
     ZM_f = img.zernike_moments()
-
-    assert abs(ZM_f[0] -  0.4303043) <= abs(ZM_f[0] * 0.01) # 1% error            
-    assert abs(ZM_f[1] -  0.2670617) <= abs(ZM_f[1] * 0.01)             
-    assert abs(ZM_f[2] -  0.8271535) <= abs(ZM_f[2] * 0.01)             
-    assert abs(ZM_f[3] -  0.3560822) <= abs(ZM_f[3] * 0.01)             
-    assert abs(ZM_f[4] -  3.3580666) <= abs(ZM_f[4] * 0.01)             
-    assert abs(ZM_f[5] -  1.3283614) <= abs(ZM_f[5] * 0.01)             
-    assert abs(ZM_f[6] -  0.4451028) <= abs(ZM_f[6] * 0.01)             
-    assert abs(ZM_f[7] -  3.3781997) <= abs(ZM_f[7] * 0.01)             
-    assert abs(ZM_f[8] -  1.9473371) <= abs(ZM_f[8] * 0.01)             
-    assert abs(ZM_f[9] -  0.5341234) <= abs(ZM_f[9] * 0.01)             
-    assert abs(ZM_f[10] -  4.8711029) <= abs(ZM_f[10] * 0.01)             
-    assert abs(ZM_f[11] -  5.6105727) <= abs(ZM_f[11] * 0.01)             
-    assert abs(ZM_f[12] -  2.6840807) <= abs(ZM_f[12] * 0.01)             
-    assert abs(ZM_f[13] -  0.6231440) <= abs(ZM_f[13] * 0.01)  
+    img = img.scale(3, 1)
+    ZM_f2 = img.zernike_moments()
+    assert abs(ZM_f2[0] - ZM_f[0]) <= 0.1
+    assert abs(ZM_f2[1] - ZM_f[1]) <= 0.1
+    assert abs(ZM_f2[2] - ZM_f[2]) <= 0.1
+    assert abs(ZM_f2[3] - ZM_f[3]) <= 0.1
+    assert abs(ZM_f2[4] - ZM_f[4]) <= 0.1
+    assert abs(ZM_f2[5] - ZM_f[5]) <= 0.1
+    assert abs(ZM_f2[6] - ZM_f[6]) <= 0.1
+    assert abs(ZM_f2[7] - ZM_f[7]) <= 0.1
+    assert abs(ZM_f2[8] - ZM_f[8]) <= 0.1
+    assert abs(ZM_f2[9] - ZM_f[9]) <= 0.1
+    assert abs(ZM_f2[10] - ZM_f[10]) <= 0.1
+    assert abs(ZM_f2[11] - ZM_f[11]) <= 0.1
+    assert abs(ZM_f2[12] - ZM_f[12]) <= 0.1
+    assert abs(ZM_f2[13] - ZM_f[13]) <= 0.1

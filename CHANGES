@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - bug fixed in zernike_moments that made the feature less useful
+
  - export/import to/from OpenCV images
 
  - interactive classifier: "Unckeck all" button in

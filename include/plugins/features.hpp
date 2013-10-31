@@ -449,35 +449,43 @@ namespace Gamera {
   // Zernike Moments
   //
 
-  double zer_pol_R(int n, int m, double x, double y) {
+  inline double zer_pol_R(int n, int m, double x, double y) {
     // precomputed factorials => make sure that n < 11
-    const int fak_a[] = {1,1,2,6,24,120,720,5040,40320,362880,3628800};
-    int s,Na,Nb,Nc;
+    static const long int fak_a[] = {1, 1, 2, 2*3, 2*3*4, 2*3*4*5, 2*3*4*5*6, 2*3*4*5*6*7, 2*3*4*5*6*7*8, 2*3*4*5*6*7*8*9, 2*3*4*5*6*7*8*9*10, 2*3*4*5*6*7*8*9*10*11, 
+							  (long int)2*3*4*5*6*7*8*9*10*11*12, (long int)2*3*4*5*6*7*8*9*10*11*12*13, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14*15};
+    long int s,Na,Nb,Nc;
     int sign = 1;
     double result = 0;
     double distance = sqrt(x * x + y * y);
-    double Zb = 1;
+    
+    double d_pow_n = pow(distance, n);
+    double d_pow_2s = 1;
+    
+    double Zb = d_pow_n;
+    
 
-    for(s=0; s<=(n-m)/2; s++){
-      Na = fak_a[n-s] / fak_a[s];
-      if (n-2*s == 0)
-        Zb = 1;
-      else
-        Zb *= distance;
-      Nb = fak_a[(n+m)/2-s];
-      Nc = fak_a[(n-m)/2-s];
-      result += sign * (Na * Zb / Nb) / Nc;
-      sign = -sign;
+    for(s=0; s<=(n-m)/2; s++)
+    {
+		Na = fak_a[n-s] / fak_a[s];
+		Nb = fak_a[(n+m)/2-s];
+		Nc = fak_a[(n-m)/2-s];
+		result += (sign * Na * Zb) / (Nb * Nc);
+		sign = -sign;
+        
+        // Replaced:
+		// Zb = pow(distance,n-2*s);
+        // by:
+		d_pow_2s *= distance * distance;
+		Zb = d_pow_n / d_pow_2s;
     }
     return result;
   }
 
-  void zer_pol(int n, int m, double x, double y, double& real, double& imag, double norm_scale=1.0) {
+  inline void zer_pol(int n, int m, double x, double y, double& real, double& imag, double norm_scale=1.0) {
     const complex<double> I(0.0, 1.0);
     // theoretically redundant due to scaling,
     // but with translation-normalizing after all needed
     if (sqrt(x*x + y*y) > 1.0) {
-      //std::cout << "outer px=" << x << "," << y << std::endl;
       real = 0.0;
       imag = 0.0; 
     } else {
@@ -505,11 +513,32 @@ namespace Gamera {
     size_t const max_order_n=order_n; 
     size_t num_features=0; // evaluated by max_order_n
     double x_dist, y_dist, real_tmp, imag_tmp;
+    
+    
+    // number of features depends on maximum order
+    for (size_t i=0 ; i<=max_order_n; i++)
+		num_features += i/2 + 1;
+    num_features -= 2; // A00 and A11 are constants
+    
+    size_t m, n, idx;
+    double tmp_real[num_features];
+    double tmp_imag[num_features];
+    
+    memset(tmp_real, 0, num_features * sizeof(double));
+    memset(tmp_imag, 0, num_features * sizeof(double));
+    
+    feature_t* begin = buf;
+    for (size_t i = 0; i < num_features; ++i) 						
+      *(buf++) = 0.0;
+    buf = begin;
+    
+    const T* scaled_image = &image; // we do not scale
 
-    // compute center of mass and normalization factor m00
+    //compute center of mass and normalization factor m00
     feature_t m00=0, m10=0, m01=0, dummy1=0, dummy2=0, dummy3=0;
-    moments_1d(image.row_begin(), image.row_end(), m00, m01, dummy1, dummy2);
-    moments_1d(image.col_begin(), image.col_end(), dummy1, m10, dummy2, dummy3);
+    moments_1d(scaled_image->row_begin(), scaled_image->row_end(), m00, m01, dummy1, dummy2);
+    moments_1d(scaled_image->col_begin(), scaled_image->col_end(), dummy1, m10, dummy2, dummy3);
+    
     double centroid_x = m10/m00;
     double centroid_y = m01/m00;
 
@@ -518,45 +547,55 @@ namespace Gamera {
     // by normalizing ZMs to be translation invariant, e.g. a large
     // bunch of pixels in the upper left corner which draws the
     // center to it, excludes pixels in the lower right corner.
-    size_t max_dimension = std::max(image.ncols(), image.nrows());
-    double unit_circle_scale = sqrt(2*pow(max_dimension/2.0,2));
 
-    // number of features depends on maximum order
-    for (size_t i=0 ; i<=max_order_n; i++)
-      num_features += i/2 + 1;
-    num_features -= 2; // A00 and A11 are constants
+	double unit_circle_scale = 0;
 
-    feature_t* begin = buf;
-    for (size_t i = 0; i < num_features; ++i)
-      *(buf++) = 0.0;
-    buf = begin;
-
-    size_t m, n, idx;
-    typename T::const_vec_iterator it = image.vec_begin();
-    for (size_t y = 0; y < image.nrows(); ++y) {
-      for (size_t x = 0; x < image.ncols(); ++x, ++it) {
-        if (is_black(*it)) {
-          x_dist = (x - centroid_x) / unit_circle_scale;
-          y_dist = (y - centroid_y) / unit_circle_scale;
-          for (n = 2, idx=0; n <= max_order_n; ++n) {
-            for (m = n%2; m <= n; m+=2) {
-              zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
-              buf[idx++] += sqrt(real_tmp*real_tmp + imag_tmp*imag_tmp);
-            }
+	for(size_t y = 0; y < scaled_image->nrows(); ++y) {
+      for (size_t x = 0; x < scaled_image->ncols(); ++x) {
+        if (is_black(scaled_image->get(Point(x,y)))) {
+          double scale_tmp = (centroid_x - (double)x)*(centroid_x - (double)x) + (centroid_y - (double)y)*(centroid_y - (double)y);
+          if(scale_tmp > unit_circle_scale)
+            unit_circle_scale = scale_tmp;
+		}
+	  }
+	}
+	
+	// Make sure that the farthest pixel is within our analysis circle
+	unit_circle_scale = 1.01 * sqrt(unit_circle_scale);
+    
+	typename T::const_vec_iterator it = scaled_image->vec_begin();
+	for (size_t y = 0; y < scaled_image->nrows(); ++y)
+      {
+		for (size_t x = 0; x < scaled_image->ncols(); ++x, ++it)
+          {
+			if (is_black(*it))
+              {
+				x_dist = (x - centroid_x) / unit_circle_scale;
+				y_dist = (y - centroid_y) / unit_circle_scale;
+				for (n = 2, idx=0; n <= max_order_n; ++n)
+                  {
+					for (m = n%2; m <= n; m+=2)
+                      {
+						zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
+						tmp_real[idx] += real_tmp;
+						tmp_imag[idx++] += imag_tmp;
+                      }
+                  }
+              }
           }
-        }
       }
-    }
-
-    // scale normalization by m00
-    for (size_t n = 2, idx=0; n <= max_order_n; ++n) {
-      double multiplier = (n + 1) / M_PI;
-      multiplier /= m00;
-      for (m= n%2; m<= n; m+=2){
-        buf[idx++] *= multiplier;
+    
+    for(idx = 0; idx<num_features; idx++)
+      buf[idx] = sqrt(tmp_real[idx]*tmp_real[idx] + tmp_imag[idx]*tmp_imag[idx]);
+    
+	// scale normalization by m00
+	for (size_t n = 2, idx=0; n <= max_order_n; ++n)
+      {
+		double multiplier = (n + 1) / M_PI;
+		multiplier /= m00;
+		for (m= n%2; m<= n; m+=2)
+          buf[idx++] *= multiplier;
       }
-    }
-
   }
 
   //

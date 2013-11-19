@@ -548,6 +548,24 @@ namespace Gamera {
       RGBColors.push_back(RGBPixel);
     }
 
+    // special case: only one cc (=> no edges in graph)
+    if (ccs.size() == 1) {
+      TypeIdImageFactory<RGB, DENSE>::image_type *coloredImage = 
+        TypeIdImageFactory<RGB, DENSE>::create(image.origin(), image.dim());
+      unsigned int label = static_cast<Cc*>(ccs.begin()->first)->label();
+      for (size_t y = 0; y < image.nrows(); y++) {
+        for(size_t x = 0; x < image.ncols(); x++) {
+          if (image.get(Point(x,y))){
+            if (image.get(Point(x,y)) == label)
+              coloredImage->set(Point(x,y), *RGBColors[0]);
+            else
+              coloredImage->set(Point(x,y), RGBPixel(0,0,0));
+          }
+        }
+      }
+      return coloredImage;
+    }
+
     // build the graph from the given ccs
     graph = graph_from_ccs(image, ccs, method);
 

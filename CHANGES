@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - graph_color_ccs did not work when only one Cc given
+
  - bug fixed in zernike_moments that made the feature less useful
 
  - export/import to/from OpenCV images

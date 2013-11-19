@@ -272,7 +272,7 @@ PyMethodDef graph_methods[] = {
   { CHAR_PTR_CAST "get_subgraph_roots", graph_get_subgraph_roots, METH_NOARGS,
     CHAR_PTR_CAST "**get_subgraph_roots** ()\n\n" \
     "Returns a lazy iterator over each of the subgraph roots.  Performing a breadth-first or depth-first search\n" \
-    "from each of this notes will visit every node in the graph. Currently this algorithm is proofed for undirected graphs only but should also work for directed graphs.\n\n"
+    "from each of this nodes will visit every node in the graph. Currently this algorithm has been tested for undirected graphs only, but it should also work for directed graphs.\n\n"
   },
   { CHAR_PTR_CAST "has_node", graph_has_node, METH_O,
     CHAR_PTR_CAST "**has_node** (*value*)\n\n" \

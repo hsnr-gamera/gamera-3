@@ -76,6 +76,11 @@ class contour_samplepoints(PluginFunction):
   *percentage*:
     return percentage of contour points. The points are selected approximately
     equidistant on the countour.
+
+  *contour*:
+    when 0 (\"outer_projection\"), the points returned by *contour_left* etc.
+    are used; when 1 (\"full_contour\") the points returned by *outline(1)*
+    are used.
   
   In addition to the points determined by the percentage argument the result
   list also contains the four extreme points (topmost, leftmost, bottommost,
@@ -91,14 +96,15 @@ class contour_samplepoints(PluginFunction):
   """
   self_type = ImageType([ONEBIT])
   author = "Oliver Christen"
-  args = Args([Int("percentage", range=(1,100), default=25)])
+  args = Args([Int("percentage", range=(1,100), default=25),
+               Choice("contour", ["outer_projection", "full_contour"], default=0)])
   return_type = PointVector("contourpoints")
   doc_examples = [(ONEBIT, 10)]
   
-  def __call__(self, percentage=25): 	
+  def __call__(self, percentage=25, contourtype=0): 	
     if percentage < 1 or percentage > 100:
       raise RuntimeError("contour_samplepoints: percentage must be between 1 and 100")
-    return _contour.contour_samplepoints(self, percentage)
+    return _contour.contour_samplepoints(self, percentage, contourtype)
   __call__ = staticmethod(__call__)
 
 class contour_pavlidis(PluginFunction):

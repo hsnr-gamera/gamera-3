@@ -148,12 +148,20 @@ class labeled_region_edges(PluginFunction):
 
 class outline(PluginFunction):
     """
-    Traces the outline of the image.  This result is obtained by
-    dilating the image and then XOR'ing the result with the original.
+    Traces the outline of the image.  When *which* is 0 (\"outer\"),
+    the result is obtained by dilating the image and then XOR'ing the
+    result with the original; when *which* is 1 (\"inner\"), the result
+    is obtained by eroding the image and then XOR'ing the
+    result with the original.
     """
     self_type = ImageType([ONEBIT])
+    args = Args([Choice("which", ["outer", "inner"], default=0)])
     return_type = ImageType([ONEBIT])
-    doc_examples = [(ONEBIT,)]
+    doc_examples = [(ONEBIT, 0), (ONEBIT, 1)]
+    def __call__(self, which=0): 	
+        return _edgedetect.outline(self, which)
+    __call__ = staticmethod(__call__)
+
 
 class EdgeDetect(PluginModule):
       category = "Edge"

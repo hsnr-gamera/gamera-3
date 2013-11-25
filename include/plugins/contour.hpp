@@ -25,6 +25,7 @@
 
 
 #include "gamera.hpp"
+#include "plugins/edgedetect.hpp"
 
 namespace Gamera {
 template<class T>
@@ -122,17 +123,10 @@ FloatVector* contour_right(const T& m) {
 // etxraction of sample points from the contour
 // author: Oliver Christen
 template<class T>
-PointVector * contour_samplepoints(const T& cc, int percentage) {
+PointVector * contour_samplepoints(const T& cc, int percentage, int contourtype=0) {
     PointVector *output = new PointVector();
     PointVector *contour_points = new PointVector();
     PointVector::iterator found;
-
-    FloatVector *top = contour_top(cc);
-    FloatVector *right = contour_right(cc);
-    FloatVector *bottom = contour_bottom(cc);
-    FloatVector *left = contour_left(cc);
-    FloatVector::iterator it;
-
     int x, y, i;
     float d;
 
@@ -152,81 +146,127 @@ PointVector * contour_samplepoints(const T& cc, int percentage) {
     unsigned int left_max_x = 0;
     unsigned int left_max_y = 0;
 
-    // top
-    i = 0;
-    for(it = top->begin() ; it != top->end() ; it++, i++) {
+    if (contourtype == 0) {
+      FloatVector *top = contour_top(cc);
+      FloatVector *right = contour_right(cc);
+      FloatVector *bottom = contour_bottom(cc);
+      FloatVector *left = contour_left(cc);
+      FloatVector::iterator it;
+
+
+      // top
+      i = 0;
+      for(it = top->begin() ; it != top->end() ; it++, i++) {
         if( *it == std::numeric_limits<double>::infinity() ) {
-            continue;
+          continue;
         }
         d = *it;
         x = cc.offset_x() + i;
         y = cc.offset_y() + d;
         if( d < top_d) {
-            top_d = d;
-            top_max_x = x;
-            top_max_y = y;
+          top_d = d;
+          top_max_x = x;
+          top_max_y = y;
         }
         found = find(contour_points->begin(), contour_points->end(), Point(x,y));
         if(found == contour_points->end()) {
-            contour_points->push_back( Point(x,y) );
+          contour_points->push_back( Point(x,y) );
         }
-    }
-    // right
-    i = 0;
-    for(it = right->begin() ; it != right->end() ; it++, i++) {
+      }
+      // right
+      i = 0;
+      for(it = right->begin() ; it != right->end() ; it++, i++) {
         if( *it == std::numeric_limits<double>::infinity() ) {
-            continue;
+          continue;
         }
         d = *it;
         x = cc.offset_x() + cc.ncols() - d;
         y = cc.offset_y() + i;
         if( d < right_d) {
-            right_d = d;
-            right_max_x = x;
-            right_max_y = y;
+          right_d = d;
+          right_max_x = x;
+          right_max_y = y;
         }
         found = find(contour_points->begin(), contour_points->end(), Point(x,y));
         if(found == contour_points->end()) {
-            contour_points->push_back( Point(x,y) );
+          contour_points->push_back( Point(x,y) );
         }
-    }
-    // bottom
-    i = 0;
-    for(it = bottom->begin() ; it != bottom->end() ; it++, i++) {
+      }
+      // bottom
+      i = 0;
+      for(it = bottom->begin() ; it != bottom->end() ; it++, i++) {
         if( *it == std::numeric_limits<double>::infinity() ) {
-            continue;
+          continue;
         }
         d = *it;
         x = cc.offset_x() + i;
         y = cc.offset_y() + cc.nrows() - d;
         if( d <= bottom_d) {
-            bottom_d = d;
-            bottom_max_x = x;
-            bottom_max_y = y;
+          bottom_d = d;
+          bottom_max_x = x;
+          bottom_max_y = y;
         }
         found = find(contour_points->begin(), contour_points->end(), Point(x,y));
         if(found == contour_points->end()) {
-            contour_points->push_back( Point(x,y) );
+          contour_points->push_back( Point(x,y) );
         }
-    }
-    // left
-    i = 0;
-    for(it = left->begin() ; it != left->end() ; it++, i++) {
+      }
+      // left
+      i = 0;
+      for(it = left->begin() ; it != left->end() ; it++, i++) {
         if( *it == std::numeric_limits<double>::infinity() ) {
-            continue;
+          continue;
         }
         d = *it;
         x = cc.offset_x() + d;
         y = cc.offset_y() + i;
         if( d <= left_d) {
-            left_d = d;
-            left_max_x = x;
-            left_max_y = y;
+          left_d = d;
+          left_max_x = x;
+          left_max_y = y;
         }
         found = find(contour_points->begin(), contour_points->end(), Point(x,y));
         if(found == contour_points->end()) {
-            contour_points->push_back( Point(x,y) );
+          contour_points->push_back( Point(x,y) );
         }
+      }
+      delete top;
+      delete right;
+      delete bottom;
+      delete left;
+    }
+    else { // contourtype == 1
+      typedef typename ImageFactory<T>::view_type view_type;
+      view_type* tmp = outline(cc, 1);
+      for (size_t y=0; y < tmp->nrows(); y++) {
+        for (size_t x=0; x < tmp->ncols(); x++) {
+          if (is_black(tmp->get(Point(x,y)))) {
+            contour_points->push_back(Point(cc.offset_x()+x, cc.offset_y()+y));
+            if (x < left_d) {
+              left_d = x;
+              left_max_x = cc.offset_x() + x;
+              left_max_y = cc.offset_y() + y;
+            }
+            if (cc.ncols()-x < right_d) {
+              right_d = cc.ncols()-x;
+              right_max_x = cc.offset_x() + x;
+              right_max_y = cc.offset_y() + y;
+            }
+            if (y < top_d) {
+              top_d = y;
+              top_max_x = cc.offset_x() + x;
+              top_max_y = cc.offset_y() + y;
+            }
+            if (cc.nrows()-y < bottom_d) {
+              bottom_d = cc.nrows() - y;
+              bottom_max_x = cc.offset_x() + x;
+              bottom_max_y = cc.offset_y() + y;
+            }
+          }
+        }
+      }
+      delete tmp->data();
+      delete tmp;
     }
 
     // add only every 100/percentage-th point
@@ -274,10 +314,6 @@ PointVector * contour_samplepoints(const T& cc, int percentage) {
         }
     }
 
-    delete top;
-    delete right;
-    delete bottom;
-    delete left;
     delete contour_points;
 
     return output;

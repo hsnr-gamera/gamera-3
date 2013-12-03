@@ -223,7 +223,7 @@ namespace Gamera {
     double start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.col_begin() + size_t(start),
-			    m.col_begin() + size_t(start) + size_t(quarter_cols))
+                m.col_begin() + size_t(start) + size_t(quarter_cols))
                 /quarter_cols;
       start += quarter_cols;
     }
@@ -231,7 +231,7 @@ namespace Gamera {
     start = 0.0;
     for (size_t i = 0; i < 4; ++i) {
       *(buf++) = nholes_1d(m.row_begin() + size_t(start),
-			   m.row_begin() + size_t(start) + size_t(quarter_rows))
+               m.row_begin() + size_t(start) + size_t(quarter_rows))
                / quarter_rows;
       start += quarter_rows;
     }
@@ -452,7 +452,7 @@ namespace Gamera {
   inline double zer_pol_R(int n, int m, double x, double y) {
     // precomputed factorials => make sure that n < 11
     static const long int fak_a[] = {1, 1, 2, 2*3, 2*3*4, 2*3*4*5, 2*3*4*5*6, 2*3*4*5*6*7, 2*3*4*5*6*7*8, 2*3*4*5*6*7*8*9, 2*3*4*5*6*7*8*9*10, 2*3*4*5*6*7*8*9*10*11, 
-							  (long int)2*3*4*5*6*7*8*9*10*11*12, (long int)2*3*4*5*6*7*8*9*10*11*12*13, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14*15};
+                              (long int)2*3*4*5*6*7*8*9*10*11*12, (long int)2*3*4*5*6*7*8*9*10*11*12*13, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14*15};
     long int s,Na,Nb,Nc;
     int sign = 1;
     double result = 0;
@@ -466,17 +466,17 @@ namespace Gamera {
 
     for(s=0; s<=(n-m)/2; s++)
     {
-		Na = fak_a[n-s] / fak_a[s];
-		Nb = fak_a[(n+m)/2-s];
-		Nc = fak_a[(n-m)/2-s];
-		result += (sign * Na * Zb) / (Nb * Nc);
-		sign = -sign;
+        Na = fak_a[n-s] / fak_a[s];
+        Nb = fak_a[(n+m)/2-s];
+        Nc = fak_a[(n-m)/2-s];
+        result += (sign * Na * Zb) / (Nb * Nc);
+        sign = -sign;
         
         // Replaced:
-		// Zb = pow(distance,n-2*s);
+        // Zb = pow(distance,n-2*s);
         // by:
-		d_pow_2s *= distance * distance;
-		Zb = d_pow_n / d_pow_2s;
+        d_pow_2s *= distance * distance;
+        Zb = d_pow_n / d_pow_2s;
     }
     return result;
   }
@@ -517,7 +517,7 @@ namespace Gamera {
     
     // number of features depends on maximum order
     for (size_t i=0 ; i<=max_order_n; i++)
-		num_features += i/2 + 1;
+        num_features += i/2 + 1;
     num_features -= 2; // A00 and A11 are constants
     
     size_t m, n, idx;
@@ -528,7 +528,7 @@ namespace Gamera {
     memset(tmp_imag, 0, num_features * sizeof(double));
     
     feature_t* begin = buf;
-    for (size_t i = 0; i < num_features; ++i) 						
+    for (size_t i = 0; i < num_features; ++i)                       
       *(buf++) = 0.0;
     buf = begin;
     
@@ -548,54 +548,51 @@ namespace Gamera {
     // bunch of pixels in the upper left corner which draws the
     // center to it, excludes pixels in the lower right corner.
 
-	double unit_circle_scale = 0;
+    double unit_circle_scale = 0;
 
-	for(size_t y = 0; y < scaled_image->nrows(); ++y) {
+    for(size_t y = 0; y < scaled_image->nrows(); ++y) {
       for (size_t x = 0; x < scaled_image->ncols(); ++x) {
         if (is_black(scaled_image->get(Point(x,y)))) {
           double scale_tmp = (centroid_x - (double)x)*(centroid_x - (double)x) + (centroid_y - (double)y)*(centroid_y - (double)y);
           if(scale_tmp > unit_circle_scale)
             unit_circle_scale = scale_tmp;
-		}
-	  }
-	}
-	
-	// Make sure that the farthest pixel is within our analysis circle
-	unit_circle_scale = 1.01 * sqrt(unit_circle_scale);
-    
-	typename T::const_vec_iterator it = scaled_image->vec_begin();
-	for (size_t y = 0; y < scaled_image->nrows(); ++y)
-      {
-		for (size_t x = 0; x < scaled_image->ncols(); ++x, ++it)
-          {
-			if (is_black(*it))
-              {
-				x_dist = (x - centroid_x) / unit_circle_scale;
-				y_dist = (y - centroid_y) / unit_circle_scale;
-				for (n = 2, idx=0; n <= max_order_n; ++n)
-                  {
-					for (m = n%2; m <= n; m+=2)
-                      {
-						zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
-						tmp_real[idx] += real_tmp;
-						tmp_imag[idx++] += imag_tmp;
-                      }
-                  }
-              }
-          }
+        }
       }
+    }
+    
+    // Make sure that the farthest pixel is within our analysis circle
+    unit_circle_scale = 1.01 * sqrt(unit_circle_scale);
+    if (unit_circle_scale < 0.00001) unit_circle_scale = 1.0;
+    
+    typename T::const_vec_iterator it = scaled_image->vec_begin();
+    for (size_t y = 0; y < scaled_image->nrows(); ++y) {
+      for (size_t x = 0; x < scaled_image->ncols(); ++x, ++it) {
+        if (is_black(*it)) {
+          x_dist = (x - centroid_x) / unit_circle_scale;
+          y_dist = (y - centroid_y) / unit_circle_scale;
+          if (abs(x_dist) > 0.00001 || abs(y_dist) > 0.00001) {   
+            for (n = 2, idx=0; n <= max_order_n; ++n) {
+              for (m = n%2; m <= n; m+=2) {
+                zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
+                tmp_real[idx] += real_tmp;
+                tmp_imag[idx++] += imag_tmp;
+              }
+            }
+          }
+        }
+      }
+    }
     
     for(idx = 0; idx<num_features; idx++)
       buf[idx] = sqrt(tmp_real[idx]*tmp_real[idx] + tmp_imag[idx]*tmp_imag[idx]);
     
-	// scale normalization by m00
-	for (size_t n = 2, idx=0; n <= max_order_n; ++n)
-      {
-		double multiplier = (n + 1) / M_PI;
-		multiplier /= m00;
-		for (m= n%2; m<= n; m+=2)
-          buf[idx++] *= multiplier;
-      }
+    // scale normalization by m00
+    for (size_t n = 2, idx=0; n <= max_order_n; ++n) {
+      double multiplier = (n + 1) / M_PI;
+      multiplier /= m00;
+      for (m= n%2; m<= n; m+=2)
+        buf[idx++] *= multiplier;
+    }
   }
 
   //
@@ -623,36 +620,36 @@ namespace Gamera {
       size_t y_before = (y == 0) ? 1 : y - 1;
       size_t y_after = (y == skel->nrows() - 1) ? skel->nrows() - 2 : y + 1;
       for (size_t x = 0; x < skel->ncols(); ++x) {
-	if (is_black(skel->get(Point(x, y)))) {
-	  ++total_pixels;
-	  center_x += x;
-	  center_y += y;
-	  size_t N, S;
-	  thin_zs_get(y, y_before, y_after, x, *skel, p, N, S);
-	  switch (N) {
-	  case 4:
-	    ++X_joints;
-	    break;
-	  case 3:
-	    ++T_joints;
-	    break;
-	  case 2:
-	    if (!(((p & 17) == 17) || // Crosswise pairs
-		  ((p & 34) == 34) ||
-		  ((p & 68) == 68) ||
-		  ((p & 136) == 136))) 
-	      ++bend_points;
-	    break;
-	  case 1:
-	    ++end_points;
-	    break;
-	  }
-	}
+    if (is_black(skel->get(Point(x, y)))) {
+      ++total_pixels;
+      center_x += x;
+      center_y += y;
+      size_t N, S;
+      thin_zs_get(y, y_before, y_after, x, *skel, p, N, S);
+      switch (N) {
+      case 4:
+        ++X_joints;
+        break;
+      case 3:
+        ++T_joints;
+        break;
+      case 2:
+        if (!(((p & 17) == 17) || // Crosswise pairs
+          ((p & 34) == 34) ||
+          ((p & 68) == 68) ||
+          ((p & 136) == 136))) 
+          ++bend_points;
+        break;
+      case 1:
+        ++end_points;
+        break;
+      }
+    }
       }
     }
     if (total_pixels == 0) {
       for (size_t i = 0; i < 6; ++i)
-	*(buf++) = 0.0;
+    *(buf++) = 0.0;
       return;
     }
 
@@ -700,12 +697,12 @@ namespace Gamera {
     for (int i = 0; ri != m.row_end(); ri++, i++) {
       typename T::const_col_iterator ci = ri.begin();
       for (; ci != ri.end(); ci++)
-	if (is_black(*ci)) {
-	  top = i;
-	  break;
-	}
+    if (is_black(*ci)) {
+      top = i;
+      break;
+    }
       if (top != -1)
-	break;
+    break;
     }
     if (top == -1) {
       *(buf++) = 1.0;
@@ -718,12 +715,12 @@ namespace Gamera {
     for (int i = m.nrows() - 1; ri != m.row_begin(); ri--, i--) {
       typename T::const_col_iterator ci = ri.begin();
       for (; ci != ri.end(); ci++)
-	if (is_black(*ci)) {
-	  bottom = i;
-	  break;
-	}
+    if (is_black(*ci)) {
+      bottom = i;
+      break;
+    }
       if (bottom != -1)
-	break;
+    break;
     }
     *(buf++) = feature_t(top) / feature_t(m.nrows());
     *buf = feature_t(bottom) / feature_t(m.nrows());

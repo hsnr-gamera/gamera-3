@@ -353,6 +353,8 @@ PointVector* contour_pavlidis(T &m) {
             }
         }
     }
+    if (!found)
+      return v_contour;
 
 	// extract contour
     Point p_Right;

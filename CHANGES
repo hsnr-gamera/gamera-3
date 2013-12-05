@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - Fourier descriptors implemented based on EURASIP JASP 2013 paper
+
+ - moments, zernike_moments, and diagonal_projection no longer
+   produce division by zero error on empty images
+
  - new options for outline() and contour_samplepoints()
 
  - graph_color_ccs did not work when only one Cc given

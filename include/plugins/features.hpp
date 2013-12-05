@@ -131,6 +131,8 @@ namespace Gamera {
     moments_1d(m.col_begin(), m.col_end(), dummy, m10, m20, m30);
     moments_2d(m.col_begin(), m.col_end(), m11, m12, m21);
 
+    if (m00 == 0.0) m00 = 1.0; // special case: no black pixels
+
     feature_t x, y, x2, y2, div;
     x = (feature_t)m10 / m00;
     x2 = 2 * x * x;
@@ -589,7 +591,8 @@ namespace Gamera {
     // scale normalization by m00
     for (size_t n = 2, idx=0; n <= max_order_n; ++n) {
       double multiplier = (n + 1) / M_PI;
-      multiplier /= m00;
+      if (m00 != 0.0)
+        multiplier /= m00;
       for (m= n%2; m<= n; m+=2)
         buf[idx++] *= multiplier;
     }
@@ -752,12 +755,15 @@ namespace Gamera {
 
     if (size_y > 1) {
       for (i = size_y/4; i < size_y*3/4+1; i++) {
-      sum_y += (*proj_y)[i];
+        sum_y += (*proj_y)[i];
       }
       mean_y = double(sum_y) / (size_y / 2);
     }
 
-    *buf = (mean_x / mean_y);
+    if (mean_y == 0.0)
+      *buf = 0.0;
+    else
+      *buf = (mean_x / mean_y);
     
     delete proj_x;
     delete proj_y;

@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff, Robert Butz,
 #                         Maria Elhachimi, Ilya Stoyanov, Rene Baston
-#               2010      Christoph Dalitz
+#               2010-2013 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 
 from gamera.plugin import *
 import _pagesegmentation
+
 
 class projection_cutting(PluginFunction):
     """
@@ -132,112 +133,103 @@ class bbox_merging(PluginFunction):
 
     *Ex*:
       How much each CC is extended to the left and right before merging.
-      When *-1*, it is set to twice the average size of all CCs.
+      When *-1*, it is set to twice the median width of all CCs.
 
     *Ey*:
       How much each CC is extended to the top and bottom before merging.
-      When *-1*, it is set to twice the average size of all CCs.
-      This will typically segemtn into paragraphs.
+      When *-1*, it is set to the median height of all CCs.
+      This will typically segment into paragraphs.
 
       If you want to segment into lines, set *Ey* to something small like
       one sixth of the median symbol height.
+
+    *iterations*:
+      After merging intersecting bounding boxes, it can happen that the
+      enclosing bounding boxes of different segments still intersect.
+      If you do not want this, set *iterations* > 1 (two will typically be
+      sufficient). If you however only want actually intersecting bounding
+      boxes to be merged, set *iterations* to one.
     """
     self_type = ImageType([ONEBIT])
     return_type = ImageList("ccs")
-    args = Args([Int('Ex', default = -1), Int('Ey', default = -1)])
+    args = Args([Int('Ex', default = -1), Int('Ey', default = -1), Int('iterations', default=2)])
     pure_python = True
     author = "Rene Baston, Karl MacMillan, and Christoph Dalitz"
 
-    def __call__(self, Ex=-1, Ey=-1):
-        # two helper functions for merging rectangles
-        def find_intersecting_rects(glyphs, index):
-            g = glyphs[index]
-            inter = []
-            for i in range(len(glyphs)):
-                if i == index:
-                    continue
-                if g.intersects(glyphs[i]):
-                    inter.append(i)
-            return inter
-        def list_union_rects(big_rects):
-            current = 0
-            rects = big_rects
-            while(1):
-                inter = find_intersecting_rects(rects, current)
-                if len(inter):
-                    g = rects[current]
-                    new_rects = [g]
-                    for i in range(len(rects)):
-                        if i == current:
-                            continue
-                        if i in inter:
-                            g.union(rects[i])
-                        else:
-                            new_rects.append(rects[i])
-                    rects = new_rects
-                    current = 0
+    def __call__(self, Ex=-1, Ey=-1, iterations=2):
+        # bbox with contained cc indices
+        class Bbox:
+            def __init__(self, allccs, indices):
+                self.ccs = allccs
+                self.indices = indices
+                if len(indices) == 1:
+                    self.rect = Rect(allccs[indices[0]])
                 else:
-                    current += 1
-                if(current >= len(rects)):
-                    break
-            return rects
+                    self.rect = allccs[indices[0]].union_images([allccs[i] for i in indices])
+            def extend(self, Ex, Ey, img):
+                ul_y = max(0, self.rect.ul_y - Ey)
+                ul_x = max(0, self.rect.ul_x - Ex)
+                lr_y = min(img.lr_y, self.rect.lr_y + Ey)
+                lr_x = min(img.lr_x, self.rect.lr_x + Ex)
+                nrows = lr_y - ul_y + 1
+                ncols = lr_x - ul_x + 1
+                self.rect = Rect(Point(ul_x, ul_y), Dim(ncols, nrows))
+            def merge(self, other):
+                self.indices += other.indices
+                self.rect.union(other.rect)
+        # does one merging step
+        def merge_boxes(bboxes):
+            from gamera import graph
+            bboxes.sort(lambda b1, b2: b1.rect.ul_y-b2.rect.ul_y)
+            g = graph.Graph(graph.UNDIRECTED)
+            # build graph where edge means overlap of two boxes
+            for i in range(len(bboxes)):
+                g.add_node(i)
+            for i in range(len(bboxes)):
+                for j in range(i+1, len(bboxes)):
+                    if bboxes[j].rect.ul_y > bboxes[i].rect.lr_y:
+                        break
+                    if bboxes[i].rect.intersects(bboxes[j].rect):
+                        if not g.has_edge(i,j):
+                            g.add_edge(i,j)
+            new_bboxes = []
+            for sg in g.get_subgraph_roots():
+                seg = [n() for n in g.BFS(sg)]
+                bbox = bboxes[seg[0]]
+                for i in range(1, len(seg)):
+                    bbox.merge(bboxes[seg[i]])
+                new_bboxes.append(bbox)
+            return new_bboxes
 
         # the actual plugin
         from gamera.core import Dim, Rect, Point, Cc
-        from gamera.plugins.image_utilities import union_images
+        from gamera.plugins.listutilities import median
 
         page = self.image_copy()
         ccs = page.cc_analysis()
 
         # compute average CC size
-        avg_size = 0.0
-        for c in ccs:
-            avg_size += c.nrows
-            avg_size += c.ncols
-        avg_size /= (2 * len(ccs))
-        avg_size = int(avg_size)
         if Ex == -1:
-            Ex = avg_size*2
+            Ex = 2*median([c.ncols for c in ccs])
         if Ey == -1:
-            Ey = avg_size*2
+            Ey = median([c.nrows for c in ccs])
 
-        # extend CC bounding boxes
-        big_rects = []
-        for c in ccs:
-            ul_y = max(0, c.ul_y - Ey)
-            ul_x = max(0, c.ul_x - Ex)
-            lr_y = min(page.lr_y, c.lr_y + Ey)
-            lr_x = min(page.lr_x, c.lr_x + Ex)
-            nrows = lr_y - ul_y + 1
-            ncols = lr_x - ul_x + 1
-            big_rects.append(Rect(Point(ul_x, ul_y), Dim(ncols, nrows)))
-        extended_segs = list_union_rects(big_rects)
-
-        # build new merged CCs
-        tmplist = ccs[:]
-        dellist = []
+        # create merged segments
+        bboxes = [Bbox(ccs, [i]) for i in range(len(ccs))]
+        for bb in bboxes:
+            bb.extend(Ex, Ey, page)
+        for i in range(iterations):
+            oldlen = len(bboxes)
+            bboxes = merge_boxes(bboxes)
+            if oldlen == len(bboxes):
+                break
         seg_ccs = []
-        seg_cc = []
-        if(len(extended_segs) > 0):
-            label = 1
-            for seg in extended_segs:
-                label += 1
-                for cc in tmplist:
-                    if(seg.intersects(cc)):
-                        # mark original image with segment label
-                        self.highlight(cc, label)
-                        seg_cc.append(cc)
-                        dellist.append(cc)
-                if len(seg_cc) == 0:
-                    continue
-                seg_rect = seg_cc[0].union_rects(seg_cc)
-                new_seg = Cc(self, label, seg_rect.ul, seg_rect.lr)
-                seg_cc = []
-                for item in dellist:
-                    tmplist.remove(item)
-                dellist = []
-                seg_ccs.append(new_seg)
-
+        for i,bbox in enumerate(bboxes):
+            label = i+1
+            ccs_of_segment = [ccs[j] for j in bbox.indices]
+            for cc in ccs_of_segment:
+                self.highlight(cc, label)
+            seg_ccs.append(Cc(self, label, ccs_of_segment[0].union_rects(ccs_of_segment)))
         return seg_ccs
 
     __call__ = staticmethod(__call__)

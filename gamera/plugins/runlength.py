@@ -1,6 +1,7 @@
 #
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2013      Christoph Dalitz, Fabian Schmitt
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -162,6 +163,19 @@ class iterate_runs(PluginFunction):
                  ChoiceString("direction", ["horizontal", "vertical"])])
     return_type = Class()
 
+class runlength_from_point(PluginFunction):
+    """
+    Returns the runlength of *color* in the direction *direction* starting
+    from one pixel after *point*.
+    """
+    category = "Runlength"
+    self_type = ImageType([ONEBIT])
+    args = Args([FloatPoint("point"),ChoiceString("color", ["black", "white"]),
+                 ChoiceString("direction", ["top", "bottom","left","right"])])
+    return_type = Int()
+    author = "Fabian Schmitt and Christoph Dalitz"
+
+
 ###########################################################################    
 # Deprecated functions.
 
@@ -209,7 +223,8 @@ class RunLengthModule(PluginModule):
                  filter_short_runs,
                  filter_tall_runs,
                  iterate_runs,
-                 to_rle, from_rle]
+                 to_rle, from_rle,
+                 runlength_from_point]
 
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

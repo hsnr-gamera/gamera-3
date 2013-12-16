@@ -300,7 +300,7 @@ class textline_reading_order(PluginFunction):
     This results in a preference of rows over columns (in case of ambiguity)
     in the depth-first-search utilized in the topological sorting.
 
-    .. __: http://pubs.iupr.org/DATA/2003-breuel-sdiut.pdf
+    .. __: http://iupr1.cs.uni-kl.de/~shared/publications/2003-breuel-sdiut-high-performance-doc-layout-analysis.pdf
 
     As this function is not an image method, but a free function, it
     is not automatically imported with all plugins and you must import

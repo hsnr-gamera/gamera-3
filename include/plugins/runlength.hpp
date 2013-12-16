@@ -518,6 +518,54 @@ namespace Gamera {
     throw std::runtime_error("color must be either \"black\" or \"white\".");
   }
 
+  template<class T>
+  int runlength_from_point(T& image, FloatPoint p, std::string color, std::string direction)
+  { 
+    bool color_tf;
+    if (color == "white")
+      color_tf = true;
+    else if (color == "black")
+      color_tf = false;
+    else
+      throw std::runtime_error("color must be either \"black\" or \"white\".");
+    
+    // corner point
+    if ((p.x() == 0 && direction == "left") || 
+        (p.x() == image.ncols() && direction == "right") || 
+        (p.y() == 0 && direction == "top") || 
+        (p.y() == image.nrows() && direction == "bottom"))
+      return 0;
+
+    // find first pixel of different color
+    int count = 0;
+    size_t i;
+    if (direction == "top") {
+      for (i = p.y()-1; i >= 0; i--, count++)
+        if (is_black(image.get(Point(p.x(),i))) == color_tf)
+          break;
+    }
+    else if (direction == "left") {
+      for (i = p.x()-1; i >= 0; i--, count++)
+        if (is_black(image.get(Point(i,p.y()))) == color_tf)
+          break;
+    }             
+    else if (direction == "bottom") {
+      for (i = p.y()+1; i <= image.nrows(); i++, count++)
+        if (is_black(image.get(Point(p.x(),i))) == color_tf)
+          break;
+    }             
+    else if (direction == "right") {
+      for (i = p.x()+1; i <= image.ncols(); i++, count++)
+        if (is_black(image.get(Point(i,p.y()))) == color_tf)
+          break;
+    }
+    else
+      throw std::runtime_error("direction must be either \"top\", \"bottom\", \"left\", or \"right\".");
+
+    return count;
+  }
+
+
 ///////////////////////////////////////////////////////////////////////////
 // TO/FROM RLE
 #ifndef GAMERA_NO_PYTHON

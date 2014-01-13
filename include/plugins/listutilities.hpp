@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
- *               2009      Christoph Dalitz
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2014      Fabian Schmitt
+ *               2009-2014 Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -169,6 +170,70 @@ namespace Gamera {
   
     Py_DECREF(a);
     return result;
+  }
+
+
+
+  FloatVector* kernel_density(FloatVector* values, FloatVector* x, double bw=0.0, int kernel=0)
+  {
+	if (values->size() == 0)
+      throw std::runtime_error("no values given for kernel density estimation");
+	if (x->size() == 0)
+      throw std::runtime_error("no x given for kernel density estimation");
+    if (kernel<0 || kernel>2)
+      throw std::runtime_error("kernel must be 0 (rectangular), 1 (triangular), or 2 (gaussian)");
+
+    // copy values because sort changes vector
+	FloatVector val_cop = FloatVector(*values);
+	std::sort(val_cop.begin(), val_cop.end());
+	
+	//Silverman's Rule of Thumb
+	if (bw == 0.0 && val_cop.size() > 1) {
+      // compute variance
+      double mu = 0.0;
+      for (size_t i = 0; i < val_cop.size(); i++)
+		mu += val_cop[i];
+      mu /= val_cop.size();
+      double var = 0.0;
+      for (size_t i = 0; i < val_cop.size(); i++)
+		var += (val_cop[i] - mu)*(val_cop[i] - mu);
+      var /= (val_cop.size() - 1);
+      // compute inter-quartile range
+      size_t lq = val_cop.size() / 4;
+      size_t uq = (val_cop.size() * 3) / 4;
+      double iqr = val_cop[uq] - val_cop[lq];
+      // Silverman's rule
+      bw = 0.9 * std::min(sqrt(var), iqr/1.34) * pow((double)val_cop.size(),-0.2);
+    }
+	if (bw == 0.0) // can happen when almost all values are identical
+      bw = 1.0;
+
+	const double pre_gaus = 1.0/sqrt(2 * M_PI);
+	const double sqrt6 = sqrt(6.0);
+
+	FloatVector* result_vec = new FloatVector(x->size(),0.0);
+	for(size_t i = 0; i < x->size(); i++) {
+      double result = 0;
+      for(size_t j = 0; j < values->size(); j++) {
+        double k_x = (x->at(i) - values->at(j)) / bw;
+        switch(kernel) {
+        case 0:	//rectangular
+          if (abs(k_x) <= 1.732051)  // sqrt(3)
+            result += 0.2886751;     // 1/(2*sqrt(3))
+          break;
+        case 1:	//triangular
+          if (abs(k_x) <= sqrt6)
+            result += (sqrt6 - abs(k_x)) / (sqrt6*sqrt6);
+          break;
+        case 2:	//gaussian
+          result += pre_gaus * exp(-k_x*k_x/2.0);
+          break;
+        }
+      }
+      result_vec->at(i) = result / (bw * values->size());
+    }
+	
+	return result_vec;
   }
 
 }

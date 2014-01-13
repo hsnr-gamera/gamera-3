@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin kernel_density in listutilities
+
  - new option "iterations" for bbox_merging and significant speedup
 
  - Fourier descriptors implemented based on EURASIP JASP 2013 paper

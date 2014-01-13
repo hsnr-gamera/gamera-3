@@ -1,6 +1,7 @@
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
-#               2009      Christoph Dalitz
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2014      Fabian Schmitt
+#               2009-2014 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -110,10 +111,48 @@ class median_py(PluginFunction):
     args = Args([Class("list"), Check("inlist")])
     author = "Christoph Dalitz"
 
+class kernel_density(PluginFunction):
+    """Computes the kernel density for *values* at the specified
+*x*-positions. Reference: S.J. Sheather: \"Density Estimation.\"
+Statistical Science 19 pp. 588-597 (2004).
+
+Arguments:
+
+  *values*
+     Sample values from which the density is to be estimated.
+
+  *x*
+     For each value in *x*, the desity at this position is returned
+     in the returned float vector.
+
+  *bw*
+     Band width, i.e. the parameter *h* in the kernel density estimator.
+     when set to zero, Silverman's rule of thumb is used, which sets the
+     bandwidth to 0.9 min{sigma, iqr/1.34} n^(-1/5).
+
+  *kernel*
+     The kernel function that weights the values (0 = rectangular, 
+     1 = triangular, 2 = gausian). A Gaussian kernel produces the smoothest
+     result, but is slightly slower than the other two.
+
+     Note that the kernels are normalized to variance one, which means that
+     the rectangular kernel has support [-sqrt(3), +sqrt(3)], and the
+     triangular kernel has support [-sqrt(6), sqrt(6)].
+"""
+    category = "List"
+    self_type = None
+    return_type = FloatVector()
+    args = Args([FloatVector("values"), FloatVector("x"), Float("bw", default=0.0), Choice("kernel", choices=["rectangular", "triangular", "gaussian"], default=0)])
+    author = "Christoph Dalitz and Fabian Schmitt"
+    def __call__(values, x, bw=0.0, kernel=0):
+        return _listutilities.kernel_density(values, x, bw, kernel)
+    __call__ = staticmethod(__call__)
+
+
 class ListUtilitiesModule(PluginModule):
    category = None
    cpp_headers=["listutilities.hpp"]
-   functions = [permute_list, all_subsets, median, median_py]
+   functions = [permute_list, all_subsets, median, median_py, kernel_density]
    author = "Michael Droettboom and Karl MacMillan"
    url = "http://gamera.sourceforge.net/"
 module = ListUtilitiesModule()
@@ -121,3 +160,4 @@ module = ListUtilitiesModule()
 permute_list = permute_list()
 all_subsets = all_subsets()
 median = median()
+kernel_density = kernel_density()

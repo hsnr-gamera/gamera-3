@@ -469,7 +469,8 @@ namespace Gamera {
         for (r=minr; r<=maxr; r++)
           for (g=ming; g<=maxg; g++)
             for (b=minb; b<=maxb; b++)
-              nns->push_back(RGBPixel((int)p.red()+r,p.green()+g,p.blue()+b));
+              if (!(r == 0 && g == 0 && b==0))
+                nns->push_back(RGBPixel((int)p.red()+r,p.green()+g,p.blue()+b));
       }
       static double rgbdistance(const RGBPixel& p1, const RGBPixel& p2) {
         return (p1.red()-(double)p2.red())*(p1.red()-(double)p2.red()) +

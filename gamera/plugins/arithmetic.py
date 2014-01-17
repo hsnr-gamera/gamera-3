@@ -119,7 +119,8 @@ class multiply_images(ArithmeticCombine):
     """
     Multiplies the corresponding pixels of two images together.
 
-    The two images must be the same type.
+    Note that this does not work on labeled ONEBIT images, because all
+    pixel values in the returned image are reset to one or zero in this case.
 
     Since it would be difficult to determine what exactly to do if the
     images are a different size, the two images must be the same size.

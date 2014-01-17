@@ -656,6 +656,7 @@ IntVector* segmentation_error(T &Gseg, U &Sseg) {
     labelsofclass.insert(make_pair(Gclasslabel,Gcclabel));
     for (y=0; y < cc->nrows(); y++)
       for (x=0; x < cc->ncols(); x++) {
+        if (!cc->get(Point(x,y))) continue;
         Scclabel.cclabel = Sseg.get(Point(cc->ul_x() + x, cc->ul_y() + y));
         // in case of overlap:
         if (Scclabel.cclabel) {

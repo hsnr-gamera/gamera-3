@@ -2,8 +2,9 @@
 # vim: set tabstop=4 shiftwidth=4 expandtab:
 
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
 #               2007-2010 Christoph Dalitz and Uma Kompella
+#               2014      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -234,6 +235,30 @@ class djvu_threshold(PluginFunction):
     __call__ = staticmethod(__call__)
     doc_examples = [(RGB, 0.5, 512, 64, 2)]
 
+class soft_threshold(PluginFunction):
+    """
+    Does a greyscale transformation that \"smears out\" the threshold *t* by a
+    choosable amount *sigma*. This has the effect of a \"soft\" thresholding.
+
+    Each grey value *x* is transformed to *F(x,t,sigma)*, where *F*
+    is the CDF of a Gaussian normal distribution with mean *t* and variance
+    *sigma^2*.
+
+    As the choice *sigma* = 0 is useless (it is the same as normal
+    thresholding), this special value is reserved for an automatic selection
+    of *sigma* such that *F(m,t,sigma)* = 0.99, where *m* is the mean grey
+    value of all pixels with a grey value greater than *t*.
+    """
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int("t"), Float("sigma", default=0.0)])
+    return_type = ImageType([GREYSCALE], "output")
+    author = "Christoph Dalitz"
+    def __call__(image, t, sigma=0.0):
+        return _threshold.soft_threshold(image, t, sigma)
+    __call__ = staticmethod(__call__)
+    doc_examples = [(GREYSCALE, 128, 25)]
+
+
 class ThresholdModule(PluginModule):
     """
     This module provides functions that convert images between different
@@ -242,7 +267,7 @@ class ThresholdModule(PluginModule):
     category = "Binarization"
     cpp_headers = ["threshold.hpp"]
     functions = [threshold, otsu_find_threshold, otsu_threshold, tsai_moment_preserving_find_threshold, tsai_moment_preserving_threshold, abutaleb_threshold,
-                 bernsen_threshold, djvu_threshold]
+                 bernsen_threshold, djvu_threshold, soft_threshold]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 

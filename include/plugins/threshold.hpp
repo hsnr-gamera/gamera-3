@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2014      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -629,6 +630,56 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
   return djvu_threshold(image, smoothness, max_block_size, min_block_size, 
                         block_factor, RGBPixel(0, 0, 0), max_color);
 }
+
+template<class T>
+typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::value_type t, double sigma) {
+
+  typedef typename ImageFactory<T>::data_type data_type;
+  typedef typename ImageFactory<T>::view_type view_type;
+  typedef typename T::value_type T_value_type;
+
+  size_t i,x,y;
+  size_t maxv = std::numeric_limits<T_value_type>::max() + 1;
+  //maxv = 256;
+  std::vector<T_value_type> transform(maxv);
+
+  if (sigma == 0.0) {
+    FloatVector* h = histogram(src);
+    double m = 0.0;
+    double hsum = 0.0;
+    for (i=t+1; i<h->size(); i++) {
+      m += i*h->at(i);
+      hsum += h->at(i);
+    }
+    if (hsum > 0.0)
+      sigma = (m-t)/(hsum*2.2363);
+    delete h;
+  }
+  //printf("sigma=%f\n", sigma);
+  if (sigma == 0.0) { // may still occur when no values above t set
+    for (i=0; i<=t; i++) transform[i] = black(src);
+    for (i=t+1; i<maxv; i++) transform[i] = white(src);
+  }
+  else {
+    double sq2sigma = sqrt(2.0)*sigma;
+    for (i=0; i<maxv; i++) {
+      transform[i] = (T_value_type)((maxv-1)*0.5*(1+vigra::erf((float(i)-t)/sq2sigma))+0.5);
+      //printf("%i -> %i\n", i, transform[i]);
+    }
+  }
+
+  data_type *res_data = new data_type(src.size(), src.origin());
+  view_type *res= new view_type(*res_data);
+
+  for (y=0; y<src.nrows(); y++) {
+    for (x=0; x<src.ncols(); x++) {
+      res->set(Point(x,y), transform[src.get(Point(x,y))]);
+    }
+  }
+
+  return res;
+}
+
 
 #endif
 

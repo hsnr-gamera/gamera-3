@@ -1,7 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
- - new plugin kernel_density in listutilities
+ - new plugins:
+    o kernel_density in listutilities
+    o soft_threshold in binarization
 
  - new option "iterations" for bbox_merging and significant speedup
 

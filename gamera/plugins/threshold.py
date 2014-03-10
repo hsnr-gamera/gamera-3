@@ -22,6 +22,7 @@
 #
 
 from gamera.plugin import *
+from gamera.args import NoneDefault
 import _threshold
 
 class threshold(PluginFunction):
@@ -248,12 +249,19 @@ class soft_threshold(PluginFunction):
     thresholding), this special value is reserved for an automatic selection
     of *sigma* such that *F(m,t,sigma)* = 0.99, where *m* is the mean grey
     value of all pixels with a grey value greater than *t*.
+
+    When *t* is not given, it is automatically computed with
+    otsu_find_threshold__.
+
+.. __: #otsu-find-threshold
     """
     self_type = ImageType([GREYSCALE])
-    args = Args([Int("t"), Float("sigma", default=0.0)])
+    args = Args([Int("t", default=NoneDefault), Float("sigma", default=0.0)])
     return_type = ImageType([GREYSCALE], "output")
     author = "Christoph Dalitz"
-    def __call__(image, t, sigma=0.0):
+    def __call__(image, t=None, sigma=0.0):
+        if t is None:
+            t = image.otsu_find_threshold()
         return _threshold.soft_threshold(image, t, sigma)
     __call__ = staticmethod(__call__)
     doc_examples = [(GREYSCALE, 128, 25)]

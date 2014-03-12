@@ -652,7 +652,8 @@ typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::v
       hsum += h->at(i);
     }
     if (hsum > 0.0)
-      sigma = (m-t)/(hsum*2.2363);
+      //sigma = (m-t)/(hsum*2.2363);
+      sigma = (m/hsum-t)/2.2363;
     delete h;
   }
   //printf("sigma=%f\n", sigma);

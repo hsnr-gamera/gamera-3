@@ -242,8 +242,9 @@ class soft_threshold(PluginFunction):
     choosable amount *sigma*. This has the effect of a \"soft\" thresholding.
 
     Each grey value *x* is transformed to *F(x,t,sigma)*, where *F*
-    is the CDF of a Gaussian normal distribution with mean *t* and variance
-    *sigma^2*.
+    is the CDF probability distribution with mean *t* and variance
+    *sigma^2*. The parameter *dist* determines the type of probability
+    distribution: 0 = logistic, 1 = normal (gaussian), 2 = uniform.
 
     As the choice *sigma* = 0 is useless (it is the same as normal
     thresholding), this special value is reserved for an automatic selection
@@ -256,13 +257,13 @@ class soft_threshold(PluginFunction):
 .. __: #otsu-find-threshold
     """
     self_type = ImageType([GREYSCALE])
-    args = Args([Int("t", default=NoneDefault), Float("sigma", default=0.0)])
+    args = Args([Int("t", default=NoneDefault), Float("sigma", default=0.0), Choice("dist", ["logistic","normal","uniform"], default=0)])
     return_type = ImageType([GREYSCALE], "output")
     author = "Christoph Dalitz"
-    def __call__(image, t=None, sigma=0.0):
+    def __call__(image, t=None, sigma=0.0, dist=0):
         if t is None:
             t = image.otsu_find_threshold()
-        return _threshold.soft_threshold(image, t, sigma)
+        return _threshold.soft_threshold(image, t, sigma, dist)
     __call__ = staticmethod(__call__)
     doc_examples = [(GREYSCALE, 128, 25)]
 

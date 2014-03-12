@@ -246,7 +246,7 @@ ChoiceString
 
 A set of choices of strings.  Corresponds to the C type ``char *``.
 
-To be used when a string argument can be on of a fixed set of values.
+To be used when a string argument can be one of a fixed set of values.
 
 If ``strict`` is ``True`` (the default), the GUI will present a
 drop-down list box of these choices.  When ``strict`` is ``False``, a

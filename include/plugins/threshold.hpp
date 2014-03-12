@@ -632,7 +632,7 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
 }
 
 template<class T>
-typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::value_type t, double sigma) {
+typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::value_type t, double sigma, int dist) {
 
   typedef typename ImageFactory<T>::data_type data_type;
   typedef typename ImageFactory<T>::view_type view_type;
@@ -642,18 +642,28 @@ typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::v
   size_t maxv = std::numeric_limits<T_value_type>::max() + 1;
   //maxv = 256;
   std::vector<T_value_type> transform(maxv);
+  const double sqrt3 = sqrt(3.0);
 
   if (sigma == 0.0) {
     FloatVector* h = histogram(src);
-    double m = 0.0;
+    double v_w = 0.0;
     double hsum = 0.0;
     for (i=t+1; i<h->size(); i++) {
-      m += i*h->at(i);
+      v_w += i*h->at(i);
       hsum += h->at(i);
     }
-    if (hsum > 0.0)
-      //sigma = (m-t)/(hsum*2.2363);
-      sigma = (m/hsum-t)/2.2363;
+    if (hsum > 0.0) {
+      v_w = v_w/hsum;
+      if (dist==0) { // logistic distribution
+        sigma = M_PI*(v_w-t)/(4.595120*sqrt3);
+      }
+      else if (dist==1) { // normal distribution
+        sigma = (v_w-t)/2.236348;
+      }
+      else { // uniform distribution
+        sigma = (v_w-t)/sqrt3;
+      }
+    }
     delete h;
   }
   //printf("sigma=%f\n", sigma);
@@ -662,11 +672,28 @@ typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::v
     for (i=t+1; i<maxv; i++) transform[i] = white(src);
   }
   else {
-    double sq2sigma = sqrt(2.0)*sigma;
-    for (i=0; i<maxv; i++) {
-      transform[i] = (T_value_type)((maxv-1)*0.5*(1+vigra::erf((float(i)-t)/sq2sigma))+0.5);
-      //printf("%i -> %i\n", i, transform[i]);
+    if (dist==0) { // logistic distribution
+      double theta = sigma*sqrt3/M_PI;
+      for (i=0; i<maxv; i++)
+        transform[i] = (T_value_type)((maxv-1)/(1+exp((t-float(i))/theta))+0.5);
     }
+    else if (dist==1) { // normal distribution
+      double sq2sigma = sqrt(2.0)*sigma;
+      for (i=0; i<maxv; i++)
+        transform[i] = (T_value_type)((maxv-1)*0.5*(1+vigra::erf((float(i)-t)/sq2sigma))+0.5);
+    }
+    else { // uniform distribution
+      double h2 = sigma*sqrt3;
+      size_t i1 = (size_t)(t-h2+0.5);
+      size_t i2 = (size_t)(t+h2);
+      for (i=0; i<=i1; i++)
+        transform[i] = black(src);
+      for (i=i1+1; i<i2; i++)
+        transform[i] = (T_value_type)((maxv-1)*0.5*(1+(float(i)-t)/h2)+0.5);
+      for (i=i2; i<maxv; i++)
+        transform[i] = white(src);
+    }
+    //printf("%i -> %i\n", i, transform[i]);
   }
 
   data_type *res_data = new data_type(src.size(), src.origin());

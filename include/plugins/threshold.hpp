@@ -631,6 +631,43 @@ Image *djvu_threshold(const RGBImageView& image, double smoothness = 0.2,
                         block_factor, RGBPixel(0, 0, 0), max_color);
 }
 
+
+//
+// soft thresholding after
+// Dalitz: "Soft Thresholding for Visual Image Enhancement."
+// Technischer Bericht Nr. 2014-01, Hochschule Niederrhein,
+// Fachbereich Elektrotechnik und Informatik (2014)
+//
+template<class T>
+double soft_threshold_find_sigma(const T& src, typename T::value_type t, int dist) {
+
+  size_t i;
+  double sigma = 0.0;
+  const double sqrt3 = sqrt(3.0);
+
+  FloatVector* h = histogram(src);
+  double v_w = 0.0;
+  double hsum = 0.0;
+  for (i=t+1; i<h->size(); i++) {
+    v_w += i*h->at(i);
+    hsum += h->at(i);
+  }
+  if (hsum > 0.0) {
+    v_w = v_w/hsum;
+    if (dist==0) { // logistic distribution
+      sigma = M_PI*(v_w-t)/(4.595120*sqrt3);
+    }
+    else if (dist==1) { // normal distribution
+      sigma = (v_w-t)/2.236348;
+    }
+    else { // uniform distribution
+      sigma = (v_w-t)/sqrt3;
+    }
+  }
+  delete h;
+  return sigma;
+}
+
 template<class T>
 typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::value_type t, double sigma, int dist) {
 
@@ -645,26 +682,7 @@ typename ImageFactory<T>::view_type*  soft_threshold(const T& src, typename T::v
   const double sqrt3 = sqrt(3.0);
 
   if (sigma == 0.0) {
-    FloatVector* h = histogram(src);
-    double v_w = 0.0;
-    double hsum = 0.0;
-    for (i=t+1; i<h->size(); i++) {
-      v_w += i*h->at(i);
-      hsum += h->at(i);
-    }
-    if (hsum > 0.0) {
-      v_w = v_w/hsum;
-      if (dist==0) { // logistic distribution
-        sigma = M_PI*(v_w-t)/(4.595120*sqrt3);
-      }
-      else if (dist==1) { // normal distribution
-        sigma = (v_w-t)/2.236348;
-      }
-      else { // uniform distribution
-        sigma = (v_w-t)/sqrt3;
-      }
-    }
-    delete h;
+    sigma = soft_threshold_find_sigma(src, t, dist);
   }
   //printf("sigma=%f\n", sigma);
   if (sigma == 0.0) { // may still occur when no values above t set

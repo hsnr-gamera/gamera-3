@@ -248,13 +248,18 @@ class soft_threshold(PluginFunction):
 
     As the choice *sigma* = 0 is useless (it is the same as normal
     thresholding), this special value is reserved for an automatic selection
-    of *sigma* such that *F(m,t,sigma)* = 0.99, where *m* is the mean grey
-    value of all pixels with a grey value greater than *t*.
+    of *sigma* with soft_threshold_find_sigma__.
+
+.. __: #soft-threshold-find-sigma
 
     When *t* is not given, it is automatically computed with
     otsu_find_threshold__.
 
 .. __: #otsu-find-threshold
+
+    Reference: C. Dalitz: *Soft Thresholding for Visual Image Enhancement.*
+    Technischer Bericht Nr. 2014-01, Hochschule Niederrhein,
+    Fachbereich Elektrotechnik und Informatik (2014)
     """
     self_type = ImageType([GREYSCALE])
     args = Args([Int("t", default=NoneDefault), Float("sigma", default=0.0), Choice("dist", ["logistic","normal","uniform"], default=0)])
@@ -267,6 +272,25 @@ class soft_threshold(PluginFunction):
     __call__ = staticmethod(__call__)
     doc_examples = [(GREYSCALE, 128, 25)]
 
+class soft_threshold_find_sigma(PluginFunction):
+    """
+    For the CDF probability distribution given by *dist*
+    (0 = logistic, 1 = normal (gaussian), 2 = uniform), sigma is
+    determined such that *F(m,t,sigma)* = 0.99, where *m* is the mean grey
+    value of all pixels with a grey value greater than *t*.
+
+    Reference: C. Dalitz: *Soft Thresholding for Visual Image Enhancement.*
+    Technischer Bericht Nr. 2014-01, Hochschule Niederrhein,
+    Fachbereich Elektrotechnik und Informatik (2014)
+    """
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int("t", default=NoneDefault), Choice("dist", ["logistic","normal","uniform"], default=0)])
+    return_type = Float("sigma")
+    author = "Christoph Dalitz"
+    def __call__(image, t, dist=0):
+        return _threshold.soft_threshold_find_sigma(image, t, dist)
+    __call__ = staticmethod(__call__)
+
 
 class ThresholdModule(PluginModule):
     """
@@ -275,8 +299,11 @@ class ThresholdModule(PluginModule):
     """
     category = "Binarization"
     cpp_headers = ["threshold.hpp"]
-    functions = [threshold, otsu_find_threshold, otsu_threshold, tsai_moment_preserving_find_threshold, tsai_moment_preserving_threshold, abutaleb_threshold,
-                 bernsen_threshold, djvu_threshold, soft_threshold]
+    functions = [threshold, otsu_find_threshold, otsu_threshold,
+                 tsai_moment_preserving_find_threshold,
+                 tsai_moment_preserving_threshold, abutaleb_threshold,
+                 bernsen_threshold, djvu_threshold,
+                 soft_threshold, soft_threshold_find_sigma]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"
 

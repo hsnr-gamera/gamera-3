@@ -257,9 +257,11 @@ class soft_threshold(PluginFunction):
 
 .. __: #otsu-find-threshold
 
-    Reference: C. Dalitz: *Soft Thresholding for Visual Image Enhancement.*
+    Reference: C. Dalitz: `\"Soft Thresholding for Visual Image Enhancement.\"`__
     Technischer Bericht Nr. 2014-01, Hochschule Niederrhein,
-    Fachbereich Elektrotechnik und Informatik (2014)
+    Fachbereich Elektrotechnik und Informatik, 2014
+
+.. __: http://www.hsnr.de/fileadmin/dateien/fb03/gruppen/technische-berichte/fb03-tb-2014-01.pdf
     """
     self_type = ImageType([GREYSCALE])
     args = Args([Int("t", default=NoneDefault), Float("sigma", default=0.0), Choice("dist", ["logistic","normal","uniform"], default=0)])
@@ -279,9 +281,11 @@ class soft_threshold_find_sigma(PluginFunction):
     determined such that *F(m,t,sigma)* = 0.99, where *m* is the mean grey
     value of all pixels with a grey value greater than *t*.
 
-    Reference: C. Dalitz: *Soft Thresholding for Visual Image Enhancement.*
+    Reference: C. Dalitz: `\"Soft Thresholding for Visual Image Enhancement.\"`__
     Technischer Bericht Nr. 2014-01, Hochschule Niederrhein,
-    Fachbereich Elektrotechnik und Informatik (2014)
+    Fachbereich Elektrotechnik und Informatik, 2014
+
+.. __: http://www.hsnr.de/fileadmin/dateien/fb03/gruppen/technische-berichte/fb03-tb-2014-01.pdf
     """
     self_type = ImageType([GREYSCALE])
     args = Args([Int("t", default=NoneDefault), Choice("dist", ["logistic","normal","uniform"], default=0)])

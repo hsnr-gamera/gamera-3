@@ -338,11 +338,13 @@ inline Point coerce_Point(PyObject* obj) {
     if (PySequence_Length(obj) == 2) {
       py_x0 = PySequence_GetItem(obj, 0);
       py_x1 = PyNumber_Int(py_x0);
+      Py_DECREF(py_x0);
       if (py_x1 != NULL) {
         long x = PyInt_AsLong(py_x1);
         Py_DECREF(py_x1);
         py_y0 = PySequence_GetItem(obj, 1);
         py_y1 = PyNumber_Int(py_y0);
+        Py_DECREF(py_y0);
         if (py_y1 != NULL) {
           long y = PyInt_AsLong(py_y1);
           Py_DECREF(py_y1);

@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed a memory leak when image positions are given as sequence
+   (Debian Bug report #747548 from 2014-05-09)
+
  - new plugins:
     o kernel_density in listutilities
     o soft_threshold in binarization

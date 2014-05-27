@@ -5,7 +5,8 @@ Changes made between Gamera File Releases
    (Debian Bug report #747548 from 2014-05-09)
 
  - new plugins:
-    o kernel_density in listutilities
+    o kise_block_extraction in pagesegmentation
+    o kernel_density, argmax, argmin in listutilities
     o soft_threshold in binarization
 
  - new option "iterations" for bbox_merging and significant speedup

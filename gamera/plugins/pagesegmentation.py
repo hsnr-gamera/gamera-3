@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2007-2009 Christoph Dalitz, Stefan Ruloff, Robert Butz,
 #                         Maria Elhachimi, Ilya Stoyanov, Rene Baston
-#               2010-2013 Christoph Dalitz
+#               2010-2014 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,6 +19,9 @@
 #
 
 from gamera.plugin import *
+from gamera.plugins.listutilities import kernel_density, argmax
+from math import sqrt
+
 import _pagesegmentation
 
 
@@ -235,6 +238,150 @@ class bbox_merging(PluginFunction):
     __call__ = staticmethod(__call__)
 
 
+class kise_block_extraction(PluginFunction):
+    """
+    Segments a page into blocks by Kise's method based on the area Voronoi diagram
+    as described in
+
+        K. Kise, A. Sato, M. Iwata: *Segmentation of Page Images Using the
+        Area Voronoi Diagram.* Computer Vision and Image Understandig 70,
+        pp. 370-382, 1998
+
+    The return value is a list of 'CCs' where each 'CC' represents a
+    found segment. Note that the input image is changed such that each
+    pixel is set to its segment label.
+
+    The algorithm first builds a CC neighborhood graph and then removes edges from
+    this graph based upon the area ratio and distance between adjacent segments.
+    The criterion is
+
+        *d/Td1* <= 1  OR  *d/Td2* + *A/Ta* <= 1
+
+    where *Td1* < *Td2* are the two largest peaks in the CC distance distribution and
+    A is the area ratio of the adjacent CCs.
+
+    Arguments:
+
+    *Ta*:
+      Area ratio in the criterion above.
+
+    *fr*:
+      Fraction for determining Td2. It is not chosen as the peak position, but
+      larger at the position where the peak has fallen to a fraction *fr* of its
+      height.
+    """
+    self_type = ImageType([ONEBIT])
+    return_type = ImageList("ccs")
+    args = Args([Float('Ta', default = 40.0), Float('fr', default = 0.34)])
+    pure_python = True
+    author = "Christoph Dalitz"
+
+    def __call__(self, Ta=40.0, fr=0.34):
+        # compute neighborship graph
+        from gamera.plugins.geometry import delaunay_from_points
+        ccs = self.cc_analysis()
+        i = 0
+        points = []
+        labels = []
+        labels2ccs = {}
+        for cc in ccs:
+            p = cc.contour_samplepoints(15,1)
+            cc.points = p
+            points += p
+            labels += [cc.label] * len(p)
+            labels2ccs[cc.label] = cc
+        neighbors = delaunay_from_points(points, range(len(points)))
+
+        # compute edge properties
+        class Edge(object):
+            def __init__(self,cc1,cc2,d2):
+                self.cc1 = cc1; self.cc2 = cc2
+                self.d = d2
+                a = [cc1.black_area()[0], cc2.black_area()[0]]
+                self.ar = max(a)/min(a)
+        labelneighbors = {}
+        for pair in neighbors:
+            if (labels[pair[0]] < labels[pair[1]]):
+                label1 = labels[pair[0]]; label2 = labels[pair[1]]
+            else:
+                label1 = labels[pair[1]]; label2 = labels[pair[0]]
+            if label1 == label2:
+                continue
+            p1 = points[pair[0]]
+            p2 = points[pair[1]]
+            d2 = (p1.x-p2.x)**2 + (p1.y-p2.y)**2
+            key = "%i;%i" % (label1,label2)
+            if not labelneighbors.has_key(key):
+                labelneighbors[key] = Edge(labels2ccs[label1], labels2ccs[label2], d2)
+            else:
+                e = labelneighbors[key]
+                if e.d > d2:
+                    e.d = d2
+        for e in labelneighbors.itervalues():
+            e.d = sqrt(e.d)
+
+        # determine thresholds Td1 and Td2 from distance statistics
+        distances = [e.d for e in labelneighbors.itervalues()]
+        distances.sort()
+        if len(distances) > 50:
+            distances = distances[len(distances)/20:(len(distances)-len(distances)/20)]
+        x = [float(i*max(distances))/512.0 for i in range(512)]
+        density = kernel_density(distances, x, kernel=2)
+        local_maxima_i = []
+        local_maxima_d = []
+        for i in range(1,len(density)-1):
+            if density[i] > density[i-1] and density[i] > density[i+1]:
+                local_maxima_i.append(i)
+                local_maxima_d.append(density[i])
+        m1 = argmax(local_maxima_d)
+        i1 = local_maxima_i[m1]
+        local_maxima_i = [local_maxima_i[i] for i in range(len(local_maxima_i)) if i != m1]
+        local_maxima_d = [local_maxima_d[i] for i in range(len(local_maxima_d)) if i != m1]
+        i2 = local_maxima_i[argmax(local_maxima_d)]
+        if i2 < i1:
+            tmp = i2
+            i2 = i1
+            i1 = tmp
+        dmax = density[i2]
+        i2 += 1
+        while i2 < len(x) - 1:
+            if density[i2] < fr*dmax:
+                break
+            i2 += 1
+        Td1 = x[i1]
+        Td2 = x[i2]
+        #print "Td1 =", Td1, "Td2 =", Td2, "(plugin)"
+
+        # build graph
+        from gamera import graph
+        g = graph.Graph(graph.UNDIRECTED)
+        rgb = self.to_rgb()
+        for e in labelneighbors.itervalues():
+            if not g.has_node(e.cc1.label):
+                g.add_node(e.cc1.label)
+            if not g.has_node(e.cc2.label):
+                g.add_node(e.cc2.label)
+            if (e.d/Td1 <= 1.0) or (e.d/Td2 + e.ar/Ta <= 1):
+                g.add_edge(e.cc1.label, e.cc2.label)
+            else:
+                pass
+        
+        # split graph into connected subgraphs
+        from gamera.core import MlCc
+        seglabels = []
+        for i,sg in enumerate(g.get_subgraph_roots()):
+            seg = [n() for n in g.BFS(sg)]
+            seglabels.append(seg)
+        segments = []
+        for lbs in seglabels:
+            mlcc = MlCc([labels2ccs[lb] for lb in lbs])
+            segments.append(mlcc.convert_to_cc())
+
+        return segments
+
+    __call__ = staticmethod(__call__)
+
+
 class sub_cc_analysis(PluginFunction):
     """
     Further subsegments the result of a page segmentation algorithm into
@@ -418,13 +565,14 @@ it explicitly with
     return_type = IntVector("errors", length=6)
     author = "Christoph Dalitz"
 
+
 # module declaration
 class PageSegmentationModule(PluginModule):
     cpp_headers = ["pagesegmentation.hpp"]
     cpp_namespace = ["Gamera"]
     category = "PageSegmentation"
     functions = [projection_cutting, runlength_smearing, bbox_merging, \
-                     sub_cc_analysis, textline_reading_order, \
+                     kise_block_extraction, sub_cc_analysis, textline_reading_order, \
                      segmentation_error]
 module = PageSegmentationModule() # create an instance of the module
 

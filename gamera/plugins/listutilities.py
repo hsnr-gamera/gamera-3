@@ -149,6 +149,40 @@ Arguments:
     __call__ = staticmethod(__call__)
 
 
+class argmax(PluginFunction):
+    """Returns the index of the maximum in a list.
+"""
+    category = "List"
+    self_type = None
+    return_type = Int()
+    args = Args([FloatVector("x")])
+    author = "Christoph Dalitz"
+    def __call__(x):
+        mi = 0
+        mv = x[0]
+        for i,v in enumerate(x):
+            if v > mv:
+                mi = i; mv = v
+        return mi
+    __call__ = staticmethod(__call__)
+
+class argmin(PluginFunction):
+    """Returns the index of the minimum in a list.
+"""
+    category = "List"
+    self_type = None
+    return_type = Int()
+    args = Args([FloatVector("x")])
+    author = "Christoph Dalitz"
+    def __call__(x):
+        mi = 0
+        mv = x[0]
+        for i,v in enumerate(x):
+            if v < mv:
+                mi = i; mv = v
+        return mi
+    __call__ = staticmethod(__call__)
+
 class ListUtilitiesModule(PluginModule):
    category = None
    cpp_headers=["listutilities.hpp"]
@@ -161,3 +195,5 @@ permute_list = permute_list()
 all_subsets = all_subsets()
 median = median()
 kernel_density = kernel_density()
+argmax = argmax()
+argmin = argmin()

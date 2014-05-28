@@ -273,7 +273,7 @@ namespace Gamera { namespace GA {
     // specialization for weighting individual
     template <>
     void GAFitnessEval<WeightingIndi>::operator()( WeightingIndi &individual ) {
-        AtomType convertedVector[this->knn->num_features];
+        AtomType* convertedVector = new AtomType[this->knn->num_features];
         std::fill(convertedVector, convertedVector + this->knn->num_features, 0.0);
 
         for (size_t i = 0; i < individual.size(); ++i) {
@@ -285,12 +285,13 @@ namespace Gamera { namespace GA {
                                    NULL, convertedVector, NULL);
 
         individual.fitness( looEvalRes.first / (double) looEvalRes.second );
+        delete [] convertedVector;
     }
 
     // specialization for selection individual
     template <>
     void GAFitnessEval<SelectionIndi>::operator()( SelectionIndi &individual ) {
-        int convertedVector[this->knn->num_features];
+        int* convertedVector = new int[this->knn->num_features];
         std::fill(convertedVector, convertedVector + this->knn->num_features, 0);
 
         for (size_t i = 0; i < individual.size(); ++i) {
@@ -305,6 +306,7 @@ namespace Gamera { namespace GA {
                                    convertedVector, NULL, NULL);
 
         individual.fitness( looEvalRes.first / (double) looEvalRes.second );
+        delete [] convertedVector;
     }
 
     ////////////////////////////////////////////////////////////////////////////

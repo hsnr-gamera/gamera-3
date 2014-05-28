@@ -35,7 +35,7 @@ struct GraphDataInt: public GraphData {
       data = d;
    }
 
-   virtual int compare(const GraphData& b) {
+   virtual int compare(const GraphData& b) const {
 #ifdef __DEBUG_GAPI__
       std::cout << "GraphDataInt::compare called\n";
 #endif
@@ -57,7 +57,7 @@ struct GraphDataLong: public GraphData {
       data = d;
    }
 
-   virtual int compare(const GraphData& b) {
+   virtual int compare(const GraphData& b) const {
 #ifdef __DEBUG_GAPI__
       std::cout << "GraphDataInt::compare called\n";
 #endif
@@ -79,7 +79,7 @@ struct GraphDataUnsignedInt: public GraphData {
       data = d;
    }
 
-   virtual int compare(const GraphData& b) {
+   virtual int compare(const GraphData& b) const {
 #ifdef __DEBUG_GAPI__
       std::cout << "GraphDataUnsignedInt::compare called\n";
 #endif
@@ -107,7 +107,7 @@ struct GraphDataString: public GraphData {
       data = d;
    }
 
-   virtual int compare(const GraphData& b) {
+   virtual int compare(const GraphData& b) const {
 #ifdef __DEBUG_GAPI__
       std::cout << "GraphDataUnsignedInt::compare called\n";
 #endif
@@ -136,7 +136,7 @@ struct GraphDataTemplate: public GraphData {
       data = d;
    }
 
-   virtual int compare(const GraphData& b) {
+   virtual int compare(const GraphData& b) const {
       const GraphDataTemplate& c = dynamic_cast<const GraphDataTemplate<T>&>(b);
       if(data < c.data)
          return - 1;

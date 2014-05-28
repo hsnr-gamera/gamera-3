@@ -39,6 +39,10 @@
 #include <eoEvalFuncCounter.h>
 #include <utils/checkpointing>
 
+// possibly problematic workaround to get this compiled with MS compilers
+#undef _MSC_VER
+
+
 // at the moment, in utils/make_help.cpp
 // this should become some eoUtils.cpp with corresponding eoUtils.h
 bool testDirRes(std::string _dirName, bool _erase);

@@ -2,125 +2,6 @@
 Building and installing Gamera
 ==============================
 
-Microsoft Windows
-=================
-
-Installing from source
-----------------------
-
-Currently, Gamera can be built using the MingW32/GNU toolset.
-The "officially supported" configuration, (i.e. the one that the
-Gamera developers use) is to use the MingW32 compiler
-to build for the official Python.org Python. This can be done in
-one of the following two ways:
-
-- with the `standalone Mingw32`__ toolchain (easiest solution)
-
-.. __: #mingw32
-
-- or with the MingW32 compiler installed `inside of Cygwin`__
-
-.. __: #cygwin
-
-If you have success with other compilers and configurations,
-please consider contributing your experiences to this documentation.
-
-Prerequisites
-`````````````
-
-- Python 2.5.x or later
-  (only the distribution from python.org has been tested)
-
-- wxPython 2.6.x or later (wxPython 2.8.x or later recommended for
-  full functionality)
-
-.. note::
-
-   Fixes for common problems:
-
-    - The Python 2.6 binary from python.org requires ``libmsvcr90.a``,
-      which is an errenous in some versions of Mingw32. To fix it, you can
-      recreate the file from the DLL ``msvcr90.dll`` that comes with
-      Python 2.6 with pexports__ and *dlltool* (the latter is part of Mingw32)::
-
-        pexports msvcr90.dll > msvcr90.def
-        dlltool --input-def msvcr90.def --dllname msvcr90.dll --output-lib libmsvcr90.a -k
-
-      With Python 2.7 and Mingw gcc 4.6, these changes are not necessary.
-
-    - Recent versions of the Mingw gcc no longer support the ``-mno-cygwin``
-      option, which is however passed on by the Python distutils. If you run
-      into this error, you can simply remove the option from the file::
-
-        C:\Python27\lib\distutils\cygwinccompiler.py
-
-.. __: http://sourceforge.net/projects/mingw/files/MinGW/Extension/pexports/
-
-.. _mingw32:
-
-Standalone Mingw32
-``````````````````
-
-Install the Mingw32 port of gcc from http://mingw.org/. Make sure
-that you do not only install *gcc-core*, but also *g++* and *make*.
-Add the *bin* subdirectory of your Mingw32 installation to
-the environment variable ``PATH``.
-
-Assuming you have installed Python to ``C:\Python275``, you can
-then compile gamera at a DOS command prompt from the root directory
-of the gamera source code with::
-
-  C:\Python27\python setup.py build --compiler=mingw32 bdist_wininst
-
-This will create a Windows installer, including uninstallation support,
-in the *dist* subdirectory. It can be started with a double click
-in the Explorer, or from the DOS command prompt with::
-
-  start dist\gamera-*.exe
-
-
-.. _cygwin:
-
-Mingw32 inside Cygwin
-`````````````````````
-
-Use the installer from http://www.cygwin.com/ to install Cygwin,
-including the ``g++-mingw32`` compiler and the ``MingW32`` libraries.
-If you plan to track development of Gamera, you will probably also
-want to install ``subversion``.
-
-The important thing to note here is that we are using Cygwin's Mingw32
-compiler to build for the standard (non-Cygwin) Python from
-python.org.  After a clean install of Cygwin, typing 'python' will
-start up Cygwin's version of Python, not the one from python.org.
-Therefore, you will want to add the standard Python to your Cygwin
-PATH using the command (assuming you installed Python in standard location)::
-
-  export PATH=/cygdrive/c/Python25/:$PATH
-
-Ensure you are using the correct Python by typing::
-
-  which python
-
-The result should be ``/cygdrive/c/Python25/python.exe``, not
-``/usr/bin/python``.
-
-Beware that the file ``/usr/bin/gcc`` installed by Cygwin actually
-is *not* the compiler executable, but a symbolic link. Symbolic
-links are not supported by MS Windows, but are a Cygwin-only
-feature. This means that the Python Distutils system cannot execute
-``/usr/bin/gcc`` and the build command will fail. To fix this,
-replace the symbolic link with the actual compiler executable::
-
-  cp /usr/bin/gcc-3 /usr/bin/gcc
-  cp /usr/bin/g++-3 /usr/bin/g++
-
-From here on, you can proceed as for the standalone Mingw32 toolchain,
-i.e.::
-
-  python setup.py build --compiler=mingw32 bdist_wininst
-  dist/gamera-*.exe
-
 
 Linux (and other \*nix)
 =======================
@@ -401,3 +282,180 @@ Start an X11 terminal and run the ``gamera_gui`` script.
 .. note:: Running the script from the root of the source tree will not
   work, since it will not be able to find the compiled version of
   Gamera.
+
+Microsoft Windows
+=================
+
+Using the binary installer
+--------------------------
+
+The binary installers only work with one specific Python version
+so you must first make sure that your Python installation matches
+this version. The required version is indicated by the filename of
+the binary installer, e.g. ``gamera-3.4.1.win-amd64-py2.7.exe`` for
+the 64bit version of Python 2.7.
+
+Note that the installer might show an error message in the last screen,
+which can be ignored. The installer should create a script file
+``Gamera.py`` on the desktop of the installing user, which can be used
+to start the Gamera GUI with a double click.
+
+Installing from source
+----------------------
+
+Currently, Gamera can be built using the MingW32/GNU toolset or with
+the Microsoft SDK. The Python core distribution for Windows officially
+only supports the latter option, though it is possible to use MingW,
+albeit only the 32bit version of MingW (gcc). The state is currently not
+very satisfactory, because MingW is not officially supported by Python
+and the Microsoft SDK is not officially supported by Gamera (volunteers
+are welcome!).
+
+There are thus three options to compile Gamera on Windows:
+
+- with the `Microsoft SDK`__ (easiest solution)
+
+.. __: #msvc
+
+- with the `standalone Mingw32`__ toolchain
+
+.. __: #mingw32
+
+- or with the MingW32 compiler installed `inside of Cygwin`__
+
+.. __: #cygwin
+
+If you have success with other compilers and configurations,
+please consider contributing your experiences to this documentation.
+
+Prerequisites
+`````````````
+
+- Python 2.5.x or later
+  (only the distribution from python.org has been tested)
+
+- wxPython 2.6.x or later (wxPython 2.8.x or later recommended for
+  full functionality)
+
+.. _msvc:
+
+Microsoft SDK
+`````````````
+
+For building extensions for Python 2.6, 2.7, 3.0, 3.1 and 3.2 (both 32 and
+64 bit), Microsoft Visual C++ 2008 (Microsoft Visual Studio 9.0) is the
+compiler that is suitable. You will need the `Microsoft Windows SDK for
+Windows 7 and .NET Framework 3.5 SP1`__.
+
+.. __: http://www.microsoft.com/downloads/en/details.aspx?familyid=71DEB800-C591-4F97-A900-BEA146E4FAE1&displaylang=en
+
+Note that this lacks some files required by the C99 standard, so you must
+additionally download the header files ``stdint.h`` and ``inttypes.h`` from
+the `msinttypes project`__ and copy them to the include directory of the
+SDK installation.
+
+.. __: https://code.google.com/p/msinttypes/
+
+Assuming that you have installed the 64bit version of Python, you can compile
+Gamera with the following commands from the Microsoft SDK shell prompt (the
+*color* command is not necessary, but *setenv* can change the colors of the
+terminal to an unreadable combination)::
+
+    setenv /x64 /release
+    color 0e
+    set DISTUTILS_USE_SDK=1
+    cd \path\to\gamera-sources
+    \path\to\python.exe setup.py bdist_wininst
+
+The installer will be built in the subdirectory ``dist`` and can be startet
+by double click in the explorer. Note that the installer might display an error
+message at the end, depending on the Python distutils version shipped with
+your Python installation. This message can simply be ignored.
+
+.. _mingw32:
+
+Standalone Mingw32
+``````````````````
+
+Install the Mingw32 port of gcc from http://mingw.org/. Make sure
+that you do not only install *gcc-core*, but also *g++* and *make*.
+Add the *bin* subdirectory of your Mingw32 installation to
+the environment variable ``PATH``.
+
+Assuming you have installed Python to ``C:\Python275``, you can
+then compile gamera at a DOS command prompt from the root directory
+of the gamera source code with::
+
+  C:\Python27\python setup.py build --compiler=mingw32 bdist_wininst
+
+This will create a Windows installer, including uninstallation support,
+in the *dist* subdirectory. It can be started with a double click
+in the Explorer, or from the DOS command prompt with::
+
+  start dist\gamera-*.exe
+
+.. note::
+
+   Fixes for common problems:
+
+    - The Python 2.6 binary from python.org requires ``libmsvcr90.a``,
+      which is an errenous in some versions of Mingw32. To fix it, you can
+      recreate the file from the DLL ``msvcr90.dll`` that comes with
+      Python 2.6 with pexports__ and *dlltool* (the latter is part of Mingw32)::
+
+        pexports msvcr90.dll > msvcr90.def
+        dlltool --input-def msvcr90.def --dllname msvcr90.dll --output-lib libmsvcr90.a -k
+
+      With Python 2.7 and Mingw gcc 4.6, these changes are not necessary.
+
+    - Recent versions of the Mingw gcc no longer support the ``-mno-cygwin``
+      option, which is however passed on by the Python distutils. If you run
+      into this error, you can simply remove the option from the file::
+
+        C:\Python27\lib\distutils\cygwinccompiler.py
+
+.. __: http://sourceforge.net/projects/mingw/files/MinGW/Extension/pexports/
+
+
+.. _cygwin:
+
+Mingw32 inside Cygwin
+`````````````````````
+
+Use the installer from http://www.cygwin.com/ to install Cygwin,
+including the ``g++-mingw32`` compiler and the ``MingW32`` libraries.
+If you plan to track development of Gamera, you will probably also
+want to install ``subversion``.
+
+The important thing to note here is that we are using Cygwin's Mingw32
+compiler to build for the standard (non-Cygwin) Python from
+python.org.  After a clean install of Cygwin, typing 'python' will
+start up Cygwin's version of Python, not the one from python.org.
+Therefore, you will want to add the standard Python to your Cygwin
+PATH using the command (assuming you installed Python in standard location)::
+
+  export PATH=/cygdrive/c/Python25/:$PATH
+
+Ensure you are using the correct Python by typing::
+
+  which python
+
+The result should be ``/cygdrive/c/Python25/python.exe``, not
+``/usr/bin/python``.
+
+Beware that the file ``/usr/bin/gcc`` installed by Cygwin actually
+is *not* the compiler executable, but a symbolic link. Symbolic
+links are not supported by MS Windows, but are a Cygwin-only
+feature. This means that the Python Distutils system cannot execute
+``/usr/bin/gcc`` and the build command will fail. To fix this,
+replace the symbolic link with the actual compiler executable::
+
+  cp /usr/bin/gcc-3 /usr/bin/gcc
+  cp /usr/bin/g++-3 /usr/bin/g++
+
+From here on, you can proceed as for the standalone Mingw32 toolchain,
+i.e.::
+
+  python setup.py build --compiler=mingw32 bdist_wininst
+  dist/gamera-*.exe
+

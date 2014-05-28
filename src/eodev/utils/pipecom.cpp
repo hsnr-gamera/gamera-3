@@ -14,7 +14,7 @@
 #include <config.h>
 #endif
 
-#if !defined(_WINDOWS) && !defined(WIN32)
+#if !defined(_MSC_VER) && !defined(_WINDOWS) && !defined(WIN32)
 
 #include <cstdlib>
 #include <cstring>

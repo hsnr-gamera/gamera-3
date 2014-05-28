@@ -32,7 +32,8 @@ def install_desktop_icon():
     print "wxPython was not found.  Please make sure that wxPython is installed before running Gamera."
 
   try:
-    desktop_path = get_special_folder_path("CSIDL_COMMON_DESKTOPDIRECTORY")
+    #desktop_path = get_special_folder_path("CSIDL_COMMON_DESKTOPDIRECTORY")
+    desktop_path = get_special_folder_path("CSIDL_DESKTOPDIRECTORY")
   except OSError:
     print "Can't find the desktop!"
     return

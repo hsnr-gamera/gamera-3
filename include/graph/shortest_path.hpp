@@ -48,7 +48,7 @@ struct DijkstraNode {
       visited = false;
    }
 
-   bool operator<(DijkstraNode &d2) {
+   bool operator<(DijkstraNode &d2) const {
       return distance < d2.distance;
    }
 };

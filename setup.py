@@ -172,11 +172,16 @@ for entry in eodev_dir:
 graph_files = glob.glob("src/graph/*.cpp") + glob.glob("src/graph/graphmodule/*.cpp")
 kdtree_files = ["src/kdtreemodule.cpp", "src/geostructs/kdtree.cpp"]
 
+# libstdc++ does not exist with MS VC, but is linke dby default
+if ('--compiler=mingw32' not in sys.argv) and (sys.platform == 'win32'):
+	galibraries = []
+else:
+	galibraries = ["stdc++"]
 if has_openmp:
     ExtGA = Extension("gamera.knnga",
                       ["src/knngamodule.cpp"] + eodev_files,
                       include_dirs=["include", "src"] + eodev_includes,
-                      libraries=["stdc++"],
+                      libraries=galibraries,
                       extra_compile_args=["-Wall", "-fopenmp"],
                       extra_link_args=["-fopenmp"]
                       )
@@ -184,7 +189,7 @@ else:
     ExtGA = Extension("gamera.knnga",
                       ["src/knngamodule.cpp"] + eodev_files,
                       include_dirs=["include", "src"] + eodev_includes,
-                      libraries=["stdc++"],
+                      libraries=galibraries,
                       extra_compile_args=["-Wall"]
                       )
 

@@ -1,26 +1,30 @@
 Changes made between Gamera File Releases
 =========================================
 
- - fixed a memory leak when image positions are given as sequence
-   (Debian Bug report #747548 from 2014-05-09)
+Version 3.4.1, May 28, 2014
+----------------------------
+
+ - ported to Windows again with MS VC and included compile instructions
 
  - new plugins:
     o kise_block_extraction in pagesegmentation
     o kernel_density, argmax, argmin in listutilities
     o soft_threshold in binarization
 
+ - new features and feature improvements:
+    o Fourier descriptors implemented based on EURASIP JASP 2013 paper
+    o moments, zernike_moments, and diagonal_projection no longer
+      produce division by zero error on empty images
+    o bug fixed in zernike_moments that made the feature less useful
+
+ - fixed a memory leak when image positions are given as sequence
+   (Debian Bug report #747548 from 2014-05-09)
+
  - new option "iterations" for bbox_merging and significant speedup
-
- - Fourier descriptors implemented based on EURASIP JASP 2013 paper
-
- - moments, zernike_moments, and diagonal_projection no longer
-   produce division by zero error on empty images
 
  - new options for outline() and contour_samplepoints()
 
  - graph_color_ccs did not work when only one Cc given
-
- - bug fixed in zernike_moments that made the feature less useful
 
  - export/import to/from OpenCV images
 

@@ -523,8 +523,8 @@ namespace Gamera {
     num_features -= 2; // A00 and A11 are constants
     
     size_t m, n, idx;
-    double tmp_real[num_features];
-    double tmp_imag[num_features];
+    double* tmp_real = new double[num_features];
+    double* tmp_imag = new double[num_features];
     
     memset(tmp_real, 0, num_features * sizeof(double));
     memset(tmp_imag, 0, num_features * sizeof(double));
@@ -596,6 +596,9 @@ namespace Gamera {
       for (m= n%2; m<= n; m+=2)
         buf[idx++] *= multiplier;
     }
+
+    delete [] tmp_real;
+    delete [] tmp_imag;
   }
 
   //

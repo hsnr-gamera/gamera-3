@@ -53,7 +53,7 @@ struct GraphData {
     * >0 if *this > b
     * != 0 if *this != b
     * */
-   virtual int compare(const GraphData& b) = 0;
+   virtual int compare(const GraphData& b) const = 0;
    
    virtual ~GraphData() {
 
@@ -64,27 +64,27 @@ struct GraphData {
 
 
    // mappings from comparison operators to int compare(const GraphData&)
-   bool operator<(const GraphData& b) {
+   bool operator<(const GraphData& b) const {
       return compare(b) < 0;
    }
 
-   bool operator==(const GraphData& b) {
+   bool operator==(const GraphData& b) const {
       return compare(b) == 0;
    }
 
-   bool operator>(const GraphData& b) {
+   bool operator>(const GraphData& b) const {
       return compare(b) > 0;
    }
 
-   bool operator!=(const GraphData& b) {
+   bool operator!=(const GraphData& b) const {
       return compare(b) != 0;
    }
 
-   bool operator<=(const GraphData& b) {
+   bool operator<=(const GraphData& b) const {
       return compare(b) <= 0;
    }
 
-   bool operator>=(const GraphData& b) {
+   bool operator>=(const GraphData& b) const {
       return compare(b) >= 0;
    }
 };
@@ -92,7 +92,7 @@ struct GraphData {
 
 /// Less-Compare for use in value-node-map of Graph
 struct GraphDataPtrLessCompare {
-   bool operator()(GraphData* a, GraphData* b){
+   bool operator()(const GraphData* a, const GraphData* b) const {
       return *a < *b;
    }
 };

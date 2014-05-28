@@ -313,8 +313,9 @@ IntVector * proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, i
     size_t size;
     lr.x()-ul.x()>lr.y()-ul.y()?size=lr.x()-ul.x():size=lr.y()-ul.y();
 
-    int SplitPoints_Min[size]; // probably no need for such big mem-alloc, but necessary in certain situations
-    int SplitPoints_Max[size]; 
+    // probably no need for such big mem-alloc, but necessary in certain situations
+    int* SplitPoints_Min = new int[size];
+    int* SplitPoints_Max = new int[size]; 
     int gap_width = 0; // width of the gap
     int gap_counter = 0; //number of gaps
 
@@ -376,6 +377,9 @@ IntVector * proj_cut_Split_Point(T& image, Point ul, Point lr, int Tx, int Ty, i
     }   
     direction=='x'? SplitPoints->push_back(lr.y()): SplitPoints->push_back(lr.x()); // ending point
     
+    delete [] SplitPoints_Min;
+    delete [] SplitPoints_Max;
+
     return SplitPoints;
 }
 

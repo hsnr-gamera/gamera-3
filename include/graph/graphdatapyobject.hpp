@@ -66,7 +66,7 @@ struct GraphDataPyObject: public GraphData {
          Py_DECREF(_node);
    }
 
-   int compare(const GraphData& b) {
+   int compare(const GraphData& b) const {
       return PyObject_Compare(data, 
             dynamic_cast<const GraphDataPyObject&>(b).data);
    }

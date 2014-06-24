@@ -10,7 +10,7 @@ recursive-include examples *.py README *.tiff *.xml
 recursive-include include *.hpp *.hxx *.h README
 recursive-include win32 *.py
 recursive-include win32/msisource *.mmh *.txt *.jpg *.c *.template *.bmp
-recursive-include gamera/mac/ *.py *.html DMG_DS_STORE
+recursive-include gamera/mac *.py *.html DMG_DS_STORE
 recursive-include gamera/mac/resources *.jpg
 recursive-include migration_tools README gamera_deprecation_filter generate_migration_docs replace_get_set
 include CHANGES INSTALL LICENSE ACKNOWLEDGEMENTS KNOWN_BUGS MANIFEST.in TODO setup.cfg gamera_post_install.py version

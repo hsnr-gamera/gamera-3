@@ -231,7 +231,11 @@ class Args:
             self.gs.EnableScrolling(0, 1)
             self.gs.SetScrollRate(0, 20)
       self.border.Layout()
-      self.border.Fit(self.window)
+      if wx.VERSION < (2, 9):
+          self.border.SetVirtualSizeHints(self.window)
+      else:
+          self.border.FitInside(self.window)
+      #self.border.Fit(self.window)
       self.window.Centre()
 
    def get_args_string(self):

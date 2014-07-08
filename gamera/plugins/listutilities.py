@@ -153,6 +153,7 @@ class argmax(PluginFunction):
     """Returns the index of the maximum in a list.
 """
     category = "List"
+    pure_python = 1
     self_type = None
     return_type = Int()
     args = Args([FloatVector("x")])
@@ -170,6 +171,7 @@ class argmin(PluginFunction):
     """Returns the index of the minimum in a list.
 """
     category = "List"
+    pure_python = 1
     self_type = None
     return_type = Int()
     args = Args([FloatVector("x")])
@@ -186,7 +188,8 @@ class argmin(PluginFunction):
 class ListUtilitiesModule(PluginModule):
    category = None
    cpp_headers=["listutilities.hpp"]
-   functions = [permute_list, all_subsets, median, median_py, kernel_density]
+   functions = [permute_list, all_subsets, median, median_py,
+                kernel_density, argmax, argmin]
    author = "Michael Droettboom and Karl MacMillan"
    url = "http://gamera.sourceforge.net/"
 module = ListUtilitiesModule()

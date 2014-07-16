@@ -160,16 +160,38 @@ class blue(ExtractGreyscaleChannel):
     """
     pass
 
+
 class false_color(PluginFunction):
     """
-    Returns a false color representation of the given image.  Low
-    values are red, mid values are green and high values are blue.
+    Returns a false color representation of the given image.
     This can help visualize greyscale images that are not *real*
     images but are representations of other kinds of data.
+
+    The option *colormap* specifies how the values are converted:
+
+     0: diverging colormap after Moreland with blue representing low, white representing mean, and red representing high values
+
+     1: rainbow colormap with blue representing low, green representing mean, and red representing high values
+ 
+    Note that float images are scaled to the range [0,1], which means
+    that the highest value is always colored red and the lowest value blue.
+    For greyscale image no range stretching is done, so if you want this,
+    you must first convert the image to a float image.
+
+    Reference: K. Moreland:
+    `Diverging Color Maps for Scientific Visualization.`__
+    5th International Symposium on Visual Computing, 2009
+
+    __ http://www.sandia.gov/~kmorel/documents/ColorMaps/
     """
     self_type = ImageType([FLOAT, GREYSCALE])
+    args = Args([Choice("colormap", ["diverging", "rainbow"], default=0)])
     return_type = ImageType([RGB], "false_color")
-    doc_examples = [(GREYSCALE,)]
+    author = "Christoph Dalitz"
+    doc_examples = [(GREYSCALE,0), (GREYSCALE,1)]
+    def __call__(self, colormap=0):
+        return _color.false_color(self, colormap)
+    __call__ = staticmethod(__call__)
 
 class colors_to_labels(PluginFunction):
     """

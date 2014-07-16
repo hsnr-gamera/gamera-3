@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - false_color now defaults to diverging colormap after Moreland, 2009
+
 Version 3.4.1, May 28, 2014
 ----------------------------
 

@@ -99,7 +99,7 @@ in your plugin, e.g.
       # wrapper for passing a default argument
       def __call__(self, nrows, ncols, interpolation="Linear"):
           return _example.resize_copy(self, nrows, ncols, interpolation)
-    __call__ = staticmethod(__call__)
+      __call__ = staticmethod(__call__)
 
 ``_example`` must be replaced by the actual name of your source file plus
 a leading underscore.

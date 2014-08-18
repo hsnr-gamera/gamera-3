@@ -238,7 +238,8 @@ Image *color_ccs(T& m, bool ignore_unlabeled) {
       dst->blue(0);
     }
 	else {
-      color = *src & 0x7;
+      //color = *src & 0x7;
+      color = size_t(*src) % COLOR_SET_SIZE;
       const unsigned char* out_color = color_set[color];
       dst->red(out_color[0]);
       dst->green(out_color[1]);

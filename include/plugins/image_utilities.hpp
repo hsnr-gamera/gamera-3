@@ -903,8 +903,8 @@ namespace Gamera {
                          create_PointObject(Point(max_x,max_y)), max_val);
   }
   // specialization for FloatImage
-  template<class U>
-  PyObject* min_max_location_nomask(const FloatImageView& image, const U& mask){
+  template<>
+  PyObject* min_max_location_nomask(const FloatImageView& image){
 
     int max_x, max_y, min_x, min_y;
     size_t x,y;

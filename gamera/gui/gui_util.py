@@ -94,7 +94,7 @@ class FileDialog(wx.FileDialog):
       if cls.last_directory is None:
          cls.last_directory = path.abspath(config.get("default_dir"))
       if multiple:
-         self._flags |= wx.MULTIPLE
+         self._flags |= wx.FD_MULTIPLE
          self._multiple = True
       else:
          self._multiple = False
@@ -121,10 +121,10 @@ class FileDialog(wx.FileDialog):
          return filename
 
 class OpenFileDialog(FileDialog):
-   _flags = wx.OPEN
+   _flags = wx.FD_OPEN
 
 class SaveFileDialog(FileDialog):
-   _flags = wx.SAVE|wx.OVERWRITE_PROMPT
+   _flags = wx.SAVE|wx.FD_OVERWRITE_PROMPT
 
 def open_file_dialog(parent, extensions="*.*", multiple=0):
    return OpenFileDialog(parent, extensions, multiple).show()

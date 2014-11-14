@@ -569,6 +569,7 @@ def run(startup=_show_shell):
 
       # wxWindows calls this method to initialize the application
       def OnInit(self):
+         self.SetAssertMode(wx.PYAPP_ASSERT_SUPPRESS)
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()

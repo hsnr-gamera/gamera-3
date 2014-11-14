@@ -29,7 +29,7 @@ from time import strftime, localtime
 import locale
 import traceback
 import warnings
-from distutils.version import StrictVersion
+from distutils.version import StrictVersion, LooseVersion
 from gamera.util import dedent
 try:
    locale.setlocale(locale.LC_ALL, '')
@@ -57,7 +57,7 @@ try:
    import pygments.lexers
    import pygments.formatters
    source_highlighter = 'pygments'
-   if StrictVersion(pygments.__version__) < StrictVersion('0.6'):
+   if LooseVersion(pygments.__version__) < LooseVersion('0.6'):
       print "pygments version (" + pygments.__version__ + ") too old"
       raise ImportError()
 except ImportError, e:

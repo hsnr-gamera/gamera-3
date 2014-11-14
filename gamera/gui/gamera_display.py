@@ -29,6 +29,7 @@ from math import sqrt, ceil, log, floor # Python standard library
 from sys import maxint
 import sys, string, weakref
 import warnings
+from distutils.version import LooseVersion
 
 from gamera.core import *          # Gamera specific
 from gamera.config import config
@@ -39,7 +40,8 @@ import gamera.plugins.gui_support  # Gamera plugin
 ##############################################################################
 
 # we want this done on import
-if int(wx.__version__.split('.')[1]) < 9:
+#if int(wx.__version__.split('.')[0]) < 3 and int(wx.__version__.split('.')[1]) < 9:
+if LooseVersion(wx.__version__) < LooseVersion('2.9'):
     wx.InitAllImageHandlers() # deprecated since wxPython 2.9
 
 def _sort_by_nrows(a, b):

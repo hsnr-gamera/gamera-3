@@ -944,7 +944,7 @@ Returns: numpy array of specified type
         raise ValueError, "type can be 'i', 'f' or 'd' in load()"
 
     ## STRIP OUT % AND # LINES
-    tmpname = tempfile.mktemp()
+    tmpname = tempfile.NamedTemporaryFile(delete=False).name
     if sys.platform == 'win32':
         # NT VERSION OF GREP DOESN'T DO THE STRIPPING ... SIGH
         cmd = "grep.exe -v \'%\' "+fname+" > "+tmpname

@@ -161,6 +161,11 @@ and then to install (you'll need to have admin priviledges)::
 
   sudo pythonw setup.py install
 
+On OS-X 10.6 and later, you must define the variable CFLAGS before
+building Gamera as follows:
+
+  export CFLAGS="-stdlib=libstdc++ -mmacosx-version-min=10.6"
+
 On OS-X 10.4, you must do the installation with ``pythonw`` rather than
 with ``python``, because ``gamera_gui`` is a GUI application. On OS-X 10.5
 this distinction is no longer necessary, but using ``pythonw`` also works.

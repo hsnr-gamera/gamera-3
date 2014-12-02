@@ -499,7 +499,8 @@ class ShellFrame(wx.Frame):
             if not window.Close():
                return
       self.Destroy()
-      app.ExitMainLoop()
+      #app.ExitMainLoop()
+      wx.Exit()
 
    def Update(self):
       self.icon_display.update_icons(self.shell.interp.locals)
@@ -554,7 +555,6 @@ def _show_shell():
    main_win.Show(True)
    main_win.import_command_line_modules()
 
-app = None
 def run(startup=_show_shell):
    global app
    has_gui.has_gui = has_gui.WX_GUI

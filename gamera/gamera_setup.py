@@ -80,7 +80,7 @@ import generate
 
 extras = {'extra_compile_args': ['-Wall']}
 if sys.platform == 'win32' and not '--compiler=mingw32' in sys.argv:
-   extras['extra_compile_args'] = ['/GR']#, "/Zi"]
+   extras['extra_compile_args'] = ['/GR','/EHsc']#, "/Zi"]
 elif sys.platform == 'darwin':
    extras['extra_link_args'] = ['-F/System/Library/Frameworks/']
    macosversion = platform.mac_ver()[0]

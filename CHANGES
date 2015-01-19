@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - updated zlib to version 1.2.8 (only used under Windows)
+
+ - enabled exceptions in compiler options on Windows
+   (this unfortunately does not fix the crash of the classifier on Windows)
+
  - fixed hang with wxpython 3.0 after quitting gamera_gui
 
  - fixed crash in min_max_location for FLOAT images

@@ -81,7 +81,7 @@ class PngSupportModule(PluginModule):
     category = "File"
     cpp_headers = ["png_support.hpp"]
     internal_png_dir = "src/libpng-1.2.5/"
-    internal_zlib_dir = "src/zlib-1.2.1/"
+    internal_zlib_dir = "src/zlib-1.2.8/"
     if sys.platform == 'darwin':
         found_png = None
         for p in ["/sw", "/usr", "/usr/local"]:
@@ -108,10 +108,11 @@ class PngSupportModule(PluginModule):
                         'pngwio.c', 'pngwrite.c', 'pngrtran.c', 'pngwtran.c',
                         'pngmem.c', 'pngerror.c', 'pngpread.c',]]
         cpp_sources.extend([os.path.join(internal_zlib_dir, x) for x in
-                            ['adler32.c','compress.c','crc32.c','deflate.c','gzio.c',
-                             'infback.c','inffast.c','inflate.c','inftrees.c','trees.c',
-                             'uncompr.c','zutil.c']])
-        cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.1"]
+                            ['adler32.c','compress.c','crc32.c','deflate.c',
+                             'gzclose.c','gzlib.c','gzread.c','gzwrite.c',
+                             'infback.c','inffast.c','inflate.c','inftrees.c',
+                             'trees.c','uncompr.c','zutil.c']])
+        cpp_include_dirs = [internal_png_dir, "include/zlib-1.2.8"]
 #        extra_libraries = ["z"]
     else:
         extra_libraries = ["png"]

@@ -218,7 +218,8 @@ static PyObject* knn_new(PyTypeObject* pytype, PyObject* args,
   o->unknown = 0;
   o->num_k = 1;
   o->distance_type = CITY_BLOCK;
-  o->confidence_types.push_back(CONFIDENCE_DEFAULT);
+  o->confidence_types = new std::vector<int>();
+  o->confidence_types->push_back(CONFIDENCE_DEFAULT);
 
   Py_INCREF(Py_None);
   return (PyObject*)o;
@@ -265,6 +266,7 @@ static void knn_dealloc(PyObject* self) {
     delete o->normalize;
   if (o->unknown != 0)
     delete[] o->unknown;
+  delete o->confidence_types;
   self->ob_type->tp_free(self);
 }
 
@@ -432,7 +434,7 @@ static PyObject* knn_classify(PyObject* self, PyObject* args) {
 
   // create the kNN object
   kNearestNeighbors<char*, ltstr, eqstr> knn(o->num_k);
-  knn.confidence_types = o->confidence_types;
+  knn.confidence_types = *(o->confidence_types);
 
   double *current_known;
 
@@ -508,7 +510,7 @@ static PyObject* knn_classify_with_images(PyObject* self, PyObject* args) {
   }
 
   kNearestNeighbors<char*, ltstr, eqstr> knn(o->num_k);
-  knn.confidence_types = o->confidence_types;
+  knn.confidence_types = *(o->confidence_types);
 
   PyObject* cur;
   while ((cur = PyIter_Next(iterator))) {
@@ -909,10 +911,10 @@ static PyObject* knn_get_confidence_types(PyObject* self) {
   size_t n,i;
   PyObject* entry;
   KnnObject* o = ((KnnObject*)self);
-  n = o->confidence_types.size();
+  n = o->confidence_types->size();
   PyObject* result = PyList_New(n);
   for (i=0; i<n; i++) {
-    entry = PyInt_FromLong(o->confidence_types[i]);
+    entry = PyInt_FromLong(o->confidence_types->at(i));
     PyList_SetItem(result, i, entry);
   }
   return result;
@@ -927,7 +929,7 @@ static int knn_set_confidence_types(PyObject* self, PyObject* list) {
   int ct;
   PyObject* entry;
   KnnObject* o = ((KnnObject*)self);
-  o->confidence_types.clear();
+  o->confidence_types->clear();
   n = PyList_Size(list);
   for (i=0; i<n; i++) {
     entry = PyList_GetItem(list, i);
@@ -936,7 +938,7 @@ static int knn_set_confidence_types(PyObject* self, PyObject* list) {
       return -1;
     }
     ct = (ConfidenceTypes)PyInt_AsLong(entry);
-    o->confidence_types.push_back(ct);
+    o->confidence_types->push_back(ct);
   }
   return 0;
 }

@@ -1,10 +1,12 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.4.2, Apr 23, 2015
+----------------------------
+
  - updated zlib to version 1.2.8 (only used under Windows)
 
- - enabled exceptions in compiler options on Windows
-   (this unfortunately does not fix the crash of the classifier on Windows)
+ - fixed classifier crash on Windows
 
  - fixed hang with wxpython 3.0 after quitting gamera_gui
 

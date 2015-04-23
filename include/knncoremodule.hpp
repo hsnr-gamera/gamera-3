@@ -55,7 +55,7 @@ namespace Gamera { namespace kNN {
     // The id_names for the feature vectors
     char** id_names;
     // confidence types to be computed during classification
-    std::vector<int> confidence_types;
+    std::vector<int> *confidence_types;
     // The current selected features
     int *selection_vector;
     // The current weights applied to the distance calculation

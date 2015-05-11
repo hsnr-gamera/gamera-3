@@ -92,11 +92,16 @@ namespace {
   void tiff_load_onebit(T& matrix, ImageInfo& info, const char* filename) {
     // open the image
     TIFF* tif = TIFFOpen(filename, "r");
+    if (!tif) throw std::runtime_error("TIFF Error opening file");
     tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    if (!buf) throw std::runtime_error("TIFF Error allocating scanline");
     
     // load the data
     for (size_t i = 0; i < info.nrows(); i++) {
-      TIFFReadScanline(tif, buf, i);
+      if (TIFFReadScanline(tif, buf, i) < 0) {
+        _TIFFfree(buf); TIFFClose(tif);
+        throw std::runtime_error("TIFF Error reading scanline");
+      }
       char* data = (char *)buf;
       std::bitset<8> bits;
       int tmp;
@@ -123,7 +128,9 @@ namespace {
   void tiff_load_greyscale(T& matrix, ImageInfo& info, const char* filename) {
     // open the image
     TIFF* tif = TIFFOpen(filename, "r");
+    if (!tif) throw std::runtime_error("TIFF Error opening file");
     tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    if (!buf) throw std::runtime_error("TIFF Error allocating scanline");
     
     typename T::row_iterator mi = matrix.row_begin();
     typename T::col_iterator mj;
@@ -131,7 +138,10 @@ namespace {
     if (info.inverted()) {
       for (size_t i = 0; i < info.nrows(); i++, mi++) {
         mj = mi.begin();
-        TIFFReadScanline(tif, buf, i);
+        if (TIFFReadScanline(tif, buf, i) < 0) {
+          _TIFFfree(buf); TIFFClose(tif);
+          throw std::runtime_error("TIFF Error reading scanline");
+        }
         data = (unsigned char *)buf;
         for (size_t j = 0; j < info.ncols(); j++, mj++) {
           *mj = 255 - data[j];
@@ -140,7 +150,10 @@ namespace {
     } else {
       for (size_t i = 0; i < info.nrows(); i++, mi++) {
         mj = mi.begin();
-        TIFFReadScanline(tif, buf, i);
+        if (TIFFReadScanline(tif, buf, i) < 0) {
+          _TIFFfree(buf); TIFFClose(tif);
+          throw std::runtime_error("TIFF Error reading scanline");
+        }
         data = (unsigned char *)buf;
         for (size_t j = 0; j < info.ncols(); j++, mj++) {
           *mj = data[j];
@@ -157,14 +170,19 @@ namespace {
   void tiff_load_grey16(T& matrix, ImageInfo& info, const char* filename) {
     // open the image
     TIFF* tif = TIFFOpen(filename, "r");
+    if (!tif) throw std::runtime_error("TIFF Error opening file");
     tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    if (!buf) throw std::runtime_error("TIFF Error allocating scanline");
     
     typename T::row_iterator mi = matrix.row_begin();
     typename T::col_iterator mj;
     unsigned short* data;
     for (size_t i = 0; i < info.nrows(); i++, mi++) {
       mj = mi.begin();
-      TIFFReadScanline(tif, buf, i);
+      if (TIFFReadScanline(tif, buf, i) < 0) {
+        _TIFFfree(buf); TIFFClose(tif);
+        throw std::runtime_error("TIFF Error reading scanline");
+      }
       data = (unsigned short *)buf;
       for (size_t j = 0; j < info.ncols(); j++, mj++) {
         *mj = data[j];
@@ -180,14 +198,19 @@ namespace {
   void tiff_load_rgb(T& matrix, ImageInfo& info, const char* filename) {
     // open the image
     TIFF* tif = TIFFOpen(filename, "r");
+    if (!tif) throw std::runtime_error("TIFF Error opening file");
     tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    if (!buf) throw std::runtime_error("TIFF Error allocating scanline");
     
     typename T::row_iterator mi = matrix.row_begin();
     typename T::col_iterator mj;
     unsigned char* data;
     for (size_t i = 0; i < info.nrows(); i++, mi++) {
       mj = mi.begin();
-      TIFFReadScanline(tif, buf, i);
+      if (TIFFReadScanline(tif, buf, i) < 0) {
+        _TIFFfree(buf); TIFFClose(tif);
+        throw std::runtime_error("TIFF Error reading scanline");
+      }
       data = (unsigned char *)buf;
       for (size_t j = 0; j < info.ncols() * 3; j += 3, mj++) {
         (*mj).red(data[j]);

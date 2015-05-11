@@ -70,6 +70,7 @@ namespace Gamera {
     typedef typename T::difference_type difference_type;
     // Gamera specific
     typedef T data_type;
+    ImageAccessor<value_type> m_accessor;
 	
     // Vigra typedefs
     typedef value_type PixelType;
@@ -173,8 +174,9 @@ namespace Gamera {
     //  FUNCTION ACCESS
     //
 
-    value_type get(const Point& point) const {
-      value_type tmp = *(m_const_begin + (point.y() * m_image_data->stride()) + point.x());
+    value_type get(const Point& p) const {
+      //value_type tmp = *(m_const_begin + (p.y() * m_image_data->stride()) + p.x());
+      value_type tmp = m_accessor(m_const_begin + (p.y() * m_image_data->stride()) + p.x());
       if (tmp == m_label)
       	return tmp;
       else

@@ -1,7 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
- - reading of tiff images more error robust (fixes Debian bug #784795)
+ - reading of tiff images more error robust
+   (fixes Debian bug #784795)
+
+ - get() method corrected for Cc's with storage format RLE
+   (fixes Debian bug #763440)
 
 
 Version 3.4.2, Apr 23, 2015

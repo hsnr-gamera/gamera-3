@@ -761,7 +761,10 @@ static PyObject* image_get(PyObject* self, const Point& point) {
     return 0;
   }
   if (is_CCObject(self)) {
-    return PyInt_FromLong(((Cc*)o->m_x)->get(point));
+    if (od->m_storage_format == RLE)
+      return PyInt_FromLong(((RleCc*)o->m_x)->get(point));
+    else
+      return PyInt_FromLong(((Cc*)o->m_x)->get(point));
   } else if (is_MLCCObject(self)) {
     return PyInt_FromLong(((MlCc*)o->m_x)->get(point));
   } else if (od->m_storage_format == RLE) {

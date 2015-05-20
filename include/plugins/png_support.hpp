@@ -52,7 +52,7 @@ void PNG_info_specific(const char* filename, FILE* & fp, png_structp& png_ptr, p
     throw std::runtime_error("Not a PNG file");
   }
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
-				   NULL, NULL);
+                   NULL, NULL);
   if (!png_ptr) {
     fclose(fp);
     throw std::runtime_error("Could not read PNG header");
@@ -125,7 +125,7 @@ ImageInfo* PNG_info(char* filename) {
     info->m_x_resolution = x_resolution;
     info->m_y_resolution = y_resolution;
     if (color_type == PNG_COLOR_TYPE_PALETTE || color_type == PNG_COLOR_TYPE_RGB ||
-	color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+    color_type == PNG_COLOR_TYPE_RGB_ALPHA)
       info->m_ncolors = 3;
     else if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
       info->m_ncolors = 1;
@@ -161,10 +161,10 @@ void load_PNG_onebit(T& image, png_structp& png_ptr) {
       png_bytep from = row;
       typename T::col_iterator c = r.begin();
       for (; c != r.end(); ++c, ++from) {
-	if (*from)
-	  c.set(pixel_traits<OneBitPixel>::black());
-	else
-	c.set(pixel_traits<OneBitPixel>::white());
+    if (*from)
+      c.set(pixel_traits<OneBitPixel>::black());
+    else
+    c.set(pixel_traits<OneBitPixel>::white());
       }
     }
   } catch (std::exception e) {
@@ -203,45 +203,49 @@ Image* load_PNG(const char* filename, int storage) {
       PNG_close(fp, png_ptr, info_ptr, end_info);
       throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
     }
+    if (bit_depth != 8) {
+      PNG_close(fp, png_ptr, info_ptr, end_info);
+      throw std::runtime_error("RGB image must have 8bits per channel.");
+    }
     if (color_type == PNG_COLOR_TYPE_PALETTE)
       png_set_palette_to_rgb(png_ptr);
     typedef TypeIdImageFactory<RGB, DENSE> fact;
     fact::image_type* image =
       fact::create(Point(0, 0), Dim(width, height));
     load_PNG_simple(*image, png_ptr);
-	//Damon
-	image->resolution(reso);
-	//Damon: end	
+    //Damon
+    image->resolution(reso);
+    //Damon: end    
     PNG_close(fp, png_ptr, info_ptr, end_info);
     return image;
   } else if (color_type == PNG_COLOR_TYPE_GRAY ||
-	     color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+             color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
     if (bit_depth == 1) {
       if (storage == DENSE) {
-	typedef TypeIdImageFactory<ONEBIT, DENSE> fact;
-	fact::image_type* image =
-	  fact::create(Point(0, 0), Dim(width, height));
-	load_PNG_onebit(*image, png_ptr);
-	//Damon
-	image->resolution(reso);
-	//Damon: end	
-	PNG_close(fp, png_ptr, info_ptr, end_info);
-	return image;
+        typedef TypeIdImageFactory<ONEBIT, DENSE> fact;
+        fact::image_type* image =
+          fact::create(Point(0, 0), Dim(width, height));
+        load_PNG_onebit(*image, png_ptr);
+        //Damon
+        image->resolution(reso);
+        //Damon: end    
+        PNG_close(fp, png_ptr, info_ptr, end_info);
+        return image;
       } else {
-	typedef TypeIdImageFactory<ONEBIT, RLE> fact;
-	fact::image_type* image =
-	  fact::create(Point(0, 0), Dim(width, height));
-	load_PNG_onebit(*image, png_ptr);
-	//Damon
-	image->resolution(reso);
-	//Damon: end	
-	PNG_close(fp, png_ptr, info_ptr, end_info);
-	return image;
-      }	
+        typedef TypeIdImageFactory<ONEBIT, RLE> fact;
+        fact::image_type* image =
+          fact::create(Point(0, 0), Dim(width, height));
+        load_PNG_onebit(*image, png_ptr);
+        //Damon
+        image->resolution(reso);
+        //Damon: end    
+        PNG_close(fp, png_ptr, info_ptr, end_info);
+        return image;
+      } 
     } else if (bit_depth <= 8) {
       if (storage == RLE) {
-	PNG_close(fp, png_ptr, info_ptr, end_info);
-	throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+        PNG_close(fp, png_ptr, info_ptr, end_info);
+        throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
       }
       if (bit_depth < 8) {
 #if PNG_LIBPNG_VER > 10399
@@ -252,25 +256,25 @@ Image* load_PNG(const char* filename, int storage) {
       }
       typedef TypeIdImageFactory<GREYSCALE, DENSE> fact_type;
       fact_type::image_type*
-	image = fact_type::create(Point(0, 0), Dim(width, height));
+        image = fact_type::create(Point(0, 0), Dim(width, height));
       load_PNG_simple(*image, png_ptr);
-	  //Damon
-	  image->resolution(reso);
-	  //Damon: end	
+      //Damon
+      image->resolution(reso);
+      //Damon: end  
       PNG_close(fp, png_ptr, info_ptr, end_info);
       return image;
     } else if (bit_depth == 16) {
       if (storage == RLE) {
-	PNG_close(fp, png_ptr, info_ptr, end_info);
-	throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
+        PNG_close(fp, png_ptr, info_ptr, end_info);
+        throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
       }
       typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
       fact_type::image_type*
-	image = fact_type::create(Point(0, 0), Dim(width, height));
+        image = fact_type::create(Point(0, 0), Dim(width, height));
       load_PNG_simple(*image, png_ptr);
-	  //Damon
-	  image->resolution(reso);
-	  //Damon: end	
+      //Damon
+      image->resolution(reso);
+      //Damon: end  
       PNG_close(fp, png_ptr, info_ptr, end_info);
       return image;
     }
@@ -297,15 +301,15 @@ struct PNG_saver<OneBitPixel> {
     try {
       typename T::row_iterator r = image.row_begin();
       for (; r != image.row_end(); ++r) {
-	png_bytep from = row;
-	typename T::col_iterator c = r.begin();
-	for (; c != r.end(); ++c, ++from) {
-	  if (is_black(c.get()))
-	    *from = 0;
-	  else
-	    *from = 255;
-	}
-	png_write_row(png_ptr, row);
+    png_bytep from = row;
+    typename T::col_iterator c = r.begin();
+    for (; c != r.end(); ++c, ++from) {
+      if (is_black(c.get()))
+        *from = 0;
+      else
+        *from = 255;
+    }
+    png_write_row(png_ptr, row);
       }
     } catch (std::exception e) {
       delete[] row;
@@ -330,12 +334,12 @@ struct PNG_saver<FloatPixel> {
     try {
       typename T::row_iterator r = image.row_begin();
       for (; r != image.row_end(); ++r) {
-	png_bytep from = row;
-	typename T::col_iterator c = r.begin();
-	for (; c != r.end(); ++c, ++from) {
-	  *from = (png_byte)(*c * max);
-	}
-	png_write_row(png_ptr, row);
+    png_bytep from = row;
+    typename T::col_iterator c = r.begin();
+    for (; c != r.end(); ++c, ++from) {
+      *from = (png_byte)(*c * max);
+    }
+    png_write_row(png_ptr, row);
       }
     } catch (std::exception e) {
       delete[] row;
@@ -360,12 +364,12 @@ struct PNG_saver<ComplexPixel> {
     try {
       typename T::row_iterator r = image.row_begin();
       for (; r != image.row_end(); ++r) {
-	png_bytep from = row;
-	typename T::col_iterator c = r.begin();
-	for (; c != r.end(); ++c, ++from) {
-	  *from = (png_byte)((*c).real() * max);
-	}
-	png_write_row(png_ptr, row);
+    png_bytep from = row;
+    typename T::col_iterator c = r.begin();
+    for (; c != r.end(); ++c, ++from) {
+      *from = (png_byte)((*c).real() * max);
+    }
+    png_write_row(png_ptr, row);
       }
     } catch (std::exception e) {
       delete[] row;
@@ -383,11 +387,11 @@ struct PNG_saver<Grey16Pixel> {
     try {
       typename T::row_iterator r = image.row_begin();
       for (; r != image.row_end(); ++r) {
-	typename T::col_iterator c = r.begin();
-	unsigned short* from = (unsigned short *)row;
-	for (; c != r.end(); ++c, ++from)
-	  *from = (unsigned short)(*c && 0xffff);
-	png_write_row(png_ptr, row);
+    typename T::col_iterator c = r.begin();
+    unsigned short* from = (unsigned short *)row;
+    for (; c != r.end(); ++c, ++from)
+      *from = (unsigned short)(*c && 0xffff);
+    png_write_row(png_ptr, row);
       }
     } catch (std::exception e) {
       delete[] row;
@@ -414,7 +418,7 @@ void save_PNG(T& image, const char* filename) {
     png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
     fclose(fp);
     throw std::runtime_error("Couldn't create PNG header");
-  }			
+  }         
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -435,8 +439,8 @@ void save_PNG(T& image, const char* filename) {
     bit_depth = image.depth();
   int color_type = (image.ncolors() == 3) ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_GRAY;
   png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, 
-	       PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
-	       PNG_FILTER_TYPE_DEFAULT);
+           PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+           PNG_FILTER_TYPE_DEFAULT);
   
   //Damon 
   png_uint_32 res_x = (png_uint_32)(image.resolution() / METER_PER_INCH);

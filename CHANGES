@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - reading of 16bit RGB PNG images now produces an error message
+   (fixes Debian bug #785548)
+
  - reading of tiff images more error robust
    (fixes Debian bug #784795)
 

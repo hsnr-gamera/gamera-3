@@ -1,7 +1,7 @@
 Changes made between Gamera File Releases
 =========================================
 
- - fixed error in reading 16bit greyscale PNG images
+ - fixed error in reading/writing 16bit greyscale PNG images
 
  - 16bit RGB PNG images now supported via downscaling
    (fixes Debian bug #785548)

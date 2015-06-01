@@ -412,15 +412,18 @@ template<>
 struct PNG_saver<Grey16Pixel> {
   template<class T>
   void operator()(T& image, png_structp png_ptr) {
-    png_bytep row = new png_byte[image.ncols() * 2];
+    //png_bytep row = new png_byte[image.ncols() * 2];
+    uint16_t* row = new uint16_t[image.ncols()];
+    if (byte_order_little_endian())
+      png_set_swap(png_ptr);
     try {
       typename T::row_iterator r = image.row_begin();
       for (; r != image.row_end(); ++r) {
-    typename T::col_iterator c = r.begin();
-    unsigned short* from = (unsigned short *)row;
-    for (; c != r.end(); ++c, ++from)
-      *from = (unsigned short)(*c && 0xffff);
-    png_write_row(png_ptr, row);
+        typename T::col_iterator c = r.begin();
+        uint16_t* from = (uint16_t*)row;
+        for (; c != r.end(); ++c, ++from)
+          *from = (uint16_t)(*c);
+        png_write_row(png_ptr, (png_bytep)row);
       }
     } catch (std::exception e) {
       delete[] row;

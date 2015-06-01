@@ -1,6 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2015      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +28,13 @@
 #define kwm07192002_utility
 
 namespace Gamera {
+
+  // runtime test for endianness
+  // (safer and less cumbersome than querying compiler macros)
+  bool byte_order_little_endian() {
+    long numberone = 1;
+    return (*((char*)(&numberone)));
+  }
 
   inline void byte_swap32(unsigned char *ptr) {
     register unsigned char val;

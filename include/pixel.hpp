@@ -46,6 +46,7 @@
 #include "vigra/rgbvalue.hxx"
 #include "vigra/colorconversions.hxx"
 #include <complex>
+//#include <stdint.h>
 
 using namespace vigra;
 
@@ -78,6 +79,59 @@ namespace Gamera {
    * The Gamera::Grey16Pixel type is for 16bit greyscale images.
    */
   typedef unsigned int Grey16Pixel;
+  /*
+  // This does not work because OneBit pixel is already of this type:
+  //typedef unsigned short Grey16Pixel;
+  //typedef uint16_t Grey16Pixel;
+  */
+  /*
+  // For some reason, VIGRA does not work with user-defined pixel types:
+  struct Grey16Pixel {
+    short value;
+    Grey16Pixel(int v) {value=short(v);}
+    Grey16Pixel() {value=0;}
+    short operator=(Grey16Pixel n) {return value=n.value;}
+    short operator=(short n) {return value=n;}
+    short operator=(int n) {return value=short(n);}
+    bool operator==(Grey16Pixel n) {return value==n.value;}
+    bool operator==(short n) {return value==n;}
+    bool operator==(int n) {return value==(short)n;}
+    short operator-=(Grey16Pixel n) {return value-=n.value;}
+    short operator-=(short n) {return value-=n;}
+    short operator-=(int n) {return value-=(short)n;}
+    short operator+=(Grey16Pixel n) {return value+=n.value;}
+    short operator+=(short n) {return value+=n;}
+    short operator+=(int n) {return value+=(short)n;}
+    bool operator>(Grey16Pixel n) {return value>n.value;}
+    bool operator>(short n) {return value>n;}
+    bool operator>(int n) {return value>(short)n;}
+    bool operator>=(Grey16Pixel n) {return value>=n.value;}
+    bool operator>=(short n) {return value>=n;}
+    bool operator>=(int n) {return value>=(short)n;}
+    bool operator<(Grey16Pixel n) {return value<n.value;}
+    bool operator<(short n) {return value<n;}
+    bool operator<(int n) {return value<(short)n;}
+    bool operator<=(Grey16Pixel n) {return value<=n.value;}
+    bool operator<=(short n) {return value<=n;}
+    bool operator<=(int n) {return value<=(short)n;}
+    short operator-(short n) {return value-n;}
+    short operator+(short n) {return value+n;}
+    short operator*(short n) {return value*n;}
+    double operator*(double n) {return value*n;}
+    short operator/(short n) {return value*n;}
+    //int operator() {return value;}
+    operator short() {return value;}
+    operator short*() {return &value;}
+    operator int() {return value;}
+    operator long int() {return value;}
+    int operator++() {return value++;}
+    int operator--() {return value--;}
+    //operator&() {return &value;}
+  };
+  int operator*(double x, Grey16Pixel p) {return int(x*p.value);}
+  int operator*(int x, Grey16Pixel p) {return x*p.value;}
+  long int operator*(long int x, Grey16Pixel p) {return x*p.value;}
+  */
 
   /**
    * OneBitPixel

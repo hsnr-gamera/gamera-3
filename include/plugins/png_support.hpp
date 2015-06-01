@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
- * and Karl MacMillan
+ * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+ *               2015      Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@
 #include "image_utilities.hpp"
 #include <png.h>
 #include <stdio.h>
+#include <stdint.h>
 
 // TODO: Get/Save resolution information
 
@@ -145,6 +146,28 @@ void load_PNG_simple(T& image, png_structp& png_ptr) {
 }
 
 template<class T>
+void load_PNG_grey16(T& image, png_structp& png_ptr) {
+  uint16_t* row = new uint16_t[image.ncols()];
+  if (byte_order_little_endian())
+    png_set_swap(png_ptr);
+  try {
+    typename T::row_iterator r = image.row_begin();
+    for (; r != image.row_end(); ++r) {
+      png_read_row(png_ptr, (png_bytep)row, NULL);
+      uint16_t* from = row;
+      typename T::col_iterator c = r.begin();
+      for (; c != r.end(); ++c, ++from) {
+        c.set((int)*from);
+      }
+    }
+  } catch (std::exception e) {
+    delete[] row;
+    throw;
+  }
+  delete[] row;
+}
+
+template<class T>
 void load_PNG_onebit(T& image, png_structp& png_ptr) {
   png_set_invert_mono(png_ptr);
 #if PNG_LIBPNG_VER > 10399
@@ -161,10 +184,10 @@ void load_PNG_onebit(T& image, png_structp& png_ptr) {
       png_bytep from = row;
       typename T::col_iterator c = r.begin();
       for (; c != r.end(); ++c, ++from) {
-    if (*from)
-      c.set(pixel_traits<OneBitPixel>::black());
-    else
-    c.set(pixel_traits<OneBitPixel>::white());
+        if (*from)
+          c.set(pixel_traits<OneBitPixel>::black());
+        else
+          c.set(pixel_traits<OneBitPixel>::white());
       }
     }
   } catch (std::exception e) {
@@ -203,9 +226,15 @@ Image* load_PNG(const char* filename, int storage) {
       PNG_close(fp, png_ptr, info_ptr, end_info);
       throw std::runtime_error("Pixel type must be OneBit to use RLE data.");
     }
-    if (bit_depth != 8) {
-      PNG_close(fp, png_ptr, info_ptr, end_info);
-      throw std::runtime_error("RGB image must have 8bits per channel.");
+    if (bit_depth > 8) {
+#if PNG_LIBPNG_VER >= 10504
+      png_set_scale_16(png_ptr);
+#else
+      png_set_strip_16(png_ptr);
+#endif
+    }
+    else if (bit_depth < 8) {
+      png_set_expand(png_ptr);
     }
     if (color_type == PNG_COLOR_TYPE_PALETTE)
       png_set_palette_to_rgb(png_ptr);
@@ -271,7 +300,7 @@ Image* load_PNG(const char* filename, int storage) {
       typedef TypeIdImageFactory<GREY16, DENSE> fact_type;
       fact_type::image_type*
         image = fact_type::create(Point(0, 0), Dim(width, height));
-      load_PNG_simple(*image, png_ptr);
+      load_PNG_grey16(*image, png_ptr);
       //Damon
       image->resolution(reso);
       //Damon: end  

@@ -229,13 +229,6 @@ namespace {
   };
 
 
-  // runtime test for endianness
-  // (safer and less cumbersome than querying compiler macros)
-  bool byte_order_little_endian() {
-    long numberone = 1;
-    return (*((char*)(&numberone)));
-  }
-
   template<>
   struct tiff_saver<OneBitPixel> {
     template<class T>

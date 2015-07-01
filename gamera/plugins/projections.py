@@ -93,7 +93,7 @@ class projection_skewed_cols(PluginFunction):
     regions moved outside the original image size are simply clipped,
     which restricts this method to small angles.
 
-    .. _rotate: deformations.html#rotate
+    .. _rotate: transformation.html#rotate
     """
     category = "Analysis"
     self_type = ImageType([ONEBIT])
@@ -171,7 +171,7 @@ class rotation_angle_projections(PluginFunction):
     *accuracy*:
       Accuracy of the returned angle.
 
-    .. _rotate: deformations.html#rotate
+    .. _rotate: transformation.html#rotate
     """
     category = "Analysis"
     self_type = ImageType([ONEBIT])

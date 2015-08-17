@@ -255,7 +255,7 @@ def test():
    print num_wrong, num_wrong / float(len(graph[1])) * 100
 
 
-test()
+#test()
 
    
 

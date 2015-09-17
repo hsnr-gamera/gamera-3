@@ -80,7 +80,7 @@ if has_openmp is None:
         p = os.popen("gcc -dumpversion","r")
         gccv = p.readline().strip().split(".")
         p.close()
-        if int(gccv[0]) >= 4 and int(gccv[1]) >= 3:
+        if int(gccv[0]) > 4 or (int(gccv[0]) == 4 and int(gccv[1]) >= 3):
             has_openmp = True
 f = open("gamera/__compiletime_config__.py", "w")
 f.write("# automatically generated configuration at compile time\n")

@@ -80,7 +80,7 @@ else:
                 offset,
                 Dim(image.size[0], image.size[1]),
                 pixel_type, DENSE,
-                image.tostring())
+                image.tobytes())
         __call__ = staticmethod(__call__)
 
     class to_pil(PluginFunction):
@@ -101,7 +101,7 @@ else:
             else:
                 raise ValueError("Only RGB and GREYSCALE Images are supported.")
             size = (image.ncols, image.nrows)
-            return PIL.fromstring(mode, size,
+            return PIL.frombytes(mode, size,
                                   _string_io._to_raw_string(image))
         __call__ = staticmethod(__call__)
 

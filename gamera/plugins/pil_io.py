@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2005 Alex Cobb
+#               2015 Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -76,11 +77,19 @@ else:
                 pixel_type = _inverse_modes[typecode]
             else:
                 raise ValueError("Only RGB and 8-bit Greyscale 'L' PIL image modes are supported.")
-            return _string_io._from_raw_string(
-                offset,
-                Dim(image.size[0], image.size[1]),
-                pixel_type, DENSE,
-                image.tobytes())
+            try:
+                return _string_io._from_raw_string(
+                    offset,
+                    Dim(image.size[0], image.size[1]),
+                    pixel_type, DENSE,
+                    image.tobytes())
+            except:
+                # for compatibility with pil 1.1.7 and earlier
+                return _string_io._from_raw_string(
+                    offset,
+                    Dim(image.size[0], image.size[1]),
+                    pixel_type, DENSE,
+                    image.tostring())
         __call__ = staticmethod(__call__)
 
     class to_pil(PluginFunction):
@@ -101,8 +110,13 @@ else:
             else:
                 raise ValueError("Only RGB and GREYSCALE Images are supported.")
             size = (image.ncols, image.nrows)
-            return PIL.frombytes(mode, size,
-                                  _string_io._to_raw_string(image))
+            try:
+                return PIL.frombytes(mode, size,
+                                     _string_io._to_raw_string(image))
+            except:
+                # for compatibility with pil 1.1.7 and earlier
+                return PIL.fromstring(mode, size,
+                                     _string_io._to_raw_string(image))
         __call__ = staticmethod(__call__)
 
         def __doc_example1__(images):

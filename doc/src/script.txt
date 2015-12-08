@@ -16,11 +16,10 @@ feature-rich general purpose language, provides a number of ways to
 structure your application.  The high-level structure of your
 application will largely depend on its size and complexity and your
 own programming preferences and style, and is out of the scope of this
-document.  Obtaining some level of familiarity with Python through the
-`Python Tutorial`_ or any of the numerous `Python books`__ available is
+document.  Obtaining some level of familiarity with Python through
+any of the numerous `Python books and tutorials`__ available is
 recommended.
 
-.. _Python Tutorial: http://docs.python.org/tut/tut.html
 .. __: http://www.python.org/cgi-bin/moinmoin/PythonBooks
 
 The examples below demonstrate how to start creating Gamera-based

@@ -182,7 +182,7 @@ class false_color(PluginFunction):
     `Diverging Color Maps for Scientific Visualization.`__
     5th International Symposium on Visual Computing, 2009
 
-    __ http://www.sandia.gov/~kmorel/documents/ColorMaps/
+    __ http://www.kennethmoreland.com/color-maps/
     """
     self_type = ImageType([FLOAT, GREYSCALE])
     args = Args([Choice("colormap", ["diverging", "rainbow"], default=0)])

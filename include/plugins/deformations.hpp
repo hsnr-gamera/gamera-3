@@ -199,7 +199,7 @@ void shear_y(const T& orig, U& newbmp, size_t &col, size_t shiftAmount, typename
   i++;
 
   for(; i<shiftAmount + orig.nrows() - sourceshift; i++) {
-    if (i >= (shiftAmount - sourceshift))
+    if (i + sourceshift >= shiftAmount)
       filterfunc(p0, p1, oldPixel, orig.get(Point(col, i - shiftAmount + sourceshift)),weight);
    
     if ((i>=0) && (i<height1))

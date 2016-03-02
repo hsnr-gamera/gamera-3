@@ -540,12 +540,12 @@ namespace Gamera {
     int count = 0;
     size_t i;
     if (direction == "top") {
-      for (i = p.y()-1; i >= 0; i--, count++)
+      for (i = p.y(); i-- > 0; count++)
         if (is_black(image.get(Point(p.x(),i))) == color_tf)
           break;
     }
     else if (direction == "left") {
-      for (i = p.x()-1; i >= 0; i--, count++)
+      for (i = p.x()-1; i-- > 0; count++)
         if (is_black(image.get(Point(i,p.y()))) == color_tf)
           break;
     }             

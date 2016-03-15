@@ -77,7 +77,7 @@ ImageInfo* tiff_info(const char* filename) {
     info->ncolors((size_t)tmp);
     TIFFGetFieldDefaulted(tif, TIFFTAG_PHOTOMETRIC, &tmp);
     info->inverted(tmp == PHOTOMETRIC_MINISWHITE);
-    
+
     TIFFClose(tif);
   } catch (std::exception e) {
     TIFFSetErrorHandler(saved_handler);
@@ -110,10 +110,17 @@ namespace {
           bits = data[bit_index];
           bit_index++;
         }
-        if (bits[k])
-          tmp = pixel_traits<OneBitPixel>::black();
-        else
-          tmp = pixel_traits<OneBitPixel>::white(); 
+        if (info.inverted()) { // MINISWHITE
+          if (bits[k])
+            tmp = pixel_traits<OneBitPixel>::black();
+          else
+            tmp = pixel_traits<OneBitPixel>::white();
+        } else { // MINISBLACK
+          if (bits[k])
+            tmp = pixel_traits<OneBitPixel>::white();
+          else
+            tmp = pixel_traits<OneBitPixel>::black();
+        }
         matrix.set(Point(j, i), tmp);
         if (k == 0)
           k = 8;

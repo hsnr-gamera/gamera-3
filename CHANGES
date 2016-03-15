@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - photometric tag of TIFF files no longer ignored for onebit TIFFs,
+   which could lead to color inversion when reading TIFF images
+
  - fixed error in reading/writing 16bit greyscale PNG images
 
  - 16bit RGB PNG images now supported via downscaling

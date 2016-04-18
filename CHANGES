@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fixed crash of progress bar an newer processors by updating it
+   less frequently
+
  - icons in gamera_gui now immediately shown without resize
    on OSX with wxpython 3.0
 

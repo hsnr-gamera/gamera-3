@@ -25,6 +25,7 @@ from types import *
 from gamera import util
 from gamera.config import config
 import sys
+import time
 
 config.add_option(
    "", "--default-dir", default=".",
@@ -159,6 +160,7 @@ class ProgressBox:
          self._den = length
       self._numsteps = numsteps
       self._lastupdate = 0
+      self._lasttime = time.time()
       wx.BeginBusyCursor()
 
    def __del__(self):
@@ -175,10 +177,10 @@ class ProgressBox:
 
    def step(self):
       self._num += 1
-      # Note that trying to cut back on the number of calls
-      # here is futile.  The testing overhead is greater than
-      # the call.
-      self.update(self._num, self._den)
+      # make sure that the progress bar is not updated too often
+      # (otherwise it will crash)
+      if (time.time() - self._lasttime) > 0.5:
+         self.update(self._num, self._den)
 
    def update(self, num, den):
       if not self.done:
@@ -190,6 +192,7 @@ class ProgressBox:
                 (den/(num-self._lastupdate) <= self._numsteps):
             self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
             self._lastupdate = num
+            self._lasttime = time.time()
 
    def kill(self):
       self.update(1, 1)

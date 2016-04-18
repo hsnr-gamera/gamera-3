@@ -18,7 +18,7 @@
 namespace eo {
 
 
-class CMAStateImpl;
+struct CMAStateImpl;
 class CMAParams;
 class CMAState {
 

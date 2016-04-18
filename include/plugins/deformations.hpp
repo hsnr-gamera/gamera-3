@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  */
 #ifndef _kwm12032001_deformations
-#define _kwn12032001_deformations
+#define _kwm12032001_deformations
 
 #include "plugins/image_utilities.hpp"
 #include "vigra/resizeimage.hxx"

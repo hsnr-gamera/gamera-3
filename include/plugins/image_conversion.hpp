@@ -595,8 +595,7 @@ namespace Gamera {
 	  typename T::const_col_iterator in_col;
 	  typename FloatImageView::row_iterator out_row = view->row_begin();
 	  typename FloatImageView::col_iterator out_col;
-	  typedef typename choose_accessor<T>::real_accessor Accessor;
-	  Accessor in_acc = Accessor(in_acc);
+      typename choose_accessor<T>::real_accessor in_acc;
 	  ImageAccessor<FloatPixel> out_acc;
 	  for (; in_row != image.row_end(); ++in_row, ++out_row) {
 	    for (in_col = in_row.begin(), out_col = out_row.begin();
@@ -782,8 +781,7 @@ namespace Gamera {
       typename T::const_col_iterator in_col;
       typename FloatImageView::row_iterator out_row = view->row_begin();
       typename FloatImageView::col_iterator out_col;
-      typedef typename choose_accessor<T>::accessor Accessor;
-      Accessor in_acc = Accessor(in_acc);
+      typename choose_accessor<T>::accessor in_acc;
       ImageAccessor<FloatPixel> out_acc;
       for (; in_row != image.row_end(); ++in_row, ++out_row) {
 	for (in_col = in_row.begin(), out_col = out_row.begin();
@@ -809,8 +807,7 @@ namespace Gamera {
       typename T::const_col_iterator in_col;
       typename FloatImageView::row_iterator out_row = view->row_begin();
       typename FloatImageView::col_iterator out_col;
-      typedef typename choose_accessor<T>::accessor Accessor;
-      Accessor in_acc = Accessor(in_acc);
+      typename choose_accessor<T>::accessor in_acc;
       ImageAccessor<FloatPixel> out_acc;
       for (; in_row != image.row_end(); ++in_row, ++out_row) {
 	for (in_col = in_row.begin(), out_col = out_row.begin();

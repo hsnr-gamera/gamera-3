@@ -39,9 +39,9 @@
 #include <iostream>
 #endif
 using namespace Gamera::GraphApi;
-class GraphObject;
-class EdgeObject;
-class NodeObject;
+struct GraphObject;
+struct EdgeObject;
+struct NodeObject;
 
 
 

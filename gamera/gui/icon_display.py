@@ -140,6 +140,7 @@ class IconDisplay(wx.ListCtrl):
          if next >= 0:
             self.SetItemState(
                next, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+         self.Refresh()
 
    def update_icons(self, locals=None):
       if locals != None:

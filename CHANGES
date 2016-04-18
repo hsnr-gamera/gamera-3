@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - icons in gamera_gui now immediately shown without resize
+   on OSX with wxpython 3.0
+
  - photometric tag of TIFF files no longer ignored for onebit TIFFs,
    which could lead to color inversion when reading TIFF images
 

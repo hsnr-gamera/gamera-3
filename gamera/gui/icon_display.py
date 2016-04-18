@@ -109,6 +109,7 @@ class IconDisplay(wx.ListCtrl):
       data.index = index
       self.data[label] = data
       self.InsertImageStringItem(index, label, icon)
+      self.Refresh()
 
    def refresh_icon(self, key, klass, data, icon_num):
       icon = self.data[key]

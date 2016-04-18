@@ -1833,7 +1833,8 @@ class ImageFrameBase:
       self._iw.id.add_callback(*args)
 
    def remove_callback(self, *args):
-      self._iw.id.remove_callback(*args)
+      if hasattr(self, "_iw"):
+         self._iw.id.remove_callback(*args)
 
    def trigger_callback(self, *args):
       self._iw.id.trigger_callback(*args)
@@ -1854,9 +1855,11 @@ class ImageFrameBase:
    def _OnCloseWindow(self, event):
       if self.owner:
          self.owner.set_display(None)
-      del self._iw
-      self._frame.Destroy()
-      del self._frame
+      if hasattr(self, "_iw"):
+         del self._iw
+      if hasattr(self, "_frame"):
+         self._frame.Destroy()
+         del self._frame
 
    def Show(self, flag=1):
       self._frame.Show(flag)

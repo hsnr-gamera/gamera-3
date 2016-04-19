@@ -179,7 +179,7 @@ class ProgressBox:
       self._num += 1
       # make sure that the progress bar is not updated too often
       # (otherwise it will crash)
-      if (time.time() - self._lasttime) > 0.5:
+      if (time.time() - self._lasttime) > 0.8:
          self.update(self._num, self._den)
 
    def update(self, num, den):

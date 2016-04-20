@@ -20,6 +20,8 @@
 # This stuff must come the very first before any other gui-specific things
 # are imported.
 
+from distutils.version import LooseVersion
+
 # wxPython
 try:
    import wxversion
@@ -209,7 +211,10 @@ class PyShellGameraShell(wx.py.shell.Shell):
       key = event.GetKeyCode()
 
       if key in (wx.WXK_UP, wx.WXK_DOWN):
-         event.m_controlDown = True
+         if LooseVersion(wx.__version__) < LooseVersion('3.0'):
+             event.m_controlDown = True
+         else:
+             event.SetControlDown(True)
       wx.py.shell.Shell.OnKeyDown(self, event)
 
    def GetLocals(self):

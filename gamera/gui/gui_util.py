@@ -25,7 +25,7 @@ from types import *
 from gamera import util
 from gamera.config import config
 import sys
-import time
+import datetime
 
 config.add_option(
    "", "--default-dir", default=".",
@@ -150,7 +150,7 @@ class ProgressBox:
    def __init__(self, message, length=1, numsteps=0):
       assert util.is_string_or_unicode(message)
       self.progress_box = wx.ProgressDialog(
-         "Progress", message, 100,
+          "Progress", message, 100,
          style=wx.PD_APP_MODAL|wx.PD_ELAPSED_TIME|wx.PD_REMAINING_TIME|wx.PD_AUTO_HIDE)
       self.done = 0
       self._num = 0
@@ -160,7 +160,7 @@ class ProgressBox:
          self._den = length
       self._numsteps = numsteps
       self._lastupdate = 0
-      self._lasttime = time.time()
+      self._lasttime = datetime.datetime.now()
       wx.BeginBusyCursor()
 
    def __del__(self):
@@ -177,22 +177,25 @@ class ProgressBox:
 
    def step(self):
       self._num += 1
-      # make sure that the progress bar is not updated too often
-      # (otherwise it will crash)
-      if (time.time() - self._lasttime) > 0.8:
-         self.update(self._num, self._den)
+      self.update(self._num, self._den)
 
    def update(self, num, den):
+      # make sure that the progress bar is not updated too often
+      # (otherwise it will crash)
+      td = datetime.datetime.now() - self._lasttime
+      if (td.days*86400 + td.seconds + td.microseconds/100000.0) <= 0.3:
+          return
       if not self.done:
          if num >= den or num == self._lastupdate:
             self.done = True
             wx.EndBusyCursor()
-            self.progress_box.Destroy()
+            #self.progress_box.Destroy()
+            wx.CallAfter(self.progress_box.Destroy)
          elif 0 == self._numsteps or \
                 (den/(num-self._lastupdate) <= self._numsteps):
             self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
             self._lastupdate = num
-            self._lasttime = time.time()
+            self._lasttime = datetime.datetime.now()
 
    def kill(self):
       self.update(1, 1)

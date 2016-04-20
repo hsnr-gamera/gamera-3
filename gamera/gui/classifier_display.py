@@ -1755,6 +1755,8 @@ class ClassifierFrame(ImageFrameBase):
    # CALLBACKS
 
    def _OnCloseWindow(self, event):
+      if self._frame is None:
+          return # workaround for function being called more than once in wxPython 3.0
       if self.is_dirty:
          if not gui_util.are_you_sure_dialog(
             "Are you sure you want to quit without saving?"):
@@ -1776,6 +1778,7 @@ class ClassifierFrame(ImageFrameBase):
          self.splitterhl.Destroy()
          self.splitterv.Destroy()
       del self._frame
+      self._frame = None
 
    def refresh(self):
       self.single_iw.id.refresh(1)

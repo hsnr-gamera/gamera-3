@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2009-2013 Christoph Dalitz
+ * Copyright (C) 2009-2015 Christoph Dalitz
  *               2010      Oliver Christen
  *               2011      Christian Brandt
  *               2012      David Kolanus
+ *               2015      Manuel Jeltsch
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -866,6 +867,132 @@ namespace Gamera {
     }
     Rect* result = new Rect(best_ul,best_lr);
     return result;
+  }
+
+
+  PyObject* hough_lines(const PointVector* points, 
+                        double min_theta, double step_theta, double max_theta, 
+                        double min_rho, double step_rho, double max_rho,
+                        unsigned int n_lines=0, float threshold=1) {
+    if(!(min_theta < max_theta && step_theta != 0 && (max_theta - min_theta) / step_theta >= 1)) {
+      throw std::invalid_argument("Invalid arguments! The following assertion failed: min_theta < max_theta && step_theta != 0 && (max_theta - min_theta) / step_theta >= 1");
+    }
+    if(!(min_rho < max_rho && step_rho != 0 && (max_rho - min_rho) / step_rho >= 1)) {
+      throw std::invalid_argument("Invalid arguments! The following assertion failed: min_rho < max_rho && step_rho != 0 && (max_rho - min_rho) / step_rho >= 1");
+    }
+    int localMaxima = 3;
+    bool smooth = true;
+    if(min_theta < 0) {
+      min_theta = 0;
+    }
+    if(max_theta > M_PI) {
+      max_theta = M_PI;
+    }
+    if(threshold <=0) {
+      threshold = 1;
+    }
+    // compute accumulator / votings in parameter space
+    int theta_size = (max_theta - min_theta) / step_theta;
+    int rho_size = (max_rho - min_rho) / step_rho;
+    
+    std::vector<std::vector<double> > houghSpace(theta_size, std::vector<double>(rho_size));
+
+    std::vector<double> sin_theta(houghSpace.size()), cos_theta(houghSpace.size());
+    for(unsigned int theta = 0; theta < houghSpace.size(); theta++) {
+      sin_theta[theta] = sin((min_theta + (theta * step_theta))*M_PI/180.0);
+      cos_theta[theta] = cos((min_theta + (theta * step_theta))*M_PI/180.0);
+    }
+
+    PointVector::const_iterator p;
+    for (p = points->begin(); p != points->end(); p++) {
+      for(unsigned int theta = 0; theta < houghSpace.size(); theta++) { // from index of min_theta to index of max_theta
+        // compute hessesche normalform:
+        // cos(alpha) * x + sin(alpha) * y = d
+        double rho = cos_theta[theta] * p->x() + sin_theta[theta] * p->y();
+
+        double di = (rho - min_rho) / step_rho; // get index
+        di = (di > 0.0) ? floor(di + 0.5) : ceil(di - 0.5); // round
+        if(di >= 0 && di < houghSpace[0].size()) { // if d >= d_min AND d<=d_max
+          houghSpace[theta][di]++;
+          if(smooth) { // compensate quantization error in d by onedirectional smoothing
+            double rho_error = rho - ((di * step_rho) + min_rho); // distance between point and line after quantization, which in a perfect world would be 0
+            if(rho_error > 0) {
+              di++;
+              if(di < houghSpace[0].size()) {
+                houghSpace[theta][di] += abs(rho_error) / (step_rho / 2);
+              }
+            } else if(rho_error < 0) {
+              di--;
+              if(di >= 0) {
+                houghSpace[theta][di] += abs(rho_error) / (step_rho / 2);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if(localMaxima >= 3) {
+      std::vector<std::vector<double> > houghSpaceLocalMaxima(theta_size, std::vector<double>(rho_size));
+
+      for(unsigned int theta = 0; theta < houghSpace.size(); theta++) {
+        for(unsigned int rho = 0; rho < houghSpace[0].size(); rho++) {
+          double val = houghSpace[theta][rho];
+          houghSpaceLocalMaxima[theta][rho] = val;
+
+          if(val != 0) {
+            for(int kTheta = theta - localMaxima / 2; kTheta <= (int)theta + localMaxima / 2; kTheta++) {
+              if(kTheta >= 0 && kTheta < (int)houghSpace.size()) { // in boundaries
+                for(int kRho = rho - localMaxima / 2; kRho <= (int)rho + localMaxima / 2; kRho++) {
+                  if(val == 0) {
+                    break;
+                  }
+                  if(kRho >= 0 && kRho < (int)houghSpace[0].size()) { // in boundaries
+                    if(val < houghSpace[kTheta][kRho]) {
+                      houghSpaceLocalMaxima[theta][rho] = 0;
+                      val = 0;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      houghSpaceLocalMaxima.swap(houghSpace);
+    }
+
+    // vector of Votes
+    typedef std::vector<std::pair<double, std::pair<double, double> > > VectorType;
+    VectorType lines;
+
+    for(unsigned int theta = 0; theta < houghSpace.size(); theta++) {
+      for(unsigned int rho = 0; rho < houghSpace[0].size(); rho++) {
+        double value = houghSpace[theta][rho];
+        if(value >= threshold) {
+          lines.push_back(std::pair<double, std::pair<double, double> > (value, std::pair<double, double>(theta * step_theta, (rho * step_rho) + (min_rho))));
+        }
+      }
+    }
+    if(lines.size() == 0) {
+      return NULL;
+    }
+    if(n_lines > 0 && lines.size() > n_lines) {
+      // partition, so that nth line is on correct position
+      std::nth_element(lines.begin(), lines.begin() + lines.size() - n_lines, lines.end()); // backward nth_element
+      // cut off lines with less votes than nth line
+      VectorType(lines.begin() + lines.size() - n_lines, lines.end()).swap(lines); // backwards resize()
+    }
+    // sort remaining lines in descending order
+    std::sort(lines.rbegin(), lines.rend());
+
+    PyObject *retval, *entry;
+    retval = PyList_New(lines.size());    
+    for(unsigned int i=0; i<lines.size(); i++) {
+      entry = Py_BuildValue(CHAR_PTR_CAST "fff", lines[i].first, lines[i].second.first * 180 / M_PI, lines[i].second.second);
+      PyList_SetItem(retval, i, entry);
+    }
+    return retval;
   }
 
 

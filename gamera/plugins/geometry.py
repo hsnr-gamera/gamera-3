@@ -1,7 +1,8 @@
 #
-# Copyright (C) 2009-2013 Christoph Dalitz
+# Copyright (C) 2009-2015 Christoph Dalitz
 #               2010      Oliver Christen, Tobias Bolten
 #               2011      Christian Brandt
+#               2015      Manuel Jeltsch
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -379,6 +380,50 @@ April 1998.
        return [rgb]
    doc_examples = [__doc_example1__]
 
+class hough_lines(PluginFunction):
+    """
+    Finds lines in a point set with the Hough transform. Lines are 
+    represented by the Hessian normal form, i.e. by the two parameters
+    *theta* and *rho*, where *rho* is the distance of the line to the origin,
+    and *theta* is the angle of normal; a horizontal line therefore
+    has *theta* = 90 degrees.
+
+    The found lines are returned as a list of tuples 
+    [(*votes*, *theta*, *rho*),...],
+    where *votes* is the number of points from the point set belonging to
+    this line. The lines are sorted by *votes* in descending order. Which and
+    how many lines are returned is controlled with *threshold* and *n_lines*.
+    The angles *theta* are given in degrees.
+    
+    Arguments:
+    
+    *points*:
+        The points from the point cloud.
+
+    *theta_min*, *theta_step*, *theta_max*
+        Theta-quantization of the Hough space, i.e. the range of angles
+        to be tested. Angles are spezified in degrees.
+
+    *rho_min*, *rho_step*, *rho_max*
+        Rho-quantization of the Hough space, i.e. the range of origin-distances
+        to be tested.
+
+    *n_lines*
+        The number of highest votes lines that are returned. When set to
+        zero, all found lines are returned.
+
+    *threshold*
+        Only lines with more votes (points) than *threshold* are returned.
+
+    """
+    author = "Manuel Jeltsch and Christoph Dalitz"
+    return_type = Class("votes_theta_rho")
+    self_type = None
+    args = Args([PointVector("points"), 
+                Real("theta_min"), Real("theta_step"), Real("theta_max"),
+                Real("rho_min"), Real("rho_step"), Real("rho_max"),
+                Int("n_lines"), Real("threshold")])
+
 
 class GeometryModule(PluginModule):
   cpp_headers = ["geometry.hpp"]
@@ -393,7 +438,8 @@ class GeometryModule(PluginModule):
                convex_hull_from_points,
                convex_hull_as_points,
                convex_hull_as_image,
-               max_empty_rect]
+               max_empty_rect,
+               hough_lines]
   author = "Christoph Dalitz"
   url = "http://gamera.sourceforge.net/"
 
@@ -401,3 +447,4 @@ module = GeometryModule()
 
 delaunay_from_points = delaunay_from_points()
 convex_hull_from_points = convex_hull_from_points()
+hough_lines = hough_lines()

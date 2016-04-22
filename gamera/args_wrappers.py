@@ -420,6 +420,7 @@ class PointVector(Arg):
    def from_python(self):
       return """
       %(symbol)s = PointVector_from_python(%(pysymbol)s);
+      if (%(symbol)s == NULL) return 0;
       """ % self
 
    def to_python(self):

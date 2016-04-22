@@ -1,6 +1,10 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - new plugin hough_lines in category geometry
+
+ - handled errors in arguments of type PointVector more gracefully
+
  - fixed crash of progress bar an newer processors by updating it
    less frequently
 

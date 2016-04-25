@@ -880,8 +880,10 @@ namespace Gamera {
     if(!(min_rho < max_rho && step_rho != 0 && (max_rho - min_rho) / step_rho >= 1)) {
       throw std::invalid_argument("Invalid arguments! The following assertion failed: min_rho < max_rho && step_rho != 0 && (max_rho - min_rho) / step_rho >= 1");
     }
-    int localMaxima = 3;
-    bool smooth = true;
+
+    unsigned int window = 2; // step width for local maxima
+    bool smooth = true;      // whether cells shall vote for neighbors too
+    
     if(min_theta < 0) {
       min_theta = 0;
     }
@@ -932,48 +934,32 @@ namespace Gamera {
       }
     }
 
-    if(localMaxima >= 3) {
-      std::vector<std::vector<double> > houghSpaceLocalMaxima(theta_size, std::vector<double>(rho_size));
-
-      for(unsigned int theta = 0; theta < houghSpace.size(); theta++) {
-        for(unsigned int rho = 0; rho < houghSpace[0].size(); rho++) {
-          double val = houghSpace[theta][rho];
-          houghSpaceLocalMaxima[theta][rho] = val;
-
-          if(val != 0) {
-            for(int kTheta = theta - localMaxima / 2; kTheta <= (int)theta + localMaxima / 2; kTheta++) {
-              if(kTheta >= 0 && kTheta < (int)houghSpace.size()) { // in boundaries
-                for(int kRho = rho - localMaxima / 2; kRho <= (int)rho + localMaxima / 2; kRho++) {
-                  if(val == 0) {
-                    break;
-                  }
-                  if(kRho >= 0 && kRho < (int)houghSpace[0].size()) { // in boundaries
-                    if(val < houghSpace[kTheta][kRho]) {
-                      houghSpaceLocalMaxima[theta][rho] = 0;
-                      val = 0;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      houghSpaceLocalMaxima.swap(houghSpace);
-    }
-
     // vector of Votes
     typedef std::vector<std::pair<double, std::pair<double, double> > > VectorType;
     VectorType lines;
-
+    
+    // find local maxima greater than threshold
+    unsigned int mintheta, minrho, maxtheta, maxrho;
+    if (window > houghSpace.size() || window > houghSpace[0].size())
+      window = std::min(houghSpace.size(), houghSpace[0].size());
     for(unsigned int theta = 0; theta < houghSpace.size(); theta++) {
+      if (theta <= window) mintheta = 0; else mintheta = theta - window;
+      if (theta >= houghSpace.size()-window) maxtheta = houghSpace.size()-1; else maxtheta = theta + window;
       for(unsigned int rho = 0; rho < houghSpace[0].size(); rho++) {
-        double value = houghSpace[theta][rho];
-        if(value >= threshold) {
-          lines.push_back(std::pair<double, std::pair<double, double> > (value, std::pair<double, double>(theta * step_theta, (rho * step_rho) + (min_rho))));
+        if (rho <= window) minrho = 0; else minrho = rho - window;
+        if (rho >= houghSpace[0].size()-window) maxrho = houghSpace[0].size()-1; else maxrho = rho + window;
+        double val = houghSpace[theta][rho];
+        for(unsigned int dt = mintheta; val > 0.0 && dt <= maxtheta; dt++) {
+          for(unsigned int dr = minrho; val > 0.0 && dr <= maxrho; dr++) {
+            if (val < houghSpace[dt][dr]) val = 0.0;
+          }
         }
+        if (val > threshold)
+          lines.push_back(std::pair<double, std::pair<double, double> > (val, std::pair<double, double>(theta * step_theta, (rho * step_rho) + (min_rho))));
       }
     }
+    
+
     if(lines.size() == 0) {
       return NULL;
     }

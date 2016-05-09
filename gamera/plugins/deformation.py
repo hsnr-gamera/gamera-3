@@ -124,7 +124,7 @@ the following meaning:
     case you should do your own smoothing afterwards.
 
 The random generator is initialized with *random_seed* for allowing
-reproducable results.
+reproducible results.
 
 References:
 

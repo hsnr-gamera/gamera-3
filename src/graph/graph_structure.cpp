@@ -287,7 +287,7 @@ void Graph::remove_node(Node* node) {
       delete node;
    }
    else {
-      throw std::runtime_error("some error occured: Null pointer to node");
+      throw std::runtime_error("some error occurred: Null pointer to node");
    }
 }
 

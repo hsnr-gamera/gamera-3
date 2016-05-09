@@ -1287,7 +1287,7 @@ static PyMethodDef mlcc_methods[] = {
     },
     {(char*)"has_label", (PyCFunction)mlcc_has_label, METH_O,
      (char*)"**has_label** (int *label*)\n\n"
-     "Returns wether a label belongs to the MlCc or not."
+     "Returns whether a label belongs to the MlCc or not."
     },
     {(char*)"get_neighbors", (PyCFunction)mlcc_get_neighbors, METH_NOARGS,
      (char*)"**get_neighbors** ()\n\n"

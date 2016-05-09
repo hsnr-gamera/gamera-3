@@ -36,7 +36,7 @@ class corelation_weighted(PluginFunction):
 
     *bb*, *bw*, *wb*, *ww*
       The rewards and penalties for different combinations of pixels.
-      The first letter in the arugment name indicates the color of the
+      The first letter in the argument name indicates the color of the
       template; the second letter indicates the color of the source
       image.  For instance, the value of *bw* will be applied to the
       result when the template pixel is black and the source image

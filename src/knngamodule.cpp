@@ -1033,7 +1033,7 @@ PyMethodDef GAReplacement_methods[] = {
                "Sets an steady state deterministic tournament as replacement "
                "method in the GA-progress. This means that the loosers of this "
                "tournament will be replaced in the following population.\n\n"
-               "int *tSize* (optinal)\n"
+               "int *tSize* (optional)\n"
                "    the number of individuals in the tournament"
     },
     { NULL }
@@ -1188,7 +1188,7 @@ PyMethodDef GAStopCriteria_methods[] = {
                "Enables the termination by attainment of the specified "
                "amount of fitness evaulations within the optimization "
                "process\n\n"
-               "int *n* (optinal)\n"
+               "int *n* (optional)\n"
                "    the number of fitness evaluations"
     },
     { (char *) "setSteadyStateStop", setSteadyStateStop, METH_VARARGS,
@@ -1505,7 +1505,7 @@ void init_GAParallelizationType(PyObject *d) {
     GAParallelizationType.tp_getset = GAParallelization_getset;
     GAParallelizationType.tp_doc = CHAR_PTR_CAST "**GAParallelization** (*mode* = ``True``, *threads* = 2)\n\n"
         "The ``GAParallelization`` constructor creates a new settings object "
-        "which controls the parallization within the GA-progress. It is used "
+        "which controls the parallelization within the GA-progress. It is used "
         "later within an ``GAOptimization``-object.\n\n"
         "*mode* (optional)\n"
         "   enable (``True``) or disable (``Flase``) the parallelization of "

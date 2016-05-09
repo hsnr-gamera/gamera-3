@@ -223,7 +223,7 @@ boundaries are removed.
         same value as the given classifier (recommended)    
     *randomize*
         Because the processing order of the glyphs in the classifier impacts the
-        result of this algorithm, the order will be randomized. If reproducable
+        result of this algorithm, the order will be randomized. If reproducible
         results are required, turn this option off.
 
 Reference: P.E. Hart: 'The Condensed Nearest Neighbor rule'. *IEEE Transactions on Information Theory*, 14(3):515-516, 1968

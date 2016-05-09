@@ -145,7 +145,7 @@ void init_KdNodeType(PyObject* d) {
   KdNodeType.tp_doc = CHAR_PTR_CAST
     "**KdNode** (*point*, *data* = ``None``)\n\n"        \
     "The ``KdNode`` constructor creates a new node for use in a kd-tree.\n\n" \
-    "*point* must not be of the Gamera data type ``Point``, but a sequence of numerical values. The optional parameter *data* can be used to store arbitrary additonal information connected to the location *point*.";
+    "*point* must not be of the Gamera data type ``Point``, but a sequence of numerical values. The optional parameter *data* can be used to store arbitrary additional information connected to the location *point*.";
   PyType_Ready(&KdNodeType);
   PyDict_SetItemString(d, "KdNode", (PyObject*)&KdNodeType);
 }

@@ -9,7 +9,7 @@ while introducing most of the key features and concepts.
 
 For this example, we will be training on pages from the
 `Statistical Accounts of Scotland`__.  The demo pages used in this
-tutorial we be made available through the Gamera website soon.
+tutorial will be made available through the Gamera website soon.
 
 .. __: http://edina.ac.uk/statacc/
 

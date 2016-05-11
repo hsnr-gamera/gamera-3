@@ -337,11 +337,11 @@ inline Point coerce_Point(PyObject* obj) {
   if (PySequence_Check(obj)) {
     if (PySequence_Length(obj) == 2) {
       py_x0 = PySequence_GetItem(obj, 0);
-      if (!PyInt_Check(py_x0)) {
+      if (!PyNumber_Check(py_x0)) {
         Py_DECREF(py_x0);
         PyErr_Clear();
-        PyErr_SetString(PyExc_TypeError, "First list entry in Point is not an int");
-        throw std::invalid_argument("First list entry in Point is not an int");
+        PyErr_SetString(PyExc_TypeError, "First list entry in Point is not a number");
+        throw std::invalid_argument("First list entry in Point is not a number");
       }
       py_x1 = PyNumber_Int(py_x0);
       Py_DECREF(py_x0);
@@ -349,11 +349,11 @@ inline Point coerce_Point(PyObject* obj) {
         long x = PyInt_AsLong(py_x1);
         Py_DECREF(py_x1);
         py_y0 = PySequence_GetItem(obj, 1);
-        if (!PyInt_Check(py_y0)) {
+        if (!PyNumber_Check(py_y0)) {
           Py_DECREF(py_y0);
           PyErr_Clear();
-          PyErr_SetString(PyExc_TypeError, "Second list entry in Point is not an int");
-          throw std::invalid_argument("Second list entry in Point is not an int");
+          PyErr_SetString(PyExc_TypeError, "Second list entry in Point is not a number");
+          throw std::invalid_argument("Second list entry in Point is not a number");
         }
         py_y1 = PyNumber_Int(py_y0);
         Py_DECREF(py_y0);

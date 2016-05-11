@@ -2,8 +2,8 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 3 -*-
 # vim: set tabstop=3 shiftwidth=3 expandtab:
 #
-# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom,
-#                         and Karl MacMillan
+# Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
+#               2016      Christoph Dalitz
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -138,12 +138,13 @@ def underline(level, s, extra=0):
    return _underline_levels[level] * (len(s) + extra)
 
 class DocumentationGenerator:
-   def __init__(self, root_path=".", test_mode=False, classes=[], plugins=None, sourceforge_logo=True):
+   def __init__(self, root_path=".", test_mode=False, classes=[], plugins=None, sourceforge_logo=False, contact_url="http://gamera.informatik.hsnr.de/contact.html"):
       self.set_paths(root_path)
       self.test_mode = test_mode
       self.classes = classes
       self.plugins = plugins
       self.sourceforge_logo = sourceforge_logo
+      self.contact_url = contact_url
 
    def set_paths(self, root):
       def check_path(path):
@@ -228,9 +229,9 @@ class DocumentationGenerator:
             print "  Generating " + rootname
             lines = fd.readlines()
             if self.sourceforge_logo:
-               footer = '.. footer:: :raw-html:`<a href="http://sourceforge.net/projects/gamera"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&type=13" width="120" height="30" border="0" alt="Get Gamera at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a>`\n\n'
+               footer = '.. footer:: :raw-html:`<a href="http://sourceforge.net/projects/gamera" style="float:left;"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=99328&type=13" width="120" height="30" border="0" alt="Get Gamera at SourceForge.net. Fast, secure and Free Open Source software downloads" /></a> <div style="text-align:right;">For contact information, see <a href="' + self.contact_url + '">' + self.contact_url + '</a></div>`\n\n'
             else:
-               footer = "\n"
+               footer = '.. footer:: :raw-html:`<div style="text-align:right;">For contact information, see <a href="' + self.contact_url + '">' + self.contact_url + '</a></div>`\n\n'
             lines = (lines[:3] + 
                      ["\n", u"**Last modified**: %s\n\n" % mtime, 
                       ".. contents::\n\n", 
@@ -633,7 +634,7 @@ def print_usage():
     print "   will be used.)"
     print 
    
-def gendoc(classes=[], plugins=None, sourceforge_logo=True):
+def gendoc(classes=[], plugins=None, sourceforge_logo=False, contact_url="http://gamera.informatik.hsnr.de/contact.html"):
    print_usage()
    opts, args = getopt.getopt(sys.argv[1:], "d:t")
    root = '.'
@@ -644,7 +645,7 @@ def gendoc(classes=[], plugins=None, sourceforge_logo=True):
       elif flag == "-t":
          test_mode = True
    try:
-      docgen = DocumentationGenerator(root, test_mode, classes=classes, plugins=plugins, sourceforge_logo=sourceforge_logo)
+      docgen = DocumentationGenerator(root, test_mode, classes=classes, plugins=plugins, sourceforge_logo=sourceforge_logo, contact_url=contact_url)
    except Exception, e:
       print "Documentation generation failed with the following exception:"
       print e

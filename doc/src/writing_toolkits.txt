@@ -82,9 +82,9 @@ The skeleton toolkit
 ````````````````````
 
 For convenience, a minimal skeleton of a toolkit is provided and
-available from the files section of the `Gamera SourceForge site`__.
+available from the files section of the `Gamera github site`__.
 
-.. __: https://sourceforge.net/project/showfiles.php?group_id=99328&package_id=118473
+.. __: https://github.com/hsnr-gamera
 
 This skeleton provides the very minimum needed to create a toolkit.
 You will need to change all the references to the toolkit name

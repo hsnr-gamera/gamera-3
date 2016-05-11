@@ -17,11 +17,11 @@ Installation and Usage
 See the INSTALL file for installation instructions,
 or online under
 
-http://gamera.sourceforge.net/doc/html/install.html
+http://gamera.informatik.hsnr.de/docs/gamera-docs/install.html
 
 The complete Gamera documentation is available online at:
 
-http://gamera.sourceforge.net/doc/html/
+http://gamera.informatik.hsnr.de/docs/gamera-docs/
 
 
 Authors and License
@@ -29,7 +29,7 @@ Authors and License
 
 (c)2001-2003 Michael Droettboom, Karl Mac Millan, Ichiro Fujinaga
 (c)2004-2007 Michael Droettboom
-(c)2008-2011 Michael Droettboom and Christoph Dalitz
+(c)2008-2016 Michael Droettboom and Christoph Dalitz
 
 See the file ACKNOWLEDGEMENTS for additional contributors.
 

@@ -326,7 +326,7 @@ namespace Gamera {
 	m_pos--;
 	if (!check_chunk()) {
 	  if (m_i != m_vec->m_data[m_chunk].begin()) {
-	    iterator prev_i = prev(m_i);
+	    iterator prev_i = std::prev(m_i);
 	    if (get_rel_pos(m_pos) <= prev_i->end) {
 	      m_i = prev_i;
 	    }
@@ -620,7 +620,7 @@ namespace Gamera {
 	    insert_in_run(pos, v, i);
 	  else if (v != 0) {
 	    //// At end of run list -- append new runs
-	    typename list_type::iterator last = prev(m_data[chunk].end());
+	    typename list_type::iterator last = std::prev(m_data[chunk].end());
 	    if (rel_pos - last->end > 1) {
 	      m_data[chunk].push_back(run_type(rel_pos - 1, 0));
 	    } else {
@@ -678,7 +678,7 @@ namespace Gamera {
 	  size_t chunk = get_chunk(pos);
 	  runsize_t rel_pos = get_rel_pos(pos);
 	  if (i != m_data[chunk].begin()) {
-	    typename list_type::iterator prev_i = prev(i);
+	    typename list_type::iterator prev_i = std::prev(i);
 	    if (i->end - prev_i->end == 1) {
 	      //// run of length 1
 	      i->value = v;
@@ -716,7 +716,7 @@ namespace Gamera {
 	    i->end--;
 	    // we do this value check here to avoid a creation/deletion for 
 	    // the merge
-	    typename list_type::iterator next_i = next(i);
+	    typename list_type::iterator next_i = std::next(i);
 	    if (next_i != m_data[chunk].end())
 	      if (next_i->value == v)
 		return;
@@ -727,7 +727,7 @@ namespace Gamera {
 	  //// in middle of run
 	  runsize_t old_end = i->end;
 	  i->end = rel_pos - 1;
-	  typename list_type::iterator next_i = next(i);
+	  typename list_type::iterator next_i = std::next(i);
 	  m_data[chunk].insert(next_i, run_type(rel_pos, v));
 	  m_data[chunk].insert(next_i, run_type(old_end, i->value));
 	}
@@ -739,7 +739,7 @@ namespace Gamera {
       */
       void merge_runs(typename list_type::iterator i, size_t chunk) {
 	if (i != m_data[chunk].begin()) {
-	  typename list_type::iterator p = prev(i);
+	  typename list_type::iterator p = std::prev(i);
 	  if (p->value == i->value) {
 	    p->end = i->end;
 	    m_data[chunk].erase(i);
@@ -747,7 +747,7 @@ namespace Gamera {
 	    m_dirty++;
 	  }
 	}
-	typename list_type::iterator n = next(i);
+	typename list_type::iterator n = std::next(i);
 	if (n != m_data[chunk].end()) {
 	  if (n->value == i->value) {
 	    i->end = n->end;
@@ -764,7 +764,7 @@ namespace Gamera {
 //       */
       void merge_runs_before(typename list_type::iterator i, size_t chunk) {
 	if (i != m_data[chunk].begin()) {
-	  typename list_type::iterator p = prev(i);
+	  typename list_type::iterator p = std::prev(i);
 	  if (p->value == i->value) {
 	    p->end = i->end;
 	    m_data[chunk].erase(i);
@@ -776,7 +776,7 @@ namespace Gamera {
  	see above.
       */
       void merge_runs_after(typename list_type::iterator i, size_t chunk) {
-	typename list_type::iterator n = next(i);
+	typename list_type::iterator n = std::next(i);
 	if (n != m_data[chunk].end()) {
 	  if (n->value == i->value) {
 	    i->end = n->end;

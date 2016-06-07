@@ -180,11 +180,6 @@ class ProgressBox:
       self.update(self._num, self._den)
 
    def update(self, num, den):
-      # make sure that the progress bar is not updated too often
-      # (otherwise it will crash)
-      td = datetime.datetime.now() - self._lasttime
-      if (td.days*86400 + td.seconds + td.microseconds/100000.0) <= 0.3:
-          return
       if not self.done:
          if num >= den or num == self._lastupdate:
             self.done = True
@@ -193,6 +188,10 @@ class ProgressBox:
             wx.CallAfter(self.progress_box.Destroy)
          elif 0 == self._numsteps or \
                 (den/(num-self._lastupdate) <= self._numsteps):
+            # make sure that the progress bar is not updated too often
+            #td = datetime.datetime.now() - self._lasttime
+            #if (td.days*86400 + td.seconds + td.microseconds/100000.0) <= 0.3:
+            #    return
             self.progress_box.Update(min(100, int((float(num) / float(den)) * 100.0)))
             self._lastupdate = num
             self._lasttime = datetime.datetime.now()

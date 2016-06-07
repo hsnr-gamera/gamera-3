@@ -580,7 +580,6 @@ def run(startup=_show_shell):
          self.splash.Show()
          wx.Yield()
          init_gamera()
-         self._startup()
          self.splash.Show(0)
          del self.splash
          return True
@@ -589,6 +588,7 @@ def run(startup=_show_shell):
          pass
 
    app = MyApp(startup, 0)
+   startup() # must be called here and not in MyApp.OnInit to avoid errors on MacOS X
    app.MainLoop()
 
 if __name__ == "__main__":

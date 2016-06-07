@@ -5,8 +5,7 @@ Changes made between Gamera File Releases
 
  - handled errors in arguments of type PointVector more gracefully
 
- - fixed crash of progress bar an newer processors by updating it
-   less frequently
+ - workaround for crash of progress bar on OSX with wxPython 3.0
 
  - workaround for GetChildren in wxPython 3.0 returning deleted items
 

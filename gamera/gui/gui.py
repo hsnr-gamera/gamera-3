@@ -567,8 +567,8 @@ def run(startup=_show_shell):
    from gamera.gui import args_gui
 
    class MyApp(wx.App):
-      def __init__(self, startup, parent):
-         self._startup = startup
+      def __init__(self, parent):
+         #self._startup = startup
          wx.App.__init__(self, 0)
          self.SetExitOnFrameDelete(1)
 
@@ -587,7 +587,7 @@ def run(startup=_show_shell):
       def OnExit(self):
          pass
 
-   app = MyApp(startup, 0)
+   app = MyApp(0)
    startup() # must be called here and not in MyApp.OnInit to avoid errors on MacOS X
    app.MainLoop()
 

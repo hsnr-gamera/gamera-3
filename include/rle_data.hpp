@@ -147,6 +147,7 @@ namespace Gamera {
     */
     typedef unsigned char runsize_t;
 
+#if __cplusplus < 201103
     /*
       These are convenience functions to make dealing
       with the list iterators a little easier.
@@ -160,6 +161,7 @@ namespace Gamera {
     T prev(T i) {
       return --i;
     }
+#endif
   
     /*
       This class holds the actual run as a value, beginning position, and

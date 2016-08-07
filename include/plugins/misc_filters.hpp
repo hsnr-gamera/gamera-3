@@ -29,8 +29,6 @@
 #include "convolution.hpp"
 #include <math.h>
 
-using namespace std;
-
 namespace Gamera {
 
   //---------------------------
@@ -408,7 +406,7 @@ namespace Gamera {
     FloatImageView *res= new FloatImageView(*res_data);
 
 	GetPixel4Border<FloatImageView> gp(src, border_treatment, k);
-    vector<FloatPixel> window(k*k);
+    std::vector<FloatPixel> window(k*k);
     
     int radius = (k-1)/2;
     for(y = 0 ; (size_t)y < src.nrows() ; y++) {

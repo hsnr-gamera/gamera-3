@@ -950,7 +950,7 @@ Image* brink_threshold(const T& image)
   unsigned long vecSum = 0;     // sum of histogram
   double invHistSum;            // inverse of histogram sum
   int Topt = 0;                 // threshold value
-  double locMin = numeric_limits<double>::max(); // local minimum
+  double locMin = std::numeric_limits<double>::max(); // local minimum
   int isMinInit = 0;            // flat for minimum initialization
 
   FloatVector *histoFV;

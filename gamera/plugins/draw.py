@@ -511,7 +511,7 @@ class highlight(PluginFunction):
     A one-bit connected component from the image
 
   *color*
-    An color value (RGBPixel, 0-255, or [0|1], depending on the image
+    A color value (RGBPixel, 0-255, or [0|1], depending on the image
     type) used to color the *cc*.
   """
   self_type = ImageType([RGB,GREYSCALE,ONEBIT])

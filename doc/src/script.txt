@@ -184,7 +184,7 @@ in the previous section:
 
 - The classifier may not be as accurate as possible
 
-- Loading the XML file everytime the script starts up can be time
+- Loading the XML file every time the script starts up can be time
   consuming.
 
 If one is willing to give up the ability to add more elements to the
@@ -276,7 +276,7 @@ is directly equivalent to the following command line::
 
 Note that the name of the command line argument is changed to be a
 valid Python identifier name when used with the ``.set`` method: the
-hypens (``-``) have been replaced by underscores (``_``).  This is the
+hyphens (``-``) have been replaced by underscores (``_``).  This is the
 standard behavior of ``optparse``, the command line parsing module
 that Gamera uses.
 
@@ -284,7 +284,7 @@ Where to go from here
 ---------------------
 
 Obviously, there's a lot more to Gamera that isn't covered in this
-chapter.  Where you go from here is largely dependant on the
+chapter.  Where you go from here is largely dependent on the
 particular document domain.  Most of the work in many Gamera
 applications involves analysing the positional information, symbolic
 classification and features of the connected components to recognize

@@ -243,7 +243,7 @@ Each classifier has the following member variables:
     must be converted to a list with ``list(classifier.get_glyphs())``.
 
   ``confidence_types``
-    List of confidence types tht are to be computed during 
+    List of confidence types that are to be computed during 
     classification. The confidence types must be from the
     predefined `confidence constants`__.
     
@@ -261,7 +261,7 @@ the constructor of ``NonInteractiveClassifier`` is described here.
 Classification
 ``````````````
 
-The following methods deal with classifying glyphs on a individual level.
+The following methods deal with classifying glyphs on an individual level.
 
 .. docstring:: gamera.classify NonInteractiveClassifier classify_glyph_automatic classify_list_automatic classify_and_update_list_automatic guess_glyph_automatic
 .. docstring:: gamera.knn _kNNBase classify_with_images

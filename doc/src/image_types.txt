@@ -48,7 +48,7 @@ The pixels in an image can be one of the following types:
         Double-precision floating point greyscale.  This is useful for images
         that need a really wide dynamic range.
 
-   .. warning:: Unfortunately, at this time ``FLOAT`` images can not be saved
+   .. warning:: Unfortunately, at this time ``FLOAT`` images cannot be saved
       or loaded.
 
    .. note:: When ``FLOAT`` images are displayed in the GUI, the
@@ -225,7 +225,7 @@ Multi-Label Connected Components
 
 MultiLabelCCs (``MlCc`` on the python side, and ``MultiLabelCC`` on the 
 C++ side) basically work in the same way as 'regular'
-Connected Components. The difference between those two is the abillity
+Connected Components. The difference between those two is the ability
 of MlCcs to have multiple labels. Each label has an associated ``Rect``
 representing its bounding box; the bounding box of the entire MlCc is
 the closure of all label bounding boxes.

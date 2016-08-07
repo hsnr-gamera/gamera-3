@@ -230,7 +230,7 @@ class volume16regions(Feature):
 
 class volume64regions(Feature):
     """
-    Divides the image into a 8 x 8 grid of 64 regions and calculates
+    Divides the image into an 8 x 8 grid of 64 regions and calculates
     the volume within each. This feature is also known as \"zoning\" method.
 
     +---------------------------+

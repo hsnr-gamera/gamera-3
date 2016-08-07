@@ -248,7 +248,7 @@ void init_FloatPointType(PyObject* module_dict) {
 "**FloatPoint** ((*x*, *y*))\n\n"
 "FloatPoint stores an (*x*, *y*) coordinate point using floating-point values.\n"
 "It is an immutable object, i.e., once it has been created at a certain position,\n"
-"it can not be moved.\n\n"
+"it cannot be moved.\n\n"
 "The standard Gamera ``Point`` stores coordinates as unsigned (positive) integers, "
 "and doesn't have any arithmetic operators.  For this reason, ``FloatPoint`` is "
 "highly recommended for any analyses that require precision and flexibility.  ``Point`` "

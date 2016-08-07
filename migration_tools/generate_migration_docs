@@ -175,7 +175,7 @@ Python code
 -----------
 
 Finding the deprecated calls in Python code is somewhat more
-difficult, since the exact function calls being made can not be
+difficult, since the exact function calls being made cannot be
 determined until runtime.
 
 When a deprecated function call is made, a deprecation warning is

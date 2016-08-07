@@ -18,7 +18,7 @@ matplotlib_ documentation.
 
 The connection between Gamera and matplotlib is intentionally minimal,
 so that it is easy to take advantage of all of matplotlib's
-functionality and to make it less dependant on any one specific
+functionality and to make it less dependent on any one specific
 version of matplotlib.  If you feel that particular graphs of
 particular kinds of data in Gamera should be made more convenient,
 please contact that Gamera authors.

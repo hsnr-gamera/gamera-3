@@ -496,7 +496,7 @@ void init_GASelectionType(PyObject *d) {
         "The ``GASelection`` constructor creates a new settings object "
         "for the GA-optimization which specifies the used individuals selection method. "
         "This object can later be used in an ``GAOptimization``-object. \n\n"
-        "Only one selection method can be choosen. Multiple settings will "
+        "Only one selection method can be chosen. Multiple settings will "
         "override each other.";
 
     PyType_Ready(&GASelectionType);
@@ -1136,7 +1136,7 @@ void init_GAReplacementType(PyObject *d) {
         "The ``GAReplacement`` constructor creates a new settings object "
         "for the GA-optimization which specifies the used replacement method. "
         "This object can later be used in an ``GAOptimization``-object. \n\n"
-        "Only one replacement method can be choosen. Multiple settings will "
+        "Only one replacement method can be chosen. Multiple settings will "
         "override each other.";
 
     PyType_Ready(&GAReplacementType);

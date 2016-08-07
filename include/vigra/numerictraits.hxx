@@ -100,10 +100,10 @@
     }
     \endcode 
     
-    The return type of this function can not be 'unsigned char' because
+    The return type of this function cannot be 'unsigned char' because
     the summation would very likely overflow. Since we know the source
     type, we can easily choose 'int' as an appropriate return type.
-    Likewise, we would have choosen 'float' if we had to sum a 
+    Likewise, we would have chosen 'float' if we had to sum a 
     sequence of floats. If we want to make this 
     algorithm generic, we would like to derive the appropriate return 
     type automatically. This can be done with NumericTraits. 

@@ -56,7 +56,7 @@ class projection_cutting(PluginFunction):
       width between adjacent text lines.
 
     *noise*:
-      maximum projection value still consideread as belonging to a
+      maximum projection value still considered as belonging to a
       'gap'.
 
     *gap_treatment*:
@@ -387,11 +387,11 @@ class sub_cc_analysis(PluginFunction):
     Further subsegments the result of a page segmentation algorithm into
     groups of actual connected components.
 
-    The result of a page segmenattion plugin is a list of 'CCs' where
+    The result of a page segmentation plugin is a list of 'CCs' where
     each 'CC' does not represent a 'connected component', but a page
     segment (typically a line of text). In a practical OCR application
     you will however need the actual connected components (which
-    should roughly corresond to the glyphs) in groups of lines. That
+    should roughly correspond to the glyphs) in groups of lines. That
     is what this plugin is meant for.
 
     The input image must be an image that has been processed with a
@@ -440,7 +440,7 @@ class textline_reading_order(PluginFunction):
     by T.M. Breuel (Symposium on Document Image Understanding,
     USA, pp. 209-218, 2003),
     an additional constraint is made for the first criterion by demanding
-    that no other segment may be between *a* and *b* that opverlaps
+    that no other segment may be between *a* and *b* that overlaps
     horizontally with both. This constraint for taking multi column
     headings that interrupt columns into account is replaced in this
     implementation with an a priori sort of all textlines by *y*-position.

@@ -98,7 +98,7 @@ as a starting point:
 
 Note that the search algorithms, like many other things in the Gamera
 graph library, return lazy iterators, so the results are determined on
-demand.  Importantly, this means you can not get the length of the
+demand.  Importantly, this means you cannot get the length of the
 result until it has been entirely evaluated.
 
 .. code:: Python

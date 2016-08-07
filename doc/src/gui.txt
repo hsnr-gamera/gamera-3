@@ -105,7 +105,7 @@ perform operations on an image.
 
   .. image:: images/right_click_menu.png
 
-At the top of the menu, the pixel type is displayeimage_api.htmld.
+At the top of the menu, the pixel type is displayed.
 
 The next two items are for creating new references and copies of the
 image.  You will be prompted for a variable name for the result.
@@ -252,7 +252,7 @@ The image display toolbar has the following buttons:
 .. note:: 
   On Linux and OS-X, the Print command works by printing to a
   PostScript file and then sends the result to ``lpr``.  Because of
-  this, it can not properly detect the resolution of the printer.
+  this, it cannot properly detect the resolution of the printer.
   Therefore, a reasonable default of 720dpi is used.  Future versions
   of wxPython may handle this better.
 
@@ -452,7 +452,7 @@ display.
 Symbol table
 ''''''''''''
 
-The symbol table is a heirarchical tree of symbol names that are
+The symbol table is a hierarchical tree of symbol names that are
 currently in use.  It is preloaded with `special class names`_.
 
 Symbols can be trained by typing the class name in the text box at

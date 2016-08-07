@@ -37,7 +37,7 @@
   (as represented by a rectangle) and some values (represented as a key
   value pair (string/double)). By convention regions should contain a key
   called "scaling" that returns the default value for that region. This is
-  used in feature functions that are dependant on some relative value (i.e.
+  used in feature functions that are dependent on some relative value (i.e.
   the height of glyphs in music recognition is scaled by the size of the 
   staff space + the size of the staff line).
 

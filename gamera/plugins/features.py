@@ -275,6 +275,38 @@ class zernike_moments(Feature):
     author = "Robert Butz, Fabian Schmitt, Christoph Dalitz"
     return_type = FloatVector(length=14)
 
+class zernike_moments_plugin(PluginFunction):
+    """
+    Computes the absolute values of the Normalized Zernike Moments up to
+    the given order. This is separate from the feature *zernike_moments*,
+    because features only support onebit images, so we need a different
+    function for greyscale images.
+
+    Zernike moments are the scalar product in the complex L2
+    Hilbert space between the image and the complex Zernike polynomials.
+    This results in complex values, the absolute values of which are
+    invariant under image rotation and reflection. To make them additionally
+    scale invariant, different normalization schemes have been suggested.
+    The present implementation normalizes the Zernike moments by
+    division with the zeroeth geometric moment *m00*, which results
+    in an approximate scale invariance according to
+    S. Belkasim, E. Hassan, T. Obeidi: \"Explicit invariance of Cartesian
+    Zernike moments.\" Pattern Recognition Letters 28, pp. 1969-1980 (2007)
+
+    The return values are the absolute values of
+    *A20, A22, A31, A33, A40, A42, A44, A51, A53, A54, A60, A62, A64, A66*.
+    The moments *A00* and *A11* are not computed because these are constant
+    under the used normalization scheme.
+    """
+    category="Features"
+    author = "Christoph Dalitz, Robert Butz, Fabian Schmitt"
+    self_type = ImageType([GREYSCALE])
+    args = Args([Int("order", default=6)])
+    return_type = FloatVector("zernike_moments")
+    def __call__(image, order = 6):
+        return _features.zernike_moments_plugin(image, order)
+    __call__ = staticmethod(__call__)
+
 class skeleton_features(Feature):
     """
     Generates a number of features based on the skeleton of an image.
@@ -382,7 +414,7 @@ class FeaturesModule(PluginModule):
                  nholes_extended, volume, area,
                  aspect_ratio, nrows_feature, ncols_feature, compactness,
                  volume16regions, volume64regions,
-                 generate_features, zernike_moments,
+                 generate_features, zernike_moments, zernike_moments_plugin,
                  skeleton_features, top_bottom, diagonal_projection]
     author = "Michael Droettboom and Karl MacMillan"
     url = "http://gamera.sourceforge.net/"

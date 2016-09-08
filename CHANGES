@@ -1,6 +1,11 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - zernike_moments now also implemented for greyscale image
+   (image is inverted so that dark objects get high weights)
+   As features do not support greyscale images, the plugin is
+   called "zernike_moments_plugin"
+
  - new plugin hough_lines in category geometry
 
  - handled errors in arguments of type PointVector more gracefully

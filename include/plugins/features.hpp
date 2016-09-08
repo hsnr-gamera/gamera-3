@@ -510,6 +510,7 @@ namespace Gamera {
     zernike_moments( image, buf, 6);
   }
 
+
   template<class T>
   void zernike_moments(const T& image, feature_t* buf, size_t order_n) {
     size_t const max_order_n=order_n; 
@@ -599,6 +600,90 @@ namespace Gamera {
 
     delete [] tmp_real;
     delete [] tmp_imag;
+  }
+
+  template<class T>
+  FloatVector* zernike_moments_plugin(const T& image, int order_n) {
+    size_t const max_order_n=(size_t)order_n;
+    size_t num_features=0; // evaluated by max_order_n
+    double x_dist, y_dist, real_tmp, imag_tmp;
+    size_t m, n, idx;  
+    
+    // number of features depends on maximum order
+    for (size_t i=0 ; i<=max_order_n; i++)
+        num_features += i/2 + 1;
+    num_features -= 2; // A00 and A11 are constants
+        
+    const T* scaled_image = &image; // we do not scale
+
+    //compute center of mass and normalization factor m00
+    double m00, m10, m01;
+    m00 = m10 = m01 = 0.0;
+    for(size_t y = 0; y < scaled_image->nrows(); ++y) {
+      for (size_t x = 0; x < scaled_image->ncols(); ++x) {
+        m00 += invert(scaled_image->get(Point(x,y)));
+        m10 += x*invert(scaled_image->get(Point(x,y)));
+        m01 += y*invert(scaled_image->get(Point(x,y)));
+      }
+    }
+    double centroid_x = m10/m00;
+    double centroid_y = m01/m00;
+
+    // we use a Zernike circle that includes the entire image
+    // beware however that some pixels can fall outside the circle
+    // by normalizing ZMs to be translation invariant, e.g. a large
+    // bunch of pixels in the upper left corner which draws the
+    // center to it, excludes pixels in the lower right corner.
+
+    double unit_circle_scale = centroid_x*centroid_x + centroid_y*centroid_y;
+    double scale_tmp;
+    scale_tmp = centroid_x*centroid_x + 
+      (scaled_image->nrows()-centroid_y)*(scaled_image->nrows()-centroid_y);
+    if (scale_tmp > unit_circle_scale)
+      unit_circle_scale = scale_tmp;
+    scale_tmp = (scaled_image->ncols()-centroid_x)*(scaled_image->ncols()-centroid_x) + 
+      (scaled_image->nrows()-centroid_y)*(scaled_image->nrows()-centroid_y);
+    if (scale_tmp > unit_circle_scale)
+      unit_circle_scale = scale_tmp;
+    scale_tmp = (scaled_image->ncols()-centroid_x)*(scaled_image->ncols()-centroid_x) + 
+      (centroid_y)*(centroid_y);
+    if (scale_tmp > unit_circle_scale)
+      unit_circle_scale = scale_tmp;
+
+    // Make sure that the farthest pixel is within our analysis circle
+    unit_circle_scale = 1.01 * sqrt(unit_circle_scale);
+    if (unit_circle_scale < 0.00001) unit_circle_scale = 1.0;
+
+    FloatVector* result = new FloatVector(num_features, 0.0);
+    double pixel_factor;
+    typename T::const_vec_iterator it = scaled_image->vec_begin();
+    for (size_t y = 0; y < scaled_image->nrows(); ++y) {
+      for (size_t x = 0; x < scaled_image->ncols(); ++x, ++it) {
+        pixel_factor = invert(*it);
+        x_dist = (x - centroid_x) / unit_circle_scale;
+        y_dist = (y - centroid_y) / unit_circle_scale;
+        if (abs(x_dist) > 0.00001 || abs(y_dist) > 0.00001) {   
+          for (n = 2, idx=0; n <= max_order_n; ++n) {
+            for (m = n%2; m <= n; m+=2) {
+              zer_pol(n, m, x_dist, y_dist, real_tmp, imag_tmp);
+              result->at(idx) += pixel_factor*sqrt(real_tmp*real_tmp + imag_tmp*imag_tmp);
+              idx++;
+            }
+          }
+        }
+      }
+    }
+  
+    // scale normalization by m00
+    for (size_t n = 2, idx=0; n <= max_order_n; ++n) {
+      double multiplier = (n + 1) / M_PI;
+      if (m00 != 0.0)
+        multiplier /= m00;
+      for (m= n%2; m<= n; m+=2)
+        result->at(idx++) *= multiplier;
+    }
+
+    return result;
   }
 
   //

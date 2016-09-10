@@ -270,7 +270,7 @@ the underlying data.  Therefore:
 
 .. code:: CPP
 
-   // Create data with an size of (64, 64) and an offset of (32, 32);
+   // Create data with a size of (64, 64) and an offset of (32, 32);
    OneBitImageData image_data(Size(64, 64), Point(32, 32));
    // This is a view over all of the data
    OneBitImageView image_view(image_data, Point(32, 32), Size(64, 64));
@@ -407,7 +407,7 @@ arrays:
 This interface is provided as a convenience to support the large body
 of legacy code written in this style.  Note that ``[row][col]`` is the
 reverse of get and set's ``Point(x, y)``.  Keep in mind, it is not really
-a 2-diminsional array underneath -- this view is "faked."
+a 2-dimensional array underneath -- this view is "faked."
 
 An example using the C-style 2-dimensional array interface:
 
@@ -448,7 +448,7 @@ Gamera has three kinds of iterators:
 The first two kinds of iterators follow the conventions of the C++ STL
 enough that they can be used with STL algorithms.  All iterators are
 available in ``const`` and non-``const`` versions.  ``const``
-iterators can not change the underlying data.  If you have an image
+iterators cannot change the underlying data.  If you have an image
 passed into your function as a ``const ImageView<T> &``, you will not
 be able to change the pixels in the image, and thus will only be able
 to get ``const`` iterators from it.
@@ -523,7 +523,7 @@ Sometimes it is necessary to have nested loops, one for rows and one
 for columns.
 
 The following is an example using row iterators (``ImageView<T>::row_iterators``) and
-column interators (``ImageView<T>::col_iterators``):
+column iterators (``ImageView<T>::col_iterators``):
 
 .. code:: CPP
 
@@ -549,7 +549,7 @@ column interators (``ImageView<T>::col_iterators``):
   }
 
 The fun thing about row and column iterators is that they are
-interchangable.  If you wish to iterate through the image in column
+interchangeable.  If you wish to iterate through the image in column
 major order instead, you could write:
 
 .. code:: CPP
@@ -814,7 +814,7 @@ pixels is not fixed.):
     }
   };
 
-  // This is specialied for FLOAT pixels
+  // This is specialized for FLOAT pixels
   template<>
   struct invert_specialized<FloatPixel> {
     template<class T>

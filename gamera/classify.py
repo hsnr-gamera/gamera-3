@@ -565,7 +565,7 @@ Removes all training data from the classifier.
       """**load_settings** (FileOpen *filename*)
 
 Loads classifier-specific settings from the given filename.  The
-format of this file is entirely dependant on the concrete classifier
+format of this file is entirely dependent on the concrete classifier
 type."""
       _Classifier.load_settings(self, filename)
       self.instantiate_from_images(self.database, self.normalize)

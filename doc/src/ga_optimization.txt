@@ -73,15 +73,15 @@ stop the optimization process. After the optimizer has finished, the results
 can be saved using **File -> Save to XML** or **File -> Save to XML as**.
 
 Classifier specific settings are configurable through the **Classifier** menu.
-With **Classifier -> Copy classifier** it is possible to create an
+With **Classifier -> Copy classifier** it is possible to create a
 copy from the loaded classifier for the optimization process. The menu entry
 **Classifier -> Classifier to Gamera-GUI** allows the usage of the
 optimized classifier in the Gamera main window. Through **Classifier ->
-Load settings from XML** an settings xml file will be loaded and applied.
+Load settings from XML** a settings xml file will be loaded and applied.
 
 The used feature set can be modified with **Classifier -> Change feature set**.
 With the menu entries **Classifier -> Reset selections** and
-**Classifier -> Reset weights** it is possible to discard already choosen
+**Classifier -> Reset weights** it is possible to discard already chosen
 optimizations.
 
 .. __: gamera_xml.html
@@ -331,7 +331,7 @@ References
 ----------
 
 .. [Holland1975] Holland, J. H. (1975). *Adaptation in natural and
-   artifical systems.*  University of Michigan Press, Ann Arbor.
+   artificial systems.*  University of Michigan Press, Ann Arbor.
 
 .. [EOdev] Keijzer, M., Merelo, J. J., Romero, G., & Schoenauer, M. (2002).
    `Evolving objects: A general purpose evolutionary computation library`__.

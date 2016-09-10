@@ -1545,7 +1545,7 @@ void applyFourierFilterImplNormalization(FFTWComplexImage const & srcImage,
 
     Filters and result images must be stored in \ref vigra::ImageArray data
     structures. In contrast to \ref applyFourierFilter(), this function adjusts
-    the size of the result images and the the length of the array.
+    the size of the result images and the length of the array.
 
     <b> Declarations:</b>
 

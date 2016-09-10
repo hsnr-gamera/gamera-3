@@ -87,7 +87,7 @@ namespace Gamera {
       increments every time the structure of the run lists changes
       (but not merely the pixel values).  The iterators on the run
       data check their own internal copy of m_dirty against
-      RleVector's everytime a pixel access needs to be made.  If
+      RleVector's every time a pixel access needs to be made.  If
       different, a full search of the run list is performed to find
       the correct current run, and then the iterator's copy of m_dirty
       is updated.  If the same, the iterator's pointer to the current

@@ -75,7 +75,7 @@ class contour_samplepoints(PluginFunction):
   
   *percentage*:
     return percentage of contour points. The points are selected approximately
-    equidistant on the countour.
+    equidistant on the contour.
 
   *contour*:
     when 0 (\"outer_projection\"), the points returned by *contour_left* etc.

@@ -110,7 +110,7 @@ class thin_lc(Thinning):
     the ends of the skeleton will not extend to the edges of the
     original image.
 
-    H.-J. Lee and B. Chen. 1992.  Recognition of handwritten chinese
+    H.-J. Lee and B. Chen. 1992.  Recognition of handwritten Chinese
     characters via short line segments. *Pattern Recognition*. 25(5)
     543-552.
     """

@@ -96,7 +96,7 @@ Reference
 
 .. __: plugins.html
 
-- `Directory heirarchy`__: Where the files are.
+- `Directory hierarchy`__: Where the files are.
 
 .. __: directory_heirarchy.html
 

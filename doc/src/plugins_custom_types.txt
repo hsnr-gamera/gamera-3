@@ -106,7 +106,7 @@ A fundamental problem with the conversion from PyObjects is that you
 can never be sure what actually is in the ``PyObject*``. For instance,
 when you expect a list and apply ``PyList_GetItem``, you cannot be sure
 that the ``PyObject*`` actually is a list. Nor can you safely assume that
-the list entries are of the data type you belive them to be. It is thus
+the list entries are of the data type you believe them to be. It is thus
 generally a good idea to check data types with ``PyList_Check`` and 
 ``PyObject_TypeCheck``, and to throw an exception when the wrong data
 type enters your function, e.g.

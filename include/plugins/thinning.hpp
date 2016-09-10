@@ -316,7 +316,7 @@ namespace Gamera {
   the Xite implementation.
 
   &[1]H.-J. Lee and B. Chen,
-  "Recognition of handwritten chinese characters via short
+  "Recognition of handwritten Chinese characters via short
   line segments,"
   Pattern Recognition,
   vol. 25, no. 5, pp. 543-552, 1992.

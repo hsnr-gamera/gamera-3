@@ -371,7 +371,7 @@ greyscale image belonging to a Cc, as in the following example:
       (pmin, vmin, pmax, vmax) = grey.min_max_location(ccs[0])
 
 The return value is a tuple of the form *(pmin, vmin, pmax, vmax)* where
-*pmin* and *pmax* are the point of the minimum and maximimum, respectively,
+*pmin* and *pmax* are the point of the minimum and maximum, respectively,
 and *vmin* and *vmax* the corresponding pixel values.
 """
     category="Analysis"

@@ -72,7 +72,7 @@ the length of the feature vectors is calculated from that.
 '''''''''''''''''''''
 
 The ``generate_features`` function is where the feature generation
-actually happens and is called everytime the classifier needs a
+actually happens and is called every time the classifier needs a
 feature vector for a particular glyph.
 
 The feature vector itself must be stored in the member ``features`` of

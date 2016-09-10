@@ -294,7 +294,7 @@ to your search PATH, or install the scripts to ``/usr/bin`` with::
   sudo pythonw setup.py install_scripts -d /usr/bin
 
 .. note::
-  In its default configuraton, the Python distutils on MacOS X
+  In its default configuration, the Python distutils on MacOS X
   build fat binaries. You can speedup the compilation time
   by a factor two by removing the unnecessary architecture from
   your distutils build settings.
@@ -357,7 +357,7 @@ Prerequisites
 Standard Build and Install
 ``````````````````````````
 
-Download and install the unoffical wxPython-Gtk-X11 distribution from
+Download and install the unofficial wxPython-Gtk-X11 distribution from
 the Gamera Files section on SourceForge.
 
   Alternatively, you can install fink and then build the package

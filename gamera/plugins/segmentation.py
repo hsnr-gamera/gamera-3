@@ -95,7 +95,7 @@ class splitx_max(Segmenter):
     the projections near *center*.
 
     This function is overloaded to work both with a single value and a
-    list of splitting point canidates as input.
+    list of splitting point candidates as input.
     """
     args = Args([FloatVector("center", default=[0.5])])
     def __call__(self, center=0.5):
@@ -114,7 +114,7 @@ class splity(Segmenter):
     the projections near *center*.
 
     This function is overloaded to work both with a single value and a
-    list of splitting point canidates as input.
+    list of splitting point candidates as input.
     """
     args = Args([FloatVector("center", default=[0.5])])
     def __call__(self, center=[0.5]):

@@ -12,7 +12,7 @@ applications that process images and return symbolic
 results (eg. an OCR package), or simply a library of utility
 functions (eg. for color image processing).
 
-A toolkit is based on Python's generic package and module heirarchy,
+A toolkit is based on Python's generic package and module hierarchy,
 which is described in the Modules chapter of the `Python tutorial`__.
 
 .. __: http://www.python.org/doc/tut/
@@ -34,11 +34,11 @@ documentation is a good resource for how to do that.
 Creating a toolkit
 ------------------
 
-The directory heirarchy
+The directory hierarchy
 ```````````````````````
 
 Toolkits require a number of different files in a directory
-heirarchy.  Here we assume the toolkit is called ``my_toolkit``.
+hierarchy.  Here we assume the toolkit is called ``my_toolkit``.
 
    +----------+----------------------------------------------------------------+
    | ./       | Basic information files for building the toolkit               |
@@ -115,7 +115,7 @@ documentation is the best resource for how to do that.
 MANIFEST.in
 '''''''''''
 
-If you need to include more data files to your toolkit distrubution,
+If you need to include more data files to your toolkit distribution,
 you will need to edit this file.  The format is described in the
 distutils documentation.
 
@@ -257,7 +257,7 @@ at least two arguments:
    *object*
       The Python object to document.
 
-Additionally, any number of names may be added to the arugment list
+Additionally, any number of names may be added to the argument list
 which will be looked up in *object* and documented.
 
 For example, to document the ``__init__`` and ``display`` methods on

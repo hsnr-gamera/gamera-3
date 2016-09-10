@@ -119,7 +119,7 @@ the following meaning:
     `b0*exp(-b*d^2) + eta`, where d is the distance to the closest
     foreground pixel
 
-  - eventuall a morphological closing operation is performed with a disk
+  - eventually a morphological closing operation is performed with a disk
     of diameter *k*. If you want to skip this step set *k=0*; in that
     case you should do your own smoothing afterwards.
 

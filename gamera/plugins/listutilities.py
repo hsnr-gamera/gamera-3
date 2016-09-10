@@ -122,7 +122,7 @@ Arguments:
      Sample values from which the density is to be estimated.
 
   *x*
-     For each value in *x*, the desity at this position is returned
+     For each value in *x*, the density at this position is returned
      in the returned float vector.
 
   *bw*
@@ -132,7 +132,7 @@ Arguments:
 
   *kernel*
      The kernel function that weights the values (0 = rectangular, 
-     1 = triangular, 2 = gausian). A Gaussian kernel produces the smoothest
+     1 = triangular, 2 = Gaussian). A Gaussian kernel produces the smoothest
      result, but is slightly slower than the other two.
 
      Note that the kernels are normalized to variance one, which means that

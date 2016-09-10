@@ -63,7 +63,7 @@ The Gamera source tree looks something like this:
 |                     | graph/        | A graph library.  API should be considered     |
 |                     |               | unstable.                                      |
 |                     +---------------+------------------------------------------------+
-|                     | libtiff/      | libtiff_: A library for reading/writting Tagged|
+|                     | libtiff/      | libtiff_: A library for reading/writing Tagged |
 |                     |               | Image Format Files (otherwise known as *Tons of|
 |                     |               | Incompatible File Formats*).  Included for     |
 |                     |               | compiling convenience on MS-Windows and Mac    |

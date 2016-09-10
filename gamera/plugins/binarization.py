@@ -347,7 +347,7 @@ class shading_subtraction(PluginFunction):
     """
     Thresholds an image after subtracting a -possibly shaded- background.
 
-    First the backgrund image is extracted with a maximum filter with a
+    First the background image is extracted with a maximum filter with a
     *k\*k* window, and this image is subtracted from the original image.
     On the difference image, a threshold is applied, and the inverted
     image thereof is the binarization result.

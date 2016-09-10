@@ -47,7 +47,7 @@ class voronoi_from_labeled_image(PluginFunction):
   Springer, 1995).
 
   The example shown below is the image *voronoi_cells* as created with
-  the the following code:
+  the following code:
 
   .. code:: Python
 
@@ -96,7 +96,7 @@ class voronoi_from_points(PluginFunction):
 .. _`voronoi_from_labeled_image`: #voronoi-from-labeled-image
 
   The example shown below is the image *voronoi_edges* as created with
-  the the following code:
+  the following code:
 
   .. code:: Python
 

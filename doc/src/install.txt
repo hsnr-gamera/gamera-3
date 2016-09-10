@@ -56,8 +56,8 @@ on your system for some reason, you can switch it off with::
   python setup.py build --openmp=no
 
 
-Installing without root priviledges
------------------------------------
+Installing without root privileges
+----------------------------------
 
 .. _without_root:
 
@@ -76,7 +76,7 @@ instructions (without using sudo)::
 Alternatively, you can set up a local installation by hand.
 
 Make a local python module directory somewhere that you have write
-priviledges (such as your home directory)::
+privileges (such as your home directory)::
 
   mkdir ~/python
 
@@ -157,7 +157,7 @@ To build Gamera, open a terminal and type::
 
   python setup.py build
 
-and then to install (you'll need to have admin priviledges)::
+and then to install (you'll need to have admin privileges)::
 
   sudo pythonw setup.py install
 
@@ -180,7 +180,7 @@ to your search PATH, or install the scripts to ``/usr/bin`` with::
   sudo pythonw setup.py install_scripts -d /usr/bin
 
 .. note::
-  In its default configuraton, the Python distutils on MacOS X
+  In its default configuration, the Python distutils on MacOS X
   build fat binaries. You can speedup the compilation time
   by a factor two by removing the unnecessary architecture from
   your distutils build settings.
@@ -194,11 +194,11 @@ to your search PATH, or install the scripts to ``/usr/bin`` with::
   ``/System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/sysconfig.py``
 
 
-Installing without root priviledges
-```````````````````````````````````
+Installing without root privileges
+``````````````````````````````````
 
 The instructions for `installing without root (administrator)
-priviledges`__ can also be used on Mac OS-X.
+privileges`__ can also be used on Mac OS-X.
 
 __ without_root_
 
@@ -243,7 +243,7 @@ Prerequisites
 Standard Build and Install
 ``````````````````````````
 
-Download and install the unoffical wxPython-Gtk-X11 distribution from
+Download and install the unofficial wxPython-Gtk-X11 distribution from
 the Gamera Files section on SourceForge.
 
   Alternatively, you can install fink and then build the package
@@ -254,11 +254,11 @@ the Gamera Files section on SourceForge.
 
 Gamera is built using the Python-standard Distutils system.
 
-To build Gamera, open a X11 terminal and type::
+To build Gamera, open an X11 terminal and type::
 
   python setup.py build
 
-and then to install (you'll need to have admin priviledges)::
+and then to install (you'll need to have admin privileges)::
 
   sudo python setup.py install
 
@@ -271,11 +271,11 @@ The scripts can be installed by::
   default installed to
   ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
 
-Installing without root priviledges
-```````````````````````````````````
+Installing without root privileges
+``````````````````````````````````
 
 The instructions for `installing without root (administrator)
-priviledges`__ can also be used on Mac OS-X.
+privileges`__ can also be used on Mac OS-X.
 
 __ without_root_
 
@@ -372,7 +372,7 @@ terminal to an unreadable combination)::
     cd \path\to\gamera-sources
     \path\to\python.exe setup.py bdist_wininst
 
-The installer will be built in the subdirectory ``dist`` and can be startet
+The installer will be built in the subdirectory ``dist`` and can be started
 by double click in the explorer. Note that the installer might display an error
 message at the end, depending on the Python distutils version shipped with
 your Python installation. This message can simply be ignored.

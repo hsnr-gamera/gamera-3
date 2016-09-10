@@ -268,7 +268,7 @@ a callable class (aka *functor*, i.e. a class with the call operator
    };
 
 The call of the class only takes a single argument, the ``KdNode``, and
-returns true when this node is an admissable search result. If this
+returns true when this node is an admissible search result. If this
 criterion depends on some information from the actual search point (like
 its *x*-component in the exampel above), this information must be passed to
 the class constructor and stored within the class.

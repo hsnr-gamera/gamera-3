@@ -23,7 +23,7 @@ from gamera.util import warn_deprecated
 import _draw
 try:
   from gamera.core import RGBPixel
-except:
+except Exception:
   def RGBPixel(*args):
     pass
 
@@ -470,7 +470,7 @@ class draw_text(PluginFunction):
       for i, name in enumerate(names):
         image.draw_text((160, i * 30),
                         name, RGBPixel(randint(0, 255), randint(0,255), randint(0, 255)), 20, halign=1)
-    except:
+    except Exception:
       pass
     return image
   if sys.platform != 'darwin':

@@ -153,7 +153,7 @@ class IconDisplay(wx.ListCtrl):
                if klass.check(val):
                   t = klass
                   break
-            except:
+            except Exception:
                pass
          if t != None:
             if self.data.has_key(key):

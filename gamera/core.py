@@ -94,7 +94,7 @@ supported.
 
    try:
       filename = filename.encode('utf8')
-   except:
+   except Exception:
       pass
    # First, try being smart by loading by extension
    for method in methods:
@@ -102,7 +102,7 @@ supported.
          if os.path.splitext(filename)[1].lower() == ext.lower():
             try:
                image = method.__call__(filename, compression)
-            except:
+            except Exception:
                pass
             else:
                return image
@@ -111,7 +111,7 @@ supported.
    for method in methods:
       try:
          image = method.__call__(filename, compression)
-      except:
+      except Exception:
          pass
       else:
          return image
@@ -707,7 +707,7 @@ def _init_gamera():
       method.register()
    try:
       verbose = config.get("verbosity_level")
-   except:
+   except Exception:
       verbose = 0
    paths.import_directory(paths.plugins, globals(), locals(), verbose)
    sys.path.append(".")

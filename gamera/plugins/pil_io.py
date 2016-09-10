@@ -28,7 +28,7 @@ try:
 except ImportError:
     try:
         verbose = config.get("verbosity_level")
-    except:
+    except Exception:
         verbose = 0
     if verbose:
         print ('Info: Python Imaging Library module Image '
@@ -83,7 +83,7 @@ else:
                     Dim(image.size[0], image.size[1]),
                     pixel_type, DENSE,
                     image.tobytes())
-            except:
+            except Exception:
                 # for compatibility with pil 1.1.7 and earlier
                 return _string_io._from_raw_string(
                     offset,
@@ -113,7 +113,7 @@ else:
             try:
                 return PIL.frombytes(mode, size,
                                      _string_io._to_raw_string(image))
-            except:
+            except Exception:
                 # for compatibility with pil 1.1.7 and earlier
                 return PIL.fromstring(mode, size,
                                      _string_io._to_raw_string(image))

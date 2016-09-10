@@ -24,13 +24,13 @@ deformations to images."""
 from gamera.plugin import *
 try:
   from gamera.core import RGBPixel
-except:
+except Exception:
   def RGBPixel(*args):
     pass
 
 try:
     from gamera.core import *
-except:
+except Exception:
     pass
 
 import _deformation

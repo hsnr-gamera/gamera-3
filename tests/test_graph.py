@@ -106,7 +106,7 @@ def _test_colorize(flag = gamera.graph.FREE):
    try:
       g.colorize(6)
       assert False
-   except:
+   except Exception:
       assert True
 
    del g

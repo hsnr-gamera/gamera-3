@@ -33,7 +33,7 @@ from distutils.version import StrictVersion, LooseVersion
 from gamera.util import dedent
 try:
    locale.setlocale(locale.LC_ALL, '')
-except:
+except Exception:
    pass
 
 ######################################################################
@@ -287,7 +287,7 @@ class PluginDocumentationGenerator:
          elif i == COMPLEX:
             try:
                images[i] = _image_conversion.to_complex(image)
-            except:
+            except Exception:
                pass
       return images
    get_generic_images = staticmethod(get_generic_images)

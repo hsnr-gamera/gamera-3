@@ -35,7 +35,7 @@ def _run_command(exc, line):
     try:
         try:
             status, output = commands.getstatusoutput(line)
-        except:
+        except Exception:
             raise IOError("Error running %s" % exc)
         if status:
             raise IOError("Error running %s" % exc)

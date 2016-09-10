@@ -249,7 +249,7 @@ class PackageMaker:
             sourceFolder = self._escapeBlanks(self.sourceFolder)
             cmd = "mkbom %s %s" % (sourceFolder, bomPath)
             res = os.system(cmd)
-        except:
+        except Exception:
             pass
 
 

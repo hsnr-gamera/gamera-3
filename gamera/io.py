@@ -69,7 +69,7 @@ Defines a number of functions for pseudo-command-line OS functionality.
 
 try:
     import mmapfile
-except:
+except Exception:
     pass
 
 import pstat
@@ -196,7 +196,7 @@ Returns: a 1D or 2D list of lists from whitespace delimited text files
                 except ValueError:
                     try:
                         newelements[i][j] = string.atof(newelements[i][j])
-                    except:
+                    except Exception:
                         pass
         elements = elements + newelements
     if len(elements)==1:  elements = elements[0]
@@ -262,10 +262,10 @@ Returns: a 1D or 2D list of lists from whitespace delimited text files
             for j in range(len(newelements[i])):
                 try:
                     newelements[i][j] = string.atoi(newelements[i][j])
-                except:
+                except Exception:
                     try:
                         newelements[i][j] = string.atof(newelements[i][j])
-                    except:
+                    except Exception:
                         pass
         elements = elements + newelements
     if len(elements)==1:  elements = elements[0]
@@ -370,7 +370,7 @@ Returns: an array of integers, floats or objects (type='O'), depending on the
             for j in range(len(newelements[i])):
                 try:
                     newelements[i][j] = string.atof(newelements[i][j])
-                except:
+                except Exception:
                     pass
         elements = elements + newelements
     for row in range(len(elements)):
@@ -455,7 +455,7 @@ Usage:  mincget(imfile,unpackstr=np.int16,shp=None)  default shp = -1,20,64,64
               imfile+' > minctemp.bshort')
     try:
         d = braw('minctemp.bshort',unpackstr)
-    except:
+    except Exception:
         print "Couldn't find file:  "+imfile
         raise IOError, "Couldn't find file in mincget()"
 
@@ -475,7 +475,7 @@ Usage:  brikget(imfile,unpackstr=np.int16,shp=None)  default shp: (-1,48,61,51)
         shp = (-1,48,61,51)
     try:
         file = open(imfile, "rb")
-    except:
+    except Exception:
         print "Couldn't find file:  "+imfile
         raise IOError, "Couldn't find file in brikget()"
     try:
@@ -521,7 +521,7 @@ Usage:  brikget(imfile,unpackstr=np.int16,shp=None)  default shp: (-1,48,61,51)
         bdata = bdata.byteswap()
     try:
         bdata.shape = shp
-    except:
+    except Exception:
         print 'Incorrect shape ...',shp,len(bdata)
         raise ValueError, 'Incorrect shape for file size'
     if len(bdata) == 1:
@@ -537,7 +537,7 @@ Usage:  brikget(imfile,unpackstr=np.int16,shp=None)  default shp: (-1,48,61,51)
                 break
         mults.shape = multshape
         return bdata*mults
-    except:
+    except Exception:
         return bdata
 
 def mghbget(imfile,numslices=-1,xsize=64,ysize=64,
@@ -553,7 +553,7 @@ Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
 """
     try:
         file = open(imfile, "rb")
-    except:
+    except Exception:
         print "Couldn't find file:  "+imfile
         raise IOError, "Couldn't find file in bget()"
     try:
@@ -567,7 +567,7 @@ Usage:   mghbget(imfile, numslices=-1, xsize=64, ysize=64,
             xsize = int(vals[0])
             ysize = int(vals[1])
             numslices = int(vals[2])
-    except:
+    except Exception:
         print "No header file.  Continuing ..."
 
     suffix = imfile[-6:]
@@ -638,7 +638,7 @@ Returns: flat array of floats, or ints (if btype=np.int16)
         try:
             bdata.shape = shp
             return bdata
-        except:
+        except Exception:
             pass
     return np.array(bdata)
 
@@ -660,7 +660,7 @@ Returns: array of 'btype elements with shape 'shape', suitable for im.ashow()
     try:
         carray = np.reshape(d,shp)
         return
-    except:
+    except Exception:
         pass
     try:
         r = d[0::3]+0
@@ -670,7 +670,7 @@ Returns: array of 'btype elements with shape 'shape', suitable for im.ashow()
         g.shape = shp
         b.shape = shp
         carray = np.array([r,g,b])
-    except:
+    except Exception:
         outstr = "glget: shape not correct for data of length "+str(len(d))
         raise ValueError, outstr
     return carray
@@ -695,7 +695,7 @@ Usage:   mget(fname,btype)
             ysize = int(vals[1])
             numslices = int(vals[2])
         print xsize,ysize,numslices, d.shape
-    except:
+    except Exception:
         print "No header file.  Continuing ..."
     if numslices == 1:
         d.shape = [ysize,xsize]
@@ -1031,7 +1031,7 @@ Returns: data in file fname of type btype
         btype = fname[-4]
     try:
         bdata = np.fromstring(bdata,btype)
-    except:
+    except Exception:
         raise ValueError, "Bad unpacking type."
 
     # force the data on disk to be LittleEndian (for more efficient PC/Linux use)
@@ -1048,7 +1048,7 @@ Returns: data in file fname of type btype
             numslices = int(vals[0][2])
         else:
             bdata.shape = vals
-    except:
+    except Exception:
         print "No (or bad) header file. Returning unshaped array."
     return np.array(bdata)
 

@@ -78,7 +78,7 @@ class Template:
       if filename != None:
          try:
             self.parse_file(filename)
-         except:
+         except Exception:
             self.parse_string(filename)
 
    def parse_file(self, filename):

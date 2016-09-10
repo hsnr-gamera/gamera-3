@@ -63,7 +63,7 @@ def mysystem(message, command):
         if retcode != 0:
             print "FAILED (%d)" % retcode
             return
-    except:
+    except Exception:
         print "FAILED"
         raise
     else:

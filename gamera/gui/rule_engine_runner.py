@@ -162,7 +162,7 @@ class RuleEngineRunnerPanel(wx.Panel):
       import imp
       try:
          filename = filename.encode('utf8')
-      except:
+      except Exception:
          pass
       fd = open(filename, 'r')
       module_name = path.split(filename)[1]

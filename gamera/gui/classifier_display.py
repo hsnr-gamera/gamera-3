@@ -1006,20 +1006,20 @@ class ClassifierFrame(ImageFrameBase):
          try:
             self._SavePageCollection(
                os.path.join(directory, "page_glyphs.xml"), with_features=with_features)
-         except:
+         except Exception:
             error_messages.add(str(e))
          self.multi_iw.id.is_dirty = False
       if classifier:
          try:
             self._SaveClassifierCollection(
                os.path.join(directory, "classifier_glyphs.xml"), with_features=with_features)
-         except:
+         except Exception:
             error_messages.add(str(e))
          self._classifier.is_dirty = False
       if symbols:
          try:
             self._ExportSymbolTable(os.path.join(directory, "symbol_table.xml"))
-         except:
+         except Exception:
             error_messages.add(str(e))
       if source and self.single_iw.id is not None:
          try:
@@ -1904,7 +1904,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       item = self.GetSelection()
       try:
          data = self.GetPyData(item)
-      except:
+      except Exception:
          event.Skip()
          return
       text = self.toplevel.text.GetValue()

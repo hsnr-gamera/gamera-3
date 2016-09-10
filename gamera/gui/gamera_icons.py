@@ -5,7 +5,7 @@ try:
    from wx import ImageFromStream, BitmapFromImage
    wxImageFromStream = ImageFromStream
    wxBitmapFromImage = BitmapFromImage
-except:
+except Exception:
    from wxPython.wx import wxImageFromStream, wxBitmapFromImage
 import cStringIO, zlib
 

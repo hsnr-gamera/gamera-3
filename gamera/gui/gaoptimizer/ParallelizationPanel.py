@@ -50,7 +50,7 @@ class ParallelizationPanel(ExpertSettingPanel):
             # check available hardware
             import multiprocessing
             cpu_count = multiprocessing.cpu_count()
-        except:
+        except Exception:
             # when no multiprocessing module is available (python < 2.6)
             # assume 2 cores
             cpu_count = 2

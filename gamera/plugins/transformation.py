@@ -25,7 +25,7 @@ like rotating or resizing."""
 from gamera.plugin import * 
 try:
   from gamera.core import RGBPixel
-except:
+except Exception:
   def RGBPixel(*args):
     pass
 from gamera.gui import has_gui

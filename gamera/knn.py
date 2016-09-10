@@ -328,7 +328,7 @@ Load the kNN settings from an XML file.  See save_settings_."""
          for x in self.feature_functions[0]:
             selections.extend(loader.selections[x[0]])
          self.set_selections(selections)
-      except:
+      except Exception:
          # if no selections are given use the default values (all features are
          # selected)
          pass

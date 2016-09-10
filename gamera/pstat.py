@@ -265,13 +265,13 @@ Returns: a list of lists with all unique permutations of entries appearing in
              if fcn1:
                  try:
                      test = fcn1(avgcol)
-                 except:
+                 except Exception:
                      test = 'N/A'
                      means[i] = [means[i], test]
              if fcn2:
                  try:
                      test = fcn2(avgcol)
-                 except:
+                 except Exception:
                      test = 'N/A'
                  try:
                      means[i] = means[i] + [len(avgcol)]
@@ -293,13 +293,13 @@ Returns: a list of lists with all unique permutations of entries appearing in
                  if fcn1 <> None:
                      try:
                          test = fcn1(avgcol)
-                     except:
+                     except Exception:
                          test = 'N/A'
                      item.append(test)
                  if fcn2 <> None:
                      try:
                          test = fcn2(avgcol)
-                     except:
+                     except Exception:
                          test = 'N/A'
                      item.append(test)
                  newlist.append(item)
@@ -792,13 +792,13 @@ Returns: unique 'conditions' specified by the contents of columns specified
         if fcn1<>None:
             try:
                 test = fcn1(avgcol)
-            except:
+            except Exception:
                 test = N.array(['N/A']*len(means))
             means = aabut(means,test)
         if fcn2<>None:
             try:
                 test = fcn2(avgcol)
-            except:
+            except Exception:
                 test = N.array(['N/A']*len(means))
             means = aabut(means,test)
         return means
@@ -819,13 +819,13 @@ Returns: unique 'conditions' specified by the contents of columns specified
                 if fcn1<>None:
                     try:
                         test = fcn1(avgcol)
-                    except:
+                    except Exception:
                         test = 'N/A'
                     item.append(test)
                 if fcn2<>None:
                     try:
                         test = fcn2(avgcol)
-                    except:
+                    except Exception:
                         test = 'N/A'
                     item.append(test)
                 newlist.append(item)
@@ -847,7 +847,7 @@ Usage:   adm (a,criterion)   where criterion is like 'x[2]==37'
     lines = eval(function)
     try:
         lines = N.array(lines)
-    except:
+    except Exception:
         lines = N.array(lines,dtype='O')
     return lines
 

@@ -304,7 +304,7 @@ class _NumericValidator(wx.PyValidator):
                 return False
           try:
              val = self._type(val)
-          except:
+          except Exception:
              self.show_error(self.caption + " is invalid.")
              return False
           if self.rng:
@@ -388,7 +388,7 @@ class Class:
             for key, val in locals.items():
                try:
                   it = iter(val)
-               except:
+               except Exception:
                   pass
                else:
                   good = True
@@ -397,7 +397,7 @@ class Class:
                         if not isinstance(x, self.klass):
                            good = False
                            break
-                  except:
+                  except Exception:
                      pass
                   else:
                      if good:
@@ -421,7 +421,7 @@ class Class:
    def get(self):
       try:
          return self.locals[self.control.GetStringSelection()]
-      except:
+      except Exception:
          if self.list_of:
             return []
          else:
@@ -430,7 +430,7 @@ class Class:
    def get_string(self):
       try:
          return self.control.GetStringSelection()
-      except:
+      except Exception:
          if self.list_of:
             return []
          else:
@@ -474,7 +474,7 @@ class _Vector(Class):
    def is_vector(self, val):
       try:
          it = iter(val)
-      except:
+      except Exception:
          return False
       else:
          good = True
@@ -483,7 +483,7 @@ class _Vector(Class):
                if not isinstance(x, self.klass):
                   good = False
                   break
-         except:
+         except Exception:
             return False
          else:
             return good
@@ -510,7 +510,7 @@ class ImageType(Class):
             for key, val in locals.items():
                try:
                   it = iter(val)
-               except:
+               except Exception:
                   pass
                else:
                   good = True
@@ -520,7 +520,7 @@ class ImageType(Class):
                             not val.data.pixel_type in self.pixel_types):
                            good = False
                            break
-                  except:
+                  except Exception:
                      pass
                   else:
                      if good:
@@ -623,7 +623,7 @@ class _Filename:
       try:
          textutf8 = text.encode('utf8')
          text = textutf8
-      except:
+      except Exception:
          pass
       if text == "":
          return None

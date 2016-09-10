@@ -313,7 +313,7 @@ class LoadXML:
    def _tag_start_gamera_database(self, a):
       try:
          version = self.try_type_convert(a, 'version', float, 'gamera-database')
-      except:
+      except Exception:
          version = 1.0
       if version < GAMERA_XML_FORMAT_VERSION:
          raise XMLError(

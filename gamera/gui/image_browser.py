@@ -40,7 +40,7 @@ class FileList(wx.GenericDirCtrl):
       wx.BeginBusyCursor()
       try:
          filename = filename.encode('utf8')
-      except:
+      except Exception:
          pass
       try:
          try:

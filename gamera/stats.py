@@ -533,7 +533,7 @@ Returns: list of bin values, lowerreallimit, binsize, extrapoints
             else:
                 bintoincrement = int((num-lowerreallimit)/float(binsize))
                 bins[bintoincrement] = bins[bintoincrement] + 1
-        except:
+        except Exception:
             extrapoints = extrapoints + 1
     if (extrapoints > 0 and printextras == 1):
         print '\nPoints outside given histogram range =',extrapoints
@@ -1141,7 +1141,7 @@ Returns: KS D-value, associated p-value
     try:
         en = math.sqrt(en1*en2/float(en1+en2))
         prob = ksprob((en+0.12+0.11/en)*abs(d))
-    except:
+    except Exception:
         prob = 1.0
     return d, prob
 
@@ -1813,7 +1813,7 @@ Returns: None
     try:
         x = prob.shape
         prob = prob[0]
-    except:
+    except Exception:
         pass
     if  prob < 0.001:  suffix = '  ***'
     elif prob < 0.01:  suffix = '  **'
@@ -1832,7 +1832,7 @@ Returns: None
                 stat = stat[0]
             if prob.shape == ():
                 prob = prob[0]
-        except:
+        except Exception:
             pass
         print 'Test statistic = ',round(stat,3),'   p = ',round(prob,3),suffix
         print
@@ -1847,7 +1847,7 @@ Returns: None
                 stat = stat[0]
             if prob.shape == ():
                 prob = prob[0]
-        except:
+        except Exception:
             pass
         file.write(pstat.list2string(['\nTest statistic = ',round(stat,4),'   p = ',round(prob,4),suffix,'\n\n']))
         file.close()
@@ -2627,7 +2627,7 @@ Returns: (array of bin counts, bin-minimum, min-width, #-points-outside-range)
             else:
                 bintoincrement = int((num-lowerreallimit) / float(binsize))
                 bins[bintoincrement] = bins[bintoincrement] + 1
-        except:                           # point outside lower/upper limits
+        except Exception:                           # point outside lower/upper limits
             extrapoints = extrapoints + 1
     if (extrapoints > 0 and printextras == 1):
         print '\nPoints outside given histogram range =',extrapoints
@@ -3524,7 +3524,7 @@ Returns: KS D-value, p-value
 #    try:
     en = math.sqrt(en1*en2/float(en1+en2))
     prob = aksprob((en+0.12+0.11/en)*N.fabs(d))
-#    except:
+#    except Exception:
 #        prob = 1.0
     return d, prob
 

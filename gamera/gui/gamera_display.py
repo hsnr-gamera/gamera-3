@@ -521,7 +521,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       filename = gui_util.save_file_dialog(self, util.get_file_extensions("save"))
       try:
          filename = filename.encode('utf8')
-      except:
+      except Exception:
          pass
       if filename is not None:
          self.original_image.save_image(filename)
@@ -1565,7 +1565,7 @@ class MultiImageDisplay(gridlib.Grid):
             label = str(
                eval(self.display_attribute,
                     {'x': glyph}))
-         except:
+         except Exception:
             label = '<ERROR!>'
          return label
 
@@ -2122,7 +2122,7 @@ class ProjectionDisplay(wx.Frame):
 try:
     if wx.PostScriptDC_GetResolution() < 150:
         wx.PostScriptDC_SetResolution(600)
-except:
+except Exception:
     # workaround for missing function (Bug?) in wxPython 2.9
     pass
 

@@ -27,7 +27,7 @@ try:
 except ImportError:
     try:
         verbose = config.get("verbosity_level")
-    except:
+    except Exception:
         verbose = 0
     if verbose:
         print ('Info: numpy.numarray could not be imported')

@@ -116,7 +116,7 @@ def get_plugin_filenames(path):
    try:
       path = os.path.normpath(os.path.abspath(path + "/__init__.py"))
       plugins.remove(path)
-   except:
+   except Exception:
       pass
    return plugins
 

@@ -49,7 +49,7 @@ import cPickle, cStringIO, zlib
 import img2img
 try:
     import wx
-except:
+except Exception:
     from wxPython import wx
 
 

@@ -78,21 +78,21 @@ class TiffSupportModule(PluginModule):
         cpp_sources = glob.glob("src/libtiff/*.c")
         try:
             cpp_sources.remove("src/libtiff\\tif_unix.c")
-        except:
+        except Exception:
             pass
         extra_compile_args = ['-Dunix']
     elif sys.platform == 'cygwin':
         cpp_sources = glob.glob("src/libtiff/*.c")
         try:
             cpp_sources.remove("src/libtiff/tif_win32.c")
-        except:
+        except Exception:
             pass
         extra_compile_args = ['-Dunix']
     elif sys.platform == 'darwin':
         cpp_sources = glob.glob("src/libtiff/*.c")
         try:
 	   cpp_sources.remove("src/libtiff/tif_win32.c")
-	except:
+	except Exception:
 	   pass
 	extra_compile_args = ['-Dunix']
     else:

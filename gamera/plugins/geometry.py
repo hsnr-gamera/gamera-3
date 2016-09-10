@@ -24,7 +24,7 @@ from gamera.args import NoneDefault
 import _geometry
 try:
   from gamera.core import RGBPixel
-except:
+except Exception:
   def RGBPixel(*args):
     pass
 

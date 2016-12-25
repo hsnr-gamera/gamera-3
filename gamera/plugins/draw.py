@@ -61,8 +61,9 @@ class draw_marker(PluginFunction):
   author = "Michael Droettboom"
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     points = [(randint(0, 100), randint(0, 100)) for x in range(4)]
     image.draw_bezier(*tuple(list(points) + [RGBPixel(255, 0, 0), 0.1]))
@@ -106,8 +107,9 @@ class draw_line(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
       image.draw_line((randint(0, 100), randint(0, 100)),
@@ -160,8 +162,9 @@ class draw_hollow_rect(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
       image.draw_hollow_rect((randint(0, 100), randint(0, 100)),
@@ -199,8 +202,9 @@ class draw_filled_rect(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
       image.draw_filled_rect((randint(0, 100), randint(0, 100)),
@@ -244,8 +248,9 @@ class draw_bezier(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
       image.draw_bezier((randint(0, 100), randint(0, 100)),
@@ -292,8 +297,9 @@ class draw_circle(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(100, 100), RGB, DENSE)
     for i in range(10):
       image.draw_circle((randint(0, 100), randint(0, 100)),
@@ -447,8 +453,9 @@ class draw_text(PluginFunction):
   __call__ = staticmethod(__call__)
 
   def __doc_example1__(images):
-    from random import randint
+    from random import randint, seed
     from gamera.core import Image, Dim
+    seed(0)
     image = Image((0, 0), Dim(320, 300), RGB, DENSE)
 
     # These are some various Unicode encoded names of different

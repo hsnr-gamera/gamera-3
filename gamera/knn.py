@@ -458,7 +458,7 @@ Set the selection vector elements by the corresponding feature name.
    described in get_selections_by_features.
 
 The dictionary must contain an entry for every feature of the currently
-active feature set, that has been set in the contructor of the classifier or
+active feature set, that has been set in the constructor of the classifier or
 by *change_feature_set*. Example:
 
 .. code:: Python
@@ -499,7 +499,7 @@ Set the selection vector elements for one specific feature.
 
 Set the weighing vector elements by the corresponding feature name.
 The dictionary must contain an entry for every feature of the currently
-active feature set, that has been set in the contructor of the classifier or
+active feature set, that has been set in the constructor of the classifier or
 by *change_feature_set*. Example:
 
 .. code:: Python

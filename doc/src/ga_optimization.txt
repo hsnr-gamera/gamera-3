@@ -8,7 +8,7 @@ Introduction
 Feature Selection, Weighting and Genetic Algorithms
 '''''''''''''''''''''''''''''''''''''''''''''''''''
 
-Feature selection is the techique of selecting a subset of good features
+Feature selection is the technique of selecting a subset of good features
 out of a larger featureset to obtain the features which are suitable
 for the best possible classification. Feature weighting is a generalization
 of feature selection with real-valued weights between [0,1] instead of the

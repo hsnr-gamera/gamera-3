@@ -54,7 +54,7 @@ static PyGetSetDef point_getset[] = {
 
 static PyMethodDef point_methods[] = {
   { (char *)"move", point_move, METH_VARARGS,
-    (char *)"**move** (*x*, *y*)\n\nMoves the point by the given *x*, *y* coordinate, i.e. the vector (*x*, *y*) is added to the point. The following two lineas are equivalent:\n\n.. code:: Python\n\n    p.move(x,y)\n    p += Point(x,y)"},
+    (char *)"**move** (*x*, *y*)\n\nMoves the point by the given *x*, *y* coordinate, i.e. the vector (*x*, *y*) is added to the point. The following two lines are equivalent:\n\n.. code:: Python\n\n    p.move(x,y)\n    p += Point(x,y)"},
   { NULL }
 };
 

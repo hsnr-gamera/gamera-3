@@ -226,7 +226,7 @@ wrapper of the form:
       self.property2 = mc.property2
       # ...
 
-  # the plugin implementing the actual contructor of MyClass
+  # the plugin implementing the actual constructor of MyClass
   class create_myclass(PluginFunction):
     self_type = None
     args = Args([Int("arg1"), Real("arg2")])

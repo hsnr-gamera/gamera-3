@@ -43,7 +43,7 @@ terminal and type::
   python setup.py build
   sudo python setup.py install
 
-By default, parallelization of the genetica algorithms is only compiled
+By default, parallelization of the genetic algorithms is only compiled
 into Gamera under Linux and with gcc version > 4.2, because we could only
 get it running in this environment. If you are sure that you have unbroken
 OpenMP support on your system, you can compile Gamera with::
@@ -404,7 +404,7 @@ in the Explorer, or from the DOS command prompt with::
    Fixes for common problems:
 
     - The Python 2.6 binary from python.org requires ``libmsvcr90.a``,
-      which is an errenous in some versions of Mingw32. To fix it, you can
+      which is an erroneous in some versions of Mingw32. To fix it, you can
       recreate the file from the DLL ``msvcr90.dll`` that comes with
       Python 2.6 with pexports__ and *dlltool* (the latter is part of Mingw32)::
 

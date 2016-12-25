@@ -23,7 +23,7 @@ import image_utilities, _image_conversion
 
 class to_rgb(PluginFunction):
     """
-    Converts the given image to an RGB image according to teh following rules:
+    Converts the given image to an RGB image according to the following rules:
 
     - for ONEBIT images, 0 is mapped to (255,255,255) and everything else to (0,0,0)
     - for GREYSCALE and GREY16 images, R=G=B

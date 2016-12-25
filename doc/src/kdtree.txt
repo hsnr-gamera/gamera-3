@@ -132,7 +132,7 @@ Each kd-tree is represented by instances of the ``KdTree`` class.
 Even though there are general kd-tree algorithms to add and remove
 nodes dynamically (see [Bentley1975]_), the present implementation
 does not support alteration of a once built tree. This has the
-consequence that tree nodes must be passed to the contructor of
+consequence that tree nodes must be passed to the constructor of
 ``KdTree``.
 
 A ``KdTree`` has the following (read only) properties:

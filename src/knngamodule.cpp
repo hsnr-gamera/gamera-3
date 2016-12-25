@@ -556,9 +556,9 @@ PyMethodDef GACrossover_methods[] = {
                "    the number of used features. Usually this value is set to "
                "``classifier.num_features``.\n"
                "double *min* (optional)\n"
-               "    the minimum value which is allowed in an allel (usually 0.0)\n"
+               "    the minimum value which is allowed in an allele (usually 0.0)\n"
                "double *max* (optional)\n"
-               "    the maximum value which is allowed in an allel (usually 1.0)\n"
+               "    the maximum value which is allowed in an allele (usually 1.0)\n"
                "double *eta* (optional)\n"
                "    the amount of exploration OUTSIDE the parents as in BLX-alpha notation"
     },
@@ -573,9 +573,9 @@ PyMethodDef GACrossover_methods[] = {
                "    the number of used features. Usually this value is set to "
                "``classifier.num_features``.\n"
                "double *min* (optional)\n"
-               "    the minimum value which is allowed in an allel (usually 0.0)\n"
+               "    the minimum value which is allowed in an allele (usually 0.0)\n"
                "double *max* (optional)\n"
-               "    the maximum value which is allowed in an allel (usually 1.0)\n"
+               "    the maximum value which is allowed in an allele (usually 1.0)\n"
                "double *alpha* (optional)\n"
                "    the amount of exploration OUTSIDE the parents as in BLX-alpha notation"
     },
@@ -590,9 +590,9 @@ PyMethodDef GACrossover_methods[] = {
                "    the number of used features. Usually this value is set to "
                "``classifier.num_features``.\n"
                "double *min* (optional)\n"
-               "    the minimum value which is allowed in an allel (usually 0.0)\n"
+               "    the minimum value which is allowed in an allele (usually 0.0)\n"
                "double *max* (optional)\n"
-               "    the maximum value which is allowed in an allel (usually 1.0)\n"
+               "    the maximum value which is allowed in an allele (usually 1.0)\n"
                "double *alpha* (optional)\n"
                "    the amount of exploration OUTSIDE the parents as in BLX-alpha notation"
     },
@@ -811,7 +811,7 @@ PyMethodDef GAMutation_methods[] = {
                "individuals. This means that this operator only effects "
                "feature selection.\n\n"
                "double *rate* (optional)\n"
-               "    the probability for mutation of an allel (should be in [0,1])\n"
+               "    the probability for mutation of an allele (should be in [0,1])\n"
                "bool *normalize* (optional)\n"
                "    if true ``rate/chromosomeSize`` is used"
     },
@@ -825,14 +825,14 @@ PyMethodDef GAMutation_methods[] = {
                "    the number of used features. Usually this value is set to "
                "``classifier.num_features``.\n"
                "double *min*\n"
-               "    the minimum value which is allowed in an allel (usually 0.0)\n"
+               "    the minimum value which is allowed in an allele (usually 0.0)\n"
                "double *max*\n"
-               "    the maximum value which is allowed in an allel (usually 1.0)\n"
+               "    the maximum value which is allowed in an allele (usually 1.0)\n"
                "double *sigma*\n"
                "    the standard deviation of the gaussian distribution. This "
-               "paramater determines the strength of the mutation.\n"
+               "parameter determines the strength of the mutation.\n"
                "double *rate*\n"
-               "    the probability for mutating an allel (should be in [0,1])\n"
+               "    the probability for mutating an allele (should be in [0,1])\n"
     },
     { NULL }
 };

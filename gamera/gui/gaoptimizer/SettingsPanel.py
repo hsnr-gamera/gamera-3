@@ -301,7 +301,7 @@ class SettingsPanel(wx.ScrolledWindow):
                 elif expertWidget.GetName() == "randomSelection":
                     selection.setRandomSelection()
                 else:
-                    raise RuntimeError("Unknown selection method choosen")
+                    raise RuntimeError("Unknown selection method chosen")
 
         # Crossover GA settings
         cross = knnga.GACrossover()
@@ -323,10 +323,10 @@ class SettingsPanel(wx.ScrolledWindow):
                     cross.setHypercubeCrossover(self.frame.classifier.num_features, 0.0, 1.0, \
                         self.crossoverPanel.hypercubeCrossoverAlpha.GetValue())
                 else:
-                    raise RuntimeError("Unknown crossover method choosen")
+                    raise RuntimeError("Unknown crossover method chosen")
                 crossOpSet = True
         if not crossOpSet:
-            raise RuntimeError("At least one crossover operator must be choosen")
+            raise RuntimeError("At least one crossover operator must be chosen")
 
         # Mutation GA settings
         muta = knnga.GAMutation()
@@ -347,10 +347,10 @@ class SettingsPanel(wx.ScrolledWindow):
                         self.mutationPanel.gaussMutationSigma.GetValue(), \
                         self.mutationPanel.gaussMutationPchance.GetValue())
                 else:
-                    raise RuntimeError("Unknown mutation method choosen")
+                    raise RuntimeError("Unknown mutation method chosen")
                 mutOpSet = True
         if not mutOpSet:
-            raise RuntimeError("At least one mutation operator must be choosen")
+            raise RuntimeError("At least one mutation operator must be chosen")
 
         # Replacement GA settings
         replacement = knnga.GAReplacement()
@@ -364,7 +364,7 @@ class SettingsPanel(wx.ScrolledWindow):
                 elif expertWidget.GetName() == "SSGAdetTournament":
                     replacement.setSSGAdetTournament(self.replacementPanel.ssgaDetTourTsize.GetValue())
                 else:
-                    raise RuntimeError("Unknown replacement method choosen")
+                    raise RuntimeError("Unknown replacement method chosen")
 
         # Stop Criteria GA settings
         stop = knnga.GAStopCriteria()
@@ -382,10 +382,10 @@ class SettingsPanel(wx.ScrolledWindow):
                     stop.setSteadyStateStop(self.stopCriteriaPanel.steadyContinueMin.GetValue(), \
                         self.stopCriteriaPanel.steadyContinueNoChange.GetValue())
                 else:
-                    raise RuntimeError("Unknown stop criteria choosen")
+                    raise RuntimeError("Unknown stop criteria chosen")
                 stopCritSet = True
         if not stopCritSet:
-            raise RuntimeError("At least one stop criteria must be choosen")
+            raise RuntimeError("At least one stop criteria must be chosen")
 
         # Parallelization GA settings
         para = knnga.GAParallelization()

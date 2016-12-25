@@ -558,7 +558,7 @@ void GAOptimization<EOT>::StartCalculation() {
 
     // adjust the individual size for the case of weighting with
     // prior deselected features and build an index relation map
-    // for futher index mapping
+    // for further index mapping
     unsigned int indiLength = (unsigned int)this->knn->num_features;
     std::map<unsigned int, unsigned int> indexRelation;
     unsigned int indiIndex = 0;

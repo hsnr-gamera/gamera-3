@@ -241,7 +241,7 @@ namespace Gamera { namespace GA {
 
             for (size_t i = 0; i < bestIndi.size(); ++i) {
                 this->knn->selection_vector[(*this->indexRelation)[i]] = bestIndi[i];
-                this->bestSolution[(*this->indexRelation)[i]] = bestIndi[i];
+                this->bestSolution[(*this->indexRelation)[i]] = (bool)bestIndi[i];
             }
         }
 

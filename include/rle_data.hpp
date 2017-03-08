@@ -44,6 +44,24 @@
 #ifndef kwm05072002_rle_data
 #define kwm05072002_rle_data
 
+#if __cplusplus < 201103
+/*
+  These are convenience functions to make dealing
+  with the list iterators a little easier.
+*/
+namespace std {
+  template<class T>
+  T next(T i) {
+    return ++i;
+  }
+  template<class T>
+  T prev(T i) {
+    return --i;
+  }
+}
+#endif
+
+
 namespace Gamera {
 
   namespace RleDataDetail {
@@ -147,21 +165,6 @@ namespace Gamera {
     */
     typedef unsigned char runsize_t;
 
-#if __cplusplus < 201103
-    /*
-      These are convenience functions to make dealing
-      with the list iterators a little easier.
-    */
-    template<class T>
-    T next(T i) {
-      return ++i;
-    }
-  
-    template<class T>
-    T prev(T i) {
-      return --i;
-    }
-#endif
   
     /*
       This class holds the actual run as a value, beginning position, and

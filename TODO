@@ -1,6 +1,7 @@
 ToDo list for Gamera
 ====================
 
+ - port to python 3
  - More documentation of wrapped Vigra functions
  - More page layout analysis resp. page segmentation methods.
    E.g. text/graphics separation and more text line finding

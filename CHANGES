@@ -1,6 +1,13 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.4.3, Mar 08, 2017
+----------------------------
+
+ - support for gcc7 (thanks to VincentS)
+
+ - removed overflow of zernike_moments on 32bit systems
+
  - zernike_moments now also implemented for greyscale image
    (image is inverted so that dark objects get high weights)
    As features do not support greyscale images, the plugin is

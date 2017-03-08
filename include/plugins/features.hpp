@@ -453,8 +453,7 @@ namespace Gamera {
 
   inline double zer_pol_R(int n, int m, double x, double y) {
     // precomputed factorials => make sure that n < 11
-    static const long int fak_a[] = {1, 1, 2, 2*3, 2*3*4, 2*3*4*5, 2*3*4*5*6, 2*3*4*5*6*7, 2*3*4*5*6*7*8, 2*3*4*5*6*7*8*9, 2*3*4*5*6*7*8*9*10, 2*3*4*5*6*7*8*9*10*11, 
-                              (long int)2*3*4*5*6*7*8*9*10*11*12, (long int)2*3*4*5*6*7*8*9*10*11*12*13, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14, (long int)2*3*4*5*6*7*8*9*10*11*12*13*14*15};
+    static const double fak_a[] = {1.0, 1.0, 2.0, 6.0, 24.0, 120.0, 720.0, 5040.0, 40320.0, 362880.0, 3.6288e+06, 3.99168e+7, 4.790016e+8, 6.2270208e+09, 8.71782912e+10, 1.307674368e+12};
     long int s,Na,Nb,Nc;
     int sign = 1;
     double result = 0;

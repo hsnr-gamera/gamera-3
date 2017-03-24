@@ -15,7 +15,7 @@ functions (eg. for color image processing).
 A toolkit is based on Python's generic package and module hierarchy,
 which is described in the Modules chapter of the `Python tutorial`__.
 
-.. __: http://www.python.org/doc/tut/
+.. __: https://docs.python.org/2/tutorial/
 
 The Gamera toolkit framework actually provides very little beyond that:
 
@@ -29,7 +29,7 @@ decide to simply release your application or library as a standard
 Python package.  `Distributing Python modules`__ in the Python
 documentation is a good resource for how to do that.
 
-.. __: http://www.python.org/doc/dist/
+.. __: https://docs.python.org/2/distributing/
 
 Creating a toolkit
 ------------------

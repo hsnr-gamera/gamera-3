@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/hsnr-gamera/gamera.png?branch=master)](https://travis-ci.org/hsnr-gamera/gamera)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf24551504684bd5ab65e6df5921559f)](https://www.codacy.com/app/hsnr-gamera/gamera)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf24551504684bd5ab65e6df5921559f)](https://www.codacy.com/app/danstender/gamera)
 
 # Gamera
 

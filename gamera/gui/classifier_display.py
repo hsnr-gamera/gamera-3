@@ -1526,7 +1526,8 @@ class ClassifierFrame(ImageFrameBase):
                list,
                grouping_function=func,
                max_parts_per_group=max_parts_per_group,
-               max_graph_size=max_graph_size)
+               max_graph_size=max_graph_size,
+               criterion=['min','avg'][criterion])
          finally:
             wx.EndBusyCursor()
       except ClassifierError, e:

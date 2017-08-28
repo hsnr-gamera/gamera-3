@@ -751,7 +751,7 @@ connnected components, such as the lower-case *i*.
                   glyph.classify_heuristic('_group._part.' + sub)
                   self.generate_features(glyph)
             added, removed = self.classify_glyph_manual(union, sub)
-            added.append(union)
+            #added.append(union) # this would lead to doublets
             return added, removed
          else:
             # grouping a single glyph corrupts the classifier_glyph.xml file

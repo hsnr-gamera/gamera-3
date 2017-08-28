@@ -1528,6 +1528,11 @@ class ClassifierFrame(ImageFrameBase):
                max_parts_per_group=max_parts_per_group,
                max_graph_size=max_graph_size,
                criterion=['min','avg'][criterion])
+            # delete all CCs with a class name beginning with ```_group._part`` from *glyph*.
+            # otherwise this causes doublets
+            gp = [g for g in list if g.get_main_id().startswith("_group._part")]
+            removed.extend(gp)
+
          finally:
             wx.EndBusyCursor()
       except ClassifierError, e:

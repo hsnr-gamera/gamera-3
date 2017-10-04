@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fix of possible crash in resize (debian bug #874797)
+
+
 Version 3.4.3, Mar 08, 2017
 ----------------------------
 

@@ -740,6 +740,7 @@ resampleImage(triple<SrcImageIterator, SrcImageIterator, SrcAccessor> src,
   resampleImage(src.first, src.second, src.third, dest.first, dest.second, xfactor, yfactor);
 }
 
+
 //@}
 
 } // namespace vigra

@@ -1,6 +1,8 @@
 Changes made between Gamera File Releases
 =========================================
 
+ - fix of Lab color conversion plugins
+
  - fix of possible crash in resize (debian bug #874797)
 
 

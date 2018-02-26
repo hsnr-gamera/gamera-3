@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2001-2005 Ichiro Fujinaga, Michael Droettboom, Karl MacMillan
  *               2010      Hasan Yildiz, Christoph Dalitz
- *               2014      Christoph Dalitz
+ *               2014-2018 Christoph Dalitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -144,14 +144,14 @@ namespace Gamera {
       return pixel.cie_Lab_a();
     }
   };
-  extract_plane<RGBImageView, FloatImageView, CIE_Lab_L> cie_Lab_a;
+  extract_plane<RGBImageView, FloatImageView, CIE_Lab_a> cie_Lab_a;
 
   struct CIE_Lab_b {
     FloatPixel operator()(RGBPixel pixel) {
-      return pixel.cie_Lab_L();
+      return pixel.cie_Lab_b();
     }
   };
-  extract_plane<RGBImageView, FloatImageView, CIE_Lab_L> cie_Lab_b;
+  extract_plane<RGBImageView, FloatImageView, CIE_Lab_b> cie_Lab_b;
 
   // TODO: Find a cool way to false color Complex images.
 

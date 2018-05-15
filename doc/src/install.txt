@@ -16,7 +16,7 @@ Prerequisites
   build Gamera from source code.  Most Linux distributions include
   these as a separate package (eg. ``python-dev`` or ``python-devel``).
 
-- wxPython 2.4.x or later (wxPython 2.8.x or later recommended for
+- wxPython 2.4.x or later (wxPython 2.8.x or later up to 3.0.x recommended for
   full functionality).
 
 - ``gcc`` version 3.1 or later.
@@ -121,35 +121,37 @@ avoid the installation of wxPython. For this case, use the option
 Mac OS-X
 ========
 
-Earlier versions of Gamera ran on OS-X by using X11 as an emulation of
-a standard Unix environment.  The current SVN version of Gamera now
-uses Cocoa, and feels much more like a standard Macintosh
-application.  Please follow the instructions for *either* X11 or Cocoa
-install below.
+On OS-X 10.5 (Panther) up to 10.10 (Yosemite), Gamera compiled oout of the
+box with the Apple command line develloper tools and the python and wxpython
+that came preinstalled with the OS. Since version 10.11 (El Capatain),
+the "system integrity protection" (SIP) prevents installation of third party
+packages system wide on OS-X. You must therefore use *virtualenv* on newer
+OS-X to create a virtual environments.
+
+Moreover, Gamera currently requires wxPython before 4.0. Versions up to 3.0.x
+came installed with OS-X, but are not shipped with OS-X >= 10.11. On
+OS-X 10.11 (El Captain) and above, wxPython must therefore be compiled from
+the sources.
+
+.. note:: On OS-X, wxPython does not run in a *virtualenv*, because it
+  only works with a "framework build of python". So far, we have not yet
+  figured out a workaround, but the compiling steps for wxPython are
+  nevertheless documented, although the GUI does not yet run.
 
 
-Native (Cocoa) build
---------------------
+Installation up to 10.10 (Yosemite)
+-----------------------------------
 
 Prerequisites
 `````````````
 
-Gamera installs out of the box on Mac OS-X 10.4 (Tiger) and 10.5 (Leopard).
-The only prerequisite is to install XCode, which is shipped with the
-OS-X installation DVD, but is not installed by default.
+Gamera installs out of the box on 10.5 (Leopard) up to 10.10 (Yosemite).
+The only prerequisite is to install the comamnd line tools of XCode,
+which are avalibale for free from the Apple App Store.
 
-It should be noted that OS-X 10.4 comes with the unstable branch 2.5 of
-wxPython. So far we have not yet encountered any problems with this
-version, but if you have any problems, please consider to install
-wxPython 2.6 instead. This is *not* possible from the binary
-installers from http://www.wxpython.org/, because there is none for
-Python 2.3, and the other Python versions require a particular prerelease
-of Xcode to build extensions, that is no longer available.
-So if you decide to upgrade wxPython on OS-X 10.4, you must do it from
-the source release of wxPython 2.6.
 
-Standard Build and Install
-``````````````````````````
+Build and Install
+`````````````````
 
 Gamera is built using the Python-standard Distutils system.
 
@@ -166,41 +168,9 @@ building Gamera as follows:
 
   export CFLAGS="-stdlib=libstdc++ -mmacosx-version-min=10.6"
 
-On OS-X 10.4, you must do the installation with ``pythonw`` rather than
-with ``python``, because ``gamera_gui`` is a GUI application. On OS-X 10.5
-this distinction is no longer necessary, but using ``pythonw`` also works.
-
-On OS-X 10.5, the script ``gamera_gui`` is installed to ``/usr/local/bin``,
+The script ``gamera_gui`` is installed to ``/usr/local/bin``,
 which is also in the default search PATH for programs.
-Prior to OS-X 10.5, the script ``gamera_gui`` was installed to 
-``/System/Library/Frameworks/Python.framework/Versions/2.?/bin``, which
-is not in the default search PATH. You can either add this directory
-to your search PATH, or install the scripts to ``/usr/bin`` with::
 
-  sudo pythonw setup.py install_scripts -d /usr/bin
-
-.. note::
-  In its default configuration, the Python distutils on MacOS X
-  build fat binaries. You can speedup the compilation time
-  by a factor two by removing the unnecessary architecture from
-  your distutils build settings.
-
-  The critical part are the architecture options "-arch ppc" and
-  "-arch i386". When you do not want to redistribute the compiled
-  binaries, you can simply remove one of the architectures.
-  Depending on the OSX/Python version, this is done in
-  ``/Library/Framework/Python.framework/Versions/2.?/lib/python2.?/config/Makefile``,
-  or in
-  ``/System/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/distutils/sysconfig.py``
-
-
-Installing without root privileges
-``````````````````````````````````
-
-The instructions for `installing without root (administrator)
-privileges`__ can also be used on Mac OS-X.
-
-__ without_root_
 
 Running
 ```````
@@ -212,81 +182,50 @@ Start the Terminal application and run the ``gamera_gui`` script.
   Gamera.
 
 
-X11 build
----------
-
-Please note that this build is no longer maintained by the Gamera developers.
-So use it only when the Cocoa build is not possible for some reason (e.g. on a 
-legacy OS-X 10.3 system).
+Installation on to 10.11 (El Captain) and above
+-----------------------------------------------
 
 Prerequisites
 `````````````
 
-- Mac OS-X 10.3 (Panther) or presumably later
+As wxPython cannot be installed into the python branch shipped with OS-X,
+you must first setup a virtual environment and activate it, e.g. with::
 
-- Python 2.3 (including the version included).
+  virtualenv /usr/local/lib/py2wx3
+  source /usr/local/lib/py2wx3/bin/activate
 
-- wxPython-GTK 2.4.x or later
+Download the source code of wxPython 3.0.x from the "Old releases" section
+on `wxpython.org`__ and unpack it. There is one fix necessary: in
+*src/osx/webview_webkit.mm*, add the following cast in lines 936 and 954::
 
-  Since there is no official build of the Gtk+/X11 version for Mac
-  OS-X, I have made one available in the Gamera SourceForge Files
-  section.
+  WebBackForwardList* history = (WebBackForwardList*)[m_webView backForwardList];
 
-- XCode.  The version of XCode that shipped on the Tiger installation
-  DVD will not work if you plan to use a newer version of Python
-  downloaded from python.org.  XCode 2.4.1, may be downloaded from
-  http://developer.apple.com/tools/xcode .
+.. __: http://wxpython.org/
 
-- X11.  This is available on the Tiger installation DVD.  You should
-  also use Software Update to update X11 to the latest version.
+Then you can compile and install wxPython with the following commands::
 
-Standard Build and Install
-``````````````````````````
+  cd root_to_wx_sources/wxPython
+  CPPFLAGS=-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=1
+  export CPPFLAGS
+  python build-wxpython.py --build_dir=../bld --osx_cocoa --install
 
-Download and install the unofficial wxPython-Gtk-X11 distribution from
-the Gamera Files section on SourceForge.
+This will install wxPython into the virtual environment.
 
-  Alternatively, you can install fink and then build the package
-  wxPython-Py23, which is currently in the unstable branch, (and its
-  dependencies) from source.  You will then need to use the fink
-  version of Python (not the one that Apple provides) to carry out the
-  instructions below.
 
-Gamera is built using the Python-standard Distutils system.
+Build and install
+`````````````````
 
-To build Gamera, open an X11 terminal and type::
+You can install Gamera into the same virtual environment with::
 
+  source /usr/local/lib/py2wx3/bin/activate
+  cd root_to_gamera_sources
   python setup.py build
+  python setup.py install
 
-and then to install (you'll need to have admin privileges)::
 
-  sudo python setup.py install
+.. note:: When calling gamera_gui, you will get the error "Please run with a
+  Framework build of python". Hints how to solve this issue are welcome.
 
-The scripts can be installed by::
-
-  sudo python setup.py install_scripts -d /usr/bin
-
-.. note:: The ``-d /usr/bin/`` installs the scripts in a reasonable
-  place on the PATH.  If you do not specify it, the scripts are by
-  default installed to
-  ``/System/Library/Frameworks/Python.framework/Versions/2.3/bin``.
-
-Installing without root privileges
-``````````````````````````````````
-
-The instructions for `installing without root (administrator)
-privileges`__ can also be used on Mac OS-X.
-
-__ without_root_
-
-Running
-```````
-
-Start an X11 terminal and run the ``gamera_gui`` script.
-
-.. note:: Running the script from the root of the source tree will not
-  work, since it will not be able to find the compiled version of
-  Gamera.
 
 Microsoft Windows
 =================

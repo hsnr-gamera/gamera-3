@@ -173,8 +173,8 @@ Start the Terminal application and run the ``gamera_gui`` script.
   Gamera.
 
 
-Installation on to 10.11 (El Captain) and above
------------------------------------------------
+Installation on 10.11 (El Captain) and above
+--------------------------------------------
 
 Prerequisites
 `````````````

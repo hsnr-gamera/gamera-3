@@ -133,11 +133,6 @@ came installed with OS-X, but are not shipped with OS-X >= 10.11. On
 OS-X 10.11 (El Captain) and above, wxPython must therefore be compiled from
 the sources.
 
-.. note:: On OS-X, wxPython does not run in a *virtualenv*, because it
-  only works with a "framework build of python". So far, we have not yet
-  figured out a workaround, but the compiling steps for wxPython are
-  nevertheless documented, although the GUI does not yet run.
-
 
 Installation up to 10.10 (Yosemite)
 -----------------------------------
@@ -154,19 +149,15 @@ Build and Install
 `````````````````
 
 Gamera is built using the Python-standard Distutils system.
-
 To build Gamera, open a terminal and type::
 
+  # the following line is only required on OS-X 10.6 and later
+  export CFLAGS="-stdlib=libstdc++ -mmacosx-version-min=10.6"
   python setup.py build
 
 and then to install (you'll need to have admin privileges)::
 
-  sudo pythonw setup.py install
-
-On OS-X 10.6 and later, you must define the variable CFLAGS before
-building Gamera as follows:
-
-  export CFLAGS="-stdlib=libstdc++ -mmacosx-version-min=10.6"
+  sudo python setup.py install
 
 The script ``gamera_gui`` is installed to ``/usr/local/bin``,
 which is also in the default search PATH for programs.
@@ -188,15 +179,29 @@ Installation on to 10.11 (El Captain) and above
 Prerequisites
 `````````````
 
-As wxPython cannot be installed into the python branch shipped with OS-X,
-you must first setup a virtual environment and activate it, e.g. with::
+Due to the OS-X builtin "system integrity protection" (SIP), wxPython cannot be
+installed into the python branch shipped with OS-X. Moreover, you must
+install wxPython from the sources, because binary packages are only available
+for wxPython 4.x, and Gamera requires an older version of wxPython.
+
+To avoid possible problems with SIP and the python shipped with OS-X,
+you can install python from homebrew and also install virtualenv with::
+
+  brew install python2
+  pip2 install virtualenv
+
+For the combination Python 2.7 with wxPython 3.0, you must first setup a
+virtual environment and activate it, e.g. with::
 
   virtualenv /usr/local/lib/py2wx3
   source /usr/local/lib/py2wx3/bin/activate
 
-Download the source code of wxPython 3.0.x from the "Old releases" section
+Download the source code of wxPython 3.0.2 from the "Old releases" section
 on `wxpython.org`__ and unpack it. There is one fix necessary: in
-*src/osx/webview_webkit.mm*, add the following cast in lines 936 and 954::
+*src/osx/webview_webkit.mm*, add a cast to *WebBackForwardList* in
+lines 936 and 954 as in the following example:
+
+.. code:: CPP
 
   WebBackForwardList* history = (WebBackForwardList*)[m_webView backForwardList];
 
@@ -223,8 +228,59 @@ You can install Gamera into the same virtual environment with::
   python setup.py install
 
 
-.. note:: When calling gamera_gui, you will get the error "Please run with a
-  Framework build of python". Hints how to solve this issue are welcome.
+Running
+```````
+
+On OS-X, wxPython applications do not run in virtualenvs, because
+wxPython requires a "Framework build of python". Fortunately, there is
+a simple workaround: store the following shell script as *gamera_gui*
+in *$HOME/bin* and modify the PATH variable in $HOME/.profile such, that
+*$HOME/bin* is quite at the beginning of the list. Then you can run
+*gamera_gui* from the shell, and the script handles the setup of the
+virtualenv automatically. (Thanks to `George V. Reilly`__ for proposing
+this fix).
+
+.. __: http://www.georgevreilly.com/blog/2015/09/20/RunSnakeRun-WxPython-Brew-Virtualenv.html
+
+.. code:: sh
+
+  #
+  # wrapper script for running gamera_gui
+  # from virtualenv with homebrew python
+  #
+
+  source /usr/local/lib/py2wx3/bin/activate
+
+  WXPYTHON_APP="gamera_gui"
+  PYVER="$(python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)"
+
+  if [ -z "$VIRTUAL_ENV" ] ; then
+      echo "You must activate your virtualenv: set '$VIRTUAL_ENV'"
+      exit 1
+  fi
+
+  SYSTEM_FRAMEWORK_PYTHON_ROOT="/Library/Frameworks/Python.framework/Versions/$PYVER"
+  # OS X >= 10.10
+  SYSTEM_FRAMEWORK_PYTHON_ROOT="/System$SYSTEM_FRAMEWORK_PYTHON_ROOT"
+
+  PYSUBVER="$(python --version 2>&1 | cut -d ' ' -f2)"  # e.g., 2.7.10
+  BREW_PYTHON_ROOT="`ls -d $(brew --prefix)/Cellar/python/$PYSUBVER*`"
+  BREW_PYTHON_ROOT="$BREW_PYTHON_ROOT/Frameworks/Python.framework/Versions/$PYVER"
+
+  PYTHON_BINARY="bin/python$PYVER"
+  FRAMEWORK_PYTHON="$BREW_PYTHON_ROOT/$PYTHON_BINARY"
+
+  VENV_SITE_PACKAGES="$VIRTUAL_ENV/lib/python$PYVER/site-packages"
+
+  # Ensure wx.pth is set up in the virtualenv
+  test -e "$VENV_SITE_PACKAGES/wx.pth" || \
+    cp "/Library/Python/$PYVER/site-packages/wxredirect.pth" "$VENV_SITE_PACKAGES/wx.pth"
+
+  # Use the Framework Python to run the app
+  export PYTHONHOME=$VIRTUAL_ENV
+  exec "$FRAMEWORK_PYTHON" "$VIRTUAL_ENV/bin/$WXPYTHON_APP" $*
+
+
 
 
 Microsoft Windows

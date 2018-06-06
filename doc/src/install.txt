@@ -264,7 +264,7 @@ this fix).
   SYSTEM_FRAMEWORK_PYTHON_ROOT="/System$SYSTEM_FRAMEWORK_PYTHON_ROOT"
 
   PYSUBVER="$(python --version 2>&1 | cut -d ' ' -f2)"  # e.g., 2.7.10
-  BREW_PYTHON_ROOT="`ls -d $(brew --prefix)/Cellar/python/$PYSUBVER*`"
+  BREW_PYTHON_ROOT="`ls -d $(brew --prefix)/Cellar/python@2/$PYSUBVER*`"
   BREW_PYTHON_ROOT="$BREW_PYTHON_ROOT/Frameworks/Python.framework/Versions/$PYVER"
 
   PYTHON_BINARY="bin/python$PYVER"

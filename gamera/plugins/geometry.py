@@ -227,7 +227,7 @@ class graph_color_ccs(PluginFunction):
       International Conference on Information Visualization Theory
       and Applications (IVAPP), pp. 567-572 (2013)
 
-.. __: http://informatik.hsnr.de/~dalitz/data/publications/ivapp13-coloring.pdf
+.. __: http://lionel.kr.hsnr.de/~dalitz/data/publications/ivapp13-coloring.pdf
 
     This function can be used to verify that the pagesegmentation 
     e.g. ``runlength_smearing`` is working correctly for your image.

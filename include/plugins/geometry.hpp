@@ -681,6 +681,9 @@ namespace Gamera {
   // see Cormen et al.: Introduction to Algorithms.
   // 2nd ed., MIT Press, p. 949, 2001
   PointVector* convex_hull_from_points(PointVector *points) {
+     if (points->empty()) {
+        return new PointVector;
+     }
      //get leftmost and top point and save it in (*points)[0]
      size_t min_x = points->at(0).x();
      size_t min_y = points->at(0).y();
@@ -729,8 +732,18 @@ namespace Gamera {
 
      retVector->push_back(origin); 	        // push point[0]
 
+     // points represent a single point
+     if (pointIt == stack_polarangle.end()) {
+       return retVector;
+     }
+
      retVector->push_back(pointIt->second); // push point[1]
      pointIt++;
+
+     // points represent a line
+     if (pointIt == stack_polarangle.end()) {
+       return retVector;
+     }
 
      retVector->push_back(pointIt->second); // push point[2]
      pointIt++;

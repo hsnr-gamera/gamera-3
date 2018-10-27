@@ -26,7 +26,7 @@ from wx.lib import buttons
 import array
 import os.path
 import string
-from gamera import util, enums
+from gamera import util, enums, compatibility
 from gamera.gui import gui_util
 from gamera.core import RGBPixel
 from gamera.args import DEFAULT_MAX_ARG_NUMBER, CNoneDefault
@@ -56,10 +56,7 @@ class Args:
          size=(-1, -1))
       gs = self._create_page_impl(locals, sw, page)
       sw.SetSizer(gs)
-      if wx.VERSION < (2, 9):
-          gs.SetVirtualSizeHints(sw)
-      else:
-          gs.FitInside(sw)
+      compatibility.resize_window_virtual(gs, sw)
       return sw
 
    def _create_page_impl(self, locals, parent, page):
@@ -120,33 +117,6 @@ class Args:
                   5)
       return buttons
 
-   if wx.VERSION >= (2, 5):
-      import wx.html
-      def _create_help_display(self, docstring):
-         try:
-            docstring = util.dedent(docstring)
-            html = gui_util.docstring_to_html(docstring)
-            window = wx.html.HtmlWindow(self.window, -1, size=wx.Size(50, 100))
-            if wx.VERSION >= (2, 5) and "gtk2" in wx.PlatformInfo:
-               window.SetStandardFonts()
-            window.SetPage(html)
-            window.SetBackgroundColour(wx.Colour(255, 255, 232))
-            if wx.VERSION < (2, 8):
-               window.SetBestFittingSize(wx.Size(50, 150))
-            else:
-               window.SetInitialSize(wx.Size(50, 150))
-            return window
-         except Exception, e:
-            print e
-   else:
-      def _create_help_display(self, docstring):
-         docstring = util.dedent(docstring)
-         style = (wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
-         window = wx.TextCtrl(self.window, -1, style=style, size=wx.Size(50, 100))
-         window.SetValue(docstring)
-         window.SetBackgroundColour(wx.Colour(255, 255, 232))
-         return window
-
    # generates the dialog box
    def setup(self, parent, locals, docstring = "", function = None):
       if function is not None:
@@ -182,7 +152,7 @@ class Args:
       self.box.Add(wx.Panel(self.window, -1, size=(20,20)), 0,
                    wx.ALIGN_RIGHT)
       if docstring:
-         help = self._create_help_display(docstring)
+         help = compatibility.create_help_display(self.window, docstring)
          self.box.Add(help, 1, wx.EXPAND)
       self.box.Add(buttons, 0, wx.ALIGN_RIGHT|wx.EXPAND)
       if self.wizard:
@@ -210,31 +180,14 @@ class Args:
       if min_height < 200:
          min_height = 200
       if min_height < client_area.height/100*98:
-         if wx.VERSION < (2, 8):
-            self.gs.SetBestFittingSize(wx.Size(0, 0))
-            self.window.SetBestFittingSize(wx.Size(min_width,min_height))
-            self.gs.SetWindowStyle(wx.BORDER_NONE)
-         else:
-            height = self.window.GetSize().height
-            self.gs.SetInitialSize(wx.Size(0, 0))
-            self.window.SetInitialSize(wx.Size(min_width,height))
-            self.gs.SetWindowStyle(wx.BORDER_NONE)
+         compatibility.configure_size_normal_height(self.gs, self.window, min_width, min_height)
+         self.gs.SetWindowStyle(wx.BORDER_NONE)
       else:
-         if wx.VERSION < (2, 8):
-            self.gs.SetBestFittingSize(wx.Size(0, 0))
-            self.window.SetBestFittingSize(wx.Size(min_width,client_area.height/2))
-            self.gs.EnableScrolling(0, 1)
-            self.gs.SetScrollRate(0, 20)
-         else:
-            self.gs.SetInitialSize(wx.Size(0, 0))
-            self.window.SetInitialSize(wx.Size(min_width,client_area.height/2))
-            self.gs.EnableScrolling(0, 1)
-            self.gs.SetScrollRate(0, 20)
+         compatibility.configure_size_small_height(self.gs, self.window, min_width, client_area)
+         self.gs.EnableScrolling(0, 1)
+         self.gs.SetScrollRate(0, 20)
       self.border.Layout()
-      if wx.VERSION < (2, 9):
-          self.border.SetVirtualSizeHints(self.window)
-      else:
-          self.border.FitInside(self.window)
+      compatibility.resize_window_virtual(self.border, self.window)
       #self.border.Fit(self.window)
       self.window.Centre()
 

@@ -23,8 +23,8 @@ from wx.lib import dialogs
 from os import path
 from types import *
 from gamera import util
+from gamera.gui import compatibility
 from gamera.config import config
-import sys
 import datetime
 
 config.add_option(
@@ -105,8 +105,7 @@ class FileDialog(wx.FileDialog):
       self.extensions = extensions
 
    def show(self):
-      if wx.VERSION < (2, 8):
-         self.SetStyle(self._flags)
+      compatibility.set_dialog_style(self)
       cls = self.__class__
       result = self.ShowModal()
       self.Destroy()

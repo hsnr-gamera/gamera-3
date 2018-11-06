@@ -17,8 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from sys import stderr
-
 try:
    import matplotlib
 #    if (not hasattr(matplotlib, '__version__') or
@@ -41,7 +39,7 @@ try:
    from matplotlib.figure import Figure
    from matplotlib._pylab_helpers import Gcf
    import wx
-   from gamera.gui import toolbar, gui_util, gamera_icons
+   from gamera.gui import toolbar, gui_util, gamera_icons, compatibility
 except ImportError:
    def plot(*args, **kwargs):
       raise RuntimeError("Plotting is not supported because the optional matplotlib library\n"
@@ -88,10 +86,7 @@ else:
       def print_plot(self, evt):
          printout = backend_wx.PrintoutWx(self.canvas)
          dialog_data = wx.PrintDialogData()
-         if wx.VERSION < (2, 5):
-            dialog_data.EnableHelp(False)
-            dialog_data.EnablePageNumbers(False)
-            dialog_data.EnableSelection(False)
+         compatibility.configure_print_dialog_data(dialog_data)
          printer = wx.Printer(dialog_data)
          if not printer.Print(self, printout, True):
             if printer.GetLastError() == wx.PRINTER_ERROR:

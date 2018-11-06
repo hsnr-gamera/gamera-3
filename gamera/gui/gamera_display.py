@@ -26,23 +26,17 @@ import wx
 import wx.grid as gridlib
 
 from math import sqrt, ceil, log, floor # Python standard library
-from sys import maxint
-import sys, string, weakref
+import string, weakref
 import warnings
-from distutils.version import LooseVersion
 
-from gamera.core import *          # Gamera specific
 from gamera.config import config
-from gamera import paths, util, plugin
-from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui
-import gamera.plugins.gui_support  # Gamera plugin
+from gamera import util, plugin
+from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui, compatibility
 
 ##############################################################################
 
 # we want this done on import
-#if int(wx.__version__.split('.')[0]) < 3 and int(wx.__version__.split('.')[1]) < 9:
-if LooseVersion(wx.__version__) < LooseVersion('2.9'):
-    wx.InitAllImageHandlers() # deprecated since wxPython 2.9
+compatibility.init_image_handlers()
 
 def _sort_by_nrows(a, b):
    return cmp(a.nrows, b.nrows)
@@ -99,12 +93,6 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       wx.EVT_MOTION(self, self._OnMotion)
       wx.EVT_LEAVE_WINDOW(self, self._OnLeave)
       wx.EVT_MOUSEWHEEL(self, self._OnMouseWheel)
-
-   if wx.VERSION >= (2, 5):
-      def SetScrollbars(self, x_amount, y_amount, w, h, x, y):
-         self.SetVirtualSize((w * x_amount, h * y_amount))
-         self.SetScrollRate(x_amount, y_amount)
-         self.Scroll(x, y)
 
    ########################################
    # THE MAIN IMAGE
@@ -528,12 +516,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
    def _OnPrint(self, *args):
       dialog_data = wx.PrintDialogData()
-      # TODO: This should theoretically work with wxPython 2.5 +,
-      # but it actually causes OnPrint to never be called.
-      if wx.VERSION < (2, 5):
-         dialog_data.EnableHelp(False)
-         dialog_data.EnablePageNumbers(False)
-         dialog_data.EnableSelection(False)
+      compatibility.configure_print_dialog_data(dialog_data)
       dialog_data.SetToPage(1)
       printer = wx.Printer(dialog_data)
       printout = GameraPrintout(self.original_image)
@@ -826,6 +809,9 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       if self.dragging:
          self.dragging = 0
 
+# Register wx-version based method
+compatibility.register_set_scrollbars(ImageDisplay)
+
 class ImageWindow(wx.Panel):
    def __init__(self, parent = None, id = -1):
       wx.Panel.__init__(self, parent, id, style=
@@ -891,10 +877,7 @@ class ImageWindow(wx.Panel):
 # MULTIPLE IMAGE DISPLAY IN A GRID
 ##############################################################################
 
-if wx.VERSION < (2, 5):
-   GridCellRenderer = gridlib.PyGridCellRenderer
-else:
-   GridCellRenderer = gridlib.PyGridCellRenderer
+GridCellRenderer = gridlib.PyGridCellRenderer
 class MultiImageGridRenderer(GridCellRenderer):
    def __init__(self, parent):
       GridCellRenderer.__init__(self)
@@ -1067,14 +1050,14 @@ config.add_option(
    '', '--grid-ncols', default=8, type="int",
    help='[grid] Number of columns in the grid')
 
+
 class MultiImageDisplay(gridlib.Grid):
    def __init__(self, parent=None, id=-1):
       gridlib.Grid.__init__(self, parent, id,
                          style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.CLIP_CHILDREN)
       self.renderer = MultiImageGridRenderer(self)
       self.SetDefaultRenderer(self.renderer)
-      if wx.VERSION >= (2, 5):
-         self.SetGridLineColour(wx.Colour(130,130,254))
+      compatibility.set_grid_line_colour(self)
 
       self.glyphs = util.CallbackSet()
       self.sorted_glyphs = []
@@ -1124,13 +1107,6 @@ class MultiImageDisplay(gridlib.Grid):
    def set_is_dirty(self, value):
       self.glyphs.is_dirty = value
    is_dirty = property(get_is_dirty, set_is_dirty)
-
-   if wx.VERSION >= (2,5):
-      def get_renderer(self):
-         return self.renderer.Clone()
-   else:
-      def get_renderer(self):
-         return self.GetDefaultRenderer()
 
    ########################################
    # BASIC UTILITY
@@ -1638,6 +1614,10 @@ class MultiImageDisplay(gridlib.Grid):
       if x < 0 or x > w or y < 0 or y > h:
          self.tooltip.Hide()
       event.Skip()
+
+# Register wx-version based method
+compatibility.register_renderer_access(MultiImageDisplay)
+
 
 class MultiImageWindow(wx.Panel):
    def __init__(self, parent = None, id = -1, title = "Gamera", owner=None):

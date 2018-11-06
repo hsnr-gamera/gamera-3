@@ -20,7 +20,6 @@
 #
 
 import os.path
-import wx
 from wx import grid
 from wx.lib import buttons
 try:
@@ -29,12 +28,11 @@ try:
    aui = None
 except ImportError:
    aui = None
-from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml, util, plugin
+from gamera import gamera_xml
 from gamera.classify import InteractiveClassifier, ClassifierError, BoundingBoxGroupingFunction, ShapedGroupingFunction
-from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner
+from gamera.gui import rule_engine_runner, compatibility
 from gamera.gui.gamera_display import *
 
 ###############################################################################
@@ -1820,11 +1818,6 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       self.toplevel._symbol_table.remove_callback(
          'remove', self.symbol_table_remove_callback)
 
-   # This is a stub to provide compatibility with wx2.4 and wx2.5
-   if wx.VERSION >= (2, 5):
-      def GetFirstChild(self, root, cookie):
-         return wx.TreeCtrl.GetFirstChild(self, root)
-
    ########################################
    # CALLBACKS
 
@@ -1918,6 +1911,10 @@ class SymbolTreeCtrl(wx.TreeCtrl):
          self.toplevel.text.SetValue(data)
          self.toplevel.text.SetInsertionPointEnd()
       event.Skip()
+
+# Register wx-version based method
+compatibility.register_get_first_child(SymbolTreeCtrl)
+
 
 class SymbolTableEditorPanel(wx.Panel):
    def __init__(self, symbol_table, toplevel, parent = None, id = -1):

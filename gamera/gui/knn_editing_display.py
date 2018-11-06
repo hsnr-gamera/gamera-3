@@ -18,7 +18,7 @@
 
 from gamera.knn_editing import AlgoRegistry
 import wx
-from gamera.compatibility import create_help_display
+from gamera.gui.compatibility import create_help_display
 
 class EditingDialog(object):
     """Dialog to apply any of the editing algorithms known to the 

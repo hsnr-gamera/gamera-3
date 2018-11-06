@@ -20,12 +20,12 @@
 #
 
 import os.path
-import wx
 from gamera.core import *                    # Gamera specific
-from gamera import paths, util, classify, gamera_xml
-from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui
+from gamera import util, classify
+from gamera.gui import image_menu, var_name, has_gui
 from gamera.gui.matplotlib_support import *
-import array, inspect
+import array
+
 
 ######################################################################
 
@@ -55,12 +55,7 @@ class IconDisplayDropTarget(wx.FileDropTarget, wx.PyDropTarget):
 
 class IconDisplay(wx.ListCtrl):
    def __init__(self, parent, main_win):
-      if wx.Platform == '__WXMAC__':
-         style = wx.LC_ICON|wx.LC_SINGLE_SEL
-      else:
-         style = wx.LC_LIST|wx.LC_SINGLE_SEL
-      if not (wx.VERSION >= (2, 5) and wx.Platform == '__WXGTK__'):
-         style |= wx.LC_ALIGN_TOP
+      style = compatibility.configure_icon_display_style()
       wx.ListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), style)
       self.data = {}
       self.locals = {}

@@ -26,11 +26,11 @@ from wx.lib import buttons
 import array
 import os.path
 import string
-from gamera import util, enums, compatibility
-from gamera.gui import gui_util
+from gamera import util
+from gamera.gui import gui_util, compatibility
 from gamera.core import RGBPixel
 from gamera.args import DEFAULT_MAX_ARG_NUMBER, CNoneDefault
-import sys
+
 
 class ArgInvalidException(Exception):
    pass

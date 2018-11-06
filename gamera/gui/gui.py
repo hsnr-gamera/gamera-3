@@ -20,8 +20,6 @@
 # This stuff must come the very first before any other gui-specific things
 # are imported.
 
-from distutils.version import LooseVersion
-
 # wxPython
 try:
    import wxversion
@@ -39,15 +37,14 @@ except ImportError:
    aui = None
    
 import inspect
-import sys, StringIO
 
 from gamera.core import *
 from gamera.config import config
    
 from gamera import paths, util
 from gamera.gui import gamera_display, image_menu, \
-     icon_display, classifier_display, var_name, gui_util, \
-     image_browser, has_gui
+   icon_display, classifier_display, var_name, gui_util, \
+   image_browser, has_gui, compatibility
 
 # wxPython
 import wx
@@ -55,7 +52,7 @@ import wx.py
 
 # Python standard library
 # import interactive
-import sys, traceback, os, string, os.path, imp
+import sys, traceback, os, os.path, imp
 
 # Set default options
 config.add_option(
@@ -144,30 +141,8 @@ class GameraGui:
       return gui_util.ProgressBox(message, length, numsteps)
    ProgressBox = staticmethod(ProgressBox)
 
-if wx.VERSION >= (2, 5):
-   import wx.html
-   class Calltip(wx.html.HtmlWindow):
-      def __init__(self, parent=None, id=-1):
-         wx.html.HtmlWindow.__init__(self, parent, id)
-         wx.py.crust.dispatcher.connect(receiver=self.display, signal='Shell.calltip')
-         if wx.VERSION >= (2, 5) and "gtk2" in wx.PlatformInfo:
-            self.SetStandardFonts()
-         self.SetBackgroundColour(wx.Colour(255, 255, 232))
-         self.message_displayed = False
-         self.cache = {}
-
-      def display(self, calltip):
-         """Receiver for Shell.calltip signal."""
-         html = gui_util.docstring_to_html(calltip)
-         self.SetPage(html)
-         self.SetBackgroundColour(wx.Colour(255, 255, 232))
-
-      def OnLinkClicked(self, link):
-         if not self.message_displayed:
-            gui_util.message("Clicking on links is not supported.")
-            self.message_displayed = True
-else:
-   Calltip = wx.py.crust.Calltip
+# Ensure defined Calltip is compatible with used wx-version
+Calltip = compatibility.Calltip
 
 class PyShellGameraShell(wx.py.shell.Shell):
    def __init__(self, *args, **kwargs):
@@ -185,8 +160,7 @@ class PyShellGameraShell(wx.py.shell.Shell):
       style['size'] = config.get("shell_font_size")
       self.setStyles(style)
       self.ScrollToLine(1)
-      if wx.VERSION < (2, 5):
-         self.autoComplete = False
+      compatibility.configure_shell_auto_completion(self)
 
    def addHistory(self, command):
       if self.update:
@@ -211,10 +185,7 @@ class PyShellGameraShell(wx.py.shell.Shell):
       key = event.GetKeyCode()
 
       if key in (wx.WXK_UP, wx.WXK_DOWN):
-         if LooseVersion(wx.__version__) < LooseVersion('3.0'):
-             event.m_controlDown = True
-         else:
-             event.SetControlDown(True)
+         compatibility.set_control_down(event)
       wx.py.shell.Shell.OnKeyDown(self, event)
 
    def GetLocals(self):
@@ -564,7 +535,6 @@ def run(startup=_show_shell):
    global app
    has_gui.has_gui = has_gui.WX_GUI
    has_gui.gui = GameraGui
-   from gamera.gui import args_gui
 
    class MyApp(wx.App):
       def __init__(self, parent):

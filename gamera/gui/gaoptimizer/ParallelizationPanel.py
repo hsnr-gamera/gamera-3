@@ -18,6 +18,7 @@
 
 import wx
 
+from gamera.gui import compatibility
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -39,7 +40,7 @@ class ParallelizationPanel(ExpertSettingPanel):
         self.parallelEnabled = wx.CheckBox(self, -1, "Enable Parallelization", \
             name = "parallelization")
         self.parallelEnabled.SetValue(True)
-        self.parallelEnabled.SetToolTipString("Only available if compiled with OpenMP")
+        compatibility.set_tool_tip(self.parallelEnabled, "Only available if compiled with OpenMP")
         sizer.Add(self.parallelEnabled, 0, wx.LEFT | wx.RIGHT | wx.TOP | wx.EXPAND, 10)
 
         # if enabled choose the number of used threads

@@ -26,12 +26,15 @@ import wx
 import wx.grid as gridlib
 
 from math import sqrt, ceil, log, floor # Python standard library
-import string, weakref
+from sys import maxint
+import sys, string, weakref
 import warnings
 
+from gamera.core import *          # Gamera specific
 from gamera.config import config
-from gamera import util, plugin
+from gamera import paths, util, plugin
 from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui, compatibility
+import gamera.plugins.gui_support  # Gamera plugin
 
 ##############################################################################
 
@@ -555,7 +558,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
 
       dc = wx.PaintDC(self)
-      dc.BeginDrawing()
+      compatibility.begin_drawing(dc)
       tmpdc = wx.MemoryDC()
 
       update_regions = self.GetUpdateRegion()
@@ -570,14 +573,14 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       self.draw_rubber(dc, clear=False)
       self.draw_boxes(dc)
-      dc.EndDrawing()
+      compatibility.end_drawing(dc)
 
    def PaintArea(self, x1, y1, x2, y2, check=True, dc=None, tmpdc=None):
       if not self.image:
          return
 
       origin = [a * self.scroll_amount for a in self.GetViewStart()]
-      size = self.GetSizeTuple()
+      size = compatibility.get_window_size(self)
 
       # If the update region is outside of the view, or there's
       # something wrong with it, just return immediately
@@ -638,10 +641,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       scaled_image = subimage.scale(scaling, scaling_quality)
 
-      image = wx.EmptyImage(scaled_image.ncols, scaled_image.nrows)
+      image = compatibility.create_empty_image(scaled_image.ncols, scaled_image.nrows)
       scaled_image.to_buffer(image.GetDataBuffer())
 
-      bmp = wx.BitmapFromImage(image)
+      bmp = compatibility.create_bitmap_from_image(image)
       tmpdc.SelectObject(bmp)
       dc.Blit(int(x), int(y), scaled_image.ncols, scaled_image.nrows,
               tmpdc, 0, 0, wx.COPY, True)
@@ -743,7 +746,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    def _OnMiddleDown(self, event):
       if not self.image:
          return
-      wx.SetCursor(wx.StockCursor(wx.CURSOR_BULLSEYE))
+      wx.SetCursor(compatibility.create_stock_cursor(wx.CURSOR_BULLSEYE))
       self.dragging = 1
       self.dragging_x = event.GetX()
       self.dragging_y = event.GetY()
@@ -911,7 +914,7 @@ class MultiImageGridRenderer(GridCellRenderer):
       else:
          image = None
 
-      dc.BeginDrawing()
+      compatibility.begin_drawing(dc)
 
       if not image is None:
          classification_state = image.classification_state
@@ -971,7 +974,7 @@ class MultiImageGridRenderer(GridCellRenderer):
          height = scaled_image.nrows
          x = rect.x + (rect.width - width) / 2
          y = rect.y + (rect.height - height) / 2
-         wx_image = wx.EmptyImage(width, height)
+         wx_image = compatibility.create_empty_image(width, height)
          scaled_image.to_buffer_colorize(
             wx_image.GetDataBuffer(),
             color.Red(), color.Green(), color.Blue(),
@@ -1010,7 +1013,7 @@ class MultiImageGridRenderer(GridCellRenderer):
          else:
             dc.SetBrush(wx.Brush(wx.RED, wx.FDIAGONAL_HATCH))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-      dc.EndDrawing()
+      compatibility.end_drawing(dc)
 
    # The images should be a little padded within the cells
    # Also, there is a max size for every cell
@@ -1571,8 +1574,8 @@ class MultiImageDisplay(gridlib.Grid):
       dc = wx.ClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
 
-      self.tooltip.SetDimensions(
-         -1,-1,extent[0]+self._tooltip_extra,extent[1]+self._tooltip_extra,
+      compatibility.set_size(self.tooltip, -1, -1,
+         extent[0]+self._tooltip_extra, extent[1]+self._tooltip_extra,
          wx.SIZE_AUTO)
 
    def _OnMotion(self, event):
@@ -1610,7 +1613,7 @@ class MultiImageDisplay(gridlib.Grid):
 
    def _OnLeave(self, event):
       x, y = event.GetX(), event.GetY()
-      w, h = self.GetSizeTuple()
+      w, h = compatibility.get_window_size(self)
       if x < 0 or x > w or y < 0 or y > h:
          self.tooltip.Hide()
       event.Skip()
@@ -1850,7 +1853,7 @@ class ImageFrame(ImageFrameBase):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self._iw = ImageWindow(self._frame)
       from gamera.gui import gamera_icons
-      icon = wx.IconFromBitmap(gamera_icons.getIconImageBitmap())
+      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconImageBitmap())
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(2)
       self._status_bar = self._frame.GetStatusBar()
@@ -1914,7 +1917,7 @@ class MultiImageFrame(ImageFrameBase):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self._iw = MultiImageWindow(self._frame)
       from gamera.gui import gamera_icons
-      icon = wx.IconFromBitmap(gamera_icons.getIconImageListBitmap())
+      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconImageListBitmap())
       self._frame.SetIcon(icon)
 
    def __repr__(self):
@@ -2058,7 +2061,7 @@ class ProjectionsDisplay(wx.Frame):
       dc_height = dc.GetSize().y
       mat_width = self.image.ncols
       mat_height = self.image.nrows
-      image = wx.EmptyImage(self.image.ncols, self.image.nrows)
+      image = compatibility.create_empty_image(self.image.ncols, self.image.nrows)
       self.image.to_buffer(image.GetDataBuffer())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell
@@ -2100,11 +2103,11 @@ class ProjectionDisplay(wx.Frame):
 ##############################################################################
 
 try:
-    if wx.PostScriptDC_GetResolution() < 150:
-        wx.PostScriptDC_SetResolution(600)
+   if wx.PostScriptDC_GetResolution() < 150:
+      wx.PostScriptDC_SetResolution(600)
 except Exception:
-    # workaround for missing function (Bug?) in wxPython 2.9
-    pass
+   # No longer exists in wxPython 2.9 and later
+   pass
 
 class GameraPrintout(wx.Printout):
    def __init__(self, image, margin = 1.0):
@@ -2135,9 +2138,9 @@ class GameraPrintout(wx.Printout):
       if self.image.pixel_type_name == "OneBit":
          self.image = self.image.to_greyscale()
       resized = self.image.scale(scale, 2)
-      image = wx.EmptyImage(resized.ncols, resized.nrows)
+      image = compatibility.create_empty_image(resized.ncols, resized.nrows)
       resized.to_buffer(image.GetDataBuffer())
-      bmp = wx.BitmapFromImage(image)
+      bmp = compatibility.create_bitmap_from_image(image)
       tmpdc = wx.MemoryDC()
       tmpdc.SelectObject(bmp)
       dc.Blit(int(mx), int(my), resized.ncols, resized.nrows,

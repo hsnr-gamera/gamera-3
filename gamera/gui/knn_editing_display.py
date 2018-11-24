@@ -18,7 +18,7 @@
 
 from gamera.knn_editing import AlgoRegistry
 import wx
-from gamera.gui.compatibility import create_help_display
+from gamera.gui import compatibility
 
 class EditingDialog(object):
     """Dialog to apply any of the editing algorithms known to the 
@@ -47,6 +47,7 @@ edited result"""
         self.sizer.Add(choiceSizer, flag = wx.EXPAND | wx.ALL, border = 10)
         self.sizer.Add(wx.StaticLine(self.dlg), flag = wx.EXPAND)
 
+        choiceControl.SetSelection(self.selection)
         self._replaceArgs()
         
         buttons = self.dlg.CreateButtonSizer(wx.OK | wx.CANCEL)
@@ -70,7 +71,8 @@ the list of parameters can be updated"""
 to the just selected algorithm"""
         panel = wx.Panel(self.dlg)
 
-        help = create_help_display(panel, self._selected().doc)
+        self._selected().args.window = panel
+        help = compatibility.create_help_display(panel, self._selected().doc)
         help.SetInitialSize(wx.Size(50, 200))
         panelSizer = wx.FlexGridSizer(rows = 0, cols = 1)
         panelSizer.AddGrowableCol(0)

@@ -26,11 +26,11 @@ from wx.lib import buttons
 import array
 import os.path
 import string
-from gamera import util
+from gamera import util, enums
 from gamera.gui import gui_util, compatibility
 from gamera.core import RGBPixel
 from gamera.args import DEFAULT_MAX_ARG_NUMBER, CNoneDefault
-
+import sys
 
 class ArgInvalidException(Exception):
    pass
@@ -227,9 +227,9 @@ class Args:
             break
       self.window.Destroy()
 
-class _NumericValidator(wx.PyValidator):
+class _NumericValidator(compatibility.Validator):
    def __init__(self, name="Float entry box ", range=None):
-      wx.PyValidator.__init__(self)
+      compatibility.Validator.__init__(self)
       self.rng = range
       self.name = name
       wx.EVT_CHAR(self, self.OnChar)
@@ -277,7 +277,7 @@ class _NumericValidator(wx.PyValidator):
       if chr(key) in self._digits:
          event.Skip()
          return
-      if not wx.Validator_IsSilent():
+      if not compatibility.is_validator_silent():
          wx.Bell()
 
    def TransferToWindow(self):

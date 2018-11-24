@@ -18,6 +18,7 @@
 
 import wx
 
+from gamera.gui import compatibility
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -46,7 +47,7 @@ class StopCriteriaPanel(ExpertSettingPanel):
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border = 10)
         self.maxGenerationCount = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=10, max=5000, value='100')
-        self.maxGenerationCount.SetToolTipString("Number of generations")
+        compatibility.set_tool_tip(self.maxGenerationCount, "Number of generations")
         self.maxGenerationCount.Disable()
         sizer.Add(self.maxGenerationCount, pos=(1,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
@@ -61,7 +62,7 @@ class StopCriteriaPanel(ExpertSettingPanel):
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
         self.maxFitnessEvalCount = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=10, max=50000, value='5000')
-        self.maxFitnessEvalCount.SetToolTipString("Number of evaluations")
+        compatibility.set_tool_tip(self.maxFitnessEvalCount, "Number of evaluations")
         self.maxFitnessEvalCount.Disable()
         sizer.Add(self.maxFitnessEvalCount, pos=(2,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
@@ -77,12 +78,12 @@ class StopCriteriaPanel(ExpertSettingPanel):
             flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10)
         self.steadyContinueMin = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=10, max=250000, value='40')
-        self.steadyContinueMin.SetToolTipString("Minimum generations")
+        compatibility.set_tool_tip(self.steadyContinueMin, "Minimum generations")
         sizer.Add(self.steadyContinueMin, pos=(3,1), \
             flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10)
         self.steadyContinueNoChange = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=1, max=10000, value='10')
-        self.steadyContinueNoChange.SetToolTipString("Generations without improvement")
+        compatibility.set_tool_tip(self.steadyContinueNoChange, "Generations without improvement")
         sizer.Add(self.steadyContinueNoChange, pos=(3,2), \
             flag = wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND, border=10)
 

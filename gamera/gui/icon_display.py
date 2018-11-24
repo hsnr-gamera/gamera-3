@@ -20,16 +20,16 @@
 #
 
 import os.path
+import wx
 from gamera.core import *                    # Gamera specific
-from gamera import util, classify
-from gamera.gui import image_menu, var_name, has_gui
+from gamera import paths, util, classify, gamera_xml
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui, compatibility
 from gamera.gui.matplotlib_support import *
-import array
-
+import array, inspect
 
 ######################################################################
 
-class IconDisplayDropTarget(wx.FileDropTarget, wx.PyDropTarget):
+class IconDisplayDropTarget(wx.FileDropTarget, compatibility.DropTarget):
    def __init__(self, parent):
       wx.FileDropTarget.__init__(self)
       self.parent = parent
@@ -225,7 +225,8 @@ class IconDisplay(wx.ListCtrl):
          source = self.currentIcon.drag()
          if source is not None:
             typename, source = source
-            data = wx.CustomDataObject(wx.CustomDataFormat(typename))
+            df = compatibility.create_data_format(typename)
+            data = wx.CustomDataObject(df)
             data.SetData(source)
             icon = self.currentIcon.get_icon()
             drop_source = wx.DropSource(self, icon, icon, icon)
@@ -253,13 +254,13 @@ class CustomIcon:
 
    def to_icon(bitmap):
       if has_gui.has_gui:
-         return wx.IconFromBitmap(bitmap)
+         return compatibility.create_icon_from_bitmap(bitmap)
       else:
          return None
    to_icon = staticmethod(to_icon)
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageUnknownBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -295,7 +296,7 @@ class CustomIcon:
 
 class CIComplexImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageComplexBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageComplexBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -304,7 +305,7 @@ class CIComplexImage(CustomIcon):
 
 class CIRGBImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageRgbBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageRgbBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -313,7 +314,7 @@ class CIRGBImage(CustomIcon):
 
 class CIGreyScaleImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageGreyBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageGreyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -322,7 +323,7 @@ class CIGreyScaleImage(CustomIcon):
 
 class CIGrey16Image(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageGrey16Bitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageGrey16Bitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -331,7 +332,7 @@ class CIGrey16Image(CustomIcon):
 
 class CIFloatImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageFloatBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageFloatBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -340,7 +341,7 @@ class CIFloatImage(CustomIcon):
 
 class CIOneBitImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageBinaryBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageBinaryBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -349,7 +350,7 @@ class CIOneBitImage(CustomIcon):
 
 class CIRGBSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageRgbBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageRgbBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -358,7 +359,7 @@ class CIRGBSubImage(CustomIcon):
 
 class CIGreyScaleSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageGreyBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageGreyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -367,7 +368,7 @@ class CIGreyScaleSubImage(CustomIcon):
 
 class CIGrey16SubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageGrey16Bitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageGrey16Bitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -376,7 +377,7 @@ class CIGrey16SubImage(CustomIcon):
 
 class CIFloatSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageFloatBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageFloatBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -385,7 +386,7 @@ class CIFloatSubImage(CustomIcon):
 
 class CIOneBitSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageBinaryBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageBinaryBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -394,7 +395,7 @@ class CIOneBitSubImage(CustomIcon):
 
 class CIComplexSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageComplexBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconSubimageComplexBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -403,7 +404,7 @@ class CIComplexSubImage(CustomIcon):
 
 class CICC(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconCcBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconCcBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -418,7 +419,7 @@ class CIImageList(CustomIcon):
                   'Features': {'generate_features_list' : self.generate_features}}}
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageListBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconImageListBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -450,7 +451,7 @@ class CIImageList(CustomIcon):
 
 class CIInteractiveClassifier(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconClassifyBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconClassifyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -467,7 +468,7 @@ class CIInteractiveClassifier(CustomIcon):
 
 class CINonInteractiveClassifier(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconNoninterClassifyBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIconNoninterClassifyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -535,7 +536,7 @@ class CIIntVector(_CIVector):
    klass = int
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIntVectorBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getIntVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 class CIFloatVector(_CIVector):
@@ -543,7 +544,7 @@ class CIFloatVector(_CIVector):
    klass = float
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getFloatVectorBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getFloatVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 class CIComplexVector(_CIVector):
@@ -551,7 +552,7 @@ class CIComplexVector(_CIVector):
    klass = complex
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getComplexVectorBitmap())
+      return compatibility.create_icon_from_bitmap(gamera_icons.getComplexVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 builtin_icon_types = (

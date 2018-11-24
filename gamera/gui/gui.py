@@ -37,6 +37,7 @@ except ImportError:
    aui = None
    
 import inspect
+import sys, StringIO
 
 from gamera.core import *
 from gamera.config import config
@@ -52,7 +53,7 @@ import wx.py
 
 # Python standard library
 # import interactive
-import sys, traceback, os, os.path, imp
+import sys, traceback, os, string, os.path, imp
 
 # Set default options
 config.add_option(
@@ -320,7 +321,7 @@ class ShellFrame(wx.Frame):
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)
       from gamera.gui import gamera_icons
-      icon = wx.IconFromBitmap(gamera_icons.getIconBitmap())
+      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconBitmap())
       self.SetIcon(icon)
       self.Move(wx.Point(int(30), int(30)))
       wx.Yield()
@@ -516,14 +517,14 @@ class StatusBar(wx.StatusBar):
       self.SetFieldsCount(3)
       self.SetStatusText("Gamera", 0)
 
-class GameraSplash(wx.SplashScreen):
+class GameraSplash(compatibility.SplashScreen):
    def __init__(self):
       from gamera.gui import gamera_icons
-      wx.SplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
-                              wx.SPLASH_CENTRE_ON_SCREEN|wx.SPLASH_NO_TIMEOUT,
-                              1000, None, -1,
-                              style = (wx.SIMPLE_BORDER|
-                                       wx.FRAME_NO_TASKBAR|wx.STAY_ON_TOP))
+      compatibility.SplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
+               compatibility.SPLASH_CENTRE_ON_SCREEN|compatibility.SPLASH_NO_TIMEOUT,
+               1000, None, -1,
+               style = (wx.SIMPLE_BORDER|
+                        wx.FRAME_NO_TASKBAR|wx.STAY_ON_TOP))
 
 def _show_shell():
    global main_win
@@ -535,6 +536,7 @@ def run(startup=_show_shell):
    global app
    has_gui.has_gui = has_gui.WX_GUI
    has_gui.gui = GameraGui
+   from gamera.gui import args_gui
 
    class MyApp(wx.App):
       def __init__(self, parent):

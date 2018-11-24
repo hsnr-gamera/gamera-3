@@ -20,7 +20,7 @@
 
 import wx
 from gamera import core, config
-from gamera.gui import gamera_display, gui_util, gamera_icons
+from gamera.gui import gamera_display, gui_util, gamera_icons, compatibility
 import glob, string, os.path
 
 class FileList(wx.GenericDirCtrl):
@@ -61,7 +61,7 @@ class ImageBrowserFrame(wx.Frame):
    def __init__(self):
       wx.Frame.__init__(self, None, -1, "Image File Browser",
                        wx.DefaultPosition,(600, 400))
-      icon = wx.IconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
+      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconImageBrowserBitmap())
       self.SetIcon(icon)
       self.splitter = wx.SplitterWindow(self, -1)
       self.image = gamera_display.ImageWindow(self.splitter, -1)

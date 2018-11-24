@@ -25,6 +25,7 @@ from types import *
 from gamera import util
 from gamera.gui import compatibility
 from gamera.config import config
+import sys
 import datetime
 
 config.add_option(

@@ -20,6 +20,7 @@
 #
 
 import os.path
+import wx
 from wx import grid
 from wx.lib import buttons
 try:
@@ -28,11 +29,12 @@ try:
    aui = None
 except ImportError:
    aui = None
+from gamera.core import *
 from gamera.args import *
 from gamera.symbol_table import SymbolTable
-from gamera import gamera_xml
+from gamera import gamera_xml, util, plugin
 from gamera.classify import InteractiveClassifier, ClassifierError, BoundingBoxGroupingFunction, ShapedGroupingFunction
-from gamera.gui import rule_engine_runner, compatibility
+from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner, compatibility
 from gamera.gui.gamera_display import *
 
 ###############################################################################
@@ -185,11 +187,11 @@ class ExtendedMultiImageWindow(MultiImageWindow):
 
          if mode:
             bitmap = gamera_icons.getXBitmap()
-            self.titlebar_button.SetToolTipString(
+            compatibility.set_tool_tip(self.titlebar_button,
                "Close this pane")
          else:
             bitmap = gamera_icons.getPlusBitmap()
-            self.titlebar_button.SetToolTipString(
+            compatibility.set_tool_tip(self.titlebar_button,
                "Split this pane to show classifier and page glyphs.")
          self.titlebar_button.SetBitmapLabel(bitmap)
          self.titlebar_button.SetBitmapDisabled(bitmap)
@@ -422,7 +424,8 @@ class ClassifierImageDisplay(ImageDisplay):
    def __init__(self, toplevel, parent):
       self.toplevel = toplevel
       ImageDisplay.__init__(self, parent)
-      self.SetToolTipString("Click or drag to select connected components.")
+      compatibility.set_tool_tip(self,
+         "Click or drag to select connected components.")
       self.add_callback("rubber", self._OnRubber)
       wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
 
@@ -506,7 +509,7 @@ class ClassifierFrame(ImageFrameBase):
          self, parent, id,
          self._classifier.get_name() + " Classifier", owner)
       from gamera.gui import gamera_icons
-      icon = wx.IconFromBitmap(gamera_icons.getIconClassifyBitmap())
+      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconClassifyBitmap())
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(len(self.status_bar_description))
       status_bar = self._frame.GetStatusBar()

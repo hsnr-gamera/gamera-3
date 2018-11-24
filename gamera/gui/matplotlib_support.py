@@ -17,6 +17,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from sys import stderr
+
 try:
    import matplotlib
 #    if (not hasattr(matplotlib, '__version__') or
@@ -112,7 +114,7 @@ else:
       # imported
 
       def set_cursor(self, cursor):
-         cursor = wx.StockCursor(cursord[cursor])
+         cursor = compatibility.create_stock_cursor(cursord[cursor])
          self.canvas.SetCursor( cursor )
 
       def release(self, event):
@@ -148,7 +150,8 @@ else:
          dc.SetPen(wpen)
          
          dc.ResetBoundingBox()
-         dc.BeginDrawing()
+         compatibility.begin_drawing(dc)
+
          height = self.canvas.figure.bbox.height()
          y1 = height - y1
          y0 = height - y0
@@ -165,7 +168,7 @@ else:
          else: dc.DrawRectangle(*lastrect)  #erase last
          self.lastrect = rect
          dc.DrawRectangle(*rect)
-         dc.EndDrawing()
+         compatibility.end_drawing(dc)
 
       def set_status_bar(self, statbar):
          self.statbar = statbar
@@ -173,10 +176,10 @@ else:
       def set_message(self, s):
          if self.statbar is not None: self.statbar.set_function(s)
 
-   class GameraPlotDropTarget(wx.PyDropTarget):
+   class GameraPlotDropTarget(compatibility.DropTarget):
       def __init__(self, figure):
-         wx.PyDropTarget.__init__(self)
-         self.df = wx.CustomDataFormat("Vector")
+         compatibility.DropTarget.__init__(self)
+         self.df = compatibility.create_data_format("Vector")
          self.data = wx.CustomDataObject(self.df)
          self.SetDataObject(self.data)
          self.figure = figure

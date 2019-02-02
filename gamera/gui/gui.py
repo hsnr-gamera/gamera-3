@@ -21,15 +21,8 @@
 # are imported.
 
 # wxPython
-try:
-   import wxversion
-   wxversion.select(["3.0", "2.9", "2.8", "2.6", "2.5", "2.4"])
-except ImportError:
-   from wxPython.wx import wxVERSION
-   # Check that the version is correct
-   if wxVERSION[:2] < (2, 4) or wxVERSION[:2] > (3, 0):
-     raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x, 2.8.x, 2.9.x, or 3.0.x.  However, it seems that you have wxPython %s installed."""
-                      % ".".join([str(x) for x in wxVERSION]))
+#from compat_wx import select_version
+#select_version()
 
 try:
    from wx import aui
@@ -45,7 +38,7 @@ from gamera.config import config
 from gamera import paths, util
 from gamera.gui import gamera_display, image_menu, \
    icon_display, classifier_display, var_name, gui_util, \
-   image_browser, has_gui, compatibility
+   image_browser, has_gui, compat_wx
 
 # wxPython
 import wx
@@ -143,7 +136,7 @@ class GameraGui:
    ProgressBox = staticmethod(ProgressBox)
 
 # Ensure defined Calltip is compatible with used wx-version
-Calltip = compatibility.Calltip
+Calltip = compat_wx.Calltip
 
 class PyShellGameraShell(wx.py.shell.Shell):
    def __init__(self, *args, **kwargs):
@@ -161,7 +154,7 @@ class PyShellGameraShell(wx.py.shell.Shell):
       style['size'] = config.get("shell_font_size")
       self.setStyles(style)
       self.ScrollToLine(1)
-      compatibility.configure_shell_auto_completion(self)
+      compat_wx.configure_shell_auto_completion(self)
 
    def addHistory(self, command):
       if self.update:
@@ -186,7 +179,7 @@ class PyShellGameraShell(wx.py.shell.Shell):
       key = event.GetKeyCode()
 
       if key in (wx.WXK_UP, wx.WXK_DOWN):
-         compatibility.set_control_down(event)
+         compat_wx.set_control_down(event)
       wx.py.shell.Shell.OnKeyDown(self, event)
 
    def GetLocals(self):
@@ -230,7 +223,7 @@ class ShellFrame(wx.Frame):
          # Win32 change
          [600, 550],
          style=wx.DEFAULT_FRAME_STYLE|wx.CLIP_CHILDREN|wx.NO_FULL_REPAINT_ON_RESIZE)
-      wx.EVT_CLOSE(self, self._OnCloseWindow)
+      compat_wx.handle_event_0(self, wx.EVT_CLOSE, self._OnCloseWindow)
 
       self.known_modules = {}
       self.menu = self.make_menu()
@@ -321,7 +314,7 @@ class ShellFrame(wx.Frame):
       self.status = StatusBar(self)
       self.SetStatusBar(self.status)
       from gamera.gui import gamera_icons
-      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconBitmap())
+      icon = compat_wx.create_icon_from_bitmap(gamera_icons.getIconBitmap())
       self.SetIcon(icon)
       self.Move(wx.Point(int(30), int(30)))
       wx.Yield()
@@ -382,12 +375,12 @@ class ShellFrame(wx.Frame):
             toolkit_menu = wx.Menu() #style=wxMENU_TEAROFF)
             toolkit_menu.Append(toolkitID, "Import '%s' toolkit" % toolkit,
                                 "Import %s toolkit" % toolkit)
-            wx.EVT_MENU(self, toolkitID, self._OnImportToolkit)
+            compat_wx.handle_event_1(self, wx.EVT_MENU, self._OnImportToolkit, toolkitID)
             self.import_toolkits[toolkitID] = toolkit
             toolkitID = wx.NewId()
             toolkit_menu.Append(toolkitID, "Reload '%s' toolkit" % toolkit,
                                 "Reload %s toolkit" % toolkit)
-            wx.EVT_MENU(self, toolkitID, self._OnReloadToolkit)
+            compat_wx.handle_event_1(self, wx.EVT_MENU, self._OnReloadToolkit, toolkitID)
             self.reload_toolkits[toolkitID] = toolkit
             toolkits_menu.AppendMenu(wx.NewId(), toolkit, toolkit_menu)
             self.toolkit_menus[toolkit] = toolkit_menu
@@ -507,9 +500,8 @@ class CustomMenu:
                else:
                   menuID = wx.NewId()
                   menu.Append(menuID, item)
-                  wx.EVT_MENU(main_win, menuID,
-                           getattr(self, "_On" +
-                                   util.string2identifier(item)))
+                  compat_wx.handle_event_1(main_win, wx.EVT_MENU, getattr(self, "_On" +
+                                                                              util.string2identifier(item)), menuID)
 
 class StatusBar(wx.StatusBar):
    def __init__(self, parent):
@@ -517,11 +509,11 @@ class StatusBar(wx.StatusBar):
       self.SetFieldsCount(3)
       self.SetStatusText("Gamera", 0)
 
-class GameraSplash(compatibility.SplashScreen):
+class GameraSplash(compat_wx.SplashScreen):
    def __init__(self):
       from gamera.gui import gamera_icons
-      compatibility.SplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
-               compatibility.SPLASH_CENTRE_ON_SCREEN|compatibility.SPLASH_NO_TIMEOUT,
+      compat_wx.SplashScreen.__init__(self, gamera_icons.getGameraSplashBitmap(),
+               compat_wx.SPLASH_CENTRE_ON_SCREEN|compat_wx.SPLASH_NO_TIMEOUT,
                1000, None, -1,
                style = (wx.SIMPLE_BORDER|
                         wx.FRAME_NO_TASKBAR|wx.STAY_ON_TOP))
@@ -546,7 +538,7 @@ def run(startup=_show_shell):
 
       # wxWindows calls this method to initialize the application
       def OnInit(self):
-         self.SetAssertMode(wx.PYAPP_ASSERT_SUPPRESS)
+         self.SetAssertMode(compat_wx.ASSERT_SUPPRESS)
          self.SetAppName("Gamera")
          self.splash = GameraSplash()
          self.splash.Show()
@@ -557,7 +549,7 @@ def run(startup=_show_shell):
          return True
 
       def OnExit(self):
-         pass
+         return 0
 
    app = MyApp(0)
    startup() # must be called here and not in MyApp.OnInit to avoid errors on MacOS X

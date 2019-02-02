@@ -26,7 +26,7 @@ except ImportError:
     except ImportError:
         raise RuntimeError("Biollante requires at least wxPython 2.8.11")
 
-from gamera.gui import compatibility
+from gamera.gui import compat_wx
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class ReplacementPanel(ExpertSettingPanel):
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
         self.ssgaDetTourTsize = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=2, max=10, value='3') # TODO: max = popSize
-        compatibility.set_tool_tip(self.ssgaDetTourTsize, "Tournament size")
+        compat_wx.set_tool_tip(self.ssgaDetTourTsize, "Tournament size")
         sizer.Add(self.ssgaDetTourTsize, pos=(2,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
 

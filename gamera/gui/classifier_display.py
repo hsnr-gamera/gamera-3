@@ -34,7 +34,7 @@ from gamera.args import *
 from gamera.symbol_table import SymbolTable
 from gamera import gamera_xml, util, plugin
 from gamera.classify import InteractiveClassifier, ClassifierError, BoundingBoxGroupingFunction, ShapedGroupingFunction
-from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner, compatibility
+from gamera.gui import image_menu, toolbar, gui_util, rule_engine_runner, compat_wx
 from gamera.gui.gamera_display import *
 
 ###############################################################################
@@ -47,15 +47,15 @@ class ExtendedMultiImageDisplay(MultiImageDisplay):
       MultiImageDisplay.__init__(self, parent)
       self.last_image_no = None
       self._last_selection = []
-      grid.EVT_GRID_RANGE_SELECT(self, self._OnSelect)
+      compat_wx.handle_event_0(self, grid.EVT_GRID_RANGE_SELECT, self._OnSelect)
       self.last_sort = None
       # This is to turn off the display of row labels if a)
       # we have done some classification and b) we have done a
       # sort other than the default. KWM
       self.display_row_labels = False
-      wx.EVT_KEY_DOWN(self, self._OnKey)
+      compat_wx.handle_event_0(self, wx.EVT_KEY_DOWN, self._OnKey)
       self._clearing = False
-      wx.EVT_SIZE(self.GetGridWindow(), self._OnSize)
+      compat_wx.handle_event_0(self.GetGridWindow(), wx.EVT_SIZE, self._OnSize)
       self._last_size_was_showing = True
 
    def _OnKey(self, event):
@@ -173,7 +173,7 @@ class ExtendedMultiImageWindow(MultiImageWindow):
          self.titlebar_button = TitleBarButtonClass(
             self, -1,
             gamera_icons.getPlusBitmap())
-         wx.EVT_BUTTON(self.titlebar_button, -1, self._OnClose)
+         compat_wx.handle_event_1(self.titlebar_button, wx.EVT_BUTTON, self._OnClose, -1)
          self._split_button_mode = False
 
          title_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -187,11 +187,11 @@ class ExtendedMultiImageWindow(MultiImageWindow):
 
          if mode:
             bitmap = gamera_icons.getXBitmap()
-            compatibility.set_tool_tip(self.titlebar_button,
+            compat_wx.set_tool_tip(self.titlebar_button,
                "Close this pane")
          else:
             bitmap = gamera_icons.getPlusBitmap()
-            compatibility.set_tool_tip(self.titlebar_button,
+            compat_wx.set_tool_tip(self.titlebar_button,
                "Split this pane to show classifier and page glyphs.")
          self.titlebar_button.SetBitmapLabel(bitmap)
          self.titlebar_button.SetBitmapDisabled(bitmap)
@@ -230,7 +230,7 @@ class ClassifierMultiImageWindow(ExtendedMultiImageWindow):
       self.toplevel._classifier.database.add_callback(
          'remove',
          self.id.remove_glyphs)
-      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
+      compat_wx.handle_event_0(self, wx.EVT_WINDOW_DESTROY, self._OnDestroy)
 
    def _OnDestroy(self, event):
       self.toplevel._classifier.database.remove_callback(
@@ -424,10 +424,10 @@ class ClassifierImageDisplay(ImageDisplay):
    def __init__(self, toplevel, parent):
       self.toplevel = toplevel
       ImageDisplay.__init__(self, parent)
-      compatibility.set_tool_tip(self,
+      compat_wx.set_tool_tip(self,
          "Click or drag to select connected components.")
       self.add_callback("rubber", self._OnRubber)
-      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
+      compat_wx.handle_event_0(self, wx.EVT_WINDOW_DESTROY, self._OnDestroy)
 
    def _OnDestroy(self, event):
       self.remove_callback("rubber", self._OnRubber)
@@ -509,7 +509,7 @@ class ClassifierFrame(ImageFrameBase):
          self, parent, id,
          self._classifier.get_name() + " Classifier", owner)
       from gamera.gui import gamera_icons
-      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconClassifyBitmap())
+      icon = compat_wx.create_icon_from_bitmap(gamera_icons.getIconClassifyBitmap())
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(len(self.status_bar_description))
       status_bar = self._frame.GetStatusBar()
@@ -1803,17 +1803,17 @@ class SymbolTreeCtrl(wx.TreeCtrl):
                           style=style|wx.NO_FULL_REPAINT_ON_RESIZE)
       self.root = self.AddRoot("Symbols")
       self.SetItemHasChildren(self.root, True)
-      self.SetPyData(self.root, "")
-      wx.EVT_KEY_DOWN(self, self._OnKey)
-      wx.EVT_TREE_SEL_CHANGED(self, id, self._OnChanged)
-      wx.EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
+      compat_wx.set_tree_item_data(self, self.root, "")
+      compat_wx.handle_event_0(self, wx.EVT_KEY_DOWN, self._OnKey)
+      compat_wx.handle_event_1(self, wx.EVT_TREE_SEL_CHANGED, self._OnChanged, id)
+      compat_wx.handle_event_1(self, wx.EVT_TREE_ITEM_ACTIVATED, self._OnActivated, id)
       self.toplevel._symbol_table.add_callback(
          'add', self.symbol_table_add_callback)
       self.toplevel._symbol_table.add_callback(
          'remove', self.symbol_table_remove_callback)
       self.Expand(self.root)
       self.SelectItem(self.root)
-      wx.EVT_WINDOW_DESTROY(self, self._OnDestroy)
+      compat_wx.handle_event_0(self, wx.EVT_WINDOW_DESTROY, self._OnDestroy)
 
    def _OnDestroy(self, event):
       self.toplevel._symbol_table.remove_callback(
@@ -1856,7 +1856,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
             item, cookie = self.GetNextChild(root, cookie)
          if not found:
             item = self.AppendItem(root, token)
-            self.SetPyData(item, '.'.join(tokens[0:i+1]))
+            compat_wx.set_tree_item_data(self, item, '.'.join(tokens[0:i + 1]))
             self.SortChildren(root)
             if token.startswith('_'):
                self.SetItemBold(item)
@@ -1892,20 +1892,20 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       keycode = evt.GetKeyCode()
 
       if keycode == wx.WXK_DELETE:
-         self.toplevel._symbol_table.remove(
-            self.GetPyData(self.GetSelection()))
+         item_data = compat_wx.get_tree_item_data(self, self.GetSelection())
+         self.toplevel._symbol_table.remove(item_data)
       else:
          evt.Skip()
 
    def _OnActivated(self, event):
-      symbol = self.GetPyData(event.GetItem())
+      symbol = compat_wx.get_tree_item_data(self, event.GetItem())
       if symbol != None:
          self.toplevel.toplevel.classify_manual(symbol)
 
    def _OnChanged(self, event):
       item = self.GetSelection()
       try:
-         data = self.GetPyData(item)
+         data = compat_wx.get_tree_item_data(self, item)
       except Exception:
          event.Skip()
          return
@@ -1916,7 +1916,7 @@ class SymbolTreeCtrl(wx.TreeCtrl):
       event.Skip()
 
 # Register wx-version based method
-compatibility.register_get_first_child(SymbolTreeCtrl)
+compat_wx.register_get_first_child(SymbolTreeCtrl)
 
 
 class SymbolTableEditorPanel(wx.Panel):
@@ -1939,12 +1939,12 @@ class SymbolTableEditorPanel(wx.Panel):
       self.box.Add(self.tree, 1, wx.EXPAND|wx.ALL)
       self.SetSizer(self.box)
 
-      wx.EVT_KEY_DOWN(self.text, self._OnKey)
-      wx.EVT_TEXT(self, txID, self._OnText)
+      compat_wx.handle_event_0(self.text, wx.EVT_KEY_DOWN, self._OnKey)
+      compat_wx.handle_event_1(self, wx.EVT_TEXT, self._OnText, txID)
       # On win32, the enter key is only caught by the EVT_TEXT_ENTER
       # On GTK, the enter key is sent directly to EVT_KEY_DOWN
       if wx.Platform == '__WXMSW__':
-         wx.EVT_TEXT_ENTER(self, txID, self._OnEnter)
+         compat_wx.handle_event_1(self, wx.EVT_TEXT_ENTER, self._OnEnter, txID)
 
    ########################################
    # CALLBACKS

@@ -22,6 +22,7 @@ import wx
 IS_WXP4 = wx.VERSION >= (4,0)
 
 import wx.py
+import wx.grid
 if IS_WXP4:
    import wx.adv
 
@@ -235,34 +236,43 @@ def set_control_down(key_event):
 # wxPython 4 (Phoenix)
 #
 
-def create_empty_image(width, height, clear=True):
-   """
-   Creates an image with the given size and clears it if requested.
-   Does not create an alpha channel.
+DropTarget = wx.DropTarget if IS_WXP4 else wx.PyDropTarget
+Validator = wx.Validator if IS_WXP4 else wx.PyValidator
+GridCellRenderer = wx.grid.GridCellRenderer if IS_WXP4 else wx.grid.PyGridCellRenderer
+SplashScreen = wx.adv.SplashScreen if IS_WXP4 else wx.SplashScreen
+SPLASH_CENTRE_ON_SCREEN = wx.adv.SPLASH_CENTRE_ON_SCREEN if IS_WXP4 else wx.SPLASH_CENTRE_ON_SCREEN
+SPLASH_NO_TIMEOUT = wx.adv.SPLASH_NO_TIMEOUT if IS_WXP4 else wx.SPLASH_NO_TIMEOUT
+ASSERT_SUPPRESS = wx.APP_ASSERT_SUPPRESS if IS_WXP4 else wx.PYAPP_ASSERT_SUPPRESS
+FD_SAVE = wx.FD_SAVE if IS_WXP4 else wx.SAVE
+# TODO: or wx.grid.EVT_GRID_CELL_CHANGING?
+EVT_GRID_CELL_CHANGED = wx.grid.EVT_GRID_CELL_CHANGED if IS_WXP4 else wx.grid.EVT_GRID_CELL_CHANGE
+FILE_DROP_DONE = True if IS_WXP4 else None
 
-   :param width: (int) Specifies the width of the image.
-   :param height: (int) Specifies the height of the image.
-   :param clear: If True, initialize the image to black.
-   :return: empty image
-   """
+def __get_version():
+   if IS_WXP4:
+      return wx.VERSION[:2]
+   else:
+      from wxPython.wx import wxVERSION
+      return wxVERSION[:2]
+
+def select_version():
+   try:
+      import wxversion
+      wxversion.select(["3.0", "2.9", "2.8", "2.6", "2.5", "2.4"])
+   except ImportError as e:
+      version = __get_version()
+      # Check that the version is correct
+      if version < (2, 4) or version > (4, 0):
+         raise RuntimeError("""This version of Gamera requires wxPython 2.4.x, 2.6.x, 2.8.x, 2.9.x, 3.0.x or 4.0.x.  
+         However, it seems that you have wxPython %s installed.""" % ".".join([str(x) for x in version]))
+
+def create_empty_image(width, height, clear=True):
    if IS_WXP4:
       return wx.Image(width, height, clear)
    else:
       return wx.EmptyImage(width, height, clear)
 
 def create_empty_bitmap(width, height, depth=wx.BITMAP_SCREEN_DEPTH):
-   """
-   Creates a new bitmap.
-   A depth of BITMAP_SCREEN_DEPTH indicates the depth of the current screen or visual.
-   Some platforms only support 1 for monochrome and BITMAP_SCREEN_DEPTH for the current colour setting.
-   A depth of 32 including an alpha channel is supported under MSW, Mac and GTK+.
-
-   :param width: (int) Specifies the width of the bitmap.
-   :param height: (int) Specifies the height of the bitmap.
-   :param depth: (int) Specifies the depth of the bitmap. If this is omitted,
-                 then a value of -1 (screen depth) is used.
-   :return: empty bitmap
-   """
    if IS_WXP4:
       return wx.Bitmap(width, height, depth)
    else:
@@ -292,19 +302,23 @@ def create_stock_cursor(id):
    else:
       return wx.StockCursor(id)
 
-DropTarget = wx.DropTarget if IS_WXP4 else wx.PyDropTarget
-Validator = wx.Validator if IS_WXP4 else wx.PyValidator
-SplashScreen = wx.adv.SplashScreen if IS_WXP4 else wx.SplashScreen
-SPLASH_CENTRE_ON_SCREEN = wx.adv.SPLASH_CENTRE_ON_SCREEN if IS_WXP4 else wx.SPLASH_CENTRE_ON_SCREEN
-SPLASH_NO_TIMEOUT = wx.adv.SPLASH_NO_TIMEOUT if IS_WXP4 else wx.SPLASH_NO_TIMEOUT
-
 def set_tool_tip(window, tooltip_string):
+   """
+   Sets the tooltip string for the given window.
+   """
    if IS_WXP4:
       window.SetToolTip(tooltip_string)
    else:
       window.SetToolTipString(tooltip_string)
 
 def is_validator_silent():
+   """
+   Checks whether the wx.Validator is currently silent.
+
+   See also:
+   - wxp4 : wx.Validator#IsSilent()
+   - older: wx.Validator_IsSilent()
+   """
    if IS_WXP4:
       return wx.Validator.IsSilent()
    else:
@@ -320,23 +334,7 @@ def end_drawing(dc):
 
 def set_size(window, x, y, width, height, sizeFlags=wx.SIZE_AUTO):
    """
-   Sets the size of the window in pixels.
-
-   :param window: wx.Window whose size is set
-   :param x: Required x position in pixels, or DefaultCoord to indicate that the existing value should be used
-   :param y: Required x position in pixels, or DefaultCoord to indicate that the existing value should be used
-   :param width: Required width in pixels, or DefaultCoord to indicate that the existing value should be used
-   :param height: Required height in pixels, or DefaultCoord to indicate that the existing value should be used
-   :param sizeFlags: Indicates the interpretation of other parameters. It is a bit list of the following:
-      - SIZE_AUTO_WIDTH: a DefaultCoord width value is taken to indicate a Widgets-supplied default width.
-      - SIZE_AUTO_HEIGHT: a DefaultCoord height value is taken to indicate a Widgets-supplied default height.
-      - SIZE_AUTO: DefaultCoord size values are taken to indicate a Widgets-supplied default size.
-      - SIZE_USE_EXISTING: existing dimensions should be used if DefaultCoord values are supplied.
-      - SIZE_ALLOW_MINUS_ONE: allow negative dimensions (i.e. value of DefaultCoord) to be interpreted as real
-      dimensions, not default values.
-      - SIZE_FORCE: normally, if the position and the size of the window are already the same as the parameters of this
-      function, nothing is done. but with this flag a window resize may be forced even in this case (supported in 2.6.2
-      and later and only implemented for MSW and ignored elsewhere currently).
+   Sets the size of the wx.Window in pixels.
    """
    if IS_WXP4:
       window.SetSize(x, y, width, height, sizeFlags)
@@ -350,7 +348,109 @@ def create_data_format(format):
       return wx.CustomDataFormat(format)
 
 def get_window_size(window):
+   """
+   Returns the size of the entire window in pixels, including title bar, border, scrollbars, etc.
+   """
    if IS_WXP4:
       return window.GetSize()
    else:
       return window.GetSizeTuple()
+
+def add_img_list_icon(image_list, icon):
+   """
+   Adds a new image using an icon to the wx.ImageList.
+   """
+   if IS_WXP4:
+      return image_list.Add(icon)
+   else:
+      return image_list.AddIcon(icon)
+
+def insert_list_img_string_item(list_ctrl, index, label, icon):
+   """
+   Inserts an image/string item to the wx.ListCtrl.
+   """
+   if IS_WXP4:
+      list_ctrl.InsertItem(index, label, icon)
+   else:
+      list_ctrl.InsertImageStringItem(index, label, icon)
+
+def set_list_string_item(list_ctrl, index, column, label, image_id):
+   """
+   Sets an item string field at a particular column for a wx.ListCtrl.
+   """
+   if IS_WXP4:
+      list_ctrl.SetItem(index, column, label, image_id)
+   else:
+      list_ctrl.SetStringItem(index, column, label, image_id)
+
+def get_list_event_item_index(list_event):
+   """
+   Returns the item index of the wx.ListEvent.
+   """
+   if IS_WXP4:
+      return list_event.GetIndex()
+   else:
+      return list_event.m_itemIndex
+
+def get_tree_item_data(tree_ctrl, item):
+   """
+   Returns the wx.TreeCtrl item data associated with the item.
+   """
+   if IS_WXP4:
+      return tree_ctrl.GetItemData(item)
+   else:
+      return tree_ctrl.GetPyData(item)
+
+def set_tree_item_data(tree_ctrl, item, data):
+   """
+   Sets item client data for the specified wx.TreeCtrl.
+   """
+   if IS_WXP4:
+      tree_ctrl.SetItemData(item, data)
+   else:
+      tree_ctrl.SetPyData(item, data)
+
+def extend_menu(menu, menu_item_id, item, sub_menu):
+   """
+   Extends the specified wx.Menu with a sub-menu.
+   """
+   if IS_WXP4:
+      menu.Append(menu_item_id, item, sub_menu)
+   else:
+      menu.AppendMenu(menu_item_id, item, sub_menu)
+
+def handle_event_0(event_handler, event, callable):
+   """
+   Registers an event handler for the specified event.
+   """
+   if IS_WXP4:
+      event_handler.Bind(event, callable)
+   else:
+      event(event_handler, callable)
+
+def handle_event_1(event_handler, event, callable, id1=wx.ID_ANY):
+   """
+   Registers an event handler for the specified event that requires a single ID.
+   """
+   if IS_WXP4:
+      event_handler.Bind(event, callable, id=id1)
+   else:
+      event(event_handler, id1, callable)
+
+def handle_event_2(event_handler, event, callable, id1=wx.ID_ANY, id2=wx.ID_ANY):
+   """
+   Registers an event handler for the specified event that requires two IDs.
+   """
+   if IS_WXP4:
+      event_handler.Bind(event, callable, id=id1, id2=id2)
+   else:
+      event(event_handler, id1, id2, callable)
+
+def handle_timer_event(event_handler, callable, timer_id):
+   """
+   Registers an event handler for the wx.EVT_TIMER-event.
+   """
+   if IS_WXP4:
+      event_handler.Bind(wx.EVT_TIMER, callable)
+   else:
+      wx.EVT_TIMER(event_handler, timer_id, callable)

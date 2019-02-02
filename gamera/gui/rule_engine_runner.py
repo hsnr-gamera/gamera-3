@@ -22,7 +22,7 @@
 from inspect import isfunction, ismodule
 from os import path
 import wx
-from gamera.gui import toolbar, gui_util
+from gamera.gui import toolbar, gui_util, compat_wx
 
 class RuleEngineRunnerTree(wx.TreeCtrl):
    def __init__(self, toplevel, parent):
@@ -35,8 +35,8 @@ class RuleEngineRunnerTree(wx.TreeCtrl):
       wx.TreeCtrl.__init__(self, parent, id)
       self.root = self.AddRoot("RuleSets")
       self.SetItemHasChildren(self.root, True)
-      self.SetPyData(self.root, "")
-      wx.EVT_TREE_ITEM_ACTIVATED(self, id, self._OnActivated)
+      compat_wx.set_tree_item_data(self, self.root, "")
+      compat_wx.handle_event_1(self, wx.EVT_TREE_ITEM_ACTIVATED, self._OnActivated, id)
       self.Expand(self.root)
 
    def _OnKey(self, event):

@@ -26,7 +26,7 @@ except ImportError:
     except ImportError:
         raise RuntimeError("Biollante requires at least wxPython 2.8.11")
 
-from gamera.gui import compatibility
+from gamera.gui import compat_wx
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class CrossoverPanel(ExpertSettingPanel):
         self.nPointCrossoverN = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=1, max=10, value='1') # TODO: max = vector dimension
         self.nPointCrossoverN.Disable()
-        compatibility.set_tool_tip(self.nPointCrossoverN, "num crossover points")
+        compat_wx.set_tool_tip(self.nPointCrossoverN, "num crossover points")
         genericFlexGridSizer.Add(self.nPointCrossoverN, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
 
         self.genericWidgets.append(self.nPointCrossover)
@@ -76,7 +76,7 @@ class CrossoverPanel(ExpertSettingPanel):
             increment=0.01, value=0.5)
         self.uniformCrossoverPref.SetFormat("%f")
         self.uniformCrossoverPref.SetDigits(2)
-        compatibility.set_tool_tip(self.uniformCrossoverPref, "Preference")
+        compat_wx.set_tool_tip(self.uniformCrossoverPref, "Preference")
         genericFlexGridSizer.Add(self.uniformCrossoverPref, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
 
         self.genericWidgets.append(self.uniformCrossover)
@@ -101,7 +101,7 @@ class CrossoverPanel(ExpertSettingPanel):
         self.sbxCrossoverEta.SetFormat("%f")
         self.sbxCrossoverEta.SetDigits(2)
         self.sbxCrossoverEta.Disable()
-        compatibility.set_tool_tip(self.sbxCrossoverEta, "eta the amount of exploration "\
+        compat_wx.set_tool_tip(self.sbxCrossoverEta, "eta the amount of exploration "\
             "OUTSIDE the parents in BLX-alpha notation")
         realBoxFlexGridSizer.Add(self.sbxCrossoverEta, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
 
@@ -119,7 +119,7 @@ class CrossoverPanel(ExpertSettingPanel):
         self.segmentCrossoverAlpha.SetFormat("%f")
         self.segmentCrossoverAlpha.SetDigits(2)
         self.segmentCrossoverAlpha.Disable()
-        compatibility.set_tool_tip(self.segmentCrossoverAlpha, "alpha the amount of exploration "\
+        compat_wx.set_tool_tip(self.segmentCrossoverAlpha, "alpha the amount of exploration "\
             "OUTSIDE the parents in BLX-alpha notation")
         realBoxFlexGridSizer.Add(self.segmentCrossoverAlpha, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
         
@@ -137,7 +137,7 @@ class CrossoverPanel(ExpertSettingPanel):
         self.hypercubeCrossoverAlpha.SetFormat("%f")
         self.hypercubeCrossoverAlpha.SetDigits(2)
         self.hypercubeCrossoverAlpha.Disable()
-        compatibility.set_tool_tip(self.hypercubeCrossoverAlpha, "alpha the amount of exploration "\
+        compat_wx.set_tool_tip(self.hypercubeCrossoverAlpha, "alpha the amount of exploration "\
             "OUTSIDE the parents in BLX-alpha notation")
         realBoxFlexGridSizer.Add(self.hypercubeCrossoverAlpha, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
         

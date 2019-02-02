@@ -14,27 +14,27 @@ Common routines for the image converter utilities.
 """
 import sys, os, glob, getopt, string
 import wx
-import compatibility
+import compat_wx
 
 if wx.Platform == "__WXGTK__":
     # some bitmap related things need to have a wxApp initialized...
-    app = compatibility.create_app()
+    app = compat_wx.create_app()
 
 wx.InitAllImageHandlers()
 
 def convert(file, maskClr, outputDir, outputName, outType, outExt):
     if string.lower(os.path.splitext(file)[1]) == ".ico":
         icon = wx.Icon(file, wx.BITMAP_TYPE_ICO)
-        img = compatibility.create_bitmap_from_icon(icon)
+        img = compat_wx.create_bitmap_from_icon(icon)
     else:
         img = wx.Bitmap(file, wx.BITMAP_TYPE_ANY)
 
-    if not compatibility.is_ok(img):
+    if not compat_wx.is_ok(img):
         return 0, file + " failed to load!"
     else:
         if maskClr:
             om = img.GetMask()
-            mask = compatibility.create_mask(img, maskClr)
+            mask = compat_wx.create_mask(img, maskClr)
             img.SetMask(mask)
             if om is not None:
                 om.Destroy()

@@ -1,0 +1,10 @@
+build/
+
+gamera/__compiletime_config__.py
+gamera/__version__.py
+gamera/plugins/*.cpp
+
+gamera_gui
+
+# IDEs
+.idea/

@@ -27,7 +27,7 @@ import array
 import os.path
 import string
 from gamera import util, enums
-from gamera.gui import gui_util, compatibility
+from gamera.gui import gui_util, compat_wx
 from gamera.core import RGBPixel
 from gamera.args import DEFAULT_MAX_ARG_NUMBER, CNoneDefault
 import sys
@@ -56,7 +56,7 @@ class Args:
          size=(-1, -1))
       gs = self._create_page_impl(locals, sw, page)
       sw.SetSizer(gs)
-      compatibility.resize_window_virtual(gs, sw)
+      compat_wx.resize_window_virtual(gs, sw)
       return sw
 
    def _create_page_impl(self, locals, parent, page):
@@ -152,7 +152,7 @@ class Args:
       self.box.Add(wx.Panel(self.window, -1, size=(20,20)), 0,
                    wx.ALIGN_RIGHT)
       if docstring:
-         help = compatibility.create_help_display(self.window, docstring)
+         help = compat_wx.create_help_display(self.window, docstring)
          self.box.Add(help, 1, wx.EXPAND)
       self.box.Add(buttons, 0, wx.ALIGN_RIGHT|wx.EXPAND)
       if self.wizard:
@@ -180,14 +180,14 @@ class Args:
       if min_height < 200:
          min_height = 200
       if min_height < client_area.height/100*98:
-         compatibility.configure_size_normal_height(self.gs, self.window, min_width, min_height)
+         compat_wx.configure_size_normal_height(self.gs, self.window, min_width, min_height)
          self.gs.SetWindowStyle(wx.BORDER_NONE)
       else:
-         compatibility.configure_size_small_height(self.gs, self.window, min_width, client_area)
+         compat_wx.configure_size_small_height(self.gs, self.window, min_width, client_area)
          self.gs.EnableScrolling(0, 1)
          self.gs.SetScrollRate(0, 20)
       self.border.Layout()
-      compatibility.resize_window_virtual(self.border, self.window)
+      compat_wx.resize_window_virtual(self.border, self.window)
       #self.border.Fit(self.window)
       self.window.Centre()
 
@@ -227,12 +227,12 @@ class Args:
             break
       self.window.Destroy()
 
-class _NumericValidator(compatibility.Validator):
+class _NumericValidator(compat_wx.Validator):
    def __init__(self, name="Float entry box ", range=None):
-      compatibility.Validator.__init__(self)
+      compat_wx.Validator.__init__(self)
       self.rng = range
       self.name = name
-      wx.EVT_CHAR(self, self.OnChar)
+      compat_wx.handle_event_0(self, wx.EVT_CHAR, self.OnChar)
 
    def Clone(self):
       return self.__class__(self.name, self.rng)
@@ -277,7 +277,7 @@ class _NumericValidator(compatibility.Validator):
       if chr(key) in self._digits:
          event.Skip()
          return
-      if not compatibility.is_validator_silent():
+      if not compat_wx.is_validator_silent():
          wx.Bell()
 
    def TransferToWindow(self):
@@ -558,7 +558,7 @@ class _Filename:
       else:
          browse = wx.Button(
             parent, browseID, "...", size=wx.Size(24, 24))
-      wx.EVT_BUTTON(browse, browseID, self.OnBrowse)
+      compat_wx.handle_event_1(browse, wx.EVT_BUTTON, self.OnBrowse, browseID)
       self.control.Add(self.text, 1, wx.EXPAND)
       self.control.Add((4, 4), 0)
       self.control.Add(browse, 0)

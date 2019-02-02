@@ -33,13 +33,13 @@ import warnings
 from gamera.core import *          # Gamera specific
 from gamera.config import config
 from gamera import paths, util, plugin
-from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui, compatibility
+from gamera.gui import image_menu, var_name, gui_util, toolbar, has_gui, compat_wx
 import gamera.plugins.gui_support  # Gamera plugin
 
 ##############################################################################
 
 # we want this done on import
-compatibility.init_image_handlers()
+compat_wx.init_image_handlers()
 
 def _sort_by_nrows(a, b):
    return cmp(a.nrows, b.nrows)
@@ -73,7 +73,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       self._boxed_highlight = None
       self._boxed_highlight_position = 0
       self._boxed_highlight_timer = wx.Timer(self, 100)
-      wx.EVT_TIMER(self, 100, self._OnBoxHighlight)
+      compat_wx.handle_timer_event(self, self._OnBoxHighlight, 100)
       self.boxes = []
       self.rubber_on = 0
       self.rubber_origin_x = None # none indicates that nothing is selected
@@ -86,16 +86,16 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       self.block_w = 8
       self.block_h = 8
 
-      wx.EVT_PAINT(self, self._OnPaint)
-      wx.EVT_SIZE(self, self._OnResize)
-      wx.EVT_LEFT_DOWN(self, self._OnLeftDown)
-      wx.EVT_LEFT_UP(self, self._OnLeftUp)
-      wx.EVT_MIDDLE_DOWN(self, self._OnMiddleDown)
-      wx.EVT_MIDDLE_UP(self, self._OnMiddleUp)
-      wx.EVT_RIGHT_DOWN(self, self._OnRightDown)
-      wx.EVT_MOTION(self, self._OnMotion)
-      wx.EVT_LEAVE_WINDOW(self, self._OnLeave)
-      wx.EVT_MOUSEWHEEL(self, self._OnMouseWheel)
+      compat_wx.handle_event_0(self, wx.EVT_PAINT, self._OnPaint)
+      compat_wx.handle_event_0(self, wx.EVT_SIZE, self._OnResize)
+      compat_wx.handle_event_0(self, wx.EVT_LEFT_DOWN, self._OnLeftDown)
+      compat_wx.handle_event_0(self, wx.EVT_LEFT_UP, self._OnLeftUp)
+      compat_wx.handle_event_0(self, wx.EVT_MIDDLE_DOWN, self._OnMiddleDown)
+      compat_wx.handle_event_0(self, wx.EVT_MIDDLE_UP, self._OnMiddleUp)
+      compat_wx.handle_event_0(self, wx.EVT_RIGHT_DOWN, self._OnRightDown)
+      compat_wx.handle_event_0(self, wx.EVT_MOTION, self._OnMotion)
+      compat_wx.handle_event_0(self, wx.EVT_LEAVE_WINDOW, self._OnLeave)
+      compat_wx.handle_event_0(self, wx.EVT_MOUSEWHEEL, self._OnMouseWheel)
 
    ########################################
    # THE MAIN IMAGE
@@ -519,7 +519,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
    def _OnPrint(self, *args):
       dialog_data = wx.PrintDialogData()
-      compatibility.configure_print_dialog_data(dialog_data)
+      compat_wx.configure_print_dialog_data(dialog_data)
       dialog_data.SetToPage(1)
       printer = wx.Printer(dialog_data)
       printout = GameraPrintout(self.original_image)
@@ -558,7 +558,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
       origin = [x * self.scroll_amount for x in self.GetViewStart()]
 
       dc = wx.PaintDC(self)
-      compatibility.begin_drawing(dc)
+      compat_wx.begin_drawing(dc)
       tmpdc = wx.MemoryDC()
 
       update_regions = self.GetUpdateRegion()
@@ -573,14 +573,14 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       self.draw_rubber(dc, clear=False)
       self.draw_boxes(dc)
-      compatibility.end_drawing(dc)
+      compat_wx.end_drawing(dc)
 
    def PaintArea(self, x1, y1, x2, y2, check=True, dc=None, tmpdc=None):
       if not self.image:
          return
 
       origin = [a * self.scroll_amount for a in self.GetViewStart()]
-      size = compatibility.get_window_size(self)
+      size = compat_wx.get_window_size(self)
 
       # If the update region is outside of the view, or there's
       # something wrong with it, just return immediately
@@ -641,10 +641,10 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
 
       scaled_image = subimage.scale(scaling, scaling_quality)
 
-      image = compatibility.create_empty_image(scaled_image.ncols, scaled_image.nrows)
+      image = compat_wx.create_empty_image(scaled_image.ncols, scaled_image.nrows)
       scaled_image.to_buffer(image.GetDataBuffer())
 
-      bmp = compatibility.create_bitmap_from_image(image)
+      bmp = compat_wx.create_bitmap_from_image(image)
       tmpdc.SelectObject(bmp)
       dc.Blit(int(x), int(y), scaled_image.ncols, scaled_image.nrows,
               tmpdc, 0, 0, wx.COPY, True)
@@ -746,7 +746,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
    def _OnMiddleDown(self, event):
       if not self.image:
          return
-      wx.SetCursor(compatibility.create_stock_cursor(wx.CURSOR_BULLSEYE))
+      wx.SetCursor(compat_wx.create_stock_cursor(wx.CURSOR_BULLSEYE))
       self.dragging = 1
       self.dragging_x = event.GetX()
       self.dragging_y = event.GetY()
@@ -813,7 +813,7 @@ class ImageDisplay(wx.ScrolledWindow, util.CallbackObject):
          self.dragging = 0
 
 # Register wx-version based method
-compatibility.register_set_scrollbars(ImageDisplay)
+compat_wx.register_set_scrollbars(ImageDisplay)
 
 class ImageWindow(wx.Panel):
    def __init__(self, parent = None, id = -1):
@@ -841,7 +841,7 @@ class ImageWindow(wx.Panel):
          self.toolbar, 24,
          choices=['low quality','medium quality','high quality'],
          style=wx.CB_READONLY)
-      wx.EVT_COMBOBOX(self, 24, self._OnZoomTypeChange)
+      compat_wx.handle_event_1(self, wx.EVT_COMBOBOX, self._OnZoomTypeChange, 24)
       self.toolbar.AddControl(self.zoom_slider)
 
       self.toolbar.AddSeparator()
@@ -880,7 +880,7 @@ class ImageWindow(wx.Panel):
 # MULTIPLE IMAGE DISPLAY IN A GRID
 ##############################################################################
 
-GridCellRenderer = gridlib.PyGridCellRenderer
+GridCellRenderer = compat_wx.GridCellRenderer
 class MultiImageGridRenderer(GridCellRenderer):
    def __init__(self, parent):
       GridCellRenderer.__init__(self)
@@ -914,7 +914,7 @@ class MultiImageGridRenderer(GridCellRenderer):
       else:
          image = None
 
-      compatibility.begin_drawing(dc)
+      compat_wx.begin_drawing(dc)
 
       if not image is None:
          classification_state = image.classification_state
@@ -974,7 +974,7 @@ class MultiImageGridRenderer(GridCellRenderer):
          height = scaled_image.nrows
          x = rect.x + (rect.width - width) / 2
          y = rect.y + (rect.height - height) / 2
-         wx_image = compatibility.create_empty_image(width, height)
+         wx_image = compat_wx.create_empty_image(width, height)
          scaled_image.to_buffer_colorize(
             wx_image.GetDataBuffer(),
             color.Red(), color.Green(), color.Blue(),
@@ -1013,7 +1013,7 @@ class MultiImageGridRenderer(GridCellRenderer):
          else:
             dc.SetBrush(wx.Brush(wx.RED, wx.FDIAGONAL_HATCH))
          dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height)
-      compatibility.end_drawing(dc)
+      compat_wx.end_drawing(dc)
 
    # The images should be a little padded within the cells
    # Also, there is a max size for every cell
@@ -1060,7 +1060,7 @@ class MultiImageDisplay(gridlib.Grid):
                          style=wx.NO_FULL_REPAINT_ON_RESIZE|wx.CLIP_CHILDREN)
       self.renderer = MultiImageGridRenderer(self)
       self.SetDefaultRenderer(self.renderer)
-      compatibility.set_grid_line_colour(self)
+      compat_wx.set_grid_line_colour(self)
 
       self.glyphs = util.CallbackSet()
       self.sorted_glyphs = []
@@ -1087,12 +1087,12 @@ class MultiImageDisplay(gridlib.Grid):
       self.tooltip = wx.Button(self.GetGridWindow(), -1, "",
                                wx.Point(0, 0), tooltip_size)
       self.tooltip.Show(False)
-      gridlib.EVT_GRID_CELL_LEFT_DCLICK(self, self._OnLeftDoubleClick)
-      gridlib.EVT_GRID_CELL_RIGHT_CLICK(self, self._OnRightClick)
-      gridlib.EVT_GRID_SELECT_CELL(self, self._OnSelect)
-      gridlib.EVT_GRID_CELL_CHANGE(self, self._OnSelect)
-      wx.EVT_MOTION(self.GetGridWindow(), self._OnMotion)
-      wx.EVT_LEAVE_WINDOW(self.GetGridWindow(), self._OnLeave)
+      compat_wx.handle_event_0(self, gridlib.EVT_GRID_CELL_LEFT_DCLICK, self._OnLeftDoubleClick)
+      compat_wx.handle_event_0(self, gridlib.EVT_GRID_CELL_RIGHT_DCLICK, self._OnRightClick)
+      compat_wx.handle_event_0(self, gridlib.EVT_GRID_SELECT_CELL, self._OnSelect)
+      compat_wx.handle_event_0(self, compat_wx.EVT_GRID_CELL_CHANGED, self._OnSelect)
+      compat_wx.handle_event_0(self.GetGridWindow(), wx.EVT_MOTION, self._OnMotion)
+      compat_wx.handle_event_0(self.GetGridWindow(), wx.EVT_LEAVE_WINDOW, self._OnLeave)
       # if wx.VERSION <= (2, 5) or wx.Platform == "__WXMSW__":
       #   wx.EVT_SIZE(self, self._OnSize)
 
@@ -1574,7 +1574,7 @@ class MultiImageDisplay(gridlib.Grid):
       dc = wx.ClientDC(self.tooltip)
       extent = dc.GetTextExtent(label)
 
-      compatibility.set_size(self.tooltip, -1, -1,
+      compat_wx.set_size(self.tooltip, -1, -1,
          extent[0]+self._tooltip_extra, extent[1]+self._tooltip_extra,
          wx.SIZE_AUTO)
 
@@ -1613,13 +1613,13 @@ class MultiImageDisplay(gridlib.Grid):
 
    def _OnLeave(self, event):
       x, y = event.GetX(), event.GetY()
-      w, h = compatibility.get_window_size(self)
+      w, h = compat_wx.get_window_size(self)
       if x < 0 or x > w or y < 0 or y > h:
          self.tooltip.Hide()
       event.Skip()
 
 # Register wx-version based method
-compatibility.register_renderer_access(MultiImageDisplay)
+compat_wx.register_renderer_access(MultiImageDisplay)
 
 
 class MultiImageWindow(wx.Panel):
@@ -1647,7 +1647,7 @@ class MultiImageWindow(wx.Panel):
       self.display_text_combo = wx.ComboBox(self.toolbar, 50, choices=[])
       if hasattr(self.display_text_combo, "SetMinSize"):
          self.display_text_combo.SetMinSize(wx.Size(200, -1))
-      wx.EVT_COMBOBOX(self.display_text_combo, 50, self._OnChangeDisplayText)
+      compat_wx.handle_event_1(self.display_text_combo, wx.EVT_COMBOBOX, self._OnChangeDisplayText, 50)
       self.toolbar.AddControl(self.display_text_combo)
       self.toolbar.AddSimpleTool(
          24, gamera_icons.getIconShowNameBitmap(),
@@ -1810,7 +1810,7 @@ class ImageFrameBase:
          self.owner = weakref.proxy(owner)
       else:
          self.owner = None
-      wx.EVT_CLOSE(self._frame, self._OnCloseWindow)
+      compat_wx.handle_event_0(self._frame, wx.EVT_CLOSE, self._OnCloseWindow)
 
    def add_callback(self, *args):
       self._iw.id.add_callback(*args)
@@ -1853,7 +1853,7 @@ class ImageFrame(ImageFrameBase):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self._iw = ImageWindow(self._frame)
       from gamera.gui import gamera_icons
-      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconImageBitmap())
+      icon = compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageBitmap())
       self._frame.SetIcon(icon)
       self._frame.CreateStatusBar(2)
       self._status_bar = self._frame.GetStatusBar()
@@ -1917,7 +1917,7 @@ class MultiImageFrame(ImageFrameBase):
       ImageFrameBase.__init__(self, parent, id, title, owner)
       self._iw = MultiImageWindow(self._frame)
       from gamera.gui import gamera_icons
-      icon = compatibility.create_icon_from_bitmap(gamera_icons.getIconImageListBitmap())
+      icon = compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageListBitmap())
       self._frame.SetIcon(icon)
 
    def __repr__(self):
@@ -2026,7 +2026,7 @@ class HistogramDisplay(wx.Frame):
             new_data.append(sqrt(datum))
       self.data = new_data
       self.mark = mark
-      wx.EVT_PAINT(self, self._OnPaint)
+      compat_wx.handle_event_0(self, wx.EVT_PAINT, self._OnPaint)
 
    def _OnPaint(self, event):
       dc = wx.PaintDC(self)
@@ -2052,7 +2052,7 @@ class ProjectionsDisplay(wx.Frame):
       self.x_data = x_data
       self.y_data = y_data
       self.image = image
-      wx.EVT_PAINT(self, self._OnPaint)
+      compat_wx.handle_event_0(self, wx.EVT_PAINT, self._OnPaint)
 
    def _OnPaint(self, event):
       dc = wx.PaintDC(self)
@@ -2061,7 +2061,7 @@ class ProjectionsDisplay(wx.Frame):
       dc_height = dc.GetSize().y
       mat_width = self.image.ncols
       mat_height = self.image.nrows
-      image = compatibility.create_empty_image(self.image.ncols, self.image.nrows)
+      image = compat_wx.create_empty_image(self.image.ncols, self.image.nrows)
       self.image.to_buffer(image.GetDataBuffer())
       bmp = image.ConvertToBitmap()
       # Display centered within the cell
@@ -2084,7 +2084,7 @@ class ProjectionDisplay(wx.Frame):
                        size=((len(data) * 2) + (HISTOGRAM_PAD * 3),
                              max(data) + (HISTOGRAM_PAD * 3)))
       self.data = data
-      wx.EVT_PAINT(self, self._OnPaint)
+      compat_wx.handle_event_0(self, wx.EVT_PAINT, self._OnPaint)
 
    def _OnPaint(self, event):
       dc = wx.PaintDC(self)
@@ -2138,9 +2138,9 @@ class GameraPrintout(wx.Printout):
       if self.image.pixel_type_name == "OneBit":
          self.image = self.image.to_greyscale()
       resized = self.image.scale(scale, 2)
-      image = compatibility.create_empty_image(resized.ncols, resized.nrows)
+      image = compat_wx.create_empty_image(resized.ncols, resized.nrows)
       resized.to_buffer(image.GetDataBuffer())
-      bmp = compatibility.create_bitmap_from_image(image)
+      bmp = compat_wx.create_bitmap_from_image(image)
       tmpdc = wx.MemoryDC()
       tmpdc.SelectObject(bmp)
       dc.Blit(int(mx), int(my), resized.ncols, resized.nrows,

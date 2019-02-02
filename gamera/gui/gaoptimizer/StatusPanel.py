@@ -41,7 +41,7 @@ class StatusPanel(wx.ScrolledWindow):
         text = wx.StaticText(self, -1, "Current Status:")
         statusFlexGridSizer.Add(text, 0, wx.LEFT | wx.TOP | wx.RIGHT, 10)
         self.status = wx.StaticText(self, -1, "not running")
-        statusFlexGridSizer.Add(self.status, 0, wx.wx.LEFT | wx.TOP | wx.RIGHT, 10)
+        statusFlexGridSizer.Add(self.status, 0, wx.LEFT | wx.TOP | wx.RIGHT, 10)
 
         # status indicator
         text = wx.StaticText(self, -1, "Initial leave one out rate:")

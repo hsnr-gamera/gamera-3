@@ -26,7 +26,7 @@ except ImportError:
     except ImportError:
         raise RuntimeError("Biollante requires at least wxPython 2.8.11")
 
-from gamera.gui import compatibility
+from gamera.gui import compat_wx
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class SelectionPanel(ExpertSettingPanel):
             increment=0.01, value=2.0)
         self.roulettWheelPreasure.SetFormat("%f")
         self.roulettWheelPreasure.SetDigits(2)
-        compatibility.set_tool_tip(self.roulettWheelPreasure, "The selective pressure")
+        compat_wx.set_tool_tip(self.roulettWheelPreasure, "The selective pressure")
         sizer.Add(self.roulettWheelPreasure, pos=(1,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
 
@@ -84,7 +84,7 @@ class SelectionPanel(ExpertSettingPanel):
         self.rankSelectionPreasure.SetFormat("%f")
         self.rankSelectionPreasure.SetDigits(2)
         self.rankSelectionPreasure.Disable()
-        compatibility.set_tool_tip(self.rankSelectionPreasure, "The selective pressure")
+        compat_wx.set_tool_tip(self.rankSelectionPreasure, "The selective pressure")
         sizer.Add(self.rankSelectionPreasure, pos=(3,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
             
@@ -93,7 +93,7 @@ class SelectionPanel(ExpertSettingPanel):
         self.rankSelectionExponent.SetFormat("%f")
         self.rankSelectionExponent.SetDigits(2)
         self.rankSelectionExponent.Disable()
-        compatibility.set_tool_tip(self.rankSelectionExponent, "Exponent")
+        compat_wx.set_tool_tip(self.rankSelectionExponent, "Exponent")
         sizer.Add(self.rankSelectionExponent, pos=(3,2), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
 
@@ -110,7 +110,7 @@ class SelectionPanel(ExpertSettingPanel):
         self.TournamentSelectionTsize = wx.SpinCtrl(self, -1, size=(100,-1), \
             min=2, max=25, value='3') # TODO: max = popSize
         self.TournamentSelectionTsize.Disable()
-        compatibility.set_tool_tip(self.TournamentSelectionTsize, "Tournament size")
+        compat_wx.set_tool_tip(self.TournamentSelectionTsize, "Tournament size")
         sizer.Add(self.TournamentSelectionTsize, pos=(4,1), \
             flag = wx.LEFT | wx.RIGHT | wx.EXPAND, border=10)
 

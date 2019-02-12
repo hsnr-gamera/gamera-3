@@ -20,10 +20,6 @@
 # This stuff must come the very first before any other gui-specific things
 # are imported.
 
-# wxPython
-#from compat_wx import select_version
-#select_version()
-
 try:
    from wx import aui
 except ImportError:

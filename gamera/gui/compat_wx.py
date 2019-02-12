@@ -16,6 +16,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+# This is a compatibility wrapper to enable parallel support of wxPython 3 and 4
+
 from distutils.version import LooseVersion
 
 import wx
@@ -256,6 +258,7 @@ def __get_version():
       return wxVERSION[:2]
 
 def select_version():
+   # This function is no longer called
    try:
       import wxversion
       wxversion.select(["3.0", "2.9", "2.8", "2.6", "2.5", "2.4"])

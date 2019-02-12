@@ -3,8 +3,7 @@ Fixes for some of them are currently under consideration.
 
  - Config options should be somewhere documented.
 
- - GAlib is a copy of an old version, which generates
-   a number of compiler warnings. This should be updated
-
  - pixel values in Cc's can only be changed over the iterators,
    but not with set()
+
+ - File->Save History in GameraGUI does not work

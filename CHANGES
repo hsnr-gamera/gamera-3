@@ -1,7 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
- - updated nstallation isntructions for OS-X
+ - support for wxPython 4.x, while still compatible with wxPython < 4.0
+
+ - updated installation isntructions for OS-X
 
  - fix of Lab color conversion plugins
 

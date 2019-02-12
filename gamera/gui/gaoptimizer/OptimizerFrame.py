@@ -31,8 +31,9 @@ class OptimizerFrame(wx.Frame):
     #---------------------------------------------------------------------------
     def __init__(self, parent, id, title):
     #---------------------------------------------------------------------------
+        width, height = wx.DisplaySize()
         wx.Frame.__init__(self, parent, id, title, wx.DefaultPosition, \
-                          wx.Size(800,800))
+                          wx.Size(min([800,width]),min([800,height])))
 
         self.classifier = None
         self.settingsFilename = None

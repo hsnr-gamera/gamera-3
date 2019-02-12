@@ -23,13 +23,13 @@ import os.path
 import wx
 from gamera.core import *                    # Gamera specific
 from gamera import paths, util, classify, gamera_xml
-from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui
+from gamera.gui import image_menu, var_name, gamera_icons, gui_util, has_gui, compat_wx
 from gamera.gui.matplotlib_support import *
 import array, inspect
 
 ######################################################################
 
-class IconDisplayDropTarget(wx.FileDropTarget, wx.PyDropTarget):
+class IconDisplayDropTarget(wx.FileDropTarget, compat_wx.DropTarget):
    def __init__(self, parent):
       wx.FileDropTarget.__init__(self)
       self.parent = parent
@@ -50,17 +50,13 @@ class IconDisplayDropTarget(wx.FileDropTarget, wx.PyDropTarget):
                if name:
                   self.display.shell.run(
                     '%s = load_image(r"%s")' % (name, filename))
+      return compat_wx.FILE_DROP_DONE
 
 ######################################################################
 
 class IconDisplay(wx.ListCtrl):
    def __init__(self, parent, main_win):
-      if wx.Platform == '__WXMAC__':
-         style = wx.LC_ICON|wx.LC_SINGLE_SEL
-      else:
-         style = wx.LC_LIST|wx.LC_SINGLE_SEL
-      if not (wx.VERSION >= (2, 5) and wx.Platform == '__WXGTK__'):
-         style |= wx.LC_ALIGN_TOP
+      style = compat_wx.configure_icon_display_style()
       wx.ListCtrl.__init__(self, parent , -1, (0,0), (-1,-1), style)
       self.data = {}
       self.locals = {}
@@ -92,23 +88,23 @@ class IconDisplay(wx.ListCtrl):
             add_it = 0
             break
       if add_it:
-         icon = self.il.AddIcon(icon_description.get_icon())
+         icon = compat_wx.add_img_list_icon(self.il, icon_description.get_icon())
          self.classes.append((icon_description, icon))
 
    def init_events(self):
       tID = self.GetId()
-      wx.EVT_LIST_BEGIN_DRAG(self, tID, self.OnMouseDown)
-      wx.EVT_LEFT_DCLICK(self, self.OnDoubleClick)
-      wx.EVT_LIST_ITEM_SELECTED(self, tID, self.OnItemSelected)
-      wx.EVT_LIST_ITEM_ACTIVATED(self, tID, self.OnItemSelected)
-      wx.EVT_LIST_ITEM_RIGHT_CLICK(self, tID, self.OnRightClick)
-      wx.EVT_CHAR(self, self.OnKeyPress)
+      compat_wx.handle_event_1(self, wx.EVT_LIST_BEGIN_DRAG, self.OnMouseDown, tID)
+      compat_wx.handle_event_0(self, wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
+      compat_wx.handle_event_1(self, wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, tID)
+      compat_wx.handle_event_1(self, wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemSelected, tID)
+      compat_wx.handle_event_1(self, wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnRightClick, tID)
+      compat_wx.handle_event_0(self, wx.EVT_CHAR, self.OnKeyPress)
 
    def add_icon(self, label, data, icon):
       index = self.GetItemCount()
       data.index = index
       self.data[label] = data
-      self.InsertImageStringItem(index, label, icon)
+      compat_wx.insert_list_img_string_item(self, index, label, icon)
       self.Refresh()
 
    def refresh_icon(self, key, klass, data, icon_num):
@@ -119,7 +115,7 @@ class IconDisplay(wx.ListCtrl):
          del icon.extra_methods
       obj = klass(key, data, index)
       self.data[key] = obj
-      self.SetStringItem(index, 0, key, icon_num)
+      compat_wx.set_list_string_item(self, index, 0, key, icon_num)
 
    def remove_icon(self, key):
       if self.data.has_key(key):
@@ -175,7 +171,7 @@ class IconDisplay(wx.ListCtrl):
       return None
 
    def OnItemSelected(self, event):
-      self.currentIcon = self.find_icon(event.m_itemIndex)
+      self.currentIcon = self.find_icon(compat_wx.get_list_event_item_index(event))
 
    def OnRightClick(self, event):
       index = event.GetIndex()
@@ -230,7 +226,8 @@ class IconDisplay(wx.ListCtrl):
          source = self.currentIcon.drag()
          if source is not None:
             typename, source = source
-            data = wx.CustomDataObject(wx.CustomDataFormat(typename))
+            df = compat_wx.create_data_format(typename)
+            data = wx.CustomDataObject(df)
             data.SetData(source)
             icon = self.currentIcon.get_icon()
             drop_source = wx.DropSource(self, icon, icon, icon)
@@ -258,13 +255,13 @@ class CustomIcon:
 
    def to_icon(bitmap):
       if has_gui.has_gui:
-         return wx.IconFromBitmap(bitmap)
+         return compat_wx.create_icon_from_bitmap(bitmap)
       else:
          return None
    to_icon = staticmethod(to_icon)
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageUnknownBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageUnknownBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -300,7 +297,7 @@ class CustomIcon:
 
 class CIComplexImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageComplexBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageComplexBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -309,7 +306,7 @@ class CIComplexImage(CustomIcon):
 
 class CIRGBImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageRgbBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageRgbBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -318,7 +315,7 @@ class CIRGBImage(CustomIcon):
 
 class CIGreyScaleImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageGreyBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageGreyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -327,7 +324,7 @@ class CIGreyScaleImage(CustomIcon):
 
 class CIGrey16Image(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageGrey16Bitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageGrey16Bitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -336,7 +333,7 @@ class CIGrey16Image(CustomIcon):
 
 class CIFloatImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageFloatBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageFloatBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -345,7 +342,7 @@ class CIFloatImage(CustomIcon):
 
 class CIOneBitImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageBinaryBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageBinaryBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -354,7 +351,7 @@ class CIOneBitImage(CustomIcon):
 
 class CIRGBSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageRgbBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageRgbBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -363,7 +360,7 @@ class CIRGBSubImage(CustomIcon):
 
 class CIGreyScaleSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageGreyBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageGreyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -372,7 +369,7 @@ class CIGreyScaleSubImage(CustomIcon):
 
 class CIGrey16SubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageGrey16Bitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageGrey16Bitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -381,7 +378,7 @@ class CIGrey16SubImage(CustomIcon):
 
 class CIFloatSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageFloatBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageFloatBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -390,7 +387,7 @@ class CIFloatSubImage(CustomIcon):
 
 class CIOneBitSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageBinaryBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageBinaryBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -399,7 +396,7 @@ class CIOneBitSubImage(CustomIcon):
 
 class CIComplexSubImage(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconSubimageComplexBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconSubimageComplexBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -408,7 +405,7 @@ class CIComplexSubImage(CustomIcon):
 
 class CICC(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconCcBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconCcBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -423,7 +420,7 @@ class CIImageList(CustomIcon):
                   'Features': {'generate_features_list' : self.generate_features}}}
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconImageListBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageListBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -455,7 +452,7 @@ class CIImageList(CustomIcon):
 
 class CIInteractiveClassifier(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconClassifyBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconClassifyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -472,7 +469,7 @@ class CIInteractiveClassifier(CustomIcon):
 
 class CINonInteractiveClassifier(CustomIcon):
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIconNoninterClassifyBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIconNoninterClassifyBitmap())
    get_icon = staticmethod(get_icon)
 
    def check(data):
@@ -540,7 +537,7 @@ class CIIntVector(_CIVector):
    klass = int
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getIntVectorBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getIntVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 class CIFloatVector(_CIVector):
@@ -548,7 +545,7 @@ class CIFloatVector(_CIVector):
    klass = float
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getFloatVectorBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getFloatVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 class CIComplexVector(_CIVector):
@@ -556,7 +553,7 @@ class CIComplexVector(_CIVector):
    klass = complex
 
    def get_icon():
-      return wx.IconFromBitmap(gamera_icons.getComplexVectorBitmap())
+      return compat_wx.create_icon_from_bitmap(gamera_icons.getComplexVectorBitmap())
    get_icon = staticmethod(get_icon)
 
 builtin_icon_types = (

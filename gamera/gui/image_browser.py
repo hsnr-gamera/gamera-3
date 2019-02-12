@@ -20,7 +20,7 @@
 
 import wx
 from gamera import core, config
-from gamera.gui import gamera_display, gui_util, gamera_icons
+from gamera.gui import gamera_display, gui_util, gamera_icons, compat_wx
 import glob, string, os.path
 
 class FileList(wx.GenericDirCtrl):
@@ -30,7 +30,7 @@ class FileList(wx.GenericDirCtrl):
           filter="All files (*.*)|*.*|TIFF files (*.tiff,*.tif)|*.tiff,*.tif",
           style=wx.DIRCTRL_SHOW_FILTERS)
       # self.SetDefaultPath(config.options.file.default_directory)
-      wx.EVT_TREE_ITEM_ACTIVATED(self.GetTreeCtrl(), -1, self.OnItemSelected)
+      compat_wx.handle_event_1(self.GetTreeCtrl(), wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemSelected, -1)
       self.image_display = image_display
 
    def OnItemSelected(self, e):
@@ -61,7 +61,7 @@ class ImageBrowserFrame(wx.Frame):
    def __init__(self):
       wx.Frame.__init__(self, None, -1, "Image File Browser",
                        wx.DefaultPosition,(600, 400))
-      icon = wx.IconFromBitmap(gamera_icons.getIconImageBrowserBitmap())
+      icon = compat_wx.create_icon_from_bitmap(gamera_icons.getIconImageBrowserBitmap())
       self.SetIcon(icon)
       self.splitter = wx.SplitterWindow(self, -1)
       self.image = gamera_display.ImageWindow(self.splitter, -1)

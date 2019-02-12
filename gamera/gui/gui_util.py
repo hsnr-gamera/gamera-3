@@ -23,6 +23,7 @@ from wx.lib import dialogs
 from os import path
 from types import *
 from gamera import util
+from gamera.gui import compat_wx
 from gamera.config import config
 import sys
 import datetime
@@ -77,13 +78,13 @@ def build_menu(parent, menu_spec):
    for name, func in menu_spec:
       if util.is_sequence(func):
          menu_item_id = wx.NewId()
-         menu.AppendMenu(menu_item_id, name, build_menu(parent, func))
+         compat_wx.extend_menu(menu, menu_item_id, name, build_menu(parent, func))
       elif name == None:
          menu.AppendSeparator()
       else:
          menu_item_id = wx.NewId()
          menu.Append(menu_item_id, name)
-         wx.EVT_MENU(parent, menu_item_id, func)
+         compat_wx.handle_event_1(parent, wx.EVT_MENU, func, menu_item_id)
    return menu
 
 NUM_RECENT_FILES = 9
@@ -105,8 +106,7 @@ class FileDialog(wx.FileDialog):
       self.extensions = extensions
 
    def show(self):
-      if wx.VERSION < (2, 8):
-         self.SetStyle(self._flags)
+      compat_wx.set_dialog_style(self)
       cls = self.__class__
       result = self.ShowModal()
       self.Destroy()
@@ -125,7 +125,7 @@ class OpenFileDialog(FileDialog):
    _flags = wx.FD_OPEN
 
 class SaveFileDialog(FileDialog):
-   _flags = wx.SAVE|wx.FD_OVERWRITE_PROMPT
+   _flags = compat_wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
 
 def open_file_dialog(parent, extensions="*.*", multiple=0):
    return OpenFileDialog(parent, extensions, multiple).show()

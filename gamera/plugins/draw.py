@@ -384,6 +384,7 @@ class draw_text(PluginFunction):
     from gamera.plugins import string_io
     try:
       import wx
+      from gamera.gui import compat_wx
     except ImportError:
       raise RuntimeError("Drawing text requires wxPython.")
     try:
@@ -409,7 +410,7 @@ class draw_text(PluginFunction):
     w, h = dc.GetTextExtent(text)
 
     # Do the actual drawing
-    bmp = wx.EmptyBitmap(w, h, -1)
+    bmp = compat_wx.create_empty_bitmap(w, h, -1)
     dc.SelectObject(bmp)
     dc.SetPen(wx.TRANSPARENT_PEN)
     dc.SetBrush(wx.WHITE_BRUSH)

@@ -23,7 +23,7 @@ import wx
 import weakref              # Python standard library
 from gamera.core import *   # Gamera-specific
 from gamera import util, plugin
-from gamera.gui import var_name, gui_util
+from gamera.gui import var_name, gui_util, compat_wx
 from gamera.args import *
 
 EXECUTE_MODE = 0
@@ -103,18 +103,18 @@ class ImageMenu:
       menu.AppendSeparator()
       id = self.get_id()
       menu.Append(id, "new reference")
-      wx.EVT_MENU(self.parent, id, self.OnCreateReference)
+      compat_wx.handle_event_1(self.parent, wx.EVT_MENU, self.OnCreateReference, id)
       id = self.get_id()
       menu.Append(id, "new copy")
-      wx.EVT_MENU(self.parent, id, self.OnCreateCopy)
+      compat_wx.handle_event_1(self.parent, wx.EVT_MENU, self.OnCreateCopy, id)
       id = self.get_id()
       menu.Append(id, "delete image")
-      wx.EVT_MENU(self.parent, id, self.OnDeleteImage)
+      compat_wx.handle_event_1(self.parent, wx.EVT_MENU, self.OnDeleteImage, id)
       menu.AppendSeparator()
 
       info_menu = wx.Menu()
       id = self.get_id()
-      menu.AppendMenu(id, "Info", info_menu)
+      compat_wx.extend_menu(menu, id, "Info", info_menu)
       # Variables
       for member in members:
          id = self.get_id()
@@ -139,11 +139,11 @@ class ImageMenu:
          if type(val) == dict:
             item = self.create_methods(val, wx.Menu())
             id = self.get_id()
-            menu.AppendMenu(id, key, item)
+            compat_wx.extend_menu(menu, id, key, item)
          else:
             id = self.get_id()
             menu.Append(id, key)
-            wx.EVT_MENU(self.parent, id, self.OnPopupFunction)
+            compat_wx.handle_event_1(self.parent, wx.EVT_MENU, self.OnPopupFunction, id)
             self.functions[id] = val
       return menu
 
@@ -158,7 +158,7 @@ class ImageMenu:
          else:
             id = self.get_id()
             menu.Append(id, key)
-            wx.EVT_MENU(self.parent, id, val)
+            compat_wx.handle_event_1(self.parent, wx.EVT_MENU, val, id)
       return menu
 
    def get_shell(self):

@@ -26,6 +26,7 @@ except ImportError:
     except ImportError:
         raise RuntimeError("Biollante requires at least wxPython 2.8.11")
 
+from gamera.gui import compat_wx
 from gamera.gui.gaoptimizer.ExpertSettingPanel import *
 
 #-------------------------------------------------------------------------------
@@ -85,7 +86,7 @@ class MutationPanel(ExpertSettingPanel):
             increment=0.01, value=0.05)
         self.binaryMutationRate.SetFormat("%f")
         self.binaryMutationRate.SetDigits(2)
-        self.binaryMutationRate.SetToolTipString("Rate of mutation")
+        compat_wx.set_tool_tip(self.binaryMutationRate, "Rate of mutation")
         binaryBoxSizer.Add(self.binaryMutationRate, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
         
         self.selectionWidgets.append(self.binaryMutation)
@@ -111,7 +112,7 @@ class MutationPanel(ExpertSettingPanel):
         self.gaussMutationSigma.SetFormat("%f")
         self.gaussMutationSigma.SetDigits(2)
         self.gaussMutationSigma.Disable()
-        self.gaussMutationSigma.SetToolTipString("sigma the range for uniform nutation")
+        compat_wx.set_tool_tip(self.gaussMutationSigma, "sigma the range for uniform nutation")
         realBoxFlexGridSizer.Add(self.gaussMutationSigma, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
         
         self.gaussMutationPchance = FS.FloatSpin(self, -1, min_val=0.0, max_val=1.0, \
@@ -119,7 +120,7 @@ class MutationPanel(ExpertSettingPanel):
         self.gaussMutationPchance.SetFormat("%f")
         self.gaussMutationPchance.SetDigits(2)
         self.gaussMutationPchance.Disable()
-        self.gaussMutationPchance.SetToolTipString("p_change the probability to "\
+        compat_wx.set_tool_tip(self.gaussMutationPchance, "p_change the probability to "\
             "change a given coordinate")
         realBoxFlexGridSizer.Add(self.gaussMutationPchance, 0, wx.LEFT | wx.TOP | wx.RIGHT, 5)
         

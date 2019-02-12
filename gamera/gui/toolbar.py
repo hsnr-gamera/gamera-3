@@ -21,7 +21,7 @@
 
 import wx
 from wx.lib import buttons
-from gamera.gui import gamera_icons
+from gamera.gui import gamera_icons, compat_wx
 
 # This is our own custom toolbar class.
 # We had to implement our own, since the one in wxWindows one supports
@@ -56,9 +56,9 @@ class ToolBar(wx.Panel):
          button = ToggleButtonClass(self, id, bitmap, size=wx.Size(30,30))
       button.SetBezelWidth(1)
       button.SetUseFocusIndicator(False)
-      button.SetToolTipString(help_string)
+      compat_wx.set_tool_tip(button, help_string)
       if callback:
-         wx.EVT_BUTTON(self, id, callback)
+         compat_wx.handle_event_1(self, wx.EVT_BUTTON, callback, id)
       self.sizer.Add(button, flag=wx.ALIGN_CENTER)
       self.sizer.SetSizeHints(self)
       self.controls.append(button)
@@ -74,9 +74,9 @@ class ToolBar(wx.Panel):
       button.SetBitmapLabel(gamera_icons.getToolbarMenuBitmap())
       button.SetBezelWidth(1)
       button.SetUseFocusIndicator(False)
-      button.SetToolTipString(help_string)
+      compat_wx.set_tool_tip(button, help_string)
       if callback:
-         wx.EVT_BUTTON(self, id, callback)
+         compat_wx.handle_event_1(self, wx.EVT_BUTTON, callback, id)
       self.sizer.Add(button, flag=wx.ALIGN_CENTER)
       self.sizer.SetSizeHints(self)
       self.controls.append(button)

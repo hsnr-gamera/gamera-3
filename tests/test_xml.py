@@ -47,7 +47,7 @@ def test_glyphs_from_xml():
    assert len(glyphs) == 66
       
 def test_glyphs_with_features_from_xml():
-   glyphs = gamera_xml.glyphs_with_features_from_xml(
+   glyphs = gamera_xml.glyphs_from_xml(
       "data/testline.xml", ["area", "aspect_ratio"])
    assert len(glyphs) == 66
    assert len(glyphs[0].features) == 2
@@ -58,7 +58,7 @@ def test_glyphs_to_xml():
    assert equal_files("tmp/testline_test1.xml", "data/testline_test1.xml")
 
 def test_glyphs_to_xml_with_features():
-   glyphs = gamera_xml.glyphs_with_features_from_xml("data/testline.xml", feature_functions=features)
+   glyphs = gamera_xml.glyphs_from_xml("data/testline.xml", feature_functions=features)
    gamera_xml.glyphs_to_xml("tmp/testline_test2.xml", glyphs, True)
    assert equal_files("tmp/testline_test2.xml", "data/testline_test2.xml")
 

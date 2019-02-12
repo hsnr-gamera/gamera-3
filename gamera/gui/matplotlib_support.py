@@ -41,7 +41,7 @@ try:
    from matplotlib.figure import Figure
    from matplotlib._pylab_helpers import Gcf
    import wx
-   from gamera.gui import toolbar, gui_util, gamera_icons
+   from gamera.gui import toolbar, gui_util, gamera_icons, compat_wx
 except ImportError:
    def plot(*args, **kwargs):
       raise RuntimeError("Plotting is not supported because the optional matplotlib library\n"
@@ -88,10 +88,7 @@ else:
       def print_plot(self, evt):
          printout = backend_wx.PrintoutWx(self.canvas)
          dialog_data = wx.PrintDialogData()
-         if wx.VERSION < (2, 5):
-            dialog_data.EnableHelp(False)
-            dialog_data.EnablePageNumbers(False)
-            dialog_data.EnableSelection(False)
+         compat_wx.configure_print_dialog_data(dialog_data)
          printer = wx.Printer(dialog_data)
          if not printer.Print(self, printout, True):
             if printer.GetLastError() == wx.PRINTER_ERROR:
@@ -117,7 +114,7 @@ else:
       # imported
 
       def set_cursor(self, cursor):
-         cursor = wx.StockCursor(cursord[cursor])
+         cursor = compat_wx.create_stock_cursor(cursord[cursor])
          self.canvas.SetCursor( cursor )
 
       def release(self, event):
@@ -153,7 +150,8 @@ else:
          dc.SetPen(wpen)
          
          dc.ResetBoundingBox()
-         dc.BeginDrawing()
+         compat_wx.begin_drawing(dc)
+
          height = self.canvas.figure.bbox.height()
          y1 = height - y1
          y0 = height - y0
@@ -170,7 +168,7 @@ else:
          else: dc.DrawRectangle(*lastrect)  #erase last
          self.lastrect = rect
          dc.DrawRectangle(*rect)
-         dc.EndDrawing()
+         compat_wx.end_drawing(dc)
 
       def set_status_bar(self, statbar):
          self.statbar = statbar
@@ -178,10 +176,10 @@ else:
       def set_message(self, s):
          if self.statbar is not None: self.statbar.set_function(s)
 
-   class GameraPlotDropTarget(wx.PyDropTarget):
+   class GameraPlotDropTarget(compat_wx.DropTarget):
       def __init__(self, figure):
-         wx.PyDropTarget.__init__(self)
-         self.df = wx.CustomDataFormat("Vector")
+         compat_wx.DropTarget.__init__(self)
+         self.df = compat_wx.create_data_format("Vector")
          self.data = wx.CustomDataObject(self.df)
          self.SetDataObject(self.data)
          self.figure = figure

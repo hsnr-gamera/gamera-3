@@ -18,6 +18,7 @@
 
 from gamera.knn_editing import AlgoRegistry
 import wx
+from gamera.gui import compat_wx
 
 class EditingDialog(object):
     """Dialog to apply any of the editing algorithms known to the 
@@ -31,21 +32,22 @@ edited result"""
 
     def _createDialog(self):
         self.dlg = wx.Dialog(None, wx.NewId(), "Create edited Classifier")
-        self.sizer = wx.FlexGridSizer(rows = 0, cols = 1)
+        self.sizer = wx.FlexGridSizer(0, 1, 0, 0)
         self.dlg.SetSizer(self.sizer)
 
-        choiceSizer = wx.FlexGridSizer(rows = 1, cols = 0)
+        choiceSizer = wx.FlexGridSizer(1, 0, 0, 0)
         statText = wx.StaticText(self.dlg, wx.NewId(), "Select an Editing Algorithm")
         choiceSizer.Add(statText, flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border = 10)
         choiceId = wx.NewId()
         choiceControl = wx.Choice(self.dlg, choiceId, choices = self._algoNames())
-        wx.EVT_CHOICE(self.dlg, choiceId, self._choiceCallback)
+        compat_wx.handle_event_1(self.dlg, wx.EVT_CHOICE, self._choiceCallback, choiceId)
         choiceSizer.Add(choiceControl, flag = wx.ALIGN_RIGHT)
         choiceSizer.AddGrowableCol(0)
 
         self.sizer.Add(choiceSizer, flag = wx.EXPAND | wx.ALL, border = 10)
         self.sizer.Add(wx.StaticLine(self.dlg), flag = wx.EXPAND)
 
+        choiceControl.SetSelection(self.selection)
         self._replaceArgs()
         
         buttons = self.dlg.CreateButtonSizer(wx.OK | wx.CANCEL)
@@ -70,9 +72,9 @@ to the just selected algorithm"""
         panel = wx.Panel(self.dlg)
 
         self._selected().args.window = panel
-        help = self._selected().args._create_help_display(self._selected().doc)
-        help.SetInitialSize(wx.Size(50, 200))        
-        panelSizer = wx.FlexGridSizer(rows = 0, cols = 1)
+        help = compat_wx.create_help_display(panel, self._selected().doc)
+        help.SetInitialSize(wx.Size(50, 200))
+        panelSizer = wx.FlexGridSizer(0, 1, 0, 0)
         panelSizer.AddGrowableCol(0)
         panel.SetSizer(panelSizer)
         

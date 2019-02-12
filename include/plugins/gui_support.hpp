@@ -204,17 +204,44 @@ PyObject* to_string(T& m) {
   return str;
 }
 
+static char *get_writable_buffer(PyObject *py_buffer, size_t nrows, size_t ncols) {
+  if (PyObject_CheckReadBuffer(py_buffer) == 1) {
+    // Old Buffer Protocol
+    char *buffer;
+    Py_ssize_t buffer_len;
+    PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
+
+    if ((size_t)buffer_len != nrows * ncols * 3 || buffer == NULL) {
+      printf("The image passed to to_buffer is not of the correct size.\n");
+      return NULL;
+    }
+    return buffer;
+  } else if (PyMemoryView_Check(py_buffer) == 1) {
+    // New Buffer Protocol
+    Py_buffer *buffer = PyMemoryView_GET_BUFFER(py_buffer);
+
+    if ((size_t)buffer->len != nrows * ncols * 3) {
+      printf("The image passed to to_buffer is not of the correct size.\n");
+      return NULL;
+    }
+    return (char *)buffer->buf;
+  }
+
+  printf("Buffer object is of an unknown type.\n");
+  return NULL;
+}
+
 template<class T>
 void to_buffer(T& m, PyObject *py_buffer) {
-  char *buffer;
-  Py_ssize_t buffer_len;
-  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-  if ((size_t)buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
-    printf("The image passed to to_buffer is not of the correct size.\n");
+  char *buffer = get_writable_buffer(py_buffer, m.nrows(), m.ncols());
+  if (buffer == NULL) {
     return;
   }
   to_string_impl<typename T::value_type> func;
   func(m, buffer);
+
+  //TODO: Is this needed?
+  //PyBuffer_Release(buffer);
 }
 
 template<class T>
@@ -352,12 +379,8 @@ template<class T>
 void to_buffer_colorize(const T& m, PyObject* py_buffer, 
 			int red, int green, int blue,
 			bool invert) {
-  char *buffer;
-  Py_ssize_t buffer_len;
-
-  PyObject_AsWriteBuffer(py_buffer, (void **)&buffer, &buffer_len);
-  if ((size_t)buffer_len != m.nrows() * m.ncols() * 3 || buffer == NULL) {
-    printf("The image passed to to_buffer is not of the correct size.\n");
+  char *buffer = get_writable_buffer(py_buffer, m.nrows(), m.ncols());
+  if (buffer == NULL) {
     return;
   }
 

@@ -139,7 +139,7 @@ class SettingsPanel(wx.ScrolledWindow):
 
         # expert settings box
         expertPane = PCP.PyCollapsiblePane(self, -1, "Expert GA settings", \
-            agwStyle=wx.CP_USE_STATICBOX)
+                                       style=wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE)
         self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.OnPaneChanged, expertPane)
         self.MakeExpertPane(expertPane.GetPane())
 

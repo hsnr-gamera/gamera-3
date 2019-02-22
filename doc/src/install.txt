@@ -176,45 +176,37 @@ Start the Terminal application and run the ``gamera_gui`` script.
 Installation on 10.11 (El Captain) and above
 --------------------------------------------
 
+Due to the OS-X builtin "system integrity protection" (SIP), wxPython
+and Gamera  cannot be installed into the python branch shipped with OS-X.
+You must therefore install wxPython and Gamera into a `virtual environment`__.
+
+.. __: https://virtualenv.pypa.io/
+
+
 Prerequisites
 `````````````
 
-Due to the OS-X builtin "system integrity protection" (SIP), wxPython cannot be
-installed into the python branch shipped with OS-X. Moreover, you must
-install wxPython from the sources, because binary packages are only available
-for wxPython 4.x, and Gamera requires an older version of wxPython.
+As Gamera must be installed from the C++ sources, you must have Xcode
+and the Xcode Command Line Tools installed. When Xcode is already installed,
+the command line tools can be installed with *xcode-select --install*.
 
-To avoid possible problems with SIP and the python shipped with OS-X,
-you can install python from homebrew and also install virtualenv with::
+If you want to use the Python that comes with OS-X, you can install
+the prerequisites for virtual environments with::
+
+  sudo easy_install pip
+  sudo pip2 install virtualenv
+
+If this runs into problems with SIP or if you prefer to use the homebrew
+version of Python, you can install the prerequisites instead with::
 
   brew install python2
   pip2 install virtualenv
 
-For the combination Python 2.7 with wxPython 3.0, you must first setup a
-virtual environment and activate it, e.g. with::
+Then you can set up a virtual environment and install wxPython therein::
 
-  virtualenv /usr/local/lib/py2wx3
-  source /usr/local/lib/py2wx3/bin/activate
-
-Download the source code of wxPython 3.0.2 from the "Old releases" section
-on `wxpython.org`__ and unpack it. There is one fix necessary: in
-*src/osx/webview_webkit.mm*, add a cast to *WebBackForwardList* in
-lines 936 and 954 as in the following example:
-
-.. code:: CPP
-
-  WebBackForwardList* history = (WebBackForwardList*)[m_webView backForwardList];
-
-.. __: http://wxpython.org/
-
-Then you can compile and install wxPython with the following commands::
-
-  cd root_to_wx_sources/wxPython
-  CPPFLAGS=-D__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=1
-  export CPPFLAGS
-  python build-wxpython.py --build_dir=../bld --osx_cocoa --install
-
-This will install wxPython into the virtual environment.
+  virtualenv /usr/local/lib/py2gamera
+  source /usr/local/lib/py2gamera/bin/activate
+  pip2 install -U wxPython
 
 
 Build and install
@@ -222,7 +214,7 @@ Build and install
 
 You can install Gamera into the same virtual environment with::
 
-  source /usr/local/lib/py2wx3/bin/activate
+  source /usr/local/lib/py2gamera/bin/activate
   cd root_to_gamera_sources
   python setup.py build
   python setup.py install
@@ -242,6 +234,39 @@ this fix).
 
 .. __: http://www.georgevreilly.com/blog/2015/09/20/RunSnakeRun-WxPython-Brew-Virtualenv.html
 
+Wrapper shell-script for *gamera_gui* using the Python shipped with OS-X:
+
+.. code:: sh
+
+  #
+  # wrapper script for running gamera_gui
+  # from virtualenv with osx stock python
+  #
+
+  source $HOME/python/py2gamera/bin/activate
+
+  WXPYTHON_APP="gamera_gui"
+  PYVER="$(python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)"
+
+  if [ -z "$VIRTUAL_ENV" ] ; then
+      echo "You must activate your virtualenv: set '$VIRTUAL_ENV'"
+      exit 1
+  fi
+
+  SYSTEM_FRAMEWORK_PYTHON_ROOT="/Library/Frameworks/Python.framework/Versions/$PYVER"
+  # OS X >= 10.10
+  SYSTEM_FRAMEWORK_PYTHON_ROOT="/System$SYSTEM_FRAMEWORK_PYTHON_ROOT"
+
+  PYTHON_BINARY="bin/python$PYVER"
+  FRAMEWORK_PYTHON="/usr/bin/python$PYVER"
+
+  # Use the Framework Python to run the app
+  export PYTHONHOME=$VIRTUAL_ENV
+  exec "$FRAMEWORK_PYTHON" "$VIRTUAL_ENV/bin/$WXPYTHON_APP" $*
+
+
+Wrapper shell-script for *gamera_gui* using the homebrew Python:
+
 .. code:: sh
 
   #
@@ -249,7 +274,7 @@ this fix).
   # from virtualenv with homebrew python
   #
 
-  source /usr/local/lib/py2wx3/bin/activate
+  source /usr/local/lib/py2gamera/bin/activate
 
   WXPYTHON_APP="gamera_gui"
   PYVER="$(python --version 2>&1 | cut -d ' ' -f 2 | cut -d '.' -f 1,2)"
@@ -273,8 +298,9 @@ this fix).
   VENV_SITE_PACKAGES="$VIRTUAL_ENV/lib/python$PYVER/site-packages"
 
   # Ensure wx.pth is set up in the virtualenv
-  test -e "$VENV_SITE_PACKAGES/wx.pth" || \
-    cp "/Library/Python/$PYVER/site-packages/wxredirect.pth" "$VENV_SITE_PACKAGES/wx.pth"
+  # (does not seem to be necessary, so we comment it out)
+  #test -e "$VENV_SITE_PACKAGES/wx.pth" || \
+  #  cp "/Library/Python/$PYVER/site-packages/wxredirect.pth" "$VENV_SITE_PACKAGES/wx.pth"
 
   # Use the Framework Python to run the app
   export PYTHONHOME=$VIRTUAL_ENV

@@ -111,7 +111,7 @@ namespace Gamera {
     inline int distance_below(const T& a, const U& b) {
       // check that b really is below a
       if (b.ul_y() <= a.lr_y())
-	return a.lr_y() - b.ul_y();
+        return (int)(a.lr_y() - b.ul_y());
       else
 	return -(int)(b.ul_y() - a.lr_y());
     }

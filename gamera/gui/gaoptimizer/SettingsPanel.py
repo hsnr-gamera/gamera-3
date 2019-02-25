@@ -196,7 +196,7 @@ class SettingsPanel(wx.ScrolledWindow):
     def OnPaneChanged(self, event):
     #---------------------------------------------------------------------------
         # redo the layout ... necessary!
-        self.Layout()
+        self.PostSizeEvent()
         
     #---------------------------------------------------------------------------
     def OnOpModeChange(self, event):

@@ -1865,7 +1865,7 @@ static PyObject* mlcc_richcompare(PyObject* a, PyObject* b, int op) {
 void init_ImageType(PyObject* module_dict) {
   ImageType.ob_type = &PyType_Type;
   ImageType.tp_name = CHAR_PTR_CAST "gameracore.Image";
-  ImageType.tp_basicsize = sizeof(ImageObject) + PyGC_HEAD_SIZE;
+  ImageType.tp_basicsize = sizeof(ImageObject);
   ImageType.tp_dealloc = image_dealloc;
   ImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -1909,7 +1909,7 @@ void init_ImageType(PyObject* module_dict) {
 
   SubImageType.ob_type = &PyType_Type;
   SubImageType.tp_name = CHAR_PTR_CAST "gameracore.SubImage";
-  SubImageType.tp_basicsize = sizeof(SubImageObject) + PyGC_HEAD_SIZE;
+  SubImageType.tp_basicsize = sizeof(SubImageObject);
   SubImageType.tp_dealloc = image_dealloc;
   SubImageType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -1938,7 +1938,7 @@ void init_ImageType(PyObject* module_dict) {
 
   CCType.ob_type = &PyType_Type;
   CCType.tp_name = CHAR_PTR_CAST "gameracore.Cc";
-  CCType.tp_basicsize = sizeof(CCObject) + PyGC_HEAD_SIZE;
+  CCType.tp_basicsize = sizeof(CCObject);
   CCType.tp_dealloc = image_dealloc;
   CCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;
@@ -1969,7 +1969,7 @@ void init_ImageType(PyObject* module_dict) {
 
   MLCCType.ob_type = &PyType_Type;
   MLCCType.tp_name = CHAR_PTR_CAST "gameracore.MlCc";
-  MLCCType.tp_basicsize = sizeof(MLCCObject) + PyGC_HEAD_SIZE;
+  MLCCType.tp_basicsize = sizeof(MLCCObject);
   MLCCType.tp_dealloc = image_dealloc;
   MLCCType.tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE |
     Py_TPFLAGS_HAVE_WEAKREFS | Py_TPFLAGS_HAVE_GC;

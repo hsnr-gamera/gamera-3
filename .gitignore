@@ -6,5 +6,7 @@ gamera/plugins/*.cpp
 
 gamera_gui
 
+*.py[co]
+
 # IDEs
 .idea/

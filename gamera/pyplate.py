@@ -211,7 +211,7 @@ class ForTemplateNode(TemplateNode):
             if len(self.vars) == 1:
                data[self.vars[0]] = list
             elif len(self.vars) == len(list):
-               for index, value in util.enumerate(list):
+               for index, value in enumerate(list):
                   data[self.vars[index]] = value
             else:
                self.parent.parser_exception(
@@ -291,7 +291,7 @@ class FunctionTemplateNode(TemplateNode):
 
    def call(self, args, stream, data):
       remember_vars = {}
-      for index, var in util.enumerate(self.vars):
+      for index, var in enumerate(self.vars):
          if data.has_key(var):
             remember_vars[var] = data[var]
          data[var] = args[index]

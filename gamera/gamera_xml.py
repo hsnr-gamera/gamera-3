@@ -133,7 +133,7 @@ class WriteXML:
       if len(glyphs):
          word_wrap(stream, '<glyphs>', indent)
          indent += 1
-         for i, glyph in util.enumerate(glyphs):
+         for i, glyph in enumerate(glyphs):
             self._write_glyph(stream, glyph, indent)
             progress.step()
          indent -= 1

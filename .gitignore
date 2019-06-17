@@ -8,5 +8,7 @@ gamera_gui
 
 *.py[co]
 
+tests/tmp
+
 # IDEs
 .idea/

@@ -173,20 +173,6 @@ def pretty_print_byte_size(bytes):
          return "%.2f %s" % (float(bytes) / step[1], step[0])
    return 'error (negative!)'
 
-if float(sys.version[0:3]) < 2.3:
-   def enumerate(collection):
-      """Backport to 2.2 of Python 2.3's enumerate function."""
-      i = 0
-      it = iter(collection)
-      while 1:
-         yield(i, it.next())
-         i += 1
-   __builtins__['enumerate'] = enumerate
-   __builtins__['True'] = 1
-   __builtins__['False'] = 0
-else:
-   enumerate = __builtins__['enumerate']
-
 _pixel_type_names = {ONEBIT:     "OneBit",
                      GREYSCALE:  "GreyScale",
                      GREY16:     "Grey16",

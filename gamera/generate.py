@@ -28,6 +28,7 @@ from distutils.core import Extension
 from distutils.dep_util import newer
 from distutils import sysconfig
 from gamera import paths, args_wrappers
+import __builtin__
 
 global std_import
 global plugins_to_ignore
@@ -57,13 +58,13 @@ def magic_import_setup(ignore):
    global std_import
    plugins_to_ignore = ignore
    # Save the standard __import__ function so we can chain to it
-   std_import = __builtins__['__import__']
+   std_import = __builtin__.__import__
    # Override the __import__ function with our new one
-   __builtins__['__import__'] = magic_import
+   __builtin__.__import__ = magic_import
 
 def restore_import():
    global std_import
-   __builtins__['__import__'] = std_import
+   __builtin__.__import__ = std_import
 
 template = Template("""
   [[exec from os import path]]

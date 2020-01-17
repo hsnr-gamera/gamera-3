@@ -1,6 +1,9 @@
 Changes made between Gamera File Releases
 =========================================
 
+Version 3.4.4, Jan 17, 2020
+----------------------------
+
  - support for wxPython 4.x, while still compatible with wxPython < 4.0
 
  - updated installation isntructions for OS-X

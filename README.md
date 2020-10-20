@@ -11,6 +11,12 @@ For more information about Gamera, visit the Gamera website at:
 
 http://gamera.informatik.hsnr.de/
 
+Note that Gamera version 3 is for Python 2.x only. For a Gamera version
+that runs under Python 3, see
+
+https://github.com/hsnr-gamera/gamera-4
+
+
 ## Installation and Usage
 
 See the INSTALL file for installation instructions,

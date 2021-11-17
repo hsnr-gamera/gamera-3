@@ -584,8 +584,8 @@ Image *djvu_threshold(const T& image, const double smoothness,
 
   for (size_t r = 0; r < image.nrows(); ++r) {
     for (size_t c = 0; c < image.ncols(); ++c) {
-      double c_frac = (double)c / min_block_size;
-      double r_frac = (double)r / min_block_size;
+      double c_frac = std::max((double)0,std::min(((double)c - (0.5 * min_block_size)) / min_block_size,floor((double)(image.ncols() - 1)/min_block_size)));
+      double r_frac = std::max((double)0,std::min(((double)r - (0.5 * min_block_size)) / min_block_size,floor((double)(image.nrows() - 1)/min_block_size)));
       RGBPixel fg = fg_acc(fg_image.upperLeft(), c_frac, r_frac); 
       RGBPixel bg = bg_acc(bg_image.upperLeft(), c_frac, r_frac);
       double fg_dist = djvu_distance(image.get(Point(c, r)), fg);

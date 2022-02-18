@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.org/hsnr-gamera/gamera.png?branch=master)](https://travis-ci.org/hsnr-gamera/gamera)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf24551504684bd5ab65e6df5921559f)](https://www.codacy.com/app/danstender/gamera)
-
-# Gamera
+# Gamera 3 (deprecated version for Python 2)
 
 Gamera is a framework for building document analysis applications.  
 It is not a packaged document recognition system, but a toolkit for

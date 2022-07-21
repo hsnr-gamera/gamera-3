@@ -55,8 +55,8 @@ else:
         .. code:: Python
 
           # Beware: name "Image" is already used in Gamera!
-          import Image as Pil
-          from pil_io import
+          from PIL import Image as Pil
+          from gamera.plugins.pil_io import from_pil
 
           # read a JPEG image and convert it to a Gamera image
           pilimg = Pil.open("image.jpg")
